@@ -128,8 +128,42 @@ test('caçando no PoE: com "Só Único" nenhuma peça Normal/Mágica/Rara entra 
   assert.ok(solto.pecas.some((x) => x.poe.raridade !== 'unico'), 'inclusive as não Únicas');
   assert.equal(solto.ignoradas, 0);
   const soUnico = cacar({ guardarRaridadePoe: 3 });
-  assert.deepEqual(soUnico.pecas.filter((x) => x.poe.raridade !== 'unico'), [], 'nenhuma não Única na bolsa');
+  // (Os frascos vêm sempre — o teste seguinte: as seções são para equipamento.)
+  const FrascosPoe = await import('../systems/itens-poe/frascos.mjs');
+  assert.deepEqual(soUnico.pecas.filter((x) => x.poe.raridade !== 'unico' && !FrascosPoe.ehFrasco(x)), [], 'nenhum equipamento não Único na bolsa');
   assert.ok(soUnico.ignoradas > 0, 'ficaram no chão ("Ignorado" no relatório da caçada)');
+});
+
+test('frasco e moeda: a raridade e as outras seções não decidem (são para equipamento) — só a lista ou uma regra da classe do frasco', { skip: SEM }, async () => {
+  // Dono, 08/10: "frascos e moedas têm raridade, mas no loot filter não era para ser considerado". Com "Raro para cima" o frasco
+  // Normal/Mágico ficava no chão.
+  const frasco = (raridade) => peca({ raridade, tiers: raridade === 'magico' ? [7] : [], abertos: 0, ilvl: 20, classe: 'Life_Flasks', id: 7001009 });
+  for (const settings of [{ guardarRaridadePoe: 2 }, { guardarRaridadePoe: 3 }, { guardarModsPoe: 4 }, { guardarIlvlPoe: 84 }, { guardarSockets: 4 }, { guardarLigados: 4 }]) {
+    for (const raridade of ['normal', 'magico']) {
+      const d = Afixos.decisaoDoLoot(quem(settings), frasco(raridade));
+      assert.deepEqual([d.acao, d.motivo], ['naoVender', 'frasco (sempre)'], `${JSON.stringify(settings)}: o frasco ${raridade} vem`);
+    }
+  }
+  assert.equal(acao(quem({ guardarRaridadePoe: 2 }), peca({ raridade: 'normal' })), 'naoColetar', 'o equipamento Normal continua no chão');
+  // A regra específica sem classe (ou de outra classe) não pega o frasco; a da classe dele, sim.
+  const e = quem({ guardarRaridadePoe: 2 });
+  e.lootRegras = [Afixos.sanearRegraDeLootPoe({ raridade: 'normal', acao: 'naoColetar' })];
+  assert.equal(acao(e, frasco('normal')), 'naoVender', 'a regra de raridade sem classe é de equipamento');
+  assert.equal(acao(e, peca({ raridade: 'normal' })), 'naoColetar');
+  e.lootRegras = [Afixos.sanearRegraDeLootPoe({ classe: 'Life_Flasks', acao: 'naoColetar' })];
+  assert.equal(acao(e, frasco('magico')), 'naoColetar', 'a regra da classe do frasco decide');
+  assert.equal(acao(e, peca({ raridade: 'normal', classe: 'Mana_Flasks', abertos: 0 })), 'naoVender', 'outra classe de frasco não');
+  // A lista "Não coletar".
+  const f = frasco('normal');
+  assert.equal(Bolsa.ignora(quem({ guardarRaridadePoe: 3 }), f.id, f), false, 'com "Só Único" o frasco entra');
+  const naLista = quem({ guardarRaridadePoe: 3 });
+  naLista.itemRules.noLoot.push(f.id);
+  assert.equal(Bolsa.ignora(naLista, f.id, f), true, 'na lista: fica no chão');
+  // A moeda: nenhuma seção (nem "Só Único") a deixa no chão.
+  const MoedasPoe = await import('../systems/itens-poe/moedas.mjs');
+  for (const m of MoedasPoe.dropDoMonstro('unico', () => 0, 50)) assert.equal(Bolsa.ignora(quem({ guardarRaridadePoe: 3, guardarModsPoe: 6, guardarIlvlPoe: 86 }), m.id), false, `a moeda ${m.id} vem`);
+  // A prévia da tela mostra o frasco vindo.
+  assert.ok(Afixos.previaDoFiltro(quem({ guardarRaridadePoe: 3 })).some((l) => /Frasco/.test(l.rotulo) && l.acao === 'naoVender'));
 });
 
 // (Dono, 08/10: "o máximo de slot na bag é 20" — como no inventário do PoE, a pilha também ocupa uma vaga. De 07/10 a 08/10 as pilhas não

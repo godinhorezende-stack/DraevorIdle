@@ -461,12 +461,19 @@ export function sanearRegraDeLootPoe(r) {
  * vender não pode". As peças do PoE não têm preço no NPC: a "venda automática" que as seções decidiam nunca vendia nada, e tudo ficava
  * na bolsa. Agora: `naoVender` = pega (a bolsa recebe), `naoColetar` = fica no chão (`Bolsa.ignora`). Sem seção nenhuma escolhida, pega
  * tudo; com alguma, só o que ela pega (as seções com OU). O Único sempre é pego, a não ser que uma regra específica diga o contrário.
+ *
+ * FRASCO e MOEDA (dono, 08/10: "frascos e moedas têm raridade, mas no loot filter não era para ser considerado"): as seções e as regras são
+ * para escolher EQUIPAMENTO — com "Raro para cima" o frasco Normal/Mágico ficava no chão. O frasco sempre vem; só a lista "Não coletar" ou
+ * uma regra específica da CLASSE dele (Frascos de Vida, de Mana, Utilitários) o deixa no chão. A moeda nem chega aqui: o drop dela passa só
+ * pela lista (`Bolsa.ignora` sem a peça).
  */
 export function decisaoDoLootPoe(estado, p) {
-  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false && r.poe);
+  const frasco = FrascosPoe.ehFrasco(p);
+  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false && r.poe && (!frasco || r.classe === p.poe.classe));
   for (const [i, r] of regras.entries()) {
     if (regraPoeBate(r, p)) return { acao: r.acao === 'naoColetar' ? 'naoColetar' : 'naoVender', motivo: `regra específica ${i + 1}` };
   }
+  if (frasco) return { acao: 'naoVender', motivo: 'frasco (sempre)' };
   if (p.poe.raridade === 'unico') return { acao: 'naoVender', motivo: 'Único (sempre)' };
   const s = regraDasSecoesPoe(estado?.settings ?? {});
   const algumaSecao = s.mods > 0 || s.tier > 0 || s.abertos > 0 || s.ligados > 1 || s.rgb || s.ilvl > 0 || s.raridade > 0;
@@ -488,6 +495,7 @@ const EXEMPLOS_DO_FILTRO_POE = [
   { rotulo: 'Raro, 4 mods (melhor T4)', raridade: 'raro', tiers: [4, 5, 6, 7], ilvl: 60, abertos: 3 },
   { rotulo: 'Raro, 6 mods com um T1', raridade: 'raro', tiers: [1, 3, 4, 5, 6, 7], ilvl: 84, abertos: 4 },
   { rotulo: 'Único', raridade: 'unico', tiers: [], ilvl: 70, abertos: 2 },
+  { rotulo: 'Frasco de Vida Mágico', raridade: 'magico', tiers: [7], ilvl: 40, abertos: 0, classe: 'Life_Flasks' },
 ];
 function previaDoFiltroPoe(estado) {
   const base = { ...estado, itemRules: { ...(estado.itemRules ?? {}), noLoot: [], noSell: [] } };
@@ -496,7 +504,7 @@ function previaDoFiltroPoe(estado) {
     const p = {
       id: 0, count: 1,
       soquetes: { abertos: x.abertos, links: Array.from({ length: Math.max(0, x.abertos - 1) }, (_, i) => i < lig - 1), gemas: [], cores: x.cores ?? Array(x.abertos).fill('R') },
-      poe: { raridade: x.raridade, classe: 'Body_Armours', ilvl: x.ilvl, prefixos: x.tiers.slice(0, 3).map((tier) => ({ tier })), sufixos: x.tiers.slice(3).map((tier) => ({ tier })) },
+      poe: { raridade: x.raridade, classe: x.classe ?? 'Body_Armours', ilvl: x.ilvl, prefixos: x.tiers.slice(0, 3).map((tier) => ({ tier })), sufixos: x.tiers.slice(3).map((tier) => ({ tier })) },
     };
     return { rotulo: x.rotulo, ...decisaoDoLootPoe(base, p) };
   });
