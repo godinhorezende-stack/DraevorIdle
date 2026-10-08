@@ -42,7 +42,7 @@ test('caçando: "Não vender" nunca é vendido, "Não coletar" fica no chão, o 
   assert.ok(Object.values(itens.vendido ?? {}).reduce((a, b) => a + b, 0) > 0, 'o resto foi vendido');
 });
 
-test('venda: a regra de raridade guarda "raro para cima" e vende o comum', () => {
+test('venda: a regra de raridade guarda "raro para cima" e vende o comum', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 120 });
   Bolsa.garantir(e);
   e.settings = { guardarRaridade: 2, guardarNivel: 0 };
@@ -91,7 +91,7 @@ test('"Toda a conta": só as mudanças de filtro se espalham (não qualquer sett
 
 // ---------- sockets, "Afixo só nestes" e gema encaixada ----------
 import * as Afixos from '../systems/afixos.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 const comSockets = (abertos, links, extra = {}) => ({ id: HAND_AXE, count: 1, raridade: 'comum', soquetes: { abertos, links, gemas: Array(4).fill(null) }, ...extra });
 const quem = (settings, itemRules) => ({ ...personagemDeTeste(), settings, ...(itemRules ? { itemRules } : {}) });
 
@@ -110,7 +110,7 @@ test('sockets: "Abertos N+" e "Ligados N+" guardam a peça SOZINHOS (mesmo comum
   assert.deepEqual(Afixos.socketsDaPeca({ id: 1 }), { abertos: 0, ligados: 0 });
 });
 
-test('venda da bolsa com sockets: a de 4 sockets fica, a sem socket vai', () => {
+test('venda da bolsa com sockets: a de 4 sockets fica, a sem socket vai', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   Bolsa.garantir(e);
   e.settings = { guardarSockets: 4, guardarNivel: 0 };
@@ -132,7 +132,7 @@ test('"Afixo só nestes": fora da lista o atributo não conta — a raridade lig
   assert.equal(Afixos.guarda(quem({ guardarNivel: 3 }, { noLoot: [], noSell: [], soAfixo: [HAND_AXE] }), rara), false);
 });
 
-test('peça com gema encaixada nunca é vendida pela venda automática, e a manual pede confirmação', () => {
+test('peça com gema encaixada nunca é vendida pela venda automática, e a manual pede confirmação', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   const comGema = comSockets(2, [true, false, false]);
   comGema.soquetes.gemas[0] = { id: 1, nivel: 3 };
   assert.equal(Afixos.guarda(quem({ guardarNivel: 0 }), comGema), true);

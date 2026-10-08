@@ -27975,8 +27975,12 @@ html:not([data-perfil="retrato"]):not([data-perfil="deitado"]) .window[data-wind
 .window[data-window-id="inventory"] .equipment .slot { background: #0b0a08; border-color: #4a3d28; box-shadow: inset 0 0 6px #000; }
 .inv-mochila { display: flex; flex-direction: column; min-height: 0; margin-top: 6px; padding-top: 6px; border-top: 1px solid #4a3d28; }
 /* A grade como a do PoE: as casas vazias desenhadas no fundo (44px + 5 de vão, alinhadas com as células; `--linhas` vem do JS). */
+/* As colunas são as das casas do fundo (`--colunas`, do JS) e o vão da barra de rolagem fica reservado desde o começo: quando a barra
+   aparecia (a mochila passando das fileiras que cabem), a largura útil encolhia e as peças caíam para 3 colunas com o fundo ainda em 4
+   (dono, 08/10, com a foto). */
 .inv-mochila .bag {
-  grid-template-columns: repeat(auto-fill, 44px); justify-content: start; max-height: 256px; overflow-y: auto;
+  grid-template-columns: repeat(var(--colunas, auto-fill), 44px); justify-content: start; max-height: 256px; overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 4px; border: 1px solid #2a2a30; border-radius: 3px;
   background-color: #08090b;
   background-image: linear-gradient(90deg, transparent 44px, #08090b 44px), linear-gradient(transparent 44px, #08090b 44px), linear-gradient(#151922, #151922);

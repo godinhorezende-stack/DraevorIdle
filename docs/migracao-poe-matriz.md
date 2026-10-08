@@ -2407,3 +2407,22 @@ Corrigido sem marca nesta etapa: a D de `itens-poe.test.mjs` (trocada por "sem c
 | 71 | requisito de entrada = PROGRESSO (exige completar fases), e o level é só RECOMENDADO: nível baixo entra, falta de fase não |
 | 94 | sem conteúdo cadastrado (produção hoje), o payload da campanha é o de sempre, com `mundo` vazio |
 
+
+## Marcas depois da matriz
+
+### 08/10 — no jogo oficial não há venda (só Limpar)
+
+**B** — A venda ao NPC do Draevor (a bolsa, o preço de venda, o valor do Analisador). Dono, 08/10: "só dá para limpar, vender não pode, tira até o botão de vender" e "bolsa de loot também só opção de limpar". As peças do PoE nunca tiveram preço no NPC; a venda (automática, pelo botão e da mochila) passou a não levar nada no jogo oficial, e o filtro de loot do PoE passou a decidir a **coleta** (o que nenhuma seção pega fica no chão — `testes/filtro-poe.test.mjs`). Os testes abaixo rodam no clássico pelos irmãos `.classico` (`preco-de-venda.classico.test.mjs` e `rentabilidade.classico.test.mjs` são novos).
+
+| Arquivo | Linha | Teste |
+|---|---:|---|
+| filtro-da-conta.test.mjs | 45 | venda: a regra de raridade guarda "raro para cima" e vende o comum |
+| filtro-da-conta.test.mjs | 113 | venda da bolsa com sockets: a de 4 sockets fica, a sem socket vai |
+| filtro-da-conta.test.mjs | 135 | peça com gema encaixada nunca é vendida pela venda automática, e a manual pede confirmação |
+| preco-de-venda.test.mjs | 18 | os itens do relato ganham preço e a venda automática vende (com qualquer raridade) |
+| preco-de-venda.test.mjs | 73 | o scroll comum vende (a exclusão é só dos itens especiais: Divine Scroll, premium scroll...) |
+| preco-de-venda.test.mjs | 84 | loot comum sem preço nenhum (lixo, produto de bicho, comida, decoração, sem tipo, enferrujados) vende por 1 |
+| rentabilidade.test.mjs | 55 | o preço do Analisador é o MESMO da venda: vender a bolsa paga exatamente o valor calculado |
+| rentabilidade.test.mjs | 65 | a CAUSA do prejuízo falso: vender a bolsa à mão não muda mais o lucro da sessão |
+
+As regras do filtro do PoE em `filtro-poe.test.mjs` mudaram junto (de "guardar/vender" para "pegar/fica no chão"), e a mochila do PoE passou a ter 20 vagas no total, com a pilha ocupando uma (dono, 08/10: "o máximo de slot na bag é 20").

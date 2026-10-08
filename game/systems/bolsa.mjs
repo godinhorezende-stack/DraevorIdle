@@ -64,7 +64,8 @@ export function desempilharMunicao(estado) {
 }
 
 // Gema do Gem Atelier nunca vai na venda automática ("é gema do Gem Atelier", no original).
-const vende = (estado, id) => precoDeVenda(id) > 0 && !estado.itemRules.noSell.includes(id) && !Gemas.ehGema(id);
+// O jogo oficial (PoE) não vende (dono, 08/10: "só dá para limpar, vender não pode"): a venda da bolsa (a automática e a do botão) não leva nada.
+const vende = (estado, id) => !itensPoeLigado() && precoDeVenda(id) > 0 && !estado.itemRules.noSell.includes(id) && !Gemas.ehGema(id);
 
 /**
  * Põe `count` de `id` na bolsa (empilhando). Devolve quantos couberam.
@@ -119,6 +120,9 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
 export function ignora(estado, id, peca = null) {
   garantir(estado);
   if (estado.itemRules.noLoot.includes(Number(id))) return true;
+  // O jogo oficial (PoE): o filtro decide a COLETA, como o filtro de loot do PoE — a peça que nenhuma seção nem regra pega fica no chão
+  // (`Afixos.decisaoDoLootPoe`; as seções contam mesmo sem regra específica).
+  if (itensPoeLigado() && peca?.poe) return Afixos.decisaoDoLoot(estado, { ...peca, id: Number(id) }).acao === 'naoColetar';
   if (!peca || !estado.lootRegras.length) return false;
   return Afixos.decisaoDoLoot(estado, { ...peca, id: Number(id) }).acao === 'naoColetar';
 }
@@ -228,6 +232,8 @@ export function regraDeItem(estado, { rule, id, only }) {
 export function presetDeLoot(estado, { preset, ids }) {
   garantir(estado);
   if (preset !== 'npc' || !Array.isArray(ids)) return { ok: false, erro: 'Preset desconhecido.' };
+  // O jogo oficial (PoE) não vende: nenhuma peça do PoE tem comprador, e o preset mandaria tudo para "Não coletar".
+  if (itensPoeLigado()) return { ok: false, erro: 'No jogo oficial não há venda ao NPC: use as seções do filtro.' };
   const noLoot = new Set(estado.itemRules.noLoot);
   for (const id of ids.map(Number)) {
     if (precoDeVenda(id) > 0) noLoot.delete(id);
@@ -346,6 +352,7 @@ export function paraCliente(estado, faltaParaVender = null) {
  * pergunta antes. Sem preço de NPC, vem com `motivo` e não sai.
  */
 export function vendaDaMochila(estado, { lugar = 'bag', vender } = {}) {
+  if (itensPoeLigado()) return { ok: false, erro: 'No jogo oficial não há venda: só Limpar.' };
   garantir(estado);
   const itens = lugar === 'pouch' ? estado.pouch : (estado.inventory ??= []);
   let ouro = 0;

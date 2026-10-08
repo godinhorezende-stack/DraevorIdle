@@ -58,7 +58,7 @@ test('sem capacidade no PoE (dono, 06/10: "não existe cap mais"): o peso não m
   assert.deepEqual(Deposito.excessoParaODeposito(e), []);
   assert.equal(e.inventory.length, 20);
   e.inventory.push(...Array.from({ length: 60 }, () => structuredClone(placa)));
-  // O peso não conta; o que limita no PoE são as VAGAS da mochila (20 peças não empilháveis — dono, 07/10).
+  // O peso não conta; o que limita no PoE são as VAGAS da mochila (20 — dono, 07/10 e 08/10).
   assert.equal(Inventario.cabeNoPeso(e, placa.id, 1), false, 'mochila com 80 peças: sem vaga');
   e.inventory = [];
   assert.equal(Inventario.cabeNoPeso(e, placa.id, 1), true, 'mochila vazia: cabe, por mais pesada que seja');

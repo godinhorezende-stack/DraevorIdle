@@ -7,6 +7,7 @@ import * as Relatorio from '../systems/hunt/relatorio.mjs';
 import * as Bolsa from '../systems/bolsa.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ITEM = 900_001; // ids de mentira: o preço é passado pela função
 const preco = (tabela) => (id) => tabela[id] ?? 0;
@@ -51,7 +52,7 @@ test('resumo: bruto, custos, líquido e por hora — inclusive bruto positivo co
   assert.equal(Rent.resumo({ gold: 0, loot: 0, supplies: 0, ms: 0 }).porHora, 0, 'sem tempo: 0, e não infinito/NaN');
 });
 
-test('o preço do Analisador é o MESMO da venda: vender a bolsa paga exatamente o valor calculado', () => {
+test('o preço do Analisador é o MESMO da venda: vender a bolsa paga exatamente o valor calculado', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
   e.pouch = [];
   const comPreco = Object.values(ITEM_CATALOG).filter((i) => i.sell > 0 && i.stackable).slice(0, 3);
@@ -61,7 +62,7 @@ test('o preço do Analisador é o MESMO da venda: vender a bolsa paga exatamente
   assert.equal(Bolsa.venderBolsa(e).gold, esperado, 'e a venda paga o mesmo');
 });
 
-test('a CAUSA do prejuízo falso: vender a bolsa à mão não muda mais o lucro da sessão', () => {
+test('a CAUSA do prejuízo falso: vender a bolsa à mão não muda mais o lucro da sessão', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
   e.pouch = [];
   const item = Object.values(ITEM_CATALOG).find((i) => i.sell >= 100 && i.stackable);

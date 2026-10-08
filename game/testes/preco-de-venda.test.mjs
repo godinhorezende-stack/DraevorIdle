@@ -8,13 +8,14 @@ import * as Bolsa from '../systems/bolsa.mjs';
 import * as PrecoDeVenda from '../systems/itens/preco-de-venda.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const porNome = (nome) => {
   const [id, m] = Object.entries(ITEM_CATALOG).find(([, x]) => x.name === nome);
   return { id: Number(id), m };
 };
 
-test('os itens do relato ganham preço e a venda automática vende (com qualquer raridade)', () => {
+test('os itens do relato ganham preço e a venda automática vende (com qualquer raridade)', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   for (const nome of ['green tunic', 'grapes', 'scarf']) {
     const { id, m } = porNome(nome);
     assert.ok(m.sell > 0, `${nome}: ${m.sell}`);
@@ -69,7 +70,7 @@ test('a raridade não muda o preço (decisão do dono)', () => {
   assert.equal(vende('comum'), vende('mítico'));
 });
 
-test('o scroll comum vende (a exclusão é só dos itens especiais: Divine Scroll, premium scroll...)', () => {
+test('o scroll comum vende (a exclusão é só dos itens especiais: Divine Scroll, premium scroll...)', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   const { id, m } = porNome('scroll');
   assert.equal(m.sell, Math.floor(m.buy * PrecoDeVenda.CONFIG.fracaoDoPrecoDeCompra));
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
@@ -80,7 +81,7 @@ test('o scroll comum vende (a exclusão é só dos itens especiais: Divine Scrol
   for (const nome of ['Divine Scroll', 'Divine Hunts Scroll', 'premium scroll', 'Scroll Speed Exercise']) assert.ok(!(porNome(nome).m.sell > 0), nome);
 });
 
-test('loot comum sem preço nenhum (lixo, produto de bicho, comida, decoração, sem tipo, enferrujados) vende por 1', () => {
+test('loot comum sem preço nenhum (lixo, produto de bicho, comida, decoração, sem tipo, enferrujados) vende por 1', { skip: doClassico('Venda ao NPC do Draevor: no jogo oficial não há venda — só Limpar (dono, 08/10)') }, () => {
   for (const nome of ['bone', 'mysterious remains', 'energy bar', 'piggy bank', 'teddy bear', 'flask of demonic blood', 'skull', 'rusted armor', 'slightly rusted legs', 'burnt scroll']) {
     const { m } = porNome(nome);
     assert.equal(m.sell, PrecoDeVenda.CONFIG.precoFixo.valor, nome);
