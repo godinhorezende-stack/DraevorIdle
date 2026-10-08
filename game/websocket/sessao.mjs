@@ -38,6 +38,7 @@ import * as Summon from '../systems/summon.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import * as Reserva from '../systems/itens-poe/reserva.mjs';
 import * as Legado from '../systems/personagem/legado.mjs';
 import * as RoupaDaClasse from '../systems/personagem/roupa-da-classe.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
@@ -336,6 +337,8 @@ function characterParaCliente(personagem, estado) {
       ...CHARACTER_TEMPLATE.derived,
       maxHp: estado.maxHp,
       maxMana: estado.maxMana,
+      // A mana (e a vida) que as auras do PoE reservam: a barra marca a parte trancada (`itens-poe/reserva.mjs`).
+      ...(() => { const r = Reserva.reservadas(estado); return r.mana || r.vida ? { reservaDeMana: r.mana, reservaDeVida: r.vida } : {}; })(),
       // `null` = sem capacidade (o PoE não tem peso: a tela esconde a barra de Cap). JSON não carrega o Infinity.
       capacity: Number.isFinite(Afixos.capacidade(estado)) ? Afixos.capacidade(estado) : null,
       speed: R.baseSpeed(estado.level),

@@ -37,6 +37,7 @@ import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as Reserva from './itens-poe/reserva.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
@@ -98,7 +99,10 @@ const ALTO_POR_ID = new Map([...ACTION_CATALOG_ALTO.spells, ...ACTION_CATALOG_AL
 /** O custo de mana DO CATÁLOGO da skill, com o balanceamento da gema (`fatorDeCusto` em `skills.json`); o resto (afixos, suportes) multiplica por cima. */
 const custoDoCatalogo = (entry) => Math.round((entry.mana ?? 0) * (Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id))?.fatorDeCusto ?? 1));
 /** O custo de mana desta skill para quem lança: a gema do PoE custa o do nível dela (a tabela do PoE); as outras, o do catálogo. */
-const custoDaSkill = (entry, efeitoDaGema) => (entry.poeGema ? GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : custoDoCatalogo(entry));
+// (A aura do PoE que RESERVA não tem custo: ela tranca a mana enquanto está ligada — `itens-poe/reserva.mjs`.)
+const custoDaSkill = (entry, efeitoDaGema) => (entry.poeGema
+  ? entry.poeGema.buff && Reserva.daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) ? 0 : GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)
+  : custoDoCatalogo(entry));
 
 /**
  * As tags de golpe do PoE desta skill (`itens-poe/mods-poe.mjs`): as do poedb da gema do PoE (Ataque, Magia, Área, Projétil, Fogo…) + `habilidade`;
@@ -737,16 +741,28 @@ function precisaDeCura(entry, estado, quem = estado) {
 const BUFFS = Reforcos.REFORCOS;
 
 /** Os buffs ativos agora, no formato do client (`{icone, nome, resta, tipo, mult}`). */
-export function buffsAtivos(hunt) {
+export function buffsAtivos(hunt, estado = null) {
   const agora = hunt.clock ?? 0;
   const lista = [];
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) {
     if (b.ate <= agora) continue;
     const entry = POR_ID.get(id);
     // `sk`: a skill do buff — o visual CONTÍNUO dela (a aura ligada) é desenhado no personagem enquanto dura (efeitos-visuais).
-    lista.push({ icone: entry?.icon ?? null, nome: entry?.name ?? id, resta: b.ate - agora, tipo: b.tipo, sk: id, ...(b.mult ? { mult: b.mult } : {}) });
+    // A aura que reserva não tem relógio: o cartão mostra quanto ela reserva (`reserva`).
+    const reserva = b.reserva && estado ? { recurso: b.reserva.recurso, valor: Reserva.valor(estado, b.reserva), ...(b.reserva.pct ? { pct: b.reserva.pct } : {}) } : null;
+    lista.push({ icone: entry?.icon ?? null, nome: entry?.name ?? id, resta: reserva ? 0 : b.ate - agora, tipo: b.tipo, sk: id, ...(b.mult ? { mult: b.mult } : {}), ...(reserva ? { reserva } : {}) });
   }
-  return lista.sort((a, b) => a.resta - b.resta);
+  return lista.sort((a, b) => (a.reserva ? 1 : 0) - (b.reserva ? 1 : 0) || a.resta - b.resta);
+}
+
+/**
+ * A aura que reserva (`itens-poe/reserva.mjs`) fica ligada enquanto a gema estiver na barra, ligada no slot e encaixada: saiu de um dos
+ * três, desliga (e a mana reservada volta a ser livre). Devolve true se alguma desligou (quem chama refaz a ficha).
+ */
+export function desligarAurasForaDaBarra(estado, hunt) {
+  if (!Object.values(hunt?.buffs ?? {}).some((b) => b?.reserva)) return false;
+  const ativas = Gemas.skillsAtivas(estado);
+  return Reserva.desligarAsQueSairam(hunt, (id) => (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id));
 }
 
 /** Um buff deste tipo está ligado? (o escudo, por exemplo — ver `contraAtaque`). */
@@ -1089,7 +1105,17 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (A habilidade ativada por um ÚNICO não tem custo, como no PoE.)
   // (PoE: × "Custo de Mana das Habilidades aumentado/reduzido" e + "N ao Custo de Mana Total" dos únicos.)
   const fichaDoCusto = Ficha.combate(estado);
-  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') / 100)) / Math.max(0.1, 1 + ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
+  /*
+   * ---- A aura do PoE que RESERVA (dono, 08/10 — `itens-poe/reserva.mjs`) ----
+   * Não custa: LIGA, trancando a % da mana máxima (ou o valor fixo) enquanto estiver na barra — se couber na parte livre. Com o suporte
+   * que reserva Vida ou o Magia Sanguínea, a reserva sai da vida.
+   */
+  const reservaEmVida = !!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(fichaDoCusto, 'keystone_magia_sanguinea') > 0;
+  const reserva = Reserva.pedida(estado, entry, efeitoDaGema, fichaDoCusto, reservaEmVida);
+  if (reserva && !Reserva.cabe(estado, entry.id, reserva)) {
+    return { ok: false, erro: `Sem ${reserva.recurso} livre para reservar: ${entry.name} reserva ${reserva.valor}.`, motivo: 'RESERVA' };
+  }
+  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') / 100)) / Math.max(0.1, 1 + ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(Ficha.combate(estado), 'keystone_magia_sanguinea') > 0) && custoDeMana > 0;
@@ -1302,10 +1328,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const duracao = Math.round(buff.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
     // A gema do PoE: os efeitos e os atributos do NÍVEL dela (`GemasPoe.buffNoNivel`) ficam no buff; a ficha é refeita (atributos novos).
     const doPoe = entry.poeGema?.buff ? GemasPoe.buffNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
+    // (A aura que reserva fica LIGADA — sem expirar — e guarda a reserva dela: o recurso, a % ou o fixo, e o fator dos suportes/eficácia.)
     (hunt.buffs ??= {})[entry.id] = doPoe
-      ? { ate: agora + Math.round(doPoe.dur * (1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100)), tipo: buff.tipo, fator: 1, efeitosPoe: doPoe.efeitos, afPoe: doPoe.af }
+      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * (1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100)), tipo: buff.tipo, fator: 1, efeitosPoe: doPoe.efeitos, afPoe: doPoe.af,
+        ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
+    // A parte reservada sai da mana (ou da vida) atual na hora.
+    if (reserva) Reserva.cortarNoLivre(estado);
     // A provocação: os bichos por perto vêm atacar você (o grito do PoE traz o `provocar` nos efeitos do nível).
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
     if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos }, distanciaChebyshev);

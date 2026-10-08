@@ -1233,6 +1233,30 @@
       "combate": true,
       "efeito": "acoes (custo ÷ 1 + isto)"
     },
+    "eficiencia_reserva": {
+      "nome": "Eficácia da Reserva das habilidades",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva (a reserva das auras ÷ 1 + isto)"
+    },
+    "eficiencia_reserva_mana": {
+      "nome": "Eficácia da Reserva de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva (a reserva de mana das auras ÷ 1 + isto)"
+    },
+    "eficiencia_reserva_vida": {
+      "nome": "Eficácia da Reserva de Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva (a reserva de vida das auras ÷ 1 + isto)"
+    },
+    "eficiencia_reserva_arauto": {
+      "nome": "Eficácia da Reserva de Mana dos Arautos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva (a reserva de mana dos Arautos ÷ 1 + isto)"
+    },
     "chance_devolver_custo": {
       "nome": "Chance de recuperar o custo da habilidade",
       "unidade": "%",

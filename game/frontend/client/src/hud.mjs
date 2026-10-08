@@ -1063,6 +1063,24 @@ function escudoNaBarraDeVida(atual, maximo, fracaoDaVida = 1) {
   vida.title = `Escudo de Energia ${atual}/${maximo}: absorve o dano antes da vida e recarrega sozinho depois de um tempo sem apanhar.`;
 }
 
+/*
+ * ---- A parte RESERVADA pelas auras do PoE (o servidor manda `reservaDeMana`/`reservaDeVida` — `itens-poe/reserva.mjs`) ----
+ * Uma faixa escura no FIM da barra: a mana trancada enquanto as auras estão ligadas. A atual nunca passa dela (a regeneração para ali).
+ */
+function reservaNaBarra(id, reservada, maximo) {
+  const barra = $(`bar-${id}`)?.parentElement;
+  if (!barra) return;
+  let camada = barra.querySelector('.bar-reserva');
+  if (!(reservada > 0) || !(maximo > 0)) return void camada?.remove();
+  if (!camada) {
+    camada = el('b', 'bar-reserva');
+    camada.setAttribute('aria-hidden', 'true');
+    barra.append(camada);
+  }
+  camada.style.setProperty('--reserva', `${Math.max(0, Math.min(100, (reservada / maximo) * 100))}%`);
+  camada.title = `${Math.round(reservada)} de ${id === 'hp' ? 'vida' : 'mana'} reservada pelas auras ligadas.`;
+}
+
 function setBar(id, value, max, label) {
   const bar = $(`bar-${id}`);
   if (!bar) return;
@@ -1646,6 +1664,11 @@ const relogioDoBuff = (segundos) =>
   segundos >= 60 ? `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, '0')}` : `${segundos}`;
 const balaoDoBuff = (buff, segundos) =>
   `${buff.nome} — ${segundos >= 60 ? `${Math.floor(segundos / 60)}min ${segundos % 60}s` : `${segundos}s`} restantes`;
+// A aura do PoE que reserva não tem relógio: o cartão mostra quanto ela tranca (a % ou o valor).
+const textoDoBuff = (buff, segundos) => (buff.reserva ? (buff.reserva.pct ? `${buff.reserva.pct}%` : `${buff.reserva.valor}`) : relogioDoBuff(segundos));
+const balaoDoCartao = (buff, segundos) => (buff.reserva
+  ? `${buff.nome} — ligada, reserva ${buff.reserva.valor} de ${buff.reserva.recurso === 'vida' ? 'Vida' : 'Mana'}${buff.reserva.pct ? ` (${buff.reserva.pct}% da máxima)` : ''}. Fica ligada enquanto a gema estiver na barra.`
+  : balaoDoBuff(buff, segundos));
 
 function renderBuffsDaMagia(hunt) {
   const caixa = $('hud-buffs');
@@ -1667,10 +1690,10 @@ function renderBuffsDaMagia(hunt) {
       const card = caixa.children[i];
       const segundos = Math.ceil(buff.resta / 1000);
       const texto = card.querySelector('b');
-      if (texto) texto.textContent = relogioDoBuff(segundos);
+      if (texto) texto.textContent = textoDoBuff(buff, segundos);
       // Os ultimos cinco segundos piscam: e' quando renovar ainda vale a pena.
-      card.classList.toggle('acabando', segundos <= 5);
-      tipTexto(card, balaoDoBuff(buff, segundos));
+      card.classList.toggle('acabando', !buff.reserva && segundos <= 5);
+      tipTexto(card, balaoDoCartao(buff, segundos));
     });
     return;
   }
@@ -1697,10 +1720,11 @@ function renderBuffsDaMagia(hunt) {
     }
     const segundos = Math.ceil(buff.resta / 1000);
     const texto = document.createElement('b');
-    texto.textContent = relogioDoBuff(segundos);
-    if (segundos <= 5) card.classList.add('acabando');
+    texto.textContent = textoDoBuff(buff, segundos);
+    if (!buff.reserva && segundos <= 5) card.classList.add('acabando');
+    if (buff.reserva) card.classList.add('reserva', `reserva-${buff.reserva.recurso}`);
     card.append(texto);
-    tipTexto(card, balaoDoBuff(buff, segundos));
+    tipTexto(card, balaoDoCartao(buff, segundos));
     caixa.append(card);
   }
 }
@@ -2316,7 +2340,10 @@ export function renderHud(character, catalog, party = null, escudoDeMana = false
   const inteiro = (v) => { const n = Number(v) || 0; return n > 0 && n < 1 ? 1 : Math.floor(n); };
   setBar('hp', character.hp, derived.maxHp, esMax > 0 ? `${inteiro(character.hp)}/${inteiro(derived.maxHp)} · ES ${inteiro(esAgora)}/${inteiro(esMax)}` : `${inteiro(character.hp)}/${inteiro(derived.maxHp)}`);
   escudoNaBarraDeVida(esAgora, esMax, derived.maxHp > 0 ? character.hp / derived.maxHp : 0);
-  setBar('mana', character.mana, derived.maxMana, `${inteiro(character.mana)}/${inteiro(derived.maxMana)}`);
+  setBar('mana', character.mana, derived.maxMana, derived.reservaDeMana > 0 ? `${inteiro(character.mana)}/${inteiro(derived.maxMana)} · ${inteiro(derived.reservaDeMana)} reservada` : `${inteiro(character.mana)}/${inteiro(derived.maxMana)}`);
+  // As auras do PoE que reservam: a parte trancada no fim das barras.
+  reservaNaBarra('mana', derived.reservaDeMana ?? 0, derived.maxMana);
+  reservaNaBarra('hp', derived.reservaDeVida ?? 0, derived.maxHp);
   /*
    * ---- A barra de mana BRILHA quando e' ela que esta apanhando ----
    *
