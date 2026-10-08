@@ -17,6 +17,7 @@
 //   - fechada a troca, confirmar de novo não faz nada (sem entrega dupla).
 import { ITEM_CATALOG } from './dados.mjs';
 import { camposDaPeca } from './itens/item.mjs';
+import { pilhaMaxima } from './itens/pilha.mjs';
 import { pesoDoInventario, VALOR_DA_MOEDA, pilhaDoAlvo } from './inventario.mjs';
 import * as Afixos from './afixos.mjs';
 import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
@@ -131,9 +132,23 @@ function montarEntrega(troca, sa, sb) {
     for (const peca of saindo[dono]) {
       const meta = ITEM_CATALOG[peca.id];
       const limpa = !Object.keys(camposDaPeca(peca)).length;
-      const junto = meta?.stackable && limpa ? novas[para].find((p) => p.id === peca.id && !Object.keys(camposDaPeca(p)).length) : null;
-      if (junto) junto.count = (junto.count ?? 1) + peca.count;
-      else novas[para].push(peca);
+      if (!(meta?.stackable && limpa)) {
+        novas[para].push(peca);
+        continue;
+      }
+      // O empilhável limpo completa as pilhas de quem recebe e abre outras, de até `pilhaMaxima`.
+      const max = pilhaMaxima(peca.id);
+      let falta = peca.count ?? 1;
+      for (const p of novas[para]) {
+        if (falta <= 0) break;
+        if (p.id !== peca.id || Object.keys(camposDaPeca(p)).length) continue;
+        const cabe = Math.min(max - (p.count ?? 1), falta);
+        if (cabe > 0) {
+          p.count = (p.count ?? 1) + cabe;
+          falta -= cabe;
+        }
+      }
+      for (; falta > 0; falta -= max) novas[para].push({ ...peca, count: Math.min(max, falta) });
     }
   }
   // 3. O peso de quem recebe (o ouro vai para o bolso, sem peso).

@@ -20,6 +20,7 @@ import * as R from '../regras.mjs';
 import * as SocketsPoe from '../itens-poe/sockets.mjs';
 import * as CompatSuportes from '../itens-poe/compat-suportes.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
+import { pilhaMaxima } from '../itens/pilha.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
@@ -828,21 +829,21 @@ export function sortearLapidadora({ ato = 1, fatorDeChance = 1 } = {}, rng = Mat
 
 // ---------------------------------------------------------------- orbes de socket
 
-/** Põe `n` do item empilhável na mochila, em pilhas de até 100 (o mesmo teto de `darItem`; importá-lo daqui fecharia um ciclo de módulos). */
+/** Põe `n` do item empilhável na mochila, em pilhas de até `pilhaMaxima` (o mesmo teto de `darItem`; importá-lo daqui fecharia um ciclo de módulos). */
 function empilhar(estado, itemId, n) {
   const inv = (estado.inventory ??= []);
   let falta = n;
   for (const pilha of inv) {
     if (falta <= 0) break;
     if (Number(pilha.id) !== itemId || pilha.af?.length || pilha.tier) continue;
-    const cabe = Math.min(100 - (pilha.count ?? 1), falta);
+    const cabe = Math.min(pilhaMaxima(itemId) - (pilha.count ?? 1), falta);
     if (cabe > 0) {
       pilha.count = (pilha.count ?? 1) + cabe;
       falta -= cabe;
     }
   }
   while (falta > 0) {
-    const c = Math.min(100, falta);
+    const c = Math.min(pilhaMaxima(itemId), falta);
     inv.push({ id: itemId, count: c });
     falta -= c;
   }

@@ -16,6 +16,7 @@ import * as Acoes from './acoes.mjs';
 // resposta pro cliente é `sessao.mjs`; este arquivo não conhece WebSocket.
 import { ITEM_CATALOG, EQUIPAMENTO_POR_VOCACAO, ACTION_CATALOG } from './dados.mjs';
 import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
+import { pilhaMaxima } from './itens/pilha.mjs';
 
 export function equipamentoInicial(vocacao) {
   const modelo = EQUIPAMENTO_POR_VOCACAO[vocacao].equipment;
@@ -51,8 +52,7 @@ export function pesoDoInventario(estado) {
  * sabe de mochila/pilha real ainda (isso é `juntar`/`organizar`, que ainda
  * não existe); o item aparece "largado" no inventário mesmo assim.
  */
-/** Tamanho máximo de uma pilha (o mesmo 100 do Tibia/OTServ). */
-const PILHA_MAX = 100;
+// O tamanho máximo de uma pilha: `pilhaMaxima` (100 fora do jogo oficial; no PoE, o da moeda até 20 — `itens/pilha.mjs`).
 
 /**
  * Põe `count` de `id` na mochila. Item empilhável (`stackable` no catálogo
@@ -97,8 +97,9 @@ export const pecasNaMochila = (estado) => (estado?.inventory ?? []).length;
 function vagasNovas(estado, id, count) {
   const n = Math.max(1, Number(count) || 1);
   if (!ITEM_CATALOG[id]?.stackable) return n;
-  const sobra = (estado?.inventory ?? []).reduce((s, p) => (p.id === id && !pecaEspecial(p) ? s + Math.max(0, PILHA_MAX - (p.count ?? 1)) : s), 0);
-  return Math.ceil(Math.max(0, n - sobra) / PILHA_MAX);
+  const max = pilhaMaxima(id);
+  const sobra = (estado?.inventory ?? []).reduce((s, p) => (p.id === id && !pecaEspecial(p) ? s + Math.max(0, max - (p.count ?? 1)) : s), 0);
+  return Math.ceil(Math.max(0, n - sobra) / max);
 }
 export function cabeNaMochila(estado, id, count = 1) {
   if (!ItensPoeCatalogo.ligado()) return true;
@@ -154,16 +155,17 @@ export function darItem(estado, id, count = 1) {
   const inventory = (estado.inventory ??= []);
   let falta = count;
   if (ITEM_CATALOG[id]?.stackable) {
+    const max = pilhaMaxima(id);
     for (const pilha of inventory) {
       if (falta <= 0) break;
       if (pilha.id !== id || pecaEspecial(pilha)) continue;
-      const cabe = Math.min(PILHA_MAX - (pilha.count ?? 1), falta);
+      const cabe = Math.min(max - (pilha.count ?? 1), falta);
       if (cabe <= 0) continue;
       pilha.count = (pilha.count ?? 1) + cabe;
       falta -= cabe;
     }
     while (falta > 0) {
-      const n = Math.min(PILHA_MAX, falta);
+      const n = Math.min(max, falta);
       inventory.push({ id, count: n });
       falta -= n;
     }
@@ -666,7 +668,7 @@ export function dividir(estado, { id, count, from, pilha }) {
   return { ok: true };
 }
 
-/** `send({t:'juntar', de, para, from})` — junta a pilha `de` na `para` (mesmo item, até 100). */
+/** `send({t:'juntar', de, para, from})` — junta a pilha `de` na `para` (mesmo item, até `pilhaMaxima`). */
 export function juntar(estado, { de, para, from }) {
   const itens = lista(estado, from);
   const a = itens[de];
@@ -674,7 +676,8 @@ export function juntar(estado, { de, para, from }) {
   if (!a || !b || a === b || a.id !== b.id) return { ok: false, erro: 'Só junta pilhas do mesmo item.' };
   // Peça com dados próprios (gema com nível/raridade, equipamento com atributos...) NUNCA se funde: a contagem somaria e a instância sumiria.
   if (!ITEM_CATALOG[a.id]?.stackable || pecaEspecial(a) || pecaEspecial(b)) return { ok: false, erro: 'Essa peça não empilha.' };
-  const passa = Math.min(a.count, 100 - b.count);
+  const passa = Math.max(0, Math.min(a.count, pilhaMaxima(a.id) - b.count));
+  if (!passa) return { ok: false, erro: `A pilha já está cheia (${pilhaMaxima(a.id)}).` };
   b.count += passa;
   a.count -= passa;
   if (a.count <= 0) itens.splice(de, 1);
@@ -700,7 +703,10 @@ export function organizar(estado, { from }) {
     else pilhas.set(p.id, (pilhas.get(p.id) ?? 0) + p.count);
   }
   const novos = [...soltos];
-  for (const [id, total] of pilhas) for (let resto = total; resto > 0; resto -= 100) novos.push({ id, count: Math.min(100, resto) });
+  for (const [id, total] of pilhas) {
+    const max = pilhaMaxima(id);
+    for (let resto = total; resto > 0; resto -= max) novos.push({ id, count: Math.min(max, resto) });
+  }
   const chave = (p) => `${ITEM_CATALOG[p.id]?.type ?? 'z'}|${ITEM_CATALOG[p.id]?.name ?? ''}`;
   novos.sort((a, b) => chave(a).localeCompare(chave(b)));
   itens.splice(0, itens.length, ...novos);

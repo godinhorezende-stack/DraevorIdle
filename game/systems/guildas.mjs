@@ -37,7 +37,8 @@
 import { banco } from '../database/banco.mjs';
 import * as Cache from '../database/redis.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
-import { converterTudo, camposDaPeca } from './itens/item.mjs';
+import { converterTudo, camposDaPeca, pecaEspecial } from './itens/item.mjs';
+import { darItem } from './inventario.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Premium from './premium.mjs';
 import { normalizarBrasao, brasaoPadrao, precoDoBrasao, efeitosUsados, mesmoBrasao } from '../engine/brasao-de-guilda.mjs';
@@ -628,7 +629,9 @@ export async function comando(s, m) {
       const { count: _c, ...extras } = peca;
       if ((peca.count ?? 1) > count) peca.count -= count;
       else itens.splice(pos, 1);
-      (s.estado.inventory ??= []).push({ ...extras, count });
+      // O empilhável limpo entra nas pilhas da mochila, de até `pilhaMaxima` (o monte do baú não tem teto).
+      if (ITEM_CATALOG[peca.id]?.stackable && !pecaEspecial(peca)) darItem(s.estado, peca.id, count);
+      else (s.estado.inventory ??= []).push({ ...extras, count });
       await Q.bau.run(JSON.stringify(itens), g.id);
       const { id: _i, ...soExtras } = extras;
       await anotar(g.id, 'bau', 'tirou', eu, peca.id, count, Object.keys(soExtras).length ? JSON.stringify(soExtras) : '');

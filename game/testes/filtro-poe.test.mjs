@@ -176,16 +176,17 @@ test('mochila do PoE: 20 vagas no total — a peça e a pilha ocupam uma cada (c
   const e = quem();
   e.inventory = Array.from({ length: Inventario.vagasDaMochila(e) - 1 }, () => ({ id: naoEmpilha, count: 1 }));
   assert.equal(Inventario.cabeNaMochila(e, naoEmpilha), true, 'a última vaga');
-  assert.equal(Inventario.cabeNaMochila(e, empilha, 50), true, 'a última vaga serve também para uma pilha');
+  assert.equal(Inventario.cabeNaMochila(e, empilha, 20), true, 'a última vaga serve também para uma pilha (até 20)');
+  assert.equal(Inventario.cabeNaMochila(e, empilha, 21), false, '21 são duas pilhas: pediriam duas vagas (dono, 08/10: "as pilhas podem ficar no máximo 20")');
   assert.equal(Inventario.cabeNaMochila(e, naoEmpilha, 2), false, 'duas peças, uma vaga');
   e.inventory.push({ id: naoEmpilha, count: 1 });
   assert.equal(Inventario.pecasNaMochila(e), 20);
   assert.equal(Inventario.cabeNaMochila(e, naoEmpilha), false, 'cheia');
-  assert.equal(Inventario.cabeNaMochila(e, empilha, 50), false, 'cheia: a pilha nova também pede vaga');
-  // A pilha que já está lá recebe mais do mesmo item sem pedir vaga, até 100; o que passar disso pede vaga nova.
-  e.inventory[19] = { id: empilha, count: 30 };
-  assert.equal(Inventario.cabeNaMochila(e, empilha, 70), true, 'junta na pilha que já está lá (30 + 70 = 100)');
-  assert.equal(Inventario.cabeNaMochila(e, empilha, 71), false, 'passa de 100: pediria uma vaga');
+  assert.equal(Inventario.cabeNaMochila(e, empilha, 5), false, 'cheia: a pilha nova também pede vaga');
+  // A pilha que já está lá recebe mais do mesmo item sem pedir vaga, até 20; o que passar disso pede vaga nova.
+  e.inventory[19] = { id: empilha, count: 5 };
+  assert.equal(Inventario.cabeNaMochila(e, empilha, 15), true, 'junta na pilha que já está lá (5 + 15 = 20)');
+  assert.equal(Inventario.cabeNaMochila(e, empilha, 16), false, 'passa de 20: pediria uma vaga');
   assert.match(Inventario.erroDeEspaco(e, naoEmpilha), /mochila está cheia \(20 vagas\)/);
   e.inventory[19] = { id: naoEmpilha, count: 1 };
   // Tirar do corpo com a mochila cheia: recusado, a peça fica vestida.

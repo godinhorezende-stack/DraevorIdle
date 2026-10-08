@@ -16,6 +16,7 @@ import * as Gerar from './gerar.mjs';
 import * as Jogo from './jogo.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Gemas from '../skills/gemas.mjs';
+import { pilhaMaxima, PILHA_MAX_POE } from '../itens/pilha.mjs';
 
 export const MOEDAS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/moedas-poe.json', import.meta.url), 'utf8')).moedas;
 const POR_SLUG = new Map(MOEDAS.map((m) => [m.slug, m]));
@@ -626,12 +627,14 @@ export function iniciar() {
     const st = STATUS[m.slug];
     const descricao = `${m.efeitos.join(' ') || m.nome}${st.status === 'nao' ? ` — sem efeito no jogo: ${st.motivo}.` : st.status === 'parcial' ? ` — no jogo: ${st.motivo}.` : ''}`;
     if (ITEM_CATALOG[m.itemId]) {
-      Object.assign(ITEM_CATALOG[m.itemId], { moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo } });
+      Object.assign(ITEM_CATALOG[m.itemId], { moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, pilha: Math.min(PILHA_MAX_POE, m.pilha ?? PILHA_MAX_POE) });
       continue;
     }
     ITEM_CATALOG[m.itemId] = {
       id: m.itemId, name: m.nome, weight: 0.1, stackable: true, type: 'moeda', rarity: 'raro', hasSprite: true, spriteDe: 9655,
-      poeMoeda: { icone: m.icone }, moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, descricao, sell: 0, pilha: m.pilha ?? 20,
+      poeMoeda: { icone: m.icone }, moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, descricao, sell: 0,
+      // O tamanho da pilha do PoE, até 20 (dono, 08/10 — `itens/pilha.mjs`); o balão mostra "Tamanho da Pilha: n / 20".
+      pilha: Math.min(PILHA_MAX_POE, m.pilha ?? PILHA_MAX_POE),
     };
     n++;
   }
@@ -651,9 +654,18 @@ function tirarDaMochila(estado, id, n) {
 }
 function porNaMochila(estado, id, n) {
   const inv = (estado.inventory ??= []);
-  const pilha = inv.find((x) => Number(x.id) === id && (x.count ?? 1) < 100);
-  if (pilha) pilha.count = (pilha.count ?? 1) + n;
-  else inv.push({ id, count: n });
+  const max = pilhaMaxima(id);
+  let falta = n;
+  for (const pilha of inv) {
+    if (falta <= 0) break;
+    if (Number(pilha.id) !== id) continue;
+    const cabe = Math.min(max - (pilha.count ?? 1), falta);
+    if (cabe > 0) {
+      pilha.count = (pilha.count ?? 1) + cabe;
+      falta -= cabe;
+    }
+  }
+  for (; falta > 0; falta -= max) inv.push({ id, count: Math.min(max, falta) });
 }
 function destruir(estado, alvo) {
   if (alvo.onde === 'equipment') delete estado.equipment[alvo.slot];
