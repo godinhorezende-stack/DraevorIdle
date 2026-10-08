@@ -10,7 +10,7 @@ import * as R from '../systems/regras.mjs';
 import { descerDeLevel } from '../systems/hunt/combate.mjs';
 import * as Afixos from '../systems/afixos.mjs';
 import { personagemDeTeste } from './apoio.mjs';
-import { doClassico } from './apoio-migracao.mjs';
+import { doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 const ler = (p) => JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8'));
 
@@ -78,7 +78,7 @@ test('morrer: tira a experiência (e o level), 20% do ouro carregado e queima as
   assert.ok(e.maxHp < antes.maxHp);
 });
 
-test('promoção: level 20, 20.000 gold, uma vez; acelera a regeneração', () => {
+test('promoção: level 20, 20.000 gold, uma vez; acelera a regeneração', { skip: doClassico('Promoção de vocação do Draevor (Elite Knight, Royal Paladin…): no jogo oficial (PoE) não existe — dono, 08/10: "tire essa promotion do desktop e do mobile"') }, () => {
   const e = personagem(19, { gold: 50000 });
   assert.equal(Promocao.paraCliente(e).missing, 1);
   assert.match(Promocao.promover(e).erro, /level 20/);
@@ -90,4 +90,14 @@ test('promoção: level 20, 20.000 gold, uma vez; acelera a regeneração', () =
   assert.deepEqual(Promocao.paraCliente(e), { ...ler('captura-charms-0925/welcome-zoros.json').character.promotion, mana: 1.5 });
   assert.deepEqual(Promocao.fatorDeRegeneracao(e), { hp: 1.5, mana: 1.5 });
   assert.match(Promocao.promover(e).erro, /já foi/);
+});
+
+test('no jogo oficial (PoE) não há promoção de vocação: nada vai para o cliente (o cartão some) e o pedido é recusado', { skip: soNoOficial('o jogo oficial não tem promoção de vocação') }, () => {
+  // Dono, 08/10: "tire essa promotion do desktop e do mobile".
+  const e = personagem(60, { gold: 50000 });
+  assert.equal(Promocao.paraCliente(e), null, 'sem cartão');
+  const r = Promocao.promover(e);
+  assert.equal(r.ok, false);
+  assert.equal(e.gold, 50000, 'nada cobrado');
+  assert.equal(e.promovido, undefined);
 });

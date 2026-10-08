@@ -720,7 +720,8 @@ function secaoDoBossDoAto(b, ato, ultimaFase, escolhida, bossPorId, catalog) {
   const aberto = !!portal && portal.ato === ato && portal.dificuldade === escolhida.id;
   const estado = aberto ? 'aberto' : b.liberado ? 'aguardando' : 'bloqueado';
   const sec = el('div', `campanha-boss-secao ${estado}${b.vencido ? ' vencido' : ''}`);
-  sec.append(el('span', 'campanha-boss-elo', `${ultimaFase.nome} → ${aberto ? 'Portal aberto' : 'Portal fechado'} → Boss final`));
+  // No jogo oficial (`b.naFase`) o chefe sai de um portal NA última fase — não há sala nem botão de portal.
+  sec.append(el('span', 'campanha-boss-elo', b.naFase ? `${ultimaFase.nome} → ${b.semPortal ? 'o chefe está na fase' : 'o portal abre na fase'} → Boss final` : `${ultimaFase.nome} → ${aberto ? 'Portal aberto' : 'Portal fechado'} → Boss final`));
   sec.append(el('h4', null, `Boss do Ato ${ato}: ${b.nome}`));
   if (dados?.creatures?.length) {
     const bichos = el('div', 'hunt-card-bichos');
@@ -732,7 +733,11 @@ function secaoDoBossDoAto(b, ato, ultimaFase, escolhida, bossPorId, catalog) {
     el(
       'p',
       null,
-      aberto
+      b.naFase
+        ? b.liberado
+          ? `${b.vencido ? 'Vencido ✓ — ' : ''}${b.comoAparece ?? `Limpe a fase ${ultimaFase.nome}: um portal se abre e o chefe sai dele, na mesma instância.`}`
+          : `🔒 Conclua as fases do Ato ${ato} para liberar o boss.`
+        : aberto
         ? `Portal aberto. Toque para enfrentar${ato < 4 ? ` e liberar o Ato ${ato + 1}` : ''}.`
         : b.liberado
           ? `${b.vencido ? 'Vencido ✓ — sem espera, ' : ''}Elimine todos os monstros da ${ultimaFase.nome} (de novo, nesta execução) para abrir o portal.`

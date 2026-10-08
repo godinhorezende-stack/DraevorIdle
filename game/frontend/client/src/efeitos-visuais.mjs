@@ -118,6 +118,11 @@ export function criarCamada() {
         const i = efeito({ sprite: p?.sprite ?? { tipo: 'efeito', id: ev.id }, x: c.x, y: c.y, agora, parte: p, visuais, atrasoExtra: p?.noImpacto ? vooAte(c) : 0, rotulo: 'area' });
         if (i) saida.efeitos.push(i);
       }
+    } else if (ev.t === 'portal') {
+      // O PORTAL do chefe do ato (o vórtice — `fabrica-portal-do-chefe`): aberto `ms`, em laço, na casa de onde o chefe sai; o servidor
+      // solta o chefe no meio e a vida do efeito acaba logo depois (o portal "fecha"). Os últimos 300 ms somem aos poucos.
+      const i = efeito({ sprite: { tipo: 'asset', id: ev.asset ?? 'fabrica-portal-do-chefe' }, x: ev.x, y: ev.y, agora, parte: { duracao: ev.ms ?? 2200, loop: true, escala: ev.escala ?? 1, someNoFim: 300 }, visuais, rotulo: 'portal' });
+      if (i) saida.efeitos.push(i);
     } else if (ev.t === 'dmg' && ev.foe && v?.alvo) {
       const i = efeito({ sprite: v.alvo.sprite, uid: ev.uid, x: ev.x, y: ev.y, agora, parte: v.alvo, visuais, atrasoExtra: v.alvo.noImpacto ? vooAte(ev) : 0, rotulo: 'alvo' });
       if (i) saida.efeitos.push(i);
@@ -155,11 +160,18 @@ export function desenharEfeito(ctx, inst, px, py, agora) {
   const pr = progressoDe(inst, t);
   const s = inst.sprite;
   if (s.tipo === 'efeito' && semTransformacao(inst.parte)) return drawEffect(ctx, s.id, px, py, pr);
+  // `someNoFim` (o portal do chefe): aparece e some aos poucos nas pontas da vida, em vez de piscar.
+  const fade = inst.parte?.someNoFim ? Math.max(0, Math.min(1, (inst.life - t) / inst.parte.someNoFim, t / inst.parte.someNoFim)) : 1;
+  if (fade < 1) {
+    ctx.save();
+    ctx.globalAlpha *= fade;
+  }
   comTransformacao(ctx, inst.parte, px + TILE / 2, py + TILE / 2, 0, () => {
     if (s.tipo === 'efeito') drawEffect(ctx, s.id, -TILE / 2, -TILE / 2, pr);
     else if (s.tipo === 'projetil') drawMissile(ctx, s.id, 0, 0, 0, 0);
     else if (s.tipo === 'asset' && inst.asset) desenharAsset(ctx, inst.asset, pr);
   });
+  if (fade < 1) ctx.restore();
   return true;
 }
 

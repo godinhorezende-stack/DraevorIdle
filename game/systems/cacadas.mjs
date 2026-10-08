@@ -961,23 +961,80 @@ function projetarNaInstancia(estado, kills) {
  * dono e os convidados da party que estão nela (decisão do dono: conta para
  * todos). O aviso "Hunt Clear!" sai na tela de cada um (`avisoDaHunt`).
  */
+/** O dono e todos da party na sala (`naSala`), também o independente parado — a partilha de exp (`membros`) o deixa de fora, a fase não. */
+function quemEstaNaSala(estado, hunt) {
+  return [estado, ...naSalaDaPartilha(hunt.partilha).filter((outro) => outro !== estado && outro?.hunt && salaDe(outro.hunt) === hunt)];
+}
 function aoLimparAInstancia(estado, hunt, personagem = null) {
-  Campanha.limpou(estado, hunt);
-  const estados = [estado];
-  // Todos da party na sala (`naSala`), também o independente parado — a partilha de exp (`membros`) o deixa de fora, a fase não.
-  for (const outro of naSalaDaPartilha(hunt.partilha)) {
-    const h = outro?.hunt;
-    if (outro !== estado && h && salaDe(h) === hunt) {
-      Campanha.limpou(outro, h);
-      estados.push(outro);
-    }
-  }
+  const estados = quemEstaNaSala(estado, hunt);
+  for (const quem of estados) Campanha.limpou(quem, quem === estado ? hunt : quem.hunt);
   // Ato do editor: a recompensa configurada da fase. Os drops sorteiam UMA vez por instância limpa (a sala); a primeira limpeza paga cada
   // personagem da sala uma vez só (`reivindicarPremio`). Este ponto roda uma vez por limpeza (`marcarSeLimpou` é idempotente).
   const rec = hunt.campanha ? Campanha.recompensaDaFase(hunt.campanha.huntId) : null;
   if (rec) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: rec, nome: Campanha.faseDe(hunt.campanha.huntId)?.nome ?? hunt.campanha.huntId, chave: `fase:${hunt.campanha.huntId}`, dificuldade: hunt.campanha.dificuldade, donos: estados });
-  // Última fase do ato concluída: o portal do boss se abre (uma vez por fase; quem da sala puder entrar, entra).
-  Campanha.abrirPortalDoBoss(hunt, estados);
+  // Última fase do ato concluída: no jogo oficial o chefe sai de um portal AQUI, na mesma instância (`abrirPortalDoChefe`); no clássico,
+  // o portal da sala do boss se abre (uma vez por fase; quem da sala puder entrar, entra).
+  if (Campanha.chefeDoAtoNaFase()) abrirPortalDoChefe(hunt, estados);
+  else Campanha.abrirPortalDoBoss(hunt, estados);
+}
+
+/*
+ * ---- O chefe do ato sai de um PORTAL na última fase (dono, 08/10) ----
+ * "antes de nascer abre esse portal e ele sai dele; quando ele sai, fecha o portal — respeitando a regra da fase (no Ato 1, a limpeza
+ * abre)". Cumprida a regra (`Campanha.chefeQueSaiNaFase`), o portal (o vórtice, `fabrica-portal-do-chefe`) abre perto de quem limpou;
+ * passado `PORTAL_DO_CHEFE_ABRE_MS`, o chefe nasce na casa do portal (`soltarChefeDoAto`) e o portal fecha logo depois. Enquanto ele não
+ * morre, a instância não é trocada por uma nova (`chefeDoAtoPendente`). Uma vez por instância; a morte paga a vitória do ato à party da
+ * sala (`vitoriaNoBoss`, combate.mjs).
+ */
+const PORTAL_DO_CHEFE_ABRE_MS = 1500;
+const PORTAL_DO_CHEFE_FECHA_MS = 700;
+function abrirPortalDoChefe(hunt, estados) {
+  const inst = hunt.instancia;
+  if (!inst || inst.chefeDoAto) return null;
+  const chefe = Campanha.chefeQueSaiNaFase(hunt, estados);
+  if (!chefe) return null;
+  const cad = CATALOGO.bosses.find((b) => b.id === chefe.bossId);
+  // Chefe sem a ficha de boss único (não deveria acontecer no jogo oficial): o portal da sala, como no clássico — o ato não trava.
+  if (!cad?.bossUnico || !bossUnico(cad.bossUnico)) return Campanha.abrirPortalDoBoss(hunt, estados);
+  const grade = andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z);
+  const ocupadas = new Set([...hunt.monstros.filter((m) => m.hp > 0).map((m) => `${m.x},${m.y}`), `${hunt.pos.x},${hunt.pos.y}`]);
+  // Duas casas à frente de quem limpou (dá para ver o portal abrir); sem casa assim, a livre mais perto.
+  const casa = casaLivrePerto(grade, hunt.pos, (c) => ocupadas.has(`${c.x},${c.y}`) || distancia(c, hunt.pos) < 2) ?? casaLivrePerto(grade, hunt.pos, (c) => ocupadas.has(`${c.x},${c.y}`));
+  if (!casa) return null;
+  const agora = hunt.clock ?? 0;
+  inst.chefeDoAto = { ...chefe, x: casa.x, y: casa.y, z: hunt.z ?? 0, abriuEm: agora, saiEm: agora + PORTAL_DO_CHEFE_ABRE_MS, uid: null, vencido: false };
+  EventosDeEncontro.empurrar(hunt, [{ t: 'portal', x: casa.x, y: casa.y, ms: PORTAL_DO_CHEFE_ABRE_MS + PORTAL_DO_CHEFE_FECHA_MS, asset: 'fabrica-portal-do-chefe' }]);
+  // O aviso na tela de cada um (a primeira conclusão já fala do portal; a repetição da fase ganha o aviso aqui).
+  for (const e of estados) if (!/portal se abre/.test(e.avisoDaHunt ?? '')) e.avisoDaHunt = `${e.avisoDaHunt ? `${e.avisoDaHunt} ` : ''}Um portal se abre: ${chefe.nome}, o chefe do Ato ${chefe.ato}, está chegando!`;
+  return inst.chefeDoAto;
+}
+/** Passado o tempo do portal aberto, o chefe sai dele (nasce na casa do portal). `agora`: o relógio do tique (o dos passos dos monstros). */
+function soltarChefeDoAto(hunt, agora) {
+  const c = hunt.instancia?.chefeDoAto;
+  if (!c || c.uid != null || c.vencido || (hunt.clock ?? 0) < c.saiEm) return;
+  const cad = CATALOGO.bosses.find((b) => b.id === c.bossId);
+  const def = cad?.bossUnico ? bossUnico(cad.bossUnico) : null;
+  const m = def ? criarBossUnico(def, { x: c.x, y: c.y, z: c.z }, { instanciaId: hunt.instancia.id }) : null;
+  if (!m) {
+    c.vencido = true; // sem como nascer: não segura a instância
+    return;
+  }
+  m.instancia = hunt.instancia.id;
+  m.chefeDoAto = c.ato;
+  // Ele fica na boca do portal enquanto o portal fecha; depois anda (`proximoPasso` é do relógio do tique, como o de todo bicho).
+  m.proximoPasso = agora + PORTAL_DO_CHEFE_FECHA_MS;
+  (c.z === (hunt.z ?? 0) ? hunt.monstros : (hunt.outrosAndares[c.z] ??= [])).push(m);
+  c.uid = m.uid;
+}
+/**
+ * O chefe do ato ainda vai sair do portal, ou saiu e não teve a morte paga: a instância espera. Zerado e ainda no mapa também segura — a
+ * troca de instância vem antes de `processarMortes` no tique, e trocar ali levava o corpo embora sem a vitória do ato.
+ */
+export function chefeDoAtoPendente(hunt) {
+  const c = hunt?.instancia?.chefeDoAto;
+  if (!c || c.vencido) return false;
+  if (c.uid == null) return true;
+  return [...(hunt.monstros ?? []), ...Object.values(hunt.outrosAndares ?? {}).flat()].some((m) => m.uid === c.uid);
 }
 
 /**
@@ -1435,9 +1492,16 @@ export function tique(estado, personagem, agora = Date.now()) {
     // "Hunt Clear!", uma instância NOVA da mesma hunt (ver `hunt/instancia.mjs`).
     // Online com "Avançar sozinho", a sessão troca de fase antes da pausa acabar.
     if (hunt.instancia) {
+      // A regra da última fase cumprida numa morte (a Lunaris do Ato 8 — `Campanha.portalAbreNaMorte`): o portal abre já.
+      if (hunt.instancia.portalDoChefePedido) {
+        delete hunt.instancia.portalDoChefePedido;
+        abrirPortalDoChefe(hunt, quemEstaNaSala(estado, hunt));
+      }
+      soltarChefeDoAto(hunt, agora);
       if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt, personagem);
-      // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal.
-      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) novaInstancia(estado);
+      // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal. Com o
+      // chefe do ato saindo do portal (ou vivo), ela espera ele morrer.
+      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && !chefeDoAtoPendente(hunt) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) novaInstancia(estado);
     }
   } else {
     hunt.lurando = false;

@@ -12,6 +12,7 @@
 
 import { CATALOGO } from './dados.mjs';
 import * as ClassesPoe from './itens-poe/classes.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
 const VOCACOES = Object.fromEntries((CATALOGO.vocations ?? []).map((v) => [v.id, v]));
 
@@ -32,6 +33,9 @@ const PROMOCOES = {
 export const promovido = (estado) => !!estado.promovido;
 
 export function paraCliente(estado) {
+  // O jogo oficial (PoE) não tem promoção de vocação (dono, 08/10: "tire essa promotion do desktop e do mobile"): sem ela, o cartão do HUD,
+  // o modal e o atalho do menu do celular somem. Quem já tinha comprado continua com a marca (`promovido`) — nada é apagado.
+  if (itensPoeLigado()) return null;
   const p = PROMOCOES[estado.vocation];
   if (!p) return null;
   const level = estado.level ?? 1;
@@ -50,6 +54,7 @@ export function paraCliente(estado) {
 }
 
 export function promover(estado) {
+  if (itensPoeLigado()) return { ok: false, erro: 'Não há promoção de vocação no jogo.' };
   const p = paraCliente(estado);
   if (!p) return { ok: false, erro: 'Esta vocação não tem promoção.' };
   if (p.done) return { ok: false, erro: 'Você já foi promovido.' };
