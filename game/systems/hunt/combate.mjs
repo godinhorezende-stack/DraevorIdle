@@ -435,6 +435,14 @@ export function fatorDaCacaOnline(hunt) {
 const vezDoResto = new WeakMap(); // sala -> quem recebe a primeira unidade do resto do ouro no próximo evento
 // O "Loot of a ..." de um item que foi para outro da party: entra no chat DELE no próximo tique (ver `tirarEventosDaParty`).
 const eventosDaParty = new WeakMap(); // estado -> [evento]
+/** Põe `lista` na fila de eventos de `estado` (sai no próximo tique dele — `tirarEventosDaParty`): o que os outros da sala fizeram. */
+export function enfileirarEventosDaParty(estado, lista) {
+  if (!estado || !lista?.length) return;
+  const fila = eventosDaParty.get(estado) ?? [];
+  fila.push(...lista);
+  eventosDaParty.set(estado, fila);
+}
+
 export function tirarEventosDaParty(estado) {
   const lista = eventosDaParty.get(estado);
   if (!lista) return null;

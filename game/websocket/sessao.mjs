@@ -63,7 +63,7 @@ import * as Ranking from '../systems/ranking.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Arena from '../systems/arena.mjs';
 import * as SimuladorTique from '../systems/simulador-tique.mjs';
-import { descerDeLevel, tirarEventosDaParty, fichaDoBicho } from '../systems/hunt/combate.mjs';
+import { descerDeLevel, tirarEventosDaParty, enfileirarEventosDaParty, fichaDoBicho } from '../systems/hunt/combate.mjs';
 import * as InstanciaDaHunt from '../systems/hunt/instancia.mjs';
 import * as EstadoDosEncontros from '../systems/encontros/estado.mjs';
 import * as TiposDosEncontros from '../systems/encontros/tipos.mjs';
@@ -2541,6 +2541,12 @@ export class Sessao {
           eventos = r.eventos;
         } else {
           eventos = Cacadas.tique(this.estado, this.personagem, agoraDoTique);
+        }
+        // Os outros da sala veem os golpes, os projéteis, o dano e a vida deste (`Party.eventosParaOsOutros`) — saem no próximo tique deles.
+        const outrosNaSala = eventos?.length ? Party.outrosNaSala(this) : [];
+        if (outrosNaSala.length) {
+          const paraOsOutros = Party.eventosParaOsOutros(this, eventos);
+          for (const o of outrosNaSala) enfileirarEventosDaParty(o.estado, paraOsOutros);
         }
         // Itens que o rodízio da party deu a ESTE char nos golpes dos outros: o "Loot of a ..." no chat dele.
         const daParty = tirarEventosDaParty(this.estado);

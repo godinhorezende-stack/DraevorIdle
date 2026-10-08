@@ -652,6 +652,22 @@ export function comandoDaCaca(s, m) {
 // ------------------------------------------------ o que cada tique precisa
 
 /** As sessões na MESMA sala de caçada que `s` (incluindo ele). */
+/*
+ * ---- O que os outros da sala VEEM deste jogador (dono, 08/10: "na instância da party, se eu estiver com outros players, quero ver os
+ * dados, ataques e projéteis dele também, a vida dele, o mob tirando a vida dele e a mana") ----
+ * Cada jogador gera os eventos da caçada no tique DELE, e só ele os recebia. Agora os eventos VISUAIS de combate (lançamento, golpe,
+ * projétil, efeito, área, número de dano e de cura, bloqueio/esquiva, estado do bicho) vão também para os outros da sala, com o nome
+ * dele (`quem`): a tela de quem vê desenha no aliado certo (`aliado:<nome>`). A experiência, o loot e as falas ficam com cada um.
+ */
+const EVENTOS_QUE_A_SALA_VE = new Set(['cast', 'castFim', 'castCancel', 'skill', 'shot', 'fx', 'explosao', 'area', 'dmg', 'heal', 'block', 'estado']);
+/** Os outros da party na mesma sala de caçada que `s`. */
+export const outrosNaSala = (s) => naMesmaSala(s).filter((o) => o !== s);
+/** Os eventos de `s` que os outros da sala recebem: só os visuais de combate, e o que era dele (`uid: 'player'`) com o nome dele. */
+export function eventosParaOsOutros(s, eventos) {
+  const nome = nomeDe(s);
+  return (eventos ?? []).filter((e) => e && EVENTOS_QUE_A_SALA_VE.has(e.t)).map((e) => (e.uid === 'player' && !e.quem ? { ...e, quem: nome } : e));
+}
+
 function naMesmaSala(s) {
   const sala = s.estado?.hunt ? Cacadas.salaDe(s.estado.hunt) : null;
   if (!sala) return [];
@@ -746,7 +762,8 @@ export function extrasDoRetrato(s) {
     aliados: outros.map((o) => {
       const e = o.estado;
       const v = olhar(e);
-      return { uid: `aliado:${nomeDe(o)}`, name: nomeDe(o), x: e.hunt.pos.x, y: e.hunt.pos.y, dir: e.hunt.pos.dir ?? 2, look: v.type, colors: v, mount: 0, addons: v.addons, hp: e.hp, maxHp: e.maxHp, level: e.level, moveMs: 250 };
+      // A vida e a MANA dele (o nameplate desenha as duas barras — dono, 08/10: "a vida dele e sua mana").
+      return { uid: `aliado:${nomeDe(o)}`, name: nomeDe(o), x: e.hunt.pos.x, y: e.hunt.pos.y, dir: e.hunt.pos.dir ?? 2, look: v.type, colors: v, mount: 0, addons: v.addons, hp: e.hp, maxHp: e.maxHp, mana: Math.floor(e.mana ?? 0), maxMana: e.maxMana, level: e.level, moveMs: 250 };
     }),
     summonsDoGrupo: outros
       .filter((o) => o.estado.hunt.summon)
