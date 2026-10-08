@@ -2,10 +2,28 @@
   "id": "poe-ato-1",
   "nome": "Ato 1",
   "descricao": "Ato 1 da campanha do Path of Exile.",
+  "imagem": "imagens/poe-ato-1.webp",
+  "nivelRecomendado": 1,
   "ordem": 1,
   "anterior": null,
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a1-the-twilight-strand",
+  "cidade": {
+    "nome": "Vigília de Lioneye",
+    "posicao": {
+      "x": 68,
+      "y": 189
+    },
+    "conexoes": [
+      "poe-a1-the-twilight-strand"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a1-the-twilight-strand",
@@ -13,17 +31,13 @@
       "descricao": "A Esperança morreu afogada aqui.",
       "ordem": 1,
       "huntId": "poe-a1-the-twilight-strand",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 1,
         "medio": 1,
         "dificil": 1
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -40,7 +54,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 71,
+        "y": 354
+      }
     },
     {
       "id": "poe-a1-the-coast",
@@ -48,17 +66,13 @@
       "descricao": "Os penhascos ecoam a loucura voraz.",
       "ordem": 2,
       "huntId": "poe-a1-the-coast",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 2,
         "medio": 2,
         "dificil": 2
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 123,
-        "y": 323
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -77,7 +91,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 158,
+        "y": 427
+      }
     },
     {
       "id": "poe-a1-the-tidal-island",
@@ -85,17 +103,13 @@
       "descricao": "Apesar do calor do sol, a brisa aqui mordisca com presas de gelo.",
       "ordem": 3,
       "huntId": "poe-a1-the-tidal-island",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 3,
         "medio": 3,
         "dificil": 3
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 195,
-        "y": 351
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -113,7 +127,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 303,
+        "y": 447
+      }
     },
     {
       "id": "poe-a1-the-mud-flats",
@@ -121,17 +139,13 @@
       "descricao": "A lama e o ar fervilham com a vida deformada.",
       "ordem": 4,
       "huntId": "poe-a1-the-mud-flats",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 4,
         "medio": 4,
         "dificil": 4
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 175,
-        "y": 280
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -150,7 +164,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 236,
+        "y": 330
+      }
     },
     {
       "id": "poe-a1-the-fetid-pool",
@@ -158,17 +176,13 @@
       "descricao": "Águas vagarosas fervendo em podridão.",
       "ordem": 5,
       "huntId": "poe-a1-the-fetid-pool",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 5,
         "medio": 5,
         "dificil": 5
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 120,
-        "y": 215
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -183,7 +197,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 293,
+        "y": 242
+      }
     },
     {
       "id": "poe-a1-the-flooded-depths",
@@ -191,17 +209,13 @@
       "descricao": "A escuridão congelando à inanição.",
       "ordem": 6,
       "huntId": "poe-a1-the-flooded-depths",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 6,
         "medio": 6,
         "dificil": 6
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 376,
-        "y": 260
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -218,7 +232,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 514,
+        "y": 380
+      }
     },
     {
       "id": "poe-a1-the-submerged-passage",
@@ -226,17 +244,13 @@
       "descricao": "Lodo, sombras e dentes muito afiados.",
       "ordem": 7,
       "huntId": "poe-a1-the-submerged-passage",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 5,
         "medio": 5,
         "dificil": 5
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 277,
-        "y": 230
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -251,7 +265,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 369,
+        "y": 377
+      }
     },
     {
       "id": "poe-a1-the-ledge",
@@ -259,17 +277,13 @@
       "descricao": "Ventos empoeirados carregam o cheiro de ossos, velhos ou não.",
       "ordem": 8,
       "huntId": "poe-a1-the-ledge",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 6,
         "medio": 6,
         "dificil": 6
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 363,
-        "y": 196
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -279,7 +293,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 363,
+        "y": 196
+      }
     },
     {
       "id": "poe-a1-the-climb",
@@ -287,17 +305,13 @@
       "descricao": "Os penhascos olham ameaçadoramente como juízes num tribunal.",
       "ordem": 9,
       "huntId": "poe-a1-the-climb",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 7,
         "medio": 7,
         "dificil": 7
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 193,
-        "y": 149
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -307,7 +321,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 579,
+        "y": 285
+      }
     },
     {
       "id": "poe-a1-the-lower-prison",
@@ -315,17 +333,13 @@
       "descricao": "O ar é rico em desesperos e aparições.",
       "ordem": 10,
       "huntId": "poe-a1-the-lower-prison",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 8,
         "medio": 8,
         "dificil": 8
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 159,
-        "y": 62
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -335,7 +349,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 720,
+        "y": 283
+      }
     },
     {
       "id": "poe-a1-the-upper-prison",
@@ -343,17 +361,13 @@
       "descricao": "",
       "ordem": 11,
       "huntId": "poe-a1-the-upper-prison",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 9,
         "medio": 9,
         "dificil": 9
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 192,
-        "y": 45
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -363,7 +377,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 776,
+        "y": 415
+      }
     },
     {
       "id": "poe-a1-prisoners-gate",
@@ -371,17 +389,13 @@
       "descricao": "Os penhascos observam com olhos caprinos.",
       "ordem": 12,
       "huntId": "poe-a1-prisoners-gate",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 10,
         "medio": 10,
         "dificil": 10
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 302,
-        "y": 62
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -396,7 +410,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 376,
+        "y": 48
+      }
     },
     {
       "id": "poe-a1-the-ship-graveyard",
@@ -404,17 +422,13 @@
       "descricao": "Agonias sussurradas dos mortos ilhados.",
       "ordem": 13,
       "huntId": "poe-a1-the-ship-graveyard",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 11,
         "medio": 11,
         "dificil": 11
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 472,
-        "y": 147
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -436,7 +450,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 555,
+        "y": 190
+      }
     },
     {
       "id": "poe-a1-the-ship-graveyard-cave",
@@ -444,17 +462,13 @@
       "descricao": "A garganta de um cadáver exalando morte.",
       "ordem": 14,
       "huntId": "poe-a1-the-ship-graveyard-cave",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 12,
         "medio": 12,
         "dificil": 12
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 455,
-        "y": 99
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -469,7 +483,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 506,
+        "y": 53
+      }
     },
     {
       "id": "poe-a1-the-cavern-of-wrath",
@@ -477,17 +495,13 @@
       "descricao": "O ar alfineta a pele com sua fúria frígida.",
       "ordem": 15,
       "huntId": "poe-a1-the-cavern-of-wrath",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 12,
         "medio": 12,
         "dificil": 12
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 734,
-        "y": 108
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -497,7 +511,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 653,
+        "y": 67
+      }
     },
     {
       "id": "poe-a1-the-cavern-of-anger",
@@ -505,17 +523,13 @@
       "descricao": "",
       "ordem": 16,
       "huntId": "poe-a1-the-cavern-of-anger",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 13,
         "medio": 13,
         "dificil": 13
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 750,
-        "y": 83
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -525,7 +539,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 750,
+        "y": 83
+      }
     }
   ],
   "conexoes": [
@@ -630,13 +648,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 1,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }
