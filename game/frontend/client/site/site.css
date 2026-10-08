@@ -597,7 +597,8 @@ a { color: inherit; text-decoration: none; }
  * antigo "O servidor agora" (panel-frame), mais fina porque o balão é pequeno.
  */
 .top5-pop {
-  position: fixed; z-index: 30; width: 268px; pointer-events: none;
+  /* Aceita o mouse: as peças do inventário têm o balão delas (top5.mjs). */
+  position: fixed; z-index: 30; width: 268px; pointer-events: auto; cursor: pointer;
   border-style: solid;
   border-width: 30px;
   border-image-source: url('/client/assets/ui/panel-frame.webp');
@@ -1314,3 +1315,6 @@ footer a:hover { color: var(--texto); }
 .guilda-posto.cargo-2 { border-color: #8a6f4255; color: #cbb388; }
 
 .voc-icone { width: 16px; height: 16px; vertical-align: -3px; margin-right: 5px; }
+
+/* A aba de categoria que o servidor não tem (no jogo oficial: as perícias do Draevor) some — o `display` da aba venceria o `hidden`. */
+.top5-aba[hidden] { display: none; }

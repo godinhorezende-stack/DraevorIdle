@@ -112,7 +112,7 @@ export function garantirEstiloDoPaperdoll(doc = globalThis.document) {
  *
  * `pecaDoSlot(slot)` devolve `null` (casa vazia) ou:
  *
- *   { id, tier, count, titulo, raridade, estrelas: [3, 1] }
+ *   { id, tier, count, titulo, raridade, estrelas: [3, 1], corPoe? }
  *
  * `estrelas` são os DEGRAUS já calculados (1 a 4), e não os afixos crus: a
  * régua que transforma um afixo em degrau mora no catálogo, e cada lado já tem
@@ -151,6 +151,13 @@ export function gradeDeEquipamento(pecaDoSlot, { tamanho = 32, comSprites = true
 
     const raridade = semAcento(peca.raridade);
     if (RARIDADES.has(raridade)) casa.classList.add('rar', `rar-${raridade}`);
+    // A peça do PoE: a borda na cor da raridade do PoE (Normal, Mágico, Raro, Único), como no inventário do jogo.
+    if (peca.corPoe) {
+      casa.classList.add('rar', 'rar-poe');
+      casa.style.setProperty('--rar', peca.corPoe);
+    }
+    // A casa diz de que slot é: quem pendura a grade liga o balão da peça nela.
+    casa.dataset.slot = slot;
     if (peca.titulo) casa.title = peca.titulo;
 
     if (comSprites) {

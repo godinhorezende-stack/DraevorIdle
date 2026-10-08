@@ -87,6 +87,16 @@ export function usarDados(itens, personagem = null, catalogo = null) {
   getCatalogo = () => catalogo;
 }
 
+/**
+ * Como `usarDados`, mas JUNTA os itens aos que o balão já tem: duas partes da mesma página (a capa do site: os drops e o balão do top 5)
+ * desenham balões com catálogos diferentes, e trocar o catálogo de uma apagaria o da outra.
+ */
+export function juntarDados(itens, catalogo = null) {
+  const juntos = { ...(getItems?.() ?? {}), ...(itens ?? {}) };
+  getItems = () => juntos;
+  if (catalogo) getCatalogo = () => catalogo;
+}
+
 export function initTooltip(itemsAccessor, personagemAccessor = () => null, catalogoAccessor = () => null) {
   getItems = itemsAccessor;
   getPersonagem = personagemAccessor;

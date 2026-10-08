@@ -1,0 +1,43 @@
+{
+  "_nota": "Overrides de classes (systems/classes.mjs): só o NOVO ou DIFERENTE sobre classes.json, atributos-principais.json e classes-meta.json. Editado em /editor/conteudo (Classes).",
+  "ativo": true,
+  "classes": {
+    "ranger": {
+      "outfit": {
+        "male": 684,
+        "female": 683
+      }
+    },
+    "shadow": {
+      "outfit": {
+        "male": 666,
+        "female": 667
+      }
+    },
+    "witch": {
+      "outfit": {
+        "male": 145,
+        "female": 149
+      }
+    },
+    "marauder": {
+      "outfit": {
+        "male": 957,
+        "female": 958
+      }
+    },
+    "duelist": {
+      "outfit": {
+        "male": 1331,
+        "female": 1332
+      }
+    },
+    "scion": {
+      "outfit": {
+        "male": 472,
+        "female": 471
+      }
+    }
+  },
+  "efeitos": {}
+}

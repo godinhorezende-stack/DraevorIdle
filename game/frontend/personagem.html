@@ -525,7 +525,11 @@ function desenhar(p) {
 function enfeitarPeca(celula, slot, peca, p) {
   const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
   const meta = p.itens?.[peca.id];
-  if (meta) {
+  if (meta && inteira.poe?.cor) {
+    // A peça do PoE: a borda na cor da raridade do PoE (Normal, Mágico, Raro, Único), como no inventário do jogo.
+    celula.classList.add('raridade');
+    celula.style.setProperty('--tier', inteira.poe.cor);
+  } else if (meta) {
     // A raridade do drop (sistema de itens), senão a do catálogo.
     const classe = classeDaRaridade(meta, inteira);
     celula.classList.add(classe);
