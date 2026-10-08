@@ -450,7 +450,7 @@
    "tipo": "archnemesis",
    "familia": "MonsterArchnemesisIgniter",
    "linhas": [
-    "Seus Acertos empre Incendeiam",
+    "Seus Acertos sempre Incendeiam",
     "Duração do Incêndio em Inimigos aumentada em 25%",
     "Todo Dano pode Incendiar"
    ],
@@ -619,7 +619,7 @@
    "tipo": "archnemesis",
    "familia": "MonsterArchnemesisShocker",
    "linhas": [
-    "Seus Acertos empre Eletrizam",
+    "Seus Acertos sempre Eletrizam",
     "Duração da Eletrização em Inimigos aumentada em 50%",
     "Todo Dano pode Eletrizar",
     "Efeito de Eletrização aumentado em 25%"
@@ -1862,7 +1862,7 @@
    "linhas": [
     "Dano de Fogo aumentado em 30%",
     "+40% de Resistência a Fogo",
-    "Seus Acertos empre Incendeiam",
+    "Seus Acertos sempre Incendeiam",
     "Receba 25% do Dano Físico como Dano de Fogo Extra",
     "50% do Dano Físico Convertido em Dano de Fogo"
    ],
@@ -1966,8 +1966,8 @@
    "tipo": "archnemesis",
    "familia": "MonsterArchnemesisElemental",
    "linhas": [
-    "Seus Acertos empre Incendeiam",
-    "Seus Acertos empre Eletrizam",
+    "Seus Acertos sempre Incendeiam",
+    "Seus Acertos sempre Eletrizam",
     "Todo o Dano com Acertos pode Resfriar",
     "Recebe 60% de Dano Físico como Dano Extra de um Elemento aleatório",
     "Todo Dano pode Incendiar",
@@ -3267,8 +3267,8 @@
    "familia": "MonsterArchnemesisElemental",
    "linhas": [
     "+50% de todas Resistências Elementais",
-    "Seus Acertos empre Incendeiam",
-    "Seus Acertos empre Eletrizam",
+    "Seus Acertos sempre Incendeiam",
+    "Seus Acertos sempre Eletrizam",
     "Todo o Dano com Acertos pode Resfriar",
     "Recebe 60% de Dano Físico como Dano Extra de um Elemento aleatório",
     "Todo Dano pode Incendiar",
@@ -3640,7 +3640,7 @@
    "tipo": "archnemesis",
    "familia": "MonsterArchnemesisIgniter",
    "linhas": [
-    "Seus Acertos empre Incendeiam",
+    "Seus Acertos sempre Incendeiam",
     "Duração do Incêndio em Inimigos aumentada em 25%",
     "Todo Dano pode Incendiar"
    ],
@@ -3696,7 +3696,7 @@
    "tipo": "archnemesis",
    "familia": "MonsterArchnemesisShocker",
    "linhas": [
-    "Seus Acertos empre Eletrizam",
+    "Seus Acertos sempre Eletrizam",
     "Duração da Eletrização em Inimigos aumentada em 50%",
     "Todo Dano pode Eletrizar",
     "Efeito de Eletrização aumentado em 25%"
@@ -3763,7 +3763,7 @@
    "linhas": [
     "Dano de Fogo aumentado em 30%",
     "+40% de Resistência a Fogo",
-    "Seus Acertos empre Incendeiam",
+    "Seus Acertos sempre Incendeiam",
     "Receba 25% do Dano Físico como Dano de Fogo Extra",
     "50% do Dano Físico Convertido em Dano de Fogo"
    ],
@@ -4539,7 +4539,7 @@
    "tipo": "mod",
    "familia": "MonsterModApplyIgnite",
    "linhas": [
-    "Seus Acertos empre Incendeiam"
+    "Seus Acertos sempre Incendeiam"
    ],
    "nivel": 27,
    "pesoMagico": 0,
@@ -4578,7 +4578,7 @@
    "tipo": "mod",
    "familia": "MonsterModApplyShock",
    "linhas": [
-    "Seus Acertos empre Eletrizam"
+    "Seus Acertos sempre Eletrizam"
    ],
    "nivel": 27,
    "pesoMagico": 0,

@@ -6,6 +6,7 @@ import * as Treino from '../systems/treino.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 test('as perícias são melee, distance, shielding e fishing (fora o magic level)', () => {
   assert.deepEqual(Treino.PERICIAS, ['melee', 'distance', 'shielding', 'fishing']);
@@ -13,7 +14,7 @@ test('as perícias são melee, distance, shielding e fishing (fora o magic level
   assert.deepEqual(Object.keys(Treino.paraCliente(e).skills), Treino.PERICIAS);
 });
 
-test('fist, club, sword e axe treinam e leem o mesmo melee', () => {
+test('fist, club, sword e axe treinam e leem o mesmo melee', { skip: doClassico("Treino de perícia melee (fist/club/sword/axe) do Draevor; o PoE não tem perícias") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
   Treino.garantir(e);
   const antes = Treino.valor(e, 'melee');

@@ -97,7 +97,6 @@ async function principal() {
   const sem = itens.filter((i) => !i.monstro).map((i) => i.nome);
   console.log(`itens de missão: ${itens.length}${sem.length ? ` (sem o monstro que carrega: ${sem.join(', ')})` : ' (todos com o monstro que carrega)'}`);
   if (soItens) return;
-  process.env.ITENS_POE ??= '1';
   const { atoDoRuntime } = await import('../systems/itens-poe/campanha.mjs');
   mkdirSync(PASTA_ATOS, { recursive: true });
   let anterior = null;

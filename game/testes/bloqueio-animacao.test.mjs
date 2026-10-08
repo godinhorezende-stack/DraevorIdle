@@ -7,7 +7,7 @@ import * as Treino from '../systems/treino.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { contraAtaque } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
@@ -20,7 +20,7 @@ function troco(armaduraPlana, golpes = 300) {
   e.maxHp = e.hp = 1e9;
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
-  Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' });
+  Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' });
   const h = e.hunt;
   const bicho = criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null);
   const eventos = [];

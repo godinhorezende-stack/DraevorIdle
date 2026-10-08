@@ -25,6 +25,7 @@ import * as SimulacaoOffline from './simulacao-offline.mjs';
 import * as Ausentes from './ausentes.mjs';
 import { marcarDia } from './site.mjs';
 import { estaNoJogo } from '../websocket/sessao.mjs';
+import * as Legado from './personagem/legado.mjs';
 
 /** De quanto em quanto tempo a rodada passa. */
 export const INTERVALO_MS = 10 * 60_000;
@@ -56,9 +57,19 @@ const gravarSeNinguemMexeu = banco.prepare(
  * Avança a ausência de UM personagem (a linha como veio do banco) e regrava.
  * Devolve `'gravado' | 'no-jogo' | 'nada' | 'mudou'`.
  */
+/*
+ * Os ARQUIVADOS (do Draevor clássico, no jogo oficial do PoE — `personagem/legado.mjs`) não são tocados: a caçada offline deles não é
+ * avançada com o jogo novo (isso seria convertê-los). Ficam fora da fila: os ids vistos vão para `ARQUIVADOS`, e a rodada pede mais linhas
+ * para eles não ocuparem as vagas dos outros (sem isso, 40 arquivados no topo travariam a rodada de todo mundo).
+ */
+const ARQUIVADOS = new Set();
 export async function consolidarUm(linha, agora = Date.now()) {
   if (estaNoJogo(linha.nome)) return 'no-jogo';
   const estado = JSON.parse(linha.estado);
+  if (Legado.arquivado(estado)) {
+    ARQUIVADOS.add(linha.id);
+    return 'arquivado';
+  }
   // O ganho entra no dia de HOJE: virou o dia desde a última gravação, a régua
   // do ranking recomeça do que ele tinha (a mesma `marcarDia` de quem está online).
   marcarDia(estado, agora);
@@ -73,8 +84,8 @@ export async function consolidarUm(linha, agora = Date.now()) {
 
 /** Uma rodada: os ausentes mais antigos, um de cada vez. Devolve a contagem por resultado. */
 export async function rodada(agora = Date.now()) {
-  const contagem = { gravado: 0, 'no-jogo': 0, nada: 0, mudou: 0, erro: 0 };
-  const linhas = await consultaDosAusentes.all(agora - MINIMO_FORA_MS, POR_RODADA);
+  const contagem = { gravado: 0, 'no-jogo': 0, nada: 0, mudou: 0, erro: 0, arquivado: 0 };
+  const linhas = (await consultaDosAusentes.all(agora - MINIMO_FORA_MS, POR_RODADA + ARQUIVADOS.size)).filter((l) => !ARQUIVADOS.has(l.id)).slice(0, POR_RODADA);
   for (const linha of linhas) {
     try {
       contagem[await consolidarUm(linha, agora)]++;

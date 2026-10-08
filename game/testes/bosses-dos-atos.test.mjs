@@ -12,6 +12,7 @@ import * as Poderes from '../systems/poderes.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as Areas from '../engine/areas.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const BP = JSON.parse(readFileSync(new URL('../gamedata/boss-poderes.json', import.meta.url), 'utf8')).bosses;
 const BOSSES = Array.from({ length: Campanha.ATOS }, (_, i) => Campanha.bossDoAto(i + 1)).filter(Boolean);
@@ -99,7 +100,7 @@ for (const b of BOSSES) {
   });
 }
 
-test('alcance: a área em volta do boss não pega quem está longe; o feixe não pega na diagonal', () => {
+test('alcance: a área em volta do boss não pega quem está longe; o feixe não pega na diagonal', { skip: doClassico("Bakragore e os bosses de ato do Draevor; no oficial os chefes são os dos atos do PoE") }, () => {
   const { e, h, boss } = sala('bakragore');
   const ataques = BP.bakragore.ataques;
   const feixe = ataques.findIndex((a) => a.forma === 'feixe');
@@ -111,7 +112,7 @@ test('alcance: a área em volta do boss não pega quem está longe; o feixe não
   assert.equal(lancarSo(u.e, u.h, u.boss, areaNoBoss, 10).filter((x) => x.t === 'dmg').length, 0, 'área de raio 3 com o jogador a 5');
 });
 
-test('morto no meio do tique: as magias seguintes não batem (sem dano depois da morte)', () => {
+test('morto no meio do tique: as magias seguintes não batem (sem dano depois da morte)', { skip: doClassico("Bakragore e os bosses de ato do Draevor; no oficial os chefes são os dos atos do PoE") }, () => {
   const { e, h, boss } = sala('bakragore');
   Object.assign(h.pos, { x: boss.x + 1, y: boss.y });
   e.hp = 1;
@@ -128,7 +129,7 @@ test('morto no meio do tique: as magias seguintes não batem (sem dano depois da
   assert.equal(ev.filter((x) => x.t === 'dmg' && x.uid === 'player').length, 1);
 });
 
-test('Bakragore se cura (a defesa do arquivo) quando está abaixo da vida máxima', () => {
+test('Bakragore se cura (a defesa do arquivo) quando está abaixo da vida máxima', { skip: doClassico("Bakragore e os bosses de ato do Draevor; no oficial os chefes são os dos atos do PoE") }, () => {
   const { e, h, boss } = sala('bakragore');
   Object.assign(h.pos, { x: boss.x + 1, y: boss.y });
   boss.hp = boss.maxHp - 10_000;

@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Bolsa from '../systems/bolsa.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ESPADA = 660; // fiery spike sword — não empilha
 const ESTRELAS = [{ id: 'dano', tier: 2, value: 5 }];
@@ -32,7 +33,7 @@ test('pelo alvo (indice) do menu: a estrelada apontada vai inteira', () => {
   assert.equal(quantas(e.pouch, ESPADA), 1, 'a simples ficou');
 });
 
-test('simples + estrelada, sem pilha: sai a simples e o total não muda', () => {
+test('simples + estrelada, sem pilha: sai a simples e o total não muda', { skip: doClassico("Mover para a bolsa pela capacidade de peso do Draevor") }, () => {
   const e = comBolsa([{ id: ESPADA, count: 1, af: ESTRELAS }, { id: ESPADA, count: 1 }]);
   assert.ok(Bolsa.moverBolsa(e, { id: ESPADA, count: 9999, to: 'bag' }).ok);
   assert.equal(quantas(e.pouch, ESPADA) + quantas(e.inventory, ESPADA), 2, 'nada criado do nada');

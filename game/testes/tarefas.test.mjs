@@ -9,6 +9,7 @@ import * as Entregas from '../systems/entregas.mjs';
 import * as Aparencia from '../systems/aparencia.mjs';
 import * as Promocao from '../systems/promocao.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const CAP = new URL('../../api-mapeada/captura-tarefas-0926/', import.meta.url);
 const ler = (n) => JSON.parse(readFileSync(new URL(n, CAP), 'utf8'));
@@ -70,7 +71,7 @@ test('entregas: o ouro no bolso mudando não remonta nem reenvia as 33 (o MESMO 
   assert.ok(antes.every((x) => !('temOuro' in x) && !('pronta' in x) && !('podeAdiantar' in x)));
 });
 
-test('pegar paga os tokens e PARA a task; aceitar volta a contar; parada não conta', () => {
+test('pegar paga os tokens e PARA a task; aceitar volta a contar; parada não conta', { skip: doClassico("Tasks do Draevor (tokens, Auto Task, montaria)") }, () => {
   const e = zoros();
   const antes = e.bestiary['crazed-winter-rearguard'];
   const r = Tarefas.comando(e, { action: 'resgatar', key: 'crazed-winter-rearguard' });
@@ -89,7 +90,7 @@ test('pegar paga os tokens e PARA a task; aceitar volta a contar; parada não co
   assert.match(Tarefas.comando(e, { action: 'resgatar', key: 'rotworm' }).erro, /Nada/);
 });
 
-test('com o Auto Task a etapa que fecha paga sozinha e a task não para', () => {
+test('com o Auto Task a etapa que fecha paga sozinha e a task não para', { skip: doClassico("Tasks do Draevor (tokens, Auto Task, montaria)") }, () => {
   const e = personagemDeTeste({ level: 100 });
   e.bestiary = { rotworm: 1999 };
   e.autoTask = { passe: true, passeAte: Date.now() + 1e9 };
@@ -100,7 +101,7 @@ test('com o Auto Task a etapa que fecha paga sozinha e a task não para', () => 
   assert.equal(Tarefas.loja(e).saldo, 1);
 });
 
-test('task de montaria: fechando, a montaria é dele e paga os tokens', () => {
+test('task de montaria: fechando, a montaria é dele e paga os tokens', { skip: doClassico("Tasks do Draevor (tokens, Auto Task, montaria)") }, () => {
   const e = personagemDeTeste({ level: 100 });
   e.bestiary = { dragon: 2250 };
   Tarefas.contarMorte(e, 'dragon');
@@ -135,7 +136,7 @@ test('entrega: adianta o que tem, fecha quando completa e dá o addon nos dois s
   assert.equal(e.outfit.addons, 1);
 });
 
-test('promoção no derived: o nome novo, promoted e a regeneração do original', () => {
+test('promoção no derived: o nome novo, promoted e a regeneração do original', { skip: doClassico("Promoção e Coleção do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   assert.deepEqual(Promocao.derivados(e), { vocationName: 'Knight', promoted: false, hpRegen: 6, manaRegen: 6, regen: { hp: 1, mana: 1 } });
   e.promovido = true;
@@ -178,7 +179,7 @@ test('Boss Tasks: as mortes são as do bestiary (Minotauros 465, como no origina
   assert.equal(Bosses.tasks(e)[0].kills, 466);
 });
 
-test('Coleção: Blade Dancer + Gorgon Hydra = 2 peças, +0,6% de crítico (o Zoros no original)', () => {
+test('Coleção: Blade Dancer + Gorgon Hydra = 2 peças, +0,6% de crítico (o Zoros no original)', { skip: doClassico("Promoção e Coleção do Draevor") }, () => {
   const e = personagemDeTeste({ level: 100 });
   e.lojaOutfits = [1746];
   e.lojaMontarias = [223];

@@ -11,7 +11,7 @@ import * as Treino from '../systems/treino.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { matarMonstro, round } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 import { NOVOS } from '../systems/itens-poe/traduzir.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
@@ -45,7 +45,7 @@ function vestirPoe(e, af) {
   return e;
 }
 function naCacada(e) {
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -63,10 +63,12 @@ const danoDosGolpes = (e, n = 150) => {
   return d;
 };
 
-test('sem peça do PoE nada muda: a ficha não ganha Caos nem dano somado, e a magia usa a chance de crítico de sempre', () => {
+// (B, docs/migracao-poe-matriz.md: era "sem peça do PoE nada muda" — da época da chave. No jogo oficial a ficha base já é a do PoE, com a
+// resistência a Caos, como no PoE; o resto vale igual.)
+test('sem peça do PoE: a ficha base tem a resistência a Caos (como no PoE), sem dano somado, e a magia usa a chance de crítico de sempre', () => {
   const e = personagem();
   const f = Ficha.combate(e);
-  assert.equal('chaos' in f.protection, false);
+  assert.equal('chaos' in f.protection, true);
   assert.equal('chaos' in f.danoDoElemento, false);
   assert.deepEqual([f.danoSomado, f.danoSomadoMagia], [{}, {}]);
   assert.deepEqual([f.vidaPorAbate, f.manaPorAbate, f.vidaPorAcerto, f.manaPorAcerto, f.danoDeMagiaDoPoe], [0, 0, 0, 0, 0]);

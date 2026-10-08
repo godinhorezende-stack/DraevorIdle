@@ -15,7 +15,8 @@ import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { round } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const skill = (id) => [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes].find((x) => x.id === id);
@@ -57,7 +58,7 @@ function personagem(voc, { arma = null, anel = null } = {}) {
   e.maxHp = e.hp = e.maxMana = e.mana = 1e9;
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
-  Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' });
+  Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' });
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -103,7 +104,7 @@ function ganhoEsperado(voc, tags, somaDasOutras) {
 }
 const perto = (a, b, msg) => assert.ok(Math.abs(a / b - 1) < 0.03, `${msg}: ${a.toFixed(4)} vs ${b.toFixed(4)}`);
 
-test('1. Knight usando skill Physical (Brutal Strike, melee): +Physical +Melee', () => {
+test('1. Knight usando skill Physical (Brutal Strike, melee): +Physical +Melee', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   assert.deepEqual(Tags.tagsDaAcao(skill('spell-brutal-strike')).sort(), ['hit', 'melee', 'physical', 'single', 'spell']);
   const com = danoDaSkill('knight', 'spell-brutal-strike');
   const sem = semEspecializacao('knight', () => danoDaSkill('knight', 'spell-brutal-strike'));
@@ -115,7 +116,7 @@ test('1. Knight usando skill Physical (Brutal Strike, melee): +Physical +Melee',
   assert.ok(com > sem * 1.15);
 });
 
-test('2. Sorcerer usando Fire (Flame Strike): +Fire +Spell', () => {
+test('2. Sorcerer usando Fire (Flame Strike): +Fire +Spell', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const com = danoDaSkill('sorcerer', 'spell-flame-strike');
   const sem = semEspecializacao('sorcerer', () => danoDaSkill('sorcerer', 'spell-flame-strike'));
   assert.ok(com > sem * 1.2, `${sem} → ${com}`);
@@ -123,7 +124,7 @@ test('2. Sorcerer usando Fire (Flame Strike): +Fire +Spell', () => {
   assert.deepEqual(Ficha.afinidadePara(Ficha.combate(e), Tags.tagsDaAcao(skill('spell-flame-strike'))).fontes.map((f) => f.especializacao).sort(), ['Fire', 'Spell']);
 });
 
-test('3. Knight usando Fire (Flame Strike): pode (não bloqueia), mas sem afinidade natural', () => {
+test('3. Knight usando Fire (Flame Strike): pode (não bloqueia), mas sem afinidade natural', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const e = comSkills(personagem('knight'), ['spell-flame-strike']);
   const entrada = Acoes.catalogo(e).spells.find((x) => x.id === 'spell-flame-strike');
   assert.equal(entrada.blocked, null, 'nada bloqueia por classe');
@@ -134,7 +135,7 @@ test('3. Knight usando Fire (Flame Strike): pode (não bloqueia), mas sem afinid
   assert.equal(com, sem, 'a especialização do knight não mexe no fogo');
 });
 
-test('4. Paladin usando skill ranged (Ethereal Spear e o arco): +Physical +Ranged', () => {
+test('4. Paladin usando skill ranged (Ethereal Spear e o arco): +Physical +Ranged', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const com = danoDaSkill('paladin', 'spell-ethereal-spear');
   const sem = semEspecializacao('paladin', () => danoDaSkill('paladin', 'spell-ethereal-spear'));
   assert.ok(com > sem * 1.2, `spear ${sem} → ${com}`);
@@ -143,7 +144,7 @@ test('4. Paladin usando skill ranged (Ethereal Spear e o arco): +Physical +Range
   assert.ok(golpeCom > golpeSem * 1.1, `golpe ${golpeSem} → ${golpeCom}`);
 });
 
-test('5. Paladin usando Fire (Flame Strike e Fireball rune): pode, sem afinidade natural', () => {
+test('5. Paladin usando Fire (Flame Strike e Fireball rune): pode, sem afinidade natural', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const e = comSkills(personagem('paladin'), ['spell-flame-strike', 'rune-fireball-rune']);
   const c = Acoes.catalogo(e);
   for (const id of ['spell-flame-strike', 'rune-fireball-rune']) {
@@ -154,7 +155,7 @@ test('5. Paladin usando Fire (Flame Strike e Fireball rune): pode, sem afinidade
   assert.equal(danoDaSkill('paladin', 'spell-flame-strike'), semEspecializacao('paladin', () => danoDaSkill('paladin', 'spell-flame-strike')));
 });
 
-test('6. Druid usando Ice (Ice Strike): +Ice (e não Spell — a do druid é Healing)', () => {
+test('6. Druid usando Ice (Ice Strike): +Ice (e não Spell — a do druid é Healing)', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const com = danoDaSkill('druid', 'spell-ice-strike');
   const sem = semEspecializacao('druid', () => danoDaSkill('druid', 'spell-ice-strike'));
   assert.ok(com > sem * 1.1, `${sem} → ${com}`);
@@ -163,7 +164,7 @@ test('6. Druid usando Ice (Ice Strike): +Ice (e não Spell — a do druid é Hea
   assert.equal(Ficha.combate(personagem('druid')).curaDeMagia - semEspecializacao('druid', () => Ficha.combate(personagem('druid')).curaDeMagia), 20);
 });
 
-test('7. Monk usando skill melee (golpe básico e Swift Jab): +Physical +Melee; Mobility na ficha', () => {
+test('7. Monk usando skill melee (golpe básico e Swift Jab): +Physical +Melee; Mobility na ficha', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const com = danoDoGolpe('monk');
   const sem = semEspecializacao('monk', () => danoDoGolpe('monk'));
   assert.ok(com > sem * 1.15, `golpe ${sem} → ${com}`);
@@ -177,7 +178,7 @@ test('7. Monk usando skill melee (golpe básico e Swift Jab): +Physical +Melee; 
   assert.ok(f.evasion > f0.evasion && f.speed > f0.speed && f.velocidadeDeAtaque > f0.velocidadeDeAtaque, 'Mobility: Evasion, Movement e Attack Speed');
 });
 
-test('8. dano antes/depois de equipar um item: Fire Damage do anel soma com a afinidade (mesma conta da comparação)', () => {
+test('8. dano antes/depois de equipar um item: Fire Damage do anel soma com a afinidade (mesma conta da comparação)', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const sem = danoDaSkill('sorcerer', 'spell-flame-strike');
   const com = danoDaSkill('sorcerer', 'spell-flame-strike', { anel: [{ id: 'fire_dmg', nivel: 5, value: 25 }] });
   const f = Ficha.combate(personagem('sorcerer'));
@@ -189,7 +190,7 @@ test('8. dano antes/depois de equipar um item: Fire Damage do anel soma com a af
   assert.equal(r.personagem.find((l) => l.chave === 'danoDoElemento.fire')?.delta, 25);
 });
 
-test('9. ficha: a classe, as especializações naturais e os efeitos derivados', () => {
+test('9. ficha: a classe, as especializações naturais e os efeitos derivados', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const f = Ficha.combate(personagem('sorcerer'));
   assert.equal(f.classe.nome, 'Sorcerer');
   assert.deepEqual(f.classe.especializacoes.map((e) => e.nome), ['Fire', 'Energy', 'Death', 'Spell']);
@@ -207,7 +208,7 @@ test('9. ficha: a classe, as especializações naturais e os efeitos derivados',
   assert.equal(Especializacoes.classeDe({ vocation: 'Elite Knight' }), 'knight');
 });
 
-test('10. a origem dos bônus (o que a ficha e o balão mostram): base, equipamento, especialização', () => {
+test('10. a origem dos bônus (o que a ficha e o balão mostram): base, equipamento, especialização', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   const e = personagem('sorcerer', { anel: [{ id: 'fire_dmg', nivel: 5, value: 25 }] });
   const f = Ficha.combate(e);
   assert.deepEqual(f.origens['dano.fire'], [{ fonte: 'Equipamento', valor: 25 }, { fonte: 'Especialização: Fire', valor: 15 }]);
@@ -235,7 +236,7 @@ test('requisito de atributo (modelo Path of Exile): peça de mago pede INT; o kn
   assert.equal(ITEM_CATALOG[idDe('might ring')].requisito, undefined);
 });
 
-test('etapa 6: cada bônus de STAT das especializações (os valores do prompt) chega na ficha — com vs sem a especialização', () => {
+test('etapa 6: cada bônus de STAT das especializações (os valores do prompt) chega na ficha — com vs sem a especialização', { skip: doClassico("Especializações das vocações do Draevor; no PoE não existem (decisão do dono; ficha-poe cobre \"sem especialização\")") }, () => {
   // [classe, o que ler na ficha, quanto deve subir (%) — os números de gamedata/classes.json]
   const casos = [
     ['knight', (f) => f.armor, 20, 'Armour +20%'],

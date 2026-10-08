@@ -16,14 +16,11 @@
 // No modo PoE, estas gemas SUBSTITUEM as gemas ativas do Draevor (drop, loja, iniciais); os SUPORTES do Draevor seguem valendo nelas
 // (pelas tags). Sem o PoE nada disto roda.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { runInNewContext } from 'node:vm';
-import { pathToFileURL } from 'node:url';
 import { ligado } from './catalogo.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
 
-const RAIZ = process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe';
-const PASTA = join(RAIZ, 'poe-gemas-poedb', 'engine');
+// As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
+const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/gemas-poe-ids.json', import.meta.url);
 export const PREFIXO = 'poe-gema:';
 // 916001 (não 912001: a Lapidadora, a Fundidora e os orbes do Draevor são 912001–912004).
@@ -435,13 +432,11 @@ let INICIADO = null;
  */
 export async function iniciar({ registrarGema, registrarReforco } = {}) {
   if (INICIADO) return INICIADO;
-  if (!ligado() || !existsSync(join(PASTA, 'dados', 'gemas.js'))) return (INICIADO = { gemas: 0, porStatus: {} });
-  const janela = {};
-  runInNewContext(readFileSync(join(PASTA, 'dados', 'gemas.js'), 'utf8'), { window: janela });
-  GEMAS = janela.GEMAS ?? [];
+  if (!ligado() || !existsSync(ARQ_GEMAS)) return (INICIADO = { gemas: 0, porStatus: {} });
+  GEMAS = JSON.parse(readFileSync(ARQ_GEMAS, 'utf8'));
   for (const g of GEMAS) POR_SLUG.set(g.slug, g);
-  const comp = await import(pathToFileURL(join(PASTA, 'src', 'gemas', 'compilador.mjs')).href);
-  const prog = await import(pathToFileURL(join(PASTA, 'src', 'gemas', 'progressao.mjs')).href);
+  const comp = await import('./compilador-de-gemas/compilador.mjs');
+  const prog = await import('./compilador-de-gemas/progressao.mjs');
   COMPILADOR = { compilarHabilidade: comp.compilarHabilidade, nivelMaximo: prog.nivelMaximo, textosDoNivel: prog.textosDoNivel, propsDoNivel: prog.propsDoNivel, basicosDoNivel: prog.basicosDoNivel };
   const ids = idsDasGemas(GEMAS.map((g) => g.slug));
   const porStatus = {};

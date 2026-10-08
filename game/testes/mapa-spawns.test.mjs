@@ -8,6 +8,7 @@ import * as Spawns from '../systems/mapa/spawns.mjs';
 import { spawnsDaHunt } from '../systems/hunt/terreno.mjs';
 import { FASES } from '../systems/campanha.mjs';
 import { spawnsDasFontesAntigas } from '../admin/migrar-spawns.mjs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 const TROLL = 'troll';
 
@@ -64,7 +65,7 @@ test('toda fase jogável tem os spawns na definição do mapa, válidos', () => 
 });
 
 test('migração: o que foi gravado no mapa é o que as fontes antigas davam (original × density)', () => {
-  for (const id of ['winter-dream-court', 'troll-cave', 'putrid-mummies']) {
+  for (const id of ['winter-dream-court', HUNT_DE_TESTE, 'putrid-mummies']) {
     const gravado = spawnsDaHunt(id);
     const fontes = spawnsDasFontesAntigas(id);
     assert.equal(gravado.length, fontes.length, id);

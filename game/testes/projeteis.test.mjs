@@ -12,7 +12,8 @@ import * as G from '../systems/skills/gemas.mjs';
 import * as S from '../systems/skills/golpes-secundarios.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
 const SUP = (id) => [...G.DEFS.values()].find((d) => d.tipo === 'support' && d.id === id).itemId;
@@ -27,7 +28,7 @@ function montar(vocacao, acao, supports = []) {
   const gemas = [G.novaGema(GEMA(acao)), ...supports.map((s) => G.novaGema(SUP(s)))];
   e.equipment.weapon = { id: idDe(arma), count: 1, soquetes: { abertos: 4, links: [true, true, true], gemas: [...gemas, ...Array(4 - gemas.length).fill(null)] } };
   Ficha.invalidar(e);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -66,7 +67,7 @@ test('as tags que as supports leem: Flame Strike é projectile + single + hit; F
   assert.ok(onda.some((t) => ['area', 'wave', 'line'].includes(t)));
 });
 
-test('Extra Projectile / Greater Multiple Projectiles: mais bichos levam o projétil, com menos dano cada', () => {
+test('Extra Projectile / Greater Multiple Projectiles: mais bichos levam o projétil, com menos dano cada', { skip: aAdaptar("O suporte existe no PoE e a mecânica é da engine; o teste usa Flame Strike do Draevor") }, () => {
   const e = montar('sorcerer', FLAME, ['greater-multiple-projectiles']);
   const alvo = bicho(e, 1, 0);
   const outros = [bicho(e, 2, 1), bicho(e, -1, 1), bicho(e, 0, 2), bicho(e, -2, 0), bicho(e, 2, -2)];
@@ -75,7 +76,7 @@ test('Extra Projectile / Greater Multiple Projectiles: mais bichos levam o proj�
   assert.equal(quantasVezes(ev, alvo), 1);
 });
 
-test('Pierce: o projétil atravessa o alvo e acerta quem está atrás, na mesma reta', () => {
+test('Pierce: o projétil atravessa o alvo e acerta quem está atrás, na mesma reta', { skip: aAdaptar("O suporte existe no PoE e a mecânica é da engine; o teste usa Flame Strike do Draevor") }, () => {
   const e = montar('sorcerer', FLAME, ['pierce']);
   const alvo = bicho(e, 1, 0);
   const atras1 = bicho(e, 2, 0);
@@ -89,7 +90,7 @@ test('Pierce: o projétil atravessa o alvo e acerta quem está atrás, na mesma 
   assert.equal(quantasVezes(ev, fora), 0, 'fora da reta');
 });
 
-test('Fork: no alvo, o projétil se divide em dois; Chain: salta de bicho em bicho', () => {
+test('Fork: no alvo, o projétil se divide em dois; Chain: salta de bicho em bicho', { skip: aAdaptar("O suporte existe no PoE e a mecânica é da engine; o teste usa Flame Strike do Draevor") }, () => {
   const e = montar('sorcerer', FLAME, ['fork']);
   const alvo = bicho(e, 2, 0);
   const a = bicho(e, 3, 1);
@@ -108,13 +109,13 @@ test('Fork: no alvo, o projétil se divide em dois; Chain: salta de bicho em bic
   assert.deepEqual([x1, x2, x3].map((m) => quantasVezes(ev2, m)), [1, 1, 0], 'encadeia 2, a até 4 do último');
 });
 
-test('Returning Projectile: o projétil volta e acerta o alvo de novo', () => {
+test('Returning Projectile: o projétil volta e acerta o alvo de novo', { skip: aAdaptar("O suporte existe no PoE e a mecânica é da engine; o teste usa Flame Strike do Draevor") }, () => {
   const e = montar('sorcerer', FLAME, ['returning-projectile']);
   const alvo = bicho(e, 2, 0);
   assert.equal(quantasVezes(lancar(e, FLAME, alvo), alvo), 2);
 });
 
-test('Explosion: o golpe explode 3×3 em volta do impacto — o alvo (direto + explosão) e os vizinhos', () => {
+test('Explosion: o golpe explode 3×3 em volta do impacto — o alvo (direto + explosão) e os vizinhos', { skip: doClassico("Suportes só do Draevor (Explosion, Impact) e a combinação com Flame Strike") }, () => {
   const e = montar('sorcerer', FLAME, ['explosion']);
   const alvo = bicho(e, 3, 0);
   const vizinho = bicho(e, 4, 1);
@@ -126,7 +127,7 @@ test('Explosion: o golpe explode 3×3 em volta do impacto — o alvo (direto + e
   assert.equal(quantasVezes(ev, longe), 0);
 });
 
-test('Impact: skill física corpo a corpo de alvo único bate também em volta do alvo', () => {
+test('Impact: skill física corpo a corpo de alvo único bate também em volta do alvo', { skip: doClassico("Suportes só do Draevor (Explosion, Impact) e a combinação com Flame Strike") }, () => {
   const e = montar('knight', 'spell-brutal-strike', ['impact']);
   const alvo = bicho(e, 1, 0);
   const vizinho = bicho(e, 2, 1);
@@ -150,7 +151,7 @@ test('as supports só valem na skill com as tags delas: Pierce não pega na Fire
   assert.equal(G.compativel(pierce, G.DEFS.get(GEMA(FLAME)).tags), true);
 });
 
-test('COMBINAÇÃO: Flame Strike + Multiple Projectiles + Pierce + Explosion — todos os efeitos juntos', () => {
+test('COMBINAÇÃO: Flame Strike + Multiple Projectiles + Pierce + Explosion — todos os efeitos juntos', { skip: doClassico("Suportes só do Draevor (Explosion, Impact) e a combinação com Flame Strike") }, () => {
   const e = montar('sorcerer', FLAME, ['multiple-projectiles', 'pierce', 'explosion']);
   const efeito = G.efeitoNaSkill(e, FLAME);
   assert.deepEqual(efeito.supports.sort(), ['Explosion', 'Multiple Projectiles', 'Pierce']);
@@ -179,7 +180,7 @@ test('os % dos golpes secundários se multiplicam entre supports (Multiple 60% �
   assert.equal(Math.round(ef.danoDosExtrasPct), 48);
 });
 
-test('Area of Effect no disparo de verdade: a Fire Wave pega mais bichos com a support', () => {
+test('Area of Effect no disparo de verdade: a Fire Wave pega mais bichos com a support', { skip: aAdaptar("O suporte existe no PoE e a mecânica é da engine; o teste usa Flame Strike do Draevor") }, () => {
   const pegos = (supports) => {
     const e = montar('sorcerer', 'spell-fire-wave', supports);
     const todos = [];

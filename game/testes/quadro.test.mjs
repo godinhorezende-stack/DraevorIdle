@@ -8,7 +8,7 @@ import { Sessao } from '../websocket/sessao.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
 import * as Quadro from '../websocket/quadro.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, huntDoPoe } from './apoio.mjs';
 
 /** O cliente, reduzido ao que junta a caçada — a mesma conta de main.mjs. */
 function clienteFalso() {
@@ -72,13 +72,13 @@ function rodar({ s, cliente }, segundos, conferir = true) {
 }
 
 test('delta: o cliente monta exatamente os bichos da tela em 2 minutos de Werelions', () => {
-  rodar(sessaoNaCacada('werelions-1'), 120);
+  rodar(sessaoNaCacada(huntDoPoe('werelions-1')), 120);
 });
 
 test('delta: numa hunt grande o quadro fica muito menor que o inteiro', () => {
-  const leve = sessaoNaCacada('werelions-1');
+  const leve = sessaoNaCacada(huntDoPoe('werelions-1'));
   rodar(leve, 30, false);
-  const cheio = sessaoNaCacada('werelions-1', { delta: false });
+  const cheio = sessaoNaCacada(huntDoPoe('werelions-1'), { delta: false });
   rodar(cheio, 30, false);
   const porSegundoLeve = leve.cliente.bytes / 30;
   const porSegundoCheio = cheio.cliente.bytes / 30;
@@ -86,14 +86,14 @@ test('delta: numa hunt grande o quadro fica muito menor que o inteiro', () => {
 });
 
 test('aba escondida: sem fx/shot, mas o resto dos eventos (dano, loot) continua', () => {
-  const r = sessaoNaCacada('werelions-1', { oculta: true });
+  const r = sessaoNaCacada(huntDoPoe('werelions-1'), { oculta: true });
   rodar(r, 30, false);
   assert.ok(r.cliente.eventos.some((e) => e.t === 'dmg'));
   assert.ok(!r.cliente.eventos.some((e) => e.t === 'fx' || e.t === 'shot'));
 });
 
 test('pedir delta de novo (remendo falhou no cliente) manda o quadro inteiro', () => {
-  const r = sessaoNaCacada('werelions-1');
+  const r = sessaoNaCacada(huntDoPoe('werelions-1'));
   rodar(r, 5, false);
   r.cliente.mobilia.clear(); // o cliente perdeu o que sabia
   r.s.receber({ t: 'delta', on: true, sessao: true, fundo: true });

@@ -48,7 +48,7 @@ import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
 import * as Defesa from './personagem/defesa.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { bossUnico } from './bosses-unicos/catalogo.mjs';
@@ -73,6 +73,8 @@ import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Poderes from './poderes.mjs';
 import * as Areas from '../engine/areas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import { podeEntrar } from './itens-poe/so-itens-do-poe.mjs';
+import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -159,6 +161,8 @@ function projetar(estado, base, fator, multExp = 1) {
     if (!qtd) continue;
     extra.itens.loot[id] = qtd;
     if (VALOR_DA_MOEDA[id]) continue; // já entrou no `gold`
+    // No jogo oficial só entra item do PoE (uma sessão de antes desta regra pode ter loot do Draevor: não projeta).
+    if (!podeEntrar(Number(id))) continue;
     // O peso vale na projeção também: o que não cabe fica no chão ("perdido").
     const peso = ITEM_CATALOG[id]?.weight ?? 0;
     const livre = Afixos.capacidade(estado) - pesoDoInventario(estado);
@@ -169,7 +173,17 @@ function projetar(estado, base, fator, multExp = 1) {
      * 12 h offline só ganhava atributo no loot da primeira meia hora.
      */
     let entrou = 0;
-    if (cabe && aceitaAtributos(Number(id))) {
+    const baseDoPoe = ItensPoeJogo.baseDoId(Number(id));
+    if (cabe && baseDoPoe) {
+      // A peça do PoE sai do gerador do PoE, uma a uma (raridade, mods, qualidade), como na caçada online. Antes a projeção punha a base
+      // CRUA na bolsa: de 3 h offline, só a primeira meia hora rendia peça do PoE de verdade.
+      const nivel = nivelDoDropPoe(estado.hunt, null);
+      const raridade = raridadeDoDrop(estado, null);
+      for (let k = 0; k < cabe; k++) {
+        const peca = ItensPoeJogo.pecaSorteada(nivel, Math.random, undefined, raridade, baseDoPoe);
+        if (peca) entrou += Bolsa.porNaBolsa(estado, peca.id, 1, peca) ? 1 : 0;
+      }
+    } else if (cabe && aceitaAtributos(Number(id))) {
       const origem = contextoDoDrop(estado.hunt);
       for (let k = 0; k < cabe; k++) entrou += Bolsa.porNaBolsa(estado, Number(id), 1, gerarItem({ itemId: Number(id), ...origem }));
     } else if (cabe) entrou = Bolsa.porNaBolsa(estado, Number(id), cabe);
@@ -543,7 +557,10 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
 /** Quanto o portal do boss de ato espera aberto, com a hunt limpa, antes de a instância seguinte começar (e fechá-lo). */
 const TEMPO_DO_PORTAL_MS = 60_000;
 
-export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false, viaPortal = false }) {
+/** O que existe no jogo oficial (PoE): as áreas do PoE, os chefes de ato e os pináculos do PoE e as arenas PvP. */
+export const conteudoDoJogoOficial = ({ hunt = null, boss = null, arenaPvp = false }) => !!(hunt?.poeArea || boss?.poeChefeDeAto != null || boss?.poePinaculo || arenaPvp);
+
+export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false, viaPortal = false, arenaPvp = false }) {
   const boss = CATALOGO.bosses.find((b) => b.id === huntId) ?? null;
   // A campanha (ver `systems/campanha.mjs`): a fase desta hunt, ou o boss de fim de ato.
   const dif = Campanha.DIFICULDADES.includes(dificuldade) ? dificuldade : Campanha.DIFICULDADES[0];
@@ -553,6 +570,10 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   const hunt = acharHunt(huntId) ?? boss;
   const mapaCustom = hunt ? null : mapaRealCapturado(huntId);
   if (!hunt && !mapaCustom) return { ok: false, erro: 'Esta hunt não existe.' };
+  // O jogo oficial é o do PoE (dono, 07/10: "só conteúdo do PoE"): as hunts e os bosses do Draevor ficam de fora — o TERRENO delas
+  // continua servindo às áreas do PoE, mas ninguém entra nelas direto (antes um `startHunt` com o id entrava, e o personagem do PoE
+  // nem matava os bichos de lá).
+  if (itensPoeLigado() && !conteudoDoJogoOficial({ hunt, boss, arenaPvp })) return { ok: false, erro: 'Essa caçada é do Draevor clássico e não existe no jogo oficial.' };
   // Hunts Vip / Instance / Divine: premium, o acesso e o level (ver `premium.mjs`).
   const tranca = Premium.trancaDaHunt(hunt);
   if (tranca) {

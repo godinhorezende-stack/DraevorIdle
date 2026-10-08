@@ -5,9 +5,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as R from '../systems/regras.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, huntDoPoe } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
-const HUNT = 'werelions-1';
+const HUNT = huntDoPoe('werelions-1');
 
 /** Entra na hunt com um personagem que aguenta, e tira todos os bichos. */
 function naHuntVazia() {
@@ -106,7 +107,7 @@ test('caçando de verdade (bichos de um golpe): nunca fica parado sem brigar, e 
   assert.ok(andou || kills >= 20 * 15, `andou pouco em 15 minutos e matou só ${kills}: ${JSON.stringify(run)}`);
 });
 
-test('hunt Vip (sala sem mapa capturado): também tem laço, pelos pontos de nascimento', () => {
+test('hunt Vip (sala sem mapa capturado): também tem laço, pelos pontos de nascimento', { skip: doClassico("Hunt VIP do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 600 });
   e.premiumAte = Date.now() + 86_400_000;
   assert.equal(Cacadas.entrar(e, { huntId: 'vip-hellspawn', mode: 'cycle', strategy: 'nearest' }).ok, true);
@@ -117,7 +118,7 @@ test('hunt Vip (sala sem mapa capturado): também tem laço, pelos pontos de nas
   assert.ok((e.huntLaps?.['vip-hellspawn'] ?? 0) >= 1, `voltas: ${JSON.stringify(e.huntLaps)}`);
 });
 
-test('sem vai-e-volta: lurando ou não, ele nunca fica desfazendo o próprio passo (Winter Dream Court)', () => {
+test('sem vai-e-volta: lurando ou não, ele nunca fica desfazendo o próprio passo (Winter Dream Court)', { skip: aAdaptar("Percurso sem vai-e-volta é da engine; o teste usa a Winter Dream Court (hunt do Draevor)") }, () => {
   // "meu char kina ficou bugado indo e voltando": lurando, o "bicho de fora mais
   // perto" trocava a cada passo (33,34 ↔ 34,34 por minutos); brigando, um bicho
   // do outro lado da parede era espelhado. Seis passos seguidos desfazendo o

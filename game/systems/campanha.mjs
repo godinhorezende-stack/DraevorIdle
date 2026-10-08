@@ -160,7 +160,8 @@ export function motivoParaNaoEntrar(estado, dif, huntId) {
   if (!f) return null;
   if (!ehDificuldade(dif)) return 'Dificuldade inválida.';
   const nomeDif = CAMPANHA.dificuldades[dif].nome;
-  if (!dificuldadeLiberada(estado, dif)) return `O ${nomeDif} abre depois de vencer o boss do Ato ${ATOS} na dificuldade anterior.`;
+  // No jogo oficial a campanha do PoE é uma passada só (o Normal): o Cruel e o Merciless não abrem — e não há "boss do Ato N" do Draevor a citar.
+  if (!dificuldadeLiberada(estado, dif)) return itensPoeLigado() ? `A campanha do PoE é uma passada só, no ${CAMPANHA.dificuldades[DIFICULDADES[0]].nome}: o ${nomeDif} não abre.` : `O ${nomeDif} abre depois de vencer o boss do Ato ${ATOS} na dificuldade anterior.`;
   if (f.pular) return `${f.nome} está travada (em obras) e não abre por enquanto.`;
   if (faseLiberada(estado, dif, huntId)) return null;
   if (f.grafo) return motivoNoGrafo(estado, dif, f, nomeDif);

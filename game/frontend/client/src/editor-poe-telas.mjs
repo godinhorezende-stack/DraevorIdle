@@ -23,8 +23,8 @@ const ROTULO_COMP = { magia: 'Magia', 'area-telegrafada': 'Área avisada', area:
 async function ligado(raiz, titulo) {
   const e = await api('estado');
   if (e.ligado) return true;
-  raiz().replaceChildren(cabecalho(titulo, 'Referência do PoE — só no servidor local com ITENS_POE=1.'),
-    el('div', { class: 'eng-painel' }, el('div', { class: 'eng-painel-corpo' }, el('p', {}, 'Desligado neste servidor.'), el('pre', { class: 'bib-json' }, 'ITENS_POE=1 PORTA=8099 node game/backend/index.mjs'))));
+  raiz().replaceChildren(cabecalho(titulo, 'Referência do PoE — o jogo oficial.'),
+    el('div', { class: 'eng-painel' }, el('div', { class: 'eng-painel-corpo' }, el('p', {}, 'Este servidor está no Draevor clássico (DRAEVOR_CLASSICO=1). Suba sem essa variável:'), el('pre', { class: 'bib-json' }, 'PORTA=8099 node game/backend/index.mjs'))));
   return false;
 }
 

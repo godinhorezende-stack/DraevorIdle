@@ -9,7 +9,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import { lootDoEncontro } from '../systems/hunt/combate.mjs';
 import { lootOrigem } from '../systems/encontros/entregar.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const ARMAS = ['wand of vortex', 'bow', 'sword', 'terra rod'].map(idDe);
@@ -44,7 +44,7 @@ test('o mínimo só sobe: a raridade que já era maior fica, a forçada não mud
 function naCacada() {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   e.maxHp = e.hp = 1e9;
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   return e;
 }
 

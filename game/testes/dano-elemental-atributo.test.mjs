@@ -7,7 +7,8 @@ import * as Treino from '../systems/treino.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { round, EFEITO_DO_ELEMENTO } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
@@ -28,7 +29,7 @@ function golpeUnico(elemento, pct) {
   e.maxHp = e.hp = 1e9;
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
-  Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' });
+  Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' });
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -42,7 +43,7 @@ function golpeUnico(elemento, pct) {
 }
 
 for (const el of ['fire', 'energy', 'earth', 'ice', 'death', 'holy']) {
-  test(`${el}: o golpe traz o número do elemento E o efeito visual dele; o físico sai cinza`, () => {
+  test(`${el}: o golpe traz o número do elemento E o efeito visual dele; o físico sai cinza`, { skip: doClassico("Dano elemental dos atributos no golpe (regra do Draevor); no PoE os atributos não dão elemento") }, () => {
     const eventos = golpeCom(el, 50);
     const fx = eventos.filter((x) => x.t === 'fx' && x.id === EFEITO_DO_ELEMENTO[el]);
     const numeros = eventos.filter((x) => x.t === 'dmg' && x.foe);
@@ -53,7 +54,7 @@ for (const el of ['fire', 'energy', 'earth', 'ice', 'death', 'holy']) {
   });
 }
 
-test('percentual minúsculo: o elemento nunca bate menos que 1', () => {
+test('percentual minúsculo: o elemento nunca bate menos que 1', { skip: doClassico("Dano elemental dos atributos no golpe (regra do Draevor); no PoE os atributos não dão elemento") }, () => {
   // 0,1% de um golpe de nível 1 dá bem menos que 1 — e tem de bater 1.
   for (let i = 0; i < 40; i++) {
     const numeros = golpeCom('fire', 0.1).filter((x) => x.t === 'dmg' && x.foe);

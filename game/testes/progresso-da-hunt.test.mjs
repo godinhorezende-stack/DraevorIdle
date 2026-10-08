@@ -11,7 +11,8 @@ import * as R from '../systems/regras.mjs';
 import { gradesCacheadas, gradeDaHunt, huntOuMapaCustom } from '../systems/hunt/terreno.mjs';
 import { passoComProgresso, MEMORIA_MS } from '../systems/hunt/progresso.mjs';
 import * as Caminho from '../systems/hunt/caminho.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 let proximaGrade = 0;
 
@@ -63,7 +64,7 @@ function naGrade(linhas, { vocacao = 'knight', distancia = 0, percurso = null } 
   const g = desenho(linhas);
   const e = personagemDeTeste({ vocacao, level: 600 });
   e.settings.distance = distancia;
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
   const alvo = bicho(g.M);
   Object.assign(e.hunt, {
     huntId: g.id, z: 7, pos: { ...g.P, dir: 2 }, percurso, respawns: [], outrosAndares: {},
@@ -471,7 +472,7 @@ function comSemente(semente, fn) {
 
 // Com semente fixa e o relógio fixo, o cenário é reproduzível. O recuo que não ganha distância (o bicho cola de novo a cada passo)
 // para depois de 3 passos; mesmo assim, ~1 em 40 sementes ainda tem um boss encurralando o personagem em terreno apertado (pendência).
-test('mapas reais que dançavam (ahau, burster-spectres): o kite não repassa em ciclo', () => {
+test('mapas reais que dançavam (ahau, burster-spectres): o kite não repassa em ciclo', { skip: doClassico("Mapas reais do Draevor (ahau, burster-spectres)") }, () => {
   for (const huntId of ['ahau', 'burster-spectres']) comSemente(1, () => {
     const e = personagemDeTeste({ vocacao: 'sorcerer', level: 600 });
     e.settings.distance = 4;

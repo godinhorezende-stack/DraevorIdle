@@ -8,7 +8,7 @@ import * as Entrega from '../systems/encontros/entrega.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
 import { matarMonstro } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const OURO = { id: 3031, chance: 100 };
 const APR = { id: 'cela', tipo: 'aprisionado', nome: 'Cela do Ferreiro', prisioneiro: { nome: 'Ferreiro' }, captores: { criaturas: [{ key: 'troll', qtd: 3 }] }, recompensa: { drops: [OURO], moedasMedia: 300, primeiraConclusao: { gold: 4000 } }, bencao: { efeitos: [{ afixo: 'phys_dmg', valor: 5 }], duracaoMs: 60000 } };
@@ -18,7 +18,7 @@ const erros = (l) => Modelo.validar(l).join(' | ');
 function luta({ modo = 'online' } = {}) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
   e.maxHp = e.hp = 1e9;
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
   e.hunt.monstros.length = 0;
   for (const z of Object.keys(e.hunt.outrosAndares ?? {})) e.hunt.outrosAndares[z].length = 0;
   e.hunt.clock = 1000;
@@ -60,7 +60,7 @@ test('aprisionado: interagir faz os captores nascerem; o último cair liberta, p
   const g = e.gold;
   for (let t = 0; t < 5; t++) passo(e, 4000 + t);
   assert.equal(e.gold, g);
-  assert.equal(Entrega.vezesConcluido(e, 'troll-cave', 'cela'), 1);
+  assert.equal(Entrega.vezesConcluido(e, HUNT_DE_TESTE, 'cela'), 1);
 });
 
 test('invasor: chega sozinho (mesmo no modo manual) quando a condição libera; vencer paga; não precisa de interação', () => {

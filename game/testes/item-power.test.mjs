@@ -4,9 +4,12 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { doClassico } from './apoio-migracao.mjs';
 
 const tmp = mkdtempSync(join(tmpdir(), 'ipw-'));
 process.env.DRAEVOR_OVERRIDES = tmp; // overrides DESTE processo ficam na pasta temporária (nunca os do dono)
+// O apoio carrega o jogo inteiro (a pasta de overrides é lida quando o módulo carrega): só DEPOIS de apontá-la para a temporária.
+const { HUNT_DE_TESTE } = await import('./apoio.mjs');
 after(() => rmSync(tmp, { recursive: true, force: true }));
 
 const IP = await import('../systems/item-power.mjs');
@@ -27,7 +30,7 @@ const espada = ITEM_CATALOG[7383]; // relic sword (level 50)
 const armadura = ITEM_CATALOG[10384]; // Zaoan armor (level 50)
 const escudo = ITEM_CATALOG[3434]; // vampire shield
 
-test('IPW1. fórmula de fábrica: pesos 1 / 1,5 / 0,8 / 0,8 / 0,8, normalização neutra e a versão da fórmula — sem atributos que não existem', () => {
+test('IPW1. fórmula de fábrica: pesos 1 / 1,5 / 0,8 / 0,8 / 0,8, normalização neutra e a versão da fórmula — sem atributos que não existem', { skip: doClassico("Item Power do Draevor (fórmula, overrides, distribuição por hunt)") }, () => {
   const c = IP.EM_USO;
   assert.deepEqual(c.pesos, { damage: 1, block: 1.5, armour: 0.8, evasion: 0.8, energyShield: 0.8 });
   assert.deepEqual([c.normalizacao.damage, c.normalizacao.block, c.normalizacao.armour, c.normalizacao.evasion, c.normalizacao.energyShield], [1, 1, 1, 1, 1]);
@@ -36,7 +39,7 @@ test('IPW1. fórmula de fábrica: pesos 1 / 1,5 / 0,8 / 0,8 / 0,8, normalizaçã
   assert.deepEqual(IP.validarConfiguracao(c).erros, []);
 });
 
-test('IPW2. dano médio = (mín + máx) / 2; a soma é ponderada e cada atributo tem o seu detalhamento em pontos', () => {
+test('IPW2. dano médio = (mín + máx) / 2; a soma é ponderada e cada atributo tem o seu detalhamento em pontos', { skip: doClassico("Item Power do Draevor (fórmula, overrides, distribuição por hunt)") }, () => {
   const c = cfg();
   const r = IP.calcular({ damageMin: 10, damageMax: 20, block: 10, armour: 5, evasion: 5, energyShield: 5 }, c);
   assert.equal(r.damage, 15);
@@ -48,7 +51,7 @@ test('IPW2. dano médio = (mín + máx) / 2; a soma é ponderada e cada atributo
   assert.equal(IP.calcular({ damageMin: 10, damageMax: 20, block: 99, armour: 7 }, c).ip, 30 + 7, 'os pesos mandam; peso zero anula');
 });
 
-test('IPW3. normalização: o fator converte a unidade do atributo antes do peso; o Block do escudo vale cheio, o da arma metade, os outros slots nada', () => {
+test('IPW3. normalização: o fator converte a unidade do atributo antes do peso; o Block do escudo vale cheio, o da arma metade, os outros slots nada', { skip: doClassico("Item Power do Draevor (fórmula, overrides, distribuição por hunt)") }, () => {
   const c = cfg();
   c.normalizacao.block = 0.5;
   assert.equal(IP.calcular({ block: 40 }, c).contribuicao.block.pontos, 40 * 0.5 * 1.5);
@@ -202,7 +205,7 @@ test('IPW12. validação da configuração: limites dos pesos, normalização, c
   assert.match(v((c) => { c.regras = [{ id: 'r1' }, { id: 'r1' }]; }), /ID repetido/);
 });
 
-test('IPW13. override: só o diferente é gravado; a fábrica nunca muda; salvar → versão anterior no histórico → conflito → restaurar → reverter', () => {
+test('IPW13. override: só o diferente é gravado; a fábrica nunca muda; salvar → versão anterior no histórico → conflito → restaurar → reverter', { skip: doClassico("Item Power do Draevor (fórmula, overrides, distribuição por hunt)") }, () => {
   reset();
   const fabrica = readFileSync(new URL('../gamedata/item-power.json', import.meta.url), 'utf8');
   const ef = Adm.obter().efetiva;
@@ -261,7 +264,7 @@ test('IPW15. simulação: editar atributos temporariamente recalcula IP, esperad
   assert.equal(Adm.simular({ atributos: {}, slot: 'body' }).situacao, 'sem-poder');
 });
 
-test('IPW16. lista de itens: filtros por categoria, level, raridade, classe e situação; ordem e paginação; detalhamento por atributo', () => {
+test('IPW16. lista de itens: filtros por categoria, level, raridade, classe e situação; ordem e paginação; detalhamento por atributo', { skip: doClassico("Item Power do Draevor") }, () => {
   const l = Adm.listarItens({ slot: 'body', nivelMin: 100, nivelMax: 300, limite: 200 });
   assert.ok(l.total > 0 && l.itens.every((i) => i.slot === 'body' && i.minLevel >= 100 && i.minLevel <= 300));
   assert.ok(l.itens.every((i, k) => k === 0 || i.minLevel >= l.itens[k - 1].minLevel), 'ordenado por level');
@@ -302,15 +305,15 @@ test('IPW17. presentes de marco: 5 classes × 50/100, IP por peça e por slot, t
   assert.match(m.aviso, /funções diferentes/);
 });
 
-test('IPW18. distribuição: análise de hunt, onde um item cai, alertas (muito acima/abaixo, level acima da hunt, muitas hunts, lacunas) — sem tocar em chance de drop', () => {
+test('IPW18. distribuição: análise de hunt, onde um item cai, alertas (muito acima/abaixo, level acima da hunt, muitas hunts, lacunas) — sem tocar em chance de drop', { skip: doClassico("Item Power do Draevor (fórmula, overrides, distribuição por hunt)") }, () => {
   const chancesAntes = JSON.stringify(Object.values(ITEM_CATALOG).map((m) => m.dropChance));
   const bestiarioAntes = JSON.stringify(Object.values((await_cat()).bestiary).map((b) => b.loot));
-  const h = An.analisarHunt('troll-cave');
+  const h = An.analisarHunt(HUNT_DE_TESTE);
   assert.equal(h.level, 8); assert.ok(h.itens.length > 0);
   assert.ok(h.itens.every((i) => i.chance > 0 && i.monstros.length && ['abaixo', 'adequado', 'acima', 'muito-acima', 'sem-poder', 'sem-referencia'].includes(i.situacao)));
   assert.equal(An.analisarHunt('nao-existe'), null);
   const onde = An.ondeCai(3268);
-  assert.ok(onde.some((x) => x.hunt === 'troll-cave' && x.monstros.includes('troll')));
+  assert.ok(onde.some((x) => x.hunt === HUNT_DE_TESTE && x.monstros.includes('troll')));
   const al = An.alertasDeDistribuicao('facil');
   assert.ok(al.total > 0 && al.alertas.every((a) => a.mensagem));
   for (const t of Object.keys(al.porTipo)) assert.ok(['item-muito-acima', 'item-muito-abaixo', 'level-acima-da-hunt', 'item-em-muitas-hunts', 'lacuna-de-poder'].includes(t), t);
@@ -323,12 +326,12 @@ test('IPW18. distribuição: análise de hunt, onde um item cai, alertas (muito 
 function await_cat() { return globalThis.__cat; }
 globalThis.__cat = (await import('../systems/dados.mjs')).CATALOGO;
 
-test('IPW19. regras de distribuição: candidatos que cabem na faixa (level, IP, raridade, slot) e drops dos monstros listados que FOGEM da regra; a dificuldade entra na chance', () => {
-  const r = An.avaliarRegra({ id: 'teste', levelMin: 1, levelMax: 60, ipMin: 0, ipMax: 100, slots: ['weapon'], hunts: ['troll-cave'] });
+test('IPW19. regras de distribuição: candidatos que cabem na faixa (level, IP, raridade, slot) e drops dos monstros listados que FOGEM da regra; a dificuldade entra na chance', { skip: doClassico("Item Power do Draevor (fórmula, overrides, distribuição por hunt)") }, () => {
+  const r = An.avaliarRegra({ id: 'teste', levelMin: 1, levelMax: 60, ipMin: 0, ipMax: 100, slots: ['weapon'], hunts: [HUNT_DE_TESTE] });
   assert.ok(r.candidatos > 0 && r.exemplos.every((e) => e.slot === 'weapon' && e.minLevel <= 60 && e.ip <= 100));
-  const rigida = An.avaliarRegra({ id: 'rigida', levelMin: 500, levelMax: 600, slots: ['weapon'], hunts: ['troll-cave'] });
+  const rigida = An.avaliarRegra({ id: 'rigida', levelMin: 500, levelMax: 600, slots: ['weapon'], hunts: [HUNT_DE_TESTE] });
   assert.ok(rigida.foraDaRegra > 0, 'o que o Troll Cave dropa hoje não cabe numa regra de level 500+');
-  assert.ok(rigida.fuga.every((f) => f.origem === 'troll-cave' && f.tipoDeOrigem === 'hunt'));
+  assert.ok(rigida.fuga.every((f) => f.origem === HUNT_DE_TESTE && f.tipoDeOrigem === 'hunt'));
   const boss = An.avaliarRegra({ id: 'boss', ipMin: 1e9, chefes: ['troll'] });
   assert.ok(boss.foraDaRegra > 0 && boss.fuga[0].tipoDeOrigem === 'chefe');
   const vazia = An.avaliarRegra({ id: 'vazia' });
@@ -336,8 +339,8 @@ test('IPW19. regras de distribuição: candidatos que cabem na faixa (level, IP,
   assert.match(r.aviso, /não altera drop/);
   // a chance respeita o fator de drop da dificuldade (neutro de fábrica)
   const c = P.comConfiguracao({ ...copia({ progressao: P.EM_USO.progressao, dificuldades: P.EM_USO.dificuldades, loot: P.EM_USO.loot }), loot: { ...copia(P.EM_USO.loot), dificil: { ...copia(P.EM_USO.loot.dificil), chanceDeDrop: 2 } } }, () => An.ondeCai(3268, 'dificil'));
-  const n = An.ondeCai(3268, 'facil').find((x) => x.hunt === 'troll-cave').chance;
-  assert.equal(c.find((x) => x.hunt === 'troll-cave').chance, Math.round(n * 2 * 1e6) / 1e6);
+  const n = An.ondeCai(3268, 'facil').find((x) => x.hunt === HUNT_DE_TESTE).chance;
+  assert.equal(c.find((x) => x.hunt === HUNT_DE_TESTE).chance, Math.round(n * 2 * 1e6) / 1e6);
 });
 
 test('IPW20. Hot Reload: a estratégia "item-power" aplica sem reiniciar, mantém a última versão válida se o arquivo for inválido e volta à fábrica quando o override some', async () => {
@@ -375,7 +378,7 @@ test('IPW21. validação centralizada, Git e versões: a verificação "item-pow
   assert.deepEqual(Val.TESTES_POR_MODULO['item-power'], ['item-power', 'item-power-editor', 'hot-reload-conteudo']);
 });
 
-test('IPW22. rotas: consulta, lista, detalhe, curva, marcos, alertas, prévia, simulação, comparação e regra só LEEM; salvar é "grava"; ação inválida = 400; conflito = 409', async () => {
+test('IPW22. rotas: consulta, lista, detalhe, curva, marcos, alertas, prévia, simulação, comparação e regra só LEEM; salvar é "grava"; ação inválida = 400; conflito = 409', { skip: doClassico("Item Power do Draevor") }, async () => {
   reset();
   const chama = async (metodo, rota, corpo, q = '') => { const r = []; await Http.atender({ method: metodo }, {}, `/api/mapas/_conteudo/${rota}`, new URL(`http://x/?${q}`), { json: (a, c, b) => r.push([c, b]), corpoJson: async () => corpo }); return r[0]; };
   const g = await chama('GET', 'item-power');

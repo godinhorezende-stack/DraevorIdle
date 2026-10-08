@@ -6,7 +6,8 @@ import * as Beta from '../systems/modo-beta.mjs';
 import * as Premium from '../systems/premium.mjs';
 import * as M from '../systems/atos-modelo.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const VIPS = CATALOGO.vips.slice(0, 2).map((h) => h.id);
 const ESPECIAL = CATALOGO.especiais[0].id;
@@ -37,10 +38,10 @@ test('VE1. o validador aceita VIP/especial como fase e cobra o tipo certo para c
   const erros = (a) => M.validarAto(a, ctx).filter((p) => p.nivel === 'erro').map((p) => p.mensagem);
   assert.deepEqual(erros({ ...ato(), anterior: null, ordem: 5 }), []);
   assert.ok(erros(ato({ fases: ato().fases.map((f) => (f.id === 'fase-1' ? { ...f, tipo: 'hunt-normal' } : f)) })).some((m) => /VIP \(exige acesso\): use o tipo "hunt-vip"/.test(m)));
-  assert.ok(erros(ato({ fases: ato().fases.map((f) => (f.id === 'fase-3' ? { ...f, huntId: 'troll-cave' } : f)) })).some((m) => /hunt normal: use o tipo "hunt-normal"/.test(m)));
+  assert.ok(erros(ato({ fases: ato().fases.map((f) => (f.id === 'fase-3' ? { ...f, huntId: HUNT_DE_TESTE } : f)) })).some((m) => /hunt normal: use o tipo "hunt-normal"/.test(m)));
 });
 
-test('VE2. a fase VIP/especial vira instância (sala gerada) que LIMPA, pela regra do jogo: precisa de acesso e, com o beta ligado, o acesso é livre', () => {
+test('VE2. a fase VIP/especial vira instância (sala gerada) que LIMPA, pela regra do jogo: precisa de acesso e, com o beta ligado, o acesso é livre', { skip: doClassico("Fases VIP/especiais do Draevor") }, () => {
   assert.equal(Campanha.registrarAto(ato()).ok, true);
   const semAcesso = novo();
   const r = Cacadas.entrar(semAcesso, { huntId: VIPS[0], mode: 'auto', dificuldade: 'facil' });
@@ -58,7 +59,7 @@ test('VE2. a fase VIP/especial vira instância (sala gerada) que LIMPA, pela reg
   assert.equal(Campanha.faseLiberada(e, 'facil', VIPS[1]), true, 'e abre a próxima pelo grafo');
 });
 
-test('VE3. com premium de verdade (sem beta) a fase VIP entra e limpa; a especial pede também o pergaminho e o level', () => {
+test('VE3. com premium de verdade (sem beta) a fase VIP entra e limpa; a especial pede também o pergaminho e o level', { skip: doClassico("Fases VIP/especiais do Draevor") }, () => {
   assert.equal(Campanha.registrarAto(ato()).ok, true);
   const e = novo();
   Premium.adicionarDias(e, 1);
@@ -72,7 +73,7 @@ test('VE3. com premium de verdade (sem beta) a fase VIP entra e limpa; a especia
   assert.match(esp.erro, /Instance|acesso|pergaminho/i);
 });
 
-test('VE4. a última fase do ato sendo especial: limpar abre o portal do boss como em qualquer ato do editor', () => {
+test('VE4. a última fase do ato sendo especial: limpar abre o portal do boss como em qualquer ato do editor', { skip: doClassico("Fases VIP/especiais do Draevor") }, () => {
   Beta.definir(true);
   assert.equal(Campanha.registrarAto(ato()).ok, true);
   const e = novo();

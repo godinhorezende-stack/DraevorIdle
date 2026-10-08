@@ -10,6 +10,7 @@ import * as Deposito from '../systems/deposito.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { gruposLigados } from '../engine/sockets-de-gema.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
@@ -191,7 +192,7 @@ test('persistência: depois de gravar e ler o save, os sockets, os links e o sal
   assert.equal(quantos(relido, LIGACAO), 1);
 });
 
-test('campos extras do `soquetes` (cores, no futuro) sobrevivem às operações dos orbes', () => {
+test('campos extras do `soquetes` (cores, no futuro) sobrevivem às operações dos orbes', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const e = novo();
   const p = vestir(e, 'weapon', 'wand of vortex', { abertos: 2 });
   p.soquetes.cores = ['r', 'g', 'b'];
@@ -202,7 +203,7 @@ test('campos extras do `soquetes` (cores, no futuro) sobrevivem às operações 
   assert.deepEqual(e.equipment.weapon.soquetes.cores, ['r', 'g', 'b']);
 });
 
-test('drop: a chance dos orbes é ZERO por enquanto (a fonte é a loja); com valor na config, sai', () => {
+test('drop: a chance dos orbes é ZERO por enquanto (a fonte é a loja); com valor na config, sai', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   for (const tipo of ['encaixe', 'ligacao']) {
     for (let i = 0; i < 2000; i++) assert.equal(G.sortearOrbe(tipo, { ato: 1 }, () => 0), null, 'zero é zero, mesmo com o dado no pior caso');
   }
@@ -216,7 +217,7 @@ test('drop: a chance dos orbes é ZERO por enquanto (a fonte é a loja); com val
 
 const orbesDaLoja = (e) => G.catalogoDaLoja(e).filter((l) => l.categoria === 'orbes');
 
-test('loja: os dois orbes aparecem, a 10.000.000 de gold cada, com nome e ícone (id do item)', () => {
+test('loja: os dois orbes aparecem, a 10.000.000 de gold cada, com nome e ícone (id do item)', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const linhas = orbesDaLoja(novo());
   assert.deepEqual(linhas.map((l) => l.id).sort(), [ENCAIXE, LIGACAO].sort());
   for (const l of linhas) {
@@ -236,7 +237,7 @@ test('loja: as gemas e os preços delas NÃO mudaram', () => {
   }
 });
 
-test('compra de 1 e de várias unidades: desconta o total exato e empilha na mochila', () => {
+test('compra de 1 e de várias unidades: desconta o total exato e empilha na mochila', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const e = novo();
   e.gold = 100_000_000;
   e.bank = 0;
@@ -251,7 +252,7 @@ test('compra de 1 e de várias unidades: desconta o total exato e empilha na moc
   assert.equal(e.inventory.filter((p) => p.id === LIGACAO).length, 1, 'uma pilha só');
 });
 
-test('compra: o ouro vem do bolso e depois do banco; a pilha passa de 100 em outra pilha', () => {
+test('compra: o ouro vem do bolso e depois do banco; a pilha passa de 100 em outra pilha', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const e = novo();
   e.gold = 5_000_000;
   e.bank = 500_000_000;
@@ -262,7 +263,7 @@ test('compra: o ouro vem do bolso e depois do banco; a pilha passa de 100 em out
   assert.deepEqual(e.inventory.map((p) => p.count), [100, 1], 'a pilha cheia fecha em 100 e a sobra abre outra');
 });
 
-test('compra sem saldo: recusada por inteiro — nem ouro nem item mexem', () => {
+test('compra sem saldo: recusada por inteiro — nem ouro nem item mexem', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const e = novo();
   e.gold = 9_999_999;
   e.bank = 0;
@@ -276,7 +277,7 @@ test('compra sem saldo: recusada por inteiro — nem ouro nem item mexem', () =>
   assert.equal(e.gold, 25_000_000);
 });
 
-test('compras seguidas (concorrência): cada uma confere o saldo da anterior — não gasta o mesmo ouro duas vezes', () => {
+test('compras seguidas (concorrência): cada uma confere o saldo da anterior — não gasta o mesmo ouro duas vezes', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const e = novo();
   e.gold = 10_000_000;
   e.bank = 0;
@@ -286,7 +287,7 @@ test('compras seguidas (concorrência): cada uma confere o saldo da anterior —
   assert.equal(quantos(e, ENCAIXE) + quantos(e, LIGACAO), 1, 'um item só, e o saldo nunca ficou negativo');
 });
 
-test('produto fora da loja ou indisponível: recusado; o teto por compra vale', () => {
+test('produto fora da loja ou indisponível: recusado; o teto por compra vale', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const e = novo();
   e.gold = 1e12;
   assert.equal(G.comprarNaLoja(e, { id: 3031, count: 1 }).ok, false, 'item que ela não vende');
@@ -299,7 +300,7 @@ test('produto fora da loja ou indisponível: recusado; o teto por compra vale', 
   G.CONFIG.orbes.ligacao.loja.disponivel = true;
 });
 
-test('inventário cheio: o que passa da capacidade vai para o depósito (o mais pesado primeiro), sem perder nada', async () => {
+test('inventário cheio: o que passa da capacidade vai para o depósito (o mais pesado primeiro), sem perder nada', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, async () => {
   const Afixos = await import('../systems/afixos.mjs');
   const { pesoDoInventario } = await import('../systems/inventario.mjs');
   const e = novo();
@@ -324,7 +325,7 @@ test('inventário cheio: o que passa da capacidade vai para o depósito (o mais 
   assert.equal(e.gold, 200_000_000, 'e o ouro foi cobrado uma vez só');
 });
 
-test('o pedido repetido (mesmo `pedido`) é ignorado pela sessão: um duplo clique compra uma vez só', async () => {
+test('o pedido repetido (mesmo `pedido`) é ignorado pela sessão: um duplo clique compra uma vez só', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, async () => {
   const { Sessao } = await import('../websocket/sessao.mjs');
   const e = novo();
   e.gold = 100_000_000;
@@ -345,7 +346,7 @@ test('o pedido repetido (mesmo `pedido`) é ignorado pela sessão: um duplo cliq
   assert.equal(quantos(e, ENCAIXE), 3);
 });
 
-test('persistência da compra: depois do save, os orbes e o saldo continuam', () => {
+test('persistência da compra: depois do save, os orbes e o saldo continuam', { skip: doClassico("Orbes de socket do Draevor vendidos na loja e a capacidade por peso; no PoE são Joalheiro/Fusão/Cromático e a mochila de 20 vagas") }, () => {
   const e = novo();
   e.gold = 30_000_000;
   e.bank = 0;

@@ -8,6 +8,7 @@ import * as Treino from '../systems/treino.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const ANEL = idDe('might ring');
@@ -28,7 +29,7 @@ test('somaDeItens + os adds da árvore + o altar = a soma de sempre (refatoraç�
   assert.equal(Afixos.soma(e).crit_chance, 20);
 });
 
-test('as origens do crítico somam o valor BRUTO (efetivo + excedente) e dizem de onde vem, por categoria', () => {
+test('as origens do crítico somam o valor BRUTO (efetivo + excedente) e dizem de onde vem, por categoria', { skip: doClassico("Origem do crítico bruto + excedente e progresso de perícia (treino) do Draevor") }, () => {
   const e = personagem([{ id: 'crit_chance', nivel: 5, value: 115 }]);
   const f = Ficha.combate(e);
   const bruto = (f.critChance + f.excedentes.critChance) * 100;
@@ -80,7 +81,7 @@ test('a ficha traz a arma equipada: nome, level exigido e o Magic Attack da wand
   assert.equal(Ficha.combate(nua).armaEquipada, null);
 });
 
-test('as skills mandam o progresso exato (tentativas de agora e as que faltam), sem mudar o percentual', () => {
+test('as skills mandam o progresso exato (tentativas de agora e as que faltam), sem mudar o percentual', { skip: doClassico("Origem do crítico bruto + excedente e progresso de perícia (treino) do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
   Treino.garantir(e);
   Treino.treinar(e, 'melee', 7);

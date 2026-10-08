@@ -7,18 +7,13 @@ import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
 import * as ConteudoHttp from '../admin/conteudo-http.mjs';
 import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
-import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
-import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
-import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
-import * as ModificadoresMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
+import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
+import * as IniciarPoe from '../systems/itens-poe/iniciar.mjs';
+import * as Legado from '../systems/personagem/legado.mjs';
+import * as Mercado from '../systems/mercado.mjs';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
-import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
 import * as EfeitosVisuais from '../systems/efeitos-visuais.mjs';
-import * as GemasDeSkill from '../systems/skills/gemas.mjs';
-import * as Reforcos from '../systems/skills/reforcos.mjs';
-import * as Acoes from '../systems/acoes.mjs';
-import { ITEM_CATALOG as CATALOGO_DE_ITENS } from '../systems/dados.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
 import * as Estaticos from './estaticos.mjs';
@@ -110,26 +105,24 @@ async function servirArquivo(req, res, caminho) {
   return Estaticos.servir(req, res, alvo);
 }
 
-// Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): as bases entram no catálogo de itens antes de qualquer `welcome`.
+// O jogo OFICIAL é o do PoE (dono, 07/10): sem os dados do PoE (`<REFERENCIAS_POE>`) ele não sobe — antes caía calado no Draevor clássico.
+// (O clássico só existe na transição, com `DRAEVOR_CLASSICO=1` — ver docs/migracao-poe-oficial.md.)
 {
-  const r = ItensPoeJogo.iniciar(CATALOGO_DE_ITENS);
-  if (r.porBase.size) console.log(`  itens do PoE: ${r.porBase.size} bases no catálogo (ids ${ItensPoeJogo.PRIMEIRO_ID}+); sem slot: ${r.naoEquipaveis.join(', ')}`);
-  const pinaculos = Pinaculos.iniciar();
-  if (pinaculos.length) console.log(`  chefes pináculo do PoE: ${pinaculos.length} no painel de Bosses (${pinaculos.join(', ')})`);
-  // A campanha do PoE no lugar da do Draevor (os 10 atos, as áreas sobre os mapas do Draevor, os chefes de ato).
-  const campanha = CampanhaPoe.iniciar();
-  // Os modificadores de monstro do PoE (Mágico 1, Raro 2 a 4) e os ocultos de cada raridade.
-  const modsDeMonstro = ModificadoresMonstroPoe.iniciar();
-  if (modsDeMonstro.modificadores) console.log(`  modificadores de monstro do PoE: ${modsDeMonstro.modificadores}`);
-  // As GEMAS do PoE no jogo (substituem as ativas do Draevor; a coleção do dono, poe-gemas-poedb): a magia, o item e o buff de cada uma.
-  const gemasPoe = await GemasPoe.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GemasDeSkill.registrarAtiva(g)), registrarReforco: Reforcos.registrar });
-  if (gemasPoe.gemas) console.log(`  gemas do PoE: ${gemasPoe.gemas} (${Object.entries(gemasPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
-  const suportesPoe = SuportesPoe.iniciar({ registrarSuporte: GemasDeSkill.registrarSuporte });
-  // As moedas empilháveis do PoE (os itens, a loja da Zuma; o efeito na Forja do PoE — `itens-poe/moedas.mjs`).
-  const moedasPoe = MoedasPoe.iniciar();
-  if (moedasPoe) console.log(`  moedas do PoE: ${moedasPoe} novas no catálogo (${MoedasPoe.MOEDAS.length} ao todo)`);
-  if (suportesPoe.suportes) console.log(`  suportes do PoE: ${suportesPoe.suportes} (${Object.entries(suportesPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
-  if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
+  const falta = ItensPoeCatalogo.dadosAusentes();
+  if (falta) {
+    console.error(`\n  O jogo não subiu: ${falta}.\n`);
+    process.exit(1);
+  }
+  if (ItensPoeCatalogo.classico()) console.warn('  ATENÇÃO: DRAEVOR_CLASSICO=1 — o Draevor clássico da transição, não o jogo oficial (PoE).');
+}
+
+// O jogo do PoE (o oficial): as bases do PoE no catálogo de itens antes de qualquer `welcome`, a campanha, as gemas, os suportes e as moedas
+// (`itens-poe/iniciar.mjs` — a mesma função que a thread da caçada offline usa).
+await IniciarPoe.iniciarJogoDoPoe({ log: (linha) => console.log(`  ${linha}`) });
+// As ofertas abertas dos personagens ARQUIVADOS (Draevor clássico) voltam para os donos como crédito (idempotente: só age se houver).
+if (ItensPoeCatalogo.ligado()) {
+  const devolvidas = await Mercado.devolverOfertasDosArquivados(Legado.arquivado);
+  if (devolvidas) console.log(`  mercado: ${devolvidas} oferta(s) de personagens arquivados devolvida(s) aos donos (como crédito)`);
 }
 
 const http = createServer((req, res) => {
@@ -174,7 +167,8 @@ const acessoDaEngine = criarAcesso({ deps: { contaPorEmail, conferirSenha } });
 // (`aoGravar`); o monitoramento de arquivos complementa. Ver `systems/hot-reload.mjs`.
 export const hotReload = iniciarHotReload({ producao: acessoDaEngine.config.producao });
 ligarHotReloadDaEngine(hotReload);
-ligarBancoDeClasses({ contar: contarPersonagensPorClasse, migrar: migrarClasse });
+// A migração de classe da Engine não mexe nos personagens ARQUIVADOS (do Draevor clássico).
+ligarBancoDeClasses({ contar: contarPersonagensPorClasse, migrar: (de, para, vocacaoPara) => migrarClasse(de, para, vocacaoPara, { pular: Legado.arquivado }) });
 const guardaDaEngine = criarGuarda(acessoDaEngine, { aoGravar: ({ rota, corpo }) => hotReload.aposGravacao(rota, corpo) });
 
 async function atender(req, res) {

@@ -9,7 +9,8 @@ import * as Prey from '../systems/prey.mjs';
 import * as Loja from '../systems/loja.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Ficha from '../systems/ficha.mjs';
-import { personagemDeTeste, PERSONAGEM, comMarcaNova } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comMarcaNova, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada');
 const capturado = (arquivo) => comMarcaNova(JSON.parse(readFileSync(join(API, arquivo), 'utf8')));
@@ -253,14 +254,14 @@ test('prey de dano entra no golpe do jogador (rolarCritico)', () => {
   assert.equal(Ficha.rolarCritico(e, 100, { ...troll, key: 'amazon' }, [], ficha).dano, 100);
 });
 
-test('caçando de verdade: prey de exp dá +40% na exp do Troll e o relógio desce', () => {
+test('caçando de verdade: prey de exp dá +40% na exp do Troll e o relógio desce', { skip: doClassico("Prey do Draevor (por criatura: Troll)") }, () => {
   const semPrey = personagemDeTeste({ level: 400 });
   const comPrey = personagemDeTeste({ level: 400 });
   Prey.garantir(comPrey);
   Object.assign(comPrey.prey[0], { key: 'troll', bonus: 'exp', rarity: 10, percent: 40, left: HORA, state: 'active' });
 
   const matarUmTroll = (estado) => {
-    assert.ok(Cacadas.entrar(estado, { huntId: 'troll-cave', mode: 'auto' }).ok);
+    assert.ok(Cacadas.entrar(estado, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
     estado.maxHp = estado.hp = 1e9;
     let t = Date.now();
     estado.hunt.ultimoTique = t;

@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { Sessao, vivas } from '../websocket/sessao.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as R from '../systems/regras.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
 
 async function welcomeDe(estado) {
   const enviados = [];
@@ -35,7 +35,7 @@ test('entrando na cidade: o welcome leva o mapa da cidade', async () => {
 test('entrando caçando: a praça vai SEM o mapa', async () => {
   const e = personagemDeTeste({ level: 100 });
   e.pos = { ...R.POSICAO_INICIAL };
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const w = await welcomeDe(e);
   assert.ok(w.city, 'a praça continua indo (jogadores, NPCs...)');
   assert.equal(w.city.map, undefined, 'mas sem os 2,7 MB do mapa');

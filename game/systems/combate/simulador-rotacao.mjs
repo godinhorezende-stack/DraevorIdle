@@ -15,6 +15,7 @@ import * as Gemas from '../skills/gemas.mjs';
 import { criarMonstro } from '../hunt/monstros.mjs';
 import { definirNivel, nivelDoRegistro, limparRegistro, ultimosGolpes } from './registro.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
+import { ligado as jogoOficial } from '../itens-poe/catalogo.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome)?.id);
 const itemDoSupport = (id) => [...Gemas.DEFS.values()].find((d) => d.tipo === 'support' && d.id === id)?.itemId;
@@ -98,7 +99,10 @@ export function vestirBuild(estado, { grupos, arma = null, nivel = 1, raridade =
  * `semente`, `huntId`. O personagem fica com mana e vida cheias a cada tique (a mana GASTA é medida pela diferença) — assim a rotação
  * nunca para por falta de mana; `manaPorSegundo` contra `regeneracaoDeMana` diz se ela se sustenta sozinha (`sustentavel`).
  */
-export function medirRotacao(estado, personagem, { duracaoMs = 60000, tiqueMs = 250, alvos = 1, mob = {}, semente = 1, huntId = 'troll-cave' } = {}) {
+/** O campo de prova padrão: a primeira área de combate do PoE no jogo oficial; a Troll Cave no clássico. */
+const CAMPO_DE_PROVA = () => (jogoOficial() ? 'poe-a1-the-coast' : 'troll-cave');
+
+export function medirRotacao(estado, personagem, { duracaoMs = 60000, tiqueMs = 250, alvos = 1, mob = {}, semente = 1, huntId = CAMPO_DE_PROVA() } = {}) {
   const random = Math.random;
   Math.random = mulberry32(semente);
   try {

@@ -108,9 +108,9 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   }
   if (req.method !== 'GET') return json(res, 405, { ok: false, erros: ['Somente leitura.'] }), true;
   const q = url.searchParams;
-  if (rota === 'estado') return json(res, 200, { ligado: Catalogo.ligado(), arquivo: Catalogo.ARQUIVO, regras: Catalogo.REGRAS, como: 'Ligue com ITENS_POE=1 e importe com: node tools/importar-poe-itens.mjs' }), true;
+  if (rota === 'estado') return json(res, 200, { ligado: Catalogo.ligado(), arquivo: Catalogo.ARQUIVO, regras: Catalogo.REGRAS, como: 'O jogo oficial é o do PoE (o clássico só com DRAEVOR_CLASSICO=1). O catálogo é do repositório; para regerar: node tools/importar-poe-itens.mjs' }), true;
   const cat = Catalogo.catalogo();
-  if (!cat) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor (ITENS_POE=1 + catálogo importado).'] }), true;
+  if (!cat) return json(res, 409, { ok: false, erros: ['Este servidor está no Draevor clássico (DRAEVOR_CLASSICO=1): o sistema de itens do PoE está desligado.'] }), true;
 
   // As GEMAS do PoE (a coleção do dono, `poe-gemas-poedb`): a lista e o detalhe da aba Gemas, e a Arena de Gemas dele (os arquivos da pasta).
   if (rota === 'gemas') return json(res, 200, GemasPoe.disponivel() ? { ok: true, resumo: GemasPoe.resumo(), gemas: GemasPoe.listar() } : { ok: false, erros: [`Coleção de gemas não encontrada em ${GemasPoe.PASTA} (node tools/baixar-drive-publico.mjs).`] }), true;
@@ -211,7 +211,10 @@ function desenhosDosMobs() {
   }
   return DESENHOS_DOS_MOBS;
 }
-const PASTA_DOS_SUPORTES = join(process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe', 'poe-suportes-poedb');
+// Os ícones que o JOGO usa ficam no repositório (`gamedata/itens-poe/`, dono 08/10): os das gemas e dos suportes vêm de
+// `game/tools/importar-gemas-poe.mjs`, os das peças de `tools/importar-poe-itens.mjs`.
+const PASTA_DAS_GEMAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-gemas', import.meta.url));
+const PASTA_DOS_SUPORTES = fileURLToPath(new URL('../gamedata/itens-poe/icones-suportes', import.meta.url));
 const PASTA_DAS_MOEDAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-moedas', import.meta.url));
 let origemDasGemas = null;
 const ORIGEM_DAS_GEMAS = () => (origemDasGemas ??= JSON.parse(readFileSync(new URL('../gamedata/itens-poe/origem-das-gemas.json', import.meta.url), 'utf8')));
@@ -229,13 +232,13 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   const rota = caminho.slice(PUBLICO.length);
   // O nome pode vir decodificado ou não (há arquivo com "%C3%B6" no próprio nome): tenta os dois.
   const nomes = (r) => { let d = r; try { d = decodeURIComponent(r); } catch { /* fica cru */ } return [...new Set([d, r])]; };
-  if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, join(GemasPoe.PASTA, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
-  if (rota.startsWith('icone/suporte/')) return nomes(rota.slice('icone/suporte/'.length)).some((n) => imagem(res, join(PASTA_DOS_SUPORTES, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, PASTA_DAS_GEMAS, n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/suporte/')) return nomes(rota.slice('icone/suporte/'.length)).some((n) => imagem(res, PASTA_DOS_SUPORTES, n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
   // Os ícones dos orbes do PoE (Joalheiro, Fusão, Cromático): no repositório (`gamedata/itens-poe/icones-moedas`).
   // Os ícones das passivas de ascendência (`tools/baixar-ascendencias-poedb.mjs`): a árvore do jogo e da Engine desenham com eles.
   if (rota.startsWith('icone/ascendencia/')) return nomes(rota.slice('icone/ascendencia/'.length)).some((n) => imagem(res, PASTA_DAS_ASCENDENCIAS, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/moeda/')) return nomes(rota.slice('icone/moeda/'.length)).some((n) => imagem(res, PASTA_DAS_MOEDAS, n)) || (json(res, 404, { ok: false }), true);
-  if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_DAS_IMAGENS, n)) || (json(res, 404, { ok: false }), true);
   // O DESENHO de cada mob do bestiário do PoE (a Arena de Gemas com os sprites do jogo): pelo nome, a mesma regra da campanha.
   if (rota === 'desenhos-dos-mobs') return json(res, 200, desenhosDosMobs()), true;
   // ONDE SE GANHA CADA GEMA (o catálogo do Gem Atelier): a origem por missão/ato/classe e quais missões já dão a gema no jogo.

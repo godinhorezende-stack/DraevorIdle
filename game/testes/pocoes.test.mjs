@@ -7,7 +7,8 @@ import * as Acoes from '../systems/acoes.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Inventario from '../systems/inventario.mjs';
 import { ACTION_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const POCOES = ACTION_CATALOG.items.filter((e) => e.heal || e.mana);
 const HP_1 = Acoes.PAPEL_DO_SLOT.indexOf('hp');
@@ -19,7 +20,7 @@ function montar(p, { level = Math.max(p.level, 1) + 50 } = {}) {
   const e = personagemDeTeste({ vocacao, level });
   e.gold = 0; // sem ouro: a barra não compra no lugar da mochila
   e.inventory = POCOES.map((x) => ({ id: x.itemId, count: 10 }));
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok !== false);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok !== false);
   e.hunt.monstros = [];
   e.hunt.clock = 10_000;
   e.hp = 1;
@@ -38,7 +39,7 @@ test('o catálogo tem as 12 poções de vida/mana, cada uma num slot de vida ou 
 });
 
 for (const p of POCOES) {
-  test(`${p.name} (${p.itemId}) pela barra: gasta 1 dela e só dela, cura dentro da faixa, liga a recarga`, () => {
+  test(`${p.name} (${p.itemId}) pela barra: gasta 1 dela e só dela, cura dentro da faixa, liga a recarga`, { skip: doClassico("Poções do Draevor pela barra; no PoE são os frascos (cinto, cargas)") }, () => {
     const e = montar(p);
     const slot = slotDe(p);
     assert.ok(Acoes.definir(e, { slot, value: { id: p.id } }).ok);
@@ -84,7 +85,7 @@ for (const p of POCOES) {
   });
 }
 
-test('a recarga é de todas as poções: vida e mana não saem no mesmo instante', () => {
+test('a recarga é de todas as poções: vida e mana não saem no mesmo instante', { skip: doClassico("Poções do Draevor pela barra; no PoE são os frascos (cinto, cargas)") }, () => {
   const vida = POCOES.find((p) => p.itemId === 266);
   const mana = POCOES.find((p) => p.itemId === 268);
   const e = montar(vida);
@@ -107,7 +108,7 @@ test('a mochila respeita o level da poção (antes só olhava a vocação)', () 
   assert.equal(e.hp, 1);
 });
 
-test('quantidade 1 some da mochila; quantidade 0 não cura nem cria item', () => {
+test('quantidade 1 some da mochila; quantidade 0 não cura nem cria item', { skip: doClassico("Poções do Draevor pela barra; no PoE são os frascos (cinto, cargas)") }, () => {
   const p = POCOES.find((x) => x.itemId === 266);
   const e = montar(p);
   e.inventory = [{ id: p.itemId, count: 1 }];
@@ -125,7 +126,7 @@ test('quantidade 1 some da mochila; quantidade 0 não cura nem cria item', () =>
   assert.equal(Inventario.usar(e, { id: p.itemId }).ok, false);
 });
 
-test('trocar a poção do slot troca a que é gasta', () => {
+test('trocar a poção do slot troca a que é gasta', { skip: doClassico("Poções do Draevor pela barra; no PoE são os frascos (cinto, cargas)") }, () => {
   const pequena = POCOES.find((x) => x.itemId === 7876);
   const grande = POCOES.find((x) => x.itemId === 239);
   const e = montar(grande);

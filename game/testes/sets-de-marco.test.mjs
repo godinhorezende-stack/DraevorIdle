@@ -5,11 +5,12 @@ import assert from 'node:assert/strict';
 import * as Recompensas from '../systems/recompensas.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ARMA = { knight: 'heroic axe', paladin: 'composite hornbow', sorcerer: 'wand of voodoo', druid: 'underworld rod', monk: 'nunchaku of enlightenment' };
 const nomesNaMochila = (e) => (e.inventory ?? []).map((p) => ITEM_CATALOG[p.id]?.name);
 
-test('os marcos 50 e 100 são BAÚS de item; cada vocação vê e sorteia entre os itens dela', () => {
+test('os marcos 50 e 100 são BAÚS de item; cada vocação vê e sorteia entre os itens dela', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   for (const [voc, arma] of Object.entries(ARMA)) {
     const e = personagemDeTeste({ vocacao: voc, level: 60 });
     Recompensas.marcosDaVocacao(e);
@@ -34,7 +35,7 @@ test('os marcos 50 e 100 são BAÚS de item; cada vocação vê e sorteia entre 
   }
 });
 
-test('o item do baú sai do gerador: raridade e faixa de valores como num drop', () => {
+test('o item do baú sai do gerador: raridade e faixa de valores como num drop', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   let comFaixa = 0;
   const raridades = new Set();
   for (let i = 0; i < 200; i++) {
@@ -48,7 +49,7 @@ test('o item do baú sai do gerador: raridade e faixa de valores como num drop',
   assert.ok(raridades.size >= 2, `raridades diferentes: ${[...raridades]}`);
 });
 
-test('druid não recebe itens de knight do baú', () => {
+test('druid não recebe itens de knight do baú', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   const deKnight = ['ornate legs', 'mastermind shield', 'crystalline axe', 'royal draken mail'];
   for (let i = 0; i < 60; i++) {
     const e = personagemDeTeste({ vocacao: 'druid', level: 100 });
@@ -58,7 +59,7 @@ test('druid não recebe itens de knight do baú', () => {
   }
 });
 
-test('set antigo AINDA NÃO PEGO vira baú; o já pego fica como set', () => {
+test('set antigo AINDA NÃO PEGO vira baú; o já pego fica como set', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
   const m50 = e.presentes.marcos.find((m) => m.level === 50);
   const m100 = e.presentes.marcos.find((m) => m.level === 100);
@@ -74,7 +75,7 @@ test('set antigo AINDA NÃO PEGO vira baú; o já pego fica como set', () => {
   assert.equal(m100.titulo, 'Set completo');
 });
 
-test('o marco só abre no level dele (antes bastava ter o ouro)', () => {
+test('o marco só abre no level dele (antes bastava ter o ouro)', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 8 });
   e.gold = 1_000_000;
   const r = Recompensas.coletarMarco(e, { level: 100 });
@@ -83,7 +84,7 @@ test('o marco só abre no level dele (antes bastava ter o ouro)', () => {
   assert.equal(e.gold, 1_000_000, 'não cobrou');
 });
 
-test('marco já pego não é reescrito', () => {
+test('marco já pego não é reescrito', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 60 });
   const marco = e.presentes.marcos.find((m) => m.level === 50);
   marco.pego = true;
@@ -96,7 +97,7 @@ test('marco já pego não é reescrito', () => {
 const marco = (e, level) => e.presentes.marcos.find((m) => m.level === level);
 
 // (A trilha das armas de treino 8–50 saiu com o treino — dono, 06/10: a fila começa no baú do 50.)
-test('level 50: o BAÚ do 50 abre (sem a trilha de treino na frente)', () => {
+test('level 50: o BAÚ do 50 abre (sem a trilha de treino na frente)', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
   Recompensas.abrirProximas(e);
   assert.equal(e.presentes.degraus.length, 0);
@@ -106,14 +107,14 @@ test('level 50: o BAÚ do 50 abre (sem a trilha de treino na frente)', () => {
   assert.equal(e.presentes.pendentes, 0);
 });
 
-test('só a PRIMEIRA que falta abre: level alto, nada pego — só o baú do 50', () => {
+test('só a PRIMEIRA que falta abre: level alto, nada pego — só o baú do 50', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 500 });
   Recompensas.abrirProximas(e);
   assert.equal(marco(e, 50).aberto, true);
   for (const outra of [marco(e, 100), marco(e, 120)]) assert.equal(outra.aberto, false);
 });
 
-test('pegar o baú abre a próxima da fila (o do 100) quando o level chega', () => {
+test('pegar o baú abre a próxima da fila (o do 100) quando o level chega', { skip: doClassico("Baús de marco (level 50/100) com itens do Draevor por vocação") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   e.gold = 200_000;
   Recompensas.abrirProximas(e);

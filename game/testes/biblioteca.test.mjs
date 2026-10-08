@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import * as B from '../admin/biblioteca.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico, soNoOficial } from './apoio-migracao.mjs';
 
 test('L1. o resumo traz todas as categorias com a contagem dos cadastros reais', () => {
   const r = Object.fromEntries(B.resumo().map((c) => [c.id, c.total]));
@@ -15,7 +17,7 @@ test('L1. o resumo traz todas as categorias com a contagem dos cadastros reais',
   for (const id of ['divinas', 'mapas', 'itens', 'drops', 'encontros']) assert.ok(id in r, id);
 });
 
-test('L2. busca por nome (sem acento/caixa) e por id, filtro de nível, ordem e categoria inválida', () => {
+test('L2. busca por nome (sem acento/caixa) e por id, filtro de nível, ordem e categoria inválida', { skip: doClassico("A Biblioteca no oficial mostra só as bases do PoE; o teste busca itens do Draevor") }, () => {
   assert.ok(B.listar({ categoria: 'vips', q: 'ROTWORM' }).itens.some((i) => i.id === 'vip-rotworm'));
   assert.equal(B.listar({ categoria: 'bosses', q: 'urmahlullu-the-immaculate' }).itens[0].id, 'urmahlullu-the-immaculate');
   const faixa = B.listar({ categoria: 'hunts', nivelMin: 10, nivelMax: 20 });
@@ -26,7 +28,7 @@ test('L2. busca por nome (sem acento/caixa) e por id, filtro de nível, ordem e 
   assert.ok(B.listar({ categoria: 'itens', limite: 9999 }).itens.length <= 200);
 });
 
-test('L3. detalhe da hunt VIP, da especial e do boss: dados reais, e o que falta sai como null (nada inventado)', () => {
+test('L3. detalhe da hunt VIP, da especial e do boss: dados reais, e o que falta sai como null (nada inventado)', { skip: doClassico("A Biblioteca no oficial mostra só as bases do PoE (biblioteca.mjs:104); o teste espera hunt VIP, raridade \"lendário\", sockets e o ato-1 do Draevor") }, () => {
   const vip = B.detalhe('vips', 'vip-rotworm');
   assert.equal(vip.requisitos.acesso.tipo, 'vip');
   assert.ok(vip.monstros.length > 0);
@@ -66,7 +68,7 @@ test('L5. auditoria de referências: aponta item inexistente em drop (real) sem 
 const OUTFITS = JSON.parse(readFileSync(new URL('../gamedata/outfits.json', import.meta.url), 'utf8'));
 const SPRITES = JSON.parse(readFileSync(new URL('../gamedata/item-sprites.json', import.meta.url), 'utf8'));
 
-test('L6. desenho de cada linha: só o que existe nos atlas do cliente (nada inventado)', () => {
+test('L6. desenho de cada linha: só o que existe nos atlas do cliente (nada inventado)', { skip: aAdaptar("Desenho de cada linha só do atlas: vale para as bases do PoE") }, () => {
   for (const cat of ['monstros', 'itens', 'bosses', 'hunts']) {
     for (const l of B.listar({ categoria: cat, limite: 200 }).itens) {
       if (!l.desenho) continue;
@@ -78,7 +80,7 @@ test('L6. desenho de cada linha: só o que existe nos atlas do cliente (nada inv
   assert.ok(sem.total > 0 && sem.itens.every((i) => i.desenho === null && !SPRITES[i.id]));
 });
 
-test('L7. filtros combináveis: raridade + tipo + texto, e paginação por deslocamento sem repetir', () => {
+test('L7. filtros combináveis: raridade + tipo + texto, e paginação por deslocamento sem repetir', { skip: doClassico("A Biblioteca no oficial mostra só as bases do PoE (biblioteca.mjs:104); o teste espera hunt VIP, raridade \"lendário\", sockets e o ato-1 do Draevor") }, () => {
   const r = B.listar({ categoria: 'itens', raridade: 'lendário', limite: 200 });
   assert.ok(r.total > 0 && r.itens.every((i) => i.raridade === 'lendário'));
   assert.ok(r.raridades.includes('comum'));
@@ -95,11 +97,11 @@ test('L7. filtros combináveis: raridade + tipo + texto, e paginação por deslo
   assert.equal(B.listar({ categoria: 'mapas' }).temNivel, false);
 });
 
-test('L8. onde é usado: monstro da hunt, item no loot, hunt na campanha, boss final do ato — e o detalhe traz a lista', () => {
-  assert.ok(B.usosDe('monstros', 'troll').some((u) => u.categoria === 'hunts' && u.id === 'troll-cave'));
+test('L8. onde é usado: monstro da hunt, item no loot, hunt na campanha, boss final do ato — e o detalhe traz a lista', { skip: doClassico("A Biblioteca no oficial mostra só as bases do PoE (biblioteca.mjs:104); o teste espera hunt VIP, raridade \"lendário\", sockets e o ato-1 do Draevor") }, () => {
+  assert.ok(B.usosDe('monstros', 'troll').some((u) => u.categoria === 'hunts' && u.id === HUNT_DE_TESTE));
   const moeda = B.usosDe('itens', '3031');
   assert.ok(moeda.length > 50 && moeda.every((u) => u.como));
-  assert.ok(B.usosDe('hunts', 'troll-cave').some((u) => u.categoria === 'atos' && u.id === 'ato-1'));
+  assert.ok(B.usosDe('hunts', HUNT_DE_TESTE).some((u) => u.categoria === 'atos' && u.id === 'ato-1'));
   assert.ok(B.usosDe('bosses', 'urmahlullu-the-immaculate').some((u) => u.como === 'boss final do ato'));
   const d = B.detalhe('monstros', 'troll');
   assert.deepEqual(d.usadoEm, B.usosDe('monstros', 'troll'));
@@ -109,7 +111,7 @@ test('L8. onde é usado: monstro da hunt, item no loot, hunt na campanha, boss f
 
 // ------------------------------------------------------------------ Etapa 5: itens, outfits e montarias
 
-test('L9. itens por slot, com o máximo de sockets do slot e o nível mínimo do catálogo', () => {
+test('L9. itens por slot, com o máximo de sockets do slot e o nível mínimo do catálogo', { skip: doClassico("A Biblioteca no oficial mostra só as bases do PoE (biblioteca.mjs:104); o teste espera hunt VIP, raridade \"lendário\", sockets e o ato-1 do Draevor") }, () => {
   const r = B.listar({ categoria: 'itens', slot: 'body', limite: 200 });
   assert.ok(r.total > 50 && r.itens.every((i) => i.slot === 'body' && i.sockets === 4));
   assert.ok(r.slots.includes('weapon') && r.slots.includes('ring'));
@@ -156,7 +158,7 @@ test('L12. outfits e montarias reais (mounts-real.json), com o desenho só quand
   assert.ok(B.listar({ categoria: 'montarias', limite: 200 }).itens.every((m) => !m.desenho || OUTFITS[m.desenho.look]));
 });
 
-test('L9. com o PoE ligado, as moedas empilháveis entram na Biblioteca de itens como "Stackable Currency", com ícone, estado no jogo e ficha própria', async () => {
+test('L9. com o PoE ligado, as moedas empilháveis entram na Biblioteca de itens como "Stackable Currency", com ícone, estado no jogo e ficha própria', { skip: soNoOficial("as moedas do PoE na Biblioteca") }, async () => {
   const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
   if (!(await import('node:fs')).existsSync(Catalogo.ARQUIVO)) return;
   const M = await import('../systems/itens-poe/moedas.mjs');

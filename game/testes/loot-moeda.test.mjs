@@ -10,14 +10,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
 
 const HORA = 3_600_000;
 
 test('matar bicho com loot de moeda (Troll, troll-cave): o ouro sobe no carregado, o banco não muda', () => {
   const estado = personagemDeTeste({ level: 400 });
   Prey.garantir(estado); // com Math.random de verdade, antes de travar o dado — ver podio-combate.test.mjs
-  assert.ok(Cacadas.entrar(estado, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(estado, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   estado.hunt.ultimoTique = Date.now();
   const bancoAntes = estado.bank;
   const original = Math.random;
@@ -40,7 +40,7 @@ test('matar bicho com loot de moeda (Troll, troll-cave): o ouro sobe no carregad
 test('caçada offline projetada (além dos 30 min simulados): o ouro projetado também vai para o carregado', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 600 });
   e.hp = e.maxHp = 1e12; // não morre durante a simulação
-  assert.ok(Cacadas.entrar(e, { huntId: 'werelions-1', mode: 'auto', strategy: 'nearest' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: huntDoPoe('werelions-1'), mode: 'auto', strategy: 'nearest' }).ok);
   e.hunt.offlineDesde = Date.now() - 2 * HORA; // bem além dos 30 min simulados tique a tique -> aciona `projetar`
   const bancoAntes = e.bank;
   const ausencia = Cacadas.simularAusencia(e, PERSONAGEM, Date.now());

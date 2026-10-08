@@ -12,10 +12,11 @@ import { conteudoDaFase } from '../systems/campanha-conteudo.mjs';
 import { encontrosDaHunt } from '../systems/hunt/terreno.mjs';
 import { CONFIG } from '../systems/encontros/config.mjs';
 import { PASTA } from '../systems/encontros/arquivos.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const jogaveis = Campanha.FASES.filter((f) => !f.pular);
 
-test('o cadastro de bosses do pacote é válido: 15 minibosses e 4 secretos, todos usados por um encontro', () => {
+test('o cadastro de bosses do pacote é válido: 15 minibosses e 4 secretos, todos usados por um encontro', { skip: doClassico("Pacote de conteúdo dos atos do Draevor (15 minibosses, 47 fases, Dark Thais)") }, () => {
   assert.deepEqual(Catalogo.ERROS_DO_ARQUIVO, []);
   const bosses = Catalogo.todos();
   assert.equal(bosses.filter((b) => b.categoria === 'miniboss').length, 15);
@@ -29,7 +30,7 @@ test('o cadastro de bosses do pacote é válido: 15 minibosses e 4 secretos, tod
   for (const b of bosses) assert.ok(usos[b.id]?.length === 1, `${b.id}: usado por exatamente um encontro`);
 });
 
-test('as 47 fases jogáveis têm descrição, ambiente e encontros; a travada (Dark Thais) segue sem nada', () => {
+test('as 47 fases jogáveis têm descrição, ambiente e encontros; a travada (Dark Thais) segue sem nada', { skip: doClassico("Pacote de conteúdo dos atos do Draevor (15 minibosses, 47 fases, Dark Thais)") }, () => {
   assert.equal(jogaveis.length, 47);
   for (const f of jogaveis) {
     const c = conteudoDaFase(f.huntId);
@@ -41,7 +42,7 @@ test('as 47 fases jogáveis têm descrição, ambiente e encontros; a travada (D
   assert.equal(conteudoDaFase(travada.huntId).descricao, undefined);
 });
 
-test('todo o conteúdo passa na validação do editor (pontos andáveis e alcançáveis, economia) — sem erros; a economia fica abaixo do alvo', () => {
+test('todo o conteúdo passa na validação do editor (pontos andáveis e alcançáveis, economia) — sem erros; a economia fica abaixo do alvo', { skip: doClassico("Pacote de conteúdo dos atos do Draevor (15 minibosses, 47 fases, Dark Thais)") }, () => {
   const a = Conteudo.auditar();
   assert.equal(a.totais.erros, 0, JSON.stringify(a.problemas.filter((p) => p.nivel === 'erro')));
   assert.equal(a.totais.comEncontros, 47);
@@ -67,7 +68,7 @@ test('o jogo enxerga o pacote como está nos arquivos: cada fase cria a instânc
   }
 });
 
-test('o pacote cabe nos limites: probabilidades de minibosses (20%) e segredos (5%), segredo só depois de um baú raro, e nada de arquivo órfão', () => {
+test('o pacote cabe nos limites: probabilidades de minibosses (20%) e segredos (5%), segredo só depois de um baú raro, e nada de arquivo órfão', { skip: doClassico("Pacote de conteúdo dos atos do Draevor (15 minibosses, 47 fases, Dark Thais)") }, () => {
   const arquivos = readdirSync(PASTA).filter((n) => n.endsWith('.json')).map((n) => n.slice(0, -5));
   for (const id of arquivos) assert.ok(Campanha.faseDe(id) && !Campanha.faseDe(id).pular, `${id}: arquivo de encontros de uma fase que não existe/está travada`);
   assert.equal(arquivos.length, 47);

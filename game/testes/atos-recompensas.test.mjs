@@ -4,6 +4,7 @@ import * as Atos from '../admin/atos.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
 import * as M from '../systems/atos-modelo.mjs';
 import * as Campanha from '../systems/campanha.mjs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 const rec = (extra = {}) => ({ drops: [{ id: 3268, chance: 25 }, { id: 3577, chance: 5 }], rolagens: 2, moedasMedia: 40, primeiraConclusao: { gold: 100, exp: 50, itens: [] }, ...extra });
 
@@ -41,13 +42,13 @@ test('D3. alertas: chance inválida, item inexistente, rolagens fora do teto, du
 });
 
 test('D4. economia: recompensa grande demais perto do valor de limpar a fase vira aviso/erro (o mesmo teto dos encontros); fase sem spawns avisa que não há base', () => {
-  const huntLegada = Campanha.FASES.find((f) => f.huntId === 'troll-cave');
+  const huntLegada = Campanha.FASES.find((f) => f.huntId === HUNT_DE_TESTE);
   assert.ok(huntLegada);
   const enorme = { drops: [{ id: 3031, chance: 100 }], rolagens: 5, moedasMedia: 1_000_000 };
-  const probs = Atos.validarRecompensa(enorme, 'troll-cave');
+  const probs = Atos.validarRecompensa(enorme, HUNT_DE_TESTE);
   assert.ok(probs.some((p) => p.nivel === 'erro'), JSON.stringify(probs));
   const pequena = { drops: [{ id: 3268, chance: 1 }], rolagens: 1 };
-  assert.equal(Atos.validarRecompensa(pequena, 'troll-cave').filter((p) => p.nivel === 'erro').length, 0);
+  assert.equal(Atos.validarRecompensa(pequena, HUNT_DE_TESTE).filter((p) => p.nivel === 'erro').length, 0);
 });
 
 test('D5. rota de prévia: devolve prévia, simulação opcional e os alertas; o modelo puro aceita recompensas só com contexto injetado', async () => {

@@ -10,6 +10,7 @@ import * as Boosts from './boosts.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 /*
  * ---- O calendário é do JOGO; o personagem guarda só o que é dele ----
@@ -111,7 +112,8 @@ function concederRecompensaDoDia(estado, doPersonagem) {
     }
     // "2 Draevor Tier UP", "Duas Stamina Extensions": a quantidade do rótulo.
     case 'item':
-      if (dia.itemId) darItem(estado, dia.itemId, quantidadeDoRotulo(dia.rotulo));
+      // No jogo oficial só entra item do PoE: o dia de item do Draevor passa sem o item.
+      if (dia.itemId && podeEntrar(dia.itemId)) darItem(estado, dia.itemId, quantidadeDoRotulo(dia.rotulo));
       return;
     // O XP Boost de sempre (a mesma fonte da Store: soma no que já corre).
     case 'xpboost': {
@@ -168,7 +170,8 @@ export function escolherDiario(estado, { escolha }) {
   const diario = estado?.diario;
   const dia = diario?.pendente;
   if (!dia || !dia.itens?.includes(escolha)) return { ok: false, erro: 'Escolha inválida.' };
-  darItem(estado, escolha);
+  // No jogo oficial a escolha do Draevor não entra (o dia passa, para o calendário não travar).
+  if (podeEntrar(escolha)) darItem(estado, escolha);
   diario.pendente = null;
   avancarDiario(estado, dia);
   return { ok: true };
@@ -208,6 +211,7 @@ function abrirBau(estado, marco) {
   const possiveis = marco.itens ?? [];
   if (!possiveis.length) return null;
   const escolhido = possiveis[Math.floor(Math.random() * possiveis.length)];
+  if (!podeEntrar(escolhido.itemId)) return null;
   const peca = gerarItem({ itemId: escolhido.itemId, level: marco.level });
   (estado.inventory ??= []).push(peca);
   return peca;
@@ -389,7 +393,7 @@ export function coletarMarco(estado, { id, level } = {}) {
     (estado.inventory ??= []).push(peca);
     aviso = `O baú abriu: ${peca.poe.nome} (comum, nível 1) na mochila.`;
   } else {
-    for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
+    for (const item of marco.itens ?? []) if (podeEntrar(item.itemId)) darItem(estado, item.itemId, item.count ?? 1);
   }
   // 2) só agora cobra e marca
   estado.gold -= marco.custo;
@@ -416,6 +420,7 @@ export function coletarPresente(estado, { itemId, id } = {}) {
   if (id != null && degrau.id !== id) return { ok: false, erro: 'Esta recompensa ainda não está disponível.' };
   const lista = degrau.boosted ? presentes.escolhasBoosted ?? presentes.escolhas : presentes.escolhas;
   if (!(lista ?? []).some((e) => e.itemId === itemId)) return { ok: false, erro: 'Escolha uma das armas da lista.' };
+  if (!podeEntrar(itemId)) return { ok: false, erro: SO_ITENS_DO_POE };
   if ((estado.gold ?? 0) < degrau.custo) return { ok: false, erro: 'Ouro insuficiente.' };
 
   darItem(estado, itemId);

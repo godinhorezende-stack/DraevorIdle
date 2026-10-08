@@ -9,6 +9,7 @@ import * as Arena from '../systems/arena.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 import * as R from '../systems/regras.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const NOMES = ['Arenatesteum', 'Arenatestedois', 'Arenatestetres'];
 after(() => {
@@ -56,7 +57,7 @@ test('enfrentar abre a sala dos dois e manda arenaPar aos dois', async () => {
   assert.match(await Arena.comando(paladin, { action: 'comecar' }), /líder/);
 });
 
-test('o duelo: lado a lado, sem bichos, até um cair — e o depois', async () => {
+test('o duelo: lado a lado, sem bichos, até um cair — e o depois', { skip: doClassico("Força pelo level da arena com teto 500 (Draevor); no PoE o teto é 100") }, async () => {
   const antes = { k: { ...knight.estado.arena }, p: { ...paladin.estado.arena } };
   assert.equal(await Arena.comando(knight, { action: 'comecar' }), null);
   const [hk, hp] = [knight.estado.hunt, paladin.estado.hunt];

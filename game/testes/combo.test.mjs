@@ -9,7 +9,8 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import * as Combo from '../systems/combo.mjs';
 import * as R from '../systems/regras.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 // Onze magias de ataque DIFERENTES do sorcerer, todas de alvo único.
 // Recarga do catálogo: 7 de 2 s, 3 de 8 s e 1 de 30 s (o efetivo é a metade).
@@ -28,7 +29,7 @@ function montar(magias, { distancia = 1, mana = 1e9 } = {}) {
     const r = Acoes.definir(e, { slot: Combo.SLOTS_DO_COMBO[i], value: { id } });
     assert.ok(r.ok, `${id}: ${r.erro}`);
   });
-  const r = Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' });
+  const r = Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' });
   assert.ok(r.ok !== false, r.erro);
   e.hunt.assistencia = true;
   e.hunt.autoBarra = true;
@@ -108,7 +109,7 @@ test('o cooldown global é 2 s, centralizado em R.GLOBAL_SPELL_COOLDOWN, e o Cas
   assert.equal(Acoes.intervaloGlobalCom(-50), 2000, 'Cast Speed negativo não alonga');
 });
 
-test('a primeira magia disponível SEMPRE sai: com o slot 1 pronto a cada global, só ele executa', () => {
+test('a primeira magia disponível SEMPRE sai: com o slot 1 pronto a cada global, só ele executa', { skip: doClassico("Medem o global do Draevor; no PoE não há global (cada gema tem o próprio tempo — itens-poe-gemas)") }, () => {
   // Buzz: recarga efetiva de 1 s < 2 s do global — está pronta em toda janela.
   const cenario = montar(ONZE);
   const { execucoes, linhas } = rodar(cenario, 30);
@@ -121,7 +122,7 @@ test('a primeira magia disponível SEMPRE sai: com o slot 1 pronto a cada global
   assert.ok(!linhas.some((l) => l.evento?.startsWith('FIM DO CICLO')), 'não há mais ciclo/rodízio');
 });
 
-test('slot 1 em recarga: sai o próximo disponível; quando o 1 volta, ele recupera a prioridade', () => {
+test('slot 1 em recarga: sai o próximo disponível; quando o 1 volta, ele recupera a prioridade', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
   // Slot 1: Lightning (4 s efetivos). Slot 2: Buzz (1 s). Slot 3: Energy Strike (1 s).
   const cenario = montar(['spell-lightning', 'spell-buzz', 'spell-energy-strike']);
   const { execucoes, linhas } = rodar(cenario, 40);
@@ -137,7 +138,7 @@ test('slot 1 em recarga: sai o próximo disponível; quando o 1 volta, ele recup
   conferirPrioridade(linhas, execucoes);
 });
 
-test('com as 11 magias: a prioridade vale em toda execução, nunca duas no mesmo instante, nunca antes do global', () => {
+test('com as 11 magias: a prioridade vale em toda execução, nunca duas no mesmo instante, nunca antes do global', { skip: doClassico("Medem o global do Draevor; no PoE não há global (cada gema tem o próprio tempo — itens-poe-gemas)") }, () => {
   const cenario = montar(['spell-ultimate-flame-strike', 'spell-strong-flame-strike', 'spell-lightning', ...ONZE.slice(0, 8)]);
   const { execucoes, linhas } = rodar(cenario, 60, { passoMs: 249 });
   const g = globalDe(cenario);
@@ -149,7 +150,7 @@ test('com as 11 magias: a prioridade vale em toda execução, nunca duas no mesm
   assert.ok(execucoes.length <= Math.floor(60000 / g) + 1 && execucoes.length >= 25, `${execucoes.length} execuções`);
 });
 
-test('a recarga individual de cada skill continua valendo junto com o global', () => {
+test('a recarga individual de cada skill continua valendo junto com o global', { skip: doClassico("Medem o global do Draevor; no PoE não há global (cada gema tem o próprio tempo — itens-poe-gemas)") }, () => {
   const cenario = montar(['spell-ultimate-flame-strike', 'spell-strong-flame-strike', 'spell-lightning', 'spell-buzz']);
   const { execucoes, linhas } = rodar(cenario, 60);
   const recarga = Object.fromEntries(Object.entries(cenario.h.cooldowns).filter(([k]) => !k.startsWith('grupo:')).map(([id, cd]) => [id, cd.total]));
@@ -169,7 +170,7 @@ test('a recarga individual de cada skill continua valendo junto com o global', (
   assert.ok(pulada?.recargaRestanteMs > 0);
 });
 
-test('uma execução recusada não conta: o global mede da última que saiu de verdade', () => {
+test('uma execução recusada não conta: o global mede da última que saiu de verdade', { skip: doClassico("Medem o global do Draevor; no PoE não há global (cada gema tem o próprio tempo — itens-poe-gemas)") }, () => {
   const { e, h } = montar(ONZE);
   h.clock = 10_000;
   h.monstros = h.monstros.slice(0, 1);
@@ -188,7 +189,7 @@ test('uma execução recusada não conta: o global mede da última que saiu de v
   assert.equal(h.ultimoAtaqueEm, 10_300);
 });
 
-test('sem mana: as caras são puladas com o motivo, e a prioridade segue entre as baratas', () => {
+test('sem mana: as caras são puladas com o motivo, e a prioridade segue entre as baratas', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
   // 30 de mana por tique: cabem Energy/Terra/Flame (20), não Lightning (60) nem Ultimate (100).
   const { execucoes, linhas } = rodar(montar(['spell-lightning', 'spell-ultimate-flame-strike', 'spell-energy-strike', 'spell-terra-strike'], { mana: 30 }), 20);
   assert.ok(execucoes.length > 0);
@@ -197,7 +198,7 @@ test('sem mana: as caras são puladas com o motivo, e a prioridade segue entre a
   conferirPrioridade(linhas, execucoes);
 });
 
-test('fora de alcance: as de alcance 3 são puladas, as de alcance 7 executam', () => {
+test('fora de alcance: as de alcance 3 são puladas, as de alcance 7 executam', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
   const { execucoes, linhas } = rodar(montar(ONZE, { distancia: 5 }), 20);
   const alcance3 = ['spell-buzz', 'spell-apprentice-s-strike', 'spell-energy-strike', 'spell-terra-strike', 'spell-flame-strike', 'spell-ice-strike', 'spell-death-strike'];
   assert.ok(!execucoes.some((x) => alcance3.includes(x.skill)));
@@ -205,7 +206,7 @@ test('fora de alcance: as de alcance 3 são puladas, as de alcance 7 executam', 
   assert.ok(linhas.some((l) => l.skill === 'spell-buzz' && l.motivo === 'FORA_DE_ALCANCE'));
 });
 
-test('slots vazios no meio da fileira não quebram a prioridade', () => {
+test('slots vazios no meio da fileira não quebram a prioridade', { skip: aAdaptar("Prioridade/recarga/pular sem mana ou fora do alcance valem na barra do PoE (pedido do dono: rotação, limite e prioridade com várias skills)") }, () => {
   const { execucoes, linhas } = rodar(montar([null, 'spell-lightning', null, 'spell-buzz']), 20);
   assert.equal(execucoes[0].slot, 2);
   assert.equal(execucoes[1].slot, 4);
@@ -213,7 +214,7 @@ test('slots vazios no meio da fileira não quebram a prioridade', () => {
   conferirPrioridade(linhas, execucoes);
 });
 
-test('o clique manual também respeita o global (o servidor decide); fora da ordem só se o jogador escolher', () => {
+test('o clique manual também respeita o global (o servidor decide); fora da ordem só se o jogador escolher', { skip: doClassico("Medem o global do Draevor; no PoE não há global (cada gema tem o próprio tempo — itens-poe-gemas)") }, () => {
   const { e, h } = montar(ONZE);
   h.monstros = h.monstros.slice(0, 1);
   Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });
@@ -239,14 +240,14 @@ test('o clique manual também respeita o global (o servidor decide); fora da ord
   assert.equal(Cacadas.disparoManual(e, PERSONAGEM, Combo.SLOTS_DO_COMBO[0]).ok, true);
 });
 
-test('cura e suporte não esperam o global de ataque (decisão do dono)', () => {
+test('cura e suporte não esperam o global de ataque (decisão do dono)', { skip: doClassico("Medem o global do Draevor; no PoE não há global (cada gema tem o próprio tempo — itens-poe-gemas)") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 600 });
   comSkills(e, ['spell-buzz', 'spell-light-healing']);
   assert.ok(Acoes.definir(e, { slot: Combo.SLOTS_DO_COMBO[0], value: { id: 'spell-buzz' } }).ok);
   const slotDeCura = Acoes.PAPEL_DO_SLOT.findIndex((p) => p !== 'attack');
   const r = Acoes.definir(e, { slot: slotDeCura, value: { id: 'spell-light-healing' } });
   assert.ok(r.ok, r.erro);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   h.monstros = h.monstros.slice(0, 1);
   Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });

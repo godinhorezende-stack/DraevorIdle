@@ -11,7 +11,8 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Treino from '../systems/treino.mjs';
 import * as FiltroDaConta from '../systems/filtro-da-conta.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const PECA = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'leather helmet').id);
 const ATRS = ['hp_max', 'mana_max', 'crit_chance', 'crit_dmg', 'atk_speed', 'fire_dmg'];
@@ -125,13 +126,13 @@ test('regra de "não coletar" só vale para equipamento (poção e produto de bi
   assert.equal(Afixos.regraBate(r, { id: pocao, count: 1 }), false);
 });
 
-test('caçando: "Comum sem atributo → não coletar" deixa essas peças no chão e coleta o resto', () => {
+test('caçando: "Comum sem atributo → não coletar" deixa essas peças no chão e coleta o resto', { skip: doClassico("Filtro de loot do Draevor (Draevor Knight Helmet comum sem atributo); no PoE é o filtro do PoE") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 120 });
   Treino.garantir(e);
   Bolsa.garantir(e);
   e.settings = { ...e.settings, autoSellPouch: false };
   assert.equal(Bolsa.definirRegrasDeLoot(e, { regras: [{ raridade: 'comum', quantos: 0, acao: 'naoColetar' }] }).ok, true);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   let t = Date.now();
   for (let i = 0; i < 240 * 6; i++) {
     t += 250;
@@ -145,7 +146,7 @@ test('caçando: "Comum sem atributo → não coletar" deixa essas peças no chã
   assert.ok(e.pouch.some((p) => !Afixos.aceitaAfixo(p.id)), 'o que não é equipamento continua sendo coletado');
 });
 
-test('regras vindas do cliente são limpas; mais de 12 não entram', () => {
+test('regras vindas do cliente são limpas; mais de 12 não entram', { skip: doClassico("Filtro de loot do Draevor (Draevor Knight Helmet comum sem atributo); no PoE é o filtro do PoE") }, () => {
   const e = quem();
   Bolsa.definirRegrasDeLoot(e, { regras: [{ raridade: 'xyz', quantos: '9', nivel: 99, acao: 'apagar' }, 'lixo', ...Array(20).fill({ quantos: 1 })] });
   assert.equal(e.lootRegras.length, 11, '12 no máximo, e o lixo sai');
@@ -153,7 +154,7 @@ test('regras vindas do cliente são limpas; mais de 12 não entram', () => {
   assert.equal(Bolsa.definirRegrasDeLoot(e, { regras: 'x' }).ok, false);
 });
 
-test('a prévia da tela usa a mesma decisão, e o filtro da conta leva as regras', () => {
+test('a prévia da tela usa a mesma decisão, e o filtro da conta leva as regras', { skip: doClassico("Filtro de loot do Draevor (Draevor Knight Helmet comum sem atributo); no PoE é o filtro do PoE") }, () => {
   const e = quem({ guardarAtributos: 1, guardarRaridade: 2 });
   const previa = Afixos.previaDoFiltro(e);
   const linha = (rotulo) => previa.find((l) => l.rotulo === rotulo);

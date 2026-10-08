@@ -6,7 +6,7 @@ import * as Rent from '../systems/hunt/rentabilidade.mjs';
 import * as Relatorio from '../systems/hunt/relatorio.mjs';
 import * as Bolsa from '../systems/bolsa.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
 
 const ITEM = 900_001; // ids de mentira: o preço é passado pela função
 const preco = (tabela) => (id) => tabela[id] ?? 0;
@@ -124,7 +124,7 @@ test('loot SEM id no bestiário ("rotten feather"): não vira item fantasma na b
   const e = personagemDeTeste({ level: 300 });
   e.pouch = [];
   e.maxHp = e.hp = 1e9;
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok, true);
   for (let i = 0; i < 15; i++) {
     const m = criarMonstro({ key: chave, x: e.hunt.pos.x + 1, y: e.hunt.pos.y }, null);
     e.hunt.monstros.push(m);

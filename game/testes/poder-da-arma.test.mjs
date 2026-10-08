@@ -9,6 +9,7 @@ import * as Gemas from '../systems/skills/gemas.mjs';
 import * as Inventario from '../systems/inventario.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, comSkills } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 // Armas de teste NO nível que se quer (fora da tabela de níveis de poder: valem pelo `minLevel`), uma de cada família.
 const ARMA = { espada: 990001, arco: 990002, wand: 990003, rod: 990004 };
@@ -75,7 +76,7 @@ test('o level do personagem NÃO soma mais ao dano base: com a mesma arma e sem 
   });
 });
 
-test('uma arma mais forte dá mais dano; a de nível mais baixo, menos (mesmo personagem, só a arma muda)', () => {
+test('uma arma mais forte dá mais dano; a de nível mais baixo, menos (mesmo personagem, só a arma muda)', { skip: doClassico("Dano das gemas do Draevor pela arma (danoBase, armaDoDano)") }, () => {
   emPisoZero(() => {
     const e = personagem({ level: 343, nivelDaArma: 100 });
     const fraca = danoDe(e, 'spell-buzz');
@@ -137,7 +138,7 @@ test('o piso legado: a arma inicial num level alto não perde tudo (segura a fra
   assert.ok(p.nivelEquivalente > 200 && p.nivelEquivalente < 343);
 });
 
-test('catálogo: a gema de ataque diz a origem do dano (família da arma, afinidade, piso) e o dano mostrado segue a arma', () => {
+test('catálogo: a gema de ataque diz a origem do dano (família da arma, afinidade, piso) e o dano mostrado segue a arma', { skip: doClassico("Dano das gemas do Draevor pela arma (danoBase, armaDoDano)") }, () => {
   const e = personagem({ level: 343, id: ARMA.espada });
   const buzz = Acoes.catalogo(e).spells.find((a) => a.id === 'spell-buzz');
   assert.equal(buzz.armaDoDano.familia, 'melee');
@@ -165,7 +166,7 @@ test('peça vestida com level acima do dele volta para a mochila, sem perda', ()
   assert.deepEqual(Inventario.devolverPecasAcimaDoLevel(e), []);
 });
 
-test('arma FÍSICA: a magia escala pelo dano normal da ficha (proporcional ao dano médio ÷ a referência do level); wand/rod seguem o Magic Attack; a cura não muda', () => {
+test('arma FÍSICA: a magia escala pelo dano normal da ficha (proporcional ao dano médio ÷ a referência do level); wand/rod seguem o Magic Attack; a cura não muda', { skip: doClassico("Escala da magia pela arma e Magic Attack (Draevor)") }, () => {
   const atkOriginal = ITEM_CATALOG[ARMA.espada].attack;
   const montar = (atk) => {
     const e = personagem({ level: 343, id: ARMA.espada });
@@ -212,7 +213,7 @@ test('arma FÍSICA: a magia escala pelo dano normal da ficha (proporcional ao da
   ITEM_CATALOG[ARMA.espada].attack = atkOriginal;
 });
 
-test('wand e rod: o Magic Attack vai para o campo "Dano" da ficha (ataque da arma + Magic Level + level), e não o 8–18 do catálogo; o golpe da wand usa esse dano', async () => {
+test('wand e rod: o Magic Attack vai para o campo "Dano" da ficha (ataque da arma + Magic Level + level), e não o 8–18 do catálogo; o golpe da wand usa esse dano', { skip: doClassico("Escala da magia pela arma e Magic Attack (Draevor)") }, async () => {
   const R = await import('../systems/regras.mjs');
   const e = personagem({ level: 343, id: ARMA.wand });
   const f = Ficha.combate(e);

@@ -6,18 +6,20 @@ import * as Http from '../admin/conteudo-http.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { spawnsDaHunt } from '../systems/hunt/terreno.mjs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 test('H1. a lista cobre todas as categorias de hunt e diz quantas têm spawns no mapa', () => {
   const l = Hunts.listar();
   assert.equal(l.length, CATALOGO.hunts.length + CATALOGO.vips.length + CATALOGO.especiais.length + CATALOGO.divinas.length);
   assert.equal(l.filter((h) => h.categoria === 'vips').length, CATALOGO.vips.length);
   assert.ok(l.filter((h) => h.spawns > 0).length >= 40);
-  assert.ok(l.find((h) => h.id === 'troll-cave').doCampanha);
+  assert.ok(l.find((h) => h.id === HUNT_DE_TESTE).doCampanha);
 });
 
-test('H2. painel da hunt da campanha: mapa, spawns, monstros, distribuição e dificuldade conferem com o jogo', () => {
-  const p = Hunts.painel('troll-cave', 'medio');
-  const spawns = spawnsDaHunt('troll-cave');
+test('H2. painel da hunt da campanha: mapa, spawns, monstros, distribuição e dificuldade conferem com o jogo', { skip: doClassico("Painel da fase do Draevor e a dificuldade Cruel") }, () => {
+  const p = Hunts.painel(HUNT_DE_TESTE, 'medio');
+  const spawns = spawnsDaHunt(HUNT_DE_TESTE);
   assert.equal(p.spawns.total, spawns.length);
   assert.equal(p.spawns.bichos, spawns.reduce((n, s) => n + s.quantidade, 0));
   assert.equal(p.spawns.pontos.length, spawns.length);
@@ -28,15 +30,15 @@ test('H2. painel da hunt da campanha: mapa, spawns, monstros, distribuição e d
   assert.equal(p.distribuicao.totalDeBichos, p.spawns.bichos);
   assert.equal(p.distribuicao.linhas.reduce((n, l) => n + l.spawns, 0), p.spawns.total);
   assert.equal(p.dificuldade.tipo, 'campanha');
-  const f = Campanha.faseDe('troll-cave');
+  const f = Campanha.faseDe(HUNT_DE_TESTE);
   const medio = p.dificuldade.porDificuldade.find((x) => x.id === 'medio');
   assert.equal(medio.levelAlvo, f.nivel.medio);
   assert.equal(medio.vida, Number(Campanha.escala(f.levelOriginal, f.nivel.medio).vida.toFixed(3)));
   assert.equal(p.dificuldade.porDificuldade.find((x) => x.id === 'facil').vida, 1);
 });
 
-test('H3. drops esperados: queda por limpeza = mortes × chance do bestiário; ordenado por valor; avisa que é estimativa', () => {
-  const p = Hunts.painel('troll-cave', 'facil');
+test('H3. drops esperados: queda por limpeza = mortes × chance do bestiário; ordenado por valor; avisa que é estimativa', { skip: doClassico("Painel de hunts com o bestiário de drops do Draevor") }, () => {
+  const p = Hunts.painel(HUNT_DE_TESTE, 'facil');
   assert.match(p.drops.modelo, /Estimativa por chance/);
   assert.match(p.drops.modelo, /não garante/);
   const axe = p.drops.itens.find((i) => i.item === 3268);
@@ -50,11 +52,11 @@ test('H3. drops esperados: queda por limpeza = mortes × chance do bestiário; o
   assert.ok(p.drops.deEncontros?.some((e) => e.tipo === 'bau-comum'), 'os encontros da fase aparecem à parte');
 });
 
-test('H4. a escala da dificuldade entra na conta: o ouro esperado sobe no Cruel (exp dos bichos escalada)', () => {
-  const facil = Hunts.painel('troll-cave', 'facil').drops.ouroEsperado;
-  const medio = Hunts.painel('troll-cave', 'medio').drops.ouroEsperado;
+test('H4. a escala da dificuldade entra na conta: o ouro esperado sobe no Cruel (exp dos bichos escalada)', { skip: doClassico("Painel da fase do Draevor e a dificuldade Cruel") }, () => {
+  const facil = Hunts.painel(HUNT_DE_TESTE, 'facil').drops.ouroEsperado;
+  const medio = Hunts.painel(HUNT_DE_TESTE, 'medio').drops.ouroEsperado;
   assert.ok(medio > facil * 5);
-  assert.equal(Hunts.painel('troll-cave', 'xyz').dificuldadeEscolhida, 'facil', 'dificuldade inválida cai no padrão');
+  assert.equal(Hunts.painel(HUNT_DE_TESTE, 'xyz').dificuldadeEscolhida, 'facil', 'dificuldade inválida cai no padrão');
 });
 
 test('H5. hunt VIP sem spawns no mapa: mostra o que o cadastro diz, sem inventar quantidade nem distribuição', () => {

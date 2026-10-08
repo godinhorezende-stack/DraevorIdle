@@ -16,7 +16,8 @@ import * as Raridade from '../systems/mobs/raridade.mjs';
 import { eventosDoQuadro } from '../websocket/quadro.mjs';
 import { ACTION_CATALOG, ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const HP = 1e12;
 const k = Areas.chave;
@@ -86,7 +87,7 @@ function montar(ids, supports = []) {
     e.equipment.weapon = { id: Number(arma.id), count: 1, soquetes: { abertos: 4, links: [true, true, true], gemas: [G.novaGema(G.ITEM_DA_ACAO.get(ids[0])), ...supports.map((s) => G.novaGema(SUP(s))), ...Array(3 - supports.length).fill(null)] } };
     Ficha.invalidar(e);
   }
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -128,7 +129,7 @@ function lancar(e, id, alvo) {
 const ocupadas = (e) => conjunto(e.hunt.monstros);
 const iguais = (a, b, msg) => assert.deepEqual([...a].sort(), [...b].sort(), msg);
 
-test('Rage of the Skies: as 85 casas levam dano — a parte de CIMA também — e a tela recebe exatamente as mesmas', () => {
+test('Rage of the Skies: as 85 casas levam dano — a parte de CIMA também — e a tela recebe exatamente as mesmas', { skip: doClassico("Formas das magias de área do Draevor (Rage of the Skies, 39 skills)") }, () => {
   const e = montar(['spell-rage-of-the-skies']);
   encher(e);
   const { atingidas, desenhadas, evento } = lancar(e, 'spell-rage-of-the-skies', e.hunt.monstros[0]);
@@ -142,7 +143,7 @@ test('Rage of the Skies: as 85 casas levam dano — a parte de CIMA também — 
   iguais(atingidas, new Set([...desenhadas].filter((c) => c !== k(p))));
 });
 
-test('Rage of the Skies: a mesma área em várias posições do mapa (bordas, perto de x/y = 0) e com o personagem virado para qualquer lado', () => {
+test('Rage of the Skies: a mesma área em várias posições do mapa (bordas, perto de x/y = 0) e com o personagem virado para qualquer lado', { skip: doClassico("Formas das magias de área do Draevor (Rage of the Skies, 39 skills)") }, () => {
   for (const pos of [{ x: 1, y: 1 }, { x: 2, y: 60 }, { x: 120, y: 3 }, { x: 64, y: 64 }]) {
     for (const dir of [0, 1, 2, 3]) {
       const e = montar(['spell-rage-of-the-skies']);
@@ -155,7 +156,7 @@ test('Rage of the Skies: a mesma área em várias posições do mapa (bordas, pe
   }
 });
 
-test(`todas as ${COM_FORMA.length} skills de ataque com forma: o dano cai exatamente nas casas desenhadas, nos quatro lados`, () => {
+test(`todas as ${COM_FORMA.length} skills de ataque com forma: o dano cai exatamente nas casas desenhadas, nos quatro lados`, { skip: doClassico("As 297 skills de ataque do Draevor com forma desenhada") }, () => {
   assert.ok(COM_FORMA.length >= 30);
   const lados = [[0, -2], [2, 0], [0, 2], [-2, 0]];
   for (const entry of COM_FORMA) {
@@ -185,7 +186,7 @@ test(`todas as ${COM_FORMA.length} skills de ataque com forma: o dano cai exatam
   }
 });
 
-test('gemas de área: Area of Effect aumenta e Concentrated Effect reduz — e a tela acompanha', () => {
+test('gemas de área: Area of Effect aumenta e Concentrated Effect reduz — e a tela acompanha', { skip: aAdaptar("Increased Area of Effect/Concentrated Effect existem no PoE; o teste usa Rage of the Skies") }, () => {
   const base = montar(['spell-rage-of-the-skies']);
   encher(base);
   const normal = lancar(base, 'spell-rage-of-the-skies', base.hunt.monstros[0]).desenhadas.size;
@@ -198,7 +199,7 @@ test('gemas de área: Area of Effect aumenta e Concentrated Effect reduz — e a
   }
 });
 
-test('explosão das gemas: o quadrado que leva dano é o mesmo que a tela desenha', () => {
+test('explosão das gemas: o quadrado que leva dano é o mesmo que a tela desenha', { skip: doClassico("Formas das magias de área do Draevor (Rage of the Skies, 39 skills)") }, () => {
   const e = montar(['spell-flame-strike'], ['explosion']);
   encher(e, 4);
   const h = e.hunt;
@@ -219,7 +220,7 @@ test('explosão das gemas: o quadrado que leva dano é o mesmo que a tela desenh
   iguais(daExplosao, naTela);
 });
 
-test('mob Explosivo: o quadrado desenhado é o raio que fere — dentro fere, fora não', () => {
+test('mob Explosivo: o quadrado desenhado é o raio que fere — dentro fere, fora não', { skip: doClassico("Mob Explosivo do Draevor (raridade de monstro do Draevor) num mapa do Draevor") }, () => {
   for (const [dx, fere] of [[1, true], [2, false]]) {
     const e = montar(['spell-flame-strike']);
     const h = e.hunt;

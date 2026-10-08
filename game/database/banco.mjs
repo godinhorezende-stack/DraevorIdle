@@ -12,7 +12,10 @@ import { colunasDaCacaOffline } from './caca-offline.mjs';
 
 const RAIZ = dirname(fileURLToPath(import.meta.url));
 
-export const banco = await Db.abrir(join(RAIZ, 'dados', 'jogo.db'));
+// `DRAEVOR_SQLITE`: outro arquivo SQLite — só para os testes (o irmão clássico, `testes/apoio-classico.mjs`, e os de carga,
+// `testes/apoio-banco-proprio.mjs`), que rodam junto com os outros e não podem disputar as mesmas linhas. Em produção (`DATABASE_URL`,
+// Postgres) o caminho nem é lido.
+export const banco = await Db.abrir(process.env.DRAEVOR_SQLITE || join(RAIZ, 'dados', 'jogo.db'));
 
 /*
  * `db` cru: o `node:sqlite` de sempre, só em modo SQLite — todo o jogo (Fase 6)
@@ -265,16 +268,20 @@ export async function contarPersonagensPorClasse() {
 
 /**
  * MIGRAÇÃO EXPLÍCITA de classe: todos os personagens da classe `de` passam para a classe `para` (com a vocação mecânica `vocacaoPara`), no banco e no estado salvo. Devolve quantos mudaram.
- * É a única forma de esvaziar uma classe antes de apagá-la.
+ * É a única forma de esvaziar uma classe antes de apagá-la. `pular(estado)`: quem fica de fora (o servidor passa o personagem ARQUIVADO,
+ * do Draevor clássico, que não é mexido — `personagem/legado.mjs`).
  */
-export async function migrarClasse(de, para, vocacaoPara) {
+export async function migrarClasse(de, para, vocacaoPara, { pular = () => false } = {}) {
   const lista = await banco.prepare('SELECT id, estado FROM personagens WHERE COALESCE(classe, vocacao) = ?').all(de);
+  let mudaram = 0;
   for (const p of lista) {
     let estado; try { estado = JSON.parse(p.estado); } catch { estado = null; }
+    if (estado && pular(estado)) continue;
+    mudaram++;
     if (estado) { estado.classe = para; estado.vocation = vocacaoPara; }
     await banco.prepare('UPDATE personagens SET classe = ?, vocacao = ?, estado = ? WHERE id = ?').run(para, vocacaoPara, estado ? JSON.stringify(estado) : p.estado, p.id);
   }
-  return lista.length;
+  return mudaram;
 }
 
 // Toda gravação de estado leva as colunas da caçada offline junto (ver `caca-offline.mjs`).

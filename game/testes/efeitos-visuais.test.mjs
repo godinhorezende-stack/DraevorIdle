@@ -6,6 +6,8 @@ import assert from 'node:assert/strict';
 import * as Efeitos from '../systems/efeitos-visuais.mjs';
 import * as Arena from '../admin/arena-efeitos.mjs';
 import { ACTION_CATALOG } from '../systems/dados.mjs';
+// O jogo inteiro, como no servidor (o bootstrap do PoE: as áreas da campanha, as gemas, os itens) — a Arena de Efeitos abre uma área do PoE.
+import './apoio.mjs';
 
 test('validar: limpa números para o intervalo, recusa campo e parte desconhecidos, preset inexistente e sprite inválido', () => {
   const ok = Efeitos.validar({ presets: { azul: { nome: 'Azul', visual: { projetil: { sprite: { tipo: 'projetil', id: 5 }, escala: 99, rastro: { quantidade: 50 } } } } }, skills: { x: { preset: 'azul', override: { impacto: { opacidade: -3 } } } } });

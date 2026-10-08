@@ -6,10 +6,10 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import { alvoAtual, FOLGA_DA_TROCA } from '../systems/hunt/alvo.mjs';
 import { gradeDaHunt, huntOuMapaCustom } from '../systems/hunt/terreno.mjs';
 import { noAndar } from '../systems/hunt/andares.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
 
 function cacadaComPercurso() {
-  for (const huntId of ['troll-cave', 'rotworm-cave', 'swamp-troll-cave', 'cyclopolis']) {
+  for (const huntId of [HUNT_DE_TESTE, 'rotworm-cave', 'swamp-troll-cave', 'cyclopolis']) {
     const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
     if (!Cacadas.entrar(e, { huntId, mode: 'auto' }).ok) continue;
     if (e.hunt.percurso) return e;

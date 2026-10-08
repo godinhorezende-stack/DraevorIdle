@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import * as T from '../systems/limpeza-de-temporarios.mjs';
 import * as SS from '../systems/server-save.mjs';
 import * as B from '../database/banco.mjs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 const HORA = 3_600_000;
 const DIA = 24 * HORA;
@@ -219,7 +220,7 @@ test('I3. anomalia no offline farm adia a limpeza; erro dentro da limpeza NÃO d
   const d = await nova();
   const p = await arquivo(d, 'draevor-anomalia.tmp', 3 * DIA);
   const c = await B.criarConta({ email: `tmp-${Date.now()}@teste.local`, senha: 'senha-123' });
-  const pers = await B.criarPersonagem({ conta: c.id, nome: `Tmp${Date.now() % 1e9}`, vocacao: 'knight', sexo: 'male', estadoInicial: { hunt: { huntId: 'troll-cave', offlineDesde: Date.now() + 5 * DIA } } });
+  const pers = await B.criarPersonagem({ conta: c.id, nome: `Tmp${Date.now() % 1e9}`, vocacao: 'knight', sexo: 'male', estadoInicial: { hunt: { huntId: HUNT_DE_TESTE, offlineDesde: Date.now() + 5 * DIA } } });
   try {
     await iniciarSave(d);
     const r = await SS.executarAgora();

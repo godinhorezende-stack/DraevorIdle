@@ -10,6 +10,7 @@ import * as R from '../systems/regras.mjs';
 import { descerDeLevel } from '../systems/hunt/combate.mjs';
 import * as Afixos from '../systems/afixos.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ler = (p) => JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8'));
 
@@ -24,13 +25,13 @@ function personagem(level, { promovido = false, gold = 0 } = {}) {
   return e;
 }
 
-test('Zotod (level 89, sem promoção): a view de blessings igual à do original', () => {
+test('Zotod (level 89, sem promoção): a view de blessings igual à do original', { skip: doClassico("Blessings e penalidade de morte do Draevor (view do original)") }, () => {
   const original = ler('servidor/blessings.json');
   const nossa = Morte.vista(personagem(89, { gold: original.gold }));
   assert.deepEqual({ list: nossa.list, gold: nossa.gold, resumo: nossa.resumo }, original);
 });
 
-test('conta2 (level 343, promovido): 30% de desconto e teto de 80% de um level', () => {
+test('conta2 (level 343, promovido): 30% de desconto e teto de 80% de um level', { skip: doClassico("Blessings e penalidade de morte do Draevor (view do original)") }, () => {
   const original = ler('servidor/conta2/blessings.json');
   const nossa = Morte.vista(personagem(343, { promovido: true, gold: original.gold }));
   assert.deepEqual({ list: nossa.list, gold: nossa.gold, resumo: nossa.resumo }, original);

@@ -7,6 +7,7 @@ import { ITEM_CATALOG } from '../systems/dados.mjs';
 import * as Gemas from '../systems/skills/gemas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const suportes = () => [...Gemas.DEFS.values()].filter((d) => d.tipo === 'support');
 
@@ -19,7 +20,7 @@ const LENTIDAO_MAXIMA = 40;`;
 const cliente = await import(`data:text/javascript,${encodeURIComponent(pre + trecho)}`);
 const defDoCliente = (d) => ITEM_CATALOG[d.itemId].gemaDef;
 
-test('os 41 suportes têm nome em português, e o id, o nome em inglês e o nome do item seguem como chave', () => {
+test('os 41 suportes têm nome em português, e o id, o nome em inglês e o nome do item seguem como chave', { skip: doClassico("Os 41 suportes do Draevor (nome em português, loja, compatibilidade)") }, () => {
   const lista = suportes();
   assert.equal(lista.length, 41);
   for (const d of lista) {
@@ -38,7 +39,7 @@ test('as habilidades continuam com o nome original (só os suportes foram traduz
   assert.equal(ITEM_CATALOG[ativa.itemId].nomeExibicao, undefined);
 });
 
-test('a loja mostra o suporte em português', () => {
+test('a loja mostra o suporte em português', { skip: doClassico("Os 41 suportes do Draevor (nome em português, loja, compatibilidade)") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   const linhas = Gemas.catalogoDaLoja(e);
   const dano = linhas.find((l) => /Dano Superior/.test(l.nome));
@@ -65,7 +66,7 @@ test('a Área de Efeito Superior mostra a contrapartida real (a penalidade encol
   assert.match(cliente.fichaDoSuporte(d, 30, 0, 1).contrapartidas[0], /-0,5% de dano/);
 });
 
-test('a compatibilidade sai em português, sem tag técnica em inglês', () => {
+test('a compatibilidade sai em português, sem tag técnica em inglês', { skip: doClassico("Os 41 suportes do Draevor (nome em português, loja, compatibilidade)") }, () => {
   const cru = /\b(physical|fire|earth|energy|ice|holy|death|spell|projectile|area|wave|line|hit|single|melee|ranged|healing|buff)\b/;
   for (const d of suportes()) {
     const dc = defDoCliente(d);
@@ -76,7 +77,7 @@ test('a compatibilidade sai em português, sem tag técnica em inglês', () => {
   }
 });
 
-test('a regra de compatibilidade não mudou: quantas habilidades de ataque aceitam cada suporte', () => {
+test('a regra de compatibilidade não mudou: quantas habilidades de ataque aceitam cada suporte', { skip: doClassico("Os 41 suportes do Draevor (nome em português, loja, compatibilidade)") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
   const cat = Acoes.catalogo(e);
   const ataques = [...cat.spells, ...cat.runes].filter((a) => a.damage && !a.heals && Gemas.ehSkillDeGema(a));

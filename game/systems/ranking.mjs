@@ -21,6 +21,7 @@ import { CATALOGO } from './dados.mjs';
 import * as Treino from './treino.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';
+import { sqlDoPoe } from './personagem/legado.mjs';
 
 export const TAMANHO = 25;
 const GUARDA_MS = 15_000;
@@ -68,6 +69,7 @@ function consulta(cat) {
              (estado::jsonb #>> '{promovido}')::boolean AS promovido,
              estado::jsonb ->> 'outfit' AS outfit
         FROM personagens
+       WHERE ${sqlDoPoe(banco.dialeto)}
        ORDER BY valor DESC, level DESC, nome
        LIMIT ${TAMANHO}`
         : `SELECT nome, vocacao,
@@ -76,6 +78,7 @@ function consulta(cat) {
              json_extract(estado, '$.promovido') AS promovido,
              json_extract(estado, '$.outfit') AS outfit
         FROM personagens
+       WHERE ${sqlDoPoe(banco.dialeto)}
        ORDER BY valor DESC, level DESC, nome
        LIMIT ${TAMANHO}`;
     consultas.set(cat, banco.prepare(sql));

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as Atos from '../admin/atos.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const pasta = mkdtempSync(join(tmpdir(), 'atos-'));
 Atos.CAMINHOS.atos = pasta;
@@ -16,7 +17,7 @@ const rascunho = (extra = {}) => ({
   conexoes: [], bossFinal: null, ...extra,
 });
 
-test('A1. lista os 4 legados (somente leitura) e nenhum arquivo é gravado fora da pasta do armazém', () => {
+test('A1. lista os 4 legados (somente leitura) e nenhum arquivo é gravado fora da pasta do armazém', { skip: doClassico("Os 4 atos legados do Draevor no armazém") }, () => {
   const l = Atos.listar();
   assert.deepEqual(l.filter((a) => a.somenteLeitura).map((a) => a.id), ['legado-1', 'legado-2', 'legado-3', 'legado-4']);
   assert.equal(Atos.obter('legado-1').fases.length, 12);
@@ -38,7 +39,7 @@ test('A3. recusa: id de legado, id inválido e beta/publicado (ainda sem runtime
   assert.equal(Atos.excluir('legado-2').ok, false);
 });
 
-test('A4. duplicar um legado cria rascunho novo e não altera o original; as hunts em uso aparecem como erro', () => {
+test('A4. duplicar um legado cria rascunho novo e não altera o original; as hunts em uso aparecem como erro', { skip: doClassico("Os 4 atos legados do Draevor no armazém") }, () => {
   const antes = JSON.stringify(Atos.obter('legado-1'));
   const r = Atos.duplicar('legado-1', 'copia-ato-um');
   assert.equal(r.ok, true);
@@ -50,7 +51,7 @@ test('A4. duplicar um legado cria rascunho novo e não altera o original; as hun
   assert.equal(Atos.excluir('copia-ato-um').ok, true);
 });
 
-test('A5. rotas HTTP: lista, detalhe com validação, validar sem gravar, 404', async () => {
+test('A5. rotas HTTP: lista, detalhe com validação, validar sem gravar, 404', { skip: doClassico("Os 4 atos legados do Draevor no armazém") }, async () => {
   const resp = [];
   const json = (r, cod, corpo) => resp.push([cod, corpo]);
   const chama = (metodo, rota, corpo = {}) => Http.atender({ method: metodo }, {}, `/api/mapas/_conteudo/${rota}`, new URL('http://x/'), { json, corpoJson: async () => corpo });

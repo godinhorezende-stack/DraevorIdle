@@ -20,6 +20,7 @@ import { camposDaPeca } from './itens/item.mjs';
 import * as Afixos from './afixos.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import * as Requisitos from './personagem/requisitos.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 const VOCACOES = Object.keys(RECEITAS_DO_CRAFT);
 
@@ -101,6 +102,7 @@ export function craftar(estado, { vocacao, geracao, id }) {
   if (!receitas) return { ok: false, erro: 'Vocação inválida.' };
   const r = (geracao === 'v2' ? receitas.v2 : receitas.craftado).find((x) => x.id === Number(id));
   if (!r) return { ok: false, erro: 'Receita inexistente.' };
+  if (!podeEntrar(r.id)) return { ok: false, erro: SO_ITENS_DO_POE };
   const ficha = fichaDaReceita(estado, r);
   if (!ficha.pronto) return { ok: false, erro: `Faltam ${ficha.falta} materiais para ${r.nome}.` };
 

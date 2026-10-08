@@ -14,7 +14,7 @@ import * as Campanha from '../systems/campanha.mjs';
 import * as Entrega from '../systems/encontros/entrega.mjs';
 import { golpesDosMonstros, matarMonstro } from '../systems/hunt/combate.mjs';
 import { resistenciaDe } from '../systems/hunt/resistencia.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const ids = [];
 after(() => ids.forEach((id) => Catalogo.esquecer(id)));
@@ -43,7 +43,7 @@ function registrar(extra = {}, id = DEF.id) {
 function luta({ modo = 'auto', level = 60 } = {}) {
   const e = personagemDeTeste({ vocacao: 'knight', level });
   e.maxHp = e.hp = 1e9;
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
   e.hunt.monstros.length = 0;
   e.hunt.clock = 1000;
   return e;
@@ -395,7 +395,7 @@ test('compatibilidade: bosses e bichos comuns (sem `boss`) seguem exatamente com
   const comum = Cacadas.entrar ? e.hunt : null;
   assert.ok(comum);
   assert.equal(e.hunt.monstros.filter((m) => m.boss).length, 0);
-  assert.ok(Campanha.faseDe('troll-cave'));
+  assert.ok(Campanha.faseDe(HUNT_DE_TESTE));
 });
 
 test('aviso VELHO não acerta ninguém: o jogador longe, o boss parado, e a área vencida é descartada ao voltar', () => {

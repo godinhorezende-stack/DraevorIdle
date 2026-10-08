@@ -13,7 +13,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { contraAtaque } from '../systems/hunt/combate.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const P = F.PARAMETROS;
 const com = (parte, chave, valor, fn) => {
@@ -103,7 +103,7 @@ function golpeDoBicho(af) {
   e.maxHp = e.hp = 1e9;
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   const m = criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null);
   h.monstros.splice(0, h.monstros.length, m);

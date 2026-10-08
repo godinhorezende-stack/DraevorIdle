@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { doClassico } from './apoio-migracao.mjs';
 
 const tmp = mkdtempSync(join(tmpdir(), 'ipe-'));
 process.env.DRAEVOR_OVERRIDES = tmp; // overrides DESTE processo na pasta temporária (nunca os do dono)
@@ -307,7 +308,7 @@ test('IPE16. comparar original × atual × editada (não salva) com nível, clas
   await reset();
 });
 
-test('IPE17. regressão do módulo de comparação: IP, ficha e lista continuam iguais ao cálculo direto; atributosBase/fichaDePoder ≡ atributosDoMeta/fichaDoMeta; a lista marca modificados', async () => {
+test('IPE17. regressão do módulo de comparação: IP, ficha e lista continuam iguais ao cálculo direto; atributosBase/fichaDePoder ≡ atributosDoMeta/fichaDoMeta; a lista marca modificados', { skip: doClassico("Editor de Item Power do Draevor") }, async () => {
   await reset();
   for (const id of [ESPADA, 3434, 10384, ARMADURA_KNIGHT.id]) {
     assert.deepEqual(IP.atributosBase(id), IP.atributosDoMeta(ITEM_CATALOG[id]));
@@ -509,7 +510,7 @@ test('IPE29. alertas do painel (não bloqueiam): vêm das configurações reais,
   assert.ok(p.equivalentes.length >= 3);
 });
 
-test('IPE30. lista do editor de itens: nível, atributos, IP e marca de modificado com os originais; histórico por item e comparação de versões filtrada por item; salvar pelo editor de itens registra', async () => {
+test('IPE30. lista do editor de itens: nível, atributos, IP e marca de modificado com os originais; histórico por item e comparação de versões filtrada por item; salvar pelo editor de itens registra', { skip: doClassico("Editor de Item Power do Draevor") }, async () => {
   const l = Itens.listar({ q: 'relic sword' });
   const r = l.itens.find((i) => i.id === String(ESPADA));
   assert.deepEqual([r.minLevel, r.attack, r.defense, r.atributosEditados, r.original], [50, 42, 24, false, null]);

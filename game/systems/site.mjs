@@ -32,6 +32,7 @@ import { nomeDaHunt } from './hunt/terreno.mjs';
 import * as Ausentes from './ausentes.mjs';
 import * as ItensDoJogo from './itens/item.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
+import { sqlDoPoe } from './personagem/legado.mjs';
 
 const TOPO = 20;
 const TOPO_EXP = 5;
@@ -107,7 +108,7 @@ const consultaDoDia = banco.prepare(
          (estado::jsonb #>> '{level}')::int - (estado::jsonb #>> '{expDoDia,level}')::int AS levels,
          estado::jsonb ->> 'outfit' AS outfit
     FROM personagens
-   WHERE (estado::jsonb #>> '{expDoDia,dia}')::bigint = ?
+   WHERE (estado::jsonb #>> '{expDoDia,dia}')::bigint = ? AND ${sqlDoPoe(banco.dialeto)}
    ORDER BY ganho DESC
    LIMIT 50`
     : `SELECT nome, vocacao,
@@ -116,7 +117,7 @@ const consultaDoDia = banco.prepare(
          json_extract(estado, '$.level') - json_extract(estado, '$.expDoDia.level') AS levels,
          json_extract(estado, '$.outfit') AS outfit
     FROM personagens
-   WHERE json_extract(estado, '$.expDoDia.dia') = ?
+   WHERE json_extract(estado, '$.expDoDia.dia') = ? AND ${sqlDoPoe(banco.dialeto)}
    ORDER BY ganho DESC
    LIMIT 50`,
 );
@@ -162,8 +163,8 @@ function expHora(agora) {
 
 const totais = banco.prepare(
   banco.dialeto === 'postgres'
-    ? "SELECT count(*)::int AS n, max(coalesce((estado::jsonb #>> '{level}')::int, 1)) AS maior FROM personagens"
-    : "SELECT count(*) AS n, max(coalesce(json_extract(estado, '$.level'), 1)) AS maior FROM personagens",
+    ? `SELECT count(*)::int AS n, max(coalesce((estado::jsonb #>> '{level}')::int, 1)) AS maior FROM personagens WHERE ${sqlDoPoe(banco.dialeto)}`
+    : `SELECT count(*) AS n, max(coalesce(json_extract(estado, '$.level'), 1)) AS maior FROM personagens WHERE ${sqlDoPoe(banco.dialeto)}`,
 );
 const guardados = new Map(); // categoria -> {ate, corpo}
 

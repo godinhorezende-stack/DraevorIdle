@@ -8,11 +8,12 @@ import { ITEM_CATALOG } from '../systems/dados.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import { metaDaPeca } from '../systems/itens/item.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const IMPLICITOS = ['skillBonus', 'critChance', 'critDamage', 'lifeLeech', 'manaLeech', 'protection', 'regen'];
 const SLOTS = ['weapon', 'shield', 'head', 'body', 'legs', 'feet', 'ring', 'neck', 'backpack', 'ammo'];
 
-test('nenhum item do catálogo traz implícito (nem os Crafted, nem os originais)', () => {
+test('nenhum item do catálogo traz implícito (nem os Crafted, nem os originais)', { skip: doClassico("Regra do Draevor: nenhum item com implícito; as bases do PoE têm implícitos") }, () => {
   const com = Object.values(ITEM_CATALOG).filter((i) => IMPLICITOS.some((c) => c in i));
   assert.deepEqual(com.slice(0, 5).map((i) => `${i.name}: ${IMPLICITOS.filter((c) => c in i)}`), [], `${com.length} itens ainda trazem implícito`);
 });
@@ -26,7 +27,7 @@ test('a base das peças continua (ataque, armadura, defesa, alcance, elemento) �
   assert.ok(todos.filter((i) => i.wand).length > 20, 'varinhas');
 });
 
-test('uma peça equipada de cada slot não dá perícia, crítico, leech, resistência nem regeneração', () => {
+test('uma peça equipada de cada slot não dá perícia, crítico, leech, resistência nem regeneração', { skip: doClassico("Regra do Draevor \"peça sem implícito\"; o PoE tem implícitos") }, () => {
   for (const voc of ['knight', 'paladin', 'sorcerer', 'druid', 'monk']) {
     const e = personagemDeTeste({ vocacao: voc, level: 500 });
     e.equipment = {};
@@ -47,7 +48,7 @@ test('uma peça equipada de cada slot não dá perícia, crítico, leech, resist
   }
 });
 
-test('os atributos EXPLÍCITOS da peça continuam entrando na ficha (crítico, leech, resistência, regeneração)', () => {
+test('os atributos EXPLÍCITOS da peça continuam entrando na ficha (crítico, leech, resistência, regeneração)', { skip: doClassico("Regra do Draevor \"peça sem implícito\"; o PoE tem implícitos") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
   const arma = Object.values(ITEM_CATALOG).find((i) => i.slot === 'weapon' && i.skill === 'sword');
   const anel = Object.values(ITEM_CATALOG).find((i) => i.slot === 'ring');

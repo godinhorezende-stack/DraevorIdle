@@ -10,7 +10,8 @@ import * as Bolsa from '../systems/bolsa.mjs';
 import * as Deposito from '../systems/deposito.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, huntDoPoe } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const antiga = (id, pct) => {
   const r = C.REGUA_ANTIGA[id];
@@ -63,7 +64,7 @@ test('idempotente: converter de novo não muda nada; peça nova não é tocada',
   assert.deepEqual(nova, { id: 3004, count: 1, raridade: 'raro', af: [{ id: 'atk_flat', nivel: 4, value: 12 }] });
 });
 
-test('o personagem inteiro: equipamento, mochila, bolsa e depósito — uma vez só', () => {
+test('o personagem inteiro: equipamento, mochila, bolsa e depósito — uma vez só', { skip: doClassico("Conversão de itens antigos do Draevor (varredura, peças com atributos na projeção)") }, () => {
   const e = personagemDeTeste({ level: 100 });
   e.equipment.ring = { id: 3004, count: 1, af: [antiga('hp_max', 100)] };
   e.inventory.push({ id: 3004, count: 1, af: [antiga('atk_flat', 10)] });
@@ -94,10 +95,10 @@ test('a bolsa guarda a peça inteira do gerador (raridade e efeito), e aceita o 
   assert.deepEqual(e.pouch.at(-1), { id: 3004, count: 1, af: [{ id: 'atk_flat', nivel: 1, value: 2 }] });
 });
 
-test('caçada offline projetada: as peças saem COM atributos (antes saíam cruas depois dos 30 min)', () => {
+test('caçada offline projetada: as peças saem COM atributos (antes saíam cruas depois dos 30 min)', { skip: doClassico("Conversão de itens antigos do Draevor (varredura, peças com atributos na projeção)") }, () => {
   const e = personagemDeTeste({ level: 60 });
   e.stamina = 2520;
-  assert.equal(Cacadas.entrar(e, { huntId: 'amazon-camp', mode: 'auto' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: huntDoPoe('amazon-camp'), mode: 'auto' }).ok, true);
   const T0 = Date.now() - 6 * 3_600_000;
   e.hunt.offlineDesde = T0;
   e.settings = { ...e.settings, autoSellPouch: false };

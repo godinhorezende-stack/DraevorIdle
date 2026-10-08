@@ -9,6 +9,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Stamina from '../systems/stamina.mjs';
 import * as R from '../systems/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 /** Uma sessão na cidade (sem hunt), com hp/mana/stamina longe do teto para o regen ter o que fazer. */
 function sessaoNaCidade() {
@@ -47,7 +48,7 @@ function rodar(s, intervalos, aCada = null) {
   }
 }
 
-test('não regenera antes de 1s (desde o 1º tique, que só estabelece a janela), regenera ao completar', () => {
+test('não regenera antes de 1s (desde o 1º tique, que só estabelece a janela), regenera ao completar', { skip: doClassico("Regeneração do Draevor na cidade; no PoE a cidade enche vida/mana/ES/frascos e a vida não tem regeneração de base (ficha-poe cobre)") }, () => {
   const s = sessaoNaCidade();
   let hpNoPrimeiro = null;
   const vistos = [];
@@ -63,7 +64,7 @@ test('não regenera antes de 1s (desde o 1º tique, que só estabelece a janela)
   assert.ok(vistos[4] > hpNoPrimeiro, 'não regenerou em +1250ms (1000ms desde a janela)');
 });
 
-test('o total ao longo de 4s é o MESMO de chamar Cacadas.regenerar/Stamina.recuperar direto', () => {
+test('o total ao longo de 4s é o MESMO de chamar Cacadas.regenerar/Stamina.recuperar direto', { skip: doClassico("Regeneração do Draevor na cidade; no PoE a cidade enche vida/mana/ES/frascos e a vida não tem regeneração de base (ficha-poe cobre)") }, () => {
   const s = sessaoNaCidade();
   const comparar = personagemDeTeste({ vocacao: 'knight', level: 200 });
   comparar.hp = s.estado.hp;
@@ -88,7 +89,7 @@ test('o total ao longo de 4s é o MESMO de chamar Cacadas.regenerar/Stamina.recu
   assert.ok(Math.abs(s.estado.stamina - comparar.stamina) < 1e-9, 'stamina final diferente do cálculo direto');
 });
 
-test('regen ao longo de 3s (depois da janela) não perde nem dobra o resto fracionário', () => {
+test('regen ao longo de 3s (depois da janela) não perde nem dobra o resto fracionário', { skip: doClassico("Regeneração do Draevor na cidade; no PoE a cidade enche vida/mana/ES/frascos e a vida não tem regeneração de base (ficha-poe cobre)") }, () => {
   // Chamar Cacadas.regenerar 1x com 3000ms tem de dar o MESMO resultado que
   // os tiques (depois do 1º, que só estabelece a janela) passando pelo
   // represamento de 1s — é o mesmo `regenResto` dos dois lados.

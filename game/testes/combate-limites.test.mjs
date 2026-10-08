@@ -12,7 +12,8 @@ import { resistido, resistenciaDe, resistenciaEfetivaDe } from '../systems/hunt/
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { round } from '../systems/hunt/combate.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
@@ -98,7 +99,7 @@ function comAfixos(af, voc = 'knight') {
   return e;
 }
 
-test('a ficha corta resistência, crítico, ataque duplo e penetração em 100%; o que passou fica em `excedentes`', () => {
+test('a ficha corta resistência, crítico, ataque duplo e penetração em 100%; o que passou fica em `excedentes`', { skip: doClassico("Tetos/excedentes do Draevor (crítico excedente, ataque duplo na gema)") }, () => {
   const e = comAfixos([
     { id: 'fire_res', nivel: 5, value: 160 },
     { id: 'crit_chance', nivel: 5, value: 150 },
@@ -135,7 +136,7 @@ test('o crítico: chance acima de 100% (suporte, charm) sempre critica e nunca p
 });
 
 function naCacada(e, forca = 1) {
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -191,7 +192,7 @@ test('ataque duplo sem a chance: um golpe só', () => {
   }
 });
 
-test('ataque duplo na gema: o ataque repete UMA vez, sem gastar mana a mais, e o roubo de vida conta só do primeiro', () => {
+test('ataque duplo na gema: o ataque repete UMA vez, sem gastar mana a mais, e o roubo de vida conta só do primeiro', { skip: doClassico("Tetos/excedentes do Draevor (crítico excedente, ataque duplo na gema)") }, () => {
   const dano = (duplo) => {
     const e = comAfixos(duplo ? [{ id: 'double_attack', nivel: 5, value: 100 }] : [], 'sorcerer');
     e.maxHp = e.hp = 1e9;

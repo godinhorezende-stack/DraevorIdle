@@ -12,7 +12,8 @@ import * as Estados from '../systems/skills/estados.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro, moverMonstros } from '../systems/hunt/monstros.mjs';
 import { golpesDosMonstros } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
 const SUP = (id) => [...G.DEFS.values()].find((d) => d.tipo === 'support' && d.id === id).itemId;
@@ -25,7 +26,7 @@ function montar(vocacao, acao, supports = []) {
   const gemas = [G.novaGema(GEMA(acao)), ...supports.map((s) => G.novaGema(SUP(s)))];
   e.equipment.weapon = { id: idDe(vocacao === 'knight' ? 'fire sword' : 'wand of vortex'), count: 1, soquetes: { abertos: 4, links: [true, true, true], gemas: [...gemas, ...Array(4 - gemas.length).fill(null)] } };
   Ficha.invalidar(e);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -56,7 +57,7 @@ function lancar(e, acao, alvo) {
   return r.eventos;
 }
 
-test('as 41 supports: cada uma com gema, nome e efeito de chave conhecida', () => {
+test('as 41 supports: cada uma com gema, nome e efeito de chave conhecida', { skip: doClassico("As 41 supports do Draevor") }, () => {
   const conhecidas = new Set(['venenoChance', 'venenoPct', 'sangramentoChance', 'sangramentoPct', 'danoPct', 'curaPct', 'castTimePct', 'custoPct', 'recargaPct', 'critChance', 'critDano', 'alvosExtras', 'danoDosExtrasPct', 'perfurar', 'danoDaPerfuracaoPct', 'bifurcar', 'danoDaBifurcacaoPct', 'encadear', 'danoDoEncadeamentoPct', 'retornar', 'danoDoRetornoPct', 'explosaoPct', 'segundaExplosaoPct', 'areaExtra', 'leechVidaPct', 'leechManaPct', 'custoEmVida', 'duracaoPct', 'igniteChance', 'ignitePct', 'congelarChance', 'lentidaoPct', 'atordoarChance']);
   const sups = [...G.DEFS.values()].filter((d) => d.tipo === 'support');
   assert.equal(sups.length, 41);
@@ -73,7 +74,7 @@ test('dano por elemento: Fire Damage vale na Flame Strike e não na Energy Strik
   assert.equal(ef.critDano, 40);
 });
 
-test('Ignite: o bicho atingido queima — o % do acerto sai em pulsos no tique', () => {
+test('Ignite: o bicho atingido queima — o % do acerto sai em pulsos no tique', { skip: doClassico("Suportes do Draevor (Ignite, Slow, Life Cost, Skill Duration)") }, () => {
   const e = montar('sorcerer', FLAME, ['ignite']);
   const m = bicho(e, 2, 0);
   lancar(e, FLAME, m);
@@ -103,11 +104,11 @@ test('Freeze / Stun: o bicho não anda nem ataca enquanto dura', () => {
   longe.perseguindo = true;
   longe.proximoPasso = 0;
   const antes = { x: longe.x, y: longe.y };
-  moverMonstros(e.hunt, Cacadas.gradeDaHunt(e.hunt.hunt ?? { id: 'troll-cave' }), agora);
+  moverMonstros(e.hunt, Cacadas.gradeDaHunt(e.hunt.hunt ?? { id: HUNT_DE_TESTE }), agora);
   assert.deepEqual({ x: longe.x, y: longe.y }, antes);
 });
 
-test('Slow: o bicho lento anda e ataca mais devagar (fator > 1); com a support, o acerto põe lento', () => {
+test('Slow: o bicho lento anda e ataca mais devagar (fator > 1); com a support, o acerto põe lento', { skip: doClassico("Suportes do Draevor (Ignite, Slow, Life Cost, Skill Duration)") }, () => {
   const e = montar('sorcerer', FLAME, ['slow']);
   const m = bicho(e, 2, 0);
   lancar(e, FLAME, m);
@@ -115,7 +116,7 @@ test('Slow: o bicho lento anda e ataca mais devagar (fator > 1); com a support, 
   assert.ok(Estados.fatorDeLentidao(m, agora) > 1);
 });
 
-test('Life Cost: o custo sai da vida, não da mana; Life/Mana Leech devolvem parte do dano', () => {
+test('Life Cost: o custo sai da vida, não da mana; Life/Mana Leech devolvem parte do dano', { skip: doClassico("Suportes do Draevor (Ignite, Slow, Life Cost, Skill Duration)") }, () => {
   const e = montar('sorcerer', FLAME, ['life-cost', 'life-leech', 'mana-leech']);
   const m = bicho(e, 2, 0);
   e.maxHp = 1e9;
@@ -126,7 +127,7 @@ test('Life Cost: o custo sai da vida, não da mana; Life/Mana Leech devolvem par
   assert.ok(ev.some((x) => x.t === 'heal' && x.color === '#00ff66'), 'life leech');
 });
 
-test('Skill Duration: o reforço dura mais', () => {
+test('Skill Duration: o reforço dura mais', { skip: doClassico("Suportes do Draevor (Ignite, Slow, Life Cost, Skill Duration)") }, () => {
   const e = montar('sorcerer', 'spell-haste', ['skill-duration']);
   bicho(e, 3, 3);
   lancar(e, 'spell-haste');

@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 process.env.ITENS_POE = '1';
 const Mods = await import('../systems/itens-poe/modificadores-monstro.mjs');
@@ -129,7 +130,7 @@ test('o monstro do PoE morto solta o ouro do level dele no bolso (o do Draevor n
   const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
   BESTIARY['poe-teste-ouro-40'] = { name: 'Teste do Ouro', look: 0, exp: 10, loot: [], poe: { nivel: 40 } };
   const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
   e.hunt.monstros = [];
   e.hunt.respawns = [];
   delete e.hunt.instancia;

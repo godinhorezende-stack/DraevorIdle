@@ -43,6 +43,7 @@ import * as Defesa from './personagem/defesa.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import { armaDoPersonagem, alcanceDaArma, categoriaDaArma, armorDoPersonagem, definirLevel, ATAQUE_MS } from './hunt/combate.mjs';
 import { distancia } from './hunt/caminho.mjs';
+import { sqlDoPoe } from './personagem/legado.mjs';
 
 const ARENAS = JSON.parse(readFileSync(new URL('../gamedata/arenas.json', import.meta.url), 'utf8')).arenas;
 const PATENTES = JSON.parse(readFileSync(new URL('../gamedata/patentes-arena.json', import.meta.url), 'utf8')).patentes;
@@ -102,19 +103,19 @@ const Q = {
   daSemana: banco.prepare(
     pg
       ? `SELECT nome, (estado::jsonb #>> '{arena,pontos}')::numeric AS pontos FROM personagens
-         WHERE (estado::jsonb #>> '{arena,semana}')::bigint = ? AND (estado::jsonb #>> '{arena,pontos}')::numeric > 0
+         WHERE (estado::jsonb #>> '{arena,semana}')::bigint = ? AND (estado::jsonb #>> '{arena,pontos}')::numeric > 0 AND ${sqlDoPoe('postgres')}
          ORDER BY pontos DESC LIMIT 3`
       : `SELECT nome, json_extract(estado, '$.arena.pontos') AS pontos FROM personagens
-         WHERE json_extract(estado, '$.arena.semana') = ? AND json_extract(estado, '$.arena.pontos') > 0
+         WHERE json_extract(estado, '$.arena.semana') = ? AND json_extract(estado, '$.arena.pontos') > 0 AND ${sqlDoPoe('sqlite')}
          ORDER BY pontos DESC LIMIT 3`,
   ),
   vencedores: banco.prepare(
     pg
       ? `SELECT nome, estado FROM personagens
-         WHERE coalesce((estado::jsonb #>> '{arena,vitorias}')::numeric, 0) > 0
+         WHERE coalesce((estado::jsonb #>> '{arena,vitorias}')::numeric, 0) > 0 AND ${sqlDoPoe('postgres')}
          ORDER BY (estado::jsonb #>> '{arena,vitorias}')::numeric DESC LIMIT 10`
       : `SELECT nome, estado FROM personagens
-         WHERE coalesce(json_extract(estado, '$.arena.vitorias'), 0) > 0
+         WHERE coalesce(json_extract(estado, '$.arena.vitorias'), 0) > 0 AND ${sqlDoPoe('sqlite')}
          ORDER BY json_extract(estado, '$.arena.vitorias') DESC LIMIT 10`,
   ),
   personagem: banco.prepare('SELECT nome, estado FROM personagens WHERE nome = ?'),
@@ -507,7 +508,7 @@ function comecarDuelo(arenaId, [A, Bs], agora) {
     garantir(s.estado, agora).tickets -= REGRAS.custoDoTicket;
     nivelarParaODuelo(s.estado, arena.level);
   }
-  const r = Cacadas.entrar(A.estado, { huntId: arenaId, mode: 'auto' });
+  const r = Cacadas.entrar(A.estado, { huntId: arenaId, mode: 'auto', arenaPvp: true });
   if (!r.ok) {
     for (const s of [A, Bs]) restaurar(s.estado);
     return r.erro ?? 'A arena não abriu.';

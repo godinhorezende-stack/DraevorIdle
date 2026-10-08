@@ -17,7 +17,8 @@ import * as S from '../systems/skills/golpes-secundarios.mjs';
 import { eventosDoQuadro } from '../websocket/quadro.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const FLAME = 'spell-flame-strike';
 const ENERGY = 'spell-energy-strike';
@@ -39,7 +40,7 @@ function montar(gemas, { links = [true, true, true], corpo = null } = {}) {
     e.equipment.body = { id: Number(peca.id), count: 1, soquetes: { abertos: max, links: Array(max - 1).fill(true), gemas: [...gc, ...Array(max - gc.length).fill(null)] } };
   }
   Ficha.invalidar(e);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -128,7 +129,7 @@ test('links: a mesma support duas vezes no grupo vale UMA vez', () => {
 
 // ---------------------------------------------------------------- explosões
 
-test('explosão sem outras supports: alvo sozinho leva o direto E a explosão; o evento é UM, no ponto do impacto, 3×3', () => {
+test('explosão sem outras supports: alvo sozinho leva o direto E a explosão; o evento é UM, no ponto do impacto, 3×3', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'explosion']);
   const alvo = bicho(e, 3, 0);
   const ev = lancar(e, FLAME, alvo);
@@ -139,7 +140,7 @@ test('explosão sem outras supports: alvo sozinho leva o direto E a explosão; o
   assert.deepEqual([ex[0].x, ex[0].y, ex[0].lado], [alvo.x, alvo.y, 3]);
 });
 
-test('explosão 3×3: as 9 casas levam; a 2 casas, não', () => {
+test('explosão 3×3: as 9 casas levam; a 2 casas, não', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'explosion']);
   const alvo = bicho(e, 3, 0);
   const dentro = [];
@@ -150,7 +151,7 @@ test('explosão 3×3: as 9 casas levam; a 2 casas, não', () => {
   for (const m of fora) assert.equal(golpesEm(ev, m), 0);
 });
 
-test('explosão em coordenadas diferentes: sempre no bicho do impacto', () => {
+test('explosão em coordenadas diferentes: sempre no bicho do impacto', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   // (Dentro do alcance da Flame Strike, 3.)
   for (const [dx, dy] of [[2, -2], [-3, 1], [1, 3]]) {
     const e = montar([FLAME, 'explosion']);
@@ -159,7 +160,7 @@ test('explosão em coordenadas diferentes: sempre no bicho do impacto', () => {
   }
 });
 
-test('explosão: dano ~40% de um golpe direto (rolagem própria) e passa pela resistência do bicho (teto de resistência do bicho)', () => {
+test('explosão: dano ~40% de um golpe direto (rolagem própria) e passa pela resistência do bicho (teto de resistência do bicho)', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'explosion']);
   const alvo = bicho(e, 3, 0);
   // Resistência 100% a fogo: o jogo limita no teto do bicho (`combate/limites.json`, 75%) — não há imunidade total.
@@ -180,7 +181,7 @@ test('explosão: dano ~40% de um golpe direto (rolagem própria) e passa pela re
 
 // ---------------------------------------------------------------- combinações
 
-test('Pierce sem explosão: atravessa na reta, até o limite de perfurações', () => {
+test('Pierce sem explosão: atravessa na reta, até o limite de perfurações', { skip: aAdaptar("Pierce existe no PoE e a mecânica de projétil é da engine; o teste usa gema do Draevor") }, () => {
   const e = montar([FLAME, 'pierce']);
   const alvo = bicho(e, 1, 0);
   const reta = [bicho(e, 2, 0), bicho(e, 3, 0), bicho(e, 4, 0)];
@@ -193,7 +194,7 @@ test('Pierce sem explosão: atravessa na reta, até o limite de perfurações', 
   assert.equal(explosoes(ev, e).length, 0);
 });
 
-test('Explosion + Pierce: cada impacto da reta explode no ponto dele; o projétil segue depois da explosão', () => {
+test('Explosion + Pierce: cada impacto da reta explode no ponto dele; o projétil segue depois da explosão', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'pierce', 'explosion']);
   const alvo = bicho(e, 1, 0);
   const segundo = bicho(e, 3, 0);
@@ -206,7 +207,7 @@ test('Explosion + Pierce: cada impacto da reta explode no ponto dele; o projéti
   assert.equal(golpesEm(ev, soDaExplosao, 'explosao'), 1);
 });
 
-test('Explosion + Multiple Projectiles: cada projétil explode no seu impacto', () => {
+test('Explosion + Multiple Projectiles: cada projétil explode no seu impacto', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'multiple-projectiles', 'explosion']);
   const alvo = bicho(e, 3, 0);
   const extra1 = bicho(e, -2, 0);
@@ -216,7 +217,7 @@ test('Explosion + Multiple Projectiles: cada projétil explode no seu impacto', 
   for (const m of [extra1, extra2]) assert.equal(golpesEm(ev, m, 'projetil'), 1);
 });
 
-test('Explosion + Pierce + Multiple Projectiles: os extras também perfuram e explodem', () => {
+test('Explosion + Pierce + Multiple Projectiles: os extras também perfuram e explodem', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'multiple-projectiles', 'pierce', 'explosion']);
   const alvo = bicho(e, 2, 0);
   bicho(e, 4, 0); // perfurado pelo principal
@@ -227,7 +228,7 @@ test('Explosion + Pierce + Multiple Projectiles: os extras também perfuram e ex
   assert.deepEqual(explosoes(ev, e).sort(), ['-2,0', '-4,0', '0,3', '2,0', '4,0'].sort());
 });
 
-test('Explosion + Fork: o projétil se divide no impacto e cada filho explode onde acerta', () => {
+test('Explosion + Fork: o projétil se divide no impacto e cada filho explode onde acerta', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'fork', 'explosion']);
   const alvo = bicho(e, 2, 0);
   const f1 = bicho(e, 4, 2);
@@ -238,7 +239,7 @@ test('Explosion + Fork: o projétil se divide no impacto e cada filho explode on
   assert.deepEqual(explosoes(ev, e).sort(), ['2,0', '4,-2', '4,2'].sort());
 });
 
-test('Explosion + Chain: cada salto explode uma vez; com 2 bichos a cadeia acaba (não volta para quem já pegou)', () => {
+test('Explosion + Chain: cada salto explode uma vez; com 2 bichos a cadeia acaba (não volta para quem já pegou)', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'chain', 'explosion']);
   const alvo = bicho(e, 2, 0);
   const outro = bicho(e, 4, 0);
@@ -248,7 +249,7 @@ test('Explosion + Chain: cada salto explode uma vez; com 2 bichos a cadeia acaba
   assert.deepEqual(explosoes(ev, e), ['2,0', '4,0'], 'uma explosão por impacto, sem duplicar');
 });
 
-test('Explosion + Returning: na volta acerta cada um UMA vez e explode de novo', () => {
+test('Explosion + Returning: na volta acerta cada um UMA vez e explode de novo', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'pierce', 'returning-projectile', 'explosion']);
   const alvo = bicho(e, 2, 0);
   const atras = bicho(e, 4, 0);
@@ -258,7 +259,7 @@ test('Explosion + Returning: na volta acerta cada um UMA vez e explode de novo',
   assert.equal(explosoes(ev, e).length, 4, '2 na ida + 2 na volta');
 });
 
-test('explosões sobrepostas acumulam: o vizinho de dois impactos leva duas explosões', () => {
+test('explosões sobrepostas acumulam: o vizinho de dois impactos leva duas explosões', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'pierce', 'explosion']);
   const alvo = bicho(e, 1, 0);
   bicho(e, 3, 0);
@@ -289,7 +290,7 @@ test('a explosão vai para a tela como evento próprio, e some fora da tela como
   assert.deepEqual(filtrados, [perto]);
 });
 
-test('caçada automática (idle/offline usam o mesmo tique): as explosões das supports saem no combate de verdade', () => {
+test('caçada automática (idle/offline usam o mesmo tique): as explosões das supports saem no combate de verdade', { skip: doClassico("Suportes do Draevor (Explosion, Returning…) combinados em magia do Draevor") }, () => {
   const e = montar([FLAME, 'pierce', 'explosion']);
   e.actions = Array(Acoes.SLOTS).fill(null);
   assert.ok(Acoes.definir(e, { slot: Acoes.PAPEL_DO_SLOT.indexOf('attack'), value: { id: FLAME } }).ok);

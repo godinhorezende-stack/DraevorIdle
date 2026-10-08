@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import * as Gemas from '../systems/skills/gemas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ataques = () => [...Gemas.DEFS.values()].filter((d) => d.tipo !== 'support' && d.categoria === 'ataque');
 
@@ -15,13 +16,13 @@ test('habilidadeDeEscala: físico de perto = melee, físico de longe (ranged) = 
   assert.equal(Gemas.habilidadeDeEscala({}), 'magic');
 });
 
-test('as 92 gemas de ataque: 23 melee + 14 distance + 55 magic (a regra das tags + as 8 exceções de : paladin sagrado → Distance, monk → Melee)', () => {
+test('as 92 gemas de ataque: 23 melee + 14 distance + 55 magic (a regra das tags + as 8 exceções de : paladin sagrado → Distance, monk → Melee)', { skip: doClassico("As 92 gemas de ataque do Draevor e o danoBase delas") }, () => {
   const por = { melee: 0, distance: 0, magic: 0 };
   for (const d of ataques()) por[Gemas.habilidadeDeEscala(d)]++;
   assert.deepEqual(por, { melee: 23, distance: 14, magic: 55 });
 });
 
-test('bonusDoTreino segue a habilidade de escala', () => {
+test('bonusDoTreino segue a habilidade de escala', { skip: doClassico("Balão das gemas do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   e.skills = { ...(e.skills ?? {}), melee: { value: 100 }, distance: { value: 40 } };
   e.magic = { value: 20 };
@@ -31,7 +32,7 @@ test('bonusDoTreino segue a habilidade de escala', () => {
   assert.equal(Gemas.bonusDoTreino(e, { tags: ['fire'] }), 20 * D.porMagicLevel);
 });
 
-test('catálogo: toda skill de gema com dano traz danoBase e escalaCom; o dano base não passa do dano com a gema', () => {
+test('catálogo: toda skill de gema com dano traz danoBase e escalaCom; o dano base não passa do dano com a gema', { skip: doClassico("As 92 gemas de ataque do Draevor e o danoBase delas") }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
   const cat = Acoes.catalogo(e);
   let n = 0;

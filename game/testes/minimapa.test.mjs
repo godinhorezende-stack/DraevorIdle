@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { montarBase, escala, pontosDoRetrato } from '../frontend/client/src/minimapa.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Campanha from '../systems/campanha.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, huntDoPoe } from './apoio.mjs';
+import { aAdaptar } from './apoio-migracao.mjs';
 
 function retratoDa(huntId) {
   const e = personagemDeTeste({ level: 2000 });
@@ -15,7 +16,7 @@ function retratoDa(huntId) {
   return Cacadas.snapshotDaHunt(e, true);
 }
 
-test('todas as fases da campanha: a geometria monta, e todo monstro e o jogador caem DENTRO do mapa', () => {
+test('todas as fases da campanha: a geometria monta, e todo monstro e o jogador caem DENTRO do mapa', { skip: aAdaptar("Minimapa é da engine; o teste percorre CAMPANHA.fases do Draevor (vazia no oficial: \"0 fases conferidas\")") }, () => {
   let fases = 0;
   for (const f of Campanha.FASES) {
     if (f.pular) continue;
@@ -98,7 +99,7 @@ test('o RADAR vai pelo fio com TODOS os bichos do andar, e não só os da tela (
   const { Sessao } = await import('../websocket/sessao.mjs');
   const Quadro = await import('../websocket/quadro.mjs');
   const e = personagemDeTeste({ level: 2000 });
-  assert.equal(Cacadas.entrar(e, { huntId: 'werelions-1', mode: 'auto', dificuldade: 'facil' }).ok || Cacadas.entrar(e, { huntId: Campanha.FASES[5].huntId, mode: 'auto', dificuldade: 'facil' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: huntDoPoe('werelions-1'), mode: 'auto', dificuldade: 'facil' }).ok || Cacadas.entrar(e, { huntId: Campanha.FASES[5].huntId, mode: 'auto', dificuldade: 'facil' }).ok, true);
   const s = new Sessao({ readyState: 1, bufferedAmount: 0, send: () => {} });
   s.delta = true;
   const vivos = e.hunt.monstros.filter((m) => m.hp > 0).length;
@@ -127,7 +128,7 @@ test('radarDosBichos: só os vivos, boss e raridade marcados', async () => {
   assert.deepEqual(radarDosBichos([{ uid: 9, x: 0, y: 0, hp: 1 }], null, true), [0, 0, 2], 'sala de boss');
 });
 
-test('buracos e escadas: só os que FUNCIONAM, pela mesma regra do servidor, em todas as fases', async () => {
+test('buracos e escadas: só os que FUNCIONAM, pela mesma regra do servidor, em todas as fases', { skip: aAdaptar("Minimapa é da engine; o teste percorre CAMPANHA.fases do Draevor (vazia no oficial: \"0 fases conferidas\")") }, async () => {
   const { passagensDoAndar } = await import('../frontend/client/src/minimapa.mjs');
   const { destinoDaMudanca } = await import('../systems/hunt/andares.mjs');
   let total = 0;

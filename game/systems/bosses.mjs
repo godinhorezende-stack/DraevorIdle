@@ -19,6 +19,7 @@ import { darItem } from './inventario.mjs';
 import * as Bau from './bau.mjs';
 import * as Beta from './modo-beta.mjs';
 import { ehBossDeAto, CAMPANHA } from './campanha.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 export const TEMPO_NA_SALA_MS = 25 * 60_000;
 
@@ -107,7 +108,7 @@ export function contarMorte(estado, key) {
     if (t.kills < t.alvo) continue;
     t.kills = t.alvo;
     t.feito = true;
-    darItem(estado, TASK_TOKEN, t.tokens);
+    if (podeEntrar(TASK_TOKEN)) darItem(estado, TASK_TOKEN, t.tokens);
     estado.avisoDaHunt = `Boss Task "${t.name}" completa: ${t.bossName} liberado (+${t.tokens} Task Token).`;
   }
 }
@@ -281,6 +282,7 @@ export function lojaParaCliente(estado) {
 export function comprar(estado, { id }) {
   const oferta = LOJA_REAL.ofertas.find((o) => o.id === id);
   if (!oferta) return { ok: false, erro: 'Oferta inexistente.' };
+  if (oferta.itemId && !podeEntrar(oferta.itemId)) return { ok: false, erro: SO_ITENS_DO_POE };
   if (oferta.grupo === 'outfit' && (estado.lojaOutfits ?? []).includes(oferta.look)) return { ok: false, erro: 'Você já tem esse outfit.' };
   if (contarTokens(estado) < oferta.tokens) return { ok: false, erro: `Precisa de ${oferta.tokens} Boss Token.` };
   let falta = oferta.tokens;

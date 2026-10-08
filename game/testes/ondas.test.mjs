@@ -11,7 +11,7 @@ import { CONFIG } from '../systems/encontros/config.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
 import { matarMonstro } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const OURO = { id: 3031, chance: 100 };
 const SOBREV = { id: 'ondas', tipo: 'sobrevivencia', nome: 'Cerco de Trolls', ondas: [{ criaturas: [{ key: 'troll', qtd: 2 }] }, { criaturas: [{ key: 'troll', qtd: 3 }] }, { criaturas: [{ key: 'troll', qtd: 4 }], raridade: 'elite' }], pausaMs: 2000, recompensa: { drops: [OURO], porOnda: true, moedasMedia: 200, primeiraConclusao: { gold: 5000 } } };
@@ -21,7 +21,7 @@ const erros = (lista) => Modelo.validar(lista).join(' | ');
 function luta({ modo = 'online' } = {}) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
   e.maxHp = e.hp = 1e9;
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
   e.hunt.monstros.length = 0;
   for (const z of Object.keys(e.hunt.outrosAndares ?? {})) e.hunt.outrosAndares[z].length = 0;
   e.hunt.clock = 1000;
@@ -105,7 +105,7 @@ test('sobrevivência (manual): onda por onda, pausa entre elas, recompensa por o
   const depois = e.gold;
   for (let t = 0; t < 10; t++) passo(e, 8000 + t);
   assert.equal(e.gold, depois, 'concluído: nada paga de novo');
-  assert.equal(Entrega.vezesConcluido(e, 'troll-cave', 'ondas'), 1);
+  assert.equal(Entrega.vezesConcluido(e, HUNT_DE_TESTE, 'ondas'), 1);
   assert.equal(e.hunt.instancia.status, 'limpa', 'sem encontro em andamento, a fase fecha');
 });
 
@@ -138,7 +138,7 @@ test('fenda: o relógio fecha a passagem, remove o que sobrou, mantém o que as 
   assert.equal(enc(e, 'fenda').estado, 'falhou');
   assert.equal(daOnda(e).length, 0, 'a fenda se fechou: o que sobrou saiu da sala');
   assert.equal(e.gold, pago, 'o que já tinha pago fica; nada a mais');
-  assert.equal(Entrega.vezesConcluido(e, 'troll-cave', 'fenda'), 0, 'e não conta como concluída');
+  assert.equal(Entrega.vezesConcluido(e, HUNT_DE_TESTE, 'fenda'), 0, 'e não conta como concluída');
   passo(e, 62_000);
   assert.equal(e.hunt.instancia.status, 'limpa', 'a fase fecha');
 });
@@ -176,7 +176,7 @@ test('party: cada onda paga o loot a quem está na luta NAQUELE momento (o que s
   const e = luta();
   const amigo = personagemDeTeste({ vocacao: 'paladin', level: 60 });
   amigo.maxHp = amigo.hp = 1e9;
-  amigo.hunt = { clock: 1000, huntId: 'troll-cave', monstros: [], sessao: e.hunt.sessao };
+  amigo.hunt = { clock: 1000, huntId: HUNT_DE_TESTE, monstros: [], sessao: e.hunt.sessao };
   e.hunt.partilha = { ativa: true, membros: [{ estado: e, nome: 'a' }, { estado: amigo, nome: 'b' }], bonus: 1 };
   com(e, [{ ...SOBREV, recompensa: { drops: [OURO], porOnda: true, moedasMedia: 1000 } }]);
   iniciar(e, 'ondas', 1000);
@@ -201,8 +201,8 @@ test('projeção offline: ondas em andamento ao zerar a instância expiram sem p
 });
 
 test('economia: as ondas (bichos que dropam) e a recompensa por onda entram na conta do impacto, e o editor cobra o teto', () => {
-  const um = Eco.impactoEconomico('troll-cave', Modelo.encontrosDoMapa({ encontros: [{ ...SOBREV, ondas: [SOBREV.ondas[0]], recompensa: { drops: [OURO], porOnda: true, moedasMedia: 100 } }] }));
-  const tres = Eco.impactoEconomico('troll-cave', Modelo.encontrosDoMapa({ encontros: [SOBREV] }));
+  const um = Eco.impactoEconomico(HUNT_DE_TESTE, Modelo.encontrosDoMapa({ encontros: [{ ...SOBREV, ondas: [SOBREV.ondas[0]], recompensa: { drops: [OURO], porOnda: true, moedasMedia: 100 } }] }));
+  const tres = Eco.impactoEconomico(HUNT_DE_TESTE, Modelo.encontrosDoMapa({ encontros: [SOBREV] }));
   assert.ok(tres.valorDosEncontros > um.valorDosEncontros * 2, `3 ondas valem bem mais que 1: ${um.valorDosEncontros} → ${tres.valorDosEncontros}`);
   const porOnda = Eco.valorDeUmEncontro(Modelo.normalizar(SOBREV), null);
   const sem = Eco.valorDeUmEncontro(Modelo.normalizar({ ...SOBREV, recompensa: { ...SOBREV.recompensa, porOnda: false } }), null);

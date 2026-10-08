@@ -466,6 +466,7 @@ export function sortearSoquetes(meta, raridade, rng = Math.random) {
 // Os grupos ligados e a compatibilidade por tag: a MESMA regra que a tela usa (engine/sockets-de-gema.mjs).
 export { gruposLigados, grupoDoSocket, compativel } from '../../engine/sockets-de-gema.mjs';
 import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from '../itens-poe/so-itens-do-poe.mjs';
 
 // + as luvas, que no PoE têm slot próprio (e sockets).
 // (+ o segundo anel do PoE, `ring2`: o anel com encaixe — "Possui 1 Encaixes" — vale nos dois lados.)
@@ -1150,6 +1151,7 @@ export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
   if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));
   if (!def) return { ok: false, erro: 'Ela não vende isso.' };
+  if (!podeEntrar(def.itemId)) return { ok: false, erro: SO_ITENS_DO_POE };
   if (!RARIDADES_DA_LOJA.includes(raridade)) return { ok: false, erro: 'Ela só vende gemas comuns. As de outras raridades caem dos bichos.' };
   const n = Math.max(1, Math.min(CONFIG.loja.porVez ?? 20, Math.floor(Number(count) || 1)));
   const total = precoNaLoja(def, raridade) * n;

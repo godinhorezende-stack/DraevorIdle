@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import * as Estados from '../systems/skills/estados.mjs';
 import { CONFIG } from '../systems/skills/gemas.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
 
 const SEMPRE = () => 0; // o sorteio sempre acerta
 const NUNCA = () => 0.999;
@@ -161,7 +161,7 @@ test('ativosDe: só os estados ativos agora vão para o cliente (e ficam fora do
 
 test('o payload da caçada leva os estados ativos do mob (e nada quando não há)', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'online' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'online' }).ok);
   const h = e.hunt;
   assert.ok(h.monstros.length > 0);
   const [a, b] = h.monstros;
@@ -175,7 +175,7 @@ test('o payload da caçada leva os estados ativos do mob (e nada quando não há
 
 test('persistência: o estado do mob grava e volta com a caçada (a duração continua no relógio dela)', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   const m = h.monstros[0];
   m.estados = { congelado: { ate: 5000 }, controleImuneAte: 8000, lento: { ate: 4000, pct: 30 } };

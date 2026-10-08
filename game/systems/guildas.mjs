@@ -43,6 +43,7 @@ import * as Premium from './premium.mjs';
 import { normalizarBrasao, brasaoPadrao, precoDoBrasao, efeitosUsados, mesmoBrasao } from '../engine/brasao-de-guilda.mjs';
 import { recusaDoNome, chaveDoNome, nomeArrumado } from '../engine/nome-de-guilda.mjs';
 import { ordenarGuildas } from '../engine/ordem-das-guildas.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 export const REGRAS = {
   levelParaFundar: 500,
@@ -621,6 +622,8 @@ export async function comando(s, m) {
       const pos = Number.isInteger(m.pos) && itens[m.pos]?.id === Number(m.id) ? m.pos : itens.findIndex((p) => p.id === Number(m.id));
       if (pos < 0) return erro('Isso não está mais no baú.');
       const peca = itens[pos];
+      // No jogo oficial só sai do baú o item do PoE (o do Draevor, guardado por membros antigos, fica lá).
+      if (!podeEntrar(peca.id, peca)) return erro(SO_ITENS_DO_POE);
       const count = Math.min(peca.count ?? 1, Math.max(1, Math.floor(Number(m.count) || 1)));
       const { count: _c, ...extras } = peca;
       if ((peca.count ?? 1) > count) peca.count -= count;
