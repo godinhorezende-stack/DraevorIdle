@@ -4238,10 +4238,19 @@ export function renderContainer() {
   encherGradeDaMochila(grid, character, state);
   body.append(grid);
   // A grade do PoE mostra TODAS as vagas da mochila (as livres desenhadas no fundo): quantas linhas a capacidade pede nesta largura.
+  // As peças ficam presas nessas colunas (`--colunas`): a barra de rolagem que aparece depois não muda a conta (o vão dela já está
+  // reservado — `scrollbar-gutter`, style.css).
   if (corpoDaMochila()) requestAnimationFrame(() => {
     grid.style.maxWidth = '';
-    const colunas = Math.max(1, Math.floor((grid.clientWidth - 8 + 5) / 49));
-    grid.style.setProperty('--linhas', String(Math.ceil((meta?.container ?? 20) / colunas)));
+    grid.style.removeProperty('--colunas');
+    const cabem = Math.max(1, Math.floor((grid.clientWidth - 8 + 5) / 49));
+    const vagas = meta?.container ?? 20;
+    // Colunas que fecham as vagas em fileiras inteiras (20 = 5×4 no celular, 4×5 no computador): a grade desenha EXATAMENTE as vagas da
+    // mochila (dono, 08/10: "o máximo de slot na bag é 20" — com 6 colunas o fundo mostrava 24 casas). Sem divisor perto, as que cabem.
+    let colunas = cabem;
+    for (let c = cabem; c >= Math.max(3, cabem - 2); c--) if (vagas % c === 0) { colunas = c; break; }
+    grid.style.setProperty('--colunas', String(colunas));
+    grid.style.setProperty('--linhas', String(Math.ceil(vagas / colunas)));
     // Fecha em colunas inteiras (a casa cortada na borda não existe), centrada.
     grid.style.maxWidth = `${colunas * 49 - 5 + 8 + (grid.offsetWidth - grid.clientWidth)}px`;
   });
@@ -4455,8 +4464,8 @@ function encherGradeDaMochila(grid, character, state) {
  * botoes. Os nos sao os mesmos de sempre, e e' isso que impede o clique de se
  * perder entre dois retratos.
  */
-/** As vagas ocupadas da mochila: no modo PoE só as peças não empilháveis ocupam vaga (as pilhas não contam — `Inventario.cabeNaMochila`). */
-const vagasOcupadas = (character) => (character.filtroPoe ? character.inventory.filter((p) => !ctx.state.items[p.id]?.stackable).length : character.inventory.length);
+/** As vagas ocupadas da mochila: cada entrada, peça ou pilha (no modo PoE, como no PoE — `Inventario.cabeNaMochila`). */
+const vagasOcupadas = (character) => character.inventory.length;
 
 function atualizarCabecaDaMochila(cabeca, character, meta) {
   const cheia = character.inventory.length;

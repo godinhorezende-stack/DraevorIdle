@@ -85,15 +85,24 @@ export function moedasParaOBolso(estado) {
 }
 
 /**
- * As VAGAS da mochila no modo PoE (dono, 07/10: "no inventário o máximo de itens não empilháveis são 20 e está podendo colocar mais"): o
- * PoE não tem peso, então o limite é de vagas — o `container` da mochila (20). Só as peças NÃO empilháveis ocupam vaga; as pilhas (moedas,
- * orbes) não contam. Fora do modo PoE vale o peso, como antes.
+ * As VAGAS da mochila no modo PoE: o PoE não tem peso, então o limite é de vagas — o `container` da mochila (20). Como no inventário do
+ * PoE, TODA entrada ocupa uma vaga: a peça e também a pilha (moedas, orbes) — dono, 08/10: "o máximo de slot na bag é 20" (de 07/10 a
+ * 08/10 as pilhas não contavam, e a mochila passava de 20). A pilha nova que se junta a uma que já está lá (mesmo item, até 100) não
+ * pede vaga. Fora do modo PoE vale o peso, como antes.
  */
 export const vagasDaMochila = (estado) => ITEM_CATALOG[estado?.equipment?.backpack?.id]?.container ?? 20;
-export const pecasNaMochila = (estado) => (estado?.inventory ?? []).filter((p) => !ITEM_CATALOG[p.id]?.stackable).length;
+/** As vagas ocupadas: cada entrada da mochila (peça ou pilha). */
+export const pecasNaMochila = (estado) => (estado?.inventory ?? []).length;
+/** Quantas vagas NOVAS `count` de `id` pedem: a peça, uma por unidade; o empilhável, o que não couber nas pilhas que já estão lá. */
+function vagasNovas(estado, id, count) {
+  const n = Math.max(1, Number(count) || 1);
+  if (!ITEM_CATALOG[id]?.stackable) return n;
+  const sobra = (estado?.inventory ?? []).reduce((s, p) => (p.id === id && !pecaEspecial(p) ? s + Math.max(0, PILHA_MAX - (p.count ?? 1)) : s), 0);
+  return Math.ceil(Math.max(0, n - sobra) / PILHA_MAX);
+}
 export function cabeNaMochila(estado, id, count = 1) {
-  if (!ItensPoeCatalogo.ligado() || ITEM_CATALOG[id]?.stackable) return true;
-  return pecasNaMochila(estado) + Math.max(1, count) <= vagasDaMochila(estado);
+  if (!ItensPoeCatalogo.ligado()) return true;
+  return pecasNaMochila(estado) + vagasNovas(estado, id, count) <= vagasDaMochila(estado);
 }
 
 /** Cabe `count` de `id` na capacidade do level (equipamento + mochila + bolsa)? (No modo PoE, nas vagas da mochila.) */
@@ -103,7 +112,7 @@ export function cabeNoPeso(estado, id, count = 1) {
   return pesoDoInventario(estado) + peso <= Afixos.capacidade(estado);
 }
 /** O erro de quando não cabe: no modo PoE é a mochila cheia (vagas); fora dele, o peso. */
-export const erroDeEspaco = (estado, id, count = 1) => (cabeNaMochila(estado, id, count) ? 'Você não tem capacidade para carregar isso.' : `A mochila está cheia (${vagasDaMochila(estado)} vagas para peças não empilháveis).`);
+export const erroDeEspaco = (estado, id, count = 1) => (cabeNaMochila(estado, id, count) ? 'Você não tem capacidade para carregar isso.' : `A mochila está cheia (${vagasDaMochila(estado)} vagas).`);
 
 /** A peça tem dados de INSTÂNCIA (raridade, afixos, tier, imbuements, sockets, gema...)? — `camposDaPeca`. */
 export const temInstancia = (p) => Object.keys(camposDaPeca(p)).length > 0;

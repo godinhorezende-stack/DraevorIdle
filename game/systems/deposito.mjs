@@ -120,12 +120,12 @@ function porNaCaixa(estado, id, count, peca = {}, indice = null, caixas = garant
  */
 export function excessoParaODeposito(estado) {
   const foi = [];
-  // Modo PoE (dono, 07/10: "ainda está acontecendo quando adiciono mais de 20 itens na mochila"): a mochila tem VAGAS — além das 20
-  // peças não empilháveis, as mais RECENTES vão para o Depósito (compra, recompensa, forja, engine… todo caminho passa por `aplicar`).
+  // Modo PoE (dono, 07/10: "ainda está acontecendo quando adiciono mais de 20 itens na mochila"; 08/10: "o máximo de slot na bag é 20"):
+  // a mochila tem VAGAS — além das 20 entradas (peças e pilhas), as mais RECENTES vão para o Depósito (compra, recompensa, forja,
+  // engine… todo caminho passa por `aplicar`). Nada se perde: depósito cheio, fica na mochila.
   if (ItensPoeCatalogo.ligado()) {
     const inv = estado.inventory ?? [];
     for (let i = inv.length - 1; i >= 0 && pecasNaMochila(estado) > vagasDaMochila(estado); i--) {
-      if (ITEM_CATALOG[inv[i].id]?.stackable) continue;
       const [peca] = inv.splice(i, 1);
       if (!porNaCaixa(estado, peca.id, peca.count ?? 1, peca)) {
         inv.splice(i, 0, peca); // depósito cheio: fica na mochila (nada se perde)
