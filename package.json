@@ -5,7 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "node game/backend/index.mjs",
-    "test": "node --test \"game/testes/*.test.mjs\""
+    "test": "node game/tools/testes/testar.mjs full",
+    "test:quick": "node game/tools/testes/testar.mjs quick",
+    "test:system": "node game/tools/testes/testar.mjs system",
+    "test:auto": "node game/tools/testes/testar.mjs auto",
+    "test:dry-run": "node game/tools/testes/testar.mjs auto --dry-run",
+    "test:explain": "node game/tools/testes/testar.mjs auto --explain",
+    "test:auditoria": "node game/tools/testes/testar.mjs auditoria",
+    "test:ambiente": "node game/tools/testes/testar.mjs ambiente",
+    "test:instalar-hook": "node game/tools/testes/testar.mjs instalar-hook"
   },
   "dependencies": {
     "pg": "^8.23.0",

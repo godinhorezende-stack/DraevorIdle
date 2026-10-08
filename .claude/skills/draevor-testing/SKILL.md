@@ -24,14 +24,31 @@ Escreva, por falha: **causa**, **comportamento esperado**, **o que muda (código
 Sem alteração em massa às cegas: script de troca mecânica só depois de classificar o que ele toca, revisando os usos que não são o
 caso comum (ex.: um `'troll-cave'` que é de propósito a hunt do Draevor). Correção nova: prove que o teste **falha sem ela** e passa com ela.
 
-## Rodar
+## Rodar — por níveis (`docs/testes-por-nivel.md`)
+
+Não rode a suíte inteira a cada mudança pequena. Um motor só (`game/tools/testes/testar.mjs`) — os npm scripts, o hook do Claude Code e o
+pre-commit do git chamam ele:
 
 ```bash
-node --test game/testes/*.test.mjs                 # a suíte (npm test); ~4–5 min em 4 núcleos
-node --test game/testes/itens-poe*.test.mjs        # os testes do PoE
-node --test --test-name-pattern="C11" game/testes/familiar-combate.test.mjs
-DRAEVOR_CLASSICO=1 node --test game/testes/*.test.mjs   # o Draevor clássico (transição)
+npm run test:dry-run                     # NÃO roda nada: arquivos, sistemas, nível, testes escolhidos, a FULL e o porquê
+npm run test:explain                     # o porquê de cada sistema e de cada teste
+npm run test:quick                       # QUICK: validações (sintaxe/JSON/conflito/import) + testes que dependem DIRETAMENTE dos alterados
+npm run test:system -- gemas             # SYSTEM: todos os testes do(s) sistema(s) (sem nome: os das mudanças)
+npm test                                 # FULL: os 368 arquivos (~10 min numa máquina de 4 núcleos)
+npm run test:auto                        # classifica e roda o nível certo (o dos hooks)
+npm run test:ambiente                    # a verificação de segurança (onde a FULL pode rodar)
+npm run test:auditoria                   # a matriz e o TOP 20 dos lentos (docs/testes-matriz.md)
+node --test --test-name-pattern="C11" game/testes/familiar-combate.test.mjs   # um teste só, como sempre
 ```
+
+- **FULL obrigatória** quando mexe no núcleo (apoio dos testes, runner, boot/modo, `dados`/`regras`/`cacadas`, banco, `sessao.mjs`);
+  **recomendada** (não bloqueia, `⚠️ FULL SUITE RECOMENDADA`) com 4+ sistemas ou módulo do qual ≥ 10% dos testes dependem.
+- **A FULL nunca roda na VPS do jogo** (PRODUCTION_HOST, detectado pelos sinais reais: contêineres, `/srv/draevor`, nginx com o domínio,
+  portas 80/443) — nem manual, nem pelo hook, nem com `nice`, nem com `NODE_ENV`/`DRAEVOR_AMBIENTE`: "FULL SUITE BLOQUEADA: esta máquina
+  hospeda o servidor do jogo". Lá rodam só QUICK/SYSTEM, leves. Rode a FULL na máquina de desenvolvimento, no CI ou em staging.
+- O ambiente dos testes nunca herda `DATABASE_URL`, `REDIS_URL`, `PG*` nem variável de senha/token (o motor tira).
+- Os sistemas e o núcleo: `game/tools/testes/sistemas.mjs` (teste novo sem sistema aparece na auditoria). O motor só ESCOLHE arquivos:
+  nunca pula nem muda teste. O fingerprint (`.saida/aprovadas.json`) evita repetir uma rodada sobre o MESMO conteúdo.
 
 Cada arquivo roda no seu processo. Compare execuções pelo resumo `ℹ tests/pass/fail/skipped` e pela lista "failing tests" (cada falha
 vem com `test at arquivo:linha` — a linha da declaração).
