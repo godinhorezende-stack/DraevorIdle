@@ -73,7 +73,7 @@ export const TAGS_DE_GOLPE = new Set([
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
-  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
+  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
 ]);
 /** As condições que dependem do ANEL em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`). */
@@ -112,9 +112,13 @@ export function condicoesDe(estado, total = null, principais = null) {
   } else {
     v.add('naoMatouRecente').add('naoCriticoRecente').add('semDanoRecente');
   }
-  if ((estado?.maxHp ?? 0) > 0 && (estado.hp ?? 0) <= VIDA_BAIXA * estado.maxHp) v.add('vidaBaixa');
+  // (09/10, as maestrias da árvore:) "Você conta como em Vida Baixa enquanto em 75% da Vida máxima ou abaixo" / "…em Vida Cheia enquanto em
+  // 90% ou acima": o limiar muda (o maior/menor vale).
+  const baixa = Math.max(VIDA_BAIXA, (Number(total?.limiar_vida_baixa) || 0) / 100);
+  const cheia = Math.min(1, (Number(total?.limiar_vida_cheia) || 100) / 100);
+  if ((estado?.maxHp ?? 0) > 0 && (estado.hp ?? 0) <= baixa * estado.maxHp) v.add('vidaBaixa');
   else v.add('naoVidaBaixa');
-  if ((estado?.maxHp ?? 0) > 0 && (estado.hp ?? 0) >= estado.maxHp) v.add('vidaCheia');
+  if ((estado?.maxHp ?? 0) > 0 && (estado.hp ?? 0) >= cheia * estado.maxHp) v.add('vidaCheia');
   if ((estado?.maxMana ?? 0) > 0 && (estado.mana ?? 0) <= VIDA_BAIXA * estado.maxMana) v.add('manaBaixa');
   else v.add('naoManaBaixa');
   if (!(estado?.es > 0)) v.add('semEscudo');
@@ -251,6 +255,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     case 'venenoEmVoce': return Math.min(Number(b) || Infinity, (h?.efeitosDoJogador?.dots ?? []).filter((d) => /veneno/i.test(d.tipo) && d.falta > 0).length);
     case 'afeccaoEmVoce': return new Set((h?.efeitosDoJogador?.dots ?? []).filter((d) => d.falta > 0).map((d) => d.tipo)).size + ['congelado', 'lento', 'atordoado'].filter((k) => h?.controle?.[k]?.ate > agora).length;
     case 'mana': return cada(estado?.maxMana ?? 0, a);
+    // (09/10) "por Inimigo em Curto Alcance" (a até 2 casas), "por Inimigo próximo" (a até 4).
+    case 'inimigosPerto': { const r = Number(a) || 2; const p = h?.pos; return p ? (h.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) <= r).length : 0; }
     case 'matouRecente': return Math.min(Number(b) || Infinity, (h?.poeMortesRecentes ?? []).filter((t) => agora - t <= RECENTE_MS).length);
     default: return 0;
   }
@@ -508,6 +514,7 @@ export function tagsDoAlvo(alvo, agora) {
   if (at(e.cego)) t.push('alvoCego');
   if (at(e.mutilado)) t.push('alvoMutilado');
   if (at(e.provocado)) t.push('alvoProvocado');
+  if (at(e.atordoado)) t.push('alvoAtordoado');
   const dots = alvo.dots ?? [];
   const dot = (...k) => dots.some((d) => k.includes(d.tipo) && d.falta > 0);
   if (dot('sangramento')) t.push('alvoSangrando');
@@ -537,7 +544,8 @@ export function furiaAtual(estado) {
 export function ganharFuria(hunt, n, agora = hunt?.clock ?? 0) {
   if (!hunt || !(n > 0)) return;
   const f = (hunt.furia ??= { n: 0, ganhou: agora, perdeu: agora });
-  f.n = Math.min(FURIA.maximo, (f.n | 0) + n);
+  // ("+N à Fúria máxima" — a árvore e as peças.)
+  f.n = Math.min(FURIA.maximo + (Number(fichaDa(hunt)?.afPoe?.furia_max) || 0), (f.n | 0) + n);
   f.ganhou = agora;
   f.perdeu = agora;
 }
@@ -569,7 +577,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 export const EVENTOS = new Set(['matar', 'critico', 'bloquear', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer']);
-export const ACOES = new Set(['buffChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
 /**
@@ -608,7 +616,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e) => !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeVazio|itemCorrompido|itemNaoCorrompido|itemUnico|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e);
+export const escalaValida = (e) => !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeVazio|itemCorrompido|itemNaoCorrompido|itemUnico|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e);
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -689,7 +697,8 @@ export function doBicho(bicho, agora, { contraOutro = false } = {}) {
   if (ativo(e.exaurido, agora)) danoFator *= 1 - e.exaurido.pct / 100;
   if (contraOutro && ativo(e.provocado, agora)) danoFator *= 1 - NO_ACERTO.provocar.danoMenosPct / 100;
   if (ativo(e.cego, agora)) {
-    precisaoFator *= 1 - NO_ACERTO.cegar.precisaoMenosPct / 100;
+    // (O "Efeito do Cegamento aumentado" de quem cegou: `e.cego.efeito`.)
+    precisaoFator *= 1 - (NO_ACERTO.cegar.precisaoMenosPct * (e.cego.efeito ?? 1)) / 100;
     criticoFator *= 1 - (e.cego.criticoMenosPct ?? 0) / 100;
     // "Inimigos Cegados por você têm Esconjuro": causam 10% menos dano.
     if (e.cego.esconjuro) danoFator *= 0.9;

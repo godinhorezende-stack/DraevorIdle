@@ -48,6 +48,8 @@ export function daSoma(af = {}) {
     // PoE (07/10): o "Dano Degenerativo aumentado" (todas) e o de cada uma; a duração de cada uma e a das Elementais; o efeito do
     // Resfriamento e da Eletrização; "causam dano X% mais rápido"; "todo o dano pode Envenenar"; o dano a mais em quem está Mutilado.
     danoAumentado: n('dot_dmg_inc'),
+    // (09/10) "Dano com Afecções aumentado" (a árvore: "Ataques com Machados causam Dano com Afecções aumentado"): só nas afecções de dano.
+    danoComAfeccoes: n('ailment_dmg_inc'),
     danoIncendio: n('ignite_dmg_inc'),
     danoSangramento: n('bleed_dmg_inc'),
     danoVeneno: n('poison_dmg_inc'),
@@ -116,7 +118,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   // `aumentado`: o "Dano Degenerativo aumentado" daquela afecção. "X% mais rápido": a mesma soma em menos tempo.
   const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0) => {
     if (!(base > 0)) return;
-    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + aumentado + mutilado) / 100);
+    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100);
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' } }, agora);
     if (estado) postos.push(estado);

@@ -193,8 +193,8 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
     return true;
   }
-  // O bicho BLOQUEIA o tiro (só quem tem bloqueio configurado): sem dano.
-  if (AtributosDoMob.bloqueou(alvo)) {
+  // O bicho BLOQUEIA o tiro (só quem tem bloqueio configurado): sem dano. ("Monstros não podem Bloquear seus Ataques": não bloqueia.)
+  if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo)) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
     return true;
   }
@@ -1295,7 +1295,7 @@ export function round(estado, personagem) {
           return false;
         }
         // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): o golpe não causa dano.
-      if (AtributosDoMob.bloqueou(alvo)) {
+      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo)) {
         Treino.treinar(estado, pericia);
         eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
         return true;

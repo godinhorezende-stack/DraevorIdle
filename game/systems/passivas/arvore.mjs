@@ -217,7 +217,8 @@ export function garantir(estado) {
 
 export function pontos(estado) {
   const { passivas } = garantir(estado);
-  const total = pontosDoLevel(estado.level);
+  // (+ os nós que concedem pontos de passiva — "Concede 1 Ponto de Habilidade Passiva", na Ascendente: `pontos_passiva`.)
+  const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0));
   // Os nós de ascendência gastam os pontos de ASCENDÊNCIA (`pontosDeAscendencia`), não estes.
   const usados = passivas.alocados.reduce((s, id) => (ARVORE.porId.get(id)?.ascendencia ? s : s + custoDe(ARVORE.porId.get(id))), 0);
   return { total, usados, livres: Math.max(0, total - usados) };

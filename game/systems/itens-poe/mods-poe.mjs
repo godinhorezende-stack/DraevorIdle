@@ -63,7 +63,7 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     ev('mutilado');
   }
   if (sorte(v('chance_cegar'))) {
-    e.cego = { ate: agora + NO_ACERTO.cegar.duracaoMs, criticoMenosPct: v('cegados_critico_red'), ...(v('cegos_esconjuro') > 0 ? { esconjuro: true } : {}) };
+    e.cego = { ate: agora + NO_ACERTO.cegar.duracaoMs, criticoMenosPct: v('cegados_critico_red'), ...(v('cegos_esconjuro') > 0 ? { esconjuro: true } : {}), ...(v('efeito_cegueira') ? { efeito: Math.max(0, 1 + v('efeito_cegueira') / 100) } : {}) };
     ev('cego');
   }
   if (tags.has('magia') && sorte(v('chance_desacelerar'))) {
@@ -279,6 +279,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
   switch (ev.acao) {
     case 'vida': return curar('hp', estado.maxHp ?? 0, v);
     case 'vidaPct': return curar('hp', estado.maxHp ?? 0, ((estado.maxHp ?? 0) * v) / 100);
+    // `vidaPctChance:<pct>` / `manaPctChance:<pct>` = a CHANCE (%) de recuperar pct% ("10% de chance de Recuperar toda a Vida ao Matar").
+    case 'vidaPctChance': if (sorte(v)) curar('hp', estado.maxHp ?? 0, ((estado.maxHp ?? 0) * (Number(ev.param) || 0)) / 100); return;
+    case 'manaPctChance': if (sorte(v)) curar('mana', estado.maxMana ?? 0, ((estado.maxMana ?? 0) * (Number(ev.param) || 0)) / 100); return;
     case 'mana': return curar('mana', estado.maxMana ?? 0, v);
     case 'manaPct': return curar('mana', estado.maxMana ?? 0, ((estado.maxMana ?? 0) * v) / 100);
     case 'es': return curar('es', esMax, v);

@@ -1139,12 +1139,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(Ficha.combate(estado), 'keystone_magia_sanguinea') > 0) && custoDeMana > 0;
   if (pagaComVida && (estado.hp ?? 0) <= custoDeMana) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };
+  // (09/10, as maestrias da árvore:) "Habilidades (de Ataque) custam Vida ao invés de X% do seu Custo de Mana": essa parte sai da vida.
+  const parteEmVida = pagaComVida || !custoDeMana ? 0 : Math.round((custoDeMana * Math.min(100, Math.max(0, ModsPoe.valor(fichaDoCusto, 'custo_em_vida_pct')))) / 100);
+  if (parteEmVida && (estado.hp ?? 0) <= parteEmVida) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };
   // (PoE: com "Gaste Escudo de Energia antes da Mana" na peça da gema, o escudo cobre parte do custo.)
   const slotDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null : null;
   const escudoNoCusto = ModsPoe.escudoParaOCusto(estado, slotDaGema, Ficha.combate(estado));
   // ("Mana Insuficiente não impede seus Ataques Corpo a Corpo".)
   const semManaPode = ModsPoe.valor(fichaDoCusto, 'ataque_sem_mana') > 0 && tagsPoeDaSkill(entry).includes('corpo');
-  if (!pagaComVida && custoDeMana && !semManaPode && (estado.mana ?? 0) + escudoNoCusto < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
+  if (!pagaComVida && custoDeMana - parteEmVida > 0 && !semManaPode && (estado.mana ?? 0) + escudoNoCusto < custoDeMana - parteEmVida) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
   // "Mana mínima (%)" do slot: abaixo dela a skill espera (guarda a mana para a cura).
   if (action.minMana > 0 && entry.kind !== 'item' && (100 * (estado.mana ?? 0)) / Math.max(1, estado.maxMana ?? 1) < action.minMana) {
     return { ok: false, erro: 'Abaixo da mana mínima do slot.', motivo: 'MANA_MINIMA' };
@@ -1321,10 +1324,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   if (pagaComVida) estado.hp = Math.max(1, (estado.hp ?? 0) - custoDeMana);
   else if (custoDeMana) {
+    if (parteEmVida) estado.hp = Math.max(1, (estado.hp ?? 0) - parteEmVida);
     // PoE: "Gaste Escudo de Energia antes da Mana para os Custos de Habilidades Encaixadas" (a gema na peça que tem o mod).
-    const doEscudo = Math.min(custoDeMana, escudoNoCusto);
+    const doEscudo = Math.min(custoDeMana - parteEmVida, escudoNoCusto);
     if (doEscudo > 0) estado.es = Math.max(0, (estado.es ?? 0) - doEscudo);
-    estado.mana = Math.max(0, (estado.mana ?? 0) - (custoDeMana - doEscudo));
+    estado.mana = Math.max(0, (estado.mana ?? 0) - (custoDeMana - parteEmVida - doEscudo));
     // PoE: "X% de chance de, quando pagar o Custo de uma Habilidade, ganhar a mesma quantidade de Mana".
     if (Math.random() * 100 < ModsPoe.valor(Ficha.combate(estado), 'chance_devolver_custo')) estado.mana = Math.min(estado.maxMana ?? estado.mana, estado.mana + custoDeMana);
     Treino.gastarMana(estado, custoDeMana);
@@ -1446,7 +1450,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         return;
       }
       // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): sem dano nem estados.
-      if (AtributosDoMob.bloqueou(bicho)) {
+      // ("Monstros não podem Bloquear seus Ataques" — as maestrias da árvore: só nos ataques.)
+      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0 && (entry.poeGema ? !!entry.poeGema.ataque : true)) && AtributosDoMob.bloqueou(bicho)) {
         eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', bloqueado: true });
         return;
       }

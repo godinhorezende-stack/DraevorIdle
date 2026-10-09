@@ -60,3 +60,40 @@ test('a árvore do poedb × a do jogo: a principal inteira, as 21 ascendências 
   assert.ok(deAul.length > 0 && deAul.every((n) => !n.noJogo));
   assert.ok(deAul.filter((n) => n.linhas.length).length >= 5, 'os nós com efeito mostram as linhas (o início da Linhagem não tem texto)');
 });
+
+test('as mecânicas novas das linhas da árvore: limiar de vida baixa, fúria máxima, "por inimigo perto", dano com afecções, cegueira, pontos de passiva', { skip: SEM }, async () => {
+  const C = await import('../systems/itens-poe/condicoes-poe.mjs');
+  const Af = await import('../systems/itens-poe/afeccoes.mjs');
+  const { traduzirParte } = await import('../systems/itens-poe/traduzir.mjs');
+  // "Você conta como em Vida Baixa enquanto em 75% da Vida máxima ou abaixo"
+  const e = { maxHp: 100, hp: 70, maxMana: 10, mana: 10, hunt: null };
+  assert.ok(!C.condicoesDe(e, {}).has('vidaBaixa'));
+  assert.ok(C.condicoesDe(e, { limiar_vida_baixa: 75 }).has('vidaBaixa'));
+  assert.ok(C.condicoesDe({ ...e, hp: 92 }, { limiar_vida_cheia: 90 }).has('vidaCheia'));
+  // "por Inimigo em Curto Alcance": os vivos a até 2 casas
+  const h = { clock: 0, pos: { x: 0, y: 0 }, monstros: [{ hp: 1, x: 1, y: 1 }, { hp: 1, x: 2, y: 0 }, { hp: 1, x: 5, y: 0 }, { hp: 0, x: 1, y: 0 }] };
+  assert.equal(C.fatorDaEscala({ hunt: h }, {}, {}, 'inimigosPerto:2'), 2);
+  // "Ataques com Machados causam Dano com Afecções aumentado": o dano com afecções entra nas afecções de dano
+  assert.equal(Af.daSoma({ ailment_dmg_inc: 30 }).danoComAfeccoes, 30);
+  for (const [texto, stat] of [
+    ['Ataques com Machados causam Dano com Afecções aumentado em {0}%', 'ailment_dmg_inc@ataque+comMachado'],
+    ['Dano Físico com Armas Corpo a Corpo de Duas Mãos aumentado em {0}%', 'phys_dmg@ataque+armaCorpo+duasMaos'],
+    ['Habilidades de Ataque causam Dano aumentado em {0}% enquanto portando um Escudo', 'dmg_inc@ataque+comEscudo'],
+    ['Concede {0} Ponto de Habilidade Passiva', 'pontos_passiva'],
+    ['Velocidade de Ataque aumentado em {0}% por Inimigo em Curto Alcance', 'atk_speed%inimigosPerto:2'],
+  ]) {
+    const r = traduzirParte(texto, [12]);
+    assert.ok(['novo', 'equivalente', 'aproximado'].includes(r.estado), `${texto}: ${r.estado}`);
+    assert.equal(r.efeitos[0].stat, stat, texto);
+  }
+  // a cegueira mais forte: a precisão a menos do Cego cresce
+  const cego = { estados: { cego: { ate: 1000, efeito: 1.5 } } };
+  assert.equal(C.doBicho(cego, 0).precisaoFator, 1 - (C.NO_ACERTO.cegar.precisaoMenosPct * 1.5) / 100);
+  // os pontos de passiva a mais vêm da soma da árvore
+  const e2 = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 50 }), { sistema: 'poe' });
+  P.garantir(e2);
+  const base = P.pontos(e2).total;
+  const comPonto = Object.values(P.arvore().nos).find((n) => (n.efeitos ?? []).some((x) => x.add === 'pontos_passiva'));
+  assert.ok(comPonto, 'algum nó concede ponto de passiva (a Ascendente)');
+  assert.ok(base > 0);
+});
