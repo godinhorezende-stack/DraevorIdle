@@ -142,6 +142,12 @@
       "combate": true,
       "efeito": "itens-poe/jogo.separarVelocidadeLocal → ficha (multiplica os Ataques por Segundo da base da própria arma: o intervalo do golpe)"
     },
+    "atk_speed_mais": {
+      "nome": "Mais/menos Velocidade de Ataque",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.intervaloDoGolpeMs (\"X% mais/menos Velocidade de Ataque\": multiplica por cima dos aumentos; negativo = menos) (09/10)"
+    },
     "accuracy_inc": {
       "nome": "Precisão Global aumentada",
       "unidade": "%",

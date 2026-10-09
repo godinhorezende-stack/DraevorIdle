@@ -13127,12 +13127,10 @@
       "padrao": "^\\{(\\d+)\\}% menos Velocidade de Ataque$",
       "efeitos": [
         {
-          "stat": "atk_speed",
+          "stat": "atk_speed_mais",
           "valor": "-{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"menos\" somado como \"reduzida\"",
       "_nova": true,
       "_unico": true
     },

@@ -123,10 +123,13 @@ export function montar(estado, ficha, extras = {}) {
     ...fonte('Desarmado', ficha.arma ? 0 : APS_DESARMADO_POE),
     ...fonte('Velocidade de Ataque local da arma', ficha.arma?.locais?.pctVelocidade, { pct: true }),
     ...daOrigem('velocidadeDeAtaque').map((f) => ({ ...f, pct: true })),
+    ...fonte('Velocidade de Ataque mais/menos', ficha.velocidadeDeAtaqueMais, { pct: true }),
   ];
+  // ("20% menos Velocidade de Ataque": multiplica por cima dos aumentos — `Ficha.fatorDeVelocidadeMais`.)
+  const maisMenos = ficha.velocidadeDeAtaqueMais ? `; ${pct(Math.abs(ficha.velocidadeDeAtaqueMais), 0)} ${ficha.velocidadeDeAtaqueMais > 0 ? 'mais' : 'menos'} (multiplica)` : '';
   const dicaDosAtaques = apsDaArma
-    ? `a arma: ${num(apsDaArma.base, 2)} por segundo${apsDaArma.aposLocal !== apsDaArma.base ? ` × local = ${num(apsDaArma.aposLocal, 2)}` : ''}${ficha.duasArmas ? ' (duas armas: a média dos tempos das duas, 10% mais rápido)' : ''}${ficha.velocidadeDeAtaque ? `; velocidade de ataque global +${pct(ficha.velocidadeDeAtaque, 0)}` : ''}`
-    : `desarmado: ${num(APS_DESARMADO_POE, 2)} por segundo${ficha.velocidadeDeAtaque ? `; velocidade de ataque global +${pct(ficha.velocidadeDeAtaque, 0)}` : ''}`;
+    ? `a arma: ${num(apsDaArma.base, 2)} por segundo${apsDaArma.aposLocal !== apsDaArma.base ? ` × local = ${num(apsDaArma.aposLocal, 2)}` : ''}${ficha.duasArmas ? ' (duas armas: a média dos tempos das duas, 10% mais rápido)' : ''}${ficha.velocidadeDeAtaque ? `; velocidade de ataque global +${pct(ficha.velocidadeDeAtaque, 0)}` : ''}${maisMenos}`
+    : `desarmado: ${num(APS_DESARMADO_POE, 2)} por segundo${ficha.velocidadeDeAtaque ? `; velocidade de ataque global +${pct(ficha.velocidadeDeAtaque, 0)}` : ''}${maisMenos}`;
   const danoMedio = ((ficha.damage?.min ?? 0) + (ficha.damage?.max ?? 0)) / 2;
   const cg = ficha.cargas ?? {};
   const maxCarga = (k) => 3 + (cg[`max_${k}`] ?? 0);

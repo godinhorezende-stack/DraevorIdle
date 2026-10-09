@@ -613,11 +613,15 @@ export function antesDoTique(s, agora = Date.now()) {
   if (poe && (h.conjurando || (esperaOutra != null && !R.liberou(agora, esperaOutra)))) return;
   // PoE: o golpe no adversário é o golpe básico da caçada — o intervalo da ficha (o APS da arma e a velocidade de ataque), no relógio lógico
   // (`cacadas.tique`): conta de quando ele PODIA sair (o fim do anterior nele, ou da ação que ele esperou). No clássico, os 2 s fixos de sempre.
-  if (!(poe ? R.liberou(agora, h.proximoGolpePvp) : R.jaPode(agora, h.proximoGolpePvp))) return;
-  const intervalo = poe ? Ficha.combate(s.estado).intervaloDoGolpeMs : ATAQUE_MS;
-  h.proximoGolpePvp = (poe ? R.instanteLogico(agora, anterior, [h.proximoGolpePvp, esperaOutra]) : agora) + intervalo;
-  if (poe) (h.cooldowns ??= {})[GRUPO_DO_POE] = { ate: h.proximoGolpePvp - paraParede, total: intervalo, basico: true, adversario: true };
-  golpeNoAdversario(s, outro, arma, id);
+  // PoE: mais de um golpe no tique, se cabem (`R.ACOES_POR_TIQUE`, como a caçada) — cada um no instante lógico dele; para se ele caiu.
+  for (let k = 0; k < (poe ? R.ACOES_POR_TIQUE : 1); k++) {
+    if (!(poe ? R.liberou(agora, h.proximoGolpePvp) : R.jaPode(agora, h.proximoGolpePvp))) return;
+    const intervalo = poe ? Math.max(R.INTERVALO_MINIMO_DA_ACAO_MS, Ficha.combate(s.estado).intervaloDoGolpeMs) : ATAQUE_MS;
+    h.proximoGolpePvp = (poe ? R.instanteLogico(agora, anterior, [h.proximoGolpePvp, k === 0 ? esperaOutra : null]) : agora) + intervalo;
+    if (poe) (h.cooldowns ??= {})[GRUPO_DO_POE] = { ate: h.proximoGolpePvp - paraParede, total: intervalo, basico: true, adversario: true };
+    golpeNoAdversario(s, outro, arma, id);
+    if (!duelos.has(id) || (outro.estado?.hp ?? 0) <= 0 || (s.estado.hp ?? 0) <= 0) return;
+  }
 }
 
 function golpeNoAdversario(s, outro, arma, id) {

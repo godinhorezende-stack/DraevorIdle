@@ -86,6 +86,15 @@ export const FOLGA_DO_TIQUE = 1000 / TICKS_POR_SEGUNDO / 2;
 /** Já dá para o próximo passo/golpe marcado para `quando`? */
 export const jaPode = (agora, quando) => agora + FOLGA_DO_TIQUE >= (quando ?? 0);
 export const PASSO_MS = 250;
+/*
+ * ---- Mais de uma AÇÃO por tique (PoE; correção 1 da auditoria da velocidade, 09/10) ----
+ * O tique anda de 250 em 250 ms, mas no PoE não há teto de ações por segundo: uma ação mais curta que o tique (4,4 ataques/s, a magia de
+ * 0,2 s) sai mais de uma vez nele, cada uma no seu instante lógico (`instanteLogico`). Antes saía uma por tique — o teto era 4 ações/s, e a
+ * tela mostrava 4,42 com 4,03 de verdade. O piso de uma ação é 50 ms (20 por segundo) e um tique faz no máximo `ACOES_POR_TIQUE`: os
+ * limites de segurança (uma velocidade absurda não trava o servidor).
+ */
+export const INTERVALO_MINIMO_DA_ACAO_MS = 50;
+export const ACOES_POR_TIQUE = 8;
 
 /*
  * ---- O RELÓGIO LÓGICO das magias (decisão do dono, 01/10) ----

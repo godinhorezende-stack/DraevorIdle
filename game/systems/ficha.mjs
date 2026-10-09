@@ -427,11 +427,13 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
     velocidadeDeAtaque: (af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed'),
+    // PoE: o "X% mais/menos Velocidade de Ataque" (o Legado do Guerreiro: 20% menos) — multiplica por cima dos aumentos (`fatorDeVelocidadeMais`).
+    velocidadeDeAtaqueMais: itensPoeLigado() ? af.atk_speed_mais ?? 0 : 0,
     // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
     // (PoE: o APS da base do catálogo × a Velocidade de Ataque LOCAL da peça; com duas armas, a média dos tempos das duas — `intervaloBaseDoGolpe`.)
-    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([
@@ -574,6 +576,11 @@ function comRaioPorPrecisao(somado, af, precisao) {
 const comAcao = (pct, af) => (fatorDeAcao(af) === 1 ? pct : ((1 + pct / 100) * fatorDeAcao(af) - 1) * 100);
 /** A "Velocidade de Ação" do PoE (multiplica ataque, conjuração e movimento): 1 sem ela. */
 export const fatorDeAcao = (af) => Math.max(0.1, 1 + (itensPoeLigado() ? af?.action_speed ?? 0 : 0) / 100);
+/**
+ * O "X% mais/menos Velocidade de Ataque" do PoE (`atk_speed_mais`, negativo = menos): MULTIPLICA a velocidade por cima dos aumentos, como
+ * o "mais Vida" e o "mais Dano" do jogo (as fontes somam entre si). Antes o "20% menos" do Legado do Guerreiro era somado como "reduzida".
+ */
+export const fatorDeVelocidadeMais = (af) => Math.max(0.1, 1 + (itensPoeLigado() ? af?.atk_speed_mais ?? 0 : 0) / 100);
 
 /** A penalidade de resistência da campanha (PoE): −30% depois do chefe do Ato 5 e −60% depois do Ato 10, em qualquer dificuldade. */
 export function penalidadeDeResistencia(estado) {

@@ -1053,7 +1053,8 @@ export function marcarRecargaDaPocao(estado, entry) {
 /**
  * Os TEMPOS de uma gema do PoE agora, como no PoE (sem o cooldown global nem a "metade da recarga" do Draevor):
  *  - `uso`: magia = o tempo de conjuração × os suportes ÷ a velocidade de conjuração; ataque = o intervalo do golpe da arma (APS, velocidade
- *    de ataque) ÷ a velocidade da gema ("X% de base"). É o tempo até a próxima skill (um uso por vez); instantânea: 0,25 s (um tique).
+ *    de ataque) ÷ a velocidade da gema ("X% de base"). É o tempo até a próxima skill (um uso por vez; mais curto que o tique, sai mais
+ *    de uma vez nele — `cacadas.tique`); instantânea: 0,25 s (um tique).
  *  - `recarga`: só a da gema no PoE ("Recarga: N seg"), com a recuperação de recarga e os suportes; 0 = sem recarga.
  *  - `conjuracaoMs`: a conjuração da magia (a mesma conta do `uso`, sem o piso do tique; 0 = instantânea ou ataque) — é ela que o `disparar`
  *    conjura, e a magia sai quando o relógio comum libera.
@@ -1061,6 +1062,8 @@ export function marcarRecargaDaPocao(estado, entry) {
  * multiplicam (`castTimePct`). A LENTIDÃO do personagem (resfriado, Lentidão — menos velocidade de ação) segura o ataque e a magia como segura
  * o golpe básico (`cacadas.tique`); a recarga não. `doJogador: false` (o totem usa a gema do dono): sem a lentidão do personagem.
  */
+/** A gema instantânea (sem tempo de uso: 0 de conjuração, ou "Utilizar Habilidades Suportadas é Instantâneo") ocupa um tique. */
+const USO_DA_INSTANTANEA_MS = 250;
 export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), ficha = Ficha.combate(estado), { doJogador = true } = {}) {
   const t = GemasPoe.temposNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
   const suportes = 1 + (efeitoDaGema?.castTimePct ?? 0) / 100;
@@ -1074,7 +1077,9 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const lentidao = doJogador ? Controle.fatorDeLentidao(estado.hunt) : 1;
   const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, castSpeed) / 100)) * lentidao;
   const recarga = t.recargaMs ? Math.round((t.recargaMs / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0)) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
-  return { uso: Math.max(250, Math.round(bruto)), recarga, ataque, conjuracaoMs: ataque ? 0 : Math.round(bruto), conjuracaoBaseMs: t.conjuracaoMs, velAtaqueBase: t.velAtaqueBase, cargas: t.cargas };
+  // (O piso de 250 ms é só da INSTANTÂNEA, um tique; o resto vai até `R.INTERVALO_MINIMO_DA_ACAO_MS` — mais de uma ação cabe num tique.)
+  const uso = bruto > 0 ? Math.max(R.INTERVALO_MINIMO_DA_ACAO_MS, Math.round(bruto)) : USO_DA_INSTANTANEA_MS;
+  return { uso, recarga, ataque, conjuracaoMs: ataque ? 0 : Math.round(bruto), conjuracaoBaseMs: t.conjuracaoMs, velAtaqueBase: t.velAtaqueBase, cargas: t.cargas };
 }
 
 /** O cooldown global com `castSpeed`% de Cast Speed: a base (`R.GLOBAL_SPELL_COOLDOWN`) encurtada por ele (decisão do dono). */
