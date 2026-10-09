@@ -158,15 +158,21 @@ function nivelDoDano(estado, entry, defDaGema) {
  * SUA arma, no mesmo revezamento do golpe básico (`hunt.golpeDaSecundaria`); a velocidade já é a média dos dois tempos
  * (`Ficha.intervaloDoGolpeMs`). A gema que acerta com AS DUAS ("Causa 60 % do Dano combinando cada Arma" — Cutilada; 75% nas Lâminas
  * Giratórias; o Ataque Combinado, "o dano de ambas em um ataque") soma as duas faixas nessa %. Antes a gema usava sempre a mão principal.
- * `hunt`: o uso de verdade (alterna); sem ele (o balão), a mão principal. null: a faixa da ficha (uma arma, magia ou fora do PoE).
+ * O CRÍTICO segue a mão (`Ficha.fichaDaMao`): o uso da secundária rola o crítico da arma dela; o que combina as duas, a média dos dois
+ * pesada pelo dano de cada mão.
+ * `hunt`: o uso de verdade (alterna); sem ele (o balão), a mão principal. `{ arma, ficha }` — a faixa e a ficha deste uso; null: a da
+ * ficha (uma arma, magia ou fora do PoE).
  */
-function armaDaGemaDeAtaque(entry, ficha, hunt = null) {
+function maoDaGemaDeAtaque(entry, ficha, hunt = null) {
   if (!entry.poeGema?.ataque || !ficha?.duasArmas) return null;
   const secundaria = { min: Math.max(1, Math.round(ficha.ataqueSecundarioMin ?? 0)), max: Math.max(1, Math.round(ficha.ataqueSecundarioMax ?? 0)) };
   const combinada = GemasPoe.danoComAsDuasArmas(entry.poeGema.slug);
-  if (combinada != null) return { min: ((ficha.damage.min + secundaria.min) * combinada) / 100, max: ((ficha.damage.max + secundaria.max) * combinada) / 100 };
+  if (combinada != null) {
+    const pesos = [(ficha.damage.min + ficha.damage.max) / 2, (secundaria.min + secundaria.max) / 2];
+    return { arma: { min: ((ficha.damage.min + secundaria.min) * combinada) / 100, max: ((ficha.damage.max + secundaria.max) * combinada) / 100 }, ficha: Ficha.fichaDaMao(ficha, 'ambas', pesos) };
+  }
   if (!hunt) return null;
-  return (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria) ? secundaria : null;
+  return (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria) ? { arma: secundaria, ficha: Ficha.fichaDaMao(ficha, 'secundaria') } : null;
 }
 
 function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null) {
@@ -186,7 +192,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   // reforços) multiplica por cima, como em toda skill.
   const daGemaPoe = entry.poeGema && !entry.poeGema.buff ? entry.poeGema : null;
   const nivelPoe = efeitoDaGema?.nivel ?? 1;
-  // A faixa da ARMA deste uso (duas armas: a da mão da vez, ou as duas combinadas — `armaDaGemaDeAtaque`).
+  // A faixa da ARMA deste uso (duas armas: a da mão da vez, ou as duas combinadas — `maoDaGemaDeAtaque`).
   const armaDoGolpe = armaDoUso ?? fichaBase.damage ?? { min: 1, max: 1 };
   const doNivel = daGemaPoe
     ? daGemaPoe.ataque
@@ -292,7 +298,8 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
 export function danoMostrado(estado, entry, efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null) {
   // (Duas armas: a gema que combina as armas mostra as duas juntas; a que alterna, a mão principal.)
   const ficha = Ficha.combate(estado);
-  const c = contaDoDano(estado, entry, efeitoDaGema, ficha, armaDaGemaDeAtaque(entry, ficha));
+  const mao = maoDaGemaDeAtaque(entry, ficha);
+  const c = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? ficha, mao?.arma ?? null);
   const f = c.mult * c.fatorDaGema;
   return { min: Math.round((c.min + c.daPericia) * f), max: Math.round((c.max + c.daPericia) * f) };
 }
@@ -1504,9 +1511,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
     }
     // A conta do dano, a MESMA do balão (`contaDoDano`): base pelo level + treino em % + gema + afixos.
-    // (Duas armas: este uso é da mão da vez — ou das duas, na gema que as combina — `armaDaGemaDeAtaque`.)
-    const fichaDaMao = Ficha.combate(estado);
-    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema, fichaDaMao, armaDaGemaDeAtaque(entry, fichaDaMao, hunt));
+    // (Duas armas: este uso é da mão da vez — ou das duas, na gema que as combina —, com o dano e o crítico dela: `maoDaGemaDeAtaque`.)
+    const fichaDaGema = Ficha.combate(estado);
+    const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
+    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null);
     let total = 0;
     const danos = [];
     /*

@@ -224,6 +224,8 @@ export function montar(estado, ficha, extras = {}) {
       linha('Veneno por segundo (acerto)', faixa(veneno), { dica: `${pct(AfeccoesPoe.BASE.veneno.porSegundo * 100, 0)} do dano físico e de caos do acerto por segundo, por ${num(AfeccoesPoe.BASE.veneno.duracaoMs / 1000)} s` }),
       linha('Veneno por segundo (crítico)', faixa(veneno.map((v) => v * doCritico)), { dica: DO_CRITICO }),
       linha('Chance de crítico', pct((ficha.critChance ?? 0) * 100, 2), { fontes: daOrigem('critChance') }),
+      // (Duas armas: cada mão rola o crítico da arma dela — `Ficha.fichaDaMao`.)
+      ...(ficha.critChanceSecundaria != null ? [linha('Chance de crítico (mão secundária)', pct(ficha.critChanceSecundaria * 100, 2), { dica: 'os golpes da arma da mão secundária usam o crítico dela (a base × o crítico local dela); a linha de cima é o da principal' })] : []),
       linha('Multiplicador de crítico', pct((ficha.critMultiplier ?? 1.5) * 100, 0), { fontes: daOrigem('critMultiplier') }),
       ...dano.map(([el, v]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} aumentado`, `+${pct(v)}`, { fontes: daOrigem(`dano.${el}`) })),
       ...Object.entries(ficha.danoSomado ?? {}).map(([el, [a, b]]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} adicionado aos ataques`, `${num(a)}–${num(b)}`)),

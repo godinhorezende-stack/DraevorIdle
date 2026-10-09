@@ -142,6 +142,12 @@
       "combate": true,
       "efeito": "itens-poe/jogo.separarVelocidadeLocal → ficha (multiplica os Ataques por Segundo da base da própria arma: o intervalo do golpe)"
     },
+    "crit_chance_local": {
+      "nome": "Chance de Crítico da arma aumentada (local)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/jogo.separarLocaisDaArma → ficha (multiplica a chance de crítico BASE da própria arma: só nos golpes dela) (09/10)"
+    },
     "atk_speed_mais": {
       "nome": "Mais/menos Velocidade de Ataque",
       "unidade": "%",

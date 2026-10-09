@@ -92,8 +92,8 @@ export function iniciar(itemCatalog) {
         // Os ATAQUES POR SEGUNDO da base (1,55 na Rusted Sword) no campo que a conta da arma lê (`engine/arma.baseDaArma`): o intervalo BASE do golpe
         // básico e das habilidades de ataque é 1000 / APS, como no PoE. Sem ele valia o padrão do Draevor (0,5 = 2 s) para toda arma do PoE.
         ...(regra.skill && Number(a.ataques_por_segundo) > 0 ? { aps: Number(a.ataques_por_segundo) } : {}),
-        // A chance de crítico da BASE da arma (ex.: 5%) no campo que a ficha já soma por peça (`critChance`, em centésimos de %); o
-        // "Chance de Crítico aumentada" dos mods multiplica por cima (ficha.critChance), como no PoE.
+        // A chance de crítico da BASE da arma (ex.: 5%) no campo que a ficha já soma por peça (`critChance`, em centésimos de %); a
+        // "Chance de Crítico aumentada" da própria arma é local (`crit_chance_local`) e a global multiplica por cima, como no PoE.
         ...(regra.skill && a.chance_critico_pct ? { critChance: Math.round(Number(a.chance_critico_pct) * 100) } : {}),
         ...(regra.twoHanded ? { twoHanded: true } : {}),
         ...(regra.range ? { range: regra.range } : {}),
@@ -147,19 +147,31 @@ function afDaBase(atributos, dosMods = {}) {
  * "Velocidade de Ataque e Conjuração" seguem globais, como no PoE. A linha só de velocidade local fica 'equivalente' (a mesma conta do PoE).
  */
 const VELOCIDADE_LOCAL = /^Velocidade de Ataque (?:aumentada|reduzida) em \{\d+\}%$/;
-function separarVelocidadeLocal(classe, t, af) {
+/*
+ * O CRÍTICO LOCAL da arma (PoE), do mesmo jeito: na ARMA, "Chance de Crítico aumentada em X%" sem condição é LOCAL — multiplica a chance
+ * de crítico BASE da própria arma (5% × 1,30 = 6,5%) e só vale nos golpes DELA. Sai de `crit_chance_inc` (global, que valia nas duas mãos e
+ * até nas magias) para `crit_chance_local`, que a ficha aplica no crítico da arma (`ArmaMod.statsDaArma`). A "Chance Global de Crítico" e
+ * as com condição seguem globais.
+ */
+const CRITICO_LOCAL = /^Chance de (?:Golpe )?Crítico aumentad[ao] em \{\d+\}%$/;
+function separarLocal(classe, t, af, padrao, global, local) {
   if (CLASSES_DO_JOGO[classe]?.slot !== 'weapon') return;
-  let local = 0;
+  let soma = 0;
   for (const l of t.linhas) {
-    const locais = l.partes.filter((p) => VELOCIDADE_LOCAL.test(p.parte) && p.efeitos.length === 1 && p.efeitos[0].stat === 'atk_speed');
-    for (const p of locais) local += p.efeitos[0].valor;
+    const locais = l.partes.filter((p) => padrao.test(p.parte) && p.efeitos.length === 1 && p.efeitos[0].stat === global);
+    for (const p of locais) soma += p.efeitos[0].valor;
     if (locais.length && locais.length === l.partes.length) l.estado = 'equivalente';
   }
-  if (!local) return;
-  const global = Math.round(((af.atk_speed ?? 0) - local) * 100) / 100;
-  if (global) af.atk_speed = global;
-  else delete af.atk_speed;
-  af.atk_speed_local = Math.round(((af.atk_speed_local ?? 0) + local) * 100) / 100;
+  if (!soma) return;
+  const resto = Math.round(((af[global] ?? 0) - soma) * 100) / 100;
+  if (resto) af[global] = resto;
+  else delete af[global];
+  af[local] = Math.round(((af[local] ?? 0) + soma) * 100) / 100;
+}
+/** A velocidade de ataque e o crítico LOCAIS da arma (os dois acima). */
+function separarLocaisDaArma(classe, t, af) {
+  separarLocal(classe, t, af, VELOCIDADE_LOCAL, 'atk_speed', 'atk_speed_local');
+  separarLocal(classe, t, af, CRITICO_LOCAL, 'crit_chance_inc', 'crit_chance_local');
 }
 
 /**
@@ -184,7 +196,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
     ...(a.escudo_energia ? { es: [a.escudo_energia, a.escudo_energia] } : {}),
   };
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
-  separarVelocidadeLocal(gerada.classe, t, af);
+  separarLocaisDaArma(gerada.classe, t, af);
   const R = regras.raridades[gerada.raridade] ?? {};
   // Frasco: não dá atributo ao personagem (só enquanto o efeito dura, pelo cinto — `frascos.mjs`); o balão leva o resumo com os mods aplicados.
   if (FRASCOS.includes(gerada.classe)) {
@@ -221,9 +233,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
  * A peça de uma versão antiga é refeita na entrada (`refazerPecasAntigas`) — mods, valores, sockets e gemas ficam como estão.
  */
 // (6 — 09/10: as regras da árvore × poedb, lotes 3 a 5, também mudam mods de itens: defesa de uma peça, condições de arma, exposição…)
-// (7 — 09/10: a "Velocidade de Ataque aumentada" da arma passa a ser LOCAL, `atk_speed_local` — `separarVelocidadeLocal`.)
+// (7 — 09/10: a "Velocidade de Ataque aumentada" da arma passa a ser LOCAL, `atk_speed_local` — `separarLocaisDaArma`.)
 // (8 — 09/10: "X% menos Velocidade de Ataque" (o Legado do Guerreiro) multiplica — `atk_speed_mais`, não mais somado como "reduzida".)
-export const VERSAO_DA_TRADUCAO = 8;
+// (9 — 09/10: a "Chance de Crítico aumentada" da arma passa a ser LOCAL, `crit_chance_local` — cada mão com o crítico da sua arma.)
+export const VERSAO_DA_TRADUCAO = 9;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -286,7 +299,7 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   const t = traduzirPeca(p);
   const af = { ...t.af };
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
-  separarVelocidadeLocal(p.classe, t, af);
+  separarLocaisDaArma(p.classe, t, af);
   p.af = af;
   p.notas = notasDe(t);
   // A versão da tradução com que `af`/`estados` foram feitos (a entrada no jogo refaz as peças de versões antigas — `refazerPecasAntigas`).
