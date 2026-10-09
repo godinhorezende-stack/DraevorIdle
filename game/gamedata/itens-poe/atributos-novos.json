@@ -859,7 +859,7 @@
       "nome": "Multiplicador do Dano de Gelo Degenerativo",
       "unidade": "%",
       "combate": true,
-      "efeito": "itens-poe/afeccoes (nenhuma fonte de dano de gelo ao longo do tempo no jogo ainda)"
+      "efeito": "acoes (o dano degenerativo das habilidades de Gelo das gemas do PoE: Vórtice, Geada Rastejante, Estalo Gélido… — gemas-poe.degenerativoNoNivel) (09/10)"
     },
     "dot_multi_chaos": {
       "nome": "Multiplicador do Dano de Caos Degenerativo",
@@ -2474,6 +2474,174 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/frascos.usar"
+    },
+    "efeito_maldicao": {
+      "nome": "Efeito das suas Maldições",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.efeitosDaMaldicao (as marcas da maldição: resistência e dano recebido do alvo) (09/10)"
+    },
+    "recuperacao_vida_inc": {
+      "nome": "Velocidade de Recuperação de Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe (a regeneração) e mods-poe.aoSerAcertado (a recuperação do dano sofrido em menos tempo) (09/10)"
+    },
+    "recuperacao_mana_inc": {
+      "nome": "Velocidade de Recuperação de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe (a regeneração) e mods-poe.aoSerAcertado (a recuperação do dano sofrido em menos tempo) (09/10)"
+    },
+    "recuperacao_es_inc": {
+      "nome": "Velocidade de Recuperação de Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.tique (a regeneração do Escudo de Energia) (09/10)"
+    },
+    "recoup_life_fire": {
+      "nome": "Dano de Fogo sofrido Recuperado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (em 4 s, só nos golpes de Fogo) (09/10)"
+    },
+    "recoup_life_ice": {
+      "nome": "Dano de Gelo sofrido Recuperado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (em 4 s, só nos golpes de Gelo) (09/10)"
+    },
+    "recoup_life_energy": {
+      "nome": "Dano de Raio sofrido Recuperado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (em 4 s, só nos golpes de Raio) (09/10)"
+    },
+    "recoup_life_phys": {
+      "nome": "Dano Físico sofrido Recuperado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (em 4 s, só nos golpes Físicos) (09/10)"
+    },
+    "recoup_life_chaos": {
+      "nome": "Dano de Caos sofrido Recuperado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (em 4 s, só nos golpes de Caos) (09/10)"
+    },
+    "chance_intimidar": {
+      "nome": "Chance de Intimidar no Acerto",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (o alvo sofre 10% mais dano de Ataques — condicoes-poe.fatorRecebidoPeloBicho) (09/10)"
+    },
+    "intimidar_s": {
+      "nome": "Duração do Intimidar",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "chance_inervar": {
+      "nome": "Chance de Inervar no Acerto",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (o alvo sofre 10% mais dano de Magias — condicoes-poe.fatorRecebidoPeloBicho) (09/10)"
+    },
+    "inervar_s": {
+      "nome": "Duração do Inervar",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "exposicao_acerto_fogo": {
+      "nome": "Exposição a Fogo no Acerto",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (−X de resistência a Fogo do alvo por 4 s — hunt/resistencia) (09/10)"
+    },
+    "exposicao_acerto_gelo": {
+      "nome": "Exposição a Gelo no Acerto",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (−X de resistência a Gelo do alvo por 4 s — hunt/resistencia) (09/10)"
+    },
+    "exposicao_acerto_raio": {
+      "nome": "Exposição a Raio no Acerto",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (−X de resistência a Raio do alvo por 4 s — hunt/resistencia) (09/10)"
+    },
+    "sangramento_mais_rapido": {
+      "nome": "Sangramentos causam Dano mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (o mesmo total em menos tempo) (09/10)"
+    },
+    "frenesi_a_cada_s": {
+      "nome": "Ganha uma Carga de Frenesi a cada N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "itens-poe/cargas.tique (09/10)"
+    },
+    "poder_a_cada_s": {
+      "nome": "Ganha uma Carga de Poder a cada N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "itens-poe/cargas.tique (09/10)"
+    },
+    "tolerancia_a_cada_s": {
+      "nome": "Ganha uma Carga de Tolerância a cada N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "itens-poe/cargas.tique (09/10)"
+    },
+    "ailment_dmg_inc": {
+      "nome": "Dano com Afecções aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (incêndio, sangramento e veneno; com condição de arma: condicoes-poe.fichaDoGolpe) (09/10)"
+    },
+    "limiar_vida_baixa": {
+      "nome": "Conta como em Vida Baixa até X% da Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.condicoesDe (vidaBaixa) (09/10)"
+    },
+    "limiar_vida_cheia": {
+      "nome": "Conta como em Vida Cheia a partir de X% da Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.condicoesDe (vidaCheia) (09/10)"
+    },
+    "furia_max": {
+      "nome": "Fúria máxima",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.ganharFuria (o teto de 30 + isto) (09/10)"
+    },
+    "custo_em_vida_pct": {
+      "nome": "Parte do custo de mana paga com Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (o custo da habilidade: essa parte sai da vida) (09/10)"
+    },
+    "inimigos_nao_bloqueiam": {
+      "nome": "Monstros não podem Bloquear seus Ataques",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes e hunt/combate (o bloqueio do bicho não vale nos ataques) (09/10)"
+    },
+    "efeito_cegueira": {
+      "nome": "Efeito do Cegamento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar → condicoes-poe.doBicho (a precisão a menos do Cego) (09/10)"
+    },
+    "pontos_passiva": {
+      "nome": "Pontos de Habilidade Passiva a mais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.pontos (os nós que concedem pontos) (09/10)"
     }
   }
 }

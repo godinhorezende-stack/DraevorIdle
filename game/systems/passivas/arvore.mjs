@@ -68,7 +68,8 @@ export function validar(arvore) {
   return erros;
 }
 
-const ADDS_PERMITIDOS = /^[a-z_]+$/;
+// (09/10, a árvore do PoE: também as chaves dos mods com condição, escala e as dinâmicas — `ModsPoe.resolver` decide quando valem.)
+const ADDS_PERMITIDOS = /^[a-z_][\w:%@+.-]*$/i;
 function efeitoValido(ef) {
   if (!ef || typeof ef !== 'object') return false;
   if (ef.tag) return Number.isFinite(ef.dano);
@@ -216,7 +217,8 @@ export function garantir(estado) {
 
 export function pontos(estado) {
   const { passivas } = garantir(estado);
-  const total = pontosDoLevel(estado.level);
+  // (+ os nós que concedem pontos de passiva — "Concede 1 Ponto de Habilidade Passiva", na Ascendente: `pontos_passiva`.)
+  const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0));
   // Os nós de ascendência gastam os pontos de ASCENDÊNCIA (`pontosDeAscendencia`), não estes.
   const usados = passivas.alocados.reduce((s, id) => (ARVORE.porId.get(id)?.ascendencia ? s : s + custoDe(ARVORE.porId.get(id))), 0);
   return { total, usados, livres: Math.max(0, total - usados) };
@@ -354,7 +356,9 @@ export function ilhadosSemEles(estado, ids) {
   return [...fica].filter((x) => (ARVORE.porId.get(x)?.tipo === 'mastery' ? !grupos.has(ARVORE.porId.get(x).grupo) : !ligados.has(x)));
 }
 
-export const precoDoRespec = (estado, quantos) => Math.round(CONFIG.respec.ouroPorNoPorLevel * (estado.level ?? 1) * quantos);
+/** As regras do respec: no jogo oficial (a árvore do PoE) as de `respec.oficial` — de graça e também na caçada (dono, 09/10). */
+export const regrasDoRespec = () => (ARVORE.id === 'poe' ? { ...CONFIG.respec, ...(CONFIG.respec.oficial ?? {}) } : CONFIG.respec);
+export const precoDoRespec = (estado, quantos) => (regrasDoRespec().gratis ? 0 : Math.round(regrasDoRespec().ouroPorNoPorLevel * (estado.level ?? 1) * quantos));
 
 /**
  * O que um respec tiraria e custaria: `ids` (os pedidos) e, com `junto`, os
@@ -362,7 +366,8 @@ export const precoDoRespec = (estado, quantos) => Math.round(CONFIG.respec.ouroP
  */
 export function planoDeRespec(estado, { ids, tudo = false, junto = false }, emCacada = false) {
   const { passivas } = garantir(estado);
-  if (CONFIG.respec.soForaDaCacada && emCacada) return erro('EM_CACADA', 'Só dá para tirar nós fora da caçada.');
+  const regras = regrasDoRespec();
+  if (regras.soForaDaCacada && emCacada) return erro('EM_CACADA', 'Só dá para tirar nós fora da caçada.');
   const inicio = inicioDe(estado);
   const inicioAsc = inicioDaAscendencia(estado);
   let tirar = tudo ? passivas.alocados.filter((x) => x !== inicio && x !== inicioAsc) : [...new Set(ids ?? [])];
@@ -374,6 +379,8 @@ export function planoDeRespec(estado, { ids, tudo = false, junto = false }, emCa
   const ilhados = ilhadosSemEles(estado, tirar);
   if (ilhados.length && !junto) return { ...erro('ILHARIA', `Tirar isso deixaria ${ilhados.length} nó(s) sem caminho até o início — tire-os junto.`), ilhados };
   tirar = [...tirar, ...ilhados];
+  // Respec sempre de graça (o jogo oficial): nada se gasta — nem o respec grátis da migração, nem os pontos do Orbe do Remorso.
+  if (regras.gratis) return { ok: true, tirar, gratis: true, semCusto: true, restituicoes: 0, preco: 0 };
   const gratis = tudo && passivas.respecsGratis > 0;
   // Os pontos de RESTITUIÇÃO (o Orbe do Remorso do PoE — `itens-poe/moedas.mjs`): cada um tira um nó sem pagar.
   const restituicoes = gratis ? 0 : Math.min(tirar.length, passivas.restituicoes ?? 0);
@@ -397,7 +404,7 @@ export function respec(estado, pedido, emCacada = false) {
   if (!plano.ok) return plano;
   const falta = pagar(estado, plano.preco);
   if (falta) return erro('SEM_OURO', falta);
-  if (plano.gratis) estado.passivas.respecsGratis -= 1;
+  if (plano.gratis && !plano.semCusto) estado.passivas.respecsGratis -= 1;
   if (plano.restituicoes) estado.passivas.restituicoes -= plano.restituicoes;
   const sai = new Set(plano.tirar);
   const ficam = estado.passivas.alocados.filter((x) => !sai.has(x));
@@ -485,7 +492,9 @@ export function vista(estado, emCacada = false) {
     ...(passivas.maestrias && Object.keys(passivas.maestrias).length ? { maestrias: { ...passivas.maestrias } } : {}),
     ...(ARVORE.ascendencias ? { ascendencia: passivas.ascendencia ?? null, inicioAscendencia: inicioDaAscendencia(estado), pontosAscendencia: pontosDeAscendencia(estado), ascendencias: ascendenciasDaClasse(estado) } : {}),
     precoPorNo: precoDoRespec(estado, 1),
-    podeTirar: !(CONFIG.respec.soForaDaCacada && emCacada),
+    // o respec de graça (jogo oficial): a tela diz "grátis" em vez do preço
+    ...(regrasDoRespec().gratis ? { respecGratis: true } : {}),
+    podeTirar: !(regrasDoRespec().soForaDaCacada && emCacada),
   };
 }
 

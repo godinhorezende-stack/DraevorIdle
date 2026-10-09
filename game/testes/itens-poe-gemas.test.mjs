@@ -151,7 +151,10 @@ test('a loja do Zuma vende TODAS as gemas do PoE, para qualquer level, no nível
 
 test('transfiguradas e Vaal sem XP no arquivo sobem pela tabela da gema de base (como no PoE)', { skip: SEM }, () => {
   for (const [slug, base] of [['Explosive_Trap_of_Magnitude', 'Explosive_Trap'], ['Vaal_Cleave', 'Cleave'], ['Heavy_Strike_of_Trarthus', 'Heavy_Strike']]) {
-    assert.equal(G.gemaDaTabelaDeXp(G.doSlug(slug).gema).slug, base);
+    // (09/10) Com a tabela por nível do poedb (\`gemas-niveis.mjs\`), a transfigurada que antes vinha SEM XP no arquivo traz a própria —
+    // igual à da base, como no PoE; a que segue sem XP (as Vaal) continua pela base. O que vale: sobem até o 20 com a mesma XP da base.
+    const fonte = G.gemaDaTabelaDeXp(G.doSlug(slug).gema).slug;
+    assert.ok(fonte === base || (fonte === slug && G.doSlug(slug).gema.niveisDoPoedb), `${slug}: a XP pela base ou pela própria tabela do poedb (${fonte})`);
     const def = GS.defDaGema(G.doSlug(slug).itemId);
     assert.equal(GS.maximoDaGema(def), 20, slug);
     assert.equal(GS.xpDaGema(def, 1), GS.xpDaGema(GS.defDaGema(G.doSlug(base).itemId), 1));

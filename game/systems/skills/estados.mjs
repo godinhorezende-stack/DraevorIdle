@@ -120,6 +120,8 @@ export function tique(hunt, eventos, agora) {
   let total = 0;
   for (const m of hunt?.monstros ?? []) {
     // A REGENERAÇÃO do modificador (`regen`: % da vida por segundo — ver `mobs/raridade.mjs`).
+    // (A próxima regeneração gravada no relógio de parede — antes de 09/10 este tique recebia ele — volta para o relógio da caçada.)
+    if (m.proximaRegen > agora + 60_000) m.proximaRegen = agora;
     if (m.regen && m.hp > 0 && m.hp < m.maxHp && R.jaPode(agora, m.proximaRegen)) {
       // (PoE: "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%".)
       const desacelerado = ativo(m.estados?.desacelerado, agora) ? Math.max(0, 1 - (m.estados.desacelerado.regenMenosPct ?? 0) / 100) : 1;

@@ -38,20 +38,57 @@ export function catalogo() {
 // encantamento…): `gamedata/itens-poe/pools/<pool>.json` (tools/importar-poe-itens.mjs). Ficam FORA do drop comum — na campanha do PoE o
 // item cai só com o pool normal — e cada um entra pelo sistema dele (orbe Vaal, essência, fóssil, orbe de influência…). Lidos sob demanda.
 const PASTA_DOS_POOLS = fileURLToPath(new URL('../../gamedata/itens-poe/pools', import.meta.url));
+// (09/10) As ABAS do poedb (tools/importar-poedb-abas.mjs): os pools novos (Labirinto, Golpe, Ungir, Crucible…) e os COMPLEMENTOS dos que
+// já existem (o que o poedb tem e a coleção antiga não: o corrompido das Espadas de Duas Mãos, o "+1 ao Mínimo de Cargas de Poder"…).
+// Numa pasta à parte (o importador antigo refaz `pools/` inteira); `poolEspecial` junta os dois.
+const PASTA_DO_POEDB = fileURLToPath(new URL('../../gamedata/itens-poe/pools-poedb', import.meta.url));
 const POOLS_LIDOS = new Map();
-/** Os nomes dos pools especiais que existem no repositório. */
-export const poolsEspeciais = () => (existsSync(PASTA_DOS_POOLS) ? readdirSync(PASTA_DOS_POOLS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort() : []);
+const nomesEm = (pasta) => (existsSync(pasta) ? readdirSync(pasta).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : []);
+/** Os nomes dos pools especiais da coleção (`pools/`, um arquivo por pool). */
+export const poolsEspeciais = () => nomesEm(PASTA_DOS_POOLS).sort();
+/** Os nomes dos pools das ABAS do poedb (`pools-poedb/`: os novos e os complementos dos da coleção). */
+export const poolsDoPoedb = () => nomesEm(PASTA_DO_POEDB).sort();
+const lerSeHouver = (arq) => (existsSync(arq) ? JSON.parse(readFileSync(arq, 'utf8')) : null);
+/**
+ * Junta o complemento do poedb ao pool da coleção: página que não existe entra inteira; na que existe, entram as famílias que ela não
+ * tem (pelo id da família). Não muda nada do que já estava (os mods que as peças guardam continuam achando o tier delas).
+ */
+export function juntarPools(base, extra) {
+  if (!base) return extra;
+  if (!extra) return base;
+  const classes = structuredClone(base.classes ?? {});
+  let familias = base.familias ?? 0;
+  let tiers = base.tiers ?? 0;
+  for (const [classe, paginas] of Object.entries(extra.classes ?? {})) {
+    for (const [pagina, pg] of Object.entries(paginas)) {
+      const alvo = ((classes[classe] ??= {})[pagina] ??= { prefixos: [], sufixos: [], implicitos: [] });
+      for (const lado of ['prefixos', 'sufixos', 'implicitos']) {
+        const ja = new Set((alvo[lado] ??= []).map((f) => f.familia));
+        for (const f of pg[lado] ?? []) {
+          if (ja.has(f.familia)) continue;
+          alvo[lado].push(f);
+          familias++;
+          tiers += f.tiers.length;
+        }
+      }
+    }
+  }
+  return { ...base, familias, tiers, classes, complementadoPor: extra._nota ?? 'poedb' };
+}
 /** Um pool especial inteiro (`{ pool, nome, familias, tiers, classes }`), ou null. Só nome de pool (letras e `_`): nada de caminho. */
 export function poolEspecial(nome) {
   if (!/^[a-z_]+$/.test(String(nome ?? ''))) return null;
-  if (!POOLS_LIDOS.has(nome)) {
-    const arq = join(PASTA_DOS_POOLS, `${nome}.json`);
-    POOLS_LIDOS.set(nome, existsSync(arq) ? JSON.parse(readFileSync(arq, 'utf8')) : null);
-  }
+  if (!POOLS_LIDOS.has(nome)) POOLS_LIDOS.set(nome, juntarPools(lerSeHouver(join(PASTA_DOS_POOLS, `${nome}.json`)), lerSeHouver(join(PASTA_DO_POEDB, `${nome}.json`))));
   return POOLS_LIDOS.get(nome);
 }
-/** O pool especial de uma página do catálogo (`classe` e o `pool` da base, ex.: `Body_Armours`, `str`): `{ prefixos, sufixos, implicitos }` ou null. */
-export const poolEspecialDa = (nome, classe, pagina) => poolEspecial(nome)?.classes?.[classe]?.[pagina] ?? null;
+/**
+ * O pool especial de uma página do catálogo (`classe` e o `pool` da base, ex.: `Body_Armours`, `str`): `{ prefixos, sufixos, implicitos }`
+ * ou null. Um pool igual para todas as variantes da classe (os encantamentos do Labirinto valem para qualquer elmo) fica uma vez só, em `*`.
+ */
+export const poolEspecialDa = (nome, classe, pagina) => {
+  const c = poolEspecial(nome)?.classes?.[classe];
+  return c?.[pagina] ?? c?.['*'] ?? null;
+};
 
 /** Esquece o catálogo lido (depois de reimportar). */
 export const recarregar = () => {

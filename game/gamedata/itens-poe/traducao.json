@@ -7534,7 +7534,7 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
+      "padrao": "^(?!.*Oferenda Espiritual).*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -15864,6 +15864,3367 @@
       "estado": "lembrete",
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^(?!Enquanto )(.+?) (?:possui|tem|têm) \\{(\\d+)\\}% de aumento do Efeito (?:de Aura|do Buff)$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^(?!Enquanto )(.+?) (?:tem|têm) (?:seu |o )?Efeito (?:de Aura|do Buff) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito do Buff (?:da|do|de) (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^(?!Enquanto )(Oferenda .+?) (?:tem|têm) Efeito aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito das Oferendas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:oferenda-carnal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff_gema:oferenda-ossea",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff_gema:oferenda-espiritual",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeitos? de Buffs? concedidos? pelos seus Golens aumentados? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeitos? do Buff concedidos? pelos seus (Golens (?:de|da|do) .+?) aumentados? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeitos? dos Buffs concedidos pelos seus (Golens (?:de|da|do) .+?) aumentados? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito das (?:suas )?Maldições aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito da Maldição (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito da Maldição (.+)$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Velocidade de Recuperação de Vida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_vida_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de vida e os frascos ainda não aceleram",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Velocidade de Recuperação de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_mana_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de mana e os frascos ainda não aceleram",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Velocidade de Recuperação de Escudo de Energia aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_es_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale na regeneração do Escudo de Energia; a recarga e o roubo ainda não aceleram",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de {E} sofrido é Recuperado como Vida$",
+      "efeitos": [
+        {
+          "stat": "recoup_life_{E}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico sofrido é Recuperado como Vida$",
+      "efeitos": [
+        {
+          "stat": "recoup_life_phys",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Recebido como Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Recebido como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Recebido como Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Sofrido por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à redução de dano das gemas (o PoE multiplica cada \"menos\")",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Sofrido por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à redução de dano das gemas (o PoE multiplica cada \"menos\")",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Sofrido por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à redução de dano das gemas (o PoE multiplica cada \"menos\")",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico para Ataques aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico para Ataques aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de (?:Golpe|Acerto) Crítico para (?:Dano de )?Ataques?$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ataques têm \\+\\{(\\d+)\\}% de Chance de Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a chance base a mais do ataque entra como chance fixa somada",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% à Chance de Golpe Crítico Mágico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a chance base a mais da magia entra como chance fixa somada",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito de Afecções Não-Danificadoras aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "Causticar, Fragilizar e Exaurir elementais (os do PoE) ainda não existem: vale no Resfriamento e na Eletrização",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Ataques$",
+      "efeitos": [
+        {
+          "stat": "furia_por_acerto@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de chance de Mutilar ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_mutilar@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Intimidar Inimigos por \\{(\\d+)\\} segundos (?:no|ao) Acert(?:o|ar)$",
+      "efeitos": [
+        {
+          "stat": "chance_intimidar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "intimidar_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Inervar Inimigos por \\{(\\d+)\\} segundos (?:no|ao) Acert(?:o|ar)$",
+      "efeitos": [
+        {
+          "stat": "chance_inervar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "inervar_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Inflige Exposição a Fogo ao Acertar, aplicando \\{(\\d+)\\}% de Resistência a Fogo$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Inflige Exposição a Gelo ao Acertar, aplicando \\{(\\d+)\\}% de Resistência a Gelo$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Inflige Exposição a Raio ao Acertar, aplicando \\{(\\d+)\\}% de Resistência a Raio$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Acertos têm \\{(\\d+)\\}% de chance de ignorar a Redução de Dano Físico dos Monstros Inimigos$",
+      "efeitos": [
+        {
+          "stat": "ignora_reducao_fisica",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech@fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "o roubo vale no golpe Físico inteiro",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Sangramentos infligidos por você causam Dano \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "sangramento_mais_rapido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Agressividade por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:agressividade:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Poder Profano por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:poderProfano:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Elusivo no Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:buffChance:elusivo:4",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "o Elusivo do jogo dura 4 s (no PoE ele vai se desfazendo)",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Frenesi a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "frenesi_a_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Poder a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "poder_a_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Tolerância a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_a_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Dano Físico com Machados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Machados causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Machados causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMachado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Machados causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Machados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Machados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Machados$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Machados$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Espadas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Espadas causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Espadas causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comEspada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Espadas causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Espadas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Espadas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Espadas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Espadas$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Maças e Cetros aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_dmg@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças e Cetros causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças e Cetros causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças e Cetros causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "accuracy_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "crit_chance_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "crit_dmg@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dot_dmg_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Maças ou Cetros aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_dmg@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças ou Cetros causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças ou Cetros causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças ou Cetros causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Maças ou Cetros aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Maças ou Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "accuracy_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Maças ou Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "atk_speed@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Maças ou Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "crit_chance_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Maças ou Cetros$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "crit_dmg@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Maças ou Cetros$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dot_dmg_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Maças aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Maças causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Maças aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Maças aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Maças aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Maças aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Maças$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Maças$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Cetros aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Cetros causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Cetros causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Cetros causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Cetros aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Cetros$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Cetros$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Adagas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Adagas causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Adagas causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comAdaga",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Adagas causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Adagas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Adagas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Adagas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Adagas$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Garras aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Garras causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Garras causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comGarra",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Garras causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Garras aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Garras aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Garras$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Garras$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Cajados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Cajados causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Cajados causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Cajados causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Cajados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Cajados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Cajados$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Cajados$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Arcos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Arcos causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Arcos causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comArco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Arcos causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Arcos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Arcos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Arcos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Arcos$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Varinhas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Varinhas causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Varinhas causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comVarinha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Varinhas causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Varinhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Varinhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Varinhas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Varinhas$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Armas Corpo a Corpo de Duas Mãos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo de Duas Mãos causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo de Duas Mãos causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo de Duas Mãos causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Armas Corpo a Corpo de Duas Mãos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Armas Corpo a Corpo de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Armas Corpo a Corpo de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Armas Corpo a Corpo de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Armas Corpo a Corpo de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Armas Corpo a Corpo de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Armas de Duas Mãos Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Duas Mãos Corpo a Corpo causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Duas Mãos Corpo a Corpo causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Duas Mãos Corpo a Corpo causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Armas de Duas Mãos Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Armas de Duas Mãos Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Armas de Duas Mãos Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Armas de Duas Mãos Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Armas de Duas Mãos Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Armas de Duas Mãos Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Armas Corpo a Corpo de Uma Mão aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo de Uma Mão causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo de Uma Mão causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo de Uma Mão causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Armas Corpo a Corpo de Uma Mão aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Armas Corpo a Corpo de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Armas Corpo a Corpo de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Armas Corpo a Corpo de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Armas Corpo a Corpo de Uma Mão$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Armas Corpo a Corpo de Uma Mão$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Armas de Uma Mão Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Uma Mão Corpo a Corpo causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Uma Mão Corpo a Corpo causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Uma Mão Corpo a Corpo causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Armas de Uma Mão Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Armas de Uma Mão Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Armas de Uma Mão Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Armas de Uma Mão Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Armas de Uma Mão Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Armas de Uma Mão Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas Corpo a Corpo causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Armas Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Armas Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Armas de Uma Mão aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Uma Mão causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Uma Mão causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+umaMao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Uma Mão causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Armas de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Armas de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Armas de Uma Mão$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Armas de Uma Mão$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano Físico com Armas de Duas Mãos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Duas Mãos causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Duas Mãos causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques com Armas de Duas Mãos causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Precisão com Armas de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Armas de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Armas de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Armas de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) cajado$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) cajado$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) arco$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) arco$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) machado$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) machado$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) espada$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) espada$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) maça$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) maça$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) cetro$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) cetro$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) adaga$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) adaga$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) garra$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) garra$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) varinha$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) varinha$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Chance de (?:golpe|Golpe|Acerto|acerto) [Cc]rítico aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) escudo$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% ao usar (?:um|uma) escudo$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Habilidades de Arco$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto Segurar Duas Armas ou um Escudo$",
+      "efeitos": [
+        {
+          "stat": "block@duasArmas",
+          "valor": "{1}"
+        },
+        {
+          "stat": "block@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto (?:em|estiver em) Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "block@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque causam Dano aumentado em \\{(\\d+)\\}% enquanto em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque causam Dano aumentado em \\{(\\d+)\\}% enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano de Ataques Físicos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Eficiência de custo dos ataques aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Eficiência de custo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Ataques utilizados por Totens têm \\{(\\d+)\\}% de Velocidade de Ataque aumentada$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_ataque:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Armadura e Evasão aumentados em \\{(\\d+)\\}% enquanto Drenando$",
+      "efeitos": [
+        {
+          "stat": "armour_pct@drenando",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct@drenando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Acertos contra Inimigos Incendiados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoIncendiado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos contra Inimigos Únicos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Concede \\{(\\d+)\\} Pontos? de Habilidades? Passivas?$",
+      "efeitos": [
+        {
+          "stat": "pontos_passiva",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Você conta como em Vida Baixa enquanto em \\{(\\d+)\\}% da Vida máxima ou abaixo$",
+      "efeitos": [
+        {
+          "stat": "limiar_vida_baixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Você conta como em Vida Cheia enquanto em \\{(\\d+)\\}% da Vida máxima ou acima$",
+      "efeitos": [
+        {
+          "stat": "limiar_vida_cheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Habilidades custam Vida ao invés de \\{(\\d+)\\}% do seu Custo de Mana$",
+      "efeitos": [
+        {
+          "stat": "custo_em_vida_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque Custam Vida ao invés de \\{(\\d+)\\}% do Custo de Mana$",
+      "efeitos": [
+        {
+          "stat": "custo_em_vida_pct@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} à Fúria máxima$",
+      "efeitos": [
+        {
+          "stat": "furia_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Monstros não podem Bloquear seus Ataques$",
+      "efeitos": [
+        {
+          "stat": "inimigos_nao_bloqueiam",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Efeito do Cegamento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_cegueira",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentado em \\{(\\d+)\\}% por Inimigo em Curto Alcance$",
+      "efeitos": [
+        {
+          "stat": "atk_speed%inimigosPerto:2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes)"
+    },
+    {
+      "padrao": "^Área de Efeito ?da Ativação de Armadilhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Duração de Clamores aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Chance (?:de )?Crítico aumentada em \\{(\\d+)\\}% contra Inimigos Sangrando$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@alvoSangrando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Efeito de Resfriamento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Bloquear o Dano Mágico enquanto portando um Cajado ou Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_block@comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_block@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano de Fogo Degenerativo com Habilidades de Ataque$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_fire@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Chance de Crítico com Minas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Minas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Chance de Crítico com Habilidades com Totem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Habilidades de Totem$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Ponto de Atordoamento dos Inimigos reduzido em \\{(\\d+)\\}% com Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "enemy_stun_threshold_red@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Machados$",
+      "efeitos": [
+        {
+          "stat": "furia_por_acerto@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Espadas$",
+      "efeitos": [
+        {
+          "stat": "furia_por_acerto@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Acertos Críticos possuem Golpe de Misericórdia$",
+      "efeitos": [
+        {
+          "stat": "culling@critico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Precisão por Nível$",
+      "efeitos": [
+        {
+          "stat": "accuracy%nivel",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Ganha Precisão igual a sua Inteligência$",
+      "efeitos": [
+        {
+          "stat": "accuracy%atr:int:1",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Bônus de Precisão da Destreza concede \\+\\{(\\d+)\\} de Precisão por Destreza$",
+      "efeitos": [
+        {
+          "stat": "accuracy%atr:dex:1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à precisão que a Destreza já dá",
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida quando usar um Clamor$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Recuperar toda a Vida quando você Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPctChance:100",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Recuperar \\{(\\d+)\\}% da Mana ao usar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:manaPctChance:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Ganha Poder Profano por \\{(\\d+)\\} segundos ao bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:buff:poderProfano",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Intimida Inimigos por \\{(\\d+)\\} segundos ao Bloquear enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:alvo:intimidado:{V1}@comEscudo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Clamores Debilitam Inimigos por \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:proximos:debilitado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Remove todas as Afecções Danificadoras quando você Clamar$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:removerAfeccao",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "remove uma afecção por clamor",
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Remove uma Afecção Elemental aleatória ao usar um Frasco de Mana$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrascoMana:removerAfeccao",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "qualquer frasco de vida remove a afecção mais antiga",
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Crítico se você não causou um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@naoCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% se você causou um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpe Crítico +contra Inimigos Atordoados$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@alvoAtordoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Atordoado enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Afecções Elementais enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "avoid_elem_ailments@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Defesas aumentadas em \\{(\\d+)\\}% enquanto portando um Cajado$",
+      "efeitos": [
+        {
+          "stat": "armour_pct@comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct@comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Não pode ser Atordoado se não tiver sido Acertado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento@naoAcertadoRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Velocidade dos Clamores aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a velocidade de uso do clamor",
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Habilidades Maldições tem Velociade de Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
     }
   ]
 }

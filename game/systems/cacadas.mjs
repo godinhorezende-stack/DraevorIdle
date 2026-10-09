@@ -702,6 +702,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     respawns: [],
     isBoss: !!boss,
     bossId: boss?.id ?? null,
+    // o chefe PINÁCULO (o "Chefe Final do Atlas" dos implícitos eldritch — `condicoes-poe.mjs`, `chefeFinalNaPresenca`)
+    ...(boss?.poePinaculo ? { bossPinaculo: true } : {}),
     // A campanha: a fase (ou o boss do ato) e a dificuldade — o progresso, a
     // escala dos bichos que renascem e o ato/dificuldade do loot saem daqui.
     campanha: fase ? { huntId, dificuldade: dif, ato: fase.ato } : atoDoBoss != null ? { bossDoAto: atoDoBoss, dificuldade: dif, ato: atoDoBoss } : null,
@@ -1911,7 +1913,10 @@ export function tique(estado, personagem, agora = Date.now()) {
   // Um buff de gema do PoE (com atributos) venceu: a ficha é refeita.
   if (GemasPoe.tique(estado)) Ficha.invalidar(estado);
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
-  Estados.tique(hunt, eventos, agora);
+  // (09/10) No RELÓGIO DA CAÇADA, o mesmo com que os danos contínuos são postos (`acoes`, `afeccoes`: `hunt.clock`). Com o relógio de
+  // parede (`agora`, que começa em ~1,8e12 enquanto o da caçada começa em 0), todo pulso "já podia" e o efeito inteiro (incêndio,
+  // sangramento, veneno, o degenerativo das gemas) era pago no tique seguinte, em vez de ao longo da duração.
+  Estados.tique(hunt, eventos, hunt.clock ?? 0);
   processarMortes(estado, personagem, eventos);
 
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;

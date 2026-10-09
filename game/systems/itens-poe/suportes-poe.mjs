@@ -9,6 +9,7 @@
 //   - o GATILHO (Conjurar no Acerto Crítico, ao Abater Corpo a Corpo, ao Receber Dano): quando e a recarga dele.
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
+import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -253,7 +254,8 @@ export function iniciar({ registrarSuporte } = {}) {
   if (INICIADO) return INICIADO;
   if (!ligado() || !existsSync(ARQ_SUPORTES)) return (INICIADO = { suportes: 0, porStatus: {} });
   // Os "Despertados"/"Excepcionais" (só de endgame) ficam de fora junto: o jogo usa os comuns.
-  SUPORTES = JSON.parse(readFileSync(ARQ_SUPORTES, 'utf8')).filter((s) => s.linhas?.length);
+  // (09/10) A tabela por nível de cada suporte pela do poedb (`gemas-niveis.mjs`).
+  SUPORTES = comNiveisDoPoedb(JSON.parse(readFileSync(ARQ_SUPORTES, 'utf8'))).filter((s) => s.linhas?.length);
   for (const s of SUPORTES) POR_SLUG.set(s.slug, s);
   const ids = idsDosSuportes(SUPORTES.map((s) => s.slug));
   const porStatus = {};

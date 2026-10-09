@@ -148,6 +148,20 @@ export function spellIcon(index, size = 26) {
  */
 export function actionIcon(entry, size = 26) {
   if (!entry) return el('span', 'plus', '+');
+  // (09/10) A gema do PoE mostra o ÍCONE DA HABILIDADE (o da barra do PoE — "SkillIcons/…"); o da gema fica para o item.
+  if (entry.poeGema?.iconeHabilidade) {
+    const img = document.createElement('img');
+    img.className = 'icone-habilidade-poe';
+    img.src = `/api/jogo/poe/icone/habilidade/${encodeURIComponent(entry.poeGema.iconeHabilidade)}`;
+    img.alt = '';
+    img.width = size;
+    img.height = size;
+    img.draggable = false;
+    img.style.cssText = `width:${size}px;height:${size}px;object-fit:contain;display:block`;
+    // Sem o arquivo: volta ao desenho da gema.
+    img.onerror = () => { if (entry.itemId) img.replaceWith(itemCanvas(entry.itemId, size)); };
+    return img;
+  }
   if (entry.icon != null) return spellIcon(entry.icon, size);
   if (entry.itemId) return itemCanvas(entry.itemId, size);
   return el('span', 'rune-mark', entry.name.slice(0, 2).toUpperCase());

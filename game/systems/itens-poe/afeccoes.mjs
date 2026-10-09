@@ -35,6 +35,11 @@ export function daSoma(af = {}) {
     chanceAtaque: { incendio: n('chance_ignite_ataque'), sangramento: n('chance_bleed_ataque'), veneno: n('chance_poison_ataque') },
     multiplicador: n('dot_multi'),
     multiplicadorFogo: n('dot_multi_fire'),
+    // (09/10) Gelo e Raio: só o dano degenerativo das habilidades usa (não há afecção de dano de Gelo nem de Raio).
+    multiplicadorGelo: n('dot_multi_cold'),
+    multiplicadorRaio: n('dot_multi_lightning'),
+    multiplicadorCaos: n('dot_multi_chaos'),
+    multiplicadorFisico: n('dot_multi_phys'),
     // O veneno é dano de Caos ao longo do tempo e o sangramento, Físico: os multiplicadores "de Caos" e "Físico" do PoE valem neles.
     multiplicadorVeneno: n('dot_multi_poison') + n('dot_multi_chaos'),
     multiplicadorSangramento: n('dot_multi_bleed') + n('dot_multi_phys'),
@@ -43,6 +48,8 @@ export function daSoma(af = {}) {
     // PoE (07/10): o "Dano Degenerativo aumentado" (todas) e o de cada uma; a duração de cada uma e a das Elementais; o efeito do
     // Resfriamento e da Eletrização; "causam dano X% mais rápido"; "todo o dano pode Envenenar"; o dano a mais em quem está Mutilado.
     danoAumentado: n('dot_dmg_inc'),
+    // (09/10) "Dano com Afecções aumentado" (a árvore: "Ataques com Machados causam Dano com Afecções aumentado"): só nas afecções de dano.
+    danoComAfeccoes: n('ailment_dmg_inc'),
     danoIncendio: n('ignite_dmg_inc'),
     danoSangramento: n('bleed_dmg_inc'),
     danoVeneno: n('poison_dmg_inc'),
@@ -58,6 +65,8 @@ export function daSoma(af = {}) {
     // Segredos do Sofrimento (keystone da peça): não Incendeia, Resfria, Congela nem Eletriza (o crítico inflige Causticar/Fragilizar/Exaurir).
     semElementais: n('keystone_sofrimento') > 0,
     incendioMaisRapido: n('incendio_mais_rapido'),
+    // (09/10) "Sangramentos infligidos por você causam Dano X% mais rápido": o mesmo total em menos tempo.
+    sangramentoMaisRapido: n('sangramento_mais_rapido'),
     // Os únicos: que dano pode pôr cada afecção ("Seu Dano de Raio pode Incendiar", "Seu Dano de Fogo pode Eletrizar, mas não Incendiar",
     // "Todo Dano pode Congelar"), quais não pode pôr ("Não Pode aplicar Incendiar"), as chances só no crítico, o "como se causasse X% mais
     // Dano", a duração do Resfriamento e os venenos a mais.
@@ -109,8 +118,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   // `aumentado`: o "Dano Degenerativo aumentado" daquela afecção. "X% mais rápido": a mesma soma em menos tempo.
   const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0) => {
     if (!(base > 0)) return;
-    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + aumentado + mutilado) / 100);
-    const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0)) / 100)));
+    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100);
+    const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' } }, agora);
     if (estado) postos.push(estado);
   };

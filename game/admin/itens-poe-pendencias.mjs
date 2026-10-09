@@ -28,6 +28,22 @@ export const POOLS_DO_JOGO = Object.freeze({
   searing: 'eldritch', eater: 'eldritch',
 });
 
+/**
+ * (09/10) Os pools que o poedb tem (as ABAS de cada classe — tools/importar-poedb-abas.mjs) e que NENHUM sistema do jogo alcança ainda:
+ * entram na aba à parte, como referência ("se um dia entrar, já funciona?"), sem misturar com o que cai de verdade. `origem`: o pool.
+ */
+export const POOLS_DE_REFERENCIA = Object.freeze({
+  labirinto: 'Labirinto (encantamentos)',
+  golpe: 'Golpe/Heist (encantamentos)',
+  orbe_incandescente: 'Orbe Incandescente (frascos)',
+  orbe_instigante: 'Orbe Instigante (frascos)',
+  ungir: 'Ungir (Óleos)',
+  vislumbre_do_caos: 'Vislumbre do Caos',
+  tintura: 'Tinturas',
+  semente_harvest: 'Semente (Harvest)',
+  crucible: 'Crucible (passivas da arma)',
+});
+
 /** O estado de uma linha de frasco (o leitor dos frascos) → o da tradução. */
 const DO_FRASCO = { efeito: 'equivalente', registrado: 'registrado', inerte: 'inerte' };
 
@@ -88,6 +104,13 @@ export function pendencias() {
       for (const pg of Object.values(paginas)) for (const g of [...(pg.prefixos ?? []), ...(pg.sufixos ?? []), ...(pg.implicitos ?? [])]) for (const t of g.tiers) somar(origem, classe, t, pool.nome ?? nome, t.peso ?? 0);
     }
   }
+  // Os pools que o jogo ainda não alcança (referência): todas as classes, também as que não entram no jogo (tinturas, joias).
+  for (const nome of Object.keys(POOLS_DE_REFERENCIA)) {
+    const pool = Catalogo.poolEspecial(nome);
+    for (const [classe, paginas] of Object.entries(pool?.classes ?? {})) {
+      for (const pg of Object.values(paginas)) for (const g of [...(pg.prefixos ?? []), ...(pg.sufixos ?? []), ...(pg.implicitos ?? [])]) for (const t of g.tiers) somar(nome, classe, t, null, t.peso ?? 0);
+    }
+  }
   const linhas = [...porChave.values()].map((x) => ({ ...x, classes: [...x.classes], itens: [...x.itens].slice(0, 12), totalDeItens: x.itens.size }));
   const resumo = {};
   for (const l of linhas) { const r = (resumo[l.origem] ??= {}); r[l.estado] = (r[l.estado] ?? 0) + 1; }
@@ -100,7 +123,7 @@ export function pendencias() {
       if (u.modificadores.every((m) => ['funciona', 'inexiste', 'lembrete'].includes(porChave.get(`unico|${m.modelo}`)?.estado))) unicos.completos++;
     }
   }
-  CACHE = { resumo, unicos, linhas };
+  CACHE = { resumo, unicos, linhas, referencia: POOLS_DE_REFERENCIA };
   return CACHE;
 }
 /** Esquece a conta (os testes; uma regra nova sem reiniciar). */

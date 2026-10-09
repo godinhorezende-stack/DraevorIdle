@@ -22,8 +22,36 @@ export function caminhoDoIconeDeAscendencia(url) {
 
 export const REGRAS_DA_ARVORE = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao-arvore.json', import.meta.url), 'utf8'));
 const PROPRIAS = compilar({ ...TABELA, regras: REGRAS_DA_ARVORE.regras });
-/** As chaves que a árvore do Draevor aceita num `add` (as outras ficam registradas). */
-const ADD_VALIDO = /^[a-z_]+$/;
+/**
+ * As chaves que a árvore aceita num `add`: as dos itens — também com CONDIÇÃO ("…enquanto em Empunhadura Dupla": `crit_chance_inc@ataque+duasArmas`),
+ * ESCALA ("por cada 10 de Força": `dmg_inc%atr:str:10`) e os dinâmicos (`efeito_buff_gema:ira`, `ev:matar:…`). Somadas com as das peças em
+ * `Afixos.soma`, o mesmo `ModsPoe.resolver` dos itens decide quando valem (09/10: antes só a chave simples entrava e o resto ficava registrado).
+ */
+const ADD_VALIDO = /^[a-z_][\w:%@+.-]*$/i;
+const COM_EFEITO = new Set(['equivalente', 'aproximado', 'novo']);
+
+/**
+ * As LINHAS de efeito de um nó: cada texto do PoE pode vir quebrado em várias linhas (\n). A quebra que CONTINUA a frase ("…20% do dano
+ * recebido de ataques\nserá subtraído…", "…ao Acertar um\nInimigo…") é juntada; a que começa outro efeito ("…quando Alocado\nÉgide Primitiva
+ * pode sofrer…") separa. A marcação de palavra-chave do poedb ("[SpiritInfusion|Infusão Espiritual]") vira o texto.
+ */
+const CONECTIVO = /(?:^|\s)(?:um|uma|uns|umas|de|do|da|dos|das|com|que|você|e|a|o|os|as|ao|aos|à|às|em|no|na|nos|nas|por|para|se|seu|sua|seus|suas|quando|caso|enquanto|mais|menos|cada|qualquer|todo|toda|sempre|até|sobre|como|pelo|pela|pelos|pelas|of|the|to|a|an)$/i;
+export function linhasDoNo(efeitos) {
+  const saida = [];
+  for (const e of efeitos ?? []) {
+    const partes = String(e).replace(/\[([^\]|]+)\|([^\]]+)\]/g, '$2').replace(/\[([^\]]+)\]/g, '$1').split('\n').map((l) => l.trim()).filter(Boolean);
+    let atual = null;
+    for (const p of partes) {
+      if (atual != null && (/^[a-zà-ú(]/.test(p) || CONECTIVO.test(atual) || /,$/.test(atual))) atual = `${atual} ${p}`;
+      else {
+        if (atual != null) saida.push(atual);
+        atual = p;
+      }
+    }
+    if (atual != null) saida.push(atual);
+  }
+  return saida;
+}
 
 /** "Evasão aumentada em 14%" → `{ modelo: 'Evasão aumentada em {0}%', valores: [14] }`. */
 export function paraModelo(texto) {
@@ -59,9 +87,12 @@ export function traduzirLinha(texto) {
   const tm = traduzirMod({ modelo, valores });
   const efeitos = [];
   const registrados = [];
-  for (const e of tm.efeitos) {
-    if (ADD_VALIDO.test(e.stat) && typeof e.valor === 'number' && Number.isFinite(e.valor)) efeitos.push({ add: e.stat, valor: e.valor });
-    else registrados.push({ stat: e.stat, valor: e.valor });
+  // Só os efeitos das partes que TÊM efeito no combate (a mesma conta do balão das peças); o resto fica registrado, para mostrar.
+  for (const p of tm.partes) {
+    for (const e of p.efeitos) {
+      if (COM_EFEITO.has(p.estado) && ADD_VALIDO.test(e.stat) && typeof e.valor === 'number' && Number.isFinite(e.valor)) efeitos.push({ add: e.stat, valor: e.valor });
+      else registrados.push({ stat: e.stat, valor: e.valor });
+    }
   }
   const semEfeito = ['inerte', 'lembrete'].includes(tm.estado) ? (tm.estado === 'lembrete' ? 'nota' : 'inerte') : 'registrado';
   return { estado: efeitos.length ? tm.estado : semEfeito, efeitos, registrados, nota: tm.partes.find((p) => p.nota)?.nota ?? null };
@@ -90,11 +121,11 @@ function keystoneDe(n, linhas, traduzidas) {
  * próprio nó inicial (`tipo: 'start'`, em `inicios` como `asc:<slug>`) e os nós marcados com `ascendencia` (gastam pontos de
  * ascendência). `lista`: os `ascendencia.json` da coleção. Devolve `{ nos, inicios, ascendencias, relatorio }`.
  */
-export function converterAscendencias(lista) {
+export function converterAscendencias(lista, textos = null) {
   const nos = [];
   const inicios = {};
   const ascendencias = {};
-  const estados = { equivalente: 0, aproximado: 0, novo: 0, registrado: 0, nota: 0 };
+  const estados = { equivalente: 0, aproximado: 0, novo: 0, registrado: 0, nota: 0, inerte: 0 };
   for (const a of lista) {
     const ids = new Set(a.nos.map((n) => n.id));
     const viz = new Map(a.nos.map((n) => [n.id, new Set()]));
@@ -107,7 +138,7 @@ export function converterAscendencias(lista) {
     for (const n of a.nos) for (const v of n.vizinhos ?? []) ligar(n.id, v);
     for (const n of a.nos) {
       const inicio = n.id === a.no_inicial || n.eh_no_inicial;
-      const linhas = (n.efeitos ?? []).flatMap((e) => String(e).split('\n')).map((l) => l.trim()).filter(Boolean);
+      const linhas = linhasDoNo(textos?.get(String(n.id)) ?? n.efeitos);
       const traduzidas = linhas.map(traduzirLinha);
       for (const t of traduzidas) estados[t.estado]++;
       nos.push({
@@ -138,7 +169,7 @@ export function converterAscendencias(lista) {
  * efeitos, custo: 1, textos, estados }`, `inicios` por classe do PoE. Nós sem ligação nenhuma (as maestrias soltas) e os que nenhum
  * início alcança ficam de fora (a árvore do Draevor exige tudo alcançável). Devolve `{ arvore, relatorio }`.
  */
-export function converterArvore(poe, completa = null) {
+export function converterArvore(poe, completa = null, textos = null) {
   // A árvore COMPLETA (o arquivo oficial do jogo, na coleção) dá o GRUPO de cada nó e as MAESTRIAS com as opções delas.
   const daCompleta = new Map((completa?.nos ?? []).map((n) => [n.id, n]));
   const inicioDe = new Map(Object.entries(poe.classes_iniciais ?? {}).map(([classe, v]) => [String(v.no), classe]));
@@ -163,12 +194,12 @@ export function converterArvore(poe, completa = null) {
       fila.push(c);
     }
   }
-  const estados = { equivalente: 0, aproximado: 0, novo: 0, registrado: 0, nota: 0 };
+  const estados = { equivalente: 0, aproximado: 0, novo: 0, registrado: 0, nota: 0, inerte: 0 };
   const nos = [];
   for (const n of poe.nos) {
     if (!alcancados.has(n.id)) continue;
     const classe = inicioDe.get(String(n.id));
-    const linhas = (n.efeitos ?? []).flatMap((e) => String(e).split('\n')).map((l) => l.trim()).filter(Boolean);
+    const linhas = linhasDoNo(textos?.get(String(n.id)) ?? n.efeitos);
     const traduzidas = linhas.map(traduzirLinha);
     for (const t of traduzidas) estados[t.estado]++;
     const tipo = classe ? 'start' : TIPO[n.tipo] ?? 'small';
@@ -203,7 +234,7 @@ export function converterArvore(poe, completa = null) {
   for (const m of completa?.nos ?? []) {
     if (m.tipo !== 'maestria' || !m.posicionado || m.fora_da_arvore || m.ascendencia || !gruposComNotavel.has(m.grupo) || !m.efeitos_de_maestria?.length) continue;
     const opcoes = m.efeitos_de_maestria.map((o) => {
-      const linhas = (o.efeitos ?? []).flatMap((e) => String(e).split('\n')).map((l) => l.trim()).filter(Boolean);
+      const linhas = linhasDoNo(textos?.get(`maestria:${o.id}`) ?? o.efeitos);
       const traduzidas = linhas.map(traduzirLinha);
       for (const t of traduzidas) estados[t.estado]++;
       return { id: String(o.id), textos: linhas, estados: traduzidas.map((t) => t.estado), efeitos: traduzidas.flatMap((t) => t.efeitos) };

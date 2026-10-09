@@ -1181,3 +1181,61 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .pend-marca.funciona { color: #5cc28a; } .pend-marca.parcial { color: #e9c34f; } .pend-marca.pendente { color: #ff8a80; } .pend-marca.inexiste, .pend-marca.lembrete { color: #8a93a5; }
 .pend-partes { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; font-size: 12px; }
 .pend-partes .poe-tr { width: auto; text-align: left; font-family: inherit; }
+
+/* ---- Abas do PoEDB (PoE): cada aba das páginas de classe do poedb × o jogo (editor-abas-poedb.mjs) ---- */
+.abas-pools { max-height: none; margin-bottom: var(--eng-e3); }
+.abas-efeito { display: flex; align-items: center; gap: 8px; min-width: 180px; }
+.abas-efeito .poe-cobertura { flex: 1; height: 10px; }
+.abas-corpo { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); gap: var(--eng-e3); align-items: start; }
+@media (max-width: 900px) { .abas-corpo { grid-template-columns: minmax(0, 1fr); } }
+.abas-lado { display: flex; flex-direction: column; gap: 6px; }
+.abas-lista { display: flex; flex-direction: column; gap: 2px; max-height: 70vh; overflow: auto; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); padding: 4px; }
+.abas-pagina { display: flex; justify-content: space-between; align-items: center; gap: 6px; text-align: left; padding: 5px 8px; border: 0; border-radius: var(--eng-r1, 4px); background: transparent; color: var(--eng-txt2); cursor: pointer; font-size: 12.5px; }
+.abas-pagina:hover { background: var(--eng-s2, rgba(255,255,255,.04)); color: inherit; }
+.abas-pagina.ativa { background: var(--eng-ouro-fundo); color: var(--eng-ouro-txt); }
+.abas-chips { display: flex; gap: 4px; flex: none; }
+.abas-chip { font-style: normal; font-size: 11.5px; padding: 1px 6px; border-radius: 9px; border: 1px solid var(--eng-linha); white-space: nowrap; }
+.abas-chip.ok { color: #5cc28a; } .abas-chip.importado { color: #c79bff; } .abas-chip.falta { color: #ff8a80; } .abas-chip.referencia { color: #8a93a5; }
+.abas-detalhe { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.abas-titulo a { color: var(--eng-ouro); }
+.abas-tabela { max-height: none; }
+.abas-tabela td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.abas-exemplos { max-width: 360px; }
+.pend-ref-titulo { font: 600 13px var(--eng-titulo, inherit); color: var(--eng-txt2); margin: var(--eng-e3) 0 var(--eng-e2, 8px); }
+
+/* ---- Árvore × PoEDB (PoE): a árvore, as ascendências e as Linhagens do poedb × o jogo (editor-arvore-poedb.mjs) ---- */
+.arv-tipos { display: flex; flex-direction: column; gap: var(--eng-e3); margin-bottom: var(--eng-e3); }
+.arv-tipo h3, .arv-subtitulo { font: 600 13px var(--eng-titulo, inherit); color: var(--eng-txt2); margin: 0 0 8px; }
+.arv-subtitulo { margin-top: var(--eng-e3); }
+.arv-grupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.arv-grupo { display: flex; flex-direction: column; gap: 5px; text-align: left; padding: 8px 10px; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); background: var(--eng-s1, transparent); color: inherit; cursor: pointer; min-width: 0; }
+.arv-grupo:hover { border-color: var(--eng-linha-forte, var(--eng-linha)); }
+.arv-grupo.ativo { border-color: var(--eng-ouro); background: var(--eng-ouro-fundo); }
+.arv-grupo.fora-do-jogo { border-style: dashed; }
+.arv-grupo-nome { font-weight: 600; font-size: 13px; }
+.arv-grupo-nome em { font-style: normal; font-weight: 400; color: var(--eng-txt3); font-size: 11.5px; }
+.arv-grupo-num { font-size: 11.5px; color: var(--eng-txt2); }
+.arv-grupo.fora-do-jogo .arv-grupo-num { color: #ff8a80; }
+.arv-barra { height: 8px; }
+.arv-paginas { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--eng-e3); }
+.arv-link { color: var(--eng-ouro); font-size: 12px; }
+.arv-abas { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.arv-itens { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; max-height: 160px; overflow: auto; }
+.arv-item { font-size: 11.5px; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--eng-linha); }
+.arv-item.sim { color: #5cc28a; } .arv-item.nao { color: #ff8a80; border-style: dashed; }
+.arv-ok { color: #5cc28a; font-size: 12px; } .arv-falta { color: #ff8a80; font-size: 12px; }
+.arv-tabela { max-height: 70vh; }
+.arv-linha { font-size: 12px; }
+.arv-linha.funciona { color: #5cc28a; } .arv-linha.parcial { color: #e9c34f; } .arv-linha.pendente { color: #ff8a80; } .arv-linha.inexiste, .arv-linha.lembrete { color: #8a93a5; }
+
+/* ---- Gemas × PoEDB (PoE): cada gema do poedb × a do jogo (editor-gemas-poedb.mjs) ---- */
+.gp-resumo { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--eng-e3); }
+.gp-chip { font-size: 12px; padding: 2px 9px; border-radius: 10px; border: 1px solid var(--eng-linha); color: var(--eng-txt2); }
+.gp-tabela { max-height: 72vh; }
+.gp-imgs { display: flex; gap: 6px; align-items: center; white-space: nowrap; }
+.gp-sem-img { display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center; color: var(--eng-txt3); border: 1px dashed var(--eng-linha); border-radius: 6px; }
+.gp-link { color: var(--eng-ouro); }
+.gp-estado { font-style: normal; font-weight: 600; font-size: 12.5px; white-space: nowrap; }
+.gp-estado.funciona { color: #5cc28a; } .gp-estado.parcial { color: #e9c34f; } .gp-estado.naoExiste, .gp-estado.semRegistro { color: #ff8a80; }
+.gp-motivos { font-size: 11.5px; color: var(--eng-txt3); margin-top: 3px; max-width: 360px; }
+.gp-detalhes { font-size: 12px; color: var(--eng-txt2); max-width: 520px; }

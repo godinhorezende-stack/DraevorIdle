@@ -258,7 +258,7 @@ const COR_DO_ATRIBUTO = { str: '#c8402f', dex: '#2fa35d', int: '#3474dc' };
 const COR_DA_CLASSE = { knight: 'str', paladin: 'dex', monk: 'dex', sorcerer: 'int', druid: 'int', Marauder: 'str', Duelist: 'str', Templar: 'str', Ranger: 'dex', Shadow: 'dex', Witch: 'int', Scion: null };
 const LETRA_DA_CLASSE = { knight: 'K', paladin: 'P', sorcerer: 'S', druid: 'D', monk: 'M', Marauder: 'M', Duelist: 'D', Templar: 'T', Ranger: 'R', Shadow: 'S', Witch: 'B', Scion: 'H' };
 // A marca da tradução de cada linha de um nó da árvore do PoE (as mesmas do balão das peças do PoE).
-const MARCA_DO_ESTADO = { equivalente: ['✓', 'tem efeito no Draevor'], aproximado: ['≈', 'tem efeito no Draevor (com diferença)'], novo: ['◆', 'atributo novo do PoE, com efeito'], registrado: ['○', 'registrado, ainda sem efeito'] };
+const MARCA_DO_ESTADO = { equivalente: ['✓', 'tem efeito no Draevor'], aproximado: ['≈', 'tem efeito no Draevor (com diferença)'], novo: ['◆', 'atributo novo do PoE, com efeito'], registrado: ['○', 'registrado, ainda sem efeito'], inerte: ['–', 'mecânica do PoE que o jogo não tem'] };
 // A cor do emblema por cluster (o "ícone" do nó): o elemento/tema dele.
 const COR_DO_CLUSTER = {
   fire: '#ff7a3c', ice: '#7fd0ff', earth: '#7fc05a', energy: '#b58cff', holy: '#ffe07a', death: '#9c7ab8', physical: '#c9b8a0',
@@ -919,7 +919,8 @@ function montar(body) {
     pontos.append(el('b', p.livres ? 'tem' : null, String(p.livres)), el('span', null, ` livre${p.livres === 1 ? '' : 's'} · ${p.usados}/${p.total} usados`));
     selo.textContent = `${p.livres} ${p.livres === 1 ? 'Ponto Restante' : 'Pontos Restantes'}`;
     selo.classList.toggle('vazio', !p.livres);
-    respecTudo.textContent = v?.respecsGratis ? `Respec completo (${v.respecsGratis} grátis)` : 'Respec completo';
+    // (no jogo oficial o respec é de graça: dono, 09/10)
+    respecTudo.textContent = v?.respecGratis ? 'Respec completo (grátis)' : v?.respecsGratis ? `Respec completo (${v.respecsGratis} grátis)` : 'Respec completo';
     respecTudo.disabled = !v?.podeTirar || (v?.alocados?.length ?? 0) <= 1;
     respecTudo.title = v?.podeTirar ? '' : 'Só fora da caçada';
     desenharAscendencia(v);
@@ -1047,7 +1048,7 @@ function montar(body) {
       caixa.append(el('b', null, `Tirar ${n} nó${n === 1 ? '' : 's'}?`));
       const nomes = t.plano.tirar.slice(0, 8).map((id) => a.porId.get(id)?.nome ?? id);
       caixa.append(el('p', null, nomes.join(', ') + (n > 8 ? ` e mais ${n - 8}` : '')));
-      caixa.append(el('p', 'pas-preco', t.plano.gratis ? 'Grátis (respec da migração).' : `Custa ${t.plano.preco.toLocaleString('pt-BR')} de ouro (bolso + banco).`));
+      caixa.append(el('p', 'pas-preco', t.plano.semCusto ? 'Grátis.' : t.plano.gratis ? 'Grátis (respec da migração).' : `Custa ${t.plano.preco.toLocaleString('pt-BR')} de ouro (bolso + banco).`));
       const sim = el('button', 'danger', 'Confirmar');
       const nao = el('button', 'ghost', 'Cancelar');
       sim.onclick = () => {
@@ -1075,7 +1076,7 @@ function montar(body) {
       const estado = estadoDoNo(n);
       const linha = el('div', 'pas-botoes');
       if (estado === 'alocado' && n.tipo !== 'start') {
-        const tirar = el('button', 'ghost danger', `Tirar (${(v.precoPorNo ?? 0).toLocaleString('pt-BR')} de ouro por nó)`);
+        const tirar = el('button', 'ghost danger', v.respecGratis ? 'Tirar (grátis)' : `Tirar (${(v.precoPorNo ?? 0).toLocaleString('pt-BR')} de ouro por nó)`);
         tirar.disabled = !v.podeTirar;
         if (!v.podeTirar) tirar.title = 'Só fora da caçada';
         tirar.onclick = () => ctx.send({ t: 'passivas', action: 'planoRespec', ids: [n.id], junto: true });

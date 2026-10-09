@@ -17,10 +17,20 @@
 // (pelas tags). Sem o PoE nada disto roda.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
+import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
+import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
+// (09/10) O ÍCONE DA HABILIDADE de cada gema (o que vai na barra de slots, como no PoE — "SkillIcons/iconcleave"; o da gema é o do item):
+// `slug → arquivo` em `gamedata/itens-poe/icones-habilidades/` (tools/importar-poedb-gemas.mjs, das páginas do poedb).
+const ARQ_ICONES_DAS_HABILIDADES = new URL('../../gamedata/itens-poe/icones-habilidades.json', import.meta.url);
+let ICONES_DAS_HABILIDADES = null;
+const iconeDaHabilidade = (slug) => {
+  ICONES_DAS_HABILIDADES ??= existsSync(ARQ_ICONES_DAS_HABILIDADES) ? JSON.parse(readFileSync(ARQ_ICONES_DAS_HABILIDADES, 'utf8')).icones ?? {} : {};
+  return ICONES_DAS_HABILIDADES[slug] ?? null;
+};
 const ARQ_IDS = new URL('../../gamedata/itens-poe/gemas-poe-ids.json', import.meta.url);
 export const PREFIXO = 'poe-gema:';
 // 916001 (não 912001: a Lapidadora, a Fundidora e os orbes do Draevor são 912001–912004).
@@ -205,6 +215,20 @@ export function afeccoesComAGema(afeccoes, slug, nivel) {
 /** O custo de mana da gema no nível. */
 export const custoNoNivel = (slug, nivel) => Math.max(0, Math.round(compilada(slug, nivel)?.stats?.custo ?? 0));
 
+// ---- o DANO DEGENERATIVO da gema (09/10: "o dano degenerativo das gemas") ----
+/** O tipo de dano contínuo (`combate/dot.json`) do dano degenerativo de cada elemento de uma habilidade. */
+export const DEGEN_DO_ELEMENTO = { physical: 'degenFisico', fire: 'degenFogo', ice: 'degenGelo', energy: 'degenRaio', chaos: 'degenCaos' };
+/**
+ * O dano degenerativo da gema no nível ("Causa 765 de Dano de Gelo Base por segundo" — Vórtice, Geada Rastejante, Flecha Cáustica…):
+ * `{ partes: [{ elemento, dps }], duracaoMs }` ou null. A duração é a da habilidade (sem ela, 4 s; no mínimo 1 s: um pulso inteiro).
+ */
+export function degenerativoNoNivel(slug, nivel) {
+  const st = compilada(slug, nivel)?.stats;
+  const partes = (st?.dot ?? []).map((d) => ({ elemento: ELEMENTO[d.el], dps: Number(d.dps) || 0 })).filter((p) => p.elemento && p.dps > 0);
+  if (!partes.length) return null;
+  return { partes, duracaoMs: Math.round(Math.max(1, Number(st.duracao) || 4) * 1000) };
+}
+
 // ---- os BUFFS (auras, arautos, guardas, gritos, maldições) no nível: os efeitos de reforço do Draevor + atributos na ficha ----
 const AF_DO_ELEMENTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', fisico: 'phys', caos: 'chaos' };
 /** `{ efeitos, af, dur, motivos }` do buff da gema no nível. */
@@ -277,12 +301,13 @@ function avaliarNoJogo(h, formato) {
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
-    if (st.dot?.length) motivos.push('o dano degenerativo (ao longo do tempo) da gema não se aplica');
+    // (09/10) O dano degenerativo da gema se aplica no acerto (`acoes`: `degenerativoNoNivel`); o "% da Vida por segundo" do Fogo Justo, ainda não.
+    if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
     if (st.estagios) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
     if (st.repeticoes) motivos.push('as repetições do golpe não existem: no jogo é um');
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque) motivos.push('sem dano direto: nenhum efeito no combate');
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
@@ -334,7 +359,7 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
     group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
-    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff, molde: moldeId, ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}) },
+    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff, molde: moldeId, ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}) },
   };
   delete entry.blocked;
   return entry;
@@ -433,7 +458,8 @@ let INICIADO = null;
 export async function iniciar({ registrarGema, registrarReforco } = {}) {
   if (INICIADO) return INICIADO;
   if (!ligado() || !existsSync(ARQ_GEMAS)) return (INICIADO = { gemas: 0, porStatus: {} });
-  GEMAS = JSON.parse(readFileSync(ARQ_GEMAS, 'utf8'));
+  // (09/10) A tabela por nível de cada gema pela do poedb (a Experiência, os requisitos e as colunas que faltavam — `gemas-niveis.mjs`).
+  GEMAS = comNiveisDoPoedb(JSON.parse(readFileSync(ARQ_GEMAS, 'utf8')));
   for (const g of GEMAS) POR_SLUG.set(g.slug, g);
   const comp = await import('./compilador-de-gemas/compilador.mjs');
   const prog = await import('./compilador-de-gemas/progressao.mjs');
@@ -464,20 +490,52 @@ export const doSlug = (slug) => REGISTRO.get(slug) ?? null;
 export const daAcao = (acao) => (String(acao).startsWith(PREFIXO) ? REGISTRO.get(String(acao).slice(PREFIXO.length)) ?? null : null);
 
 /** Os atributos dos buffs de gema do PoE ligados agora (somados em `Afixos.soma`). null: nenhum. */
+/**
+ * A soma de um atributo nas peças vestidas — também a variante com CONDIÇÃO DE ESTADO ("Enquanto um Inimigo Único estiver em sua presença,
+ * Ira possui 20% de aumento do Efeito de Aura": `efeito_buff_gema:ira@unicoNaPresenca`), quando a condição vale agora. (Aqui não dá para ler
+ * a ficha: `adds` é parte da soma que monta a ficha.)
+ */
+function doEquipamento(estado, chave) {
+  let conds = null;
+  let n = 0;
+  for (const p of Object.values(estado?.equipment ?? {})) {
+    for (const [k, v] of Object.entries(p?.poe?.af ?? {})) {
+      if (k !== chave && !k.startsWith(`${chave}@`)) continue;
+      const cs = partir(k).conds;
+      if (cs.length) {
+        conds ??= condicoesDe(estado);
+        if (!cs.every((c) => vale(conds, c))) continue;
+      }
+      n += Number(v) || 0;
+    }
+  }
+  return n;
+}
+
 export function adds(estado) {
   const hunt = estado?.hunt;
   if (!hunt?.buffs && !hunt?.lacaios?.length) return null;
   const agora = hunt.clock ?? 0;
   const total = {};
-  // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas.)
-  const efeitoDe = (tipo) => 1 + Object.values(estado.equipment ?? {}).reduce((n, p) => n + (Number(p?.poe?.af?.[`efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`]) || 0) + (Number(p?.poe?.af?.['efeito_buff_gema:todos']) || 0), 0) / 100;
-  for (const b of Object.values(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
+  // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas — e o
+  // de UMA gema ("Ira possui 20% de aumento do Efeito de Aura", "Efeito do Buff da Armadura Ártica aumentado": `efeito_buff_gema:<nome da gema>`,
+  // os implícitos eldritch e os únicos — 09/10).)
+  const efeitoDe = (tipo, id) => {
+    const g = String(id ?? '').startsWith(PREFIXO) ? REGISTRO.get(String(id).slice(PREFIXO.length))?.gema : null;
+    const daGema = g?.nome ? `efeito_buff_gema:${slugDoNome(g.nome)}` : null;
+    return 1 + (doEquipamento(estado, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(estado, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(estado, daGema) : 0)) / 100;
+  };
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo, id); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
   // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...); o Golem Carniçal, dano físico
   // adicional por lacaio não-golem em campo.
   const vivos = (hunt.lacaios ?? []).filter((l) => l.hp > 0);
   const naoGolens = vivos.filter((l) => !l.golem && l.tipo === 'lacaio').length;
+  // (09/10) × o "Efeitos de Buffs concedidos pelos seus Golens aumentados" (`efeito_buff_gema:golem`) e o de UM golem ("Golens de Chamas":
+  // `efeito_buff_gema:convocar-golem-flamejante`).
   for (const l of vivos) {
-    for (const [k, v] of Object.entries(l.afDono ?? {})) total[k] = (total[k] ?? 0) + v;
+    const nomeDaGema = l.golem ? REGISTRO.get(l.gema)?.gema?.nome : null;
+    const f = l.golem ? 1 + (doEquipamento(estado, 'efeito_buff_gema:golem') + (nomeDaGema ? doEquipamento(estado, `efeito_buff_gema:${slugDoNome(nomeDaGema)}`) : 0)) / 100 : 1;
+    for (const [k, v] of Object.entries(l.afDono ?? {})) total[k] = (total[k] ?? 0) + v * f;
     if (l.porLacaioFisico && naoGolens) {
       total.added_phys_dmg_min = (total.added_phys_dmg_min ?? 0) + l.porLacaioFisico[0] * naoGolens;
       total.added_phys_dmg_max = (total.added_phys_dmg_max ?? 0) + l.porLacaioFisico[1] * naoGolens;

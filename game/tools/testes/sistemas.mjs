@@ -181,7 +181,7 @@ export const SISTEMAS = {
       /^gamedata\/(arvore|passivas)\//, /^gamedata\/(progressao|proficiencia|charms|sets-de-marco)\.json$/, /^frontend\/client\/src\/(arvore|passivas)\.mjs$/,
     ],
     testes: [
-      /^arvore/, /^passivas/, /^itens-poe-arvore/, /^itens-poe-classes/, /^classes/, /^especializacoes/, /^balanceamento-1-100/, /^recompensas-de-nivel/,
+      /^arvore/, /^passivas/, /^respec-gratis/, /^itens-poe-arvore/, /^itens-poe-classes/, /^classes/, /^especializacoes/, /^balanceamento-1-100/, /^recompensas-de-nivel/,
       /^sets-de-marco/, /^progressao/, /^skills-iguais/, /^xp-da-hunt/, /^prey/, /^charms/, /^morte/, /^roupa-da-classe/, /^melee/, /^bonus-online/,
     ],
   },
