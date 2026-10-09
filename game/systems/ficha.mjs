@@ -130,11 +130,23 @@ export function combate(estado) {
   return valor;
 }
 
+/**
+ * A ficha do golpe de UMA MÃO (PoE, duas armas): `'secundaria'` troca o crítico pelo da arma da mão secundária (a base × o local dela);
+ * `'ambas'` (a gema que acerta com as duas — a Cutilada) usa a média dos dois críticos pesada pelo dano de cada mão (`pesos`: o dano médio
+ * da principal e o da secundária), o mesmo crítico esperado de rolar cada mão. A principal, ou sem duas armas, a própria ficha.
+ */
+export function fichaDaMao(ficha, mao = 'principal', [pesoPrincipal, pesoSecundaria] = [1, 1]) {
+  if (!ficha?.duasArmas || ficha.critPontosSecundaria == null || mao === 'principal') return ficha;
+  const pontos = mao === 'secundaria' ? ficha.critPontosSecundaria : (ficha.critPontos * pesoPrincipal + ficha.critPontosSecundaria * pesoSecundaria) / Math.max(1e-9, pesoPrincipal + pesoSecundaria);
+  const chance = Math.min(ficha.critTeto ?? 1, Math.max(0, pontos * (1 + (ficha.critInc ?? 0) / 100) * (ficha.critMais ?? 1)));
+  return { ...ficha, critPontos: pontos, critChance: chance, mao };
+}
+
 /** O bônus de empunhar DUAS ARMAS no PoE: +15% de chance de bloqueio (somada) e 10% mais velocidade de ataque. */
 export const BONUS_DE_DUAS_ARMAS = { bloqueio: 0.15, velocidadeMais: 1.1 };
 
-/** Os modificadores LOCAIS da arma (`engine/arma.mjs`): os da peça do Draevor (`peca.locais`) ou, na do PoE, a Velocidade de Ataque local dela. */
-const locaisDaArma = (peca) => (peca?.poe ? { pctVelocidade: Number(peca.poe.af?.atk_speed_local) || 0 } : peca?.locais);
+/** Os modificadores LOCAIS da arma (`engine/arma.mjs`): os da peça do Draevor (`peca.locais`) ou, na do PoE, a Velocidade de Ataque e o crítico locais dela. */
+const locaisDaArma = (peca) => (peca?.poe ? { pctVelocidade: Number(peca.poe.af?.atk_speed_local) || 0, pctCritico: Number(peca.poe.af?.crit_chance_local) || 0 } : peca?.locais);
 /** DESARMADO no PoE: 1,2 ataques por segundo (833 ms), como no PoE. No clássico, sem arma, os 2 s de sempre. */
 export const APS_DESARMADO_POE = 1.2;
 /**
@@ -293,6 +305,10 @@ function calcularCombate(estado, extrasDoPoe = null) {
   const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais;
   const critChance = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
+  // PoE, DUAS ARMAS: o golpe da mão secundária usa o crítico da arma DELA (a base × o local dela) no lugar do da principal; o resto (os
+  // "+% de chance" fixos, os aumentos globais, o "mais") é o mesmo. `fichaDaMao` troca na hora do golpe.
+  const critLocalSecundaria = armaSecundariaFinal ? (armaSecundariaFinal.critChance.final - armaSecundariaFinal.critChance.base) / 10000 : 0;
+  const critPontosSecundaria = armaSecundaria ? critPontos - ((w?.critChance ?? 0) / 10000 + critLocalDaArma) + ((armaSecundaria.critChance ?? 0) / 10000 + critLocalSecundaria) : null;
   // Nas magias o PoE ainda soma o "Chance de Golpe Crítico com Magias aumentada" (`spell_crit_chance_inc`).
   const critChanceMagia = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
   // A magia do PoE: a chance-base é a da GEMA (somada a estes "+% de chance" fixos) × (1 + o "aumentada" geral e o de magias).
@@ -367,6 +383,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     critMagiaPoe,
     // Para o crítico de CADA golpe (os "aumentada" com condição — `itens-poe/mods-poe.mjs → fichaDoGolpe`): os pontos, os "aumentada" e o teto.
     critPontos,
+    // (Duas armas no PoE: os pontos e a chance da mão secundária — `fichaDaMao`.)
+    ...(critPontosSecundaria != null ? { critPontosSecundaria, critChanceSecundaria: Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontosSecundaria * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais)) } : {}),
     critMais,
     critInc: af.crit_chance_inc ?? 0,
     critIncMagia: af.spell_crit_chance_inc ?? 0,

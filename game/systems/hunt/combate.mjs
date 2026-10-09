@@ -1288,7 +1288,10 @@ export function round(estado, personagem) {
       const golpear = (segundo, alvo = alvoDoTique) => {
         // A ficha DESTE golpe (PoE): os mods condicionais pelas tags do golpe básico (ataque, corpo a corpo/projétil, físico, arco) e pelo
         // alvo, e os sorteios do golpe (dano dobrado, ignorar a redução física) — `itens-poe/mods-poe.mjs`. Sem o PoE, a mesma ficha.
-        const ficha = ModsPoe.fichaDoGolpe(fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma)), { alvo, estado });
+        // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária — a mão é escolhida AQUI (o golpe que erra também usou
+        // a dele), e o golpe leva o dano e o CRÍTICO da arma dela (`Ficha.fichaDaMao`: a base × o crítico local da arma da vez).
+        const daSecundaria = !!fichaDoPersonagem.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);
+        const ficha = ModsPoe.fichaDoGolpe(daSecundaria ? Ficha.fichaDaMao(fichaDoPersonagem, 'secundaria') : fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma)), { alvo, estado });
         const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
         if (Defesa.errou(ficha, hunt, alvo)) {
@@ -1313,8 +1316,7 @@ export function round(estado, personagem) {
         const fisicoDoGolpe = (ficha.danoDoElemento?.physical ?? 0) - (poe && !Ficha.forcaNoGolpe(ficha, tagsDoGolpe) ? ficha.danoFisicoDaForca ?? 0 : 0);
         const fisico = 1 + (fisicoDoGolpe + (poe ? 0 : Ficha.afinidadePara(ficha, tagsDoGolpe).pct) + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
         // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
-        // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária, cada uma com o próprio dano.
-        const daSecundaria = !!ficha.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);
+        // (Duas armas: a faixa da mão escolhida no começo do golpe.)
         const [faixaMin, faixaMax] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
         const fisicoCheio = (R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level)) * fisico * fatorDoGolpe;
         // PoE: "Ganha X% do Dano Físico como Dano de Caos/Fogo extra" e "X% do Dano Físico … Convertido para um Elemento Aleatório" — do Físico
