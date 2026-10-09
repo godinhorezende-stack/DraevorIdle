@@ -8,6 +8,7 @@
 //   3. `entregar(nome, peca)`: dá a peça a um personagem ONLINE (a engine local usa para testar jogando).
 // Classes sem slot no Draevor (frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`.
 import * as Catalogo from './catalogo.mjs';
+import { definirLeitorDeBase } from './condicoes-poe.mjs';
 import { traduzirPeca } from './traduzir.mjs';
 import { gerarPeca } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
@@ -193,7 +194,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
  * A VERSÃO da tradução dos mods (`traducao.json` + `atributos-novos.json`): sobe quando uma regra nova muda o `af` ou os estados das peças.
  * A peça de uma versão antiga é refeita na entrada (`refazerPecasAntigas`) — mods, valores, sockets e gemas ficam como estão.
  */
-export const VERSAO_DA_TRADUCAO = 5;
+// (6 — 09/10: as regras da árvore × poedb, lotes 3 a 5, também mudam mods de itens: defesa de uma peça, condições de arma, exposição…)
+export const VERSAO_DA_TRADUCAO = 6;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -470,3 +472,16 @@ export function armaInicial(slugDaClasse, regras = Catalogo.REGRAS) {
   if (!cat) return null;
   return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng: () => 0.5 }), regras, () => 0.5);
 }
+
+// (09/10) As defesas da BASE de uma peça do PoE (as condições "se o Elmo, Peitoral, Luvas e Botas tiverem Evasão/Armadura"): o catálogo.
+const DEFESAS_DA_BASE = new Map();
+definirLeitorDeBase((poe) => {
+  if (!poe?.base) return null;
+  if (!DEFESAS_DA_BASE.has(poe.base)) {
+    const [classe] = String(poe.base).split('/');
+    const b = Catalogo.catalogo()?.classes?.[classe]?.bases?.find((x) => x.id === poe.base);
+    const v = (k) => Number(b?.atributos?.[k]?.max ?? b?.atributos?.[k]) || 0;
+    DEFESAS_DA_BASE.set(poe.base, b ? { armadura: v('armadura'), evasao: v('evasao'), escudo: v('escudo_energia') } : null);
+  }
+  return DEFESAS_DA_BASE.get(poe.base);
+});

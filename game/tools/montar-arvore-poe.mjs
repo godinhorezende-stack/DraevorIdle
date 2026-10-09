@@ -17,9 +17,13 @@ const DESTINO = new URL('../gamedata/itens-poe/arvore-poe.json', import.meta.url
 // As maestrias pelo id do efeito. Sem o arquivo, ficam os da coleção. A posição e as ligações continuam as da coleção.
 const POEDB = process.env.POEDB_ARVORE ?? '/home/deploy/scrapling/saida/arvore/arvore-poedb-3.29-pt.json';
 const textos = new Map();
+// (09/10, auditoria da árvore) As OPÇÕES DE ESCOLHA das ascendências (poedb: `isMultipleChoiceOption` — "Estilo de Assassinato", os
+// "Mostruários" da Caçadora de Relíquias, as "Ascensões" da Ascendente): `id da opção → id do nó-pai` (o nó ligado a ela).
+const escolhas = new Map();
 if (existsSync(POEDB)) {
   for (const [id, n] of Object.entries(JSON.parse(readFileSync(POEDB, 'utf8')).nodes ?? {})) {
     if (id === 'root') continue;
+    if (n.isMultipleChoiceOption) { const pai = [...(n.in ?? []), ...(n.out ?? [])][0]; if (pai != null) escolhas.set(String(id), String(pai)); }
     // (+ o texto de lembrete do PoE, entre parênteses: o balão mostra como nota.)
     if (n.stats?.length) textos.set(String(id), [...n.stats, ...(n.reminderText ?? [])]);
     for (const m of n.masteryEffects ?? []) if (m.stats?.length) textos.set(`maestria:${m.effect}`, m.stats);
@@ -30,7 +34,7 @@ if (existsSync(POEDB)) {
 const { arvore, relatorio } = converterArvore(JSON.parse(readFileSync(ORIGEM, 'utf8')), JSON.parse(readFileSync(COMPLETA, 'utf8')), textos);
 // As 21 ascendências (incremento 4e): pedaços à parte, cada um com o próprio início.
 const listaAsc = readdirSync(ASCENDENCIAS).filter((d) => existsSync(`${ASCENDENCIAS}/${d}/ascendencia.json`)).sort().map((d) => JSON.parse(readFileSync(`${ASCENDENCIAS}/${d}/ascendencia.json`, 'utf8')));
-const asc = converterAscendencias(listaAsc, textos);
+const asc = converterAscendencias(listaAsc, textos, escolhas);
 const repetidos = asc.nos.filter((n) => arvore.nos.some((m) => m.id === n.id));
 if (repetidos.length) throw new Error(`ids de ascendência repetidos na árvore: ${repetidos.map((n) => n.id).join(', ')}`);
 arvore.nos.push(...asc.nos);
@@ -43,7 +47,7 @@ if (erros.length) {
   process.exit(1);
 }
 const saida = {
-  _nota: 'A árvore de passivas do PoE no formato da árvore do Draevor (gerada por tools/montar-arvore-poe.mjs a partir da coleção do Drive). Cada nó: custo 1 (como no PoE), os efeitos traduzidos (add = atributo somado, tag = dano % por tag), os TEXTOS originais e o estado de cada linha (equivalente/aproximado/novo/registrado/nota). As 21 ASCENDÊNCIAS vêm junto, como pedaços à parte na borda (nós com `ascendencia`, início em inicios["asc:<slug>"], dados em `ascendencias`). Só entra no jogo com ITENS_POE=1.',
+  _nota: 'A árvore de passivas do PoE no formato da árvore do Draevor (gerada por tools/montar-arvore-poe.mjs a partir da coleção do Drive). Cada nó: custo 1 (como no PoE; a opção de escolha de uma ascendência, `opcaoDe`, custo 0), os efeitos traduzidos (add = atributo somado, com condição/escala na chave; stat = % de vida/mana/precisão no formato da árvore do Draevor), os TEXTOS originais e o estado de cada linha (equivalente/aproximado/novo/registrado/nota). As 21 ASCENDÊNCIAS vêm junto, como pedaços à parte na borda (nós com `ascendencia`, início em inicios["asc:<slug>"], dados em `ascendencias`). Só entra no jogo com ITENS_POE=1.',
   relatorio,
   ...arvore,
 };

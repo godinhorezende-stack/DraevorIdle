@@ -89,3 +89,25 @@ test('o Multiplicador de Dano de Gelo Degenerativo agora age (no dano degenerati
   assert.ok(maior(sem.bicho()) > 0, 'sem o mod, o Vórtice já degenera');
   assert.ok(Math.abs(maior(com.bicho()) / maior(sem.bicho()) - 2) < 0.05, `+100% de multiplicador: o dobro (${maior(com.bicho())} / ${maior(sem.bicho())})`);
 });
+
+test('a chance de EMPALAR da gema (Golpe Duplo do Empalamento, Aço Partido… 7 gemas) chega ao acerto: a mesma mecânica de empalamento dos itens e da árvore', { skip: SEM }, async () => {
+  const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
+  const slug = 'Double_Strike_of_Impaling';
+  const chance = G.compilada(slug, 10)?.stats?.chances?.empalar;
+  assert.ok(chance > 0, 'a gema tem chance de empalar');
+  const ficha = { afPoe: {}, porTag: [] };
+  // sem a gema: nada de empalar (era o defeito — a chance da gema não ia a lugar nenhum)
+  assert.equal(ModsPoe.valor(ficha, 'chance_empalar'), 0);
+  const comGema = G.fichaComAsChancesDaGema(ficha, slug, 10);
+  assert.equal(ModsPoe.valor(comGema, 'chance_empalar'), chance);
+  // o acerto do motor empala o alvo com essa ficha
+  const hunt = { clock: 0 };
+  const alvo = { uid: 1, x: 0, y: 0, hp: 1000, maxHp: 1000, estados: {} };
+  ModsPoe.aoAcertar({ hp: 100, maxHp: 100, equipment: {} }, hunt, alvo, comGema, { dano: 100, fisico: 100, rng: () => 0, agora: 0 });
+  assert.ok(Array.isArray(alvo.estados.empalado) && alvo.estados.empalado.length === 1, JSON.stringify(alvo.estados));
+  // e o estado da gema no jogo não diz mais "a chance de empalar ainda não existe"
+  assert.ok(!(G.doSlug(slug).motivosNoJogo ?? []).some((m) => /empalar/.test(m)));
+  // a ação da gema passa a ficha com a chance ao acerto
+  const acoes = (await import('node:fs')).readFileSync(new URL('../systems/acoes.mjs', import.meta.url), 'utf8');
+  assert.match(acoes, /GemasPoe\.fichaComAsChancesDaGema\(ficha, entry\.poeGema\.slug/);
+});

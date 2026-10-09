@@ -67,6 +67,8 @@ export function daSoma(af = {}) {
     incendioMaisRapido: n('incendio_mais_rapido'),
     // (09/10) "Sangramentos infligidos por você causam Dano X% mais rápido": o mesmo total em menos tempo.
     sangramentoMaisRapido: n('sangramento_mais_rapido'),
+    // (09/10) "Golpes Críticos não Incendeiam de forma inerente" (a maestria de fogo).
+    criticoNaoIncendeia: n('critico_nao_incendeia') > 0,
     // Os únicos: que dano pode pôr cada afecção ("Seu Dano de Raio pode Incendiar", "Seu Dano de Fogo pode Eletrizar, mas não Incendiar",
     // "Todo Dano pode Congelar"), quais não pode pôr ("Não Pode aplicar Incendiar"), as chances só no crítico, o "como se causasse X% mais
     // Dano", a duração do Resfriamento e os venenos a mais.
@@ -130,7 +132,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const raio = baseDe('eletrizacao');
   const caos = dano('chaos');
   // Incêndio: pela chance, ou crítico com dano de Fogo.
-  if (fogo > 0 && (crit || sorte(chance('incendio')))) dot('queimadura', BASE.incendio.porSegundo, duracaoDe(BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, a.multiplicador + a.multiplicadorFogo, a.danoIncendio ?? 0);
+  if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) dot('queimadura', BASE.incendio.porSegundo, duracaoDe(BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, a.multiplicador + a.multiplicadorFogo, a.danoIncendio ?? 0);
   if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0), fisico, a.multiplicador + (a.multiplicadorSangramento ?? 0), a.danoSangramento ?? 0);
   // Veneno: do dano Físico e de Caos (ou de TODO o dano, com "Todo o Dano … pode Envenenar").
   const todos = ['physical', 'fire', 'ice', 'energy', 'chaos'].reduce((x, el) => x + dano(el), 0);

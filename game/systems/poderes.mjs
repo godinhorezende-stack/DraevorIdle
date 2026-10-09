@@ -203,6 +203,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     // PoE: os eventos "ao Bloquear" dos únicos e o "Bloqueou Recentemente".
     ModsPoe.marcar(hunt, 'bloqueou');
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
+    // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
+    ModsPoe.evento(estado, hunt, 'bloquearMagia', ficha, { alvo: bicho, eventos, personagem });
   }
 
   const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];

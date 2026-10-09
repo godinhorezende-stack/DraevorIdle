@@ -12,6 +12,7 @@ import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import * as Atributos from './atributos.mjs';
 import * as AtributosDoMob from '../mobs/atributos.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
+import { RECENTE_MS } from '../itens-poe/condicoes-poe.mjs';
 
 const ES = Atributos.CONFIG.energyShield;
 
@@ -60,7 +61,13 @@ export function esAtual(estado, ficha) {
  */
 export function absorver(estado, ficha, dano, eventos, evento) {
   if (!(dano > 0)) return dano;
-  estado.esEspera = esperaDaRecarga(ficha);
+  const v = (k) => Number(ficha?.afPoe?.[k]) || 0;
+  // (Proteção Perversa: "Recarga do Escudo de Energia não é interrompida por Dano se a Recarga começou recentemente" — 4 s, o "recente".)
+  const agora = estado.hunt?.clock ?? 0;
+  const recargaRecente = v('recarga_nao_interrompida') > 0 && !(estado.esEspera > 0) && estado.esRecargaDesde != null && agora - estado.esRecargaDesde <= RECENTE_MS;
+  if (!recargaRecente) estado.esEspera = esperaDaRecarga(ficha);
+  // (Bateria Anciã: "Escudo de Energia protege a Mana ao invés da Vida" — o escudo não segura o dano da vida; ele paga os custos.)
+  if (v('es_protege_mana') > 0) return dano;
   const tem = esAtual(estado, ficha);
   if (!(tem > 0)) return dano;
   const tira = Math.min(tem, dano);
@@ -86,14 +93,29 @@ export function recarregar(estado, ficha, ms) {
     return;
   }
   const atual = esAtual(estado, ficha);
+  const v = (k) => Number(ficha?.afPoe?.[k]) || 0;
+  // (Devastador Fantasma: "Não Pode Recarregar Escudo de Energia".)
+  if (v('sem_recarga_es') > 0) return;
   let resto = ms;
   if (estado.esEspera > 0) {
     const usa = Math.min(estado.esEspera, resto);
     estado.esEspera -= usa;
     resto -= usa;
+    // a recarga COMEÇOU agora (a Proteção Perversa conta o "recentemente" daqui)
+    if (!(estado.esEspera > 0)) estado.esRecargaDesde = (estado.hunt?.clock ?? 0) - resto;
   }
-  if (!(resto > 0) || atual >= max) return;
-  estado.esResto = (estado.esResto ?? 0) + (max * ES.RECARGA_POR_SEGUNDO * (1 + (ficha.esRecargaPct ?? 0) / 100) * resto) / 1000;
+  // ("Recarga do Escudo de Energia é aplicada à Vida" — a Juventude Eterna: o mesmo ritmo, mas quem enche é a vida; o escudo não recarrega.)
+  const naVida = v('recarga_es_na_vida') > 0;
+  if (!(resto > 0) || (naVida ? (estado.hp ?? 0) >= (estado.maxHp ?? 0) || !((estado.hp ?? 0) > 0) : atual >= max)) return;
+  // ("X% menos Recarga do Escudo de Energia" — Bateria Anciã 50%, Proteção Perversa 40%: multiplica a recarga.)
+  const menos = Math.max(0, 1 - v('es_recarga_menos') / 100);
+  estado.esResto = (estado.esResto ?? 0) + (max * ES.RECARGA_POR_SEGUNDO * (1 + (ficha.esRecargaPct ?? 0) / 100) * menos * resto) / 1000;
+  if (naVida) {
+    const ganhoNaVida = Math.floor(estado.esResto);
+    estado.esResto -= ganhoNaVida;
+    estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + ganhoNaVida);
+    return;
+  }
   const ganho = Math.floor(estado.esResto);
   estado.esResto -= ganho;
   estado.es = Math.min(max, atual + ganho);

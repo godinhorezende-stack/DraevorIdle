@@ -24,6 +24,7 @@ import { readFileSync } from 'node:fs';
 import * as Keystones from './keystones.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
+import { definirLeitorDeMaestrias } from '../itens-poe/condicoes-poe.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -45,6 +46,10 @@ export function validar(arvore) {
     if (!Number.isFinite(n.x) || !Number.isFinite(n.y)) erros.push(`${n.id}: sem posição`);
     for (const ef of n.efeitos ?? []) if (!efeitoValido(ef)) erros.push(`${n.id}: efeito ${JSON.stringify(ef)}`);
     if (n.tipo === 'keystone' && !Keystones.valida(n.keystone)) erros.push(`${n.id}: keystone ${JSON.stringify(n.keystone)}`);
+    if (n.opcaoDe != null) {
+      const pai = arvore.nos.find((x) => x.id === n.opcaoDe);
+      if (!pai || pai.ascendencia !== n.ascendencia || !(n.conexoes ?? []).includes(n.opcaoDe)) erros.push(`${n.id}: opção de escolha de ${n.opcaoDe}, que não existe ou não está ligado`);
+    }
     if (n.tipo === 'mastery') {
       if (n.grupo == null || !n.opcoes?.length) erros.push(`${n.id}: maestria sem grupo ou sem opções`);
       for (const o of n.opcoes ?? []) for (const ef of o.efeitos ?? []) if (!efeitoValido(ef)) erros.push(`${n.id}/${o.id}: efeito ${JSON.stringify(ef)}`);
@@ -129,6 +134,24 @@ const classeDe = (estado) => {
   return ARVORE.inicios[estado.vocation] ? estado.vocation : 'knight';
 };
 export const inicioDe = (estado) => ARVORE.inicios[classeDe(estado)];
+/**
+ * Os INÍCIOS EXTRAS (o "Caminho do Marauder" da Ascendente: "Pode Alocar Passivas do ponto inicial do Marauder" — `inicio_extra:<classe>`):
+ * o início dessas classes vale como se fosse seu (aloca-se a partir dele). `ids`: os nós que contam (por padrão, os alocados).
+ */
+export function iniciosExtras(estado, ids = estado?.passivas?.alocados ?? []) {
+  const extras = [];
+  for (const id of ids) {
+    const no = ARVORE.porId.get(id);
+    if (!no) continue;
+    for (const ef of efeitosDoNo(no, estado.passivas)) {
+      const m = /^inicio_extra:(\w+)$/.exec(ef.add ?? '');
+      if (m && ef.valor > 0 && ARVORE.inicios[m[1]] && !extras.includes(ARVORE.inicios[m[1]])) extras.push(ARVORE.inicios[m[1]]);
+    }
+  }
+  return extras;
+}
+/** Todos os pontos de partida do personagem: o início da classe, o da ascendência e os extras. */
+const raizesDe = (estado, ids) => [inicioDe(estado), inicioDaAscendencia(estado), ...iniciosExtras(estado, ids)].filter(Boolean);
 export const custoDe = (no) => no?.custo ?? (no?.atributo ? CONFIG.custo.atributo : undefined) ?? CONFIG.custo[no?.tipo] ?? 1;
 export const pontosDoLevel = (level) => {
   const regra = ARVORE.pontos ?? CONFIG.pontos;
@@ -199,7 +222,7 @@ export function garantir(estado) {
   let arvoreMudou = false;
   if ((p.versaoDaArvore ?? 1) !== ARVORE.versao) {
     const antes = new Set(p.alocados);
-    const ligados = alcancaveis(ARVORE.porId, new Set(limpos), [inicio, ...(inicioAsc ? [inicioAsc] : [])]);
+    const ligados = alcancaveis(ARVORE.porId, new Set([...limpos, ...iniciosExtras(estado, limpos)]), [inicio, ...(inicioAsc ? [inicioAsc] : []), ...iniciosExtras(estado, limpos)]);
     const grupos = gruposComNotavel([...ligados]);
     limpos = limpos.filter((id) => ligados.has(id) || (ARVORE.porId.get(id)?.tipo === 'mastery' && grupos.has(ARVORE.porId.get(id).grupo)));
     const sairam = [...antes].filter((id) => id !== inicio && !limpos.includes(id) && ARVORE.porId.get(id)?.tipo !== 'start').length;
@@ -221,7 +244,22 @@ export function pontos(estado) {
   const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0));
   // Os nós de ascendência gastam os pontos de ASCENDÊNCIA (`pontosDeAscendencia`), não estes.
   const usados = passivas.alocados.reduce((s, id) => (ARVORE.porId.get(id)?.ascendencia ? s : s + custoDe(ARVORE.porId.get(id))), 0);
-  return { total, usados, livres: Math.max(0, total - usados) };
+  // `deficit`: pontos gastos A MAIS do que o personagem tem (um personagem antigo que caiu de level na morte, antes da regra do PoE; um nó
+  // que concedia pontos e saiu). Não se aloca nada enquanto houver déficit; a tela mostra (auditoria da árvore, 09/10).
+  return { total, usados, livres: Math.max(0, total - usados), ...(usados > total ? { deficit: usados - total } : {}) };
+}
+
+/** Os pontos gastos e o total se só `ficam` estivessem alocados (o respec confere antes de tirar um nó que concede pontos). */
+function pontosSe(estado, ficam) {
+  let concedidos = 0;
+  let usados = 0;
+  for (const id of ficam) {
+    const no = ARVORE.porId.get(id);
+    if (!no) continue;
+    if (!no.ascendencia) usados += custoDe(no);
+    for (const ef of efeitosDoNo(no, estado.passivas)) if (ef.add === 'pontos_passiva') concedidos += ef.valor;
+  }
+  return { total: pontosDoLevel(estado.level) + Math.max(0, Math.round(concedidos)), usados };
 }
 
 // ------------------------------------------------------------ as ascendências (árvore do PoE, incremento 4e)
@@ -272,14 +310,21 @@ export function podeAlocar(estado, id, opcao = null) {
   if (meus.has(id)) return erro('JA_ALOCADO', 'Você já tem esse nó.');
   if (no.tipo === 'start') return erro('INICIO', 'O início de outra classe não se aloca.');
   if (no.tipo === 'mastery') return podeAlocarMaestria(estado, no, opcao, meus);
-  if (!(no.conexoes ?? []).some((c) => meus.has(c))) return erro('SEM_CAMINHO', 'Esse nó não está ligado a nenhum nó seu.');
+  const extras = new Set(iniciosExtras(estado));
+  if (!(no.conexoes ?? []).some((c) => meus.has(c) || extras.has(c))) return erro('SEM_CAMINHO', 'Esse nó não está ligado a nenhum nó seu.');
   if ((estado.level ?? 1) < (no.levelMinimo ?? 0)) return erro('LEVEL', `Precisa do level ${no.levelMinimo}.`);
   if (no.ascendencia) {
     if (passivas.ascendencia !== no.ascendencia) return erro('OUTRA_ASCENDENCIA', 'Esse nó é de outra ascendência.');
+    // A OPÇÃO DE ESCOLHA (como no PoE): abre pelo nó-pai alocado, não gasta ponto, e é uma só por pai.
+    if (no.opcaoDe != null) {
+      if (!meus.has(no.opcaoDe)) return erro('SEM_PAI', `Aloque "${ARVORE.porId.get(no.opcaoDe)?.nome ?? no.opcaoDe}" para escolher uma das opções dele.`);
+      const outra = passivas.alocados.find((x) => x !== id && ARVORE.porId.get(x)?.opcaoDe === no.opcaoDe);
+      if (outra) return erro('OPCAO_REPETIDA', `Você já escolheu "${ARVORE.porId.get(outra)?.nome}" — tire-a para escolher outra.`);
+    }
     if (pontosDeAscendencia(estado).livres < custoDe(no)) return erro('SEM_PONTOS', 'Faltam pontos de ascendência: vença o boss de fim de ato seguinte.');
     return { ok: true };
   }
-  if (pontos(estado).livres < custoDe(no)) return erro('SEM_PONTOS', `Faltam pontos: esse nó custa ${custoDe(no)}.`);
+  if (pontos(estado).livres < custoDe(no) || (custoDe(no) > 0 && pontos(estado).deficit)) return erro('SEM_PONTOS', `Faltam pontos: esse nó custa ${custoDe(no)}.`);
   return { ok: true };
 }
 
@@ -294,8 +339,9 @@ export function caminhoAte(estado, id) {
   const meus = new Set(passivas.alocados);
   if (meus.has(id)) return [];
   const veioDe = new Map();
-  const fila = [...meus];
+  const fila = [...meus, ...iniciosExtras(estado).filter((x) => !meus.has(x))];
   for (const x of fila) veioDe.set(x, null);
+  const origens = new Set(fila);
   for (let i = 0; i < fila.length; i++) {
     const atual = fila[i];
     for (const c of ARVORE.porId.get(atual)?.conexoes ?? []) {
@@ -303,7 +349,7 @@ export function caminhoAte(estado, id) {
       veioDe.set(c, atual);
       if (c === id) {
         const caminho = [];
-        for (let x = c; x && !meus.has(x); x = veioDe.get(x)) caminho.unshift(x);
+        for (let x = c; x && !origens.has(x); x = veioDe.get(x)) caminho.unshift(x);
         return caminho;
       }
       fila.push(c);
@@ -350,7 +396,8 @@ export function ilhadosSemEles(estado, ids) {
   const { passivas } = garantir(estado);
   const tirar = new Set(ids);
   const fica = new Set(passivas.alocados.filter((x) => !tirar.has(x)));
-  const ligados = alcancaveis(ARVORE.porId, fica, [inicioDe(estado), inicioDaAscendencia(estado)].filter(Boolean));
+  const raizes = raizesDe(estado, [...fica]);
+  const ligados = alcancaveis(ARVORE.porId, new Set([...fica, ...raizes]), raizes);
   // A maestria fica enquanto houver um notável LIGADO no grupo dela.
   const grupos = gruposComNotavel([...ligados]);
   return [...fica].filter((x) => (ARVORE.porId.get(x)?.tipo === 'mastery' ? !grupos.has(ARVORE.porId.get(x).grupo) : !ligados.has(x)));
@@ -379,6 +426,15 @@ export function planoDeRespec(estado, { ids, tudo = false, junto = false }, emCa
   const ilhados = ilhadosSemEles(estado, tirar);
   if (ilhados.length && !junto) return { ...erro('ILHARIA', `Tirar isso deixaria ${ilhados.length} nó(s) sem caminho até o início — tire-os junto.`), ilhados };
   tirar = [...tirar, ...ilhados];
+  // Tirar um nó que CONCEDE pontos ("Concede 1 Ponto de Habilidade Passiva", na Ascendente/Caçadora de Relíquias) não pode deixar mais
+  // pontos gastos do que o total — como no PoE, tire outros nós antes (o respec completo sempre pode).
+  if (!tudo) {
+    const sai = new Set(tirar);
+    const antes = pontosSe(estado, passivas.alocados);
+    const depois = pontosSe(estado, passivas.alocados.filter((x) => !sai.has(x)));
+    const faltaDepois = depois.usados - depois.total;
+    if (faltaDepois > 0 && faltaDepois > antes.usados - antes.total) return erro('PONTOS_NEGATIVOS', `Tirar isso deixaria ${faltaDepois} ponto(s) gasto(s) a mais do que você tem — tire outros nós antes.`);
+  }
   // Respec sempre de graça (o jogo oficial): nada se gasta — nem o respec grátis da migração, nem os pontos do Orbe do Remorso.
   if (regras.gratis) return { ok: true, tirar, gratis: true, semCusto: true, restituicoes: 0, preco: 0 };
   const gratis = tudo && passivas.respecsGratis > 0;
@@ -486,6 +542,8 @@ export function vista(estado, emCacada = false) {
   return {
     alocados: [...passivas.alocados],
     inicio: inicioDe(estado),
+    // os inícios de outras classes liberados por um nó ("Caminho do Marauder" da Ascendente)
+    ...(iniciosExtras(estado).length ? { iniciosExtras: iniciosExtras(estado) } : {}),
     pontos: pontos(estado),
     respecsGratis: passivas.respecsGratis,
     // Árvore do PoE: a ascendência (escolhida ou não), os pontos dela e as opções da classe.
@@ -522,6 +580,8 @@ export function arvoreParaCliente() {
       // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
       ...(n.icone ? { icone: n.icone } : {}),
       ...(n.grupo != null ? { grupo: n.grupo } : {}),
+      // A opção de escolha de uma ascendência (o nó-pai deixa escolher uma, sem gastar ponto).
+      ...(n.opcaoDe != null ? { opcaoDe: n.opcaoDe } : {}),
       // A keystone do PoE aproximada: a diferença para o PoE (o balão mostra).
       ...(n.keystone?.nota ? { notaDoDraevor: n.keystone.nota } : {}),
       ...(n.opcoes ? { opcoes: n.opcoes.map((o) => ({ id: o.id, textos: o.textos, estados: o.estados, efeitos: o.efeitos })) } : {}),
@@ -537,3 +597,9 @@ export function arvoreParaCliente() {
     })),
   };
 }
+
+// (09/10) "se você tiver ao menos N Maestrias de Vida alocadas" (as maestrias da árvore do PoE): as maestrias alocadas cujo nome tem o tema.
+definirLeitorDeMaestrias((estado, tema) => (estado?.passivas?.alocados ?? []).filter((id) => {
+  const n = ARVORE.porId.get(id);
+  return n?.tipo === 'mastery' && new RegExp(`\\b${tema}\\b`, 'i').test(n.nome ?? '');
+}).length);

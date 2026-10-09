@@ -586,6 +586,9 @@ export function sincronizarMaximos(estado) {
   const manaPct = (Especializacoes.efeitos(estado).stats.mana ?? 0) + (t.mana_inc ?? 0);
   const manaSemPct = base.maxMana + (t.mana ?? 0) + doAtributo.mana;
   const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
+  // (09/10) "X% MAIS Vida Máxima" (a maestria de vida da árvore: `life_more`): multiplica a vida inteira.
+  const maisVida = itensPoeLigado() ? Number(t.life_more) || 0 : 0;
+  if (maisVida) quer.hp = Math.round((base.maxHp + quer.hp) * (1 + maisVida / 100) - base.maxHp);
   // PoE: "X% de Vida Máxima Convertida em Escudo de Energia" — sai da vida e vira escudo (a ficha soma `vidaConvertidaPoe` no escudo).
   const converte = itensPoeLigado() ? Math.min(100, Number(t.vida_em_escudo) || 0) : 0;
   const vidaConvertida = converte > 0 ? Math.round(((base.maxHp + quer.hp) * converte) / 100) : 0;

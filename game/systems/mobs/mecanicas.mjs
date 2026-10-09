@@ -163,6 +163,8 @@ export function tique(estado, hunt, personagem, eventos) {
     }
   }
   // O dano ao longo do tempo no JOGADOR (o debuff do golpe: veneno, queimadura, sangramento...), um pulso por segundo, pelo motor `combate/dot.mjs`.
-  Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome) => ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, valor, elemento, eventos, nome), () => estado.hp > 0);
+  // ("X% menos Dano Sofrido de Dano Degenerativo" — a árvore do PoE.)
+  const menosDegen = Math.max(0, 1 - (Number(ModsPoe.fichaDa?.(hunt)?.afPoe?.dano_degen_recebido_menos) || 0) / 100);
+  Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome) => ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, Math.round(valor * menosDegen), elemento, eventos, nome), () => estado.hp > 0);
 }
 

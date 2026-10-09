@@ -973,6 +973,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     ModsPoe.aoBloquear(hunt, bicho, ficha, { eventos });
     ModsPoe.marcar(hunt, 'bloqueou');
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
+    // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
+    ModsPoe.evento(estado, hunt, 'bloquearAtaque', ficha, { alvo: bicho, eventos, personagem });
     // Golpes Reveladores (keystone do PoE): o golpe bloqueado ainda causa 65% do dano. PoE: "Você sofre X% do Dano de Acertos Bloqueados".
     const glancing = Math.max(temHabilidade(estado, 'golpesReveladores') ? 65 : Formulas.PARAMETROS.bloqueio.glancingPct, ModsPoe.valor(ficha, 'dano_dos_bloqueados'));
     if (glancing > 0) {
@@ -1307,7 +1309,7 @@ export function round(estado, personagem) {
         const tagsDoGolpe = Tags.tagsDoGolpe(categoriaDaArma(arma));
         // No PoE: sem a afinidade de classe do Draevor, e a parte da Força só no corpo a corpo (o arco não ganha dano físico da STR).
         const poe = itensPoeLigado();
-        const fisicoDoGolpe = (ficha.danoDoElemento?.physical ?? 0) - (poe && !tagsDoGolpe.includes('melee') ? ficha.danoFisicoDaForca ?? 0 : 0);
+        const fisicoDoGolpe = (ficha.danoDoElemento?.physical ?? 0) - (poe && !Ficha.forcaNoGolpe(ficha, tagsDoGolpe) ? ficha.danoFisicoDaForca ?? 0 : 0);
         const fisico = 1 + (fisicoDoGolpe + (poe ? 0 : Ficha.afinidadePara(ficha, tagsDoGolpe).pct) + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
         // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
         // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária, cada uma com o próprio dano.

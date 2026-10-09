@@ -57,7 +57,7 @@ test('comprar: uma, as que faltam, e sem ouro não', () => {
   assert.equal(e.gold, 1e6 - (4 * 13800 + 2 * 27600));
 });
 
-test('morrer: tira a experiência (e o level), 20% do ouro carregado e queima as bênçãos', () => {
+test('morrer: tira a experiência (e o level), 20% do ouro carregado e queima as bênçãos', { skip: doClassico('a morte do Tibia derruba level; no modo PoE (regra do PoE 1) a morte não tira level — o teste do oficial está logo abaixo') }, () => {
   const e = personagem(89, { gold: 1000 });
   e.bank = 5000;
   e.blessings = [2, 3];
@@ -76,6 +76,27 @@ test('morrer: tira a experiência (e o level), 20% do ouro carregado e queima as
   assert.equal(morte.levelPerdido, 1);
   assert.equal(e.level, 88);
   assert.ok(e.maxHp < antes.maxHp);
+});
+
+test('morrer no modo PoE: tira a experiência só até o começo do level (como no PoE 1, nunca um level) — a árvore não fica com pontos a mais', { skip: soNoOficial('a regra de morte do PoE') }, () => {
+  const e = personagem(89, { gold: 1000 });
+  e.blessings = [2, 3];
+  const antes = { xp: e.xp, maxHp: e.maxHp, level: e.level };
+  const conta = Morte.conta(e);
+  // Estava 1.000 acima do level 89: a perda (~84% de um level) é aparada nos 1.000 — o piso é o começo do level.
+  assert.equal(conta.expPerdida, 1000);
+  assert.equal(conta.semPerderLevel, true);
+  const morte = Morte.morrer(e, descerDeLevel);
+  assert.equal(morte.lost, 1000);
+  assert.equal(e.xp, R.expForLevel(89));
+  assert.equal(morte.levelPerdido, 0);
+  assert.equal(e.level, antes.level);
+  assert.equal(e.maxHp, antes.maxHp);
+  assert.equal(morte.goldLost, 200);
+  assert.deepEqual(e.blessings, []);
+  // Morrer de novo no começo do level não tira nada (nem o level).
+  assert.equal(Morte.morrer(e, descerDeLevel).lost, 0);
+  assert.equal(e.level, 89);
 });
 
 test('promoção: level 20, 20.000 gold, uma vez; acelera a regeneração', { skip: doClassico('Promoção de vocação do Draevor (Elite Knight, Royal Paladin…): no jogo oficial (PoE) não existe — dono, 08/10: "tire essa promotion do desktop e do mobile"') }, () => {

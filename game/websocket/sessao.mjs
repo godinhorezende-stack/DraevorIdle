@@ -45,6 +45,7 @@ import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
 import * as FichaPoe from '../systems/personagem/ficha-poe.mjs';
 import * as FrascosPoe from '../systems/itens-poe/frascos.mjs';
+import * as ModsPoe from '../systems/itens-poe/mods-poe.mjs';
 import * as PreviaPoe from '../systems/itens-poe/previa-da-area.mjs';
 import * as ModsDeMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
 import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/combate.mjs';
@@ -1105,8 +1106,14 @@ export class Sessao {
       // O CINTO de frascos do PoE (`itens-poe/frascos.mjs`): pôr um frasco da mochila e tirar de volta; usar na hora (na caçada).
       case 'frasco':
         if (m.action === 'usar') {
+          const classeDoFrasco = FrascosPoe.cinto(this.estado)[Number(m.vaga)]?.poe?.classe ?? null;
           const usou = FrascosPoe.usar(this.estado, Number(m.vaga), null, this.personagem?.nome);
-          if (usou) Ficha.invalidar(this.estado);
+          if (usou) {
+            Ficha.invalidar(this.estado);
+            // Os eventos "ao usar um Frasco" (a Maestria de Frascos da árvore, os mods das peças).
+            ModsPoe.eventosDoFrasco(this.estado, classeDoFrasco, Ficha.combate(this.estado), { personagem: this.personagem?.nome });
+            Ficha.invalidar(this.estado);
+          }
           return this.aplicar(usou ? { ok: true } : { ok: false, erro: 'Esse frasco não pode ser usado agora (sem cargas, já ativo ou fora da caçada).' });
         }
         if (m.action === 'configurar') return this.aplicar(FrascosPoe.configurar(this.estado, m));

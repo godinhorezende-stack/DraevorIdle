@@ -61,7 +61,7 @@ export function criarTelaDaArvorePoedb({ raiz }) {
     const linhaDoNo = (n) => el('tr', {},
       el('td', {}, el('em', { class: `pend-marca ${n.estado}`, title: ESTADOS[n.estado]?.dica }, ESTADOS[n.estado]?.simbolo ?? '?')),
       el('td', {}, el('b', {}, n.nome), el('div', { class: 'dica' }, `${TIPO_DO_NO[n.tipo] ?? n.tipo} · id ${n.id}${n.noJogo ? '' : ' · não está no jogo'}`)),
-      el('td', {}, el('div', { class: 'pend-partes' }, n.linhas.map((l) => el('span', { class: `arv-linha ${l.estado}`, title: l.nota ?? ESTADOS[l.estado]?.nome }, `${ESTADOS[l.estado]?.simbolo ?? '?'} ${l.texto}`)))));
+      el('td', {}, el('div', { class: 'pend-partes' }, n.linhas.map((l) => el('span', { class: `arv-linha ${l.estado}`, title: l.nota ?? (l.tema ? `${ESTADOS[l.estado]?.nome} — falta: ${l.tema}` : ESTADOS[l.estado]?.nome) }, `${ESTADOS[l.estado]?.simbolo ?? '?'} ${l.texto}`)))));
     const item = (it) => el('span', { class: `arv-item ${it.noJogo ? 'sim' : 'nao'}`, title: [it.ascendencia, it.classe, it.estado ? ESTADOS[it.estado]?.nome : null].filter(Boolean).join(' · ') }, it.nome);
     const aba = (a) => el('div', { class: 'arv-aba' },
       el('div', {}, el('b', {}, a.titulo.replace(/\s*\/\s*\d+$/, '')), el('span', { class: a.noJogo === a.itens.length ? 'arv-ok' : 'arv-falta' }, ` ${a.noJogo} de ${a.itens.length} no jogo`)),
@@ -71,6 +71,18 @@ export function criarTelaDaArvorePoedb({ raiz }) {
         el('b', {}, pag.replace(/_/g, ' ')),
         el('a', { href: p.fonte, target: '_blank', rel: 'noopener', class: 'arv-link' }, ' abrir no poedb'),
         el('div', { class: 'arv-abas' }, p.abas.filter((a) => a.itens.length).map(aba)))));
+    // (09/10) O QUE FALTA na árvore principal: as linhas sem efeito por grupo — o que depende de GEMAS, de ITENS e das MECÂNICAS — com o que
+    // o motor precisa ter para implementar direito.
+    const GRUPO_DO_QUE_FALTA = { gema: 'Depende de gemas', item: 'Depende de itens', mecanica: 'Mecânicas do combate' };
+    const quadroDoQueFalta = (d.precisa ?? []).length ? el('div', { class: 'arv-falta-grade' }, Object.entries(GRUPO_DO_QUE_FALTA).map(([g, titulo]) => {
+      const temas = d.precisa.filter((x) => x.grupo === g);
+      return el('div', { class: 'eng-painel arv-falta' }, el('div', { class: 'eng-painel-corpo' },
+        el('b', {}, titulo), el('span', { class: 'dica' }, ` · ${temas.reduce((n, x) => n + x.linhas, 0)} linhas`),
+        temas.map((x) => el('details', { class: 'arv-tema' },
+          el('summary', {}, el('span', {}, x.tema), el('span', { class: 'dica' }, ` ${x.linhas} linhas · ${x.nos} nós`)),
+          el('div', { class: 'arv-precisa' }, `Precisa: ${x.precisa}`),
+          el('div', { class: 'arv-exemplos' }, x.exemplos.map((e) => el('div', {}, `· ${e}`)))))));
+    })) : null;
     const principal = d.grupos.find((x) => x.id === 'principal');
     raiz().replaceChildren(
       cabecalho('Árvore × PoEDB', `A árvore do poedb (PoE 1 ${d.versao}) comparada com a do jogo, nó a nó pelo id do PoE. Árvore principal: ${principal?.noJogo ?? 0} de ${principal?.nos ?? 0} nós no jogo; ${principal?.porEstado.funciona ?? 0} funcionam inteiros.`,
@@ -78,6 +90,8 @@ export function criarTelaDaArvorePoedb({ raiz }) {
       el('div', { class: 'arv-tipos' }, ['principal', 'classe', 'alternativa', 'linhagem', 'antiga', 'fora'].filter((t) => porTipo[t]).map((t) => el('section', { class: 'arv-tipo' },
         el('h3', {}, TIPO_DO_GRUPO[t], el('span', { class: 'dica' }, ` ${porTipo[t].length > 1 ? `${porTipo[t].length} · ` : ''}${porTipo[t].reduce((n, x) => n + x.noJogo, 0)} de ${porTipo[t].reduce((n, x) => n + x.nos, 0)} nós no jogo`)),
         el('div', { class: 'arv-grupos' }, porTipo[t].map(cartao))))),
+      quadroDoQueFalta ? el('h3', { class: 'arv-subtitulo' }, 'O que falta implementar na árvore principal (as linhas em vermelho)') : null,
+      quadroDoQueFalta,
       el('h3', { class: 'arv-subtitulo' }, 'As abas das páginas de Ascendência e de Linhagem'),
       el('div', { class: 'arv-paginas' }, paginas),
       el('h3', { class: 'arv-subtitulo' }, g ? `Nós: ${g.nome}` : 'Nós'),

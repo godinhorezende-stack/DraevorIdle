@@ -8,6 +8,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as Arvore from '../systems/passivas/arvore.mjs';
 import { traduzirLinha } from '../systems/itens-poe/arvore.mjs';
+import { temaDaLinha } from '../systems/itens-poe/precisa-arvore.mjs';
 
 export const ARQUIVO = fileURLToPath(new URL('../gamedata/itens-poe/poedb-arvore.json', import.meta.url));
 /** O estado de uma LINHA na árvore → o da aba (o mesmo vocabulário da aba Pendências). */
@@ -80,7 +81,21 @@ export function arvorePoedb() {
       return { id: a.id, titulo: a.titulo, itens, noJogo: itens.filter((x) => x.noJogo).length };
     }),
   }]));
-  CACHE = { versao: m.versao, geradoEm: m.geradoEm, fonte: m.fonte, grupos: Object.values(grupos), nos, paginas };
+  // O QUE FALTA na árvore principal: cada linha sem efeito por grupo (gema, item, mecânica) e tema, com quantos nós e um exemplo.
+  const precisa = {};
+  for (const n of nos) {
+    if (n.grupo !== 'principal') continue;
+    for (const l of n.linhas) {
+      if (l.estado !== 'pendente') continue;
+      const t = temaDaLinha(l.texto);
+      l.tema = t.tema;
+      const x = (precisa[`${t.grupo}|${t.tema}`] ??= { grupo: t.grupo, tema: t.tema, precisa: t.precisa, linhas: 0, nos: new Set(), exemplos: [] });
+      x.linhas++;
+      x.nos.add(n.id);
+      if (x.exemplos.length < 4 && !x.exemplos.includes(l.texto)) x.exemplos.push(l.texto);
+    }
+  }
+  CACHE = { versao: m.versao, geradoEm: m.geradoEm, fonte: m.fonte, grupos: Object.values(grupos), nos, paginas, precisa: Object.values(precisa).map((x) => ({ ...x, nos: x.nos.size })).sort((a, b) => b.linhas - a.linhas) };
   return CACHE;
 }
 export const esquecer = () => { CACHE = null; };
