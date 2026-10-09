@@ -256,7 +256,7 @@ const romano = (n) => ROMANOS[n - 1] ?? String(n);
 
 /**
  * Desenha a tela inteira dentro de `body`. `h` traz o que vem do resto do jogo (para não importar `panels.mjs`):
- * `figuraDaCriatura`, `entrarNaFase(hunt, lista)`, `enfrentarBoss(boss)`, `portalAberto(boss)`, `escolherDificuldade(id)`, `definirAoCompletar(valor)`, `fechar()`, `verLista()`.
+ * `figuraDaCriatura`, `entrarNaFase(hunt, lista)`, `enfrentarBoss(boss)`, `portalAberto(boss)`, `escolherDificuldade(id)`, `definirAoCompletar(valor)`, `fechar()`, `verLista()` (só no clássico; sem ele, nada de botão Lista).
  */
 export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestiario, h }) {
   const { figuraDaCriatura } = h;
@@ -764,13 +764,14 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   const aoc = campanha.aoCompletar;
   modos.append(
     botao(`w2-modo${aoc === 'repetir' ? ' on' : ''}`, 'Ficar na fase', () => h.definirAoCompletar('repetir')),
-    botao(`w2-modo${aoc === 'seguir' ? ' on' : ''}`, 'Avançar sozinho', () => h.definirAoCompletar('seguir')),
-    botao('w2-modo', 'Lista', () => h.verLista?.())
+    botao(`w2-modo${aoc === 'seguir' ? ' on' : ''}`, 'Avançar sozinho', () => h.definirAoCompletar('seguir'))
   );
+  // A lista em cartões só onde ela existe (o Draevor clássico): no jogo oficial a Campanha é só o mapa (dono, 09/10).
+  if (h.verLista) modos.append(botao('w2-modo', 'Lista', () => h.verLista()));
   const sub = modos.querySelectorAll('.w2-modo');
   sub[0].title = 'Com a fase completa, continua em loop na mesma fase (bom para farmar).';
   sub[1].title = 'Jogando online, com a fase completa vai para a próxima do Ato. Offline fica sempre em loop.';
-  sub[2].title = 'As fases em lista.';
+  if (sub[2]) sub[2].title = 'As fases em lista.';
   proxima.onclick = () => {
     if (!fronteira) return;
     const a = atos.find((x) => x.ato === fronteira.ato);
