@@ -3477,7 +3477,9 @@
           "valor": "{1}"
         }
       ],
-      "_nova": true
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "não há dano de Gelo ao longo do tempo no jogo: o dano degenerativo das gemas de Gelo (Vórtice, Geada Rastejante, Estalo Gélido…) ainda não se aplica — quando entrar, este multiplicador age nele"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% do Multiplicador de Dano de Caos$",
@@ -7534,7 +7536,7 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
+      "padrao": "^(?!.*Oferenda Espiritual).*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -15864,6 +15866,565 @@
       "estado": "lembrete",
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^(?!Enquanto )(.+?) (?:possui|tem|têm) \\{(\\d+)\\}% de aumento do Efeito (?:de Aura|do Buff)$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^(?!Enquanto )(.+?) (?:tem|têm) (?:seu |o )?Efeito (?:de Aura|do Buff) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito do Buff (?:da|do|de) (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^(?!Enquanto )(Oferenda .+?) (?:tem|têm) Efeito aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito das Oferendas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:oferenda-carnal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff_gema:oferenda-ossea",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_buff_gema:oferenda-espiritual",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeitos? de Buffs? concedidos? pelos seus Golens aumentados? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeitos? do Buff concedidos? pelos seus (Golens (?:de|da|do) .+?) aumentados? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeitos? dos Buffs concedidos pelos seus (Golens (?:de|da|do) .+?) aumentados? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito das (?:suas )?Maldições aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito da Maldição (.+?) aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito da Maldição (.+)$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Velocidade de Recuperação de Vida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_vida_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de vida e os frascos ainda não aceleram",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Velocidade de Recuperação de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_mana_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale na regeneração e na recuperação do dano sofrido; o roubo de mana e os frascos ainda não aceleram",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Velocidade de Recuperação de Escudo de Energia aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_es_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale na regeneração do Escudo de Energia; a recarga e o roubo ainda não aceleram",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de {E} sofrido é Recuperado como Vida$",
+      "efeitos": [
+        {
+          "stat": "recoup_life_{E}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico sofrido é Recuperado como Vida$",
+      "efeitos": [
+        {
+          "stat": "recoup_life_phys",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Recebido como Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Recebido como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Recebido como Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Sofrido por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à redução de dano das gemas (o PoE multiplica cada \"menos\")",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Sofrido por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à redução de dano das gemas (o PoE multiplica cada \"menos\")",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Dano por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Sofrido por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à redução de dano das gemas (o PoE multiplica cada \"menos\")",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico para Ataques aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico para Ataques aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de (?:Golpe|Acerto) Crítico para (?:Dano de )?Ataques?$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ataques têm \\+\\{(\\d+)\\}% de Chance de Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a chance base a mais do ataque entra como chance fixa somada",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% à Chance de Golpe Crítico Mágico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a chance base a mais da magia entra como chance fixa somada",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Efeito de Afecções Não-Danificadoras aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "Causticar, Fragilizar e Exaurir elementais (os do PoE) ainda não existem: vale no Resfriamento e na Eletrização",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Ataques$",
+      "efeitos": [
+        {
+          "stat": "furia_por_acerto@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de chance de Mutilar ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_mutilar@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Intimidar Inimigos por \\{(\\d+)\\} segundos (?:no|ao) Acert(?:o|ar)$",
+      "efeitos": [
+        {
+          "stat": "chance_intimidar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "intimidar_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Inervar Inimigos por \\{(\\d+)\\} segundos (?:no|ao) Acert(?:o|ar)$",
+      "efeitos": [
+        {
+          "stat": "chance_inervar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "inervar_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Inflige Exposição a Fogo ao Acertar, aplicando \\{(\\d+)\\}% de Resistência a Fogo$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Inflige Exposição a Gelo ao Acertar, aplicando \\{(\\d+)\\}% de Resistência a Gelo$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Inflige Exposição a Raio ao Acertar, aplicando \\{(\\d+)\\}% de Resistência a Raio$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Acertos têm \\{(\\d+)\\}% de chance de ignorar a Redução de Dano Físico dos Monstros Inimigos$",
+      "efeitos": [
+        {
+          "stat": "ignora_reducao_fisica",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech@fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "o roubo vale no golpe Físico inteiro",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Sangramentos infligidos por você causam Dano \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "sangramento_mais_rapido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Agressividade por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:agressividade:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Poder Profano por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:poderProfano:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Elusivo no Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:buffChance:elusivo:4",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "o Elusivo do jogo dura 4 s (no PoE ele vai se desfazendo)",
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Frenesi a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "frenesi_a_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Poder a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "poder_a_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Tolerância a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_a_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
     }
   ]
 }

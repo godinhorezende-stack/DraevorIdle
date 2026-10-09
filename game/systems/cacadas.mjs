@@ -702,6 +702,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     respawns: [],
     isBoss: !!boss,
     bossId: boss?.id ?? null,
+    // o chefe PINÁCULO (o "Chefe Final do Atlas" dos implícitos eldritch — `condicoes-poe.mjs`, `chefeFinalNaPresenca`)
+    ...(boss?.poePinaculo ? { bossPinaculo: true } : {}),
     // A campanha: a fase (ou o boss do ato) e a dificuldade — o progresso, a
     // escala dos bichos que renascem e o ato/dificuldade do loot saem daqui.
     campanha: fase ? { huntId, dificuldade: dif, ato: fase.ato } : atoDoBoss != null ? { bossDoAto: atoDoBoss, dificuldade: dif, ato: atoDoBoss } : null,

@@ -56,7 +56,12 @@ export const CONDICOES_DE_ESTADO = new Set([
   'ganhouPoderRecente', 'naoGanhouPoderRecente', 'naoGanhouFrenesiRecente', 'naoPerdeuPoderRecente', 'consumiuCadaverRecente',
   'gastouManaRecente', 'usouHabilidadeRecente', 'mudouPosturaRecente', 'recargaEsIniciouRecente', 'naoCritRecente', 'naoCriticouRecente',
   'naoMatouRecente2', 'usouRubiRecente', 'usouSafiraRecente', 'usouTopazioRecente', 'usouAmetistaRecente', 'naoConjurouAvancoRecente', 'conjurouAvancoRecente',
+  // (09/10, os implícitos eldritch:) a PRESENÇA — um inimigo Único (ou chefe) perto, o Chefe Final do Atlas (um pináculo) perto, e um Raro
+  // ou Único próximo.
+  'unicoNaPresenca', 'chefeFinalNaPresenca', 'raroOuUnicoPerto',
 ]);
+/** O raio da PRESENÇA (PoE: a área em volta do personagem que os implícitos eldritch olham), em casas. */
+export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
 const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin):/;
@@ -140,6 +145,15 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (!recente(r.ganhouFrenesi, agora)) v.add('naoGanhouFrenesiRecente');
     if (!recente(r.perdeuPoder, agora)) v.add('naoPerdeuPoderRecente');
     if (!recente(r.usouAvanco, agora)) v.add('naoConjurouAvancoRecente');
+    // A PRESENÇA: quem está vivo a até `RAIO_DA_PRESENCA` casas — o Único (ou o chefe), o Raro, e o chefe pináculo da sala (o "Chefe Final do
+    // Atlas" dos implícitos eldritch: `hunt.bossPinaculo`, marcado na entrada — `cacadas.entrar`).
+    if (h.pos) {
+      const perto = (h.monstros ?? []).filter((m) => m.hp > 0 && Math.max(Math.abs(m.x - h.pos.x), Math.abs(m.y - h.pos.y)) <= RAIO_DA_PRESENCA);
+      const unico = perto.some((m) => m.raridade === 'unico' || m.raridade === 'boss' || m.boss);
+      if (unico) v.add('unicoNaPresenca');
+      if (unico || perto.some((m) => m.raridade === 'raro')) v.add('raroOuUnicoPerto');
+      if (h.bossPinaculo && perto.some((m) => m.boss || m.raridade === 'boss')) v.add('chefeFinalNaPresenca');
+    }
   } else v.add('parado').add('semFrasco').add('naoAcertadoRecente').add('naoBloqueouRecente').add('naoGanhouPoderRecente').add('naoGanhouFrenesiRecente').add('naoPerdeuPoderRecente').add('naoConjurouAvancoRecente').add('naoCritRecente').add('naoArdendo').add('semAfeccaoElemental');
   return v;
 }
@@ -555,7 +569,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 export const EVENTOS = new Set(['matar', 'critico', 'bloquear', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer']);
-export const ACOES = new Set(['vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['buffChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
 /**
@@ -577,7 +591,7 @@ const PARAMETRICOS = [
   /^res_fixa(_tem)?:(fire|ice|energy|chaos)$/, // ficha (resistência fixa)
   /^frasco_regen_[ns]:(vida|mana|utilidade|todos)$/, /^frasco_instantaneo_baixa:(vida|mana)$/, /^sem_frasco:(vida|mana|utilidade)$/, // itens-poe/frascos
   /^aura_proximos:(cego|mutilado|intimidado|debilitado|cinzas|causticado|fragilizado|exaurido|lento|provocado|resfriado|exposicaoFogo|exposicaoGelo|exposicaoRaio|amaldicoado|definhado)$/, // mods-poe.aurasProximas
-  /^efeito_buff_gema:(aura|clamor|arauto|lacaio|todos)$/, // itens-poe/gemas-poe (reforços das gemas)
+  /^efeito_buff_gema:(aura|clamor|arauto|lacaio|todos|golem)$/, // itens-poe/gemas-poe (reforços das gemas; golem: os bônus dos golens ao dono)
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes
 ];
 /** O atributo dinâmico tem efeito (sabe-se o que fazer com ele)? */
@@ -588,6 +602,12 @@ export function dinamicoValido(stat) {
   }
   const m = /^(sempre|efeito_buff):(\w+)$/.exec(stat);
   if (m) return !!BUFFS[m[2]];
+  // O efeito de buff de UMA gema (`efeito_buff_gema:ira` — gemas-poe.adds): só a gema que o jogo tem.
+  const gema = /^efeito_buff_gema:([\w-]+)$/.exec(stat);
+  if (gema && !/^(aura|clamor|arauto|lacaio|todos|golem)$/.test(gema[1])) return gemaConhecida(gema[1]) === true;
+  // O efeito de UMA maldição ("Efeito da Maldição Flamabilidade aumentado" — acoes.efeitosDaMaldicao): só a gema que o jogo tem.
+  const maldicao = /^efeito_maldicao_gema:([\w-]+)$/.exec(stat);
+  if (maldicao) return gemaConhecida(maldicao[1]) === true;
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
@@ -727,7 +747,8 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   perde('hp', estado.maxHp, valor(ficha, 'perde_vida_s') + ((estado.maxHp ?? 0) * valor(ficha, 'perde_vida_pct_s')) / 100);
   perde('mana', estado.maxMana, ((estado.maxMana ?? 0) * valor(ficha, 'perde_mana_pct_s')) / 100);
   perde('es', esMax, (esMax * valor(ficha, 'perde_es_pct_s')) / 100);
-  const esRegen = valor(ficha, 'es_regen') + (esMax * valor(ficha, 'es_regen_pct')) / 100;
+  // (+ a "Velocidade de Recuperação de Escudo de Energia aumentada": a regeneração é recuperação.)
+  const esRegen = (valor(ficha, 'es_regen') + (esMax * valor(ficha, 'es_regen_pct')) / 100) * Math.max(0, 1 + (valor(ficha, 'recuperacao_es_inc') + valor(ficha, 'recuperacao_inc')) / 100);
   if (esRegen > 0 && esMax > 0 && (estado.es ?? 0) < esMax) {
     hunt.poeEsResto = (hunt.poeEsResto ?? 0) + (esRegen * ms) / 1000;
     const inteiro = Math.floor(hunt.poeEsResto);
@@ -948,8 +969,11 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   let f = 1;
   if (tipo === 'fire' && ativo(e.cinzas, agora)) f *= 1.2;
   if (ativo(e.intimidado, agora) && (ficha?.tagsDoGolpe ?? []).includes('ataque')) f *= 1.1;
+  // Inervado (PoE: "Unnerve"): o alvo sofre 10% mais dano de magias.
+  if (ativo(e.inervado, agora) && (ficha?.tagsDoGolpe ?? []).includes('magia')) f *= 1.1;
   if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.min(15, e.definhado.n ?? 1);
   return f;
 }
 /** A resistência a menos do bicho Exposto (−10% no elemento), além do Causticar. */
-export const exposicao = (alvo, agora, tipo) => ((alvo?.estados?.exposicao?.[tipo] ?? 0) > agora ? 10 : 0);
+// (09/10) A exposição posta pelo "Inflige Exposição a Fogo ao Acertar, aplicando −X%" guarda o X (`exposicaoPct`); a das auras, 10.
+export const exposicao = (alvo, agora, tipo) => ((alvo?.estados?.exposicao?.[tipo] ?? 0) > agora ? alvo.estados.exposicaoPct?.[tipo] ?? 10 : 0);

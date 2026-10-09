@@ -11,6 +11,7 @@ import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 import * as Jogo from '../systems/itens-poe/jogo.mjs';
 import * as Telas from './itens-poe-telas.mjs';
 import * as Pendencias from './itens-poe-pendencias.mjs';
+import * as AbasPoedb from './itens-poe-abas.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
@@ -174,8 +175,14 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   }
   // A aba Pendências de modificadores: o estado de cada mod que pode cair (afixos, implícitos, únicos, frascos).
   if (rota === 'pendencias') {
-    if (q.get('recalcular')) Pendencias.esquecer();
+    if (q.get('recalcular')) { Pendencias.esquecer(); AbasPoedb.esquecer(); }
     return json(res, 200, Pendencias.pendencias()), true;
+  }
+  // (09/10) A aba Abas do PoEDB: cada aba de cada página de classe do poedb × o que o jogo tem (tools/importar-poedb-abas.mjs).
+  if (rota === 'abas-poedb') {
+    if (q.get('recalcular')) { Pendencias.esquecer(); AbasPoedb.esquecer(); }
+    const d = AbasPoedb.abas();
+    return json(res, d ? 200 : 404, d ?? { ok: false, erros: ['Sem o manifesto: rode node tools/importar-poedb-abas.mjs.'] }), true;
   }
   if (rota === 'cobertura') {
     const c = Traduzir.cobertura(cat);

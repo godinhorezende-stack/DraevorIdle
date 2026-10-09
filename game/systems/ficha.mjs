@@ -550,8 +550,9 @@ export function penalidadeDeResistencia(estado) {
 export const MANA_REGEN_BASE_POE = 1.8;
 export function regenDoPoe(estado, af) {
   const vidaPctDoMax = af.life_regen_max_pct ?? 0;
-  const vidaAumentada = (af.life_regen_pct ?? 0) + (af.recuperacao_inc ?? 0);
-  const manaAumentada = af.mana_regen_pct ?? 0;
+  // (09/10) + a "Velocidade de Recuperação de Vida/Mana aumentada" (os implícitos eldritch e as influências): a regeneração é recuperação.
+  const vidaAumentada = (af.life_regen_pct ?? 0) + (af.recuperacao_inc ?? 0) + (af.recuperacao_vida_inc ?? 0);
+  const manaAumentada = (af.mana_regen_pct ?? 0) + (af.recuperacao_mana_inc ?? 0);
   // ("Você não possui Regeneração de Vida", "Espaço de anel direito: Não pode Regenerar Mana"; "X% de Mana Regenerada por segundo".)
   const vidaPorSegundo = af.sem_regen_vida > 0 ? 0 : Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
   const manaPorSegundo = af.sem_regen_mana > 0 ? 0 : Math.max(0, (((estado.maxMana ?? 0) * (MANA_REGEN_BASE_POE + (af.mana_regen_max_pct ?? 0))) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));

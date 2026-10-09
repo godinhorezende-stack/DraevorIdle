@@ -76,6 +76,19 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     ev('provocado');
   }
   if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) ev('empurrado');
+  // (09/10) INTIMIDAR (o alvo sofre 10% mais dano de Ataques) e INERVAR (10% mais dano de Magias) — "X% de chance de Intimidar Inimigos por N
+  // segundos no Acerto" (N: `intimidar_s`/`inervar_s`; sem ele, 4 s, o padrão do PoE).
+  if (sorte(v('chance_intimidar'))) { e.intimidado = { ate: agora + 1000 * (v('intimidar_s') || 4) }; ev('intimidado'); }
+  if (sorte(v('chance_inervar'))) { e.inervado = { ate: agora + 1000 * (v('inervar_s') || 4) }; ev('inervado'); }
+  // A EXPOSIÇÃO no acerto ("Inflige Exposição a Fogo ao Acertar, aplicando −X% de Resistência a Fogo"): −X na resistência do alvo por 4 s
+  // (`condicoes-poe.exposicao`, lida em `hunt/resistencia`). Como no PoE, só a mais forte de cada elemento vale.
+  for (const [el, k] of [['fire', 'exposicao_acerto_fogo'], ['ice', 'exposicao_acerto_gelo'], ['energy', 'exposicao_acerto_raio']]) {
+    const pct = Math.abs(v(k));
+    if (!pct) continue;
+    const ainda = (e.exposicao?.[el] ?? 0) > agora;
+    e.exposicao = { ...(e.exposicao ?? {}), [el]: agora + 4000 };
+    e.exposicaoPct = { ...(e.exposicaoPct ?? {}), [el]: ainda ? Math.max(e.exposicaoPct?.[el] ?? 10, pct) : pct };
+  }
   if (fisico > 0 && sorte(v('chance_empalar'))) {
     const valor2 = (fisico * NO_ACERTO.empalar.pctDoFisico * (1 + v('efeito_empalamento') / 100)) / 100;
     const lista = (e.empalado ??= []);
@@ -140,7 +153,9 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
  * Recoup do PoE) e o "chance de Congelar Inimigos quando te Acertarem". Devolve os eventos.
  */
 
-export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
+/** O "X% do Dano de <elemento> sofrido é Recuperado como Vida" de cada elemento de golpe. */
+const RECOUP_DO_ELEMENTO = { physical: 'recoup_life_phys', fire: 'recoup_life_fire', ice: 'recoup_life_ice', energy: 'recoup_life_energy', chaos: 'recoup_life_chaos' };
+export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
   if (!ligado() || !hunt || !ficha?.afPoe) return eventos;
   marcar(hunt, 'acertado', agora);
   if (dano > 0) marcar(hunt, 'dano', agora);
@@ -155,9 +170,13 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
     bicho.hp -= d;
     eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: d, foe: true, alvo: bicho.name, color: '#c0c0c0', reflexo: true });
   }
-  for (const [recurso, k] of [['hp', 'recoup_life'], ['mana', 'recoup_mana']]) {
-    const pct = v(k);
-    if (pct > 0 && dano > 0) (hunt.recuperacoes ??= []).push({ recurso, porMs: (dano * pct) / 100 / RECUPERACAO_MS, ate: agora + RECUPERACAO_MS });
+  // (09/10) + a do ELEMENTO do golpe ("X% do Dano de Fogo sofrido é Recuperado como Vida": `recoup_life_<elemento>`) e a VELOCIDADE DE
+  // RECUPERAÇÃO de Vida/Mana ("Velocidade de Recuperação de Vida aumentada": o mesmo total, em menos tempo).
+  const doElemento = RECOUP_DO_ELEMENTO[tipo] ?? null;
+  for (const [recurso, k, rapidez] of [['hp', 'recoup_life', 'recuperacao_vida_inc'], ['mana', 'recoup_mana', 'recuperacao_mana_inc']]) {
+    const pct = v(k) + (doElemento && recurso === 'hp' ? v(doElemento) : 0);
+    const ms = RECUPERACAO_MS / Math.max(0.1, 1 + v(rapidez) / 100);
+    if (pct > 0 && dano > 0) (hunt.recuperacoes ??= []).push({ recurso, porMs: (dano * pct) / 100 / ms, ate: agora + ms });
   }
   if (bicho && bicho.hp > 0 && rng() * 100 < v('congelar_agressor')) {
     const dur = Math.round(1000 * (v('congelar_agressor_s') || 1));
@@ -273,6 +292,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'cargaAleatoria': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;
     case 'roubarCargas': if (sorte(v)) for (const t of ['frenesi', 'poder', 'tolerancia']) leitorDeCargas?.(estado, 'ganhar', t, 1); return;
     case 'buff': return ganharBuff(hunt, ev.param, v, agora);
+    // `buffChance:<buff>:<segundos>` = a CHANCE (%) de ganhar o buff por N segundos ("X% de chance de ganhar Agressividade por 4 segundos ao Matar").
+    case 'buffChance': { const [buff, seg] = String(ev.param).split(':'); if (sorte(v)) ganharBuff(hunt, buff, Number(seg) || SEGUNDOS_PADRAO, agora); return; }
     case 'furia': return ganharFuria(hunt, v, agora);
     case 'frasco': { for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + v; return; }
     case 'recargaEs': if (sorte(v)) estado.esEspera = 0; return;

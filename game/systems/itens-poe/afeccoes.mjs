@@ -58,6 +58,8 @@ export function daSoma(af = {}) {
     // Segredos do Sofrimento (keystone da peça): não Incendeia, Resfria, Congela nem Eletriza (o crítico inflige Causticar/Fragilizar/Exaurir).
     semElementais: n('keystone_sofrimento') > 0,
     incendioMaisRapido: n('incendio_mais_rapido'),
+    // (09/10) "Sangramentos infligidos por você causam Dano X% mais rápido": o mesmo total em menos tempo.
+    sangramentoMaisRapido: n('sangramento_mais_rapido'),
     // Os únicos: que dano pode pôr cada afecção ("Seu Dano de Raio pode Incendiar", "Seu Dano de Fogo pode Eletrizar, mas não Incendiar",
     // "Todo Dano pode Congelar"), quais não pode pôr ("Não Pode aplicar Incendiar"), as chances só no crítico, o "como se causasse X% mais
     // Dano", a duração do Resfriamento e os venenos a mais.
@@ -110,7 +112,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0) => {
     if (!(base > 0)) return;
     const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + aumentado + mutilado) / 100);
-    const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0)) / 100)));
+    const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' } }, agora);
     if (estado) postos.push(estado);
   };

@@ -1181,3 +1181,24 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .pend-marca.funciona { color: #5cc28a; } .pend-marca.parcial { color: #e9c34f; } .pend-marca.pendente { color: #ff8a80; } .pend-marca.inexiste, .pend-marca.lembrete { color: #8a93a5; }
 .pend-partes { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; font-size: 12px; }
 .pend-partes .poe-tr { width: auto; text-align: left; font-family: inherit; }
+
+/* ---- Abas do PoEDB (PoE): cada aba das páginas de classe do poedb × o jogo (editor-abas-poedb.mjs) ---- */
+.abas-pools { max-height: none; margin-bottom: var(--eng-e3); }
+.abas-efeito { display: flex; align-items: center; gap: 8px; min-width: 180px; }
+.abas-efeito .poe-cobertura { flex: 1; height: 10px; }
+.abas-corpo { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); gap: var(--eng-e3); align-items: start; }
+@media (max-width: 900px) { .abas-corpo { grid-template-columns: minmax(0, 1fr); } }
+.abas-lado { display: flex; flex-direction: column; gap: 6px; }
+.abas-lista { display: flex; flex-direction: column; gap: 2px; max-height: 70vh; overflow: auto; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); padding: 4px; }
+.abas-pagina { display: flex; justify-content: space-between; align-items: center; gap: 6px; text-align: left; padding: 5px 8px; border: 0; border-radius: var(--eng-r1, 4px); background: transparent; color: var(--eng-txt2); cursor: pointer; font-size: 12.5px; }
+.abas-pagina:hover { background: var(--eng-s2, rgba(255,255,255,.04)); color: inherit; }
+.abas-pagina.ativa { background: var(--eng-ouro-fundo); color: var(--eng-ouro-txt); }
+.abas-chips { display: flex; gap: 4px; flex: none; }
+.abas-chip { font-style: normal; font-size: 11.5px; padding: 1px 6px; border-radius: 9px; border: 1px solid var(--eng-linha); white-space: nowrap; }
+.abas-chip.ok { color: #5cc28a; } .abas-chip.importado { color: #c79bff; } .abas-chip.falta { color: #ff8a80; } .abas-chip.referencia { color: #8a93a5; }
+.abas-detalhe { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.abas-titulo a { color: var(--eng-ouro); }
+.abas-tabela { max-height: none; }
+.abas-tabela td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.abas-exemplos { max-width: 360px; }
+.pend-ref-titulo { font: 600 13px var(--eng-titulo, inherit); color: var(--eng-txt2); margin: var(--eng-e3) 0 var(--eng-e2, 8px); }

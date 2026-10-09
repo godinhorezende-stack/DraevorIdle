@@ -48,8 +48,22 @@ function valorDo(expr, indices, valores) {
   return um ? (um[1] ? -1 : 1) * v(um[2]) : Number(expr);
 }
 
+/**
+ * Os NOMES DE GEMA como os textos dos mods escrevem, quando o nome da gema no jogo é outro (a tradução do PoE não é uniforme: o mod diz
+ * "Pureza dos Elementos", a gema chama "Pureza Elementar"). `{NOME}` passa por aqui antes de virar a chave.
+ */
+export const APELIDOS_DE_GEMA = Object.freeze({
+  'Pureza dos Elementos': 'Pureza Elementar', 'Pureza do Fogo': 'Pureza Ardente', 'Pureza do Gelo': 'Pureza Glacial', 'Pureza do Raio': 'Pureza Elétrica',
+  'Arauto da Agonia': 'Arauto Agonizante', 'Arauto do Trovão': 'Arauto Trovejante', 'Arauto do Gelo': 'Arauto Glacial', 'Arauto das Cinzas': 'Arauto Flamejante',
+  'Oferenda de Carne': 'Oferenda Carnal', 'Oferenda de Espíritos': 'Oferenda Espiritual', 'Oferenda Espírito': 'Oferenda Espiritual',
+  'Golens de Chamas': 'Convocar Golem Flamejante', 'Golens de Gelo': 'Convocar Golem Glacial', 'Golens de Raio': 'Convocar Golem Relampejante',
+  'Golens de Pedra': 'Convocar Golem Pedregulho', 'Golens de Caos': 'Convocar Golem Caótico', 'Golens da Carniça': 'Convocar Golem da Carniça',
+});
+const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
+
 /** Traduz UMA parte do modelo (sem " / "). */
-export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA } = {}) {
+export function traduzirParte(parte, valores, opcoes = {}) {
+  const { regras = PADRAO, tabela = TABELA } = opcoes;
   if (LEMBRETE.test(String(parte).trim())) return { estado: 'lembrete', efeitos: [], nota: null, regra: null };
   for (const r of regras) {
     const m = r.re.exec(parte);
@@ -60,7 +74,7 @@ export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA
     // `{NOME}`: o nome capturado (a gema de "Concede a Habilidade X", "Suportadas por X", "Ativa X") como chave.
     const nome = capturas.find((x) => !/^\d+$/.test(x) && !tabela.elementos?.[x] && x.length > 2);
     // `{V<n>}`: o n-ésimo número do texto como PARÂMETRO do atributo ("a cada {1} de Destreza" → `%atr:dex:{V2}`).
-    const stat = (s) => s.replace('{E}', tabela.elementos?.[elemento] ?? '?').replace('{NOME}', slugDoNome(nome)).replace(/\{V(\d)\}/g, (_, n) => String(Math.abs(valorDo(`{${n}}`, indices, valores)) || 1));
+    const stat = (s) => s.replace('{E}', tabela.elementos?.[elemento] ?? '?').replace('{NOME}', slugDaGema(nome)).replace(/\{V(\d)\}/g, (_, n) => String(Math.abs(valorDo(`{${n}}`, indices, valores)) || 1));
     // "reduzida" (a regra derivada) e o "-" na frente do número ("-10% de Resistência a Fogo"): o valor sai negativo.
     const sinal = (r.reduzida ? -1 : 1) * (m[0].startsWith('-') ? -1 : 1);
     const efeitos = r.efeitos.map((e) => { const v = valorDo(e.valor, indices, valores); return { stat: stat(e.stat), valor: typeof v === 'number' ? v * sinal : v }; });
@@ -71,14 +85,94 @@ export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA
     // diz ('equivalente'/'aproximado'), ou 'novo'.
     const soDoDraevor = efeitos.every((e) => FICHAS[e.stat]);
     // A gema nomeada não está na coleção do jogo: o mod não tem como agir (o balão explica).
-    if (r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDoNome(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
+    if (r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDaGema(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
     const estado = !efeitos.every(temEfeito) ? 'registrado' : soDoDraevor ? r.estado ?? 'equivalente' : r._nova && r.estado && r.estado !== 'novo' ? r.estado : 'novo';
     return { estado, efeitos, nota: r.nota ?? null, regra: r.i };
+  }
+  // A CONDIÇÃO no texto ("<efeito> enquanto/se/caso <condição>", "Enquanto <condição>, <efeito>"): o efeito pelas regras de sempre e a
+  // condição que o jogo avalia (`@cond`, `condicoes-poe.mjs`). Só quando o efeito sozinho já tem efeito no combate.
+  if (!opcoes?.semCondicao) {
+    const c = condicaoDoTexto(parte, valores);
+    if (c) {
+      const base = traduzirParte(c.efeito, valores, { regras, tabela, semCondicao: true });
+      const efeitos = base.efeitos.map((e) => ({ ...e, stat: comCondicao(e.stat, c.cond) }));
+      const doGolpe = TAGS_DE_GOLPE.has(c.cond);
+      if (['equivalente', 'aproximado', 'novo'].includes(base.estado) && efeitos.every(temEfeito) && (!doGolpe || base.efeitos.every((e) => DO_GOLPE.test(partir(e.stat).stat)))) {
+        return { estado: 'novo', efeitos, nota: base.nota ?? null, regra: base.regra, condicao: c.cond };
+      }
+    }
   }
   // Sem regra: o atributo automático do próprio texto (nada fica de fora). O valor é o número da parte (ou a lista, se forem vários).
   const nums = [...parte.matchAll(/\{(\d+)\}/g)].map((m) => Number(valores[Number(m[1])]));
   return { estado: 'registrado', efeitos: [{ stat: idAutomatico(parte), valor: nums.length === 1 ? nums[0] : nums.length ? nums : 1 }], nota: null, regra: null };
 }
+
+/*
+ * ---- As CONDIÇÕES escritas no texto do mod (09/10: "eu quero que tenha efeito real, funcione 100%") ----
+ * O PoE escreve a condição na frase: "Velocidade de Ataque aumentada em 10% se você Matou Recentemente", "Enquanto um Inimigo Único estiver
+ * em sua presença, Dano de Fogo aumentado em 20%" (os implícitos eldritch). Cada frase daqui vira a condição que o jogo já avalia; o efeito
+ * é traduzido pelas regras de sempre. As do ALVO ("contra Inimigos Resfriados") só valem nos atributos que o golpe resolve (`DO_GOLPE`).
+ */
+const CARGA = { 'Tolerância': 'tolerancia', 'Frenesi': 'frenesi', 'Poder': 'poder' };
+const ARMA = { Cajado: 'comCajado', Arco: 'comArco', Varinha: 'comVarinha', Adaga: 'comAdaga', Garra: 'comGarra', Espada: 'comEspada', Machado: 'comMachado', 'Maça': 'comMaca', Cetro: 'comCetro' };
+const ALVO = { Resfriados: 'alvoResfriado', Congelados: 'alvoCongelado', Eletrizados: 'alvoEletrizado', Cegos: 'alvoCego', 'Amaldiçoados': 'alvoAmaldicoado', Sangrando: 'alvoSangrando', Envenenados: 'alvoEnvenenado', Incendiados: 'alvoIncendiado', Mutilados: 'alvoMutilado', Lentos: 'alvoLento', Provocados: 'alvoProvocado' };
+const PREFIXOS_DE_CONDICAO = [
+  [/^Enquanto um Inimigo Único estiver em sua presença, (.+)$/, 'unicoNaPresenca'],
+  [/^Enquanto o Chefe Final do Atlas estiver em sua presença, (.+)$/, 'chefeFinalNaPresenca'],
+];
+const SUFIXOS_DE_CONDICAO = [
+  [/^(.+?),? (?:enquanto|quando) (?:estiver |você estiver )?em Vida Baixa$/, 'vidaBaixa'],
+  [/^(.+?),? enquanto não (?:estiver )?em Vida Baixa$/, 'naoVidaBaixa'],
+  [/^(.+?),? (?:enquanto|quando) (?:estiver )?em Vida Cheia$/, 'vidaCheia'],
+  [/^(.+?),? enquanto (?:estiver )?em Mana Baixa$/, 'manaBaixa'],
+  [/^(.+?),? enquanto não (?:estiver )?em Mana Baixa$/, 'naoManaBaixa'],
+  [/^(.+?),? (?:se você|caso (?:você )?tenha) Matado? Recentemente$/i, 'matouRecente'],
+  [/^(.+?),? (?:se você não (?:houver )?Matou|caso (?:você )?não tenha Matado|se você não tiver Matado) Recentemente$/i, 'naoMatouRecente'],
+  [/^(.+?),? (?:se você causou|caso (?:você )?tenha causado) um (?:Golpe|Acerto) Crítico Recentemente$/i, 'criticoRecente'],
+  [/^(.+?),? se você não causou um (?:Golpe|Acerto) Crítico Recentemente$/i, 'naoCriticoRecente'],
+  [/^(.+?),? (?:se você foi Acertado|caso (?:você )?tenha sido Acertado|caso tenha sofrido Dano de um Acerto) Recentemente$/i, 'acertadoRecente'],
+  [/^(.+?),? se você não foi Acertado Recentemente$/i, 'naoAcertadoRecente'],
+  [/^(.+?),? (?:se você Bloqueou|caso (?:você )?tenha Bloqueado)(?: (?:o )?Dano (?:Mágico|de Ataques))? Recentemente$/i, 'bloqueouRecente'],
+  [/^(.+?),? se você Atordoou um Inimigo Recentemente$/i, 'atordoouRecente'],
+  [/^(.+?),? (?:se você Acertou|caso (?:você )?tenha Acertado)(?: um Inimigo)? Recentemente$/i, 'acertouRecente'],
+  [/^(.+?),? se voc[eê6]+ (?:Clamou|usou um Clamor) Recentemente$/i, 'clamouRecente'],
+  [/^(.+?),? se você usou uma Habilidade de Movimento Recentemente$/i, 'usouMovimentoRecente'],
+  [/^(.+?),? (?:se você Conjurou|caso você tenha Conjurado) Avanço recentemente$/i, 'conjurouAvancoRecente'],
+  [/^(.+?),? se você não houver Conjurado Avanço recentemente$/i, 'naoConjurouAvancoRecente'],
+  [/^(.+?),? durante (?:qualquer|um) Efeito de Frasco$/, 'duranteFrasco'],
+  [/^(.+?),? enquanto (?:se move|se movendo|movendo-se)$/, 'movendo'],
+  [/^(.+?),? enquanto parado$/, 'parado'],
+  [/^(.+?),? enquanto (?:estiver )?Sangrando$/, 'sangrandoProprio'],
+  [/^(.+?),? enquanto (?:estiver )?Envenenado$/, 'envenenadoProprio'],
+  [/^(.+?),? enquanto (?:estiver )?Inc[eê]?n?diado$/, 'ardendo'],
+  [/^(.+?),? enquanto (?:estiver )?Congelado$/, 'congeladoProprio'],
+  [/^(.+?),? enquanto (?:estiver )?Eletrizado$/, 'eletrizadoProprio'],
+  [/^(.+?),? enquanto (?:estiver )?Resfriado$/, 'resfriadoProprio'],
+  [/^(.+?),? enquanto (?:estiver )?Amaldiçoado$/, 'amaldicoadoProprio'],
+  [/^(.+?),? enquanto não (?:estiver )?Incendiado, Congelado ou Eletrizado$/, 'semAfeccaoElemental'],
+  [/^(.+?),? enquanto (?:carregando|empunhando|empunhar|segurando) um Escudo$/, 'comEscudo'],
+  [/^(.+?),? enquanto (?:em|estiver em) Dupla Empunhadura$/, 'duasArmas'],
+  [/^(.+?),? enquanto (?:carregando|empunhando|empunhar) uma Arma de Duas Mãos$/, 'duasMaos'],
+  [/^(.+?),? enquanto um Inimigo Raro ou Único estiver Próximo$/, 'raroOuUnicoPerto'],
+];
+const SUFIXOS_COM_PARAMETRO = [
+  [/^(.+?),? enquanto (?:carregando|empunhando|empunhar|segurando) (?:um|uma) (Cajado|Arco|Varinha|Adaga|Garra|Espada|Machado|Maça|Cetro)$/, (m) => ARMA[m[2]]],
+  [/^(.+?),? (?:enquanto|quando) (?:você )?(?:estiver )?(?:no máximo de|com o Máximo de) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `cargasMax:${CARGA[m[2]]}`],
+  [/^(.+?),? (?:quando|enquanto) você não (?:tiver|tem|possuir) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `semCargas:${CARGA[m[2]]}`],
+  [/^(.+?),? contra Inimigos (Resfriados|Congelados|Eletrizados|Cegos|Amaldiçoados|Sangrando|Envenenados|Incendiados|Mutilados|Lentos|Provocados)$/, (m) => ALVO[m[2]]],
+  [/^(.+?),? caso você tenha ao menos \{(\d+)\} de Escudo de Energia Máximo$/, (m, valores) => `escudoMin:${Number(valores[Number(m[2])]) || 0}`],
+];
+/** Os atributos que o GOLPE resolve com as tags do alvo (`fichaDoGolpe`): dano aumentado, crítico, penetração, dano por elemento, "mais dano". */
+const DO_GOLPE = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|elem_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|life_leech|mana_leech)$/;
+/** `{ efeito, cond }` da condição escrita no texto, ou null. */
+export function condicaoDoTexto(parte, valores = []) {
+  for (const [re, cond] of PREFIXOS_DE_CONDICAO) { const m = re.exec(parte); if (m) return { efeito: m[1], cond }; }
+  for (const [re, cond] of SUFIXOS_DE_CONDICAO) { const m = re.exec(parte); if (m) return { efeito: m[1], cond }; }
+  for (const [re, f] of SUFIXOS_COM_PARAMETRO) { const m = re.exec(parte); if (m) { const cond = f(m, valores); if (cond) return { efeito: m[1], cond }; } }
+  return null;
+}
+/** O atributo com mais uma condição: `stat@a` → `stat@a+cond`. */
+const comCondicao = (stat, cond) => (String(stat).includes('@') ? `${stat}+${cond}` : `${stat}@${cond}`);
 
 /** O atributo tem efeito no combate? (o do Draevor, ou o novo com `combate: true`; condicional: o atributo-base e condições conhecidas.) */
 function temEfeito(e) {

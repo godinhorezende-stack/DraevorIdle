@@ -17,6 +17,7 @@
 // (pelas tags). Sem o PoE nada disto roda.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
+import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
@@ -464,20 +465,52 @@ export const doSlug = (slug) => REGISTRO.get(slug) ?? null;
 export const daAcao = (acao) => (String(acao).startsWith(PREFIXO) ? REGISTRO.get(String(acao).slice(PREFIXO.length)) ?? null : null);
 
 /** Os atributos dos buffs de gema do PoE ligados agora (somados em `Afixos.soma`). null: nenhum. */
+/**
+ * A soma de um atributo nas peças vestidas — também a variante com CONDIÇÃO DE ESTADO ("Enquanto um Inimigo Único estiver em sua presença,
+ * Ira possui 20% de aumento do Efeito de Aura": `efeito_buff_gema:ira@unicoNaPresenca`), quando a condição vale agora. (Aqui não dá para ler
+ * a ficha: `adds` é parte da soma que monta a ficha.)
+ */
+function doEquipamento(estado, chave) {
+  let conds = null;
+  let n = 0;
+  for (const p of Object.values(estado?.equipment ?? {})) {
+    for (const [k, v] of Object.entries(p?.poe?.af ?? {})) {
+      if (k !== chave && !k.startsWith(`${chave}@`)) continue;
+      const cs = partir(k).conds;
+      if (cs.length) {
+        conds ??= condicoesDe(estado);
+        if (!cs.every((c) => vale(conds, c))) continue;
+      }
+      n += Number(v) || 0;
+    }
+  }
+  return n;
+}
+
 export function adds(estado) {
   const hunt = estado?.hunt;
   if (!hunt?.buffs && !hunt?.lacaios?.length) return null;
   const agora = hunt.clock ?? 0;
   const total = {};
-  // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas.)
-  const efeitoDe = (tipo) => 1 + Object.values(estado.equipment ?? {}).reduce((n, p) => n + (Number(p?.poe?.af?.[`efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`]) || 0) + (Number(p?.poe?.af?.['efeito_buff_gema:todos']) || 0), 0) / 100;
-  for (const b of Object.values(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
+  // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas — e o
+  // de UMA gema ("Ira possui 20% de aumento do Efeito de Aura", "Efeito do Buff da Armadura Ártica aumentado": `efeito_buff_gema:<nome da gema>`,
+  // os implícitos eldritch e os únicos — 09/10).)
+  const efeitoDe = (tipo, id) => {
+    const g = String(id ?? '').startsWith(PREFIXO) ? REGISTRO.get(String(id).slice(PREFIXO.length))?.gema : null;
+    const daGema = g?.nome ? `efeito_buff_gema:${slugDoNome(g.nome)}` : null;
+    return 1 + (doEquipamento(estado, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(estado, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(estado, daGema) : 0)) / 100;
+  };
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo, id); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
   // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...); o Golem Carniçal, dano físico
   // adicional por lacaio não-golem em campo.
   const vivos = (hunt.lacaios ?? []).filter((l) => l.hp > 0);
   const naoGolens = vivos.filter((l) => !l.golem && l.tipo === 'lacaio').length;
+  // (09/10) × o "Efeitos de Buffs concedidos pelos seus Golens aumentados" (`efeito_buff_gema:golem`) e o de UM golem ("Golens de Chamas":
+  // `efeito_buff_gema:convocar-golem-flamejante`).
   for (const l of vivos) {
-    for (const [k, v] of Object.entries(l.afDono ?? {})) total[k] = (total[k] ?? 0) + v;
+    const nomeDaGema = l.golem ? REGISTRO.get(l.gema)?.gema?.nome : null;
+    const f = l.golem ? 1 + (doEquipamento(estado, 'efeito_buff_gema:golem') + (nomeDaGema ? doEquipamento(estado, `efeito_buff_gema:${slugDoNome(nomeDaGema)}`) : 0)) / 100 : 1;
+    for (const [k, v] of Object.entries(l.afDono ?? {})) total[k] = (total[k] ?? 0) + v * f;
     if (l.porLacaioFisico && naoGolens) {
       total.added_phys_dmg_min = (total.added_phys_dmg_min ?? 0) + l.porLacaioFisico[0] * naoGolens;
       total.added_phys_dmg_max = (total.added_phys_dmg_max ?? 0) + l.porLacaioFisico[1] * naoGolens;
