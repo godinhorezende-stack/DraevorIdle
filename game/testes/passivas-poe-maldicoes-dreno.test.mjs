@@ -424,7 +424,10 @@ test('DEFEITO corrigido: a maldição da GEMA conta como "Inimigo Amaldiçoado" 
   Reforcos.marcar(hunt, b, 1000);
   assert.ok([...ModsPoe.tagsDoAlvo(b, 1000)].includes('alvoAmaldicoado'), 'a maldição da gema no monstro');
   ModsPoe.evento(e, hunt, 'matar', f, { alvo: b, agora: 1000 });
-  assert.ok(Math.abs(e.hp - (10 + (e.maxHp * pct) / 100)) < 1e-9, `${e.hp}`);
+  // (a vida é inteira: a parte inteira da cura entra agora e a fração fica guardada para a próxima — 1263 × 4% = 50,52: +50 e 0,52 no resto)
+  const cura = (e.maxHp * pct) / 100;
+  assert.equal(e.hp, 10 + Math.trunc(cura));
+  assert.ok(Math.abs(hunt.poeRestoDosEventos.hp - (cura - Math.trunc(cura))) < 1e-9, `resto ${hunt.poeRestoDosEventos.hp}`);
   // vencida, não conta
   assert.ok(![...ModsPoe.tagsDoAlvo(b, 1000 + b.maldicoes[Object.keys(b.maldicoes)[0]].dur + 1)].includes('alvoAmaldicoado'));
 });

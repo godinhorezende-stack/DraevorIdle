@@ -209,7 +209,10 @@ test('O Campeão (nó real): "Ganhe Adrenalina ao atingir Vida Baixa", "Recupera
   assert.equal(h.controle.congelado, undefined);
   assert.equal(h.controle.lento, undefined);
   const pct = f.eventosPoe.filter((x) => x.evento === 'ganharAdrenalina' && x.acao === 'vidaPct').reduce((s, x) => s + x.valor, 0);
-  assert.ok(pct > 0 && Math.abs(e.hp - Math.min(e.maxHp, antes + (e.maxHp * pct) / 100)) < 1e-6, `recuperou ${pct}%: ${antes} → ${e.hp}`);
+  // (a vida é inteira: a parte inteira da cura entra agora e a fração fica guardada para a próxima — 25% de 1250 = 312,5: +312 e 0,5 no resto)
+  const cura = (e.maxHp * pct) / 100;
+  assert.ok(pct > 0 && e.hp === Math.min(e.maxHp, antes + Math.trunc(cura)), `recuperou ${pct}%: ${antes} → ${e.hp}`);
+  assert.ok(Math.abs(h.poeRestoDosEventos.hp - (cura - Math.trunc(cura))) < 1e-9, `resto ${h.poeRestoDosEventos.hp}`);
 });
 
 test('"Você é Inafetado por Sangramento enquanto Drenando" (o Carrasco, nó real): drenando, o sangramento corre em você mas não fere', { skip: SEM }, () => {
