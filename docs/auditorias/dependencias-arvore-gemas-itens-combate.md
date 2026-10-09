@@ -157,6 +157,8 @@ A ordem segue o código e os números, não a ordem do editor.
 ## 7. Lacunas restantes e próxima prioridade
 
 - **Restantes:** as categorias da seção 3 com "validado" baixo, mais os sistemas ausentes da seção 4. Os detalhes estão no grafo gerado.
+- **Suíte SYSTEM depois do merge da main (#181, #182):** 318 arquivos, 3.295 testes, 2.715 passam, **0 falhas**, 578 pulados. Três testes tiveram a premissa corrigida: `passivas-poe-lacaios`, `xp-da-hunt` e `so-itens-do-poe` (ver a seção 9 da auditoria da árvore).
+  - **Efeito no jogo do escudo dos monstros do PoE puro:** quem bate devagar fica preso no Elite/Raro com "Início da Recarga 150% mais rápido". Na Costa, em 3 h, com o cavaleiro desarmado: 19 de 40 sementes abaixo de 500 abates; na main, todas acima de 792. A velocidade da arma no golpe básico resolve para quem está armado.
 - **Suíte SYSTEM no fim do ciclo 6:** 317 arquivos, 3.289 testes, 2.709 passam, **0 falhas**, 578 pulados.
 - **Suíte SYSTEM no fim do ciclo 5:** 316 arquivos, 3.278 testes, 2.698 passam, **0 falhas**, 578 pulados.
 - **Suíte SYSTEM no fim do ciclo 4:** 315 arquivos, 3.271 testes, 2.690 passam, 1 falha — `loot-moeda.test.mjs`, intermitente e antiga (as mesmas sementes travam no `origin/main`).

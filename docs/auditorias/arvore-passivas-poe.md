@@ -542,12 +542,18 @@ L4) vieram em seguida, no mesmo ciclo.
 | fim do ciclo 4 (totens, excedente, monstros, maldições em você) | 315 | 3.271 | 2.690 | **1** (intermitente e antiga — abaixo) | 578 |
 | fim do ciclo 5 (afecções em você) | 316 | 3.278 | 2.698 | **0** | 578 |
 | fim do ciclo 6 (afecções do personagem nos monstros) | 317 | 3.289 | 2.709 | **0** | 578 |
+| depois do merge da main (#181, #182) e dos 3 testes abaixo | 318 | 3.295 | 2.715 | **0** | 578 |
 
 Sem falhas preexistentes no escopo do SYSTEM. Dois testes antigos foram adaptados, e só porque a regra mudou de propósito (ver a seção 6):
 - `morte.test.mjs`, classe B: a regra do Tibia continua testada no clássico;
 - `itens-poe-arvore.test.mjs`, classe C: o formato `tag` era o defeito L1.
 
 **A falha do ciclo 4 é antiga:** `loot-moeda.test.mjs` (o personagem de teste, desarmado, às vezes fica preso no monstro "Ameaça Agarradora" e não mata em 15 minutos). Reproduzida com o sorteio do spawn por semente: no `origin/main` (sem as mudanças deste trabalho) as MESMAS sementes travam (4 de 40); sozinho, o teste passou em 5 de 6 rodadas. Fica como tarefa à parte.
+
+**Depois do merge da main (#181, #182)**, três testes com a premissa corrigida, com a asserção igual e conferidos por mutação:
+- `passivas-poe-lacaios.test.mjs`: falhava na main pura (3/4) desde o "uma ação por vez" (#182). Os zumbis vencem por tempo, e o teste contava os vivos no último tique; agora conta o pico de invocados.
+- `xp-da-hunt.test.mjs` (caçada offline): falhava sempre na main pura desde o #181. Os Mágicos/Raros mais rápidos matavam o cavaleiro desarmado em 51 s, com 0 abates. A projeção nem rodava antes (82 s, 1 abate). Decisão do dono (09/10): vida que não acaba e um Machado Vaal, como no `encontros-etapa6`. Resultado: 592 abates e razão 0,500; a mutação da projeção é pega (0,313).
+- `so-itens-do-poe.test.mjs`: 2 de 40 sementes falhavam com o escudo dos monstros do PoE puro. O cavaleiro desarmado ficava preso no Elite/Raro com "Início da Recarga 150% mais rápido". Decisão do dono (09/10): um Machado Vaal só nesse teste. Resultado: 0 de 40, mínimo de 3.876 abates.
 
 No ciclo 3, mais dois, também classe C (a regra mudou a pedido do dono):
 - `passivas-poe-afeccoes.test.mjs`: a duração da maldição agora é lida em `bicho.maldicoes` (o modelo da maldição no monstro mudou);
