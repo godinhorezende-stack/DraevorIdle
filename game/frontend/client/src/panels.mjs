@@ -543,7 +543,8 @@ function campanhaCards(body) {
   // A última dificuldade escolhida no WORLD volta (se o servidor ainda a mantém aberta).
   ctx.tabs.dificuldade ??= preferenciaDoMundo().dificuldade;
   const escolhida = campanha.dificuldades.find((d) => d.id === ctx.tabs.dificuldade && d.liberada) ?? campanha.dificuldades.findLast((d) => d.liberada);
-  const visao = ctx.tabs.campanhaVisao ?? 'mapa';
+  // No jogo oficial a Campanha é só o MAPA (dono, 09/10: "tire a lista da campanha"); a lista em cartões fica para o Draevor clássico.
+  const visao = ctx.state.classesPoe ? 'mapa' : ctx.tabs.campanhaVisao ?? 'mapa';
   ctx.tabs.dificuldade = escolhida.id;
 
   // No WORLD, as dificuldades e o "quando completar" ficam dentro da própria tela (cabeçalho e barra de atalhos).
@@ -651,7 +652,8 @@ function campanhaCards(body) {
           ctx.closeModal();
         },
         fechar: () => ctx.closeModal(),
-        verLista: () => {
+        // (no jogo oficial não há lista: o rodapé do mapa fica sem o botão)
+        verLista: ctx.state.classesPoe ? null : () => {
           ctx.tabs.campanhaVisao = 'lista';
           ctx.redraw();
         },
