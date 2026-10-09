@@ -113,7 +113,8 @@ export function recarregar(estado, ficha, ms) {
   if (naVida) {
     const ganhoNaVida = Math.floor(estado.esResto);
     estado.esResto -= ganhoNaVida;
-    estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + ganhoNaVida);
+    // (o Pacto Vaal: "Não pode Recuperar Vida fora o Dreno")
+    if (!ModsPoe.vidaSoPeloDreno(ficha?.afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + ganhoNaVida);
     return;
   }
   const ganho = Math.floor(estado.esResto);

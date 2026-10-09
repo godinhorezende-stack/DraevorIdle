@@ -19,6 +19,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
+import { vidaSoPeloDreno } from './condicoes-poe.mjs';
 
 export const CLASSES = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks'];
 const TIPO_DA_CLASSE = { Life_Flasks: 'vida', Mana_Flasks: 'mana', Utility_Flasks: 'utilidade' };
@@ -275,7 +276,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   // Vida/Mana: na vida baixa (abaixo de 50%), o "mais Recuperação se usado enquanto em Vida Baixa" (o de mana olha a Mana Baixa).
   const vidaBaixa = par.recurso === 'mana' && Number(afp['frasco_instantaneo_baixa:mana']) > 0 ? (estado.mana ?? 0) <= (estado.maxMana ?? 1) * 0.5 : (estado.hp ?? 0) < (estado.maxHp ?? 1) * 0.5;
   const total = par.quantidade * (vidaBaixa ? 1 + par.maisNaVidaBaixaPct / 100 : 1);
-  const extras = { custoDaOutraPct: par.custoDaOutraPct, lacaiosPct: par.lacaiosPct };
+  // (o Pacto Vaal — "Não pode Recuperar Vida fora o Dreno": o frasco de vida não enche a vida; o repasse aos lacaios segue)
+  const extras = { custoDaOutraPct: par.custoDaOutraPct, lacaiosPct: par.lacaiosPct, ...(par.recurso !== 'mana' && vidaSoPeloDreno(afp) ? { semVida: true } : {}) };
   // "Recuperação Instantânea" (ou "quando em Vida Baixa", na vida baixa): tudo na hora.
   if (par.instantaneo || (par.instantaneoNaVidaBaixa && vidaBaixa)) {
     recuperar(estado, par.recurso, total, eventos, quem, extras);
@@ -334,7 +336,7 @@ function recuperar(estado, recurso, valor, eventos, quem, extras = null) {
   const ganho = Math.min(Math.max(0, valor), Math.max(0, (estado[maximo] ?? 0) - (estado[campo] ?? 0)));
   // "Repassa X% da Recuperação de Vida para Lacaios" (o que o frasco recupera, mesmo com a vida cheia).
   if (extras?.lacaiosPct > 0 && recurso !== 'mana') for (const l of estado.hunt?.lacaios ?? []) if (l.hp > 0) l.hp = Math.min(l.maxHp, l.hp + (valor * extras.lacaiosPct) / 100);
-  if (!(ganho > 0)) return 0;
+  if (!(ganho > 0) || (extras?.semVida && campo === 'hp')) return 0;
   estado[campo] = (estado[campo] ?? 0) + ganho;
   // "Retira X% de Vida Recuperada da Mana" (e o contrário): a outra barra paga.
   if (extras?.custoDaOutraPct > 0) {

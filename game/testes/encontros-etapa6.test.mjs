@@ -20,6 +20,10 @@ import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { CONFIG } from '../systems/encontros/config.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 import { aAdaptar } from './apoio-migracao.mjs';
+import { ligado as jogoOficial, catalogo as catalogoDoPoe, REGRAS as REGRAS_DO_POE } from '../systems/itens-poe/catalogo.mjs';
+import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
+import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 after(() => SimulacaoOffline.encerrar());
 const HORA = 3_600_000;
@@ -180,6 +184,13 @@ test('caçada offline de verdade com encontros no mapa (obrigatório de idle, ba
     assert.deepEqual(Modelo.validar(Arquivos.doArquivo(HUNT_DE_TESTE)), [], 'o conteúdo de teste é válido');
     const e = personagemDeTeste({ vocacao: 'knight', level: 200 });
     e.maxHp = e.hp = 1e9;
+    // (C — o PoE puro, decisão do dono, 09/10: o escudo de energia dos monstros do PoE RECARREGA como no PoE. Desarmado, o cavaleiro dava
+    // 15 de dano a cada 2 s e não vencia a recarga do mod "Início da Recarga 150% mais rápido" (0,8 s sem dano): a caçada ficava presa
+    // nesse monstro. No PoE ele caça com uma arma de verdade — um Machado Vaal, base comum do fim do jogo.)
+    if (jogoOficial()) {
+      JogoDoPoe.iniciar(ITEM_CATALOG);
+      e.equipment = { ...(e.equipment ?? {}), weapon: JogoDoPoe.pecaDoJogo(gerarPeca({ catalogo: catalogoDoPoe(), regras: REGRAS_DO_POE, base: 'Two_Hand_Axes/Vaal_Axe', raridade: 'normal', ilvl: 64, rng: () => 0.5 })) };
+    }
     assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
     assert.ok(e.hunt.instancia.encontros.altar, 'a instância nasceu com os encontros do mapa');
     e.hunt.offlineDesde = Date.now() - 3 * HORA;

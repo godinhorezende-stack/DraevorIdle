@@ -513,10 +513,11 @@
    "pesoMagico": 0,
    "pesoRaro": 4000,
    "stats": {
-    "vidaPct": 40
+    "esPct": 40,
+    "esAtrasoMenosPct": 150
    },
    "estado": "parcial",
-   "valem": 1,
+   "valem": 2,
    "total": 3,
    "statsPoe": [
     {
@@ -1504,9 +1505,11 @@
    "nivel": 19,
    "pesoMagico": 1000,
    "pesoRaro": 1000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "aProvaDeMaldicoes": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -3236,10 +3239,11 @@
    "pesoMagico": 4000,
    "pesoRaro": 0,
    "stats": {
-    "vidaPct": 40
+    "esPct": 40,
+    "esAtrasoMenosPct": 50
    },
    "estado": "parcial",
-   "valem": 1,
+   "valem": 2,
    "total": 3,
    "statsPoe": [
     {
@@ -4410,10 +4414,11 @@
    "pesoMagico": 5000,
    "pesoRaro": 5000,
    "stats": {
-    "vidaPct": 40
+    "esPct": 40,
+    "esAtrasoMenosPct": 150
    },
-   "estado": "parcial",
-   "valem": 1,
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -5159,9 +5164,11 @@
    "nivel": 19,
    "pesoMagico": 1000,
    "pesoRaro": 1000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "aProvaDeMaldicoes": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5402,9 +5409,11 @@
    "nivel": 36,
    "pesoMagico": 500,
    "pesoRaro": 500,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "refleteFeiticos": 100
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5466,9 +5475,9 @@
    "pesoMagico": 0,
    "pesoRaro": 3000,
    "stats": {
-    "vidaPct": 40
+    "esPct": 40
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -6136,9 +6145,9 @@
    "pesoMagico": 0,
    "pesoRaro": 1500,
    "stats": {
-    "vidaPct": 40
+    "esPct": 40
    },
-   "estado": "aproximado",
+   "estado": "efeito",
    "valem": 1,
    "total": 1,
    "statsPoe": [
@@ -6282,16 +6291,29 @@
    "tipo": "mod",
    "familia": "MonsterModHexingEffigy",
    "linhas": [
-    "Curses"
+    "Amaldiçoa com Fraqueza Elemental, Vulnerabilidade ou Enfraquecer ao Acertar"
    ],
    "nivel": 19,
    "pesoMagico": 0,
    "pesoRaro": 1000,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
-   "total": 0,
-   "statsPoe": []
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [],
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "maldicao",
+     "chance": 100,
+     "maldicoes": [
+      "fraquezaElemental",
+      "vulnerabilidade",
+      "enfraquecer"
+     ],
+     "duracaoMs": 6000
+    }
+   ]
   },
   {
    "id": "MonsterModMirrorImage",

@@ -149,7 +149,7 @@ export function aplicarNoJogador(hunt, { tipo, total, origem = null, duracaoMs =
 }
 
 /**
- * Um tique: os pulsos dos efeitos no jogador. O dano passa por `ferir(origem, valor, elemento, nome)` — a proteção do jogador ao elemento,
+ * Um tique: os pulsos dos efeitos no jogador. O dano passa por `ferir(origem, valor, elemento, nome, tipo)` — a proteção do jogador ao elemento,
  * o Energy Shield, a mitigação das gemas (o mesmo caminho de qualquer dano elemental do mob); a armadura NÃO vale (dano contínuo).
  */
 export function tiqueDoJogador(hunt, agora, ferir, vivo = () => true) {
@@ -163,7 +163,7 @@ export function tiqueDoJogador(hunt, agora, ferir, vivo = () => true) {
       const parte = Math.max(1, Math.round(Math.min(d.falta, d.porPulso)));
       d.falta -= parte;
       d.proximo += t.pulsoMs;
-      total += ferir(d.origem, parte, d.elemento, t.nome) ?? 0;
+      total += ferir(d.origem, parte, d.elemento, t.nome, d.tipo) ?? 0;
     }
   }
   h.dots = h.dots.filter((d) => d.falta > 0 && d.proximo <= d.ate + (CONFIG.tipos[d.tipo]?.pulsoMs ?? 1000));

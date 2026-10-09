@@ -236,19 +236,22 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // `extras` da magia: dano de OUTROS tipos no mesmo lançamento, cada um com a proteção do SEU elemento.
   const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => n + sortear(x.min, x.max) * forcaDaMagia * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento), 0);
   const bruto = sortear(a.min, a.max) * forcaDaMagia * fatorDaResistencia + doutrosTipos;
+  // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance) — sorteada ANTES das
+  // afecções: "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" (a árvore) as tira da magia suprimida.
+  const suprimiu = (ficha.supressaoDeMagia ?? 0) > 0 && Math.random() < ficha.supressaoDeMagia;
+  const semElementais = suprimiu && (Number(ficha.afPoe?.suprimido_sem_afeccao_elemental) || 0) > 0;
   // Os EFEITOS da magia (`efeitos` do ataque): dano contínuo no jogador pelo motor `combate/dot.mjs`.
   for (const ef of AtributosDoMob.efeitosDoGolpe(null, a)) {
     if (Math.random() * 100 >= (ef.chance ?? 100)) continue;
+    if (semElementais && ['queimadura', 'choque', 'gelo'].includes(ef.tipo)) continue;
     const posto = ModsPoe.dotNoJogador(hunt, { tipo: ef.tipo, total: (sortear(a.min, a.max) * ef.pctDoGolpe) / 100, duracaoMs: ef.duracaoMs ?? null, origem: { fonte: 'mob', mob: bicho.name, uid: bicho.uid, key: bicho.key } }, hunt.clock ?? agora);
     if (posto) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: posto, de: bicho.name });
   }
   // A magia ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador (`combate/controle.mjs`).
   if (a.min > 0 || a.max > 0) {
-    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0);
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { semAfeccaoElemental: semElementais });
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: controle, de: bicho.name });
   }
-  // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance).
-  const suprimiu = (ficha.supressaoDeMagia ?? 0) > 0 && Math.random() < ficha.supressaoDeMagia;
   // PoE: os eventos "ao Suprimir Dano Mágico" dos únicos.
   if (suprimiu) ModsPoe.evento(estado, hunt, 'suprimir', ficha, { alvo: bicho, eventos, personagem });
   let dano = Math.round(bruto * (suprimiu ? 0.5 : 1) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) + ModsPoe.fixoRecebido(ficha, a.elemento));

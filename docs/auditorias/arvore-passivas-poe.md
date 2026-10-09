@@ -1,7 +1,7 @@
 # Auditoria da árvore de passivas do PoE no Draevor
 
 Página auditada: `http://localhost:8099/editor/conteudo#poe-arvore-poedb` (Engine › Árvore × PoEDB) e a árvore em uso no jogo com `ITENS_POE=1`.
-Ciclos 1 e 2 — 09/10/2026. Inventário verificável (gerado, rastreável por id):
+Ciclos 1, 2, 3 (maldições e dreno instantâneo) 4 (totens, dano excedente, monstros à prova e amaldiçoados, maldições em você) 5 (afecções em você) e 6 (afecções do personagem nos monstros) — 09/10/2026. Inventário verificável (gerado, rastreável por id):
 - [`arvore-passivas-poe-inventario.md`](arvore-passivas-poe-inventario.md);
 - [`arvore-passivas-poe-inventario.json`](arvore-passivas-poe-inventario.json).
 
@@ -9,32 +9,32 @@ Ciclos 1 e 2 — 09/10/2026. Inventário verificável (gerado, rastreável por i
 
 ## 1. Resumo executivo
 
-| | Antes (commit `de2be187`) | Ciclo 1 | **Ciclo 2** |
-|---|---:|---:|---:|
-| Nós analisados (principal + maestrias + ascendências) | 2.810 | 2.810 | 2.810 |
-| Auditáveis (sem os 28 inícios) | 2.782 | 2.782 | 2.782 |
-| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | **1.712 (61,5%)** |
-| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) |
-| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | **400 (14,4%)** |
-| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | **419 (15,1%)** |
-| Não classificáveis (sem linhas: 57 encaixes de joia, 53 outros) | 110 | 110 | 110 |
-| Falhas no motor (alocar → somar → tirar), em todos os nós | 5 | 0 | **0** |
-| Efeitos traduzidos que nada no código lê | 84 em 5 causas | 0 | **0** |
-| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | **66,6%** |
+| | Antes (commit `de2be187`) | Ciclo 1 | Ciclo 2 | Ciclo 3 | Ciclo 4 | Ciclo 5 | **Ciclo 6** |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Nós analisados (principal + maestrias + ascendências) | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 |
+| Auditáveis (sem os 28 inícios) | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 |
+| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | 1.712 (61,5%) | 1.728 (62,1%) | 1.730 (62,2%) | 1.734 (62,3%) | **1.753 (63,0%)** |
+| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) | 147 (5,3%) | 147 (5,3%) | 147 (5,3%) | 148 (5,3%) |
+| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | 400 (14,4%) | 395 (14,2%) | 401 (14,4%) | 403 (14,5%) | **406 (14,6%)** |
+| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | 419 (15,1%) | 402 (14,5%) | 394 (14,2%) | 388 (13,9%) | **365 (13,1%)** |
+| Não classificáveis (sem linhas: 57 encaixes de joia, 53 outros) | 110 | 110 | 110 | 110 | 110 | 110 | 110 |
+| Falhas no motor (alocar → somar → tirar), em todos os nós | 5 | 0 | 0 | 0 | 0 | 0 | **0** |
+| Efeitos traduzidos que nada no código lê | 84 em 5 causas | 0 | 0 | 0 | 0 | 0 | **0** |
+| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | 66,6% | 67,4% | 67,5% | 67,6% | **68,3%** |
 
 Linhas, no ciclo 1: 4.075 com efeito real, 1.515 pendentes, 455 que o jogo marca como inexistentes (com o porquê) e 756 lembretes do PoE.
 
-### A escada de cobertura (ciclo 2)
+### A escada de cobertura (ciclo 6; entre parênteses, o ciclo 2)
 
 Cada nó fica no último degrau que alcança sem pular nenhum. Lista por id no inventário.
 
 | Degrau | O que prova | Nós |
 |---|---|---:|
 | Apenas exibido | está nos dados e no editor, mas o motor não o aloca | 0 |
-| Alocável | o servidor aloca e tira (caminho, pontos, regras), mas nenhuma linha tem efeito | 529 |
-| Interpretado | a linha vira modificador tipado com leitor no código, mas o efeito não foi visto | 19 (condições que o cenário automático não monta: "drenando", "cadáver consumido"…) |
-| Aplicado (sem teste numérico ainda) | a ficha efetiva muda ao alocar ou o combate lê o valor no acerto/tique | 1.065 |
-| **Validado por teste** | cada efeito do nó tem teste numérico de integração (`testes/cobertura-arvore.mjs` e os arquivos citados lá) | **1.169** |
+| Alocável | o servidor aloca e tira (caminho, pontos, regras), mas nenhuma linha tem efeito | 475 (529) |
+| Interpretado | a linha vira modificador tipado com leitor no código, mas o efeito não foi visto | 10 (19) (condições que o cenário automático não monta: "drenando", "cadáver consumido"…) |
+| Aplicado (sem teste numérico ainda) | a ficha efetiva muda ao alocar ou o combate lê o valor no acerto/tique | 1.081 (1.065) |
+| **Validado por teste** | cada efeito do nó tem teste numérico de integração (`testes/cobertura-arvore.mjs` e os arquivos citados lá) | **1.216** (1.169) |
 
 "Aplicado" se mede na ficha que o servidor refaz depois de mudar a árvore (`depoisDeMudar`): vida, armadura, golpe, regeneração… Quando a
 chave pede uma condição comum (escudo, tipo de arma, duas armas, vida baixa), o cenário é montado. Aparecer só na ficha do personagem
@@ -222,13 +222,14 @@ Cada lacuna traz a evidência e a causa. Quando muitos nós dividem a causa, ela
 | Proteção Perversa | a recarga que começou há menos de 4 s não é interrompida; 40% menos recarga | `defesa.absorver`, `defesa.recarregar` |
 | Juventude Eterna | a recarga do escudo enche a vida; 50% menos regeneração de vida; 50% menos teto de roubo de vida | `defesa.recarregar`, `ficha.regenDoPoe`, `recuperarRoubo` |
 | Equilíbrio Elemental | o acerto elemental tira a Exposição daqueles elementos e põe −25% nos outros (o PoE atual; a de peça é a regra antiga) | `mods-poe.aoAcertar` (o sistema de Exposição) |
+| **Pacto Vaal** (ciclo 3) | o dreno de vida do golpe corpo a corpo entra na hora, fora do teto por segundo; a vida só se recupera pelo dreno (regeneração, vida por acerto/abate, "Recupera X% de Vida", frasco de vida, cura de magia e recarga na vida não enchem) | `ficha.aplicarLeech` (tags do golpe); `condicoes-poe.vidaSoPeloDreno` em `regenDoPoe`, `curar`, `mods-poe`, `frascos`, `defesa`, `condicoes-poe.tique`, `acoes` (cura) |
+| **Mestre dos Feitiços** (ciclo 3) | as maldições Feitiço (Hex) ficam no monstro sem expirar; 20% menos efeito das maldições | `acoes.efeitosDaMaldicao` → `Reforcos.marcar` |
 
-As outras 28 keystones de texto, uma a uma: o que falta e se dá para fechar com o que o jogo tem.
+As outras 26 keystones de texto, uma a uma: o que falta e se dá para fechar com o que o jogo tem.
 
 | Keystone | Situação | O que falta (dependência) |
 |---|---|---|
 | Inoculação do Caos | sem efeito | vida 1 é simples (`sincronizarMaximos`), mas a imunidade a caos tem de cobrir golpes, magias e dano contínuo. Pela metade, com vida 1, mataria o personagem — não implementada |
-| Pacto Vaal | sem efeito | dreno instantâneo no corpo a corpo é simples; "só recupera vida pelo dreno" exige um ponto único de recuperação de vida (hoje: regeneração, frascos, por acerto/abate, eventos, recarga) |
 | Dançarino do Vento | sem efeito | o dano recebido precisa saber se o golpe do monstro é ataque; "mais evasão" condicional |
 | Dança da Flecha | sem efeito | o golpe do monstro precisa saber se é projétil ou corpo a corpo |
 | Guarda Desequilibrada | sem efeito | a mitigação da armadura do jogador com "defender com X%" e o teto de redução por tipo |
@@ -236,7 +237,6 @@ As outras 28 keystones de texto, uma a uma: o que falta e se dá para fechar com
 | Combatente Versátil | sem efeito | os tetos de bloqueio −10 e o bloqueio mágico pelo excedente (os tetos existem em `bloqueioFinal`) |
 | O Agnóstico | sem efeito | tirar o escudo existe (`sem_escudo`); falta o "sacrifica 20% da mana por segundo para recuperar vida" no tique |
 | Sombra Fluvial | sem efeito | o dano contínuo em você precisa saber quando começou; 100% mais duração das afecções em você (existe o atributo) |
-| Mestre dos Feitiços | sem efeito | duração infinita das maldições e o "menos efeito" delas |
 | Agonia Perfeita | sem efeito | afecções só no crítico e o multiplicador de dano contínuo igual ao do crítico |
 | Dança Carmesim | sem efeito | o acúmulo do sangramento por personagem (o `maxPilhas` é por tipo, em `dot.json`) |
 | Geada Cortante, Tempestade Turbulenta, Chama Voraz | sem efeito | "Não pode causar dano que não seja X" existe (`so_dano:`); falta a outra metade de cada uma (frio pelo resfriamento, dano elétrico máx/mín, incêndio extra de 1 s). Pela metade ficariam só a desvantagem |
@@ -279,13 +279,76 @@ Conferi contra o poedb 3.29 (`/home/deploy/scrapling/saida/arvore/arvore-poedb-3
   5. a tela.
 - Os itens 2 a 5 dependem do 1, que é o item "Joias" do roteiro. Implementar só o encaixe deixaria código sem uso. Fica como R12, com este desenho.
 
+### 3.1c Corrigidas no ciclo 3 (maldições e dreno instantâneo)
+
+**M1. A maldição do PoE amaldiçoa o monstro com as regras do PoE** (`skills/reforcos.mjs` — `marcar`, `maldicoesAtivas`, `vulnerabilidade`, `forcaDoBicho`):
+- a gema de maldição grava a maldição no monstro (`bicho.maldicoes[<gema>]`: os efeitos, a duração, quando começou, quando foi lançada);
+- **limite de 1 maldição** (+ "Você pode aplicar uma Maldição adicional"): vale a lançada por último; a Marca tem o limite próprio, à parte;
+- a maldição ativa **não renova a cada acerto** (corre a duração; vencida, o próximo acerto amaldiçoa de novo) — senão a "Duração" e o "expirou X%" não valeriam num jogo idle;
+- "Efeito aumentado se Y% da Duração expirou", "Desacelerados" (o passo do monstro, `hunt/monstros.moverMonstros`), "Recupera X% de Vida/Mana quando você Amaldiçoar um Inimigo sem Maldições" (evento novo `amaldicoarSemMaldicao`, disparado pelo golpe básico e pelas gemas), "Dano Extra dos Críticos de Inimigos Amaldiçoados reduzido" (`criticoDoBicho`), "Remove Afecções Elementais ao Conjurar uma Maldição", "+2 ao Nível das Gemas de Maldição" (a árvore no nível da gema — `skills/gemas.extrasDaGemaPoe`);
+- **defeito corrigido:** as regras "@alvoAmaldicoado" (10 linhas: "Recupera X% de Vida ao Matar um Inimigo Amaldiçoado", dreno contra amaldiçoados…) nunca viam a maldição posta pela gema — só o dano contínuo "maldição" dos monstros. Agora `tagsDoAlvo` lê `bicho.maldicoes`.
+
+**M2. O dreno do PoE completo** (`ficha.aplicarLeech`, `recuperarRoubo`, `tetoDoRouboPct`):
+- **a parte instantânea** ("X% do Dreno é Instantâneo", "por Garra Equipada", "empunhando uma Garra", Pacto Vaal no corpo a corpo): entra na hora, fora do teto por segundo; o resto vira a instância de sempre;
+- **o teto por recurso** (vida, mana, escudo) e o geral; a tela de personagem mostra o mesmo número (`tetoDoRouboPct`);
+- **o recurso cheio encerra o dreno** (como no PoE), medido na parte **livre** (a vida/mana não reservada); "não são removidos quando… Cheia" (vida e escudo) e o Recoup "se o Dreno foi removido Preenchendo a Vida Não Reservada" (condição nova `drenoRemovidoCheio`);
+- o dreno de escudo nos ataques (`es_leech`), o dreno de vida das magias com Fúria Arcana (`vida_leech_magia`), e "enquanto no máximo de Fúria" (condição nova `furiaCheia`);
+- **defeitos corrigidos:** (a) "X% do Dreno é Instantâneo" (9 linhas) era inerte com a nota "o dreno do jogo já é instantâneo" — falso desde 07/10; (b) 18 linhas de teto ("Vida, Mana ou Escudo de Energia") eram inertes com "o dreno do jogo não tem teto" — falso; (c) a regra genérica de "Reserva" engolia como inertes as linhas de dreno com "Vida Não Reservada" (11 linhas); (d) o teto "do Dreno de Vida" e o "de Mana" subiam o teto de TODOS os recursos — agora cada um sobe o seu.
+
+**M3. Pacto Vaal e Mestre dos Feitiços** com as duas metades (C4).
+
+Teste: `testes/passivas-poe-maldicoes-dreno.test.mjs` (13 testes, todos com o nó real; um deles numa caçada de verdade). Cada mecânica foi conferida por mutação: desligada, o teste dela falha.
+
+### 3.1d Corrigidas no ciclo 4 (totens, dano excedente, monstros à prova e amaldiçoados, maldições em você)
+
+- **O dreno dos totens para você** (6 opções da Maestria de Totens): o golpe FÍSICO de um totem de ATAQUE drena para o dono com as regras do dreno do PoE (`cacadas.golpeDoTotem` → `Ficha.drenarPoe`); o totem de magia, não.
+- **O dano excedente** (o Apetite Insaciável do Carrasco): o acerto que mata drena o que passou da vida que restava (`mods-poe.aoAcertar`, o ponto único do golpe básico e das gemas).
+- **Monstros à prova de maldições:** os mods do PoE "Infeitiçável" e "Feiticeiro" (Hexproof) — eram só registrados — passam a valer: o Feitiço não pega, a Marca pega; a Ocultista ("Seus Feitiços podem afetar Inimigos a Prova de Maldições") passa. "Reflete Feitiços" devolve o Feitiço para você.
+- **O escudo de energia do monstro de verdade:** os mods "Ganhe 40% de Vida Máxima como Escudo de Energia" eram +40% de vida; agora o escudo fica por cima da vida, sai primeiro e recarrega 20%/s depois de 2 s sem dano (÷ "Início da Recarga mais rápido"), como no PoE (`skills/estados.tique`). Com isso, "Inimigos Amaldiçoados por você não podem Recuperar Escudo de Energia" e "têm Regeneração de Vida reduzida" (Últimos Ritos) têm onde agir.
+- **Decisão do dono (09/10): o escudo do monstro é o do PoE puro.** Consequência medida: quem depende do golpe básico e não vence a recarga (o mod "Início da Recarga 150% mais rápido" recarrega 0,8 s depois do dano — cerca de 10% da barra do monstro por golpe de 2 s) fica preso nesse monstro e o mapa não limpa. Skills de gema mais rápidas, lacaios e dano contínuo interrompem a recarga. **Lacuna antiga achada aqui:** no modo PoE, o golpe básico ataca a cada 2 s para todo mundo — a velocidade de ataque da arma do PoE não entra no intervalo (`ficha.intervaloDoGolpeMs` só lê o APS das armas do Draevor).
+- **Defeito corrigido no caminho:** a sobra fracionária da recarga do escudo se acumulava com o escudo quase cheio (339 pontos num escudo de 135, medido), e a recarga seguinte saía inteira de uma vez.
+- **"Inimigos Amaldiçoados Mortos por você são destruídos":** sem cadáver (o Erguer Espectro não os ergue).
+- **Maldições dos monstros em você:** o mod do PoE "Amaldiçoa" (era só registrado) amaldiçoa quem o monstro acerta (Fraqueza Elemental, Vulnerabilidade ou Enfraquecer, por 6 s), com "Imune a Maldições" e "Efeito das Maldições em você". "Suas Resistências Elementais não podem ser reduzidas por Maldições" deixou de ser inerte: segura a Fraqueza Elemental e a Inflamabilidade refletida.
+- **Defeito corrigido — resistência negativa:** no modo PoE, toda resistência negativa vinda de atributos (os "−X% de Resistência a Fogo" das peças, as maldições) era cortada em 0 pelo limite do Draevor antes da conta do PoE. Agora fica negativa, como no PoE (até −200%), e o dano daquele elemento aumenta.
+
+Teste: `testes/passivas-poe-maldicoes-dreno.test.mjs` (22 testes no arquivo, 8 deste ciclo). Cada mecânica foi conferida por mutação.
+
+### 3.1e Corrigidas no ciclo 5 (afecções em você)
+
+- **"Afecções Danificadoras/Não Danificadoras Não Podem ser infligidas em você enquanto você já tiver uma"** (a Maestria de Proteção): o Incêndio, o Sangramento e o Veneno de um lado; a Eletrização, o Resfriamento e o Congelamento (o do controle conta) do outro (`mods-poe.dotNoJogador`, `condicoes-poe.controleNoJogador`).
+- **"Efeito do Resfriamento e Eletrização em você reduzido"**, **"X% mais Duração de Afecções em você"** e **"Sofre 50% menos Dano Degenerativo se você começou a sofrer Dano Degenerativo no último segundo"** — a Sombra Fluvial passa a ter as duas linhas.
+- **"Inimigos Sangrando não infligem Sangramento em você"**, **"Inimigos Incendiados não podem te Incendiar"** (Cauterização): o monstro que bate com a afecção não a passa.
+- **"Dano Mágico Suprimido não pode infligir Afecções Elementais em você"**: a supressão passou a ser sorteada antes das afecções da magia (`poderes.dispararMagia`), e a magia suprimida não incendeia, não eletriza e não congela/resfria (`Controle.tentar`).
+- **O Campeão** ("Primeiro a Bater, Último a Cair"): Adrenalina ao atingir Vida Baixa, 25% de vida ao ganhar Adrenalina (evento novo `ganharAdrenalina`) e as afecções removidas ao ganhar Adrenalina.
+- **"Você é Inafetado por Sangramento enquanto Drenando"** (o Carrasco): o sangramento corre em você, mas não fere.
+- **Inertes, com o porquê:** "Não pode ser Empalado" e "Evitar ser Empalado" (os monstros do jogo não empalam); "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente" (o crítico dos monstros não põe afecção por si no jogo).
+- **Ainda pendentes no tema, por depender de mecânica que não existe:** o sangramento que dói mais em movimento (nem em você, nem nos monstros), as afecções do personagem nos monstros (empalamento, eletrização máxima/espalhada, sangramento agravado, "permanentemente Dano aumentado por segundo Congelado").
+
+Teste: `testes/passivas-poe-afeccoes-em-voce.test.mjs` (7 testes, nós reais; conferido por mutação).
+
+### 3.1f Corrigidas no ciclo 6 (as afecções do personagem nos monstros)
+
+Afecções e controle: de 413 para 541 linhas com efeito (88%); pendentes de 169 para 31.
+
+- **Eletrização** (`itens-poe/afeccoes.aoAcertar`, `mods-poe.aoPorAfeccoes`): o máximo a mais e o fixo ("Efeito Máximo … é igual a X%"), o mínimo, a parte da Mana máxima aumentada, "até N Eletrizações em cada Inimigo" (somam — o Warden), o espalhar para os vizinhos, "sempre Eletrizam" e "Todo Dano pode Eletrizar".
+- **Resfriamento e Congelamento** (`afeccoes`, `skills/estados`): o mínimo e o máximo do Resfriamento, "reduz o Dano causado pela metade do Efeito" (`doBicho`), "continuam Congelados por ao menos N segundos", "Resfriados ao Descongelarem", "Todo o Dano com Maças e Cetros infligem Resfriamento" e o **dano permanente** por segundo Congelado/Resfriado (`fatorRecebidoPeloBicho`).
+- **Empalamento** (`mods-poe.aoAcertar`): o efeito em não Empalados, a duração, os acertos a mais, "durarem por um Acerto adicional", "remover todos os Empalamentos" e **O Empalador** (espalha, +5, a espera). **Mudança de regra:** o empalamento solto passa pela Redução de Dano Físico do monstro (a resistência física e a redução de dano), como no PoE — antes passava inteiro —, e "ignoram a Redução de Dano Físico" a tira.
+- **Veneno**: em não-Envenenados, em Sangrando, os do crítico, "Envenenados por você não podem causar Golpes Críticos" e "X% mais Dano contra Inimigos Afetados por ao menos N Venenos" (condição nova `alvoVenenos:N`).
+- **Sangramento**: por Empalamento, por Carga de Tolerância, a **Dança Carmesim** (até 8, 50% menos) e "Inimigos com Sangramento Explodem".
+- **O crítico nas afecções**: o efeito das não-Danificadoras, os multiplicadores, e a **Agonia Perfeita** completa (o multiplicador degenerativo é o de crítico; o crítico não dá dano extra — a linha não tinha regra —; sem crítico não há afecção). A Agonia vinda de peça deixou de ser "+30% de multiplicador".
+- **Resistências a menos** (Incendiados/Resfriados: elementais; Envenenados: caos — `hunt/resistencia.resistenciaDe`), "Eletrizados ou Congelados por você sofrem Dano Elemental aumentado", o **Coberto de Gelo** (estado novo) e de Cinzas ao Congelar/Incendiar, "Recupera X% de Vida ao Incendiar um Inimigo não Incendiado" (evento novo `incendiarNovo`).
+- **Inertes, com o porquê:** os dois "sem Dano extra em movimento" (o sangramento do jogo não dói mais em movimento) e "Feixes de Vínculo" (não existem).
+- **Ainda pendentes (31):** o sangramento agravado e em movimento (pede a mecânica do movimento, uma decisão de balanceamento), "Dano de Raio … Azarado" em você, os projéteis (atravessados, ricochetes, distância), o tempo na Presença, o Liberto (Elementalista), a Geada, o físico convertido em fogo dos incendiados e as auras de Congelar/Resfriar em volta.
+
+Teste: `testes/passivas-poe-afeccoes-nos-monstros.test.mjs` (11 testes, nós reais; 31 mecânicas conferidas por mutação).
+
 ### 3.2 Restantes (por causa técnica)
 
 As linhas pendentes, agrupadas por tema, com o que cada tema precisa, estão no inventário ("Linhas sem tradução com efeito"). Os maiores grupos:
 
 | # | Lacuna (causa) | Nós/linhas | Prioridade | Dependência | Correção proposta | Teste necessário |
 |---|---|---|---|---|---|---|
-| R1 | **Keystones só de texto**: das 36, **8 fechadas no ciclo 2** (C4); restam 28 (ver C4, uma a uma) | 28 nós | alta | mecânicas próprias (ES protege a mana, recuperação limitada pela evasão…) | uma regra por keystone em `traducao-arvore.json` → `keystones` (o formato `poe` existe) e o gancho no combate. **Não** ligar só a vantagem: a Bateria Anciã já tem o "custo pago pelo escudo" (`escudoParaOCusto`), mas sem as duas desvantagens daria uma keystone só positiva | por keystone: o número com e sem, as duas metades |
+| R1 | **Keystones só de texto**: das 36, **8 fechadas no ciclo 2 e 2 no ciclo 3** (C4); restam 26 (ver C4, uma a uma) | 26 nós | alta | mecânicas próprias (ES protege a mana, recuperação limitada pela evasão…) | uma regra por keystone em `traducao-arvore.json` → `keystones` (o formato `poe` existe) e o gancho no combate. **Não** ligar só a vantagem: a Bateria Anciã já tem o "custo pago pelo escudo" (`escudoParaOCusto`), mas sem as duas desvantagens daria uma keystone só positiva | por keystone: o número com e sem, as duas metades |
 | R2 | **Notáveis de ascendência quase todos sem efeito** (109 de 161; Guardião, Gladiador, Luminária com 0 funcionais) | 141 nós | alta | mecânicas de cada ascendência (cerca de 113 linhas "outros") | por ascendência, começando pelas sem nenhum efeito | por notável: o efeito no golpe/defesa |
 | R3 | ~~"Pode Alocar Passivas do ponto inicial do X"~~ — **corrigido no ciclo 2 (C1)** | 6 nós | feito | o motor aceitar um 2º início alcançável (hoje: `alcancaveis` parte do início da classe e da ascendência) | o nó guarda `inicioExtra`; `podeAlocar`, `caminhoAte` e `ilhadosSemEles` passam a partir dos inícios extras alocados | alocar pelo início do Marauder com o Caminho do Marauder; tirar o Caminho ilha os nós de lá |
 | R4 | **Maestrias parciais** (216 de 315: alguma opção sem efeito) | 1.106 linhas de opção sem efeito (pendentes ou inexistentes) | média | as mesmas mecânicas dos temas | por tema (afecções em você, precisão "mais", reflexo…) | por opção |
@@ -294,7 +357,7 @@ As linhas pendentes, agrupadas por tema, com o que cada tema precisa, estão no 
 | R7 | **Armadilhas e minas de verdade** | 80 / 30 | média | no jogo as gemas viram golpes comuns | sistema de armar/detonar (decisão de design) | — |
 | R8 | **Marcas/Runas presas ao inimigo** (vínculo, convocação, alcance) | 70 / 30 | média | as Runas (Brands) são golpes comuns; a tag agora existe (L5) | o que for número (dano, crítico, duração) com `@runa`/`@marca`; o vínculo pede sistema | por linha |
 | R9 | **Reflexo de dano dos monstros** ("Evita X% do dano refletido") | 36 / 26 | baixa | o jogo não reflete dano no personagem | só depois de existir reflexo | — |
-| R10 | **Dreno com ritmo e teto** | 38 / 34 | baixa | o roubo do PoE tem instância e teto (existe); o que depende de "instantâneo" não | linhas de teto e taxa → `roubo_*_inc` (existe) | o teto por segundo |
+| R10 | ~~**Dreno com ritmo e teto**~~ — **fechado nos ciclos 3 e 4**: o teto por recurso, a parte instantânea, o fim do dreno com a vida livre cheia, o dreno dos totens e o do dano excedente | 0 linhas pendentes | — | — | — | — |
 | R11 | **Debuffs do PoE ausentes** (Crueldade, Esmagado, Sangue Corrompido) | 29 / 29 | baixa | os debuffs não existem | criar os estados no alvo/jogador | — |
 | R12 | **Encaixes de joia** | 57 nós | média (depende do roteiro) | não há joias de árvore (Joias está no roteiro do dono) | o nó guarda a joia encaixada; a soma entra por `Afixos.soma` como as peças | joia encaixada soma; sair do nó tira a joia |
 | R14 | **Guardiã desatualizada** (a da coleção 3.24/3.25 × a do poedb 3.29) | 22 × 15 nós | **decisão do dono** | trocar remove alocações | importar a Guardiã do poedb (posições `group`/`orbit`) e dar respec grátis a quem tinha | — |
@@ -412,6 +475,39 @@ L4) vieram em seguida, no mesmo ciclo.
 | C3 legado, bloqueio e dreno | `game/testes/passivas-poe.test.mjs` (dreno de ataques, bloqueio com escudo) |
 | C4 keystones | `game/systems/personagem/atributos.mjs` (`efeitos(p, af)`); `game/systems/ficha.mjs` (`forcaNoGolpe`, `regenDoPoe`, `aplicarLeech`, `recuperarRoubo`); `game/systems/personagem/defesa.mjs` (`absorver`, `recarregar`); `game/systems/itens-poe/condicoes-poe.mjs` (o `tique` com `esDaVida`); `game/systems/acoes.mjs`, `game/systems/hunt/combate.mjs`, `game/systems/personagem/ficha-poe.mjs` (a Força pela `forcaNoGolpe`); `game/gamedata/itens-poe/traducao.json` (15 regras); `game/gamedata/itens-poe/atributos-novos.json` (13 atributos); `game/testes/passivas-poe-keystones.test.mjs` (novo) |
 
+### Arquivos do ciclo 3 (maldições e dreno instantâneo)
+
+| Correção | Arquivos |
+|---|---|
+| M1 maldições | `game/systems/skills/reforcos.mjs` (`marcar`, `maldicoesAtivas`, `amaldicoado`, `fatorDeDesaceleracao`, `vulnerabilidade`, `forcaDoBicho`); `game/systems/acoes.mjs` (`efeitosDaMaldicao`: `maldicaoRegras`, o "menos efeito", a duração infinita; a hora do lançamento no buff; o evento nas gemas; o leitor da árvore para o nível das gemas); `game/systems/hunt/combate.mjs` (o evento no golpe básico); `game/systems/hunt/monstros.mjs` (o passo do amaldiçoado); `game/systems/itens-poe/condicoes-poe.mjs` (`amaldicoadoPorVoce` em `tagsDoAlvo` e `criticoDoBicho`; o evento `amaldicoarSemMaldicao`; `efeito_maldicao_expirou:<Y>`); `game/systems/itens-poe/mods-poe.mjs` (`removerAfeccao:elementais`); `game/systems/skills/gemas.mjs` (o nível das gemas pela árvore) |
+| M2 dreno | `game/systems/ficha.mjs` (`aplicarLeech`: a parte instantânea, `es_leech` nos ataques, `vida_leech_magia`; `tetoDoRouboPct`; `recuperarRoubo`: o cheio pela parte livre; `regenDoPoe` e `curar` com o Pacto Vaal); `game/systems/personagem/ficha-poe.mjs` (o teto da tela); `game/systems/itens-poe/condicoes-poe.mjs` (`vidaSoPeloDreno`, `furiaCheia`, `drenoRemovidoCheio`, o buff `pactoVaal` das peças como no PoE); `game/systems/itens-poe/frascos.mjs`, `game/systems/personagem/defesa.mjs` (o Pacto Vaal) |
+| Regras e atributos | `game/gamedata/itens-poe/traducao.json` (31 regras novas — uma no lugar da antiga do teto de vida/mana, que subia o de todos — e 4 corrigidas); `game/gamedata/itens-poe/atributos-novos.json` (15 atributos); `game/gamedata/itens-poe/arvore-poe.json` (refeito); `game/systems/itens-poe/precisa-arvore.mjs` (o que falta) |
+| Testes | `game/testes/passivas-poe-maldicoes-dreno.test.mjs` (novo, 14 testes); `game/testes/passivas-poe-afeccoes.test.mjs` (a duração lida em `bicho.maldicoes` — classe C, o modelo mudou); `game/testes/itens-poe-arvore-poedb.test.mjs` (o dreno instantâneo agora existe — classe C); `game/testes/cobertura-arvore.mjs` |
+
+### Arquivos do ciclo 4
+
+| Correção | Arquivos |
+|---|---|
+| Dreno dos totens e do excedente | `game/systems/ficha.mjs` (`drenarPoe`, o dreno compartilhado); `game/systems/cacadas.mjs` (`golpeDoTotem`); `game/systems/itens-poe/mods-poe.mjs` (`aoAcertar`: o excedente; `definirDreno`) |
+| Monstros à prova, refletindo, com escudo e amaldiçoados | `game/systems/mobs/raridade.mjs` (`esPoe`, `aProvaDeMaldicoes`, `refleteFeiticos`); `game/systems/skills/estados.mjs` (`escudoDoMonstro`, a recarga, a regeneração reduzida); `game/systems/skills/reforcos.mjs` (`regrasDasMaldicoes`, `afDaMaldicaoNoJogador`, à prova e o reflexo em `marcar`); `game/systems/acoes.mjs` (as regras da maldição); `game/systems/hunt/combate.mjs` (sem cadáver) |
+| Maldições em você | `game/systems/itens-poe/condicoes-poe.mjs` (`MALDICOES_DOS_MONSTROS`, `amaldicoarJogador`, `addsDasMaldicoesNoJogador`); `game/systems/afixos.mjs` (a soma); `game/systems/mobs/mecanicas.mjs` (o efeito `maldicao`); `game/systems/ficha.mjs` (a resistência negativa) |
+| Dados | `game/tools/montar-modificadores-monstro-poe.mjs` e `game/gamedata/itens-poe/modificadores-monstro.json` (9 mods: escudo, Hexproof, Reflete Feitiços, Amaldiçoa — só esses; as correções manuais das linhas ficaram); `traducao.json` (6 regras novas, 1 corrigida); `atributos-novos.json` (7) |
+| Testes | `passivas-poe-maldicoes-dreno.test.mjs` (+8); `mobs-raridade.test.mjs` (a lista de stats conhecidos dos modificadores ganhou os 4 novos — classe C: o mob passou a aplicá-los); `encontros-etapa6.test.mjs` (classe C, decisão do dono "PoE puro": no modo PoE o cavaleiro da caçada offline caça com um Machado Vaal — desarmado, 15 de dano a cada 2 s, ficava preso num monstro com escudo de recarga rápida) |
+
+### Arquivos do ciclo 5
+
+| Correção | Arquivos |
+|---|---|
+| Afecções em você | `game/systems/itens-poe/mods-poe.mjs` (`dotNoJogador`, `jaTemAfeccao`, o evento `ganharAdrenalina`); `game/systems/itens-poe/condicoes-poe.mjs` (`controleNoJogador`, `ganharBuff`); `game/systems/poderes.mjs` (a supressão antes das afecções); `game/systems/combate/controle.mjs` (`tentar`: sem afecção elemental); `game/systems/combate/dot.mjs` (o tipo no pulso); `game/systems/mobs/mecanicas.mjs` (inafetado, o primeiro segundo do dano contínuo) |
+| Dados e testes | `traducao.json` (15 regras); `atributos-novos.json` (9); `testes/passivas-poe-afeccoes-em-voce.test.mjs` (novo, 7 testes); `testes/cobertura-arvore.mjs` |
+
+### Arquivos do ciclo 6
+
+| Correção | Arquivos |
+|---|---|
+| Afecções nos monstros | `game/systems/itens-poe/afeccoes.mjs` (`daSoma`, `aoAcertar`, `fatorDeEletrizacao`); `game/systems/itens-poe/mods-poe.mjs` (o empalamento, `aoPorAfeccoes`, o Coberto de Gelo, `definirReducaoFisica`); `game/systems/itens-poe/condicoes-poe.mjs` (`finalizar`, `tagsDoAlvo`, `doBicho`, `criticoDoBicho`, `fatorRecebidoPeloBicho`, `resMenosDasAfeccoes`, a Agonia Perfeita das peças); `game/systems/skills/estados.mjs` (o congelamento mínimo, o resfriar ao sair, o tempo Congelado/Resfriado); `game/systems/hunt/resistencia.mjs` (as resistências a menos); `game/systems/cacadas.mjs` (registra a redução física do empalamento); `game/systems/ficha.mjs` (`critMultiplierBruto`); `game/systems/itens-poe/traduzir.mjs` e `game/admin/auditoria-arvore-passivas.mjs` (a condição `alvoVenenos:N`) |
+| Dados e testes | `traducao.json` (60 regras); `atributos-novos.json` (39); `testes/passivas-poe-afeccoes-nos-monstros.test.mjs` (novo); `testes/cobertura-arvore.mjs` |
+
 ## 7. Testes executados (resultados reais)
 
 - `testes/passivas-poe.test.mjs`: **24 de 24 passam**, incluindo o invariante do auditor (2.230 nós alocados, 0 falhas, ~14 s).
@@ -424,6 +520,8 @@ L4) vieram em seguida, no mesmo ciclo.
 ---
 
 ## 8. Próxima prioridade recomendada
+
+(Ciclo 3: as maldições e o dreno instantâneo foram fechados, com o Pacto Vaal e o Mestre dos Feitiços. O que segue continua valendo, sem R10.)
 
 1. **R3, o "Caminho do X" da Ascendente.** É regra de alocação, prioridade 1, e mexe no motor (inícios extras).
 2. **R1, keystones**, uma por vez e sempre com as duas metades:
@@ -440,7 +538,17 @@ L4) vieram em seguida, no mesmo ciclo.
 | fim do ciclo 1 | 308 | 3.164 | 2.584 | **0** | 578 |
 | fim do ciclo 2 | 310 | 3.208 | 2.628 | **0** | 578 |
 | fim do ciclo de dependências | 313 | 3.242 | 2.662 | **0** | 578 |
+| fim do ciclo 3 (maldições e dreno instantâneo) | 314 | 3.260 | 2.680 | **0** | 578 |
+| fim do ciclo 4 (totens, excedente, monstros, maldições em você) | 315 | 3.271 | 2.690 | **1** (intermitente e antiga — abaixo) | 578 |
+| fim do ciclo 5 (afecções em você) | 316 | 3.278 | 2.698 | **0** | 578 |
+| fim do ciclo 6 (afecções do personagem nos monstros) | 317 | 3.289 | 2.709 | **0** | 578 |
 
 Sem falhas preexistentes no escopo do SYSTEM. Dois testes antigos foram adaptados, e só porque a regra mudou de propósito (ver a seção 6):
 - `morte.test.mjs`, classe B: a regra do Tibia continua testada no clássico;
 - `itens-poe-arvore.test.mjs`, classe C: o formato `tag` era o defeito L1.
+
+**A falha do ciclo 4 é antiga:** `loot-moeda.test.mjs` (o personagem de teste, desarmado, às vezes fica preso no monstro "Ameaça Agarradora" e não mata em 15 minutos). Reproduzida com o sorteio do spawn por semente: no `origin/main` (sem as mudanças deste trabalho) as MESMAS sementes travam (4 de 40); sozinho, o teste passou em 5 de 6 rodadas. Fica como tarefa à parte.
+
+No ciclo 3, mais dois, também classe C (a regra mudou a pedido do dono):
+- `passivas-poe-afeccoes.test.mjs`: a duração da maldição agora é lida em `bicho.maldicoes` (o modelo da maldição no monstro mudou);
+- `itens-poe-arvore-poedb.test.mjs`: a asserção dizia que "X% do Dreno é Instantâneo" não existia no jogo; agora existe (`roubo_instantaneo_pct`).

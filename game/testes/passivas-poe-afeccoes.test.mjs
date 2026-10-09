@@ -137,7 +137,8 @@ test('maldição: "Duração da Maldição aumentada" (o nó real) alonga a MARC
     const hunt = { clock: 0, buffs: { [entry.id]: { ate: 60_000, tipo: 'poe-maldicao', fator: 1, efeitosPoe: Acoes.efeitosDaMaldicao(doPoe.efeitos, null, e, entry) } } };
     const bicho = { uid: 1, x: 0, y: 0, hp: 100, maxHp: 100 };
     Reforcos.marcar(hunt, bicho, 0);
-    return bicho.marcas?.vulneravel?.ate ?? bicho.marcas?.enfraquecido?.ate ?? 0;
+    // (a maldição do PoE amaldiçoa o monstro — `bicho.maldicoes[<gema>]`, com o limite e a duração dela; antes era a marca genérica)
+    return bicho.maldicoes?.[entry.id]?.ate ?? 0;
   };
   const e = novo();
   Comandos.comando(e, { action: 'alocar', ids: P.caminhoAte(e, no.id).slice(0, -1) });

@@ -38,9 +38,15 @@ Cada linha foi conferida no código.
 ## 2. Fluxos de ponta a ponta (conferidos)
 
 **Maldição**
-- **Fluxo:** árvore ("Efeito da Maldição aumentado" → `efeito_maldicao`) → gema de maldição (arquétipo `maldicao`, `acoes.efeitosDaMaldicao`) → debuff no monstro (`marcaVulneravel`/`marcaEnfraquece` com `durMarca`) → o dano recebido pelo monstro.
-- **Situação:** o fluxo existe, mas 0 de 76 efeitos têm teste. "Duração da Maldição aumentada" (pendente) não tem consumidor: a duração vem da gema.
-- **Próximo ciclo:** validar e ligar a duração.
+- **Fluxo:** árvore (efeito, duração, "menos efeito", "Maldição adicional", "expirou X%", "Desacelerados", Mestre dos Feitiços) → gema de maldição (arquétipo `maldicao`, `acoes.efeitosDaMaldicao`: os efeitos × efeito, a duração e o efeito `maldicaoRegras`) → o buff ligado (com a hora em que foi lançado) → o acerto (golpe básico em `hunt/combate`, gemas em `acoes`) → `Reforcos.marcar`: a maldição no monstro (`bicho.maldicoes`, com o limite e a duração do PoE) → o dano a mais (`vulnerabilidade`), o monstro enfraquecido (`forcaDoBicho`), o passo dele (`moverMonstros`), o crítico dele em você (`criticoDoBicho`), as regras "@alvoAmaldicoado" (`tagsDoAlvo`) e o evento `amaldicoarSemMaldicao`.
+- **Monstro ↔ maldição** (ciclo 4): o monstro "Infeitiçável" (Hexproof, mod do PoE) recusa o Feitiço (a Marca pega; a Ocultista passa); "Reflete Feitiços" devolve o Feitiço para você; o escudo de energia do monstro (mod do PoE) recarrega — e o amaldiçoado com "não podem Recuperar Escudo de Energia" não; a regeneração dele cai; o amaldiçoado "destruído" não deixa cadáver. O monstro "Amaldiçoa" põe Fraqueza Elemental, Vulnerabilidade ou Enfraquecer em você (`condicoes-poe.addsDasMaldicoesNoJogador` → a sua soma), que "Imune a Maldições", "Efeito das Maldições em você" e "Suas Resistências Elementais não podem ser reduzidas por Maldições" seguram.
+- **Situação:** **fechado nos ciclos de maldições/dreno e 4**; 108 de 118 linhas da categoria com efeito, 43 efeitos validados por teste (eram 4). Pendente: "Efeito de Auras Não-Maldição de suas Habilidades aumentado nos Inimigos" (1 linha).
+- **Defeito achado e corrigido:** a maldição da gema não contava como "Inimigo Amaldiçoado" (10 linhas, 28 efeitos da árvore: "Recupera X% de Vida ao Matar um Inimigo Amaldiçoado", as chances de afecção contra amaldiçoados).
+
+**Dreno**
+- **Fluxo:** árvore/peças (`life_leech`, `mana_leech`, `es_leech`, `es_leech_magia`, `vida_leech_magia`, `roubo_instantaneo_pct`, os tetos) → a ficha do golpe (as tags: corpo a corpo, ataque, magia) → `Ficha.aplicarLeech` (a parte instantânea na hora; o resto vira instância de até 10% do máximo) → `Ficha.recuperarRoubo` no tique (2%/s por instância; teto por recurso — `tetoDoRouboPct`; o recurso livre cheio encerra o dreno) → vida/mana/escudo.
+- **Totem e excedente** (ciclo 4): o golpe físico de ataque do totem drena para o dono (`cacadas.golpeDoTotem`); o acerto que mata drena o excedente (`mods-poe.aoAcertar`). Os dois pelo mesmo `Ficha.drenarPoe`.
+- **Situação:** **fechado**; 127 de 136 linhas da categoria com efeito, 0 pendentes, 84 efeitos validados (eram 23). As 9 "inexistentes" são o "mais Dano contra Inimigos que não podem ter Vida Drenada" (no jogo todo monstro pode).
 
 **Frasco**
 - **Fluxo:** árvore ("Maestria de Frascos") → frasco no cinto (`frascos.cinto`) → cargas (`ev:critico:frascoChance`, cargas por abate) → uso (`{t:'frasco', action:'usar'}` → `Frascos.usar`) → eventos "ao usar" (`ModsPoe.eventosDoFrasco`) → o efeito ativo entra na soma → ficha.
@@ -64,16 +70,16 @@ A tabela completa, com os atributos, os consumidores e as gemas de cada categori
 
 | Categoria | Nós | Linhas com efeito | Pendentes | Validado por teste | O que falta (dependência) |
 |---|---:|---:|---:|---:|---|
-| Afecções e controle | 441 | 391 (64%) | 208 | **285/490** (era 6) | afecções em você (limite, "enquanto tiver uma"), empalar em você, resfriamento mínimo |
+| Afecções e controle | 441 | **541 (88%)** (era 391) | 31 (eram 208) | **414/692** (era 6) | o sangramento agravado e em movimento; projéteis atravessados/ricocheteados; o Liberto; a Geada |
 | Lacaios | 91 | 103 (54%) | 83 | **62/103** (era 0) | os atributos do lacaio além de dano/vida/velocidade/máximo |
 | Armadilhas e Minas | 63 | 60 (43%) | 80 | 0/60 | armadilhas e minas de verdade (armar, detonar, limite); no jogo são golpes comuns |
 | Marcas e Runas | 40 | 7 (8%) | 70 | 7/7 | marcas presas ao inimigo (vínculo); as tags Runa/Marca agora existem |
-| Maldições | 75 | 62 (53%) | 47 | 4/80 (era 0) | "expirou X%", maldição sobre inimigo sem maldição, maldições em você; a duração foi ligada neste ciclo |
+| Maldições | 75 | **108 (92%)** (era 62) | 1 (eram 47) | **43/126** (era 4) | auras não-maldição nos inimigos |
 | Atordoamento | 117 | 99 (63%) | 51 | **41/103** (era 0) | duração do atordoamento crítico, ignorar atordoamento ao conjurar |
 | Fúria, cargas e poder | 118 | 119 (71%) | 41 | **52/119** (era 0) | ganhos/perdas específicos (Fúria Arcana, perda que começa depois) |
 | Precisão e crítico | 267 | 354 (85%) | 61 | 230/364 | precisão "mais" contra únicos/de perto |
 | Defesa e armadura | 299 | 320 (84%) | 43 | 231/376 | defender com armadura extra, teto de bloqueio |
-| Dreno | 81 | 52 (38%) | 37 | 23/52 | dreno instantâneo, dreno de escudo/mana por tipo |
+| Dreno | 81 | **127 (93%)** (era 52) | 0 (eram 37) | **84/128** (era 23) | — |
 | Canalização e repetição | 10 | 0 | 26 | — | estágios de canalização, intensidade, selos (ausente) |
 | Debuffs do PoE / Reflexo / Solo / Cadáveres / Encaixes | — | ~0 | — | — | sistemas ausentes (ver a auditoria da árvore) |
 
@@ -90,6 +96,12 @@ A tabela completa, com os atributos, os consumidores e as gemas de cada categori
 | Lacaio com atributos próprios (`lacaios-poe.mjs`) | Lacaios, Totens, Oferendas, Égide Necromântica | parcial: dano/vida/velocidade/dano somado/resistências; faltam área, recarga, penetração |
 | Objeto plantado (armadilha/mina com armar e detonar) | Armadilhas e Minas (80 linhas), keystones de mina | ausente: as gemas viram golpe comum (decisão de design) |
 | Vínculo de marca no monstro | Marcas e Runas (70 linhas), Mesclador de Runas | ausente |
+| Maldição no monstro com as regras do PoE (`Reforcos.marcar`: limite, duração, Marca à parte, a lançada por último) | Maldições (todas as linhas de efeito/duração/limite/"expirou"/lentidão), as regras "@alvoAmaldicoado" | **pronto** (ciclo de maldições e dreno) |
+| Dreno com parte instantânea, teto por recurso e fim no recurso livre cheio | Dreno, Pacto Vaal, maestrias de Dreno e de Garra | **pronto** (idem) |
+| Um ponto de checagem "só recupera vida pelo dreno" (`vidaSoPeloDreno`) | Pacto Vaal (árvore e peças) | **pronto**: regeneração, vida por acerto/abate, eventos, frascos, cura, recarga na vida |
+| Um dreno compartilhado (`Ficha.drenarPoe`) | o acerto, o golpe do totem, o dano excedente | **pronto** (ciclo 4) |
+| Escudo de energia do monstro com recarga (`skills/estados.escudoDoMonstro`) | os mods de escudo do PoE, "não podem Recuperar Escudo de Energia" | **pronto** (ciclo 4) |
+| Maldições dos monstros em você (`hunt.maldicoesNoJogador` → a sua soma) | "Amaldiçoa", "Reflete Feitiços", "Resistências não podem ser reduzidas por Maldições", "Imune a Maldições", "Efeito das Maldições em você" | **pronto** (ciclo 4) |
 | Joia como item | 57 encaixes da árvore | ausente (item "Joias" do roteiro) |
 | Óleos/Unção | 30 notáveis de unção | ausente (roteiro: óleos só dos pináculos) |
 
@@ -131,11 +143,27 @@ A ordem segue o código e os números, não a ordem do editor.
 | Duração da maldição (era sem consumidor) | árvore → `efeitosDaMaldicao` → buff da maldição → `Reforcos.marcar` → a marca no monstro | 4 efeitos + mods de itens | `passivas-poe-afeccoes.test.mjs` |
 | Cargas e Fúria | árvore → regras das cargas/Fúria → o que a caçada guarda | 52 de 119 efeitos validados | `passivas-poe-cargas.test.mjs` |
 | Frascos de ponta a ponta | árvore → soma do personagem → frasco no cinto → `usar`/`tique`/`aoMatar` → vida recuperada, duração ativa, cargas | 99 de 130 efeitos de frasco validados (eram 24) | `passivas-poe-frascos.test.mjs` |
+| **Maldições do PoE no monstro** (ciclo de maldições e dreno) | árvore → `efeitosDaMaldicao` (`maldicaoRegras`) → buff → acerto → `Reforcos.marcar` → dano, força, passo e crítico do monstro, `tagsDoAlvo`, evento `amaldicoarSemMaldicao` | Maldições: 98 linhas com efeito (eram 62), 33 validados (eram 4); keystone Mestre dos Feitiços | `passivas-poe-maldicoes-dreno.test.mjs` (um teste numa caçada de verdade: o golpe básico amaldiçoa e a mana volta pelo evento) |
+| **Defeito corrigido — alvo amaldiçoado**: as regras "@alvoAmaldicoado" só viam o dano contínuo "maldição" dos monstros, nunca a maldição da gema | `tagsDoAlvo` lê `bicho.maldicoes` | 10 linhas / 28 efeitos | idem (com mutação: sem a correção, falha) |
+| **Dreno instantâneo e teto por recurso** | árvore/peças → ficha do golpe → `aplicarLeech` (parte instantânea) → `recuperarRoubo` (`tetoDoRouboPct`; o recurso livre cheio encerra) | Dreno: 120 linhas com efeito (eram 52), 77 validados (eram 23); keystone Pacto Vaal | idem |
+| **Ciclo 4 — dreno dos totens e do excedente** | árvore → `cacadas.golpeDoTotem` / `mods-poe.aoAcertar` → `Ficha.drenarPoe` | 6 opções da Maestria de Totens + o Carrasco | `passivas-poe-maldicoes-dreno.test.mjs` |
+| **Ciclo 4 — monstros à prova, refletindo, com escudo e amaldiçoados** | mods do PoE → `raridade.aplicar` → `Reforcos.marcar` / `skills/estados.tique` / `processarMortes` | Autoridade Profana, Últimos Ritos; 9 mods de monstro que eram registrados ou "+40% de vida" | idem |
+| **Ciclo 4 — maldições dos monstros em você** | "Amaldiçoa"/"Reflete Feitiços" → `hunt.maldicoesNoJogador` → `Afixos.soma` → a ficha | 6 opções da Maestria de Maldições (era inerte) | idem |
+| **Ciclo 5 — afecções em você** | monstro (golpe, magia, controle) → `dotNoJogador`/`controleNoJogador`/`dispararMagia` → o pulso (`Mecanicas.tique`) | Maestria de Proteção, Maestria de Supressão Mágica, Cauterização, Sombra Fluvial (keystone, as duas linhas), o Campeão, o Carrasco; Afecções e controle de 391 para 413 linhas com efeito | `passivas-poe-afeccoes-em-voce.test.mjs` |
+| **Ciclo 6 — afecções do personagem nos monstros** | árvore → ficha do golpe → `afeccoes.aoAcertar`/`mods-poe.aoAcertar`/`aoPorAfeccoes` → o monstro → `resistido`/`doBicho`/`criticoDoBicho` | Afecções e controle de 413 para 541 linhas com efeito; keystones Agonia Perfeita, Dança Carmesim e O Empalador | `passivas-poe-afeccoes-nos-monstros.test.mjs` |
+| **Defeito corrigido — resistência negativa**: no PoE, toda resistência negativa dos atributos virava 0 antes da conta do PoE | `ficha.mjs` (a soma bruta) | peças com "−X% de Resistência", as maldições | idem (com mutação) |
+| **Defeitos corrigidos — dreno**: "Dreno é Instantâneo" (9 linhas) e 18 linhas de teto eram inertes com notas falsas ("o dreno do jogo já é instantâneo"/"não tem teto"); a regra genérica de "Reserva" engolia 11 linhas de dreno; o teto "do Dreno de Vida/de Mana" subia o de todos os recursos | `traducao.json` | 38 linhas inertes que passaram a valer (+ o teto por recurso) | idem; `itens-poe-arvore-poedb.test.mjs` (classe C: a asserção antiga dizia que o dreno instantâneo não existia) |
 
 ## 7. Lacunas restantes e próxima prioridade
 
 - **Restantes:** as categorias da seção 3 com "validado" baixo, mais os sistemas ausentes da seção 4. Os detalhes estão no grafo gerado.
+- **Suíte SYSTEM no fim do ciclo 6:** 317 arquivos, 3.289 testes, 2.709 passam, **0 falhas**, 578 pulados.
+- **Suíte SYSTEM no fim do ciclo 5:** 316 arquivos, 3.278 testes, 2.698 passam, **0 falhas**, 578 pulados.
+- **Suíte SYSTEM no fim do ciclo 4:** 315 arquivos, 3.271 testes, 2.690 passam, 1 falha — `loot-moeda.test.mjs`, intermitente e antiga (as mesmas sementes travam no `origin/main`).
+- **Feito no ciclo 4:** os quatro itens que tinham sobrado (o dreno dos totens e do excedente; o monstro à prova de maldições; a regeneração, o escudo e o "destruído" do amaldiçoado; as maldições dos monstros em você, com a linha de resistências que era inerte) e o defeito da resistência negativa cortada em 0.
+- **Suíte SYSTEM no fim do ciclo de maldições e dreno:** 314 arquivos, 3.260 testes, 2.680 passam, **0 falhas**, 578 pulados (B/C do clássico).
+- **Feito no ciclo de maldições e dreno:** as duas prioridades anteriores (maldições e dreno instantâneo), com o Pacto Vaal e o Mestre dos Feitiços.
 - **Próxima prioridade:**
-  1. **Maldições**: o "expirou X%" e a maldição sobre inimigo sem maldição. A marca no monstro já guarda quando começou.
-  2. **Dreno**: o dreno instantâneo. O roubo do PoE já tem instância e teto; falta o "instantâneo" (Pacto Vaal e maestria).
-  3. **Afecções em você** ("enquanto tiver uma", limite).
+  1. **O sangramento em movimento e agravado** (decisão de balanceamento: no PoE o sangramento dói mais com o alvo andando — o jogo não tem isso, nem em você nem nos monstros), e o resto de Afecções (31 linhas). As afecções do personagem nos monstros foram fechadas no ciclo 6.
+  2. **As auras não-maldição nos inimigos** (a última linha pendente de Maldições) e os mods de monstro do PoE ainda só registrados (102 de 204).
+  3. **A velocidade de ataque da arma do PoE no golpe básico** (lacuna antiga, achada no ciclo 4): no modo PoE o golpe básico ataca a cada 2 s para todo mundo. Com o escudo dos monstros do PoE puro (decisão do dono), quem depende do golpe básico pode ficar preso num monstro com "Início da Recarga 150% mais rápido".

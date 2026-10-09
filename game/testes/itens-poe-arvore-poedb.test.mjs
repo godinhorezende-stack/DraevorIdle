@@ -145,10 +145,11 @@ test('lotes 3 e 4 da árvore: peitoral sem Vida, armaduras com Evasão, maestria
     assert.ok(['novo', 'equivalente', 'aproximado'].includes(r.estado), `${texto}: ${r.estado}`);
     assert.equal(r.efeitos[0].stat, stat, texto);
   }
-  // o dreno instantâneo: honesto — "não existe", com o porquê
+  // o dreno instantâneo (C — a regra mudou a pedido do dono, 09/10: "continue com as maldições e o dreno instantâneo"): o dreno do PoE é ao
+  // longo do tempo, e "X% do Dreno é Instantâneo" é a parte que entra na hora (`roubo_instantaneo_pct` — passivas-poe-maldicoes-dreno.test.mjs)
   const dreno = traduzirParte('{0}% do Dreno é Instantâneo', [10]);
-  assert.equal(dreno.estado, 'inerte');
-  assert.match(dreno.nota, /instantâneo/);
+  assert.equal(dreno.estado, 'novo');
+  assert.equal(dreno.efeitos[0].stat, 'roubo_instantaneo_pct');
 });
 
 test('lote 5 da árvore — a defesa de UMA peça: "Evasão do seu Peitoral", "Defesas do Escudo", o elmo com mais armadura, o "por X no Escudo"', { skip: SEM }, async () => {

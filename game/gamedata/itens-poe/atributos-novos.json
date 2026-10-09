@@ -2846,6 +2846,426 @@
       "unidade": "%",
       "combate": true,
       "efeito": "acoes.efeitosDaMaldicao (a duração da marca no monstro) (09/10)"
+    },
+    "roubo_instantaneo_pct": {
+      "nome": "Parte do Dreno que é Instantânea",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (a parte instantânea entra na hora, fora do teto por segundo) (09/10)"
+    },
+    "roubo_vida_instantaneo_corpo": {
+      "nome": "Dreno de Vida do Dano Corpo a Corpo é Instantâneo (Pacto Vaal)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (golpe com a tag corpo) (09/10)"
+    },
+    "sem_recuperar_vida_fora_dreno": {
+      "nome": "Não pode Recuperar Vida fora o Dreno (Pacto Vaal)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.vidaSoPeloDreno: regeneração, frascos, curas, eventos e recarga na vida não enchem (09/10)"
+    },
+    "roubo_teto_vida_inc": {
+      "nome": "Recuperação total por segundo do Dreno de Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.tetoDoRouboPct (vida) (09/10)"
+    },
+    "roubo_teto_mana_inc": {
+      "nome": "Recuperação total por segundo do Dreno de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.tetoDoRouboPct (mana) (09/10)"
+    },
+    "roubo_teto_es_inc": {
+      "nome": "Recuperação total por segundo do Dreno de Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.tetoDoRouboPct (escudo) (09/10)"
+    },
+    "es_leech": {
+      "nome": "Dano Drenado como Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (ataques e magias) (09/10)"
+    },
+    "vida_leech_magia": {
+      "nome": "Dano Mágico Drenado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (magias) (09/10)"
+    },
+    "roubo_es_nao_para_no_cheio": {
+      "nome": "Efeitos de Dreno de Escudo de Energia não são removidos com o escudo cheio",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.recuperarRoubo (09/10)"
+    },
+    "maldicao_desacelera": {
+      "nome": "Inimigos Amaldiçoados por você são Desacelerados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.efeitosDaMaldicao → Reforcos.marcar → hunt/monstros (o passo do monstro) (09/10)"
+    },
+    "crit_dmg_taken_red_amaldicoado": {
+      "nome": "Dano extra de Críticos de Inimigos Amaldiçoados reduzido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.criticoDoBicho (09/10)"
+    },
+    "maldicoes_adicionais": {
+      "nome": "Maldições adicionais no mesmo inimigo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.efeitosDaMaldicao → Reforcos.marcar (o limite de maldições) (09/10)"
+    },
+    "efeito_maldicao_menos": {
+      "nome": "Menos Efeito das suas Maldições (multiplica)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.efeitosDaMaldicao (09/10)"
+    },
+    "feitico_duracao_infinita": {
+      "nome": "Seus Feitiços têm Duração infinita (Mestre dos Feitiços)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.efeitosDaMaldicao (a marca das maldições Feitiço não expira) (09/10)"
+    },
+    "roubo_vida_nao_para_no_cheio": {
+      "nome": "Efeitos do Dreno de Vida não são removidos com a vida (não reservada) cheia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.recuperarRoubo (09/10)"
+    },
+    "totem_roubo_vida_fisico": {
+      "nome": "Dano Físico de Ataques dos Totens Drenado como Vida para você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios → Ficha.drenarPoe (09/10)"
+    },
+    "roubo_excedente": {
+      "nome": "Dano Excedente Drenado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (o acerto que matou) → Ficha.drenarPoe (09/10)"
+    },
+    "feitico_afeta_aprova": {
+      "nome": "Seus Feitiços afetam Inimigos à Prova de Maldições",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.efeitosDaMaldicao → Reforcos.marcar (09/10)"
+    },
+    "amaldicoado_regen_menos": {
+      "nome": "Regeneração de Vida dos Inimigos Amaldiçoados por você reduzida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "Reforcos.marcar → skills/estados.tique (09/10)"
+    },
+    "amaldicoado_sem_recarga_es": {
+      "nome": "Inimigos Amaldiçoados por você não recuperam Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "Reforcos.marcar → skills/estados.tique (o escudo do monstro) (09/10)"
+    },
+    "amaldicoado_destruido": {
+      "nome": "Inimigos Amaldiçoados Mortos por você são destruídos (sem cadáver)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "Reforcos.marcar → hunt/combate.processarMortes (09/10)"
+    },
+    "res_elem_nao_reduzida_maldicao": {
+      "nome": "Suas Resistências Elementais não podem ser reduzidas por Maldições",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.addsDasMaldicoesNoJogador (as maldições dos monstros em você) (09/10)"
+    },
+    "afeccao_dano_unica": {
+      "nome": "Afecções Danificadoras não entram em você enquanto tiver uma",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador (09/10)"
+    },
+    "afeccao_controle_unica": {
+      "nome": "Afecções Não Danificadoras não entram em você enquanto tiver uma",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador, condicoes-poe.controleNoJogador (09/10)"
+    },
+    "duracao_afeccoes_propria_mais": {
+      "nome": "Mais Duração das Afecções em você (multiplica)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador, condicoes-poe.controleNoJogador (09/10)"
+    },
+    "sem_sangramento_de_sangrando": {
+      "nome": "Inimigos Sangrando não infligem Sangramento em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador (09/10)"
+    },
+    "sem_incendio_de_incendiado": {
+      "nome": "Inimigos Incendiados não podem te Incendiar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador (09/10)"
+    },
+    "suprimido_sem_afeccao_elemental": {
+      "nome": "Dano Mágico Suprimido não inflige Afecções Elementais em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes (a magia suprimida) → combate/controle.tentar (09/10)"
+    },
+    "adrenalina_remove_afeccoes": {
+      "nome": "Remove as Afecções ao ganhar Adrenalina",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.ganharBuff (09/10)"
+    },
+    "inafetado_sangramento": {
+      "nome": "Inafetado por Sangramento (corre, mas não fere)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas.tique (o pulso no jogador) (09/10)"
+    },
+    "degen_menos_no_inicio": {
+      "nome": "Menos Dano Degenerativo no primeiro segundo dele (multiplica)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mobs/mecanicas.tique (o pulso no jogador) (09/10)"
+    },
+    "efeito_nao_dano_critico": {
+      "nome": "Efeito das Afecções não Danificadoras dos Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "resfriamento_minimo": {
+      "nome": "Resfriamento mínimo dos seus Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "resfriamento_maximo": {
+      "nome": "Resfriamento máximo dos seus Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "resfriamento_reduz_dano": {
+      "nome": "Inimigos Resfriados por você causam menos dano (metade do efeito)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afeccoes → condicoes-poe.doBicho (09/10)"
+    },
+    "dano_perm_congelado": {
+      "nome": "Dano recebido a mais por segundo Congelado por você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "skills/estados.tique → condicoes-poe.fatorRecebidoPeloBicho (09/10)"
+    },
+    "dano_perm_congelado_max": {
+      "nome": "Máximo do dano a mais por tempo Congelado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "idem (09/10)"
+    },
+    "dano_perm_resfriado": {
+      "nome": "Dano recebido a mais por segundo Resfriado por você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "idem (09/10)"
+    },
+    "dano_perm_resfriado_max": {
+      "nome": "Máximo do dano a mais por tempo Resfriado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "idem (09/10)"
+    },
+    "eletrizacao_maximo": {
+      "nome": "Máximo de Efeito da Eletrização (a mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "eletrizacao_maximo_fixo": {
+      "nome": "Efeito Máximo da Eletrização (fixo)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "eletrizacao_minima": {
+      "nome": "Eletrização mínima dos seus Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "eletrizacoes_max": {
+      "nome": "Eletrizações por inimigo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar → fatorDeEletrizacao (09/10)"
+    },
+    "eletrizacao_espalha_m": {
+      "nome": "Eletrizações se espalham (metros)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoPorAfeccoes (09/10)"
+    },
+    "eletrizacao_da_mana_pct": {
+      "nome": "Parte da Mana máxima aumentada no efeito da Eletrização",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.daSoma (09/10)"
+    },
+    "dot_multi_bleed_por_empalamento": {
+      "nome": "Multiplicador do Sangramento por Empalamento no alvo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "empalar_acerto_extra_chance": {
+      "nome": "Chance dos Empalamentos durarem um Acerto a mais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "empalar_ignora_reducao": {
+      "nome": "Dano de Empalamento ignora a Redução de Dano Físico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "efeito_empalamento_nao_empalado": {
+      "nome": "Efeito do Empalamento em Inimigos não Empalados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "empalar_remover_chance": {
+      "nome": "Chance de remover os Empalamentos do Inimigo ao Acertar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "empalar_acertos_extra": {
+      "nome": "Acertos a mais dos Empalamentos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "duracao_empalamento": {
+      "nome": "Duração do Empalamento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "empalar_espalha": {
+      "nome": "Empalar também os Inimigos próximos (O Empalador)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "empalamentos_extras": {
+      "nome": "Empalamentos adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "empalar_bloqueio_s": {
+      "nome": "Segundos sem poder Empalar de novo o mesmo Inimigo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "veneno_nao_envenenado_inc": {
+      "nome": "Dano do Veneno em Inimigos não Envenenados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "dot_multi_poison_sangrando": {
+      "nome": "Multiplicador do Veneno em Inimigos Sangrando",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "envenenados_sem_critico": {
+      "nome": "Inimigos Envenenados por você não causam Golpes Críticos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.criticoDoBicho (09/10)"
+    },
+    "res_menos_caos_envenenado": {
+      "nome": "Resistência a Caos a menos dos Envenenados por você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes → hunt/resistencia.resistenciaDe (09/10)"
+    },
+    "res_menos_incendiado_resfriado": {
+      "nome": "Resistências Elementais a menos dos Incendiados/Resfriados por você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes → hunt/resistencia.resistenciaDe (09/10)"
+    },
+    "dano_elemental_eletrizado_congelado": {
+      "nome": "Dano Elemental recebido pelos Eletrizados/Congelados por você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (09/10)"
+    },
+    "dot_multi_critico": {
+      "nome": "Multiplicador Degenerativo das Afecções dos Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "dot_multi_poison_critico": {
+      "nome": "Multiplicador Degenerativo do Veneno dos Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "veneno_critico_mais": {
+      "nome": "Mais dano do Veneno dos Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "agonia_perfeita": {
+      "nome": "Multiplicador Degenerativo das Afecções igual ao de Crítico (Agonia Perfeita)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.finalizar → afeccoes.aoAcertar (09/10)"
+    },
+    "sem_afeccao_sem_critico": {
+      "nome": "Golpes não Críticos não infligem Afecções",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "sangramento_pilhas": {
+      "nome": "Sangramentos por inimigo (Dança Carmesim)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "sangramento_menos": {
+      "nome": "Menos dano com Sangramento (multiplica)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (09/10)"
+    },
+    "congelamento_minimo_s": {
+      "nome": "Congelamento mínimo (segundos)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afeccoes → skills/estados.aplicar (09/10)"
+    },
+    "resfriar_ao_descongelar": {
+      "nome": "Resfriamento ao Descongelar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes → skills/estados.tique (09/10)"
     }
   }
 }

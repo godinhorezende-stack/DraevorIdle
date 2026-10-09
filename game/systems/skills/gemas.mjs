@@ -367,6 +367,10 @@ export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t 
  * vestidas ("+1 ao Nível de todas as Gemas Habilidades de Magias de Fogo"). As condições são as tags da gema (`poe:Fogo`…), + `habilidade`
  * (gema ativa) ou `suporte`. `{ nivel, qualidade }`.
  */
+// Quem lê os atributos da ÁRVORE de passivas (o "+2 ao Nível de todas as Gemas de Habilidade Maldição" das passivas): `acoes.mjs` registra
+// (`Passivas.efeitos(estado).adds`) — daqui importar a árvore fecharia um ciclo de imports.
+let leitorDaArvore = null;
+export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
 export function extrasDaGemaPoe(estado, peca, def) {
   const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade']);
   const vale = (chave, base) => {
@@ -381,6 +385,9 @@ export function extrasDaGemaPoe(estado, peca, def) {
     nivel += Object.entries(p.poe.af).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_level') ? v : 0), 0);
     qualidade += Object.entries(p.poe.af).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_quality') ? v : 0), 0);
   }
+  // (+ o da árvore: "+N ao Nível de todas as Gemas de Habilidade Maldição" — `gem_level@maldicao` nas passivas alocadas)
+  const daArvore = estado && leitorDaArvore ? leitorDaArvore(estado) ?? {} : {};
+  nivel += Object.entries(daArvore).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_level') ? v : 0), 0);
   return { nivel: Math.round(nivel), qualidade: Math.round(qualidade) };
 }
 

@@ -11,6 +11,8 @@
 //   resistência → `resist` (somada em `resistenciaDe`); armadura/precisão/evasão → `armaduraPct`/`precisaoPct`/`evasaoPct`, bloqueio/redução → `bloqueio`/`reducaoDeDano` (`mobs/atributos.mjs`)
 //   passo    → `velocidade` (em `passoDoBicho`);  golpe → `velocidadeDeAtaque`
 //   regeneração → `regen` (% da vida por segundo, no tique dos estados)
+//   escudo de energia (PoE) → `esPoe` (o escudo POR CIMA da vida, com a recarga — `skills/estados.tique`); à prova de maldições (PoE,
+//   "Infeitiçável") → `aProvaDeMaldicoes`; "Reflete Feitiços" → `refleteFeiticos` (`skills/reforcos.marcar`)
 //   elite/boss → `elite`/`chefe` (os adds "Damage vs Elite/Boss" do jogador)
 //   level    → `levelExtra` (somado ao level do mob: Accuracy/Evasion e o Lv da tela)
 // As MECÂNICAS (ao morrer explode, gera mobs...) ficam nos dados do
@@ -131,7 +133,8 @@ export const avisosDoSpawn = (s) => {
 
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
-  const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, resist: {} };
+  const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0,
+    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, resist: {} };
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
     for (const k of Object.keys(t)) if (k !== 'resist' && Number.isFinite(s[k])) t[k] += s[k];
@@ -170,7 +173,17 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   m.raridade = raridade;
   if (mods.length) m.mods = mods;
   m.maxHp = Math.max(1, Math.round((m.maxHp ?? m.hp) * r.vida * (1 + st.vidaPct / 100)));
+  // O ESCUDO DE ENERGIA do PoE ("Ganhe X% de Vida Máxima como Escudo de Energia Máximo Extra"): a barra do monstro vira vida + escudo, e o
+  // escudo fica por cima (o dano tira dele primeiro) e RECARREGA depois de um tempo sem dano — `skills/estados.tique`.
+  if (st.esPct > 0) {
+    const es = Math.round((m.maxHp * st.esPct) / 100);
+    m.maxHp += es;
+    // (a FRAÇÃO da barra que é escudo — o máximo acompanha a vida máxima do monstro; `atual` vazio = cheio)
+    m.esPoe = { fracao: es / m.maxHp, ultimoHp: m.maxHp, ...(st.esAtrasoMenosPct ? { atrasoMenosPct: st.esAtrasoMenosPct } : {}) };
+  }
   m.hp = m.maxHp;
+  if (st.aProvaDeMaldicoes) m.aProvaDeMaldicoes = true;
+  if (st.refleteFeiticos) m.refleteFeiticos = st.refleteFeiticos;
   const forca = (m.forca ?? 1) * r.dano * (1 + st.danoPct / 100);
   if (forca !== 1) m.forca = forca;
   if (r.exp !== 1) {

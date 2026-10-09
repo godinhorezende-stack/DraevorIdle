@@ -141,3 +141,34 @@ MECANICAS.minion_dmg = 'passivas-poe-lacaios (o dano do lacaio invocado)';
 for (const k of ['max_frenesi', 'max_poder', 'max_tolerancia', 'duracao_frenesi', 'furia_max', 'furia_perda_lenta', 'furia_por_acerto']) MECANICAS[k] = 'passivas-poe-cargas';
 // (os FRASCOS — passivas-poe-frascos.test.mjs: o nó real → o frasco no cinto → usar/tique/abate)
 for (const k of ['frasco_vida_rec', 'frasco_duracao', 'frasco_cargas_recebidas', 'frasco_regen_n', 'frasco_regen_s']) MECANICAS[k] = 'passivas-poe-frascos';
+// (as MALDIÇÕES e o DRENO INSTANTÂNEO — passivas-poe-maldicoes-dreno.test.mjs: o nó real → a gema de maldição → o monstro amaldiçoado /
+// o dreno na hora e o teto por recurso)
+for (const k of ['maldicoes_adicionais', 'efeito_maldicao_expirou', 'maldicao_desacelera', 'crit_dmg_taken_red_amaldicoado', 'efeito_maldicao_menos', 'feitico_duracao_infinita',
+  'roubo_vida_instantaneo_corpo', 'sem_recuperar_vida_fora_dreno', 'roubo_instantaneo_pct', 'roubo_teto_mana_inc', 'roubo_teto_vida_inc', 'es_leech', 'roubo_es_nao_para_no_cheio']) MECANICAS[k] = 'passivas-poe-maldicoes-dreno';
+EVENTOS['amaldicoarSemMaldicao:manaPct'] = 'passivas-poe-maldicoes-dreno (numa caçada: o golpe básico amaldiçoa e a mana volta)';
+EVENTOS['conjurarMaldicao:removerAfeccao'] = 'passivas-poe-maldicoes-dreno (as afecções elementais saem)';
+CONDICOES.furiaCheia = 'passivas-poe-maldicoes-dreno (o teto do dreno de vida só com a Fúria cheia)';
+// (o "+2 ao Nível de todas as Gemas de Habilidade Maldição" — `gem_level@maldicao` — tem teste no mesmo arquivo, mas a condição `maldicao`
+// não entra aqui: ela também valida o `cast_speed@maldicao`, que não tem teste próprio.)
+ESCALAS.armas ??= 'passivas-poe-maldicoes-dreno ("por Garra Equipada")';
+MECANICAS.roubo_vida_nao_para_no_cheio = 'passivas-poe-maldicoes-dreno (a vida livre cheia encerra o dreno; o Carrasco o segura)';
+MECANICAS.recoup_life = 'itens-poe-mods (o Recoup do dano sofrido, 40% em 4 s) + passivas-poe-maldicoes-dreno (a condição do dreno removido)';
+CONDICOES.drenoRemovidoCheio = 'passivas-poe-maldicoes-dreno (o Recoup só depois que a vida livre cheia encerrou o dreno, recentemente)';
+// (os totens, o dano excedente, os monstros à prova e amaldiçoados, as maldições dos monstros em você — passivas-poe-maldicoes-dreno.test.mjs)
+for (const k of ['totem_roubo_vida_fisico', 'roubo_excedente', 'feitico_afeta_aprova', 'amaldicoado_regen_menos', 'amaldicoado_sem_recarga_es', 'amaldicoado_destruido', 'res_elem_nao_reduzida_maldicao']) MECANICAS[k] = 'passivas-poe-maldicoes-dreno';
+// (as AFECÇÕES EM VOCÊ — passivas-poe-afeccoes-em-voce.test.mjs: o nó real → o dano contínuo/controle/magia do monstro em você)
+for (const k of ['afeccao_dano_unica', 'afeccao_controle_unica', 'efeito_resfriamento_proprio', 'efeito_eletrizacao_proprio', 'duracao_afeccoes_propria_mais', 'sem_sangramento_de_sangrando', 'sem_incendio_de_incendiado',
+  'suprimido_sem_afeccao_elemental', 'adrenalina_remove_afeccoes', 'inafetado_sangramento', 'degen_menos_no_inicio']) MECANICAS[k] = 'passivas-poe-afeccoes-em-voce';
+EVENTOS['vidaBaixa:buff'] = 'passivas-poe-afeccoes-em-voce (o Campeão: a Adrenalina na vida baixa)';
+EVENTOS['ganharAdrenalina:vidaPct'] = 'passivas-poe-afeccoes-em-voce (o Campeão: a vida ao ganhar Adrenalina)';
+CONDICOES.drenando ??= 'passivas-poe-afeccoes-em-voce (o Carrasco: inafetado por sangramento drenando)';
+// (as AFECÇÕES DO PERSONAGEM NOS MONSTROS — passivas-poe-afeccoes-nos-monstros.test.mjs: o nó real → a ficha do golpe → o acerto → o monstro)
+for (const k of ['eletrizacao_maximo', 'eletrizacao_minima', 'eletrizacao_da_mana_pct', 'eletrizacoes_max', 'eletrizacao_maximo_fixo', 'eletrizacao_espalha_m', 'resfriamento_minimo', 'resfriamento_maximo',
+  'resfriamento_reduz_dano', 'congelamento_minimo_s', 'resfriar_ao_descongelar', 'dano_perm_resfriado', 'dano_perm_resfriado_max', 'dano_perm_congelado', 'dano_perm_congelado_max',
+  'efeito_empalamento_nao_empalado', 'duracao_empalamento', 'empalar_acertos_extra', 'empalar_ignora_reducao', 'empalar_acerto_extra_chance', 'empalar_espalha', 'empalamentos_extras', 'empalar_bloqueio_s',
+  'veneno_nao_envenenado_inc', 'dot_multi_poison_sangrando', 'envenenados_sem_critico', 'agonia_perfeita', 'sem_afeccao_sem_critico', 'critico_sem_dano_extra', 'sangramento_pilhas', 'sangramento_menos',
+  'dot_multi_bleed_por_empalamento', 'res_menos_incendiado_resfriado', 'res_menos_caos_envenenado', 'dano_elemental_eletrizado_congelado', 'efeito_nao_dano_critico', 'dot_multi_critico']) MECANICAS[k] = 'passivas-poe-afeccoes-nos-monstros';
+CONDICOES['alvoVenenos:*'] = 'passivas-poe-afeccoes-nos-monstros ("ao menos N Venenos")';
+EVENTOS['incendiarNovo:vidaPct'] = 'passivas-poe-afeccoes-nos-monstros (o primeiro incêndio cura)';
+EVENTOS['incendiar:alvo'] = 'passivas-poe-afeccoes-nos-monstros (Coberto de Cinzas)';
+EVENTOS['congelar:alvo'] = 'passivas-poe-afeccoes-nos-monstros (Coberto de Gelo)';

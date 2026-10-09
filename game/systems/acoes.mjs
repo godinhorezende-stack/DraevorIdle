@@ -40,7 +40,7 @@ import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Ficha from './ficha.mjs';
-import { temHabilidade } from './passivas/arvore.mjs';
+import { temHabilidade, efeitos as efeitosDaArvore } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
 import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
@@ -773,6 +773,10 @@ export function desligarAurasForaDaBarra(estado, hunt) {
  * das peças: "Efeito das suas Maldições aumentado em X%" (`efeito_maldicao`) e o de UMA maldição ("Efeito da Maldição Flamabilidade
  * aumentado": `efeito_maldicao_gema:<gema>`) — os implícitos eldritch, influências e únicos. O resto como está.
  */
+// O nível das gemas pela árvore ("+2 ao Nível de todas as Gemas de Habilidade Maldição"): o leitor que `skills/gemas` usa.
+Gemas.definirLeitorDaArvore((e) => efeitosDaArvore(e)?.adds ?? null);
+/** A duração "infinita" dos Feitiços do Mestre dos Feitiços (a marca dura até o monstro morrer ou outra maldição a substituir). */
+export const DURACAO_INFINITA_MS = 1e12;
 export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = null) {
   const f = estado && itensPoeLigado() ? Ficha.combate(estado) : null;
   const nome = entry?.poeGema?.slug ? GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome : null;
@@ -780,10 +784,31 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   const pct = (Number(efeitoDaGema?.efeitoMaldicaoPct) || 0) + dasPecas;
   // (09/10, auditoria de dependências) "Duração da Maldição aumentada em X%" (a árvore, as peças): a marca da maldição dura mais no monstro.
   const duracao = f ? valorPoe(f, 'duracao_maldicao') : 0;
-  if (!pct && !duracao) return efeitos;
-  return efeitos.map((e) => (/^marca/.test(e.efeito) && typeof e.pct === 'number'
-    ? { ...e, pct: e.pct * Math.max(0, 1 + pct / 100), ...(duracao && e.durMarca ? { durMarca: Math.round(e.durMarca * Math.max(0, 1 + duracao / 100)) } : {}) }
+  // "X% menos Efeito das suas Maldições" e "Seus Feitiços têm Duração infinita" (Mestre dos Feitiços — só os Feitiços, as maldições Hex).
+  const menos = f ? valorPoe(f, 'efeito_maldicao_menos') : 0;
+  const tagsDaGema = GemasPoe.doSlug(entry?.poeGema?.slug)?.gema?.tags ?? [];
+  const ehFeitico = tagsDaGema.includes('Feitiço');
+  const infinita = !!f && ehFeitico && valorPoe(f, 'feitico_duracao_infinita') > 0;
+  const fatorPct = Math.max(0, 1 + pct / 100) * Math.max(0, 1 - menos / 100);
+  const saida = efeitos.map((e) => (/^marca/.test(e.efeito) && typeof e.pct === 'number'
+    ? { ...e, pct: e.pct * fatorPct, ...(e.durMarca && (duracao || infinita) ? { durMarca: infinita ? DURACAO_INFINITA_MS : Math.round(e.durMarca * Math.max(0, 1 + duracao / 100)) } : {}) }
     : e));
+  // As REGRAS da maldição no monstro (`Reforcos.marcar`): o limite ("Você pode aplicar uma Maldição adicional"), o "Efeito aumentado se Y% da
+  // Duração expirou" (`efeito_maldicao_expirou:<Y>`) e o "Inimigos Amaldiçoados por você são Desacelerados" — da ficha de quem conjurou.
+  if (!f || entry?.poeGema?.arquetipo !== 'maldicao') return saida;
+  const expirou = Object.entries(f.afPoe ?? {}).map(([k, v]) => { const m = /^efeito_maldicao_expirou:(\d+)$/.exec(k); return m && Number(v) ? { apos: Number(m[1]) / 100, pct: Number(v) } : null; }).filter(Boolean);
+  const desacelera = valorPoe(f, 'maldicao_desacelera');
+  // (a MARCA — "Marca do Senhor da Guerra", "Marca do Atirador"… — tem o limite próprio de 1, fora o das outras maldições, como no PoE)
+  const marca = tagsDaGema.includes('Marca');
+  // (+ à prova de maldições: o Feitiço não pega, salvo "Seus Feitiços podem afetar Inimigos a Prova de Maldições"; "têm Regeneração de Vida
+  // reduzida", "não podem Recuperar Escudo de Energia" e "Mortos por você são destruídos" — `Reforcos.marcar` guarda na maldição do monstro.)
+  const regenMenos = valorPoe(f, 'amaldicoado_regen_menos');
+  return [...saida, {
+    efeito: 'maldicaoRegras', limite: marca ? 1 : 1 + Math.max(0, valorPoe(f, 'maldicoes_adicionais')), nome: GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? null,
+    ...(marca ? { marca: true } : {}), ...(ehFeitico ? { feitico: true } : {}), ...(valorPoe(f, 'feitico_afeta_aprova') > 0 ? { afetaAProva: true } : {}),
+    ...(expirou.length ? { expirou } : {}), ...(desacelera ? { desacelera } : {}), ...(regenMenos ? { regenMenos } : {}),
+    ...(valorPoe(f, 'amaldicoado_sem_recarga_es') > 0 ? { semRecargaEs: true } : {}), ...(valorPoe(f, 'amaldicoado_destruido') > 0 ? { destruir: true } : {}),
+  }];
 }
 
 /** Um buff deste tipo está ligado? (o escudo, por exemplo — ver `contraAtaque`). */
@@ -1363,7 +1388,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const doPoe = entry.poeGema?.buff ? GemasPoe.buffNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
     // (A aura que reserva fica LIGADA — sem expirar — e guarda a reserva dela: o recurso, a % ou o fixo, e o fator dos suportes/eficácia.)
     (hunt.buffs ??= {})[entry.id] = doPoe
-      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * (1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100)), tipo: buff.tipo, fator: 1, efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
+      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * (1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100)), desde: agora, tipo: buff.tipo, fator: 1, efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
@@ -1397,7 +1422,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // "Toda cura que você recebe vale X% a mais" (Shared Conservation).
       const cura = Math.round(curaBruta * (1 + Reforcos.bonus(hunt, 'curaRecebida') / 100));
       const quem = curado.estado;
-      quem.hp = Math.min(quem.maxHp ?? quem.hp, (quem.hp ?? 0) + cura);
+      // (PoE, o Pacto Vaal de quem recebe: "Não pode Recuperar Vida fora o Dreno" — a cura não enche a vida dele.)
+      if (!(itensPoeLigado() && ModsPoe.vidaSoPeloDreno(Ficha.combate(quem)?.afPoe))) quem.hp = Math.min(quem.maxHp ?? quem.hp, (quem.hp ?? 0) + cura);
       if (quem === estado) eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: cura, color: '#00ff66' });
       else eventos.push({ t: 'heal', uid: `aliado:${curado.nome}`, quem: curado.nome, x: quem.hunt?.pos?.x ?? x, y: quem.hunt?.pos?.y ?? y, v: cura, color: '#00ff66' });
     }
@@ -1453,10 +1479,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // não um golpe — sem acerto, sem crítico, e a resistência passa em cada pulso.
       const tipoDoDot = entry.overTime ? Dot.tipoDaFonte(entry.overTime.type) : null;
       if (tipoDoDot) {
-        Reforcos.marcar(hunt, bicho, agora);
-        const estado = Dot.aplicar(bicho, { tipo: tipoDoDot, total: bruto, origem: { fonte: 'gema', habilidade: entry.id } }, agora);
-        if (estado) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado });
-        registrarGolpe(() => ({ origem: 'gema-dot', habilidade: entry.id, alvo: bicho.name, tipo, dot: tipoDoDot, totalDoEfeito: Math.round(bruto), aplicou: !!estado }));
+        if (Reforcos.marcar(hunt, bicho, agora).amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: bicho, eventos, personagem });
+        const doDot = Dot.aplicar(bicho, { tipo: tipoDoDot, total: bruto, origem: { fonte: 'gema', habilidade: entry.id } }, agora);
+        if (doDot) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: doDot });
+        registrarGolpe(() => ({ origem: 'gema-dot', habilidade: entry.id, alvo: bicho.name, tipo, dot: tipoDoDot, totalDoEfeito: Math.round(bruto), aplicou: !!doDot }));
         return;
       }
       // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): sem dano nem estados.
@@ -1466,7 +1492,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         return;
       }
       const base = pedacos ? Math.round(pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, ficha), 0)) : resistido(hunt, bicho, tipo, bruto, ficha);
-      Reforcos.marcar(hunt, bicho, agora);
+      // (a maldição amaldiçoa no acerto; "Recupera X% de Vida quando você Amaldiçoar um Inimigo sem Maldições")
+      if (Reforcos.marcar(hunt, bicho, agora).amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: bicho, eventos, personagem });
       const rolado = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros" — no crítico, a parte elemental sem a resistência positiva.
       if (rolado.crit && base > 0 && ModsPoe.valor(ficha, 'critico_ignora_res') > 0) {

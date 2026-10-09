@@ -82,8 +82,9 @@ export function processarMortes(estado, personagem, eventos) {
       continue;
     }
     if (m.hp > 0) continue;
-    // Os CADÁVERES recentes (o Erguer Espectro do PoE ergue o último): o tipo do bicho, o desenho e onde caiu.
-    if (!m.boss) {
+    // Os CADÁVERES recentes (o Erguer Espectro do PoE ergue o último): o tipo do bicho, o desenho e onde caiu. ("Inimigos Amaldiçoados Mortos
+    // por você são destruídos": a maldição do PoE com essa regra não deixa cadáver.)
+    if (!m.boss && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir)) {
       hunt.cadaveres = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y }].slice(-10);
     }
     matarMonstro(estado, hunt, personagem, m, eventos);
@@ -1377,8 +1378,8 @@ export function round(estado, personagem) {
         }
         // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
         if (!segundo) Charms.aoAcertar(estado, hunt, alvo, eventos);
-        // As auras ligadas marcam o bicho atingido (vulnerável, enfraquecido).
-        Reforcos.marcar(hunt, alvo);
+        // As auras ligadas marcam o bicho atingido (vulnerável, enfraquecido); a maldição do PoE amaldiçoa ("ao Amaldiçoar um Inimigo sem Maldições").
+        if (Reforcos.marcar(hunt, alvo).amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo, eventos, personagem });
         return true;
       };
       if (!golpear(false)) return { eventos, bateu };

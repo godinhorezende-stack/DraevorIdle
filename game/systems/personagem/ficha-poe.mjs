@@ -15,7 +15,7 @@ import * as ClassesPoe from '../itens-poe/classes.mjs';
 import { esperaDaRecarga } from './defesa.mjs';
 import { nomeDaHunt } from '../hunt/terreno.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
-import { MANA_REGEN_BASE_POE, LEECH_POE } from '../ficha.mjs';
+import { MANA_REGEN_BASE_POE, LEECH_POE, tetoDoRouboPct } from '../ficha.mjs';
 import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
@@ -165,8 +165,8 @@ export function montar(estado, ficha, extras = {}) {
   const DO_CRITICO = `posto por um golpe crítico: ${pct(AfeccoesPoe.BASE.criticoMaisPct, 0)} mais (como no PoE)`;
   // ---- o ROUBO (aba Diversos do PoE): o máximo por instância e o total por segundo, em pontos e em % do máximo
   const instPct = LEECH_POE.porInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_instancia_inc') / 100);
-  const tetoPct = LEECH_POE.porSegundoPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_teto_inc') / 100);
-  const tetoEsPct = LEECH_POE.porSegundoEsPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_teto_inc') / 100);
+  const tetoPct = tetoDoRouboPct(ficha, 'vida');
+  const tetoEsPct = tetoDoRouboPct(ficha, 'es');
   const doMax = (max, p0) => `${num((max * p0) / 100, 1)} (${pct(p0, 0)})`;
   // ---- as CARGAS: o que cada uma dá (os números do combate — `CargasPoe.porCarga`)
   const pc = CargasPoe.porCarga(cg);

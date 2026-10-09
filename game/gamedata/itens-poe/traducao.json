@@ -7486,6 +7486,28 @@
       "_unico": true
     },
     {
+      "padrao": "^Efeitos do Dreno de Vida não são removidos quando a Vida Não Reservada estiver Cheia$",
+      "efeitos": [
+        {
+          "stat": "roubo_vida_nao_para_no_cheio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido Recuperado como Vida se o Dreno foi removido Preenchendo a Vida Não Reservada$",
+      "efeitos": [
+        {
+          "stat": "recoup_life@drenoRemovidoCheio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
       "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
       "efeitos": [
         {
@@ -14965,26 +14987,26 @@
       "_unico": true
     },
     {
-      "padrao": "^Recuperação total por segundo do Dreno de (?:Vida|Mana) aumentada em \\{(\\d+)\\}%|Recuperação de Vida Máxima total do Dreno por segundo aumentada em \\{(\\d+)\\}%$",
+      "padrao": "^Recuperação total por segundo do Dreno de Vida aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "roubo_teto_inc",
+          "stat": "roubo_teto_vida_inc",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_unico": true
+      "_de": "09/10 — maldições e dreno instantâneo"
     },
     {
       "padrao": "^Total Recuperado por segundo do Dreno de Vida é Dobrado$",
       "efeitos": [
         {
-          "stat": "roubo_teto_inc",
+          "stat": "roubo_teto_vida_inc",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "_unico": true
+      "_de": "09/10 — maldições e dreno instantâneo"
     },
     {
       "padrao": "^Recuperação Máxima por Dreno de Vida reduzida em \\{(\\d+)\\}%$",
@@ -19471,40 +19493,34 @@
       "padrao": "^\\{(\\d+)\\}% do Dreno é Instantâneo$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "roubo_instantaneo_pct",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "o dreno do jogo já é instantâneo: este modificador não muda nada",
       "_nova": true,
-      "_de": "09/10 — árvore × poedb (3º lote)"
+      "_de": "09/10 — maldições e dreno instantâneo"
     },
     {
       "padrao": "^Recuperação total por segundo do Dreno de Vida, Mana ou Escudo de Energia aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "roubo_teto_inc",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "o dreno do jogo não tem teto de recuperação por segundo: este modificador não muda nada",
       "_nova": true,
-      "_de": "09/10 — árvore × poedb (3º lote)"
+      "_de": "09/10 — maldições e dreno instantâneo"
     },
     {
       "padrao": "^Máximo de Vida, Mana e Escudo de Energia total Recuperado por segundo do Dreno aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "roubo_teto_inc",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "o dreno do jogo não tem teto de recuperação por segundo: este modificador não muda nada",
       "_nova": true,
-      "_de": "09/10 — árvore × poedb (3º lote)"
+      "_de": "09/10 — maldições e dreno instantâneo"
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos contra Inimigos que não podem ter Vida Drenada deles$",
@@ -21078,6 +21094,1295 @@
       ],
       "_nova": true,
       "_de": "09/10 — auditoria de dependências (a duração da maldição)"
+    },
+    {
+      "padrao": "^Recuperação total por segundo do Dreno de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_mana_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Recuperação total por segundo do Dreno de Escudo de Energia aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_es_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Recuperação de Vida Máxima total do Dreno por segundo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_vida_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Recuperação de Mana Máxima total do Dreno por segundo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_mana_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_es_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Máximo total de Vida Recuperada do Dreno por segundo aumentado em \\{(\\d+)\\}% enquanto no máximo de Fúria$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_vida_inc@furiaCheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Recuperação Máxima por Dreno de Vida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "roubo_instancia_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dreno é Instantâneo por Garra Equipada$",
+      "efeitos": [
+        {
+          "stat": "roubo_instantaneo_pct%armas:comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dreno é Instantâneo enquanto empunhando uma Garra$",
+      "efeitos": [
+        {
+          "stat": "roubo_instantaneo_pct@comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Dreno de Vida do Dano Corpo a Corpo é Instantâneo$",
+      "efeitos": [
+        {
+          "stat": "roubo_vida_instantaneo_corpo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Não pode Recuperar Vida fora o Dreno$",
+      "efeitos": [
+        {
+          "stat": "sem_recuperar_vida_fora_dreno",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Mágico Drenado como Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech_magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano é Drenado como Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Drenado como vida e Mana caso tenha Matado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "life_leech@ataque+matouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "mana_leech@ataque+matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano Mágico Drenado como Vida enquanto você possuir Fúria Arcana$",
+      "efeitos": [
+        {
+          "stat": "vida_leech_magia@buff:furiaArcana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Efeitos de Dreno de Escudo de Energia não são removidos quando o Escudo de Energia se Encher$",
+      "efeitos": [
+        {
+          "stat": "roubo_es_nao_para_no_cheio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Suas Maldições têm Efeito aumentado em \\{(\\d+)\\}% se \\{(\\d+)\\}% da Duração da Maldição expirou$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_expirou:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados por você são Desacelerados\\s*, com Velocidade de Movimento Reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "maldicao_desacelera",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida quando você Amaldiçoar um Inimi?go sem Maldições$",
+      "efeitos": [
+        {
+          "stat": "ev:amaldicoarSemMaldicao:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Mana quando você Amaldiçoar um Inimi?go sem Maldições$",
+      "efeitos": [
+        {
+          "stat": "ev:amaldicoarSemMaldicao:manaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red_amaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Você pode aplicar uma Maldição adicional$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_adicionais",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Você pode aplicar \\{(\\d+)\\} Maldições adicionais$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_adicionais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Efeito das suas Maldições$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Seus Feitiços têm Duração infinita$",
+      "efeitos": [
+        {
+          "stat": "feitico_duracao_infinita",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Remove Afecções Elementais quando você Conjurar uma Magia Maldição$",
+      "efeitos": [
+        {
+          "stat": "ev:conjurarMaldicao:removerAfeccao:elementais",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^Suas Resistências Elementais não podem ser reduzidas por Maldições$",
+      "efeitos": [
+        {
+          "stat": "res_elem_nao_reduzida_maldicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — totens, excedente, à prova de maldições, monstros amaldiçoados"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade Maldição$",
+      "efeitos": [
+        {
+          "stat": "gem_level@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — maldições e dreno instantâneo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico de Ataques causado pelos seus Totens é Drenado como Vida para você$",
+      "efeitos": [
+        {
+          "stat": "totem_roubo_vida_fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — totens, excedente, à prova de maldições, monstros amaldiçoados"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Excedente é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "roubo_excedente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — totens, excedente, à prova de maldições, monstros amaldiçoados"
+    },
+    {
+      "padrao": "^Seus Feitiços podem afetar Inimigos a Prova de Maldições$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — totens, excedente, à prova de maldições, monstros amaldiçoados"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados por você têm Regeneração de Vida reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "amaldicoado_regen_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — totens, excedente, à prova de maldições, monstros amaldiçoados"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados por você não podem Recuperar Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "amaldicoado_sem_recarga_es",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — totens, excedente, à prova de maldições, monstros amaldiçoados"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados Mortos por você são destruídos$",
+      "efeitos": [
+        {
+          "stat": "amaldicoado_destruido",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — totens, excedente, à prova de maldições, monstros amaldiçoados"
+    },
+    {
+      "padrao": "^Afecções Danificadoras Não Podem Ser infligidos em você enquanto você tiver um$",
+      "efeitos": [
+        {
+          "stat": "afeccao_dano_unica",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Afecções Não Danificadoras Não Podem ser infligidos em você enquanto você já tiver um$",
+      "efeitos": [
+        {
+          "stat": "afeccao_controle_unica",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Efeito do Resfriamento e Eletrização em você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento_proprio",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Duração de Afecções em você$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_propria_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Inimigos Sangrando não infligem Sangramento em você$",
+      "efeitos": [
+        {
+          "stat": "sem_sangramento_de_sangrando",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Inimigos Incendiados não podem te Incendiar$",
+      "efeitos": [
+        {
+          "stat": "sem_incendio_de_incendiado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Dano Mágico Suprimido não pode infligir Afecções Elementais em você$",
+      "efeitos": [
+        {
+          "stat": "suprimido_sem_afeccao_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Remove todas as Afecções e Incêndios quando ao ganhar Adrenalina$",
+      "efeitos": [
+        {
+          "stat": "adrenalina_remove_afeccoes",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Você é Inafetado por Sangramento enquanto Drenando$",
+      "efeitos": [
+        {
+          "stat": "inafetado_sangramento@drenando",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Não pode ser Empalado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "os monstros do jogo não empalam: não há o que evitar",
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Empalado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "os monstros do jogo não empalam: não há o que evitar",
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "no jogo o crítico dos monstros não põe afecção por si (só os efeitos do golpe e o controle): não há o que impedir",
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Ganhe Adrenalina por \\{(\\d+)\\} segundos quando você atingir Vida Baixa$",
+      "efeitos": [
+        {
+          "stat": "ev:vidaBaixa:buff:adrenalina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao ganhar Adrenalina$",
+      "efeitos": [
+        {
+          "stat": "ev:ganharAdrenalina:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% menos Dano Degenerativo se você começou a sofrer Dano Degenerativo no último segundo$",
+      "efeitos": [
+        {
+          "stat": "degen_menos_no_inicio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções em você"
+    },
+    {
+      "padrao": "^Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_nao_dano_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Resfriamentos dos seus Acertos sempre reduzem a Velocidade de Ação em ao menos \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "resfriamento_minimo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos sofrem permanentemente Dano aumentado em \\{(\\d+)\\}% para cada segundo que foram Congeladas por você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_perm_congelado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dano_perm_congelado_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos sofrem permanentemente Dano aumentado em \\{(\\d+)\\}% por cada segundo que passaram Resfriados por você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_perm_resfriado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dano_perm_resfriado_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Máximo de Efeito da Eletrização$",
+      "efeitos": [
+        {
+          "stat": "eletrizacao_maximo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Eletrizações infligidas por você (?:se|es) espalham para outros Inimigos dentro de \\{(\\d+)\\} metros?$",
+      "efeitos": [
+        {
+          "stat": "eletrizacao_espalha_m",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Máximo de Mana também se aplicam ao Efeito de Eletrização em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "eletrizacao_da_mana_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Todo o Dano com Maças e Cetros infligem Resfriamento$",
+      "efeitos": [
+        {
+          "stat": "pode:resfriamento:physical@comMaca",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire@comMaca",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy@comMaca",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos@comMaca",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:physical@comCetro",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:fire@comCetro",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:energy@comCetro",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:resfriamento:chaos@comCetro",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo para Sangramentos por Empalamento no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_bleed_por_empalamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Mover enquanto Sangrando faz com que você não sofra Dano extra$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "no jogo o sangramento não dói mais em movimento (nem em você, nem nos monstros): não há dano extra a tirar",
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Seu Sangramento não causa Dano extra enquanto o Inimigo se move$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "no jogo o sangramento não dói mais em movimento: não há dano extra a tirar",
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo para Sangramento por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_bleed%carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional$",
+      "efeitos": [
+        {
+          "stat": "empalar_acerto_extra_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Dano de Empalamento causado aos Inimigos Empalados por você ignoram a Redução de Dano Físico Inimiga$",
+      "efeitos": [
+        {
+          "stat": "empalar_ignora_reducao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Efeito de Empalamentos infligidos por você em Inimigos não Empalados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_empalamento_nao_empalado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo$",
+      "efeitos": [
+        {
+          "stat": "empalar_remover_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Empalamentos que você infligir duram por \\{(\\d+)\\} Acertos? adicional$",
+      "efeitos": [
+        {
+          "stat": "empalar_acertos_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Efeito dos Empalamentos infligidos por você com Armas de Duas Mãos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_empalamento@duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^E[Ff]eito dos Empalamentos infligidos por você com Armas de Duas Mãos em Inimigos não Empalados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_empalamento_nao_empalado@duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Duração do Empalamento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_empalamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Quando seus Acertos Empalarem Inimigos, também Empalam outros Inimigos próximos deles$",
+      "efeitos": [
+        {
+          "stat": "empalar_espalha",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inflige \\{(\\d+)\\} Empalamentos adicionais em Inimigos que você Empalar$",
+      "efeitos": [
+        {
+          "stat": "empalamentos_extras",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Por \\{(\\d+)\\} segundos após você Empalar Inimigos, eles não podem ser Empalados novamente, e Chamado do Aço não pode remover Empalamentos deles$",
+      "efeitos": [
+        {
+          "stat": "empalar_bloqueio_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Venenos infligidos por você em Inimigos não-Envenenados causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "veneno_nao_envenenado_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Dano Degenerativo por Envenenamento infligido por você em Inimigos Sangrando$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison_sangrando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos Envenenados por você não podem causar Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "envenenados_sem_critico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos e Afecções contra Inimigos Afetados por ao menos \\{(\\d+)\\} Venenos$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@alvoVenenos:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos Envenenados por você têm \\{(\\d+)\\}% de Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "res_menos_caos_envenenado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos Incendiados ou Resfriados por você têm \\{(\\d+)\\}% de Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "res_menos_incendiado_resfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos Eletrizados ou Congelados por você sofrem Dano Elemental aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_elemental_eletrizado_congelado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo para Afecções dos Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% do Multiplicador de Dano Degenerativo para Envenenamento de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Golpes Críticos com Adagas Envenenam o Inimigo$",
+      "efeitos": [
+        {
+          "stat": "chance_poison_critico@comAdaga",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Envenenar infligido por você com Golpes Críticos causa \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "veneno_critico_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Multiplicador de Dano Degenerativo para Afecções é igual ao Multiplicador de Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "agonia_perfeita",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Golpes não Críticos não infligem Afecções$",
+      "efeitos": [
+        {
+          "stat": "sem_afeccao_sem_critico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Você pode aplicar Sangramento em um Inimigo até \\{(\\d+)\\} vezes$",
+      "efeitos": [
+        {
+          "stat": "sangramento_pilhas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano com Sangramento$",
+      "efeitos": [
+        {
+          "stat": "sangramento_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao Incendiar um Inimigo não Incendiado$",
+      "efeitos": [
+        {
+          "stat": "ev:incendiarNovo:vidaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos com Sangramento Explodem quando você matá-los, causando \\{(\\d+)\\}% de suas Vidas Máximas com Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:{V1}@alvoSangrando",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a explosão do jogo não passa pela resistência física dos atingidos",
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos que você Congelar continuam Congelados por ao menos \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "congelamento_minimo_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos Ficam Resfriados ao Descongelarem, causando \\{(\\d+)\\}% de redução da Velocidade de Ação$",
+      "efeitos": [
+        {
+          "stat": "resfriar_ao_descongelar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Eletrizações dos seus Acertos sempre aumentam o Dano recebido em ao menos \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eletrizacao_minima",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Seus Acertos s?empre Eletrizam$",
+      "efeitos": [
+        {
+          "stat": "chance_shock",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Seus Acertos s?empre Incendeiam$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Efeito Máximo da Eletrização é igual a \\{(\\d+)\\}% de aumento do Dano sofrido$",
+      "efeitos": [
+        {
+          "stat": "eletrizacao_maximo_fixo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Você pode aplicar até \\{(\\d+)\\} Eletrizações em cada Inimigo$",
+      "efeitos": [
+        {
+          "stat": "eletrizacoes_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Todo Dano pode Eletrizar$",
+      "efeitos": [
+        {
+          "stat": "pode:eletrizacao:physical",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:fire",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:ice",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:eletrizacao:chaos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Todo Dano pode Incendiar$",
+      "efeitos": [
+        {
+          "stat": "pode:incendio:physical",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:ice",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:energy",
+          "valor": "1"
+        },
+        {
+          "stat": "pode:incendio:chaos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Seus Resfriamentos podem reduzir a Velocidade de Ação em até um máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "resfriamento_maximo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos Resfriados pelos seus Acertos reduz o Dano causado pela metade do Efeito de Resfriamento$",
+      "efeitos": [
+        {
+          "stat": "resfriamento_reduz_dano",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Cobre Inimigos em Cinzas por \\{(\\d+)\\} segundos quando você os Incendiar$",
+      "efeitos": [
+        {
+          "stat": "ev:incendiar:alvo:cinzas:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Cobre Inimigos em Gelo por \\{(\\d+)\\} segundos quando você os Congelar$",
+      "efeitos": [
+        {
+          "stat": "ev:congelar:alvo:cobertoGelo:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Imune a Incêndio e Eletrização$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_eletrizacao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Afecções Não Danificadoras têm Efeito \\{(\\d+)\\}% de aumento de Efeito em você enquanto você tiver Fúria Arcana$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento_proprio@buff:furiaArcana",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao_proprio@buff:furiaArcana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Todo o Dano dos Acertos pode Envenenar$",
+      "efeitos": [
+        {
+          "stat": "envenena_qualquer_dano",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos e Afecções contra Inimigos que estejam em Vida Baixa enquanto você empunhar um Machado$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@alvoVidaBaixa+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos e Afecções contra Inimigos Únicos$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "o jogo não tem Feixes de Vínculo (as Runas/Marcas não ficam presas ao inimigo)",
+      "_de": "09/10 — afecções do personagem nos monstros"
+    },
+    {
+      "padrao": "^Golpes Críticos não causam Dano extra$",
+      "efeitos": [
+        {
+          "stat": "critico_sem_dano_extra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — afecções do personagem nos monstros"
     }
   ]
 }

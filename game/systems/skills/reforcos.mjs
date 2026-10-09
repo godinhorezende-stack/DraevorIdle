@@ -38,9 +38,65 @@ export function ativos(hunt, agora = hunt?.clock ?? Date.now()) {
   for (const [id, b] of Object.entries(hunt?.buffs ?? {})) {
     if (!(b.ate > agora)) continue;
     const def = REFORCOS[id];
-    if (def) lista.push({ id, def: b.efeitosPoe ? { ...def, efeitos: b.efeitosPoe } : def, fator: b.fator ?? 1 });
+    if (def) lista.push({ id, def: b.efeitosPoe ? { ...def, efeitos: b.efeitosPoe } : def, fator: b.fator ?? 1, lancado: b.desde ?? 0 });
   }
   return lista;
+}
+
+/*
+ * ---- As MALDIÇÕES do PoE no monstro (09/10, auditoria de dependências) ----
+ * A gema de maldição (`poe-maldicao`) liga um buff e cada acerto AMALDIÇOA o monstro: `bicho.maldicoes[<id da gema>] = { ate, desde, dur,
+ * efeitos: [{ tipo: 'vulneravel'|'enfraquecido', pct, tipos? }], expirou, desacelera }`. Como no PoE:
+ *   - o LIMITE de maldições no monstro é 1 (+ "Você pode aplicar uma Maldição adicional"): a nova substitui a mais antiga; a MARCA tem o
+ *     limite próprio de 1 (não conta nem soma com o das outras);
+ *   - a maldição ativa NÃO renova a cada acerto: corre a duração dela (o "expirou X%" conta); vencida, o próximo acerto amaldiçoa de novo;
+ *   - "Suas Maldições têm Efeito aumentado em X% se Y% da Duração expirou" (`expirou`) e "Inimigos Amaldiçoados por você são Desacelerados"
+ *     (`desacelera`: o passo do monstro) vêm da ficha de quem conjurou (`acoes.efeitosDaMaldicao` → o efeito `maldicaoRegras`).
+ */
+const ehMaldicao = (def) => def?.tipo === 'poe-maldicao';
+/** As maldições ATIVAS no monstro (`[{ id, ...maldição }]`). */
+export const maldicoesAtivas = (bicho, agora) => Object.entries(bicho?.maldicoes ?? {}).filter(([, m]) => m && m.ate > agora).map(([id, m]) => ({ id, ...m }));
+/** O monstro está amaldiçoado por você agora? */
+export const amaldicoado = (bicho, agora) => maldicoesAtivas(bicho, agora).length > 0;
+/** O fator do "Efeito aumentado se Y% da Duração expirou" desta maldição agora (1 = nada). */
+const fatorDoExpirou = (m, agora) => 1 + (m.expirou ?? []).reduce((s, x) => s + ((agora - m.desde) >= x.apos * m.dur ? x.pct : 0), 0) / 100;
+/**
+ * As REGRAS das maldições ativas no monstro, da ficha de quem conjurou: "têm Regeneração de Vida reduzida em X%" (a maior — `regenMenos`),
+ * "não podem Recuperar Escudo de Energia" (`semRecargaEs`) e "Inimigos Amaldiçoados Mortos por você são destruídos" (`destruir`: sem cadáver).
+ */
+export function regrasDasMaldicoes(bicho, agora) {
+  const ativas = maldicoesAtivas(bicho, agora);
+  return {
+    regenMenos: Math.max(0, ...ativas.map((m) => m.regenMenos ?? 0)),
+    semRecargaEs: ativas.some((m) => m.semRecargaEs),
+    destruir: ativas.some((m) => m.destruir),
+  };
+}
+/**
+ * O que a maldição faz em VOCÊ quando o monstro a reflete ("100% de chance de Refletir Feitiços"): os mesmos efeitos, como no PoE —
+ * a parte "vulnerável" a um elemento vira resistência a menos (Inflamabilidade, Ulceração, Condutividade, Fraqueza Elemental, Desespero no
+ * Caos); a Vulnerabilidade (todos os tipos) vira Dano Físico recebido aumentado; o Enfraquecer, menos dano causado.
+ */
+export function afDaMaldicaoNoJogador(efeitos) {
+  const af = {};
+  const somar = (k, v) => { af[k] = (af[k] ?? 0) + v; };
+  for (const e of efeitos ?? []) {
+    if (e.tipo === 'enfraquecido') somar('mais_dano', -e.pct);
+    if (e.tipo !== 'vulneravel') continue;
+    const tipos = e.tipos ?? [];
+    if (tipos.length >= 5 && tipos.includes('physical')) { somar('dano_physical_recebido_inc', e.pct); continue; }
+    for (const el of tipos) {
+      if (['fire', 'ice', 'energy', 'chaos'].includes(el)) somar(`${el}_res`, -e.pct);
+      else if (el === 'physical') somar('dano_physical_recebido_inc', e.pct);
+    }
+  }
+  return af;
+}
+
+/** O passo do monstro amaldiçoado e Desacelerado (×; 1 = normal): a maior lentidão entre as maldições ativas. */
+export function fatorDeDesaceleracao(bicho, agora) {
+  const pct = Math.max(0, ...maldicoesAtivas(bicho, agora).map((m) => m.desacelera ?? 0));
+  return pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1;
 }
 
 /** Registra o reforço de uma gema de fora do catálogo (as do PoE — `itens-poe/gemas-poe.mjs`): `{ dur, tipo, efeitos }`. */
@@ -71,27 +127,77 @@ export function treinoDeOutraPericia(estado, hunt, tags) {
   return ml;
 }
 
-/** Marca o bicho atingido com as auras ligadas (vulnerável, enfraquecido) — elas valem por `durMarca`. */
+/**
+ * Marca o bicho atingido com as auras ligadas (vulnerável, enfraquecido) — elas valem por `durMarca`; a MALDIÇÃO do PoE amaldiçoa (acima).
+ * Devolve `{ amaldicoouSemMaldicao }`: o monstro não tinha maldição e passou a ter (o evento "ao Amaldiçoar um Inimigo sem Maldições").
+ */
 export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
-  for (const { def, fator } of ativos(hunt, agora)) {
+  const tinha = amaldicoado(bicho, agora);
+  let amaldicoou = false;
+  for (const { id, def, fator, lancado } of ativos(hunt, agora)) {
+    if (ehMaldicao(def)) {
+      const efeitos = [];
+      let dur = 0;
+      for (const e of def.efeitos ?? []) {
+        if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos });
+        if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator });
+        if (/^marca/.test(e.efeito)) dur = Math.max(dur, e.durMarca ?? 0);
+      }
+      if (!efeitos.length && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
+      const regras = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoRegras') ?? {};
+      // À PROVA DE MALDIÇÕES (o "Infeitiçável" do PoE): o Feitiço não pega — a Marca, sim; e o "Seus Feitiços podem afetar Inimigos a Prova
+      // de Maldições" (a Ocultista) passa.
+      if (bicho.aProvaDeMaldicoes && regras.feitico && !regras.afetaAProva) continue;
+      const maldicoes = (bicho.maldicoes ??= {});
+      for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) delete maldicoes[k];
+      // já amaldiçoado por ESTA: a maldição corre a duração dela (não renova a cada acerto — o "expirou X%" e a duração valem)
+      if (maldicoes[id]) continue;
+      // o LIMITE: a nova tira a lançada há mais tempo DO MESMO GRUPO (as Marcas têm o limite delas, à parte) — se ela mesma foi lançada
+      // depois; senão espera (duas maldições ligadas com limite 1: vale a lançada por último, sem trocar a cada acerto)
+      const limite = Math.max(1, regras.limite ?? 1);
+      const marca = !!regras.marca;
+      const doGrupo = () => Object.entries(maldicoes).filter(([, m]) => !!m.marca === marca).sort((a, b) => (a[1].lancada ?? 0) - (b[1].lancada ?? 0));
+      let cabe = true;
+      while (doGrupo().length >= limite) {
+        const [velha, m] = doGrupo()[0];
+        if ((m.lancada ?? 0) >= lancado) { cabe = false; break; }
+        delete maldicoes[velha];
+      }
+      if (!cabe) continue;
+      dur ||= 6000;
+      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}),
+        ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}) };
+      amaldicoou = true;
+      // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
+      if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
+        const af = afDaMaldicaoNoJogador(efeitos);
+        if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + dur, nome: regras.nome ?? 'Maldição refletida', af };
+      }
+      continue;
+    }
     for (const e of def.efeitos ?? []) {
       if (e.efeito === 'marcaVulneravel') (bicho.marcas ??= {}).vulneravel = { ate: agora + e.durMarca, pct: e.pct * fator, tipos: e.tipos };
       if (e.efeito === 'marcaEnfraquece') (bicho.marcas ??= {}).enfraquecido = { ate: agora + e.durMarca, pct: e.pct * fator };
     }
   }
+  return { amaldicoouSemMaldicao: amaldicoou && !tinha };
 }
 
-/** Quanto a marca de vulnerável aumenta o dano do `tipo` neste bicho (1 = nada). */
+/** Quanto a marca de vulnerável (e as maldições) aumentam o dano do `tipo` neste bicho (1 = nada). */
 export function vulnerabilidade(bicho, tipo, agora) {
   const m = bicho?.marcas?.vulneravel;
-  return m && m.ate > agora && m.tipos.includes(tipo) ? 1 + m.pct / 100 : 1;
+  let f = m && m.ate > agora && m.tipos.includes(tipo) ? 1 + m.pct / 100 : 1;
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora)) / 100;
+  return f;
 }
 
-/** A força do bicho (o `forca` da Arena) × a marca de enfraquecido. */
+/** A força do bicho (o `forca` da Arena) × a marca de enfraquecido (e as maldições que enfraquecem). */
 export function forcaDoBicho(bicho, agora) {
   const m = bicho?.marcas?.enfraquecido;
+  let f = m && m.ate > agora ? 1 - m.pct / 100 : 1;
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (e.pct * fatorDoExpirou(c, agora)) / 100);
   // × o buff de dano das mecânicas do mob (Enfurecido, Vingativo — `mobs/buffs.mjs`).
-  return (bicho?.forca ?? 1) * (m && m.ate > agora ? 1 - m.pct / 100 : 1) * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
+  return (bicho?.forca ?? 1) * f * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
 }
 
 /**

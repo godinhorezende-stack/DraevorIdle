@@ -153,7 +153,13 @@ export function soma(estado) {
   if (dosBuffs) for (const [k, v] of Object.entries(dosBuffs)) total[k] = (total[k] ?? 0) + v;
   // Os mods CONDICIONAIS do PoE ("segurando um Escudo", "se você Matou Recentemente"…) e os "por X" (por nível, a cada N de Destreza, por
   // carga…): os que valem agora entram no atributo-base.
-  return itensPoeLigado() ? ModsPoe.resolver(estado, total, Atributos.principais(estado, total)) : total;
+  if (!itensPoeLigado()) return total;
+  const resolvido = ModsPoe.resolver(estado, total, Atributos.principais(estado, total));
+  // + as MALDIÇÕES dos monstros em você (Fraqueza Elemental, Vulnerabilidade, Enfraquecer; as refletidas): depois das condições, porque a
+  // imunidade e o efeito delas podem ser condicionais ("Imune a Maldições enquanto possuir ao menos N de Fúria").
+  const malditas = ModsPoe.addsDasMaldicoesNoJogador(estado, resolvido);
+  if (malditas) for (const [k, v] of Object.entries(malditas)) resolvido[k] = (resolvido[k] ?? 0) + v;
+  return resolvido;
 }
 
 /** Só os adds das peças VESTIDAS (a parte de `soma` que vem do equipamento; a ficha mostra a origem por categoria). */

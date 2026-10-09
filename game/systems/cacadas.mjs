@@ -2124,6 +2124,31 @@ function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo) {
   return eventos;
 }
 
+/**
+ * O golpe do TOTEM no `alvo`: a skill da gema que ele usa (o dano do balão, no tempo de uso dela), pela resistência do monstro. PoE: "X% do Dano
+ * Físico de Ataques causado pelos seus Totens é Drenado como Vida para você" — o golpe FÍSICO de uma gema de ATAQUE drena para o dono, com as
+ * regras do dreno do PoE (`Ficha.drenarPoe`). Devolve os eventos.
+ */
+// O empalamento solto passa pela Redução de Dano Físico do monstro (`mods-poe.aoAcertar`): a resistência física e a redução de dano dele.
+ModsPoe.definirReducaoFisica((hunt, alvo, valor) => resistido(hunt, alvo, 'physical', valor, null, { armadura: false }));
+export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
+  const eventos = [];
+  const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
+  const conta = entry ? Acoes.danoMostrado(estado, entry) : l.dano;
+  const uso = entry ? Acoes.temposDaGemaPoe(estado, entry).uso : l.intervaloMs;
+  l.proximoGolpe = agora + Math.max(400, uso);
+  l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
+  const tipo = entry?.element ?? l.elemento ?? 'physical';
+  const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, conta.min + Math.random() * Math.max(0, conta.max - conta.min), ficha)));
+  alvo.hp -= dano;
+  const drenoDoTotem = tipo === 'physical' && entry?.poeGema?.ataque ? ModsPoe.valor(ficha, 'totem_roubo_vida_fisico') : 0;
+  if (drenoDoTotem > 0) Ficha.drenarPoe(estado, { vida: (dano * drenoDoTotem) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
+  if (entry?.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y, sk: l.acao });
+  eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });
+  eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
+  return eventos;
+}
+
 function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   const eventos = [];
   const ficha = Ficha.combate(estado);
@@ -2160,17 +2185,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       let alvo = null;
       for (const m of hunt.monstros) if (m.hp > 0 && !m.dummy && distancia(m, l) <= l.alcanceDeAtaque && (!alvo || distancia(m, l) < distancia(alvo, l))) alvo = m;
       if (!alvo) continue;
-      const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
-      const conta = entry ? Acoes.danoMostrado(estado, entry) : l.dano;
-      const uso = entry ? Acoes.temposDaGemaPoe(estado, entry).uso : l.intervaloMs;
-      l.proximoGolpe = agora + Math.max(400, uso);
-      l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
-      const tipo = entry?.element ?? l.elemento ?? 'physical';
-      const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, conta.min + Math.random() * Math.max(0, conta.max - conta.min), ficha)));
-      alvo.hp -= dano;
-      if (entry?.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y, sk: l.acao });
-      eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });
-      eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
+      eventos.push(...golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora));
       continue;
     }
     // A AURA (os robôs rastejantes): a cada segundo, um pouco do golpe em quem está em volta (resfria/eletriza na cor).
