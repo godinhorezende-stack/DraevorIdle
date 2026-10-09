@@ -96,6 +96,10 @@ export function montar(estado, ficha, extras = {}) {
     ...fonte('Equipamento (aumentado)', itens.es_pct, { pct: true }),
     ...fonte('Árvore de passivas (aumentado)', arv.adds.es_pct, { pct: true }),
     ...fonte(`Inteligência (${p.int})`, doAtributo.energyShieldPct, { pct: true }),
+    // (o aumento de UMA peça: "Escudo de Energia do Elmo Equipado", "Defesas do Escudo equipado" — só na base dela)
+    ...fonte('Só na base do Escudo (aumentado)', (total.es_pct_escudo ?? 0) + (total.defesas_pct_escudo ?? 0), { pct: true }),
+    ...fonte('Só na base do Elmo (aumentado)', total.es_pct_elmo, { pct: true }),
+    ...fonte('Só na base do Peitoral (aumentado)', total.es_pct_peitoral, { pct: true }),
   ];
   const esMax = Math.round(ficha.energyShield ?? 0);
   const esRecarga = esMax * (ES.RECARGA_POR_SEGUNDO ?? 0) * (1 + (ficha.esRecargaPct ?? 0) / 100);

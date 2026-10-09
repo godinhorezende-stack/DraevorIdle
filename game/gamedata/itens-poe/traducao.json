@@ -6065,7 +6065,26 @@
       "estado": "equivalente"
     },
     {
-      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}%( com Habilidades de Ataque)?$",
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% com Habilidades de Ataque$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@ataque",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@ataque",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
           "stat": "fire_dmg",
@@ -6079,9 +6098,7 @@
           "stat": "energy_dmg",
           "valor": "{1}"
         }
-      ],
-      "estado": "aproximado",
-      "nota": "o PoE pode restringir a ataques; o Draevor soma em fogo, gelo e energia para tudo."
+      ]
     },
     {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico( em Ataques)?$",
@@ -19618,6 +19635,1251 @@
       "estado": "aproximado",
       "nota": "o alvo da maldição é Cegado (o \"não amaldiçoado\" não é conferido)",
       "_de": "09/10 — árvore × poedb (4º lote)"
+    },
+    {
+      "padrao": "^Defesas do Escudo equipado aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "defesas_pct_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Escudo de Energia do Escudo equipado aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Escudo de Energia do Elmo Equipado aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct_elmo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Evasão do seu Peitoral aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct_peitoral",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Armadura das Botas e Luvas Equipadas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct_botas",
+          "valor": "{1}"
+        },
+        {
+          "stat": "armour_pct_luvas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Armadura e Escudo de Energia do Peitoral Equipado aumentada em \\{(\\d+)\\}% se o Elmo, Luvas e Botas Equipados tiverem Armadura e Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "armour_pct_peitoral@outrasComArmaduraEEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct_peitoral@outrasComArmaduraEEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano de Ataque aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Armadura ou Evasão no Escudo$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%armEvaEscudo:{V2}@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos por cada \\{(\\d+)\\} de Escudo de Energia Máximo no Escudo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg%esEscudo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques por cada \\{(\\d+)\\}% de Chance de Bloquear no Escudo Equipado$",
+      "efeitos": [
+        {
+          "stat": "block%bloqueioEscudo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Imune a Sangramento se o Elmo Equipado tiver maior Armadura do que Evasão$",
+      "efeitos": [
+        {
+          "stat": "imune_sangramento@elmoArmaduraMaior",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Imune a Envenenamento se o Elmo Equipado tiver mais Evasão do que Armadura$",
+      "efeitos": [
+        {
+          "stat": "imune_veneno@elmoEvasaoMaior",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Recarga do Escudo de Energia aumentada em \\{(\\d+)\\}% se o Amuleto Equipado possuir um Modificador de Evasão Explícito$",
+      "efeitos": [
+        {
+          "stat": "es_recharge@amuletoComEvasao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano de Ataque Físico aumentado em \\{(\\d+)\\}% quando carregando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@ataque+comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistências Elementais segurando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "fire_res@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano de Fogo aumentado em \\{(\\d+)\\}% com Habilidades de Ataque$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano de Raio aumentado em \\{(\\d+)\\}% com Habilidades de Ataque$",
+      "efeitos": [
+        {
+          "stat": "energy_dmg@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Habilidades Corpo a Corpo têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Habilidades Mágicas têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto em Empunhadura Dupla$",
+      "efeitos": [
+        {
+          "stat": "move_speed@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao multiplicador de golpe crítico ao usar um cajado$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano enquanto portando uma Varinha aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano Elemental com Varinhas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@ataque+comVarinha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@ataque+comVarinha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano Elemental com Cajados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@ataque+comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@ataque+comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano Elemental com Maças e Cetros aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@ataque+comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "fire_dmg@ataque+comCetro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@ataque+comCetro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@ataque+comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% caso tenha Consumido um cadáver Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@consumiuCadaverRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Dano com Acertos aumentado em \\{(\\d+)\\}% contra Inimigos Raros e Únicos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoRaro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dmg_inc@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^Velocidade de Projéteis aumentada em \\{(\\d+)\\}% enquanto portando uma Adaga$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed@comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (5º lote: a defesa de uma peça e as condições de arma)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Trespassar por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:trespassar:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Vida ao Bloquear o Dano de Ataques enquanto portando um Cajado$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquearAtaque:vidaPct@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% do Escudo de Energia ao Bloquear Dano Mágico enquanto portando um Cajado$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquearMagia:esPct@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\} do Escudo de Energia ao bloquear Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquearMagia:es",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Vida ao Matar um Inimigo Envenenado$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPct@alvoEnvenenado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico contra Inimigos com Vida Cheia$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@alvoVidaCheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques se você não Bloqueou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "block@naoBloqueouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Triplo$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_triplo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque causam \\{(\\d+)\\}% de Dano com Afecções aumentado ao segurar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos e Afecções contra Inimigos que estejam em Vida Baixa$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@alvoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano com Garras contra Inimigos em Vida Baixa aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comGarra+alvoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao multiplicador de dano degenerativo com habilidades mágicas$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Duração de Atordoamentos com Armas Corpo a Corpo de Duas Mãos em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration@corpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Ponto de Atordoamento Inimigo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Fúria$",
+      "efeitos": [
+        {
+          "stat": "move_speed%furia:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "armor_flat%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano Mágico por cada \\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "spell_block%bloqueio:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% enquanto portando dois Tipos de Armas diferentes$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@armasDiferentes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico para cada Adaga que estiver Portando$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression%armas:comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao Matar um Inimigo Amaldiçoado$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPct@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Precisão com Dupla Empunhadura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano de Projéteis aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%atr:dex:{V2}@projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque com Projéteis têm \\+\\{(\\d+)\\}% de Multiplicador dos Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano com Afecções de Habilidades de Ataque aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Chance de Crítico com Armadilhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Armadilhas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Duração de Atordoamentos com Cajados em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}% enquanto você tiver Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct@comEscudoDeEnergia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Escudo de energia máximo aumentado em \\{(\\d+)\\}%, se os anéis esquerdo e direito equipados tiverem um modificador de evasão$",
+      "efeitos": [
+        {
+          "stat": "es_pct@aneisComEvasao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Envenenar ao Acertar com Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "chance_poison@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos enquanto em Empunhadura Dupla$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque causam \\{(\\d+)\\}% de Dano com Afecções aumentado quando em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Duração das Afecções de Gelo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_congelamento",
+          "valor": "{1}"
+        },
+        {
+          "stat": "duracao_resfriamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empalar Inimigos ao Acertar com Armas de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "chance_empalar@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico de Runas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@runa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Tolerância ao Matar enquanto segura um Escudo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:carga:tolerancia@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano de Ataque Penetra \\{(\\d+)\\}% das Resistências Elementais Inimigas$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Intimidar Inimigos por \\{(\\d+)\\} segundos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_intimidar@ataque",
+          "valor": "{1}"
+        },
+        {
+          "stat": "intimidar_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Duração de Atordoamentos em Inimigos com Vida Cheia aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration@alvoVidaCheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano com Armas Penetra \\{(\\d+)\\}% da Resistência a Raio$",
+      "efeitos": [
+        {
+          "stat": "energy_pen@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}% com Arcos$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano enquanto em Escudo de Energia Completo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@escudoCheio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano com Acertos contra Inimigos em Vida Baixa aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Ataques disparam um Projétil adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@ataque",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Ataques com Varinhas disparam um Projétil adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@ataque+comVarinha",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Armadura e Evasão aumentada em \\{(\\d+)\\}% durante Agressividade$",
+      "efeitos": [
+        {
+          "stat": "armour_pct@buff:agressividade",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct@buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% se você Atordoou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@atordoouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Precisão com Espadas$",
+      "efeitos": [
+        {
+          "stat": "accuracy@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Precisão com Machados$",
+      "efeitos": [
+        {
+          "stat": "accuracy@comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo se você Consumiu um cadáver Recentemente$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@consumiuCadaverRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano com Armas Penetra \\{(\\d+)\\}% da Resistência a Fogo$",
+      "efeitos": [
+        {
+          "stat": "fire_pen@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano com Armas Penetra \\{(\\d+)\\}% da Resistência a Gelo$",
+      "efeitos": [
+        {
+          "stat": "ice_pen@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Projéteis Perfuram um Alvo adicional$",
+      "efeitos": [
+        {
+          "stat": "perfurar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "area_inc%carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "area_inc%carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Ataques com Arco disparam uma Flecha adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@ataque+comArco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico enquanto em Escudo de Energia Cheio$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@escudoCheio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}% caso você não tenha sido Acertado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct@naoAcertadoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Bloquear Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquearMagia:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Bloquear o Dano Mágico enquanto portar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_block@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano Corpo a Corpo com Acertos em Curto Alcance aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@corpo+alvoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Chance de Acerto Crítico contra Enemigos Eletrizados$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@alvoEletrizado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar Inimigos que estão Resfriados$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Chance de Suprimir Dano Mágico por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Duração do Atordoamento em Inimigos por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "stun_duration%carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Cada Fúria também concede Armadura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct%furia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria quando Acertado por um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:furia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Velocidade de Regeneração de Mana aumentada em \\{(\\d+)\\}% enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@parado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Duração das Afecções Elementais em você reduzida em \\{(\\d+)\\}% enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais_propria@comEscudo",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Duração de Afecções em Você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_propria",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Duração de Atordoamentos com Arcos em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano com Varinha aumentado em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%carga:poder@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Acerto Crítico das Runas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@runa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Habilidades Mágicas têm \\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por Veneno$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano da Mina Penetra \\{(\\d+)\\}% de Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\} de Escudo de Energia quando Suprimir Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "ev:suprimir:es",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por cada Arauto afetando você$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%arautosAtivos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Dano de Ataques aumentado em \\{(\\d+)\\}% enquanto Drenando$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+drenando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
     }
   ]
 }

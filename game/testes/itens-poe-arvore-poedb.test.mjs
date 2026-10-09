@@ -150,3 +150,67 @@ test('lotes 3 e 4 da árvore: peitoral sem Vida, armaduras com Evasão, maestria
   assert.equal(dreno.estado, 'inerte');
   assert.match(dreno.nota, /instantâneo/);
 });
+
+test('lote 5 da árvore — a defesa de UMA peça: "Evasão do seu Peitoral", "Defesas do Escudo", o elmo com mais armadura, o "por X no Escudo"', { skip: SEM }, async () => {
+  const C = await import('../systems/itens-poe/condicoes-poe.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const { traduzirParte } = await import('../systems/itens-poe/traduzir.mjs');
+  // as regras: cada linha vira a chave da peça (o aumento só daquela base)
+  for (const [texto, stats] of [
+    ['Evasão do seu Peitoral aumentada em {0}%', ['evasion_pct_peitoral']],
+    ['Defesas do Escudo equipado aumentadas em {0}%', ['defesas_pct_escudo']],
+    ['Escudo de Energia do Elmo Equipado aumentado em {0}%', ['es_pct_elmo']],
+    ['Armadura das Botas e Luvas Equipadas aumentada em {0}%', ['armour_pct_botas', 'armour_pct_luvas']],
+    ['Dano de Ataque aumentado em {0}% por cada {1} de Armadura ou Evasão no Escudo', ['dmg_inc%armEvaEscudo:10@ataque']],
+    ['Imune a Sangramento se o Elmo Equipado tiver maior Armadura do que Evasão', ['imune_sangramento@elmoArmaduraMaior']],
+  ]) {
+    const r = traduzirParte(texto, [30, 10]);
+    assert.ok(['novo', 'equivalente', 'aproximado'].includes(r.estado), `${texto}: ${r.estado}`);
+    assert.deepEqual(r.efeitos.map((e) => e.stat), stats, texto);
+  }
+  // o elmo: mais armadura que evasão (a base da peça vestida)
+  const elmo = (armor, evasion) => ({ poe: { classe: 'Helmets', base: 'Helmets/X', prefixos: [], sufixos: [], implicitos: [] }, base: { armor: [armor, armor], evasion: [evasion, evasion] } });
+  assert.ok(C.condicoesDe({ equipment: { head: elmo(100, 20) } }, {}).has('elmoArmaduraMaior'));
+  assert.ok(C.condicoesDe({ equipment: { head: elmo(10, 200) } }, {}).has('elmoEvasaoMaior'));
+  // a escala "no Escudo": a armadura + a evasão da peça do escudo
+  const escudo = { poe: { classe: 'Shields', af: { block: 24 } }, base: { armor: [150, 150], evasion: [50, 50], es: [30, 30] } };
+  const extras = C.escalasDaFicha({ equipment: { shield: escudo } }, { 'dmg_inc%armEvaEscudo:10@ataque': 1, 'crit_dmg%esEscudo:10': 2, 'block%bloqueioEscudo:5': 1 }, { accuracy: 0 });
+  assert.deepEqual(extras, { 'dmg_inc@ataque': 20, crit_dmg: 6, block: 4 });
+  // a ficha: o aumento do Peitoral só multiplica a base do Peitoral (somado aos aumentos gerais), não a das outras peças
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 50 }), { sistema: 'poe' });
+  const peca = (classe, campo, v) => ({ id: e.equipment?.body?.id ?? 'x', count: 1, base: { [campo]: [v, v] }, poe: { classe, base: `${classe}/X`, af: {}, prefixos: [], sufixos: [], implicitos: [] } });
+  e.equipment = { body: peca('Body_Armours', 'evasion', 400), feet: peca('Boots', 'evasion', 100) };
+  Ficha.invalidar(e);
+  const antes = Ficha.combate(e).evasion;
+  e.equipment.body.poe.af = { evasion_pct_peitoral: 50 };
+  Ficha.invalidar(e);
+  assert.equal(Ficha.combate(e).evasion - antes, 200);
+});
+
+test('lote 6 da árvore: bloquear ataque × magia, duas armas diferentes, "por Adaga empunhada", "por Arauto", com Escudo de Energia, os dois anéis', { skip: SEM }, async () => {
+  const C = await import('../systems/itens-poe/condicoes-poe.mjs');
+  const M = await import('../systems/itens-poe/mods-poe.mjs');
+  // as armas: espada + machado são diferentes; duas adagas contam 2 para "por Adaga"
+  const arma = (classe) => ({ poe: { classe, base: `${classe}/X`, prefixos: [], sufixos: [], implicitos: [] } });
+  assert.ok(C.condicoesDe({ equipment: { weapon: arma('One_Hand_Swords'), shield: arma('One_Hand_Axes') } }, {}).has('armasDiferentes'));
+  assert.ok(!C.condicoesDe({ equipment: { weapon: arma('Daggers'), shield: arma('Rune_Daggers') } }, {}).has('armasDiferentes'));
+  assert.equal(C.fatorDaEscala({ equipment: { weapon: arma('Daggers'), shield: arma('Daggers') } }, {}, {}, 'armas:comAdaga'), 2);
+  assert.equal(C.fatorDaEscala({ equipment: { weapon: arma('Daggers'), shield: arma('Shields') } }, {}, {}, 'armas:comAdaga'), 1);
+  // os arautos (só eles) e o escudo de energia
+  assert.equal(C.fatorDaEscala({ hunt: { clock: 0, buffs: { a: { tipo: 'poe-aura', ate: 9 }, b: { tipo: 'poe-arauto', ate: 9 } } } }, {}, {}, 'arautosAtivos'), 1);
+  assert.ok(C.condicoesDe({ es: 10 }, {}).has('comEscudoDeEnergia'));
+  assert.ok(!C.condicoesDe({ es: 0 }, {}).has('comEscudoDeEnergia'));
+  // os dois anéis com modificador de Evasão
+  const anel = (m) => ({ poe: { classe: 'Rings', base: 'Rings/X', prefixos: [{ modelo: m }], sufixos: [], implicitos: [] } });
+  assert.ok(C.condicoesDe({ equipment: { ring: anel('+{0} de Evasão'), ring2: anel('+{0} de Evasão') } }, {}).has('aneisComEvasao'));
+  assert.ok(!C.condicoesDe({ equipment: { ring: anel('+{0} de Evasão'), ring2: anel('+{0} de Vida máxima') } }, {}).has('aneisComEvasao'));
+  // "ao Bloquear Dano Mágico" recupera o escudo só no bloqueio de magia (o de ataque não)
+  const estado = { hp: 100, maxHp: 100, es: 0, equipment: {} };
+  const hunt = { clock: 0 };
+  const ficha = { energyShield: 200, afPoe: { 'ev:bloquearMagia:es': 30 }, eventosPoe: C.eventosDa({ 'ev:bloquearMagia:es': 30 }) };
+  M.evento(estado, hunt, 'bloquearAtaque', ficha, {});
+  assert.equal(estado.es, 0);
+  M.evento(estado, hunt, 'bloquearMagia', ficha, {});
+  assert.equal(estado.es, 30);
+});

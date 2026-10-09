@@ -2696,6 +2696,66 @@
       "unidade": "",
       "combate": true,
       "efeito": "condicoes-poe.controleNoJogador (a lentidão) (09/10)"
+    },
+    "defesas_pct_escudo": {
+      "nome": "Defesas do Escudo equipado aumentadas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "armour_pct_escudo": {
+      "nome": "Armadura do Escudo equipado aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "es_pct_escudo": {
+      "nome": "Escudo de Energia do Escudo equipado aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "es_pct_elmo": {
+      "nome": "Escudo de Energia do Elmo equipado aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "evasion_pct_peitoral": {
+      "nome": "Evasão do Peitoral equipado aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "armour_pct_peitoral": {
+      "nome": "Armadura do Peitoral equipado aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "es_pct_peitoral": {
+      "nome": "Escudo de Energia do Peitoral equipado aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "armour_pct_luvas": {
+      "nome": "Armadura das Luvas equipadas aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "armour_pct_botas": {
+      "nome": "Armadura das Botas equipadas aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.defesasDaFicha (só a base desta peça, somado aos aumentos gerais) (09/10)"
+    },
+    "chance_dano_triplo": {
+      "nome": "Chance de causar Dano Triplo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fichaDoGolpe (o sorteio do golpe: 3× o dano) (09/10)"
     }
   }
 }

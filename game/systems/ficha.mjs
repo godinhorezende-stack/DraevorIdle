@@ -603,6 +603,11 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosI
   por('armour', 'Equipamento', af.armor_flat ?? 0);
   por('armour', 'Equipamento', af.armour_pct ?? 0, { pct: true });
   for (const f of esp.fontes.armour ?? []) por('armour', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
+  // (09/10) O aumento de UMA peça (a árvore do PoE: "Evasão do seu Peitoral", "Defesas do Escudo equipado") — vale só na base dela.
+  for (const [chave, peca, ks] of [
+    ['armour', 'Escudo', ['armour_pct_escudo', 'defesas_pct_escudo']], ['armour', 'Peitoral', ['armour_pct_peitoral']], ['armour', 'Luvas', ['armour_pct_luvas']], ['armour', 'Botas', ['armour_pct_botas']],
+    ['evasion', 'Escudo', ['defesas_pct_escudo']], ['evasion', 'Peitoral', ['evasion_pct_peitoral']],
+  ]) por(chave, `Só na base do ${peca}`, ks.reduce((n, k) => n + (Number(af[k]) || 0), 0), { pct: true });
   for (const f of esp.fontes.life ?? []) por('vida', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
 
   /*
@@ -681,7 +686,19 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   // (+ a evasão % da DEX e o escudo % da INT — `Atributos.efeitos`; na escala do PoE com o PoE ligado.)
   const evasion = simples(somaDoCampo('evasion'), { fixos: (af.evasion ?? 0) + doAtributo.evasao, pct: (af.evasion_pct ?? 0) + espStat('evasion') + (doAtributo.evasaoPct ?? 0) }).bruto;
   const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: (af.es_pct ?? 0) + (doAtributo.energyShieldPct ?? 0) }).bruto;
-  return { armour: Math.round(armour), evasion: Math.round(evasion), energyShield: Math.round(energyShield) };
+  // (09/10) O aumento de UMA peça (a árvore do PoE: "Evasão do seu Peitoral aumentada em X%", "Defesas do Escudo equipado aumentadas em
+  // X%", "Armadura das Botas e Luvas Equipadas"): vale só para a base daquela peça, somado aos aumentos gerais — como no PoE.
+  const daPeca = (campo, chaves, total) => (total > 0 ? Object.entries(chaves).reduce((n, [slot, ks]) => {
+    const p = estado.equipment?.[slot];
+    const pct = ks.reduce((s, k) => s + (Number(af[k]) || 0), 0);
+    if (!p || !pct) return n;
+    const [a, b] = faixaDoCampo(p, campo);
+    return n + ((a + b) / 2) * pct / 100;
+  }, 0) : 0);
+  const armourDaPeca = daPeca('armor', { shield: ['armour_pct_escudo', 'defesas_pct_escudo'], body: ['armour_pct_peitoral'], gloves: ['armour_pct_luvas'], feet: ['armour_pct_botas'] }, armour);
+  const evasionDaPeca = daPeca('evasion', { shield: ['defesas_pct_escudo'], body: ['evasion_pct_peitoral'] }, evasion);
+  const esDaPeca = daPeca('es', { shield: ['es_pct_escudo', 'defesas_pct_escudo'], head: ['es_pct_elmo'], body: ['es_pct_peitoral'] }, energyShield);
+  return { armour: Math.round(armour + armourDaPeca), evasion: Math.round(evasion + evasionDaPeca), energyShield: Math.round(energyShield + esDaPeca) };
 }
 
 /** Os totais da vida do personagem (monstros, ouro, mortes, tempo caçando). */

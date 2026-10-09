@@ -194,7 +194,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
  * A VERSÃO da tradução dos mods (`traducao.json` + `atributos-novos.json`): sobe quando uma regra nova muda o `af` ou os estados das peças.
  * A peça de uma versão antiga é refeita na entrada (`refazerPecasAntigas`) — mods, valores, sockets e gemas ficam como estão.
  */
-export const VERSAO_DA_TRADUCAO = 5;
+// (6 — 09/10: as regras da árvore × poedb, lotes 3 a 5, também mudam mods de itens: defesa de uma peça, condições de arma, exposição…)
+export const VERSAO_DA_TRADUCAO = 6;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
