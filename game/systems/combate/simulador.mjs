@@ -41,7 +41,8 @@ export function simular(estado, id, alvo = {}) {
   const chanceDeAcerto = entry.kind === 'spell' || entry.kind === 'rune' ? 1 : Atributos.chanceDeAcerto(ficha.accuracy, alvo.level ?? estado.level ?? 1);
   // A cadência: a recarga da própria magia ou o intervalo global entre ataques, o que for maior (o motor espera os dois).
   // Gema do PoE: os tempos do PoE (sem o intervalo global do Draevor) — o tempo de uso, ou a recarga repartida pelas cargas, o que for maior.
-  const poe = entry.poeGema ? Acoes.temposDaGemaPoe(estado, entry, efeito, ficha) : null;
+  // (A estimativa não leva a lentidão passageira do personagem — resfriado agora não muda o DPS da ficha.)
+  const poe = entry.poeGema ? Acoes.temposDaGemaPoe(estado, entry, efeito, ficha, { doJogador: false }) : null;
   const cadenciaMs = poe
     ? Math.max(poe.uso, poe.recarga ? poe.recarga / Math.max(1, poe.cargas) : 0, 1)
     : Math.max(entry.cooldown ?? 0, entry.groupCooldown ?? 0, Acoes.intervaloGlobal(estado), efeito ? Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed) : 0, 1);

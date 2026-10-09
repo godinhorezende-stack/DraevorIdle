@@ -2167,7 +2167,8 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   const eventos = [];
   const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
   const conta = entry ? Acoes.danoMostrado(estado, entry) : l.dano;
-  const uso = entry ? Acoes.temposDaGemaPoe(estado, entry).uso : l.intervaloMs;
+  // (O totem não fica lento com o dono: a lentidão do personagem não entra no tempo do golpe dele.)
+  const uso = entry ? Acoes.temposDaGemaPoe(estado, entry, undefined, undefined, { doJogador: false }).uso : l.intervaloMs;
   l.proximoGolpe = agora + Math.max(400, uso);
   l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
   const tipo = entry?.element ?? l.elemento ?? 'physical';

@@ -115,10 +115,12 @@ const REGRAS = [
   // Dano ADICIONADO (× a eficácia da gema, no `contaDoDano`).
   // O elemento vai junto (`somadoMin:fire`...): o ataque do PoE separa o dano por elemento (`GemasPoe.partesDoAtaque`).
   [new RegExp(`têm ${N} a ${N} de Dano de (\\S+) adicional`, 'i'), (m) => { const el = ELEMENTO_DO_TEXTO[m[3].toLowerCase()] ?? 'physical'; return { somadoMin: num(m[1]), somadoMax: num(m[2]), [`somadoMin:${el}`]: num(m[1]), [`somadoMax:${el}`]: num(m[2]) }; }],
-  // Velocidade (o tempo de uso: conjuração ou ataque).
+  // Velocidade. O "mais/menos" MULTIPLICA o tempo de uso (`castTimePct`); o "aumentada" SOMA com os aumentos da ficha, como no PoE
+  // (`velAtaquePct`/`velConjuracaoPct` → `Acoes.temposDaGemaPoe`). Antes o "aumentada" também multiplicava: Ataques Acelerados nv 10 (31%) com
+  // +40% global fazia a Cutilada em 440 ms em vez dos 472 do PoE (1,55 × 0,8 × 1,71).
   [new RegExp(`têm ${N}% (mais|menos) Velocidade de (Ataque|Conjuração)( Corpo a Corpo)?`, 'i'), (m, t, a) => ((m[3] === 'Ataque' && !temTag(a, 'Ataque')) || (m[3] === 'Conjuração' && !temTag(a, 'Magia')) || (m[4] && !temTag(a, 'Corpo a Corpo')) ? null : { castTimePct: tempoDaVelocidade((m[2] === 'mais' ? 1 : -1) * num(m[1])) })],
-  [new RegExp(`têm Velocidade de (Ataque|Conjuração) aumentada em ${N}%`, 'i'), (m, t, a) => (temTag(a, m[1] === 'Ataque' ? 'Ataque' : 'Magia') ? { castTimePct: tempoDaVelocidade(num(m[2])) } : null)],
-  [new RegExp(`têm ${N}% de Velocidade de (Ataque|Conjuração) aumentada`, 'i'), (m, t, a) => (temTag(a, m[2] === 'Ataque' ? 'Ataque' : 'Magia') ? { castTimePct: tempoDaVelocidade(num(m[1])) } : null)],
+  [new RegExp(`têm Velocidade de (Ataque|Conjuração) aumentada em ${N}%`, 'i'), (m, t, a) => (temTag(a, m[1] === 'Ataque' ? 'Ataque' : 'Magia') ? { [m[1] === 'Ataque' ? 'velAtaquePct' : 'velConjuracaoPct']: num(m[2]) } : null)],
+  [new RegExp(`têm ${N}% de Velocidade de (Ataque|Conjuração) aumentada`, 'i'), (m, t, a) => (temTag(a, m[2] === 'Ataque' ? 'Ataque' : 'Magia') ? { [m[2] === 'Ataque' ? 'velAtaquePct' : 'velConjuracaoPct']: num(m[1]) } : null)],
   // Projéteis, alvos, perfurar, bifurcar, encadear.
   [new RegExp(`atiram ${N} Proj\\S+ adiciona`, 'i'), (m) => ({ alvosExtras: num(m[1]) })],
   [new RegExp(`Ricocheteiam \\+?${N} vez`, 'i'), (m) => ({ encadear: num(m[1]) })],
