@@ -919,7 +919,8 @@ function montar(body) {
     pontos.append(el('b', p.livres ? 'tem' : null, String(p.livres)), el('span', null, ` livre${p.livres === 1 ? '' : 's'} · ${p.usados}/${p.total} usados`));
     selo.textContent = `${p.livres} ${p.livres === 1 ? 'Ponto Restante' : 'Pontos Restantes'}`;
     selo.classList.toggle('vazio', !p.livres);
-    respecTudo.textContent = v?.respecsGratis ? `Respec completo (${v.respecsGratis} grátis)` : 'Respec completo';
+    // (no jogo oficial o respec é de graça: dono, 09/10)
+    respecTudo.textContent = v?.respecGratis ? 'Respec completo (grátis)' : v?.respecsGratis ? `Respec completo (${v.respecsGratis} grátis)` : 'Respec completo';
     respecTudo.disabled = !v?.podeTirar || (v?.alocados?.length ?? 0) <= 1;
     respecTudo.title = v?.podeTirar ? '' : 'Só fora da caçada';
     desenharAscendencia(v);
@@ -1047,7 +1048,7 @@ function montar(body) {
       caixa.append(el('b', null, `Tirar ${n} nó${n === 1 ? '' : 's'}?`));
       const nomes = t.plano.tirar.slice(0, 8).map((id) => a.porId.get(id)?.nome ?? id);
       caixa.append(el('p', null, nomes.join(', ') + (n > 8 ? ` e mais ${n - 8}` : '')));
-      caixa.append(el('p', 'pas-preco', t.plano.gratis ? 'Grátis (respec da migração).' : `Custa ${t.plano.preco.toLocaleString('pt-BR')} de ouro (bolso + banco).`));
+      caixa.append(el('p', 'pas-preco', t.plano.semCusto ? 'Grátis.' : t.plano.gratis ? 'Grátis (respec da migração).' : `Custa ${t.plano.preco.toLocaleString('pt-BR')} de ouro (bolso + banco).`));
       const sim = el('button', 'danger', 'Confirmar');
       const nao = el('button', 'ghost', 'Cancelar');
       sim.onclick = () => {
@@ -1075,7 +1076,7 @@ function montar(body) {
       const estado = estadoDoNo(n);
       const linha = el('div', 'pas-botoes');
       if (estado === 'alocado' && n.tipo !== 'start') {
-        const tirar = el('button', 'ghost danger', `Tirar (${(v.precoPorNo ?? 0).toLocaleString('pt-BR')} de ouro por nó)`);
+        const tirar = el('button', 'ghost danger', v.respecGratis ? 'Tirar (grátis)' : `Tirar (${(v.precoPorNo ?? 0).toLocaleString('pt-BR')} de ouro por nó)`);
         tirar.disabled = !v.podeTirar;
         if (!v.podeTirar) tirar.title = 'Só fora da caçada';
         tirar.onclick = () => ctx.send({ t: 'passivas', action: 'planoRespec', ids: [n.id], junto: true });

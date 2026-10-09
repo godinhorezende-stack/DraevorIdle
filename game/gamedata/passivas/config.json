@@ -9,7 +9,8 @@
   "_custoDoAtributo": "`atributo`: o nó de CAMINHO (+STR/+DEX/+INT, estilo Path of Exile — versão 2 da árvore, 01/10) custa metade do pequeno: ele é o trajeto até os clusters.",
 
   "_respec": "Tirar um nó: ouroPorNoPorLevel × level do personagem (bolso primeiro, depois o banco). Full respec = a soma dos nós tirados. Só fora da caçada. `respecsGratis`: quantos respecs completos sem custo cada personagem tem (a migração dá 1).",
-  "respec": { "ouroPorNoPorLevel": 2000, "soForaDaCacada": true },
+  "respec": { "ouroPorNoPorLevel": 2000, "soForaDaCacada": true, "oficial": { "gratis": true, "ouroPorNoPorLevel": 0, "soForaDaCacada": false } },
+  "_respecOficial": "No JOGO OFICIAL (a árvore do PoE) o respec é de GRAÇA — tirar um nó e o respec completo — e vale também durante a caçada (dono, 09/10: 'liberar a árvore, o respec de graça total, e tirar nó também de graça'). Não gasta ouro, nem os pontos do Orbe do Remorso, nem o respec grátis da migração. O Draevor clássico segue com o preço por nó acima.",
 
   "_vessels": "Os vessels do Gem Atelier (gemas.mjs) liam a fração da árvore antiga por via. Agora: nós alocados de cada domínio ÷ esta referência (1 = cheio). `verde` conta a árvore toda.",
   "vessels": { "verde": 120, "vermelho": 40, "roxo": 40, "azul": 40 },
