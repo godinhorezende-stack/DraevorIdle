@@ -206,6 +206,20 @@ export function afeccoesComAGema(afeccoes, slug, nivel) {
 /** O custo de mana da gema no nível. */
 export const custoNoNivel = (slug, nivel) => Math.max(0, Math.round(compilada(slug, nivel)?.stats?.custo ?? 0));
 
+// ---- o DANO DEGENERATIVO da gema (09/10: "o dano degenerativo das gemas") ----
+/** O tipo de dano contínuo (`combate/dot.json`) do dano degenerativo de cada elemento de uma habilidade. */
+export const DEGEN_DO_ELEMENTO = { physical: 'degenFisico', fire: 'degenFogo', ice: 'degenGelo', energy: 'degenRaio', chaos: 'degenCaos' };
+/**
+ * O dano degenerativo da gema no nível ("Causa 765 de Dano de Gelo Base por segundo" — Vórtice, Geada Rastejante, Flecha Cáustica…):
+ * `{ partes: [{ elemento, dps }], duracaoMs }` ou null. A duração é a da habilidade (sem ela, 4 s; no mínimo 1 s: um pulso inteiro).
+ */
+export function degenerativoNoNivel(slug, nivel) {
+  const st = compilada(slug, nivel)?.stats;
+  const partes = (st?.dot ?? []).map((d) => ({ elemento: ELEMENTO[d.el], dps: Number(d.dps) || 0 })).filter((p) => p.elemento && p.dps > 0);
+  if (!partes.length) return null;
+  return { partes, duracaoMs: Math.round(Math.max(1, Number(st.duracao) || 4) * 1000) };
+}
+
 // ---- os BUFFS (auras, arautos, guardas, gritos, maldições) no nível: os efeitos de reforço do Draevor + atributos na ficha ----
 const AF_DO_ELEMENTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', fisico: 'phys', caos: 'chaos' };
 /** `{ efeitos, af, dur, motivos }` do buff da gema no nível. */
@@ -278,12 +292,13 @@ function avaliarNoJogo(h, formato) {
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
-    if (st.dot?.length) motivos.push('o dano degenerativo (ao longo do tempo) da gema não se aplica');
+    // (09/10) O dano degenerativo da gema se aplica no acerto (`acoes`: `degenerativoNoNivel`); o "% da Vida por segundo" do Fogo Justo, ainda não.
+    if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
     if (st.estagios) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
     if (st.repeticoes) motivos.push('as repetições do golpe não existem: no jogo é um');
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque) motivos.push('sem dano direto: nenhum efeito no combate');
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };

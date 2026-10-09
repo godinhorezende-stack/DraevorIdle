@@ -1,14 +1,142 @@
 {
   "_nota": "O DANO AO LONGO DO TEMPO (dono, 02/10): queimadura, veneno, sangramento e as outras fontes periódicas, num sistema só (systems/combate/dot.mjs). Cada TIPO tem o elemento do dano, a duração e o pulso, e a regra de ACUMULAÇÃO: 'maior' (uma só por bicho: a de maior dano substitui; reaplicar não reinicia o relógio dos pulsos), 'empilha' (cada aplicação é uma pilha com a sua duração, até `maxPilhas`; cheio, a mais forte substitui a mais fraca) e 'renova' (uma só: reaplicar renova a duração e fica com o maior dano que falta). O dano de cada pulso passa pela RESISTÊNCIA do bicho ao elemento (no pulso, sem a penetração do atacante: ela vale para golpes), não rola crítico, não tem teste de acerto nem de bloqueio. `fontes`: o `overTime.type` das gemas de dano contínuo do catálogo → o tipo (o dano da gema vira o total do efeito, na duração do tipo; o `rounds × interval` do catálogo original é longo demais para a caçada).",
   "tipos": {
-    "queimadura":  { "nome": "Queimadura",  "elemento": "fire",     "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#ff9000", "estado": "queimando" },
-    "veneno":      { "nome": "Veneno",      "elemento": "earth",    "duracaoMs": 6000, "pulsoMs": 1000, "acumulacao": "empilha", "maxPilhas": 10, "cor": "#5fd35f", "estado": "envenenado" },
-    "sangramento": { "nome": "Sangramento", "elemento": "physical", "duracaoMs": 5000, "pulsoMs": 1000, "acumulacao": "renova",  "maxPilhas": 1,  "cor": "#d03030", "estado": "sangrando" },
-    "choque":      { "nome": "Choque",      "elemento": "energy",   "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#8fb6ff", "estado": "eletrizado" },
-    "maldicao":    { "nome": "Maldição",    "elemento": "death",    "duracaoMs": 6000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#9a6bd6", "estado": "amaldicoado" },
-    "gelo":        { "nome": "Enregelamento", "elemento": "ice",    "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#9fe8ff", "estado": "enregelado" },
-    "ofuscamento": { "nome": "Ofuscamento", "elemento": "holy",     "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#fff1a8", "estado": "ofuscado" },
-    "venenoPoe":   { "nome": "Veneno",      "elemento": "chaos",    "duracaoMs": 2000, "pulsoMs": 500,  "acumulacao": "empilha", "maxPilhas": 8,  "cor": "#5fd35f", "estado": "envenenado", "_nota": "o veneno do sistema de itens do PoE (ITENS_POE=1): de Caos, 2 s, acumula" }
+    "queimadura": {
+      "nome": "Queimadura",
+      "elemento": "fire",
+      "duracaoMs": 4000,
+      "pulsoMs": 1000,
+      "acumulacao": "maior",
+      "maxPilhas": 1,
+      "cor": "#ff9000",
+      "estado": "queimando"
+    },
+    "veneno": {
+      "nome": "Veneno",
+      "elemento": "earth",
+      "duracaoMs": 6000,
+      "pulsoMs": 1000,
+      "acumulacao": "empilha",
+      "maxPilhas": 10,
+      "cor": "#5fd35f",
+      "estado": "envenenado"
+    },
+    "sangramento": {
+      "nome": "Sangramento",
+      "elemento": "physical",
+      "duracaoMs": 5000,
+      "pulsoMs": 1000,
+      "acumulacao": "renova",
+      "maxPilhas": 1,
+      "cor": "#d03030",
+      "estado": "sangrando"
+    },
+    "choque": {
+      "nome": "Choque",
+      "elemento": "energy",
+      "duracaoMs": 4000,
+      "pulsoMs": 1000,
+      "acumulacao": "maior",
+      "maxPilhas": 1,
+      "cor": "#8fb6ff",
+      "estado": "eletrizado"
+    },
+    "maldicao": {
+      "nome": "Maldição",
+      "elemento": "death",
+      "duracaoMs": 6000,
+      "pulsoMs": 1000,
+      "acumulacao": "maior",
+      "maxPilhas": 1,
+      "cor": "#9a6bd6",
+      "estado": "amaldicoado"
+    },
+    "gelo": {
+      "nome": "Enregelamento",
+      "elemento": "ice",
+      "duracaoMs": 4000,
+      "pulsoMs": 1000,
+      "acumulacao": "maior",
+      "maxPilhas": 1,
+      "cor": "#9fe8ff",
+      "estado": "enregelado"
+    },
+    "ofuscamento": {
+      "nome": "Ofuscamento",
+      "elemento": "holy",
+      "duracaoMs": 4000,
+      "pulsoMs": 1000,
+      "acumulacao": "maior",
+      "maxPilhas": 1,
+      "cor": "#fff1a8",
+      "estado": "ofuscado"
+    },
+    "venenoPoe": {
+      "nome": "Veneno",
+      "elemento": "chaos",
+      "duracaoMs": 2000,
+      "pulsoMs": 500,
+      "acumulacao": "empilha",
+      "maxPilhas": 8,
+      "cor": "#5fd35f",
+      "estado": "envenenado",
+      "_nota": "o veneno do sistema de itens do PoE (ITENS_POE=1): de Caos, 2 s, acumula"
+    },
+    "degenFogo": {
+      "nome": "Dano degenerativo de Fogo",
+      "elemento": "fire",
+      "duracaoMs": 4000,
+      "pulsoMs": 500,
+      "acumulacao": "renova",
+      "maxPilhas": 1,
+      "cor": "#ff9000",
+      "estado": "queimando",
+      "_nota": "o dano degenerativo de uma HABILIDADE do PoE (Vórtice, Geada Rastejante, Flecha Cáustica…): um por gema (chave), o mais forte vale; reaplicar renova"
+    },
+    "degenGelo": {
+      "nome": "Dano degenerativo de Gelo",
+      "elemento": "ice",
+      "duracaoMs": 4000,
+      "pulsoMs": 500,
+      "acumulacao": "renova",
+      "maxPilhas": 1,
+      "cor": "#9fe8ff",
+      "estado": "enregelado",
+      "_nota": "o dano degenerativo de uma HABILIDADE do PoE (Vórtice, Geada Rastejante, Flecha Cáustica…): um por gema (chave), o mais forte vale; reaplicar renova"
+    },
+    "degenRaio": {
+      "nome": "Dano degenerativo de Raio",
+      "elemento": "energy",
+      "duracaoMs": 4000,
+      "pulsoMs": 500,
+      "acumulacao": "renova",
+      "maxPilhas": 1,
+      "cor": "#8fb6ff",
+      "estado": "eletrizado",
+      "_nota": "o dano degenerativo de uma HABILIDADE do PoE (Vórtice, Geada Rastejante, Flecha Cáustica…): um por gema (chave), o mais forte vale; reaplicar renova"
+    },
+    "degenCaos": {
+      "nome": "Dano degenerativo de Caos",
+      "elemento": "chaos",
+      "duracaoMs": 4000,
+      "pulsoMs": 500,
+      "acumulacao": "renova",
+      "maxPilhas": 1,
+      "cor": "#5fd35f",
+      "estado": "envenenado",
+      "_nota": "o dano degenerativo de uma HABILIDADE do PoE (Vórtice, Geada Rastejante, Flecha Cáustica…): um por gema (chave), o mais forte vale; reaplicar renova"
+    },
+    "degenFisico": {
+      "nome": "Dano degenerativo Físico",
+      "elemento": "physical",
+      "duracaoMs": 4000,
+      "pulsoMs": 500,
+      "acumulacao": "renova",
+      "maxPilhas": 1,
+      "cor": "#d03030",
+      "estado": "sangrando",
+      "_nota": "o dano degenerativo de uma HABILIDADE do PoE (Vórtice, Geada Rastejante, Flecha Cáustica…): um por gema (chave), o mais forte vale; reaplicar renova"
+    }
   },
   "fontes": {
     "CONDITION_FIRE": "queimadura",
@@ -19,6 +147,18 @@
     "CONDITION_DAZZLED": "ofuscamento",
     "CONDITION_FREEZING": "gelo"
   },
-  "doElemento": { "_nota": "O tipo de dano contínuo de cada elemento — o que o dano de um mob no JOGADOR vira (o Venenoso, os `efeitos` dos mobs): `earth` → veneno, `fire` → queimadura...", "physical": "sangramento", "earth": "veneno", "fire": "queimadura", "energy": "choque", "death": "maldicao", "holy": "ofuscamento", "ice": "gelo" },
-  "limites": { "_nota": "Teto de efeitos de dano contínuo ao mesmo tempo num bicho (contra empilhar sem fim).", "efeitosPorBicho": 12 }
+  "doElemento": {
+    "_nota": "O tipo de dano contínuo de cada elemento — o que o dano de um mob no JOGADOR vira (o Venenoso, os `efeitos` dos mobs): `earth` → veneno, `fire` → queimadura...",
+    "physical": "sangramento",
+    "earth": "veneno",
+    "fire": "queimadura",
+    "energy": "choque",
+    "death": "maldicao",
+    "holy": "ofuscamento",
+    "ice": "gelo"
+  },
+  "limites": {
+    "_nota": "Teto de efeitos de dano contínuo ao mesmo tempo num bicho (contra empilhar sem fim).",
+    "efeitosPorBicho": 12
+  }
 }

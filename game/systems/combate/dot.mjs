@@ -27,11 +27,12 @@ export const restante = (m, tipo) => dosDoTipo(m, tipo).reduce((n, d) => n + d.f
  * Põe um efeito no bicho. `total`: o dano que o efeito paga ao todo (antes da resistência); `origem`: `{ fonte, habilidade?, atacante? }`.
  * Devolve o nome do ESTADO posto (`'queimando'`, `'envenenado'`...) ou null se não entrou (mais fraco que o que já vale, sem dano...).
  */
-export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null }, agora) {
+export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, chave = null }, agora) {
   const t = CONFIG.tipos[tipo];
   if (!t || !(total > 0) || bicho.hp <= 0) return null;
   const dots = (bicho.dots ??= []);
-  const mesmos = dots.filter((d) => d.tipo === tipo && ativo(d, agora));
+  // `chave` (o dano degenerativo de uma habilidade: a gema): só briga com o da MESMA chave — duas habilidades diferentes acumulam, como no PoE.
+  const mesmos = dots.filter((d) => d.tipo === tipo && (chave == null || d.chave === chave) && ativo(d, agora));
   // `duracaoMs`: a duração própria da fonte (um modificador de mob pode ter a dele); sem ela, a do tipo.
   const duracao = duracaoMs ?? t.duracaoMs;
   const novo = () => ({
@@ -43,6 +44,7 @@ export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null },
     porPulso: total / Math.max(1, Math.round(duracao / t.pulsoMs)),
     proximo: agora + t.pulsoMs,
     origem,
+    ...(chave != null ? { chave } : {}),
   });
   const limite = CONFIG.limites.efeitosPorBicho;
   if (t.acumulacao === 'empilha') {

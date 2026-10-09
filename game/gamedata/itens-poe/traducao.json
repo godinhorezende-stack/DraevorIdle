@@ -3477,9 +3477,7 @@
           "valor": "{1}"
         }
       ],
-      "_nova": true,
-      "estado": "inerte",
-      "nota": "não há dano de Gelo ao longo do tempo no jogo: o dano degenerativo das gemas de Gelo (Vórtice, Geada Rastejante, Estalo Gélido…) ainda não se aplica — quando entrar, este multiplicador age nele"
+      "_nova": true
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% do Multiplicador de Dano de Caos$",

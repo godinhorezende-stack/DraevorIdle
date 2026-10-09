@@ -35,6 +35,11 @@ export function daSoma(af = {}) {
     chanceAtaque: { incendio: n('chance_ignite_ataque'), sangramento: n('chance_bleed_ataque'), veneno: n('chance_poison_ataque') },
     multiplicador: n('dot_multi'),
     multiplicadorFogo: n('dot_multi_fire'),
+    // (09/10) Gelo e Raio: só o dano degenerativo das habilidades usa (não há afecção de dano de Gelo nem de Raio).
+    multiplicadorGelo: n('dot_multi_cold'),
+    multiplicadorRaio: n('dot_multi_lightning'),
+    multiplicadorCaos: n('dot_multi_chaos'),
+    multiplicadorFisico: n('dot_multi_phys'),
     // O veneno é dano de Caos ao longo do tempo e o sangramento, Físico: os multiplicadores "de Caos" e "Físico" do PoE valem neles.
     multiplicadorVeneno: n('dot_multi_poison') + n('dot_multi_chaos'),
     multiplicadorSangramento: n('dot_multi_bleed') + n('dot_multi_phys'),

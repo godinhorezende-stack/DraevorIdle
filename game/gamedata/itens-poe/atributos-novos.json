@@ -858,8 +858,8 @@
     "dot_multi_cold": {
       "nome": "Multiplicador do Dano de Gelo Degenerativo",
       "unidade": "%",
-      "combate": false,
-      "efeito": "PENDENTE (09/10): não há dano de gelo ao longo do tempo no jogo — o dano degenerativo das gemas (Geada Rastejante, Estalo Gélido…) ainda não existe. Ganha efeito com ele."
+      "combate": true,
+      "efeito": "acoes (o dano degenerativo das habilidades de Gelo das gemas do PoE: Vórtice, Geada Rastejante, Estalo Gélido… — gemas-poe.degenerativoNoNivel) (09/10)"
     },
     "dot_multi_chaos": {
       "nome": "Multiplicador do Dano de Caos Degenerativo",
