@@ -2,10 +2,28 @@
   "id": "poe-ato-6",
   "nome": "Ato 6",
   "descricao": "Ato 6 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 45,
   "ordem": 6,
   "anterior": "poe-ato-5",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a6-the-twilight-strand",
+  "cidade": {
+    "nome": "Vigília de Lioneye",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a6-the-twilight-strand"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a6-the-twilight-strand",
@@ -13,17 +31,13 @@
       "descricao": "Aqueles que naufragam não buscam calor ou abrigo, apenas querem preencher um vazio sem fim de dor e fome.",
       "ordem": 1,
       "huntId": "poe-a6-the-twilight-strand",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 45,
         "medio": 45,
         "dificil": 45
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -38,7 +52,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a6-the-coast",
@@ -46,17 +64,13 @@
       "descricao": "Os Ancestrais retornam para conquistar os litorais mais uma vez.",
       "ordem": 2,
       "huntId": "poe-a6-the-coast",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 45,
         "medio": 45,
         "dificil": 45
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 81,
-        "y": 350
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -66,7 +80,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 237,
+        "y": 294
+      }
     },
     {
       "id": "poe-a6-the-tidal-island",
@@ -74,17 +92,13 @@
       "descricao": "Conforme a maré aumenta, a esperança se afoga.",
       "ordem": 3,
       "huntId": "poe-a6-the-tidal-island",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 45,
         "medio": 45,
         "dificil": 45
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 133,
-        "y": 381
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -102,7 +116,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 169
+      }
     },
     {
       "id": "poe-a6-the-mud-flats",
@@ -110,17 +128,13 @@
       "descricao": "Lama e sangue fazem uma bela tinta de guerra.",
       "ordem": 4,
       "huntId": "poe-a6-the-mud-flats",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 46,
         "medio": 46,
         "dificil": 46
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 127,
-        "y": 308
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -130,7 +144,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 249
+      }
     },
     {
       "id": "poe-a6-the-karui-fortress",
@@ -138,17 +156,13 @@
       "descricao": "As águas aqui, que já foram paradas e sujas, agora correm límpidas com um desejo ancestral por sangue.",
       "ordem": 5,
       "huntId": "poe-a6-the-karui-fortress",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 46,
         "medio": 46,
         "dificil": 46
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 55,
-        "y": 271
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -165,7 +179,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 203
+      }
     },
     {
       "id": "poe-a6-the-ridge",
@@ -173,17 +191,13 @@
       "descricao": "O ar está fino, o caminho, estreito.",
       "ordem": 6,
       "huntId": "poe-a6-the-ridge",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 46,
         "medio": 46,
         "dificil": 46
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 187
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -193,7 +207,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 157
+      }
     },
     {
       "id": "poe-a6-the-lower-prison",
@@ -201,17 +219,13 @@
       "descricao": "Ecos do passado trazem nova vida a um antigo experimento.",
       "ordem": 7,
       "huntId": "poe-a6-the-lower-prison",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 47,
         "medio": 47,
         "dificil": 47
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 94,
-        "y": 119
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -221,7 +235,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 586,
+        "y": 111
+      }
     },
     {
       "id": "poe-a6-shavronnes-tower",
@@ -229,17 +247,13 @@
       "descricao": "",
       "ordem": 8,
       "huntId": "poe-a6-shavronnes-tower",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 47,
         "medio": 47,
         "dificil": 47
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 128,
-        "y": 92
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -249,7 +263,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 673,
+        "y": 66
+      }
     },
     {
       "id": "poe-a6-prisoners-gate",
@@ -257,17 +275,13 @@
       "descricao": "As terras de caça do deus gretado.",
       "ordem": 9,
       "huntId": "poe-a6-prisoners-gate",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 47,
         "medio": 47,
         "dificil": 47
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 173,
-        "y": 119
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -284,7 +298,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 237,
+        "y": 374
+      }
     },
     {
       "id": "poe-a6-the-western-forest",
@@ -292,17 +310,13 @@
       "descricao": "Quais loucuras tremulam e rastejam pelas florestas escuras?",
       "ordem": 10,
       "huntId": "poe-a6-the-western-forest",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 48,
         "medio": 48,
         "dificil": 48
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 185,
-        "y": 66
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -312,7 +326,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 329
+      }
     },
     {
       "id": "poe-a6-the-riverways",
@@ -320,17 +338,13 @@
       "descricao": "Estas águas violentas carregam avisos de morte.",
       "ordem": 11,
       "huntId": "poe-a6-the-riverways",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 48,
         "medio": 48,
         "dificil": 48
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 303,
-        "y": 98
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -340,7 +354,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 283
+      }
     },
     {
       "id": "poe-a6-the-wetlands",
@@ -348,17 +366,13 @@
       "descricao": "Um verme corpulento vaga sem pensar, infestando a sujeira putrescente.",
       "ordem": 12,
       "huntId": "poe-a6-the-wetlands",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 48,
         "medio": 48,
         "dificil": 48
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 277,
-        "y": 45
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -373,7 +387,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 317
+      }
     },
     {
       "id": "poe-a6-the-southern-forest",
@@ -381,17 +399,13 @@
       "descricao": "Uma crisália insidiosa se reproduz sob o calor sufocante.",
       "ordem": 13,
       "huntId": "poe-a6-the-southern-forest",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 49,
         "medio": 49,
         "dificil": 49
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 407,
-        "y": 119
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -401,7 +415,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 237
+      }
     },
     {
       "id": "poe-a6-the-cavern-of-anger",
@@ -409,17 +427,13 @@
       "descricao": "Estalactites gotejam em luto por uma rainha do oceano.",
       "ordem": 14,
       "huntId": "poe-a6-the-cavern-of-anger",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 49,
         "medio": 49,
         "dificil": 49
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 419,
-        "y": 172
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -429,7 +443,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 586,
+        "y": 191
+      }
     },
     {
       "id": "poe-a6-the-beacon",
@@ -437,17 +455,13 @@
       "descricao": "Um eco do destino consome a terra.",
       "ordem": 15,
       "huntId": "poe-a6-the-beacon",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 49,
         "medio": 49,
         "dificil": 49
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 523,
-        "y": 172
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -462,7 +476,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 673,
+        "y": 146
+      }
     },
     {
       "id": "poe-a6-the-brine-kings-reef",
@@ -470,17 +488,13 @@
       "descricao": "Um trono de coral para um deus salgado.",
       "ordem": 16,
       "huntId": "poe-a6-the-brine-kings-reef",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 50,
         "medio": 50,
         "dificil": 50
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 750,
-        "y": 115
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -495,7 +509,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -600,13 +618,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 45,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

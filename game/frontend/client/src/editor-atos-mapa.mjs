@@ -4,7 +4,7 @@
 // posição, só muda o desenho). A escala: o editor mora em 920×520 e o jogo em 1000×640 — a conversão é a de `Campanha.registrarAto`.
 import { desenharNo } from './world.mjs';
 import { svg, fundoDoAto, nomeDoTema } from './world-arte.mjs';
-import { LARGURA, ALTURA, tracadoDaEstrada } from './world-dados.mjs';
+import { LARGURA, ALTURA, tracadoDaEstrada, lugarDoChefe } from './world-dados.mjs';
 
 const L = 920;
 const A = 520;
@@ -13,6 +13,7 @@ const KY = ALTURA / A;
 
 /**
  * Desenha a vista. `ato`: o ato do editor; `posicoes`: Map(faseId → {x,y}) no espaço do editor; `opcoes`: { imagem (url), fase (selecionada),
+ * nomeDoBoss (o nome do chefe na placa, como no jogo — sem ele, o id),
  * somenteLeitura, aoMover(fase, {x,y}), aoEscolher(faseId), aoEscolherBoss() }. Devolve o nó raiz.
  */
 export function vistaMapa(ato, posicoes, opcoes) {
@@ -36,9 +37,10 @@ export function vistaMapa(ato, posicoes, opcoes) {
     const p = posicoes.get(f.id) ?? { x: 100, y: 100 };
     P.set(f.id, { x: p.x * KX, y: p.y * KY });
   }
+  // O boss ao lado da fase que leva a ele: a MESMA regra do mapa do jogo (`lugarDoChefe`).
   const bossPos = (() => {
     const ult = ato.bossFinal?.faseAnterior ? P.get(ato.bossFinal.faseAnterior) : null;
-    return ult ? { x: Math.min(LARGURA - 60, ult.x + 120), y: ult.y } : null;
+    return ult ? lugarDoChefe(ult) : null;
   })();
   const cidade = ato.cidade ? { ...ato.cidade, p: ato.cidade.posicao ? { x: ato.cidade.posicao.x * KX, y: ato.cidade.posicao.y * KY } : { x: 70, y: ALTURA / 2 } } : null;
   const pontos = [...P.values(), ...(bossPos ? [bossPos] : []), ...(cidade ? [cidade.p] : [])];
@@ -135,7 +137,7 @@ export function vistaMapa(ato, posicoes, opcoes) {
     nos.append(g);
   }
   if (bossPos) {
-    const g = desenharNo({ id: 'boss', tipo: 'boss', estado: 'aberta', numero: 0, nome: ato.bossFinal.bossId ?? 'Boss', p: bossPos, boss: true });
+    const g = desenharNo({ id: 'boss', tipo: 'boss', estado: 'aberta', numero: 0, nome: opcoes.nomeDoBoss ?? ato.bossFinal.bossId ?? 'Boss', p: bossPos, boss: true });
     g.addEventListener('click', () => opcoes.aoEscolherBoss?.());
     nos.append(g);
   }

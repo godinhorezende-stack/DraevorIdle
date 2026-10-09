@@ -2,10 +2,28 @@
   "id": "poe-ato-3",
   "nome": "Ato 3",
   "descricao": "Ato 3 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 23,
   "ordem": 3,
   "anterior": "poe-ato-2",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a3-the-city-of-sarn",
+  "cidade": {
+    "nome": "Acampamento de Sarn",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a3-the-city-of-sarn"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a3-the-city-of-sarn",
@@ -13,17 +31,13 @@
       "descricao": "Uma luz severa em uma paisagem severa.",
       "ordem": 1,
       "huntId": "poe-a3-the-city-of-sarn",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 23,
         "medio": 23,
         "dificil": 23
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 681,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -38,7 +52,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a3-the-slums",
@@ -46,17 +64,13 @@
       "descricao": "Agora apenas o vento sussurra e geme aqui.",
       "ordem": 2,
       "huntId": "poe-a3-the-slums",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 24,
         "medio": 24,
         "dificil": 24
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 668,
-        "y": 365
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -66,7 +80,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 252,
+        "y": 367
+      }
     },
     {
       "id": "poe-a3-the-crematorium",
@@ -74,17 +92,13 @@
       "descricao": "Engasgado com cinzas e brasas.",
       "ordem": 3,
       "huntId": "poe-a3-the-crematorium",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 25,
         "medio": 25,
         "dificil": 25
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 365
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -101,7 +115,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 403
+      }
     },
     {
       "id": "poe-a3-the-marketplace",
@@ -109,17 +127,13 @@
       "descricao": "Todo o dinheiro no mundo não pode impedir que o mundo acabe.",
       "ordem": 4,
       "huntId": "poe-a3-the-marketplace",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 26,
         "medio": 26,
         "dificil": 26
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 583,
-        "y": 208
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -129,7 +143,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 350
+      }
     },
     {
       "id": "poe-a3-the-catacombs",
@@ -137,17 +155,13 @@
       "descricao": "Tossindo a poeira da devoção sem vida.",
       "ordem": 5,
       "huntId": "poe-a3-the-catacombs",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 27,
         "medio": 27,
         "dificil": 27
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 668,
-        "y": 187
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -157,7 +171,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 387
+      }
     },
     {
       "id": "poe-a3-the-battlefront",
@@ -165,17 +183,13 @@
       "descricao": "Carne carbonizada e entranhas espalhadas. Agridoce.",
       "ordem": 6,
       "huntId": "poe-a3-the-battlefront",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 27,
         "medio": 27,
         "dificil": 27
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 436,
-        "y": 152
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -190,7 +204,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 117
+      }
     },
     {
       "id": "poe-a3-the-solaris-temple-level-1",
@@ -198,17 +216,13 @@
       "descricao": "Um império em seu apogeu, refletido em ouro polido.",
       "ordem": 7,
       "huntId": "poe-a3-the-solaris-temple-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 27,
         "medio": 27,
         "dificil": 27
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 540,
-        "y": 98
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -218,7 +232,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 243
+      }
     },
     {
       "id": "poe-a3-the-solaris-temple-level-2",
@@ -226,17 +244,13 @@
       "descricao": "Um império em seu apogeu, refletido em ouro polido.",
       "ordem": 8,
       "huntId": "poe-a3-the-solaris-temple-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 28,
         "medio": 28,
         "dificil": 28
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 469,
-        "y": 52
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -259,7 +273,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 190
+      }
     },
     {
       "id": "poe-a3-the-docks",
@@ -267,17 +285,13 @@
       "descricao": "A vida empalidece no despertar do progresso.",
       "ordem": 9,
       "huntId": "poe-a3-the-docks",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 29,
         "medio": 29,
         "dificil": 29
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 324,
-        "y": 124
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -287,7 +301,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 63
+      }
     },
     {
       "id": "poe-a3-the-sewers",
@@ -295,17 +313,13 @@
       "descricao": "Quais horrores se escondem nas entranhas da cidade?",
       "ordem": 10,
       "huntId": "poe-a3-the-sewers",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 26,
         "medio": 26,
         "dificil": 26
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 619,
-        "y": 293
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -324,7 +338,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 313
+      }
     },
     {
       "id": "poe-a3-the-ebony-barracks",
@@ -332,17 +350,13 @@
       "descricao": "Superfícies polidas refletem a eficiência brutal.",
       "ordem": 11,
       "huntId": "poe-a3-the-ebony-barracks",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 29,
         "medio": 29,
         "dificil": 29
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 193,
-        "y": 199
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -359,7 +373,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 260
+      }
     },
     {
       "id": "poe-a3-the-lunaris-temple-level-1",
@@ -367,17 +385,13 @@
       "descricao": "A depravação não tem limites.",
       "ordem": 12,
       "huntId": "poe-a3-the-lunaris-temple-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 29,
         "medio": 29,
         "dificil": 29
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 188
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -387,7 +401,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 297
+      }
     },
     {
       "id": "poe-a3-the-lunaris-temple-level-2",
@@ -395,17 +413,13 @@
       "descricao": "",
       "ordem": 13,
       "huntId": "poe-a3-the-lunaris-temple-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 30,
         "medio": 30,
         "dificil": 30
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 83,
-        "y": 162
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -415,7 +429,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 423
+      }
     },
     {
       "id": "poe-a3-the-imperial-gardens",
@@ -423,17 +441,13 @@
       "descricao": "A natureza sobrepuja os desígnios do Homem.",
       "ordem": 14,
       "huntId": "poe-a3-the-imperial-gardens",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 30,
         "medio": 30,
         "dificil": 30
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 148,
-        "y": 138
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -452,7 +466,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 207
+      }
     },
     {
       "id": "poe-a3-the-library",
@@ -460,17 +478,13 @@
       "descricao": "Todo o conhecimento no Império não pôde salvá-los.",
       "ordem": 15,
       "huntId": "poe-a3-the-library",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 30,
         "medio": 30,
         "dificil": 30
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 88,
-        "y": 98
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -485,7 +499,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 333
+      }
     },
     {
       "id": "poe-a3-the-archives",
@@ -493,17 +511,13 @@
       "descricao": "",
       "ordem": 16,
       "huntId": "poe-a3-the-archives",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 31,
         "medio": 31,
         "dificil": 31
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 122,
-        "y": 72
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -513,7 +527,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 370
+      }
     },
     {
       "id": "poe-a3-the-sceptre-of-god",
@@ -521,17 +539,13 @@
       "descricao": "O pináculo do poder. O tamanho da arrogância.",
       "ordem": 17,
       "huntId": "poe-a3-the-sceptre-of-god",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 32,
         "medio": 32,
         "dificil": 32
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 179,
-        "y": 71
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -546,7 +560,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 153
+      }
     },
     {
       "id": "poe-a3-the-upper-sceptre-of-god",
@@ -554,17 +572,13 @@
       "descricao": "",
       "ordem": 18,
       "huntId": "poe-a3-the-upper-sceptre-of-god",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 33,
         "medio": 33,
         "dificil": 33
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 213,
-        "y": 45
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -574,7 +588,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -691,13 +709,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 23,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

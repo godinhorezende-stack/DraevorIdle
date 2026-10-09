@@ -2,10 +2,28 @@
   "id": "poe-ato-5",
   "nome": "Ato 5",
   "descricao": "Ato 5 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 41,
   "ordem": 5,
   "anterior": "poe-ato-4",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a5-the-slave-pens",
+  "cidade": {
+    "nome": "Torre do Capataz",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a5-the-slave-pens"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a5-the-slave-pens",
@@ -13,17 +31,13 @@
       "descricao": "No canto mais escuro de Oriath, uma faísca de rebelião acende.",
       "ordem": 1,
       "huntId": "poe-a5-the-slave-pens",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 41,
         "medio": 41,
         "dificil": 41
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 229
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -33,7 +47,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a5-the-control-blocks",
@@ -41,17 +59,13 @@
       "descricao": "A ilusão de controle é rapidamente decepada pela lâmina da realidade.",
       "ordem": 2,
       "huntId": "poe-a5-the-control-blocks",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 41,
         "medio": 41,
         "dificil": 41
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 218,
-        "y": 286
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -77,7 +91,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 237,
+        "y": 374
+      }
     },
     {
       "id": "poe-a5-oriath-square",
@@ -85,17 +103,13 @@
       "descricao": "O que já foi o coração da cidade agora é o coração da batalha.",
       "ordem": 3,
       "huntId": "poe-a5-oriath-square",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 42,
         "medio": 42,
         "dificil": 42
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 409,
-        "y": 148
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -105,7 +119,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 329
+      }
     },
     {
       "id": "poe-a5-the-ruined-square",
@@ -113,17 +131,13 @@
       "descricao": "O coração sangrento de Oriath é o prato principal em um terrível banquete.",
       "ordem": 4,
       "huntId": "poe-a5-the-ruined-square",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 44,
         "medio": 44,
         "dificil": 44
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 409,
-        "y": 148
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -144,7 +158,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 673,
+        "y": 146
+      }
     },
     {
       "id": "poe-a5-the-templar-courts",
@@ -152,17 +170,13 @@
       "descricao": "Apenas aqueles com olhos fieis podem entrar nestas câmaras solenes voluntariamente.",
       "ordem": 5,
       "huntId": "poe-a5-the-templar-courts",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 42,
         "medio": 42,
         "dificil": 42
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 384
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -177,7 +191,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 283
+      }
     },
     {
       "id": "poe-a5-the-torched-courts",
@@ -185,17 +203,13 @@
       "descricao": "Carregado por sangue e caos, um inferno sombrio engole os salões da justiça.",
       "ordem": 6,
       "huntId": "poe-a5-the-torched-courts",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 44,
         "medio": 44,
         "dificil": 44
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 384
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -205,7 +219,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 586,
+        "y": 191
+      }
     },
     {
       "id": "poe-a5-the-chamber-of-innocence",
@@ -213,17 +231,13 @@
       "descricao": "No santuário mais sagrado, o Alto Templário comunga com Deus e entrega Seu divino julgamento.",
       "ordem": 7,
       "huntId": "poe-a5-the-chamber-of-innocence",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 43,
         "medio": 43,
         "dificil": 43
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 685,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -248,7 +262,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 237
+      }
     },
     {
       "id": "poe-a5-the-ossuary",
@@ -256,17 +274,13 @@
       "descricao": "Os fieis mortos vigiam a cidade com olhos vazios.",
       "ordem": 8,
       "huntId": "poe-a5-the-ossuary",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 44,
         "medio": 44,
         "dificil": 44
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 714,
-        "y": 67
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -281,7 +295,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 180
+      }
     },
     {
       "id": "poe-a5-the-reliquary",
@@ -289,17 +307,13 @@
       "descricao": "Um tesouro com relíquias vergonhosas exibidas com orgulho.",
       "ordem": 9,
       "huntId": "poe-a5-the-reliquary",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 44,
         "medio": 44,
         "dificil": 44
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 323,
-        "y": 360
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -314,7 +328,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 260
+      }
     },
     {
       "id": "poe-a5-the-cathedral-rooftop",
@@ -322,17 +340,13 @@
       "descricao": "No topo deste monumento em chamas de arrogância, resta a última esperança de Oriath.",
       "ordem": 10,
       "huntId": "poe-a5-the-cathedral-rooftop",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 45,
         "medio": 45,
         "dificil": 45
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 338,
-        "y": 45
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -349,7 +363,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -418,13 +436,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 41,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

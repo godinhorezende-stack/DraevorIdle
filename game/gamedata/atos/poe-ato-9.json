@@ -2,10 +2,28 @@
   "id": "poe-ato-9",
   "nome": "Ato 9",
   "descricao": "Ato 9 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 61,
   "ordem": 9,
   "anterior": "poe-ato-8",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a9-the-blood-aqueduct",
+  "cidade": {
+    "nome": "Highgate",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a9-the-blood-aqueduct"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a9-the-blood-aqueduct",
@@ -13,17 +31,13 @@
       "descricao": "Um vertedouro poderoso infectado pelo preto da escuridão e vermelho do sangue.",
       "ordem": 1,
       "huntId": "poe-a9-the-blood-aqueduct",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 61,
         "medio": 61,
         "dificil": 61
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 323,
-        "y": 453
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -33,7 +47,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a9-the-descent",
@@ -41,17 +59,13 @@
       "descricao": "Uma queda congelante para testar a determinação.",
       "ordem": 2,
       "huntId": "poe-a9-the-descent",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 61,
         "medio": 61,
         "dificil": 61
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 416,
-        "y": 266
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -61,7 +75,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 237,
+        "y": 374
+      }
     },
     {
       "id": "poe-a9-the-vastiri-desert",
@@ -69,17 +87,13 @@
       "descricao": "Areia estrondosa, mais afiada que a lâmina de um bandido.",
       "ordem": 3,
       "huntId": "poe-a9-the-vastiri-desert",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 61,
         "medio": 61,
         "dificil": 61
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 629,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -105,7 +119,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 329
+      }
     },
     {
       "id": "poe-a9-the-oasis",
@@ -113,17 +131,13 @@
       "descricao": "Um parasita escondido entre os ossos queimados e dunas escaldantes.",
       "ordem": 4,
       "huntId": "poe-a9-the-oasis",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 61,
         "medio": 61,
         "dificil": 61
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 274
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -133,7 +147,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 363
+      }
     },
     {
       "id": "poe-a9-the-foothills",
@@ -141,17 +159,13 @@
       "descricao": "Os segredos da história escondidos entre camadas de sujeira e poeira.",
       "ordem": 5,
       "huntId": "poe-a9-the-foothills",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 62,
         "medio": 62,
         "dificil": 62
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 590,
-        "y": 223
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -169,7 +183,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 283
+      }
     },
     {
       "id": "poe-a9-the-boiling-lake",
@@ -177,17 +195,13 @@
       "descricao": "Estas águas corrosivas devoram tanto a carne quanto os ossos.",
       "ordem": 6,
       "huntId": "poe-a9-the-boiling-lake",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 62,
         "medio": 62,
         "dificil": 62
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 542,
-        "y": 128
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -205,7 +219,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 317
+      }
     },
     {
       "id": "poe-a9-the-tunnel",
@@ -213,17 +231,13 @@
       "descricao": "Horrores indescritíveis assombram pela escuridão inominada.",
       "ordem": 7,
       "huntId": "poe-a9-the-tunnel",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 62,
         "medio": 62,
         "dificil": 62
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 446,
-        "y": 126
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -233,7 +247,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 237
+      }
     },
     {
       "id": "poe-a9-the-quarry",
@@ -241,17 +259,13 @@
       "descricao": "Um terror monstruoso espreita minas ctônicas, ansiando pelo céu sem limites.",
       "ordem": 8,
       "huntId": "poe-a9-the-quarry",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 63,
         "medio": 63,
         "dificil": 63
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 334,
-        "y": 95
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -273,7 +287,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 586,
+        "y": 191
+      }
     },
     {
       "id": "poe-a9-the-refinery",
@@ -281,17 +299,13 @@
       "descricao": "A loucura foi visitada por aqueles que cavaram fundo demais.",
       "ordem": 9,
       "huntId": "poe-a9-the-refinery",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 63,
         "medio": 63,
         "dificil": 63
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 353,
-        "y": 45
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -309,7 +323,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 673,
+        "y": 226
+      }
     },
     {
       "id": "poe-a9-the-belly-of-the-beast",
@@ -317,17 +335,13 @@
       "descricao": "Uma vez tingido pelo calor do sangue, agora apodrecido; consumido pela podridão de fungos.",
       "ordem": 10,
       "huntId": "poe-a9-the-belly-of-the-beast",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 63,
         "medio": 63,
         "dificil": 63
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 128,
-        "y": 70
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -337,7 +351,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 673,
+        "y": 146
+      }
     },
     {
       "id": "poe-a9-the-rotting-core",
@@ -345,17 +363,13 @@
       "descricao": "O interior pútrido transborda e deteriora.",
       "ordem": 11,
       "huntId": "poe-a9-the-rotting-core",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 64,
         "medio": 64,
         "dificil": 64
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 50,
-        "y": 130
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -372,7 +386,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -447,13 +465,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 61,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

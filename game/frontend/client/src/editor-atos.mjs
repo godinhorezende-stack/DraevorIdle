@@ -15,6 +15,7 @@ const obrigatorio = (v) => (v ? null : 'Digite um ID.');
 import { tabelaDeDrops } from './editor-drops.mjs';
 import { vistaValidacao, vistaPrevia, vistaVersoes, vistaPublicacao } from './editor-atos-vistas.mjs';
 import { vistaMapa } from './editor-atos-mapa.mjs';
+import { organizarAto } from './atos-layout.mjs';
 
 const NS = 'http://www.w3.org/2000/svg';
 const L = 920;
@@ -271,10 +272,13 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
     if (p && E.zoom > 1) E.pan = { x: p.x - L / E.zoom / 2, y: p.y - A / E.zoom / 2 };
     pintar();
   }
-  /** Organiza as fases automaticamente (colunas por profundidade a partir do início). */
+  /** Organiza as fases automaticamente: o fluxo do início (embaixo à esquerda, a cidade ao lado) à fase do chefe (em cima à direita), sem nada
+   * sobreposto (`atos-layout.mjs`). */
   function organizar() {
-    const pos = posicoesAutomaticas({ ...E.ato, fases: E.ato.fases.map((f) => ({ ...f, posicao: null })) });
-    for (const f of E.ato.fases) { const p = pos.get(f.id); if (p) f.posicao = { x: Math.round(p.x), y: Math.round(p.y) }; }
+    lembrar();
+    const { fases, cidade } = organizarAto(E.ato);
+    for (const f of E.ato.fases) { const p = fases.get(f.id); if (p) f.posicao = p; }
+    if (E.ato.cidade && cidade) E.ato.cidade.posicao = cidade;
     mudou();
   }
   /** A fase anterior/seguinte (pela ordem) à selecionada. */
@@ -946,7 +950,13 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
     if (E.vista !== 'fluxo') {
       const corpo = el('div', { class: 'atos-vista-corpo' }, el('div', { class: 'dica' }, 'Carregando…'));
       const completar = async () => {
+        // O nome do chefe na placa (como o jogo mostra), da Biblioteca — uma vez por chefe.
+        const idDoBoss = E.ato.bossFinal?.bossId;
+        if (E.vista === 'mapa' && idDoBoss && !(E.nomesDeBoss ??= new Map()).has(idDoBoss)) {
+          E.nomesDeBoss.set(idDoBoss, (await api(`biblioteca/detalhe?${new URLSearchParams({ categoria: 'bosses', id: idDoBoss })}`).catch(() => null))?.nome ?? null);
+        }
         if (E.vista === 'mapa') corpo.replaceChildren(vistaMapa(E.ato, posicoesAutomaticas(E.ato), {
+          nomeDoBoss: idDoBoss ? E.nomesDeBoss.get(idDoBoss) : null,
           imagem: E.ato.imagem ? `/api/mapas/_conteudo/atos-imagem/${encodeURIComponent(E.ato.imagem)}?v=${E.versaoDaImagem ?? 0}` : null,
           fase: E.fase, somenteLeitura: E.somenteLeitura,
           aoMover: (f, p) => { lembrar(); f.posicao = p; mudou(); },

@@ -2,10 +2,28 @@
   "id": "poe-ato-2",
   "nome": "Ato 2",
   "descricao": "Ato 2 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 13,
   "ordem": 2,
   "anterior": "poe-ato-1",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a2-the-southern-forest",
+  "cidade": {
+    "nome": "Acampamento da Floresta",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a2-the-southern-forest"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a2-the-southern-forest",
@@ -13,17 +31,13 @@
       "descricao": "Violência transpirante, úmida e luxuriante.",
       "ordem": 1,
       "huntId": "poe-a2-the-southern-forest",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 13,
         "medio": 13,
         "dificil": 13
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 539,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -33,7 +47,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a2-the-old-fields",
@@ -41,17 +59,13 @@
       "descricao": "Pastos doentes e febris.",
       "ordem": 2,
       "huntId": "poe-a2-the-old-fields",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 14,
         "medio": 14,
         "dificil": 14
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 539,
-        "y": 286
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -61,7 +75,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 252,
+        "y": 277
+      }
     },
     {
       "id": "poe-a2-the-den",
@@ -69,17 +87,13 @@
       "descricao": "Quente e amargo como o arquejo do urso raivoso.",
       "ordem": 3,
       "huntId": "poe-a2-the-den",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 15,
         "medio": 15,
         "dificil": 15
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 490,
-        "y": 224
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -96,7 +110,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 223
+      }
     },
     {
       "id": "poe-a2-the-crossroads",
@@ -104,17 +122,13 @@
       "descricao": "A vida penúria onde já floresceu.",
       "ordem": 4,
       "huntId": "poe-a2-the-crossroads",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 15,
         "medio": 15,
         "dificil": 15
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 586,
-        "y": 195
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -124,7 +138,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 133
+      }
     },
     {
       "id": "poe-a2-the-crypt-level-1",
@@ -132,17 +150,13 @@
       "descricao": "Pedras suavizadas por séculos de devoção.",
       "ordem": 5,
       "huntId": "poe-a2-the-crypt-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 17,
         "medio": 17,
         "dificil": 17
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 734,
-        "y": 296
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -152,7 +166,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 387
+      }
     },
     {
       "id": "poe-a2-the-crypt-level-2",
@@ -160,17 +178,13 @@
       "descricao": "",
       "ordem": 6,
       "huntId": "poe-a2-the-crypt-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 18,
         "medio": 18,
         "dificil": 18
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 271
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -180,7 +194,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 423
+      }
     },
     {
       "id": "poe-a2-the-chamber-of-sins-level-1",
@@ -188,17 +206,13 @@
       "descricao": "Sussurros fantasmas de uma paixão maníaca.",
       "ordem": 7,
       "huntId": "poe-a2-the-chamber-of-sins-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 15,
         "medio": 15,
         "dificil": 15
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 500,
-        "y": 101
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -208,7 +222,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 170
+      }
     },
     {
       "id": "poe-a2-the-chamber-of-sins-level-2",
@@ -216,17 +234,13 @@
       "descricao": "",
       "ordem": 8,
       "huntId": "poe-a2-the-chamber-of-sins-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 16,
         "medio": 16,
         "dificil": 16
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 533,
-        "y": 76
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -236,7 +250,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 117
+      }
     },
     {
       "id": "poe-a2-the-broken-bridge",
@@ -244,17 +262,13 @@
       "descricao": "Um rio puro e plácido que já esteve vermelho e cheio com as vítimas de guerra.",
       "ordem": 9,
       "huntId": "poe-a2-the-broken-bridge",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 16,
         "medio": 16,
         "dificil": 16
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 616,
-        "y": 101
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -287,7 +301,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 80
+      }
     },
     {
       "id": "poe-a2-the-riverways",
@@ -295,17 +313,13 @@
       "descricao": "Os rios que já foram domados hoje correm livres.",
       "ordem": 10,
       "huntId": "poe-a2-the-riverways",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 15,
         "medio": 15,
         "dificil": 15
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 354,
-        "y": 379
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -320,7 +334,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 252,
+        "y": 367
+      }
     },
     {
       "id": "poe-a2-the-northern-forest",
@@ -328,17 +346,13 @@
       "descricao": "A luz do dia é exilada aqui.",
       "ordem": 11,
       "huntId": "poe-a2-the-northern-forest",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 21,
         "medio": 21,
         "dificil": 21
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 181,
-        "y": 179
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -348,7 +362,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 207
+      }
     },
     {
       "id": "poe-a2-the-western-forest",
@@ -356,17 +374,13 @@
       "descricao": "Banhada na fria luz da obsessão.",
       "ordem": 12,
       "huntId": "poe-a2-the-western-forest",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 17,
         "medio": 17,
         "dificil": 17
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 138,
-        "y": 312
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -397,7 +411,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 403
+      }
     },
     {
       "id": "poe-a2-the-weavers-chambers",
@@ -405,17 +423,13 @@
       "descricao": "Envolto em mortalhas.",
       "ordem": 13,
       "huntId": "poe-a2-the-weavers-chambers",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 18,
         "medio": 18,
         "dificil": 18
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 168,
-        "y": 371
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -437,7 +451,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 440
+      }
     },
     {
       "id": "poe-a2-the-vaal-ruins",
@@ -445,17 +463,13 @@
       "descricao": "Sombras arranhando a pedra aprisionadora.",
       "ordem": 14,
       "huntId": "poe-a2-the-vaal-ruins",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 20,
         "medio": 20,
         "dificil": 20
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 248,
-        "y": 226
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -470,7 +484,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 260
+      }
     },
     {
       "id": "poe-a2-the-wetlands",
@@ -478,17 +496,13 @@
       "descricao": "Águas corrompidas, jorrando do Manto acima.",
       "ordem": 15,
       "huntId": "poe-a2-the-wetlands",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 19,
         "medio": 19,
         "dificil": 19
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 290,
-        "y": 289
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -525,7 +539,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 313
+      }
     },
     {
       "id": "poe-a2-the-dread-thicket",
@@ -533,17 +551,13 @@
       "descricao": "Natureza irrestrita. Ferocidade livre.",
       "ordem": 16,
       "huntId": "poe-a2-the-dread-thicket",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 21,
         "medio": 21,
         "dificil": 21
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 109,
-        "y": 220
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -558,7 +572,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 243
+      }
     },
     {
       "id": "poe-a2-the-caverns",
@@ -566,17 +584,13 @@
       "descricao": "Dois mil anos de arrependimento.",
       "ordem": 17,
       "huntId": "poe-a2-the-caverns",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 22,
         "medio": 22,
         "dificil": 22
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 62
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -591,7 +605,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 658,
+        "y": 153
+      }
     },
     {
       "id": "poe-a2-the-ancient-pyramid",
@@ -599,17 +617,13 @@
       "descricao": "",
       "ordem": 18,
       "huntId": "poe-a2-the-ancient-pyramid",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 23,
         "medio": 23,
         "dificil": 23
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 83,
-        "y": 45
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -619,7 +633,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     },
     {
       "id": "poe-a2-the-fellshrine-ruins",
@@ -627,17 +645,13 @@
       "descricao": "O chão sofre com a profanação. A chuva tem sabor de ferrugem.",
       "ordem": 19,
       "huntId": "poe-a2-the-fellshrine-ruins",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 16,
         "medio": 16,
         "dificil": 16
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 660,
-        "y": 283
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -647,7 +661,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 350
+      }
     }
   ],
   "conexoes": [
@@ -770,13 +788,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 13,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

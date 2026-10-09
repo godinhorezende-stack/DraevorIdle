@@ -2,10 +2,28 @@
   "id": "poe-ato-10",
   "nome": "Ato 10",
   "descricao": "Ato 10 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 64,
   "ordem": 10,
   "anterior": "poe-ato-9",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a10-the-cathedral-rooftop",
+  "cidade": {
+    "nome": "Docas de Oriath",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a10-the-cathedral-rooftop"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a10-the-cathedral-rooftop",
@@ -13,17 +31,13 @@
       "descricao": "De cima, o verdadeiro escopo da carnificina é claramente espiado.",
       "ordem": 1,
       "huntId": "poe-a10-the-cathedral-rooftop",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 64,
         "medio": 64,
         "dificil": 64
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 198,
-        "y": 45
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -38,7 +52,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a10-the-ravaged-square",
@@ -46,17 +64,13 @@
       "descricao": "Um lugar próspero para comércio, mal reconhecido no meio de incontáveis mortes.",
       "ordem": 2,
       "huntId": "poe-a10-the-ravaged-square",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 64,
         "medio": 64,
         "dificil": 64
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 287,
-        "y": 149
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -66,7 +80,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 313
+      }
     },
     {
       "id": "poe-a10-the-torched-courts",
@@ -74,17 +92,13 @@
       "descricao": "Sacerdotes devotos já aplicaram cruelmente a justiça nestes salões, agora ambos ardem em uma agonia silenciosa.",
       "ordem": 3,
       "huntId": "poe-a10-the-torched-courts",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 65,
         "medio": 65,
         "dificil": 65
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 710,
-        "y": 384
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -94,7 +108,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 287
+      }
     },
     {
       "id": "poe-a10-the-desecrated-chambers",
@@ -102,17 +120,13 @@
       "descricao": "Homens loucos trabalham arduamente sob céus esfumaçados para corromper um santuário sagrado.",
       "ordem": 4,
       "huntId": "poe-a10-the-desecrated-chambers",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 65,
         "medio": 65,
         "dificil": 65
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 629,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -130,7 +144,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 260
+      }
     },
     {
       "id": "poe-a10-the-canals",
@@ -138,17 +156,13 @@
       "descricao": "Uma ruptura feita pelo homem, na qual tanto sangue como água escorrem.",
       "ordem": 5,
       "huntId": "poe-a10-the-canals",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 66,
         "medio": 66,
         "dificil": 66
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 602,
-        "y": 146
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -158,7 +172,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 447
+      }
     },
     {
       "id": "poe-a10-the-feeding-trough",
@@ -166,17 +184,13 @@
       "descricao": "Gritos de tormento e choros patéticos enquanto o banquete ímpio de carne continua.",
       "ordem": 6,
       "huntId": "poe-a10-the-feeding-trough",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 67,
         "medio": 67,
         "dificil": 67
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 138
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -186,7 +200,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 393
+      }
     },
     {
       "id": "poe-a10-the-control-blocks",
@@ -194,17 +212,13 @@
       "descricao": "Sádicos e degoladores quebram tanto ossos quanto cérebro.",
       "ordem": 7,
       "huntId": "poe-a10-the-control-blocks",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 66,
         "medio": 66,
         "dificil": 66
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 286
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -221,7 +235,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 127
+      }
     },
     {
       "id": "poe-a10-the-reliquary",
@@ -229,17 +247,13 @@
       "descricao": "Prateleiras vazias e quebradas perduram, saqueadas e esquecidas como resultado desta guerra horrível.",
       "ordem": 8,
       "huntId": "poe-a10-the-reliquary",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 67,
         "medio": 67,
         "dificil": 67
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 179,
-        "y": 360
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -249,7 +263,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 367
+      }
     },
     {
       "id": "poe-a10-the-ossuary",
@@ -257,17 +275,13 @@
       "descricao": "Os mortos agradecem por terem sido poupados desta última selvageria.",
       "ordem": 9,
       "huntId": "poe-a10-the-ossuary",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 67,
         "medio": 67,
         "dificil": 67
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 665,
-        "y": 67
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -277,7 +291,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -346,13 +364,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 64,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

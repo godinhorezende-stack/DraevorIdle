@@ -7,7 +7,7 @@
 //   atos[n] = { nome, parte, tema, descricao }
 export const LARGURA = 1000;
 export const ALTURA = 640;
-export const RAIO_DA_FASE = 22;
+export const RAIO_DA_FASE = 15; // o nó pequeno do mapa de ARPG (dono, 09/10) — o mesmo de `world-dados.mjs`
 /** Os tipos de nó que o editor oferece (o `boss` do Ato é um nó à parte, não uma escolha). */
 export const TIPOS_DE_FASE = ['comum', 'quest', 'miniboss', 'boss-fase', 'boss-opcional', 'secreta', 'evento', 'cidade', 'retorno', 'especial', 'desafio'];
 export const TEMAS_DE_MAPA = ['floresta', 'deserto', 'pantano', 'cinzas', 'neve', 'caverna'];

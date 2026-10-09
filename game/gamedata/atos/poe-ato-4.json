@@ -2,10 +2,28 @@
   "id": "poe-ato-4",
   "nome": "Ato 4",
   "descricao": "Ato 4 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 33,
   "ordem": 4,
   "anterior": "poe-ato-3",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a4-the-aqueduct",
+  "cidade": {
+    "nome": "Highgate",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a4-the-aqueduct"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a4-the-aqueduct",
@@ -13,17 +31,13 @@
       "descricao": "A força vital de um Império há muito morto.",
       "ordem": 1,
       "huntId": "poe-a4-the-aqueduct",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 33,
         "medio": 33,
         "dificil": 33
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 416
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -38,7 +52,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a4-the-dried-lake",
@@ -46,17 +64,13 @@
       "descricao": "Ossos da traição, cinzas da purificação.",
       "ordem": 2,
       "huntId": "poe-a4-the-dried-lake",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 34,
         "medio": 34,
         "dificil": 34
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 201,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -74,7 +88,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 153
+      }
     },
     {
       "id": "poe-a4-the-mines-level-1",
@@ -82,17 +100,13 @@
       "descricao": "Doença na escuridão.",
       "ordem": 3,
       "huntId": "poe-a4-the-mines-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 34,
         "medio": 34,
         "dificil": 34
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 504,
-        "y": 222
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -102,7 +116,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 393
+      }
     },
     {
       "id": "poe-a4-the-mines-level-2",
@@ -110,17 +128,13 @@
       "descricao": "",
       "ordem": 4,
       "huntId": "poe-a4-the-mines-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 35,
         "medio": 35,
         "dificil": 35
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 538,
-        "y": 196
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -130,7 +144,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 447
+      }
     },
     {
       "id": "poe-a4-the-crystal-veins",
@@ -138,17 +156,13 @@
       "descricao": "Presentes Bestiais, esperando serem levados.",
       "ordem": 5,
       "huntId": "poe-a4-the-crystal-veins",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 36,
         "medio": 36,
         "dificil": 36
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 402,
-        "y": 185
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -171,7 +185,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 233
+      }
     },
     {
       "id": "poe-a4-kaoms-dream",
@@ -179,17 +197,13 @@
       "descricao": "Fúria e chama avivadas.",
       "ordem": 6,
       "huntId": "poe-a4-kaoms-dream",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 37,
         "medio": 37,
         "dificil": 37
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 172,
-        "y": 288
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -199,7 +213,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 367
+      }
     },
     {
       "id": "poe-a4-kaoms-stronghold",
@@ -207,17 +225,13 @@
       "descricao": "Um suporte feito de soberba.",
       "ordem": 7,
       "huntId": "poe-a4-kaoms-stronghold",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 38,
         "medio": 38,
         "dificil": 38
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 236
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -235,7 +249,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 340
+      }
     },
     {
       "id": "poe-a4-daressos-dream",
@@ -243,17 +261,13 @@
       "descricao": "Não importa quão alto escalar, você nunca escapará do Fosso.",
       "ordem": 8,
       "huntId": "poe-a4-daressos-dream",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 37,
         "medio": 37,
         "dificil": 37
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 478,
-        "y": 97
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -263,7 +277,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 287
+      }
     },
     {
       "id": "poe-a4-the-grand-arena",
@@ -271,17 +289,13 @@
       "descricao": "Sangue escorrendo e flores chorando.",
       "ordem": 9,
       "huntId": "poe-a4-the-grand-arena",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 38,
         "medio": 38,
         "dificil": 38
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 389,
-        "y": 45
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -299,7 +313,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 260
+      }
     },
     {
       "id": "poe-a4-the-belly-of-the-beast-level-1",
@@ -307,17 +325,13 @@
       "descricao": "Entre no Pesadelo.",
       "ordem": 10,
       "huntId": "poe-a4-the-belly-of-the-beast-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 38,
         "medio": 38,
         "dificil": 38
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 273,
-        "y": 145
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -327,7 +341,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 127
+      }
     },
     {
       "id": "poe-a4-the-belly-of-the-beast-level-2",
@@ -335,17 +353,13 @@
       "descricao": "",
       "ordem": 11,
       "huntId": "poe-a4-the-belly-of-the-beast-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 39,
         "medio": 39,
         "dificil": 39
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 306,
-        "y": 118
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -355,7 +369,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 180
+      }
     },
     {
       "id": "poe-a4-the-harvest",
@@ -363,17 +381,13 @@
       "descricao": "Onde os sonhos vêm morrer.",
       "ordem": 12,
       "huntId": "poe-a4-the-harvest",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 40,
         "medio": 40,
         "dificil": 40
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 157,
-        "y": 97
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -394,7 +408,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 73
+      }
     },
     {
       "id": "poe-a4-the-ascent",
@@ -402,17 +420,13 @@
       "descricao": "Quanto maior a altura, maior a queda.",
       "ordem": 13,
       "huntId": "poe-a4-the-ascent",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 40,
         "medio": 40,
         "dificil": 40
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 725,
-        "y": 107
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -427,7 +441,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -514,13 +532,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 33,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

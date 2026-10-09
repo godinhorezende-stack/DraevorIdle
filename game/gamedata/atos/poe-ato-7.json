@@ -2,10 +2,28 @@
   "id": "poe-ato-7",
   "nome": "Ato 7",
   "descricao": "Ato 7 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 50,
   "ordem": 7,
   "anterior": "poe-ato-6",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a7-the-broken-bridge",
+  "cidade": {
+    "nome": "Acampamento da Ponte",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a7-the-broken-bridge"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a7-the-broken-bridge",
@@ -13,17 +31,13 @@
       "descricao": "As pedras tremem no topo desta terra petrificada.",
       "ordem": 1,
       "huntId": "poe-a7-the-broken-bridge",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 50,
         "medio": 50,
         "dificil": 50
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 618,
-        "y": 179
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -38,7 +52,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a7-the-crossroads",
@@ -46,17 +64,13 @@
       "descricao": "A crueldade ancestral dilacera através da intersecção pavimentada.",
       "ordem": 2,
       "huntId": "poe-a7-the-crossroads",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 51,
         "medio": 51,
         "dificil": 51
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 584,
-        "y": 288
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -66,7 +80,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 237,
+        "y": 294
+      }
     },
     {
       "id": "poe-a7-the-fellshrine-ruins",
@@ -74,17 +92,13 @@
       "descricao": "Um espírito de sadismo mancha a terra.",
       "ordem": 3,
       "huntId": "poe-a7-the-fellshrine-ruins",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 51,
         "medio": 51,
         "dificil": 51
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 668,
-        "y": 386
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -99,7 +113,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 409
+      }
     },
     {
       "id": "poe-a7-the-crypt",
@@ -107,17 +125,13 @@
       "descricao": "Memórias ancestrais de volta à vida, depois enfurecidas.",
       "ordem": 4,
       "huntId": "poe-a7-the-crypt",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 51,
         "medio": 51,
         "dificil": 51
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 401
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -127,7 +141,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 443
+      }
     },
     {
       "id": "poe-a7-the-chamber-of-sins-level-1",
@@ -135,17 +153,13 @@
       "descricao": "Ruínas decrépitas renascidas. Um mal cobiçante à espreita pelos salões.",
       "ordem": 5,
       "huntId": "poe-a7-the-chamber-of-sins-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 52,
         "medio": 52,
         "dificil": 52
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 488,
-        "y": 180
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -155,7 +169,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 249
+      }
     },
     {
       "id": "poe-a7-the-chamber-of-sins-level-2",
@@ -163,17 +181,13 @@
       "descricao": "",
       "ordem": 6,
       "huntId": "poe-a7-the-chamber-of-sins-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 52,
         "medio": 52,
         "dificil": 52
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 522,
-        "y": 154
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -183,7 +197,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 203
+      }
     },
     {
       "id": "poe-a7-maligaros-sanctum",
@@ -191,17 +209,13 @@
       "descricao": "As profundezas de uma escuridão decadente.",
       "ordem": 7,
       "huntId": "poe-a7-maligaros-sanctum",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 52,
         "medio": 52,
         "dificil": 52
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 419,
-        "y": 137
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -223,7 +237,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 123
+      }
     },
     {
       "id": "poe-a7-the-den",
@@ -231,17 +249,13 @@
       "descricao": "Esporos encharcados florescem e se alimentam de carne podre.",
       "ordem": 8,
       "huntId": "poe-a7-the-den",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 53,
         "medio": 53,
         "dificil": 53
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 476,
-        "y": 318
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -251,7 +265,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 237,
+        "y": 374
+      }
     },
     {
       "id": "poe-a7-the-ashen-fields",
@@ -259,17 +277,13 @@
       "descricao": "Uma terra causticada e cinzas dormentes.",
       "ordem": 9,
       "huntId": "poe-a7-the-ashen-fields",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 53,
         "medio": 53,
         "dificil": 53
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 473,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -286,7 +300,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 324,
+        "y": 329
+      }
     },
     {
       "id": "poe-a7-the-northern-forest",
@@ -294,17 +312,13 @@
       "descricao": "Uma torre alta de sentinelas de madeira.",
       "ordem": 10,
       "huntId": "poe-a7-the-northern-forest",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 53,
         "medio": 53,
         "dificil": 53
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 131,
-        "y": 269
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -319,7 +333,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 411,
+        "y": 283
+      }
     },
     {
       "id": "poe-a7-the-dread-thicket",
@@ -327,17 +345,13 @@
       "descricao": "Gotejando com raiva e tristeza, o antigo matagal chora.",
       "ordem": 11,
       "huntId": "poe-a7-the-dread-thicket",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 53,
         "medio": 53,
         "dificil": 53
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 315
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -358,7 +372,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 317
+      }
     },
     {
       "id": "poe-a7-the-causeway",
@@ -366,17 +384,13 @@
       "descricao": "Ruínas primordiais guardam segredos antiquários.",
       "ordem": 12,
       "huntId": "poe-a7-the-causeway",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 54,
         "medio": 54,
         "dificil": 54
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 170,
-        "y": 141
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -395,7 +409,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 499,
+        "y": 237
+      }
     },
     {
       "id": "poe-a7-the-vaal-city",
@@ -403,17 +421,13 @@
       "descricao": "Antigo e arcano, uma civilização perdida na poeira da história.",
       "ordem": 13,
       "huntId": "poe-a7-the-vaal-city",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 54,
         "medio": 54,
         "dificil": 54
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 114,
-        "y": 89
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -423,7 +437,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 586,
+        "y": 191
+      }
     },
     {
       "id": "poe-a7-the-temple-of-decay-level-1",
@@ -431,17 +449,13 @@
       "descricao": "Servos aracnídeos babam e salivam, uma carne peregrina cobiçada para alimentar desejos abomináveis.",
       "ordem": 14,
       "huntId": "poe-a7-the-temple-of-decay-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 54,
         "medio": 54,
         "dificil": 54
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 62
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -451,7 +465,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 673,
+        "y": 146
+      }
     },
     {
       "id": "poe-a7-the-temple-of-decay-level-2",
@@ -459,17 +477,13 @@
       "descricao": "",
       "ordem": 15,
       "huntId": "poe-a7-the-temple-of-decay-level-2",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 55,
         "medio": 55,
         "dificil": 55
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 83,
-        "y": 45
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -479,7 +493,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -578,13 +596,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 50,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }
