@@ -222,7 +222,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
  */
 // (6 — 09/10: as regras da árvore × poedb, lotes 3 a 5, também mudam mods de itens: defesa de uma peça, condições de arma, exposição…)
 // (7 — 09/10: a "Velocidade de Ataque aumentada" da arma passa a ser LOCAL, `atk_speed_local` — `separarVelocidadeLocal`.)
-export const VERSAO_DA_TRADUCAO = 7;
+// (8 — 09/10: "X% menos Velocidade de Ataque" (o Legado do Guerreiro) multiplica — `atk_speed_mais`, não mais somado como "reduzida".)
+export const VERSAO_DA_TRADUCAO = 8;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

@@ -1913,7 +1913,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     // golpes" (árvore) mexe no próprio intervalo: −3% é 3% mais curto.
     if (golpe.bateu) {
       const f = Ficha.combate(estado);
-      const intervalo = Math.round(f.intervaloDoGolpeMs * Controle.fatorDeLentidao(hunt));
+      const intervalo = Math.max(umaAcaoPorVez ? R.INTERVALO_MINIMO_DA_ACAO_MS : 0, Math.round(f.intervaloDoGolpeMs * Controle.fatorDeLentidao(hunt)));
       // `proximoGolpeEm` é do relógio do tique (`agora`, o de parede) e o grupo é do relógio da caçada: a diferença entre os dois
       // (`agora - hunt.clock`) é fixa na caçada — os dois andam o mesmo `passou` a cada tique.
       const paraParede = agora - (hunt.clock ?? 0);
@@ -1947,11 +1947,27 @@ export function tique(estado, personagem, agora = Date.now()) {
   processarMortes(estado, personagem, eventos);
 
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;
-  if (usaBarra && livre && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
-  // Modo PoE: o golpe básico depois da barra (ver `umaAcaoPorVez`, acima).
-  if (umaAcaoPorVez) {
-    golpeBasico();
-    processarMortes(estado, personagem, eventos);
+  if (!umaAcaoPorVez) {
+    if (usaBarra && livre && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
+  } else {
+    /*
+     * Modo PoE: a barra e, depois dela, o golpe básico (ver `umaAcaoPorVez`, acima) — e MAIS DE UMA AÇÃO NO TIQUE (`R.ACOES_POR_TIQUE`).
+     * Enquanto o relógio comum libera DENTRO deste tique, a próxima ação sai no instante lógico dela: a conjuração que terminou, a barra,
+     * o golpe básico — cada um conferindo o próprio relógio (`R.liberou`). A barra decide primeiro em toda volta: o golpe básico só tenta
+     * quando ela não usou nada nesta volta (se usou, ela tenta de novo na próxima, antes dele). Para quando nada novo saiu (o relógio ficou
+     * para o tique seguinte). Antes era uma ação por tique: 4 por segundo no máximo, com a ficha prometendo mais.
+     */
+    for (let volta = 0; volta < R.ACOES_POR_TIQUE && livre && estado.hp > 0; volta++) {
+      const grupo = hunt.cooldowns?.[Acoes.GRUPO_DO_POE];
+      const conjurando = hunt.conjurando;
+      // (Na primeira volta a conjuração já foi concluída, no começo do tique.)
+      if (volta > 0) eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
+      if (usaBarra && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
+      const barraAgiu = hunt.cooldowns?.[Acoes.GRUPO_DO_POE] !== grupo || hunt.conjurando !== conjurando;
+      if (!barraAgiu) golpeBasico();
+      processarMortes(estado, personagem, eventos);
+      if (hunt.cooldowns?.[Acoes.GRUPO_DO_POE] === grupo && hunt.conjurando === conjurando) break;
+    }
   }
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
