@@ -47,7 +47,7 @@ const A_DISTANCIA = new Set(['Bows', 'Wands']);
 export const CONDICOES_DE_ESTADO = new Set([
   ...new Set(Object.values(COND_DA_CLASSE)), 'umaMao', 'duasMaos', 'armaCorpo', 'comEscudo', 'duasArmas',
   'matouRecente', 'naoMatouRecente', 'criticoRecente', 'naoCriticoRecente', 'acertadoRecente', 'semDanoRecente', 'movendo', 'vidaBaixa',
-  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'vidaCheia',
+  'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
   'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'parado',
@@ -81,7 +81,7 @@ export const TAGS_DE_GOLPE = new Set([
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
-  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
+  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
 ]);
 /** As condições que dependem do ANEL em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`). */
@@ -128,6 +128,10 @@ export function condicoesDe(estado, total = null, principais = null) {
   if (h) {
     v.add(recente(r.matou, agora) ? 'matouRecente' : 'naoMatouRecente');
     v.add(recente(r.critico, agora) ? 'criticoRecente' : 'naoCriticoRecente');
+    // ("se o Dreno foi removido Preenchendo a Vida Não Reservada": recentemente — `Ficha.recuperarRoubo` marca quando a vida cheia encerra o dreno.)
+    if (recente(r.drenoCheio, agora)) v.add('drenoRemovidoCheio');
+    // ("enquanto no máximo de Fúria": a Fúria no máximo — 30 + "+N à Fúria máxima".)
+    if ((h.furia?.n ?? 0) > 0 && (h.furia.n | 0) >= FURIA.maximo + (Number(total?.furia_max) || 0)) v.add('furiaCheia');
     if (recente(r.acertado, agora)) v.add('acertadoRecente');
     if (!recente(r.dano, agora)) v.add('semDanoRecente');
     if (r.moveu != null && agora - r.moveu <= MOVENDO_MS) v.add('movendo');
@@ -176,7 +180,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (temDot('queimadura')) v.add('ardendo'); else v.add('naoArdendo');
     if (temDot('sangramento')) v.add('sangrandoProprio');
     if (temDot('veneno', 'venenoPoe')) v.add('envenenadoProprio');
-    if (temDot('maldicao')) v.add('amaldicoadoProprio');
+    // (+ as maldições do PoE que os monstros põem em você — `amaldicoarJogador`)
+    if (temDot('maldicao') || Object.values(h.maldicoesNoJogador ?? {}).some((m) => m && m.ate > agora)) v.add('amaldicoadoProprio');
     if (temDot('choque')) v.add('eletrizadoProprio');
     const c = h.controle ?? {};
     if (c.congelado?.ate > agora) v.add('congeladoProprio');
@@ -370,8 +375,10 @@ export const BUFFS = {
   sobrecargaElemental: { nome: 'Sobrecarga Elemental', af: { fire_dmg: 40, ice_dmg: 40, energy_dmg: 40 } },
   tecnicaResoluta: { nome: 'Técnica Resoluta', af: { nunca_erra: 1 } },
   juramentoDoZelote: { nome: 'Juramento do Zelote', af: {} },
-  pactoVaal: { nome: 'Pacto Vaal', af: { life_leech: 2 } },
-  agoniaPerfeita: { nome: 'Agonia Perfeita', af: { dot_multi: 30 } },
+  // (a keystone do PoE: o dreno de vida corpo a corpo é instantâneo e a vida só se recupera pelo dreno — `Ficha.aplicarLeech`, `vidaSoPeloDreno`)
+  pactoVaal: { nome: 'Pacto Vaal', af: { roubo_vida_instantaneo_corpo: 1, sem_recuperar_vida_fora_dreno: 1 } },
+  // (a keystone do PoE: o multiplicador degenerativo das afecções é o de crítico, o crítico não dá dano extra, sem crítico não há afecção)
+  agoniaPerfeita: { nome: 'Agonia Perfeita', af: { agonia_perfeita: 1, sem_afeccao_sem_critico: 1, critico_sem_dano_extra: 1 } },
   presencaEnlouquecedora: { nome: 'Presença Enlouquecedora', af: { dmg_inc: 10 } },
   presencaDoCriador: { nome: 'Presença do Criador', af: { dmg_inc: 10 } },
   fervorSacrificial: { nome: 'Fervor Sacrificial', af: {} },
@@ -394,6 +401,13 @@ export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0) {
   if (!hunt || !BUFFS[nome] || !(segundos > 0)) return;
   const b = (hunt.poeBuffs ??= {});
   b[nome] = Math.max(b[nome] ?? 0, agora + segundos * 1000);
+  // "Remove todas as Afecções e Incêndios quando ao ganhar Adrenalina" (o Campeão/Gladiador): os danos contínuos de afecção em você
+  // (Incêndio, Sangramento, Veneno, Eletrização, Resfriamento) e o Congelamento/Resfriamento do controle.
+  if (nome === 'adrenalina' && Number(fichaDa(hunt)?.afPoe?.adrenalina_remove_afeccoes) > 0) {
+    const h = hunt.efeitosDoJogador;
+    if (h?.dots) h.dots = h.dots.filter((d) => !['queimadura', 'sangramento', 'veneno', 'venenoPoe', 'choque', 'gelo'].includes(d.tipo));
+    if (hunt.controle) { delete hunt.controle.congelado; delete hunt.controle.lento; }
+  }
 }
 /** O que os buffs ativos somam (`Afixos.soma`): `{ stat: valor }` ou null. "+X% Efeito da Agressividade" multiplica a dela. */
 export function adds(estado, total = null) {
@@ -406,6 +420,46 @@ export function adds(estado, total = null) {
   }
   return Object.keys(saida).length ? saida : null;
 }
+// ---------------------------------------------------------------- as MALDIÇÕES dos monstros em VOCÊ
+
+/**
+ * As maldições que um monstro do PoE põe em você (o modificador "Amaldiçoa" — `mobs/mecanicas.aoAtacar`, efeito `maldicao`) e as que os
+ * monstros com "Reflete Feitiços" devolvem (`Reforcos.marcar`). Cada uma é um conjunto de atributos que entra na SUA soma enquanto dura
+ * (`addsDasMaldicoesNoJogador`): a Fraqueza Elemental tira resistência ANTES do máximo de 75%, como no PoE. Os números são os da gema no
+ * nível mais baixo do PoE (a do monstro não tem nível no poedb).
+ */
+export const MALDICOES_DOS_MONSTROS = {
+  fraquezaElemental: { nome: 'Fraqueza Elemental', af: { fire_res: -20, ice_res: -20, energy_res: -20 } },
+  vulnerabilidade: { nome: 'Vulnerabilidade', af: { dano_physical_recebido_inc: 20 } },
+  enfraquecer: { nome: 'Enfraquecer', af: { mais_dano: -20 } },
+};
+export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
+/** Põe uma maldição em você (renova a mesma): `{ nome, af, ms }`. */
+export function amaldicoarJogador(hunt, id, { nome, af, ms = DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, agora = hunt?.clock ?? 0) {
+  if (!hunt || !af) return;
+  (hunt.maldicoesNoJogador ??= {})[id] = { ate: agora + ms, nome, af };
+}
+/**
+ * O que as maldições em você somam agora (`Afixos.soma`, DEPOIS das condições — o "Imune a Maldições enquanto possuir ao menos N de Fúria"
+ * já resolvido): × "Efeito das Maldições em você" (`efeito_maldicao_proprio`); nada com "Imune a Maldições"; e, com "Suas Resistências
+ * Elementais não podem ser reduzidas por Maldições" (`res_elem_nao_reduzida_maldicao`), sem a parte que tira resistência elemental.
+ */
+export function addsDasMaldicoesNoJogador(estado, total) {
+  if (!ligado()) return null;
+  const h = estado?.hunt;
+  const agora = h?.clock ?? 0;
+  const ativas = Object.values(h?.maldicoesNoJogador ?? {}).filter((m) => m && m.ate > agora);
+  if (!ativas.length || Number(total?.imune_maldicao) > 0) return null;
+  const efeito = Math.max(0, 1 + (Number(total?.efeito_maldicao_proprio) || 0) / 100);
+  const semResElemental = Number(total?.res_elem_nao_reduzida_maldicao) > 0;
+  const saida = {};
+  for (const m of ativas) for (const [k, v] of Object.entries(m.af ?? {})) {
+    if (semResElemental && v < 0 && /^(fire|ice|energy)_res$/.test(k)) continue;
+    saida[k] = (saida[k] ?? 0) + v * efeito;
+  }
+  return Object.keys(saida).length ? saida : null;
+}
+
 /** Os buffs ativos para a tela (cartões da caçada). */
 export function buffsParaTela(estado) {
   const h = estado?.hunt;
@@ -560,6 +614,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   }
   if (s.crit_chance) f.critChance = Math.min(ficha.critTeto ?? 1, (f.critChance ?? 0) + s.crit_chance / 100);
   if (critMult) f.critMultiplier = (ficha.critMultiplier ?? 1.5) + critMult / 100;
+  // (o multiplicador de crítico BRUTO — o da Agonia Perfeita, que tira o dano extra do crítico mas usa o multiplicador nas afecções)
+  if (critMult && ficha.critMultiplierBruto != null) f.critMultiplierBruto = ficha.critMultiplierBruto + critMult / 100;
   const penPorElemento = { fire: s.fire_pen ?? 0, ice: s.ice_pen ?? 0, energy: s.energy_pen ?? 0 };
   if (pen || s.phys_pen || Object.values(penPorElemento).some(Boolean)) {
     const p = ficha.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
@@ -571,6 +627,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
 }
 function finalizar(f, ficha, s, temAfeccao) {
   if (temAfeccao && ficha.recalcularAfeccoes) f.afeccoes = ficha.recalcularAfeccoes({ ...ficha.afPoe, ...somarSobre(ficha.afPoe, s) });
+  // (as afecções do golpe sabem o multiplicador de crítico dele — "Multiplicador de Dano Degenerativo para Afecções é igual ao Multiplicador
+  // de Golpe Crítico", a Agonia Perfeita)
+  if (f.afeccoes?.agoniaPerfeita) f.afeccoes = { ...f.afeccoes, multiplicadorDoCritico: f.critMultiplierBruto ?? f.critMultiplier };
   return f;
 }
 
@@ -592,7 +651,12 @@ export function tagsDoAlvo(alvo, agora) {
   if (dot('sangramento')) t.push('alvoSangrando');
   if (dot('veneno', 'venenoPoe')) t.push('alvoEnvenenado');
   if (dot('queimadura')) t.push('alvoIncendiado');
-  if (dot('maldicao') || at(e.amaldicoado)) t.push('alvoAmaldicoado');
+  // (+ a MALDIÇÃO do PoE posta pelo acerto — `alvo.maldicoes`, `Reforcos.marcar`: antes as regras "@alvoAmaldicoado" não a viam)
+  if (dot('maldicao') || at(e.amaldicoado) || amaldicoadoPorVoce(alvo, agora)) t.push('alvoAmaldicoado');
+  // ("contra Inimigos Afetados por ao menos N Venenos": `alvoVenenos:N` para cada N até o número de venenos no alvo)
+  const venenos = dots.filter((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0).length;
+  for (let n = 1; n <= Math.min(venenos, 100); n++) t.push(`alvoVenenos:${n}`);
+  if (at(e.chocado) || at(e.congelado)) t.push('alvoEletrizadoOuCongelado');
   const rar = alvo.raridade ?? alvo.raridadePoe;
   if (rar === 'raro') t.push('alvoRaro');
   if (rar === 'unico' || alvo.boss || alvo.chefe) t.push('alvoUnico');
@@ -648,7 +712,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer']);
 export const ACOES = new Set(['frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
@@ -673,7 +737,8 @@ const PARAMETRICOS = [
   /^res_fixa(_tem)?:(fire|ice|energy|chaos)$/, // ficha (resistência fixa)
   /^frasco_regen_[ns]:(vida|mana|utilidade|todos)$/, /^frasco_instantaneo_baixa:(vida|mana)$/, /^sem_frasco:(vida|mana|utilidade)$/, // itens-poe/frascos
   /^aura_proximos:(cego|mutilado|intimidado|debilitado|cinzas|causticado|fragilizado|exaurido|lento|provocado|resfriado|exposicaoFogo|exposicaoGelo|exposicaoRaio|amaldicoado|definhado)$/, // mods-poe.aurasProximas
-  /^efeito_buff_gema:(aura|clamor|arauto|lacaio|todos|golem)$/, // itens-poe/gemas-poe (reforços das gemas; golem: os bônus dos golens ao dono)
+  /^efeito_buff_gema:(aura|clamor|arauto|lacaio|todos|golem)$/,
+  /^efeito_maldicao_expirou:\d+$/, // acoes.efeitosDaMaldicao → Reforcos.marcar ("Efeito aumentado se Y% da Duração da Maldição expirou") // itens-poe/gemas-poe (reforços das gemas; golem: os bônus dos golens ao dono)
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes
 ];
 /** O atributo dinâmico tem efeito (sabe-se o que fazer com ele)? */
@@ -778,6 +843,10 @@ export function doBicho(bicho, agora, { contraOutro = false } = {}) {
     if (e.cego.esconjuro) danoFator *= 0.9;
   }
   if (ativo(e.debilitado, agora)) danoFator *= 0.9;
+  // "Inimigos Resfriados pelos seus Acertos reduz o Dano causado pela metade do Efeito de Resfriamento" (o Modelador do Inverno).
+  if (ativo(e.lento, agora) && e.lento.reduzDano) danoFator *= Math.max(0, 1 - e.lento.pct / 200);
+  // Coberto de Gelo (PoE): 50% menos chance de crítico (o +20% de dano de Gelo recebido está em `fatorRecebidoPeloBicho`).
+  if (ativo(e.cobertoGelo, agora)) criticoFator *= 0.5;
   return { danoFator, precisaoFator, criticoFator };
 }
 /** A resistência elemental a menos do bicho Causticado (pontos), e a chance de crítico a mais contra ele Fragilizado (pontos de %). */
@@ -812,7 +881,7 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
       const inteiro = Math.floor(r.resto);
       if (inteiro > 0) {
         r.resto -= inteiro;
-        if (r.recurso === 'hp') estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + inteiro);
+        if (r.recurso === 'hp') { if (!vidaSoPeloDreno(ficha?.afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + inteiro); }
         else estado.mana = Math.min(estado.maxMana ?? 0, (estado.mana ?? 0) + inteiro);
       }
     }
@@ -920,6 +989,12 @@ const AFECCAO_DO_CONTROLE = { congelado: { nome: 'congelamento', elemental: true
  * Elementais), imunidade, a duração em você ("Duração do Congelamento em você reduzida", das Afecções), a "Recuperação de Atordoamentos"
  * (encurta o atordoamento) e o efeito do Resfriamento em você (a lentidão). `{ evitou, duracaoFator, pctFator, chanceFator }`.
  */
+/** Você já está Congelado, Resfriado ou Eletrizado (as Afecções Não Danificadoras em você)? (dado puro: os dots e o controle da caçada) */
+function jaTemNaoDanificadora(hunt) {
+  const agora = hunt?.clock ?? 0;
+  const c = hunt?.controle ?? {};
+  return (c.congelado?.ate ?? 0) > agora || (c.lento?.ate ?? 0) > agora || (hunt?.efeitosDoJogador?.dots ?? []).some((d) => d.falta > 0 && (d.tipo === 'choque' || d.tipo === 'gelo'));
+}
 export function controleNoJogador(ficha, efeito, rng = Math.random, hunt = null) {
   const a = AFECCAO_DO_CONTROLE[efeito];
   if (!ligado() || !ficha?.afPoe || !a) return { evitou: false, duracaoFator: 1, pctFator: 1, chanceFator: 1 };
@@ -928,9 +1003,13 @@ export function controleNoJogador(ficha, efeito, rng = Math.random, hunt = null)
   const imunePorTempo = (hunt?.imunidadesPoe?.[a.nome] ?? 0) > (hunt?.clock ?? 0) || (efeito === 'lento' && (hunt?.imunidadesPoe?.lento ?? 0) > (hunt?.clock ?? 0));
   // (+ "Você não pode ficar Lento" — a árvore: só a lentidão.)
   if (v(`imune_${a.nome}`) > 0 || imunePorTempo || (efeito === 'lento' && v('imune_lento') > 0)) return { evitou: true, duracaoFator: 0, pctFator: 0, chanceFator: 0 };
+  // "Afecções Não Danificadoras Não Podem ser infligidas em você enquanto você já tiver uma": o Congelamento e o Resfriamento (o Atordoamento
+  // não é afecção) não entram se você já está Congelado, Resfriado ou Eletrizado.
+  if (a.elemental && v('afeccao_controle_unica') > 0 && hunt && jaTemNaoDanificadora(hunt)) return { evitou: true, duracaoFator: 0, pctFator: 0, chanceFator: 0 };
   const evitar = v(`evitar_${a.nome}`) + (a.elemental ? v('avoid_elem_ailments') : 0);
   if (evitar > 0 && rng() * 100 < evitar) return { evitou: true, duracaoFator: 0, pctFator: 0, chanceFator: 1 };
-  let duracaoFator = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100);
+  // (+ "X% mais Duração de Afecções em você" — multiplica; o Atordoamento não é afecção.)
+  let duracaoFator = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * (a.elemental ? Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100) : 1);
   if (efeito === 'atordoado') duracaoFator /= Math.max(0.1, 1 + v('stun_recovery') / 100);
   const pctFator = efeito === 'lento' ? Math.max(0, 1 + v('efeito_resfriamento_proprio') / 100) : 1;
   // "Ponto de Atordoamento reduzido": mais fácil de ser atordoado.
@@ -965,11 +1044,21 @@ export function extraDoFisicoRecebido(ficha, fisico, rng = Math.random) {
   const el = ['fire', 'ice', 'energy'][Math.floor(rng() * 3)];
   return (fisico * pct) / 100 * fatorDaResistenciaRecebida(ficha, el);
 }
+/**
+ * "Não pode Recuperar Vida fora o Dreno" (o Pacto Vaal — da árvore, `sem_recuperar_vida_fora_dreno`, ou de uma peça, `sempre:`/`keystone:pactoVaal`):
+ * a regeneração, os frascos, as curas, o "Recupera X% de Vida ao…" e a recarga aplicada à vida não enchem a vida; o dreno, sim.
+ */
+export const vidaSoPeloDreno = (af) => Number(af?.sem_recuperar_vida_fora_dreno) > 0 || Number(af?.['sempre:pactoVaal']) > 0 || Number(af?.['keystone:pactoVaal']) > 0;
+/** O monstro tem uma maldição sua ativa (`Reforcos.marcar` → `bicho.maldicoes`)? (dado puro: este módulo não importa os reforços) */
+export const amaldicoadoPorVoce = (bicho, agora) => Object.values(bicho?.maldicoes ?? {}).some((m) => m && m.ate > agora);
 /** O crítico do monstro no personagem: a chance × o Cego, e o dano extra × (1 − "Dano Extra recebido de Acertos Críticos reduzido"). */
 export function criticoDoBicho(base, bicho, ficha, agora, rng = Math.random) {
   if (!ligado()) return null;
+  // "Inimigos Envenenados por você não podem causar Golpes Críticos".
+  if (Number(ficha?.afPoe?.envenenados_sem_critico) > 0 && (bicho?.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0)) return { critico: false, fator: 1 };
   const { criticoFator } = doBicho(bicho, agora);
-  const red = Number(ficha?.afPoe?.crit_dmg_taken_red) || 0;
+  // (+ "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em X%" — só do monstro amaldiçoado por você)
+  const red = (Number(ficha?.afPoe?.crit_dmg_taken_red) || 0) + (amaldicoadoPorVoce(bicho, agora) ? Number(ficha?.afPoe?.crit_dmg_taken_red_amaldicoado) || 0 : 0);
   if (criticoFator === 1 && !red) return null;
   if (!(base.chance > 0) || !(rng() < base.chance * criticoFator)) return { critico: false, fator: 1 };
   return { critico: true, fator: 1 + (base.fator - 1) * Math.max(0, 1 - red / 100) };
@@ -1054,7 +1143,23 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // Inervado (PoE: "Unnerve"): o alvo sofre 10% mais dano de magias.
   if (ativo(e.inervado, agora) && (ficha?.tagsDoGolpe ?? []).includes('magia')) f *= 1.1;
   if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.min(15, e.definhado.n ?? 1);
+  // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
+  if (tipo === 'ice' && ativo(e.cobertoGelo, agora)) f *= 1.2;
+  // "Inimigos sofrem permanentemente Dano aumentado em X% por cada segundo que passaram Congelados/Resfriados por você, máximo de Y%".
+  const p = e.permanente;
+  if (p) f *= 1 + (Math.min(p.congeladoMax ?? 0, ((p.congelado ?? 0) * (p.msCongelado ?? 0)) / 1000) + Math.min(p.resfriadoMax ?? 0, ((p.resfriado ?? 0) * (p.msResfriado ?? 0)) / 1000)) / 100;
+  // "Inimigos Eletrizados ou Congelados por você sofrem Dano Elemental aumentado em X%" (do atacante).
+  if (['fire', 'ice', 'energy'].includes(tipo) && (ativo(e.chocado, agora) || ativo(e.congelado, agora))) f *= 1 + (Number(ficha?.afPoe?.dano_elemental_eletrizado_congelado) || 0) / 100;
   return f;
+}
+/** As resistências a menos que as afecções do personagem deixam no bicho: −X% Elementais (Incendiado/Resfriado), −X% Caos (Envenenado). */
+export function resMenosDasAfeccoes(alvo, agora, tipo) {
+  const e = alvo?.estados;
+  if (!ligado() || !e) return 0;
+  const dot = (...t) => (alvo.dots ?? []).some((d) => t.includes(d.tipo) && d.falta > 0);
+  if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental;
+  if (tipo === 'chaos' && e.resMenosCaos > 0 && dot('veneno', 'venenoPoe')) return e.resMenosCaos;
+  return 0;
 }
 /** A resistência a menos do bicho Exposto (−10% no elemento), além do Causticar. */
 // (09/10) A exposição posta pelo "Inflige Exposição a Fogo ao Acertar, aplicando −X%" guarda o X (`exposicaoPct`); a das auras, 10.

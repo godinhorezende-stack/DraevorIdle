@@ -11,6 +11,10 @@ import { aplicarEscala, escalaDaFase } from '../systems/campanha.mjs';
 import { matarMonstro, estimarExpDoBicho } from '../systems/hunt/combate.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
 import { aAdaptar, doClassico } from './apoio-migracao.mjs';
+import { ligado as jogoOficial, catalogo as catalogoDoPoe, REGRAS as REGRAS_DO_POE } from '../systems/itens-poe/catalogo.mjs';
+import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
+import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const H = (h, m = 0) => h * 60 + m;
 const FASE = { huntId: huntDoPoe('mistrock-cyclops'), dificuldade: 'facil' };
@@ -120,10 +124,22 @@ test('caçada OFFLINE: a projeção segue a faixa da stamina (14h ou menos paga 
     try {
       const e = personagemDeTeste({ vocacao: 'knight', level: 200 });
       e.stamina = stamina;
+      // (C — o personagem precisa SOBREVIVER aos 30 min simulados, senão a projeção, que é o que este teste mede, nem roda. Desarmado no PoE
+      // ele dava ~5 a cada 2 s; desde que a raridade passou a MULTIPLICAR a velocidade de ataque do bicho do PoE (#181), os Mágicos/Raros
+      // que esta semente sorteia o matavam em 51 s sem nenhum abate — antes, em 82 s com 1 abate, e o teste só comparava a exp desse abate.
+      // Como na caçada offline do encontros-etapa6: vida que não acaba e, no PoE, uma arma de verdade — um Machado Vaal.)
+      e.maxHp = e.hp = 1e9;
+      if (jogoOficial()) {
+        JogoDoPoe.iniciar(ITEM_CATALOG);
+        e.equipment = { ...(e.equipment ?? {}), weapon: JogoDoPoe.pecaDoJogo(gerarPeca({ catalogo: catalogoDoPoe(), regras: REGRAS_DO_POE, base: 'Two_Hand_Axes/Vaal_Axe', raridade: 'normal', ilvl: 64, rng: () => 0.5 })) };
+      }
       assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
       e.stamina = stamina;
       e.hunt.offlineDesde = Date.now() - 2 * 3_600_000;
-      return Cacadas.simularAusencia(e, PERSONAGEM, Date.now()).report.exp;
+      const r = Cacadas.simularAusencia(e, PERSONAGEM, Date.now());
+      assert.equal(r.morreu, false, 'sobreviveu aos 30 min simulados');
+      assert.ok(r.report.kills > 0, `caçou: ${r.report.kills} abates`);
+      return r.report.exp;
     } finally {
       Math.random = original;
     }

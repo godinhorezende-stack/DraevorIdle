@@ -9,6 +9,7 @@ import { huntOuMapaCustom } from './terreno.mjs';
 import { VIZINHANCA_8, VIZINHANCA_4, bfsDistancias, distancia } from './caminho.mjs';
 import * as Charms from '../charms.mjs';
 import * as Estados from '../skills/estados.mjs';
+import * as Reforcos from '../skills/reforcos.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -309,7 +310,8 @@ export function moverMonstros(hunt, grade, agora) {
     m.dir = dy < 0 ? 0 : dy > 0 ? 2 : dx > 0 ? 1 : 3;
     // Paralisado (charms Cripple e Numb): passo bem mais lento por 10 s.
     // + lento (support Slow): o passo demora mais.
-    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora);
+    // + Desacelerado pela maldição do PoE ("Inimigos Amaldiçoados por você são Desacelerados" — `Reforcos.fatorDeDesaceleracao`).
+    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora);
     m.proximoPasso = agora + m.moveMs;
   }
 }

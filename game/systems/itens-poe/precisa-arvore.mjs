@@ -8,7 +8,7 @@ export const TEMAS = [
   ['gema', 'Armadilhas e Minas', /Armadilha|Mina\b|Minas\b/, 'armadilhas e minas de verdade (armar, detonar, limite plantado, auras das minas) — no jogo as gemas viram golpes comuns'],
   ['gema', 'Marcas e Runas', /Marca|Vínculo de Runas|Convocação de Runas|Runa/, 'marcas presas ao inimigo (vínculo, convocação, alcance, duração da marca)'],
   ['gema', 'Clamores', /Clamor/, 'o Poder dos clamores, a recarga e os bônus do clamor reforçado'],
-  ['gema', 'Maldições', /Maldi|Amaldi/, 'a duração e o "expirou X%" das maldições, maldição sobre inimigo sem maldição, maldições em você'],
+  ['gema', 'Maldições', /Maldi|Amaldi/, 'as maldições do PoE já amaldiçoam o monstro com limite, duração, "expirou X%", lentidão e o evento "sem Maldições" (`Reforcos.marcar`); o monstro à prova de maldições, a regeneração/escudo do amaldiçoado, o "destruído" e as maldições dos monstros em você também; faltam as auras não-maldição nos inimigos e o redefinir de esfriamentos e eletrificações'],
   ['gema', 'Auras e Arautos', /Aura|Arauto/, 'efeitos de aura em aliados e a duração das auras não reservadas'],
   ['gema', 'Guardas', /Guarda/, 'o escudo absorvente das guardas'],
   ['gema', 'Canalização e repetição', /Canaliz|Intensidade|Selos|Repetição|Liberar/, 'canalização por estágios, intensidade, selos (Liberar) e repetição de magias — no jogo cada uso é um'],
@@ -24,7 +24,7 @@ export const TEMAS = [
   ['item', 'Aljava, anéis, amuleto, cinto', /Aljava|anéis|Anel|Amuleto|Cinto/, 'condições pelos modificadores de outras peças e os bônus da aljava'],
   ['item', 'Joias', /Joia/, 'encaixes de joia na árvore'],
   // ---- MECÂNICAS gerais do combate
-  ['mecanica', 'Dreno', /Dreno|Drenad/, 'o roubo do PoE já tem instância, taxa e teto (`ficha.aplicarLeech`/`recuperarRoubo`); faltam o dreno instantâneo, o de mana/escudo por tipo de dano e o "enquanto drenando" de outras peças'],
+  ['mecanica', 'Dreno', /Dreno|Drenad/, 'o roubo do PoE já tem instância, taxa, teto por recurso e a parte instantânea (`ficha.aplicarLeech`/`recuperarRoubo`/`tetoDoRouboPct`); o dos totens para você e o do dano excedente também; falta o "enquanto drenando" de outras peças'],
   ['mecanica', 'Escudo de Energia', /Escudo de Energia|Escudo Mágico/, 'a recarga do escudo (atraso, início, ritmo), escudo no ponto de atordoamento, caos que não ignora o escudo'],
   ['mecanica', 'Exposição', /Exposiç/, 'exposição com valor mínimo, efeito de exposição em você'],
   ['mecanica', 'Atordoamento', /Atordo/, 'duração do atordoamento crítico, ignorar atordoamento, atordoar em área ao ser atordoado'],

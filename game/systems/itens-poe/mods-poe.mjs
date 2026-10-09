@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { valor, marcar, ganharFuria, ativo, fichaDa, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe } from './condicoes-poe.mjs';
+import { valor, marcar, ganharFuria, ativo, fichaDa, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -21,17 +21,28 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   const tags = new Set(ficha.tagsDoGolpe ?? []);
   const salaDeBoss = !!hunt?.isBoss;
   const ev = (estado2) => eventos?.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: estado2 });
+  const sorte = (pct) => pct > 0 && rng() * 100 < pct;
+  // "X% do Dano Excedente é Drenado como Vida" (o Apetite Insaciável do Carrasco): o acerto que MATOU — a vida que faltava ao monstro era
+  // menos que o dano — drena o que sobrou ("Dano Excedente é qualquer Dano de um Acerto que exceda a Vida restante do Inimigo").
+  const excedente = alvo.hp <= 0 && alvo.hp + dano > 0 ? Math.min(dano, -alvo.hp) : 0;
+  if (excedente > 0 && v('roubo_excedente') > 0) drenoDaFicha?.(estado, { vida: (excedente * v('roubo_excedente')) / 100 }, ficha, eventos, personagem?.nome ?? null, hunt?.pos ?? null);
   if (crit) {
     marcar(hunt, 'critico', agora);
     // (Os frascos com "chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico" — `frascos.tique`.)
     if (hunt) hunt.poeCriticosParaFrascos = (hunt.poeCriticosParaFrascos ?? 0) + 1;
   }
   const e = (alvo.estados ??= {});
-  // Os EMPALAMENTOS do alvo: cada acerto solta o guardado (passa pela redução física do alvo como um golpe físico).
+  // Os EMPALAMENTOS do alvo: cada acerto solta o guardado — passando pela Redução de Dano Físico do alvo (a resistência física e a redução
+  // de dano do monstro — `reducaoFisica`, registrada pela caçada), salvo "Dano de Empalamento … ignoram a Redução de Dano Físico Inimiga".
+  // ("X% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional": este acerto não gasta.)
   if (Array.isArray(e.empalado) && e.empalado.length && alvo.hp > 0) {
     let total = 0;
-    for (const x of e.empalado) if (x.ate > agora && x.acertos > 0) { total += x.valor; x.acertos--; }
+    const segura = sorte(v('empalar_acerto_extra_chance'));
+    for (const x of e.empalado) if (x.ate > agora && x.acertos > 0) { total += x.valor; if (!segura) x.acertos--; }
     e.empalado = e.empalado.filter((x) => x.ate > agora && x.acertos > 0);
+    if (total > 0 && reducaoFisica && !(v('empalar_ignora_reducao') > 0)) total = reducaoFisica(hunt, alvo, total);
+    // ("X% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo")
+    if (sorte(v('empalar_remover_chance'))) e.empalado = [];
     if (total > 0) {
       const d = Math.max(1, Math.round(total));
       alvo.hp -= d;
@@ -51,7 +62,6 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
       ev('atordoado');
     }
   }
-  const sorte = (pct) => pct > 0 && rng() * 100 < pct;
   const lentidao = (pct, ms) => {
     const l = e.lento;
     const ate = agora + ms;
@@ -90,12 +100,30 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     e.exposicao = { ...(e.exposicao ?? {}), [el]: agora + 4000 };
     e.exposicaoPct = { ...(e.exposicaoPct ?? {}), [el]: ainda ? Math.max(e.exposicaoPct?.[el] ?? 10, pct) : pct };
   }
+  // O EMPALAMENTO: o efeito (+ "em Inimigos não Empalados"), os acertos ("duram por N Acerto adicional"), a duração, os "N Empalamentos
+  // adicionais" e o espalhar ("também Empalam outros Inimigos próximos deles" — O Empalador), com o "Por N segundos … não podem ser Empalados
+  // novamente".
   if (fisico > 0 && sorte(v('chance_empalar'))) {
-    const valor2 = (fisico * NO_ACERTO.empalar.pctDoFisico * (1 + v('efeito_empalamento') / 100)) / 100;
-    const lista = (e.empalado ??= []);
-    lista.push({ valor: valor2, acertos: NO_ACERTO.empalar.acertos, ate: agora + NO_ACERTO.empalar.duracaoMs });
-    if (lista.length > NO_ACERTO.empalar.maximo) lista.splice(0, lista.length - NO_ACERTO.empalar.maximo);
-    ev('empalado');
+    const empalar = (m) => {
+      const em = (m.estados ??= {});
+      if ((em.empalarBloqueadoAte ?? 0) > agora) return false;
+      const lista = (em.empalado ??= []);
+      const naoEmpalado = !lista.some((x) => x.ate > agora && x.acertos > 0);
+      const valor2 = (fisico * NO_ACERTO.empalar.pctDoFisico * (1 + (v('efeito_empalamento') + (naoEmpalado ? v('efeito_empalamento_nao_empalado') : 0)) / 100)) / 100;
+      const acertos = NO_ACERTO.empalar.acertos + Math.max(0, Math.floor(v('empalar_acertos_extra')));
+      const ate = agora + Math.round(NO_ACERTO.empalar.duracaoMs * Math.max(0.1, 1 + v('duracao_empalamento') / 100));
+      for (let k = 0; k <= Math.max(0, Math.floor(v('empalamentos_extras'))); k++) lista.push({ valor: valor2, acertos, ate });
+      if (lista.length > NO_ACERTO.empalar.maximo) lista.splice(0, lista.length - NO_ACERTO.empalar.maximo);
+      if (v('empalar_bloqueio_s') > 0) em.empalarBloqueadoAte = agora + v('empalar_bloqueio_s') * 1000;
+      return true;
+    };
+    if (empalar(alvo)) ev('empalado');
+    if (v('empalar_espalha') > 0) {
+      for (const m of hunt?.monstros ?? []) {
+        if (m === alvo || m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) > RAIO_DO_EMPALAR_ESPALHADO) continue;
+        if (empalar(m)) eventos?.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'empalado' });
+      }
+    }
   }
   // EQUILÍBRIO ELEMENTAL (a keystone da árvore, o PoE atual): o acerto com dano elemental TIRA a Exposição daqueles elementos e INFLIGE
   // Exposição aos outros (−25% de resistência, "Exposições infligidas desta forma aplicam −25%"), por 4 s — o mesmo sistema de Exposição acima.
@@ -159,6 +187,24 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
     if (rec) marcar(hunt, rec);
     evento(estado, hunt, ev, ficha, { alvo, eventos, personagem });
   }
+  // "Recupera X% de Vida ao Incendiar um Inimigo não Incendiado" (`afeccoes.aoAcertar` marca o alvo que não queimava).
+  if (alvo?.estados?.incendiadoNovo) {
+    delete alvo.estados.incendiadoNovo;
+    evento(estado, hunt, 'incendiarNovo', ficha, { alvo, eventos, personagem });
+  }
+  // "Eletrizações infligidas por você se espalham para outros Inimigos dentro de N metros" (1 casa = 2 m): a mesma Eletrização nos de perto.
+  const metros = valor(ficha, 'eletrizacao_espalha_m');
+  const s = alvo?.estados?.chocado;
+  if (metros > 0 && postos.includes('eletrizado') && s) {
+    const casas = Math.max(1, Math.round(metros / 2));
+    for (const m of hunt?.monstros ?? []) {
+      if (m === alvo || m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) > casas) continue;
+      const atual = m.estados?.chocado;
+      if (atual && atual.ate > (hunt.clock ?? 0) && atual.pct >= s.pct) continue;
+      (m.estados ??= {}).chocado = { ate: s.ate, pct: s.pct };
+      eventos?.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'eletrizado' });
+    }
+  }
 }
 
 
@@ -213,10 +259,17 @@ function congelar(bicho, dur, agora, salaDeBoss) {
 
 
 /** O tipo de dano contínuo do motor (`combate/dot.json`) → a afecção do PoE e se é Elemental. */
+// (`danifica`: Afecção Danificadora — Incêndio, Sangramento, Veneno — ou Não Danificadora — Eletrização, Resfriamento; a Maldição não é afecção)
 const AFECCAO_DO_DOT = {
-  queimadura: { nome: 'incendio', elemental: true }, choque: { nome: 'eletrizacao', elemental: true }, gelo: { nome: 'resfriamento', elemental: true },
-  veneno: { nome: 'veneno' }, venenoPoe: { nome: 'veneno' }, sangramento: { nome: 'sangramento' }, maldicao: { nome: 'maldicao' },
+  queimadura: { nome: 'incendio', elemental: true, danifica: true }, choque: { nome: 'eletrizacao', elemental: true, danifica: false }, gelo: { nome: 'resfriamento', elemental: true, danifica: false },
+  veneno: { nome: 'veneno', danifica: true }, venenoPoe: { nome: 'veneno', danifica: true }, sangramento: { nome: 'sangramento', danifica: true }, maldicao: { nome: 'maldicao' },
 };
+/** Você já tem uma Afecção Danificadora (`danifica`) ou Não Danificadora (o Congelamento e o Resfriamento do controle contam)? */
+export function jaTemAfeccao(hunt, danifica, agora = hunt?.clock ?? 0) {
+  if ((hunt?.efeitosDoJogador?.dots ?? []).some((d) => d.falta > 0 && AFECCAO_DO_DOT[d.tipo]?.danifica === danifica)) return true;
+  const c = hunt?.controle ?? {};
+  return !danifica && ((c.congelado?.ate ?? 0) > agora || (c.lento?.ate ?? 0) > agora);
+}
 
 /**
  * O dano contínuo de um monstro NO PERSONAGEM, pelos mods do PoE: "X% de chance de Evitar ser Incendiado" (e Afecções Elementais),
@@ -229,9 +282,15 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   if (!a) return Dot.aplicarNoJogador(hunt, ef, agora);
   const v = (k) => Number(ficha.afPoe[k]) || 0;
   if (v(`imune_${a.nome}`) > 0 || (hunt.imunidadesPoe?.[a.nome] ?? 0) > agora) return null;
+  // "Afecções Danificadoras/Não Danificadoras Não Podem ser infligidas em você enquanto você já tiver uma" (a maestria de Afecções).
+  if (a.danifica != null && v(a.danifica ? 'afeccao_dano_unica' : 'afeccao_controle_unica') > 0 && jaTemAfeccao(hunt, a.danifica, agora)) return null;
+  // "Inimigos Sangrando não infligem Sangramento em você", "Inimigos Incendiados não podem te Incendiar": o monstro que bate tem a afecção.
+  const quem = ef.origem?.uid != null ? (hunt.monstros ?? []).find((m) => m.uid === ef.origem.uid) : null;
+  if (quem && ((ef.tipo === 'sangramento' && v('sem_sangramento_de_sangrando') > 0) || (ef.tipo === 'queimadura' && v('sem_incendio_de_incendiado') > 0)) && (quem.dots ?? []).some((d) => d.tipo === ef.tipo && d.falta > 0)) return null;
   const evitar = v(`evitar_${a.nome}`) + (a.elemental ? v('avoid_elem_ailments') : 0);
   if (evitar > 0 && rng() * 100 < evitar) return null;
-  const dur = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100);
+  // (+ "X% mais Duração de Afecções em você" — multiplica.)
+  const dur = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100);
   const efeito = Math.max(0, 1 + v(`efeito_${a.nome}_proprio`) / 100);
   const base = Dot.CONFIG.tipos[ef.tipo]?.duracaoMs ?? 4000;
   return Dot.aplicarNoJogador(hunt, { ...ef, total: ef.total * dur * efeito, duracaoMs: Math.round((ef.duracaoMs ?? base) * dur) }, agora);
@@ -248,14 +307,27 @@ export function definirDisparo(fn) { disparoDeGatilho = fn; }
 // eslint-disable-next-line no-var
 var leitorDeCargas;
 export function definirCargas(fn) { leitorDeCargas = fn; }
+// O dreno do PoE (`Ficha.drenarPoe` — registrado pela ficha: este módulo não a importa).
+// eslint-disable-next-line no-var
+var drenoDaFicha;
+export function definirDreno(fn) { drenoDaFicha = fn; }
 
 /** Os estados que um evento põe no ALVO (`ev:<evento>:alvo:<estado>` = segundos ou chance). */
+/** O raio do "também Empalam outros Inimigos próximos deles" (O Empalador), em casas. */
+const RAIO_DO_EMPALAR_ESPALHADO = 2;
+// A Redução de Dano Físico do monstro no empalamento solto (`hunt/resistencia.resistido`, sem a armadura): quem registra é a caçada — este
+// módulo não importa a resistência (o ciclo de imports).
+// eslint-disable-next-line no-var
+var reducaoFisica;
+export function definirReducaoFisica(fn) { reducaoFisica = fn; }
 const ESTADOS_NO_ALVO = {
   cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate) => { e.mutilado = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 30) }; },
   intimidado: (e, ate) => (e.intimidado = { ate }), debilitado: (e, ate) => { e.debilitado = { ate }; e.exaurido = { ate, pct: 10 }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 20) }; },
   cinzas: (e, ate) => { e.cinzas = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 20) }; }, causticado: (e, ate) => (e.causticado = { ate, pct: 10 }),
   fragilizado: (e, ate) => (e.fragilizado = { ate, pct: 6 }), exaurido: (e, ate) => (e.exaurido = { ate, pct: 10 }), lento: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 30) }),
   provocado: (e, ate) => (e.provocado = { ate }), resfriado: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 10) }),
+  // Coberto de Gelo (PoE): +20% de dano de Gelo recebido e 50% menos chance de crítico (`condicoes-poe`).
+  cobertoGelo: (e, ate) => (e.cobertoGelo = { ate }),
   exposicaoFogo: (e, ate) => (e.exposicao = { ...(e.exposicao ?? {}), fire: ate }), exposicaoGelo: (e, ate) => (e.exposicao = { ...(e.exposicao ?? {}), ice: ate }),
   exposicaoRaio: (e, ate) => (e.exposicao = { ...(e.exposicao ?? {}), energy: ate }), amaldicoado: (e, ate) => (e.amaldicoado = { ate }),
   definhado: (e, ate) => (e.definhado = { ate, n: Math.min(15, (e.definhado?.ate > 0 ? e.definhado.n : 0) + 1) }),
@@ -300,9 +372,15 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
 function aplicarAcao(estado, hunt, ev, ficha, ctx) {
   const { alvo, agora, rng, eventos } = ctx;
   const v = ev.valor;
-  const curar = (campo, max, quanto) => { if (quanto > 0 && (estado.hp ?? 0) > 0) estado[campo] = Math.min(max, (estado[campo] ?? 0) + quanto); };
+  // (o Pacto Vaal — "Não pode Recuperar Vida fora o Dreno": a vida dos eventos não enche)
+  const curar = (campo, max, quanto) => { if (quanto > 0 && (estado.hp ?? 0) > 0 && !(campo === 'hp' && vidaSoPeloDreno(ficha?.afPoe))) estado[campo] = Math.min(max, (estado[campo] ?? 0) + quanto); };
   const esMax = Math.max(0, Math.round(ficha?.energyShield ?? 0));
   const sorte = (pct) => pct >= 100 || rng() * 100 < pct;
+  // (ganhar a ADRENALINA dispara "ao ganhar Adrenalina" — "Recupera 25% de Vida ao ganhar Adrenalina", o Campeão; sem disparar de dentro dele)
+  const ganhar = (buff, seg) => {
+    ganharBuff(hunt, buff, seg, agora);
+    if (buff === 'adrenalina' && ev.evento !== 'ganharAdrenalina') evento(estado, hunt, 'ganharAdrenalina', ficha, { ...ctx, alvo: null });
+  };
   switch (ev.acao) {
     case 'vida': return curar('hp', estado.maxHp ?? 0, v);
     case 'vidaPct': return curar('hp', estado.maxHp ?? 0, ((estado.maxHp ?? 0) * v) / 100);
@@ -321,15 +399,22 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;
     case 'cargaAleatoria': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;
     case 'roubarCargas': if (sorte(v)) for (const t of ['frenesi', 'poder', 'tolerancia']) leitorDeCargas?.(estado, 'ganhar', t, 1); return;
-    case 'buff': return ganharBuff(hunt, ev.param, v, agora);
+    case 'buff': return ganhar(ev.param, v);
     // `buffChance:<buff>:<segundos>` = a CHANCE (%) de ganhar o buff por N segundos ("X% de chance de ganhar Agressividade por 4 segundos ao Matar").
-    case 'buffChance': { const [buff, seg] = String(ev.param).split(':'); if (sorte(v)) ganharBuff(hunt, buff, Number(seg) || SEGUNDOS_PADRAO, agora); return; }
+    case 'buffChance': { const [buff, seg] = String(ev.param).split(':'); if (sorte(v)) ganhar(buff, Number(seg) || SEGUNDOS_PADRAO); return; }
     case 'furia': return ganharFuria(hunt, v, agora);
     case 'frasco': { for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + v; return; }
     // "X% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico": a CHANCE de cada frasco do cinto ganhar uma carga.
     case 'frascoChance': { if (sorte(v)) for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + 1; return; }
     case 'recargaEs': if (sorte(v)) estado.esEspera = 0; return;
-    case 'removerAfeccao': if (sorte(v)) { const d = hunt.efeitosDoJogador?.dots; if (d?.length) d.shift(); } return;
+    // `removerAfeccao:elementais` ("Remove Afecções Elementais quando você Conjurar uma Magia Maldição"): o Incêndio, a Eletrização, o
+    // Resfriamento e o Congelamento em você; sem parâmetro, a afecção mais antiga.
+    case 'removerAfeccao': if (sorte(v)) {
+      if (ev.param === 'elementais') {
+        for (const t of ['queimadura', 'choque', 'gelo']) Dot.removerDoJogador(hunt, t);
+        if (hunt.controle) { delete hunt.controle.congelado; delete hunt.controle.lento; }
+      } else { const d = hunt.efeitosDoJogador?.dots; if (d?.length) d.shift(); }
+    } return;
     case 'alvo': {
       // `alvo:<estado>[:segundos]` = a CHANCE (%) de pôr o estado no alvo (100 = sempre).
       if (!alvo || alvo.hp <= 0) return;

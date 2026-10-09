@@ -179,7 +179,8 @@ function temEfeito(e) {
   const { stat, escala, conds } = partir(e.stat);
   if (!(FICHAS[stat] || NOVOS[stat]?.combate || dinamicoValido(stat))) return false;
   if (!escalaValida(escala)) return false;
-  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c]);
+  // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo`)
+  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvoVenenos:\d+$/.test(c));
 }
 
 const PIOR = ['lembrete', 'equivalente', 'aproximado', 'novo', 'inerte', 'registrado'];

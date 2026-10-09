@@ -1,29 +1,29 @@
 {
- "geradoEm": "2026-10-09T11:00:49.317Z",
+ "geradoEm": "2026-10-09T14:53:35.183Z",
  "resumo": {
   "nos": 2810,
   "auditaveis": 2782,
   "porSituacao": {
-   "funcional": 1712,
-   "sem-efeito": 419,
-   "funcional-aproximado": 141,
-   "parcial": 400,
+   "funcional": 1753,
+   "sem-efeito": 365,
+   "funcional-aproximado": 148,
+   "parcial": 406,
    "nao-classificado": 110
   },
   "verificadosNoMotor": 2782,
   "falhasDeMotor": 0,
   "porNivel": {
    "exibido": 0,
-   "alocavel": 529,
-   "interpretado": 19,
-   "aplicado": 1065,
-   "validado": 1169
+   "alocavel": 475,
+   "interpretado": 10,
+   "aplicado": 1081,
+   "validado": 1216
   },
   "porAplicado": {
-   "ficha": 1665,
-   "combate": 569,
-   "sem efeito": 529,
-   "condicional": 19
+   "ficha": 1694,
+   "combate": 603,
+   "sem efeito": 475,
+   "condicional": 10
   }
  },
  "nos": [
@@ -118,7 +118,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -626,12 +626,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "duracao_afeccoes_elementais_propria"
+    "duracao_afeccoes_elementais_propria",
+    "efeito_resfriamento_proprio",
+    "efeito_eletrizacao_proprio"
    ],
    "tipos": [
     "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -641,18 +643,16 @@
     "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "1/1",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Efeito do Resfriamento e Eletrização em você reduzido em 10%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -800,30 +800,32 @@
    "nomeEn": "Impale Effect with Two Handed Weapons",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "efeito_empalamento@duasMaos"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Efeito dos Empalamentos infligidos por você com Armas de Duas Mãos aumentado em 10%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -1312,12 +1314,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "mana_leech@ataque"
+    "mana_leech@ataque",
+    "roubo_teto_mana_inc"
    ],
    "tipos": [
-    "mana e custo"
+    "mana e custo",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -1327,18 +1331,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Recuperação de Mana Máxima total do Dreno por segundo aumentada em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -2706,16 +2708,16 @@
     "vida, regeneração e dreno de vida"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -3315,16 +3317,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -3840,7 +3842,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -4201,22 +4203,22 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -7245,7 +7247,7 @@
    "chaves": [
     "phys_dmg@ataque+armaCorpo+duasMaos",
     "ailment_dmg_inc@ataque+armaCorpo+duasMaos",
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
@@ -7261,7 +7263,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -9673,12 +9675,13 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "dot_multi_critico",
     "crit_chance_inc"
    ],
    "tipos": [
     "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -9688,18 +9691,16 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "+25% de Multiplicador do Dano Degenerativo para Afecções dos Golpes Críticos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -9794,7 +9795,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -9813,22 +9814,22 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -10476,34 +10477,34 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "es_leech_magia",
+    "roubo_teto_es_inc",
     "dmg_inc@escudoCheio"
    ],
    "tipos": [
+    "escudo de energia",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
-   "nivel": "interpretado",
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/1",
+   "aplicado": "combate",
+   "cobertura": "0/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 3
    },
-   "pendentes": [
-    "0.8% do Dano Mágico Drenado como Escudo de Energia",
-    "Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em 30%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -11527,31 +11528,33 @@
    "nomeEn": "Vaal Pact",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_vida_instantaneo_corpo",
+    "sem_recuperar_vida_fora_dreno"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Dreno de Vida do Dano Corpo a Corpo é Instantâneo",
-    "Não pode Recuperar Vida fora o Dreno"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -12882,7 +12885,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -13003,13 +13006,15 @@
     "fire_res_max",
     "ice_res_max",
     "energy_res_max",
-    "duracao_afeccoes_elementais_propria"
+    "duracao_afeccoes_elementais_propria",
+    "efeito_resfriamento_proprio",
+    "efeito_eletrizacao_proprio"
    ],
    "tipos": [
     "resistências",
     "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -13019,18 +13024,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/4",
+   "cobertura": "3/6",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Efeito do Resfriamento e Eletrização em você reduzido em 20%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -14742,30 +14745,32 @@
    "nomeEn": "Increased Energy Shield Leeched",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_teto_es_inc"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Recuperação total por segundo do Dreno de Escudo de Energia aumentada em 30%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -17469,31 +17474,33 @@
    "nomeEn": "Ethereal Feast",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "es_leech_magia",
+    "roubo_teto_es_inc"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "1% do Dano Mágico Drenado como Escudo de Energia",
-    "Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -19074,16 +19081,16 @@
     "vida, regeneração e dreno de vida"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -19205,32 +19212,33 @@
    "nomeEn": "Crimson Dance",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "sangramento_pilhas",
+    "sangramento_menos"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 3,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Você pode aplicar Sangramento em um Inimigo até 8 vezes",
-    "Seu Sangramento não causa Dano extra enquanto o Inimigo se move",
-    "50% menos Dano com Sangramento"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -20189,16 +20197,16 @@
     "vida, regeneração e dreno de vida"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -23550,12 +23558,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "dot_multi_fire@ataque"
+    "dot_multi_fire@ataque",
+    "ev:incendiarNovo:vidaPct"
    ],
    "tipos": [
-    "afecções e chance no acerto"
+    "afecções e chance no acerto",
+    "efeito por evento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -23565,18 +23575,16 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Recupera 2% de Vida ao Incendiar um Inimigo não Incendiado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -23795,22 +23803,22 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -24037,30 +24045,32 @@
    "nomeEn": "Whispers of Doom",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "maldicoes_adicionais"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Você pode aplicar uma Maldição adicional"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -24922,32 +24932,35 @@
    "nomeEn": "Perfect Agony",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "agonia_perfeita",
+    "critico_sem_dano_extra",
+    "sem_afeccao_sem_critico"
+   ],
+   "tipos": [
+    "outros",
+    "crítico"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 0,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 3
    },
-   "pendentes": [
-    "Multiplicador de Dano Degenerativo para Afecções é igual ao Multiplicador de Golpe Crítico",
-    "Golpes Críticos não causam Dano extra",
-    "Golpes não Críticos não infligem Afecções"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -26535,12 +26548,15 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "chance_empalar@ataque+duasMaos"
+    "chance_empalar@ataque+duasMaos",
+    "efeito_empalamento_nao_empalado@duasMaos",
+    "duracao_empalamento"
    ],
    "tipos": [
-    "afecções e chance no acerto"
+    "afecções e chance no acerto",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -26550,19 +26566,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 3
    },
-   "pendentes": [
-    "EFeito dos Empalamentos infligidos por você com Armas de Duas Mãos em Inimigos não Empalados aumentado em 30%",
-    "Duração do Empalamento aumentada em 50%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -27786,30 +27799,32 @@
    "nomeEn": "Energy Shield Leech",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "es_leech_magia"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "0.3% do Dano Mágico Drenado como Escudo de Energia"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -29307,7 +29322,7 @@
    "chaves": [
     "phys_dmg@ataque+armaCorpo+duasMaos",
     "ailment_dmg_inc@ataque+armaCorpo+duasMaos",
-    "roubo_teto_inc",
+    "roubo_teto_vida_inc",
     "ignora_reducao_fisica"
    ],
    "tipos": [
@@ -29324,7 +29339,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -30368,23 +30383,23 @@
    "ascendencia": null,
    "chaves": [
     "atk_speed",
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "velocidades",
     "outros"
    ],
    "situacao": "funcional-aproximado",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 1,
@@ -31656,22 +31671,22 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -34775,31 +34790,33 @@
    "nomeEn": "Adder's Touch",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "dot_multi_poison_critico",
+    "chance_poison_critico@comAdaga"
+   ],
+   "tipos": [
+    "crítico"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "+25% do Multiplicador de Dano Degenerativo para Envenenamento de Golpes Críticos",
-    "Golpes Críticos com Adagas Envenenam o Inimigo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -35011,12 +35028,13 @@
    "ascendencia": null,
    "chaves": [
     "ice_dmg",
-    "energy_dmg"
+    "energy_dmg",
+    "dano_elemental_eletrizado_congelado"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -35026,18 +35044,16 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Inimigos Eletrizados ou Congelados por você sofrem Dano Elemental aumentado em 5%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -37581,30 +37597,32 @@
    "nomeEn": "Malicious Intent",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "gem_level@maldicao"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "+2 ao Nível de todas as Gemas de Habilidade Maldição"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -38031,7 +38049,7 @@
    "chaves": [
     "phys_dmg@ataque+armaCorpo+duasMaos",
     "ailment_dmg_inc@ataque+armaCorpo+duasMaos",
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
@@ -38047,7 +38065,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -38805,22 +38823,22 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -40933,16 +40951,16 @@
     "vida, regeneração e dreno de vida"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -41484,7 +41502,7 @@
    "ascendencia": null,
    "chaves": [
     "dmg_inc@ataque",
-    "roubo_teto_inc",
+    "roubo_teto_vida_inc",
     "ailment_dmg_inc@ataque"
    ],
    "tipos": [
@@ -41492,16 +41510,16 @@
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/3",
+   "cobertura": "3/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -43014,30 +43032,32 @@
    "nomeEn": "Critical Ailment Damage Over Time Multiplier",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "dot_multi_critico"
+   ],
+   "tipos": [
+    "crítico"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "+14% de Multiplicador do Dano Degenerativo para Afecções dos Golpes Críticos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -43048,23 +43068,23 @@
    "ascendencia": null,
    "chaves": [
     "life_leech",
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -43675,30 +43695,32 @@
    "nomeEn": "Brutal Skewering",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "empalar_acertos_extra"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Empalamentos que você infligir duram por 1 Acerto adicional"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -43776,10 +43798,12 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "cast_speed@maldicao"
+    "cast_speed@maldicao",
+    "ev:conjurarMaldicao:removerAfeccao:elementais"
    ],
    "tipos": [
-    "velocidades"
+    "velocidades",
+    "efeito por evento"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -43791,18 +43815,17 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
-    "Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você",
-    "Remove Afecções Elementais quando você Conjurar uma Magia Maldição"
+    "Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você"
    ],
    "desconectados": []
   },
@@ -45660,22 +45683,22 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -46460,12 +46483,14 @@
    "ascendencia": null,
    "chaves": [
     "fire_dmg",
-    "ice_dmg"
+    "ice_dmg",
+    "res_menos_incendiado_resfriado"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -46475,18 +46500,16 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Inimigos Incendiados ou Resfriados por você têm -5% de Resistências Elementais"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -47307,30 +47330,32 @@
    "nomeEn": "Energy Shield Leech",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_teto_es_inc"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em 15%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -47830,31 +47855,34 @@
    "nomeEn": "Hex Master",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "feitico_duracao_infinita",
+    "efeito_maldicao_menos"
+   ],
+   "tipos": [
+    "afecções e chance no acerto",
+    "auras, maldições e reserva"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Seus Feitiços têm Duração infinita",
-    "20% menos Efeito das suas Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -54396,31 +54424,33 @@
    "nomeEn": "Cauterisation",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "sem_sangramento_de_sangrando",
+    "sem_incendio_de_incendiado"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Inimigos Sangrando não infligem Sangramento em você",
-    "Inimigos Incendiados não podem te Incendiar"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -56174,30 +56204,32 @@
    "nomeEn": "Energy Shield Leech",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "es_leech_magia"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "0.3% do Dano Mágico Drenado como Escudo de Energia"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -56587,32 +56619,35 @@
    "nomeEn": "Last Rites",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "amaldicoado_destruido",
+    "amaldicoado_regen_menos",
+    "amaldicoado_sem_recarga_es"
+   ],
+   "tipos": [
+    "outros",
+    "cargas e fúria"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 0,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 3
    },
-   "pendentes": [
-    "Inimigos Amaldiçoados Mortos por você são destruídos",
-    "Inimigos Amaldiçoados por você têm Regeneração de Vida reduzida em 50%",
-    "Inimigos Amaldiçoados por você não podem Recuperar Escudo de Energia"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -57579,7 +57614,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -59225,30 +59260,32 @@
    "nomeEn": "Increased Energy Shield Leeched",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_teto_es_inc"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Recuperação total por segundo do Dreno de Escudo de Energia aumentada em 80%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -59678,22 +59715,22 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "roubo_teto_inc"
+    "roubo_teto_mana_inc"
    ],
    "tipos": [
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -60876,16 +60913,16 @@
     "vida, regeneração e dreno de vida"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -62783,32 +62820,35 @@
    "nomeEn": "The Impaler",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "empalar_espalha",
+    "empalamentos_extras",
+    "empalar_bloqueio_s"
+   ],
+   "tipos": [
+    "outros",
+    "bloqueio"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 0,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 3
    },
-   "pendentes": [
-    "Quando seus Acertos Empalarem Inimigos, também Empalam outros Inimigos próximos deles",
-    "Inflige 5 Empalamentos adicionais em Inimigos que você Empalar",
-    "Por 5 segundos após você Empalar Inimigos, eles não podem ser Empalados novamente, e Chamado do Aço não pode remover Empalamentos deles"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -63515,12 +63555,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "res_menos_caos_envenenado",
     "dot_multi_poison@magia"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -63530,18 +63572,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Inimigos Envenenados por você têm -5% de Resistência a Caos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -63650,12 +63690,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "resfriar_ao_descongelar",
     "chance_freeze@alvoResfriado"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -63665,18 +63707,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Inimigos Ficam Resfriados ao Descongelarem, causando 30% de redução da Velocidade de Ação"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -65242,30 +65282,32 @@
    "nomeEn": "Energy Shield Leech",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_teto_es_inc"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em 15%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -66731,23 +66773,23 @@
    "ascendencia": null,
    "chaves": [
     "life_leech",
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -67957,23 +67999,23 @@
    "ascendencia": null,
    "chaves": [
     "life_leech",
-    "roubo_teto_inc"
+    "roubo_teto_vida_inc"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
     "outros"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -68676,31 +68718,34 @@
    "nomeEn": "Lethe Shade",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "degen_menos_no_inicio",
+    "duracao_afeccoes_propria_mais"
+   ],
+   "tipos": [
+    "outros",
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Sofre 50% menos Dano Degenerativo se você começou a sofrer Dano Degenerativo no último segundo",
-    "100% mais Duração de Afecções em você"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -68814,30 +68859,33 @@
    "nomeEn": "Glacial Cage",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "dano_perm_resfriado",
+    "dano_perm_resfriado_max"
+   ],
+   "tipos": [
+    "dano % (aumentado e \"mais\")"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Inimigos sofrem permanentemente Dano aumentado em 1% por cada segundo que passaram Resfriados por você, máximo de 10%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -69893,7 +69941,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 1,
@@ -71412,13 +71460,13 @@
    "ascendencia": null,
    "chaves": [
     "mana_leech@ataque",
-    "roubo_teto_inc"
+    "roubo_teto_mana_inc"
    ],
    "tipos": [
     "mana e custo",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -71428,18 +71476,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Recuperação de Mana Máxima total do Dreno por segundo aumentada em 50%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -72116,7 +72162,10 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "phys_conv_energy"
+    "phys_conv_energy",
+    "eletrizacao_maximo",
+    "eletrizacao_espalha_m",
+    "eletrizacao_da_mana_pct"
    ],
    "tipos": [
     "outros"
@@ -72130,21 +72179,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Chance de Golpe Crítico contra inimigos com Exposição a Raio aumentada em 60%",
-    "+15% ao Máximo de Efeito da Eletrização",
-    "Eletrizações infligidas por você es espalham para outros Inimigos dentro de 1 metro",
-    "Aumentos e Reduções ao Máximo de Mana também se aplicam ao Efeito de Eletrização em 30% de seu valor",
     "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"
    ],
    "desconectados": []
@@ -72237,11 +72283,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "veneno_nao_envenenado_inc",
     "dot_mais_rapido",
+    "dot_multi_poison_sangrando",
+    "envenenados_sem_critico",
     "ev:matar:vidaPct@alvoEnvenenado"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
+    "crítico",
     "efeito por evento"
    ],
    "situacao": "parcial",
@@ -72254,19 +72305,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 2,
+    "funciona": 5,
     "aproximado": 1,
-    "pendente": 4,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 5
    },
    "pendentes": [
-    "Venenos infligidos por você em Inimigos não-Envenenados causam Dano aumentado em 300%",
-    "+12% ao Multiplicador de Dano Degenerativo por Envenenamento infligido por você em Inimigos Sangrando",
-    "Inimigos Envenenados por você não podem causar Golpes Críticos",
     "Portador da Praga têm Valor Máximo da Praga aumentado em 20%"
    ],
    "desconectados": []
@@ -72556,14 +72604,12 @@
    "linhas": {
     "funciona": 7,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 7
    },
-   "pendentes": [
-    "30% de chance de Evitar ser Empalado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -72769,10 +72815,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@ataque+comGarra+alvoVidaBaixa"
+    "dmg_inc@ataque+comGarra+alvoVidaBaixa",
+    "roubo_instantaneo_pct%armas:comGarra"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "validado",
@@ -72784,20 +72832,19 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Ganha 25 de Vida por Inimigo Acertado com Ataques de Garras na Mão Principal",
     "Ganha 25 de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária",
     "Bônus Inerente de Velocidade de Ataque da Empunhadura Dupla é dobrado enquanto portando Garras",
-    "10% do Dreno é Instantâneo por Garra Equipada",
     "Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente",
     "Habilidades Suportadas por Lâmina Noturna têm Efeito do Elusivo aumentado em 40%"
    ],
@@ -72872,8 +72919,8 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 0,
+    "pendente": 5,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
@@ -72882,7 +72929,6 @@
     "Evita +60% do dano elemental refletido",
     "Efeito de Exposições em você reduzido em 50%",
     "Acertos têm 15% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos",
-    "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente",
     "3% de chance de Acertos causarem 300% do Dano Físico como Dano Extra de um Elemento aleatório"
    ],
    "desconectados": []
@@ -72949,8 +72995,8 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 0,
+    "pendente": 5,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
@@ -72959,7 +73005,6 @@
     "Evita +60% do dano elemental refletido",
     "Efeito de Exposições em você reduzido em 50%",
     "Acertos têm 15% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos",
-    "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente",
     "3% de chance de Acertos causarem 300% do Dano Físico como Dano Extra de um Elemento aleatório"
    ],
    "desconectados": []
@@ -73051,30 +73096,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -73171,13 +73221,20 @@
     "chance_freeze@alvoAmaldicoado",
     "chance_shock@alvoAmaldicoado",
     "chance_poison@alvoAmaldicoado",
-    "ev:conjurarMaldicao:alvo:cego:4"
+    "crit_dmg_taken_red_amaldicoado",
+    "ev:conjurarMaldicao:alvo:cego:4",
+    "efeito_maldicao_expirou:50",
+    "maldicao_desacelera",
+    "ev:amaldicoarSemMaldicao:vidaPct",
+    "ev:amaldicoarSemMaldicao:manaPct"
    ],
    "tipos": [
     "afecções e chance no acerto",
-    "efeito por evento"
+    "crítico",
+    "efeito por evento",
+    "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -73187,22 +73244,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/5",
+   "cobertura": "4/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 5,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 7
    },
-   "pendentes": [
-    "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em 40%",
-    "Suas Maldições têm Efeito aumentado em 20% se 50% da Duração da Maldição expirou",
-    "Inimigos Amaldiçoados por você são Desacelerados , com Velocidade de Movimento Reduzida em 15%",
-    "Recupera 1% de Vida quando você Amaldiçoar um Inimgo sem Maldições",
-    "Recupera 1% de Mana quando você Amaldiçoar um Inimgo sem Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -73348,12 +73399,16 @@
     "phys_conv_ice",
     "ev:acertar:alvo:exposicaoGelo:4@gelo",
     "fire_res",
-    "gem_level@habilidade+gelo"
+    "gem_level@habilidade+gelo",
+    "resfriamento_minimo",
+    "dano_perm_congelado",
+    "dano_perm_congelado_max"
    ],
    "tipos": [
     "outros",
     "efeito por evento",
-    "resistências"
+    "resistências",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -73365,19 +73420,17 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [
-    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente",
-    "Resfriamentos dos seus Acertos sempre reduzem a Velocidade de Ação em ao menos 10%",
-    "Inimigos sofrem permanentemente Dano aumentado em 5% para cada segundo que foram Congeladas por você, máximo de 50%"
+    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente"
    ],
    "desconectados": []
   },
@@ -73388,30 +73441,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -73424,11 +73482,13 @@
    "ascendencia": null,
    "chaves": [
     "move_speed%furia:5",
-    "furia_max"
+    "furia_max",
+    "roubo_teto_vida_inc@furiaCheia"
    ],
    "tipos": [
     "velocidades",
-    "cargas e fúria"
+    "cargas e fúria",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -73440,20 +73500,19 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Cada Fúria também concede Ponto de Atordoamento aumentado em 1%",
     "Perda Inerente de Fúria é 20% mais rápida",
     "Clamores concedem 1 de Fúria por cada 5 de Poder Inimigo, até 5",
-    "Máximo total de Vida Recuperada do Dreno por segundo aumentado em 25% enquanto no máximo de Fúria",
     "Inimigos Próximos são Intimidados enquanto você tiver Fúria"
    ],
    "desconectados": []
@@ -73467,11 +73526,13 @@
    "chaves": [
     "crit_dmg@alvoVidaCheia",
     "spell_suppression%armas:comAdaga",
+    "mais_dano@alvoVenenos:5",
     "projectile_speed@comAdaga"
    ],
    "tipos": [
     "crítico",
     "supressão de magia",
+    "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
    "situacao": "parcial",
@@ -73486,19 +73547,25 @@
    "aplicado": "ficha",
    "cobertura": "1/3",
    "linhas": {
-    "funciona": 3,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
     "efetivas": 3
    },
    "pendentes": [
     "Acertos Críticos possuem Golpe de Misericórdia",
-    "8% mais Dano com Acertos e Afecções contra Inimigos Afetados por ao menos 5 Venenos",
     "Elusivo concede +40% de Multiplicador de Golpes Críticos às Habilidades Suportadas por Lâmina Noturna"
    ],
-   "desconectados": []
+   "desconectados": [
+    {
+     "efeito": "mais_dano@alvoVenenos:5",
+     "faltas": [
+      "condição desconhecida: alvoVenenos:5"
+     ]
+    }
+   ]
   },
   {
    "id": "8370",
@@ -73808,13 +73875,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 4,
+    "pendente": 1,
+    "inexiste": 5,
     "lembrete": 0,
     "efetivas": 0
    },
    "pendentes": [
-    "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais",
     "Vínculos demoram duas vezes mais para quebrar"
    ],
    "desconectados": []
@@ -73915,11 +73981,13 @@
    "ascendencia": null,
    "chaves": [
     "move_speed%furia:5",
-    "furia_max"
+    "furia_max",
+    "roubo_teto_vida_inc@furiaCheia"
    ],
    "tipos": [
     "velocidades",
-    "cargas e fúria"
+    "cargas e fúria",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -73931,20 +73999,19 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Cada Fúria também concede Ponto de Atordoamento aumentado em 1%",
     "Perda Inerente de Fúria é 20% mais rápida",
     "Clamores concedem 1 de Fúria por cada 5 de Poder Inimigo, até 5",
-    "Máximo total de Vida Recuperada do Dreno por segundo aumentado em 25% enquanto no máximo de Fúria",
     "Inimigos Próximos são Intimidados enquanto você tiver Fúria"
    ],
    "desconectados": []
@@ -73956,6 +74023,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_nao_dano_critico",
     "crit_dmg@alvoUnico",
     "gem_level@gemaCritica",
     "crit_dmg_taken_red",
@@ -73975,17 +74043,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [
-    "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em 50%",
     "Atordoamentos dos Golpes Criticos têm Duração aumentada em 100%"
    ],
    "desconectados": []
@@ -74413,10 +74480,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "pode:resfriamento:physical@comMaca",
+    "pode:resfriamento:fire@comMaca",
+    "pode:resfriamento:energy@comMaca",
+    "pode:resfriamento:chaos@comMaca",
+    "pode:resfriamento:physical@comCetro",
+    "pode:resfriamento:fire@comCetro",
+    "pode:resfriamento:energy@comCetro",
+    "pode:resfriamento:chaos@comCetro",
     "area_inc@criticoRecente",
     "stun_duration"
    ],
    "tipos": [
+    "outros",
     "área e projéteis",
     "atordoamento"
    ],
@@ -74430,17 +74506,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "1/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
-    "Todo o Dano com Maças e Cetros infligem Resfriamento",
     "Esmaga Inimigos ao acertar com Maças e Cetros",
     "12% de chance de causar Dano Dobrado com Ataques se o Tempo de Ataque for maior que 1 segundo",
     "Acertos que Atordoarem os Inimigos possuem Golpe de Misericórdia"
@@ -74495,10 +74570,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "ignora_reducao_fisica"
+    "ignora_reducao_fisica",
+    "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "outros"
+    "outros",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -74509,22 +74586,21 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Evita +60% do dano físico refletido",
     "10% mais Dano Físico Máximo de Ataques",
     "Não pode ser Atordoado por Acertos que causem apenas Dano Físico",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%",
-    "+6% de Multiplicador do Dano Degenerativo para Sangramentos por Empalamento no Inimigo"
+    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
    ],
    "desconectados": []
   },
@@ -74535,10 +74611,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "ignora_reducao_fisica"
+    "ignora_reducao_fisica",
+    "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "outros"
+    "outros",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -74549,22 +74627,21 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Evita +60% do dano físico refletido",
     "10% mais Dano Físico Máximo de Ataques",
     "Não pode ser Atordoado por Acertos que causem apenas Dano Físico",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%",
-    "+6% de Multiplicador do Dano Degenerativo para Sangramentos por Empalamento no Inimigo"
+    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
    ],
    "desconectados": []
   },
@@ -74590,13 +74667,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 4,
+    "pendente": 1,
+    "inexiste": 5,
     "lembrete": 0,
     "efetivas": 0
    },
    "pendentes": [
-    "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais",
     "Vínculos demoram duas vezes mais para quebrar"
    ],
    "desconectados": []
@@ -74649,10 +74725,15 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "imune_lento"
+    "res_elem_nao_reduzida_maldicao",
+    "imune_lento",
+    "afeccao_dano_unica",
+    "afeccao_controle_unica"
    ],
    "tipos": [
-    "outros"
+    "auras, maldições e reserva",
+    "outros",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -74664,22 +74745,18 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Evita +50% do dano refletido",
-    "Suas Resistências Elementais não podem ser reduzidas por Maldições",
-    "Não pode ser afetado por Sangue Corrompido",
-    "Não pode ser Empalado",
-    "Afecções Danificadoras Não Podem Ser infligidos em você enquanto você tiver um",
-    "Afecções Não Danificadoras Não Podem ser infligidos em você enquanto você já tiver um"
+    "Não pode ser afetado por Sangue Corrompido"
    ],
    "desconectados": []
   },
@@ -74690,10 +74767,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@ataque+comGarra+alvoVidaBaixa"
+    "dmg_inc@ataque+comGarra+alvoVidaBaixa",
+    "roubo_instantaneo_pct%armas:comGarra"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "validado",
@@ -74705,20 +74784,19 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Ganha 25 de Vida por Inimigo Acertado com Ataques de Garras na Mão Principal",
     "Ganha 25 de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária",
     "Bônus Inerente de Velocidade de Ataque da Empunhadura Dupla é dobrado enquanto portando Garras",
-    "10% do Dreno é Instantâneo por Garra Equipada",
     "Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente",
     "Habilidades Suportadas por Lâmina Noturna têm Efeito do Elusivo aumentado em 40%"
    ],
@@ -74731,10 +74809,15 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "imune_lento"
+    "res_elem_nao_reduzida_maldicao",
+    "imune_lento",
+    "afeccao_dano_unica",
+    "afeccao_controle_unica"
    ],
    "tipos": [
-    "outros"
+    "auras, maldições e reserva",
+    "outros",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -74746,22 +74829,18 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Evita +50% do dano refletido",
-    "Suas Resistências Elementais não podem ser reduzidas por Maldições",
-    "Não pode ser afetado por Sangue Corrompido",
-    "Não pode ser Empalado",
-    "Afecções Danificadoras Não Podem Ser infligidos em você enquanto você tiver um",
-    "Afecções Não Danificadoras Não Podem ser infligidos em você enquanto você já tiver um"
+    "Não pode ser afetado por Sangue Corrompido"
    ],
    "desconectados": []
   },
@@ -74787,8 +74866,8 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 0,
+    "pendente": 5,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
@@ -74797,7 +74876,6 @@
     "Evita +60% do dano elemental refletido",
     "Efeito de Exposições em você reduzido em 50%",
     "Acertos têm 15% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos",
-    "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente",
     "3% de chance de Acertos causarem 300% do Dano Físico como Dano Extra de um Elemento aleatório"
    ],
    "desconectados": []
@@ -74928,7 +75006,10 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "phys_conv_energy"
+    "phys_conv_energy",
+    "eletrizacao_maximo",
+    "eletrizacao_espalha_m",
+    "eletrizacao_da_mana_pct"
    ],
    "tipos": [
     "outros"
@@ -74942,21 +75023,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Chance de Golpe Crítico contra inimigos com Exposição a Raio aumentada em 60%",
-    "+15% ao Máximo de Efeito da Eletrização",
-    "Eletrizações infligidas por você es espalham para outros Inimigos dentro de 1 metro",
-    "Aumentos e Reduções ao Máximo de Mana também se aplicam ao Efeito de Eletrização em 30% de seu valor",
     "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"
    ],
    "desconectados": []
@@ -75010,10 +75088,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "pode:resfriamento:physical@comMaca",
+    "pode:resfriamento:fire@comMaca",
+    "pode:resfriamento:energy@comMaca",
+    "pode:resfriamento:chaos@comMaca",
+    "pode:resfriamento:physical@comCetro",
+    "pode:resfriamento:fire@comCetro",
+    "pode:resfriamento:energy@comCetro",
+    "pode:resfriamento:chaos@comCetro",
     "area_inc@criticoRecente",
     "stun_duration"
    ],
    "tipos": [
+    "outros",
     "área e projéteis",
     "atordoamento"
    ],
@@ -75027,17 +75114,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "1/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
-    "Todo o Dano com Maças e Cetros infligem Resfriamento",
     "Esmaga Inimigos ao acertar com Maças e Cetros",
     "12% de chance de causar Dano Dobrado com Ataques se o Tempo de Ataque for maior que 1 segundo",
     "Acertos que Atordoarem os Inimigos possuem Golpe de Misericórdia"
@@ -75053,11 +75139,13 @@
    "chaves": [
     "crit_dmg@alvoVidaCheia",
     "spell_suppression%armas:comAdaga",
+    "mais_dano@alvoVenenos:5",
     "projectile_speed@comAdaga"
    ],
    "tipos": [
     "crítico",
     "supressão de magia",
+    "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
    "situacao": "parcial",
@@ -75072,19 +75160,25 @@
    "aplicado": "ficha",
    "cobertura": "1/3",
    "linhas": {
-    "funciona": 3,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
     "efetivas": 3
    },
    "pendentes": [
     "Acertos Críticos possuem Golpe de Misericórdia",
-    "8% mais Dano com Acertos e Afecções contra Inimigos Afetados por ao menos 5 Venenos",
     "Elusivo concede +40% de Multiplicador de Golpes Críticos às Habilidades Suportadas por Lâmina Noturna"
    ],
-   "desconectados": []
+   "desconectados": [
+    {
+     "efeito": "mais_dano@alvoVenenos:5",
+     "faltas": [
+      "condição desconhecida: alvoVenenos:5"
+     ]
+    }
+   ]
   },
   {
    "id": "15697",
@@ -75125,6 +75219,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_nao_dano_critico",
     "crit_dmg@alvoUnico",
     "gem_level@gemaCritica",
     "crit_dmg_taken_red",
@@ -75144,17 +75239,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [
-    "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em 50%",
     "Atordoamentos dos Golpes Criticos têm Duração aumentada em 100%"
    ],
    "desconectados": []
@@ -75166,30 +75260,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -75245,10 +75344,15 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "imune_lento"
+    "res_elem_nao_reduzida_maldicao",
+    "imune_lento",
+    "afeccao_dano_unica",
+    "afeccao_controle_unica"
    ],
    "tipos": [
-    "outros"
+    "auras, maldições e reserva",
+    "outros",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -75260,22 +75364,18 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Evita +50% do dano refletido",
-    "Suas Resistências Elementais não podem ser reduzidas por Maldições",
-    "Não pode ser afetado por Sangue Corrompido",
-    "Não pode ser Empalado",
-    "Afecções Danificadoras Não Podem Ser infligidos em você enquanto você tiver um",
-    "Afecções Não Danificadoras Não Podem ser infligidos em você enquanto você já tiver um"
+    "Não pode ser afetado por Sangue Corrompido"
    ],
    "desconectados": []
   },
@@ -75289,12 +75389,16 @@
     "phys_conv_ice",
     "ev:acertar:alvo:exposicaoGelo:4@gelo",
     "fire_res",
-    "gem_level@habilidade+gelo"
+    "gem_level@habilidade+gelo",
+    "resfriamento_minimo",
+    "dano_perm_congelado",
+    "dano_perm_congelado_max"
    ],
    "tipos": [
     "outros",
     "efeito por evento",
-    "resistências"
+    "resistências",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -75305,20 +75409,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "1/4",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [
-    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente",
-    "Resfriamentos dos seus Acertos sempre reduzem a Velocidade de Ação em ao menos 10%",
-    "Inimigos sofrem permanentemente Dano aumentado em 5% para cada segundo que foram Congeladas por você, máximo de 50%"
+    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente"
    ],
    "desconectados": []
   },
@@ -75529,10 +75631,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@ataque+comGarra+alvoVidaBaixa"
+    "dmg_inc@ataque+comGarra+alvoVidaBaixa",
+    "roubo_instantaneo_pct%armas:comGarra"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "validado",
@@ -75544,20 +75648,19 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Ganha 25 de Vida por Inimigo Acertado com Ataques de Garras na Mão Principal",
     "Ganha 25 de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária",
     "Bônus Inerente de Velocidade de Ataque da Empunhadura Dupla é dobrado enquanto portando Garras",
-    "10% do Dreno é Instantâneo por Garra Equipada",
     "Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente",
     "Habilidades Suportadas por Lâmina Noturna têm Efeito do Elusivo aumentado em 40%"
    ],
@@ -75704,10 +75807,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "ignora_reducao_fisica"
+    "ignora_reducao_fisica",
+    "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "outros"
+    "outros",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -75718,22 +75823,21 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Evita +60% do dano físico refletido",
     "10% mais Dano Físico Máximo de Ataques",
     "Não pode ser Atordoado por Acertos que causem apenas Dano Físico",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%",
-    "+6% de Multiplicador do Dano Degenerativo para Sangramentos por Empalamento no Inimigo"
+    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
    ],
    "desconectados": []
   },
@@ -75743,33 +75847,36 @@
    "nomeEn": "Spell Suppression Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "suprimido_sem_afeccao_elemental"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 8,
+    "pendente": 7,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "Ignora +3% do Dano Mágico Suprimido",
     "Inflige Exposição a Fogo, Gelo e raio nos Inimigos quando você Suprimir seu Dano Mágico",
     "Impede +1% do Dano Mágico Suprimido por Acerto Suprimido Recentemente",
     "-2% de chance de Suprimir Dano Mágico por Acerto Suprimido Recentemente",
-    "Dano Mágico Suprimido não pode infligir Afecções Elementais em você",
     "Você tem Trespassar se você Suprimiu Dano Mágico Recentemente",
     "+8% de chance de Suprimir Dano Mágico enquanto Trepassando",
     "Chance de Suprimir Dano Mágico é Sortuda"
@@ -75985,10 +76092,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "crit_chance_inc@alvoSangrando"
+    "crit_chance_inc@alvoSangrando",
+    "dot_multi_bleed%carga:tolerancia"
    ],
    "tipos": [
-    "crítico"
+    "crítico",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -76000,20 +76109,18 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 4,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
-    "Mover enquanto Sangrando faz com que você não sofra Dano extra",
     "50% de chance de Agravar o Sangramento em alvos que você Atordoar com Acertos de Ataques",
-    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos",
-    "+3% de Multiplicador de Dano Degenerativo para Sangramento por Carga de Tolerância"
+    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos"
    ],
    "desconectados": []
   },
@@ -76068,13 +76175,20 @@
     "chance_freeze@alvoAmaldicoado",
     "chance_shock@alvoAmaldicoado",
     "chance_poison@alvoAmaldicoado",
-    "ev:conjurarMaldicao:alvo:cego:4"
+    "crit_dmg_taken_red_amaldicoado",
+    "ev:conjurarMaldicao:alvo:cego:4",
+    "efeito_maldicao_expirou:50",
+    "maldicao_desacelera",
+    "ev:amaldicoarSemMaldicao:vidaPct",
+    "ev:amaldicoarSemMaldicao:manaPct"
    ],
    "tipos": [
     "afecções e chance no acerto",
-    "efeito por evento"
+    "crítico",
+    "efeito por evento",
+    "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76084,22 +76198,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/5",
+   "cobertura": "4/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 5,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 7
    },
-   "pendentes": [
-    "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em 40%",
-    "Suas Maldições têm Efeito aumentado em 20% se 50% da Duração da Maldição expirou",
-    "Inimigos Amaldiçoados por você são Desacelerados , com Velocidade de Movimento Reduzida em 15%",
-    "Recupera 1% de Vida quando você Amaldiçoar um Inimgo sem Maldições",
-    "Recupera 1% de Mana quando você Amaldiçoar um Inimgo sem Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -76196,13 +76304,20 @@
     "chance_freeze@alvoAmaldicoado",
     "chance_shock@alvoAmaldicoado",
     "chance_poison@alvoAmaldicoado",
-    "ev:conjurarMaldicao:alvo:cego:4"
+    "crit_dmg_taken_red_amaldicoado",
+    "ev:conjurarMaldicao:alvo:cego:4",
+    "efeito_maldicao_expirou:50",
+    "maldicao_desacelera",
+    "ev:amaldicoarSemMaldicao:vidaPct",
+    "ev:amaldicoarSemMaldicao:manaPct"
    ],
    "tipos": [
     "afecções e chance no acerto",
-    "efeito por evento"
+    "crítico",
+    "efeito por evento",
+    "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76212,22 +76327,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/5",
+   "cobertura": "4/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 5,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 7
    },
-   "pendentes": [
-    "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em 40%",
-    "Suas Maldições têm Efeito aumentado em 20% se 50% da Duração da Maldição expirou",
-    "Inimigos Amaldiçoados por você são Desacelerados , com Velocidade de Movimento Reduzida em 15%",
-    "Recupera 1% de Vida quando você Amaldiçoar um Inimgo sem Maldições",
-    "Recupera 1% de Mana quando você Amaldiçoar um Inimgo sem Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -76293,13 +76402,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 4,
+    "pendente": 1,
+    "inexiste": 5,
     "lembrete": 0,
     "efetivas": 0
    },
    "pendentes": [
-    "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais",
     "Vínculos demoram duas vezes mais para quebrar"
    ],
    "desconectados": []
@@ -76631,30 +76739,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -76902,32 +77015,35 @@
    "nomeEn": "Totem Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "totem_roubo_vida_fisico"
+   ],
+   "tipos": [
+    "lacaios e totens"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base",
     "Habilidades que invocam um Totem têm 30% de chance de invocar dois em vez de um",
     "5% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua",
-    "1% do Dano Físico de Ataques causado pelos seus Totens é Drenado como Vida para você",
     "Chance de golpe crítico aumentada em 40%, se você criou um totem recentemente",
     "Totens Provocam Inimigos ao redor deles por 1 segundo quando Convocados"
    ],
@@ -77176,14 +77292,12 @@
    "linhas": {
     "funciona": 7,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 7
    },
-   "pendentes": [
-    "30% de chance de Evitar ser Empalado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -77306,10 +77420,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "pode:resfriamento:physical@comMaca",
+    "pode:resfriamento:fire@comMaca",
+    "pode:resfriamento:energy@comMaca",
+    "pode:resfriamento:chaos@comMaca",
+    "pode:resfriamento:physical@comCetro",
+    "pode:resfriamento:fire@comCetro",
+    "pode:resfriamento:energy@comCetro",
+    "pode:resfriamento:chaos@comCetro",
     "area_inc@criticoRecente",
     "stun_duration"
    ],
    "tipos": [
+    "outros",
     "área e projéteis",
     "atordoamento"
    ],
@@ -77323,17 +77446,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "1/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
-    "Todo o Dano com Maças e Cetros infligem Resfriamento",
     "Esmaga Inimigos ao acertar com Maças e Cetros",
     "12% de chance de causar Dano Dobrado com Ataques se o Tempo de Ataque for maior que 1 segundo",
     "Acertos que Atordoarem os Inimigos possuem Golpe de Misericórdia"
@@ -77466,30 +77588,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -77541,11 +77668,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "veneno_nao_envenenado_inc",
     "dot_mais_rapido",
+    "dot_multi_poison_sangrando",
+    "envenenados_sem_critico",
     "ev:matar:vidaPct@alvoEnvenenado"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
+    "crítico",
     "efeito por evento"
    ],
    "situacao": "parcial",
@@ -77558,19 +77690,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 2,
+    "funciona": 5,
     "aproximado": 1,
-    "pendente": 4,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 5
    },
    "pendentes": [
-    "Venenos infligidos por você em Inimigos não-Envenenados causam Dano aumentado em 300%",
-    "+12% ao Multiplicador de Dano Degenerativo por Envenenamento infligido por você em Inimigos Sangrando",
-    "Inimigos Envenenados por você não podem causar Golpes Críticos",
     "Portador da Praga têm Valor Máximo da Praga aumentado em 20%"
    ],
    "desconectados": []
@@ -77664,6 +77793,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_nao_dano_critico",
     "crit_dmg@alvoUnico",
     "gem_level@gemaCritica",
     "crit_dmg_taken_red",
@@ -77683,17 +77813,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [
-    "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em 50%",
     "Atordoamentos dos Golpes Criticos têm Duração aumentada em 100%"
    ],
    "desconectados": []
@@ -77707,11 +77836,13 @@
    "chaves": [
     "crit_dmg@alvoVidaCheia",
     "spell_suppression%armas:comAdaga",
+    "mais_dano@alvoVenenos:5",
     "projectile_speed@comAdaga"
    ],
    "tipos": [
     "crítico",
     "supressão de magia",
+    "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
    "situacao": "parcial",
@@ -77726,19 +77857,25 @@
    "aplicado": "ficha",
    "cobertura": "1/3",
    "linhas": {
-    "funciona": 3,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
     "efetivas": 3
    },
    "pendentes": [
     "Acertos Críticos possuem Golpe de Misericórdia",
-    "8% mais Dano com Acertos e Afecções contra Inimigos Afetados por ao menos 5 Venenos",
     "Elusivo concede +40% de Multiplicador de Golpes Críticos às Habilidades Suportadas por Lâmina Noturna"
    ],
-   "desconectados": []
+   "desconectados": [
+    {
+     "efeito": "mais_dano@alvoVenenos:5",
+     "faltas": [
+      "condição desconhecida: alvoVenenos:5"
+     ]
+    }
+   ]
   },
   {
    "id": "31291",
@@ -77790,10 +77927,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "pode:resfriamento:physical@comMaca",
+    "pode:resfriamento:fire@comMaca",
+    "pode:resfriamento:energy@comMaca",
+    "pode:resfriamento:chaos@comMaca",
+    "pode:resfriamento:physical@comCetro",
+    "pode:resfriamento:fire@comCetro",
+    "pode:resfriamento:energy@comCetro",
+    "pode:resfriamento:chaos@comCetro",
     "area_inc@criticoRecente",
     "stun_duration"
    ],
    "tipos": [
+    "outros",
     "área e projéteis",
     "atordoamento"
    ],
@@ -77807,17 +77953,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "1/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
-    "Todo o Dano com Maças e Cetros infligem Resfriamento",
     "Esmaga Inimigos ao acertar com Maças e Cetros",
     "12% de chance de causar Dano Dobrado com Ataques se o Tempo de Ataque for maior que 1 segundo",
     "Acertos que Atordoarem os Inimigos possuem Golpe de Misericórdia"
@@ -77830,48 +77975,11 @@
    "nomeEn": "Impale Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
-   "niveis": {
-    "exibido": true,
-    "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
-   },
-   "aplicado": null,
-   "cobertura": null,
-   "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
-    "pendente": 9,
-    "inexiste": 0,
-    "lembrete": 0,
-    "efetivas": 0
-   },
-   "pendentes": [
-    "10% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional",
-    "Dano de Empalamento causado aos Inimigos Empalados por você ignoram a Redução de Dano Físico Inimiga",
-    "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%",
-    "Convocar o Aço tem Velocidade de Uso aumentada em 40%",
-    "Chamado do Aço tem +4 ao máximo de Fragmentos de Aço",
-    "Convocar o Aço causa Dano Refletido aumentado em 10%",
-    "Efeito de Empalamentos infligidos por você em Inimigos não Empalados aumentado em 20%",
-    "20% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo",
-    "Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam"
-   ],
-   "desconectados": []
-  },
-  {
-   "id": "31818",
-   "nome": "Maestria de Proteção",
-   "nomeEn": "Protection Mastery",
-   "categoria": "maestria",
-   "ascendencia": null,
    "chaves": [
-    "imune_lento"
+    "empalar_acerto_extra_chance",
+    "empalar_ignora_reducao",
+    "efeito_empalamento_nao_empalado",
+    "empalar_remover_chance"
    ],
    "tipos": [
     "outros"
@@ -77886,22 +77994,63 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 1,
+    "pendente": 5,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
+   },
+   "pendentes": [
+    "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%",
+    "Convocar o Aço tem Velocidade de Uso aumentada em 40%",
+    "Chamado do Aço tem +4 ao máximo de Fragmentos de Aço",
+    "Convocar o Aço causa Dano Refletido aumentado em 10%",
+    "Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam"
+   ],
+   "desconectados": []
+  },
+  {
+   "id": "31818",
+   "nome": "Maestria de Proteção",
+   "nomeEn": "Protection Mastery",
+   "categoria": "maestria",
+   "ascendencia": null,
+   "chaves": [
+    "res_elem_nao_reduzida_maldicao",
+    "imune_lento",
+    "afeccao_dano_unica",
+    "afeccao_controle_unica"
+   ],
+   "tipos": [
+    "auras, maldições e reserva",
+    "outros",
+    "dano % (aumentado e \"mais\")"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
+   "niveis": {
+    "exibido": true,
+    "alocavel": true,
+    "interpretado": true,
+    "aplicado": true,
+    "validado": false
+   },
+   "aplicado": "combate",
+   "cobertura": "3/4",
+   "linhas": {
+    "funciona": 4,
+    "aproximado": 0,
+    "pendente": 2,
+    "inexiste": 2,
+    "lembrete": 0,
+    "efetivas": 4
    },
    "pendentes": [
     "Evita +50% do dano refletido",
-    "Suas Resistências Elementais não podem ser reduzidas por Maldições",
-    "Não pode ser afetado por Sangue Corrompido",
-    "Não pode ser Empalado",
-    "Afecções Danificadoras Não Podem Ser infligidos em você enquanto você tiver um",
-    "Afecções Não Danificadoras Não Podem ser infligidos em você enquanto você já tiver um"
+    "Não pode ser afetado por Sangue Corrompido"
    ],
    "desconectados": []
   },
@@ -78140,10 +78289,15 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "imune_lento"
+    "res_elem_nao_reduzida_maldicao",
+    "imune_lento",
+    "afeccao_dano_unica",
+    "afeccao_controle_unica"
    ],
    "tipos": [
-    "outros"
+    "auras, maldições e reserva",
+    "outros",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -78155,22 +78309,18 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Evita +50% do dano refletido",
-    "Suas Resistências Elementais não podem ser reduzidas por Maldições",
-    "Não pode ser afetado por Sangue Corrompido",
-    "Não pode ser Empalado",
-    "Afecções Danificadoras Não Podem Ser infligidos em você enquanto você tiver um",
-    "Afecções Não Danificadoras Não Podem ser infligidos em você enquanto você já tiver um"
+    "Não pode ser afetado por Sangue Corrompido"
    ],
    "desconectados": []
   },
@@ -78223,6 +78373,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_nao_dano_critico",
     "crit_dmg@alvoUnico",
     "gem_level@gemaCritica",
     "crit_dmg_taken_red",
@@ -78242,17 +78393,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [
-    "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em 50%",
     "Atordoamentos dos Golpes Criticos têm Duração aumentada em 100%"
    ],
    "desconectados": []
@@ -78279,8 +78429,8 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 0,
+    "pendente": 5,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
@@ -78289,7 +78439,6 @@
     "Evita +60% do dano elemental refletido",
     "Efeito de Exposições em você reduzido em 50%",
     "Acertos têm 15% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos",
-    "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente",
     "3% de chance de Acertos causarem 300% do Dano Físico como Dano Extra de um Elemento aleatório"
    ],
    "desconectados": []
@@ -78300,32 +78449,35 @@
    "nomeEn": "Totem Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "totem_roubo_vida_fisico"
+   ],
+   "tipos": [
+    "lacaios e totens"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base",
     "Habilidades que invocam um Totem têm 30% de chance de invocar dois em vez de um",
     "5% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua",
-    "1% do Dano Físico de Ataques causado pelos seus Totens é Drenado como Vida para você",
     "Chance de golpe crítico aumentada em 40%, se você criou um totem recentemente",
     "Totens Provocam Inimigos ao redor deles por 1 segundo quando Convocados"
    ],
@@ -78511,6 +78663,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_nao_dano_critico",
     "crit_dmg@alvoUnico",
     "gem_level@gemaCritica",
     "crit_dmg_taken_red",
@@ -78530,17 +78683,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [
-    "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em 50%",
     "Atordoamentos dos Golpes Criticos têm Duração aumentada em 100%"
    ],
    "desconectados": []
@@ -78668,30 +78820,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -78781,7 +78938,10 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "phys_conv_energy"
+    "phys_conv_energy",
+    "eletrizacao_maximo",
+    "eletrizacao_espalha_m",
+    "eletrizacao_da_mana_pct"
    ],
    "tipos": [
     "outros"
@@ -78795,21 +78955,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Chance de Golpe Crítico contra inimigos com Exposição a Raio aumentada em 60%",
-    "+15% ao Máximo de Efeito da Eletrização",
-    "Eletrizações infligidas por você es espalham para outros Inimigos dentro de 1 metro",
-    "Aumentos e Reduções ao Máximo de Mana também se aplicam ao Efeito de Eletrização em 30% de seu valor",
     "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"
    ],
    "desconectados": []
@@ -79037,10 +79194,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "crit_chance_inc@alvoSangrando"
+    "crit_chance_inc@alvoSangrando",
+    "dot_multi_bleed%carga:tolerancia"
    ],
    "tipos": [
-    "crítico"
+    "crítico",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -79052,20 +79211,18 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 4,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
-    "Mover enquanto Sangrando faz com que você não sofra Dano extra",
     "50% de chance de Agravar o Sangramento em alvos que você Atordoar com Acertos de Ataques",
-    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos",
-    "+3% de Multiplicador de Dano Degenerativo para Sangramento por Carga de Tolerância"
+    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos"
    ],
    "desconectados": []
   },
@@ -79079,12 +79236,16 @@
     "phys_conv_ice",
     "ev:acertar:alvo:exposicaoGelo:4@gelo",
     "fire_res",
-    "gem_level@habilidade+gelo"
+    "gem_level@habilidade+gelo",
+    "resfriamento_minimo",
+    "dano_perm_congelado",
+    "dano_perm_congelado_max"
    ],
    "tipos": [
     "outros",
     "efeito por evento",
-    "resistências"
+    "resistências",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -79095,20 +79256,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "1/4",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [
-    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente",
-    "Resfriamentos dos seus Acertos sempre reduzem a Velocidade de Ação em ao menos 10%",
-    "Inimigos sofrem permanentemente Dano aumentado em 5% para cada segundo que foram Congeladas por você, máximo de 50%"
+    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente"
    ],
    "desconectados": []
   },
@@ -79205,32 +79364,35 @@
    "nomeEn": "Totem Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "totem_roubo_vida_fisico"
+   ],
+   "tipos": [
+    "lacaios e totens"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base",
     "Habilidades que invocam um Totem têm 30% de chance de invocar dois em vez de um",
     "5% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua",
-    "1% do Dano Físico de Ataques causado pelos seus Totens é Drenado como Vida para você",
     "Chance de golpe crítico aumentada em 40%, se você criou um totem recentemente",
     "Totens Provocam Inimigos ao redor deles por 1 segundo quando Convocados"
    ],
@@ -79326,11 +79488,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "veneno_nao_envenenado_inc",
     "dot_mais_rapido",
+    "dot_multi_poison_sangrando",
+    "envenenados_sem_critico",
     "ev:matar:vidaPct@alvoEnvenenado"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
+    "crítico",
     "efeito por evento"
    ],
    "situacao": "parcial",
@@ -79343,19 +79510,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 2,
+    "funciona": 5,
     "aproximado": 1,
-    "pendente": 4,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 5
    },
    "pendentes": [
-    "Venenos infligidos por você em Inimigos não-Envenenados causam Dano aumentado em 300%",
-    "+12% ao Multiplicador de Dano Degenerativo por Envenenamento infligido por você em Inimigos Sangrando",
-    "Inimigos Envenenados por você não podem causar Golpes Críticos",
     "Portador da Praga têm Valor Máximo da Praga aumentado em 20%"
    ],
    "desconectados": []
@@ -79653,10 +79817,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "crit_chance_inc@alvoSangrando"
+    "crit_chance_inc@alvoSangrando",
+    "dot_multi_bleed%carga:tolerancia"
    ],
    "tipos": [
-    "crítico"
+    "crítico",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -79668,20 +79834,18 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 4,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
-    "Mover enquanto Sangrando faz com que você não sofra Dano extra",
     "50% de chance de Agravar o Sangramento em alvos que você Atordoar com Acertos de Ataques",
-    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos",
-    "+3% de Multiplicador de Dano Degenerativo para Sangramento por Carga de Tolerância"
+    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos"
    ],
    "desconectados": []
   },
@@ -79774,30 +79938,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -79846,11 +80015,13 @@
    "ascendencia": null,
    "chaves": [
     "move_speed%furia:5",
-    "furia_max"
+    "furia_max",
+    "roubo_teto_vida_inc@furiaCheia"
    ],
    "tipos": [
     "velocidades",
-    "cargas e fúria"
+    "cargas e fúria",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -79862,20 +80033,19 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Cada Fúria também concede Ponto de Atordoamento aumentado em 1%",
     "Perda Inerente de Fúria é 20% mais rápida",
     "Clamores concedem 1 de Fúria por cada 5 de Poder Inimigo, até 5",
-    "Máximo total de Vida Recuperada do Dreno por segundo aumentado em 25% enquanto no máximo de Fúria",
     "Inimigos Próximos são Intimidados enquanto você tiver Fúria"
    ],
    "desconectados": []
@@ -79960,14 +80130,12 @@
    "linhas": {
     "funciona": 7,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 7
    },
-   "pendentes": [
-    "30% de chance de Evitar ser Empalado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -80249,10 +80417,15 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "imune_lento"
+    "res_elem_nao_reduzida_maldicao",
+    "imune_lento",
+    "afeccao_dano_unica",
+    "afeccao_controle_unica"
    ],
    "tipos": [
-    "outros"
+    "auras, maldições e reserva",
+    "outros",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -80264,22 +80437,18 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Evita +50% do dano refletido",
-    "Suas Resistências Elementais não podem ser reduzidas por Maldições",
-    "Não pode ser afetado por Sangue Corrompido",
-    "Não pode ser Empalado",
-    "Afecções Danificadoras Não Podem Ser infligidos em você enquanto você tiver um",
-    "Afecções Não Danificadoras Não Podem ser infligidos em você enquanto você já tiver um"
+    "Não pode ser afetado por Sangue Corrompido"
    ],
    "desconectados": []
   },
@@ -80322,30 +80491,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -80357,10 +80531,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "crit_chance_inc@alvoSangrando"
+    "crit_chance_inc@alvoSangrando",
+    "dot_multi_bleed%carga:tolerancia"
    ],
    "tipos": [
-    "crítico"
+    "crítico",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -80372,20 +80548,18 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 4,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
-    "Mover enquanto Sangrando faz com que você não sofra Dano extra",
     "50% de chance de Agravar o Sangramento em alvos que você Atordoar com Acertos de Ataques",
-    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos",
-    "+3% de Multiplicador de Dano Degenerativo para Sangramento por Carga de Tolerância"
+    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos"
    ],
    "desconectados": []
   },
@@ -80482,12 +80656,16 @@
     "phys_conv_ice",
     "ev:acertar:alvo:exposicaoGelo:4@gelo",
     "fire_res",
-    "gem_level@habilidade+gelo"
+    "gem_level@habilidade+gelo",
+    "resfriamento_minimo",
+    "dano_perm_congelado",
+    "dano_perm_congelado_max"
    ],
    "tipos": [
     "outros",
     "efeito por evento",
-    "resistências"
+    "resistências",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -80499,19 +80677,17 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [
-    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente",
-    "Resfriamentos dos seus Acertos sempre reduzem a Velocidade de Ação em ao menos 10%",
-    "Inimigos sofrem permanentemente Dano aumentado em 5% para cada segundo que foram Congeladas por você, máximo de 50%"
+    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente"
    ],
    "desconectados": []
   },
@@ -80569,8 +80745,8 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 0,
+    "pendente": 5,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
@@ -80579,7 +80755,6 @@
     "Evita +60% do dano elemental refletido",
     "Efeito de Exposições em você reduzido em 50%",
     "Acertos têm 15% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos",
-    "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente",
     "3% de chance de Acertos causarem 300% do Dano Físico como Dano Extra de um Elemento aleatório"
    ],
    "desconectados": []
@@ -81047,36 +81222,39 @@
    "nomeEn": "Impale Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "empalar_acerto_extra_chance",
+    "empalar_ignora_reducao",
+    "efeito_empalamento_nao_empalado",
+    "empalar_remover_chance"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 0,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 9,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 4
    },
    "pendentes": [
-    "10% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional",
-    "Dano de Empalamento causado aos Inimigos Empalados por você ignoram a Redução de Dano Físico Inimiga",
     "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%",
     "Convocar o Aço tem Velocidade de Uso aumentada em 40%",
     "Chamado do Aço tem +4 ao máximo de Fragmentos de Aço",
     "Convocar o Aço causa Dano Refletido aumentado em 10%",
-    "Efeito de Empalamentos infligidos por você em Inimigos não Empalados aumentado em 20%",
-    "20% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo",
     "Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam"
    ],
    "desconectados": []
@@ -81308,13 +81486,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 4,
+    "pendente": 1,
+    "inexiste": 5,
     "lembrete": 0,
     "efetivas": 0
    },
    "pendentes": [
-    "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais",
     "Vínculos demoram duas vezes mais para quebrar"
    ],
    "desconectados": []
@@ -81543,32 +81720,35 @@
    "nomeEn": "Totem Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "totem_roubo_vida_fisico"
+   ],
+   "tipos": [
+    "lacaios e totens"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base",
     "Habilidades que invocam um Totem têm 30% de chance de invocar dois em vez de um",
     "5% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua",
-    "1% do Dano Físico de Ataques causado pelos seus Totens é Drenado como Vida para você",
     "Chance de golpe crítico aumentada em 40%, se você criou um totem recentemente",
     "Totens Provocam Inimigos ao redor deles por 1 segundo quando Convocados"
    ],
@@ -81596,8 +81776,8 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 6,
-    "inexiste": 0,
+    "pendente": 5,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
@@ -81606,7 +81786,6 @@
     "Evita +60% do dano elemental refletido",
     "Efeito de Exposições em você reduzido em 50%",
     "Acertos têm 15% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos",
-    "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente",
     "3% de chance de Acertos causarem 300% do Dano Físico como Dano Extra de um Elemento aleatório"
    ],
    "desconectados": []
@@ -81704,36 +81883,39 @@
    "nomeEn": "Impale Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "empalar_acerto_extra_chance",
+    "empalar_ignora_reducao",
+    "efeito_empalamento_nao_empalado",
+    "empalar_remover_chance"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 0,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 9,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 4
    },
    "pendentes": [
-    "10% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional",
-    "Dano de Empalamento causado aos Inimigos Empalados por você ignoram a Redução de Dano Físico Inimiga",
     "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%",
     "Convocar o Aço tem Velocidade de Uso aumentada em 40%",
     "Chamado do Aço tem +4 ao máximo de Fragmentos de Aço",
     "Convocar o Aço causa Dano Refletido aumentado em 10%",
-    "Efeito de Empalamentos infligidos por você em Inimigos não Empalados aumentado em 20%",
-    "20% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo",
     "Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam"
    ],
    "desconectados": []
@@ -81784,36 +81966,39 @@
    "nomeEn": "Impale Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "empalar_acerto_extra_chance",
+    "empalar_ignora_reducao",
+    "efeito_empalamento_nao_empalado",
+    "empalar_remover_chance"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 0,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 9,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 4
    },
    "pendentes": [
-    "10% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional",
-    "Dano de Empalamento causado aos Inimigos Empalados por você ignoram a Redução de Dano Físico Inimiga",
     "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%",
     "Convocar o Aço tem Velocidade de Uso aumentada em 40%",
     "Chamado do Aço tem +4 ao máximo de Fragmentos de Aço",
     "Convocar o Aço causa Dano Refletido aumentado em 10%",
-    "Efeito de Empalamentos infligidos por você em Inimigos não Empalados aumentado em 20%",
-    "20% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo",
     "Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam"
    ],
    "desconectados": []
@@ -81824,33 +82009,36 @@
    "nomeEn": "Spell Suppression Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "suprimido_sem_afeccao_elemental"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 8,
+    "pendente": 7,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "Ignora +3% do Dano Mágico Suprimido",
     "Inflige Exposição a Fogo, Gelo e raio nos Inimigos quando você Suprimir seu Dano Mágico",
     "Impede +1% do Dano Mágico Suprimido por Acerto Suprimido Recentemente",
     "-2% de chance de Suprimir Dano Mágico por Acerto Suprimido Recentemente",
-    "Dano Mágico Suprimido não pode infligir Afecções Elementais em você",
     "Você tem Trespassar se você Suprimiu Dano Mágico Recentemente",
     "+8% de chance de Suprimir Dano Mágico enquanto Trepassando",
     "Chance de Suprimir Dano Mágico é Sortuda"
@@ -81911,13 +82099,20 @@
     "chance_freeze@alvoAmaldicoado",
     "chance_shock@alvoAmaldicoado",
     "chance_poison@alvoAmaldicoado",
-    "ev:conjurarMaldicao:alvo:cego:4"
+    "crit_dmg_taken_red_amaldicoado",
+    "ev:conjurarMaldicao:alvo:cego:4",
+    "efeito_maldicao_expirou:50",
+    "maldicao_desacelera",
+    "ev:amaldicoarSemMaldicao:vidaPct",
+    "ev:amaldicoarSemMaldicao:manaPct"
    ],
    "tipos": [
     "afecções e chance no acerto",
-    "efeito por evento"
+    "crítico",
+    "efeito por evento",
+    "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -81927,22 +82122,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/5",
+   "cobertura": "4/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 5,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 7
    },
-   "pendentes": [
-    "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em 40%",
-    "Suas Maldições têm Efeito aumentado em 20% se 50% da Duração da Maldição expirou",
-    "Inimigos Amaldiçoados por você são Desacelerados , com Velocidade de Movimento Reduzida em 15%",
-    "Recupera 1% de Vida quando você Amaldiçoar um Inimgo sem Maldições",
-    "Recupera 1% de Mana quando você Amaldiçoar um Inimgo sem Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -81981,14 +82170,12 @@
    "linhas": {
     "funciona": 7,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 7
    },
-   "pendentes": [
-    "30% de chance de Evitar ser Empalado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -81998,6 +82185,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_nao_dano_critico",
     "crit_dmg@alvoUnico",
     "gem_level@gemaCritica",
     "crit_dmg_taken_red",
@@ -82017,17 +82205,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [
-    "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em 50%",
     "Atordoamentos dos Golpes Criticos têm Duração aumentada em 100%"
    ],
    "desconectados": []
@@ -82156,11 +82343,13 @@
    "ascendencia": null,
    "chaves": [
     "move_speed%furia:5",
-    "furia_max"
+    "furia_max",
+    "roubo_teto_vida_inc@furiaCheia"
    ],
    "tipos": [
     "velocidades",
-    "cargas e fúria"
+    "cargas e fúria",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -82172,20 +82361,19 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Cada Fúria também concede Ponto de Atordoamento aumentado em 1%",
     "Perda Inerente de Fúria é 20% mais rápida",
     "Clamores concedem 1 de Fúria por cada 5 de Poder Inimigo, até 5",
-    "Máximo total de Vida Recuperada do Dreno por segundo aumentado em 25% enquanto no máximo de Fúria",
     "Inimigos Próximos são Intimidados enquanto você tiver Fúria"
    ],
    "desconectados": []
@@ -82196,48 +82384,11 @@
    "nomeEn": "Impale Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
-   "niveis": {
-    "exibido": true,
-    "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
-   },
-   "aplicado": null,
-   "cobertura": null,
-   "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
-    "pendente": 9,
-    "inexiste": 0,
-    "lembrete": 0,
-    "efetivas": 0
-   },
-   "pendentes": [
-    "10% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional",
-    "Dano de Empalamento causado aos Inimigos Empalados por você ignoram a Redução de Dano Físico Inimiga",
-    "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%",
-    "Convocar o Aço tem Velocidade de Uso aumentada em 40%",
-    "Chamado do Aço tem +4 ao máximo de Fragmentos de Aço",
-    "Convocar o Aço causa Dano Refletido aumentado em 10%",
-    "Efeito de Empalamentos infligidos por você em Inimigos não Empalados aumentado em 20%",
-    "20% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo",
-    "Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam"
-   ],
-   "desconectados": []
-  },
-  {
-   "id": "52220",
-   "nome": "Maestria Física",
-   "nomeEn": "Physical Mastery",
-   "categoria": "maestria",
-   "ascendencia": null,
    "chaves": [
-    "ignora_reducao_fisica"
+    "empalar_acerto_extra_chance",
+    "empalar_ignora_reducao",
+    "efeito_empalamento_nao_empalado",
+    "empalar_remover_chance"
    ],
    "tipos": [
     "outros"
@@ -82252,21 +82403,62 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
     "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
+   },
+   "pendentes": [
+    "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%",
+    "Convocar o Aço tem Velocidade de Uso aumentada em 40%",
+    "Chamado do Aço tem +4 ao máximo de Fragmentos de Aço",
+    "Convocar o Aço causa Dano Refletido aumentado em 10%",
+    "Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam"
+   ],
+   "desconectados": []
+  },
+  {
+   "id": "52220",
+   "nome": "Maestria Física",
+   "nomeEn": "Physical Mastery",
+   "categoria": "maestria",
+   "ascendencia": null,
+   "chaves": [
+    "ignora_reducao_fisica",
+    "dot_multi_bleed_por_empalamento"
+   ],
+   "tipos": [
+    "outros",
+    "afecções e chance no acerto"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
+   "niveis": {
+    "exibido": true,
+    "alocavel": true,
+    "interpretado": true,
+    "aplicado": true,
+    "validado": false
+   },
+   "aplicado": "ficha",
+   "cobertura": "1/2",
+   "linhas": {
+    "funciona": 2,
+    "aproximado": 0,
+    "pendente": 4,
+    "inexiste": 0,
+    "lembrete": 0,
+    "efetivas": 2
    },
    "pendentes": [
     "Evita +60% do dano físico refletido",
     "10% mais Dano Físico Máximo de Ataques",
     "Não pode ser Atordoado por Acertos que causem apenas Dano Físico",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%",
-    "+6% de Multiplicador do Dano Degenerativo para Sangramentos por Empalamento no Inimigo"
+    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
    ],
    "desconectados": []
   },
@@ -82446,10 +82638,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@ataque+comGarra+alvoVidaBaixa"
+    "dmg_inc@ataque+comGarra+alvoVidaBaixa",
+    "roubo_instantaneo_pct%armas:comGarra"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
    "situacao": "parcial",
    "nivel": "validado",
@@ -82461,20 +82655,19 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Ganha 25 de Vida por Inimigo Acertado com Ataques de Garras na Mão Principal",
     "Ganha 25 de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária",
     "Bônus Inerente de Velocidade de Ataque da Empunhadura Dupla é dobrado enquanto portando Garras",
-    "10% do Dreno é Instantâneo por Garra Equipada",
     "Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente",
     "Habilidades Suportadas por Lâmina Noturna têm Efeito do Elusivo aumentado em 40%"
    ],
@@ -82694,33 +82887,36 @@
    "nomeEn": "Spell Suppression Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "suprimido_sem_afeccao_elemental"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 8,
+    "pendente": 7,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "Ignora +3% do Dano Mágico Suprimido",
     "Inflige Exposição a Fogo, Gelo e raio nos Inimigos quando você Suprimir seu Dano Mágico",
     "Impede +1% do Dano Mágico Suprimido por Acerto Suprimido Recentemente",
     "-2% de chance de Suprimir Dano Mágico por Acerto Suprimido Recentemente",
-    "Dano Mágico Suprimido não pode infligir Afecções Elementais em você",
     "Você tem Trespassar se você Suprimiu Dano Mágico Recentemente",
     "+8% de chance de Suprimir Dano Mágico enquanto Trepassando",
     "Chance de Suprimir Dano Mágico é Sortuda"
@@ -82779,12 +82975,16 @@
     "phys_conv_ice",
     "ev:acertar:alvo:exposicaoGelo:4@gelo",
     "fire_res",
-    "gem_level@habilidade+gelo"
+    "gem_level@habilidade+gelo",
+    "resfriamento_minimo",
+    "dano_perm_congelado",
+    "dano_perm_congelado_max"
    ],
    "tipos": [
     "outros",
     "efeito por evento",
-    "resistências"
+    "resistências",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -82795,20 +82995,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "1/4",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [
-    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente",
-    "Resfriamentos dos seus Acertos sempre reduzem a Velocidade de Ação em ao menos 10%",
-    "Inimigos sofrem permanentemente Dano aumentado em 5% para cada segundo que foram Congeladas por você, máximo de 50%"
+    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente"
    ],
    "desconectados": []
   },
@@ -82848,32 +83046,35 @@
    "nomeEn": "Totem Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "totem_roubo_vida_fisico"
+   ],
+   "tipos": [
+    "lacaios e totens"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base",
     "Habilidades que invocam um Totem têm 30% de chance de invocar dois em vez de um",
     "5% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua",
-    "1% do Dano Físico de Ataques causado pelos seus Totens é Drenado como Vida para você",
     "Chance de golpe crítico aumentada em 40%, se você criou um totem recentemente",
     "Totens Provocam Inimigos ao redor deles por 1 segundo quando Convocados"
    ],
@@ -82886,30 +83087,35 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "roubo_instantaneo_pct",
     "armour_pct@drenando",
-    "evasion_pct@drenando"
+    "evasion_pct@drenando",
+    "recoup_life@drenoRemovidoCheio",
+    "roubo_teto_inc"
    ],
    "tipos": [
-    "armadura e evasão"
+    "outros",
+    "armadura e evasão",
+    "vida, regeneração e dreno de vida"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 5,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -83414,7 +83620,10 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "phys_conv_energy"
+    "phys_conv_energy",
+    "eletrizacao_maximo",
+    "eletrizacao_espalha_m",
+    "eletrizacao_da_mana_pct"
    ],
    "tipos": [
     "outros"
@@ -83428,21 +83637,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Chance de Golpe Crítico contra inimigos com Exposição a Raio aumentada em 60%",
-    "+15% ao Máximo de Efeito da Eletrização",
-    "Eletrizações infligidas por você es espalham para outros Inimigos dentro de 1 metro",
-    "Aumentos e Reduções ao Máximo de Mana também se aplicam ao Efeito de Eletrização em 30% de seu valor",
     "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"
    ],
    "desconectados": []
@@ -83454,10 +83660,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "pode:resfriamento:physical@comMaca",
+    "pode:resfriamento:fire@comMaca",
+    "pode:resfriamento:energy@comMaca",
+    "pode:resfriamento:chaos@comMaca",
+    "pode:resfriamento:physical@comCetro",
+    "pode:resfriamento:fire@comCetro",
+    "pode:resfriamento:energy@comCetro",
+    "pode:resfriamento:chaos@comCetro",
     "area_inc@criticoRecente",
     "stun_duration"
    ],
    "tipos": [
+    "outros",
     "área e projéteis",
     "atordoamento"
    ],
@@ -83471,17 +83686,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "1/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
-    "Todo o Dano com Maças e Cetros infligem Resfriamento",
     "Esmaga Inimigos ao acertar com Maças e Cetros",
     "12% de chance de causar Dano Dobrado com Ataques se o Tempo de Ataque for maior que 1 segundo",
     "Acertos que Atordoarem os Inimigos possuem Golpe de Misericórdia"
@@ -83604,12 +83818,16 @@
     "phys_conv_ice",
     "ev:acertar:alvo:exposicaoGelo:4@gelo",
     "fire_res",
-    "gem_level@habilidade+gelo"
+    "gem_level@habilidade+gelo",
+    "resfriamento_minimo",
+    "dano_perm_congelado",
+    "dano_perm_congelado_max"
    ],
    "tipos": [
     "outros",
     "efeito por evento",
-    "resistências"
+    "resistências",
+    "dano % (aumentado e \"mais\")"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -83620,20 +83838,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "1/4",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [
-    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente",
-    "Resfriamentos dos seus Acertos sempre reduzem a Velocidade de Ação em ao menos 10%",
-    "Inimigos sofrem permanentemente Dano aumentado em 5% para cada segundo que foram Congeladas por você, máximo de 50%"
+    "+1 ao multiplicador de dano de gelo degenerativo por 4% de resistência a dano de gelo excedente"
    ],
    "desconectados": []
   },
@@ -83644,11 +83860,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "veneno_nao_envenenado_inc",
     "dot_mais_rapido",
+    "dot_multi_poison_sangrando",
+    "envenenados_sem_critico",
     "ev:matar:vidaPct@alvoEnvenenado"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
+    "crítico",
     "efeito por evento"
    ],
    "situacao": "parcial",
@@ -83661,19 +83882,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 2,
+    "funciona": 5,
     "aproximado": 1,
-    "pendente": 4,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 5
    },
    "pendentes": [
-    "Venenos infligidos por você em Inimigos não-Envenenados causam Dano aumentado em 300%",
-    "+12% ao Multiplicador de Dano Degenerativo por Envenenamento infligido por você em Inimigos Sangrando",
-    "Inimigos Envenenados por você não podem causar Golpes Críticos",
     "Portador da Praga têm Valor Máximo da Praga aumentado em 20%"
    ],
    "desconectados": []
@@ -83881,13 +84099,20 @@
     "chance_freeze@alvoAmaldicoado",
     "chance_shock@alvoAmaldicoado",
     "chance_poison@alvoAmaldicoado",
-    "ev:conjurarMaldicao:alvo:cego:4"
+    "crit_dmg_taken_red_amaldicoado",
+    "ev:conjurarMaldicao:alvo:cego:4",
+    "efeito_maldicao_expirou:50",
+    "maldicao_desacelera",
+    "ev:amaldicoarSemMaldicao:vidaPct",
+    "ev:amaldicoarSemMaldicao:manaPct"
    ],
    "tipos": [
     "afecções e chance no acerto",
-    "efeito por evento"
+    "crítico",
+    "efeito por evento",
+    "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83897,22 +84122,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/5",
+   "cobertura": "4/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 5,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 7
    },
-   "pendentes": [
-    "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em 40%",
-    "Suas Maldições têm Efeito aumentado em 20% se 50% da Duração da Maldição expirou",
-    "Inimigos Amaldiçoados por você são Desacelerados , com Velocidade de Movimento Reduzida em 15%",
-    "Recupera 1% de Vida quando você Amaldiçoar um Inimgo sem Maldições",
-    "Recupera 1% de Mana quando você Amaldiçoar um Inimgo sem Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -84141,13 +84360,20 @@
     "chance_freeze@alvoAmaldicoado",
     "chance_shock@alvoAmaldicoado",
     "chance_poison@alvoAmaldicoado",
-    "ev:conjurarMaldicao:alvo:cego:4"
+    "crit_dmg_taken_red_amaldicoado",
+    "ev:conjurarMaldicao:alvo:cego:4",
+    "efeito_maldicao_expirou:50",
+    "maldicao_desacelera",
+    "ev:amaldicoarSemMaldicao:vidaPct",
+    "ev:amaldicoarSemMaldicao:manaPct"
    ],
    "tipos": [
     "afecções e chance no acerto",
-    "efeito por evento"
+    "crítico",
+    "efeito por evento",
+    "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -84157,22 +84383,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/5",
+   "cobertura": "4/10",
    "linhas": {
-    "funciona": 2,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 5,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 7
    },
-   "pendentes": [
-    "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em 40%",
-    "Suas Maldições têm Efeito aumentado em 20% se 50% da Duração da Maldição expirou",
-    "Inimigos Amaldiçoados por você são Desacelerados , com Velocidade de Movimento Reduzida em 15%",
-    "Recupera 1% de Vida quando você Amaldiçoar um Inimgo sem Maldições",
-    "Recupera 1% de Mana quando você Amaldiçoar um Inimgo sem Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -84262,11 +84482,13 @@
    "chaves": [
     "crit_dmg@alvoVidaCheia",
     "spell_suppression%armas:comAdaga",
+    "mais_dano@alvoVenenos:5",
     "projectile_speed@comAdaga"
    ],
    "tipos": [
     "crítico",
     "supressão de magia",
+    "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
    "situacao": "parcial",
@@ -84281,19 +84503,25 @@
    "aplicado": "ficha",
    "cobertura": "1/3",
    "linhas": {
-    "funciona": 3,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
     "efetivas": 3
    },
    "pendentes": [
     "Acertos Críticos possuem Golpe de Misericórdia",
-    "8% mais Dano com Acertos e Afecções contra Inimigos Afetados por ao menos 5 Venenos",
     "Elusivo concede +40% de Multiplicador de Golpes Críticos às Habilidades Suportadas por Lâmina Noturna"
    ],
-   "desconectados": []
+   "desconectados": [
+    {
+     "efeito": "mais_dano@alvoVenenos:5",
+     "faltas": [
+      "condição desconhecida: alvoVenenos:5"
+     ]
+    }
+   ]
   },
   {
    "id": "63184",
@@ -84391,7 +84619,10 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "phys_conv_energy"
+    "phys_conv_energy",
+    "eletrizacao_maximo",
+    "eletrizacao_espalha_m",
+    "eletrizacao_da_mana_pct"
    ],
    "tipos": [
     "outros"
@@ -84405,21 +84636,18 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 1,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 4
    },
    "pendentes": [
     "Chance de Golpe Crítico contra inimigos com Exposição a Raio aumentada em 60%",
-    "+15% ao Máximo de Efeito da Eletrização",
-    "Eletrizações infligidas por você es espalham para outros Inimigos dentro de 1 metro",
-    "Aumentos e Reduções ao Máximo de Mana também se aplicam ao Efeito de Eletrização em 30% de seu valor",
     "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"
    ],
    "desconectados": []
@@ -84473,10 +84701,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "crit_chance_inc@alvoSangrando"
+    "crit_chance_inc@alvoSangrando",
+    "dot_multi_bleed%carga:tolerancia"
    ],
    "tipos": [
-    "crítico"
+    "crítico",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -84488,20 +84718,18 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 4,
-    "inexiste": 1,
+    "pendente": 2,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
-    "Mover enquanto Sangrando faz com que você não sofra Dano extra",
     "50% de chance de Agravar o Sangramento em alvos que você Atordoar com Acertos de Ataques",
-    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos",
-    "+3% de Multiplicador de Dano Degenerativo para Sangramento por Carga de Tolerância"
+    "Acertos de Ataques Agravam qualquer Sangramento mais antigos que 4 segundos nos alvos"
    ],
    "desconectados": []
   },
@@ -84512,6 +84740,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_nao_dano_critico",
     "crit_dmg@alvoUnico",
     "gem_level@gemaCritica",
     "crit_dmg_taken_red",
@@ -84531,17 +84760,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [
-    "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado em 50%",
     "Atordoamentos dos Golpes Criticos têm Duração aumentada em 100%"
    ],
    "desconectados": []
@@ -84553,10 +84781,12 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "ignora_reducao_fisica"
+    "ignora_reducao_fisica",
+    "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "outros"
+    "outros",
+    "afecções e chance no acerto"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -84567,22 +84797,21 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/1",
+   "aplicado": "ficha",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 4,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "Evita +60% do dano físico refletido",
     "10% mais Dano Físico Máximo de Ataques",
     "Não pode ser Atordoado por Acertos que causem apenas Dano Físico",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%",
-    "+6% de Multiplicador do Dano Degenerativo para Sangramentos por Empalamento no Inimigo"
+    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
    ],
    "desconectados": []
   },
@@ -84678,32 +84907,35 @@
    "nomeEn": "Totem Mastery",
    "categoria": "maestria",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "totem_roubo_vida_fisico"
+   ],
+   "tipos": [
+    "lacaios e totens"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 6,
+    "pendente": 5,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base",
     "Habilidades que invocam um Totem têm 30% de chance de invocar dois em vez de um",
     "5% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua",
-    "1% do Dano Físico de Ataques causado pelos seus Totens é Drenado como Vida para você",
     "Chance de golpe crítico aumentada em 40%, se você criou um totem recentemente",
     "Totens Provocam Inimigos ao redor deles por 1 segundo quando Convocados"
    ],
@@ -84787,14 +85019,12 @@
    "linhas": {
     "funciona": 7,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 7
    },
-   "pendentes": [
-    "30% de chance de Evitar ser Empalado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -84874,30 +85104,32 @@
    "nomeEn": "Master of Metal",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Champion",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "empalar_acertos_extra"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Empalamentos que você infligir duram por 1 Acerto adicional"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -84943,32 +85175,36 @@
    "nomeEn": "First to Strike, Last to Fall",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Champion",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "ev:vidaBaixa:buff:adrenalina",
+    "ev:ganharAdrenalina:vidaPct",
+    "adrenalina_remove_afeccoes"
+   ],
+   "tipos": [
+    "efeito por evento",
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 0,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 0
+    "efetivas": 3
    },
    "pendentes": [
-    "Seus Acertos Intimidam permanentemente Inimigos com Vida Cheia",
-    "Ganhe Adrenalina por 20 segundos quando você atingir Vida Baixa",
-    "Recupera 25% de Vida ao ganhar Adrenalina",
-    "Remove todas as Afecções e Incêndios quando ao ganhar Adrenalina"
+    "Seus Acertos Intimidam permanentemente Inimigos com Vida Cheia"
    ],
    "desconectados": []
   },
@@ -85588,30 +85824,32 @@
    "nomeEn": "Gratuitous Violence",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Gladiator",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "ev:matar:explodirChance:20@alvoSangrando"
+   ],
+   "tipos": [
+    "efeito por evento"
+   ],
+   "situacao": "funcional-aproximado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 1,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Inimigos com Sangramento Explodem quando você matá-los, causando 20% de suas Vidas Máximas com Dano Físico"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -85728,33 +85966,37 @@
    "nomeEn": "Weapon Master",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Gladiator",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_instantaneo_pct@comGarra",
+    "mais_dano@alvoVidaBaixa+comMachado"
+   ],
+   "tipos": [
+    "outros",
+    "dano % (aumentado e \"mais\")"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 5,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [
     "25% mais Precisão enquanto empunhando uma Espada",
     "20% mais Área de Efeito enquanto empunhando uma Maça ou Cetro",
-    "20% mais Chance de Golpe Crítico enquanto empunhando uma Adaga",
-    "20% do Dreno é Instantâneo enquanto empunhando uma Garra",
-    "30% mais Dano com Acertos e Afecções contra Inimigos que estejam em Vida Baixa enquanto você empunhar um Machado"
+    "20% mais Chance de Golpe Crítico enquanto empunhando uma Adaga"
    ],
    "desconectados": []
   },
@@ -85858,29 +86100,33 @@
    "nomeEn": "Brutal Fervour",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Slayer",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_instancia_inc",
+    "roubo_vida_nao_para_no_cheio"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 1,
+    "pendente": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [
-    "Recuperação Máxima por Dreno de Vida aumentada em 100%",
     "Dano sofrido reduzido em 10% enquanto Drenando"
    ],
    "desconectados": []
@@ -86068,32 +86314,35 @@
    "nomeEn": "Endless Hunger",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Slayer",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "roubo_excedente",
+    "inafetado_sangramento@drenando"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [
-    "20% do Dano Excedente é Drenado como Vida",
     "Velocidade de Ataque aumentada em 20% enquanto Drenando",
-    "Não pode ser Atordoado enquanto Drenando",
-    "Você é Inafetado por Sangramento enquanto Drenando"
+    "Não pode ser Atordoado enquanto Drenando"
    ],
    "desconectados": []
   },
@@ -86287,31 +86536,34 @@
    "nomeEn": "Bane of Legends",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Slayer",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "mais_dano@alvoUnico"
+   ],
+   "tipos": [
+    "dano % (aumentado e \"mais\")"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "10% mais Dano se você Matou Recentemente",
-    "Não pode sofrer Dano Físico Refletido",
-    "20% mais Dano com Acertos e Afecções contra Inimigos Únicos"
+    "Não pode sofrer Dano Físico Refletido"
    ],
    "desconectados": []
   },
@@ -86621,7 +86873,7 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Berserker",
    "chaves": [
-    "roubo_teto_inc",
+    "roubo_teto_vida_inc",
     "phys_dmg"
    ],
    "tipos": [
@@ -86629,16 +86881,16 @@
     "dano % (aumentado e \"mais\")"
    ],
    "situacao": "funcional-aproximado",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 1,
@@ -89332,29 +89584,32 @@
    "nomeEn": "Oath of Winter",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Warden",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "congelamento_minimo_s"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
-    "Inimigos que você Congelar continuam Congelados por ao menos 2 segundo",
     "Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada"
    ],
    "desconectados": []
@@ -89535,31 +89790,33 @@
    "nomeEn": "Oath of Spring",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Warden",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "eletrizacao_maximo_fixo",
+    "eletrizacoes_max"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Efeito Máximo da Eletrização é igual a 2% de aumento do Dano sofrido",
-    "Você pode aplicar até 50 Eletrizações em cada Inimigo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -90002,10 +90259,14 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Ascendant",
    "chaves": [
-    "dano_recebido_inc"
+    "dano_recebido_inc",
+    "life_leech@ataque+matouRecente",
+    "mana_leech@ataque+matouRecente"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "vida, regeneração e dreno de vida",
+    "mana e custo"
    ],
    "situacao": "parcial",
    "nivel": "aplicado",
@@ -90017,18 +90278,17 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "0/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 8,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
     "15% mais Dano",
-    "2% do Dano de Ataques Drenado como vida e Mana caso tenha Matado Recentemente",
     "Não pode ser Atordoado enquanto ainda possuir ao menos 25 de Ira",
     "Perna Inerente de Fúria começa 1 segundo depois"
    ],
@@ -90040,31 +90300,34 @@
    "nomeEn": "Trickster",
    "categoria": "ascendencia-comum",
    "ascendencia": "Ascendant",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "es_leech"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "parcial",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 3,
     "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
     "Impede +6% do Dano Mágico Suprimido enquanto em Escudo de Energia Cheio",
     "2% mais Dano para cada tipo diferente de Maestria Alocada por você",
-    "2% do Dano é Drenado como Escudo de Energia",
     "Velocidade de Ação dos Monstros Inimigos Próximos é no máximo de 90% do valor base"
    ],
    "desconectados": []
@@ -90111,9 +90374,11 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Ascendant",
    "chaves": [
+    "eletrizacao_minima",
     "max_lacaio:golem"
    ],
    "tipos": [
+    "outros",
     "lacaios e totens"
    ],
    "situacao": "parcial",
@@ -90125,18 +90390,17 @@
     "aplicado": true,
     "validado": true
    },
-   "aplicado": "combate",
-   "cobertura": "1/1",
+   "aplicado": "ficha",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [
-    "Eletrizações dos seus Acertos sempre aumentam o Dano recebido em ao menos 10%",
     "Não pode sofrer Dano Elemental Refletido",
     "Exposições infligidas por você aplicam -20% extra à Resistência afetada"
    ],
@@ -90262,10 +90526,12 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Ascendant",
    "chaves": [
+    "maldicoes_adicionais",
     "efeito_maldicao",
     "es_regen_pct"
    ],
    "tipos": [
+    "outros",
     "auras, maldições e reserva",
     "escudo de energia"
    ],
@@ -90279,17 +90545,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
-    "Você pode aplicar uma Maldição adicional",
     "Não pode ser Atordoado enquanto possuir Escudo de Energia"
    ],
    "desconectados": []
@@ -90961,6 +91226,7 @@
    "ascendencia": "Ascendant",
    "chaves": [
     "culling",
+    "roubo_vida_nao_para_no_cheio",
     "area_inc@matouRecente"
    ],
    "tipos": [
@@ -90977,14 +91243,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
     "pendente": 1,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Não pode sofrer Dano Físico Refletido"
@@ -92525,10 +92791,12 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Reliquarian",
    "chaves": [
+    "chance_shock",
     "sem_dano:physical",
     "efeito_buff_gema:arauto"
    ],
    "tipos": [
+    "afecções e chance no acerto",
     "outros",
     "auras, maldições e reserva"
    ],
@@ -92541,19 +92809,17 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/2",
+   "aplicado": "ficha",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 1,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Seus Acertos empre Eletrizam"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -93119,12 +93385,15 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Reliquarian",
    "chaves": [
-    "ailment_duration"
+    "ailment_duration",
+    "ev:incendiar:alvo:cinzas:5",
+    "ev:congelar:alvo:cobertoGelo:5"
    ],
    "tipos": [
-    "afecções e chance no acerto"
+    "afecções e chance no acerto",
+    "efeito por evento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -93134,19 +93403,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 1
+    "efetivas": 3
    },
-   "pendentes": [
-    "Cobre Inimigos em Cinzas por 5 segundos quando você os Incendiar",
-    "Cobre Inimigos em Gelo por 5 segundos quando você os Congelar"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -93644,29 +93910,32 @@
    "nomeEn": "Toxic Delivery",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Assassin",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "veneno_critico_mais"
+   ],
+   "tipos": [
+    "crítico"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
-    "Envenenar infligido por você com Golpes Críticos causa 20% mais Dano",
     "Duração do Envenamento aumentada em 5% para cada Veneno que você tenha infligido Recentemente, máximo de 100%",
     "Recupera 0.5% de Vida por Veneno afetando Inimigos mortos por Você"
    ],
@@ -93678,30 +93947,32 @@
    "nomeEn": "Infused Toxins",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Assassin",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "envenena_qualquer_dano"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Todo o Dano dos Acertos pode Envenenar"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -94311,29 +94582,33 @@
    "nomeEn": "Pyromaniac",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Saboteur",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "imune_incendio",
+    "imune_eletrizacao"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 2,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [
-    "Imune a Incêndio e Eletrização",
     "2% de Vida Regenerada por Segundo para cada uma das suas Minas Detonadas Recentemente, até 10% por segundo",
     "2% da Vida Regenerada por Segundo para cada uma de suas Armadilhas Ativadas Recentemente, até 10% por segundo"
    ],
@@ -94902,34 +95177,33 @@
    "ascendencia": "Trickster",
    "chaves": [
     "evasion_pct",
-    "es_pct"
+    "es_pct",
+    "roubo_teto_es_inc"
    ],
    "tipos": [
     "armadura e evasão",
     "escudo de energia"
    ],
-   "situacao": "parcial",
-   "nivel": "validado",
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": true
+    "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "2/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Recuperação total por segundo do Dreno de Escudo de Energia aumentada em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -95260,31 +95534,33 @@
    "nomeEn": "Soul Drinker",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Trickster",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "es_leech",
+    "roubo_es_nao_para_no_cheio"
+   ],
+   "tipos": [
+    "escudo de energia"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "2% do Dano é Drenado como Escudo de Energia",
-    "Efeitos de Dreno de Escudo de Energia não são removidos quando o Escudo de Energia se Encher"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -96552,31 +96828,36 @@
    "nomeEn": "Illuminated Devotion",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Hierophant",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "efeito_resfriamento_proprio@buff:furiaArcana",
+    "efeito_eletrizacao_proprio@buff:furiaArcana",
+    "vida_leech_magia@buff:furiaArcana"
+   ],
+   "tipos": [
+    "afecções e chance no acerto",
+    "vida, regeneração e dreno de vida"
+   ],
+   "situacao": "parcial",
+   "nivel": "interpretado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
+    "interpretado": true,
     "aplicado": false,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "condicional",
+   "cobertura": "0/3",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [
-    "Afecções Não Danificadoras têm Efeito 50% de aumento de Efeito em você enquanto você tiver Fúria Arcana",
-    "Área de Efeito aumentada em 30% enquanto você possuir Fúria Arcana",
-    "0.5% de Dano Mágico Drenado como Vida enquanto você possuir Fúria Arcana"
+    "Área de Efeito aumentada em 30% enquanto você possuir Fúria Arcana"
    ],
    "desconectados": []
   },
@@ -97441,32 +97722,38 @@
    "nomeEn": "Shaper of Storms",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Elementalist",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "chance_shock",
+    "eletrizacao_minima",
+    "pode:eletrizacao:physical",
+    "pode:eletrizacao:fire",
+    "pode:eletrizacao:ice",
+    "pode:eletrizacao:chaos"
+   ],
+   "tipos": [
+    "afecções e chance no acerto",
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 0,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 3
    },
-   "pendentes": [
-    "Seus Acertos empre Eletrizam",
-    "Eletrizações dos seus Acertos sempre aumentam o Dano recebido em ao menos 25%",
-    "Todo Dano pode Eletrizar"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -97518,12 +97805,14 @@
     "pode:resfriamento:physical",
     "pode:resfriamento:fire",
     "pode:resfriamento:energy",
-    "pode:resfriamento:chaos"
+    "pode:resfriamento:chaos",
+    "resfriamento_maximo",
+    "resfriamento_reduz_dano"
    ],
    "tipos": [
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -97532,20 +97821,17 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "0/4",
+   "aplicado": "ficha",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 1,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 3
    },
-   "pendentes": [
-    "Seus Resfriamentos podem reduzir a Velocidade de Ação em até um máximo de 40%",
-    "Inimigos Resfriados pelos seus Acertos reduz o Dano causado pela metade do Efeito de Resfriamento"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -97594,30 +97880,37 @@
    "nomeEn": "Shaper of Flames",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Elementalist",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "chance_ignite",
+    "pode:incendio:physical",
+    "pode:incendio:ice",
+    "pode:incendio:energy",
+    "pode:incendio:chaos"
+   ],
+   "tipos": [
+    "afecções e chance no acerto",
+    "outros"
+   ],
+   "situacao": "parcial",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 3,
+    "pendente": 1,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [
-    "Seus Acertos empre Incendeiam",
-    "Todo Dano pode Incendiar",
     "Inimigos Incendiados por você têm 40% do Dano Físico causado por eles convertido para Fogo"
    ],
    "desconectados": []
@@ -98667,31 +98960,33 @@
    "nomeEn": "Unholy Authority",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Occultist",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "maldicoes_adicionais",
+    "feitico_afeta_aprova"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Você pode aplicar uma Maldição adicional",
-    "Seus Feitiços podem afetar Inimigos a Prova de Maldições"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {

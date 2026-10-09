@@ -9,7 +9,8 @@
 //   vidaBaixa     → enrage (uma vez: mais dano e velocidade de ataque)  — no tique
 //   aura          → areaDeDano no jogador perto, de tempo em tempo       — no tique
 //   aoReceberDano → buff (empilha), refletir (parte do dano volta)  — no acerto
-//   aoAtacar      → debuff (dano ao longo do tempo no jogador)   — no golpe do mob
+//   aoAtacar      → debuff (dano ao longo do tempo no jogador), maldicao (PoE: o "Amaldiçoa" — uma das maldições do monstro, sempre a
+//                   mesma para cada monstro, em você por 6 s: `condicoes-poe.MALDICOES_DOS_MONSTROS`)   — no golpe do mob
 //
 // O dano no jogador vai pelo MESMO caminho das magias dos bosses
 // (`Poderes.danoDeElementoNoJogador`: proteção, Energy Shield, magic shield,
@@ -133,8 +134,19 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
   if (!m?.mods?.length || !(danoDoGolpe > 0)) return;
   const agora = relogio(hunt);
   for (const mec of Raridade.mecanicasDe(m)) {
-    if (mec.gatilho !== 'aoAtacar' || mec.efeito !== 'debuff') continue;
+    if (mec.gatilho !== 'aoAtacar' || !['debuff', 'maldicao'].includes(mec.efeito)) continue;
     if (Math.random() * 100 >= (mec.chance ?? 100)) continue;
+    if (mec.efeito === 'maldicao') {
+      // (cada monstro tem a SUA maldição — a primeira sorteada fica: no PoE o monstro amaldiçoa sempre com a mesma)
+      const lista = (mec.maldicoes ?? []).filter((k) => ModsPoe.MALDICOES_DOS_MONSTROS[k]);
+      if (!lista.length) continue;
+      m.maldicaoDoMonstro ??= lista[Math.floor(Math.random() * lista.length)];
+      const def = ModsPoe.MALDICOES_DOS_MONSTROS[m.maldicaoDoMonstro];
+      ModsPoe.amaldicoarJogador(hunt, `${m.maldicaoDoMonstro}:${m.uid}`, { nome: def.nome, af: def.af, ms: mec.duracaoMs ?? ModsPoe.DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, agora);
+      eventos?.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: 'amaldicoado', nome: def.nome, de: m.name });
+      Ficha.invalidar(estado);
+      continue;
+    }
     const pulsos = Math.max(1, Math.round((mec.duracaoMs ?? 4000) / 1000));
     const total = (danoDoGolpe * (mec.danoPctDoGolpe ?? 30)) / 100;
     // O dano contínuo no JOGADOR passa pelo motor de efeitos (`combate/dot.mjs`): acumulação por tipo, relógio da caçada, resistência no pulso.
@@ -164,7 +176,16 @@ export function tique(estado, hunt, personagem, eventos) {
   }
   // O dano ao longo do tempo no JOGADOR (o debuff do golpe: veneno, queimadura, sangramento...), um pulso por segundo, pelo motor `combate/dot.mjs`.
   // ("X% menos Dano Sofrido de Dano Degenerativo" — a árvore do PoE.)
-  const menosDegen = Math.max(0, 1 - (Number(ModsPoe.fichaDa?.(hunt)?.afPoe?.dano_degen_recebido_menos) || 0) / 100);
-  Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome) => ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, Math.round(valor * menosDegen), elemento, eventos, nome), () => estado.hp > 0);
+  const afPoe = ModsPoe.fichaDa?.(hunt)?.afPoe;
+  // ("Sofre X% menos Dano Degenerativo se você começou a sofrer Dano Degenerativo no último segundo" — a Sombra Fluvial: o primeiro segundo
+  // de dano contínuo em você, contado de quando ele começou sem nenhum antes.)
+  const comDot = (hunt.efeitosDoJogador?.dots ?? []).some((d) => d.falta > 0);
+  if (comDot && !hunt.degenAtivo) hunt.degenDesde = agora;
+  hunt.degenAtivo = comDot;
+  const noInicio = comDot && agora - (hunt.degenDesde ?? -Infinity) <= 1000 ? Number(afPoe?.degen_menos_no_inicio) || 0 : 0;
+  const menosDegen = Math.max(0, 1 - (Number(afPoe?.dano_degen_recebido_menos) || 0) / 100) * Math.max(0, 1 - noInicio / 100);
+  // (PoE, "Inafetado por Sangramento" — "enquanto Drenando", o Carrasco: o sangramento corre em você, mas não fere.)
+  const inafetado = (tipo) => tipo === 'sangramento' && Number(afPoe?.inafetado_sangramento) > 0;
+  Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome, tipo) => (inafetado(tipo) ? 0 : ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, Math.round(valor * menosDegen), elemento, eventos, nome)), () => estado.hp > 0);
 }
 

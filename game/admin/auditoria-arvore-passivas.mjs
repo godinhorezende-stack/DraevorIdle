@@ -86,7 +86,7 @@ export function arquivosQueLeem(k) {
 }
 /** Uma condição de estado/tag de golpe é PRODUZIDA em algum lugar (além da declaração)? */
 function condicaoProduzida(x) {
-  if (/^(atrMin|atrMaior|buff|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe):/.test(x)) return true; // `vale` lê o estado
+  if (/^(atrMin|atrMaior|buff|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|alvoVenenos):/.test(x)) return true; // `vale` lê o estado (`alvoVenenos:N`: `tagsDoAlvo`)
   const n = (codigo().match(new RegExp(`['"]${esc(x)}['"]`, 'g')) ?? []).length;
   return n >= 2;
 }

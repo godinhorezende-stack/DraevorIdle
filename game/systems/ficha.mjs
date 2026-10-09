@@ -41,6 +41,7 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 import * as ModsPoeEfeitos from './itens-poe/mods-poe.mjs';
+import * as Reserva from './itens-poe/reserva.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -253,8 +254,12 @@ function calcularCombate(estado, extrasDoPoe = null) {
   }
   // O LIMITE (`combate/limites.json`): a proteção final de cada elemento vai de 0 a 100%; o que passa disso fica em `excedentes` (a tela mostra à parte).
   const excedentes = { protection: {}, critChance: 0, ataqueDuplo: 0, resistenciaAControle: Math.max(0, (af.control_resist ?? 0) - Limites.LIMITES.resistenciaAControle.maximo) };
+  // (a soma BRUTA, antes do limite do Draevor: no PoE a resistência pode ficar negativa — os "−X% de Resistência" das peças, a Fraqueza
+  // Elemental dos monstros — e a conta dela, mais abaixo, parte daqui)
+  const brutoDaSoma = {};
   for (const el of ELEMENTOS) {
     const bruto = protection[el];
+    brutoDaSoma[el] = bruto;
     protection[el] = Limites.resistenciaDoJogador(bruto);
     excedentes.protection[el] = Math.max(0, bruto - protection[el]);
   }
@@ -288,7 +293,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
   const penalidade = itensPoeLigado() ? penalidadeDeResistencia(estado) : 0;
   if (itensPoeLigado()) {
     for (const el of ['fire', 'ice', 'energy', 'chaos']) {
-      const bruto = (el === 'chaos' ? af.chaos_res ?? 0 : protection[el] + (excedentes.protection[el] ?? 0)) - penalidade;
+      const bruto = (el === 'chaos' ? af.chaos_res ?? 0 : brutoDaSoma[el] ?? protection[el] + (excedentes.protection[el] ?? 0)) - penalidade;
       // O MÁXIMO de cada resistência (75%) + o "+X% de Resistência a <elemento> máxima" das peças (até 90%, como no PoE).
       protection[el] = Math.max(-200, Math.min(maximoDaResistencia(af, el), bruto));
       // "Resistência a Fogo é de X%", "Resistências Elementais são Zero", "Resistência a Caos é Zero" (únicos): o valor fixo.
@@ -352,6 +357,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     arma: armaFinal,
     // (PoE: "Seus Acertos Críticos não causam Dano extra" — o multiplicador fica em 100%.)
     critMultiplier: itensPoeLigado() && af.critico_sem_dano_extra ? 1 : MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
+    // (o mesmo, sem o "Golpes Críticos não causam Dano extra": a Agonia Perfeita usa nas afecções — `condicoes-poe.finalizar`)
+    critMultiplierBruto: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
     // "Acertos não podem ser Evadidos" (peça do PoE): o golpe nunca erra (`personagem/defesa.errou`).
     ...(itensPoeLigado() && af.nunca_erra ? { nuncaErra: true } : {}),
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
@@ -565,7 +572,8 @@ export function regenDoPoe(estado, af) {
   // (a keystone da árvore, `regen_vida_no_escudo`, e a que as PEÇAS dão — `keystone:juramentoDoZelote`/`sempre:` — pelo mesmo caminho)
   const noEscudo = Number(af.regen_vida_no_escudo) > 0 || Number(af['keystone:juramentoDoZelote']) > 0 || Number(af['sempre:juramentoDoZelote']) > 0;
   // ("X% menos Regeneração de Vida" — a Juventude Eterna: multiplica.)
-  const vidaPorSegundo = noEscudo ? 0 : regenDaVida * Math.max(0, 1 - (Number(af.regen_vida_menos) || 0) / 100);
+  // (+ o Pacto Vaal: "Não pode Recuperar Vida fora o Dreno" — a regeneração de vida não enche; a do Zelote, no escudo, segue.)
+  const vidaPorSegundo = noEscudo || ModsPoe.vidaSoPeloDreno(af) ? 0 : regenDaVida * Math.max(0, 1 - (Number(af.regen_vida_menos) || 0) / 100);
   const esDaVida = noEscudo ? regenDaVida : 0;
   const manaPorSegundo = af.sem_regen_mana > 0 ? 0 : Math.max(0, (((estado.maxMana ?? 0) * (MANA_REGEN_BASE_POE + (af.mana_regen_max_pct ?? 0))) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));
   return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0, ...(esDaVida ? { esDaVida } : {}) };
@@ -821,6 +829,8 @@ export function ataqueDoGolpe(ficha, rng = Math.random) {
 
 /** Vida/mana a mais (por acerto ou por abate dos afixos), com o número na tela. */
 export function curar(estado, vida, mana, eventos, quem, pos) {
+  // (PoE, o Pacto Vaal: "Não pode Recuperar Vida fora o Dreno" — a vida por acerto/abate não enche.)
+  if (itensPoeLigado() && vida > 0 && ModsPoe.vidaSoPeloDreno(combate(estado).afPoe)) vida = 0;
   const ganhoVida = Math.min(vida, Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));
   const ganhoMana = Math.min(mana, Math.max(0, (estado.maxMana ?? 0) - (estado.mana ?? 0)));
   if (ganhoVida > 0) {
@@ -842,6 +852,20 @@ export function curar(estado, vida, mana, eventos, quem, pos) {
  */
 // (O Escudo de Energia tem teto total de 10% do máximo por segundo, como no PoE 1 — a tela de personagem: "0 (10%)".)
 export const LEECH_POE = { porInstanciaPct: 10, taxaDaInstanciaPct: 2, porSegundoPct: 20, porSegundoEsPct: 10 };
+/**
+ * O TETO do roubo por segundo de um recurso (`vida`, `mana`, `es`), em % do máximo: 20% (10% no escudo) × "Recuperação total por segundo do
+ * Dreno aumentada" (de todos — `roubo_teto_inc` — e a de cada recurso — `roubo_teto_<vida|mana|es>_inc`), × o Devastador Fantasma (o do escudo
+ * dobrado) e × a Juventude Eterna ("X% menos máximo de Vida Total Recuperada do Dreno por Segundo"). A tela de personagem mostra o mesmo.
+ */
+const TETO_DO_RECURSO = { vida: 'roubo_teto_vida_inc', mana: 'roubo_teto_mana_inc', es: 'roubo_teto_es_inc' };
+export function tetoDoRouboPct(ficha, recurso) {
+  const v = (k) => ModsPoe.valor(ficha, k);
+  const base = recurso === 'es' ? LEECH_POE.porSegundoEsPct * (v('roubo_teto_es_dobrado') > 0 ? 2 : 1) : LEECH_POE.porSegundoPct;
+  const menos = recurso === 'vida' ? Math.max(0, 1 - v('roubo_teto_vida_menos') / 100) : 1;
+  return base * menos * Math.max(0, 1 + (v('roubo_teto_inc') + v(TETO_DO_RECURSO[recurso])) / 100);
+}
+const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
+const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
 export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
   // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
   if (itensPoeLigado() && !ataque) {
@@ -851,6 +875,13 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
       const quanto = Math.min((danoTotal * pct) / 100, (max * LEECH_POE.porInstanciaPct) / 100);
       if (quanto > 0) (estado.hunt.roubos ??= []).push({ recurso: 'es', restante: quanto, porSegundo: (max * LEECH_POE.taxaDaInstanciaPct) / 100, max });
     }
+    // ("X% de Dano Mágico Drenado como Vida enquanto você possuir Fúria Arcana" — a magia que drena vida, com as regras do roubo.)
+    const pctVida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : ModsPoe.valor(ficha, 'vida_leech_magia');
+    const maxVida = estado.maxHp ?? 0;
+    if (pctVida > 0 && maxVida > 0 && estado.hunt) {
+      const quanto = Math.min((danoTotal * pctVida) / 100, (maxVida * LEECH_POE.porInstanciaPct) / 100);
+      if (quanto > 0) (estado.hunt.roubos ??= []).push({ recurso: 'vida', restante: quanto, porSegundo: (maxVida * LEECH_POE.taxaDaInstanciaPct) / 100 });
+    }
     return;
   }
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
@@ -859,22 +890,8 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
   const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
   if (itensPoeLigado()) {
-    if (!estado.hunt) return;
-    const lista = (estado.hunt.roubos ??= []);
-    // ("Recuperação Máxima por Dreno de Vida aumentada/reduzida", "Pacto Vaal" — o teto de cada instância e a velocidade.)
-    const porInstancia = LEECH_POE.porInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_instancia_inc') / 100);
-    const taxa = LEECH_POE.taxaDaInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_taxa_inc') / 100);
-    const instancia = (recurso, total, max) => {
-      const quanto = Math.min(total, (max * porInstancia) / 100);
-      if (quanto > 0) lista.push({ recurso, restante: quanto, porSegundo: (max * taxa) / 100 });
-    };
-    // (Devastador Fantasma: "Drena Escudo de Energia ao invés de Vida" — a instância é de escudo, com o teto do escudo.)
-    if (ModsPoe.valor(ficha, 'roubo_vida_no_escudo') > 0) {
-      const esMax = Math.max(0, Math.round(ficha.energyShield ?? 0));
-      const quanto = Math.min(vida, (esMax * porInstancia) / 100);
-      if (quanto > 0) lista.push({ recurso: 'es', restante: quanto, porSegundo: (esMax * taxa) / 100, max: esMax });
-    } else instancia('vida', vida, estado.maxHp ?? 0);
-    instancia('mana', mana, estado.maxMana ?? 0);
+    // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).
+    drenarPoe(estado, { vida, mana, es: (danoTotal * ModsPoe.valor(ficha, 'es_leech')) / 100 }, ficha, eventos, quem, pos);
     return;
   }
   const ganhoVida = Math.min(vida, Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));
@@ -889,6 +906,43 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   }
 }
 
+/**
+ * O DRENO do PoE de um acerto (`{ vida, mana, es }` — quanto drenar de cada, já em pontos): cada um vira uma instância de até 10% do máximo
+ * ("Recuperação Máxima por Dreno aumentada" — `roubo_instancia_inc`) que recupera 2%/s (`roubo_taxa_inc`); a parte INSTANTÂNEA entra na hora,
+ * fora do teto por segundo ("X% do Dreno é Instantâneo" — por Garra Equipada/empunhando uma Garra — e o Pacto Vaal: "Dreno de Vida do Dano
+ * Corpo a Corpo é Instantâneo", só a vida, só no golpe com a tag `corpo` — `fichaDoGolpe`). O Devastador Fantasma ("Drena Escudo de Energia
+ * ao invés de Vida") troca a vida pelo escudo. Quem usa: o acerto (`aplicarLeech`), o golpe do TOTEM ("…causado pelos seus Totens é Drenado
+ * como Vida para você" — `cacadas`) e o DANO EXCEDENTE ("X% do Dano Excedente é Drenado como Vida" — `mods-poe.aoAcertar`).
+ */
+export function drenarPoe(estado, { vida = 0, mana = 0, es = 0 } = {}, ficha = combate(estado), eventos = null, quem = null, pos = null) {
+  if (!estado.hunt) return;
+  const lista = (estado.hunt.roubos ??= []);
+  const porInstancia = LEECH_POE.porInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_instancia_inc') / 100);
+  const taxa = LEECH_POE.taxaDaInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_taxa_inc') / 100);
+  const instantaneo = Math.min(100, Math.max(0, ModsPoe.valor(ficha, 'roubo_instantaneo_pct')));
+  const corpo = (ficha?.tagsDoGolpe ?? []).includes('corpo');
+  const vidaInstantanea = corpo && ModsPoe.valor(ficha, 'roubo_vida_instantaneo_corpo') > 0 ? 100 : instantaneo;
+  const instancia = (recurso, total, max, inst = instantaneo) => {
+    const quanto = Math.min(total, (max * porInstancia) / 100);
+    if (!(quanto > 0)) return;
+    const campo = CAMPO_DO_ROUBO[recurso];
+    const naHora = Math.floor((quanto * inst) / 100);
+    const ganho = Math.min(naHora, Math.max(0, max - (estado[campo] ?? 0)));
+    if (ganho > 0 && (estado.hp ?? 0) > 0) {
+      estado[campo] = (estado[campo] ?? 0) + ganho;
+      eventos?.push({ t: 'heal', uid: 'player', quem, x: pos?.x, y: pos?.y, v: ganho, color: COR_DO_ROUBO[recurso], leech: recurso === 'vida' ? 'life' : recurso, instantaneo: true });
+    }
+    if (quanto - naHora > 0) lista.push({ recurso, restante: quanto - naHora, porSegundo: (max * taxa) / 100, ...(recurso === 'es' ? { max } : {}) });
+  };
+  const esMax = Math.max(0, Math.round(ficha.energyShield ?? 0));
+  if (vida > 0 && !(ModsPoe.valor(ficha, 'sem_roubo_vida') > 0)) {
+    if (ModsPoe.valor(ficha, 'roubo_vida_no_escudo') > 0) instancia('es', vida, esMax);
+    else instancia('vida', vida, estado.maxHp ?? 0, vidaInstantanea);
+  }
+  if (mana > 0) instancia('mana', mana, estado.maxMana ?? 0);
+  if (es > 0) instancia('es', es, esMax);
+}
+
 /** A recuperação das instâncias de roubo do PoE em `ms` de caçada: cada uma a 2%/s da máxima, a soma até 20%/s; acabou, sai. */
 export function recuperarRoubo(estado, ms) {
   const lista = estado.hunt?.roubos;
@@ -897,17 +951,25 @@ export function recuperarRoubo(estado, ms) {
   const resto = (estado.hunt.restoDoRoubo ??= { vida: 0, mana: 0 });
   resto.es ??= 0;
   const esMax = lista.find((x) => x.recurso === 'es')?.max ?? 0;
+  const fRoubo = combate(estado);
+  // o CHEIO é a parte livre (a vida/mana não reservada pelas auras — `Reserva.livre`): "quando a Vida Não Reservada estiver Cheia"
+  const livre = Reserva.livre(estado);
+  const cheio = { vida: livre.vida, mana: livre.mana, es: esMax };
   for (const [recurso, campo, max] of [['vida', 'hp', estado.maxHp ?? 0], ['mana', 'mana', estado.maxMana ?? 0], ['es', 'es', esMax]]) {
     const ativas = lista.filter((x) => x.recurso === recurso);
     if (!ativas.length) continue;
+    // Como no PoE: o recurso CHEIO encerra os efeitos de dreno dele (o golpe seguinte cria outros) — menos o "Efeitos de Dreno de Escudo
+    // de Energia não são removidos quando o Escudo de Energia se Encher" e o "Efeitos do Dreno de Vida não são removidos quando a Vida Não
+    // Reservada estiver Cheia". A vida que encerrou o dreno fica marcada ("se o Dreno foi removido Preenchendo a Vida Não Reservada").
+    const naoPara = { vida: 'roubo_vida_nao_para_no_cheio', es: 'roubo_es_nao_para_no_cheio' }[recurso];
+    if (max > 0 && (estado[campo] ?? 0) >= cheio[recurso] && !(naoPara && ModsPoe.valor(fRoubo, naoPara) > 0)) {
+      for (const x of ativas) x.restante = 0;
+      if (recurso === 'vida') (estado.hunt.poeRecente ??= {}).drenoCheio = estado.hunt.clock ?? 0;
+      continue;
+    }
     const pedido = ativas.reduce((n, x) => n + Math.min(x.restante, x.porSegundo * s), 0);
-    // ("Recuperação total por segundo do Dreno de Vida aumentada", "é Dobrado".)
-    const fRoubo = combate(estado);
-    // (+ "Máximo total da Recuperação do Escudo de Energia por segundo do Dreno é Dobrado" — o Devastador Fantasma.)
-    const dobraEs = recurso === 'es' && ModsPoe.valor(fRoubo, 'roubo_teto_es_dobrado') > 0 ? 2 : 1;
-    // ("X% menos máximo de Vida Total Recuperada do Dreno por Segundo" — a Juventude Eterna.)
-    const menosVida = recurso === 'vida' ? Math.max(0, 1 - ModsPoe.valor(fRoubo, 'roubo_teto_vida_menos') / 100) : 1;
-    const teto = (max * (recurso === 'es' ? LEECH_POE.porSegundoEsPct * dobraEs : LEECH_POE.porSegundoPct) * menosVida * Math.max(0, 1 + ModsPoe.valor(fRoubo, 'roubo_teto_inc') / 100) * s) / 100;
+    // (o teto por segundo do recurso — `tetoDoRouboPct`: os "Recuperação total por segundo do Dreno aumentada", o Devastador, a Juventude)
+    const teto = (max * tetoDoRouboPct(fRoubo, recurso) * s) / 100;
     const fator = pedido > teto ? teto / pedido : 1;
     let ganho = 0;
     for (const x of ativas) {
@@ -922,6 +984,9 @@ export function recuperarRoubo(estado, ms) {
   }
   estado.hunt.roubos = lista.filter((x) => x.restante > 0.001);
 }
+
+// O dano excedente drena pela mesma regra (`mods-poe.aoAcertar` não importa a ficha: o ciclo de imports).
+ModsPoeEfeitos.definirDreno((e, partes, f, eventos, quem, pos) => drenarPoe(e, partes, f, eventos, quem, pos));
 
 // Os eventos dos únicos ganham/perdem cargas do PoE com as regras da ficha (o máximo depende da soma).
 ModsPoeEfeitos.definirCargas((e, oque, tipo, n = 1) => {

@@ -1,22 +1,20 @@
 # Grafo de dependências árvore × gemas × itens × combate (gerado)
 
-Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a partir da árvore, das regras de tradução, do código (quem lê cada atributo) e do registro das gemas. Não edite à mão.
+Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T14:53:40.676Z a partir da árvore, das regras de tradução, do código (quem lê cada atributo) e do registro das gemas. Não edite à mão.
 
 ## Por categoria (os temas do editor)
 
 | Grupo · categoria | Nós | Linhas com efeito | Pendentes | Inexistentes no jogo | Efeito validado por teste | Estado |
 |---|---:|---:|---:|---:|---:|---|
-| mecanica · Outros | 1664 | 1805 (76%) | 397 | 172 | 1409/2082 | parcial |
-| mecanica · Afecções e controle | 441 | 391 (64%) | 208 | 13 | 285/490 | parcial |
+| mecanica · Outros | 1664 | 1808 (76%) | 394 | 172 | 1413/2085 | parcial |
 | gema · Lacaios | 91 | 103 (54%) | 83 | 5 | 62/103 | parcial |
-| mecanica · Dreno | 81 | 52 (38%) | 37 | 47 | 23/52 | parcial |
 | gema · Marcas e Runas | 40 | 7 (8%) | 70 | 11 | 7/7 | parcial |
 | gema · Armadilhas e Minas | 63 | 60 (43%) | 80 | 0 | 0/60 | parcial |
-| mecanica · Recuperação e regeneração | 173 | 177 (73%) | 45 | 21 | 77/177 | parcial |
-| mecanica · Precisão e crítico | 267 | 354 (85%) | 61 | 1 | 230/364 | parcial |
-| mecanica · Defesa e armadura | 299 | 320 (84%) | 43 | 16 | 231/376 | parcial |
+| mecanica · Afecções e controle | 441 | 541 (88%) | 31 | 40 | 414/692 | parcial |
+| mecanica · Recuperação e regeneração | 173 | 178 (73%) | 44 | 21 | 87/178 | parcial |
+| mecanica · Precisão e crítico | 267 | 355 (85%) | 60 | 1 | 231/365 | parcial |
+| mecanica · Defesa e armadura | 299 | 320 (84%) | 43 | 16 | 249/376 | parcial |
 | mecanica · Atordoamento | 117 | 99 (63%) | 51 | 8 | 41/103 | parcial |
-| gema · Maldições | 75 | 62 (53%) | 47 | 9 | 4/80 | parcial |
 | gema · Golpes e ataques | 48 | 21 (29%) | 9 | 42 | 0/21 | parcial |
 | mecanica · Fúria, cargas e poder | 118 | 119 (71%) | 41 | 7 | 52/119 | parcial |
 | item · Frascos | 68 | 106 (70%) | 33 | 13 | 99/130 | parcial |
@@ -30,7 +28,9 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
 | gema · Canalização e repetição | 10 | 0 (0%) | 26 | 0 | 0/0 | ausente |
 | item · Defesa de uma peça | 91 | 105 (81%) | 17 | 8 | 41/112 | parcial |
 | gema · Totens | 33 | 36 (64%) | 20 | 0 | 0/36 | parcial |
+| gema · Maldições | 75 | 108 (92%) | 1 | 9 | 43/126 | parcial |
 | mecanica · Solo e mapa | 7 | 0 (0%) | 5 | 5 | 0/0 | ausente |
+| mecanica · Dreno | 81 | 127 (93%) | 0 | 9 | 84/128 | parcial |
 | gema · Cadáveres | 9 | 0 (0%) | 0 | 9 | 0/0 | ausente |
 | gema · Oferendas, golens e invocações | 18 | 16 (64%) | 9 | 0 | 5/32 | parcial |
 | item · Encaixes e cores | 9 | 0 (0%) | 9 | 0 | 0/0 | ausente |
@@ -43,7 +43,7 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
 
 ### mecanica · Outros
 
-- **Nós da árvore:** 1664 (ids no inventário da árvore). **Linhas:** 1805 com efeito, 397 pendentes, 172 inexistentes no jogo.
+- **Nós da árvore:** 1664 (ids no inventário da árvore). **Linhas:** 1808 com efeito, 394 pendentes, 172 inexistentes no jogo.
 - **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
   - `atk_speed` (147) → encontros/altares.mjs, ficha (atributos finais), cargas, condições, golpe e tique, gemas ativas, lacaios e totens
   - `phys_dmg` (143) → encontros/altares.mjs, ficha (atributos finais), itens/item.mjs, condições, golpe e tique
@@ -56,22 +56,6 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
   - `dex` (87) → classes.mjs, ficha (atributos finais), itens/item.mjs, condições, golpe e tique, itens-poe/jogo.mjs, itens-poe/sockets.mjs, árvore (motor), atributos For/Des/Int, tela da ficha, personagem/requisitos.mjs
   - `energy_dmg` (86) → encontros/altares.mjs, ficha (atributos finais), condições, golpe e tique, gemas ativas
 - **O que falta (pendentes):** mecânica própria desta linha. Exemplos: "Habilidades de Ataque tem +1 de número máximo aos Totens Balista Convocados" · "Efeito em Área de Habilidades Feitiço aumentada em 15%" · "Eficiência de custo de mana de habilidades de conexão aumentada em 20%" · "A cada 10 segundos, ganhe 30% do Dano Físico como Dano Extra de Fogo por 4 segundos"
-
-### mecanica · Afecções e controle
-
-- **Nós da árvore:** 441 (ids no inventário da árvore). **Linhas:** 391 com efeito, 208 pendentes, 13 inexistentes no jogo.
-- **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
-  - `ailment_dmg_inc` (153) → afecções e dano contínuo
-  - `dmg_inc` (66) → ficha (atributos finais), condições, golpe e tique
-  - `chance_empalar` (17) → gemas ativas, combate: acerto e eventos
-  - `efeito_resfriamento` (13) → afecções e dano contínuo, combate: acerto e eventos
-  - `chance_freeze` (13) → afecções e dano contínuo
-  - `chance_bleed_ataque` (12) → afecções e dano contínuo
-  - `avoid_elem_ailments` (12) → condições, golpe e tique, combate: acerto e eventos
-  - `dot_multi_poison` (11) → afecções e dano contínuo
-  - `chance_ignite` (11) → afecções e dano contínuo
-  - `chance_shock` (10) → afecções e dano contínuo
-- **O que falta (pendentes):** afecções em você (limite, "enquanto tiver uma"), empalar em você, resfriamento mínimo, dano por segundo congelado. Exemplos: "Efeito do Resfriamento e Eletrização em você reduzido em 10%" · "Efeito dos Empalamentos infligidos por você com Armas de Duas Mãos aumentado em 10%" · "+25% de Multiplicador do Dano Degenerativo para Afecções dos Golpes Críticos" · "Efeito do Resfriamento e Eletrização em você reduzido em 20%"
 
 ### gema · Lacaios
 
@@ -89,16 +73,6 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
   - `minion_res` (2) → lacaios e totens
 - **Gemas (arquétipo `lacaio`):** 58 — funcionam 0, parciais 58, sem comportamento 0. Motivos mais comuns: 58× o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro; 49× efeito não simulado.
 - **O que falta (pendentes):** os atributos dos lacaios além de dano/vida/velocidade (área, recarga, penetração, buffs ao matar, resistências máximas) — o lacaio do jogo ainda não tem esses números. Exemplos: "Lacaios têm +20% de Multiplicador de Acerto Crítico" · "Aumentos e reduções de Dano de Lacaio também afetam você" · "Lacaios têm Chance de Acerto Crítico aumentada em 25%" · "Lacaios explodem quando reduzidos à Vida Baixa, causando 33% de suas vidas máximas como Dano de Fogo em inimigos próximos"
-
-### mecanica · Dreno
-
-- **Nós da árvore:** 81 (ids no inventário da árvore). **Linhas:** 52 com efeito, 37 pendentes, 47 inexistentes no jogo.
-- **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
-  - `life_leech` (22) → ficha (atributos finais), condições, golpe e tique
-  - `roubo_teto_inc` (18) → ficha (atributos finais), tela da ficha
-  - `mana_leech` (11) → ficha (atributos finais), condições, golpe e tique
-  - `roubo_teto_vida_menos` (1) → ficha (atributos finais)
-- **O que falta (pendentes):** o roubo do PoE já tem instância, taxa e teto (`ficha.aplicarLeech`/`recuperarRoubo`); faltam o dreno instantâneo, o de mana/escudo por tipo de dano e o "enquanto drenando" de outras peças. Exemplos: "Recuperação de Mana Máxima total do Dreno por segundo aumentada em 40%" · "0.8% do Dano Mágico Drenado como Escudo de Energia" · "Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em 30%" · "Dreno de Vida do Dano Corpo a Corpo é Instantâneo"
 
 ### gema · Marcas e Runas
 
@@ -125,9 +99,25 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
 - **Gemas (arquétipo `mina`):** 8 — funcionam 0, parciais 8, sem comportamento 0. Motivos mais comuns: 15× efeito não simulado; 2× sem dano direto.
 - **O que falta (pendentes):** armadilhas e minas de verdade (armar, detonar, limite plantado, auras das minas) — no jogo as gemas viram golpes comuns. Exemplos: "Minas tem Velocidade de Detonação aumentada em 20%" · "Habilidades usadas por Minas causam Dano em Área aumentado em 30% caso tenha Detonado uma Mina Recentemente" · "Habilidades usadas por Minas têm Efeito em Área aumentado em 15% caso tenha Detonado uma Mina Recentemente" · "Pode ter até 2 Armadilhas adicionais plantadas por vez"
 
+### mecanica · Afecções e controle
+
+- **Nós da árvore:** 441 (ids no inventário da árvore). **Linhas:** 541 com efeito, 31 pendentes, 40 inexistentes no jogo.
+- **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
+  - `ailment_dmg_inc` (153) → afecções e dano contínuo
+  - `dmg_inc` (66) → ficha (atributos finais), condições, golpe e tique
+  - `chance_empalar` (17) → gemas ativas, combate: acerto e eventos
+  - `efeito_resfriamento` (13) → afecções e dano contínuo, combate: acerto e eventos
+  - `chance_freeze` (13) → afecções e dano contínuo
+  - `chance_bleed_ataque` (12) → afecções e dano contínuo
+  - `chance_ignite` (12) → afecções e dano contínuo
+  - `chance_shock` (12) → afecções e dano contínuo
+  - `avoid_elem_ailments` (12) → condições, golpe e tique, combate: acerto e eventos
+  - `dot_multi_poison` (11) → afecções e dano contínuo
+- **O que falta (pendentes):** afecções em você (limite, "enquanto tiver uma"), empalar em você, resfriamento mínimo, dano por segundo congelado. Exemplos: "25% de chance de Agravar o Sangramento em alvos que você Golpear com um Crítico com Ataques" · "10% de chance de Agravar o Sangramento em alvos que você Acertar com Ataques" · "25% de chance de Agravar o Sangramento em alvos que você Golpear com um Crítico com Ataques" · "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"
+
 ### mecanica · Recuperação e regeneração
 
-- **Nós da árvore:** 173 (ids no inventário da árvore). **Linhas:** 177 com efeito, 45 pendentes, 21 inexistentes no jogo.
+- **Nós da árvore:** 173 (ids no inventário da árvore). **Linhas:** 178 com efeito, 44 pendentes, 21 inexistentes no jogo.
 - **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
   - `life_regen_max_pct` (47) → ficha (atributos finais)
   - `mana_regen_pct` (32) → ficha (atributos finais), cargas
@@ -143,7 +133,7 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
 
 ### mecanica · Precisão e crítico
 
-- **Nós da árvore:** 267 (ids no inventário da árvore). **Linhas:** 354 com efeito, 61 pendentes, 1 inexistentes no jogo.
+- **Nós da árvore:** 267 (ids no inventário da árvore). **Linhas:** 355 com efeito, 60 pendentes, 1 inexistentes no jogo.
 - **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
   - `crit_chance_inc` (111) → ficha (atributos finais), cargas, condições, golpe e tique, lacaios e totens
   - `crit_dmg` (91) → encontros/altares.mjs, ficha (atributos finais), itens/item.mjs, cargas, condições, golpe e tique
@@ -155,7 +145,7 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
   - `gem_level` (7) → skills/gemas.mjs
   - `area_inc` (5) → condições, golpe e tique
   - `carga_poder_ao_critico_varinha` (4) → cargas
-- **O que falta (pendentes):** precisão "mais" contra únicos/de perto, crítico contra o personagem. Exemplos: "Golpes Críticos não causam Dano extra" · "Precisão aumentada em 40%, se você tiver pelo menos 1 aliado por perto" · "Inimigos são Empurrados caso você acerte um Golpe Crítico com um Cajado" · "Empurra Inimigos se você tiver um Golpe Crítico com Dano de Projéteis"
+- **O que falta (pendentes):** precisão "mais" contra únicos/de perto, crítico contra o personagem. Exemplos: "Precisão aumentada em 40%, se você tiver pelo menos 1 aliado por perto" · "Inimigos são Empurrados caso você acerte um Golpe Crítico com um Cajado" · "Empurra Inimigos se você tiver um Golpe Crítico com Dano de Projéteis" · "Flechas ganham Chance de Golpe Crítico enquanto viajam adiante, máximo de até 100% de Chance de Golpe Crítico"
 
 ### mecanica · Defesa e armadura
 
@@ -188,23 +178,6 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
   - `ponto_atordoamento_proprio_red` (4) → condições, golpe e tique
   - `chance_dobrar_atordoamento` (3) → combate: acerto e eventos
 - **O que falta (pendentes):** duração do atordoamento crítico, ignorar atordoamento, atordoar em área ao ser atordoado. Exemplos: "10% do Dano sofrido de Acertos Atordoadores é Recuperado como Vida" · "Acertos Atordoam como se causassem 50% mais Dano de Fogo Corpo a Corpo" · "Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano" · "Regenera 5% de Vida durante 1 segundo quando Atordoado"
-
-### gema · Maldições
-
-- **Nós da árvore:** 75 (ids no inventário da árvore). **Linhas:** 62 com efeito, 47 pendentes, 9 inexistentes no jogo.
-- **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
-  - `efeito_buff_gema:aura` (16) → itens-poe/arvore.mjs, condições, golpe e tique, gemas ativas
-  - `efeito_maldicao` (10) → habilidades (uso), combate: acerto e eventos
-  - `efeito_maldicao_proprio` (6) → combate: acerto e eventos
-  - `chance_ignite` (6) → afecções e dano contínuo
-  - `chance_freeze` (6) → afecções e dano contínuo
-  - `chance_shock` (6) → afecções e dano contínuo
-  - `chance_poison` (6) → afecções e dano contínuo
-  - `ev:conjurarMaldicao:alvo:cego:4` (6) → combate: acerto e eventos
-  - `eficiencia_reserva_maldicao` (5) → reserva (auras)
-  - `cast_speed` (5) → encontros/altares.mjs, ficha (atributos finais), cargas, gemas ativas, lacaios e totens
-- **Gemas (arquétipo `maldicao`):** 19 — funcionam 6, parciais 13, sem comportamento 0. Motivos mais comuns: 37× efeito não simulado; 12× nenhum efeito do buff tem equivalente no jogo; 1× a lentidão da maldição ainda não existe no jogo.
-- **O que falta (pendentes):** a duração e o "expirou X%" das maldições, maldição sobre inimigo sem maldição, maldições em você. Exemplos: "Efeito de Auras Não-Maldição de suas Habilidades aumentado em 10% nos Inimigos" · "Você pode aplicar uma Maldição adicional" · "+2 ao Nível de todas as Gemas de Habilidade Maldição" · "Remove Afecções Elementais quando você Conjurar uma Magia Maldição"
 
 ### gema · Golpes e ataques
 
@@ -362,10 +335,42 @@ Gerado por `game/tools/mapear-dependencias.mjs` em 2026-10-09T11:00:54.288Z a pa
 - **Gemas (arquétipo `totem`):** 21 — funcionam 0, parciais 21, sem comportamento 0. Motivos mais comuns: 21× o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram); 20× efeito não simulado.
 - **O que falta (pendentes):** totens múltiplos ("invocar dois"), dano sofrido pelo totem, roubo/provocação do totem — o totem do jogo é um só e simples. Exemplos: "Cada Totem aplica Dano aumentado em 1% sofrido pelos Inimigos próximos a ele" · "Duração do Totem aumentada em 30%" · "Velocidade de Movimento aumentada em 1% por Totem Convocado" · "Duração do Totem aumentada em 50%"
 
+### gema · Maldições
+
+- **Nós da árvore:** 75 (ids no inventário da árvore). **Linhas:** 108 com efeito, 1 pendentes, 9 inexistentes no jogo.
+- **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
+  - `efeito_buff_gema:aura` (16) → itens-poe/arvore.mjs, condições, golpe e tique, gemas ativas
+  - `efeito_maldicao` (10) → habilidades (uso), combate: acerto e eventos
+  - `efeito_maldicao_proprio` (6) → condições, golpe e tique, combate: acerto e eventos
+  - `chance_ignite` (6) → afecções e dano contínuo
+  - `chance_freeze` (6) → afecções e dano contínuo
+  - `chance_shock` (6) → afecções e dano contínuo
+  - `chance_poison` (6) → afecções e dano contínuo
+  - `crit_dmg_taken_red_amaldicoado` (6) → condições, golpe e tique
+  - `ev:conjurarMaldicao:alvo:cego:4` (6) → combate: acerto e eventos
+  - `efeito_maldicao_expirou:50` (6) → habilidades (uso), condições, golpe e tique
+- **Gemas (arquétipo `maldicao`):** 19 — funcionam 6, parciais 13, sem comportamento 0. Motivos mais comuns: 37× efeito não simulado; 12× nenhum efeito do buff tem equivalente no jogo; 1× a lentidão da maldição ainda não existe no jogo.
+- **O que falta (pendentes):** as maldições do PoE já amaldiçoam o monstro com limite, duração, "expirou X%", lentidão e o evento "sem Maldições" (`Reforcos.marcar`); o monstro à prova de maldições, a regeneração/escudo do amaldiçoado, o "destruído" e as maldições dos monstros em você também; faltam as auras não-maldição nos inimigos e o redefinir de esfriamentos e eletrificações. Exemplos: "Efeito de Auras Não-Maldição de suas Habilidades aumentado em 10% nos Inimigos"
+
 ### mecanica · Solo e mapa
 
 - **Nós da árvore:** 7 (ids no inventário da árvore). **Linhas:** 0 com efeito, 5 pendentes, 5 inexistentes no jogo.
 - **O que falta (pendentes):** solos (sagrado, ardente…) e baús. Exemplos: "Efeito de Solos Sagrados Criados por você aumentado em 20%" · "Efeito de Solos Sagrados Criados por você aumentado em 10%" · "Efeito de Solos Sagrados Criados por você aumentado em 25%" · "Efeito de Solos Sagrados Criados por você aumentado em 20%"
+
+### mecanica · Dreno
+
+- **Nós da árvore:** 81 (ids no inventário da árvore). **Linhas:** 127 com efeito, 0 pendentes, 9 inexistentes no jogo.
+- **Atributos que as linhas com efeito produzem → quem os lê (o sistema consumidor):**
+  - `life_leech` (23) → ficha (atributos finais), condições, golpe e tique
+  - `roubo_teto_vida_inc` (20) → ficha (atributos finais)
+  - `roubo_teto_inc` (18) → ficha (atributos finais)
+  - `roubo_instantaneo_pct` (14) → ficha (atributos finais)
+  - `mana_leech` (12) → ficha (atributos finais), condições, golpe e tique
+  - `recoup_life` (9) → combate: acerto e eventos
+  - `roubo_teto_es_inc` (7) → ficha (atributos finais)
+  - `totem_roubo_vida_fisico` (6) → caçada (tique)
+  - `roubo_teto_mana_inc` (4) → ficha (atributos finais)
+  - `es_leech_magia` (4) → ficha (atributos finais)
 
 ### gema · Cadáveres
 

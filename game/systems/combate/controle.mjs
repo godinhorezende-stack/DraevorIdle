@@ -48,12 +48,15 @@ function sortearEfeito(pesos, rng) {
  * Um golpe do `bicho` acertou o jogador: sorteia se ele põe controle e qual. `ficha`: a do jogador (`resistenciaAControle`, em %).
  * Devolve o nome do efeito posto ou null (sem sorte, mob comum, jogador imune, já preso ou resistência de 100%).
  */
-export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.random) {
+export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.random, { semAfeccaoElemental = false } = {}) {
   const classe = classeDoMob(bicho, !!hunt?.isBoss);
   const cfg = classe ? CONFIG.mobs[classe] : null;
   if (!cfg) return null;
   const sorte = rng() * 100;
   const efeito = sortearEfeito(cfg.efeitos, rng);
+  // (PoE: a magia suprimida com "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" não Congela nem Resfria — o
+  // Atordoamento não é afecção.)
+  if (semAfeccaoElemental && (efeito === 'congelado' || efeito === 'lento')) return null;
   // PoE (`itens-poe/mods-poe.mjs → controleNoJogador`): evitar e imunidade, a duração em você, a Recuperação de Atordoamentos, o efeito do
   // Resfriamento em você e o "Ponto de Atordoamento reduzido" (mais chance de ser atordoado). Sem o PoE, tudo 1.
   const poe = ModsPoe.controleNoJogador(ficha, efeito, rng, hunt);

@@ -19,7 +19,9 @@ import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { matarMonstro } from '../systems/hunt/combate.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { CATALOGO } from '../systems/dados.mjs';
+import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
+import { gerarPeca } from '../systems/itens-poe/gerar.mjs';
+import * as JogoDoPoe from '../systems/itens-poe/jogo.mjs';
 import * as B from '../database/banco.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
@@ -86,6 +88,11 @@ test('loot: a tabela do Draevor do bicho-base não solta item do Draevor (o ouro
 
 test('caçando de verdade (online e a projeção offline de 3 h): só peça do PoE, e toda base do PoE com raridade e mods do PoE', { skip: SEM }, () => {
   const e = doPoe();
+  // (C — o PoE puro, decisão do dono, 09/10: o escudo de energia dos monstros do PoE RECARREGA. Desarmado, o cavaleiro dava ~12 a cada
+  // 2 s e não vencia o Elite/Raro com "Início da Recarga 150% mais rápido" (0,8 s sem dano): ficava 20 dos 30 min simulados no mesmo
+  // bicho — 2 de 40 sementes abaixo dos 50 abates. Como no encontros-etapa6, ele caça com uma arma de verdade, um Machado Vaal: 0 de 40.)
+  JogoDoPoe.iniciar(ITEM_CATALOG);
+  e.equipment = { ...(e.equipment ?? {}), weapon: JogoDoPoe.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Two_Hand_Axes/Vaal_Axe', raridade: 'normal', ilvl: 64, rng: () => 0.5 })) };
   naArea(e);
   e.settings = { ...(e.settings ?? {}), autoSellPouch: false };
   e.hunt.offlineDesde = Date.now() - 3 * 3_600_000;

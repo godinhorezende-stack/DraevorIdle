@@ -14,6 +14,8 @@
 import { CONFIG } from './gemas.mjs';
 import * as R from '../regras.mjs';
 import * as Dot from '../combate/dot.mjs';
+import { CONFIG as ATRIBUTOS } from '../personagem/atributos.mjs';
+import { regrasDasMaldicoes } from './reforcos.mjs';
 
 const E = () => CONFIG.estados ?? {};
 const ativo = (s, agora) => !!s && s.ate > agora;
@@ -53,14 +55,16 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
   // Congelar e atordoar dividem a MESMA imunidade (um depois do outro seria controle quase contínuo).
   const preso = ativo(estados.congelado, agora) || ativo(estados.atordoado, agora) || agora < (estados.controleImuneAte ?? 0);
   const podeControlar = !preso && !(chefe && (cfg.chefe?.controle ?? 1) <= 0) && resistenciaDoBichoAControle(bicho) < 100;
-  const prender = (nome, base) => {
-    const dur = duracaoNo(bicho, base);
-    estados[nome] = { ate: agora + dur };
+  // (PoE: "Inimigos que você Congelar continuam Congelados por ao menos N segundos" — `minimoMs`; "Inimigos Ficam Resfriados ao Descongelarem"
+  // — `extra.resfriarAoSair`, que o tique cobra quando o Congelamento acaba.)
+  const prender = (nome, base, minimoMs = 0, extra = null) => {
+    const dur = Math.max(duracaoNo(bicho, base), minimoMs);
+    estados[nome] = { ate: agora + dur, ...(extra ?? {}) };
     estados.controleImuneAte = agora + dur + (cfg.controle?.imunidade ?? 0);
     postos.push(nome);
   };
   // (`congelarDuracaoPct`: a "Duração do Congelamento em Inimigos aumentada" do PoE.)
-  if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', (cfg.congelado?.duracao ?? 1500) * (1 + (efeito.congelarDuracaoPct ?? 0) / 100));
+  if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', (cfg.congelado?.duracao ?? 1500) * (1 + (efeito.congelarDuracaoPct ?? 0) / 100), efeito.congelarMinimoMs ?? 0, efeito.resfriarAoDescongelar > 0 ? { resfriarAoSair: efeito.resfriarAoDescongelar } : null);
   else if (podeControlar && efeito.atordoarChance > 0 && rng() * 100 < efeito.atordoarChance) prender('atordoado', cfg.atordoado?.duracao ?? 1500);
 
   if (efeito.lentidaoPct > 0) {
@@ -112,22 +116,106 @@ export function fatorDeLentidao(m, agora) {
   return ativo(s, agora) ? 1 / (1 - s.pct / 100) : 1;
 }
 
+/*
+ * ---- O ESCUDO DE ENERGIA do monstro (PoE: "Ganhe X% de Vida Máxima como Escudo de Energia Máximo Extra" — `mobs/raridade.aplicar`) ----
+ * A barra do monstro (`hp`/`maxHp`) é vida + escudo, e o escudo fica POR CIMA. Quem tira vida do monstro (golpe, magia, lacaio, dano
+ * contínuo) só mexe no `hp`; a conta de quanto saiu do escudo é feita aqui, a cada tique, pelo que o `hp` caiu desde o último (`m.esPoe =
+ * { fracao, atual, ultimoHp, ultimoDano }` — o máximo é a `fracao` da barra; a vida é o `hp` menos o escudo). O escudo RECARREGA como o do
+ * jogador no PoE: depois de 2 s sem dano (÷ "Início da Recarga X% mais rápido" — `atrasoMenosPct`), 20% do máximo por segundo
+ * (`gamedata/atributos-principais.json`).
+ */
+/** O escudo do monstro agora: `{ max, atual, vida, vidaMax }` (null sem escudo). */
+export function escudoDoMonstro(m) {
+  const es = m?.esPoe;
+  if (!es) return null;
+  const max = Math.round((m.maxHp ?? 0) * es.fracao);
+  const atual = Math.max(0, Math.min(max, es.atual ?? max));
+  return { max, atual, vida: Math.max(0, (m.hp ?? 0) - atual), vidaMax: Math.max(0, (m.maxHp ?? 0) - max) };
+}
+function acertarEscudo(m, agora) {
+  const es = m.esPoe;
+  const { max, atual } = escudoDoMonstro(m);
+  es.atual = atual;
+  const caiu = (es.ultimoHp ?? m.hp) - m.hp;
+  // o dano sai do escudo primeiro (a vida é o resto da barra)
+  if (caiu > 0) {
+    es.atual -= Math.min(es.atual, caiu);
+    es.ultimoDano = agora;
+  }
+  // (a cura que entrou por fora é vida: não passa da vida máxima)
+  m.hp = Math.min(m.hp, (m.maxHp ?? 0) - max + es.atual);
+  es.ultimoHp = m.hp;
+}
+function recarregarEscudo(m, agora, bloqueada) {
+  const es = m.esPoe;
+  const desde = es.ultimoTique ?? agora;
+  es.ultimoTique = agora;
+  const { max } = escudoDoMonstro(m);
+  // (cheio ou sem poder recarregar: a sobra fracionária some — senão ela se acumula e a próxima recarga sai inteira de uma vez)
+  if (bloqueada || (es.atual ?? max) >= max) { es.resto = 0; return; }
+  const cfg = ATRIBUTOS.energyShield ?? {};
+  const espera = (cfg.ATRASO_MS_POE ?? 2000) / Math.max(0.1, 1 + (es.atrasoMenosPct ?? 0) / 100);
+  if (es.ultimoDano != null && agora - es.ultimoDano < espera) return;
+  const ms = Math.max(0, agora - Math.max(desde, es.ultimoDano != null ? es.ultimoDano + espera : desde));
+  es.resto = (es.resto ?? 0) + (max * (cfg.RECARGA_POR_SEGUNDO ?? 0.2) * ms) / 1000;
+  const ganho = Math.min(Math.floor(es.resto), max - es.atual);
+  if (!(ganho > 0)) return;
+  es.resto = es.atual + ganho >= max ? 0 : es.resto - ganho;
+  es.atual += ganho;
+  m.hp += ganho;
+  es.ultimoHp = m.hp;
+}
+
 /**
  * Um tique da caçada: a regeneração dos modificadores e os pulsos de dano ao longo do tempo
  * (`combate/dot.mjs`). Quem cair é recolhido depois por `processarMortes`. Devolve o dano total dos pulsos.
  */
+/** A duração base do Resfriamento do PoE (o "ao Descongelarem"). */
+const RESFRIAMENTO_AO_DESCONGELAR_MS = 2000;
 export function tique(hunt, eventos, agora) {
   let total = 0;
   for (const m of hunt?.monstros ?? []) {
+    const est = m.estados;
+    if (est && m.hp > 0) {
+      // "Inimigos Ficam Resfriados ao Descongelarem": o Congelamento acabou — o Resfriamento entra (a maior lentidão vale).
+      const c = est.congelado;
+      if (c?.resfriarAoSair > 0 && c.ate <= agora) {
+        const pct = Math.min(E().lento?.maximo ?? 40, c.resfriarAoSair);
+        est.lento = ativo(est.lento, agora) ? { ...est.lento, pct: Math.max(est.lento.pct, pct), ate: Math.max(est.lento.ate, c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS) } : { ate: c.ate + RESFRIAMENTO_AO_DESCONGELAR_MS, pct };
+        delete c.resfriarAoSair;
+        eventos?.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'lento' });
+      }
+      // O tempo Congelado/Resfriado por você (o "permanentemente Dano aumentado por cada segundo" — `condicoes-poe.fatorRecebidoPeloBicho`).
+      const p = est.permanente;
+      if (p) {
+        const passou = Math.max(0, agora - (p.ultimo ?? agora));
+        p.ultimo = agora;
+        if (p.congelado > 0 && ativo(est.congelado, agora)) p.msCongelado = (p.msCongelado ?? 0) + passou;
+        if (p.resfriado > 0 && ativo(est.lento, agora)) p.msResfriado = (p.msResfriado ?? 0) + passou;
+      }
+    }
+    // O escudo de energia do PoE: o dano que entrou desde o último tique sai primeiro do escudo (`escudoDoMonstro`).
+    if (m.esPoe && m.hp > 0) acertarEscudo(m, agora);
+    // As regras das maldições do PoE no monstro ("Inimigos Amaldiçoados por você têm Regeneração de Vida reduzida em X%"/"não podem Recuperar
+    // Escudo de Energia" — `Reforcos.marcar` guarda na maldição as da ficha de quem conjurou).
+    const maldicoes = m.maldicoes ? regrasDasMaldicoes(m, agora) : null;
     // A REGENERAÇÃO do modificador (`regen`: % da vida por segundo — ver `mobs/raridade.mjs`).
     // (A próxima regeneração gravada no relógio de parede — antes de 09/10 este tique recebia ele — volta para o relógio da caçada.)
     if (m.proximaRegen > agora + 60_000) m.proximaRegen = agora;
-    if (m.regen && m.hp > 0 && m.hp < m.maxHp && R.jaPode(agora, m.proximaRegen)) {
+    const es = escudoDoMonstro(m);
+    const vidaMax = es ? es.vidaMax : m.maxHp;
+    const vidaAgora = es ? es.vida : m.hp;
+    if (m.regen && m.hp > 0 && vidaAgora < vidaMax && R.jaPode(agora, m.proximaRegen)) {
       // (PoE: "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%".)
       const desacelerado = ativo(m.estados?.desacelerado, agora) ? Math.max(0, 1 - (m.estados.desacelerado.regenMenosPct ?? 0) / 100) : 1;
-      m.hp = Math.min(m.maxHp, m.hp + Math.max(desacelerado > 0 ? 1 : 0, Math.round((m.maxHp * m.regen * desacelerado) / 100)));
+      const fator = desacelerado * Math.max(0, 1 - (maldicoes?.regenMenos ?? 0) / 100);
+      const ganho = Math.max(fator > 0 ? 1 : 0, Math.round((vidaMax * m.regen * fator) / 100));
+      // (com escudo, a regeneração é da VIDA: não passa da vida máxima, e o escudo fica como está)
+      m.hp = es ? Math.min(vidaMax, vidaAgora + ganho) + es.atual : Math.min(m.maxHp, m.hp + ganho);
+      if (es) m.esPoe.ultimoHp = m.hp;
       m.proximaRegen = agora + 1000;
     }
+    if (m.esPoe && m.hp > 0) recarregarEscudo(m, agora, !!maldicoes?.semRecargaEs);
   }
   // Os pulsos de dano ao longo do tempo (queimadura, veneno, sangramento...).
   total += Dot.tique(hunt, eventos, agora);
