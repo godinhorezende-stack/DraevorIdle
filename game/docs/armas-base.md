@@ -39,8 +39,10 @@ Golpe básico REAL (knight nv 50, perícia 10; relic sword com essa base): sem q
 - **Qualidade do PoE** (`poe.qualidade`) não mexe no APS (só no dano físico), como no PoE.
 - **Duas armas:** o golpe alterna e cada um leva o tempo da sua arma — o intervalo base é a média dos dois (`Ficha.intervaloBaseDoGolpe`), × o "10% mais" de empunhar duas armas.
 - **Na caçada** (e no PvP da arena) o golpe básico segue o relógio lógico das magias (`R.liberou` + `R.instanteLogico`): sem isso o tique de 250 ms arredondava 645 ms para 750 ms.
+- **As gemas** (`Acoes.temposDaGemaPoe`, auditoria da velocidade, 09/10): ataque = o intervalo do golpe ÷ o "X% de base" da gema; magia = a conjuração ÷ a Velocidade de Conjuração; sem cooldown global. O "aumentada" dos suportes (Ataques Acelerados, Conjuração Acelerada) SOMA com os aumentos da ficha (`velAtaquePct`/`velConjuracaoPct`); o "mais/menos" multiplica (`castTimePct`). A LENTIDÃO do personagem segura a gema e a conjuração como segura o golpe básico (o totem e a estimativa de DPS, não).
+- **Duas armas nas gemas:** o ataque alterna as mãos (cada uso com o dano da sua arma, no mesmo revezamento do golpe básico); a Cutilada (60%), as Lâminas Giratórias (75%) e o Ataque Combinado (100%) combinam as duas armas nessa % (`GemasPoe.danoComAsDuasArmas`).
 - Ainda **globais** na arma do PoE (o PoE os faz locais): "Adiciona X a Y de Dano Físico", "Dano Físico aumentado em X%" e "+X de Precisão".
-Testes: `testes/velocidade-de-ataque-poe.test.mjs`.
+Testes: `testes/velocidade-de-ataque-poe.test.mjs`, `testes/gemas-de-ataque-poe-velocidade.test.mjs`.
 
 ## Requisitos de atributo
 `reqStr/reqDex/reqInt` explícitos fazem `requisitoDe` devolver `{ todos: true, porAtributo }`: o personagem precisa de **todos** (como no PoE) — conferido ao equipar (`inventario.mjs`) e mostrado no balão; sem eles segue a regra derivada de sempre.

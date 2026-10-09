@@ -152,7 +152,24 @@ function nivelDoDano(estado, entry, defDaGema) {
  * e sem a resistência do alvo (são do golpe, sorteados em cada acerto).
  * Devolve também a ficha com o crítico das supports (o que o golpe rola).
  */
-function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado)) {
+/*
+ * ---- DUAS ARMAS na gema de ATAQUE (PoE) ----
+ * Como no PoE e como o golpe básico (`hunt/combate.mjs`): o ataque ALTERNA entre a mão principal e a secundária, cada uso com o dano da
+ * SUA arma, no mesmo revezamento do golpe básico (`hunt.golpeDaSecundaria`); a velocidade já é a média dos dois tempos
+ * (`Ficha.intervaloDoGolpeMs`). A gema que acerta com AS DUAS ("Causa 60 % do Dano combinando cada Arma" — Cutilada; 75% nas Lâminas
+ * Giratórias; o Ataque Combinado, "o dano de ambas em um ataque") soma as duas faixas nessa %. Antes a gema usava sempre a mão principal.
+ * `hunt`: o uso de verdade (alterna); sem ele (o balão), a mão principal. null: a faixa da ficha (uma arma, magia ou fora do PoE).
+ */
+function armaDaGemaDeAtaque(entry, ficha, hunt = null) {
+  if (!entry.poeGema?.ataque || !ficha?.duasArmas) return null;
+  const secundaria = { min: Math.max(1, Math.round(ficha.ataqueSecundarioMin ?? 0)), max: Math.max(1, Math.round(ficha.ataqueSecundarioMax ?? 0)) };
+  const combinada = GemasPoe.danoComAsDuasArmas(entry.poeGema.slug);
+  if (combinada != null) return { min: ((ficha.damage.min + secundaria.min) * combinada) / 100, max: ((ficha.damage.max + secundaria.max) * combinada) / 100 };
+  if (!hunt) return null;
+  return (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria) ? secundaria : null;
+}
+
+function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null) {
   // PoE: a ficha DESTA habilidade — os mods condicionais pelas tags dela ("Dano em Área", "Chance de Crítico com Habilidades de Fogo"…) e os
   // sorteios do uso (dano dobrado, ignorar a redução física) — `itens-poe/mods-poe.mjs`. Sem o PoE, a mesma ficha.
   fichaBase = ModsPoe.fichaDoGolpe(fichaBase, tagsPoeDaSkill(entry), { estado });
@@ -169,9 +186,11 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   // reforços) multiplica por cima, como em toda skill.
   const daGemaPoe = entry.poeGema && !entry.poeGema.buff ? entry.poeGema : null;
   const nivelPoe = efeitoDaGema?.nivel ?? 1;
+  // A faixa da ARMA deste uso (duas armas: a da mão da vez, ou as duas combinadas — `armaDaGemaDeAtaque`).
+  const armaDoGolpe = armaDoUso ?? fichaBase.damage ?? { min: 1, max: 1 };
   const doNivel = daGemaPoe
     ? daGemaPoe.ataque
-      ? { min: (fichaBase.damage?.min ?? 1) * GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe), max: (fichaBase.damage?.max ?? 1) * GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe) }
+      ? { min: armaDoGolpe.min * GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe), max: armaDoGolpe.max * GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe) }
       : GemasPoe.danoNoNivel(daGemaPoe.slug, nivelPoe)
     : danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
   const identidade = ehAtaque && !daGemaPoe ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
@@ -210,7 +229,6 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       const extras = { ...(fichaBase.danoSomado ?? {}) };
       for (const [el, [a, b]] of Object.entries(doSuporte)) extras[el] = [(extras[el]?.[0] ?? 0) + a, (extras[el]?.[1] ?? 0) + b];
       // PoE: o Físico da arma como Caos/Fogo extra, e o convertido para um elemento aleatório (sai do Físico).
-      const armaDoGolpe = fichaBase.damage ?? { min: 1, max: 1 };
       const doFisico = ModsPoe.extrasDoFisico(fichaBase, [armaDoGolpe.min, armaDoGolpe.max]);
       for (const [el, [a, b]] of Object.entries(doFisico.extras)) extras[el] = [(extras[el]?.[0] ?? 0) + a, (extras[el]?.[1] ?? 0) + b];
       const fConv = 1 - doFisico.convertidoPct / 100;
@@ -272,7 +290,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
 
 /** O dano que a skill causa agora, por acerto (sem crítico nem resistência): o que o balão mostra. */
 export function danoMostrado(estado, entry, efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null) {
-  const c = contaDoDano(estado, entry, efeitoDaGema);
+  // (Duas armas: a gema que combina as armas mostra as duas juntas; a que alterna, a mão principal.)
+  const ficha = Ficha.combate(estado);
+  const c = contaDoDano(estado, entry, efeitoDaGema, ficha, armaDaGemaDeAtaque(entry, ficha));
   const f = c.mult * c.fatorDaGema;
   return { min: Math.round((c.min + c.daPericia) * f), max: Math.round((c.max + c.daPericia) * f) };
 }
@@ -409,6 +429,7 @@ export function catalogo(estado) {
   const daGema = (entry) => {
     const a = ativas.get(entry.id);
     if (!a) return null;
+    const efeito = Gemas.efeitoNaSkill(estado, entry.id, ativas);
     return {
       itemId: a.itemId,
       nivel: a.nivel,
@@ -420,8 +441,9 @@ export function catalogo(estado) {
       raridade: a.raridade,
       multiplicador: Gemas.multiplicadorDaRaridade(a.raridade),
       supports: a.supports.map((sp) => ({ nome: sp.def.nome, nomePt: sp.def.nomePt ?? sp.def.nome, nivel: sp.nivel })),
-      efeito: Gemas.efeitoNaSkill(estado, entry.id, ativas),
-      castTime: Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed, ativas),
+      efeito,
+      // (A gema do PoE: a conjuração de verdade, a mesma que o `disparar` conjura — `temposDaGemaPoe`.)
+      castTime: entry.poeGema ? temposDaGemaPoe(estado, entry, efeito, ficha).conjuracaoMs : Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed, ativas),
     };
   };
   const comBloqueio = (entry) => ({
@@ -1033,17 +1055,26 @@ export function marcarRecargaDaPocao(estado, entry) {
  *  - `uso`: magia = o tempo de conjuração × os suportes ÷ a velocidade de conjuração; ataque = o intervalo do golpe da arma (APS, velocidade
  *    de ataque) ÷ a velocidade da gema ("X% de base"). É o tempo até a próxima skill (um uso por vez); instantânea: 0,25 s (um tique).
  *  - `recarga`: só a da gema no PoE ("Recarga: N seg"), com a recuperação de recarga e os suportes; 0 = sem recarga.
+ *  - `conjuracaoMs`: a conjuração da magia (a mesma conta do `uso`, sem o piso do tique; 0 = instantânea ou ataque) — é ela que o `disparar`
+ *    conjura, e a magia sai quando o relógio comum libera.
+ * Os "aumentada" dos suportes (Ataques Acelerados, a qualidade do Conjuração Acelerada) SOMAM com os aumentos da ficha; os "mais/menos"
+ * multiplicam (`castTimePct`). A LENTIDÃO do personagem (resfriado, Lentidão — menos velocidade de ação) segura o ataque e a magia como segura
+ * o golpe básico (`cacadas.tique`); a recarga não. `doJogador: false` (o totem usa a gema do dono): sem a lentidão do personagem.
  */
-export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), ficha = Ficha.combate(estado)) {
+export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), ficha = Ficha.combate(estado), { doJogador = true } = {}) {
   const t = GemasPoe.temposNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
   const suportes = 1 + (efeitoDaGema?.castTimePct ?? 0) / 100;
   const ataque = !!entry.poeGema.ataque;
   // PoE: a velocidade de conjuração / a recuperação de recarga "com Habilidades de Fogo", "de Movimento", "do Totem"… (pelas tags da gema).
   const porTag = ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry));
-  const castSpeed = (ficha.castSpeed ?? 0) + (porTag.cast_speed_tag ?? 0);
-  const bruto = ataque ? ((ficha.intervaloDoGolpeMs ?? 2000) / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, castSpeed) / 100);
+  const castSpeed = (ficha.castSpeed ?? 0) + (porTag.cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
+  // O ataque: o intervalo da ficha (`1000 / APS` ÷ (1 + aumentos globais)) com os aumentos da gema somados aos globais.
+  const global = ficha.velocidadeDeAtaque ?? 0;
+  const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + (efeitoDaGema?.velAtaquePct ?? 0)) / 100);
+  const lentidao = doJogador ? Controle.fatorDeLentidao(estado.hunt) : 1;
+  const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, castSpeed) / 100)) * lentidao;
   const recarga = t.recargaMs ? Math.round((t.recargaMs / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0)) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
-  return { uso: Math.max(250, Math.round(bruto)), recarga, ataque, conjuracaoBaseMs: t.conjuracaoMs, velAtaqueBase: t.velAtaqueBase, cargas: t.cargas };
+  return { uso: Math.max(250, Math.round(bruto)), recarga, ataque, conjuracaoMs: ataque ? 0 : Math.round(bruto), conjuracaoBaseMs: t.conjuracaoMs, velAtaqueBase: t.velAtaqueBase, cargas: t.cargas };
 }
 
 /** O cooldown global com `castSpeed`% de Cast Speed: a base (`R.GLOBAL_SPELL_COOLDOWN`) encurtada por ele (decisão do dono). */
@@ -1330,7 +1361,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    * conjuração o personagem não bate, não anda e não lança outra coisa.
    */
   if (!concluir && !gatilho && Gemas.ehSkillDeGema(entry)) {
-    const castMs = Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed);
+    // A gema do PoE conjura pela conta dos tempos dela (`temposDaGemaPoe`: os suportes, a velocidade por tag e a lentidão do personagem) — a
+    // magia sai quando o relógio comum libera, nem antes nem depois.
+    const castMs = entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema).conjuracaoMs : Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed);
     if (castMs > 0) {
       // Conjurando, já olha para onde a skill vai sair.
       virarParaOAlvo(hunt, mira && entry.miraNoChao ? mira : alvo);
@@ -1466,7 +1499,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
     }
     // A conta do dano, a MESMA do balão (`contaDoDano`): base pelo level + treino em % + gema + afixos.
-    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema);
+    // (Duas armas: este uso é da mão da vez — ou das duas, na gema que as combina — `armaDaGemaDeAtaque`.)
+    const fichaDaMao = Ficha.combate(estado);
+    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema, fichaDaMao, armaDaGemaDeAtaque(entry, fichaDaMao, hunt));
     let total = 0;
     const danos = [];
     /*

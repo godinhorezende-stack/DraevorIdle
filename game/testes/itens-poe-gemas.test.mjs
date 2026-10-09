@@ -227,8 +227,11 @@ test('o efeito do suporte no nível: "mais/menos" multiplica, custo, velocidade,
   const gmp = SP.efeitoNoNivel('Greater_Multiple_Projectiles_Support', 10, 0, magia).efeito;
   assert.equal(gmp.alvosExtras, 4);
   assert.ok(gmp.maisDanoPct < 0 && gmp.custoPct === 50);
-  assert.ok(SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, magia).efeito.castTimePct < -15);
-  assert.equal(SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, { tags: ['poe:Ataque'] }).efeito.castTimePct, undefined, 'conjuração não vale no ataque');
+  // (C — dono, 09/10, correção 3 da auditoria da velocidade: o "aumentada" do suporte SOMA com a velocidade da ficha — vai em
+  // `velConjuracaoPct`, não mais no tempo de uso `castTimePct`, que fica só para o "mais/menos".)
+  const fc = SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, magia).efeito;
+  assert.ok(fc.velConjuracaoPct > 15 && fc.castTimePct === undefined, JSON.stringify(fc));
+  assert.equal(SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, { tags: ['poe:Ataque'] }).efeito.velConjuracaoPct, undefined, 'conjuração não vale no ataque');
   assert.equal(SP.efeitoNoNivel('Empower_Support', 2, 0, magia).efeito.nivelExtra, 1);
   const cwdt = SP.fichaNoNivel('Cast_when_Damage_Taken_Support', 1).gatilho;
   assert.deepEqual(cwdt, { quando: 'danoRecebido', recargaMs: 250, limiar: 528 }, 'limiar do nível 1 do PoE');

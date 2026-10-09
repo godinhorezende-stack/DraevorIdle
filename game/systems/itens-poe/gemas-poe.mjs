@@ -182,6 +182,22 @@ export function extrasDoAtaque(slug, nivel = 1, qualidade = 0) {
   for (const l of [...linhas, ...daQualidade]) { const m = String(l).match(/\+?(\d+(?:[.,]\d+)?) ?% mais Dano por cada tipo de Afecção Elemental no Inimigo/i); if (m) porAfeccao += Number(m[1].replace(',', '.')); }
   return { soElemental: linhas.some((l) => /^Não causa Dano não-Elemental$/i.test(l)), umElemento: linhas.some((l) => /^Apenas Causa Dano do Elemento escolhido/i.test(l)), porAfeccao };
 }
+/**
+ * DUAS ARMAS (PoE): a % do dano com que o ataque acerta COMBINANDO as duas armas — "Quando em Dupla Empunhadura, Causa 60 % do Dano
+ * combinando cada Arma" (Cutilada), 75 nas Lâminas Giratórias, 100 no Ataque Combinado (Dual Strike: "causando o dano de ambas em um ataque"). null: o
+ * ataque ALTERNA entre as armas, como todo ataque do PoE.
+ */
+const COMBINA_AS_ARMAS = /Quando em Dupla Empunhadura, Causa (\d+(?:[.,]\d+)?) ?% do Dano combinando cada Arma/i;
+const DANO_DE_AMBAS = /Ataca com ambas as armas, causando o dano de ambas em um ataque/i;
+export function danoComAsDuasArmas(slug) {
+  const g = POR_SLUG.get(slug);
+  if (!g) return null;
+  for (const l of g.mods ?? []) {
+    const m = String(l).match(COMBINA_AS_ARMAS);
+    if (m) return Number(m[1].replace(',', '.'));
+  }
+  return DANO_DE_AMBAS.test(g.desc ?? '') ? 100 : null;
+}
 /** Os tipos de AFECÇÃO ELEMENTAL no bicho agora (incêndio, resfriamento, congelamento, eletrização). */
 export function afeccoesElementaisEm(bicho, agora) {
   const e = bicho?.estados ?? {};
