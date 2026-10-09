@@ -18,10 +18,19 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
+import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
+// (09/10) O ÍCONE DA HABILIDADE de cada gema (o que vai na barra de slots, como no PoE — "SkillIcons/iconcleave"; o da gema é o do item):
+// `slug → arquivo` em `gamedata/itens-poe/icones-habilidades/` (tools/importar-poedb-gemas.mjs, das páginas do poedb).
+const ARQ_ICONES_DAS_HABILIDADES = new URL('../../gamedata/itens-poe/icones-habilidades.json', import.meta.url);
+let ICONES_DAS_HABILIDADES = null;
+const iconeDaHabilidade = (slug) => {
+  ICONES_DAS_HABILIDADES ??= existsSync(ARQ_ICONES_DAS_HABILIDADES) ? JSON.parse(readFileSync(ARQ_ICONES_DAS_HABILIDADES, 'utf8')).icones ?? {} : {};
+  return ICONES_DAS_HABILIDADES[slug] ?? null;
+};
 const ARQ_IDS = new URL('../../gamedata/itens-poe/gemas-poe-ids.json', import.meta.url);
 export const PREFIXO = 'poe-gema:';
 // 916001 (não 912001: a Lapidadora, a Fundidora e os orbes do Draevor são 912001–912004).
@@ -350,7 +359,7 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
     group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
-    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff, molde: moldeId, ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}) },
+    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff, molde: moldeId, ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}) },
   };
   delete entry.blocked;
   return entry;
@@ -449,7 +458,8 @@ let INICIADO = null;
 export async function iniciar({ registrarGema, registrarReforco } = {}) {
   if (INICIADO) return INICIADO;
   if (!ligado() || !existsSync(ARQ_GEMAS)) return (INICIADO = { gemas: 0, porStatus: {} });
-  GEMAS = JSON.parse(readFileSync(ARQ_GEMAS, 'utf8'));
+  // (09/10) A tabela por nível de cada gema pela do poedb (a Experiência, os requisitos e as colunas que faltavam — `gemas-niveis.mjs`).
+  GEMAS = comNiveisDoPoedb(JSON.parse(readFileSync(ARQ_GEMAS, 'utf8')));
   for (const g of GEMAS) POR_SLUG.set(g.slug, g);
   const comp = await import('./compilador-de-gemas/compilador.mjs');
   const prog = await import('./compilador-de-gemas/progressao.mjs');

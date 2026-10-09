@@ -13,6 +13,7 @@ import * as Telas from './itens-poe-telas.mjs';
 import * as Pendencias from './itens-poe-pendencias.mjs';
 import * as AbasPoedb from './itens-poe-abas.mjs';
 import * as ArvorePoedb from './itens-poe-arvore-poedb.mjs';
+import * as GemasPoedb from './itens-poe-gemas-poedb.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
@@ -179,6 +180,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (q.get('recalcular')) { Pendencias.esquecer(); AbasPoedb.esquecer(); }
     return json(res, 200, Pendencias.pendencias()), true;
   }
+  // (09/10) A aba Gemas × PoEDB: cada gema do poedb × a do jogo (tools/importar-poedb-gemas.mjs) e o estado dela no motor.
+  if (rota === 'gemas-poedb') {
+    if (q.get('recalcular')) GemasPoedb.esquecer();
+    const d = GemasPoedb.gemasPoedb();
+    return json(res, d ? 200 : 404, d ?? { ok: false, erros: ['Sem o manifesto: rode node tools/importar-poedb-gemas.mjs.'] }), true;
+  }
   // (09/10) A aba Árvore × PoEDB: cada nó da árvore do poedb (principal, ascendências, Linhagens) × a do jogo (tools/importar-poedb-arvore.mjs).
   if (rota === 'arvore-poedb') {
     if (q.get('recalcular')) ArvorePoedb.esquecer();
@@ -233,6 +240,8 @@ const PASTA_DAS_MOEDAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-moe
 let origemDasGemas = null;
 const ORIGEM_DAS_GEMAS = () => (origemDasGemas ??= JSON.parse(readFileSync(new URL('../gamedata/itens-poe/origem-das-gemas.json', import.meta.url), 'utf8')));
 const PASTA_DAS_ASCENDENCIAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-ascendencias', import.meta.url));
+// (09/10) Os ícones das HABILIDADES (a barra de slots — tools/importar-poedb-gemas.mjs).
+const PASTA_DAS_HABILIDADES = fileURLToPath(new URL('../gamedata/itens-poe/icones-habilidades', import.meta.url));
 const imagem = (res, pasta, relativo) => {
   const alvo = normalize(join(pasta, relativo));
   if (!alvo.startsWith(pasta) || !TIPOS[extname(alvo).toLowerCase()] || !existsSync(alvo) || !statSync(alvo).isFile()) return false;
@@ -251,6 +260,7 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   // Os ícones dos orbes do PoE (Joalheiro, Fusão, Cromático): no repositório (`gamedata/itens-poe/icones-moedas`).
   // Os ícones das passivas de ascendência (`tools/baixar-ascendencias-poedb.mjs`): a árvore do jogo e da Engine desenham com eles.
   if (rota.startsWith('icone/ascendencia/')) return nomes(rota.slice('icone/ascendencia/'.length)).some((n) => imagem(res, PASTA_DAS_ASCENDENCIAS, n)) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/habilidade/')) return nomes(rota.slice('icone/habilidade/'.length)).some((n) => imagem(res, PASTA_DAS_HABILIDADES, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/moeda/')) return nomes(rota.slice('icone/moeda/'.length)).some((n) => imagem(res, PASTA_DAS_MOEDAS, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_DAS_IMAGENS, n)) || (json(res, 404, { ok: false }), true);
   // O DESENHO de cada mob do bestiário do PoE (a Arena de Gemas com os sprites do jogo): pelo nome, a mesma regra da campanha.

@@ -752,7 +752,8 @@ export function buffsAtivos(hunt, estado = null) {
     // `sk`: a skill do buff — o visual CONTÍNUO dela (a aura ligada) é desenhado no personagem enquanto dura (efeitos-visuais).
     // A aura que reserva não tem relógio: o cartão mostra quanto ela reserva (`reserva`).
     const reserva = b.reserva && estado ? { recurso: b.reserva.recurso, valor: Reserva.valor(estado, b.reserva), ...(b.reserva.pct ? { pct: b.reserva.pct } : {}) } : null;
-    lista.push({ icone: entry?.icon ?? null, nome: entry?.name ?? id, resta: reserva ? 0 : b.ate - agora, tipo: b.tipo, sk: id, ...(b.mult ? { mult: b.mult } : {}), ...(reserva ? { reserva } : {}) });
+    // (09/10) A aura/arauto/guarda do PoE: o ícone da HABILIDADE (o mesmo da barra).
+    lista.push({ icone: entry?.icon ?? null, ...(entry?.poeGema?.iconeHabilidade ? { iconeHabilidade: entry.poeGema.iconeHabilidade } : {}), nome: entry?.name ?? id, resta: reserva ? 0 : b.ate - agora, tipo: b.tipo, sk: id, ...(b.mult ? { mult: b.mult } : {}), ...(reserva ? { reserva } : {}) });
   }
   return lista.sort((a, b) => (a.reserva ? 1 : 0) - (b.reserva ? 1 : 0) || a.resta - b.resta);
 }

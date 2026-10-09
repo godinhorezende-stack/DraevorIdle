@@ -1710,7 +1710,15 @@ function renderBuffsDaMagia(hunt) {
     const card = document.createElement('div');
     card.className = 'hud-buff';
     // A sprite da magia, do mesmo indice que a barra de acoes usa.
-    if (buff.icone != null) card.append(hudCtx.spellIcon(buff.icone, LADO_DO_RELOGIO));
+    // (A gema do PoE: o ícone da habilidade, o mesmo da barra.)
+    if (buff.iconeHabilidade) {
+      const img = document.createElement('img');
+      img.src = `/api/jogo/poe/icone/habilidade/${encodeURIComponent(buff.iconeHabilidade)}`;
+      img.alt = '';
+      img.width = img.height = LADO_DO_RELOGIO;
+      img.style.cssText = `width:${LADO_DO_RELOGIO}px;height:${LADO_DO_RELOGIO}px;object-fit:contain`;
+      card.append(img);
+    } else if (buff.icone != null) card.append(hudCtx.spellIcon(buff.icone, LADO_DO_RELOGIO));
     // Carga do PoE: a bolinha da cor dela (Tolerância vermelha, Frenesi verde, Poder azul) com o número.
     else if (buff.carga) {
       const bola = document.createElement('span');
