@@ -862,7 +862,7 @@ export function disparoManual(estado, personagem, slot, mira = null) {
   const alvo = alvoAtual(hunt);
   // A casa que o jogador escolheu na MIRA (runa/magia de área com `miraNoChao`): é lá que a área cai.
   const noChao = mira && Number.isInteger(mira.x) && Number.isInteger(mira.y) ? { x: mira.x, y: mira.y } : null;
-  const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo, { mira: noChao });
+  const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo, { mira: noChao, manual: true });
   if (!resultado.ok) return resultado;
   processarMortes(estado, personagem, resultado.eventos);
   return resultado;
@@ -1882,8 +1882,23 @@ export function tique(estado, personagem, agora = Date.now()) {
   // quando clico no mob, o ataque básico não pega") — e só ele: sem alvo clicado, nada é escolhido sozinho.
   const alvoClicado = hunt.modo === 'online' && hunt.alvo != null && hunt.monstros.some((m) => m.uid === hunt.alvo && m.hp > 0);
   const assiste = hunt.modo !== 'online' || hunt.assistencia !== false || alvoClicado;
-  // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
-  if (assiste && livre && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
+  /*
+   * ---- O golpe básico no modo PoE: UMA AÇÃO POR VEZ com as gemas (09/10) ----
+   * O golpe básico é o ataque padrão do PoE e divide com as gemas UM relógio (`Acoes.GRUPO_DO_POE`, no relógio da caçada): só sai com
+   * ele livre e, saindo, o ocupa pelo intervalo dele (a gema automática espera o golpe terminar). E a barra decide PRIMEIRO: o golpe é
+   * tentado depois do `autoDisparo` — no tique em que os dois podiam sair, sai a gema, e o básico fica para quando nenhuma pode (sem
+   * mana, recarga, fora do alcance dela). Antes os dois corriam em paralelo: num minuto, 30 golpes básicos + 24 Cleaves.
+   * No clássico, nada muda: o golpe aqui, antes da barra, no relógio dele.
+   */
+  const umaAcaoPorVez = itensPoeLigado();
+  const golpeBasico = () => {
+    // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
+    if (!(assiste && livre && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0)) return;
+    // (Espera a GEMA em uso e o golpe no adversário do duelo — `Arena.antesDoTique`; a marca do golpe anterior no bicho não conta: o
+    // ritmo dele é o `proximoGolpeEm`, acima.)
+    const emUso = hunt.cooldowns?.[Acoes.GRUPO_DO_POE];
+    const doProprio = emUso?.basico && !emUso.adversario;
+    if (umaAcaoPorVez && emUso && !doProprio && !R.liberou(hunt.clock ?? 0, emUso.ate)) return;
     const golpe = round(estado, personagem);
     // JUNTA aos eventos, e não substitui: no tique em que uma conjuração termina e o golpe
     // básico também sai, a magia (dano, explosões, o fim da conjuração) sumia da tela e do
@@ -1895,9 +1910,14 @@ export function tique(estado, personagem, agora = Date.now()) {
     // golpes" (árvore) mexe no próprio intervalo: −3% é 3% mais curto.
     if (golpe.bateu) {
       const f = Ficha.combate(estado);
-      hunt.proximoGolpeEm = agora + Math.round(f.intervaloDoGolpeMs * Controle.fatorDeLentidao(hunt));
+      const intervalo = Math.round(f.intervaloDoGolpeMs * Controle.fatorDeLentidao(hunt));
+      hunt.proximoGolpeEm = agora + intervalo;
+      // `proximoGolpeEm` é do relógio do tique (`agora`, o de parede) e o grupo é do relógio da caçada: a diferença entre os dois
+      // (`agora - hunt.clock`) é fixa na caçada — os dois andam o mesmo `passou` a cada tique.
+      if (umaAcaoPorVez) (hunt.cooldowns ??= {})[Acoes.GRUPO_DO_POE] = { ate: hunt.proximoGolpeEm - (agora - (hunt.clock ?? 0)), total: intervalo, basico: true };
     }
-  }
+  };
+  if (!umaAcaoPorVez) golpeBasico();
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));
   // O que os encontros abriram neste tique (loot de baú, falas): vai junto com os eventos da caçada.
   eventos.push(...EventosDeEncontro.tirar(hunt));
@@ -1921,6 +1941,11 @@ export function tique(estado, personagem, agora = Date.now()) {
 
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;
   if (usaBarra && livre && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
+  // Modo PoE: o golpe básico depois da barra (ver `umaAcaoPorVez`, acima).
+  if (umaAcaoPorVez) {
+    golpeBasico();
+    processarMortes(estado, personagem, eventos);
+  }
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
   if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));

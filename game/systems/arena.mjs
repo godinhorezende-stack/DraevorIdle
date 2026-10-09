@@ -44,6 +44,8 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import { armaDoPersonagem, alcanceDaArma, categoriaDaArma, armorDoPersonagem, definirLevel, ATAQUE_MS } from './hunt/combate.mjs';
 import { distancia } from './hunt/caminho.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import { GRUPO_DO_POE } from './acoes.mjs';
 
 const ARENAS = JSON.parse(readFileSync(new URL('../gamedata/arenas.json', import.meta.url), 'utf8')).arenas;
 const PATENTES = JSON.parse(readFileSync(new URL('../gamedata/patentes-arena.json', import.meta.url), 'utf8')).patentes;
@@ -556,6 +558,16 @@ export function mirar(estado, uid) {
  * Antes do tique da caçada de quem está no duelo: a largada (ninguém anda nem
  * bate), o degrau dos bichos (15% a cada 2 min) e o golpe básico no adversário
  * (chegando perto se estiver longe).
+ *
+ * ---- PoE: uma ação por vez também no duelo (09/10) ----
+ * As gemas não acertam o adversário (vão no bicho mais perto), e o golpe nele
+ * tinha relógio próprio (`proximoGolpePvp`): mirando o adversário, eram 30
+ * golpes nele + 24 Cleaves nos bichos por minuto, em paralelo. Agora o golpe no
+ * adversário entra no relógio comum (`GRUPO_DO_POE`, o da caçada): espera a gema
+ * em uso (e a conjuração) e, saindo, ocupa o relógio pelo intervalo dele. E ele
+ * vem ANTES da barra (este tique roda antes do `Cacadas.tique`): mirar no
+ * adversário é o comando do jogador, como o clique — a barra automática fica
+ * com as brechas (o adversário fora de alcance). No clássico, nada muda.
  */
 export function antesDoTique(s, agora = Date.now()) {
   const id = dueloDe.get(nomeDe(s));
@@ -589,8 +601,16 @@ export function antesDoTique(s, agora = Date.now()) {
     h.guia = { pos: oh.pos, coleira: alcance };
     return;
   }
+  const poe = itensPoeLigado();
+  // `agora` é o relógio de parede e o grupo é do relógio da caçada: a diferença é fixa na caçada (`cacadas.tique` anda os dois juntos).
+  const paraParede = (h.ultimoTique ?? agora) - (h.clock ?? 0);
+  // (A marca do golpe anterior NELE não conta: o ritmo dele é o `proximoGolpePvp`. A do golpe no bicho, sim — trocou de alvo no meio.)
+  const emUso = h.cooldowns?.[GRUPO_DO_POE];
+  if (poe && (h.conjurando || (emUso && !emUso.adversario && !R.liberou(agora, emUso.ate + paraParede)))) return;
   if (!R.jaPode(agora, h.proximoGolpePvp)) return;
-  h.proximoGolpePvp = agora + ATAQUE_MS;
+  const intervalo = ATAQUE_MS;
+  h.proximoGolpePvp = agora + intervalo;
+  if (poe) (h.cooldowns ??= {})[GRUPO_DO_POE] = { ate: h.proximoGolpePvp - paraParede, total: intervalo, basico: true, adversario: true };
   golpeNoAdversario(s, outro, arma, id);
 }
 
@@ -611,7 +631,9 @@ function golpeNoAdversario(s, outro, arma, id) {
   const { dano: bruto, crit } = Ficha.rolarCritico(s.estado, base, { key: null, uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y }, eventos, ficha);
   const protegido = Math.round(bruto * (1 - Math.min(100, fo.protection?.[elemento] ?? 0) / 100));
   // O Energy Shield do adversário absorve antes da vida.
-  const dano = Defesa.absorver(outro.estado, fo, Math.max(0, elemento === 'physical' ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido));
+  // (Arredondado, como o golpe do bicho no personagem — `combate.mjs`: a armadura no modo 'poe' corta uma FRAÇÃO do golpe físico, e sem
+  // isto o número na tela e a vida do adversário ficavam quebrados — 14,24, 107,01...)
+  const dano = Defesa.absorver(outro.estado, fo, Math.max(0, Math.round(elemento === 'physical' ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido)));
   outro.estado.hp = Math.max(0, outro.estado.hp - dano);
   // PoE: o frasco com "Efeito é removido quando Acertado por um Jogador" acaba.
   if (FrascosPoe.aoSerAcertadoPorJogador(outro.estado)) Ficha.invalidar(outro.estado);
