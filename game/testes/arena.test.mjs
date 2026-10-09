@@ -183,3 +183,38 @@ test('cada um nasce numa ponta da arena e os dois se encontram pela caverna', as
     await tique();
   }
 });
+
+test('o golpe no adversário tira vida INTEIRA: o número na tela e a vida dele (a armadura do PoE corta uma fração do golpe físico)', async () => {
+  knight.msgs.length = 0;
+  paladin.msgs.length = 0;
+  await Arena.comando(paladin, { action: 'alistar', arenaId });
+  await Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId });
+  await Arena.comando(knight, { action: 'pronto' });
+  await Arena.comando(paladin, { action: 'pronto' });
+  assert.equal(await Arena.comando(knight, { action: 'comecar' }), null);
+  const [hk, hp] = [knight.estado.hunt, paladin.estado.hunt];
+  hk.monstros.length = 0;
+  hp.monstros.length = 0;
+  Cacadas.definirAlvo(knight.estado, { uid: `aliado:${NOMES[1]}` });
+  Cacadas.definirAlvo(paladin.estado, { uid: `aliado:${NOMES[0]}` });
+  const danos = [];
+  const vidas = [];
+  let agora = Date.now() + 6000;
+  for (let i = 0; i < 4 * 60; i++, agora += 250) {
+    Object.assign(hp.pos, { x: hk.pos.x + 1, y: hk.pos.y });
+    for (const s of [knight, paladin]) {
+      // Vida cheia a cada tique (ninguém cai): conta só o golpe deste tique.
+      for (const t of [knight, paladin]) t.estado.hp = t.estado.maxHp;
+      const outro = s === knight ? paladin : knight;
+      const n = s.msgs.length;
+      Arena.antesDoTique(s, agora);
+      danos.push(...s.msgs.slice(n).flatMap((m) => (m.t === 'events' ? m.events : [])).filter((e) => e.t === 'dmg' && e.alvo).map((e) => e.v));
+      vidas.push(outro.estado.hp);
+    }
+  }
+  assert.ok(danos.length > 20, `${danos.length} golpes`);
+  assert.deepEqual(danos.filter((v) => !Number.isInteger(v)), [], 'o dano do golpe no adversário');
+  assert.deepEqual(vidas.filter((v) => !Number.isInteger(v)), [], 'a vida do adversário depois do golpe');
+  Arena.saiuDoJogo(paladin);
+  await tique();
+});
