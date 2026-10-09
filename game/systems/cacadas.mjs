@@ -1094,6 +1094,13 @@ function casasDaChegada(grade, centro, n, ocupadas) {
   }
   return casas;
 }
+/** Os bichos e a entrada de uma instância nova de `hunt` (sem aplicar); null se a hunt não tem como ter outra. */
+function sortearInstancia(hunt) {
+  const novo = povoar({ huntId: hunt.huntId, hunt: acharHunt(hunt.huntId), boss: null, tranca: null, fase: Campanha.faseDe(hunt.huntId), mapaCustom: null, escala: hunt.escala });
+  return novo.instancia ? novo : null;
+}
+// A instância nova sorteada quando o portal de viagem abre, à espera de ele fechar (não vai para o banco: sem ela, sorteia de novo).
+const instanciasProntas = new WeakMap();
 /** O convidado da sala chega na instância nova: na casa dele, sem alvo nem rumo da instância de antes. */
 function chegarNaInstancia(h, casa, z) {
   h.z = z;
@@ -1116,13 +1123,11 @@ function chegarNaInstancia(h, casa, z) {
  * apontam para o mesmo array. Só o dono da sala. `false` se não há instância.
  * Os convidados na sala chegam junto, cada um numa casa livre perto da entrada (antes ficavam onde estavam na instância de antes).
  */
-export function novaInstancia(estado) {
+export function novaInstancia(estado, pronta = null) {
   const hunt = estado.hunt;
   if (!hunt?.instancia || hunt.anfitriao) return false;
-  const dados = acharHunt(hunt.huntId);
-  const fase = Campanha.faseDe(hunt.huntId);
-  const novo = povoar({ huntId: hunt.huntId, hunt: dados, boss: null, tranca: null, fase, mapaCustom: null, escala: hunt.escala });
-  if (!novo.instancia) return false;
+  const novo = pronta ?? sortearInstancia(hunt);
+  if (!novo) return false;
   hunt.monstros.splice(0, hunt.monstros.length, ...novo.monstros);
   hunt.outrosAndares = novo.outrosAndares;
   hunt.respawns = [];
@@ -1583,13 +1588,21 @@ export function tique(estado, personagem, agora = Date.now()) {
       // chefe do ato saindo do portal (ou vivo), ela espera ele morrer.
       else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && !chefeDoAtoPendente(hunt) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) {
         // O portal de viagem abre sob cada um da sala e cada um fica nele (o passo espera); passado `ENTRAR_NO_PORTAL_MS`, todos chegam
-        // na instância nova (por outro portal).
+        // na instância nova (por outro portal). Ela é sorteada ANTES: a hunt que não tem como ter outra não abre portal nem para ninguém.
         if (hunt.instancia.viajaEm == null) {
-          hunt.instancia.viajaEm = (hunt.clock ?? 0) + ENTRAR_NO_PORTAL_MS;
-          const cacadasDaSala = quemEstaNaSala(estado, hunt).map((o) => (o === estado ? hunt : o.hunt));
-          for (const h of cacadasDaSala) h.proximoPassoEm = Math.max(h.proximoPassoEm ?? 0, agora + ENTRAR_NO_PORTAL_MS);
-          EventosDeEncontro.empurrar(hunt, cacadasDaSala.map((h) => portalDeViagem(h.pos, { z: h.z ?? 0 })));
-        } else if ((hunt.clock ?? 0) >= hunt.instancia.viajaEm) novaInstancia(estado);
+          const novo = sortearInstancia(hunt);
+          if (novo) {
+            instanciasProntas.set(hunt, novo);
+            hunt.instancia.viajaEm = (hunt.clock ?? 0) + ENTRAR_NO_PORTAL_MS;
+            const cacadasDaSala = quemEstaNaSala(estado, hunt).map((o) => (o === estado ? hunt : o.hunt));
+            for (const h of cacadasDaSala) h.proximoPassoEm = Math.max(h.proximoPassoEm ?? 0, agora + ENTRAR_NO_PORTAL_MS);
+            EventosDeEncontro.empurrar(hunt, cacadasDaSala.map((h) => portalDeViagem(h.pos, { z: h.z ?? 0 })));
+          }
+        } else if ((hunt.clock ?? 0) >= hunt.instancia.viajaEm) {
+          const pronta = instanciasProntas.get(hunt) ?? null;
+          instanciasProntas.delete(hunt);
+          novaInstancia(estado, pronta);
+        }
       }
     }
   } else {
