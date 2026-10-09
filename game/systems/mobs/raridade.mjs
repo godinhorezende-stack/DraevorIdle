@@ -192,7 +192,10 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   }
   if (r.loot !== 1) m.lootMult = r.loot;
   if (st.velocidadePct) m.velocidade = 1 + st.velocidadePct / 100;
-  if (st.velocidadeDeAtaquePct) m.velocidadeDeAtaque = 1 + st.velocidadeDeAtaquePct / 100;
+  // A velocidade de ataque MULTIPLICA a do próprio bicho (a do PoE, que `criarMonstro` copia: 2 s ÷ o tempo de ataque dele), como no PoE —
+  // os "aumentados" da raridade e dos mods somam entre si e escalam a base. Antes ela TROCAVA a base: o Raro (+33%) de um bicho de 0,93 s
+  // passava a bater a cada 1,5 s, mais devagar que o Comum da mesma espécie.
+  if (st.velocidadeDeAtaquePct) m.velocidadeDeAtaque = (m.velocidadeDeAtaque ?? 1) * (1 + st.velocidadeDeAtaquePct / 100);
   if (st.regenPct) m.regen = st.regenPct;
   // Os atributos de defesa e precisão do bicho (`mobs/atributos.mjs`): % sobre a curva, e bloqueio/redução em % (só quem declara).
   if (st.precisaoPct) m.precisaoPct = st.precisaoPct;

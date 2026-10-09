@@ -101,6 +101,34 @@ test('com o PoE ligado, todo bicho (do PoE e do Draevor) nasce Mágico/Raro só 
   delete BESTIARY['poe-teste-unico-30'];
 });
 
+// A Ameaça Agarradora (o Navio Encalhado, a área de HUNT_DE_TESTE) bate a cada 0,93 s no PoE. A raridade TROCAVA esse ritmo pelo
+// "1 + os aumentados": a Rara (+33%) ficava com 1,33 — um golpe a cada 1,5 s, mais devagar que a Comum (loot-moeda.test.mjs, 09/10).
+test('a raridade acelera o golpe do PRÓPRIO bicho do PoE: Mágico e Raro batem mais rápido que o Comum da mesma espécie', async () => {
+  const { criarMonstro } = await import('../systems/hunt/monstros.mjs');
+  const AtributosDoMob = await import('../systems/mobs/atributos.mjs');
+  Mods.iniciar();
+  const key = 'poe-scrabbling-menace-12';
+  const base = BESTIARY[key]?.velocidadeDeAtaque;
+  assert.ok(BESTIARY[key]?.poe && base > 1, `a espécie do PoE com o ritmo dela (${base})`);
+  const nascer = (raridade, modificadores) => Raridade.aplicar(criarMonstro({ key, x: 0, y: 0 }), { raridade, modificadores });
+  const { magico, raro } = Mods.DADOS.ocultos;
+  // Mods sem velocidade de ataque: só os ocultos da raridade mexem nela.
+  const comum = nascer('normal', []);
+  const mag = nascer('modificado', ['poe:MonsterModIncreasedLife']);
+  const rar = nascer('raro', ['poe:MonsterModIncreasedLife', 'poe:MonsterArchnemesisGargantuan']);
+  assert.equal(comum.velocidadeDeAtaque, base);
+  assert.ok(Math.abs(mag.velocidadeDeAtaque - base * (1 + magico.velocidadeDeAtaquePct / 100)) < 1e-9, `Mágico: ${mag.velocidadeDeAtaque}`);
+  assert.ok(Math.abs(rar.velocidadeDeAtaque - base * (1 + raro.velocidadeDeAtaquePct / 100)) < 1e-9, `Raro: ${rar.velocidadeDeAtaque}`);
+  const intervalo = (m) => AtributosDoMob.intervaloDoGolpe(m);
+  assert.equal(intervalo(comum), 930, 'o Comum: o tempo de ataque do PoE');
+  assert.ok(intervalo(rar) < intervalo(mag) && intervalo(mag) < intervalo(comum), `Raro ${intervalo(rar)} < Mágico ${intervalo(mag)} < Comum ${intervalo(comum)} ms`);
+  // Um mod de velocidade de ataque soma com o oculto (os "aumentados" do PoE somam entre si) e os dois escalam a base.
+  const veloz = nascer('raro', ['poe:MonsterModSpeedAura', 'poe:MonsterModIncreasedLife']);
+  const doMod = Raridade.statsDos(['poe:MonsterModSpeedAura']).velocidadeDeAtaquePct;
+  assert.ok(doMod > 0);
+  assert.ok(Math.abs(veloz.velocidadeDeAtaque - base * (1 + (raro.velocidadeDeAtaquePct + doMod) / 100)) < 1e-9, `Raro com Aura do Ímpeto: ${veloz.velocidadeDeAtaque}`);
+});
+
 test('o ouro pelo level do monstro: aleatório na faixa da tabela (interpolada), × a raridade e o Gold Find', () => {
   assert.deepEqual(Jogo.faixaDeOuro(1, REGRAS), [2, 4]);
   assert.deepEqual(Jogo.faixaDeOuro(50, REGRAS), [80, 115]);

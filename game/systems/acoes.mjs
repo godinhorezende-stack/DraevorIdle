@@ -982,6 +982,16 @@ function ordemDosLados(pos, alvo) {
  */
 export const RECARGA_DA_POCAO_MS = 1000;
 const GRUPO_DAS_POCOES = 'grupo:item';
+/**
+ * ---- UMA AÇÃO POR VEZ no modo PoE (09/10) ----
+ * Um relógio só (`hunt.cooldowns[GRUPO_DO_POE]`, no relógio da CAÇADA) para tudo o que o personagem faz: cada gema do PoE o ocupa pelo
+ * tempo de uso dela, e o GOLPE BÁSICO (o ataque padrão do PoE) também, pelo intervalo dele (marcado com `basico: true` — `cacadas.tique`).
+ * No tique, a barra decide primeiro e o básico só sai com o relógio livre (é o "enchimento" de quando nenhuma gema pode sair); a gema
+ * automática espera o golpe básico terminar. O CLIQUE do jogador (`manual`) não espera o básico: interrompe o resto do golpe.
+ * No duelo da arena, o golpe no ADVERSÁRIO também (`adversario: true` — `Arena.antesDoTique`), e ele vem antes da barra: mirar no
+ * adversário é o comando do jogador.
+ */
+export const GRUPO_DO_POE = 'grupo:poe';
 
 /** Dá para beber `entry` (uma poção do catálogo) agora? `{ok}` ou `{ok:false, erro, motivo}`. */
 export function podeBeberPocao(estado, entry) {
@@ -1083,7 +1093,7 @@ export function condicoesParaCliente(estado, hunt, alvo) {
   return r;
 }
 
-function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null, gatilho = null } = {}) {
+function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null, gatilho = null, manual = false } = {}) {
   // Morto não lança nada (o clique manual chegava aqui entre o golpe e o fim da caçada).
   if ((estado.hp ?? 0) <= 0) return { ok: false, erro: 'Você está morto.', motivo: 'MORTO' };
   // Conjurando outra skill: nada mais sai até ela terminar (ou cancelar) — ver `concluirConjuracao`.
@@ -1135,9 +1145,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // davam 215 golpes cada em 10 min por cima das magias (sem captura de runa no
   // original para conferir — é a regra do Tibia). Runa de cura continua livre.
   const grupoDeAtaque = entry.kind === 'rune' && entry.papeis?.[0] === 'attack' ? 'grupo:attack' : null;
-  // Gema do PoE: uma ação por vez entre TODAS as skills (ataque, magia, aura...) — um relógio só, o tempo de uso da última.
-  const grupoQueConta = entry.poeGema ? 'grupo:poe' : grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
-  if (!gatilho && grupoQueConta && cds[grupoQueConta] && !R.liberou(agora, cds[grupoQueConta].ate)) {
+  // Gema do PoE: uma ação por vez entre TODAS as skills (ataque, magia, aura...) e o golpe básico — um relógio só (`GRUPO_DO_POE`).
+  const grupoQueConta = entry.poeGema ? GRUPO_DO_POE : grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
+  // (O clique do jogador interrompe o golpe básico em andamento; a barra automática espera ele terminar. A conjuração que o clique começou
+  // por cima do golpe também não é barrada por ele no fim — conjurando, o básico não sai, e o golpe que segura o grupo é o interrompido.)
+  const interrompeOBasico = (manual || concluir) && cds[grupoQueConta]?.basico;
+  if (!gatilho && !interrompeOBasico && grupoQueConta && cds[grupoQueConta] && !R.liberou(agora, cds[grupoQueConta].ate)) {
     return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN_DO_GRUPO', faltaMs: cds[grupoQueConta].ate - agora };
   }
   // O instante LÓGICO desta execução: o de quando ela podia sair, se caiu dentro do último tique
@@ -1668,8 +1681,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     cds[grupoQueConta] = { ate: inicio + doGrupo, total: doGrupo };
   }
   if (entry.kind === 'item') cds[grupo] = { ate: inicio + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
-  // Gema do PoE: uma ação por vez, como no PoE — o golpe básico espera o tempo de uso dela.
-  if (tempoPoe && !gatilho) hunt.proximoGolpeEm = Math.max(hunt.proximoGolpeEm ?? 0, inicio + tempoPoe.uso);
+  // (Gema do PoE: o golpe básico espera o tempo de uso dela pelo `GRUPO_DO_POE` acima, no relógio da caçada — `cacadas.tique`. Antes era
+  // `hunt.proximoGolpeEm`, que é do relógio de PAREDE do tique: o `inicio` + uso, pequeno, nunca passava dele e o básico não esperava nada.)
   // Skill de ataque instantânea: o global conta deste instante. (A conjurada já marcou no início.)
   if (deAtaque && !concluir && !gatilho) hunt.ultimoAtaqueEm = inicio;
   if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;

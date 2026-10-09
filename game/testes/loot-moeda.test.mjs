@@ -17,12 +17,15 @@ const HORA = 3_600_000;
 test('matar bicho com loot de moeda (Troll, troll-cave): o ouro sobe no carregado, o banco não muda', () => {
   const estado = personagemDeTeste({ level: 400 });
   Prey.garantir(estado); // com Math.random de verdade, antes de travar o dado — ver podio-combate.test.mjs
-  assert.ok(Cacadas.entrar(estado, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
-  estado.hunt.ultimoTique = Date.now();
   const bancoAntes = estado.bank;
   const original = Math.random;
   Math.random = () => 0.35; // mesmo sorteio usado em prey-combate.test.mjs para o gold coin (3031) cair
   try {
+    // O dado travado JÁ no `entrar` (dono, 09/10): é nele que o spawn sorteia a raridade (`sorteioDaRaridade`, 10% Mágico e 2% Raro
+    // por bicho). Com o dado de verdade, em ~15% das vezes o 1º alvo nascia Mágico/Raro (472 a 933 de vida, contra 136 do Comum) e o
+    // personagem de teste (a machadinha do kit, 5 por golpe depois da armadura 190) morria antes — regra do PoE, não o que este teste mede.
+    assert.ok(Cacadas.entrar(estado, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
+    estado.hunt.ultimoTique = Date.now();
     let t = Date.now();
     let subiu = false;
     for (let i = 0; i < 4 * 900 && !subiu; i++) {
