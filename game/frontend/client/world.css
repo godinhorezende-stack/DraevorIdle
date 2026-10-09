@@ -3,13 +3,19 @@
  * A IDENTIDADE (dono, 07/10 — "harmonização visual completa"): azul petróleo/aço é a interface (molduras, painéis, botões, barras,
  * estados ativos); o ciano só marca o que está ATIVO ou selecionado; o dourado/bronze é progressão e detalhe (nó e caminho concluídos,
  * filetes); o vermelho fica só no boss/perigo; o verde só em "Aberta" e requisito cumprido. O mapa (a arte do ato) é o protagonista. */
-.w2 { display: grid; gap: 8px; color: var(--w-txt);
+/* As cores valem também nas vistas da Engine que desenham a MESMA tela (a aba Mapa do editor de atos e a prévia do mapa): sem elas a
+   estrada dourada sumia (só o leito escuro) e o nome nas placas ficava preto no fundo escuro (dono, 09/10). */
+.w2 { display: grid; gap: 8px; color: var(--w-txt); }
+.w2, .atos-mapa, .eng-previa-mapa {
   --w-fundo: #0a141c; --w-fundo2: #0d1d29; --w-petroleo: #10303f; --w-aco: #3d6f8a; --w-aco2: #27506a; --w-linha: #244a60;
   --w-ciano: #4fd1e0; --w-ciano2: #8ae9f4; --w-ciano-fraco: rgba(79, 209, 224, .35);
   --w-ouro: #d9b35a; --w-ouro2: #f0d27e; --w-bronze: #8a6a2c; --w-bronze2: #b08a3e;
   --w-carvao: #14181c; --w-carvao2: #1b2127; --w-cinza-aco: #3a444c; --w-cinza-aco2: #55626c;
   --w-txt: #dde7ec; --w-txt2: #9fb3bf; --w-txt3: #6c8290;
   --w-vermelho: #c8372c; --w-vermelho2: #5a1512; --w-verde: #4fae4a; }
+/* A fonte dos nomes nas placas: a do jogo (`--font-heading` vem do style.css, que a Engine não carrega). Sem ela o nome caía na fonte do
+   sistema, mais larga que a Cinzel para a qual a placa é medida, e passava da placa. */
+.atos-mapa, .eng-previa-mapa { --font-heading: "Cinzel", Georgia, serif; }
 /* 1. as dificuldades: placas de aço */
 .w2-dificuldades { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .w2-placa { position: relative; display: grid; gap: 1px; min-width: 104px; min-height: 44px; padding: 5px 16px; text-align: center; cursor: pointer; color: var(--w-txt2);

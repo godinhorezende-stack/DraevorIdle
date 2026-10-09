@@ -2,10 +2,28 @@
   "id": "poe-ato-8",
   "nome": "Ato 8",
   "descricao": "Ato 8 da campanha do Path of Exile.",
+  "imagem": null,
+  "nivelRecomendado": 55,
   "ordem": 8,
   "anterior": "poe-ato-7",
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
   "estado": "publicado",
+  "versao": 4,
   "inicio": "poe-a8-the-sarn-ramparts",
+  "cidade": {
+    "nome": "Acampamento de Sarn",
+    "posicao": {
+      "x": 85,
+      "y": 290
+    },
+    "conexoes": [
+      "poe-a8-the-sarn-ramparts"
+    ]
+  },
   "fases": [
     {
       "id": "poe-a8-the-sarn-ramparts",
@@ -13,17 +31,13 @@
       "descricao": "Um baluarte treme embaixo de um céu crescente.",
       "ordem": 1,
       "huntId": "poe-a8-the-sarn-ramparts",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 55,
         "medio": 55,
         "dificil": 55
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 633,
-        "y": 455
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -33,7 +47,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 150,
+        "y": 420
+      }
     },
     {
       "id": "poe-a8-the-toxic-conduits",
@@ -41,17 +59,13 @@
       "descricao": "Feitiços de sangue mancham as águas abaixo.",
       "ordem": 2,
       "huntId": "poe-a8-the-toxic-conduits",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 56,
         "medio": 56,
         "dificil": 56
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 373,
-        "y": 293
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -74,7 +88,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 272,
+        "y": 436
+      }
     },
     {
       "id": "poe-a8-doedres-cesspool",
@@ -82,17 +100,13 @@
       "descricao": "",
       "ordem": 3,
       "huntId": "poe-a8-doedres-cesspool",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 56,
         "medio": 56,
         "dificil": 56
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 406,
-        "y": 267
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -102,7 +116,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 394,
+        "y": 452
+      }
     },
     {
       "id": "poe-a8-the-grand-promenade",
@@ -110,17 +128,13 @@
       "descricao": "O caminho favorito de nobres lordes, agora caídos e arruinados.",
       "ordem": 4,
       "huntId": "poe-a8-the-grand-promenade",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 56,
         "medio": 56,
         "dificil": 56
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 166,
-        "y": 312
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -130,7 +144,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 272,
+        "y": 116
+      }
     },
     {
       "id": "poe-a8-the-high-gardens",
@@ -138,17 +156,13 @@
       "descricao": "Horrores rastejantes sufocam a vida deste terraço próspero.",
       "ordem": 5,
       "huntId": "poe-a8-the-high-gardens",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 58,
         "medio": 58,
         "dificil": 58
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 81,
-        "y": 226
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -165,7 +179,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 272,
+        "y": 196
+      }
     },
     {
       "id": "poe-a8-the-bath-house",
@@ -173,17 +191,13 @@
       "descricao": "Pecado escondido onde festas prosperam.",
       "ordem": 6,
       "huntId": "poe-a8-the-bath-house",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 57,
         "medio": 57,
         "dificil": 57
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 172,
-        "y": 226
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -201,7 +215,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 394,
+        "y": 132
+      }
     },
     {
       "id": "poe-a8-the-lunaris-concourse",
@@ -209,17 +227,13 @@
       "descricao": "Alianças enfraquecem como o minguar da lua.",
       "ordem": 7,
       "huntId": "poe-a8-the-lunaris-concourse",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 58,
         "medio": 58,
         "dificil": 58
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 177,
-        "y": 162
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -229,7 +243,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 516,
+        "y": 148
+      }
     },
     {
       "id": "poe-a8-the-lunaris-temple-level-1",
@@ -237,17 +255,13 @@
       "descricao": "A beleza minguante eclipsada pela rivalidade das irmãs.",
       "ordem": 8,
       "huntId": "poe-a8-the-lunaris-temple-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 59,
         "medio": 59,
         "dificil": 59
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 50,
-        "y": 152
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -257,7 +271,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 638,
+        "y": 244
+      }
     },
     {
       "id": "poe-a8-the-lunaris-temple-level-2",
@@ -265,17 +283,13 @@
       "descricao": "",
       "ordem": 9,
       "huntId": "poe-a8-the-lunaris-temple-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 59,
         "medio": 59,
         "dificil": 59
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 83,
-        "y": 126
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -285,7 +299,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 260
+      }
     },
     {
       "id": "poe-a8-the-quay",
@@ -293,17 +311,13 @@
       "descricao": "Os mortos incansáveis se mexem debaixo de águas escurecidas.",
       "ordem": 10,
       "huntId": "poe-a8-the-quay",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 57,
         "medio": 57,
         "dificil": 57
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 495,
-        "y": 270
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -313,7 +327,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 272,
+        "y": 276
+      }
     },
     {
       "id": "poe-a8-the-grain-gate",
@@ -321,17 +339,13 @@
       "descricao": "Uma barreira treme perante os pés dos imortais.",
       "ordem": 11,
       "huntId": "poe-a8-the-grain-gate",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 57,
         "medio": 57,
         "dificil": 57
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 609,
-        "y": 248
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -346,7 +360,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 394,
+        "y": 212
+      }
     },
     {
       "id": "poe-a8-the-imperial-fields",
@@ -354,17 +372,13 @@
       "descricao": "A selvageria da guerra mancha tanto a sujeira quanto a lama.",
       "ordem": 12,
       "huntId": "poe-a8-the-imperial-fields",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 58,
         "medio": 58,
         "dificil": 58
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 750,
-        "y": 146
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -374,7 +388,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 516,
+        "y": 308
+      }
     },
     {
       "id": "poe-a8-the-solaris-concourse",
@@ -382,17 +400,13 @@
       "descricao": "Conquistado pela neblina da guerra.",
       "ordem": 13,
       "huntId": "poe-a8-the-solaris-concourse",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 58,
         "medio": 58,
         "dificil": 58
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 393,
-        "y": 118
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -402,7 +416,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 272,
+        "y": 356
+      }
     },
     {
       "id": "poe-a8-the-solaris-temple-level-1",
@@ -410,17 +428,13 @@
       "descricao": "O brilho de luminárias extinguido pelo orgulho flamejante.",
       "ordem": 14,
       "huntId": "poe-a8-the-solaris-temple-level-1",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 59,
         "medio": 59,
         "dificil": 59
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 466,
-        "y": 62
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -430,7 +444,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 394,
+        "y": 372
+      }
     },
     {
       "id": "poe-a8-the-solaris-temple-level-2",
@@ -438,17 +456,13 @@
       "descricao": "",
       "ordem": 15,
       "huntId": "poe-a8-the-solaris-temple-level-2",
+      "tipo": "hunt-normal",
       "nivel": {
         "facil": 59,
         "medio": 59,
         "dificil": 59
       },
       "obrigatoria": false,
-      "posicao": {
-        "x": 499,
-        "y": 45
-      },
-      "tipo": "hunt-normal",
       "requisitos": {
         "exige": []
       },
@@ -458,7 +472,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 516,
+        "y": 388
+      }
     },
     {
       "id": "poe-a8-the-harbour-bridge",
@@ -466,17 +484,13 @@
       "descricao": "Uma agitação sombria envie fitas à guerra.",
       "ordem": 16,
       "huntId": "poe-a8-the-harbour-bridge",
+      "tipo": "fase-final-do-ato",
       "nivel": {
         "facil": 60,
         "medio": 60,
         "dificil": 60
       },
       "obrigatoria": true,
-      "posicao": {
-        "x": 306,
-        "y": 183
-      },
-      "tipo": "fase-final-do-ato",
       "requisitos": {
         "exige": []
       },
@@ -497,7 +511,11 @@
       },
       "recompensas": null,
       "eventos": [],
-      "sobrescritas": {}
+      "sobrescritas": {},
+      "posicao": {
+        "x": 760,
+        "y": 100
+      }
     }
   ],
   "conexoes": [
@@ -620,13 +638,5 @@
     },
     "arena": null,
     "recompensas": null
-  },
-  "imagem": null,
-  "nivelRecomendado": 55,
-  "seguinte": null,
-  "requisitos": {
-    "exige": []
-  },
-  "progressao": {},
-  "versao": 2
+  }
 }

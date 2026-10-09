@@ -192,14 +192,32 @@ export function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, esc
   if (achados) g.append(svg('g', { class: 'w-selo achado', transform: `translate(${-r + 4} ${-r + 5}) scale(.6)` }, svg('circle', { r: 11 }), ICONES.estrela(1.2)));
   const texto = nome.length > 22 ? `${nome.slice(0, 21)}…` : nome;
   // A PLACA do rótulo (o estilo do mapa ilustrado — dono, 07/10): fundo escuro atrás do nome, legível sobre qualquer arte. A largura
-  // acompanha o texto (~6,4 px por letra na fonte do rótulo); o número da fase vai pequeno acima do nome.
-  const largura = Math.max(56, Math.round(texto.length * 6.4) + 16);
+  // acompanha o texto: a estimativa (~7,8 px por letra maiúscula na Cinzel do rótulo) e, desenhado e com a fonte carregada, a medida de
+  // verdade — o nome não passa da placa (dono, 09/10: "não aparece o nome da fase direito"; com 6,4 px por letra, "Profundezas
+  // Inundadas" saía 17 px para fora). O número da fase vai pequeno acima do nome.
+  const largura = Math.max(56, Math.round(texto.length * 7.8) + 16);
   const placa = svg('g', { class: 'w-placa' });
-  placa.append(svg('rect', { x: -largura / 2, y: r + 6, width: largura, height: 20, rx: 4 }));
+  const fundo = svg('rect', { x: -largura / 2, y: r + 6, width: largura, height: 20, rx: 4 });
+  placa.append(fundo);
   if (numero && !boss) placa.append(svg('text', { class: 'w-placa-num', 'text-anchor': 'middle', y: r + 4 }, String(numero)));
-  placa.append(svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 20 }, texto));
+  const rotulo = svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 20 }, texto);
+  placa.append(rotulo);
   g.append(placa);
+  ajustarPlaca(fundo, rotulo, largura);
   return g;
+}
+
+/** Depois do desenho (e da fonte): a placa do tamanho do nome de verdade. Fora do navegador (os testes), fica a estimativa. */
+function ajustarPlaca(fundo, rotulo, largura) {
+  if (typeof requestAnimationFrame !== 'function' || typeof document === 'undefined') return;
+  const medir = () => {
+    if (!rotulo.isConnected) return;
+    const w = Math.ceil(rotulo.getBBox().width) + 16;
+    if (w <= largura && w >= largura - 24) return;
+    fundo.setAttribute('x', String(-w / 2));
+    fundo.setAttribute('width', String(Math.max(56, w)));
+  };
+  (document.fonts?.ready ?? Promise.resolve()).then(() => requestAnimationFrame(medir));
 }
 
 // ---------------------------------------------------------------- a tela

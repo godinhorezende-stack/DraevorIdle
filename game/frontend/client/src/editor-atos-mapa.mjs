@@ -13,6 +13,7 @@ const KY = ALTURA / A;
 
 /**
  * Desenha a vista. `ato`: o ato do editor; `posicoes`: Map(faseId → {x,y}) no espaço do editor; `opcoes`: { imagem (url), fase (selecionada),
+ * nomeDoBoss (o nome do chefe na placa, como no jogo — sem ele, o id),
  * somenteLeitura, aoMover(fase, {x,y}), aoEscolher(faseId), aoEscolherBoss() }. Devolve o nó raiz.
  */
 export function vistaMapa(ato, posicoes, opcoes) {
@@ -135,7 +136,7 @@ export function vistaMapa(ato, posicoes, opcoes) {
     nos.append(g);
   }
   if (bossPos) {
-    const g = desenharNo({ id: 'boss', tipo: 'boss', estado: 'aberta', numero: 0, nome: ato.bossFinal.bossId ?? 'Boss', p: bossPos, boss: true });
+    const g = desenharNo({ id: 'boss', tipo: 'boss', estado: 'aberta', numero: 0, nome: opcoes.nomeDoBoss ?? ato.bossFinal.bossId ?? 'Boss', p: bossPos, boss: true });
     g.addEventListener('click', () => opcoes.aoEscolherBoss?.());
     nos.append(g);
   }
