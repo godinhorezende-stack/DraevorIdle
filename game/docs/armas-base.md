@@ -32,6 +32,16 @@ Base 30–50, APS 1,2, crítico 5%:
 | q10% + adicional 5–9 + 10% dano + 20% vel. local | 42,35–71,39 | 1,584 | 90,1 |
 Golpe básico REAL (knight nv 50, perícia 10; relic sword com essa base): sem q 27–39 em 831 ms; q20% 31–45 em 693 ms (a ficha inclui perícia, level e DEX).
 
+## As armas do PoE (modo PoE, 09/10)
+- **APS da base:** a base virtual da arma do PoE (`itens-poe/jogo.iniciar`) leva `aps` = `ataques_por_segundo` do catálogo do PoE (Rusted Sword 1,55): o intervalo base do golpe básico e das gemas de ataque é `1000 / APS` (antes, 2 s para toda arma do PoE).
+- **Velocidade de Ataque LOCAL:** na arma, "Velocidade de Ataque aumentada/reduzida em X%" sem condição é local, como no PoE — `itens-poe/jogo.separarVelocidadeLocal` tira de `atk_speed` (global) e põe em `poe.af.atk_speed_local`, que a ficha passa como `locais.pctVelocidade`. Com condição, e nas outras peças, segue global. As peças antigas são refeitas na entrada (`VERSAO_DA_TRADUCAO` 7).
+- **Desarmado:** 1,2 ataques por segundo (833 ms) e o soco com a faixa de dano físico da CLASSE (`desarmado` em `gamedata/itens-poe/classes.json`: 2–8 no Marauder; 2–6 no Duelist, Templar e Scion; 2–5 na Ranger, Witch e Shadow), 0% de crítico — como no PoE (Path of Building › `data.unarmedWeaponData`). No clássico, sem arma, os 2 s e o `ataqueSemArma` de sempre.
+- **Qualidade do PoE** (`poe.qualidade`) não mexe no APS (só no dano físico), como no PoE.
+- **Duas armas:** o golpe alterna e cada um leva o tempo da sua arma — o intervalo base é a média dos dois (`Ficha.intervaloBaseDoGolpe`), × o "10% mais" de empunhar duas armas.
+- **Na caçada** (e no PvP da arena) o golpe básico segue o relógio lógico das magias (`R.liberou` + `R.instanteLogico`): sem isso o tique de 250 ms arredondava 645 ms para 750 ms.
+- Ainda **globais** na arma do PoE (o PoE os faz locais): "Adiciona X a Y de Dano Físico", "Dano Físico aumentado em X%" e "+X de Precisão".
+Testes: `testes/velocidade-de-ataque-poe.test.mjs`.
+
 ## Requisitos de atributo
 `reqStr/reqDex/reqInt` explícitos fazem `requisitoDe` devolver `{ todos: true, porAtributo }`: o personagem precisa de **todos** (como no PoE) — conferido ao equipar (`inventario.mjs`) e mostrado no balão; sem eles segue a regra derivada de sempre.
 

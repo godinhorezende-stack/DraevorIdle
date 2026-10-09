@@ -1891,9 +1891,12 @@ export function tique(estado, personagem, agora = Date.now()) {
    * No clássico, nada muda: o golpe aqui, antes da barra, no relógio dele.
    */
   const umaAcaoPorVez = itensPoeLigado();
+  // PoE: o golpe segue o RELÓGIO LÓGICO das magias (`R.liberou` + `R.instanteLogico`): nunca antes do instante, e o próximo conta de quando
+  // ele PODIA sair. Com a folga de meio tique e contando do tique, o passo de 250 ms arredondava o APS da arma (645 ms batiam a cada 750).
+  const golpeLogico = umaAcaoPorVez;
   const golpeBasico = () => {
     // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
-    if (!(assiste && livre && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0)) return;
+    if (!(assiste && livre && !hunt.conjurando && (golpeLogico ? R.liberou(agora, hunt.proximoGolpeEm) : R.jaPode(agora, hunt.proximoGolpeEm)) && estado.hp > 0)) return;
     // (Espera a GEMA em uso e o golpe no adversário do duelo — `Arena.antesDoTique`; a marca do golpe anterior no bicho não conta: o
     // ritmo dele é o `proximoGolpeEm`, acima.)
     const emUso = hunt.cooldowns?.[Acoes.GRUPO_DO_POE];
@@ -1911,10 +1914,14 @@ export function tique(estado, personagem, agora = Date.now()) {
     if (golpe.bateu) {
       const f = Ficha.combate(estado);
       const intervalo = Math.round(f.intervaloDoGolpeMs * Controle.fatorDeLentidao(hunt));
-      hunt.proximoGolpeEm = agora + intervalo;
       // `proximoGolpeEm` é do relógio do tique (`agora`, o de parede) e o grupo é do relógio da caçada: a diferença entre os dois
       // (`agora - hunt.clock`) é fixa na caçada — os dois andam o mesmo `passou` a cada tique.
-      if (umaAcaoPorVez) (hunt.cooldowns ??= {})[Acoes.GRUPO_DO_POE] = { ate: hunt.proximoGolpeEm - (agora - (hunt.clock ?? 0)), total: intervalo, basico: true };
+      const paraParede = agora - (hunt.clock ?? 0);
+      // (`agora - passou`: o tique anterior, no mesmo relógio de `agora` e de `proximoGolpeEm`. Também conta o fim da ação que ele esperou.)
+      const esperou = umaAcaoPorVez && emUso && !doProprio ? emUso.ate + paraParede : null;
+      const desde = golpeLogico ? R.instanteLogico(agora, agora - passou, [hunt.proximoGolpeEm, esperou]) : agora;
+      hunt.proximoGolpeEm = desde + intervalo;
+      if (umaAcaoPorVez) (hunt.cooldowns ??= {})[Acoes.GRUPO_DO_POE] = { ate: hunt.proximoGolpeEm - paraParede, total: intervalo, basico: true };
     }
   };
   if (!umaAcaoPorVez) golpeBasico();

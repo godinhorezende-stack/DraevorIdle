@@ -76,9 +76,13 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     if (k === 'recupera') return v && typeof v === 'object' ? { ...v, quantidade: Math.round(v.quantidade * (1 + q / 100)) } : v;
     return v && typeof v === 'object' ? { min: Math.round(v.min * (1 + q / 100)), max: Math.round(v.max * (1 + q / 100)) } : Math.round(v * (1 + q / 100));
   };
+  // A Velocidade de Ataque LOCAL da arma (`af.atk_speed_local`, separada no servidor): os Ataques por Segundo já com ela, em azul, como no PoE.
+  const local = Number(af?.atk_speed_local) || 0;
+  const comLocal = (k, v) => (k === 'ataques_por_segundo' && local && typeof v === 'number' ? Math.round(v * (1 + local / 100) * 100) / 100 : v);
+  const aumentado = (k) => (q && QUALIFICAM.has(k)) || (k === 'ataques_por_segundo' && local);
   const props = [
     q ? no('div', null, 'Qualidade: ', no('b', 'poe-aumentado', `+${q}%`)) : null,
-    ...Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', q && QUALIFICAM.has(k) ? 'poe-aumentado' : null, valorDoAtributo(k, comQ(k, v))))),
+    ...Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', aumentado(k) ? 'poe-aumentado' : null, valorDoAtributo(k, comLocal(k, comQ(k, v)))))),
   ];
   const caixa = no('div', `poe-balao r-${p.raridade}`,
     no('div', 'poe-topo', no('b', null, p.nome), nomeDaBase && nomeDaBase !== p.nome ? no('span', null, nomeDaBase) : null),

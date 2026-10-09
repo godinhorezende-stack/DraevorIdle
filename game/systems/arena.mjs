@@ -574,6 +574,9 @@ export function antesDoTique(s, agora = Date.now()) {
   const d = duelos.get(id);
   const h = s.estado.hunt;
   if (!d || !h?.pvp) return;
+  // O tique anterior DESTE relógio (o `agora` da arena): o instante lógico do golpe no adversário conta de dentro dele.
+  const anterior = h.relogioPvp;
+  h.relogioPvp = agora;
   if (agora < d.largadaAte) {
     h.proximoPassoEm = h.proximoGolpeEm = d.largadaAte;
     h.rumo = null;
@@ -606,10 +609,13 @@ export function antesDoTique(s, agora = Date.now()) {
   const paraParede = (h.ultimoTique ?? agora) - (h.clock ?? 0);
   // (A marca do golpe anterior NELE não conta: o ritmo dele é o `proximoGolpePvp`. A do golpe no bicho, sim — trocou de alvo no meio.)
   const emUso = h.cooldowns?.[GRUPO_DO_POE];
-  if (poe && (h.conjurando || (emUso && !emUso.adversario && !R.liberou(agora, emUso.ate + paraParede)))) return;
-  if (!R.jaPode(agora, h.proximoGolpePvp)) return;
-  const intervalo = ATAQUE_MS;
-  h.proximoGolpePvp = agora + intervalo;
+  const esperaOutra = emUso && !emUso.adversario ? emUso.ate + paraParede : null;
+  if (poe && (h.conjurando || (esperaOutra != null && !R.liberou(agora, esperaOutra)))) return;
+  // PoE: o golpe no adversário é o golpe básico da caçada — o intervalo da ficha (o APS da arma e a velocidade de ataque), no relógio lógico
+  // (`cacadas.tique`): conta de quando ele PODIA sair (o fim do anterior nele, ou da ação que ele esperou). No clássico, os 2 s fixos de sempre.
+  if (!(poe ? R.liberou(agora, h.proximoGolpePvp) : R.jaPode(agora, h.proximoGolpePvp))) return;
+  const intervalo = poe ? Ficha.combate(s.estado).intervaloDoGolpeMs : ATAQUE_MS;
+  h.proximoGolpePvp = (poe ? R.instanteLogico(agora, anterior, [h.proximoGolpePvp, esperaOutra]) : agora) + intervalo;
   if (poe) (h.cooldowns ??= {})[GRUPO_DO_POE] = { ate: h.proximoGolpePvp - paraParede, total: intervalo, basico: true, adversario: true };
   golpeNoAdversario(s, outro, arma, id);
 }

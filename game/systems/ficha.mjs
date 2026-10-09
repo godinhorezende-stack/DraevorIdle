@@ -42,6 +42,7 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 import * as ModsPoeEfeitos from './itens-poe/mods-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
+import { classeDe as classePoeDe } from './itens-poe/classes.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -131,6 +132,20 @@ export function combate(estado) {
 
 /** O bônus de empunhar DUAS ARMAS no PoE: +15% de chance de bloqueio (somada) e 10% mais velocidade de ataque. */
 export const BONUS_DE_DUAS_ARMAS = { bloqueio: 0.15, velocidadeMais: 1.1 };
+
+/** Os modificadores LOCAIS da arma (`engine/arma.mjs`): os da peça do Draevor (`peca.locais`) ou, na do PoE, a Velocidade de Ataque local dela. */
+const locaisDaArma = (peca) => (peca?.poe ? { pctVelocidade: Number(peca.poe.af?.atk_speed_local) || 0 } : peca?.locais);
+/** DESARMADO no PoE: 1,2 ataques por segundo (833 ms), como no PoE. No clássico, sem arma, os 2 s de sempre. */
+export const APS_DESARMADO_POE = 1.2;
+/**
+ * O intervalo BASE do golpe (ms, antes dos aumentos globais): `1000 / APS final` da arma (sem arma, o desarmado). Com DUAS ARMAS (PoE) os
+ * golpes alternam e cada um leva o tempo da sua arma: a média dos dois intervalos (a média harmônica dos APS, como no PoE).
+ */
+export function intervaloBaseDoGolpe(arma, secundaria = null) {
+  const desarmado = itensPoeLigado() ? 1000 / APS_DESARMADO_POE : INTERVALO_BASE_DO_GOLPE_MS;
+  const de = (s) => s?.aps.intervaloMs || desarmado;
+  return secundaria ? (de(arma) + de(secundaria)) / 2 : de(arma);
+}
 function comDuasArmas(bloqueio, armaSecundaria) {
   if (!armaSecundaria) return bloqueio;
   const teto = Atributos.CONFIG.bloqueio.MAX;
@@ -214,7 +229,10 @@ function calcularCombate(estado, extrasDoPoe = null) {
   const temAtaque = !!w?.attack || jMax > 0 || mMax > 0;
   // Sem NENHUM ataque (punho, arco sem flecha): o ataque BASE de `danoFisico.ataqueSemArma` — senão a perícia (Melee/Distance) não valia nada, porque o
   // dano é ataque × (perícia + 4) e o ataque era 0 (o Monk sem arma dava o mesmo 42–78 com Melee 10 ou 120).
-  const ataqueBase = !temAtaque && !w?.wand ? FORMULAS.danoFisico?.ataqueSemArma ?? 0 : 0;
+  // PoE, SEM ARMA: o SOCO com a faixa da classe (2–8 no Marauder; 2–6 no Duelist, Templar e Scion; 2–5 na Ranger, Witch e Shadow —
+  // `itens-poe/classes.json`), e o dano físico somado nas duas pontas, como numa arma. No clássico, o `ataqueSemArma` de sempre.
+  const soco = !w && !temAtaque && itensPoeLigado() ? classePoeDe(estado)?.desarmado ?? null : null;
+  const ataqueBase = !temAtaque && !w?.wand && !soco ? FORMULAS.danoFisico?.ataqueSemArma ?? 0 : 0;
   // O "Ataque" mostrado (e o `ataque` da ficha) segue sendo o da arma/munição (0 sem eles); o ataque BASE só entra na conta do dano (mín. e máx. do golpe).
   // ---- A ARMA: qualidade (0–20%) e modificadores LOCAIS (`engine/arma.mjs`, a conta única) ----
   // Só a PRÓPRIA arma: o dano físico dela = base (a faixa sorteada) → + adicional local → × % local → × qualidade. Os adds GLOBAIS (afixos das outras peças, `phys_add`/`atk_flat` abaixo,
@@ -222,12 +240,14 @@ function calcularCombate(estado, extrasDoPoe = null) {
   // (o dano dela é o Magic Attack): a qualidade só mexe na velocidade dela.
   const pecaDaArma = estado.equipment?.weapon ?? null;
   const baseDaArma = ArmaMod.baseDaArma(w, [faixaMin, faixaMax]);
-  const armaFinal = baseDaArma ? ArmaMod.statsDaArma(baseDaArma, { qualidade: pecaDaArma?.qualidade, locais: pecaDaArma?.locais }) : null;
+  const armaFinal = baseDaArma ? ArmaMod.statsDaArma(baseDaArma, { qualidade: pecaDaArma?.qualidade, locais: locaisDaArma(pecaDaArma) }) : null;
+  // A arma da mão secundária (PoE, duas armas): só a velocidade dela importa aqui (o golpe alterna, cada um no tempo da sua arma).
+  const armaSecundariaFinal = armaSecundaria ? ArmaMod.statsDaArma(ArmaMod.baseDaArma(armaSecundaria), { locais: locaisDaArma(estado.equipment?.shield) }) : null;
   const armaAlteraODano = !!armaFinal && !w?.wand && (armaFinal.qualidade > 0 || armaFinal.locais.addMin > 0 || armaFinal.locais.addMax > 0 || armaFinal.locais.pctDano !== 0);
   const [armaMin, armaMax] = armaAlteraODano ? [armaFinal.danoMin, armaFinal.danoMax] : [faixaMin, faixaMax];
   const ataque = calcAtaque((armaAlteraODano ? (armaMin + armaMax) / 2 : (w?.attack ?? 0)) + Math.round((jMin + jMax) / 2) + (daMunicao?.attack ?? 0));
-  const ataqueMin = temAtaque ? calcAtaque(armaMin + jMin + mMin, addMin) : ataque + ataqueBase;
-  const ataqueMax = temAtaque ? calcAtaque(armaMax + jMax + mMax, addMax) : ataque + ataqueBase;
+  const ataqueMin = temAtaque ? calcAtaque(armaMin + jMin + mMin, addMin) : soco ? calcAtaque(soco.min, addMin) : ataque + ataqueBase;
+  const ataqueMax = temAtaque ? calcAtaque(armaMax + jMax + mMax, addMax) : soco ? calcAtaque(soco.max, addMax) : ataque + ataqueBase;
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   // Wand e rod (dono, 02/10): o Magic Attack (fixo, × raridade) é o "ataque" da arma e o Magic Level a perícia — o MESMO cálculo do golpe físico.
@@ -410,7 +430,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
-    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * ((armaFinal && armaFinal.aps.intervaloMs ? armaFinal.aps.intervaloMs : INTERVALO_BASE_DO_GOLPE_MS) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    // (PoE: o APS da base do catálogo × a Velocidade de Ataque LOCAL da peça; com duas armas, a média dos tempos das duas — `intervaloBaseDoGolpe`.)
+    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([

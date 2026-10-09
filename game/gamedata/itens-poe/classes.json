@@ -1,5 +1,5 @@
 {
-  "_nota": "As 7 CLASSES do PoE (decisão do dono, 05/10: criar as 7 classes; a classe fica POR CIMA da vocação do Draevor — a vocação segue com skills, outfit e kit; a classe dá os atributos iniciais, o ponto de partida na árvore do PoE e as ascendências). Atributos como no PoE: só os iniciais da classe, SEM ganho por level (decisão do dono) — o resto vem da árvore e do equipamento. Só com ITENS_POE=1. Fonte: coleção do Drive (poe-arvore/Classes/classes.json). padraoPorVocacao: a classe de quem ainda não escolheu.",
+  "_nota": "As 7 CLASSES do PoE (decisão do dono, 05/10: criar as 7 classes; a classe fica POR CIMA da vocação do Draevor — a vocação segue com skills, outfit e kit; a classe dá os atributos iniciais, o ponto de partida na árvore do PoE e as ascendências). Atributos como no PoE: só os iniciais da classe, SEM ganho por level (decisão do dono) — o resto vem da árvore e do equipamento. Só com ITENS_POE=1. Fonte: coleção do Drive (poe-arvore/Classes/classes.json). padraoPorVocacao: a classe de quem ainda não escolheu. desarmado: o dano físico do SOCO (sem arma) por classe, como no PoE (Path of Building › data.unarmedWeaponData: 2–8 no Marauder; 2–6 no Duelist, Templar e Scion; 2–5 na Ranger, Witch e Shadow; 1,2 ataques por segundo e 0% de crítico para todos).",
   "ordem": [
     "Ranger",
     "Shadow",
@@ -18,6 +18,10 @@
         "str": 14,
         "dex": 32,
         "int": 14
+      },
+      "desarmado": {
+        "min": 2,
+        "max": 5
       },
       "noInicial": 50459,
       "ascendencias": [
@@ -43,6 +47,10 @@
         "str": 14,
         "dex": 23,
         "int": 23
+      },
+      "desarmado": {
+        "min": 2,
+        "max": 5
       },
       "noInicial": 44683,
       "noInicialInferido": true,
@@ -70,6 +78,10 @@
         "dex": 14,
         "int": 32
       },
+      "desarmado": {
+        "min": 2,
+        "max": 5
+      },
       "noInicial": 54447,
       "ascendencias": [
         {
@@ -94,6 +106,10 @@
         "str": 32,
         "dex": 14,
         "int": 14
+      },
+      "desarmado": {
+        "min": 2,
+        "max": 8
       },
       "noInicial": 47175,
       "ascendencias": [
@@ -120,6 +136,10 @@
         "dex": 23,
         "int": 14
       },
+      "desarmado": {
+        "min": 2,
+        "max": 6
+      },
       "noInicial": 50986,
       "ascendencias": [
         {
@@ -144,6 +164,10 @@
         "str": 20,
         "dex": 20,
         "int": 20
+      },
+      "desarmado": {
+        "min": 2,
+        "max": 6
       },
       "noInicial": 58833,
       "noInicialInferido": true,
@@ -170,6 +194,10 @@
         "str": 23,
         "dex": 14,
         "int": 23
+      },
+      "desarmado": {
+        "min": 2,
+        "max": 6
       },
       "noInicial": 61525,
       "ascendencias": [
