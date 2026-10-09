@@ -89,6 +89,9 @@ export function iniciar(itemCatalog) {
         id, name: b.nome, type: regra.tipo, slot: regra.slot, weight: regra.peso ?? 20, hasSprite: false, rarity: 'comum', stackable: false,
         ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
         ...(regra.skill ? { skill: regra.skill, attack: media(a.dano_fisico) } : {}),
+        // Os ATAQUES POR SEGUNDO da base (1,55 na Rusted Sword) no campo que a conta da arma lê (`engine/arma.baseDaArma`): o intervalo BASE do golpe
+        // básico e das habilidades de ataque é 1000 / APS, como no PoE. Sem ele valia o padrão do Draevor (0,5 = 2 s) para toda arma do PoE.
+        ...(regra.skill && Number(a.ataques_por_segundo) > 0 ? { aps: Number(a.ataques_por_segundo) } : {}),
         // A chance de crítico da BASE da arma (ex.: 5%) no campo que a ficha já soma por peça (`critChance`, em centésimos de %); o
         // "Chance de Crítico aumentada" dos mods multiplica por cima (ficha.critChance), como no PoE.
         ...(regra.skill && a.chance_critico_pct ? { critChance: Math.round(Number(a.chance_critico_pct) * 100) } : {}),
@@ -137,6 +140,28 @@ function afDaBase(atributos, dosMods = {}) {
   return af;
 }
 
+/*
+ * A VELOCIDADE DE ATAQUE LOCAL da arma (PoE): na ARMA, "Velocidade de Ataque aumentada/reduzida em X%" sem condição é LOCAL — multiplica os
+ * Ataques por Segundo da própria arma (1,55 × 1,10 = 1,71), em vez de somar aos aumentos globais. Sai de `atk_speed` (global) para
+ * `atk_speed_local`, que a ficha aplica na base da arma (`ArmaMod.statsDaArma`). Com condição ("se você Matou Recentemente", "com Espadas") e a
+ * "Velocidade de Ataque e Conjuração" seguem globais, como no PoE. A linha só de velocidade local fica 'equivalente' (a mesma conta do PoE).
+ */
+const VELOCIDADE_LOCAL = /^Velocidade de Ataque (?:aumentada|reduzida) em \{\d+\}%$/;
+function separarVelocidadeLocal(classe, t, af) {
+  if (CLASSES_DO_JOGO[classe]?.slot !== 'weapon') return;
+  let local = 0;
+  for (const l of t.linhas) {
+    const locais = l.partes.filter((p) => VELOCIDADE_LOCAL.test(p.parte) && p.efeitos.length === 1 && p.efeitos[0].stat === 'atk_speed');
+    for (const p of locais) local += p.efeitos[0].valor;
+    if (locais.length && locais.length === l.partes.length) l.estado = 'equivalente';
+  }
+  if (!local) return;
+  const global = Math.round(((af.atk_speed ?? 0) - local) * 100) / 100;
+  if (global) af.atk_speed = global;
+  else delete af.atk_speed;
+  af.atk_speed_local = Math.round(((af.atk_speed_local ?? 0) + local) * 100) / 100;
+}
+
 /**
  * A peça do JOGO a partir da peça gerada (`gerarPeca`). `{ id, count: 1, base, poe }` — sem `raridade`/`af` do Draevor (a peça do PoE
  * não passa pelas regras de raridade e de afixos do Draevor: forja, essência e o resto não a reconhecem).
@@ -159,6 +184,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
     ...(a.escudo_energia ? { es: [a.escudo_energia, a.escudo_energia] } : {}),
   };
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
+  separarVelocidadeLocal(gerada.classe, t, af);
   const R = regras.raridades[gerada.raridade] ?? {};
   // Frasco: não dá atributo ao personagem (só enquanto o efeito dura, pelo cinto — `frascos.mjs`); o balão leva o resumo com os mods aplicados.
   if (FRASCOS.includes(gerada.classe)) {
@@ -195,7 +221,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
  * A peça de uma versão antiga é refeita na entrada (`refazerPecasAntigas`) — mods, valores, sockets e gemas ficam como estão.
  */
 // (6 — 09/10: as regras da árvore × poedb, lotes 3 a 5, também mudam mods de itens: defesa de uma peça, condições de arma, exposição…)
-export const VERSAO_DA_TRADUCAO = 6;
+// (7 — 09/10: a "Velocidade de Ataque aumentada" da arma passa a ser LOCAL, `atk_speed_local` — `separarVelocidadeLocal`.)
+export const VERSAO_DA_TRADUCAO = 7;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -258,6 +285,7 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   const t = traduzirPeca(p);
   const af = { ...t.af };
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
+  separarVelocidadeLocal(p.classe, t, af);
   p.af = af;
   p.notas = notasDe(t);
   // A versão da tradução com que `af`/`estados` foram feitos (a entrada no jogo refaz as peças de versões antigas — `refazerPecasAntigas`).

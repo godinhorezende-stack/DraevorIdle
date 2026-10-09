@@ -6020,8 +6020,8 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "na arma é LOCAL no PoE (só os ataques dela); no Draevor é global."
+      "estado": "equivalente",
+      "nota": "na arma é LOCAL, como no PoE: multiplica os Ataques por Segundo da base dela (itens-poe/jogo.separarVelocidadeLocal → atk_speed_local); nas outras peças, global."
     },
     {
       "padrao": "^Velocidade de Conjuração aumentada em \\{(\\d+)\\}%$",

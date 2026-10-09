@@ -136,6 +136,12 @@
       "combate": true,
       "efeito": "itens-poe/jogo (bloqueio da própria base, local)"
     },
+    "atk_speed_local": {
+      "nome": "Velocidade de Ataque da arma aumentada (local)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/jogo.separarVelocidadeLocal → ficha (multiplica os Ataques por Segundo da base da própria arma: o intervalo do golpe)"
+    },
     "accuracy_inc": {
       "nome": "Precisão Global aumentada",
       "unidade": "%",

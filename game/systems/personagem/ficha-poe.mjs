@@ -15,7 +15,7 @@ import * as ClassesPoe from '../itens-poe/classes.mjs';
 import { esperaDaRecarga } from './defesa.mjs';
 import { nomeDaHunt } from '../hunt/terreno.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
-import { MANA_REGEN_BASE_POE, LEECH_POE, tetoDoRouboPct } from '../ficha.mjs';
+import { MANA_REGEN_BASE_POE, LEECH_POE, tetoDoRouboPct, APS_DESARMADO_POE } from '../ficha.mjs';
 import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
@@ -115,6 +115,18 @@ export function montar(estado, ficha, extras = {}) {
 
   // ---- números grandes
   const ataquesPorSegundo = ficha.intervaloDoGolpeMs ? 1000 / ficha.intervaloDoGolpeMs : 0;
+  // De onde vêm: os Ataques por Segundo da BASE da arma (o catálogo do PoE), a Velocidade de Ataque LOCAL dela (`atk_speed_local`) e os
+  // aumentos globais (a mesma conta de `ficha.intervaloDoGolpeMs`). Sem arma, os 1,2 por segundo do desarmado.
+  const apsDaArma = ficha.arma?.aps;
+  const fontesDosAtaques = [
+    ...fonte('Base da arma', apsDaArma?.base),
+    ...fonte('Desarmado', ficha.arma ? 0 : APS_DESARMADO_POE),
+    ...fonte('Velocidade de Ataque local da arma', ficha.arma?.locais?.pctVelocidade, { pct: true }),
+    ...daOrigem('velocidadeDeAtaque').map((f) => ({ ...f, pct: true })),
+  ];
+  const dicaDosAtaques = apsDaArma
+    ? `a arma: ${num(apsDaArma.base, 2)} por segundo${apsDaArma.aposLocal !== apsDaArma.base ? ` × local = ${num(apsDaArma.aposLocal, 2)}` : ''}${ficha.duasArmas ? ' (duas armas: a média dos tempos das duas, 10% mais rápido)' : ''}${ficha.velocidadeDeAtaque ? `; velocidade de ataque global +${pct(ficha.velocidadeDeAtaque, 0)}` : ''}`
+    : `desarmado: ${num(APS_DESARMADO_POE, 2)} por segundo${ficha.velocidadeDeAtaque ? `; velocidade de ataque global +${pct(ficha.velocidadeDeAtaque, 0)}` : ''}`;
   const danoMedio = ((ficha.damage?.min ?? 0) + (ficha.damage?.max ?? 0)) / 2;
   const cg = ficha.cargas ?? {};
   const maxCarga = (k) => 3 + (cg[`max_${k}`] ?? 0);
@@ -200,9 +212,9 @@ export function montar(estado, ficha, extras = {}) {
       linha('Dano por segundo', num(dps, 2), { destaque: true, dica: 'média do acerto × ataques por segundo × chance de acertar (como na tela do PoE)' }),
       linha('Chance de acertar', pct(chanceDeAcertar * 100, 0), { dica: 'contra um monstro do seu nível' }),
       ...(chances.acertoEvasivo != null ? [linha('Chance de acertar monstros evasivos', pct(chances.acertoEvasivo * 100, 0), { dica: 'contra um monstro do seu nível com o modificador Evasivo (+100% de evasão)' })] : []),
-      linha('Ataques por segundo', num(ataquesPorSegundo, 2), { fontes: daOrigem('velocidadeDeAtaque'), dica: ficha.velocidadeDeAtaque ? `velocidade de ataque +${pct(ficha.velocidadeDeAtaque, 0)}` : null }),
+      linha('Ataques por segundo', num(ataquesPorSegundo, 2), { fontes: fontesDosAtaques, dica: dicaDosAtaques }),
       linha('Dano total do acerto', faixa(totalDoAcerto, 0), { dica: 'todos os tipos de dano do golpe, com os "aumentado", antes da resistência do monstro' }),
-      linha('Dano físico do acerto', faixa(partesDoAcerto.physical ?? [0, 0], 0), { dica: `o dano da arma ${num(ficha.damage?.min)}–${num(ficha.damage?.max)} × ${num(1 + pctDo('physical') / 100, 2)} (dano físico aumentado)` }),
+      linha('Dano físico do acerto', faixa(partesDoAcerto.physical ?? [0, 0], 0), { dica: `${ficha.arma ? 'o dano da arma' : 'o soco (desarmado)'} ${num(ficha.damage?.min)}–${num(ficha.damage?.max)} × ${num(1 + pctDo('physical') / 100, 2)} (dano físico aumentado)` }),
       linha('Precisão', num(ficha.accuracy), { fontes: daOrigem('accuracy') }),
       linha('Sangramento por segundo (acerto)', faixa(sangra), { dica: `${pct(AfeccoesPoe.BASE.sangramento.porSegundo * 100, 0)} do dano físico do acerto por segundo, por ${num(AfeccoesPoe.BASE.sangramento.duracaoMs / 1000)} s` }),
       linha('Sangramento por segundo (crítico)', faixa(sangra.map((v) => v * doCritico)), { dica: DO_CRITICO }),
