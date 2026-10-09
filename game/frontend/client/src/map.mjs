@@ -7,6 +7,8 @@ import { comecarPasso } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais } from './efeitos-visuais.mjs';
+/** A cortina "Traçando a rota" (`mostrarViagem`, main.mjs) está cobrindo a tela? */
+const cortinaDeViagemNaTela = () => typeof document !== 'undefined' && document.getElementById('viagem')?.hidden === false;
 /** Os eventos que a camada de efeitos desenha (os outros — números, falas — seguem aqui no mapa). */
 const EVENTOS_DA_CAMADA = new Set(['skill', 'cast', 'fx', 'explosao', 'area', 'shot', 'dmg', 'portal']);
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
@@ -1274,6 +1276,15 @@ export class MapView {
        * A mesma da Arena de Efeitos da engine: sem visual configurado para a skill (`sk`), o desenho de sempre; com, o da skill
        * (lançamento, projétil, impacto, área, no alvo). Antes do filtro dos números: o efeito "no alvo" vem do evento de dano.
        */
+      if (event.t === 'portal') {
+        // O portal de viagem de quem saiu noutro andar não aparece neste; o da CHEGADA espera a cortina "Traçando a rota" sair (é
+        // por baixo dela que a caçada começa) — `drawEffects` o solta.
+        if (event.z != null && event.z !== (this.snapshot?.z ?? this.floor ?? 0)) continue;
+        if (event.chegada && cortinaDeViagemNaTela()) {
+          (this.portaisDepoisDaCortina ??= []).push(event);
+          continue;
+        }
+      }
       if (EVENTOS_DA_CAMADA.has(event.t)) {
         // De quem é o lançamento nesta tela (a mesma regra do `deQuem` logo abaixo: o meu boneco é 'player', o do aliado `aliado:<nome>`).
         const uidDe = (e) => (!e.quem ? e.uid : e.quem === this.meuNome ? 'player' : `aliado:${e.quem}`);
@@ -3420,6 +3431,12 @@ export class MapView {
         const p = this.position(eu, now);
         for (const b of this.buffsDoJogador) desenharContinuo(ctx, b.sk, p.x - this.camera.x, p.y - this.camera.y, now);
       }
+    }
+    // Os portais de chegada guardados enquanto a cortina de viagem cobria a tela: abrem agora.
+    if (this.portaisDepoisDaCortina?.length && !cortinaDeViagemNaTela()) {
+      const portais = this.portaisDepoisDaCortina.map((ev) => ({ ...ev, chegada: false }));
+      this.portaisDepoisDaCortina = [];
+      this.addEvents(portais);
     }
     this.effects = this.effects.filter((effect) => now - effect.born < effect.life);
     for (const effect of this.effects) {

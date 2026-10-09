@@ -390,6 +390,21 @@
    "reverso": false,
    "fabrica": true,
    "importado": true
+  },
+  "fabrica-portal-de-viagem": {
+   "nome": "Portal de Viagem",
+   "categoria": "Other",
+   "arquivo": "portal-de-viagem.png",
+   "colunas": 8,
+   "linhas": 1,
+   "fps": 10,
+   "inicio": 0,
+   "fim": 7,
+   "loop": true,
+   "pingpong": false,
+   "reverso": false,
+   "fabrica": true,
+   "importado": true
   }
  }
 }

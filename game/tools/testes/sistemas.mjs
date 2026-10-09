@@ -39,7 +39,7 @@ export const SISTEMAS = {
     ],
     testes: [
       /^itens-/, /^itens-poe$/, /^item-/, /^implicitos/, /^comparar/, /^conjuntos/, /^defesas-novas/, /^equipamento/, /^arma-base/, /^base-por-raridade/,
-      /^preco-de-venda/, /^preco-das-pocoes/, /^pocoes/, /^overrides-itens/, /^icones/, /^so-itens-do-poe/, /^moedas-/, /^forja/, /^pilha-de-20/,
+      /^preco-de-venda/, /^preco-das-pocoes/, /^pocoes/, /^overrides-itens/, /^icones/, /^so-itens-do-poe/, /^moedas-/, /^forja/, /^pilha-de-/,
       /^mochila-redesenho/, /^bolsa-mover/, /^chao-e-troca/, /^chegadas/, /^atributos-efeito/, /^gemas-raridade/, /^sockets-joias-poe/, /^filtro-/,
     ],
   },
@@ -72,7 +72,7 @@ export const SISTEMAS = {
     testes: [
       /^campanha/, /^chefe-da-fase/, /^itens-poe-(campanha|atos|pinaculos)/, /^atos-/, /^boss-do-ato/, /^bosses/, /^conteudo-dos-atos/, /^encontros/,
       /^captura/, /^decisao/, /^ondas/, /^world/, /^mapa-editor/, /^extrair-poedb-pinaculos/, /^sets-de-marco/, /^raridade-minima-boss-bau/,
-      /^site-poe/, /^party-objetivo-da-fase/, /^avancar-em-grupo/, /^missoes-de-gemas/, /^roupa-da-classe/,
+      /^site-poe/, /^party-objetivo-da-fase/, /^avancar-em-grupo/, /^missoes-de-gemas/, /^roupa-da-classe/, /^chefe-do-ato-na-fase/,
     ],
   },
   cacada: {
@@ -86,6 +86,7 @@ export const SISTEMAS = {
       /^percurso/, /^progresso-da-hunt/, /^alvo-mais-perto/, /^kite-parede-diagonal/, /^caminho/, /^andares/, /^agua/, /^moverMonstros/, /^setores/,
       /^escalonamento/, /^familiar-anda/, /^mapa-spawns/, /^aquecer-grades/, /^hunt-gravada/, /^hunts-painel/, /^xp-da-hunt/, /^regen-na-cidade/,
       /^andar/, /^morte/, /^rentabilidade/, /^limpeza-do-chao/, /^item-no-chao/, /^raridade-dos-mapas/, /^loot-/, /^bonus-online/, /^bloqueio/,
+      /^chefe-do-ato-na-fase/, /^portal-de-viagem/,
     ],
   },
   offline: {
@@ -101,7 +102,7 @@ export const SISTEMAS = {
     nome: 'Party',
     apelidos: ['grupo'],
     fontes: [/^systems\/(party|party-recompensas)\.mjs$/, /^systems\/hunt\/(aliados|sala|escalonamento)\.mjs$/],
-    testes: [/^party-/, /^avancar-em-grupo/, /^escalonamento/, /^conta-char/, /^bonus-online/, /^setores/],
+    testes: [/^party-/, /^avancar-em-grupo/, /^escalonamento/, /^conta-char/, /^bonus-online/, /^setores/, /^portal-de-viagem/, /^chefe-do-ato-na-fase/],
   },
   sessao: {
     nome: 'Sessão e WebSocket',
@@ -156,7 +157,7 @@ export const SISTEMAS = {
     ],
     testes: [
       /^filtro-/, /^loot-/, /^itens-poe-pools/, /^moedas-pools/, /^anuncios/, /^raridade-minima-boss-bau/, /^rentabilidade/, /^preco-de-venda/,
-      /^encontros-bau/, /^mobs-raridade/, /^pilha-de-20/, /^bolsa-mover/, /^item-no-chao/,
+      /^encontros-bau/, /^mobs-raridade/, /^pilha-de-/, /^bolsa-mover/, /^item-no-chao/,
     ],
   },
   social: {

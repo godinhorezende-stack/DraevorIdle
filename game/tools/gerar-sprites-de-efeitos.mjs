@@ -207,5 +207,8 @@ await b.close();
  *     convertido numa folha de uma linha).
  */
 assets['fabrica-portal-do-chefe'] = { nome: 'Portal do Chefe', categoria: 'Other', arquivo: 'portal-do-chefe.png', colunas: 15, linhas: 1, fps: 10, inicio: 0, fim: 14, loop: true, pingpong: false, reverso: false, fabrica: true, importado: true };
+// O portal de VIAGEM: por onde o personagem sai de uma instância e chega na outra (dono, 08/10 — o `Portal_(Marapur).gif`, 8 quadros de
+// 64 px a 100 ms, convertido do mesmo jeito).
+assets['fabrica-portal-de-viagem'] = { nome: 'Portal de Viagem', categoria: 'Other', arquivo: 'portal-de-viagem.png', colunas: 8, linhas: 1, fps: 10, inicio: 0, fim: 7, loop: true, pingpong: false, reverso: false, fabrica: true, importado: true };
 writeFileSync(join(PASTA, 'assets.json'), `${JSON.stringify({ _nota: 'Os sprites de efeito de FÁBRICA (tools/gerar-sprites-de-efeitos.mjs): desenhados por código, por elemento. Os PNGs ficam ao lado. Para mudar, edite o gerador e rode de novo; para variações, use a Arena de Efeitos (escala, cor por cima, fps, quadros).', assets }, null, 1)}\n`);
 console.log(`gerados ${Object.keys(assets).length} sprites em ${PASTA}`);

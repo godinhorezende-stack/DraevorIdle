@@ -720,6 +720,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   };
   // "A espera começa quando você ENTRA — mesmo que ele não caia." (Menos a primeira do boss de ato.)
   if (boss && !primeiraDoAto) Bosses.marcarEntrada(estado, boss.id);
+  // Ele chega por um portal de viagem (o cliente o mostra quando a cortina "Traçando a rota" sai).
+  if (!arenaPvp) EventosDeEncontro.empurrar(estado.hunt, [portalDeViagem(estado.hunt.pos, { chegada: true })]);
   return { ok: true };
 }
 
@@ -917,6 +919,8 @@ export function entrarNaSala(estado, sala, gente = []) {
     viagem: { hunt: dados.name ?? sala.huntId, motivo: 'partida' },
   };
   ligarAoDono(estado.hunt, sala);
+  // Chega por um portal de viagem, na casa livre dele perto do dono (todos da sala veem).
+  EventosDeEncontro.empurrar(sala, [portalDeViagem(inicio, { chegada: true })]);
   return { ok: true };
 }
 
@@ -1037,19 +1041,93 @@ export function chefeDoAtoPendente(hunt) {
   return [...(hunt.monstros ?? []), ...Object.values(hunt.outrosAndares ?? {}).flat()].some((m) => m.uid === c.uid);
 }
 
+/*
+ * ---- O PORTAL DE VIAGEM (dono, 08/10) ----
+ * "Quando o personagem entra em uma instância e sai, ele usa [o portal], simulando que ele entra e vai embora para outro lugar; se tiver
+ * em party, os 2 ou mais personagens nunca caem no mesmo lugar, mas caem no range perto, na tela visível." O portal
+ * (`fabrica-portal-de-viagem`) abre onde cada um SAI — na troca de instância, sob cada um da sala, `ENTRAR_NO_PORTAL_MS` antes de
+ * trocar; no "Parar" e ao ir para a caçada de outro, para quem fica na sala (`Party.portalDeSaida`) — e onde cada um CHEGA: a entrada
+ * da instância nova, o começo da caçada, a entrada na sala da party. Na chegada, a party fica cada um numa casa livre perto do dono
+ * (`casasDaChegada`), nunca a mesma. O portal da chegada leva `chegada`: o cliente espera a cortina "Traçando a rota" sair para mostrá-lo.
+ */
+const PORTAL_DE_VIAGEM = 'fabrica-portal-de-viagem';
+const PORTAL_DE_VIAGEM_MS = 1300;
+const ENTRAR_NO_PORTAL_MS = 900;
+/** Até quantas casas do dono a party chega (perto, na tela). */
+export const RAIO_DA_CHEGADA = 3;
+/** O evento do portal de viagem em `pos`. */
+export const portalDeViagem = (pos, extra = {}) => ({ t: 'portal', x: pos.x, y: pos.y, ms: PORTAL_DE_VIAGEM_MS, asset: PORTAL_DE_VIAGEM, ...extra });
+/** Eventos para a tela de todos da sala de `hunt` (o primeiro tique da sala leva; a party repassa o `portal` aos outros). */
+export const empurrarEventos = (hunt, eventos) => EventosDeEncontro.empurrar(hunt, eventos);
+/**
+ * `n` casas livres e diferentes perto de `centro`, pelo chão (nada do outro lado da parede): as mais perto primeiro, até `RAIO_DA_CHEGADA`;
+ * faltando, as livres mais perto além dele. `ocupadas` (Set de "x,y") recebe as escolhidas.
+ */
+function casasDaChegada(grade, centro, n, ocupadas) {
+  const casas = [];
+  const chave = (c) => `${c.x},${c.y}`;
+  const visto = new Set([chave(centro)]);
+  let camada = [centro];
+  while (camada.length && casas.length < n) {
+    const proxima = [];
+    for (const c of camada) {
+      for (const [dx, dy] of [[-1, 0], [1, 0], [0, 1], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1]]) {
+        const v = { x: c.x + dx, y: c.y + dy };
+        if (visto.has(chave(v)) || !grade.andavel.has(chave(v)) || distancia(v, centro) > RAIO_DA_CHEGADA) continue;
+        visto.add(chave(v));
+        proxima.push(v);
+      }
+    }
+    proxima.sort((a, b) => (a.x - centro.x) ** 2 + (a.y - centro.y) ** 2 - ((b.x - centro.x) ** 2 + (b.y - centro.y) ** 2));
+    for (const v of proxima) {
+      if (casas.length >= n || ocupadas.has(chave(v))) continue;
+      casas.push(v);
+      ocupadas.add(chave(v));
+    }
+    camada = proxima;
+  }
+  while (casas.length < n) {
+    const c = casaLivrePerto(grade, centro, (x) => ocupadas.has(chave(x)));
+    if (!c) break;
+    casas.push(c);
+    ocupadas.add(chave(c));
+  }
+  return casas;
+}
+/** Os bichos e a entrada de uma instância nova de `hunt` (sem aplicar); null se a hunt não tem como ter outra. */
+function sortearInstancia(hunt) {
+  const novo = povoar({ huntId: hunt.huntId, hunt: acharHunt(hunt.huntId), boss: null, tranca: null, fase: Campanha.faseDe(hunt.huntId), mapaCustom: null, escala: hunt.escala });
+  return novo.instancia ? novo : null;
+}
+// A instância nova sorteada quando o portal de viagem abre, à espera de ele fechar (não vai para o banco: sem ela, sorteia de novo).
+const instanciasProntas = new WeakMap();
+/** O convidado da sala chega na instância nova: na casa dele, sem alvo nem rumo da instância de antes. */
+function chegarNaInstancia(h, casa, z) {
+  h.z = z;
+  h.pos = { x: casa.x, y: casa.y, dir: 2 };
+  h.alvo = null;
+  h.alvoTravado = null;
+  h.alvoDaLimpeza = null;
+  h.perseguicao = null;
+  h.rumo = null;
+  if (h.summon) {
+    h.summon.x = casa.x;
+    h.summon.y = casa.y;
+  }
+}
+
 /**
  * Uma instância NOVA da mesma hunt, do zero: bichos sorteados de novo, o
  * personagem de volta à entrada, o resto da caçada (sessão, relógio, recargas,
  * ajustes) segue. Os bichos trocam NO LUGAR (`splice`): os convidados da party
  * apontam para o mesmo array. Só o dono da sala. `false` se não há instância.
+ * Os convidados na sala chegam junto, cada um numa casa livre perto da entrada (antes ficavam onde estavam na instância de antes).
  */
-export function novaInstancia(estado) {
+export function novaInstancia(estado, pronta = null) {
   const hunt = estado.hunt;
   if (!hunt?.instancia || hunt.anfitriao) return false;
-  const dados = acharHunt(hunt.huntId);
-  const fase = Campanha.faseDe(hunt.huntId);
-  const novo = povoar({ huntId: hunt.huntId, hunt: dados, boss: null, tranca: null, fase, mapaCustom: null, escala: hunt.escala });
-  if (!novo.instancia) return false;
+  const novo = pronta ?? sortearInstancia(hunt);
+  if (!novo) return false;
   hunt.monstros.splice(0, hunt.monstros.length, ...novo.monstros);
   hunt.outrosAndares = novo.outrosAndares;
   hunt.respawns = [];
@@ -1071,6 +1149,13 @@ export function novaInstancia(estado) {
   hunt.instancia = novo.instancia;
   // Instância nova = limpeza nova: o portal da execução anterior fecha (a limpeza velha não vale para entrar).
   hunt.portalDoBoss = null;
+  // A party chega junto: cada um numa casa livre perto da entrada, nunca a mesma — e cada um sai de um portal de viagem.
+  const convidados = quemEstaNaSala(estado, hunt).slice(1);
+  const grade = andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), novo.andarInicial);
+  const ocupadas = new Set([...hunt.monstros.filter((m) => m.hp > 0).map((m) => `${m.x},${m.y}`), `${novo.inicio.x},${novo.inicio.y}`]);
+  const casas = casasDaChegada(grade, novo.inicio, convidados.length, ocupadas);
+  convidados.forEach((o, i) => chegarNaInstancia(o.hunt, casas[i] ?? novo.inicio, novo.andarInicial));
+  EventosDeEncontro.empurrar(hunt, [novo.inicio, ...casas].map((c) => portalDeViagem(c, { chegada: true })));
   return true;
 }
 
@@ -1501,7 +1586,24 @@ export function tique(estado, personagem, agora = Date.now()) {
       if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt, personagem);
       // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal. Com o
       // chefe do ato saindo do portal (ou vivo), ela espera ele morrer.
-      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && !chefeDoAtoPendente(hunt) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) novaInstancia(estado);
+      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && !chefeDoAtoPendente(hunt) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) {
+        // O portal de viagem abre sob cada um da sala e cada um fica nele (o passo espera); passado `ENTRAR_NO_PORTAL_MS`, todos chegam
+        // na instância nova (por outro portal). Ela é sorteada ANTES: a hunt que não tem como ter outra não abre portal nem para ninguém.
+        if (hunt.instancia.viajaEm == null) {
+          const novo = sortearInstancia(hunt);
+          if (novo) {
+            instanciasProntas.set(hunt, novo);
+            hunt.instancia.viajaEm = (hunt.clock ?? 0) + ENTRAR_NO_PORTAL_MS;
+            const cacadasDaSala = quemEstaNaSala(estado, hunt).map((o) => (o === estado ? hunt : o.hunt));
+            for (const h of cacadasDaSala) h.proximoPassoEm = Math.max(h.proximoPassoEm ?? 0, agora + ENTRAR_NO_PORTAL_MS);
+            EventosDeEncontro.empurrar(hunt, cacadasDaSala.map((h) => portalDeViagem(h.pos, { z: h.z ?? 0 })));
+          }
+        } else if ((hunt.clock ?? 0) >= hunt.instancia.viajaEm) {
+          const pronta = instanciasProntas.get(hunt) ?? null;
+          instanciasProntas.delete(hunt);
+          novaInstancia(estado, pronta);
+        }
+      }
     }
   } else {
     hunt.lurando = false;

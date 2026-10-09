@@ -211,7 +211,7 @@ export function comando(estado, m, contaCaixa = null) {
     if (peca.count <= 0) caixa.itens.splice(i, 1);
     caixa.tipos = caixa.itens.length;
     const { count, ...extras } = peca;
-    // O empilhável limpo entra nas pilhas da mochila, de até `pilhaMaxima` (o monte da caixa não tem teto: 60 viram 20 + 20 + 20).
+    // O empilhável limpo entra nas pilhas da mochila, de até `pilhaMaxima` (o monte da caixa não tem teto: 250 viram 100 + 100 + 50).
     if (ITEM_CATALOG[id]?.stackable && !pecaEspecial(peca)) darItem(estado, id, n);
     else (estado.inventory ??= []).push({ ...extras, id, count: n });
     return { ok: true };

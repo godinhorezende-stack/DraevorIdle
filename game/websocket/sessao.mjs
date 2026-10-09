@@ -1354,8 +1354,11 @@ export class Sessao {
         const report = this.estado?.hunt ? Cacadas.relatorio(this.estado) : null;
         // Quem segue o líder volta junto (antes de ele sair: é pela sala dele que se acha quem estava junto).
         Party.voltarComOLider(this, 'voltou para a cidade');
+        // Quem fica na sala o vê ir embora pelo portal de viagem.
+        const portal = Party.portalDeSaida(this);
         Party.antesDeSairDaCacada(this);
         const resultado = this.aplicar(Cacadas.sair(this.estado));
+        portal();
         if (report) this.enviar({ t: 'runReport', report });
         return resultado;
       }

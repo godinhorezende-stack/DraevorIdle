@@ -428,6 +428,22 @@ export function entrouNoJogo(s) {
 // --------------------------------------------------------- caçada em grupo
 
 /**
+ * Quem deixa a caçada ANDANDO (o "Parar", ir para a caçada de outro — não a morte): quem fica na sala vê o PORTAL DE VIAGEM onde ele
+ * estava (dono, 08/10 — `Cacadas.portalDeViagem`). Chamar ANTES de `antesDeSairDaCacada` (se ele era o dono, a sala passa a outro lá) e
+ * chamar o que volta DEPOIS: o portal vai para a sala que ficou.
+ */
+export function portalDeSaida(s) {
+  const hunt = s.estado?.hunt;
+  const ficam = hunt?.pos ? outrosNaSala(s) : [];
+  if (!ficam.length) return () => {};
+  const portal = Cacadas.portalDeViagem(hunt.pos, { z: hunt.z ?? 0 });
+  return () => {
+    const quem = ficam.find((o) => o.estado?.hunt);
+    if (quem) Cacadas.empurrarEventos(quem.estado.hunt, [portal]);
+  };
+}
+
+/**
  * Quem vai deixar a caçada (stopHunt, morte, logout, trocar de hunt): se ele
  * é o dono de uma sala com gente dentro, o próximo da sala assume.
  */
@@ -497,8 +513,10 @@ function juntar(convidado, anfitriao, { semExtrato = false } = {}) {
         });
       }
     }
+    const portal = Cacadas.salaDe(h) !== sala ? portalDeSaida(convidado) : () => {};
     antesDeSairDaCacada(convidado);
     convidado.estado.hunt = null;
+    portal();
   }
   // Onde cada um da sala está: quem entra cai numa casa livre (a colisão da caçada em grupo).
   const gente = [...vivas.values()]
