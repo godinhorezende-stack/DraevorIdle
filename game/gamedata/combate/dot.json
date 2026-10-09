@@ -158,7 +158,7 @@
     "ice": "gelo"
   },
   "limites": {
-    "_nota": "Teto de efeitos de dano contínuo ao mesmo tempo num bicho (contra empilhar sem fim).",
-    "efeitosPorBicho": 12
+    "_nota": "Teto de efeitos de dano contínuo ao mesmo tempo num bicho (contra empilhar sem fim). 12 → 20 (09/10): com os 5 tipos do dano degenerativo das habilidades do PoE são 13 tipos, que têm de caber juntos, e cada gema degenerativa tem a sua instância.",
+    "efeitosPorBicho": 20
   }
 }
