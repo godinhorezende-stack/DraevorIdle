@@ -21,6 +21,7 @@ const Afixos = await import('../systems/afixos.mjs');
 const Controle = await import('../systems/combate/controle.mjs');
 const Dot = await import('../systems/combate/dot.mjs');
 const Gemas = await import('../systems/skills/gemas.mjs');
+const Defesa = await import('../systems/personagem/defesa.mjs');
 const { personagemDeTeste } = await import('./apoio.mjs');
 if (!SEM) Jogo.iniciar(ITEM_CATALOG);
 const semente = (s = 1) => () => ((s = (s * 16807) % 2147483647) / 2147483647);
@@ -244,4 +245,53 @@ test('únicos: "Dano Físico como Dano Extra de um Elemento aleatório" soma um 
   const fogo = ModsPoe.extrasDoFisico(ficha, [10, 20], () => 0.1);
   assert.deepEqual(fogo.extras, { fire: [5, 10] });
   assert.deepEqual(ModsPoe.extrasDoFisico(ficha, [10, 20], () => 0.9).extras, { energy: [5, 10] });
+});
+
+test('as ações em % dos eventos deixam vida, mana e escudo INTEIROS ("Recupera 3% do Escudo de Energia ao Matar", "Sacrifica 1% da Vida…"): a fração fica guardada para a próxima', { skip: SEM }, () => {
+  const e = personagem({ af: { energy_shield: 76, 'ev:matar:esPct': 3, 'ev:matar:manaPct': 1, 'ev:usarMagia:perdeVidaPct': 1 } });
+  const f = Ficha.combate(e);
+  const esMax = Math.round(f.energyShield);
+  e.hunt = { clock: 0, monstros: [] };
+  Object.assign(e, { maxHp: 525, hp: 400, maxMana: 50, mana: 10, es: 10 });
+  // "Sacrifica 1% da Vida" com 525: 5,25 por magia — 5, 5, 5 e 6 (21 em 4, a conta exata), nunca 394,75.
+  const vidas = [];
+  for (let i = 0; i < 4; i++) {
+    ModsPoe.evento(e, e.hunt, 'usarMagia', f, {});
+    vidas.push(e.hp);
+  }
+  assert.deepEqual(vidas, [395, 390, 385, 379]);
+  // 1% de 50 de mana = 0,5 por abate: 5 em 10 abates (cortando a fração a cada vez, 0 — a cura pequena sumia; arredondando, 10). E 3% do
+  // escudo: inteiro a cada abate e, somado, a conta exata sem a fração que ainda não fechou um ponto.
+  for (let i = 0; i < 10; i++) {
+    ModsPoe.evento(e, e.hunt, 'matar', f, {});
+    assert.ok(Number.isInteger(e.es) && Number.isInteger(e.mana), `abate ${i + 1}: escudo ${e.es}, mana ${e.mana}`);
+  }
+  assert.equal(e.mana, 15);
+  const exato = (10 * esMax * 3) / 100;
+  assert.ok(exato - (e.es - 10) >= 0 && exato - (e.es - 10) < 1, `escudo +${e.es - 10} em 10 abates (exato: ${exato})`);
+  // O golpe que atravessa o escudo passa um número inteiro para a vida (antes: escudo 52,28 → um golpe de 70 passava 17,72).
+  const eventos = [];
+  const passa = Defesa.absorver(e, f, 70, eventos, { uid: 'player' });
+  assert.ok(Number.isInteger(passa) && Number.isInteger(eventos[0]?.v), `passa ${passa}; o escudo absorveu ${eventos[0]?.v}`);
+});
+
+test('numa caçada de verdade os eventos em % ("ao Matar": vida, mana e escudo; "ao Acertar": perde vida) não deixam fração na vida, na mana nem no escudo', { skip: SEM }, async () => {
+  const Cacadas = await import('../systems/cacadas.mjs');
+  const { PERSONAGEM } = await import('./apoio.mjs');
+  (await import('../systems/itens-poe/campanha.mjs')).iniciar();
+  const e = personagem({ af: { energy_shield: 76, 'ev:matar:esPct': 3, 'ev:matar:vidaPct': 1, 'ev:matar:manaPct': 1, 'ev:acertar:perdeVidaPct': 1 } });
+  assert.ok(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok);
+  let t = Date.now();
+  let abates = 0;
+  for (let i = 0; i < 1200 && e.hunt; i++) {
+    const h = e.hunt;
+    // Bichos que morrem em poucos golpes e batem fraco (o personagem mata bastante); a vida volta inteira se cair à metade (não esconde fração).
+    for (const m of h.monstros ?? []) if (m.hp > 0 && !m.fraco) Object.assign(m, { hp: 30, maxHp: 30, forca: 0.3, fraco: true });
+    if (e.hp < e.maxHp / 2) e.hp = e.maxHp;
+    const vivos = (h.monstros ?? []).filter((m) => m.hp > 0).length;
+    Cacadas.tique(e, PERSONAGEM, (t += 250));
+    abates += Math.max(0, vivos - (e.hunt?.monstros ?? []).filter((m) => m.hp > 0).length);
+    for (const k of ['hp', 'mana', 'es']) assert.ok(Number.isInteger(e[k]), `tique ${i}: ${k} = ${e[k]}`);
+  }
+  assert.ok(abates >= 5, `${abates} abates`);
 });

@@ -372,8 +372,19 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
 function aplicarAcao(estado, hunt, ev, ficha, ctx) {
   const { alvo, agora, rng, eventos } = ctx;
   const v = ev.valor;
+  // Vida, mana e escudo são INTEIROS: as ações em % ("Recupera 3% do Escudo de Energia ao Matar" com 76 de escudo = 2,28) entram pela parte
+  // inteira e a fração fica guardada para a próxima (como a regeneração e a recarga do escudo) — a cura pequena não some e o dano não sai a
+  // mais. Antes a fração ia direto no estado: escudo 52,28, e o golpe que o atravessava passava 17,72 para a vida (09/10).
+  const inteiro = (campo, quanto) => {
+    const r = (hunt.poeRestoDosEventos ??= { hp: 0, mana: 0, es: 0 });
+    r[campo] += quanto;
+    const n = Math.trunc(r[campo]);
+    r[campo] -= n;
+    return n;
+  };
   // (o Pacto Vaal — "Não pode Recuperar Vida fora o Dreno": a vida dos eventos não enche)
-  const curar = (campo, max, quanto) => { if (quanto > 0 && (estado.hp ?? 0) > 0 && !(campo === 'hp' && vidaSoPeloDreno(ficha?.afPoe))) estado[campo] = Math.min(max, (estado[campo] ?? 0) + quanto); };
+  const curar = (campo, max, quanto) => { if (quanto > 0 && (estado.hp ?? 0) > 0 && !(campo === 'hp' && vidaSoPeloDreno(ficha?.afPoe))) estado[campo] = Math.min(max, (estado[campo] ?? 0) + inteiro(campo, quanto)); };
+  const perder = (campo, min, quanto) => { estado[campo] = Math.max(min, (estado[campo] ?? 0) + inteiro(campo, -quanto)); };
   const esMax = Math.max(0, Math.round(ficha?.energyShield ?? 0));
   const sorte = (pct) => pct >= 100 || rng() * 100 < pct;
   // (ganhar a ADRENALINA dispara "ao ganhar Adrenalina" — "Recupera 25% de Vida ao ganhar Adrenalina", o Campeão; sem disparar de dentro dele)
@@ -391,9 +402,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'manaPct': return curar('mana', estado.maxMana ?? 0, ((estado.maxMana ?? 0) * v) / 100);
     case 'es': return curar('es', esMax, v);
     case 'esPct': return curar('es', esMax, (esMax * v) / 100);
-    case 'perdeVidaPct': estado.hp = Math.max(1, (estado.hp ?? 0) - ((estado.maxHp ?? 0) * v) / 100); return;
-    case 'perdeEsPct': estado.es = Math.max(0, (estado.es ?? 0) - (esMax * v) / 100); return;
-    case 'perdeManaPct': estado.mana = Math.max(0, (estado.mana ?? 0) - ((estado.maxMana ?? 0) * v) / 100); return;
+    case 'perdeVidaPct': return perder('hp', 1, ((estado.maxHp ?? 0) * v) / 100);
+    case 'perdeEsPct': return perder('es', 0, (esMax * v) / 100);
+    case 'perdeManaPct': return perder('mana', 0, ((estado.maxMana ?? 0) * v) / 100);
     case 'carga': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ev.param, 1); return;
     case 'cargaMax': if (sorte(v)) leitorDeCargas?.(estado, 'max', ev.param); return;
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;
@@ -436,9 +447,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       }
       return;
     }
-    case 'dano': estado.hp = Math.max(0, (estado.hp ?? 0) - v); return;
+    case 'dano': return perder('hp', 0, v);
     case 'vidaFaltaPct': return curar('hp', estado.maxHp ?? 0, (((estado.maxHp ?? 0) - (estado.hp ?? 0)) * v) / 100);
-    case 'perdeMana': estado.mana = Math.max(0, (estado.mana ?? 0) - v); return;
+    case 'perdeMana': return perder('mana', 0, v);
     case 'perdeUmaCarga': { if (!sorte(v)) return; const c = hunt.cargasPoe?.[ev.param]; if (c?.n > 0) { c.n--; if (!c.n) delete hunt.cargasPoe[ev.param]; } return; }
     case 'refletir': {
       // "Reflete N a M de Dano Físico para Atacantes ao Bloquear": o dano no alvo do evento.
@@ -448,7 +459,7 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       eventos?.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d, foe: true, alvo: alvo.name, color: '#c0c0c0', reflexo: true });
       return;
     }
-    case 'danoPctVida': estado.hp = Math.max(0, (estado.hp ?? 0) - ((estado.maxHp ?? 0) * v) / 100); return;
+    case 'danoPctVida': return perder('hp', 0, ((estado.maxHp ?? 0) * v) / 100);
     // `explodirChance:<pct da vida>` = a CHANCE (%) de o morto explodir ("Inimigos Queimando mortos por você têm X% de chance de Explodirem").
     case 'explodirChance': if (!sorte(v)) return; return aplicarAcao(estado, hunt, { ...ev, acao: 'explodir', valor: Number(ev.param) || 10 }, ficha, ctx);
     case 'explodir': {
