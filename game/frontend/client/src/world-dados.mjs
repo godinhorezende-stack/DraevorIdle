@@ -8,8 +8,10 @@
 
 export const LARGURA = 1000;
 export const ALTURA = 640;
-export const RAIO_DA_FASE = 22;
-export const RAIO_DO_BOSS = 28;
+// Nós pequenos, de mapa de ARPG (dono, 09/10: "os nós estão muito grandes e parecem botões"); o toque usa um alvo invisível maior
+// (`desenharNo`), então o tamanho do desenho não atrapalha o dedo.
+export const RAIO_DA_FASE = 15;
+export const RAIO_DO_BOSS = 21;
 const ESPACO = 78;
 
 /** Os tipos de nó que a tela sabe desenhar (o editor oferece estes; `rotulo` é o texto do painel e do balão). */
@@ -154,7 +156,21 @@ export function posicoesDoAto(fases, temBoss, mundo = {}, ato = 1, bossManual = 
     return m && Number.isFinite(m.x) && Number.isFinite(m.y) ? { x: m.x, y: m.y, manual: true } : { ...g, manual: false };
   };
   const pontos = fases.map((f, i) => dono(f.huntId, gerados[i]));
-  return { pontos, boss: temBoss ? (bossManual ? { x: bossManual.x, y: bossManual.y, manual: true } : { ...gerados[fases.length], manual: false }) : null };
+  // Sem posição própria do boss: ao lado da fase que leva a ele, se ela tem posição do editor (o Ato da Engine) — a mesma regra da vista
+  // Mapa da Engine (`lugarDoChefe`). Antes caía na serpentina, longe da fase, com a estrada atravessando o mapa.
+  const antes = fases.findIndex((f) => mundo[f.huntId]?.grafo?.aoBoss);
+  const doEditor = antes >= 0 && pontos[antes].manual ? { ...lugarDoChefe(pontos[antes]), manual: false } : null;
+  return { pontos, boss: temBoss ? (bossManual ? { x: bossManual.x, y: bossManual.y, manual: true } : doEditor ?? { ...gerados[fases.length], manual: false }) : null };
+}
+
+/**
+ * Onde fica o nó do boss final quando o editor não o posicionou: à direita da fase que leva a ele; sem espaço lá (a fase já encosta na
+ * borda), na diagonal logo abaixo (ou acima, perto do chão do mapa) — o nome dos dois não se cobre. `p`: a fase, no espaço do jogo.
+ */
+export function lugarDoChefe(p) {
+  const x = Math.min(LARGURA - 80, p.x + 130);
+  if (x - p.x >= 110) return { x, y: p.y };
+  return { x: Math.min(LARGURA - 80, p.x + 70), y: p.y + (p.y < ALTURA / 2 ? 100 : -100) };
 }
 
 /**

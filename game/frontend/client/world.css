@@ -1,8 +1,9 @@
-/* A tela CAMPANHA (o mapa da campanha): dificuldades, Atos, mapa, nós, painel e barra. Também usada pelo editor de conteúdo.
+/* A tela CAMPANHA (o mapa da campanha): dificuldades, Atos, mapa, nós, painel e rodapé. Também usada pelo editor de conteúdo.
  *
- * A IDENTIDADE (dono, 07/10 — "harmonização visual completa"): azul petróleo/aço é a interface (molduras, painéis, botões, barras,
- * estados ativos); o ciano só marca o que está ATIVO ou selecionado; o dourado/bronze é progressão e detalhe (nó e caminho concluídos,
- * filetes); o vermelho fica só no boss/perigo; o verde só em "Aberta" e requisito cumprido. O mapa (a arte do ato) é o protagonista. */
+ * A IDENTIDADE (dono, 09/10 — "o mapa nunca deixa de ser o protagonista", com o mockup do mapa de campanha de ARPG): preto carvão,
+ * bronze envelhecido, dourado e azul petróleo; bordas metálicas, sombras internas, vinheta e névoa nas bordas do mapa, sem exagerar no
+ * dourado. O dourado é progressão (caminho e nó concluídos, o que está selecionado); o azul aceso é ONDE O JOGADOR ESTÁ (a fase atual e a
+ * dificuldade escolhida); o vermelho só no boss; o verde só em "Aberta" e requisito cumprido. */
 /* As cores valem também nas vistas da Engine que desenham a MESMA tela (a aba Mapa do editor de atos e a prévia do mapa): sem elas a
    estrada dourada sumia (só o leito escuro) e o nome nas placas ficava preto no fundo escuro (dono, 09/10). */
 .w2 { display: grid; gap: 8px; color: var(--w-txt); }
@@ -12,198 +13,260 @@
   --w-ouro: #d9b35a; --w-ouro2: #f0d27e; --w-bronze: #8a6a2c; --w-bronze2: #b08a3e;
   --w-carvao: #14181c; --w-carvao2: #1b2127; --w-cinza-aco: #3a444c; --w-cinza-aco2: #55626c;
   --w-txt: #dde7ec; --w-txt2: #9fb3bf; --w-txt3: #6c8290;
-  --w-vermelho: #c8372c; --w-vermelho2: #5a1512; --w-verde: #4fae4a; }
+  --w-vermelho: #c8372c; --w-vermelho2: #5a1512; --w-verde: #4fae4a;
+  /* o metal da moldura: bronze escuro, filete claro e o preto da borda de fora */
+  --w-metal: #4a3a1c; --w-metal2: #6b5326; --w-papel: #efe6cf; --w-papel2: #c8c0ad; --w-apagado: #9a917c; }
 /* A fonte dos nomes nas placas: a do jogo (`--font-heading` vem do style.css, que a Engine não carrega). Sem ela o nome caía na fonte do
    sistema, mais larga que a Cinzel para a qual a placa é medida, e passava da placa. */
 .atos-mapa, .eng-previa-mapa { --font-heading: "Cinzel", Georgia, serif; }
-/* 1. as dificuldades: placas de aço */
-.w2-dificuldades { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.w2-placa { position: relative; display: grid; gap: 1px; min-width: 104px; min-height: 44px; padding: 5px 16px; text-align: center; cursor: pointer; color: var(--w-txt2);
-  background: linear-gradient(180deg, #17333f, #0f2430 55%, #12303e); border: 1px solid var(--w-aco2); border-radius: 6px; box-shadow: inset 0 1px 0 rgba(138, 233, 244, .12), 0 2px 4px #0008; transition: border-color .15s, box-shadow .15s, color .15s; }
-.w2-placa b { font: 700 14px var(--font-heading, Cinzel, serif); letter-spacing: .12em; text-transform: uppercase; }
-.w2-placa small { font-size: 10.5px; color: var(--w-txt3); }
-.w2-placa:hover:not(.selecionada):not(.bloqueada) { border-color: var(--w-aco); color: var(--w-txt); }
-.w2-placa.selecionada { color: var(--w-ciano2); background: linear-gradient(180deg, #16455a, #0c2a3a 60%, #0a2230); border-color: var(--w-ciano); box-shadow: 0 0 12px var(--w-ciano-fraco), inset 0 0 14px rgba(79, 209, 224, .12), inset 0 1px 0 rgba(138, 233, 244, .25); }
-.w2-placa.selecionada small { color: #7fc9d6; }
-.w2-placa.bloqueada { color: var(--w-cinza-aco2); background: linear-gradient(180deg, #1c2126, #14181c); border-color: var(--w-cinza-aco); box-shadow: none; }
-.w2-placa.bloqueada small { color: var(--w-cinza-aco2); }
-.w2-placa.bloqueada b::before { content: "🔒 "; font-size: 12px; filter: grayscale(1) brightness(1.6); }
 .w2-ico { display: block; }
-.w2-ctl { display: grid; place-items: center; padding: 0; }
-.w2-cad { display: inline-grid; color: var(--w-cinza-aco2); }
+.w2-cad { display: inline-grid; color: #6c747a; font-style: normal; }
+.w2-ok { display: inline-grid; font-style: normal; color: var(--w-ouro); }
+.w2-ok .w2-ico, .w2-cad .w2-ico { width: 13px; height: 13px; }
 .w2-selo-ok .w2-ico { width: 11px; height: 11px; margin: 2.5px; }
-.w2-selo-ok { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #2a2210; border: 1px solid var(--w-ouro); color: var(--w-ouro2); font: 700 11px/16px system-ui; text-align: center; font-style: normal; }
-.w2-aviso { padding: 6px 12px; border: 1px solid #7a3a2a; border-radius: 8px; background: #2a1410; color: #f3c9b8; font-size: 13px; text-align: center; }
-/* 2. as abas dos Atos */
-.w2-atos { display: flex; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding: 4px 4px 0; border-bottom: 2px solid var(--w-linha); touch-action: pan-x; }
-.w2-aba { position: relative; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 5px 18px; cursor: pointer; white-space: nowrap; color: var(--w-txt2);
-  background: linear-gradient(180deg, #132a36, #0d1d29); border: 1px solid var(--w-linha); border-bottom: 0; border-radius: 6px 6px 0 0; font: 700 13px var(--font-heading, Cinzel, serif); letter-spacing: .12em; text-transform: uppercase; transition: color .15s, background .15s, border-color .15s; }
-.w2-aba small { font: 600 10.5px var(--font-heading, Cinzel, serif); letter-spacing: .04em; color: var(--w-txt3); }
-.w2-aba:hover:not(.selecionada):not(.bloqueada) { color: var(--w-txt); border-color: var(--w-aco2); }
-.w2-aba.selecionada { color: var(--w-ciano2); background: linear-gradient(180deg, #17465c, #0f2e3e); border-color: var(--w-ciano); box-shadow: 0 -2px 12px var(--w-ciano-fraco), inset 0 1px 0 rgba(138, 233, 244, .25); }
-.w2-aba.selecionada small { color: #7fc9d6; }
-/* o detalhe dourado do ato atual: um filete na base */
-.w2-aba.selecionada::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--w-ouro), transparent); }
-.w2-aba.concluida { border-color: var(--w-bronze); }
-.w2-aba.concluida:not(.selecionada) { color: var(--w-ouro); }
-.w2-aba.concluida .w2-selo-ok { position: static; }
-.w2-aba.bloqueada { color: var(--w-cinza-aco2); background: linear-gradient(180deg, #1b2127, #14181c); border-color: var(--w-cinza-aco); }
-.w2-cad { font-style: normal; }
-/* a barra de progresso do ato: carvão por baixo, ciano por cima, filete de bronze */
-.w2-progresso { height: 5px; margin: -4px 4px 0; background: var(--w-carvao); border: 1px solid #2a2a22; border-top: 0; border-radius: 0 0 3px 3px; overflow: hidden; box-shadow: inset 0 1px 2px #000a; }
-.w2-progresso i { display: block; height: 100%; background: linear-gradient(90deg, #2a9fb5, var(--w-ciano) 70%, var(--w-ciano2)); box-shadow: 0 0 6px var(--w-ciano-fraco); border-right: 1px solid var(--w-ouro); transition: width .4s ease; }
-/* 3. o mapa: borda de aço, moldura discreta, sombra interna; a arte é o protagonista */
-.w2-palco { position: relative; border: 2px solid var(--w-aco2); border-radius: 8px; overflow: hidden; background: var(--w-fundo);
-  box-shadow: inset 0 0 0 1px #061018, inset 0 0 36px #000b, 0 0 0 1px rgba(79, 209, 224, .08), 0 4px 16px #000a; }
-.w2-viewport { background: var(--w-fundo); position: relative; height: clamp(300px, 52vh, 620px); touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.w2-selo-ok { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #2a2210; border: 1px solid var(--w-ouro); color: var(--w-ouro2); font-style: normal; }
+
+/* 1. as dificuldades: abas de metal no topo; a escolhida acesa em azul, com o filete dourado */
+.w2-dificuldades { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.w2-dif { position: relative; display: grid; justify-items: center; gap: 1px; min-width: 150px; padding: 6px 22px 7px; cursor: pointer; color: #9aa2a8;
+  background: linear-gradient(180deg, #14171a, #0b0d0f); border: 1px solid #2f3236; border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04), 0 2px 6px #000a; transition: color .15s, border-color .15s, box-shadow .15s; }
+.w2-dif b { display: inline-flex; align-items: center; gap: 6px; font: 700 16px var(--font-heading, Cinzel, serif); letter-spacing: .14em; text-transform: uppercase; }
+.w2-dif small { font: 600 10px var(--font-heading, Cinzel, serif); letter-spacing: .12em; text-transform: uppercase; color: #6f777e; }
+.w2-dif.aberta:hover { color: #dfe6ea; border-color: #4a5258; }
+.w2-dif.selecionada { color: #e6f6fa; background: linear-gradient(180deg, #14394c, #0a1f2b 60%, #081822); border-color: #4fa9c0;
+  box-shadow: 0 0 14px rgba(79, 209, 224, .28), inset 0 0 16px rgba(79, 209, 224, .14), inset 0 1px 0 rgba(160, 236, 248, .3); }
+.w2-dif.selecionada small { color: #9fdbe7; }
+.w2-dif.selecionada::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: -1px; height: 2px; background: linear-gradient(90deg, transparent, var(--w-ouro2), transparent); }
+.w2-dif.bloqueada { color: #5d646b; cursor: default; }
+.w2-dif.bloqueada small { color: #4c5258; }
+
+/* 2. a faixa dos Atos: número romano, o progresso embaixo e as setas quando não cabe inteira */
+.w2-atos-faixa { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: stretch; gap: 6px; padding: 4px;
+  background: linear-gradient(180deg, #101315, #0a0c0e); border: 1px solid #3a2f1c; border-radius: 4px; box-shadow: inset 0 1px 0 rgba(240, 210, 126, .06), inset 0 0 12px #000a; }
+.w2-seta { display: none; place-items: center; width: 30px; padding: 0; cursor: pointer; color: var(--w-ouro); background: linear-gradient(180deg, #17150f, #0d0c09); border: 1px solid #3a2f1c; border-radius: 3px; }
+.w2-atos-faixa.rola .w2-seta { display: grid; }
+.w2-seta:hover:not(:disabled) { color: #fff1c4; border-color: var(--w-metal2); }
+.w2-seta:disabled { opacity: .3; cursor: default; }
+.w2-atos { display: flex; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x; }
+.w2-atos::-webkit-scrollbar { display: none; }
+.w2-aba { position: relative; flex: 1 0 auto; min-width: 104px; display: grid; justify-items: center; align-content: center; gap: 2px; padding: 6px 14px 9px; cursor: pointer; white-space: nowrap; color: #b8ad92;
+  background: linear-gradient(180deg, #15181b, #0d0f11); border: 1px solid #2c2a24; border-radius: 3px;
+  font: 600 14px var(--font-heading, Cinzel, serif); letter-spacing: .1em; text-transform: uppercase; transition: color .15s, border-color .15s, background .15s; }
+.w2-aba small { display: inline-flex; align-items: center; gap: 4px; font: 600 11px var(--font-heading, Cinzel, serif); letter-spacing: .06em; color: #8d846e; }
+.w2-aba-barra { position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px; background: #000; overflow: hidden; }
+.w2-aba-barra > i { display: block; height: 100%; background: linear-gradient(90deg, var(--w-bronze), var(--w-ouro2)); }
+.w2-aba:hover:not(.selecionada):not(.bloqueada) { color: #e8dcb8; border-color: #4a3f28; }
+.w2-aba.selecionada { color: #f3dc94; background: linear-gradient(180deg, #24200f, #120f08); border-color: var(--w-bronze); box-shadow: inset 0 0 14px rgba(217, 179, 90, .12), 0 0 10px rgba(217, 179, 90, .15); }
+.w2-aba.selecionada small { color: #d8c27e; }
+.w2-aba.selecionada::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: linear-gradient(90deg, transparent, var(--w-ouro2), transparent); box-shadow: 0 0 8px rgba(240, 210, 126, .6); }
+.w2-aba.concluida:not(.selecionada) { color: #d8c27e; }
+.w2-aba.bloqueada { color: #5d646b; background: linear-gradient(180deg, #121416, #0b0c0e); border-color: #24272a; }
+.w2-aba.bloqueada .w2-cad { color: #555c62; }
+
+/* 3. o mapa: a "carta" — ocupa todo o espaço, borda de metal, vinheta e névoa por cima da arte */
+.w2-palco { --w2-painel-l: clamp(290px, 30%, 380px); position: relative; overflow: hidden; background: #07090b; border: 1px solid var(--w-metal); border-radius: 4px;
+  box-shadow: 0 0 0 1px #000, inset 0 0 0 1px rgba(240, 210, 126, .08), 0 6px 20px #000c; }
+.w2-viewport { position: relative; height: clamp(320px, 62vh, 680px); background: #07090b; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .w2-viewport:active { cursor: grabbing; }
+/* as sobras dos lados do mapa (o Ato inteiro na tela larga): a própria arte, desfocada e escura, parada atrás da câmera */
+.w2-viewport.com-arte::before { content: ""; position: absolute; inset: -40px; background: var(--w2-arte) center / cover no-repeat; filter: blur(18px) brightness(.38) saturate(.8); pointer-events: none; }
+.w2-viewport > .w2-svg { position: relative; }
 .w2-svg { display: block; width: 100%; height: 100%; }
 .w2-svg.entra { animation: w2-entra .32s ease-out; }
 @keyframes w2-entra { from { opacity: 0; } to { opacity: 1; } }
-/* os caminhos: parte do mapa, com estado — concluído dourado, disponível ciano, atual azul luminoso, bloqueado cinza */
-.w2-leito { fill: none; stroke: rgba(4, 10, 14, .55); stroke-width: 10; stroke-linecap: round; }
-.w2-estrada { fill: none; stroke-linecap: round; stroke-width: 4; transition: stroke .3s, opacity .3s; }
-.w2-estrada.bloqueado { stroke: #3e4a52; stroke-dasharray: 3 9; stroke-width: 3.5; opacity: .85; }
-.w2-estrada.disponivel { stroke: var(--w-ciano); stroke-width: 4.5; stroke-dasharray: 10 6; animation: w2-marcha 1.6s linear infinite; filter: drop-shadow(0 0 4px var(--w-ciano-fraco)); }
-.w2-estrada.disponivel.atual { stroke: var(--w-ciano2); filter: drop-shadow(0 0 6px rgba(138, 233, 244, .7)); }
-.w2-estrada.percorrido { stroke: var(--w-ouro); stroke-width: 4.5; filter: drop-shadow(0 0 3px rgba(217, 179, 90, .45)); }
-.w2-estrada.extra { stroke-width: 2.6; stroke-dasharray: 3 7; }
+.w2-vinheta { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse 78% 72% at 50% 50%, transparent 58%, rgba(4, 3, 2, .62) 100%); box-shadow: inset 0 0 56px rgba(0, 0, 0, .85), inset 0 0 0 1px rgba(0, 0, 0, .9); }
+.w2-nevoa { position: absolute; inset: -6%; z-index: 1; pointer-events: none; filter: blur(6px); animation: w2-nevoa 38s ease-in-out infinite alternate;
+  background:
+    radial-gradient(ellipse 30% 26% at 4% 8%, rgba(200, 206, 212, .22), transparent 70%),
+    radial-gradient(ellipse 28% 22% at 96% 6%, rgba(200, 206, 212, .18), transparent 70%),
+    radial-gradient(ellipse 30% 26% at 97% 94%, rgba(200, 206, 212, .16), transparent 70%),
+    radial-gradient(ellipse 28% 24% at 3% 95%, rgba(200, 206, 212, .2), transparent 70%); }
+@keyframes w2-nevoa { from { transform: translate(-1.2%, .4%); } to { transform: translate(1.2%, -.6%); } }
+/* os caminhos: concluído em ouro contínuo, o próximo em ouro tracejado andando, o futuro apagado */
+.w2-leito { fill: none; stroke: rgba(0, 0, 0, .55); stroke-width: 7; stroke-linecap: round; }
+.w2-estrada { fill: none; stroke-linecap: round; stroke-width: 3; transition: stroke .3s, opacity .3s; }
+.w2-estrada.bloqueado { stroke: rgba(205, 180, 125, .38); stroke-width: 2.2; stroke-dasharray: 2 8; }
+.w2-estrada.disponivel { stroke: #f3d98a; stroke-width: 3.2; stroke-dasharray: 9 7; animation: w2-marcha 1.8s linear infinite; filter: drop-shadow(0 0 4px rgba(240, 210, 126, .55)); }
+.w2-estrada.disponivel.atual { stroke: #fff0bf; filter: drop-shadow(0 0 6px rgba(255, 226, 150, .8)); }
+.w2-estrada.percorrido { stroke: var(--w-ouro); stroke-width: 3.2; filter: drop-shadow(0 0 3px rgba(240, 200, 110, .55)); }
+.w2-estrada.extra { stroke-width: 2.2; stroke-dasharray: 3 7; }
 .w2-estrada.extra.percorrido, .w2-estrada.extra.disponivel { stroke-dasharray: 3 7; animation: none; }
 @keyframes w2-marcha { to { stroke-dashoffset: -32; } }
-/* os nós (sobre o mapa). A forma diz o tipo; a cor diz o estado. */
-.w-no { cursor: pointer; outline: none; color: var(--w-cinza-aco2); --no-fundo: #14181c; --no-borda: #3a444c; }
-.w-forma { fill: var(--no-fundo); stroke: var(--no-borda); stroke-width: 3.5; transition: filter .15s; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
-/* disponível: petróleo com borda ciano */
-.w-no.aberta { color: var(--w-ciano2); --no-fundo: #0f3242; --no-borda: var(--w-ciano); }
-.w-no.aberta .w-forma { filter: drop-shadow(0 0 5px var(--w-ciano-fraco)) drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
-/* a fase ATUAL: ciano luminoso, brilho forte */
-.w-no.atual { color: #06222c; --no-fundo: var(--w-ciano); --no-borda: var(--w-ciano2); }
-.w-no.atual .w-forma { fill: url(#w-ciano); filter: drop-shadow(0 0 10px rgba(79, 209, 224, .85)) drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
-/* concluída: dourada com o visto */
-.w-no.completa { color: #2a1d05; --no-fundo: var(--w-ouro); --no-borda: #4a3610; }
-.w-no.completa .w-forma { fill: url(#w-ouro); filter: drop-shadow(0 0 5px rgba(217, 179, 90, .5)) drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
-/* bloqueada: carvão, borda cinza, cadeado */
-.w-no.fechada { color: #7d8a93; --no-fundo: #15191d; --no-borda: #3a444c; }
-.w-no.fechada .w-forma { fill: #15191d; opacity: .94; }
-.w-no.travada { color: #e0a090; --no-fundo: #2a1212; --no-borda: #7a3a3a; }
-/* boss: forma diferente (losango), vermelho escuro, caveira, brilho vermelho discreto */
-.w-no.t-boss .w-forma, .w-no.t-boss-fase .w-forma { stroke-width: 3.5; }
-.w-no.aberta.t-boss, .w-no.aberta.t-boss-fase, .w-no.fechada.t-boss, .w-no.fechada.t-boss-fase, .w-no.atual.t-boss, .w-no.atual.t-boss-fase { --no-fundo: #2c0e10; --no-borda: var(--w-vermelho); color: #ffd9d0; }
-.w-no.fechada.t-boss, .w-no.fechada.t-boss-fase { --no-borda: #6a2a26; color: #a07a76; }
-.w-no.fechada.t-boss .w-forma, .w-no.fechada.t-boss-fase .w-forma { fill: #1e1114; }
-.w-no.aberta.t-boss .w-forma, .w-no.aberta.t-boss-fase .w-forma, .w-no.atual.t-boss .w-forma, .w-no.atual.t-boss-fase .w-forma { fill: #2c0e10; filter: drop-shadow(0 0 7px rgba(200, 55, 44, .65)) drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
-.w-no.completa.t-boss .w-forma, .w-no.completa.t-boss-fase .w-forma { fill: url(#w-ouro); }
-.w-no:hover .w-forma, .w-no:focus-visible .w-forma { filter: brightness(1.3) drop-shadow(0 0 8px var(--w-ciano-fraco)); }
-.w-no:focus-visible .w-halo { opacity: 1; }
+/* os nós: esferas pequenas com aro de bronze (a forma diz o tipo; a cor, o estado). O alvo invisível pega o toque. */
+.w-alvo { fill: transparent; pointer-events: all; }
+.w-no { cursor: pointer; outline: none; color: #d8c27e; }
+.w-forma { fill: url(#w-orbe); stroke: #7a5f2a; stroke-width: 2.5; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .85)); transition: filter .15s; }
+.w-ponto { fill: #e9cf86; opacity: .85; }
+.w-no.aberta { color: var(--w-ouro2); }
+.w-no.aberta .w-forma { stroke: #c9a24a; filter: drop-shadow(0 0 4px rgba(217, 179, 90, .45)) drop-shadow(0 2px 3px rgba(0, 0, 0, .85)); }
+.w-no.completa { color: #f3dc94; }
+.w-no.completa .w-forma { stroke: var(--w-ouro); }
+/* a fase ATUAL: a esfera azul acesa — onde o jogador está */
+.w-no.atual { color: #e8fbff; }
+.w-no.atual .w-forma { fill: url(#w-orbe-azul); stroke: #a8f0f8; filter: drop-shadow(0 0 8px rgba(79, 209, 224, .9)) drop-shadow(0 0 16px rgba(79, 170, 240, .45)); }
+.w-no.atual .w-ponto { fill: #f2fdff; opacity: 1; }
+.w-no.fechada { color: #6c747a; }
+.w-no.fechada .w-forma { fill: #0d0f11; stroke: #33383c; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .8)); }
+.w-no.travada { color: #e0a090; }
+.w-no.travada .w-forma { stroke: #7a3a3a; }
+/* boss: o losango rubro com aro dourado e a caveira */
+.w-no.t-boss, .w-no.t-boss-fase { color: #f3e6d0; }
+.w-no.t-boss .w-forma, .w-no.t-boss-fase .w-forma { fill: url(#w-orbe-boss); stroke: var(--w-ouro); stroke-width: 3; filter: drop-shadow(0 0 8px rgba(200, 55, 44, .55)) drop-shadow(0 2px 4px #000); }
+.w-no.fechada.t-boss, .w-no.fechada.t-boss-fase { color: #8a7a70; }
+.w-no.fechada.t-boss .w-forma, .w-no.fechada.t-boss-fase .w-forma { fill: #160808; stroke: #6a5530; filter: drop-shadow(0 2px 3px #000); }
+.w-no.completa.t-boss .w-forma, .w-no.completa.t-boss-fase .w-forma { stroke: var(--w-ouro2); }
+.w-no:hover .w-forma, .w-no:focus-visible .w-forma { filter: brightness(1.35) drop-shadow(0 0 7px rgba(240, 210, 126, .6)); }
 .w-icone { pointer-events: none; }
-.w-numero { font: 700 17px var(--font-heading, Cinzel, system-ui, sans-serif); fill: currentColor; pointer-events: none; }
-.w-halo { fill: none; stroke: var(--w-ciano2); stroke-width: 2; stroke-dasharray: 5 4; opacity: 0; pointer-events: none; }
-.w-no.escolhido .w-halo { opacity: 1; }
-.w-no.completa.escolhido .w-halo { stroke: var(--w-ouro2); }
+.w-numero { font: 700 13px var(--font-heading, Cinzel, system-ui, sans-serif); fill: currentColor; pointer-events: none; }
+.w-halo { fill: none; stroke: var(--w-ouro2); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0; pointer-events: none; }
+.w-no.escolhido .w-halo, .w-no:focus-visible .w-halo { opacity: 1; }
+.w-no.atual.escolhido .w-halo { stroke: var(--w-ciano2); }
 .w-no.novo .w-forma { animation: w2-novo 1.4s ease-out 3; }
-@keyframes w2-novo { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 8px var(--w-ciano2)) brightness(1.5); } }
-.w-selo circle { fill: #0a141c; stroke: var(--w-aco2); stroke-width: 2; }
+@keyframes w2-novo { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 8px var(--w-ouro2)) brightness(1.5); } }
+.w-selo circle { fill: #0a0a0a; stroke: var(--w-metal2); stroke-width: 2; }
 .w-selo { color: #e08a7a; pointer-events: none; }
 .w-selo.achado { color: var(--w-ouro2); }
 /* o nome da fase: só quando o nó está escolhido, em foco, sob o mouse ou é a fase atual — não é rótulo permanente */
 .w-placa { opacity: 0; transition: opacity .15s; pointer-events: none; }
 .w-no.escolhido .w-placa, .w-no.atual .w-placa, .w-no:hover .w-placa, .w-no:focus-visible .w-placa { opacity: 1; }
-.w-placa rect { fill: rgba(6, 14, 20, .88); stroke: rgba(79, 209, 224, .4); stroke-width: 1; }
-.w-no.completa .w-placa rect { stroke: rgba(217, 179, 90, .5); }
-.w-no.fechada .w-placa rect { stroke: rgba(85, 98, 108, .4); }
-.w-placa-num { font: 700 9px var(--font-heading, system-ui, sans-serif); fill: var(--w-ciano2); stroke: #06101a; stroke-width: 2.5px; paint-order: stroke; pointer-events: none; }
-.w-no.completa .w-placa-num { fill: var(--w-ouro2); }
-.w-rotulo { font: 600 10.5px var(--font-heading, system-ui, sans-serif); letter-spacing: .06em; text-transform: uppercase; fill: var(--w-txt); stroke: none; pointer-events: none; }
-.w-no.fechada .w-rotulo { fill: var(--w-txt2); }
-.w2-viewport:not(.ampliado) .w-rotulo { font-size: 10.5px; }
+.w-placa rect { fill: rgba(8, 7, 5, .9); stroke: rgba(217, 179, 90, .45); stroke-width: 1; }
+.w-no.atual .w-placa rect { stroke: rgba(138, 233, 244, .5); }
+.w-no.fechada .w-placa rect { stroke: rgba(85, 98, 108, .45); }
+.w-placa-num { font: 700 9px var(--font-heading, system-ui, sans-serif); fill: var(--w-ouro2); stroke: #060402; stroke-width: 2.5px; paint-order: stroke; pointer-events: none; }
+.w-no.atual .w-placa-num { fill: var(--w-ciano2); }
+.w-rotulo { font: 600 10.5px var(--font-heading, system-ui, sans-serif); letter-spacing: .06em; text-transform: uppercase; fill: var(--w-papel); stroke: none; pointer-events: none; }
+.w-no.fechada .w-rotulo { fill: #a7a49a; }
 /* o nó da cidade: o ponto de partida, verde (pedido do dono) e sem número */
-.w-no.t-cidade { color: #0d2412; --no-fundo: var(--w-verde); --no-borda: #1f4a30; }
-.w-no.t-cidade .w-forma { fill: url(#w-verde); stroke: #163a22; }
-.w-no.t-cidade .w-icone { transform: scale(1.1); }
+.w-no.t-cidade { color: #0d2412; }
+.w-no.t-cidade .w-forma { fill: url(#w-verde); stroke: var(--w-ouro); filter: drop-shadow(0 0 5px rgba(79, 174, 74, .5)) drop-shadow(0 2px 3px #000); }
 .w-no.t-cidade .w-placa rect { stroke: rgba(111, 211, 111, .45); }
-.w-no.t-cidade .w-placa-num { fill: #9ad99a; }
-/* controles, bússola, balão e dica */
-.w2-controles { position: absolute; right: 8px; bottom: 8px; display: grid; gap: 4px; }
-.w2-ctl { width: 38px; height: 38px; border-radius: 6px; border: 1px solid var(--w-bronze); background: rgba(8, 20, 28, .9); color: var(--w-ouro2); font: 700 18px system-ui; cursor: pointer; box-shadow: 0 2px 6px #000a; transition: color .15s, border-color .15s, background .15s; }
-.w2-ctl:hover { color: var(--w-ciano2); border-color: var(--w-ciano); background: rgba(12, 40, 54, .95); }
-.w2-bussola { position: absolute; left: 8px; top: 8px; width: 80px; height: 80px; opacity: .85; pointer-events: none; filter: drop-shadow(0 2px 3px #000); }
+/* a bússola, o controle de zoom, o balão e a dica — pequenos, nas bordas */
+.w2-bussola { position: absolute; z-index: 2; left: 12px; top: 10px; width: 72px; height: 72px; opacity: .82; pointer-events: none; filter: drop-shadow(0 2px 3px #000); }
 .w2-bussola svg { width: 100%; height: 100%; }
-.w2-bussola .b-anel { fill: rgba(6, 14, 20, .5); stroke: var(--w-bronze2); stroke-width: 1.5; }
+.w2-bussola .b-anel { fill: rgba(6, 5, 3, .55); stroke: var(--w-bronze2); stroke-width: 1.5; }
 .w2-bussola .b-anel2 { fill: none; stroke: var(--w-bronze2); stroke-width: .8; opacity: .7; }
-.w2-bussola .b-agulha { fill: var(--w-ouro); } .w2-bussola .b-agulha2 { fill: var(--w-aco); }
-.w2-bussola .b-txt { font: 700 9px var(--font-heading, serif); fill: var(--w-txt); text-anchor: middle; }
-.w2-balao { position: absolute; z-index: 3; display: grid; gap: 1px; padding: 6px 10px; max-width: 200px; border: 1px solid var(--w-aco2); border-radius: 6px; background: rgba(8, 20, 28, .95); font-size: 12px; color: var(--w-txt2); pointer-events: none; box-shadow: 0 4px 14px #000a, inset 0 1px 0 rgba(138, 233, 244, .1); }
-.w2-balao b { color: var(--w-txt); font-size: 13px; }
-.w2-dica { position: absolute; left: 8px; bottom: 6px; max-width: calc(100% - 64px); font-size: 10.5px; color: var(--w-txt2); background: rgba(8, 20, 28, .8); border: 1px solid var(--w-linha); border-radius: 6px; padding: 1px 7px; pointer-events: none; }
-/* 4. o painel da fase: petróleo quase preto, borda de aço, detalhes dourados, separadores discretos */
-.w2-painel { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 180px; gap: 14px; padding: 12px 14px; border: 1px solid var(--w-aco2); border-radius: 8px;
-  background: linear-gradient(180deg, #0e2230, #091620); box-shadow: inset 0 0 0 1px #061018, inset 0 1px 0 rgba(138, 233, 244, .08), 0 4px 16px #000a; }
-.w2-painel.abre { animation: w2-abre .22s ease-out; }
-@keyframes w2-abre { from { opacity: .3; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.w2-col { display: grid; gap: 6px; align-content: start; min-width: 0; }
-.w2-col.acao { align-content: center; }
-.w2-nome { margin: 0; font-family: var(--font-display, var(--font-heading, serif)); font-size: 20px; letter-spacing: .06em; color: var(--w-txt); text-shadow: 0 1px 0 #000; }
-.w2-nome::after { content: ""; display: block; height: 1px; margin-top: 4px; background: linear-gradient(90deg, var(--w-ouro), rgba(217, 179, 90, .15) 60%, transparent); }
-.w2-sub { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; color: var(--w-txt2); font-size: 12.5px; }
-.w2-estado { padding: 1px 9px; border-radius: 999px; font-size: 11px; background: var(--w-carvao2); color: var(--w-txt2); border: 1px solid var(--w-cinza-aco); }
-.w2-estado.completa { background: #2a2210; color: var(--w-ouro2); border-color: var(--w-bronze); } .w2-estado.aberta { background: #12331d; color: #bff0d0; border-color: #2c6a3e; } .w2-estado.travada { background: #4a2020; color: #ffd0cc; border-color: #7a3a3a; }
-.w2-tipo { padding: 1px 8px; border: 1px solid var(--w-aco2); border-radius: 6px; font-size: 11px; color: #9fd8e3; }
-.w2-tipo.atual { border-color: var(--w-ciano); color: var(--w-ciano2); box-shadow: 0 0 6px var(--w-ciano-fraco); }
-.w2-tag { justify-self: start; font-size: 11px; padding: 1px 9px; border-radius: 6px; background: #16405a; color: #cfe8ff; }
-.w2-desc { margin: 0; font-size: 13px; line-height: 1.45; color: var(--w-txt2); }
-.w2-linha { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--w-txt3); border-bottom: 1px dotted rgba(61, 111, 138, .35); padding-bottom: 2px; } .w2-linha b { color: var(--w-txt); font-weight: 600; text-align: right; }
-.w2-bloco { display: grid; gap: 3px; padding-top: 6px; border-top: 1px solid rgba(61, 111, 138, .25); } .w2-rotulo-bloco { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--w-ouro); }
-.w2-bichos { display: flex; gap: 6px; flex-wrap: wrap; }
-.w2-lista { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--w-txt2); } .w2-lista li.feito { color: #8fd7a4; list-style: none; margin-left: -18px; } .w2-lista li.falta { color: #9fb3bf; list-style: none; margin-left: -18px; } .w2-lista.achados li { color: var(--w-ouro2); }
-/* o botão ENTRAR: azul profundo, borda clara, brilho interno; hover mais luminoso; pressionado mais escuro; desligado cinza aço */
-.w2-entrar { min-height: 48px; border-radius: 6px; font: 700 16px var(--font-heading, Cinzel, serif); letter-spacing: .12em; text-transform: uppercase; color: var(--w-ciano2); cursor: pointer;
-  background: linear-gradient(180deg, #1a4d66, #0f3242 55%, #0b2634); border: 1px solid var(--w-ciano); box-shadow: inset 0 0 18px rgba(79, 209, 224, .18), inset 0 1px 0 rgba(138, 233, 244, .35), 0 0 0 1px rgba(217, 179, 90, .25), 0 3px 8px #0009; text-shadow: 0 1px 0 #000; transition: filter .12s, transform .06s, box-shadow .12s; }
-.w2-entrar:hover:not(:disabled) { filter: brightness(1.18); box-shadow: inset 0 0 22px rgba(79, 209, 224, .3), inset 0 1px 0 rgba(138, 233, 244, .4), 0 0 10px var(--w-ciano-fraco), 0 0 0 1px rgba(217, 179, 90, .3), 0 3px 8px #0009; }
-.w2-entrar:active:not(:disabled) { transform: translateY(1px); filter: brightness(.9); box-shadow: inset 0 2px 6px #000a, 0 0 0 1px rgba(217, 179, 90, .25); }
-.w2-entrar:disabled { cursor: not-allowed; background: linear-gradient(180deg, #2a3138, #1b2127); color: var(--w-cinza-aco2); border-color: var(--w-cinza-aco); box-shadow: none; text-shadow: none; }
-.w2-nota { margin: 0; font-size: 11.5px; color: var(--w-txt3); text-align: center; }
-/* 5. a barra de atalhos (ficar na fase, avançar, fase atual, lista) */
-.w2-barra { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; padding: 4px 6px; }
-.w2-atalho { min-height: 36px; padding: 4px 14px; border-radius: 6px; border: 1px solid var(--w-linha); background: linear-gradient(180deg, #132a36, #0d1d29); color: var(--w-txt2); font: 600 12px var(--font-heading, system-ui); letter-spacing: .06em; cursor: pointer; transition: color .15s, border-color .15s, box-shadow .15s; }
-.w2-atalho:hover { color: var(--w-txt); border-color: var(--w-aco); }
-.w2-atalho.on { color: var(--w-ciano2); background: linear-gradient(180deg, #17465c, #0f2e3e); border-color: var(--w-ciano); box-shadow: 0 0 10px var(--w-ciano-fraco), inset 0 1px 0 rgba(138, 233, 244, .25); }
+.w2-bussola .b-agulha { fill: var(--w-ouro); } .w2-bussola .b-agulha2 { fill: #8a8f94; }
+.w2-bussola .b-txt { font: 700 9px var(--font-heading, serif); fill: var(--w-papel); text-anchor: middle; }
+.w2-controles { position: absolute; z-index: 3; right: 12px; bottom: 12px; display: grid; border: 1px solid var(--w-metal2); border-radius: 4px; overflow: hidden; background: rgba(10, 10, 10, .85); box-shadow: 0 2px 8px #000c, inset 0 1px 0 rgba(240, 210, 126, .1); transition: right .25s ease; }
+.w2-ctl { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; cursor: pointer; color: #e8cf8a; background: linear-gradient(180deg, #1a1814, #0e0d0b); border: 0; border-bottom: 1px solid #3a2f1c; }
+.w2-ctl:last-child { border-bottom: 0; }
+.w2-ctl:hover { color: #fff1c4; background: linear-gradient(180deg, #2a2416, #14110a); }
+.w2-palco.com-painel .w2-controles { right: calc(var(--w2-painel-l) + 22px); }
+.w2-balao { position: absolute; z-index: 4; display: grid; gap: 1px; padding: 6px 10px; max-width: 220px; border: 1px solid var(--w-metal2); border-radius: 3px; background: rgba(10, 9, 7, .95); font-size: 12px; color: var(--w-papel2); pointer-events: none; box-shadow: 0 4px 14px #000a, inset 0 1px 0 rgba(240, 210, 126, .1); }
+.w2-balao b { color: var(--w-papel); font: 600 13px var(--font-heading, Cinzel, serif); letter-spacing: .04em; }
+.w2-dica { position: absolute; z-index: 3; left: 12px; bottom: 10px; display: flex; gap: 14px; flex-wrap: wrap; max-width: calc(100% - 80px); padding: 5px 12px; pointer-events: none;
+  background: rgba(6, 6, 6, .72); border: 1px solid rgba(107, 83, 38, .6); border-radius: 3px; font: 600 10.5px var(--font-heading, Cinzel, serif); letter-spacing: .08em; text-transform: uppercase; color: #cdbf98; transition: opacity .4s; }
+.w2-dica span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; flex: 0 0 auto; }
+.w2-dica .w2-ico { width: 15px; height: 15px; color: var(--w-ouro); }
+.w2-dica.some { opacity: 0; }
+.w2-aviso { position: absolute; z-index: 5; left: 50%; top: 12px; transform: translateX(-50%); max-width: min(520px, 90%); padding: 7px 14px; border: 1px solid #7a3a2a; border-radius: 3px; background: rgba(36, 14, 10, .95); color: #f3c9b8; font-size: 13px; text-align: center; box-shadow: 0 4px 14px #000c; }
+
+/* 4. o painel do nó escolhido: aparece só quando se escolhe um nó, deslizando por cima do mapa (e fecha no X, no Esc ou no mapa vazio) */
+.w2-painel { position: absolute; z-index: 6; top: 10px; right: 10px; bottom: 10px; width: var(--w2-painel-l); display: flex; flex-direction: column; overflow: hidden;
+  background: linear-gradient(180deg, rgba(16, 18, 20, .97), rgba(8, 9, 10, .98)); border: 1px solid var(--w-metal2); border-radius: 4px;
+  box-shadow: 0 0 0 1px #000, 0 12px 36px #000d, inset 0 1px 0 rgba(240, 210, 126, .14), inset 0 0 30px rgba(0, 0, 0, .6); }
+.w2-painel::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(217, 179, 90, .16); border-radius: 2px; pointer-events: none; }
+.w2-painel.desliza { animation: w2-desliza .26s cubic-bezier(.2, .8, .2, 1); }
+@keyframes w2-desliza { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+.w2-p-cab { position: relative; padding: 14px 42px 10px; text-align: center; border-bottom: 1px solid rgba(107, 83, 38, .5); background: linear-gradient(180deg, rgba(40, 32, 14, .4), transparent); }
+.w2-nome { margin: 0; font: 600 21px var(--font-display, var(--font-heading, Cinzel, serif)); letter-spacing: .06em; color: #f3dc94; text-shadow: 0 1px 0 #000, 0 0 12px rgba(217, 179, 90, .25); }
+.w2-p-sub { margin-top: 3px; font: 600 11px var(--font-heading, Cinzel, serif); letter-spacing: .14em; text-transform: uppercase; color: #b49a5e; }
+.w2-fechar { position: absolute; right: 9px; top: 9px; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; cursor: pointer; color: #c9b27a; background: #0e0c09; border: 1px solid var(--w-metal); border-radius: 3px; }
+.w2-fechar:hover { color: #fff1c4; border-color: var(--w-bronze); }
+.w2-fechar .w2-ico { width: 16px; height: 16px; }
+.w2-p-corpo { flex: 1; overflow-y: auto; display: grid; gap: 9px; align-content: start; padding: 12px 16px; scrollbar-width: thin; scrollbar-color: var(--w-metal2) transparent; }
+.w2-arte { height: 168px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--w-metal); border-radius: 3px;
+  background: radial-gradient(circle at 50% 42%, #1b3442 0%, #0b1418 55%, #050708 100%); box-shadow: inset 0 0 30px #000c; }
+.w2-arte > * { image-rendering: pixelated; filter: drop-shadow(0 4px 8px #000); }
+.w2-arte.ilustrada > img { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; filter: none; }
+.w2-chips { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.w2-chip { padding: 4px 12px; font: 600 10.5px var(--font-heading, Cinzel, serif); letter-spacing: .1em; text-transform: uppercase; color: #e3cf95; background: linear-gradient(180deg, #221d10, #120f08); border: 1px solid var(--w-metal2); border-radius: 2px; }
+.w2-chip.completa { color: #f3dc94; border-color: #a5813a; }
+.w2-chip.aberta { color: #bff0d0; border-color: #2c6a3e; background: linear-gradient(180deg, #10261a, #0a160f); }
+.w2-chip.fechada { color: #8d949a; border-color: #3a3f44; background: #121416; }
+.w2-chip.travada { color: #ffd0cc; border-color: #7a3a3a; background: #2a1212; }
+.w2-chip.atual { color: var(--w-ciano2); border-color: #2a8aa0; background: linear-gradient(180deg, #0f2a36, #081820); }
+.w2-chip.boss { color: #f0b8a8; border-color: #7a2a24; background: linear-gradient(180deg, #2a0f0d, #160707); }
+.w2-tag { justify-self: center; font-size: 11px; padding: 1px 10px; border-radius: 2px; background: #1a1610; border: 1px solid var(--w-metal); color: var(--w-papel2); }
+.w2-desc { margin: 0; font-size: 13px; line-height: 1.5; color: var(--w-papel2); }
+.w2-linha { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 12.5px; color: var(--w-apagado); border-bottom: 1px solid rgba(107, 83, 38, .25); }
+.w2-linha b { color: #ebe3cf; font-weight: 600; text-align: right; }
+.w2-linha.ok b { color: #8fd7a4; } .w2-linha.falta b { color: #c9b27a; }
+.w2-bloco { display: grid; gap: 4px; padding-top: 8px; border-top: 1px solid rgba(107, 83, 38, .3); }
+.w2-rotulo-bloco { font: 600 10.5px var(--font-heading, Cinzel, serif); letter-spacing: .14em; text-transform: uppercase; color: var(--w-ouro); }
+.w2-lista { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--w-papel2); }
+.w2-lista li.feito { color: #8fd7a4; list-style: none; margin-left: -18px; } .w2-lista li.falta { color: #b8ad92; list-style: none; margin-left: -18px; } .w2-lista.achados li { color: var(--w-ouro2); }
+.w2-estado { padding: 1px 9px; border-radius: 2px; font-size: 11px; background: #15130d; color: var(--w-papel2); border: 1px solid #3a342a; }
+.w2-estado.completa { color: var(--w-ouro2); border-color: var(--w-bronze); } .w2-estado.aberta { background: #12331d; color: #bff0d0; border-color: #2c6a3e; } .w2-estado.travada { background: #4a2020; color: #ffd0cc; border-color: #7a3a3a; }
+.w2-p-acao { display: grid; gap: 6px; padding: 10px 14px 14px; border-top: 1px solid rgba(107, 83, 38, .45); background: linear-gradient(180deg, transparent, rgba(30, 24, 10, .35)); }
+/* o botão de entrar: bronze e ouro (não azul de painel web) */
+.w2-entrar { width: 100%; min-height: 46px; border-radius: 3px; cursor: pointer; font: 700 15px var(--font-heading, Cinzel, serif); letter-spacing: .14em; text-transform: uppercase; color: #f7e3a6;
+  background: linear-gradient(180deg, #4a3714 0%, #2a1f0b 55%, #1a1307 100%); border: 1px solid var(--w-ouro);
+  box-shadow: inset 0 1px 0 rgba(255, 236, 170, .35), inset 0 0 18px rgba(217, 179, 90, .2), 0 0 0 1px #000, 0 4px 10px #000a; text-shadow: 0 1px 0 #000; transition: filter .12s, transform .06s, box-shadow .12s; }
+.w2-entrar:hover:not(:disabled) { filter: brightness(1.15); box-shadow: inset 0 1px 0 rgba(255, 236, 170, .45), inset 0 0 22px rgba(217, 179, 90, .3), 0 0 12px rgba(217, 179, 90, .35), 0 0 0 1px #000, 0 4px 10px #000a; }
+.w2-entrar:active:not(:disabled) { transform: translateY(1px); filter: brightness(.9); }
+.w2-entrar:disabled { cursor: not-allowed; background: linear-gradient(180deg, #24262a, #16181b); color: #6c747a; border-color: #3a3f44; box-shadow: none; text-shadow: none; }
+.w2-nota { margin: 0; font-size: 11.5px; color: var(--w-apagado); text-align: center; }
+
+/* 5. o rodapé: o progresso do Ato, os modos e a próxima fase */
+.w2-rodape { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 10px;
+  background: linear-gradient(180deg, #101315, #0a0c0e); border: 1px solid #3a2f1c; border-radius: 4px; box-shadow: inset 0 1px 0 rgba(240, 210, 126, .06); }
+.w2-feitas { display: inline-flex; align-items: center; gap: 6px; font: 600 13px var(--font-heading, Cinzel, serif); color: #e3cf95; letter-spacing: .06em; }
+.w2-feitas span { color: var(--w-apagado); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
+.w2-feitas-barra { width: 90px; height: 3px; background: #000; border: 1px solid #2c2416; overflow: hidden; }
+.w2-feitas-barra > i { display: block; height: 100%; background: linear-gradient(90deg, var(--w-bronze), var(--w-ouro2)); }
+.w2-modos { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+.w2-modo { min-height: 30px; padding: 3px 12px; cursor: pointer; color: #a99f86; background: linear-gradient(180deg, #15171a, #0d0e10); border: 1px solid #2f2a20; border-radius: 2px;
+  font: 600 11px var(--font-heading, Cinzel, serif); letter-spacing: .08em; text-transform: uppercase; transition: color .15s, border-color .15s; }
+.w2-modo:hover { color: #e8dcb8; border-color: var(--w-metal2); }
+.w2-modo.on { color: #f3dc94; border-color: var(--w-bronze); background: linear-gradient(180deg, #24200f, #120f08); box-shadow: inset 0 0 10px rgba(217, 179, 90, .15); }
+.w2-proxima { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 16px; cursor: pointer; color: #f7e3a6; background: linear-gradient(180deg, #3a2b10, #1c1508);
+  border: 1px solid var(--w-ouro); border-radius: 3px; font: 700 13px var(--font-heading, Cinzel, serif); letter-spacing: .12em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgba(255, 236, 170, .3), 0 2px 6px #000a; transition: filter .12s, box-shadow .12s; }
+.w2-proxima .w2-ico { width: 16px; height: 16px; }
+.w2-proxima:hover:not(:disabled) { filter: brightness(1.15); box-shadow: inset 0 1px 0 rgba(255, 236, 170, .4), 0 0 10px rgba(217, 179, 90, .35), 0 2px 6px #000a; }
+.w2-proxima:disabled { opacity: .45; cursor: default; }
 .w2-registro { padding: 8px 12px; border: 1px solid var(--w-linha); border-radius: 8px; background: var(--w-fundo2); }
-.w2-registro[hidden], .w2-aviso[hidden], .w2-balao[hidden] { display: none; }
+.w2-registro[hidden], .w2-aviso[hidden], .w2-balao[hidden], .w2-dica[hidden], .w2-painel[hidden] { display: none; }
 .w2-sombra { fill: rgba(0, 0, 0, .45); }
-/* ---- A tela se ADAPTA À CAIXA em que está (o JS mede a janela do jogo e marca `larga` / `lado` e a altura `--w2-h`) ---- */
-/* larga (a janela tem pelo menos 700 px): a tela ocupa a altura disponível, sem rolagem; o mapa leva o que sobra e o painel fica embaixo, em 3 colunas */
-.w2.larga { height: var(--w2-h); grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto minmax(0, 1fr) auto; grid-template-areas: "dif" "barra" "abas" "aviso" "palco" "painel"; gap: 6px 10px; align-content: stretch; }
-.w2.larga .w2-dificuldades { grid-area: dif; justify-content: center; flex-wrap: nowrap; } .w2.larga .w2-placa { min-height: 38px; padding: 2px 14px; min-width: 96px; }
-.w2.larga .w2-barra { grid-area: barra; } .w2.larga .w2-atos { grid-area: abas; border-bottom: 0; min-width: 0; } .w2.larga .w2-aba { min-height: 36px; }
-.w2.larga .w2-aviso { grid-area: aviso; }
-.w2.larga .w2-palco { grid-area: palco; min-height: 0; } .w2.larga .w2-viewport { height: 100%; }
-.w2.larga .w2-painel { grid-area: painel; max-height: 34vh; overflow-y: auto; align-content: start; }
-.w2.larga .w2-barra { padding: 0; justify-content: center; } .w2.larga .w2-atalho { min-height: 32px; }
-/* lado (a janela tem 780 px ou mais): o painel da fase fica À DIREITA do mapa — o mapa com ~66% e o painel com ~34% */
-.w2.lado { grid-template-columns: minmax(0, 1fr) var(--w2-painel, 34%); grid-template-areas: "dif dif" "barra barra" "abas abas" "aviso aviso" "palco painel"; grid-template-rows: auto auto auto auto minmax(0, 1fr); }
-.w2.lado .w2-palco, .w2.lado .w2-painel { align-self: stretch; }
-.w2.lado .w2-painel { grid-template-columns: 1fr; max-height: none; height: 100%; gap: 8px; }
-.w2.lado .w2-col.acao { position: sticky; bottom: -12px; padding: 8px 0 2px; background: linear-gradient(180deg, transparent, #091620 28%); order: 9; }
-.w2.lado .w2-atalho { padding: 3px 12px; font-size: 11px; min-height: 30px; letter-spacing: .03em; }
-/* celular: o mapa ocupa o que dá; o painel vira uma coluna compacta; as abas dos Atos rolam na horizontal */
+
+/* ---- A tela se ADAPTA À CAIXA em que está (o JS mede a janela do jogo e marca `larga` e a altura `--w2-h`) ---- */
+/* larga (a janela tem pelo menos 700 px): a tela ocupa a altura disponível, sem rolagem; o mapa leva tudo o que sobra */
+.w2.larga { height: var(--w2-h); grid-template-rows: auto auto minmax(0, 1fr) auto; align-content: stretch; }
+.w2.larga .w2-palco { min-height: 0; }
+.w2.larga .w2-viewport { height: 100%; }
+/* celular: as abas encolhem, o rodapé quebra em duas linhas e o painel vira uma gaveta que sobe por cima do mapa */
 @media (max-width: 760px) {
-  .w2-painel { grid-template-columns: 1fr; gap: 8px; padding: 10px; }
-  .w2-viewport { height: clamp(260px, 46vh, 460px); }
-  .w2-placa { flex: 1 1 0; min-width: 0; padding: 4px 6px; } .w2-placa b { font-size: 12.5px; letter-spacing: .06em; }
-  .w2-dica { display: none; }
-  .w2-ctl { width: 44px; height: 44px; }
+  .w2-dif { flex: 1 1 0; min-width: 0; padding: 5px 4px; } .w2-dif b { gap: 4px; font-size: 11.5px; letter-spacing: .04em; } .w2-dif small { font-size: 8.5px; letter-spacing: .06em; }
+  .w2-dif .w2-cad .w2-ico { width: 11px; height: 11px; }
+  .w2-viewport { height: clamp(300px, 54vh, 560px); }
+  .w2-p-cab .w2-nome { font-size: 18px; }
+  .w2-palco .w2-painel { max-height: 74%; }
+  .w2-aba { min-width: 84px; padding: 5px 10px 8px; font-size: 12.5px; }
+  .w2-rodape { grid-template-columns: 1fr auto; } .w2-modos { grid-column: 1 / -1; order: 3; }
+  .w2-feitas { white-space: nowrap; } .w2-feitas-barra { display: none; }
+  .w2-proxima { padding: 4px 12px; font-size: 12px; letter-spacing: .08em; }
+  .w2-ctl { width: 40px; height: 40px; }
+  .w2-bussola { width: 56px; height: 56px; }
+  .w2-dica { gap: 10px; flex-wrap: nowrap; max-width: calc(100% - 72px); padding: 4px 8px; font-size: 9px; letter-spacing: .05em; white-space: nowrap; }
+  .w2-dica .w2-ico { width: 13px; height: 13px; }
+  .w2-palco:has(> .w2-dica:not([hidden])) .w2-controles { bottom: 48px; }
+  .w2-palco .w2-painel { left: 6px; right: 6px; top: auto; bottom: 6px; width: auto; max-height: 78%; }
+  .w2-palco .w2-painel.desliza { animation-name: w2-sobe; }
+  .w2-palco.com-painel .w2-controles { right: 12px; visibility: hidden; }
+  .w2-arte { height: 112px; }
   .w2-entrar { min-height: 50px; }
 }
-/* celular DEITADO (paisagem): o mapa ganha a altura toda; o painel vai para o lado; dificuldades e Atos viram uma faixa só */
+@keyframes w2-sobe { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+/* celular DEITADO (paisagem): o mapa ganha a altura toda */
 @media (max-height: 460px) and (orientation: landscape) {
-  .w2 { grid-template-columns: minmax(0, 1fr) 280px; grid-template-areas: "dif abas" "barra barra" "aviso aviso" "palco painel"; gap: 6px; }
-  .w2-dificuldades { grid-area: dif; justify-content: flex-start; flex-wrap: nowrap; } .w2-placa { min-width: 0; min-height: 36px; padding: 2px 10px; } .w2-placa small { display: none; }
-  .w2-atos { grid-area: abas; border-bottom: 0; } .w2-barra { grid-area: barra; } .w2-aba { min-height: 36px; padding: 4px 10px; }
-  .w2-aviso { grid-area: aviso; } .w2-palco { grid-area: palco; } .w2-painel { grid-area: painel; grid-template-columns: 1fr; max-height: 74vh; overflow-y: auto; }
-  .w2-viewport { height: 74vh; } .w2-dica { display: none; }
+  .w2-viewport { height: 72vh; } .w2-dica { display: none; } .w2-dif small { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .w2-estrada.disponivel, .w-no.novo .w-forma, .w2-svg.entra, .w2-painel.abre { animation: none; }
+  .w2-estrada.disponivel, .w-no.novo .w-forma, .w2-svg.entra, .w2-painel.desliza, .w2-nevoa { animation: none; }
 }
+/* No EDITOR a dica é uma frase de instrução (não a HUD do jogo): texto normal. */
+.atos-mapa .w2-dica { font: 11px system-ui, sans-serif; letter-spacing: 0; text-transform: none; }
 /* No EDITOR (a vista Mapa dos atos e a prévia do mapa mundo) os nomes ficam sempre visíveis: lá se posiciona pelo nome. */
 .atos-mapa-palco .w-placa, .eng-previa-mapa .w-placa { opacity: 1; }

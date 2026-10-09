@@ -5046,6 +5046,8 @@ body {
  * o `.modal-box` para 100vw, e ela vem DEPOIS nesta folha.
  */
 .modal-box.forja { width: min(1180px, 96vw); }
+/* A CAMPANHA (o mapa do jogo oficial): a janela quase da tela toda — o mapa é o protagonista (dono, 09/10). */
+.modal-box.campanha { width: min(1400px, 97vw); max-height: 95vh; }
 
 /* A loja usa a moldura dourada — é a vitrine do jogo. */
 .modal-box.store {

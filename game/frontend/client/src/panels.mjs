@@ -497,7 +497,8 @@ export function openHunts() {
       body.append(atalhoDaArenaDeBoss());
       huntCards(body, ctx.state.catalog.bosses, true);
     }
-  });
+    // A Campanha do jogo oficial numa janela GRANDE: o mapa é o protagonista (dono, 09/10 — `world.css`, `.modal-box.campanha`).
+  }, ctx.state.classesPoe ? 'campanha' : undefined);
 }
 
 /*

@@ -57,15 +57,25 @@ export function fundoDoAto(ato, nome, pontos = [], fundo = null) {
   // O OURO dos nós concluídos (um gradiente, não uma cor chapada — o relevo das moedas do exemplo).
   g.append(svg('linearGradient', { id: 'w-ouro', x1: 0, y1: 0, x2: 0, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': '#f7dc8a' }), svg('stop', { offset: '55%', 'stop-color': '#dcb04a' }), svg('stop', { offset: '100%', 'stop-color': '#a67a1c' })));
   g.append(svg('radialGradient', { id: 'w-vinheta', cx: '50%', cy: '50%', r: '70%' }, svg('stop', { offset: '55%', 'stop-color': 'rgba(0,0,0,0)' }), svg('stop', { offset: '100%', 'stop-color': 'rgba(8,5,2,.55)' })));
+  // As ESFERAS dos nós (dono, 09/10 — os nós de mapa de ARPG): carvão com reflexo (a fase), azul aceso (a fase atual) e rubro (o boss).
+  const esfera = (id, cores) => svg('radialGradient', { id, cx: '38%', cy: '32%', r: '75%' }, ...cores.map(([offset, cor]) => svg('stop', { offset, 'stop-color': cor })));
+  g.append(esfera('w-orbe', [['0%', '#4a4c4e'], ['35%', '#1d1f21'], ['100%', '#050607']]));
+  g.append(esfera('w-orbe-azul', [['0%', '#d9fbff'], ['30%', '#4fc6e8'], ['70%', '#1252a0'], ['100%', '#06173a']]));
+  g.append(esfera('w-orbe-boss', [['0%', '#7a1f1c'], ['45%', '#3a0c0c'], ['100%', '#120303']]));
   g.append(svg('linearGradient', { id: `w-papel-${ato}`, x1: 0, y1: 0, x2: 1, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': tema.papel[0] }), svg('stop', { offset: '100%', 'stop-color': tema.papel[1] })));
   // Com IMAGEM, o que sobra em volta dela é escuro (a mesa), não o pergaminho bege: a arte é o mapa inteiro.
-  g.append(svg('rect', { x: EXT.x0, y: EXT.y0, width: EXT.x1 - EXT.x0, height: EXT.y1 - EXT.y0, fill: fundo?.url || fundo?.arquivo ? '#0b0805' : `url(#w-papel-${ato})` }));
+  // (Com imagem, a sobra fica TRANSPARENTE: atrás dela a tela põe a própria arte desfocada — `--w2-arte` no world.css.)
+  g.append(svg('rect', { x: EXT.x0, y: EXT.y0, width: EXT.x1 - EXT.x0, height: EXT.y1 - EXT.y0, fill: fundo?.url || fundo?.arquivo ? 'transparent' : `url(#w-papel-${ato})` }));
   // IMAGEM DE FUNDO do Ato (carregada na Engine › Mapa do mundo): cobre a tela do mapa (LARGURA × ALTURA, cortando o excesso) e dispensa a decoração desenhada; sem ela, o fundo de sempre.
   if (fundo?.url || fundo?.arquivo) {
     // `slice`: cobre o espaço inteiro, cortando a sobra — a MESMA regra do editor de atos, para o nó cair no mesmo ponto da arte nos dois.
     g.append(svg('image', { href: fundo.url ?? `/gamedata/mapa-mundo/${fundo.arquivo}`, x: 0, y: 0, width: LARGURA, height: ALTURA, preserveAspectRatio: 'xMidYMid slice', class: 'w-fundo-imagem' }));
     // Um véu escuro nas bordas (a arte é clara e os rótulos são brancos): a vinheta do estilo do mapa.
     g.append(svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, fill: 'url(#w-vinheta)', 'pointer-events': 'none' }));
+    // A emenda com a sobra (a mesma arte, desfocada atrás — `--w2-arte`): a borda da ilustração escurece até sumir, sem linha dura.
+    const borda = (id, x2, y2) => svg('linearGradient', { id, x1: 0, y1: 0, x2, y2 }, ...[['0%', 0.8], ['7%', 0], ['93%', 0], ['100%', 0.8]].map(([offset, o]) => svg('stop', { offset, 'stop-color': '#030201', 'stop-opacity': o })));
+    g.append(borda('w-borda-x', 1, 0), borda('w-borda-y', 0, 1));
+    g.append(svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, fill: 'url(#w-borda-x)', 'pointer-events': 'none' }), svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, fill: 'url(#w-borda-y)', 'pointer-events': 'none' }));
     // Um véu azul-petróleo bem leve: a arte quente passa a conversar com a interface azul sem perder a riqueza.
     g.append(svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, fill: 'rgba(10, 40, 60, .10)', 'pointer-events': 'none' }));
     return g;
@@ -132,6 +142,13 @@ export function iconeDeBotao(nome) {
     tudo: [svg('path', { d: 'M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15', ...t })],
     cadeado: [svg('rect', { x: 6, y: 11, width: 12, height: 9, rx: 2, ...t }), svg('path', { d: 'M9 11 V8 a3 3 0 0 1 6 0 V11', ...t })],
     visto: [svg('path', { d: 'M5 12.5 L10 17.5 L19 7', ...t })],
+    esquerda: [svg('path', { d: 'M15 5 L8 12 L15 19', ...t })],
+    direita: [svg('path', { d: 'M9 5 L16 12 L9 19', ...t })],
+    seta: [svg('path', { d: 'M4 12 H19 M13 6 L19 12 L13 18', ...t })],
+    // a dica do mapa: o mouse (arrastar), a roda (zoom) e a mão (escolher)
+    mouse: [svg('rect', { x: 7, y: 3, width: 10, height: 18, rx: 5, ...t, 'stroke-width': 1.8 }), svg('path', { d: 'M12 3 V9 M7 9 H17', ...t, 'stroke-width': 1.6 })],
+    roda: [svg('rect', { x: 7, y: 3, width: 10, height: 18, rx: 5, ...t, 'stroke-width': 1.8 }), svg('path', { d: 'M12 6.5 V10.5', ...t, 'stroke-width': 2.6 })],
+    mao: [svg('path', { d: 'M9 11 V5.5 a1.5 1.5 0 0 1 3 0 V10 M12 9.5 a1.5 1.5 0 0 1 3 0 V11 M15 10.5 a1.5 1.5 0 0 1 3 0 V15 a6 6 0 0 1 -6 6 h-1 a5 5 0 0 1 -4 -2 L4.5 15 a1.5 1.5 0 0 1 2.3 -1.9 L9 15 V11', ...t, 'stroke-width': 1.6 })],
   };
   return svg('svg', { class: 'w2-ico', viewBox: '0 0 24 24', width: 18, height: 18, 'aria-hidden': 'true' }, formas[nome]);
 }
