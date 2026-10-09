@@ -12,6 +12,7 @@ import * as Jogo from '../systems/itens-poe/jogo.mjs';
 import * as Telas from './itens-poe-telas.mjs';
 import * as Pendencias from './itens-poe-pendencias.mjs';
 import * as AbasPoedb from './itens-poe-abas.mjs';
+import * as ArvorePoedb from './itens-poe-arvore-poedb.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
@@ -177,6 +178,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (rota === 'pendencias') {
     if (q.get('recalcular')) { Pendencias.esquecer(); AbasPoedb.esquecer(); }
     return json(res, 200, Pendencias.pendencias()), true;
+  }
+  // (09/10) A aba Árvore × PoEDB: cada nó da árvore do poedb (principal, ascendências, Linhagens) × a do jogo (tools/importar-poedb-arvore.mjs).
+  if (rota === 'arvore-poedb') {
+    if (q.get('recalcular')) ArvorePoedb.esquecer();
+    const d = ArvorePoedb.arvorePoedb();
+    return json(res, d ? 200 : 404, d ?? { ok: false, erros: ['Sem o manifesto: rode node tools/importar-poedb-arvore.mjs.'] }), true;
   }
   // (09/10) A aba Abas do PoEDB: cada aba de cada página de classe do poedb × o que o jogo tem (tools/importar-poedb-abas.mjs).
   if (rota === 'abas-poedb') {

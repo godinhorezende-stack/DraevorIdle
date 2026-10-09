@@ -68,7 +68,8 @@ export function validar(arvore) {
   return erros;
 }
 
-const ADDS_PERMITIDOS = /^[a-z_]+$/;
+// (09/10, a árvore do PoE: também as chaves dos mods com condição, escala e as dinâmicas — `ModsPoe.resolver` decide quando valem.)
+const ADDS_PERMITIDOS = /^[a-z_][\w:%@+.-]*$/i;
 function efeitoValido(ef) {
   if (!ef || typeof ef !== 'object') return false;
   if (ef.tag) return Number.isFinite(ef.dano);

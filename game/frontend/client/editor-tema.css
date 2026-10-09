@@ -1202,3 +1202,28 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .abas-tabela td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .abas-exemplos { max-width: 360px; }
 .pend-ref-titulo { font: 600 13px var(--eng-titulo, inherit); color: var(--eng-txt2); margin: var(--eng-e3) 0 var(--eng-e2, 8px); }
+
+/* ---- Árvore × PoEDB (PoE): a árvore, as ascendências e as Linhagens do poedb × o jogo (editor-arvore-poedb.mjs) ---- */
+.arv-tipos { display: flex; flex-direction: column; gap: var(--eng-e3); margin-bottom: var(--eng-e3); }
+.arv-tipo h3, .arv-subtitulo { font: 600 13px var(--eng-titulo, inherit); color: var(--eng-txt2); margin: 0 0 8px; }
+.arv-subtitulo { margin-top: var(--eng-e3); }
+.arv-grupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.arv-grupo { display: flex; flex-direction: column; gap: 5px; text-align: left; padding: 8px 10px; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); background: var(--eng-s1, transparent); color: inherit; cursor: pointer; min-width: 0; }
+.arv-grupo:hover { border-color: var(--eng-linha-forte, var(--eng-linha)); }
+.arv-grupo.ativo { border-color: var(--eng-ouro); background: var(--eng-ouro-fundo); }
+.arv-grupo.fora-do-jogo { border-style: dashed; }
+.arv-grupo-nome { font-weight: 600; font-size: 13px; }
+.arv-grupo-nome em { font-style: normal; font-weight: 400; color: var(--eng-txt3); font-size: 11.5px; }
+.arv-grupo-num { font-size: 11.5px; color: var(--eng-txt2); }
+.arv-grupo.fora-do-jogo .arv-grupo-num { color: #ff8a80; }
+.arv-barra { height: 8px; }
+.arv-paginas { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--eng-e3); }
+.arv-link { color: var(--eng-ouro); font-size: 12px; }
+.arv-abas { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.arv-itens { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; max-height: 160px; overflow: auto; }
+.arv-item { font-size: 11.5px; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--eng-linha); }
+.arv-item.sim { color: #5cc28a; } .arv-item.nao { color: #ff8a80; border-style: dashed; }
+.arv-ok { color: #5cc28a; font-size: 12px; } .arv-falta { color: #ff8a80; font-size: 12px; }
+.arv-tabela { max-height: 70vh; }
+.arv-linha { font-size: 12px; }
+.arv-linha.funciona { color: #5cc28a; } .arv-linha.parcial { color: #e9c34f; } .arv-linha.pendente { color: #ff8a80; } .arv-linha.inexiste, .arv-linha.lembrete { color: #8a93a5; }
