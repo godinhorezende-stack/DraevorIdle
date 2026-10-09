@@ -49,6 +49,9 @@ async function montar(comNo) {
   // (determinístico: o sorteio com semente fixa, e os zumbis não morrem — conta-se quantos a gema INVOCA, não quantos sobrevivem)
   const original = Math.random;
   let semente = 7;
+  // (o PICO de zumbis ao mesmo tempo: eles vencem por tempo e a gema invoca de novo — os vivos no último tique dependem de em que ponto
+  // desse ciclo a caçada acaba, e o "uma ação por vez" do PoE, 09/10, mudou o ritmo da gema)
+  let pico = 0;
   Math.random = () => ((semente = (semente * 16807) % 2147483647) / 2147483647);
   try {
     for (let i = 0; i < 240 && e.hunt; i++) {
@@ -59,6 +62,7 @@ async function montar(comNo) {
       for (const l of h.lacaios ?? []) if (l.hp > 0) l.hp = l.maxHp;
       e.hp = e.maxHp; e.mana = 1e6; e.maxMana = 1e6;
       Cacadas.tique(e, PERSONAGEM, (t += 250));
+      pico = Math.max(pico, (e.hunt?.lacaios ?? []).filter((l) => l.gema === 'Raise_Zombie' && l.hp > 0).length);
     }
   } finally {
     Math.random = original;
@@ -66,16 +70,16 @@ async function montar(comNo) {
   Ficha.invalidar(e);
   const q = LacaiosPoe.oQueInvoca('Raise_Zombie', 10, null, Ficha.combate(e).afPoe);
   const zumbis = (e.hunt?.lacaios ?? []).filter((l) => l.gema === 'Raise_Zombie' && l.hp > 0);
-  return { e, q, zumbis };
+  return { e, q, zumbis, pico };
 }
 
 test('"+1 ao número Máximo de Zumbis" (a árvore): a caçada invoca o zumbi a MAIS — antes a checagem "todos em campo" usava o máximo sem a árvore', { skip: SEM }, async () => {
   const sem = await montar(false);
   const com = await montar(true);
   assert.ok(sem.zumbis.length >= 1, 'a gema invoca');
-  assert.equal(sem.zumbis.length, sem.q.maximo, `sem o nó: ${sem.zumbis.length}/${sem.q.maximo}`);
+  assert.equal(sem.pico, sem.q.maximo, `sem o nó: ${sem.pico}/${sem.q.maximo}`);
   assert.equal(com.q.maximo, sem.q.maximo + 1);
-  assert.equal(com.zumbis.length, com.q.maximo, `com o nó: ${com.zumbis.length}/${com.q.maximo}`);
+  assert.equal(com.pico, com.q.maximo, `com o nó: ${com.pico}/${com.q.maximo}`);
 });
 
 test('"Lacaios causam Dano aumentado" e "Vida máxima dos Lacaios aumentada" (a árvore) chegam aos zumbis INVOCADOS: o zumbi em campo tem a vida e o dano da soma do dono', { skip: SEM }, async () => {
