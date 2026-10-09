@@ -461,6 +461,11 @@ const TAG_DO_POE = {
   Vaal: 'vaal', Movimento: 'movimento', Clamor: 'clamor', Aura: 'aura', Maldição: 'maldicao',
   // (09/10, a árvore:) "Habilidade de Guarda" e "Gemas de Habilidade Críticas" (a tag Crítico da gema — não o golpe crítico).
   Guarda: 'guarda', Crítico: 'gemaCritica',
+  // (09/10, auditoria da árvore) As tags que existiam em TAGS_DE_GOLPE mas nenhuma gema produzia — as regras com elas nunca valiam. Nas
+  // gemas em português: Golpear = Strike, Impacto = Slam, Runa = Brand ("Runa Tempestuosa"), Marca = Mark, Feitiço = Hex, Vínculo = Link,
+  // Ativação = Trigger.
+  Golpear: 'golpe', Impacto: 'pancada', Nova: 'nova', Canalização: 'canalizar', Feitiço: 'feitico', Vínculo: 'vinculo', Marca: 'marca',
+  Runa: 'runa', Ativação: 'ativada', Retaliação: 'retaliacao',
 };
 /** As tags de golpe de uma lista de tags do poedb (`['Ataque','Projétil','Arco']` → `['ataque','projetil','arco']`), + `elemental`. */
 export function tagsDoPoe(lista = []) {
@@ -646,7 +651,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 export const EVENTOS = new Set(['usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer']);
-export const ACOES = new Set(['explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
 /**
@@ -823,7 +828,8 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   perde('mana', estado.maxMana, ((estado.maxMana ?? 0) * valor(ficha, 'perde_mana_pct_s')) / 100);
   perde('es', esMax, (esMax * valor(ficha, 'perde_es_pct_s')) / 100);
   // (+ a "Velocidade de Recuperação de Escudo de Energia aumentada": a regeneração é recuperação.)
-  const esRegen = (valor(ficha, 'es_regen') + (esMax * valor(ficha, 'es_regen_pct')) / 100) * Math.max(0, 1 + (valor(ficha, 'recuperacao_es_inc') + valor(ficha, 'recuperacao_inc')) / 100);
+  // (+ o Juramento do Zelote: a regeneração de VIDA da ficha, aplicada ao escudo — `ficha.regenPoe.esDaVida`.)
+  const esRegen = (valor(ficha, 'es_regen') + (esMax * valor(ficha, 'es_regen_pct')) / 100) * Math.max(0, 1 + (valor(ficha, 'recuperacao_es_inc') + valor(ficha, 'recuperacao_inc')) / 100) + (ficha?.regenPoe?.esDaVida ?? 0);
   if (esRegen > 0 && esMax > 0 && (estado.es ?? 0) < esMax) {
     hunt.poeEsResto = (hunt.poeEsResto ?? 0) + (esRegen * ms) / 1000;
     const inteiro = Math.floor(hunt.poeEsResto);

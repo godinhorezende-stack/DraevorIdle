@@ -121,7 +121,7 @@ function keystoneDe(n, linhas, traduzidas) {
  * próprio nó inicial (`tipo: 'start'`, em `inicios` como `asc:<slug>`) e os nós marcados com `ascendencia` (gastam pontos de
  * ascendência). `lista`: os `ascendencia.json` da coleção. Devolve `{ nos, inicios, ascendencias, relatorio }`.
  */
-export function converterAscendencias(lista, textos = null) {
+export function converterAscendencias(lista, textos = null, escolhas = null) {
   const nos = [];
   const inicios = {};
   const ascendencias = {};
@@ -148,7 +148,9 @@ export function converterAscendencias(lista, textos = null) {
         tipo: inicio ? 'start' : n.molde === 'notable' ? 'notable' : 'small',
         x: n.x,
         y: n.y,
-        custo: inicio ? 0 : 1,
+        // A OPÇÃO DE ESCOLHA (como no PoE: o nó-pai deixa escolher UMA, sem gastar ponto) — `escolhas` vem do poedb.
+        custo: inicio || (escolhas?.has(String(n.id)) && ids.has(Number(escolhas.get(String(n.id))))) ? 0 : 1,
+        ...(escolhas?.has(String(n.id)) && ids.has(Number(escolhas.get(String(n.id)))) ? { opcaoDe: escolhas.get(String(n.id)) } : {}),
         ascendencia: a.slug,
         efeitos: traduzidas.flatMap((t) => t.efeitos),
         textos: linhas,

@@ -5349,7 +5349,7 @@
       "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico$",
       "efeitos": [
         {
-          "stat": "frasco_carga_no_critico",
+          "stat": "ev:critico:frascoChance",
           "valor": "{1}"
         }
       ],
@@ -20880,6 +20880,204 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (6º lote: bloqueio de ataque/magia, armas, fúria, vida baixa)"
+    },
+    {
+      "padrao": "^Inteligência não concede nenhum bônus inerente ao Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "sem_es_da_int",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Duração das Afecções Elementais reduzida em \\{(\\d+)\\}% em você por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais_propria%atr:int:{V2}",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Destreza não concede nenhum bônus inerente [àa] Evasão$",
+      "efeitos": [
+        {
+          "stat": "sem_evasao_da_des",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Bônus de Dano de Força se Aplica ao Dano de Ataque de Projéteis assim como ao Dano Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "forca_em_projeteis",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Regeneração de Vida é aplicada ao Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "regen_vida_no_escudo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Drena Escudo de Energia (?:o|ao) invés de Vida$",
+      "efeitos": [
+        {
+          "stat": "roubo_vida_no_escudo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Máximo total da Recuperação do Escudo de Energia por segundo do Dreno é Dobrado$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_es_dobrado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Não Pode Recarregar Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "sem_recarga_es",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Gasta Escudo de Energia antes da Mana para Custos de Habilidades$",
+      "efeitos": [
+        {
+          "stat": "bateria_ancia",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Escudo de Energia protege a Mana ao invés da Vida$",
+      "efeitos": [
+        {
+          "stat": "es_protege_mana",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Recarga do Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_recarga_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^Recarga do Escudo de Energia não é interrompida por Dano se a Recarga começou recentemente$",
+      "efeitos": [
+        {
+          "stat": "recarga_nao_interrompida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystones com mecânica: Solipsismo, Terror dos Magos, Empunhadura de Ferro, Juramento do Zelote, Devastador Fantasma, Bateria Anciã, Proteção Perversa)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Regeneração de Vida$",
+      "efeitos": [
+        {
+          "stat": "regen_vida_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystone Juventude Eterna)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos máximo de Vida Total Recuperada do Dreno por Segundo$",
+      "efeitos": [
+        {
+          "stat": "roubo_teto_vida_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystone Juventude Eterna)"
+    },
+    {
+      "padrao": "^Recarga do Escudo de Energia é aplica(?:da)? à Vida$",
+      "efeitos": [
+        {
+          "stat": "recarga_es_na_vida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria da árvore (keystone Juventude Eterna)"
+    },
+    {
+      "padrao": "^Acertos que causam Dano Elemental removem a Exposição àqueles Elementos e infligem Exposição aos outros Elementos$",
+      "efeitos": [
+        {
+          "stat": "equilibrio_exposicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria (keystone Equilíbrio Elemental, o do PoE atual)"
+    },
+    {
+      "padrao": "^Exposições infligidas desta forma aplicam \\{(\\d+)\\}% de Resistências$",
+      "efeitos": [
+        {
+          "stat": "equilibrio_exposicao_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria (keystone Equilíbrio Elemental, o do PoE atual)"
+    },
+    {
+      "padrao": "^Duração (?:da|das) Maldiç(?:ão|ões) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — auditoria de dependências (a duração da maldição)"
     }
   ]
 }

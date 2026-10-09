@@ -52,9 +52,13 @@ export function principais(estado, adds = {}) {
 }
 
 /** O que STR/DEX/INT dão ao personagem (`p` = `principais(...)`). */
-export function efeitos(p) {
+export function efeitos(p, af = null) {
   // Com o PoE ligado, a tabela `E` é a do PoE (STR +0,5 de vida e +0,2% de dano físico; DEX +2 de precisão e +0,2% de evasão; INT +0,5 de mana e +0,2% de
   // escudo de energia — `classes.EFEITOS_DO_POE`), editável no Editor de Classes como a do Draevor.
+  // (`af`: as keystones que tiram o bônus INERENTE — Solipsismo "Inteligência não concede nenhum bônus inerente ao Escudo de Energia",
+  // Terror dos Magos "Destreza não concede nenhum bônus inerente à Evasão".)
+  const semEsDaInt = Number(af?.sem_es_da_int) > 0;
+  const semEvasaoDaDes = Number(af?.sem_evasao_da_des) > 0;
   return {
     vida: p.str * E.STR_LIFE_PER_POINT,
     danoFisicoPct: p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT,
@@ -64,8 +68,8 @@ export function efeitos(p) {
     mana: p.int * E.INT_MANA_PER_POINT,
     danoMagicoPct: p.int * E.INT_MAGIC_DAMAGE_PER_POINT,
     // Bônus em % da DEX sobre a Evasion e da INT sobre o Energy Shield (0 de fábrica: o jogo de antes não muda; liga-se no Editor de Classes).
-    evasaoPct: p.dex * (E.DEX_EVASION_PCT_PER_POINT ?? 0),
-    energyShieldPct: p.int * (E.INT_ENERGY_SHIELD_PCT_PER_POINT ?? 0),
+    evasaoPct: semEvasaoDaDes ? 0 : p.dex * (E.DEX_EVASION_PCT_PER_POINT ?? 0),
+    energyShieldPct: semEsDaInt ? 0 : p.int * (E.INT_ENERGY_SHIELD_PCT_PER_POINT ?? 0),
   };
 }
 

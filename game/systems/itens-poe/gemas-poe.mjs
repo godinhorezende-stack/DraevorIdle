@@ -203,6 +203,20 @@ export function criticoBaseNoNivel(slug, nivel = 1) {
 }
 /** As chances de afecção da arena → as do jogo (`itens-poe/afeccoes.mjs`): as que existem. */
 const AFECCAO_NO_JOGO = { incendiar: 'incendio', congelar: 'congelamento', eletrizar: 'eletrizacao', envenenar: 'veneno', sangrar: 'sangramento' };
+/**
+ * As chances da gema que NÃO são afecção (o empalamento — "40% de chance de Empalar Inimigos ao Acertar", 7 gemas: Golpe Duplo do Empalamento,
+ * Aço Partido…): o atributo do PoE que `ModsPoe.aoAcertar` sorteia. (09/10, auditoria de dependências: antes a chance da gema não ia a lugar nenhum.)
+ */
+const CHANCE_NO_ACERTO = { empalar: 'chance_empalar' };
+/** A ficha do golpe da gema com as chances dela no acerto (o empalamento): a mesma ficha se a gema não tem nenhuma. */
+export function fichaComAsChancesDaGema(ficha, slug, nivel) {
+  const ch = compilada(slug, nivel)?.stats?.chances ?? {};
+  const extra = Object.entries(ch).filter(([k, v]) => v && CHANCE_NO_ACERTO[k]);
+  if (!ficha?.afPoe || !extra.length) return ficha;
+  const afPoe = { ...ficha.afPoe };
+  for (const [k, v] of extra) afPoe[CHANCE_NO_ACERTO[k]] = (Number(afPoe[CHANCE_NO_ACERTO[k]]) || 0) + v;
+  return { ...ficha, afPoe };
+}
 /** As afecções da ficha + as chances da gema no nível (o acerto da skill usa isto). */
 export function afeccoesComAGema(afeccoes, slug, nivel) {
   const ch = compilada(slug, nivel)?.stats?.chances ?? {};
@@ -305,7 +319,7 @@ function avaliarNoJogo(h, formato) {
     if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
     if (st.estagios) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
     if (st.repeticoes) motivos.push('as repetições do golpe não existem: no jogo é um');
-    for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
+    for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k] && !CHANCE_NO_ACERTO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
     if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }

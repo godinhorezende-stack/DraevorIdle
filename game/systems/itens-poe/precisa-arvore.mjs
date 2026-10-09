@@ -18,13 +18,13 @@ export const TEMAS = [
   ['gema', 'Cadáveres', /Cadáver/, 'usar e consumir cadáveres'],
   ['gema', 'Gemas Vaal', /Vaal|Almas/, 'as almas e a carga das gemas Vaal'],
   // ---- ITENS: a linha depende de uma peça vestida
-  ['item', 'Defesa de uma peça', /(Escudo|Elmo|Peitoral|Luvas|Botas)( do| das| de)?[^,]*(Equipad|equipad)|do Escudo|no Escudo|do Elmo|do seu Peitoral|das Botas/, 'a defesa de UMA peça ("Evasão do Peitoral", "Defesas do Escudo equipado") — a ficha precisa guardar a armadura/evasão/escudo de cada peça em separado'],
+  ['item', 'Defesa de uma peça', /(Escudo|Elmo|Peitoral|Luvas|Botas)( do| das| de)?[^,]*(Equipad|equipad)|do Escudo|no Escudo|do Elmo|do seu Peitoral|das Botas/, 'a defesa de UMA peça já existe (`ficha.defesasDaFicha`, lote 5); faltam o que depende da recuperação/recarga do escudo e das condições de outras peças'],
   ['item', 'Frascos', /Frasco/, 'cargas de frasco por abate/inimigo marcado e efeitos durante o frasco'],
   ['item', 'Encaixes e cores', /encaixe/i, 'condições pela cor dos encaixes da arma/cajado'],
   ['item', 'Aljava, anéis, amuleto, cinto', /Aljava|anéis|Anel|Amuleto|Cinto/, 'condições pelos modificadores de outras peças e os bônus da aljava'],
   ['item', 'Joias', /Joia/, 'encaixes de joia na árvore'],
   // ---- MECÂNICAS gerais do combate
-  ['mecanica', 'Dreno', /Dreno|Drenad/, 'o dreno do jogo é instantâneo e sem teto — o que depende de ritmo/teto não muda nada'],
+  ['mecanica', 'Dreno', /Dreno|Drenad/, 'o roubo do PoE já tem instância, taxa e teto (`ficha.aplicarLeech`/`recuperarRoubo`); faltam o dreno instantâneo, o de mana/escudo por tipo de dano e o "enquanto drenando" de outras peças'],
   ['mecanica', 'Escudo de Energia', /Escudo de Energia|Escudo Mágico/, 'a recarga do escudo (atraso, início, ritmo), escudo no ponto de atordoamento, caos que não ignora o escudo'],
   ['mecanica', 'Exposição', /Exposiç/, 'exposição com valor mínimo, efeito de exposição em você'],
   ['mecanica', 'Atordoamento', /Atordo/, 'duração do atordoamento crítico, ignorar atordoamento, atordoar em área ao ser atordoado'],

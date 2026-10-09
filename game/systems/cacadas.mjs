@@ -1460,9 +1460,9 @@ export function regenerar(estado, ms) {
   if (poe) {
     // Como no PoE (dono, 07/10): a VIDA não regenera de base — só o "+N por segundo" e o "N% da Vida por segundo" de itens e árvore,
     // × "Velocidade de Regeneração de Vida aumentada"; a MANA regenera 1,8% da máxima por segundo (+ o fixo), × "Regeneração de Mana aumentada".
-    // ("Juramento do Zelote": a regeneração de vida vai para o Escudo de Energia.)
-    if (ficha.afPoe?.['keystone:juramentoDoZelote'] > 0 || ficha.afPoe?.['sempre:juramentoDoZelote'] > 0) estado.es = Math.min(Math.round(ficha.energyShield ?? 0), (estado.es ?? 0) + poe.vidaPorSegundo * s);
-    else r.hp += poe.vidaPorSegundo * s;
+    // ("Juramento do Zelote" — da árvore ou de uma peça: `ficha.regenDoPoe` zera a da vida e passa o mesmo ao escudo, `esDaVida`, que o tique
+    // do PoE regenera — `condicoes-poe.tique`. Um caminho só.)
+    r.hp += poe.vidaPorSegundo * s;
     r.mana += poe.manaPorSegundo * s;
   } else {
     r.hp += (estado.maxHp ?? 0) * 0.004 * s * promo.hp * (1 + daArvore.hp) + (doEquipamento.hp ?? 0) * s;

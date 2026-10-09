@@ -97,7 +97,21 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     if (lista.length > NO_ACERTO.empalar.maximo) lista.splice(0, lista.length - NO_ACERTO.empalar.maximo);
     ev('empalado');
   }
-  // EQUILÍBRIO ELEMENTAL (keystone da peça): o alvo acertado por dano elemental fica com +25% de resistência a esses elementos e −50% aos
+  // EQUILÍBRIO ELEMENTAL (a keystone da árvore, o PoE atual): o acerto com dano elemental TIRA a Exposição daqueles elementos e INFLIGE
+  // Exposição aos outros (−25% de resistência, "Exposições infligidas desta forma aplicam −25%"), por 4 s — o mesmo sistema de Exposição acima.
+  const elementosDoAcerto = [...new Set(elementos)].filter((el) => ['fire', 'ice', 'energy'].includes(el));
+  if (v('equilibrio_exposicao') > 0 && elementosDoAcerto.length) {
+    const pctEq = Math.abs(v('equilibrio_exposicao_pct')) || 25;
+    e.exposicao = { ...(e.exposicao ?? {}) };
+    e.exposicaoPct = { ...(e.exposicaoPct ?? {}) };
+    for (const el of ['fire', 'ice', 'energy']) {
+      if (elementosDoAcerto.includes(el)) { delete e.exposicao[el]; delete e.exposicaoPct[el]; continue; }
+      const ainda = (e.exposicao[el] ?? 0) > agora;
+      e.exposicao[el] = agora + 4000;
+      e.exposicaoPct[el] = ainda ? Math.max(e.exposicaoPct[el] ?? 10, pctEq) : pctEq;
+    }
+  }
+  // EQUILÍBRIO ELEMENTAL (keystone da peça, a regra antiga): o alvo acertado por dano elemental fica com +25% de resistência a esses elementos e −50% aos
   // outros, por 5 s (vale para os próximos acertos).
   const elementaisDoAcerto = [...new Set(elementos)].filter((el) => ['fire', 'ice', 'energy'].includes(el));
   if (v('keystone_equilibrio') > 0 && elementaisDoAcerto.length) e.equilibrio = { ate: agora + 5000, atingidos: elementaisDoAcerto };
@@ -253,6 +267,18 @@ const SEGUNDOS_PADRAO = 4;
  * valem (as de estado e as do alvo). `ctx`: `{ alvo, eventos, personagem, rng, agora }`. Ações: vida/mana/escudo (fixo ou %), cargas,
  * buffs, estados no alvo e em volta, dano em você, Fúria, cargas de frasco, recarga do escudo, explosão do morto, habilidade ativada.
  */
+/**
+ * Os eventos de USAR UM FRASCO ("Recupera 4% de Vida ao usar um Frasco", "Remove uma Afecção Elemental aleatória ao usar um Frasco de
+ * Mana" — a Maestria de Frascos e os mods das peças): `usarFrasco` em qualquer frasco e `usarFrascoMana` no de mana. Quem chama é quem usou
+ * o frasco (a sessão, `{t:'frasco', action:'usar'}`), depois de `Frascos.usar` dar certo — antes ninguém disparava (auditoria, 09/10).
+ */
+export function eventosDoFrasco(estado, classe, ficha, ctx = {}) {
+  const hunt = estado?.hunt;
+  if (!hunt) return;
+  evento(estado, hunt, 'usarFrasco', ficha, ctx);
+  if (classe === 'Mana_Flasks') evento(estado, hunt, 'usarFrascoMana', ficha, ctx);
+}
+
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
   const lista = ficha?.eventosPoe;
   if (!ligado() || !hunt || !lista?.length) return;
@@ -300,6 +326,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'buffChance': { const [buff, seg] = String(ev.param).split(':'); if (sorte(v)) ganharBuff(hunt, buff, Number(seg) || SEGUNDOS_PADRAO, agora); return; }
     case 'furia': return ganharFuria(hunt, v, agora);
     case 'frasco': { for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + v; return; }
+    // "X% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico": a CHANCE de cada frasco do cinto ganhar uma carga.
+    case 'frascoChance': { if (sorte(v)) for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + 1; return; }
     case 'recargaEs': if (sorte(v)) estado.esEspera = 0; return;
     case 'removerAfeccao': if (sorte(v)) { const d = hunt.efeitosDoJogador?.dots; if (d?.length) d.shift(); } return;
     case 'alvo': {

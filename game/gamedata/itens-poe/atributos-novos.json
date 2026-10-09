@@ -1551,12 +1551,6 @@
       "combate": true,
       "efeito": "itens-poe/frascos"
     },
-    "frasco_carga_no_critico": {
-      "nome": "Chance de Carga de Frasco no Crítico",
-      "unidade": "%",
-      "combate": true,
-      "efeito": "itens-poe/frascos"
-    },
     "frasco_util_regen_n": {
       "nome": "Cargas dos Frascos Utilitários por tempo",
       "unidade": "%",
@@ -2756,6 +2750,102 @@
       "unidade": "%",
       "combate": true,
       "efeito": "condicoes-poe.fichaDoGolpe (o sorteio do golpe: 3× o dano) (09/10)"
+    },
+    "sem_es_da_int": {
+      "nome": "Inteligência não dá o bônus inerente de Escudo de Energia (Solipsismo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/atributos.efeitos (energyShieldPct = 0) (09/10)"
+    },
+    "sem_evasao_da_des": {
+      "nome": "Destreza não dá o bônus inerente de Evasão (Terror dos Magos)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/atributos.efeitos (evasaoPct = 0) (09/10)"
+    },
+    "forca_em_projeteis": {
+      "nome": "O bônus de dano da Força vale nos ataques de projétil (Empunhadura de Ferro)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.forcaNoGolpe (acoes, hunt/combate, ficha-poe) (09/10)"
+    },
+    "regen_vida_no_escudo": {
+      "nome": "A regeneração de vida vai para o Escudo de Energia (Juramento do Zelote)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe (esDaVida) + condicoes-poe.tique (09/10)"
+    },
+    "roubo_vida_no_escudo": {
+      "nome": "O roubo de vida vira roubo de Escudo de Energia (Devastador Fantasma)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (09/10)"
+    },
+    "roubo_teto_es_dobrado": {
+      "nome": "O teto por segundo do roubo de Escudo de Energia dobra (Devastador Fantasma)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.recuperarRoubo (09/10)"
+    },
+    "sem_recarga_es": {
+      "nome": "O Escudo de Energia não recarrega (Devastador Fantasma)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/defesa.recarregar (09/10)"
+    },
+    "es_protege_mana": {
+      "nome": "O Escudo de Energia não segura o dano da vida (Bateria Anciã)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/defesa.absorver (09/10)"
+    },
+    "es_recarga_menos": {
+      "nome": "Menos recarga do Escudo de Energia (multiplica)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/defesa.recarregar (09/10)"
+    },
+    "recarga_nao_interrompida": {
+      "nome": "A recarga do Escudo que começou há pouco não é interrompida por dano (Proteção Perversa)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/defesa.absorver (09/10)"
+    },
+    "regen_vida_menos": {
+      "nome": "Menos regeneração de vida (multiplica)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe (09/10)"
+    },
+    "roubo_teto_vida_menos": {
+      "nome": "Menos teto por segundo do roubo de vida (multiplica)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.recuperarRoubo (09/10)"
+    },
+    "recarga_es_na_vida": {
+      "nome": "A recarga do Escudo de Energia vai para a vida (Juventude Eterna)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/defesa.recarregar (09/10)"
+    },
+    "equilibrio_exposicao": {
+      "nome": "Equilíbrio Elemental (acerto elemental troca a Exposição pelos outros elementos)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "equilibrio_exposicao_pct": {
+      "nome": "Equilíbrio Elemental: a Exposição infligida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (09/10)"
+    },
+    "duracao_maldicao": {
+      "nome": "Duração das Maldições aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.efeitosDaMaldicao (a duração da marca no monstro) (09/10)"
     }
   }
 }

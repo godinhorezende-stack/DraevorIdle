@@ -145,6 +145,16 @@ function preparar(a) {
 const arvore = () => ctx.state.passivasArvore ?? null;
 const vista = () => ctx.state.passivas ?? ctx.state.character?.passivas ?? null;
 const meus = () => new Set(vista()?.alocados ?? []);
+/** Os inícios de outras classes que estes nós liberam ("Caminho do Marauder" da Ascendente: `inicio_extra:<classe>`) — a regra do servidor. */
+function iniciosExtras(ids) {
+  const a = arvore();
+  const extras = new Set();
+  for (const id of ids) for (const ef of a?.porId.get(id)?.efeitos ?? []) {
+    const m = /^inicio_extra:(\w+)$/.exec(ef.add ?? '');
+    if (m && ef.valor > 0 && a.inicios?.[m[1]]) extras.add(a.inicios[m[1]]);
+  }
+  return extras;
+}
 
 /** O menor caminho de nós não alocados até `id` — o mesmo que o servidor aceita. */
 function caminhoAte(id) {
@@ -153,15 +163,16 @@ function caminhoAte(id) {
   if (!a?.porId.has(id)) return null;
   if (mine.has(id)) return [];
   const veioDe = new Map();
-  const fila = [...mine];
+  const fila = [...mine, ...[...iniciosExtras(mine)].filter((x) => !mine.has(x))];
   for (const x of fila) veioDe.set(x, null);
+  const origens = new Set(fila);
   for (let i = 0; i < fila.length; i++) {
     for (const c of a.porId.get(fila[i])?.conexoes ?? []) {
       if (veioDe.has(c) || a.porId.get(c)?.tipo === 'start') continue;
       veioDe.set(c, fila[i]);
       if (c === id) {
         const caminho = [];
-        for (let x = c; x && !mine.has(x); x = veioDe.get(x)) caminho.unshift(x);
+        for (let x = c; x && !origens.has(x); x = veioDe.get(x)) caminho.unshift(x);
         return caminho;
       }
       fila.push(c);
@@ -178,7 +189,8 @@ function ficamSem(id) {
   const a = arvore();
   const v = vista();
   const resto = new Set((v?.alocados ?? []).filter((x) => x !== id));
-  const inicios = [v?.inicio, v?.inicioAscendencia].filter(Boolean);
+  // (+ os inícios extras dos nós que FICAM: tirar o "Caminho" ilha o que só se ligava por ele)
+  const inicios = [v?.inicio, v?.inicioAscendencia, ...iniciosExtras(resto)].filter(Boolean);
   const ligados = new Set(inicios);
   const fila = [...inicios];
   while (fila.length) {
@@ -211,7 +223,10 @@ function estadoDoNo(n) {
   if (n.tipo === 'start') return 'bloqueado';
   // A maestria abre com um notável alocado no grupo dela.
   if (n.tipo === 'mastery') return gruposComNotavel(arvore(), mine).has(n.grupo) ? 'disponivel' : 'bloqueado';
-  return n.conexoes.some((c) => mine.has(c)) ? 'disponivel' : 'bloqueado';
+  // A opção de escolha de uma ascendência: uma por pai (a irmã escolhida bloqueia as outras).
+  if (n.opcaoDe != null && [...mine].some((x) => x !== n.id && arvore()?.porId.get(x)?.opcaoDe === n.opcaoDe)) return 'bloqueado';
+  const extras = iniciosExtras(mine);
+  return n.conexoes.some((c) => mine.has(c) || extras.has(c)) ? 'disponivel' : 'bloqueado';
 }
 
 // ------------------------------------------------------------------- abrir
@@ -918,7 +933,9 @@ function montar(body) {
     const p = v?.pontos ?? { livres: 0, total: 0, usados: 0 };
     pontos.textContent = '';
     pontos.append(el('b', p.livres ? 'tem' : null, String(p.livres)), el('span', null, ` livre${p.livres === 1 ? '' : 's'} · ${p.usados}/${p.total} usados`));
-    selo.textContent = `${p.livres} ${p.livres === 1 ? 'Ponto Restante' : 'Pontos Restantes'}`;
+    // (o servidor manda `deficit` quando há mais pontos gastos do que o total — um nó que concedia pontos saiu, ou um level perdido antigo)
+    if (p.deficit) pontos.append(el('span', 'pas-aviso', ` · ${p.deficit} ponto${p.deficit === 1 ? '' : 's'} a mais gasto${p.deficit === 1 ? '' : 's'}: tire nós no respec`));
+    selo.textContent = p.deficit ? `−${p.deficit} ${p.deficit === 1 ? 'Ponto' : 'Pontos'}` : `${p.livres} ${p.livres === 1 ? 'Ponto Restante' : 'Pontos Restantes'}`;
     selo.classList.toggle('vazio', !p.livres);
     // (no jogo oficial o respec é de graça: dono, 09/10)
     respecTudo.textContent = v?.respecGratis ? 'Respec completo (grátis)' : v?.respecsGratis ? `Respec completo (${v.respecsGratis} grátis)` : 'Respec completo';

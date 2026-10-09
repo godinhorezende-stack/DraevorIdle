@@ -103,6 +103,12 @@ export function periciaDaArma(item) {
  */
 const CACHE = new WeakMap();
 
+/**
+ * O bônus de dano físico da FORÇA vale neste golpe? No PoE, só no corpo a corpo — e, com a Empunhadura de Ferro ("Bônus de Dano de Força se
+ * Aplica ao Dano de Ataque de Projéteis assim como ao Dano Corpo a Corpo"), também nos ataques de projétil. `tags`: as do golpe (Draevor).
+ */
+export const forcaNoGolpe = (ficha, tags = []) => tags.includes('melee') || (Number(ficha?.afPoe?.forca_em_projeteis) > 0 && tags.includes('projectile') && tags.includes('attack'));
+
 /** Esquece a ficha guardada (a sessão chama no início de cada tique/comando). */
 export function invalidar(estado) {
   if (estado) CACHE.delete(estado);
@@ -154,7 +160,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
    * Evasion, Attack Speed) entram abaixo, cada um no número que o combate lê.
    */
   const principais = Atributos.principais(estado, af);
-  const doAtributo = Atributos.efeitos(principais);
+  const doAtributo = Atributos.efeitos(principais, af);
   /*
    * ---- A CLASSE e as especializações naturais ----
    * `gamedata/classes.json` (ver `personagem/especializacoes.mjs`): afinidades
@@ -554,9 +560,15 @@ export function regenDoPoe(estado, af) {
   const vidaAumentada = (af.life_regen_pct ?? 0) + (af.recuperacao_inc ?? 0) + (af.recuperacao_vida_inc ?? 0);
   const manaAumentada = (af.mana_regen_pct ?? 0) + (af.recuperacao_mana_inc ?? 0);
   // ("Você não possui Regeneração de Vida", "Espaço de anel direito: Não pode Regenerar Mana"; "X% de Mana Regenerada por segundo".)
-  const vidaPorSegundo = af.sem_regen_vida > 0 ? 0 : Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  const regenDaVida = af.sem_regen_vida > 0 ? 0 : Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  // (Juramento do Zelote: "Regeneração de Vida é aplicada ao Escudo de Energia" — a vida não regenera; o escudo ganha o mesmo por segundo.)
+  // (a keystone da árvore, `regen_vida_no_escudo`, e a que as PEÇAS dão — `keystone:juramentoDoZelote`/`sempre:` — pelo mesmo caminho)
+  const noEscudo = Number(af.regen_vida_no_escudo) > 0 || Number(af['keystone:juramentoDoZelote']) > 0 || Number(af['sempre:juramentoDoZelote']) > 0;
+  // ("X% menos Regeneração de Vida" — a Juventude Eterna: multiplica.)
+  const vidaPorSegundo = noEscudo ? 0 : regenDaVida * Math.max(0, 1 - (Number(af.regen_vida_menos) || 0) / 100);
+  const esDaVida = noEscudo ? regenDaVida : 0;
   const manaPorSegundo = af.sem_regen_mana > 0 ? 0 : Math.max(0, (((estado.maxMana ?? 0) * (MANA_REGEN_BASE_POE + (af.mana_regen_max_pct ?? 0))) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));
-  return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0 };
+  return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0, ...(esDaVida ? { esDaVida } : {}) };
 }
 
 function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens, gem, buff }) {
@@ -856,7 +868,12 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
       const quanto = Math.min(total, (max * porInstancia) / 100);
       if (quanto > 0) lista.push({ recurso, restante: quanto, porSegundo: (max * taxa) / 100 });
     };
-    instancia('vida', vida, estado.maxHp ?? 0);
+    // (Devastador Fantasma: "Drena Escudo de Energia ao invés de Vida" — a instância é de escudo, com o teto do escudo.)
+    if (ModsPoe.valor(ficha, 'roubo_vida_no_escudo') > 0) {
+      const esMax = Math.max(0, Math.round(ficha.energyShield ?? 0));
+      const quanto = Math.min(vida, (esMax * porInstancia) / 100);
+      if (quanto > 0) lista.push({ recurso: 'es', restante: quanto, porSegundo: (esMax * taxa) / 100, max: esMax });
+    } else instancia('vida', vida, estado.maxHp ?? 0);
     instancia('mana', mana, estado.maxMana ?? 0);
     return;
   }
@@ -886,7 +903,11 @@ export function recuperarRoubo(estado, ms) {
     const pedido = ativas.reduce((n, x) => n + Math.min(x.restante, x.porSegundo * s), 0);
     // ("Recuperação total por segundo do Dreno de Vida aumentada", "é Dobrado".)
     const fRoubo = combate(estado);
-    const teto = (max * (recurso === 'es' ? LEECH_POE.porSegundoEsPct : LEECH_POE.porSegundoPct) * Math.max(0, 1 + ModsPoe.valor(fRoubo, 'roubo_teto_inc') / 100) * s) / 100;
+    // (+ "Máximo total da Recuperação do Escudo de Energia por segundo do Dreno é Dobrado" — o Devastador Fantasma.)
+    const dobraEs = recurso === 'es' && ModsPoe.valor(fRoubo, 'roubo_teto_es_dobrado') > 0 ? 2 : 1;
+    // ("X% menos máximo de Vida Total Recuperada do Dreno por Segundo" — a Juventude Eterna.)
+    const menosVida = recurso === 'vida' ? Math.max(0, 1 - ModsPoe.valor(fRoubo, 'roubo_teto_vida_menos') / 100) : 1;
+    const teto = (max * (recurso === 'es' ? LEECH_POE.porSegundoEsPct * dobraEs : LEECH_POE.porSegundoPct) * menosVida * Math.max(0, 1 + ModsPoe.valor(fRoubo, 'roubo_teto_inc') / 100) * s) / 100;
     const fator = pedido > teto ? teto / pedido : 1;
     let ganho = 0;
     for (const x of ativas) {

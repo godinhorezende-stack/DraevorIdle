@@ -1,5 +1,5 @@
 {
-  "_nota": "Regras de tradução PRÓPRIAS da árvore de passivas do PoE (incremento 4b), lidas ANTES das regras dos mods (traducao.json) — os textos da árvore dizem 'X aumentado em N%' onde os mods dizem de outro jeito. Mesmo formato das regras dos mods; um efeito pode ser `stat` (atributo somado, a mesma chave dos itens), `pct` (% de um stat da árvore do Draevor: life, mana, armour... — a vida/mana máximas somam este %) ou `tag` (dano % por tag de skill, o formato de dano da árvore do Draevor). O que não casa aqui nem nos mods vira atributo registrado do próprio texto (sem efeito ainda). Linhas inteiras entre parênteses são texto explicativo do PoE: viram nota, não efeito.",
+  "_nota": "Regras de tradução PRÓPRIAS da árvore de passivas do PoE (incremento 4b), lidas ANTES das regras dos mods (traducao.json) — os textos da árvore dizem 'X aumentado em N%' onde os mods dizem de outro jeito. Mesmo formato das regras dos mods; um efeito pode ser `stat` (atributo somado, a mesma chave dos itens), `pct` (% de um stat da árvore do Draevor: life, mana, armour... — a vida/mana máximas somam este %) (o `tag` — a afinidade de dano por tag do Draevor — não se usa mais aqui: no modo PoE o golpe não a lê; o dano por tipo de golpe é o `stat` com a tag de golpe, ex.: `dmg_inc@projetil`). O que não casa aqui nem nos mods vira atributo registrado do próprio texto (sem efeito ainda). Linhas inteiras entre parênteses são texto explicativo do PoE: viram nota, não efeito.",
   "regras": [
     {
       "padrao": "^Vida máxima aumentada em \\{(\\d+)\\}%$",
@@ -103,7 +103,7 @@
       "padrao": "^Dano de Projétil aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "tag": "projectile",
+          "stat": "dmg_inc@projetil",
           "valor": "{1}"
         }
       ],
@@ -113,7 +113,7 @@
       "padrao": "^Dano Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "tag": "melee",
+          "stat": "dmg_inc@corpo",
           "valor": "{1}"
         }
       ],
@@ -123,18 +123,17 @@
       "padrao": "^Dano Físico Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "tag": "melee",
+          "stat": "phys_dmg@corpo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no Draevor vira dano corpo a corpo (todo golpe de perto é físico ou da arma)"
+      "estado": "equivalente"
     },
     {
       "padrao": "^Dano de Área aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "tag": "area",
+          "stat": "dmg_inc@area",
           "valor": "{1}"
         }
       ],
@@ -144,12 +143,11 @@
       "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto portar um Escudo$",
       "efeitos": [
         {
-          "stat": "block",
+          "stat": "block@comEscudo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o bloqueio do Draevor já é o do escudo"
+      "estado": "equivalente"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano de Ataques é Drenado como Vida$",
@@ -159,8 +157,7 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o roubo de vida do Draevor vale para todo dano"
+      "estado": "equivalente"
     },
     {
       "padrao": "^\\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo$",
@@ -171,6 +168,72 @@
         }
       ],
       "estado": "equivalente"
+    },
+    {
+      "padrao": "^Pode Alocar Passivas do ponto inicial da Caçadora$",
+      "efeitos": [
+        {
+          "stat": "inicio_extra:Ranger",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o início dessa classe passa a valer como seu: dá para alocar a partir dele (o \"Caminho\" da Ascendente)"
+    },
+    {
+      "padrao": "^Pode Alocar Passivas do ponto inicial do Marauder$",
+      "efeitos": [
+        {
+          "stat": "inicio_extra:Marauder",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o início dessa classe passa a valer como seu: dá para alocar a partir dele (o \"Caminho\" da Ascendente)"
+    },
+    {
+      "padrao": "^Pode Alocar Passivas do ponto inicial do Sombra$",
+      "efeitos": [
+        {
+          "stat": "inicio_extra:Shadow",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o início dessa classe passa a valer como seu: dá para alocar a partir dele (o \"Caminho\" da Ascendente)"
+    },
+    {
+      "padrao": "^Pode Alocar Passivas do ponto inicial do Templário$",
+      "efeitos": [
+        {
+          "stat": "inicio_extra:Templar",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o início dessa classe passa a valer como seu: dá para alocar a partir dele (o \"Caminho\" da Ascendente)"
+    },
+    {
+      "padrao": "^Pode Alocar Passivas do ponto inicial da Bruxa$",
+      "efeitos": [
+        {
+          "stat": "inicio_extra:Witch",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o início dessa classe passa a valer como seu: dá para alocar a partir dele (o \"Caminho\" da Ascendente)"
+    },
+    {
+      "padrao": "^Pode Alocar Passivas do ponto inicial do Duelista$",
+      "efeitos": [
+        {
+          "stat": "inicio_extra:Duelist",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "o início dessa classe passa a valer como seu: dá para alocar a partir dele (o \"Caminho\" da Ascendente)"
     }
   ],
   "_keystones": "As KEYSTONES do PoE com mecânica no Draevor (pelo nome em inglês). Só as que dá para representar dos DOIS lados (o bônus e o custo); as outras ficam com a regra `texto` (sem efeito). `estado`: equivalente ou aproximado (com `nota` dizendo a diferença). `efeitos`: o que o nó soma (o mesmo formato das linhas).",

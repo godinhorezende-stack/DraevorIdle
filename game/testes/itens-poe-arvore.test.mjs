@@ -5,12 +5,14 @@ import { readFileSync, existsSync } from 'node:fs';
 import { traduzirLinha, converterArvore, paraModelo } from '../systems/itens-poe/arvore.mjs';
 import { validar } from '../systems/passivas/arvore.mjs';
 
-test('as linhas da árvore viram efeitos da árvore do Draevor (atributo somado ou dano por tag); parênteses viram nota', () => {
+test('as linhas da árvore viram efeitos da árvore do Draevor (atributo somado, com a tag de golpe na chave); parênteses viram nota', () => {
   assert.deepEqual(paraModelo('Evasão aumentada em 14%'), { modelo: 'Evasão aumentada em {0}%', valores: [14] });
   assert.deepEqual(traduzirLinha('Vida máxima aumentada em 8%').efeitos, [{ stat: 'life', pct: 8 }], 'vida % = o % de stat que a vida máxima soma');
   assert.deepEqual(traduzirLinha('Precisão aumentada em 10%').efeitos, [{ stat: 'accuracy', pct: 10 }]);
   assert.deepEqual(traduzirLinha('+10 de Força').efeitos, [{ add: 'str', valor: 10 }], 'as regras dos mods valem também');
-  assert.deepEqual(traduzirLinha('Dano de Projétil aumentado em 12%').efeitos, [{ tag: 'projectile', dano: 12 }]);
+  // (C, 09/10 — auditoria da árvore: era `{ tag: 'projectile' }`, a afinidade do Draevor, que o golpe do PoE NÃO lê — o nó não fazia nada no
+  // modo PoE. Agora é o modificador tipado do PoE, resolvido pelo `fichaDoGolpe`; o efeito no golpe está provado em passivas-poe.test.mjs.)
+  assert.deepEqual(traduzirLinha('Dano de Projétil aumentado em 12%').efeitos, [{ add: 'dmg_inc@projetil', valor: 12 }]);
   assert.deepEqual(traduzirLinha('Evasão e Armadura aumentadas em 6%').efeitos, [{ add: 'armour_pct', valor: 6 }, { add: 'evasion_pct', valor: 6 }]);
   const nota = traduzirLinha('(Recentemente se refere aos últimos 4 segundos)');
   assert.deepEqual([nota.estado, nota.efeitos.length], ['nota', 0]);

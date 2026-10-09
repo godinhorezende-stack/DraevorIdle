@@ -42,7 +42,7 @@ export function montar(estado, ficha, extras = {}) {
   const outros = (k) => (total[k] ?? 0) - (itens[k] ?? 0) - (arv.adds[k] ?? 0);
   const esp = Especializacoes.efeitos(estado);
   const p = Atributos.principais(estado, total);
-  const doAtributo = Atributos.efeitos(p);
+  const doAtributo = Atributos.efeitos(p, total);
   const classe = ClassesPoe.classeDe(estado);
   const asc = estado.passivas?.ascendencia ? Passivas.arvore()?.ascendencias?.[estado.passivas.ascendencia] ?? null : null;
   const o = ficha.origens ?? {};
@@ -143,7 +143,9 @@ export function montar(estado, ficha, extras = {}) {
   // dano por segundo do Sangramento e do Veneno que o acerto aplica (`itens-poe/afeccoes`: 70% e 30% do dano por segundo, os multiplicadores
   // e os "aumentado" das afecções).
   const corpoACorpo = !['distance', 'magic'].includes(ficha.armaEquipada?.familia);
-  const pctDo = (el) => (ficha.danoDoElemento?.[el] ?? 0) - (el === 'physical' && !corpoACorpo ? ficha.danoFisicoDaForca ?? 0 : 0);
+  // (+ a Empunhadura de Ferro: a Força também no ataque de projétil — `Ficha.forcaNoGolpe`)
+  const forcaVale = corpoACorpo || Number(ficha.afPoe?.forca_em_projeteis) > 0;
+  const pctDo = (el) => (ficha.danoDoElemento?.[el] ?? 0) - (el === 'physical' && !forcaVale ? ficha.danoFisicoDaForca ?? 0 : 0);
   const fisico = [ficha.damage?.min ?? 0, ficha.damage?.max ?? 0].map((v) => v * (1 + pctDo('physical') / 100));
   const partesDoAcerto = { physical: fisico };
   for (const [el, [a0, b0]] of Object.entries(ficha.danoSomado ?? {})) {
