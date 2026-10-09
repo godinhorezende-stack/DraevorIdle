@@ -602,12 +602,9 @@ export function dinamicoValido(stat) {
   }
   const m = /^(sempre|efeito_buff):(\w+)$/.exec(stat);
   if (m) return !!BUFFS[m[2]];
-  // O efeito de buff de UMA gema (`efeito_buff_gema:ira` — gemas-poe.adds): só a gema que o jogo tem.
-  const gema = /^efeito_buff_gema:([\w-]+)$/.exec(stat);
-  if (gema && !/^(aura|clamor|arauto|lacaio|todos|golem)$/.test(gema[1])) return gemaConhecida(gema[1]) === true;
-  // O efeito de UMA maldição ("Efeito da Maldição Flamabilidade aumentado" — acoes.efeitosDaMaldicao): só a gema que o jogo tem.
-  const maldicao = /^efeito_maldicao_gema:([\w-]+)$/.exec(stat);
-  if (maldicao) return gemaConhecida(maldicao[1]) === true;
+  // O efeito de buff de UMA gema (`efeito_buff_gema:ira` — gemas-poe.adds) e o de UMA maldição (`efeito_maldicao_gema:flamabilidade` —
+  // acoes.efeitosDaMaldicao): valem pela FORMA, como `concede:<gema>`; a gema que o jogo não tem a tradução já marca "não existe", com o nome.
+  if (/^(efeito_buff_gema|efeito_maldicao_gema):[\w-]+$/.test(stat)) return true;
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
