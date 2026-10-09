@@ -59,12 +59,15 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (09/10, os implícitos eldritch:) a PRESENÇA — um inimigo Único (ou chefe) perto, o Chefe Final do Atlas (um pináculo) perto, e um Raro
   // ou Único próximo.
   'unicoNaPresenca', 'chefeFinalNaPresenca', 'raroOuUnicoPerto',
+  // (09/10, a árvore:) sem modificador de Vida no Peitoral; Elmo, Peitoral, Luvas e Botas todos com Evasão / com Armadura na base;
+  // reservando Vida E Mana.
+  'peitoralSemVida', 'armadurasComEvasao', 'armadurasComArmadura', 'reservouVidaEMana',
 ]);
 /** O raio da PRESENÇA (PoE: a área em volta do personagem que os implícitos eldritch olham), em casas. */
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin):/;
+const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -73,7 +76,7 @@ export const TAGS_DE_GOLPE = new Set([
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
-  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
+  'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
 ]);
 /** As condições que dependem do ANEL em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`). */
@@ -83,6 +86,14 @@ const classeDe = (peca) => peca?.poe?.classe ?? null;
 const recente = (quando, agora) => quando != null && agora - quando <= RECENTE_MS;
 
 /** As condições de estado que VALEM agora para o personagem (um Set). `total`: a soma (para os máximos de cargas e os atributos). */
+/** As defesas da BASE de uma peça do PoE (`{ armadura, evasao, escudo }`: o que o catálogo diz da base), ou null. */
+let leitorDeBase = null;
+let leitorDeMaestrias = null;
+/** Quem conta as maestrias alocadas de um tema (`passivas/arvore.mjs`): `(estado, 'Vida') → n`. */
+export function definirLeitorDeMaestrias(fn) { leitorDeMaestrias = fn; }
+export function definirLeitorDeBase(fn) { leitorDeBase = fn; }
+export const defesasDaPeca = (poe) => leitorDeBase?.(poe) ?? null;
+
 export function condicoesDe(estado, total = null, principais = null) {
   const v = new Set();
   v.parametros = { estado, total, principais };
@@ -122,6 +133,17 @@ export function condicoesDe(estado, total = null, principais = null) {
   if ((estado?.maxMana ?? 0) > 0 && (estado.mana ?? 0) <= VIDA_BAIXA * estado.maxMana) v.add('manaBaixa');
   else v.add('naoManaBaixa');
   if (!(estado?.es > 0)) v.add('semEscudo');
+  // (09/10) As peças vestidas: o Peitoral sem modificador de Vida; as quatro armaduras com Evasão / com Armadura na base (`defesasDaPeca`).
+  const eq = estado?.equipment ?? {};
+  const corpo = eq.body?.poe;
+  if (corpo && ![...(corpo.implicitos ?? []), ...(corpo.prefixos ?? []), ...(corpo.sufixos ?? []), ...(corpo.modificadores ?? [])].some((m) => /Vida/.test(m.modelo ?? m.texto ?? ''))) v.add('peitoralSemVida');
+  const quatro = ['head', 'body', 'gloves', 'feet'].map((s) => eq[s]?.poe ? defesasDaPeca(eq[s].poe) : null);
+  if (quatro.every((d) => d?.evasao > 0)) v.add('armadurasComEvasao');
+  if (quatro.every((d) => d?.armadura > 0)) v.add('armadurasComArmadura');
+  if (h) {
+    const res = Object.values(h.buffs ?? {}).filter((b) => b?.reserva && b.ate > (h.clock ?? 0));
+    if (res.some((b) => b.reserva.recurso === 'vida') && res.some((b) => b.reserva.recurso !== 'vida')) v.add('reservouVidaEMana');
+  }
   if (estado?.es > 0 && estado.esCheio) v.add('escudoCheio');
   if (!arma) v.add('desarmado');
   if (!estado?.equipment?.shield) v.add('maoSecundariaVazia');
@@ -174,13 +196,15 @@ export function vale(conds, c) {
   const m = COND_COM_PARAMETRO.exec(c);
   if (!m) return false;
   const { estado, total, principais } = conds.parametros ?? {};
-  const [, tipo, ...resto] = c.split(':');
+  const [tipo, ...resto] = c.split(':');
   const h = estado?.hunt;
   const agora = h?.clock ?? 0;
   const cargas = (t) => { const x = h?.cargasPoe?.[t]; return x && x.ate > agora ? x.n | 0 : 0; };
   const maxCargas = (t) => 3 + (Number(total?.[`max_${t}`]) || 0);
   switch (tipo) {
     case 'atrMin': return (principais?.[resto[0]] ?? 0) >= Number(resto[1]);
+    // "se você tiver ao menos N Maestrias de Vida alocadas": `maestriasDe:Vida:N` (a árvore registra quem conta — `definirLeitorDeMaestrias`).
+    case 'maestriasDe': return (leitorDeMaestrias?.(estado, resto[0]) ?? 0) >= Number(resto[1]);
     case 'atrMaior': return (principais?.[resto[0]] ?? 0) > (principais?.[resto[1]] ?? 0);
     case 'buff': return buffAtivo(estado, resto[0], total);
     case 'semCargas': return cargas(resto[0]) === 0;
@@ -223,7 +247,7 @@ export function resolver(estado, total, principais = null) {
 }
 
 /** As escalas que só a ficha sabe (a segunda passada). */
-export const ESCALAS_DA_FICHA = /^(precisao|armadura|evasao|esMax|bloqueio|bloqueioMagico|armaduraEscudo|evasaoEscudo|esEscudo):/;
+export const ESCALAS_DA_FICHA = /^(precisao|armadura|evasao|esMax|bloqueio|bloqueioMagico|armaduraEscudo|evasaoEscudo|esEscudo|resFogo|resGelo|resRaio|resCaos):/;
 
 /**
  * O fator de uma ESCALA ("por X"): `nivel`, `atr:dex:10` (a cada 10 de Destreza), `carga:frenesi`, `cargaMax:poder`, `furia`, `furia:5`,
@@ -255,6 +279,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     case 'venenoEmVoce': return Math.min(Number(b) || Infinity, (h?.efeitosDoJogador?.dots ?? []).filter((d) => /veneno/i.test(d.tipo) && d.falta > 0).length);
     case 'afeccaoEmVoce': return new Set((h?.efeitosDoJogador?.dots ?? []).filter((d) => d.falta > 0).map((d) => d.tipo)).size + ['congelado', 'lento', 'atordoado'].filter((k) => h?.controle?.[k]?.ate > agora).length;
     case 'mana': return cada(estado?.maxMana ?? 0, a);
+    // (09/10) "para cada uma das suas Habilidades de Aura ou Arauto afetando você": as auras e arautos ligados.
+    case 'aurasAtivas': return Object.values(h?.buffs ?? {}).filter((b) => b && b.ate > agora && /^poe-(aura|arauto)$/.test(b.tipo ?? '')).length;
     // (09/10) "por Inimigo em Curto Alcance" (a até 2 casas), "por Inimigo próximo" (a até 4).
     case 'inimigosPerto': { const r = Number(a) || 2; const p = h?.pos; return p ? (h.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) <= r).length : 0; }
     case 'matouRecente': return Math.min(Number(b) || Infinity, (h?.poeMortesRecentes ?? []).filter((t) => agora - t <= RECENTE_MS).length);
@@ -274,7 +300,8 @@ export function escalasDaFicha(estado, total, ficha) {
     conds ??= condicoesDe(estado, total);
     if (!c.every((x) => vale(conds, x))) continue;
     const [tipo, n] = escala.split(':');
-    const base = { precisao: ficha.accuracy, armadura: ficha.armor, evasao: ficha.evasion, esMax: ficha.energyShield, bloqueio: (ficha.blockChance ?? 0) * 100, bloqueioMagico: (ficha.bloqueioDeMagia ?? 0) * 100 }[tipo] ?? 0;
+    // (+ a RESISTÊNCIA total de um elemento — "para cada 1% de Resistência a Fogo Total": `resFogo:1`.)
+    const base = { precisao: ficha.accuracy, armadura: ficha.armor, evasao: ficha.evasion, esMax: ficha.energyShield, bloqueio: (ficha.blockChance ?? 0) * 100, bloqueioMagico: (ficha.bloqueioDeMagia ?? 0) * 100, resFogo: ficha.protection?.fire, resGelo: ficha.protection?.ice, resRaio: ficha.protection?.energy, resCaos: ficha.protection?.chaos }[tipo] ?? 0;
     const m = Math.floor(Math.max(0, base) / Math.max(1, Number(n) || 1));
     if (m) saida[stat] = (saida[stat] ?? 0) + v * m;
   }
@@ -394,6 +421,8 @@ const TAG_DO_POE = {
   Ataque: 'ataque', Magia: 'magia', 'Corpo a Corpo': 'corpo', Projétil: 'projetil', Área: 'area', Fogo: 'fogo', Gelo: 'gelo', Raio: 'raio',
   Físico: 'fisico', Caos: 'caos', Arco: 'arco', Totem: 'totem', Armadilha: 'armadilha', Mina: 'mina', Lacaio: 'lacaio', Arauto: 'arauto',
   Vaal: 'vaal', Movimento: 'movimento', Clamor: 'clamor', Aura: 'aura', Maldição: 'maldicao',
+  // (09/10, a árvore:) "Habilidade de Guarda" e "Gemas de Habilidade Críticas" (a tag Crítico da gema — não o golpe crítico).
+  Guarda: 'guarda', Crítico: 'gemaCritica',
 };
 /** As tags de golpe de uma lista de tags do poedb (`['Ataque','Projétil','Arco']` → `['ataque','projetil','arco']`), + `elemental`. */
 export function tagsDoPoe(lista = []) {
@@ -554,7 +583,9 @@ export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
   const f = hunt?.furia;
   if (!f || !(f.n > 0)) return;
   if (agora - f.ganhou < FURIA.esperaMs) { f.perdeu = agora; return; }
-  while (f.n > 0 && agora - f.perdeu >= FURIA.perdaMs) { f.n--; f.perdeu += FURIA.perdaMs; }
+  // ("Perda Inerente de Fúria é X% mais lenta" — a árvore.)
+  const perdaMs = FURIA.perdaMs * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.furia_perda_lenta) || 0) / 100);
+  while (f.n > 0 && agora - f.perdeu >= perdaMs) { f.n--; f.perdeu += perdaMs; }
 }
 
 /** A chave de um atributo da peça vestida em `slot`, resolvendo a condição de ANEL: no anel certo, sem a condição; no outro, null. */
@@ -574,10 +605,10 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['matar', 'critico', 'bloquear', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['usarGuarda', 'matar', 'critico', 'bloquear', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer']);
-export const ACOES = new Set(['buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
+export const ACOES = new Set(['explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
 /**
@@ -616,7 +647,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e) => !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeVazio|itemCorrompido|itemNaoCorrompido|itemUnico|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e);
+export const escalaValida = (e) => !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeVazio|itemCorrompido|itemNaoCorrompido|itemUnico|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e);
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -851,7 +882,8 @@ export function controleNoJogador(ficha, efeito, rng = Math.random, hunt = null)
   const v = (k) => Number(ficha.afPoe[k]) || 0;
   // (+ a imunidade por tempo dos frascos: "Concede Imunidade a Congelamento por N segundos se usado enquanto Congelado".)
   const imunePorTempo = (hunt?.imunidadesPoe?.[a.nome] ?? 0) > (hunt?.clock ?? 0) || (efeito === 'lento' && (hunt?.imunidadesPoe?.lento ?? 0) > (hunt?.clock ?? 0));
-  if (v(`imune_${a.nome}`) > 0 || imunePorTempo) return { evitou: true, duracaoFator: 0, pctFator: 0, chanceFator: 0 };
+  // (+ "Você não pode ficar Lento" — a árvore: só a lentidão.)
+  if (v(`imune_${a.nome}`) > 0 || imunePorTempo || (efeito === 'lento' && v('imune_lento') > 0)) return { evitou: true, duracaoFator: 0, pctFator: 0, chanceFator: 0 };
   const evitar = v(`evitar_${a.nome}`) + (a.elemental ? v('avoid_elem_ailments') : 0);
   if (evitar > 0 && rng() * 100 < evitar) return { evitou: true, duracaoFator: 0, pctFator: 0, chanceFator: 1 };
   let duracaoFator = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100);

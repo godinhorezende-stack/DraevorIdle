@@ -24,6 +24,7 @@ import { readFileSync } from 'node:fs';
 import * as Keystones from './keystones.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
+import { definirLeitorDeMaestrias } from '../itens-poe/condicoes-poe.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -537,3 +538,9 @@ export function arvoreParaCliente() {
     })),
   };
 }
+
+// (09/10) "se você tiver ao menos N Maestrias de Vida alocadas" (as maestrias da árvore do PoE): as maestrias alocadas cujo nome tem o tema.
+definirLeitorDeMaestrias((estado, tema) => (estado?.passivas?.alocados ?? []).filter((id) => {
+  const n = ARVORE.porId.get(id);
+  return n?.tipo === 'mastery' && new RegExp(`\\b${tema}\\b`, 'i').test(n.nome ?? '');
+}).length);

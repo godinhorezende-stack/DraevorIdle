@@ -258,7 +258,8 @@ const COR_DO_ATRIBUTO = { str: '#c8402f', dex: '#2fa35d', int: '#3474dc' };
 const COR_DA_CLASSE = { knight: 'str', paladin: 'dex', monk: 'dex', sorcerer: 'int', druid: 'int', Marauder: 'str', Duelist: 'str', Templar: 'str', Ranger: 'dex', Shadow: 'dex', Witch: 'int', Scion: null };
 const LETRA_DA_CLASSE = { knight: 'K', paladin: 'P', sorcerer: 'S', druid: 'D', monk: 'M', Marauder: 'M', Duelist: 'D', Templar: 'T', Ranger: 'R', Shadow: 'S', Witch: 'B', Scion: 'H' };
 // A marca da tradução de cada linha de um nó da árvore do PoE (as mesmas do balão das peças do PoE).
-const MARCA_DO_ESTADO = { equivalente: ['✓', 'tem efeito no Draevor'], aproximado: ['≈', 'tem efeito no Draevor (com diferença)'], novo: ['◆', 'atributo novo do PoE, com efeito'], registrado: ['○', 'registrado, ainda sem efeito'], inerte: ['–', 'mecânica do PoE que o jogo não tem'] };
+// (dono, 09/10: "o que tiver funcionando coloque só o certo verde e o que não tiver um x vermelho"): ✓ com efeito no jogo, ✗ sem efeito.
+const MARCA_DO_ESTADO = { equivalente: ['✓', 'tem efeito no jogo (mesma conta do PoE)'], aproximado: ['✓', 'tem efeito no jogo (com diferença)'], novo: ['✓', 'atributo do PoE, com efeito no jogo'], registrado: ['✗', 'ainda sem efeito no jogo'], inerte: ['✗', 'mecânica do PoE que o jogo não tem'] };
 // A cor do emblema por cluster (o "ícone" do nó): o elemento/tema dele.
 const COR_DO_CLUSTER = {
   fire: '#ff7a3c', ice: '#7fd0ff', earth: '#7fc05a', energy: '#b58cff', holy: '#ffe07a', death: '#9c7ab8', physical: '#c9b8a0',

@@ -82,8 +82,9 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   if (sorte(v('chance_inervar'))) { e.inervado = { ate: agora + 1000 * (v('inervar_s') || 4) }; ev('inervado'); }
   // A EXPOSIÇÃO no acerto ("Inflige Exposição a Fogo ao Acertar, aplicando −X% de Resistência a Fogo"): −X na resistência do alvo por 4 s
   // (`condicoes-poe.exposicao`, lida em `hunt/resistencia`). Como no PoE, só a mais forte de cada elemento vale.
-  for (const [el, k] of [['fire', 'exposicao_acerto_fogo'], ['ice', 'exposicao_acerto_gelo'], ['energy', 'exposicao_acerto_raio']]) {
-    const pct = Math.abs(v(k));
+  for (const [el, k, extra] of [['fire', 'exposicao_acerto_fogo', 'exposicao_extra_fogo'], ['ice', 'exposicao_acerto_gelo', 'exposicao_extra_gelo'], ['energy', 'exposicao_acerto_raio', 'exposicao_extra_raio']]) {
+    // (+ "Exposição a Fogo infligida por você aplica X% extra de Resistência a Fogo" — a maestria da árvore.)
+    const pct = Math.abs(v(k)) + (v(k) ? Math.abs(v(extra)) : 0);
     if (!pct) continue;
     const ainda = (e.exposicao?.[el] ?? 0) > agora;
     e.exposicao = { ...(e.exposicao ?? {}), [el]: agora + 4000 };
@@ -335,6 +336,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       return;
     }
     case 'danoPctVida': estado.hp = Math.max(0, (estado.hp ?? 0) - ((estado.maxHp ?? 0) * v) / 100); return;
+    // `explodirChance:<pct da vida>` = a CHANCE (%) de o morto explodir ("Inimigos Queimando mortos por você têm X% de chance de Explodirem").
+    case 'explodirChance': if (!sorte(v)) return; return aplicarAcao(estado, hunt, { ...ev, acao: 'explodir', valor: Number(ev.param) || 10 }, ficha, ctx);
     case 'explodir': {
       // O morto explode: X% da vida máxima dele em quem está em volta (1 casa).
       if (!alvo || !hunt.pos) return;

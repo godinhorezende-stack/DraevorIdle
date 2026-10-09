@@ -97,3 +97,56 @@ test('as mecânicas novas das linhas da árvore: limiar de vida baixa, fúria m�
   assert.ok(comPonto, 'algum nó concede ponto de passiva (a Ascendente)');
   assert.ok(base > 0);
 });
+
+test('lotes 3 e 4 da árvore: peitoral sem Vida, armaduras com Evasão, maestrias de Vida, auras ativas, crítico que não incendeia, imune a Lento', { skip: SEM }, async () => {
+  const C = await import('../systems/itens-poe/condicoes-poe.mjs');
+  const Af = await import('../systems/itens-poe/afeccoes.mjs');
+  const Jogo = await import('../systems/itens-poe/jogo.mjs');
+  const { traduzirParte } = await import('../systems/itens-poe/traduzir.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  Jogo.iniciar(ITEM_CATALOG);
+  // o Peitoral sem modificador de Vida (e com): a condição
+  const peca = (base, mods = []) => ({ poe: { base, classe: base.split('/')[0], prefixos: mods.map((m) => ({ modelo: m })), sufixos: [], implicitos: [] } });
+  const semVida = { maxHp: 100, hp: 100, equipment: { body: peca('Body_Armours/Plate_Vest', ['+{0} de Armadura']) } };
+  assert.ok(C.condicoesDe(semVida, {}).has('peitoralSemVida'));
+  assert.ok(!C.condicoesDe({ ...semVida, equipment: { body: peca('Body_Armours/Plate_Vest', ['+{0} de Vida máxima']) } }, {}).has('peitoralSemVida'));
+  // as quatro armaduras com Evasão na base (Couro: evasão; Placas: armadura)
+  const evas = (cls) => Catalogo.catalogo().classes[cls].bases.find((b) => (b.atributos?.evasao?.max ?? 0) > 0 && !(b.atributos?.armadura?.max > 0)).id;
+  const quatro = { maxHp: 1, hp: 1, equipment: Object.fromEntries([['head', 'Helmets'], ['body', 'Body_Armours'], ['gloves', 'Gloves'], ['feet', 'Boots']].map(([s, c]) => [s, peca(evas(c))])) };
+  assert.ok(C.condicoesDe(quatro, {}).has('armadurasComEvasao'));
+  assert.ok(!C.condicoesDe(quatro, {}).has('armadurasComArmadura'));
+  // as maestrias de Vida alocadas
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 90 }), { sistema: 'poe' });
+  P.garantir(e);
+  const vida = Object.values(P.arvore().nos).filter((n) => n.tipo === 'mastery' && /\bVida\b/.test(n.nome)).slice(0, 2).map((n) => n.id);
+  e.passivas.alocados = [...e.passivas.alocados, ...vida];
+  const conds = C.condicoesDe(e, {});
+  assert.ok(C.vale(conds, 'maestriasDe:Vida:2'));
+  assert.ok(!C.vale(conds, 'maestriasDe:Vida:3'));
+  // (bug: o nome da condição com parâmetro era pulado no `vale` — nenhuma valia: atributo mínimo, fúria, cargas…)
+  const com = C.condicoesDe({ hunt: { clock: 5, furia: { n: 4 }, cargasPoe: { poder: { n: 2, ate: 9 } } } }, {}, { str: 120, dex: 30 });
+  assert.ok(C.vale(com, 'atrMin:str:100') && !C.vale(com, 'atrMin:dex:100'));
+  assert.ok(C.vale(com, 'atrMaior:str:dex'));
+  assert.ok(C.vale(com, 'furiaMin:3') && !C.vale(com, 'furiaMin:5'));
+  assert.ok(C.vale(com, 'semCargas:frenesi') && C.vale(com, 'comCargas:poder') && !C.vale(com, 'semCargas:poder'));
+  // auras e arautos ligados
+  assert.equal(C.fatorDaEscala({ hunt: { clock: 0, buffs: { a: { tipo: 'poe-aura', ate: 9 }, b: { tipo: 'poe-arauto', ate: 9 }, c: { tipo: 'poe-guarda', ate: 9 } } } }, {}, {}, 'aurasAtivas'), 2);
+  // o crítico que não incendeia
+  assert.equal(Af.daSoma({ critico_nao_incendeia: 1 }).criticoNaoIncendeia, true);
+  // imune a Lento
+  assert.equal(C.controleNoJogador({ afPoe: { imune_lento: 1 } }, 'lento').evitou, true);
+  for (const [texto, stat] of [
+    ['Vida máxima aumentada em {0}% se não houver Modificadores de Vida no Peitoral Equipado', 'life_inc@peitoralSemVida'],
+    ['{0}% mais Vida Máxima se você tiver ao menos {1} Maestrias de Vida alocadas', 'life_more@maestriasDe:Vida:3'],
+    ['Habilidades de Golpe Não Vaal focam em {0} Inimigo próximo adicional', 'golpe_alvos_extra'],
+    ['Dano aumentadeo em {0}% para cada uma das suas Habilidades de Aura ou Arauto afetando você', 'dmg_inc%aurasAtivas'],
+  ]) {
+    const r = traduzirParte(texto, [10, 3]);
+    assert.ok(['novo', 'equivalente', 'aproximado'].includes(r.estado), `${texto}: ${r.estado}`);
+    assert.equal(r.efeitos[0].stat, stat, texto);
+  }
+  // o dreno instantâneo: honesto — "não existe", com o porquê
+  const dreno = traduzirParte('{0}% do Dreno é Instantâneo', [10]);
+  assert.equal(dreno.estado, 'inerte');
+  assert.match(dreno.nota, /instantâneo/);
+});

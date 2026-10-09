@@ -8,7 +8,9 @@ const ROTULO = {
   alcance_metros: 'Alcance', protecao: 'Proteção', recupera: 'Recupera', cargas_por_uso: 'Cargas por uso', cargas_maximas: 'Cargas máximas', duracao_segundos: 'Duração',
 };
 const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance_critico_pct: '%', alcance_metros: ' m', duracao_segundos: ' s' };
-const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', inerte: '–', lembrete: '', registrado: '○' };
+// (dono, 09/10: "o que tiver funcionando coloque só o certo verde e o que não tiver um x vermelho"): com efeito no jogo ✓, sem efeito ✗; a
+// diferença (mesma conta, aproximado, atributo novo, não existe no jogo) fica no texto ao passar o mouse.
+const SIMBOLO = { equivalente: '✓', aproximado: '✓', novo: '✓', inerte: '✗', lembrete: '', registrado: '✗' };
 const ESTADO = { equivalente: 'tem efeito no jogo (mesma conta do PoE)', aproximado: 'tem efeito no jogo (com diferença)', novo: 'atributo do PoE, com efeito no jogo', inerte: 'mecânica do PoE que não existe no jogo', lembrete: 'texto de lembrete do PoE (explica a mecânica do mod de cima)', registrado: 'registrado, ainda sem efeito no combate' };
 /** O valor de um atributo da base no balão. `recupera` (frasco): "70 de Vida em 3 s"; faixa: "min–max"; o resto com o sufixo. */
 export const valorDoAtributo = (k, v) => {

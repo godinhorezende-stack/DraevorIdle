@@ -19225,6 +19225,399 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+    },
+    {
+      "padrao": "^Vida máxima aumentada em \\{(\\d+)\\}% se não houver Modificadores de Vida no Peitoral Equipado$",
+      "efeitos": [
+        {
+          "stat": "life_inc@peitoralSemVida",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Vida Máxima se você tiver ao menos \\{(\\d+)\\} Maestrias de Vida alocadas$",
+      "efeitos": [
+        {
+          "stat": "life_more@maestriasDe:Vida:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% do máximo de todas as Resistências Elementais se você Reservou Vida e Mana$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max@reservouVidaEMana",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max@reservouVidaEMana",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max@reservouVidaEMana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico se o Elmo, Peitoral, Luvas e Botas equipados tiverem Evasão$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@armadurasComEvasao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% do máximo de todas as Resistências Elementais se o Elmo, Peitoral, Luvas e Botas tiverem Armadura$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max@armadurasComArmadura",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max@armadurasComArmadura",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max@armadurasComArmadura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^Auras das suas Habilidades têm Efeito aumentado em \\{(\\d+)\\}% em você$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:aura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^Dano aumentade?o em \\{(\\d+)\\}% para cada uma das suas Habilidades de Aura ou Arauto afetando você$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%aurasAtivas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^Exposição a Fogo infligida por você aplica \\{(\\d+)\\}% extra de Resistência a Fogo$",
+      "efeitos": [
+        {
+          "stat": "exposicao_extra_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "estado": "aproximado",
+      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+    },
+    {
+      "padrao": "^Exposição a Gelo infligida por você aplica \\{(\\d+)\\}% extra de Resistência a Gelo$",
+      "efeitos": [
+        {
+          "stat": "exposicao_extra_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "estado": "aproximado",
+      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+    },
+    {
+      "padrao": "^Exposição a Raio infligida por você aplica \\{(\\d+)\\}% extra de Resistência a Raio$",
+      "efeitos": [
+        {
+          "stat": "exposicao_extra_raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "estado": "aproximado",
+      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+    },
+    {
+      "padrao": "^Inimigos Queimando mortos por você têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:10@alvoIncendiado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^Golpes Críticos não Incendeiam de forma inerente$",
+      "efeitos": [
+        {
+          "stat": "critico_nao_incendeia",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Sofrido de Dano Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "dano_degen_recebido_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^Perda Inerente de Fúria é \\{(\\d+)\\}% mais lenta$",
+      "efeitos": [
+        {
+          "stat": "furia_perda_lenta",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio$",
+      "efeitos": [
+        {
+          "stat": "phys_res@escudoCheio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "entra como redução de dano físico enquanto o escudo está cheio",
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Mana por \\{(\\d+)\\} segundos? quando você usar uma Habilidade de Guarda$",
+      "efeitos": [
+        {
+          "stat": "ev:usarGuarda:manaPct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a mana volta na hora (no PoE, ao longo do tempo)",
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas de Habilidade Críticas Suportadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@gemaCritica",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} de Vida por segundo para cada \\{(\\d+)\\}% de Resistência a Fogo Total$",
+      "efeitos": [
+        {
+          "stat": "life_regen%resFogo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dreno é Instantâneo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o dreno do jogo já é instantâneo: este modificador não muda nada",
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote)"
+    },
+    {
+      "padrao": "^Recuperação total por segundo do Dreno de Vida, Mana ou Escudo de Energia aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o dreno do jogo não tem teto de recuperação por segundo: este modificador não muda nada",
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote)"
+    },
+    {
+      "padrao": "^Máximo de Vida, Mana e Escudo de Energia total Recuperado por segundo do Dreno aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o dreno do jogo não tem teto de recuperação por segundo: este modificador não muda nada",
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos contra Inimigos que não podem ter Vida Drenada deles$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "no jogo todo inimigo pode ter a vida drenada",
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote)"
+    },
+    {
+      "padrao": "^Ganha uma carga de poder por segundo enquanto canaliza uma magia$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não há canalização por estágios no jogo (no jogo é um uso por vez)",
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote)"
+    },
+    {
+      "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as auras do jogo ficam ligadas sem duração",
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (3º lote)"
+    },
+    {
+      "padrao": "^Habilidades de Golpe Não Vaal focam em \\{(\\d+)\\} Inimigos? próximos? adiciona(?:l|is)$",
+      "efeitos": [
+        {
+          "stat": "golpe_alvos_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (4º lote)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Incendiar, Congelar, Eletrizar e Envenenar Inimigos Amaldiçoados$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite@alvoAmaldicoado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_freeze@alvoAmaldicoado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_shock@alvoAmaldicoado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_poison@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (4º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance de Exposição a Gelo ao Acertar com Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:exposicaoGelo:4@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (4º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance de Exposição a Fogo ao Acertar com Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:exposicaoFogo:4@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (4º lote)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance de Exposição a Raio ao Acertar com Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:exposicaoRaio:4@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (4º lote)"
+    },
+    {
+      "padrao": "^Você não pode ficar Lento$",
+      "efeitos": [
+        {
+          "stat": "imune_lento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "09/10 — árvore × poedb (4º lote)"
+    },
+    {
+      "padrao": "^Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados por \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "ev:conjurarMaldicao:alvo:cego:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "o alvo da maldição é Cegado (o \"não amaldiçoado\" não é conferido)",
+      "_de": "09/10 — árvore × poedb (4º lote)"
     }
   ]
 }

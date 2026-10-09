@@ -163,6 +163,13 @@ export function importar(origem = ORIGEM) {
       abas: Object.values(p.abas ?? {}),
     });
   }
+  // A gema sem ícone de habilidade próprio usa o da BASE (a transfigurada "Contágio da Transferência" → o do Contágio; a Vaal → o da gema
+  // sem Vaal): a barra nunca fica sem desenho.
+  for (const g of manifesto) {
+    if (icones[g.slug] || g.tipo !== 'ativa') continue;
+    const base = g.slug.includes('_of_') ? g.slug.split('_of_')[0] : g.slug.replace(/^Vaal_/, '');
+    if (icones[base]) { icones[g.slug] = icones[base]; g.iconeHabilidade = icones[base]; g.iconeDaBase = base; }
+  }
   return { manifesto: { geradoEm: new Date().toISOString(), fonte: 'poedb.tw/pt — Skill_Gems, Support_Gems e a página de cada gema (Scrapling; tools/importar-poedb-gemas.mjs)', gemas: manifesto, naoSincronizadas }, icones, niveis: tabelas };
 }
 

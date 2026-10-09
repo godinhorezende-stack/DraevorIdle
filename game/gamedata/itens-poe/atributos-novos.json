@@ -2642,6 +2642,60 @@
       "unidade": "",
       "combate": true,
       "efeito": "passivas/arvore.pontos (os nós que concedem pontos) (09/10)"
+    },
+    "life_more": {
+      "nome": "Mais Vida máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.sincronizarMaximos (multiplica a vida inteira) (09/10)"
+    },
+    "exposicao_extra_fogo": {
+      "nome": "Exposição a Fogo aplica resistência extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (somado à exposição posta no acerto) (09/10)"
+    },
+    "exposicao_extra_gelo": {
+      "nome": "Exposição a Gelo aplica resistência extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (somado à exposição posta no acerto) (09/10)"
+    },
+    "exposicao_extra_raio": {
+      "nome": "Exposição a Raio aplica resistência extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (somado à exposição posta no acerto) (09/10)"
+    },
+    "critico_nao_incendeia": {
+      "nome": "Golpes Críticos não Incendeiam de forma inerente",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (09/10)"
+    },
+    "dano_degen_recebido_menos": {
+      "nome": "Menos Dano Degenerativo sofrido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mobs/mecanicas (o dano contínuo no personagem) (09/10)"
+    },
+    "furia_perda_lenta": {
+      "nome": "Perda de Fúria mais lenta",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.tiqueDaFuria (09/10)"
+    },
+    "golpe_alvos_extra": {
+      "nome": "Habilidades de Golpe atingem inimigos adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.comOsAlvosDaGema (as gemas de Golpear, não Vaal) (09/10)"
+    },
+    "imune_lento": {
+      "nome": "Não pode ficar Lento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.controleNoJogador (a lentidão) (09/10)"
     }
   }
 }
