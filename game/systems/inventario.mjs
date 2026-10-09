@@ -52,7 +52,7 @@ export function pesoDoInventario(estado) {
  * sabe de mochila/pilha real ainda (isso é `juntar`/`organizar`, que ainda
  * não existe); o item aparece "largado" no inventário mesmo assim.
  */
-// O tamanho máximo de uma pilha: `pilhaMaxima` (100 fora do jogo oficial; no PoE, o da moeda até 20 — `itens/pilha.mjs`).
+// O tamanho máximo de uma pilha: `pilhaMaxima` (100 para todo empilhável — `itens/pilha.mjs`).
 
 /**
  * Põe `count` de `id` na mochila. Item empilhável (`stackable` no catálogo

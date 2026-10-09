@@ -627,14 +627,15 @@ export function iniciar() {
     const st = STATUS[m.slug];
     const descricao = `${m.efeitos.join(' ') || m.nome}${st.status === 'nao' ? ` — sem efeito no jogo: ${st.motivo}.` : st.status === 'parcial' ? ` — no jogo: ${st.motivo}.` : ''}`;
     if (ITEM_CATALOG[m.itemId]) {
-      Object.assign(ITEM_CATALOG[m.itemId], { moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, pilha: Math.min(PILHA_MAX_POE, m.pilha ?? PILHA_MAX_POE) });
+      Object.assign(ITEM_CATALOG[m.itemId], { moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, pilha: PILHA_MAX_POE });
       continue;
     }
     ITEM_CATALOG[m.itemId] = {
       id: m.itemId, name: m.nome, weight: 0.1, stackable: true, type: 'moeda', rarity: 'raro', hasSprite: true, spriteDe: 9655,
       poeMoeda: { icone: m.icone }, moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, descricao, sell: 0,
-      // O tamanho da pilha do PoE, até 20 (dono, 08/10 — `itens/pilha.mjs`); o balão mostra "Tamanho da Pilha: n / 20".
-      pilha: Math.min(PILHA_MAX_POE, m.pilha ?? PILHA_MAX_POE),
+      // A pilha de 100 de todo empilhável (dono, 09/10 — `itens/pilha.mjs`); o balão mostra "Tamanho da Pilha: n / 100". O tamanho do
+      // PoE (`m.pilha`) fica na ficha da Engine.
+      pilha: PILHA_MAX_POE,
     };
     n++;
   }

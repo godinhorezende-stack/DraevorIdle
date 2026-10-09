@@ -1,6 +1,7 @@
-// As PILHAS no jogo oficial (dono, 08/10: "as pilhas podem ficar no máximo 20"): o tamanho da pilha do PoE, até 20 — o Orbe do Remorso
-// (40 no PoE) fica 20, as moedas de 10 continuam 10. Vale na mochila (dar, juntar, organizar), na bolsa de loot, na retirada do depósito e
-// nas moedas da Forja. Antes era 100 (o do Tibia) em todo lugar. A pilha maior que já estava lá (de antes) fica como está: nada se perde.
+// As PILHAS no jogo oficial (dono, 09/10: "item empilháveis até 100"): todo empilhável empilha até 100 — o Orbe do Remorso (40 no PoE) e as
+// moedas de 10 do PoE também. Vale na mochila (dar, juntar, organizar), na bolsa de loot, na retirada do depósito e nas moedas da Forja.
+// De 08/10 a 09/10 foi o tamanho da pilha do PoE até 20 ("as pilhas podem ficar no máximo 20"); antes, 100 (o do Tibia). A pilha maior
+// que já estava lá (de antes) fica como está: nada se perde.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -27,57 +28,59 @@ function quem() {
   return e;
 }
 
-test('o tamanho da pilha: o do PoE até 20 (o Remorso, 40 no PoE, fica 20; a de 10 continua 10) — e o balão recebe o 20', { skip: SEM }, () => {
+test('o tamanho da pilha: 100 para todo empilhável (o Remorso, 40 no PoE, e as de 10 do PoE também) — e o balão recebe o 100', { skip: SEM }, () => {
   assert.ok(REMORSO() && ITEM_CATALOG[REMORSO()], 'o Orbe do Remorso no catálogo');
-  assert.equal(MoedasPoe.MOEDAS.find((m) => m.slug === 'Orb_of_Regret').pilha, 40, 'no PoE, 40');
-  assert.equal(pilhaMaxima(REMORSO()), 20);
-  assert.equal(ITEM_CATALOG[REMORSO()].pilha, 20, 'o catálogo (o balão: "Tamanho da Pilha: n / 20")');
-  assert.equal(pilhaMaxima(DE_10()), 10);
-  for (const m of MoedasPoe.MOEDAS) assert.ok(pilhaMaxima(m.itemId) <= 20, `${m.slug}: ${pilhaMaxima(m.itemId)}`);
+  assert.equal(MoedasPoe.MOEDAS.find((m) => m.slug === 'Orb_of_Regret').pilha, 40, 'no PoE, 40 (fica na ficha da Engine)');
+  assert.equal(pilhaMaxima(REMORSO()), 100);
+  assert.equal(ITEM_CATALOG[REMORSO()].pilha, 100, 'o catálogo (o balão: "Tamanho da Pilha: n / 100")');
+  assert.equal(pilhaMaxima(DE_10()), 100, 'a de 10 do PoE também');
+  for (const m of MoedasPoe.MOEDAS) assert.equal(pilhaMaxima(m.itemId), 100, m.slug);
+  const empilha = Number(Object.keys(ITEM_CATALOG).find((id) => ITEM_CATALOG[id].stackable && !ITEM_CATALOG[id].moedaPoe));
+  assert.equal(pilhaMaxima(empilha), 100, 'e o empilhável que não é moeda');
 });
 
-test('mochila: dar 45 vira 20 + 20 + 5; juntar para em 20; organizar refaz em pilhas de 20', { skip: SEM }, () => {
+test('mochila: dar 245 vira 100 + 100 + 45; juntar para em 100; organizar refaz em pilhas de 100', { skip: SEM }, () => {
   const id = REMORSO();
   const e = quem();
-  Inventario.darItem(e, id, 45);
-  assert.deepEqual(contagens(e.inventory, id), [20, 20, 5]);
-  Inventario.darItem(e, id, 18);
-  assert.deepEqual(contagens(e.inventory, id), [20, 20, 20, 3], 'completa a pilha de 5 e abre outra');
-  // Juntar: a de 3 na de 20 — cheia, recusa; a de 20 na de 3 passa só 17.
-  assert.equal(Inventario.juntar(e, { de: 3, para: 0, from: 'inventory' }).ok, false, 'a de 20 está cheia');
+  Inventario.darItem(e, id, 245);
+  assert.deepEqual(contagens(e.inventory, id), [100, 100, 45]);
+  Inventario.darItem(e, id, 80);
+  assert.deepEqual(contagens(e.inventory, id), [100, 100, 100, 25], 'completa a pilha de 45 e abre outra');
+  // Juntar: a de 25 na de 100 — cheia, recusa; a de 100 na de 25 passa só 75.
+  assert.equal(Inventario.juntar(e, { de: 3, para: 0, from: 'inventory' }).ok, false, 'a de 100 está cheia');
   assert.equal(Inventario.juntar(e, { de: 0, para: 3, from: 'inventory' }).ok, true);
-  assert.deepEqual(contagens(e.inventory, id), [3, 20, 20, 20], 'passou 17 (3 + 17 = 20), sobraram 3');
-  e.inventory = [{ id, count: 7 }, { id, count: 9 }, { id, count: 13 }];
+  assert.deepEqual(contagens(e.inventory, id), [25, 100, 100, 100], 'passou 75 (25 + 75 = 100), sobraram 25');
+  e.inventory = [{ id, count: 30 }, { id, count: 45 }, { id, count: 65 }];
   assert.equal(Inventario.organizar(e, { from: 'inventory' }).ok, true);
-  assert.deepEqual(contagens(e.inventory, id), [20, 9]);
+  assert.deepEqual(contagens(e.inventory, id), [100, 40]);
 });
 
 test('a pilha maior que já estava lá (de antes da regra) fica como está: nada se perde, e o que chega abre outra pilha', { skip: SEM }, () => {
   const id = REMORSO();
   const e = quem();
-  e.inventory = [{ id, count: 57 }];
+  e.inventory = [{ id, count: 157 }];
   Inventario.darItem(e, id, 4);
-  assert.deepEqual(contagens(e.inventory, id), [57, 4]);
-  assert.equal(contagens(e.inventory, id).reduce((a, b) => a + b, 0), 61);
+  assert.deepEqual(contagens(e.inventory, id), [157, 4]);
+  assert.equal(contagens(e.inventory, id).reduce((a, b) => a + b, 0), 161);
 });
 
-test('bolsa de loot: as pilhas também param em 20', { skip: SEM }, () => {
+test('bolsa de loot: as pilhas também param em 100', { skip: SEM }, () => {
   const id = REMORSO();
   const e = quem();
-  assert.equal(Bolsa.porNaBolsa(e, id, 45), 45);
-  assert.deepEqual(contagens(e.pouch, id), [20, 20, 5]);
+  assert.equal(Bolsa.porNaBolsa(e, id, 245), 245);
+  assert.deepEqual(contagens(e.pouch, id), [100, 100, 45]);
 });
 
-test('depósito: o monte da caixa não tem teto, mas o que sai para a mochila sai em pilhas de 20', { skip: SEM }, () => {
+test('depósito: o monte da caixa não tem teto, mas o que sai para a mochila sai em pilhas de 100', { skip: SEM }, () => {
   const id = REMORSO();
   const e = quem();
   const caixas = Deposito.garantir(e);
   const caixa = caixas.find((c) => !c.chegadas && !c.compartilhada);
-  caixa.itens.push({ id, count: 60 });
-  const r = Deposito.comando(e, { action: 'take', caixa: caixa.indice, id, count: 45 });
+  caixa.itens.push({ id, count: 300 });
+  const r = Deposito.comando(e, { action: 'take', caixa: caixa.indice, id, count: 245 });
   assert.ok(r.ok, r.erro);
-  assert.deepEqual(contagens(e.inventory, id), [20, 20, 5]);
-  assert.equal(caixa.itens.find((p) => p.id === id).count, 15, 'ficaram 15 na caixa');
+  assert.deepEqual(contagens(e.inventory, id), [100, 100, 45]);
+  assert.equal(caixa.itens.find((p) => p.id === id).count, 55, 'ficaram 55 na caixa');
 });
 
 test('mover da bolsa de loot para a mochila pelo menu do celular (count 9999 = "tudo"): passa o que há; sem vaga, diz "mochila cheia"', { skip: SEM }, () => {
@@ -90,16 +93,16 @@ test('mover da bolsa de loot para a mochila pelo menu do celular (count 9999 = "
   assert.ok(r.ok, r.erro);
   assert.deepEqual(contagens(e.inventory, id), [13], 'os 13 na mochila');
   assert.deepEqual(contagens(e.pouch, id), [], 'a bolsa ficou sem eles');
-  // Uma vaga só: passa o que cabe (uma pilha de 20) e avisa; o resto fica na bolsa.
+  // Uma vaga só: passa o que cabe (uma pilha de 100) e avisa; o resto fica na bolsa.
   const naoEmpilha = Number(Object.keys(ITEM_CATALOG).find((i) => ITEM_CATALOG[i].slot === 'body' && !ITEM_CATALOG[i].stackable));
   const quase = quem();
   quase.inventory = Array.from({ length: Inventario.vagasDaMochila(quase) - 1 }, () => ({ id: naoEmpilha, count: 1 }));
-  quase.pouch = [{ id, count: 20 }, { id, count: 20 }, { id, count: 5 }];
+  quase.pouch = [{ id, count: 100 }, { id, count: 100 }, { id, count: 45 }];
   const r2 = Bolsa.moverBolsa(quase, { id, count: 9999, to: 'bag' });
   assert.ok(r2.ok, r2.erro);
-  assert.match(r2.notice ?? '', /passaram 20 de 45/);
-  assert.deepEqual(contagens(quase.inventory, id), [20]);
-  assert.equal(contagens(quase.pouch, id).reduce((a, b) => a + b, 0), 25, 'nada se perdeu');
+  assert.match(r2.notice ?? '', /passaram 100 de 245/);
+  assert.deepEqual(contagens(quase.inventory, id), [100]);
+  assert.equal(contagens(quase.pouch, id).reduce((a, b) => a + b, 0), 145, 'nada se perdeu');
   // Cheia (e sem pilha dele com espaço): a mensagem é a da mochila cheia, não a do peso.
   const r3 = Bolsa.moverBolsa(quase, { id, count: 9999, to: 'bag' });
   assert.equal(r3.ok, false);

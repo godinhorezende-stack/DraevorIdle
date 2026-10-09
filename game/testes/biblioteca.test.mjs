@@ -181,7 +181,7 @@ test('L9. com o PoE ligado, as moedas empilháveis entram na Biblioteca de itens
     assert.equal(d.tipo, 'Stackable Currency');
     assert.equal(d.moeda.status, 'nao');
     assert.match(d.moeda.descricao, /sem efeito no jogo/);
-    assert.equal(d.moeda.pilha, 20);
+    assert.equal(d.moeda.pilha, 100, 'a pilha do jogo: 100 para todo empilhável (dono, 09/10 — `itens/pilha.mjs`)');
   } finally {
     if (antes == null) delete process.env.ITENS_POE; else process.env.ITENS_POE = antes;
   }

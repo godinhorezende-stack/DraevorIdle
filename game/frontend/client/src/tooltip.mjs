@@ -2968,10 +2968,10 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     stats.append(linha);
     return linha;
   };
-  // A moeda do PoE, como no PoE: "Moedas Empilháveis" e "Tamanho da Pilha: 1 / 20" (no máximo 20 — `itens/pilha.mjs`).
+  // A moeda do PoE, como no PoE: "Moedas Empilháveis" e "Tamanho da Pilha: 1 / 100" (o teto de todo empilhável — `itens/pilha.mjs`).
   if (meta.moedaPoe) {
     add(linha, 'moeda-tipo');
-    prop('Tamanho da Pilha', `${(peca?.count ?? 1).toLocaleString('pt-BR')} / ${(meta.pilha ?? 20).toLocaleString('pt-BR')}`);
+    prop('Tamanho da Pilha', `${(peca?.count ?? 1).toLocaleString('pt-BR')} / ${(meta.pilha ?? 100).toLocaleString('pt-BR')}`);
   }
 
   const sinal = (value) => (value > 0 ? `+${value}` : String(value));
