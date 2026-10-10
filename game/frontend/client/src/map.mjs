@@ -7,7 +7,7 @@ import { comecarPasso, teleportar } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais, desenharQuadroDeAsset, duracaoDoAsset } from './efeitos-visuais.mjs';
-import { quadroDoCiclo, quadroDaChegada, casaDoPortal, ordemDaSaida, ORDEM_DA_CHEGADA, direcaoDoPasso } from './portal-ciclo.mjs';
+import { quadroDoCiclo, quadroDaChegada, casaDoPortal, ordemDaSaida, ORDEM_DA_CHEGADA, direcaoDoPasso, entradaNova } from './portal-ciclo.mjs';
 /** A cortina "Traçando a rota" (`mostrarViagem`, main.mjs) está cobrindo a tela? */
 const cortinaDeViagemNaTela = () => typeof document !== 'undefined' && document.getElementById('viagem')?.hidden === false;
 /** Os eventos que a camada de efeitos desenha (os outros — números, falas — seguem aqui no mapa). */
@@ -941,6 +941,17 @@ export class MapView {
       this.mapId = payload.mapId;
       this.groundKey = '';
     }
+
+    // ENTRADA nova no mesmo mapa (a instância nova do loop da fase, a sala da party) também é um recomeço: o boneco aparece na entrada,
+    // sem ser "puxado" pela instância de antes (`entradaNova`, portal-ciclo.mjs). Os eventos da cena nova chegam depois deste retrato.
+    if (entradaNova(this.entrada, payload.entrada)) {
+      this.entities.clear();
+      this.texts = [];
+      this.falas = [];
+      this.effects = [];
+      this.missiles = [];
+    }
+    if (payload.entrada != null) this.entrada = payload.entrada;
 
     // Troca de andar também é um recomeço: o mapa é o mesmo, as posições não.
     if (this.floor !== (payload.z ?? 0)) {

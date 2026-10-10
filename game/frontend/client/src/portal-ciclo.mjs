@@ -141,6 +141,14 @@ export function chaveDaCena({ hunt = null, city = null } = {}) {
 }
 
 /**
+ * A ENTRADA mudou no MESMO mapa (a instância nova do loop da fase, a sala da party)? Então ninguém "vem andando" da instância de antes:
+ * o mapa recomeça as criaturas, como numa troca de mapa (dono, 10/10: "quando completa 100% e está em loop, fica arrastando para o
+ * começo de forma não natural" — o boneco deslizava da posição velha até a entrada). Sem entrada (a cidade, servidor antigo) ou na
+ * primeira, não.
+ */
+export const entradaNova = (antes, entrada) => antes != null && entrada != null && entrada !== antes;
+
+/**
  * Abre o portal de saída nesta troca de cena? Só com uma cena antes (a entrada no jogo e a reconexão não têm de onde sair), cena
  * diferente e o personagem vivo (morrer não é viajar). Com os efeitos desligados também: o portal é a viagem, não enfeite. O duelo da
  * Arena (`pvp`) não: lá não há proteção de entrada — a largada dele conta na hora, e a luta não pode começar com a tela no portal.

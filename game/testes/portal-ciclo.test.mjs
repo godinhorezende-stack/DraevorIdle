@@ -150,3 +150,17 @@ test('a CASA do portal: ao lado dele — na saída à frente (para onde está vi
   assert.equal(direcaoDoPasso(p, p, 3), 3, 'sem passo, a direção de antes');
   assert.deepEqual(ordemDaSaida(undefined), [2, 1, 3, 0], 'sem direção: o sul primeiro');
 });
+
+test('o LOOP da fase no MESMO mapa: entrada nova recomeça a cena (o boneco aparece na entrada, sem ser puxado pela instância de antes)', async () => {
+  // Dono, 10/10: "na hunt, quando está na fase e completa 100% e está em loop, fica arrastando para o começo de forma não natural".
+  const { entradaNova } = await import('../frontend/client/src/portal-ciclo.mjs');
+  assert.equal(entradaNova('inst-1', 'inst-2'), true, 'a instância nova do loop');
+  assert.equal(entradaNova('inst-1', 'inst-1'), false, 'a mesma instância: segue andando normal');
+  assert.equal(entradaNova(undefined, 'inst-1'), false, 'a primeira entrada (quem recomeça é a troca de mapa)');
+  assert.equal(entradaNova('inst-1', undefined), false, 'a cidade e o servidor antigo não têm entrada');
+  // O mapa usa a regra no retrato e recomeça as criaturas (como na troca de mapa e de andar).
+  const { readFileSync } = await import('node:fs');
+  const fonte = readFileSync(new URL('../frontend/client/src/map.mjs', import.meta.url), 'utf8');
+  const trecho = fonte.slice(fonte.indexOf('if (entradaNova(this.entrada, payload.entrada)) {'));
+  assert.ok(trecho.length > 0 && /this\.entities\.clear\(\);/.test(trecho.slice(0, 200)), 'entrada nova → as criaturas recomeçam');
+});
