@@ -6864,7 +6864,7 @@ export function openLimparBolsa() {
       const unitario = new Map((state.character.pouchValue?.lines ?? []).map((linha) => [linha.id, linha.unit]));
 
       body.append(
-        el('p', 'shop-note', 'Isto destrói o que estiver marcado em vermelho, e não tem volta. Clique num item para guardá-lo.')
+        el('p', 'shop-note', 'Isto destrói o que estiver marcado em vermelho, e não tem volta. Clique num item para guardá-lo. Os itens com cadeado 🔒 e os Únicos ficam sempre.')
       );
 
       /*
@@ -6888,9 +6888,13 @@ export function openLimparBolsa() {
 
       const grupos = [];
       const juntas = new Map();
+      // PROTEGIDA da limpeza (o LOCK — `Bolsa.protegidaDaLimpeza`, auditoria de 10/10): a pilha com cadeado e o Único do PoE ficam sempre.
+      const protegida = (entry) => !!(entry?.trava || entry?.poe?.raridade === 'unico');
       for (let i = 0; i < bolsa.length; i++) {
         const entry = bolsa[i];
-        const propria = !!(entry.af?.length || entry.tier || entry.imbu?.length || entry.carga != null);
+        // (A peça do PoE — cada uma com os seus mods —, a de sockets, a gema e a pilha com cadeado também são UMA célula cada: juntas por id,
+        // duas peças da mesma base viravam um quadradinho só e saíam juntas.)
+        const propria = !!(entry.af?.length || entry.tier || entry.imbu?.length || entry.carga != null || entry.poe || entry.soquetes || entry.gema || entry.trava);
 
         if (!propria) {
           const igual = juntas.get(entry.id);
@@ -6918,10 +6922,15 @@ export function openLimparBolsa() {
       const fora = [];
 
       for (const grupo of grupos) {
-        const fica = guardados.has(grupo.chave);
+        const travada = protegida(grupo.entry);
+        const fica = travada || guardados.has(grupo.chave);
         // A peça INTEIRA: é ela que carrega as estrelas e o selo do tier.
         const cell = itemCell({ ...grupo.entry, count: grupo.count }, 'filter');
         cell.classList.add(fica ? 'protected' : 'barred');
+        if (travada) {
+          cell.classList.add('travada');
+          cell.append(el('i', 'selo-cadeado', '🔒'));
+        }
         const unidade = unitario.get(grupo.entry.id) ?? 0;
         tipFor(
           cell,
@@ -6929,12 +6938,13 @@ export function openLimparBolsa() {
           [
             `${money(grupo.count)} unidade(s)`,
             unidade ? `${money(unidade * grupo.count)} gold na venda rápida` : 'nenhum NPC compra',
-            fica ? 'FICA na bolsa' : 'vai fora',
+            travada ? (grupo.entry.trava ? 'PROTEGIDO pelo cadeado: não sai na limpeza' : 'Único: protegido da limpeza') : fica ? 'FICA na bolsa' : 'vai fora',
           ].join(' — '),
           null,
           grupo.entry
         );
         cell.onclick = () => {
+          if (travada) return;
           if (fica) guardados.delete(grupo.chave);
           else guardados.add(grupo.chave);
           desenhar();
@@ -7933,16 +7943,13 @@ function marcacoesDoFiltro() {
   if (!canto) return;
   const config = state.character?.lootFiltro ?? { sempreSalvar: true, paraTodos: false };
 
+  // ("Salvar sempre" saiu — auditoria do filtro, 10/10: ela prometia um filtro por caçada que não existe; o filtro é um só e cada mudança
+  // já fica gravada na hora.)
   for (const [chave, curto, inteiro] of [
-    [
-      'sempreSalvar',
-      'Salvar sempre',
-      'Sempre salvar alterações: o filtro de cada caçada fica como você deixou e volta sozinho quando você entrar ali de novo.',
-    ],
     [
       'paraTodos',
       'Toda a conta',
-      'Usar as configurações deste loot filter para todos os chares da conta.',
+      'Usar as configurações deste loot filter (as listas, as seções e as regras específicas) para todos os chares da conta. Cada mudança já fica gravada na hora.',
     ],
   ]) {
     const rotulo = el('label', 'filtro-marca');
@@ -8134,6 +8141,8 @@ export function openLootFilter() {
               // deixava o item parado por um instante, como se o arrasto não
               // tivesse pegado. O `pushState` seguinte confirma o desenho.
               vivas[rule].push(carga.id);
+              // (`only`: o servidor tira o item das outras listas — pinta igual, para a tela não mostrar o item em duas.)
+              for (const outra of Object.keys(vivas)) if (outra !== rule && Array.isArray(vivas[outra])) vivas[outra] = vivas[outra].filter((x) => x !== carga.id);
               draw();
               send({ t: 'itemRule', rule, id: carga.id, only: true });
             }
@@ -15959,6 +15968,42 @@ function renderLocker(body) {
     const renomear = el('button', 'ghost', 'Renomear');
     renomear.onclick = () => perguntarNomeDaCaixa(caixa);
     linha.append(renomear);
+  }
+  /*
+   * ---- A AFINIDADE da caixa (o jogo oficial — a organização da bolsa de loot, 10/10) ----
+   * A caixa de Currency recebe o "Currency →" da bolsa (toda moeda); a de Orbs, o "Orbs →" — quando os Orbs vão para o baú (a escolha ao
+   * lado: as caixas de Orbs ou a mochila). Só nas caixas numeradas.
+   */
+  if (ctx.state.character?.filtroPoe && !caixa.chegadas && !caixa.compartilhada) {
+    const afinidade = document.createElement('select');
+    afinidade.className = 'deposito-afinidade';
+    afinidade.setAttribute('aria-label', 'Afinidade da caixa');
+    for (const [valor, texto] of [['', 'Sem afinidade'], ['currency', 'Afinidade: Currency'], ['orbs', 'Afinidade: Orbs']]) {
+      const o = document.createElement('option');
+      o.value = valor;
+      o.textContent = texto;
+      afinidade.append(o);
+    }
+    afinidade.value = caixa.afinidade ?? '';
+    tipTexto(afinidade, 'Currency: recebe todas as moedas pelo botão "Currency →" da bolsa de loot. Orbs: recebe os "Orbe …" pelo botão "Orbs →". O que não couber fica na bolsa.');
+    afinidade.onchange = () => send({ t: 'depot', action: 'afinidade', caixa: caixa.indice, afinidade: afinidade.value || null });
+    linha.append(afinidade);
+    const destino = document.createElement('select');
+    destino.className = 'deposito-afinidade';
+    destino.setAttribute('aria-label', 'Para onde vão os Orbs');
+    for (const [valor, texto] of [['bau', 'Orbs → caixas de Orbs'], ['mochila', 'Orbs → mochila']]) {
+      const o = document.createElement('option');
+      o.value = valor;
+      o.textContent = texto;
+      destino.append(o);
+    }
+    destino.value = ctx.state.character?.settings?.destinoDosOrbs === 'mochila' ? 'mochila' : 'bau';
+    tipTexto(destino, 'Para onde o botão "Orbs →" da bolsa de loot leva os Orbs.');
+    destino.onchange = () => {
+      send({ t: 'settings', destinoDosOrbs: destino.value });
+      ctx.state.character.settings = { ...(ctx.state.character.settings ?? {}), destinoDosOrbs: destino.value };
+    };
+    linha.append(destino);
   }
 
   /*

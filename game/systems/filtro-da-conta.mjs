@@ -15,7 +15,11 @@
 // quantidade do atributo). Puro: quem lê/grava a conta e avisa as sessões é a sessão.
 import * as Bolsa from './bolsa.mjs';
 
-export const CHAVES_DE_GUARDAR = ['guardarRaridade', 'guardarNivel', 'guardarQuantos', 'guardarAfixo', 'guardarEstrelas', 'guardarSockets', 'guardarLigados', 'guardarAtributos', 'guardarNivelMinimo'];
+// (As seções do filtro do PoE — `Afixos.regraDasSecoesPoe` — também: sem elas, "Toda a conta" no jogo oficial não levava nada das seções.)
+export const CHAVES_DE_GUARDAR = [
+  'guardarRaridade', 'guardarNivel', 'guardarQuantos', 'guardarAfixo', 'guardarEstrelas', 'guardarSockets', 'guardarLigados', 'guardarAtributos', 'guardarNivelMinimo',
+  'guardarRaridadePoe', 'guardarModsPoe', 'guardarTierPoe', 'guardarIlvlPoe', 'guardarRgbPoe',
+];
 const LISTAS = ['noLoot', 'noSell', 'soAfixo'];
 
 /** Este pedido do cliente muda o filtro? (listas por item ou as regras de guardar) */
