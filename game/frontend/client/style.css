@@ -4554,11 +4554,12 @@ body {
 }
 .bolsa-org > * { flex: 1 1 100%; min-width: 0; }
 /* A faixa de cima: o Loot filter à esquerda, os atalhos à direita, numa linha só. */
-.bolsa-org > .bag-actions { order: 0; flex: 0 1 auto; display: flex; margin: 0 0 8px; }
-.bolsa-org > .bagline { order: 1; flex: 1 1 auto; margin: 0 0 8px; justify-content: flex-end; }
-/* Na janela estreita os atalhos quebram linha (sem isto o primeiro saía pela esquerda da janela). */
-.bolsa-org > .bagline .bag-botoes { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
-.bolsa-org > .bolsa-barra { order: 2; }
+/* A linha de cima: o Loot filter e, ao lado, a busca e a ordem; embaixo, as abas. A linha antiga dos atalhos (`.bagline`) some: os
+   atalhos dela eram repetidos (cada seção tem Depósito e Mochila; o Limpar está no rodapé). */
+.bolsa-org > .bagline { display: none; }
+.bolsa-org > .bag-actions { order: 0; flex: 0 0 auto; display: flex; margin: 0 0 8px; }
+.bolsa-org > .bolsa-barra-linha { order: 1; flex: 1 1 220px; margin: 0 0 8px; }
+.bolsa-org > .bolsa-abas { order: 2; margin: 0 0 10px; }
 .bolsa-org > .bolsa-secoes { order: 3; }
 .bolsa-org > .bolsa-rodape { order: 4; }
 .bolsa-org .bag-actions .loot-filter-button {
@@ -4578,7 +4579,6 @@ body {
 .bolsa-ico svg { width: 100%; height: 100%; }
 
 /* Abas, busca e ordem. */
-.bolsa-barra { display: flex; flex-direction: column; gap: 6px; margin: 0 0 10px; }
 .bolsa-abas { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; border-radius: 8px; background: var(--fundo-fundo); border: 1px solid var(--line-soft); }
 .bolsa-aba {
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer;
@@ -4653,17 +4653,20 @@ body {
 .bolsa-botao.fantasma:hover { color: var(--text); border-color: var(--line); }
 .bolsa-todos { padding: 0 8px; color: var(--muted); }
 .bolsa-quadrado, .bolsa-marca {
-  display: inline-grid; place-items: center; width: 14px; height: 14px; padding: 0; border-radius: 4px; color: #0b0f11;
-  border: 1px solid #5d6a6f; background: #0b0f11;
+  display: inline-grid; place-items: center; width: 17px; height: 17px; padding: 0; border-radius: 4px; color: #0b0f11;
+  border: 1.5px solid #6d7b80; background: #0b0f11e6; box-sizing: border-box;
 }
-.bolsa-quadrado .bolsa-ico, .bolsa-marca .bolsa-ico { width: 11px; height: 11px; }
+.bolsa-quadrado .bolsa-ico, .bolsa-marca .bolsa-ico { width: 13px; height: 13px; }
+.bolsa-quadrado .bolsa-ico svg, .bolsa-marca .bolsa-ico svg { stroke-width: 2.6; }
 .bolsa-todos.ligada .bolsa-quadrado, .bolsa-marca.ligada { background: var(--ouro); border-color: var(--ouro); }
 .bolsa-todos.parcial .bolsa-quadrado { border-color: var(--ouro-fraco); box-shadow: inset 0 0 0 3px #0b0f11, inset 0 0 0 7px var(--ouro-fraco); }
 .bolsa-mais { grid-column: 1 / -1; justify-self: start; }
 
 /* As células: a caixinha aparece no hover, ou sempre quando já se está marcando (e no toque, que não tem hover). */
 .bolsa-grade { gap: 6px; }
-.cell .bolsa-marca { position: absolute; top: 2px; left: 2px; z-index: 3; cursor: pointer; opacity: 0; transition: opacity .1s; }
+.cell .bolsa-marca { position: absolute; top: 1px; left: 1px; z-index: 3; cursor: pointer; opacity: 0; transition: opacity .1s; }
+/* No toque, a caixinha é maior: o dedo precisa de alvo. */
+@media (hover: none) { .cell .bolsa-marca { width: 20px; height: 20px; } }
 .cell:hover .bolsa-marca, .bolsa-secoes.selecionando .cell .bolsa-marca, .cell .bolsa-marca.ligada { opacity: 1; }
 @media (hover: none) { .cell .bolsa-marca { opacity: .8; } }
 .cell.selecionada { border-color: var(--ouro); box-shadow: 0 0 0 1px var(--ouro), 0 0 8px #d9b45f55; }

@@ -195,3 +195,34 @@ test('a bolsa organizada: "Proteger seleção" põe e tira o cadeado de várias;
   assert.match(Bolsa.moverSelecao(e, { itens: [] }).erro, /Nada marcado/);
   assert.match(Bolsa.moverSelecao(e, { itens: [{ i: 0, id: SABEDORIA }] }).erro, /mudou/);
 });
+
+test('o botão "Depósito" das seções: Orbs nas caixas de Orbs, moedas nas de Currency, o resto nas comuns; peça inteira, sem cadeado; caixa cheia fica na bolsa', { skip: SEM }, () => {
+  const e = quem();
+  Deposito.comando(e, { action: 'afinidade', caixa: 1, afinidade: 'currency' });
+  Deposito.comando(e, { action: 'afinidade', caixa: 2, afinidade: 'orbs' });
+  const peca = Jogo.pecaSorteada(30, () => 0.5);
+  const mapa = Jogo.mapaSorteado(2, { raridade: 'normal' });
+  e.pouch = [{ id: CAOS, count: 5 }, { id: SABEDORIA, count: 7 }, { ...peca, trava: true }, mapa];
+  const antes = [CAOS, SABEDORIA].map((id) => total(e, id));
+  const r = Bolsa.moverSelecao(e, { para: 'deposito', itens: e.pouch.map((p, i) => ({ i, id: p.id })) });
+  assert.ok(r.ok, r.erro);
+  assert.match(r.notice, /4 itens foram para o depósito/);
+  assert.deepEqual(e.pouch, []);
+  assert.deepEqual(caixa(e, 2).itens, [{ id: CAOS, count: 5 }], 'o Orbe vai para a caixa de Orbs');
+  assert.deepEqual(caixa(e, 1).itens, [{ id: SABEDORIA, count: 7 }], 'a outra moeda vai para a de Currency');
+  const comum = caixa(e, 0).itens;
+  assert.deepEqual(comum.map((p) => p.id), [peca.id, mapa.id], 'o resto vai para a primeira caixa sem afinidade');
+  assert.deepEqual(comum[0].poe, peca.poe, 'a peça vai inteira');
+  assert.equal(comum[0].trava, undefined, 'sem o cadeado');
+  assert.deepEqual([CAOS, SABEDORIA].map((id) => total(e, id)), antes, 'nada some nem duplica');
+  // Sem caixa de afinidade, a moeda vai para a comum; caixas comuns cheias: fica na bolsa e diz.
+  const f = quem();
+  f.pouch = [{ id: CAOS, count: 2 }];
+  assert.ok(Bolsa.moverSelecao(f, { para: 'deposito', itens: [{ i: 0, id: CAOS }] }).ok);
+  assert.ok(f.deposito.some((c) => !c.afinidade && c.itens.some((p) => p.id === CAOS)));
+  const g = quem();
+  for (const c of g.deposito) if (!c.chegadas) c.itens = Array.from({ length: c.teto ?? 100 }, (_, k) => ({ id: 8200000 + k, count: 1 }));
+  g.pouch = [{ ...peca }];
+  assert.match(Bolsa.moverSelecao(g, { para: 'deposito', itens: [{ i: 0, id: peca.id }] }).erro, /cheias/);
+  assert.equal(g.pouch.length, 1);
+});

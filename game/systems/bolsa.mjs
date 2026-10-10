@@ -18,6 +18,8 @@ import { precoNpc } from './hunt/rentabilidade.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import { pilhaMaxima } from './itens/pilha.mjs';
 import * as MoedasPoe from './itens-poe/moedas.mjs';
+// (Ciclo com deposito.mjs, que importa a bolsa: só se usa dentro das funções, nunca ao carregar o módulo.)
+import * as Deposito from './deposito.mjs';
 
 export const VAGAS_DA_BOLSA = 1000;
 export const VENDA_A_CADA_S = 120;
@@ -380,11 +382,13 @@ export function travar(estado, { i, id, lista, valor }) {
 }
 
 /**
- * `send({t:'moverSelecao', itens:[{i, id}]})` — a bolsa organizada (modo PoE): leva as pilhas marcadas (ou uma seção inteira, como o
+ * `send({t:'moverSelecao', itens:[{i, id}], para?})` — a bolsa organizada (modo PoE): leva as pilhas marcadas (ou uma seção inteira, como o
  * "Mover gemas →") para a MOCHILA, pelo mesmo caminho do clique (`moverBolsa`, pilha a pilha, a de índice maior primeiro para os índices
  * das outras não andarem). O que não couber fica na bolsa.
  */
-export function moverSelecao(estado, { itens } = {}) {
+export function moverSelecao(estado, { itens, para } = {}) {
+  // `para: 'deposito'`: o botão "Depósito" das seções — as caixas do depósito, pela afinidade (`Deposito.moverDaBolsaParaODeposito`).
+  if (para === 'deposito') return Deposito.moverDaBolsaParaODeposito(estado, { itens });
   garantir(estado);
   if (!Array.isArray(itens) || !itens.length) return { ok: false, erro: 'Nada marcado.' };
   const indices = [...new Set(itens.filter((f) => Number.isInteger(f?.i) && estado.pouch[f.i]?.id === Number(f.id)).map((f) => f.i))].sort((a, b) => b - a);
