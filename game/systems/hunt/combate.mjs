@@ -356,16 +356,15 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
     const dif = hunt.campanha?.dificuldade ?? Campanha.DIFICULDADES[0];
     const doEndgame = Mapas.mapaDoChefeDoAto(atoDoChefe, { primeiraVitoria: !Campanha.bossVencido(estado, dif, atoDoChefe) });
     const mapa = doEndgame ? ItensPoeJogo.mapaSorteado(doEndgame.tier, { raridade: doEndgame.raridade }) : null;
-    if (mapa && !Bolsa.ignora(estado, mapa.id, mapa)) itens.push(mapa);
+    if (mapa) itens.push(mapa);
   }
   // Sistema de itens do PoE (só com ITENS_POE=1): o drop do PoE do boss (raridade do monstro: Único) e, no chefe pináculo, 1 Único
   // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
   {
     const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
-    // (O FILTRO DE LOOT vale na sacola também — dono, 10/10: como no PoE, onde ele decide tudo o que cai; o Único, o mapa e o frasco seguem
-    // vindo sempre, pelas regras dele.)
+    // A SACOLA DO CHEFE NÃO PASSA PELO FILTRO DE LOOT (dono, 10/10: "sacola do boss do ato não tem filtro, vai direto para o baú do
+    // boss"): tudo o que ele solta — peças, moedas, o mapa, o Único do pináculo — vai inteiro para o baú. O filtro vale no loot da caçada.
     for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo))) {
-      if (Bolsa.ignora(estado, daPoe.id, daPoe)) continue;
       itens.push(daPoe);
       // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
       Anuncios.dropRaro({ quem, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
@@ -373,13 +372,13 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
       DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
     }
     // As moedas do PoE que o boss solta (`itens-poe/moedas.mjs`, `regras.json → moedas.drop`).
-    itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade).filter((moeda) => !Bolsa.ignora(estado, moeda.id)));
+    itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade));
     if (BESTIARY[alvo.key]?.poe) {
       const ouro = ItensPoeJogo.ouroDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, 1 + (Ficha.combate(estado).goldFind ?? 0) / 100);
       if (ouro > 0) itens.push({ id: 3031, count: ouro });
     }
     const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
-    if (exclusivo && !Bolsa.ignora(estado, exclusivo.id, exclusivo)) {
+    if (exclusivo) {
       itens.push(exclusivo);
       Anuncios.dropRaro({ quem, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
       DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo }).catch((e) => console.error('drops-do-site', e.message));

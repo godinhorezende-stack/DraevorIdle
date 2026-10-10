@@ -4534,9 +4534,153 @@ body {
 .cell:hover { border-color: var(--accent-dim); }
 /* O CADEADO (o LOCK da bolsa de loot, o jogo oficial): a pilha travada — e o Único na tela Limpar — não sai na limpeza. */
 .cell.travada { position: relative; box-shadow: inset 0 0 0 1px #c9a24a; }
-.cell .selo-cadeado { position: absolute; top: -3px; right: -3px; font-size: 10px; font-style: normal; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1px #000); }
+.cell .selo-cadeado {
+  position: absolute; top: 2px; right: 2px; z-index: 3; display: inline-grid; place-items: center; width: 14px; height: 14px; padding: 2px;
+  box-sizing: border-box; border-radius: 4px; color: #e6c46e; background: #000c; pointer-events: none;
+}
+.cell .selo-cadeado svg { width: 100%; height: 100%; }
 /* Os botões da organização da bolsa ("Currency →", "Orbs →") e os seletores de afinidade do depósito. */
 .bagline .bag-organizar { min-width: max-content; }
+/*
+ * ---- A BOLSA ORGANIZADA (o jogo oficial — dono, 10/10) ----
+ * Visual de painel do PoE: molduras escuras com fio dourado, títulos em versalete dourado, ícones de traço fino (SVG, `currentColor`) e
+ * botões que só aparecem quando servem. A linha de cima (os atalhos e o Loot filter) vira uma faixa só; abas em pílulas com a contagem;
+ * a caixinha de marcar só aparece ao passar o mouse ou quando já se está marcando (no toque, sempre). Tudo quebra linha: a janela
+ * começa estreita e o jogador alarga.
+ */
+.bolsa-org {
+  --ouro: #d9b45f; --ouro-fraco: #8a6d34; --moldura: #3b3122; --fundo-secao: #12171a; --fundo-fundo: #0b0f11;
+  display: flex; flex-wrap: wrap; align-content: flex-start; column-gap: 8px;
+}
+.bolsa-org > * { flex: 1 1 100%; min-width: 0; }
+/* A faixa de cima: o Loot filter à esquerda, os atalhos à direita, numa linha só. */
+.bolsa-org > .bag-actions { order: 0; flex: 0 1 auto; display: flex; margin: 0 0 8px; }
+.bolsa-org > .bagline { order: 1; flex: 1 1 auto; margin: 0 0 8px; justify-content: flex-end; }
+/* Na janela estreita os atalhos quebram linha (sem isto o primeiro saía pela esquerda da janela). */
+.bolsa-org > .bagline .bag-botoes { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+.bolsa-org > .bolsa-barra { order: 2; }
+.bolsa-org > .bolsa-secoes { order: 3; }
+.bolsa-org > .bolsa-rodape { order: 4; }
+.bolsa-org .bag-actions .loot-filter-button {
+  width: auto; max-width: none; height: 28px; padding: 0 12px; gap: 6px; border-radius: 6px;
+  background: linear-gradient(#1d2326, #141a1c); border: 1px solid var(--moldura); box-shadow: none; filter: none; font-size: 11px;
+}
+.bolsa-org .bag-actions .loot-filter-button:hover { border-color: var(--ouro-fraco); color: var(--ouro); filter: none; }
+.bolsa-org .bagline .bag-clear {
+  height: 28px; padding: 0 12px; border-radius: 6px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  background: linear-gradient(#1d2326, #141a1c); border: 1px solid var(--moldura); color: #cdbb8f;
+}
+.bolsa-org .bagline .bag-clear:hover:not(:disabled) { border-color: var(--ouro-fraco); color: var(--ouro); }
+.bolsa-org .bagline .bag-clear:not(.bag-organizar) { border-color: #5a2723; color: #e39a92; background: linear-gradient(#2a1615, #1c1010); }
+.bolsa-org .bagline .bag-clear:disabled { opacity: .4; }
+
+.bolsa-ico { display: inline-flex; width: 14px; height: 14px; flex: none; }
+.bolsa-ico svg { width: 100%; height: 100%; }
+
+/* Abas, busca e ordem. */
+.bolsa-barra { display: flex; flex-direction: column; gap: 6px; margin: 0 0 10px; }
+.bolsa-abas { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; border-radius: 8px; background: var(--fundo-fundo); border: 1px solid var(--line-soft); }
+.bolsa-aba {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; border-radius: 6px; cursor: pointer;
+  white-space: nowrap; background: none; color: var(--muted); border: 1px solid transparent; transition: color .12s, background .12s;
+}
+.bolsa-aba b { min-width: 16px; padding: 0 5px; border-radius: 8px; font-size: 10px; font-weight: 600; line-height: 15px; text-align: center; background: #1c2427; color: var(--muted); }
+.bolsa-aba:hover { color: var(--text); background: #151c1f; }
+.bolsa-aba.vazia { opacity: .45; }
+.bolsa-aba.ativa { color: var(--ouro); background: linear-gradient(#262013, #1a160e); border-color: var(--ouro-fraco); }
+.bolsa-aba.ativa b { background: #3a2f17; color: var(--ouro); }
+.bolsa-barra-linha { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.bolsa-busca {
+  flex: 1 1 160px; min-width: 0; display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border-radius: 6px;
+  background: var(--fundo-fundo); border: 1px solid var(--line); color: var(--muted);
+}
+.bolsa-busca:focus-within { border-color: var(--ouro-fraco); color: var(--ouro); }
+.bolsa-busca input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: none; color: var(--text); font-size: 12px; }
+.bolsa-ordenar { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; flex: none; }
+.bolsa-ordem, .bolsa-sentido {
+  height: 28px; font-size: 11px; background: var(--fundo-fundo); color: var(--text); border: 1px solid var(--line); border-radius: 6px;
+}
+.bolsa-ordem { padding: 0 6px; text-transform: none; letter-spacing: 0; }
+.bolsa-sentido { width: 28px; padding: 0; cursor: pointer; }
+.bolsa-ordem:hover, .bolsa-sentido:hover { border-color: var(--ouro-fraco); }
+
+/* As seções. */
+.bolsa-secoes { display: flex; flex-direction: column; gap: 8px; }
+.bolsa-secao {
+  position: relative; padding: 8px 8px 10px; border-radius: 8px; background: var(--fundo-secao);
+  border: 1px solid var(--moldura); box-shadow: inset 0 1px 0 #ffffff08, 0 2px 6px #0006;
+}
+/* O fio dourado em cima da moldura, apagando nas pontas. */
+.bolsa-secao::before {
+  content: ''; position: absolute; left: 12px; right: 12px; top: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro-fraco), transparent);
+}
+.bolsa-secao.fechada { padding-bottom: 8px; }
+.bolsa-secao-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 8px; }
+.bolsa-secao:not(.fechada) .bolsa-secao-topo { margin-bottom: 8px; padding-bottom: 7px; border-bottom: 1px solid #ffffff0a; }
+.bolsa-secao-titulo {
+  display: inline-flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto;
+  background: none; border: 0; padding: 0; cursor: pointer; text-align: left; color: var(--text);
+}
+.bolsa-secao-ico {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: 6px; color: var(--ouro);
+  background: radial-gradient(circle at 50% 35%, #2b2414, #15120b); border: 1px solid var(--ouro-fraco);
+}
+.bolsa-secao-ico svg { width: 15px; height: 15px; }
+.bolsa-secao-textos { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.bolsa-secao-nome { display: inline-flex; align-items: center; gap: 6px; }
+.bolsa-secao-nome b { color: var(--ouro); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.bolsa-secao-nome em { font-style: normal; font-size: 10px; color: var(--muted); padding: 0 5px; border-radius: 8px; background: #1c2427; line-height: 15px; }
+.bolsa-secao-textos small { color: var(--muted); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bolsa-seta { font-style: normal; color: var(--muted); font-size: 10px; margin-left: 2px; }
+.bolsa-secao-titulo:hover .bolsa-seta, .bolsa-secao-titulo:hover .bolsa-secao-nome b { color: #f0cf7e; }
+.bolsa-secao-acoes { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px; margin-left: auto; }
+
+/* Os botões da bolsa. */
+.bolsa-botao, .bolsa-todos, .bolsa-mais {
+  display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; font-size: 11px; border-radius: 6px;
+  background: linear-gradient(#1c2225, #14191b); color: #cdc3a8; border: 1px solid var(--line); cursor: pointer; white-space: nowrap;
+  transition: border-color .12s, color .12s;
+}
+.bolsa-botao:hover:not(:disabled), .bolsa-todos:hover, .bolsa-mais:hover { border-color: var(--ouro-fraco); color: var(--ouro); }
+.bolsa-botao:disabled { opacity: .4; cursor: default; }
+.bolsa-botao.principal { color: #f3dc9c; border-color: var(--ouro-fraco); background: linear-gradient(#3a2e14, #261e0d); }
+.bolsa-botao.principal:hover { border-color: var(--ouro); }
+.bolsa-botao.so-icone { width: 26px; padding: 0; justify-content: center; }
+.bolsa-botao.perigo { color: #eea59d; border-color: #5a2723; background: linear-gradient(#2c1715, #1d0f0e); }
+.bolsa-botao.perigo:hover:not(:disabled) { border-color: #a1453c; color: #ffc2bb; }
+.bolsa-botao.fantasma { background: none; border-color: transparent; color: var(--muted); }
+.bolsa-botao.fantasma:hover { color: var(--text); border-color: var(--line); }
+.bolsa-todos { padding: 0 8px; color: var(--muted); }
+.bolsa-quadrado, .bolsa-marca {
+  display: inline-grid; place-items: center; width: 14px; height: 14px; padding: 0; border-radius: 4px; color: #0b0f11;
+  border: 1px solid #5d6a6f; background: #0b0f11;
+}
+.bolsa-quadrado .bolsa-ico, .bolsa-marca .bolsa-ico { width: 11px; height: 11px; }
+.bolsa-todos.ligada .bolsa-quadrado, .bolsa-marca.ligada { background: var(--ouro); border-color: var(--ouro); }
+.bolsa-todos.parcial .bolsa-quadrado { border-color: var(--ouro-fraco); box-shadow: inset 0 0 0 3px #0b0f11, inset 0 0 0 7px var(--ouro-fraco); }
+.bolsa-mais { grid-column: 1 / -1; justify-self: start; }
+
+/* As células: a caixinha aparece no hover, ou sempre quando já se está marcando (e no toque, que não tem hover). */
+.bolsa-grade { gap: 6px; }
+.cell .bolsa-marca { position: absolute; top: 2px; left: 2px; z-index: 3; cursor: pointer; opacity: 0; transition: opacity .1s; }
+.cell:hover .bolsa-marca, .bolsa-secoes.selecionando .cell .bolsa-marca, .cell .bolsa-marca.ligada { opacity: 1; }
+@media (hover: none) { .cell .bolsa-marca { opacity: .8; } }
+.cell.selecionada { border-color: var(--ouro); box-shadow: 0 0 0 1px var(--ouro), 0 0 8px #d9b45f55; }
+.bolsa-vazia { margin: 18px 0; text-align: center; color: var(--muted); font-size: 12px; }
+
+/* O rodapé, preso embaixo da janela. */
+.bolsa-rodape {
+  position: sticky; bottom: -1px; z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-top: 10px; padding: 8px; border-radius: 8px 8px 0 0; background: linear-gradient(#151b1e, #101416);
+  border: 1px solid var(--moldura); border-bottom: 0; box-shadow: 0 -6px 12px #0008;
+}
+.bolsa-rodape.com-selecao { border-color: var(--ouro-fraco); }
+.bolsa-rodape-conta { display: inline-flex; align-items: center; gap: 4px; margin-right: auto; font-size: 11px; color: var(--muted); }
+.bolsa-rodape-conta > b { color: var(--text); font-size: 14px; }
+.bolsa-rodape.com-selecao .bolsa-rodape-conta > b { color: var(--ouro); }
+.bolsa-rodape-protegidos { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; color: var(--ouro-fraco); }
+.bolsa-rodape-protegidos .bolsa-ico { width: 12px; height: 12px; }
 .deposito-afinidade { max-width: 100%; font-size: 12px; padding: 2px 4px; background: var(--panel-2, #1a1f24); color: var(--text); border: 1px solid var(--border, #333); border-radius: 4px; }
 /*
  * ---- O quadradinho fixo da Boss Pouch, no começo da mochila ----

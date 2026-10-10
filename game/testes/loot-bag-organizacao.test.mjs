@@ -1,6 +1,6 @@
 // A ORGANIZAÇÃO da Loot Bag (dono, 10/10): a AFINIDADE das caixas do depósito, o "Mover Currency" (toda moeda → as caixas de Currency) e o
 // "Mover Orbs" (os "Orbe …" → as caixas de Orbs ou a mochila) — sem perder nem duplicar, e o que não couber fica na bolsa —, o CADEADO das
-// pilhas de moeda/Orb e a LIMPEZA que respeita o cadeado e os Únicos; e o filtro de loot valendo na sacola do chefe.
+// pilhas e a LIMPEZA que respeita o cadeado e os Únicos; e a sacola do chefe, que NÃO passa pelo filtro (vai inteira para o baú).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -105,13 +105,17 @@ test('Mover Orbs: só os Orbs, para as caixas de Orbs — ou para a mochila, se 
   assert.deepEqual(g.pouch, [{ id: CAOS, count: 3 }]);
 });
 
-test('o CADEADO: só em moeda/Orb, liga e desliga, e a limpeza não tira o que tem cadeado nem os Únicos', { skip: SEM }, () => {
+test('o CADEADO: em qualquer item (dono, 10/10), liga e desliga, e a limpeza não tira o que tem cadeado nem os Únicos', { skip: SEM }, () => {
   const e = quem();
   const unico = Jogo.mapaSorteado(2, { raridade: 'normal' });
   unico.poe = { ...unico.poe, raridade: 'unico' };
   const comum = Jogo.mapaSorteado(3, { raridade: 'normal' });
   e.pouch = [{ id: CAOS, count: 9 }, { id: SABEDORIA, count: 4 }, unico, comum];
-  assert.match(Bolsa.travar(e, { i: 3, id: comum.id }).erro, /Só moedas e Orbs/);
+  // Dono, 10/10: o cadeado vale para QUALQUER item (antes só moeda/Orb). Liga e desliga na peça comum.
+  assert.ok(Bolsa.travar(e, { i: 3, id: comum.id }).ok);
+  assert.equal(e.pouch[3].trava, true);
+  assert.ok(Bolsa.travar(e, { i: 3, id: comum.id }).ok);
+  assert.equal(e.pouch[3].trava, undefined);
   assert.match(Bolsa.travar(e, { i: 0, id: SABEDORIA }).erro, /mudou/);
   assert.ok(Bolsa.travar(e, { i: 0, id: CAOS }).ok);
   assert.equal(e.pouch[0].trava, true);
@@ -139,17 +143,55 @@ test('o CADEADO: só em moeda/Orb, liga e desliga, e a limpeza não tira o que t
   assert.deepEqual(caixa(f, 1).itens, [{ id: CAOS, count: 2 }]);
 });
 
-test('o filtro vale na SACOLA do chefe: as moedas do "Não coletar" e o equipamento que as seções não pegam ficam de fora; o mapa vem', { skip: SEM }, () => {
+test('a SACOLA do chefe NÃO passa pelo filtro (dono, 10/10: "vai direto para o baú do boss"): moeda do "Não coletar", peça abaixo do "Só Único" e o mapa vêm', { skip: SEM }, () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 70 });
   Bolsa.garantir(e);
   for (const d of Object.keys(e.campanha)) e.campanha[d].bosses = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  e.itemRules.noLoot = MoedasPoe.MOEDAS.map((m) => m.itemId);
+  // O filtro recusando TUDO: todas as moedas e os mapas no "Não coletar", e só Únicos de peça.
+  e.itemRules.noLoot = [...MoedasPoe.MOEDAS.map((m) => m.itemId), ...Mapas.bases().map((b) => b.itemId)];
   e.settings = { ...e.settings, guardarRaridadePoe: 3 };
   const sala = () => ({ huntId: 'x', isBoss: true, bossId: null, campanha: { bossDoAto: 10, dificuldade: 'facil', ato: 10 }, monstros: [], clock: 0 });
-  for (let k = 0; k < 15; k++) vitoriaNoBoss(e, sala(), { key: 'demon', name: 'Kitava', loot: [], uid: k + 1, hp: 0, maxHp: 1 }, PERSONAGEM);
+  // O sorteio com SEMENTE fixa: sem ela, umas rodadas não soltavam peça nenhuma em 15 vitórias e o teste dependia da sorte.
+  const aleatorio = Math.random;
+  let semente = 20261010;
+  Math.random = () => ((semente = (semente * 1664525 + 1013904223) >>> 0) / 4294967296);
+  try {
+    for (let k = 0; k < 15; k++) vitoriaNoBoss(e, sala(), { key: 'demon', name: 'Kitava', loot: [], uid: k + 1, hp: 0, maxHp: 1 }, PERSONAGEM);
+  } finally {
+    Math.random = aleatorio;
+  }
   const itens = e.rewards.flatMap((s) => s.itens);
-  assert.ok(!itens.some((p) => MoedasPoe.ehMoeda(p.id)), 'nenhuma moeda da lista "Não coletar"');
+  assert.equal(itens.filter((p) => Mapas.ehMapa(p)).length, 15, 'o T1 garantido do Kitava vem sempre, mesmo no "Não coletar"');
+  assert.ok(itens.some((p) => MoedasPoe.ehMoeda(p.id)), 'as moedas do boss vêm, mesmo no "Não coletar"');
   const equipamento = itens.filter((p) => p.poe && !Mapas.ehMapa(p));
-  assert.ok(equipamento.every((p) => p.poe.raridade === 'unico'), `com "Só Único", só Únicos: ${equipamento.map((p) => p.poe.raridade).join(', ')}`);
-  assert.equal(itens.filter((p) => Mapas.ehMapa(p)).length, 15, 'o T1 garantido do Kitava vem sempre (o mapa não passa pelas seções)');
+  assert.ok(equipamento.some((p) => p.poe.raridade !== 'unico'), `peça abaixo do "Só Único" também vem: ${equipamento.map((p) => p.poe.raridade).join(', ')}`);
+});
+
+test('a bolsa organizada: "Proteger seleção" põe e tira o cadeado de várias; "Mover seleção" leva para a mochila sem duplicar e sem o cadeado', { skip: SEM }, () => {
+  const e = quem();
+  e.inventory = [];
+  const mapa = Jogo.mapaSorteado(2, { raridade: 'normal' });
+  const peca = Jogo.pecaSorteada(30, () => 0.5);
+  e.pouch = [{ id: CAOS, count: 9 }, mapa, { id: SABEDORIA, count: 4 }, peca];
+  // Proteger várias de uma vez (as que ainda batem com a bolsa); a que não bate fica de fora.
+  const r = Bolsa.travar(e, { lista: [{ i: 1, id: mapa.id }, { i: 3, id: peca.id }, { i: 2, id: CAOS }], valor: true });
+  assert.ok(r.ok);
+  assert.match(r.notice, /2 itens com cadeado/);
+  assert.deepEqual(e.pouch.map((p) => !!p.trava), [false, true, false, true]);
+  assert.ok(Bolsa.travar(e, { lista: [{ i: 1, id: mapa.id }], valor: false }).ok);
+  assert.equal(e.pouch[1].trava, undefined);
+  assert.match(Bolsa.travar(e, { lista: [{ i: 9, id: CAOS }], valor: true }).erro, /mudou/);
+  // Mover a seleção: o mapa, a peça travada e o Pergaminho vão para a mochila; o Caos fica.
+  const antes = [CAOS, SABEDORIA].map((id) => total(e, id));
+  const m = Bolsa.moverSelecao(e, { itens: [{ i: 1, id: mapa.id }, { i: 2, id: SABEDORIA }, { i: 3, id: peca.id }] });
+  assert.ok(m.ok, m.erro);
+  assert.match(m.notice, /3 itens foram para a mochila/);
+  assert.deepEqual(e.pouch.map((p) => p.id), [CAOS]);
+  assert.deepEqual([CAOS, SABEDORIA].map((id) => total(e, id)), antes, 'nada some nem duplica');
+  const naMochila = e.inventory.find((p) => p.id === peca.id);
+  assert.deepEqual(naMochila.poe, peca.poe, 'a peça vai inteira, com os mods');
+  assert.equal(naMochila.trava, undefined, 'o cadeado é da bolsa: na mochila ele sai');
+  assert.ok(e.inventory.some((p) => p.id === mapa.id));
+  assert.match(Bolsa.moverSelecao(e, { itens: [] }).erro, /Nada marcado/);
+  assert.match(Bolsa.moverSelecao(e, { itens: [{ i: 0, id: SABEDORIA }] }).erro, /mudou/);
 });

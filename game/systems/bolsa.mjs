@@ -286,6 +286,8 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   if (to === 'bag' && alvoEspecial && !cabeNaMochila(estado, id, 1)) return { ok: false, erro: erroDeEspaco(estado, id, 1) };
   if (alvoEspecial) {
     const [peca] = de.splice(pilha, 1);
+    // O cadeado é da BOLSA (não sair na limpeza): na mochila ele não quer dizer nada.
+    if (to === 'bag') delete peca.trava;
     if (to === 'bag') (estado.inventory ??= []).push(peca);
     else if (estado.pouch.length < VAGAS_DA_BOLSA) estado.pouch.push(peca);
     else {
@@ -354,17 +356,50 @@ export function limparBolsa(estado, { fora }) {
 }
 
 /**
- * `send({t:'travar', i, id})` — o CADEADO de uma pilha de moeda/Orb da bolsa (liga e desliga): a pilha travada não sai na limpeza. Só moeda
- * (os Únicos já são protegidos sempre). Fica na pilha (`trava`), gravada com o personagem.
+ * `send({t:'travar', i, id})` — o CADEADO de uma pilha da bolsa (liga e desliga): a pilha travada não sai na limpeza. Qualquer item (dono,
+ * 10/10: "qualquer" — antes só moeda/Orb). Fica na pilha (`trava`), gravada com o personagem.
+ * `send({t:'travar', lista:[{i, id}], valor})` — o "Proteger seleção" da bolsa organizada: põe (`valor` true) ou tira o cadeado de várias
+ * de uma vez. Só as que ainda batem com a bolsa (`i` + `id`); nenhuma batendo = "a bolsa mudou".
  */
-export function travar(estado, { i, id }) {
+export function travar(estado, { i, id, lista, valor }) {
   garantir(estado);
+  if (Array.isArray(lista)) {
+    const alvos = [...new Set(lista.filter((f) => Number.isInteger(f?.i) && estado.pouch[f.i] && estado.pouch[f.i].id === Number(f.id)).map((f) => f.i))];
+    if (!alvos.length) return { ok: false, erro: 'A bolsa mudou — tente de novo.' };
+    for (const k of alvos) {
+      if (valor) estado.pouch[k].trava = true;
+      else delete estado.pouch[k].trava;
+    }
+    return { ok: true, notice: `${alvos.length} ${alvos.length === 1 ? 'item' : 'itens'} ${valor ? 'com cadeado 🔒' : 'sem cadeado'}.` };
+  }
   const p = Number.isInteger(i) ? estado.pouch[i] : null;
   if (!p || p.id !== Number(id)) return { ok: false, erro: 'A bolsa mudou — tente de novo.' };
-  if (!MoedasPoe.ehMoeda(p.id)) return { ok: false, erro: 'Só moedas e Orbs têm cadeado (os Únicos já ficam protegidos da limpeza).' };
   if (p.trava) delete p.trava;
   else p.trava = true;
   return { ok: true };
+}
+
+/**
+ * `send({t:'moverSelecao', itens:[{i, id}]})` — a bolsa organizada (modo PoE): leva as pilhas marcadas (ou uma seção inteira, como o
+ * "Mover gemas →") para a MOCHILA, pelo mesmo caminho do clique (`moverBolsa`, pilha a pilha, a de índice maior primeiro para os índices
+ * das outras não andarem). O que não couber fica na bolsa.
+ */
+export function moverSelecao(estado, { itens } = {}) {
+  garantir(estado);
+  if (!Array.isArray(itens) || !itens.length) return { ok: false, erro: 'Nada marcado.' };
+  const indices = [...new Set(itens.filter((f) => Number.isInteger(f?.i) && estado.pouch[f.i]?.id === Number(f.id)).map((f) => f.i))].sort((a, b) => b - a);
+  if (!indices.length) return { ok: false, erro: 'A bolsa mudou — tente de novo.' };
+  let foram = 0;
+  let erro = null;
+  for (const i of indices) {
+    const p = estado.pouch[i];
+    const r = moverBolsa(estado, { id: p.id, count: p.count ?? 1, to: 'bag', pilha: i });
+    if (r.ok && !r.notice) foram++;
+    else erro ??= r.erro ?? r.notice;
+  }
+  const ficaram = indices.length - foram;
+  if (!foram) return { ok: false, erro: erro ?? 'Nada coube na mochila.' };
+  return { ok: true, notice: ficaram ? `${foram} foram para a mochila; ${ficaram} ficaram na bolsa (${erro ?? 'sem espaço'}).` : `${foram} ${foram === 1 ? 'item foi' : 'itens foram'} para a mochila.` };
 }
 
 /** `send({t:'venderSacolas'})` — o botão Vender da bolsa (na cidade não há venda sozinha). */

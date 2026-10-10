@@ -1386,6 +1386,8 @@ export class Sessao {
       // (para as caixas de afinidade do depósito, ou os Orbs para a mochila — `Deposito.moverMoedasDaBolsa`).
       case 'travar':
         return this.aplicar(Bolsa.travar(this.estado, m));
+      case 'moverSelecao':
+        return this.aplicar(Bolsa.moverSelecao(this.estado, m));
       case 'moverMoedas':
         return this.aplicar(Deposito.moverMoedasDaBolsa(this.estado, m));
       case 'market':

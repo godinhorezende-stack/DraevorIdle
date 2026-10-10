@@ -14,6 +14,7 @@ import {
 } from './windows.mjs';
 import { tipFor, tipTexto, tipPanel, previaDaMagia, classeDaRaridade, classeSemRaridade, raridadeDaPeca, estrelasDosAfixos, seloDeEstrelas, marcaDeItem, numerosDoItem as ganhosDoItem, ehEssencia, ehVermelha } from './tooltip.mjs';
 import { chatEscrevendo, inserirNoChat } from './chat.mjs';
+import { organizar, chaveDaPilha, ORDENS } from './bolsa-organizada.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -1965,7 +1966,8 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
   // O CADEADO da pilha (o LOCK da bolsa de loot — `Bolsa.travar`): não sai na limpeza.
   if (entry.trava) {
     cell.classList.add('travada');
-    cell.append(el('i', 'selo-cadeado', '🔒'));
+    // O cadeado desenhado (SVG), e não o emoji: o 🔒 muda de cara em cada sistema e em alguns vira um quadrado.
+    cell.append(icone('cadeado', 'selo-cadeado'));
   }
 
   // A entrada inteira: é ela que tem o tier e os imbuements desta peça.
@@ -3197,8 +3199,9 @@ let linhaDeAcoes = null;
  * É o `body.innerHTML = ''` de antes, menos um filho. Ver `acoesDaBolsa`.
  */
 function limparPoupandoAsAcoes(body) {
-  const poupar = linhaDeAcoes?.caixa;
-  for (const filho of [...body.childNodes]) if (filho !== poupar) filho.remove();
+  // (E a barra de abas/busca/ordem da bolsa organizada: a busca não pode perder o foco a cada loot.)
+  const poupar = [linhaDeAcoes?.caixa, barraDaBolsa?.caixa];
+  for (const filho of [...body.childNodes]) if (!poupar.includes(filho)) filho.remove();
 }
 
 function acoesDaBolsa({ character, state, send, espera }) {
@@ -3267,6 +3270,7 @@ export function renderPouch() {
   const assinatura = JSON.stringify([
     pouch, character.pouchSlots, espera0, falta0 == null, character.derived?.capacity, character.weight,
     character.itemRules, paginaDaBolsa, state.catalog?.quickSellRate, character.settings?.destinoDosOrbs ?? null,
+    character.filtroPoe ? assinaturaDaOrganizacao() : null,
   ]);
   const relogioNaTela = body.querySelector('.bag-timer b');
   if (relogioNaTela && body.dataset.assinaturaDaBolsa === assinatura) {
@@ -3425,24 +3429,24 @@ export function renderPouch() {
    */
   /*
    * ---- A ORGANIZAÇÃO da bolsa (o jogo oficial — auditoria de 10/10) ----
-   * "Currency →": toda moeda vai para as caixas do depósito de afinidade Currency; "Orbs →": os "Orbe …" vão para o destino escolhido no
-   * depósito (as caixas de afinidade Orbs ou a mochila). O que não couber fica na bolsa, com o aviso. Depois, avaliar as peças e Limpar.
+   * "Moedas → Depósito": toda moeda vai para as caixas do depósito de afinidade Currency; "Gemas → Mochila": as gemas vão para a mochila.
+   * O que não couber fica na bolsa, com o aviso. O "Orbs" (só os Orbs, para o destino escolhido no depósito) mora na seção Moedas.
    */
   if (character.filtroPoe) {
     const ehMoeda = (p) => !!state.items[p.id]?.moedaPoe;
-    const ehOrbe = (p) => ehMoeda(p) && /^Orbe\b/i.test(state.items[p.id]?.name ?? '');
     const moedas = pouch.filter(ehMoeda).length;
-    const orbes = pouch.filter(ehOrbe).length;
-    const paraMochila = character.settings?.destinoDosOrbs === 'mochila';
-    const currency = el('button', 'bag-clear bag-organizar', 'Currency →');
+    // (O "Orbs →" saiu daqui — dono, 10/10: "tire orbs lá em cima"; ele continua no cabeçalho da seção Moedas.)
+    const currency = el('button', 'bag-clear bag-organizar', 'Moedas → Depósito');
     currency.disabled = !moedas;
     tipTexto(currency, moedas ? `Leva as moedas da bolsa (${moedas} pilha(s), Orbs inclusive) para as caixas do depósito de afinidade Currency. O que não couber fica na bolsa.` : 'Não há moedas na bolsa.');
     currency.onclick = () => send({ t: 'moverMoedas', tipo: 'currency' });
-    const orbs = el('button', 'bag-clear bag-organizar', 'Orbs →');
-    orbs.disabled = !orbes;
-    tipTexto(orbs, orbes ? `Leva os Orbs (${orbes} pilha(s)) para ${paraMochila ? 'a mochila' : 'as caixas do depósito de afinidade Orbs'} (escolha no depósito). O que não couber fica na bolsa.` : 'Não há Orbs na bolsa.');
-    orbs.onclick = () => send({ t: 'moverMoedas', tipo: 'orbs' });
-    botoes.append(currency, orbs);
+    // As GEMAS vão para a mochila (dono, 10/10) — todas as da bolsa, pelo mesmo caminho do "Mover seleção".
+    const gemas = pouch.map((p, i) => ({ i, id: p.id })).filter(({ id }) => state.items[id]?.gemaDef);
+    const botaoGemas = el('button', 'bag-clear bag-organizar', 'Gemas → Mochila');
+    botaoGemas.disabled = !gemas.length;
+    tipTexto(botaoGemas, gemas.length ? `Leva as gemas da bolsa (${gemas.length}) para a mochila. O que não couber fica na bolsa.` : 'Não há gemas na bolsa.');
+    botaoGemas.onclick = () => send({ t: 'moverSelecao', itens: gemas });
+    botoes.append(currency, botaoGemas);
   }
 
   const limpar = el('button', 'bag-clear', 'Limpar');
@@ -3527,27 +3531,13 @@ export function renderPouch() {
     janela.append(alerta);
   }
 
+  // O jogo oficial (PoE): a bolsa ORGANIZADA — seções, abas, busca, ordem e seleção (ver `renderBolsaOrganizada`).
+  if (barraDaBolsa) barraDaBolsa.caixa.hidden = !character.filtroPoe;
+  body.classList.toggle('bolsa-org', !!character.filtroPoe);
+  if (character.filtroPoe) return void renderBolsaOrganizada(body, pouch);
+
   const grid = el('div', 'bag');
-  grid.addEventListener('dragover', (event) => event.preventDefault());
-  grid.addEventListener('drop', (event) => {
-    event.preventDefault();
-    try {
-      const payload = JSON.parse(event.dataTransfer.getData('text/plain'));
-      // Arrastado do CHÃO para dentro: é recolher. Ver `vindoDoChao`.
-      if (vindoDoChao(payload)) return;
-      if (juntarArrastando(payload, 'pouch', event)) return;
-      if (trocarArrastando(payload, 'pouch', event)) return;
-      /*
-       * Só o que JÁ está na bolsa se mexe aqui — juntar duas pilhas e separar
-       * uma. Vindo da mochila o arrasto morre calado: o servidor recusaria de
-       * qualquer jeito, e um aviso a cada vez que a peça passa por cima da
-       * janela seria barulho. Ver `movePouch`.
-       */
-      if (payload.from === 'pouch') separarArrastando(payload, 'pouch');
-    } catch {
-      /* ignora */
-    }
-  });
+  aceitarSolturaNaBolsa(grid);
 
   /*
    * ---- Cem por página ----
@@ -3572,50 +3562,7 @@ export function renderPouch() {
 
   for (const [ordem, entry] of nesta.entries()) {
     // A bolsa ja levava tudo no clique; com shift agora da' para escolher.
-    grid.append(
-      itemCell(entry, 'pouch', {
-        // O índice é o da lista INTEIRA, e não o da página: é ele que o
-        // servidor conhece. Ver `mergeStacks`.
-        pilha: inicio + ordem,
-        /*
-         * ---- Com uma caixa do depósito aberta, o destino é ELA ----
-         *
-         * "eu tenho que conseguir tirar as coisas da loot pouch, seja pra
-         * mochila, seja pro depósito."
-         *
-         * É o mesmo gesto que a mochila já tem, com a mesma regra: clique seco
-         * guarda a pilha inteira, shift pergunta quanto. Sem isto, guardar o
-         * loot era sempre dois passos — bolsa para mochila, mochila para caixa
-         * —, e o passo do meio esbarra nas vinte vagas da mochila justamente
-         * quando ela está cheia, que é quando se vai ao depósito.
-         */
-        titulo: () =>
-          ctx.caixaDoDepositoAberta?.() != null ? 'Quanto vai para a caixa?' : 'Quanto vai para a mochila?',
-        // Guardar começa em tudo; mover para a mochila também. Ver `itemCell`.
-        onClick: (_, quantos) => {
-          const pilha = inicio + ordem;
-          const alvo = alvoDaPeca(entry, pilha);
-          const caixa = ctx.caixaDoDepositoAberta?.();
-          if (caixa != null) {
-            /*
-             * `alvo` leva `onde: 'pouch'` para o servidor procurar na BOLSA e
-             * não na mochila — com uma cópia do mesmo id nas duas, era a da
-             * mochila que ia para a caixa. Ver `takeItemComExtras`.
-             */
-            return void send({
-              t: 'depot',
-              action: 'store',
-              id: entry.id,
-              count: quantos ?? entry.count,
-              caixa,
-              alvo: { ...alvo, onde: 'pouch' },
-            });
-          }
-          // A `pilha` diz QUAL cópia vai: sem ela o servidor pega a primeira do id.
-          send({ t: 'pouch', id: entry.id, count: quantos ?? entry.count, to: 'bag', pilha, alvo });
-        },
-      })
-    );
+    grid.append(celulaDaBolsa(entry, inicio + ordem));
   }
   if (!pouch.length) grid.append(el('p', 'empty', 'A bolsa está vazia — vá caçar.'));
   body.append(grid);
@@ -3646,6 +3593,396 @@ export function renderPouch() {
     );
     body.append(barra);
   }
+}
+
+/*
+ * ---- A BOLSA ORGANIZADA (o jogo oficial — dono, 10/10) ----
+ *
+ * O que cai entra sozinho na sua seção (Moedas, Equipáveis, Frascos, Gemas, Mapas, Itens de quest, Outros), e Equipáveis e Frascos se
+ * dividem pela categoria do PoE (Elmos, Luvas, Machados de Uma Mão, Frascos de Vida...). A lista do servidor é uma só: as seções são só a forma de mostrar
+ * (`bolsa-organizada.mjs`). Abas, busca e ordem ficam numa barra que o redesenho NÃO apaga (`limparPoupandoAsAcoes`) — a busca não perde
+ * o foco a cada loot. As seções são refeitas a cada loot, então os botões delas agem no APERTAR (`aoApertar`): o clique só existe se o
+ * apertar e o soltar caem no mesmo nó, e na caçada o nó troca no meio (ver a nota de `acoesDaBolsa`).
+ */
+const CHAVE_DA_BOLSA = 'draevor:bolsa-organizada';
+const bolsaOrg = (() => {
+  const padrao = { aba: 'todos', ordem: 'categoria', desc: false, fechadas: [] };
+  try {
+    const salvo = JSON.parse(localStorage.getItem(CHAVE_DA_BOLSA) ?? 'null');
+    if (salvo && typeof salvo === 'object') Object.assign(padrao, salvo);
+  } catch {
+    /* sem armazenamento: o de fábrica */
+  }
+  return { ...padrao, busca: '', selecao: new Set(), inteiras: new Set() };
+})();
+/** Quantas pilhas cada seção mostra antes do "Mostrar todas" (a bolsa vai a mil, e ela é refeita a cada loot). */
+const POR_SECAO = 120;
+let barraDaBolsa = null;
+
+function guardarBolsaOrg() {
+  try {
+    localStorage.setItem(CHAVE_DA_BOLSA, JSON.stringify({ aba: bolsaOrg.aba, ordem: bolsaOrg.ordem, desc: bolsaOrg.desc, fechadas: bolsaOrg.fechadas }));
+  } catch {
+    /* sem armazenamento: só não lembra */
+  }
+}
+
+/** O que a bolsa organizada mostra entra na assinatura do `renderPouch` (mudou a aba, a busca, a seleção... redesenha). */
+function assinaturaDaOrganizacao() {
+  return [bolsaOrg.aba, bolsaOrg.busca, bolsaOrg.ordem, bolsaOrg.desc, bolsaOrg.fechadas, [...bolsaOrg.selecao], [...bolsaOrg.inteiras]];
+}
+
+function redesenharBolsa() {
+  guardarBolsaOrg();
+  renderPouch();
+}
+
+/** Age no APERTAR (botão esquerdo), e no Enter/Espaço do teclado. Ver a nota da bolsa organizada. */
+function aoApertar(alvo, acao) {
+  alvo.draggable = false;
+  alvo.dataset.semArrasto = '';
+  alvo.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (!alvo.disabled) acao(event);
+  });
+  alvo.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.detail === 0 && !alvo.disabled) acao(event);
+  });
+}
+
+/*
+ * Os ÍCONES da bolsa organizada: traço fino em SVG, na cor do texto (`currentColor`). Emoji muda de cara em cada sistema (e some em
+ * alguns: o 🔒 virava um quadrado); estes são iguais em todo lugar.
+ */
+const ICONES = {
+  cadeado: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  aberto: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/>',
+  lixeira: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',
+  // (A seta para dentro da bandeja — "guardar": o desenho de mochila parecia o cadeado.)
+  mochila: '<path d="M12 3v11M7.5 9.5L12 14l4.5-4.5"/><path d="M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/>',
+  bau: '<path d="M3 10a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v9H3z"/><path d="M3 12h18M11 11h2v3h-2z"/>',
+  busca: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+  visto: '<path d="M5 12l4 4 10-10"/>',
+  moedas: '<ellipse cx="9" cy="8" rx="5" ry="2.5"/><path d="M4 8v4c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V8"/><path d="M10 14.4V17c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-4c0-1.4-2.2-2.5-5-2.5"/>',
+  equipaveis: '<path d="M14 4l6 0 0 6-9 9-6-6z"/><path d="M5 13l-2 2 6 6 2-2M15 9l-4 4"/>',
+  frascos: '<path d="M10 3h4M10 3v5l-4 7a4 4 0 0 0 3.5 6h5A4 4 0 0 0 18 15l-4-7V3"/><path d="M7.5 14h9"/>',
+  gemas: '<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 16 3-16"/>',
+  mapas: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
+  quest: '<path d="M7 3h10v18l-5-3-5 3z"/><path d="M10 8h4M10 12h4"/>',
+  outros: '<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>',
+};
+function icone(nome, classe = 'bolsa-ico') {
+  const span = el('span', classe);
+  span.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONES[nome] ?? ''}</svg>`;
+  return span;
+}
+const ICONE_DA_SECAO = { currency: 'moedas', equipamentos: 'equipaveis', frascos: 'frascos', gemas: 'gemas', mapas: 'mapas', quest: 'quest', outros: 'outros' };
+
+/** A barra de cima: as abas (com a contagem), a busca e a ordem. Montada uma vez; o que muda é atualizado no lugar. */
+function barraDaBolsaOrganizada(body, contagem, total) {
+  if (!barraDaBolsa) {
+    const caixa = el('div', 'bolsa-barra');
+    const abas = el('div', 'bolsa-abas');
+    const campo = el('label', 'bolsa-busca');
+    const busca = el('input');
+    busca.type = 'search';
+    busca.placeholder = 'Buscar item...';
+    busca.addEventListener('input', () => {
+      bolsaOrg.busca = busca.value;
+      redesenharBolsa();
+    });
+    campo.append(icone('busca'), busca);
+    const ordem = el('select', 'bolsa-ordem');
+    for (const [valor, rotulo] of Object.entries(ORDENS)) {
+      const o = el('option', null, rotulo);
+      o.value = valor;
+      ordem.append(o);
+    }
+    ordem.addEventListener('change', () => {
+      bolsaOrg.ordem = ordem.value;
+      redesenharBolsa();
+    });
+    const sentido = el('button', 'bolsa-sentido');
+    sentido.type = 'button';
+    sentido.onclick = () => {
+      bolsaOrg.desc = !bolsaOrg.desc;
+      redesenharBolsa();
+    };
+    const ordenar = el('label', 'bolsa-ordenar');
+    ordenar.append(el('span', null, 'Ordenar'), ordem, sentido);
+    const linha = el('div', 'bolsa-barra-linha');
+    linha.append(campo, ordenar);
+    caixa.append(abas, linha);
+    barraDaBolsa = { caixa, abas, busca, ordem, sentido };
+  }
+  const { caixa, abas, busca, ordem, sentido } = barraDaBolsa;
+  const rotulos = [['todos', 'Todos', total], ['currency', 'Moedas', contagem.currency], ['equipamentos', 'Equipáveis', contagem.equipamentos], ['frascos', 'Frascos', contagem.frascos], ['gemas', 'Gemas', contagem.gemas], ['mapas', 'Mapas', contagem.mapas], ['quest', 'Quest', contagem.quest], ['outros', 'Outros', contagem.outros]];
+  // As abas são refeitas (são poucas), mas só quando o texto muda: assim o clique nelas não se perde no meio de uma caçada.
+  const texto = JSON.stringify([rotulos, bolsaOrg.aba]);
+  if (abas.dataset.texto !== texto) {
+    abas.dataset.texto = texto;
+    abas.replaceChildren(
+      ...rotulos.map(([id, rotulo, n]) => {
+        const aba = el('button', `bolsa-aba${bolsaOrg.aba === id ? ' ativa' : ''}${n ? '' : ' vazia'}`);
+        aba.type = 'button';
+        aba.append(el('span', null, rotulo), el('b', null, String(n)));
+        aba.onclick = () => {
+          bolsaOrg.aba = id;
+          redesenharBolsa();
+        };
+        return aba;
+      })
+    );
+  }
+  if (document.activeElement !== busca && busca.value !== bolsaOrg.busca) busca.value = bolsaOrg.busca;
+  ordem.value = bolsaOrg.ordem;
+  sentido.textContent = bolsaOrg.desc ? '↑' : '↓';
+  sentido.title = bolsaOrg.desc ? 'Ordem invertida — clique para a normal' : 'Ordem normal — clique para inverter';
+  if (caixa.parentElement !== body) body.append(caixa);
+  return caixa;
+}
+
+/** A bolsa em seções (o jogo oficial). `pouch`: a lista do personagem. */
+function renderBolsaOrganizada(body, pouch) {
+  const { state, send } = ctx;
+  // A marcação que não bate mais com a bolsa (a pilha saiu, outra tomou o lugar) some.
+  for (const chave of [...bolsaOrg.selecao]) {
+    const i = Number(chave.slice(0, chave.indexOf('|')));
+    if (!pouch[i] || chaveDaPilha(pouch[i], i) !== chave) bolsaOrg.selecao.delete(chave);
+  }
+  const marcada = (entry, i) => bolsaOrg.selecao.has(chaveDaPilha(entry, i));
+  const marcar = (lista, ligar) => {
+    for (const { entry, i } of lista) {
+      const chave = chaveDaPilha(entry, i);
+      if (ligar) bolsaOrg.selecao.add(chave);
+      else bolsaOrg.selecao.delete(chave);
+    }
+    redesenharBolsa();
+  };
+  const pedido = (lista) => lista.map(({ entry, i }) => ({ i, id: entry.id }));
+  const desmarcar = (lista) => {
+    for (const x of lista) bolsaOrg.selecao.delete(chaveDaPilha(x.entry, x.i));
+  };
+
+  const org = organizar(pouch, state.items, bolsaOrg);
+  barraDaBolsaOrganizada(body, org.contagem, org.total);
+
+  const area = el('div', `bolsa-secoes${bolsaOrg.selecao.size ? ' selecionando' : ''}`);
+  aceitarSolturaNaBolsa(area);
+
+  const celula = (entry, i) => {
+    const cell = celulaDaBolsa(entry, i);
+    const sim = marcada(entry, i);
+    cell.classList.toggle('selecionada', sim);
+    const caixinha = el('button', `bolsa-marca${sim ? ' ligada' : ''}`);
+    caixinha.type = 'button';
+    caixinha.title = sim ? 'Desmarcar' : 'Marcar';
+    if (sim) caixinha.append(icone('visto'));
+    aoApertar(caixinha, () => marcar([{ entry, i }], !sim));
+    cell.append(caixinha);
+    return cell;
+  };
+  const grade = (lista, chaveDaLista) => {
+    const g = el('div', 'bag bolsa-grade');
+    const todas = bolsaOrg.inteiras.has(chaveDaLista);
+    for (const { entry, i } of todas ? lista : lista.slice(0, POR_SECAO)) g.append(celula(entry, i));
+    if (!todas && lista.length > POR_SECAO) {
+      const mais = el('button', 'bolsa-mais', `Mostrar todas (${lista.length})`);
+      mais.type = 'button';
+      aoApertar(mais, () => {
+        bolsaOrg.inteiras.add(chaveDaLista);
+        redesenharBolsa();
+      });
+      g.append(mais);
+    }
+    return g;
+  };
+  const botao = (rotulo, { ico, classe = '', dica, ligado = true } = {}, acao) => {
+    const b = el('button', `bolsa-botao ${classe}`);
+    b.type = 'button';
+    if (ico) b.append(icone(ico));
+    if (rotulo) b.append(el('span', null, rotulo));
+    b.disabled = !ligado;
+    if (dica) tipTexto(b, dica);
+    aoApertar(b, acao);
+    return b;
+  };
+
+  for (const secao of org.secoes) {
+    const caixa = el('section', `bolsa-secao secao-${secao.id}`);
+    const fechada = bolsaOrg.fechadas.includes(secao.id);
+    caixa.classList.toggle('fechada', fechada);
+    const marcadas = secao.itens.filter(({ entry, i }) => marcada(entry, i));
+    const topo = el('header', 'bolsa-secao-topo');
+    const titulo = el('button', 'bolsa-secao-titulo');
+    titulo.type = 'button';
+    const textos = el('span', 'bolsa-secao-textos');
+    const nome = el('span', 'bolsa-secao-nome');
+    nome.append(el('b', null, secao.titulo), el('em', null, String(secao.itens.length)));
+    textos.append(nome, el('small', null, secao.sub));
+    titulo.append(icone(ICONE_DA_SECAO[secao.id] ?? 'outros', 'bolsa-secao-ico'), textos, el('i', 'bolsa-seta', fechada ? '▸' : '▾'));
+    titulo.title = fechada ? 'Abrir a seção' : 'Fechar a seção';
+    aoApertar(titulo, () => {
+      bolsaOrg.fechadas = fechada ? bolsaOrg.fechadas.filter((x) => x !== secao.id) : [...bolsaOrg.fechadas, secao.id];
+      redesenharBolsa();
+    });
+
+    // Os botões só do que dá para fazer AGORA: com itens marcados nesta seção, mover e proteger os marcados; sem, a ação da seção inteira.
+    const acoes = el('div', 'bolsa-secao-acoes');
+    if (marcadas.length) {
+      const todasTravadas = marcadas.every(({ entry }) => entry.trava);
+      acoes.append(
+        botao(`Mochila (${marcadas.length})`, { ico: 'mochila', classe: 'principal', dica: 'Leva os marcados para a mochila. O que não couber fica na bolsa.' }, () => {
+          send({ t: 'moverSelecao', itens: pedido(marcadas) });
+          desmarcar(marcadas);
+        }),
+        botao(null, { ico: todasTravadas ? 'aberto' : 'cadeado', classe: 'so-icone', dica: todasTravadas ? 'Tirar o cadeado dos marcados (voltam a sair na limpeza)' : 'Pôr o cadeado nos marcados (não saem na limpeza)' }, () =>
+          send({ t: 'travar', lista: pedido(marcadas), valor: !todasTravadas })
+        )
+      );
+    } else if (secao.id === 'currency') {
+      acoes.append(
+        botao('Depósito', { ico: 'bau', dica: 'Leva as moedas (Orbs inclusive) para as caixas do depósito com afinidade Currency. O que não couber fica na bolsa.' }, () =>
+          send({ t: 'moverMoedas', tipo: 'currency' })
+        ),
+        botao('Orbs', { ico: state.character.settings?.destinoDosOrbs === 'mochila' ? 'mochila' : 'bau', dica: 'Leva só os Orbs para o destino escolhido no depósito (as caixas de afinidade Orbs ou a mochila).' }, () =>
+          send({ t: 'moverMoedas', tipo: 'orbs' })
+        )
+      );
+    } else if (secao.id !== 'equipamentos') {
+      acoes.append(
+        botao('Tudo para a mochila', { ico: 'mochila', dica: `Leva ${secao.itens.length === 1 ? 'o item' : `os ${secao.itens.length} itens`} desta seção para a mochila. O que não couber fica na bolsa.` }, () =>
+          send({ t: 'moverSelecao', itens: pedido(secao.itens) })
+        )
+      );
+    }
+    const todasMarcadas = secao.itens.length > 0 && marcadas.length === secao.itens.length;
+    const tudo = el('button', `bolsa-todos${todasMarcadas ? ' ligada' : marcadas.length ? ' parcial' : ''}`);
+    tudo.type = 'button';
+    const quadrado = el('i', 'bolsa-quadrado');
+    if (todasMarcadas) quadrado.append(icone('visto'));
+    tudo.append(quadrado, el('span', null, 'Todos'));
+    tudo.title = todasMarcadas ? 'Desmarcar todos desta seção' : 'Marcar todos desta seção';
+    aoApertar(tudo, () => marcar(secao.itens, !todasMarcadas));
+    acoes.append(tudo);
+    topo.append(titulo, acoes);
+    caixa.append(topo);
+
+    // Equipáveis e Frascos: uma grade só, na ORDEM da categoria (armas, escudos, armaduras, elmos...), sem o nome dela (dono, 10/10:
+    // "não precisa escrever a categoria, só ficar organizado").
+    if (!fechada) caixa.append(grade(secao.grupos ? secao.grupos.flatMap((g) => g.itens) : secao.itens, secao.id));
+    area.append(caixa);
+  }
+  if (!org.total) area.append(el('p', 'bolsa-vazia', 'A bolsa está vazia — o que você coletar na caçada aparece aqui.'));
+  else if (!org.secoes.length) area.append(el('p', 'bolsa-vazia', bolsaOrg.busca ? `Nada com "${bolsaOrg.busca}" na bolsa.` : 'Nada nesta aba.'));
+  body.append(area);
+
+  // O rodapé: com marcados, o que fazer com eles; sem, o resumo da bolsa e o "Limpar itens restantes" (a tela de sempre, que poupa os
+  // protegidos).
+  const todasAsMarcadas = pouch.map((entry, i) => ({ entry, i })).filter(({ entry, i }) => marcada(entry, i));
+  const rodape = el('div', `bolsa-rodape${todasAsMarcadas.length ? ' com-selecao' : ''}`);
+  const resumo = el('span', 'bolsa-rodape-conta');
+  if (todasAsMarcadas.length) {
+    resumo.append(el('b', null, String(todasAsMarcadas.length)), el('span', null, todasAsMarcadas.length === 1 ? ' selecionado' : ' selecionados'));
+    rodape.append(
+      resumo,
+      botao('Mochila', { ico: 'mochila', classe: 'principal', dica: 'Leva os marcados para a mochila. O que não couber fica na bolsa.' }, () => {
+        send({ t: 'moverSelecao', itens: pedido(todasAsMarcadas) });
+        bolsaOrg.selecao.clear();
+      }),
+      botao('Proteger', { ico: 'cadeado', dica: 'Põe o cadeado nos marcados: não saem na limpeza.' }, () => send({ t: 'travar', lista: pedido(todasAsMarcadas), valor: true })),
+      botao('Desproteger', { ico: 'aberto', dica: 'Tira o cadeado dos marcados.' }, () => send({ t: 'travar', lista: pedido(todasAsMarcadas), valor: false })),
+      botao('Cancelar', { classe: 'fantasma' }, () => marcar(todasAsMarcadas, false))
+    );
+  } else {
+    const protegidos = pouch.filter((p) => p.trava || p.poe?.raridade === 'unico').length;
+    resumo.append(el('b', null, String(pouch.length)), el('span', null, pouch.length === 1 ? ' item' : ' itens'));
+    if (protegidos) {
+      const p = el('span', 'bolsa-rodape-protegidos');
+      p.append(icone('cadeado'), el('span', null, `${protegidos} protegido${protegidos === 1 ? '' : 's'}`));
+      resumo.append(p);
+    }
+    rodape.append(
+      resumo,
+      botao('Limpar itens restantes', { ico: 'lixeira', classe: 'perigo', ligado: pouch.length > 0, dica: 'Abre a tela da limpeza: joga fora o que não está protegido (os com cadeado e os Únicos ficam).' }, () => ctx.openLimparBolsa?.())
+    );
+  }
+  body.append(rodape);
+}
+
+/** A célula de uma pilha da bolsa: clique leva para a mochila (ou para a caixa do depósito aberta), shift pergunta quanto. */
+function celulaDaBolsa(entry, indice) {
+  const { send } = ctx;
+  return itemCell(entry, 'pouch', {
+    // O índice é o da lista INTEIRA, e não o da página: é ele que o
+    // servidor conhece. Ver `mergeStacks`.
+    pilha: indice,
+    /*
+     * ---- Com uma caixa do depósito aberta, o destino é ELA ----
+     *
+     * "eu tenho que conseguir tirar as coisas da loot pouch, seja pra
+     * mochila, seja pro depósito."
+     *
+     * É o mesmo gesto que a mochila já tem, com a mesma regra: clique seco
+     * guarda a pilha inteira, shift pergunta quanto. Sem isto, guardar o
+     * loot era sempre dois passos — bolsa para mochila, mochila para caixa
+     * —, e o passo do meio esbarra nas vinte vagas da mochila justamente
+     * quando ela está cheia, que é quando se vai ao depósito.
+     */
+    titulo: () =>
+      ctx.caixaDoDepositoAberta?.() != null ? 'Quanto vai para a caixa?' : 'Quanto vai para a mochila?',
+    // Guardar começa em tudo; mover para a mochila também. Ver `itemCell`.
+    onClick: (_, quantos) => {
+      const pilha = indice;
+      const alvo = alvoDaPeca(entry, pilha);
+      const caixa = ctx.caixaDoDepositoAberta?.();
+      if (caixa != null) {
+        /*
+         * `alvo` leva `onde: 'pouch'` para o servidor procurar na BOLSA e
+         * não na mochila — com uma cópia do mesmo id nas duas, era a da
+         * mochila que ia para a caixa. Ver `takeItemComExtras`.
+         */
+        return void send({
+          t: 'depot',
+          action: 'store',
+          id: entry.id,
+          count: quantos ?? entry.count,
+          caixa,
+          alvo: { ...alvo, onde: 'pouch' },
+        });
+      }
+      // A `pilha` diz QUAL cópia vai: sem ela o servidor pega a primeira do id.
+      send({ t: 'pouch', id: entry.id, count: quantos ?? entry.count, to: 'bag', pilha, alvo });
+    },
+  });
+}
+
+/** Soltar uma peça arrastada sobre a grade da bolsa (a de sempre, e as seções da bolsa organizada). */
+function aceitarSolturaNaBolsa(elemento) {
+  elemento.addEventListener('dragover', (event) => event.preventDefault());
+  elemento.addEventListener('drop', (event) => {
+    event.preventDefault();
+    try {
+      const payload = JSON.parse(event.dataTransfer.getData('text/plain'));
+      // Arrastado do CHÃO para dentro: é recolher. Ver `vindoDoChao`.
+      if (vindoDoChao(payload)) return;
+      if (juntarArrastando(payload, 'pouch', event)) return;
+      if (trocarArrastando(payload, 'pouch', event)) return;
+      /*
+       * Só o que JÁ está na bolsa se mexe aqui — juntar duas pilhas e separar
+       * uma. Vindo da mochila o arrasto morre calado: o servidor recusaria de
+       * qualquer jeito, e um aviso a cada vez que a peça passa por cima da
+       * janela seria barulho. Ver `movePouch`.
+       */
+      if (payload.from === 'pouch') separarArrastando(payload, 'pouch');
+    } catch {
+      /* ignora */
+    }
+  });
 }
 
 /*
