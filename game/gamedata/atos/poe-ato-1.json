@@ -12,7 +12,7 @@
   },
   "progressao": {},
   "estado": "publicado",
-  "versao": 4,
+  "versao": 5,
   "inicio": "poe-a1-the-twilight-strand",
   "cidade": {
     "nome": "Vigília de Lioneye",
@@ -204,10 +204,43 @@
       }
     },
     {
+      "id": "poe-a1-the-submerged-passage",
+      "nome": "Passagem Submersa",
+      "descricao": "Lodo, sombras e dentes muito afiados.",
+      "ordem": 6,
+      "huntId": "poe-a1-the-submerged-passage",
+      "tipo": "hunt-normal",
+      "nivel": {
+        "facil": 5,
+        "medio": 5,
+        "dificil": 5
+      },
+      "obrigatoria": false,
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Quebrando Alguns Ovos",
+          "texto": "Entre na Passagem Submersa."
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {},
+      "posicao": {
+        "x": 369,
+        "y": 377
+      }
+    },
+    {
       "id": "poe-a1-the-flooded-depths",
       "nome": "Profundezas Inundadas",
       "descricao": "A escuridão congelando à inanição.",
-      "ordem": 6,
+      "ordem": 7,
       "huntId": "poe-a1-the-flooded-depths",
       "tipo": "hunt-normal",
       "nivel": {
@@ -236,39 +269,6 @@
       "posicao": {
         "x": 514,
         "y": 380
-      }
-    },
-    {
-      "id": "poe-a1-the-submerged-passage",
-      "nome": "Passagem Submersa",
-      "descricao": "Lodo, sombras e dentes muito afiados.",
-      "ordem": 7,
-      "huntId": "poe-a1-the-submerged-passage",
-      "tipo": "hunt-normal",
-      "nivel": {
-        "facil": 5,
-        "medio": 5,
-        "dificil": 5
-      },
-      "obrigatoria": false,
-      "requisitos": {
-        "exige": []
-      },
-      "objetivos": [
-        {
-          "missao": "Quebrando Alguns Ovos",
-          "texto": "Entre na Passagem Submersa."
-        }
-      ],
-      "conclusao": {
-        "tipo": "limpar-hunt"
-      },
-      "recompensas": null,
-      "eventos": [],
-      "sobrescritas": {},
-      "posicao": {
-        "x": 369,
-        "y": 377
       }
     },
     {

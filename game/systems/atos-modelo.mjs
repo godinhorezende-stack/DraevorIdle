@@ -281,6 +281,14 @@ export function validarAto(bruto, ctx = {}) {
     if (ids.has(a.inicio)) {
       const vivas = alcancaveis(a);
       for (const f of a.fases) if (!vivas.has(f.id)) r.push(erro(`fase ${f.id}`, 'Fase isolada: nenhum caminho chega nela a partir da fase inicial.'));
+      // A NUMERAÇÃO (a `ordem` — o número no mapa) tem de ser um caminho: o "Avançar sozinho" segue a numeração (`campanha.proximaNoGrafo`),
+      // e a fase que só abre depois de uma de número maior é pulada e feita depois (dono, 10/10: "a numeração dos atos está bugando").
+      const numeradas = [...a.fases].sort((x, y) => (x.ordem ?? 1e9) - (y.ordem ?? 1e9));
+      const feitas = new Set();
+      numeradas.forEach((f, i) => {
+        if (vivas.has(f.id) && !fasesAbertas(a, feitas).has(f.id)) r.push(aviso(`fase ${f.id}`, `A fase ${i + 1} (${f.nome}) só abre depois de uma de número maior: o "Avançar sozinho" segue a numeração — ponha-a depois da fase que a abre.`));
+        feitas.add(f.id);
+      });
     }
   }
 

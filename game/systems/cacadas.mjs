@@ -866,12 +866,13 @@ export function definirAoCompletarFase(estado, { value }) {
  * fase já feita também avança (o dono: "se eu clico o seguir ela não vai para
  * a próxima mesmo completa"). Para farmar uma fase completa, é o "Repetir".
  * Só a sessão ONLINE chama (offline fica sempre em loop), e só quem caça a
- * PRÓPRIA sala segue: o convidado da party fica com o anfitrião.
+ * PRÓPRIA sala segue: o convidado da party fica com o anfitrião — menos o
+ * LÍDER da party (`mesmoConvidado`: ele decide pela sala — `party.quemDecideOAvancar`).
  */
-export function faseParaSeguir(estado) {
+export function faseParaSeguir(estado, { mesmoConvidado = false } = {}) {
   const hunt = estado.hunt;
   const c = hunt?.campanha;
-  if (!c || c.bossDoAto || Campanha.aoCompletar(estado) !== 'seguir' || salaDe(hunt) !== hunt) return null;
+  if (!c || c.bossDoAto || Campanha.aoCompletar(estado) !== 'seguir' || (!mesmoConvidado && salaDe(hunt) !== hunt)) return null;
   if (!Campanha.faseCompleta(estado, c.dificuldade, c.huntId)) return null;
   const proxima = Campanha.proximaParaSeguir(estado, c.dificuldade, c.huntId);
   return proxima ? { huntId: proxima.huntId, dificuldade: c.dificuldade, nome: proxima.nome } : null;
@@ -1916,6 +1917,10 @@ export function tique(estado, personagem, agora = Date.now()) {
             destino = null;
           }
         }
+        // Party: quem SEGUE alguém caça DENTRO da coleira ("Seguir ... a N sqm"): o passo de caça (até o bicho, o kite, o laço da rota) que o
+        // levaria para além dos N sqm de quem ele segue não sai — ele bate de onde está e fica perto (dono, 10/10: "o follow da party está
+        // estranho: quem está seguindo fica na frente"). Antes corria até o bicho do outro lado do líder e, no tique seguinte, voltava.
+        if (destino && hunt.guia && distancia(destino, hunt.guia.pos) > hunt.guia.coleira && distancia(destino, hunt.guia.pos) > distancia(hunt.pos, hunt.guia.pos)) destino = null;
         if (destino) {
           const dx = Math.sign(destino.x - hunt.pos.x);
           const dy = Math.sign(destino.y - hunt.pos.y);
@@ -1931,11 +1936,18 @@ export function tique(estado, personagem, agora = Date.now()) {
        * líder voltando pela fila que o segue), os dois trocam de lugar — como no
        * Tibia. Sem a troca, o líder e quem o segue se travariam para sempre: quem
        * segue fica parado dentro da coleira, e o líder não passa por ele.
+       * Quem SEGUE nunca troca com quem está à frente dele na fila (`guia.acima`:
+       * quem ele segue, até a ponta): espera atrás. Antes, travado atrás do líder
+       * que parou para lutar, passava para a frente dele (dono, 10/10: "quem está
+       * seguindo fica na frente").
        */
       if (destino) {
         const aliado = aliadosPorCasa(hunt).get(`${destino.x},${destino.y}`);
         if (!aliado) barradosPorAliado.delete(hunt);
-        else {
+        else if (hunt.guia?.acima?.includes(aliado.pos)) {
+          barradosPorAliado.delete(hunt);
+          destino = null;
+        } else {
           const antes = barradosPorAliado.get(hunt);
           const desde = antes?.aliado === aliado ? antes.desde : agora;
           if (agora - desde < TROCA_COM_ALIADO_MS) {

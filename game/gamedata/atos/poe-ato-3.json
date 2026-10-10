@@ -12,7 +12,7 @@
   },
   "progressao": {},
   "estado": "publicado",
-  "versao": 4,
+  "versao": 5,
   "inicio": "poe-a3-the-city-of-sarn",
   "cidade": {
     "nome": "Acampamento de Sarn",
@@ -122,10 +122,47 @@
       }
     },
     {
+      "id": "poe-a3-the-sewers",
+      "nome": "Os Esgotos",
+      "descricao": "Quais horrores se escondem nas entranhas da cidade?",
+      "ordem": 4,
+      "huntId": "poe-a3-the-sewers",
+      "tipo": "hunt-normal",
+      "nivel": {
+        "facil": 26,
+        "medio": 26,
+        "dificil": 26
+      },
+      "obrigatoria": false,
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Segredos do Victario",
+          "texto": "Encontre o terceiro Busto de Platina"
+        },
+        {
+          "missao": "Areia Ardente",
+          "texto": "Destrua o Bloqueio Imortal"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {},
+      "posicao": {
+        "x": 353,
+        "y": 313
+      }
+    },
+    {
       "id": "poe-a3-the-marketplace",
       "nome": "O Mercado",
       "descricao": "Todo o dinheiro no mundo não pode impedir que o mundo acabe.",
-      "ordem": 4,
+      "ordem": 5,
       "huntId": "poe-a3-the-marketplace",
       "tipo": "hunt-normal",
       "nivel": {
@@ -153,7 +190,7 @@
       "id": "poe-a3-the-catacombs",
       "nome": "Catacumbas",
       "descricao": "Tossindo a poeira da devoção sem vida.",
-      "ordem": 5,
+      "ordem": 6,
       "huntId": "poe-a3-the-catacombs",
       "tipo": "hunt-normal",
       "nivel": {
@@ -181,7 +218,7 @@
       "id": "poe-a3-the-battlefront",
       "nome": "Frente de Batalha",
       "descricao": "Carne carbonizada e entranhas espalhadas. Agridoce.",
-      "ordem": 6,
+      "ordem": 7,
       "huntId": "poe-a3-the-battlefront",
       "tipo": "hunt-normal",
       "nivel": {
@@ -214,7 +251,7 @@
       "id": "poe-a3-the-solaris-temple-level-1",
       "nome": "Templo Solaris Nível 1",
       "descricao": "Um império em seu apogeu, refletido em ouro polido.",
-      "ordem": 7,
+      "ordem": 8,
       "huntId": "poe-a3-the-solaris-temple-level-1",
       "tipo": "hunt-normal",
       "nivel": {
@@ -242,7 +279,7 @@
       "id": "poe-a3-the-solaris-temple-level-2",
       "nome": "Templo Solaris Nível 2",
       "descricao": "Um império em seu apogeu, refletido em ouro polido.",
-      "ordem": 8,
+      "ordem": 9,
       "huntId": "poe-a3-the-solaris-temple-level-2",
       "tipo": "hunt-normal",
       "nivel": {
@@ -283,7 +320,7 @@
       "id": "poe-a3-the-docks",
       "nome": "As Docas",
       "descricao": "A vida empalidece no despertar do progresso.",
-      "ordem": 9,
+      "ordem": 10,
       "huntId": "poe-a3-the-docks",
       "tipo": "hunt-normal",
       "nivel": {
@@ -305,43 +342,6 @@
       "posicao": {
         "x": 658,
         "y": 63
-      }
-    },
-    {
-      "id": "poe-a3-the-sewers",
-      "nome": "Os Esgotos",
-      "descricao": "Quais horrores se escondem nas entranhas da cidade?",
-      "ordem": 10,
-      "huntId": "poe-a3-the-sewers",
-      "tipo": "hunt-normal",
-      "nivel": {
-        "facil": 26,
-        "medio": 26,
-        "dificil": 26
-      },
-      "obrigatoria": false,
-      "requisitos": {
-        "exige": []
-      },
-      "objetivos": [
-        {
-          "missao": "Segredos do Victario",
-          "texto": "Encontre o terceiro Busto de Platina"
-        },
-        {
-          "missao": "Areia Ardente",
-          "texto": "Destrua o Bloqueio Imortal"
-        }
-      ],
-      "conclusao": {
-        "tipo": "limpar-hunt"
-      },
-      "recompensas": null,
-      "eventos": [],
-      "sobrescritas": {},
-      "posicao": {
-        "x": 353,
-        "y": 313
       }
     },
     {
