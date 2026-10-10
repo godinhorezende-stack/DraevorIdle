@@ -5,6 +5,7 @@
 // para a etapa em que o dono aprovar a troca (cada uma atrás do seu `modo`).
 import { readFileSync } from 'node:fs';
 import * as Modificadores from './modificadores.mjs';
+import { reducaoMaximaDaArmadura } from './limites.mjs';
 
 export const PARAMETROS = JSON.parse(readFileSync(new URL('../../gamedata/combate/formulas.json', import.meta.url), 'utf8'));
 
@@ -44,10 +45,13 @@ export function absorcaoPorArmadura(armadura, roll) {
   return Math.floor(armadura * (t.fatorMinimo + roll * t.faixa));
 }
 
-/** O modo 'poe': a redução (0–1) do dano FÍSICO de UM golpe: armadura / (armadura + coeficiente × dano). */
+/**
+ * O modo 'poe': a redução (0–1) do dano FÍSICO de UM golpe: armadura / (armadura + coeficiente × dano), no máximo o teto do PoE (90%,
+ * `combate/limites.json` → `armadura.reducaoMaxima`) — armadura enorme contra golpe pequeno ainda deixa passar 10%.
+ */
 export function reducaoDeArmaduraPoe(armadura, danoFisico, coeficiente = PARAMETROS.armadura.poe.coeficiente) {
   if (!(armadura > 0) || !(danoFisico > 0)) return 0;
-  return armadura / (armadura + coeficiente * danoFisico);
+  return Math.min(reducaoMaximaDaArmadura(), armadura / (armadura + coeficiente * danoFisico));
 }
 
 // ---------------------------------------------------------------- acerto e evasão

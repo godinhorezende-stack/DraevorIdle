@@ -11,6 +11,7 @@ import { CONFIG as RARIDADES } from './raridade.mjs';
 
 import { CONFIG, daCurva } from './curvas.mjs';
 import { simples } from '../combate/modificadores.mjs';
+import { reducaoDeArmaduraPoe } from '../combate/formulas.mjs';
 
 export { CONFIG, daCurva };
 const L = CONFIG.limites;
@@ -67,13 +68,12 @@ export const bloqueou = (m, rng = Math.random) => {
 };
 
 /**
- * A fração do golpe físico que a ARMADURA do bicho corta (0–1): armadura / (armadura + coeficiente × dano do golpe). Zero com a armadura
- * desligada na config, sem armadura ou sem dano.
+ * A fração do golpe físico que a ARMADURA do bicho corta (0–1): armadura / (armadura + coeficiente × dano do golpe), no máximo o teto do
+ * PoE (90%) — a mesma conta da armadura do jogador (`combate/formulas.mjs`). Zero com a armadura desligada na config, sem armadura ou sem dano.
  */
 export function reducaoDeArmadura(m, level, danoDoGolpe, coeficiente) {
   if (!CONFIG.armaduraDoMob.ativa || !(danoDoGolpe > 0)) return 0;
-  const a = armaduraDe(m, level);
-  return a > 0 ? a / (a + coeficiente * danoDoGolpe) : 0;
+  return reducaoDeArmaduraPoe(armaduraDe(m, level), danoDoGolpe, coeficiente);
 }
 
 // ---------------------------------------------------------------- o detalhamento (origem de cada atributo)

@@ -3,6 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as F from '../systems/combate/formulas.mjs';
+import * as Limites from '../systems/combate/limites.mjs';
 import * as Registro from '../systems/combate/registro.mjs';
 import * as Simulador from '../systems/combate/simulador.mjs';
 import * as R from '../systems/regras.mjs';
@@ -38,6 +39,14 @@ test('armadura (modo PoE, para a etapa futura): 1.000 contra 500 de dano físico
   assert.equal(F.reducaoDeArmaduraPoe(0, 500), 0);
   assert.equal(F.reducaoDeArmaduraPoe(1000, 0), 0);
   assert.ok(F.reducaoDeArmaduraPoe(1000, 100) > F.reducaoDeArmaduraPoe(1000, 1000), 'a eficiência cai contra golpes mais fortes');
+});
+
+test('armadura: a redução física tem o teto do PoE (90%, `combate/limites.json`) — 65.664 contra um golpe de 10 deixa passar 1, para o jogador também', () => {
+  assert.equal(F.reducaoDeArmaduraPoe(65664, 10), 0.9);
+  assert.ok(Math.abs(R.danoRecebido(10, 65664) - 1) < 1e-9, 'o golpe do mob no jogador: 10% passa');
+  const antes = Limites.LIMITES.armadura.reducaoMaxima;
+  Limites.LIMITES.armadura.reducaoMaxima = 75;
+  try { assert.equal(F.reducaoDeArmaduraPoe(65664, 10), 0.75, 'o teto vem da config'); } finally { Limites.LIMITES.armadura.reducaoMaxima = antes; }
 });
 
 test('acerto (modo PoE): fica entre 5% e 95%; mais precisão acerta mais, mais evasão acerta menos', () => {

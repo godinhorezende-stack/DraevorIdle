@@ -18,6 +18,7 @@ import * as CargasPoe from '../itens-poe/cargas.mjs';
 import { MANA_REGEN_BASE_POE, LEECH_POE, tetoDoRouboPct, APS_DESARMADO_POE } from '../ficha.mjs';
 import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
 import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
+import { reducaoDeArmaduraPoe } from '../combate/formulas.mjs';
 
 const ES = Atributos.CONFIG.energyShield ?? {};
 const r2 = (v) => Math.round((Number(v) || 0) * 100) / 100;
@@ -26,7 +27,7 @@ const linha = (rotulo, valor, { fontes = null, dica = null, destaque = false } =
 const pct = (v, casas = 1) => `${(Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: casas })}%`;
 const num = (v, casas = 0) => (Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: casas });
 /** A redução da Armadura contra um golpe físico de `dano` (a fórmula do PoE 1: A / (A + 5 × dano), até 90%). */
-export const reducaoDaArmadura = (armadura, dano) => Math.min(0.9, armadura > 0 ? armadura / (armadura + 5 * Math.max(1, dano)) : 0);
+export const reducaoDaArmadura = (armadura, dano) => reducaoDeArmaduraPoe(armadura, Math.max(1, dano));
 
 /** Um número que é soma de partes: as partes que somam e um "outros" com o que sobra para fechar o total (buffs, auras, cargas...). */
 function partes(total, lista, resto = 'Outros (buffs, auras, frascos, cargas)') {
