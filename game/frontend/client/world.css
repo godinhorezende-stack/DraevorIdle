@@ -142,6 +142,10 @@
 .w-no.t-cidade { color: #0d2412; }
 .w-no.t-cidade .w-forma { fill: url(#w-verde); stroke: var(--w-ouro); filter: drop-shadow(0 0 5px rgba(79, 174, 74, .5)) drop-shadow(0 2px 3px #000); }
 .w-no.t-cidade .w-placa rect { stroke: rgba(111, 211, 111, .45); }
+/* …e o personagem NA cidade: o mesmo azul de "você está aqui" das fases (dono, 10/10) */
+.w-no.t-cidade.atual { color: #e8fbff; }
+.w-no.t-cidade.atual .w-forma { fill: url(#w-orbe-azul); stroke: #a8f0f8; filter: drop-shadow(0 0 8px rgba(79, 209, 224, .9)) drop-shadow(0 0 16px rgba(79, 170, 240, .45)); }
+.w-no.t-cidade.atual .w-placa rect { stroke: rgba(138, 233, 244, .5); }
 /* a bússola, o controle de zoom, o balão e a dica — pequenos, nas bordas */
 .w2-bussola { position: absolute; z-index: 2; left: 12px; top: 10px; width: 72px; height: 72px; opacity: .82; pointer-events: none; filter: drop-shadow(0 2px 3px #000); }
 .w2-bussola svg { width: 100%; height: 100%; }

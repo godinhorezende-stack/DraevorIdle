@@ -686,6 +686,9 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
 
   const escala = fase ? Campanha.escalaDaFase(huntId, dif) : atoDoBoss != null ? Campanha.escalaDoBoss(atoDoBoss, dif) : null;
   const { grade, inicio, andarInicial, monstros, outrosAndares, instancia } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa });
+  // A cidade do personagem fora da caçada é a do ato onde ele caçou por último (o nó azul do mapa da campanha — `Campanha.paraCliente`).
+  if (fase?.ato != null) estado.atoDaCidade = fase.ato;
+  else if (atoDoBoss != null) estado.atoDaCidade = atoDoBoss;
   // Estava no SEU mapa aberto (e foi para outra caçada, ou voltou ao mesmo): os monstros dele ficam guardados para a volta.
   MapaAberto.guardarAoSair(estado);
 
@@ -946,6 +949,9 @@ export function entrarNaSala(estado, sala, gente = []) {
   }
   inicio ??= casaLivrePerto(grade, sala.pos, (c) => ocupadas.has(`${c.x},${c.y}`)) ?? casaAndavelMaisProxima(grade, sala.pos.x, sala.pos.y);
   const settings = estado.settings ?? {};
+  // (A cidade de quem entra na sala da party passa a ser a do ato dela, como em `entrar`.)
+  const faseDaSala = Campanha.faseDe(sala.huntId);
+  if (faseDaSala?.ato != null) estado.atoDaCidade = faseDaSala.ato;
   estado.hunt = {
     huntId: sala.huntId, modo: 'auto', z: sala.z, pos: { x: inicio.x, y: inicio.y, dir: 2 },
     monstros: sala.monstros, respawns: (sala.respawns ??= []), alvo: null,

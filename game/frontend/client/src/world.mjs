@@ -7,7 +7,7 @@
 // O mapa é SVG (13 nós por Ato: poucas formas, nítido em qualquer zoom e acessível por teclado/leitor de tela); a câmera move UM grupo
 // (`transform`), o pergaminho de cada Ato é desenhado uma vez, e trocar a seleção só mexe em classes e no painel — nada é refeito.
 // Os dados e as contas moram em `world-dados.mjs` (testável sem DOM); a arte procedural em `world-arte.mjs`.
-import { LARGURA, ALTURA, RAIO_DA_FASE, RAIO_DO_BOSS, TIPOS_DE_NO, TEXTO_DO_ESTADO, atosDaCampanha, faseDaFronteira, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, estadoDoNo } from './world-dados.mjs';
+import { LARGURA, ALTURA, RAIO_DA_FASE, RAIO_DO_BOSS, TIPOS_DE_NO, TEXTO_DO_ESTADO, atosDaCampanha, faseDaFronteira, ondeEstaNoMapa, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, estadoDoNo } from './world-dados.mjs';
 import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, iconeDeBotao } from './world-arte.mjs';
 import { faixaDosMapas } from './mapas-dispositivo.mjs';
 
@@ -190,7 +190,7 @@ function criarCamera(viewport, svgEl, cam, vista, aoMudar) {
 
 export function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, escolhido, boss, achados = 0 }) {
   const r = boss ? RAIO_DO_BOSS : RAIO_DA_FASE;
-  const g = svg('g', { class: `w-no ${estado} t-${tipo}${atual ? ' atual' : ''}${novo ? ' novo' : ''}${escolhido ? ' escolhido' : ''}`, transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${nome}. ${TIPOS_DE_NO[tipo]}. ${TEXTO_DO_ESTADO[estado]}${atual ? '. Fase atual' : ''}` });
+  const g = svg('g', { class: `w-no ${estado} t-${tipo}${atual ? ' atual' : ''}${novo ? ' novo' : ''}${escolhido ? ' escolhido' : ''}`, transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${nome}. ${TIPOS_DE_NO[tipo]}. ${TEXTO_DO_ESTADO[estado]}${atual ? '. Você está aqui' : ''}` });
   // O ALVO do toque: invisível e bem maior que o nó pequeno — o dedo acerta sem o desenho virar botão.
   g.append(svg('circle', { class: 'w-alvo', r: r + 14 }));
   g.append(svg('circle', { class: 'w-halo', r: r + 7 }));
@@ -257,7 +257,7 @@ const romano = (n) => ROMANOS[n - 1] ?? String(n);
 
 /**
  * Desenha a tela inteira dentro de `body`. `h` traz o que vem do resto do jogo (para não importar `panels.mjs`):
- * `figuraDaCriatura`, `entrarNaFase(hunt, lista)`, `enfrentarBoss(boss)`, `portalAberto(boss)`, `escolherDificuldade(id)`, `definirAoCompletar(valor)`, `fechar()`, `verLista()` (só no clássico; sem ele, nada de botão Lista).
+ * `figuraDaCriatura`, `huntIdAtual()` (a caçada em que o personagem está, ou null — o nó azul), `entrarNaFase(hunt, lista)`, `enfrentarBoss(boss)`, `portalAberto(boss)`, `escolherDificuldade(id)`, `definirAoCompletar(valor)`, `fechar()`, `verLista()` (só no clássico; sem ele, nada de botão Lista).
  */
 export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestiario, h }) {
   const { figuraDaCriatura } = h;
@@ -265,9 +265,12 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   const atos = atosDaCampanha(escolhida, campanha.atos ?? {});
   if (!atos.length) return void body.append(el('p', 'empty', 'A campanha ainda não tem Atos.'));
   const fronteira = faseDaFronteira(escolhida);
+  // Onde o personagem ESTÁ (o nó azul): a fase em que caça, ou a cidade do ato em que estava (`ondeEstaNoMapa`). A fronteira (a próxima
+  // fase a fazer) continua com a estrada acesa e o selo "Próxima fase".
+  const onde = ondeEstaNoMapa({ huntId: h.huntIdAtual?.() ?? null, escolhida, atoDaCidade: campanha.atoDaCidade ?? null });
 
-  // Qual Ato mostrar: o que o jogador estava vendo (se segue aberto) ou o da fase atual.
-  let atoAtual = atos.find((a) => a.ato === (E.ato ?? ler().ato) && a.aberto) ?? atos.find((a) => a.ato === fronteira?.ato) ?? atos[0];
+  // Qual Ato mostrar: o que o jogador estava vendo (se segue aberto), o de onde ele está ou o da próxima fase.
+  let atoAtual = atos.find((a) => a.ato === (E.ato ?? ler().ato) && a.aberto) ?? atos.find((a) => a.ato === onde?.ato && a.aberto) ?? atos.find((a) => a.ato === fronteira?.ato) ?? atos[0];
   if (!E.sel || !(E.sel.tipo === 'boss' ? atos.some((a) => a.ato === E.sel.ato) : E.sel.tipo === 'cidade' || escolhida.fases.some((f) => f.huntId === E.sel.huntId))) E.sel = fronteira ? { tipo: 'fase', huntId: fronteira.huntId } : null;
   if (E.sel && (E.sel.tipo === 'boss' || E.sel.tipo === 'cidade' ? E.sel.ato : escolhida.fases.find((f) => f.huntId === E.sel.huntId)?.ato) !== atoAtual.ato) E.sel = null;
   if (!E.sel) E.sel = atoAtual.fases.length ? { tipo: 'fase', huntId: (atoAtual.fases.find((f) => f.huntId === fronteira?.huntId) ?? atoAtual.fases[0]).huntId } : null;
@@ -513,18 +516,18 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const escolhido = E.painel ? idDaSelecao(E.sel) : null;
     a.fases.forEach((f, i) => {
       const m = mundo[f.huntId] ?? {};
-      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: m.grafo?.ordem ?? escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: escolhido === f.huntId, achados: m.descobertos?.length ?? 0 });
+      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: m.grafo?.ordem ?? escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: onde?.id === f.huntId, novo: novos.has(f.huntId), escolhido: escolhido === f.huntId, achados: m.descobertos?.length ?? 0 });
       nosPorId.set(f.huntId, g);
       nos.append(g);
     });
     if (cidade) {
-      const g = desenharNo({ id: cidadeId, tipo: 'cidade', estado: 'aberta', numero: 0, nome: cidade.nome, p: cidade.p, escolhido: escolhido === cidadeId });
+      const g = desenharNo({ id: cidadeId, tipo: 'cidade', estado: 'aberta', numero: 0, nome: cidade.nome, p: cidade.p, atual: onde?.id === cidadeId, escolhido: escolhido === cidadeId });
       g.classList.add('t-cidade-no');
       nosPorId.set(cidadeId, g);
       nos.append(g);
     }
     if (a.boss) {
-      const g = desenharNo({ id: `boss:${a.ato}`, tipo: 'boss', estado: estadoDoNo(a.boss), numero: 0, nome: a.boss.nome, p: pos.boss, boss: true, escolhido: escolhido === `boss:${a.ato}` });
+      const g = desenharNo({ id: `boss:${a.ato}`, tipo: 'boss', estado: estadoDoNo(a.boss), numero: 0, nome: a.boss.nome, p: pos.boss, boss: true, atual: onde?.id === `boss:${a.ato}`, escolhido: escolhido === `boss:${a.ato}` });
       nosPorId.set(`boss:${a.ato}`, g);
       nos.append(g);
     }
@@ -553,10 +556,10 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     }
   }
 
-  // O controle de zoom: um bloco pequeno (+, −, centrar na fase atual).
+  // O controle de zoom: um bloco pequeno (+, −, centrar onde você está — ou, em outro Ato, na próxima fase).
   function desenharControles() {
     const centrarNaAtual = () => {
-      const id = fronteira?.ato === atoAtual.ato ? fronteira.huntId : idDaSelecao(E.sel);
+      const id = onde?.ato === atoAtual.ato ? onde.id : fronteira?.ato === atoAtual.ato ? fronteira.huntId : idDaSelecao(E.sel);
       const p = dadosDoAto.posicao(id);
       if (p) camera.centrarEm(p.x, p.y, Math.max(1.6, vista.k));
     };
@@ -566,7 +569,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       botao('w2-ctl', iconeDeBotao('centrar'), centrarNaAtual)
     );
     [...controles.children].forEach((b, i) => {
-      b.setAttribute('aria-label', ['Aproximar', 'Afastar', 'Centrar na fase atual'][i]);
+      b.setAttribute('aria-label', ['Aproximar', 'Afastar', 'Centrar onde você está'][i]);
       b.title = b.getAttribute('aria-label');
     });
   }
@@ -685,7 +688,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const acao = el('div', 'w2-p-acao');
     if (sel.tipo === 'cidade') {
       const c = atoAtual.cidade ?? { nome: 'Cidade', conexoes: [] };
-      corpo.append(el('div', 'w2-chips', chip('Aberta', 'aberta'), chip(TIPOS_DE_NO.cidade)), el('p', 'w2-desc', 'O ponto de partida do Ato: loja, depósito e os serviços da vila. Daqui saem as estradas para as primeiras fases.'));
+      corpo.append(el('div', 'w2-chips', chip('Aberta', 'aberta'), chip(TIPOS_DE_NO.cidade), onde?.id === `cidade:${atoAtual.ato}` ? chip('Você está aqui', 'atual') : null), el('p', 'w2-desc', 'O ponto de partida do Ato: loja, depósito e os serviços da vila. Daqui saem as estradas para as primeiras fases.'));
       const saidas = el('ul', 'w2-lista', ...(c.conexoes ?? []).map((huntId) => { const f = escolhida.fases.find((x) => x.huntId === huntId); return el('li', f?.completa ? 'feito' : null, `${f?.completa ? '✓ ' : ''}${f?.nome ?? huntId}`); }));
       corpo.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Estradas daqui'), saidas));
       const voltar = botao('w2-entrar', 'Voltar à cidade');
@@ -709,7 +712,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       const hunt = hunts.get(f.huntId);
       // (o `append` do DOM escreveria "null" no lugar do que não existe: só vai o que existe)
       corpo.append(...[
-        el('div', 'w2-chips', chip(TEXTO_DO_ESTADO[st], st), tipo !== 'comum' ? chip(TIPOS_DE_NO[tipo]) : null, fronteira?.huntId === f.huntId ? chip('Fase atual', 'atual') : null),
+        el('div', 'w2-chips', chip(TEXTO_DO_ESTADO[st], st), tipo !== 'comum' ? chip(TIPOS_DE_NO[tipo]) : null, onde?.id === f.huntId ? chip('Você está aqui', 'atual') : null, fronteira?.huntId === f.huntId ? chip('Próxima fase') : null),
         m.ambiente ? el('span', 'w2-tag', m.ambiente) : null,
         el('p', 'w2-desc', m.descricao ?? 'Sem descrição.'),
         linha('Nível dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`),
