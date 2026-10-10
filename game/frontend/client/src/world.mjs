@@ -314,6 +314,14 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     };
     dif.append(b);
   }
+  // A aba MAPAS (o Dispositivo de Mapas do endgame): fechada até o chefe do Ato do dispositivo.
+  if (campanha.mapas && h.abrirMapas) {
+    const m = campanha.mapas;
+    const b = botao(`w2-dif mapas ${m.liberado ? 'aberta' : 'bloqueada'}`, null);
+    b.append(el('b', null, m.liberado ? null : el('i', 'w2-cad', iconeDeBotao('cadeado')), 'Mapas'), el('small', null, m.liberado ? (m.aberto ? `T${m.aberto.tier} aberto` : 'Endgame · T1 – T16') : `Depois do Ato ${romano(m.ato)}`));
+    b.onclick = () => (m.liberado ? h.abrirMapas() : mostrarAviso(m.motivo ?? `Os mapas abrem depois do chefe do Ato ${romano(m.ato)}.`));
+    dif.append(b);
+  }
 
   // ---- 2. a faixa dos Atos: setas, o número romano e o progresso de cada um
   const faixa = el('div', 'w2-atos-faixa');
@@ -682,6 +690,12 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       const voltar = botao('w2-entrar', 'Voltar à cidade');
       voltar.onclick = () => h.voltarParaCidade?.();
       acao.append(voltar, el('p', 'w2-nota', 'Encerra a caçada atual (se houver) e volta para a vila.'));
+      // O Dispositivo de Mapas fica na cidade do Ato dele (as Docas de Oriath): o atalho para a aba Mapas.
+      if (campanha.mapas && h.abrirMapas && atoAtual.ato === campanha.mapas.ato) {
+        const dispositivo = botao('w2-entrar w2-dispositivo', 'Dispositivo de Mapas');
+        dispositivo.onclick = () => h.abrirMapas();
+        acao.append(dispositivo, el('p', 'w2-nota', campanha.mapas.liberado ? 'Abre os mapas do endgame (T1–T16).' : campanha.mapas.motivo));
+      }
       painel.append(moldura(c.nome, `Ato ${r} · Cidade`), corpo, acao);
       return;
     }

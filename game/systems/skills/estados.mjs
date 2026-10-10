@@ -65,7 +65,8 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
   };
   // (`congelarDuracaoPct`: a "Duração do Congelamento em Inimigos aumentada" do PoE.)
   if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', (cfg.congelado?.duracao ?? 1500) * (1 + (efeito.congelarDuracaoPct ?? 0) / 100), efeito.congelarMinimoMs ?? 0, efeito.resfriarAoDescongelar > 0 ? { resfriarAoSair: efeito.resfriarAoDescongelar } : null);
-  else if (podeControlar && efeito.atordoarChance > 0 && rng() * 100 < efeito.atordoarChance) prender('atordoado', cfg.atordoado?.duracao ?? 1500);
+  // (`imuneAtordoamento`: o mapa do endgame com "Monstros não podem ser Atordoados".)
+  else if (podeControlar && !bicho.imuneAtordoamento && efeito.atordoarChance > 0 && rng() * 100 < efeito.atordoarChance) prender('atordoado', cfg.atordoado?.duracao ?? 1500);
 
   if (efeito.lentidaoPct > 0) {
     const maximo = cfg.lento?.maximo ?? 40;
@@ -87,7 +88,7 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
  * imunidade depois, resistência do bicho). `duracaoMs` já vem pronta. Devolve true se atordoou.
  */
 export function atordoar(bicho, duracaoMs, agora, salaDeBoss = false) {
-  if (!bicho || bicho.hp <= 0 || !(duracaoMs > 0)) return false;
+  if (!bicho || bicho.hp <= 0 || !(duracaoMs > 0) || bicho.imuneAtordoamento) return false;
   const cfg = E();
   const estados = (bicho.estados ??= {});
   const preso = ativo(estados.congelado, agora) || ativo(estados.atordoado, agora) || agora < (estados.controleImuneAte ?? 0);

@@ -159,10 +159,11 @@ export const definirAplicadorPoe = (f) => (APLICADOR_POE = typeof f === 'functio
  * `sortear`: o mob nasce de um SPAWN de caçada (só o aplicador do PoE sorteia; os mobs do Draevor seguem "nada é sorteado").
  * `multiplicadores`: troca a vida/dano/exp/levelExtra da raridade; `extra`: stats somados aos dos modificadores.
  */
-export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = false, multiplicadores = null, extra = null } = {}) {
+export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = false, multiplicadores = null, extra = null, chancesDaRaridade = null } = {}) {
   if (!m) return m;
   if (APLICADOR_POE && !multiplicadores) {
-    const poe = APLICADOR_POE(m, { raridade, modificadores, sortear });
+    // (`chancesDaRaridade`: os fatores das chances do sorteio de Mágico/Raro — o mapa do endgame com "X% mais Monstros Raros".)
+    const poe = APLICADOR_POE(m, { raridade, modificadores, sortear, chancesDaRaridade });
     if (poe) return aplicar(m, poe);
   }
   const r = { ...(CONFIG.raridades[raridade] ?? CONFIG.raridades.normal), ...(multiplicadores ?? {}) };

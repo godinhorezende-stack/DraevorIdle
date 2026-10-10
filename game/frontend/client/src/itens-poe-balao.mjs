@@ -10,8 +10,8 @@ const ROTULO = {
 const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance_critico_pct: '%', alcance_metros: ' m', duracao_segundos: ' s' };
 // (dono, 09/10: "o que tiver funcionando coloque só o certo verde e o que não tiver um x vermelho"): com efeito no jogo ✓, sem efeito ✗; a
 // diferença (mesma conta, aproximado, atributo novo, não existe no jogo) fica no texto ao passar o mouse.
-const SIMBOLO = { equivalente: '✓', aproximado: '✓', novo: '✓', inerte: '✗', lembrete: '', registrado: '✗' };
-const ESTADO = { equivalente: 'tem efeito no jogo (mesma conta do PoE)', aproximado: 'tem efeito no jogo (com diferença)', novo: 'atributo do PoE, com efeito no jogo', inerte: 'mecânica do PoE que não existe no jogo', lembrete: 'texto de lembrete do PoE (explica a mecânica do mod de cima)', registrado: 'registrado, ainda sem efeito no combate' };
+const SIMBOLO = { equivalente: '✓', aproximado: '✓', novo: '✓', parcial: '◐', inerte: '✗', lembrete: '', registrado: '✗' };
+const ESTADO = { parcial: 'tem efeito no jogo em parte', equivalente: 'tem efeito no jogo (mesma conta do PoE)', aproximado: 'tem efeito no jogo (com diferença)', novo: 'atributo do PoE, com efeito no jogo', inerte: 'mecânica do PoE que não existe no jogo', lembrete: 'texto de lembrete do PoE (explica a mecânica do mod de cima)', registrado: 'registrado, ainda sem efeito no combate' };
 /** O valor de um atributo da base no balão. `recupera` (frasco): "70 de Vida em 3 s"; faixa: "min–max"; o resto com o sufixo. */
 export const valorDoAtributo = (k, v) => {
   if (k === 'recupera' && v && typeof v === 'object') return `${v.quantidade} de ${v.recurso === 'mana' ? 'Mana' : 'Vida'} em ${String(v.segundos).replace('.', ',')} s`;
@@ -42,6 +42,7 @@ export const CATEGORIA = {
   Sceptres: 'Cetro', Staves: 'Cajado', Warstaves: 'Cajado de Guerra', Claws: 'Garra', Daggers: 'Adaga', Rune_Daggers: 'Adaga Rúnica',
   Bows: 'Arco', Wands: 'Varinha', Fishing_Rods: 'Vara de Pesca',
   Life_Flasks: 'Frasco de Vida', Mana_Flasks: 'Frasco de Mana', Utility_Flasks: 'Frasco de Utilidade', Tinctures: 'Tintura',
+  Maps: 'Mapa',
 };
 const categoriaDe = (p) => CATEGORIA[p.classe ?? String(p.base ?? '').split('/')[0]] ?? null;
 /** O frasco com os mods já aplicados (o servidor manda `poe.frasco`): o que recupera, as cargas e o efeito. */
@@ -54,6 +55,20 @@ function resumoDoFrasco(f) {
   linhas.push(`Usa ${f.cargasPorUso} de ${f.cargasMaximas} cargas`);
   linhas.push(f.tipo === 'utilidade' ? 'No cinto: usado sozinho em combate' : `No cinto: usado sozinho com a ${f.recurso === 'mana' ? 'mana' : 'vida'} baixa`);
   return no('div', 'poe-props poe-frasco-resumo', linhas.map((l) => no('div', null, l)));
+}
+
+/** O MAPA (o servidor manda `poe.mapa` — `itens-poe/mapas.mjs`): o tier e o nível da área, a quantidade e a raridade de itens e o tamanho do
+ * grupo (a soma dos mods e da qualidade), e o que das linhas ainda não age (as parciais). */
+function resumoDoMapa(m) {
+  const pct = (v) => `+${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+  const parciais = (m.linhas ?? []).filter((l) => l.estado === 'parcial' && l.nota).map((l) => l.nota);
+  return no('div', 'poe-props poe-mapa-resumo',
+    no('div', null, `Tier ${m.tier} · Nível da Área ${m.nivel}`),
+    m.quantidade ? no('div', null, 'Quantidade de Itens: ', no('b', 'poe-aumentado', pct(m.quantidade))) : null,
+    m.raridade ? no('div', null, 'Raridade de Itens: ', no('b', 'poe-aumentado', pct(m.raridade))) : null,
+    m.grupo ? no('div', null, 'Tamanho do Grupo: ', no('b', 'poe-aumentado', pct(m.grupo))) : null,
+    parciais.length ? no('div', 'poe-aviso', `Em parte: ${[...new Set(parciais)].join('; ')}.`) : null,
+    no('div', null, 'Use no Dispositivo de Mapas (depois do Ato 10).'));
 }
 
 export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null, tem = null } = {}) {
@@ -94,6 +109,7 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
           .flatMap(([k, texto], i) => [i ? ', ' : null, no('span', tem && (Number(tem[k]) || 0) < requisitos[k] ? 'poe-req falta' : 'poe-req', texto)]))
       : null,
     p.frasco ? [sep(), resumoDoFrasco(p.frasco)] : null,
+    p.mapa ? [sep(), resumoDoMapa(p.mapa)] : null,
     p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp', '')] : null,
     p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
     p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,

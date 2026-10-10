@@ -270,7 +270,7 @@
 .poe-aviso { padding: 4px 10px 8px; color: var(--eng-aviso); font: 12px var(--eng-fonte); text-align: center; }
 .poe-tr { font-style: normal; font: 600 11px var(--eng-mono); width: 14px; display: inline-block; text-align: center; flex: none; }
 /* (09/10) ✓ verde com efeito, ✗ vermelho sem efeito — no balão das peças e no da árvore. */
-.poe-tr.equivalente, .poe-tr.aproximado, .poe-tr.novo { color: #5cc28a; } .poe-tr.registrado, .poe-tr.inerte { color: #ff6b6b; }
+.poe-tr.equivalente, .poe-tr.aproximado, .poe-tr.novo { color: #5cc28a; } .poe-tr.registrado, .poe-tr.inerte { color: #ff6b6b; } .poe-tr.parcial { color: #e5c07b; }
 .poe-draevor { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 6px 10px 8px; border-top: 1px dashed #2a2a30; font: 12px var(--eng-fonte); color: var(--eng-txt2); }
 .poe-draevor b { font-weight: 500; color: var(--eng-txt); }
 .poe-secao { margin: 4px 12px 0; font: 10.5px var(--font-item, 'Alegreya SC', Georgia, serif); letter-spacing: .12em; text-transform: uppercase; color: #6d6d78; text-align: center; }

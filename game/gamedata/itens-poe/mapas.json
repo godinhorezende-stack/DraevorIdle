@@ -1,0 +1,3481 @@
+{
+ "_nota": "Os MAPAS do endgame do PoE (T1–T16). `classe` e os mods (`classe.paginas`) são gerados por tools/montar-mapas-poe.mjs a partir do poedb (rodar de novo refaz só eles); `tiers`, `drop`, `dispositivo` e `instancia` são a CONFIGURAÇÃO do jogo, editável aqui e preservada pelo gerador. Só entram no pool as famílias com `efeitos` (o que age de verdade no jogo); as outras ficam em `naoImplementados`, com o motivo.",
+ "tiers": [
+  {
+   "tier": 1,
+   "nivel": 68
+  },
+  {
+   "tier": 2,
+   "nivel": 69
+  },
+  {
+   "tier": 3,
+   "nivel": 70
+  },
+  {
+   "tier": 4,
+   "nivel": 71
+  },
+  {
+   "tier": 5,
+   "nivel": 72
+  },
+  {
+   "tier": 6,
+   "nivel": 73
+  },
+  {
+   "tier": 7,
+   "nivel": 74
+  },
+  {
+   "tier": 8,
+   "nivel": 75
+  },
+  {
+   "tier": 9,
+   "nivel": 76
+  },
+  {
+   "tier": 10,
+   "nivel": 77
+  },
+  {
+   "tier": 11,
+   "nivel": 78
+  },
+  {
+   "tier": 12,
+   "nivel": 79
+  },
+  {
+   "tier": 13,
+   "nivel": 80
+  },
+  {
+   "tier": 14,
+   "nivel": 81
+  },
+  {
+   "tier": 15,
+   "nivel": 82
+  },
+  {
+   "tier": 16,
+   "nivel": 83
+  }
+ ],
+ "drop": {
+  "_nota": "Os DROPS de mapa (dono, 10/10: valores próximos aos do PoE, ajustáveis aqui). Só caem dentro de um mapa (a área é o tier dele) e do chefe do Ato 10. Por monstro: chanceBase × (1 + o bônus de quantidade do tipo — os mesmos do loot, regras.json → drop.bonusDeQuantidade) × (1 + a Quantidade de Itens do mapa); o tamanho da party não muda (como no PoE). O tier: o da área, ou um acima com `tierAcima[tipo]` (o normal só dá o tier da área; o T16 só dá T16). O chefe do mapa garante `chefe.garantidos` mapas (e `chefe.chanceDeMaisUm` de mais um) — a progressão não depende só da sorte. A raridade do mapa que cai: os pesos do loot (regras.json → drop.raridades), com a Raridade de Itens do mapa.",
+  "chanceBase": 0.004,
+  "tierAcima": {
+   "normal": 0,
+   "modificado": 0.25,
+   "raro": 0.35,
+   "elite": 0.35,
+   "unico": 0.4,
+   "boss": 0.4
+  },
+  "chefe": {
+   "garantidos": 1,
+   "chanceDeMaisUm": 0.5
+  },
+  "kitava": {
+   "ato": 10,
+   "tier": 1,
+   "primeiraVitoria": "magico",
+   "outrasVitorias": "normal"
+  }
+ },
+ "dispositivo": {
+  "_nota": "O DISPOSITIVO DE MAPAS: libera depois do chefe do `atoQueLibera`; fica na aba Mapas da tela Mundo e na cidade `cidade`. Cada mapa aberto dá `portais` entradas (cada morte gasta uma; sem portal, o mapa acaba — como no PoE).",
+  "atoQueLibera": 10,
+  "cidade": "poe-a10-oriath-docks",
+  "portais": 6
+ },
+ "instancia": {
+  "_nota": "A INSTÂNCIA de cada tier: o TERRENO (uma hunt do Draevor, como as áreas da campanha), os MONSTROS comuns da `area` da campanha do PoE e o CHEFE (o slug de um monstro único da campanha) — todos levados ao nível do mapa pelo `crescimentoPorNivel` (o quanto cada status cresce por nível no PoE, medido nos próprios monstros da campanha, níveis 55–67, pela mediana do mesmo monstro em níveis diferentes). Concluir = limpar 100% (o chefe conta). `pausaAoConcluirMs`: o tempo do aviso antes de voltar para a cidade.",
+  "crescimentoPorNivel": {
+   "vida": 0.0643,
+   "dano": 0.0519,
+   "experiencia": 0.0362,
+   "armadura": 0.0814,
+   "evasao": 0.0643,
+   "escudoDeEnergia": 0.0643
+  },
+  "pausaAoConcluirMs": 8000,
+  "porTier": [
+   {
+    "tier": 1,
+    "area": "poe-a8-the-harbour-bridge",
+    "terreno": "falcons",
+    "chefe": "Avarius,_Reassembled"
+   },
+   {
+    "tier": 2,
+    "area": "poe-a9-the-tunnel",
+    "terreno": "medusa-cave",
+    "chefe": "Tolman"
+   },
+   {
+    "tier": 3,
+    "area": "poe-a9-the-boiling-lake",
+    "terreno": "poi-dt-seal",
+    "chefe": "Doedre_the_Vile"
+   },
+   {
+    "tier": 4,
+    "area": "poe-a9-the-rotting-core",
+    "terreno": "burster-spectres",
+    "chefe": "Dusk,_Harbinger_of_Lunaris"
+   },
+   {
+    "tier": 5,
+    "area": "poe-a8-the-bath-house",
+    "terreno": "cobra-bastion-1",
+    "chefe": "Dawn,_Harbinger_of_Solaris"
+   },
+   {
+    "tier": 6,
+    "area": "poe-a8-the-imperial-fields",
+    "terreno": "edron-were-mobs",
+    "chefe": "The_Basilisk"
+   },
+   {
+    "tier": 7,
+    "area": "poe-a8-the-grain-gate",
+    "terreno": "old-fortress-hero-cave",
+    "chefe": "General_Adus"
+   },
+   {
+    "tier": 8,
+    "area": "poe-a9-the-vastiri-desert",
+    "terreno": "werehyaenna-north",
+    "chefe": "Garukhan,_Queen_of_the_Winds"
+   },
+   {
+    "tier": 9,
+    "area": "poe-a8-the-lunaris-concourse",
+    "terreno": "dt-seal-inq",
+    "chefe": "Arakaali,_Spinner_of_Shadows"
+   },
+   {
+    "tier": 10,
+    "area": "poe-a8-the-quay",
+    "terreno": "warzone-2",
+    "chefe": "Yugul,_Reflection_of_Terror"
+   },
+   {
+    "tier": 11,
+    "area": "poe-a9-the-descent",
+    "terreno": "wild-life-raid-oramond",
+    "chefe": "Lunaris,_Eternal_Moon"
+   },
+   {
+    "tier": 12,
+    "area": "poe-a9-the-blood-aqueduct",
+    "terreno": "abandoned-sewers",
+    "chefe": "Doedre,_Darksoul"
+   },
+   {
+    "tier": 13,
+    "area": "poe-a8-the-high-gardens",
+    "terreno": "zaoan-draken-walls",
+    "chefe": "Shakari,_Queen_of_the_Sands"
+   },
+   {
+    "tier": 14,
+    "area": "poe-a10-the-ravaged-square",
+    "terreno": "asura-palace",
+    "chefe": "Vilenta"
+   },
+   {
+    "tier": 15,
+    "area": "poe-a9-the-oasis",
+    "terreno": "werelions-1",
+    "chefe": "Solaris,_Eternal_Sun"
+   },
+   {
+    "tier": 16,
+    "area": "poe-a10-the-ossuary",
+    "terreno": "golems-catacombs",
+    "chefe": "The_Depraved_Trinity"
+   }
+  ]
+ },
+ "classe": {
+  "id": "Maps",
+  "grupo": "Mapas",
+  "fontes": [
+   "https://poedb.tw/pt/Maps",
+   "https://poedb.tw/pt/Maps_low_tier",
+   "https://poedb.tw/pt/Maps_mid_tier",
+   "https://poedb.tw/pt/Maps_top_tier"
+  ],
+  "bases": [
+   {
+    "id": "Maps/Map_Tier_1",
+    "slug": "Map_Tier_1",
+    "nome": "Mapa (Nível 1)",
+    "itemId": 7700001,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 1,
+     "nivel_area": 68
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_1.webp",
+    "iconeLado": 80,
+    "pool": "baixo"
+   },
+   {
+    "id": "Maps/Map_Tier_2",
+    "slug": "Map_Tier_2",
+    "nome": "Mapa (Nível 2)",
+    "itemId": 7700002,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 2,
+     "nivel_area": 69
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_2.webp",
+    "iconeLado": 80,
+    "pool": "baixo"
+   },
+   {
+    "id": "Maps/Map_Tier_3",
+    "slug": "Map_Tier_3",
+    "nome": "Mapa (Nível 3)",
+    "itemId": 7700003,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 3,
+     "nivel_area": 70
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_3.webp",
+    "iconeLado": 80,
+    "pool": "baixo"
+   },
+   {
+    "id": "Maps/Map_Tier_4",
+    "slug": "Map_Tier_4",
+    "nome": "Mapa (Nível 4)",
+    "itemId": 7700004,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 4,
+     "nivel_area": 71
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_4.webp",
+    "iconeLado": 80,
+    "pool": "baixo"
+   },
+   {
+    "id": "Maps/Map_Tier_5",
+    "slug": "Map_Tier_5",
+    "nome": "Mapa (Nível 5)",
+    "itemId": 7700005,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 5,
+     "nivel_area": 72
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_5.webp",
+    "iconeLado": 80,
+    "pool": "baixo"
+   },
+   {
+    "id": "Maps/Map_Tier_6",
+    "slug": "Map_Tier_6",
+    "nome": "Mapa (Nível 6)",
+    "itemId": 7700006,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 6,
+     "nivel_area": 73
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_6.webp",
+    "iconeLado": 80,
+    "pool": "medio"
+   },
+   {
+    "id": "Maps/Map_Tier_7",
+    "slug": "Map_Tier_7",
+    "nome": "Mapa (Nível 7)",
+    "itemId": 7700007,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 7,
+     "nivel_area": 74
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_7.webp",
+    "iconeLado": 80,
+    "pool": "medio"
+   },
+   {
+    "id": "Maps/Map_Tier_8",
+    "slug": "Map_Tier_8",
+    "nome": "Mapa (Nível 8)",
+    "itemId": 7700008,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 8,
+     "nivel_area": 75
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_8.webp",
+    "iconeLado": 80,
+    "pool": "medio"
+   },
+   {
+    "id": "Maps/Map_Tier_9",
+    "slug": "Map_Tier_9",
+    "nome": "Mapa (Nível 9)",
+    "itemId": 7700009,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 9,
+     "nivel_area": 76
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_9.webp",
+    "iconeLado": 80,
+    "pool": "medio"
+   },
+   {
+    "id": "Maps/Map_Tier_10",
+    "slug": "Map_Tier_10",
+    "nome": "Mapa (Nível 10)",
+    "itemId": 7700010,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 10,
+     "nivel_area": 77
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_10.webp",
+    "iconeLado": 80,
+    "pool": "medio"
+   },
+   {
+    "id": "Maps/Map_Tier_11",
+    "slug": "Map_Tier_11",
+    "nome": "Mapa (Nível 11)",
+    "itemId": 7700011,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 11,
+     "nivel_area": 78
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_11.webp",
+    "iconeLado": 80,
+    "pool": "alto"
+   },
+   {
+    "id": "Maps/Map_Tier_12",
+    "slug": "Map_Tier_12",
+    "nome": "Mapa (Nível 12)",
+    "itemId": 7700012,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 12,
+     "nivel_area": 79
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_12.webp",
+    "iconeLado": 80,
+    "pool": "alto"
+   },
+   {
+    "id": "Maps/Map_Tier_13",
+    "slug": "Map_Tier_13",
+    "nome": "Mapa (Nível 13)",
+    "itemId": 7700013,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 13,
+     "nivel_area": 80
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_13.webp",
+    "iconeLado": 80,
+    "pool": "alto"
+   },
+   {
+    "id": "Maps/Map_Tier_14",
+    "slug": "Map_Tier_14",
+    "nome": "Mapa (Nível 14)",
+    "itemId": 7700014,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 14,
+     "nivel_area": 81
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_14.webp",
+    "iconeLado": 80,
+    "pool": "alto"
+   },
+   {
+    "id": "Maps/Map_Tier_15",
+    "slug": "Map_Tier_15",
+    "nome": "Mapa (Nível 15)",
+    "itemId": 7700015,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 15,
+     "nivel_area": 82
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_15.webp",
+    "iconeLado": 80,
+    "pool": "alto"
+   },
+   {
+    "id": "Maps/Map_Tier_16",
+    "slug": "Map_Tier_16",
+    "nome": "Mapa (Nível 16)",
+    "itemId": 7700016,
+    "requisitos": {
+     "nivel": null,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributos": {
+     "tier": 16,
+     "nivel_area": 83
+    },
+    "implicitos": [],
+    "icone": "poe-itens/Mapas/icones/Map_Tier_16.webp",
+    "iconeLado": 80,
+    "pool": "alto"
+   }
+  ],
+  "paginas": {
+   "baixo": {
+    "prefixos": [
+     {
+      "familia": "MapNemesisModOnRares",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Antagonista",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Número de Monstros Raros aumentado em (20—30)%",
+        "modelo": "Número de Monstros Raros aumentado em {0}%",
+        "faixas": [
+         [
+          20,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "rarosPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapTwoBosses",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Geminado",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Área contém dois Chefes Únicos",
+        "modelo": "Área contém dois Chefes Únicos",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "chefes",
+        "fixo": 2
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapMonsterCannotBeStunned",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Inabalável",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "(15—19)% mais Vida de Monstros / Monstros não podem ser Atordoados",
+        "modelo": "{0}% mais Vida de Monstros / Monstros não podem ser Atordoados",
+        "faixas": [
+         [
+          15,
+          19
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       },
+       {
+        "alvo": "monstros",
+        "stat": "imuneAtordoamento",
+        "fixo": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterPhysicalResistance",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Blindado",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "+20% de Redução de Dano Físico para Monstros",
+        "modelo": "+{0}% de Redução de Dano Físico para Monstros",
+        "faixas": [
+         [
+          20,
+          20
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "resist.physical",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterLife",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Fecundo",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "(20—29)% mais Vida de Monstros",
+        "modelo": "{0}% mais Vida de Monstros",
+        "faixas": [
+         [
+          20,
+          29
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Selvagem",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Dano dos Monstros aumentado em (14—17)%",
+        "modelo": "Dano dos Monstros aumentado em {0}%",
+        "faixas": [
+         [
+          14,
+          17
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapMonsterElementalDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Ardente",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (50—69)% de Dano Físico como Dano de Fogo extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Fogo extra",
+        "faixas": [
+         [
+          50,
+          69
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.fire",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterElementalDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Congelante",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (50—69)% de Dano Físico como Dano de Gelo extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Gelo extra",
+        "faixas": [
+         [
+          50,
+          69
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.fire",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterElementalDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Eletrizante",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (50—69)% de Dano Físico como Dano de Raio extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Raio extra",
+        "faixas": [
+         [
+          50,
+          69
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.fire",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterFast",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Célere",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Velocidade de Movimento dos Monstros aumentada em (15—20)% / Velocidade de Ataque dos Monstros aumentada em (20—25)% / Velocidade de Conjuração dos Monstros aumentada em (20—25)%",
+        "modelo": "Velocidade de Movimento dos Monstros aumentada em {0}% / Velocidade de Ataque dos Monstros aumentada em {1}% / Velocidade de Conjuração dos Monstros aumentada em {2}%",
+        "faixas": [
+         [
+          15,
+          20
+         ],
+         [
+          20,
+          25
+         ],
+         [
+          20,
+          25
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadePct",
+        "de": 0
+       },
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeAtaquePct",
+        "de": 1,
+        "parcial": "a velocidade de conjuração dos monstros ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapBossMod",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Suserano",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Chefe Único causa Dano aumentado em 15% / Chefe Único tem 20% de sua Velocidade de Conjuração aumentada",
+        "modelo": "Chefe Único causa Dano aumentado em {0}% / Chefe Único tem {1}% de sua Velocidade de Conjuração aumentada",
+        "faixas": [
+         [
+          15,
+          15
+         ],
+         [
+          20,
+          20
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "danoPct",
+        "de": 0,
+        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapBossMod",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Titã",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Chefe Único tem sua Vida aumentada em 25% / Chefe Único tem seu Efeito em Área aumentado em 45%",
+        "modelo": "Chefe Único tem sua Vida aumentada em {0}% / Chefe Único tem seu Efeito em Área aumentado em {1}%",
+        "faixas": [
+         [
+          25,
+          25
+         ],
+         [
+          45,
+          45
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "danoPct",
+        "de": 0,
+        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersAllResistances",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Resistente",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "+15% de Resistência a Caos aos Monstros / +20% de Resistência Elemental aos Monstros",
+        "modelo": "+{0}% de Resistência a Caos aos Monstros / +{1}% de Resistência Elemental aos Monstros",
+        "faixas": [
+         [
+          15,
+          15
+         ],
+         [
+          20,
+          20
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "resist.chaos",
+        "de": 0
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.fire",
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.ice",
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.energy",
+        "de": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersMaximumLifeAddedEnergyShield",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Bufado",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham (20—29)% da Vida Máxima como Escudo de Energia Máximo Extra",
+        "modelo": "Monstros ganham {0}% da Vida Máxima como Escudo de Energia Máximo Extra",
+        "faixas": [
+         [
+          20,
+          29
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "esPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     }
+    ],
+    "sufixos": [
+     {
+      "familia": "MapBloodlinesModOnMagics",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "das Linhagens",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros Mágicos aumentados em (20—30)%",
+        "modelo": "Monstros Mágicos aumentados em {0}%",
+        "faixas": [
+         [
+          20,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "magicosPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonsterCriticalStrikesAndDamage",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fatalidade",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros têm a Chance de Crítico aumentada em (160—200)% / +(30—35)% ao Multiplicador de Crítico do Monstro",
+        "modelo": "Monstros têm a Chance de Crítico aumentada em {0}% / +{1}% ao Multiplicador de Crítico do Monstro",
+        "faixas": [
+         [
+          160,
+          200
+         ],
+         [
+          30,
+          35
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "critChance",
+        "de": 0,
+        "escala": 0.05
+       },
+       {
+        "alvo": "monstros",
+        "stat": "critMultiplicador",
+        "de": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayerReducedRegen",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 750,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Abafamento",
+        "ilvl": 1,
+        "peso": 750,
+        "texto": "Jogadores têm 20% menos Velocidade de Recuperação de Vida e Escudo de Energia",
+        "modelo": "Jogadores têm {0}% menos Velocidade de Recuperação de Vida e Escudo de Energia",
+        "faixas": [
+         [
+          20,
+          20
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "recuperacao_inc",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayersGainReducedFlaskCharges",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Seca",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Jogadores ganham 30% de Cargas de Frasco reduzidas",
+        "modelo": "Jogadores ganham {0}% de Cargas de Frasco reduzidas",
+        "faixas": [
+         [
+          30,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "frasco_cargas_recebidas",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterAccuracyPlayersUnlockyDodge",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Enterramento",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Precisão dos Monstros aumentada em 30% / Jogadores têm -10% da quantidade do Dano Mágico Suprimido Ignorado",
+        "modelo": "Precisão dos Monstros aumentada em {0}% / Jogadores têm {1}% da quantidade do Dano Mágico Suprimido Ignorado",
+        "faixas": [
+         [
+          30,
+          30
+         ],
+         [
+          -10,
+          -10
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "precisaoPct",
+        "de": 0,
+        "parcial": "o azar na supressão de dano mágico ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerCooldownRecovery",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 650,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fadiga",
+        "ilvl": 1,
+        "peso": 650,
+        "texto": "Jogadores têm 20% menos Recuperação da Recarga",
+        "modelo": "Jogadores têm {0}% menos Recuperação da Recarga",
+        "faixas": [
+         [
+          20,
+          20
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "cooldown_recovery",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerAccuracyRating",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Impressão",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Jogadores têm 15% menos Precisão",
+        "modelo": "Jogadores têm {0}% menos Precisão",
+        "faixas": [
+         [
+          15,
+          15
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "accuracy_less",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     }
+    ]
+   },
+   "medio": {
+    "prefixos": [
+     {
+      "familia": "MapNemesisModOnRares",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Antagonista",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Número de Monstros Raros aumentado em (20—30)%",
+        "modelo": "Número de Monstros Raros aumentado em {0}%",
+        "faixas": [
+         [
+          20,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "rarosPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapTwoBosses",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Geminado",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Área contém dois Chefes Únicos",
+        "modelo": "Área contém dois Chefes Únicos",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "chefes",
+        "fixo": 2
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapMonsterCannotBeStunned",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Inabalável",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "(20—24)% mais Vida de Monstros / Monstros não podem ser Atordoados",
+        "modelo": "{0}% mais Vida de Monstros / Monstros não podem ser Atordoados",
+        "faixas": [
+         [
+          20,
+          24
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       },
+       {
+        "alvo": "monstros",
+        "stat": "imuneAtordoamento",
+        "fixo": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterPhysicalResistance",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Blindado",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "+30% de Redução de Dano Físico para Monstros",
+        "modelo": "+{0}% de Redução de Dano Físico para Monstros",
+        "faixas": [
+         [
+          30,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "resist.physical",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterLife",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Fecundo",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "(30—39)% mais Vida de Monstros",
+        "modelo": "{0}% mais Vida de Monstros",
+        "faixas": [
+         [
+          30,
+          39
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Selvagem",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Dano dos Monstros aumentado em (18—21)%",
+        "modelo": "Dano dos Monstros aumentado em {0}%",
+        "faixas": [
+         [
+          18,
+          21
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapMonsterFireDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Ardente",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (70—89)% de Dano Físico como Dano de Fogo extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Fogo extra",
+        "faixas": [
+         [
+          70,
+          89
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.fire",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterColdDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Congelante",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (70—89)% de Dano Físico como Dano de Gelo extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Gelo extra",
+        "faixas": [
+         [
+          70,
+          89
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.ice",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterLightningDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Eletrizante",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (70—89)% de Dano Físico como Dano de Raio extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Raio extra",
+        "faixas": [
+         [
+          70,
+          89
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.energy",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterFast",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Célere",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Velocidade de Movimento dos Monstros aumentada em (20—25)% / Velocidade de Ataque dos Monstros aumentada em (25—35)% / Velocidade de Conjuração dos Monstros aumentada em (25—35)%",
+        "modelo": "Velocidade de Movimento dos Monstros aumentada em {0}% / Velocidade de Ataque dos Monstros aumentada em {1}% / Velocidade de Conjuração dos Monstros aumentada em {2}%",
+        "faixas": [
+         [
+          20,
+          25
+         ],
+         [
+          25,
+          35
+         ],
+         [
+          25,
+          35
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadePct",
+        "de": 0
+       },
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeAtaquePct",
+        "de": 1,
+        "parcial": "a velocidade de conjuração dos monstros ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapDangerousBoss",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Suserano",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Chefe Único causa Dano aumentado em 20% / Chefe Único tem 25% de sua Velocidade de Conjuração aumentada",
+        "modelo": "Chefe Único causa Dano aumentado em {0}% / Chefe Único tem {1}% de sua Velocidade de Conjuração aumentada",
+        "faixas": [
+         [
+          20,
+          20
+         ],
+         [
+          25,
+          25
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "danoPct",
+        "de": 0,
+        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMassiveBoss",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Titã",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Chefe Único tem sua Vida aumentada em 30% / Chefe Único tem seu Efeito em Área aumentado em 55%",
+        "modelo": "Chefe Único tem sua Vida aumentada em {0}% / Chefe Único tem seu Efeito em Área aumentado em {1}%",
+        "faixas": [
+         [
+          30,
+          30
+         ],
+         [
+          55,
+          55
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "vidaPct",
+        "de": 0,
+        "parcial": "o efeito em área do chefe ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersAllResistances",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Resistente",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "+20% de Resistência a Caos aos Monstros / +30% de Resistência Elemental aos Monstros",
+        "modelo": "+{0}% de Resistência a Caos aos Monstros / +{1}% de Resistência Elemental aos Monstros",
+        "faixas": [
+         [
+          20,
+          20
+         ],
+         [
+          30,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "resist.chaos",
+        "de": 0
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.fire",
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.ice",
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.energy",
+        "de": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersMaximumLifeAddedEnergyShield",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Bufado",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham (30—39)% da Vida Máxima como Escudo de Energia Máximo Extra",
+        "modelo": "Monstros ganham {0}% da Vida Máxima como Escudo de Energia Máximo Extra",
+        "faixas": [
+         [
+          30,
+          39
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "esPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     }
+    ],
+    "sufixos": [
+     {
+      "familia": "MapBloodlinesModOnMagics",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "das Linhagens",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros Mágicos aumentados em (20—30)%",
+        "modelo": "Monstros Mágicos aumentados em {0}%",
+        "faixas": [
+         [
+          20,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "magicosPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonsterCriticalStrikesAndDamage",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fatalidade",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros têm a Chance de Crítico aumentada em (260—300)% / +(36—40)% ao Multiplicador de Crítico do Monstro",
+        "modelo": "Monstros têm a Chance de Crítico aumentada em {0}% / +{1}% ao Multiplicador de Crítico do Monstro",
+        "faixas": [
+         [
+          260,
+          300
+         ],
+         [
+          36,
+          40
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "critChance",
+        "de": 0,
+        "escala": 0.05
+       },
+       {
+        "alvo": "monstros",
+        "stat": "critMultiplicador",
+        "de": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayerReducedRegen",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 750,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Abafamento",
+        "ilvl": 1,
+        "peso": 750,
+        "texto": "Jogadores têm 40% menos Velocidade de Recuperação de Vida e Escudo de Energia",
+        "modelo": "Jogadores têm {0}% menos Velocidade de Recuperação de Vida e Escudo de Energia",
+        "faixas": [
+         [
+          40,
+          40
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "recuperacao_inc",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayerCurse",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 850,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fraqueza Elemental",
+        "ilvl": 1,
+        "peso": 850,
+        "texto": "Jogadores são Amaldiçoados com Fraqueza Elemental",
+        "modelo": "Jogadores são Amaldiçoados com Fraqueza Elemental",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "fraquezaElemental"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerCurse",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 850,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Vulnerabilidade",
+        "ilvl": 1,
+        "peso": 850,
+        "texto": "Jogadores são Amaldiçoados com Vulnerabilidade",
+        "modelo": "Jogadores são Amaldiçoados com Vulnerabilidade",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "vulnerabilidade"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerCurse",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 850,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Enfraquecimento",
+        "ilvl": 1,
+        "peso": 850,
+        "texto": "Jogadores são Amaldiçoados com Debilitar",
+        "modelo": "Jogadores são Amaldiçoados com Debilitar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "enfraquecer"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerReducedRegen",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 300,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "de Estase",
+        "ilvl": 1,
+        "peso": 300,
+        "texto": "Jogadores não podem Regenerar Vida, Mana ou Escudo de Energia",
+        "modelo": "Jogadores não podem Regenerar Vida, Mana ou Escudo de Energia",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "sem_regen_vida",
+        "fixo": 1
+       },
+       {
+        "alvo": "jogador",
+        "stat": "sem_regen_mana",
+        "fixo": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayerMaxResists",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Exposição",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Jogadores têm (-8—-5)% de todos os máximos de Resistências",
+        "modelo": "Jogadores têm {0}% de todos os máximos de Resistências",
+        "faixas": [
+         [
+          -8,
+          -5
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "fire_res_max",
+        "de": 0
+       },
+       {
+        "alvo": "jogador",
+        "stat": "ice_res_max",
+        "de": 0
+       },
+       {
+        "alvo": "jogador",
+        "stat": "energy_res_max",
+        "de": 0
+       },
+       {
+        "alvo": "jogador",
+        "stat": "chaos_res_max",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapPlayersGainReducedFlaskCharges",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Seca",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Jogadores ganham 40% de Cargas de Frasco reduzidas",
+        "modelo": "Jogadores ganham {0}% de Cargas de Frasco reduzidas",
+        "faixas": [
+         [
+          40,
+          40
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "frasco_cargas_recebidas",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterAccuracyPlayersUnlockyDodge",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Enterramento",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Precisão dos Monstros aumentada em 40% / Jogadores têm -15% da quantidade do Dano Mágico Suprimido Ignorado",
+        "modelo": "Precisão dos Monstros aumentada em {0}% / Jogadores têm {1}% da quantidade do Dano Mágico Suprimido Ignorado",
+        "faixas": [
+         [
+          40,
+          40
+         ],
+         [
+          -15,
+          -15
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "precisaoPct",
+        "de": 0,
+        "parcial": "o azar na supressão de dano mágico ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerCooldownRecovery",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 650,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fadiga",
+        "ilvl": 1,
+        "peso": 650,
+        "texto": "Jogadores têm 30% menos Recuperação da Recarga",
+        "modelo": "Jogadores têm {0}% menos Recuperação da Recarga",
+        "faixas": [
+         [
+          30,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "cooldown_recovery",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerAccuracyRating",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Impressão",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Jogadores têm 20% menos Precisão",
+        "modelo": "Jogadores têm {0}% menos Precisão",
+        "faixas": [
+         [
+          20,
+          20
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "accuracy_less",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     }
+    ]
+   },
+   "alto": {
+    "prefixos": [
+     {
+      "familia": "MapNemesisModOnRares",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Antagonista",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Número de Monstros Raros aumentado em (20—30)%",
+        "modelo": "Número de Monstros Raros aumentado em {0}%",
+        "faixas": [
+         [
+          20,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "rarosPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapTwoBosses",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Geminado",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Área contém dois Chefes Únicos",
+        "modelo": "Área contém dois Chefes Únicos",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "chefes",
+        "fixo": 2
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapMonsterCannotBeStunned",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Inabalável",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "(25—30)% mais Vida de Monstros / Monstros não podem ser Atordoados",
+        "modelo": "{0}% mais Vida de Monstros / Monstros não podem ser Atordoados",
+        "faixas": [
+         [
+          25,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       },
+       {
+        "alvo": "monstros",
+        "stat": "imuneAtordoamento",
+        "fixo": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterPhysicalResistance",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Blindado",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "+40% de Redução de Dano Físico para Monstros",
+        "modelo": "+{0}% de Redução de Dano Físico para Monstros",
+        "faixas": [
+         [
+          40,
+          40
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "resist.physical",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterLife",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Fecundo",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "(40—49)% mais Vida de Monstros",
+        "modelo": "{0}% mais Vida de Monstros",
+        "faixas": [
+         [
+          40,
+          49
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Selvagem",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Dano dos Monstros aumentado em (22—25)%",
+        "modelo": "Dano dos Monstros aumentado em {0}%",
+        "faixas": [
+         [
+          22,
+          25
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapMonsterFireDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Ardente",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (90—110)% de Dano Físico como Dano de Fogo extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Fogo extra",
+        "faixas": [
+         [
+          90,
+          110
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.fire",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterColdDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Congelante",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (90—110)% de Dano Físico como Dano de Gelo extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Gelo extra",
+        "faixas": [
+         [
+          90,
+          110
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.ice",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterLightningDamage",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Eletrizante",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros causam (90—110)% de Dano Físico como Dano de Raio extra",
+        "modelo": "Monstros causam {0}% de Dano Físico como Dano de Raio extra",
+        "faixas": [
+         [
+          90,
+          110
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.energy",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMonsterFast",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Célere",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Velocidade de Movimento dos Monstros aumentada em (25—30)% / Velocidade de Ataque dos Monstros aumentada em (35—45)% / Velocidade de Conjuração dos Monstros aumentada em (35—45)%",
+        "modelo": "Velocidade de Movimento dos Monstros aumentada em {0}% / Velocidade de Ataque dos Monstros aumentada em {1}% / Velocidade de Conjuração dos Monstros aumentada em {2}%",
+        "faixas": [
+         [
+          25,
+          30
+         ],
+         [
+          35,
+          45
+         ],
+         [
+          35,
+          45
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadePct",
+        "de": 0
+       },
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeAtaquePct",
+        "de": 1,
+        "parcial": "a velocidade de conjuração dos monstros ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapDangerousBoss",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Suserano",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Chefe Único causa Dano aumentado em 25% / Chefe Único tem 30% de sua Velocidade de Conjuração aumentada",
+        "modelo": "Chefe Único causa Dano aumentado em {0}% / Chefe Único tem {1}% de sua Velocidade de Conjuração aumentada",
+        "faixas": [
+         [
+          25,
+          25
+         ],
+         [
+          30,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "danoPct",
+        "de": 0,
+        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapMassiveBoss",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Titã",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Chefe Único tem sua Vida aumentada em 35% / Chefe Único tem seu Efeito em Área aumentado em 70%",
+        "modelo": "Chefe Único tem sua Vida aumentada em {0}% / Chefe Único tem seu Efeito em Área aumentado em {1}%",
+        "faixas": [
+         [
+          35,
+          35
+         ],
+         [
+          70,
+          70
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "vidaPct",
+        "de": 0,
+        "parcial": "o efeito em área do chefe ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersAllResistances",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Resistente",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "+25% de Resistência a Caos aos Monstros / +40% de Resistência Elemental aos Monstros",
+        "modelo": "+{0}% de Resistência a Caos aos Monstros / +{1}% de Resistência Elemental aos Monstros",
+        "faixas": [
+         [
+          25,
+          25
+         ],
+         [
+          40,
+          40
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "resist.chaos",
+        "de": 0
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.fire",
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.ice",
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "resist.energy",
+        "de": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersMaximumLifeAddedEnergyShield",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Bufado",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham (40—49)% da Vida Máxima como Escudo de Energia Máximo Extra",
+        "modelo": "Monstros ganham {0}% da Vida Máxima como Escudo de Energia Máximo Extra",
+        "faixas": [
+         [
+          40,
+          49
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "esPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     }
+    ],
+    "sufixos": [
+     {
+      "familia": "MapBloodlinesModOnMagics",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "das Linhagens",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Monstros Mágicos aumentados em (20—30)%",
+        "modelo": "Monstros Mágicos aumentados em {0}%",
+        "faixas": [
+         [
+          20,
+          30
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "magicosPct",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonsterCriticalStrikesAndDamage",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fatalidade",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros têm a Chance de Crítico aumentada em (360—400)% / +(41—45)% ao Multiplicador de Crítico do Monstro",
+        "modelo": "Monstros têm a Chance de Crítico aumentada em {0}% / +{1}% ao Multiplicador de Crítico do Monstro",
+        "faixas": [
+         [
+          360,
+          400
+         ],
+         [
+          41,
+          45
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "critChance",
+        "de": 0,
+        "escala": 0.05
+       },
+       {
+        "alvo": "monstros",
+        "stat": "critMultiplicador",
+        "de": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayerReducedRegen",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 750,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Abafamento",
+        "ilvl": 1,
+        "peso": 750,
+        "texto": "Jogadores têm 60% menos Velocidade de Recuperação de Vida e Escudo de Energia",
+        "modelo": "Jogadores têm {0}% menos Velocidade de Recuperação de Vida e Escudo de Energia",
+        "faixas": [
+         [
+          60,
+          60
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "recuperacao_inc",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayerElementalWeakness",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fraqueza Elemental",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Jogadores são Amaldiçoados com Fraqueza Elemental",
+        "modelo": "Jogadores são Amaldiçoados com Fraqueza Elemental",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "fraquezaElemental"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerVulnerability",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Vulnerabilidade",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Jogadores são Amaldiçoados com Vulnerabilidade",
+        "modelo": "Jogadores são Amaldiçoados com Vulnerabilidade",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "vulnerabilidade"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerEnfeeblement",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Enfraquecimento",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Jogadores são Amaldiçoados com Debilitar",
+        "modelo": "Jogadores são Amaldiçoados com Debilitar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "enfraquecer"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerReducedRegen",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "de Estase",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Jogadores não podem Regenerar Vida, Mana ou Escudo de Energia",
+        "modelo": "Jogadores não podem Regenerar Vida, Mana ou Escudo de Energia",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "sem_regen_vida",
+        "fixo": 1
+       },
+       {
+        "alvo": "jogador",
+        "stat": "sem_regen_mana",
+        "fixo": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
+      "familia": "MapPlayerMaxResists",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 1000,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Exposição",
+        "ilvl": 1,
+        "peso": 1000,
+        "texto": "Jogadores têm (-12—-9)% de todos os máximos de Resistências",
+        "modelo": "Jogadores têm {0}% de todos os máximos de Resistências",
+        "faixas": [
+         [
+          -12,
+          -9
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "fire_res_max",
+        "de": 0
+       },
+       {
+        "alvo": "jogador",
+        "stat": "ice_res_max",
+        "de": 0
+       },
+       {
+        "alvo": "jogador",
+        "stat": "energy_res_max",
+        "de": 0
+       },
+       {
+        "alvo": "jogador",
+        "stat": "chaos_res_max",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 19,
+       "raridade": 11,
+       "grupo": 7
+      }
+     },
+     {
+      "familia": "MapPlayersGainReducedFlaskCharges",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Seca",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Jogadores ganham 50% de Cargas de Frasco reduzidas",
+        "modelo": "Jogadores ganham {0}% de Cargas de Frasco reduzidas",
+        "faixas": [
+         [
+          50,
+          50
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "frasco_cargas_recebidas",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonsterAccuracyPlayersUnlockyDodge",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Enterramento",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Precisão dos Monstros aumentada em 50% / Jogadores têm -20% da quantidade do Dano Mágico Suprimido Ignorado",
+        "modelo": "Precisão dos Monstros aumentada em {0}% / Jogadores têm {1}% da quantidade do Dano Mágico Suprimido Ignorado",
+        "faixas": [
+         [
+          50,
+          50
+         ],
+         [
+          -20,
+          -20
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "precisaoPct",
+        "de": 0,
+        "parcial": "o azar na supressão de dano mágico ainda não existe no jogo"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerCooldownRecovery",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 650,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Fadiga",
+        "ilvl": 1,
+        "peso": 650,
+        "texto": "Jogadores têm 40% menos Recuperação da Recarga",
+        "modelo": "Jogadores têm {0}% menos Recuperação da Recarga",
+        "faixas": [
+         [
+          40,
+          40
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "cooldown_recovery",
+        "de": 0,
+        "escala": -1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapPlayerAccuracyRating",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Impressão",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Jogadores têm 25% menos Precisão",
+        "modelo": "Jogadores têm {0}% menos Precisão",
+        "faixas": [
+         [
+          25,
+          25
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "accuracy_less",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     }
+    ]
+   }
+  },
+  "unicos": []
+ },
+ "naoImplementados": [
+  {
+   "familia": "MapBossPossessed",
+   "texto": "Chefes Únicos são Possuídos",
+   "motivo": "os espíritos que possuem monstros ainda não existem no jogo"
+  },
+  {
+   "familia": "MapGroundEffect",
+   "texto": "Área têm poças de Solo Sagrado",
+   "motivo": "o solo ardente/gélido/eletrizado ainda não existe no jogo"
+  },
+  {
+   "familia": "MapHexproof",
+   "texto": "60% menos efeito de Maldições em Monstros",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonsterAreaOfEffect",
+   "texto": "Efeito em Área dos Monstros aumentado em 100%",
+   "motivo": "o efeito em área dos monstros ainda não existe"
+  },
+  {
+   "familia": "MapMonsterChain",
+   "texto": "Habilidades dos Monstros Ricocheteiam 2 vezes mais",
+   "motivo": "as habilidades dos monstros ainda não ricocheteiam"
+  },
+  {
+   "familia": "MapMonsterChaosDamage",
+   "texto": "Monstros ganham (31—35)% de Dano Físico como Dano de Caos Extra / Monstros infligem Definhamento por 2 segundos ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonsterElementalReflection",
+   "texto": "Monstros raros têm espinhos elementais que refletem 1500 de dano elemental",
+   "motivo": "os espinhos de dano fixo dos monstros raros ainda não existem (o reflexo de hoje é em % do dano)"
+  },
+  {
+   "familia": "MapMonsterLifeLeechImmunity",
+   "texto": "Impossível Drenar dos Monstros",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonsterMultipleProjectiles",
+   "texto": "Monstros atiram 2 Projéteis adicionais",
+   "motivo": "os projéteis adicionais dos monstros ainda não existem"
+  },
+  {
+   "familia": "MapMonsterPacks",
+   "texto": "Ganho de Experiência aumentado em % / Área habitada pelos Vaal / Itens Encontrados têm 10% de chance de caírem Corrompidos na Área",
+   "motivo": "trocar os grupos por uma família de monstros (Esqueletos…) ainda não existe no jogo"
+  },
+  {
+   "familia": "MapMonsterPhysicalReflection",
+   "texto": "Monstros raros têm espinhos físicos que refletem 800 de dano físico",
+   "motivo": "os espinhos de dano fixo dos monstros raros ainda não existem (o reflexo de hoje é em % do dano)"
+  },
+  {
+   "familia": "MapMonstersAllDamageAlwaysIgnites",
+   "texto": "Todo Dano de Acertos dos Monstros Incendeiam",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersAvoidPoisonBleedBlind",
+   "texto": "Monstros têm 50% de chance de evitar Envenenamento, Empalamento e Sangramento",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersBaseSelfCriticalMultiplier",
+   "texto": "Monstros têm (36—40)% de redução do Dano Extra de Golpes Críticos",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersBlindOnHit",
+   "texto": "Monstros Cegam ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersCantBeSlowedOrTaunted",
+   "texto": "Monstros não podem ser Provocados / Velocidade de Ação dos Monstros não pode ser modificada para abaixo do Valor base / Velocidade de Movimento dos Monstros não pode ser modificada para abaixo do Valor base",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersChanceToInflictStatusAilments",
+   "texto": "Monstros têm 20% de chance de Incendiar, Congelar e Eletrizar ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersChanceToSuppressSpells",
+   "texto": "Monstros têm +60% de chance de Suprimor Dano Mágico",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersEnduranceChargeOnHit",
+   "texto": "Monstros ganham uma Carga de Tolerância ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersFrenzyChargeOnHit",
+   "texto": "Monstros ganham uma Carga de Frenesi ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersHinderOnHit",
+   "texto": "Monstros Desaceleram ao Acertar com Magias",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersImpaleOnHit",
+   "texto": "Ataques dos Monstros têm 60% de chance de Empalar ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersMaimOnHit",
+   "texto": "Monstros Mutilam com Ataques",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersPowerChargeOnHit",
+   "texto": "Monstros ganham uma Carga de Poder ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonstersStealChargesOnHit",
+   "texto": "Monstros roubam cargas de Poder, Frenesi e Tolerância ao Acertarem",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapMonsterStatusAilmentImmunity",
+   "texto": "Monstros têm 70% de chance de Evitarem Afecções Elementais",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapPlayerAuraEffect",
+   "texto": "Jogadores têm efeito de Auras Não Maldição das Habilidades reduzido em 60%",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapPlayerBuffsExpireFaster",
+   "texto": "Buff em jogadores expiram 70% mais rápido",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapPlayerCurse",
+   "texto": "Jogadores são Amaldiçoados com Grilhões Temporais",
+   "motivo": "a maldição Grilhões Temporais (lentidão) ainda não existe entre as maldições dos monstros"
+  },
+  {
+   "familia": "MapPlayerElementalEquilibrium",
+   "texto": "Jogadores não podem infligir Exposição",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapPlayersAoERadius",
+   "texto": "Jogadores têm 25% menos Efeito em Área",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapPlayersBlockAndArmour",
+   "texto": "Jogadores têm 30% menos Armadura / Chance de Bloqueio dos Jogadores reduzida em 40%",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapPlayerTemporalChains",
+   "texto": "Jogadores são Amaldiçoados com Grilhões Temporais",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapPoisoning",
+   "texto": "Monstros Envenenam ao Acertar",
+   "motivo": "ainda não tem a mecânica no jogo"
+  },
+  {
+   "familia": "MapTotems",
+   "texto": "Área possui muitos Totens",
+   "motivo": "os totens dos monstros ainda não existem no jogo"
+  }
+ ]
+}

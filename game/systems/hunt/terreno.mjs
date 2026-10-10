@@ -112,13 +112,16 @@ export function spawnsCapturados(huntId) {
  * spawns são os da hunt base; os bichos dos spawns passam pelo `transformarSpawns` (que põe os monstros do PoE da área).
  */
 const APELIDOS = new Map();
-let transformadorDeSpawns = null;
+// Um transformador por dono (`campanha`: as áreas do PoE; `mapas`: os mapas do endgame): cada um mexe só nas áreas dele e devolve as outras
+// como vieram — passam todos, em ordem.
+const transformadoresDeSpawns = new Map();
 export function apelidarMapa(id, base) {
   APELIDOS.set(id, base);
 }
 export const mapaDe = (id) => APELIDOS.get(id) ?? id;
-export function definirTransformadorDeSpawns(fn) {
-  transformadorDeSpawns = fn;
+export function definirTransformadorDeSpawns(fn, dono = 'campanha') {
+  if (typeof fn === 'function') transformadoresDeSpawns.set(dono, fn);
+  else transformadoresDeSpawns.delete(dono);
 }
 
 export function mapaRealCapturado(idPedido) {
@@ -264,7 +267,10 @@ export function spawnsDaHunt(huntId) {
     return null;
   })();
   // Área com apelido (a campanha do PoE): os bichos dela no lugar dos da hunt base.
-  return doMapa && APELIDOS.has(huntId) && transformadorDeSpawns ? transformadorDeSpawns(huntId, doMapa) : doMapa;
+  if (!doMapa || !APELIDOS.has(huntId)) return doMapa;
+  let spawns = doMapa;
+  for (const fn of transformadoresDeSpawns.values()) spawns = fn(huntId, spawns);
+  return spawns;
 }
 
 /** Os encontros que o arquivo do mapa define (ver `encontros/modelo.mjs`); lista vazia = nenhum. */

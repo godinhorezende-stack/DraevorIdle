@@ -10,6 +10,7 @@
 //   - do GOLPE (as tags da habilidade: ataque, magia, corpo a corpo, projétil, área, fogo…; e o alvo com Vida Baixa): resolvidas em cada
 //     acerto (`fichaDoGolpe`), que devolve a ficha daquele golpe com o "aumentado", o crítico, a penetração e as afecções dele.
 import { ligado } from './catalogo.mjs';
+import { maldicoesNoJogador as maldicoesDoMapa } from './mapas.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -450,7 +451,8 @@ export function addsDasMaldicoesNoJogador(estado, total) {
   if (!ligado()) return null;
   const h = estado?.hunt;
   const agora = h?.clock ?? 0;
-  const ativas = Object.values(h?.maldicoesNoJogador ?? {}).filter((m) => m && m.ate > agora);
+  // (+ as do MAPA do endgame em que você está — "Jogadores são Amaldiçoados com Vulnerabilidade": valem o mapa inteiro.)
+  const ativas = [...Object.values(h?.maldicoesNoJogador ?? {}).filter((m) => m && m.ate > agora), ...maldicoesDoMapa(estado).map((id) => MALDICOES_DOS_MONSTROS[id]).filter(Boolean)];
   if (!ativas.length || Number(total?.imune_maldicao) > 0) return null;
   const efeito = Math.max(0, 1 + (Number(total?.efeito_maldicao_proprio) || 0) / 100);
   const semResElemental = Number(total?.res_elem_nao_reduzida_maldicao) > 0;

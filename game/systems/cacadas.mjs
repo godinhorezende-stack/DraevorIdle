@@ -76,6 +76,9 @@ import * as Areas from '../engine/areas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import { podeEntrar } from './itens-poe/so-itens-do-poe.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
+import * as Mapas from './itens-poe/mapas.mjs';
+import * as MapasAreas from './itens-poe/mapas-areas.mjs';
+import * as MapaAberto from './itens-poe/mapa-aberto.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -285,7 +288,7 @@ function avancarAusencia(estado, personagem, agora, final) {
   let avancou = false;
 
   // 1. A parte simulada, tique a tique, continuando de onde o pedaço anterior parou.
-  if (!a.base && !a.morreu && hunt.offlineDesde <= Math.min(ate, fimDaSimulacao)) {
+  if (!a.base && !a.morreu && !a.acabou && hunt.offlineDesde <= Math.min(ate, fimDaSimulacao)) {
     hunt.sessao = a.fora;
     // A caçada automática corre sozinha; na online, fora da tela, também — é
     // o que o original faz ("Caçando offline").
@@ -295,6 +298,13 @@ function avancarAusencia(estado, personagem, agora, final) {
     let t = hunt.offlineDesde;
     for (; t <= fim; t += R.PASSO_MS) {
       tique(estado, personagem, t);
+      // A caçada ACABOU no meio (o mapa do endgame concluído, a sala do boss): a ausência para aqui — não há caçada para continuar nem
+      // para projetar (antes o laço seguia sem caçada e a projeção repetia o loot dela por horas).
+      if (estado.hunt !== hunt) {
+        a.acabou = true;
+        a.parouEm = t;
+        break;
+      }
       if (estado.hp <= 0) {
         a.morreu = true;
         a.morreuEm = t;
@@ -308,11 +318,12 @@ function avancarAusencia(estado, personagem, agora, final) {
       }
     }
     hunt.modo = modo;
-    hunt.offlineDesde = a.morreu ? a.morreuEm : a.semStamina ? a.parouEm : t;
+    hunt.offlineDesde = a.morreu ? a.morreuEm : a.semStamina || a.acabou ? a.parouEm : t;
     avancou = true;
     // Os 30 min inteiros simulados: o ritmo deles é a base da projeção — e o
-    // fator de exp da stamina com que ele foi medido.
-    if (!a.morreu && !a.semStamina && fim >= fimDaSimulacao) {
+    // fator de exp da stamina com que ele foi medido. (O MAPA do endgame não se projeta: ele acaba ao limpar — offline ele é só simulado,
+    // e o que passar dos 30 min espera a volta.)
+    if (!a.morreu && !a.semStamina && !a.acabou && !hunt.mapa && fim >= fimDaSimulacao) {
       a.base = JSON.parse(JSON.stringify(a.fora));
       a.fatorBase = Stamina.fatorDeExp(estado);
       a.projetadoAte = fimDaSimulacao;
@@ -363,7 +374,7 @@ function avancarAusencia(estado, personagem, agora, final) {
   if (!final) return { avancou, morreu: a.morreu, semStamina: !!a.semStamina };
 
   // O login: fecha a ausência inteira e entrega o relatório desde a saída.
-  const fim = a.morreu ? a.morreuEm : a.semStamina ? a.parouEm : ate;
+  const fim = a.morreu ? a.morreuEm : a.semStamina || a.acabou ? a.parouEm : ate;
   const report = relatorio(estado, a.fora, fim);
   somarSessao(a.principal, a.fora);
   hunt.sessao = a.principal;
@@ -491,7 +502,7 @@ function chaveDoChefe(alvo, nivel = null) {
   return chaves.reduce((m, k) => (Math.abs(nivelDe(k) - (nivel ?? nivelDe(k))) < Math.abs(nivelDe(m) - (nivel ?? nivelDe(m))) ? k : m));
 }
 
-function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
+function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = null }) {
   const grade = gradeDaHunt(hunt ?? { id: huntId });
   const posicoes = boss ? posicaoDoBoss(boss, grade) : hunt?.posicoes?.length ? pontosNoMapa(hunt, grade.mapa?.floors ? grade.mapa : null) : spawnsCapturados(huntId) ?? grade.posicoes ?? mapaCustom?.posicoes ?? pontosDosSpawns(spawnsDaHunt(huntId));
   /*
@@ -532,21 +543,39 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
    */
   // Hunt VIP/Instance/Divine como FASE de um ato do editor: elas não têm spawns no mapa (a sala é gerada), então a instância sai dos pontos da
   // própria sala gerada, com as criaturas e pesos do cadastro (`spawnPorAndar`). Sem isto a fase nunca limparia.
-  const spawnsDoMapa = fase ? (spawnsDaHunt(huntId)?.length ? spawnsDaHunt(huntId) : tranca ? spawnsDaSalaGerada(posicoes, hunt, grade) : null) : null;
+  // (O MAPA do endgame — `mapa`, o resumo da peça aberta no Dispositivo — também é uma instância nos spawns do terreno dele.)
+  const spawnsDoMapa = fase || mapa ? (spawnsDaHunt(huntId)?.length ? spawnsDaHunt(huntId) : tranca ? spawnsDaSalaGerada(posicoes, hunt, grade) : null) : null;
   const comInstancia = !!spawnsDoMapa?.length;
   const instanciaId = comInstancia ? Instancia.gerarId() : null;
   // Uma criatura por casa (por andar).
   const casasDeSpawn = new Set();
+  // O mapa muda a composição (o tamanho do grupo, mais Mágicos/Raros) e cada monstro (os efeitos dos afixos — `MapasAreas.aplicarEfeitos`).
+  const doMapa = mapa ? Mapas.fatoresDaInstancia(mapa) : null;
+  const ajustesDoMapa = doMapa ? { fatorDoGrupo: doMapa.fatorDoGrupo, chancesDaRaridade: doMapa.chancesDaRaridade, ajustar: (m) => MapasAreas.aplicarEfeitos(m, mapa.efeitos?.monstros) } : {};
   const todos = comInstancia
-    ? Instancia.comporBichos({ grade, spawns: spawnsDoMapa, dadosDaHunt: hunt, inicio, escala, aplicarEscala: Campanha.aplicarEscala, instanciaId })
+    ? Instancia.comporBichos({ grade, spawns: spawnsDoMapa, dadosDaHunt: hunt, inicio, escala, aplicarEscala: Campanha.aplicarEscala, instanciaId, ...ajustesDoMapa })
     : [];
   // A fase que conclui matando um chefe (ou pegando o item que um alvo solta) precisa TER esse monstro: o que os spawns do mapa não trazem
   // nasce no fundo da área (`chefeNaInstancia`).
-  const conclusao = comInstancia ? Campanha.conclusaoDa(huntId) : null;
+  const conclusao = comInstancia && !mapa ? Campanha.conclusaoDa(huntId) : null;
   if ((conclusao?.tipo === 'matar-chefe' || conclusao?.tipo === 'item-de-missao') && conclusao.monstro && !todos.some(({ m }) => Campanha.ehOMonstro(m.key, conclusao.monstro))) {
     const chave = chaveDoChefe(conclusao.monstro, fase?.levelOriginal);
     const chefe = chave ? Instancia.chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala: Campanha.aplicarEscala, dadosDaHunt: hunt, instanciaId }) : null;
     if (chefe) todos.push(chefe);
+  }
+  // O CHEFE do mapa (dois com "A área contém dois Chefes Únicos"): um Único da campanha no nível do mapa, no fundo da área (o primeiro; o
+  // segundo, perto dele), com os efeitos do mapa nos monstros e os do chefe. Ele conta na limpeza: concluir o mapa é matar tudo, ele junto.
+  if (mapa && comInstancia) {
+    const chave = MapasAreas.chefeDoTier(mapa.tier);
+    for (let i = 0; chave && i < doMapa.chefes; i++) {
+      const chefe = Instancia.chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala: Campanha.aplicarEscala, dadosDaHunt: hunt, instanciaId });
+      if (!chefe) break;
+      chefe.m.raridade = 'unico';
+      chefe.m.chefeDoMapa = true;
+      MapasAreas.aplicarEfeitos(chefe.m, mapa.efeitos?.monstros);
+      MapasAreas.aplicarEfeitos(chefe.m, mapa.efeitos?.chefe);
+      todos.push(chefe);
+    }
   }
   for (const p of comInstancia ? [] : posicoes) {
     const z = andarDe(p);
@@ -589,9 +618,13 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
 const TEMPO_DO_PORTAL_MS = 60_000;
 
 /** O que existe no jogo oficial (PoE): as áreas do PoE, os chefes de ato e os pináculos do PoE e as arenas PvP. */
-export const conteudoDoJogoOficial = ({ hunt = null, boss = null, arenaPvp = false }) => !!(hunt?.poeArea || boss?.poeChefeDeAto != null || boss?.poePinaculo || arenaPvp);
+export const conteudoDoJogoOficial = ({ hunt = null, boss = null, arenaPvp = false }) => !!(hunt?.poeArea || hunt?.poeMapa || boss?.poeChefeDeAto != null || boss?.poePinaculo || arenaPvp);
 
-export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false, viaPortal = false, arenaPvp = false }) {
+/**
+ * (`mapa`: o mapa do endgame aberto no Dispositivo — `{ id, peca }` do `estado.mapas.aberto`, passado só pelo `mapas-dispositivo.mjs`: a
+ * hunt do mapa não se alcança por `startHunt`.)
+ */
+export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false, viaPortal = false, arenaPvp = false, mapa: mapaAberto = null }) {
   const boss = CATALOGO.bosses.find((b) => b.id === huntId) ?? null;
   // A campanha (ver `systems/campanha.mjs`): a fase desta hunt, ou o boss de fim de ato.
   const dif = Campanha.DIFICULDADES.includes(dificuldade) ? dificuldade : Campanha.DIFICULDADES[0];
@@ -605,6 +638,9 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // continua servindo às áreas do PoE, mas ninguém entra nelas direto (antes um `startHunt` com o id entrava, e o personagem do PoE
   // nem matava os bichos de lá).
   if (itensPoeLigado() && !conteudoDoJogoOficial({ hunt, boss, arenaPvp })) return { ok: false, erro: 'Essa caçada é do Draevor clássico e não existe no jogo oficial.' };
+  // O MAPA do endgame só se abre pelo Dispositivo de Mapas (com a peça): o tier da hunt é o da peça.
+  const mapa = hunt?.poeMapa ? (mapaAberto?.peca ? Mapas.resumoNaCacada(mapaAberto.id, mapaAberto.peca) : null) : null;
+  if (hunt?.poeMapa && (!mapa || mapa.tier !== hunt.poeMapa)) return { ok: false, erro: 'Os mapas se abrem no Dispositivo de Mapas, com a peça do mapa.' };
   // Hunts Vip / Instance / Divine: premium, o acesso e o level (ver `premium.mjs`).
   const tranca = Premium.trancaDaHunt(hunt);
   if (tranca) {
@@ -649,7 +685,9 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   }
 
   const escala = fase ? Campanha.escalaDaFase(huntId, dif) : atoDoBoss != null ? Campanha.escalaDoBoss(atoDoBoss, dif) : null;
-  const { grade, inicio, andarInicial, monstros, outrosAndares, instancia } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala });
+  const { grade, inicio, andarInicial, monstros, outrosAndares, instancia } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa });
+  // Estava no SEU mapa aberto (e foi para outra caçada, ou voltou ao mesmo): os monstros dele ficam guardados para a volta.
+  MapaAberto.guardarAoSair(estado);
 
   // Lure e assistência começam do que o personagem já tinha configurado fora
   // da hunt (`estado.settings`, ver `Cacadas.definirLure`/`definirAssistencia`)
@@ -711,6 +749,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     // A instância desta entrada (hunt da campanha): os bichos não renascem, e
     // ela fica CLEAR quando não sobra nenhum (ver `hunt/instancia.mjs`).
     instancia,
+    // O MAPA do endgame (o resumo da peça aberta: tier, nível, quantidade/raridade de itens, os efeitos — `itens-poe/mapas.mjs`).
+    ...(mapa ? { mapa } : {}),
     // "Você tem 25 minutos lá dentro, nos dois modos" (no relógio da caçada).
     fimDaSala: boss ? Bosses.TEMPO_NA_SALA_MS : null,
     tranca,
@@ -973,6 +1013,7 @@ function quemEstaNaSala(estado, hunt) {
 }
 function aoLimparAInstancia(estado, hunt, personagem = null) {
   const estados = quemEstaNaSala(estado, hunt);
+  if (hunt.mapa) return concluirMapa(estado, hunt, estados);
   for (const quem of estados) Campanha.limpou(quem, quem === estado ? hunt : quem.hunt);
   // Ato do editor: a recompensa configurada da fase. Os drops sorteiam UMA vez por instância limpa (a sala); a primeira limpeza paga cada
   // personagem da sala uma vez só (`reivindicarPremio`). Este ponto roda uma vez por limpeza (`marcarSeLimpou` é idempotente).
@@ -982,6 +1023,23 @@ function aoLimparAInstancia(estado, hunt, personagem = null) {
   // o portal da sala do boss se abre (uma vez por fase; quem da sala puder entrar, entra).
   if (Campanha.chefeDoAtoNaFase()) abrirPortalDoChefe(hunt, estados);
   else Campanha.abrirPortalDoBoss(hunt, estados);
+}
+
+/**
+ * O MAPA do endgame limpo (100%, o chefe junto): concluído para quem o abriu (`MapaAberto.encerrar`) e para quem estava na sala (as
+ * estatísticas de cada um); a caçada de cada um acaba depois do aviso (`pausaAoConcluirMs`) e volta para a cidade — o mapa não tem outra
+ * instância.
+ */
+function concluirMapa(estado, hunt, estados) {
+  const pausa = Math.max(0, Number(MapasAreas.CONFIG.pausaAoConcluirMs) || 8000);
+  const nome = `Mapa (Nível ${hunt.mapa.tier})`;
+  for (const quem of estados) {
+    const h = quem === estado ? hunt : quem.hunt;
+    if (quem.mapas?.aberto?.id === hunt.mapa.id) MapaAberto.encerrar(quem, 'concluido');
+    else MapaAberto.contarConclusao(quem, hunt.mapa.tier);
+    if (h) h.fimEm = (h.clock ?? 0) + pausa;
+    quem.avisoDaHunt = `${nome} concluído! Voltando para a cidade.`;
+  }
 }
 
 /*
@@ -1188,6 +1246,8 @@ export function adotarNaCampanha(estado) {
 
 /** `send({t:'stopHunt'})` */
 export function sair(estado) {
+  // Saindo do SEU mapa aberto: os monstros vivos ficam guardados (volta pelo Dispositivo, sem gastar portal).
+  MapaAberto.guardarAoSair(estado);
   estado.hunt = null;
   return { ok: true };
 }
@@ -1572,6 +1632,13 @@ export function tique(estado, personagem, agora = Date.now()) {
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;
+  // O MAPA do endgame é de quem o abriu (o Dispositivo — `estado.mapas.aberto`): a caçada que ficou com ele sem o dono (a sala que passou
+  // para outro da party, a cópia de quem saiu dela) fecha — senão o mesmo mapa rodaria duas vezes, com o loot duas vezes.
+  if (donoDaSala && hunt.mapa && !hunt.fimEm && estado.mapas?.aberto?.id !== hunt.mapa.id) {
+    estado.hunt = null;
+    estado.avisoDaHunt = 'O mapa fechou: ele é de quem o abriu no Dispositivo de Mapas.';
+    return [];
+  }
   if (donoDaSala) {
     atualizarLure(hunt, estado);
     renascer(hunt);
@@ -1588,7 +1655,7 @@ export function tique(estado, personagem, agora = Date.now()) {
       if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt, personagem);
       // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal. Com o
       // chefe do ato saindo do portal (ou vivo), ela espera ele morrer.
-      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && !chefeDoAtoPendente(hunt) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) {
+      else if (!hunt.mapa && Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && !chefeDoAtoPendente(hunt) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) {
         // O portal de viagem abre sob cada um da sala e cada um fica nele (o passo espera); passado `ENTRAR_NO_PORTAL_MS`, todos chegam
         // na instância nova (por outro portal). Ela é sorteada ANTES: a hunt que não tem como ter outra não abre portal nem para ninguém.
         if (hunt.instancia.viajaEm == null) {

@@ -4,6 +4,7 @@ import { balaoPoe, CATEGORIA as CATEGORIA_POE } from './itens-poe-balao.mjs';
 import { abrirForjaPoe, temForjaPoe } from './forja-poe.mjs';
 import { listaDetalhe } from './lista-detalhe.mjs';
 import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
+import { desenharDispositivo } from './mapas-dispositivo.mjs';
 import { montarAosPoucos } from './aos-poucos.mjs';
 import { ehTelefone } from './perfil.mjs';
 import { analogicoLigado, ligarAnalogico } from './celular.mjs';
@@ -615,6 +616,22 @@ function campanhaCards(body) {
         send({ t: 'campanha' });
       }, 8000);
     }
+    // A aba MAPAS (o Dispositivo de Mapas do endgame — só no jogo oficial, quando o servidor manda `campanha.mapas`).
+    if (ctx.tabs.campanhaMapas && campanha.mapas) {
+      return void desenharDispositivo(body, {
+        mapas: campanha.mapas,
+        h: {
+          send,
+          itemCanvas,
+          tipFor,
+          voltarParaCampanha: () => {
+            ctx.tabs.campanhaMapas = false;
+            ctx.redraw();
+          },
+          fechar: () => ctx.closeModal(),
+        },
+      });
+    }
     return void desenharMundo(body, {
       campanha,
       escolhida,
@@ -646,6 +663,14 @@ function campanhaCards(body) {
           send({ t: 'aoCompletarFase', value: valor });
           ctx.redraw();
         },
+        // O Dispositivo de Mapas (a aba Mapas e o atalho na cidade do Ato 10).
+        abrirMapas: campanha.mapas
+          ? () => {
+              ctx.tabs.campanhaMapas = true;
+              send({ t: 'campanha' });
+              ctx.redraw();
+            }
+          : null,
         // A CIDADE (o nó de partida do ato): estando numa caçada, volta para a cidade pelo mesmo fluxo do botão Parar.
         voltarParaCidade: () => {
           if (ctx.state.hunt) send({ t: 'stopHunt' });

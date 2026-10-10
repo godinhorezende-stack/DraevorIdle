@@ -5084,6 +5084,12 @@ function mostrarMorte(message) {
   if (message.goldLost) perda('do ouro carregado', `−${message.goldLost.toLocaleString('pt-BR')}`, 'ouro');
   if (message.levelPerdido) perda(message.levelPerdido === 1 ? 'level' : 'levels', `−${message.levelPerdido}`, 'level');
   painel.append(perdas);
+  // Morreu no SEU mapa aberto (o endgame): a morte gastou um portal; sem portal, o mapa acabou.
+  if (message.mapa) {
+    painel.append(el('p', 'morte-nota', message.mapa.falhou
+      ? 'Era o último portal do mapa: o mapa se perdeu.'
+      : `O mapa continua aberto: ${message.mapa.portais} ${message.mapa.portais === 1 ? 'portal sobrando' : 'portais sobrando'} (volte pela aba Mapas da Campanha).`));
+  }
 
   /*
    * O que as bênçãos pouparam, em pontos.

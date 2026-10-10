@@ -53,10 +53,13 @@ export function sortearMods(raridadePoe, nivel, rng = Math.random, opcoes = {}) 
   return saida;
 }
 
-/** A raridade sorteada para um monstro comum sem raridade (`sorteioDaRaridade`: chance de cada uma). */
-export function sortearRaridade(rng = Math.random) {
+/**
+ * A raridade sorteada para um monstro comum sem raridade (`sorteioDaRaridade`: chance de cada uma). `fatores`: `{ modificado, raro }` que
+ * multiplicam as chances (o mapa do endgame: "X% mais Monstros Mágicos/Raros" — `itens-poe/mapas.mjs`).
+ */
+export function sortearRaridade(rng = Math.random, fatores = null) {
   let sorte = rng();
-  for (const [r, chance] of Object.entries(DADOS.sorteioDaRaridade ?? {})) if ((sorte -= chance) < 0) return r;
+  for (const [r, chance] of Object.entries(DADOS.sorteioDaRaridade ?? {})) if ((sorte -= chance * (Number(fatores?.[r]) || 1)) < 0) return r;
   return 'normal';
 }
 
@@ -72,14 +75,14 @@ export function multiplicadoresDe(raridade) {
 }
 
 /** O aplicador que `Raridade.aplicar` chama: null para quem não é monstro comum do PoE. */
-export function aplicador(m, { raridade = 'normal', modificadores = [], sortear = false }, rng = Math.random) {
+export function aplicador(m, { raridade = 'normal', modificadores = [], sortear = false, chancesDaRaridade = null }, rng = Math.random) {
   if (!doPoe(m)) return null;
   let r = raridade;
   // Monstro do PoE só leva modificador do PoE: os do Draevor que o spawn do mapa traga ficam de fora (o PoE manda) e ele sorteia os dele.
   let mods = modificadores.filter((id) => String(id).startsWith(PREFIXO));
   // Os do Draevor que vieram (onda de encontro, spawn antigo) dão lugar aos do PoE: sorteia mesmo sem `sortear`.
   const trocar = modificadores.length > 0 && !mods.length;
-  if (sortear && r === 'normal' && !mods.length) r = sortearRaridade(rng);
+  if (sortear && r === 'normal' && !mods.length) r = sortearRaridade(rng, chancesDaRaridade);
   if ((sortear || trocar) && !mods.length && RARIDADE_DO_POE[r] !== 'normal') mods = sortearMods(RARIDADE_DO_POE[r], nivelDe(m), rng).map((id) => PREFIXO + id);
   if (r === 'normal' && !mods.length) return { raridade: 'normal', modificadores: [], multiplicadores: {} };
   return { raridade: r, modificadores: mods, ...multiplicadoresDe(r) };

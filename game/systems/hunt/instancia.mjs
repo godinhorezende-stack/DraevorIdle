@@ -171,7 +171,12 @@ export function chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarE
  * `raio` do ponto. Devolve `[{ z, m }]` (o bicho e o andar dele), como o
  * `entrar` monta. Nenhuma casa é inventada fora dos spawns.
  */
-export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplicarEscala, instanciaId, rng = Math.random }) {
+/**
+ * (Os MAPAS do endgame — `itens-poe/mapas-areas.mjs` — passam o que a peça do mapa muda: `fatorDoGrupo`, o tamanho do grupo (cada spawn
+ * gera `quantidade` × o fator, a fração sorteada); `chancesDaRaridade`, os fatores das chances de Mágico/Raro do sorteio do PoE; e
+ * `ajustar(m)`, os efeitos dos afixos em cada monstro, depois da raridade.)
+ */
+export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplicarEscala, instanciaId, rng = Math.random, fatorDoGrupo = 1, chancesDaRaridade = null, ajustar = null }) {
   const alcancaveis = casasAlcancaveis(grade, inicio);
   const setores = mapaDeSetores(alcancaveis);
   const ocupada = new Set();
@@ -182,7 +187,9 @@ export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplic
     const casas = alcancaveis.get(s.z);
     if (!casas) continue; // andar por onde a rota não passa: ninguém chega lá
     const g = andarDaGrade(grade, s.z);
-    for (let i = 0; i < s.quantidade; i++) {
+    const bruto = s.quantidade * fatorDoGrupo;
+    const quantos = fatorDoGrupo === 1 ? s.quantidade : Math.floor(bruto) + (rng() < bruto - Math.floor(bruto) ? 1 : 0);
+    for (let i = 0; i < quantos; i++) {
       const casa = casaNoSpawn(g, casas, s, ocupada);
       if (!casa) break;
       ocupada.add(`${casa.x},${casa.y},${s.z}`);
@@ -193,7 +200,8 @@ export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplic
       m.spawnId = s.id;
       m.tipo = s.tipo;
       // A raridade e os modificadores do spawn (vida, dano, exp, loot, resistência... — ver `mobs/raridade.mjs`).
-      Raridade.aplicar(m, { ...Raridade.doSpawn(s), sortear: true });
+      Raridade.aplicar(m, { ...Raridade.doSpawn(s), sortear: true, ...(chancesDaRaridade ? { chancesDaRaridade } : {}) });
+      if (ajustar) ajustar(m);
       m.instancia = instanciaId;
       m.objetivo = 1;
       // O setor onde ele nasce (derivado do mapa; ver `setores.mjs`).
