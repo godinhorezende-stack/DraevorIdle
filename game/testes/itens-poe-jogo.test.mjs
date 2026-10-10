@@ -136,6 +136,28 @@ test('os pesos de raridade do dono (05/10): a peça que cai é quase sempre Norm
   assert.ok(conta.unico <= 5, `único ${conta.unico}`);
 });
 
+test('a base que cai pede nível perto do da área (dono, 10/10): requisito em ilvl ± 3; a classe sem base na faixa cai com a mais alta que cabe', { skip: SEM }, () => {
+  Jogo.iniciar(ITEM_CATALOG);
+  assert.equal(Catalogo.REGRAS.drop.janelaDaBase, 3);
+  const cat = Catalogo.catalogo();
+  const base = (id) => cat.classes[id.split('/')[0]].bases.find((b) => b.id === id);
+  const rng = semente(23);
+  for (const nivel of [30, 78]) {
+    for (let i = 0; i < 1500; i++) {
+      const p = Jogo.pecaSorteada(nivel, rng);
+      if (!p || p.poe.raridade === 'unico') continue;
+      const classe = p.poe.base.split('/')[0];
+      const req = base(p.poe.base).requisitos?.nivel ?? 1;
+      assert.ok(req <= nivel + 3, `${p.poe.base} pede ${req} na área ${nivel}`);
+      if (req >= nivel - 3) continue;
+      // Fora da faixa só quando a classe não tem base nela: aí é a de requisito mais alto que cabe (ex.: arma no mapa 78 — o PoE para nas 70–72).
+      const daClasse = cat.classes[classe].bases.filter((b) => b.pool && !b.slug?.startsWith('Royale_') && (b.requisitos?.nivel ?? 1) <= nivel + 3).map((b) => b.requisitos?.nivel ?? 1);
+      assert.ok(!daClasse.some((r) => r >= nivel - 3), `${p.poe.base} (req ${req}) caiu na área ${nivel}, mas ${classe} tem base na faixa`);
+      assert.equal(req, Math.max(...daClasse), `${p.poe.base} não é a base mais alta de ${classe} que cabe na área ${nivel}`);
+    }
+  }
+});
+
 test('luvas e cinto do PoE se equipam de verdade (slot gloves e slot legs) e somam na ficha; luva não entra nas pernas', { skip: SEM }, () => {
   Jogo.iniciar(ITEM_CATALOG);
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });

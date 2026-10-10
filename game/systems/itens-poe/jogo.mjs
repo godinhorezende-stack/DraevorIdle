@@ -480,20 +480,34 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
     return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: baseFixa, raridade: r, ilvl, rng }), regras, rng), rng, regras);
   }
-  const candidatas = [];
+  // Dono (10/10): a base cai perto do nível da área — requisito em ilvl ± janelaDaBase (no PoE puro, qualquer base ≤ ilvl). Por classe; a classe
+  // sem base na faixa usa as de requisito mais alto que ainda cabem. O Único fica de fora (cai em qualquer base ≤ ilvl, como no PoE).
+  const janela = raridade === 'unico' ? 0 : Math.max(0, Number(D.janelaDaBase) || 0);
+  const tetoDoRequisito = ilvl + janela;
+  const porClasse = new Map();
   for (const baseId of REG.porBase.keys()) {
     const [classe] = baseId.split('/');
     // (O MAPA não cai como loot comum: só pelas regras de drop dos mapas — `itens-poe/mapas.mjs`.)
     if (classe === Mapas.CLASSE) continue;
     const c = cat.classes[classe];
     const b = c?.bases.find((x) => x.id === baseId);
-    if (!b || (b.requisitos?.nivel ?? 1) > ilvl) continue;
+    const req = b?.requisitos?.nivel ?? 1;
+    if (!b || req > (janela ? tetoDoRequisito : ilvl)) continue;
     // As bases "Royale" são do modo Battle Royale do PoE: ficam no catálogo (os ids não mudam), mas não caem. A "Lâmina de Energia" também
     // não: no PoE ela é a arma que a habilidade Lâmina de Energia cria.
     if (b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
     if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) continue;
     if (!podeCairComo(c, b, raridade)) continue;
-    candidatas.push(baseId);
+    if (!porClasse.has(classe)) porClasse.set(classe, []);
+    porClasse.get(classe).push([baseId, req]);
+  }
+  const candidatas = [];
+  for (const lista of porClasse.values()) {
+    if (!janela) { for (const [id] of lista) candidatas.push(id); continue; }
+    const naFaixa = lista.filter(([, req]) => req >= ilvl - janela);
+    if (naFaixa.length) { for (const [id] of naFaixa) candidatas.push(id); continue; }
+    const maior = Math.max(...lista.map(([, req]) => req));
+    for (const [id, req] of lista) if (req === maior) candidatas.push(id);
   }
   if (!candidatas.length) return null;
   const base = candidatas[Math.floor(rng() * candidatas.length)];
