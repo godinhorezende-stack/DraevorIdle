@@ -244,9 +244,9 @@ test('o ciclo do portal vai para a tela no welcome (a mesma configuração do se
   assert.deepEqual(Protecao.lerConfig({ minimoMs: -5, esperaMaximaMs: 'x', tentativas: 99, portal: { abertoMs: 1500 } }), { minimoMs: 3000, esperaMaximaMs: 30000, tentativas: 5, portal: { abertoMs: 1500, fechamentoMs: 3000 } });
 });
 
-test('o ciclo da CHEGADA vai para a tela no welcome (3 s surgindo, o passo para o lado, 1 s o portal sumindo), com números válidos', () => {
-  assert.deepEqual({ ...Protecao.chegada() }, { surgindoMs: 3000, passoMs: 600, fechamentoMs: 1000 });
-  assert.deepEqual({ ...Protecao.lerChegada({ surgindoMs: -1, fechamentoMs: 1500 }) }, { surgindoMs: 3000, passoMs: 600, fechamentoMs: 1500 });
+test('o ciclo da CHEGADA vai para a tela no welcome (3 s ao todo: surgindo, o passo para o lado, o portal sumindo), com números válidos', () => {
+  assert.deepEqual({ ...Protecao.chegada() }, { surgindoMs: 1500, passoMs: 500, fechamentoMs: 1000 });
+  assert.deepEqual({ ...Protecao.lerChegada({ surgindoMs: -1, fechamentoMs: 1200 }) }, { surgindoMs: 1500, passoMs: 500, fechamentoMs: 1200 });
 });
 
 test('o LOOP da fase: limpou a instância → o tique troca sozinho (instância nova ou próxima fase) → protegido de novo, até a tela confirmar', async (t) => {

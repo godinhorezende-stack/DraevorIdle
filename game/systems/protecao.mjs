@@ -52,7 +52,7 @@ export function lerChegada(bruto = null) {
     }
   }
   const ms = (v, padrao) => (Number.isFinite(Number(v)) && Number(v) >= 0 ? Math.round(Number(v)) : padrao);
-  return Object.freeze({ surgindoMs: ms(c.surgindoMs, 3000), passoMs: ms(c.passoMs, 600), fechamentoMs: ms(c.fechamentoMs, 1000) });
+  return Object.freeze({ surgindoMs: ms(c.surgindoMs, 1500), passoMs: ms(c.passoMs, 500), fechamentoMs: ms(c.fechamentoMs, 1000) });
 }
 const CHEGADA = lerChegada();
 /** O ciclo da chegada em uso (vai para a tela no `welcome`). */

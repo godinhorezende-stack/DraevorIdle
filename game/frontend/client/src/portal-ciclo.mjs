@@ -2,15 +2,15 @@
 // nova, a sala da party, outra cidade, de volta à cidade — vê, na cena de onde sai (congelada: o servidor já o pôs no mapa novo, protegido
 // até a confirmação do carregamento — `systems/protecao.mjs`):
 //
-//   Fase 1 — ABERTO (`abertoMs`, 3 s): o portal se abre sob o personagem, com a energia pulsando, e uma barra acima dele diminui até o
-//            fechamento.
-//   Fase 2 — FECHAMENTO (`fechamentoMs`, 3 s): o portal se fecha em fade-out (e encolhe), e o personagem some junto, puxado para dentro (a
-//            absorção). A barra, na cor do fechamento, acompanha.
+//   Fase 1 — ABERTO (`abertoMs`, 1,5 s): o portal se abre AO LADO do personagem, com a energia pulsando, e uma barra acima dele diminui;
+//            ele fica olhando para o portal e, no fim, entra (o passo).
+//   Fase 2 — FECHAMENTO (`fechamentoMs`, 1,5 s): ele some lá dentro (a absorção) e o portal fecha junto, em fade-out (e encolhe). A barra,
+//            na cor do fechamento, acompanha. Saída e chegada com 3 s cada (dono, 10/10).
 //
 // Depois a cena nova entra (com a cortina, se o mapa ainda carrega) e o cliente confirma o carregamento. Tudo aqui é conta pura no relógio
 // local — nenhuma mensagem ao servidor por quadro — e o mapa (`map.mjs`) só desenha o que estas funções devolvem.
 
-export const CICLO_PADRAO = Object.freeze({ abertoMs: 3000, fechamentoMs: 3000 });
+export const CICLO_PADRAO = Object.freeze({ abertoMs: 1500, fechamentoMs: 1500 });
 
 /** A duração inteira do ciclo (ms). */
 export const duracao = (ciclo = CICLO_PADRAO) => Math.max(0, ciclo.abertoMs) + Math.max(0, ciclo.fechamentoMs);
@@ -26,7 +26,7 @@ export const ABRINDO_MS = 350;
  * sumindo; no outro lado ele vai surgindo e anda 1 tile para o lado"): o portal abre na casa AO LADO dele, e ele anda essa casa — para
  * dentro, no fim da abertura; para fora, depois de surgir. A duração de um passo (ms), quando o ciclo não diz (`passoMs`).
  */
-export const PASSO_NO_PORTAL_MS = 600;
+export const PASSO_NO_PORTAL_MS = 500;
 
 /**
  * O quadro do ciclo `t` ms depois do início:
@@ -60,12 +60,13 @@ export function quadroDoCiclo(t, ciclo = CICLO_PADRAO) {
  * some") ----
  * O espelho da saída, na cena NOVA (com o mapa já desenhável). O portal abre na casa AO LADO de onde ele fica (a casa de verdade dele,
  * a do servidor):
- *   SURGINDO (`surgindoMs`, 3 s): ele vai aparecendo dentro do portal (fade-in, crescendo); a barra conta.
- *   SAINDO (`passoMs`): ele anda a casa, do portal para o lugar dele. A tela só confirma o carregamento no fim disto — o combate começa
+ *   SURGINDO (`surgindoMs`, 1,5 s): ele vai aparecendo dentro do portal (fade-in, crescendo); a barra conta.
+ *   SAINDO (`passoMs`, 0,5 s): ele anda a casa, do portal para o lugar dele. A tela só confirma o carregamento no fim disto — o combate começa
  *            com ele inteiro, no lugar certo.
  *   FECHANDO (`fechamentoMs`, 1 s): o portal some SOZINHO (fade e encolhe); o boneco fica, 1 casa ao lado. Sem barra.
+ * Ao todo 3 s, como a saída (dono, 10/10: "queria colocar saída e chegada algo com 3 s cada").
  */
-export const CHEGADA_PADRAO = Object.freeze({ surgindoMs: 3000, passoMs: PASSO_NO_PORTAL_MS, fechamentoMs: 1000 });
+export const CHEGADA_PADRAO = Object.freeze({ surgindoMs: 1500, passoMs: PASSO_NO_PORTAL_MS, fechamentoMs: 1000 });
 
 const passoDaChegada = (ciclo) => Math.max(0, ciclo.passoMs ?? PASSO_NO_PORTAL_MS);
 /** A duração inteira da chegada (ms). */
