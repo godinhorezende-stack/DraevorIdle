@@ -7,7 +7,9 @@
 // na hora, sem tocar em mais nada. Os SPAWNS moram no próprio arquivo, no
 // bloco `spawns` (formato e validação em `systems/mapa/spawns.mjs` — o mesmo
 // que o jogo lê para montar a instância). O editor antigo ainda manda
-// `posicoes` (um bicho por ponto): viram spawns de quantidade 1.
+// `posicoes` (um bicho por ponto): viram spawns de quantidade 1. As SAFE
+// ZONES (`seguras`: as casas seguras por andar — `systems/protecao.mjs`)
+// também moram no arquivo, e o editor as grava junto (mapa real inclusive).
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -17,6 +19,8 @@ import * as Raridade from '../systems/mobs/raridade.mjs';
 import * as Mobs from '../systems/mobs/atributos.mjs';
 import * as Poderes from '../systems/poderes.mjs';
 import { montarMob } from '../systems/combate/simulador-mob.mjs';
+import * as Protecao from '../systems/protecao.mjs';
+import { mapasReaisCacheados } from '../systems/hunt/terreno.mjs';
 
 const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
@@ -43,7 +47,20 @@ function erroDeValidacao(dados) {
   if (!Array.isArray(dados.blocked) || dados.blocked.length !== n) return 'Grade de bloqueio não bate com o tamanho.';
   if (!Array.isArray(dados.stacks) || dados.stacks.length !== n) return 'Grade de chão não bate com o tamanho.';
   const erros = validar(spawnsDoPedido(dados), { largura: dados.width, altura: dados.height });
-  return erros[0] ?? null;
+  if (erros[0]) return erros[0];
+  const seguras = Protecao.validarSeguras(dados.seguras, { width: dados.width, height: dados.height });
+  return seguras.ok ? null : seguras.erro;
+}
+
+/*
+ * As Safe Zones gravadas valem já no jogo que está rodando: o mapa em memória (`mapaRealCapturado`) recebe o objeto novo — a proteção
+ * refaz as casas seguras e a grade dos bichos a partir dele, e o bicho que ficar numa casa nova segura sai dela no tique seguinte.
+ */
+function aplicarSegurasNoJogo(id, seguras) {
+  const emMemoria = mapasReaisCacheados.get(id);
+  if (!emMemoria) return;
+  if (seguras) emMemoria.seguras = seguras;
+  else delete emMemoria.seguras;
 }
 
 /**
@@ -78,7 +95,11 @@ export function salvar(dados) {
     custom: true,
     spawns: spawnsDoPedido(dados).map((s, i) => normalizar(s, 7, i)),
   };
+  // (Sem o campo — o /editor antigo não conhece as Safe Zones —, as que o arquivo já tinha ficam.)
+  const { seguras } = Protecao.validarSeguras(Object.hasOwn(dados, 'seguras') ? dados.seguras : atual?.seguras ?? null, completo);
+  if (seguras) completo.seguras = seguras;
   writeFileSync(caminhoDe(dados.id), JSON.stringify(completo), 'utf8');
+  aplicarSegurasNoJogo(dados.id, seguras);
   return { ok: true };
 }
 
@@ -99,19 +120,31 @@ export function validarSpawns({ spawns, width, height }) {
   return { ok: erros.length === 0, erros };
 }
 
-/** Grava SÓ o bloco `spawns` de um mapa que já existe (o resto do arquivo fica como está). */
+/**
+ * Grava SÓ o bloco `spawns` de um mapa que já existe (o resto do arquivo fica como está) — e as Safe Zones (`seguras`), quando o pedido as
+ * traz (sem o campo, as de antes ficam; `null` apaga todas).
+ */
 export function salvarSpawns(dados) {
   const atual = dados?.id && ID_VALIDO.test(dados.id) ? carregar(dados.id) : null;
   if (!atual) return { ok: false, erro: 'Mapa não encontrado para gravar os spawns.' };
   if (!Array.isArray(dados.spawns)) return { ok: false, erro: 'Sem spawns no pedido.' };
   const erros = validar(dados.spawns, { largura: atual.width, altura: atual.height });
   if (erros.length) return { ok: false, erro: erros[0] };
+  const comSeguras = Object.hasOwn(dados, 'seguras');
+  const seguras = comSeguras ? Protecao.validarSeguras(dados.seguras, atual) : null;
+  if (seguras && !seguras.ok) return { ok: false, erro: seguras.erro };
   const spawns = dados.spawns.map((s, i) => normalizar(s, atual.z ?? 7, i));
+  const novo = { ...atual, spawns };
+  if (comSeguras) {
+    if (seguras.seguras) novo.seguras = seguras.seguras;
+    else delete novo.seguras;
+  }
   try {
-    writeFileSync(caminhoDe(dados.id), JSON.stringify({ ...atual, spawns }), 'utf8');
+    writeFileSync(caminhoDe(dados.id), JSON.stringify(novo), 'utf8');
   } catch (e) {
     return { ok: false, erro: `Não deu para gravar (${e.code ?? e.message}) — o editor grava no servidor de desenvolvimento.` };
   }
+  if (comSeguras) aplicarSegurasNoJogo(dados.id, seguras.seguras);
   return { ok: true, soSpawns: true };
 }
 

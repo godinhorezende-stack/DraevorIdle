@@ -6,7 +6,9 @@
 export const TILE = 32;
 export const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
 export const LIMITES = { lado: [5, 300], raio: [0, 10], quantidade: [1, 20] };
-export const FERRAMENTAS = ['spawn', 'apagarSpawn', 'pincel', 'parede'];
+export const FERRAMENTAS = ['spawn', 'apagarSpawn', 'pincel', 'parede', 'segura', 'apagarSegura'];
+/** As ferramentas das SAFE ZONES (`systems/protecao.mjs`): valem em qualquer mapa, o real inclusive (não mexem no chão). */
+export const FERRAMENTAS_DE_ZONA = new Set(['segura', 'apagarSegura']);
 
 /** F4: mapa real = atlas próprio (não o da cidade) ou mais de um andar → só os spawns se editam. */
 export const ehMapaReal = (mapa, cidade) => !!mapa && (mapa.atlas !== cidade?.atlas || (mapa.levels?.length ?? 1) > 1);
@@ -49,13 +51,54 @@ export function casaDoPonteiro(dx, dy, escala, largura, altura) {
   return x < 0 || y < 0 || x >= largura || y >= altura ? null : { x, y };
 }
 
-/** F17: o texto da barra de status para uma casa. */
-export function textoDaCasa(mapa, z, casa, spawns, nomeDe) {
+/** F17: o texto da barra de status para uma casa (com " · zona segura" na casa segura). */
+export function textoDaCasa(mapa, z, casa, spawns, nomeDe, seguras = null) {
   const i = casa.y * mapa.width + casa.x;
   const { stacks, blocked } = gradeDe(mapa, z);
   const s = spawns.find((x) => x.x === casa.x && x.y === casa.y && zDoSpawn(x, mapa) === z);
-  return `x ${casa.x}, y ${casa.y}, andar ${z} · ${!stacks[i]?.length ? 'vazio' : blocked[i] ? 'bloqueado' : 'andável'}${s ? ` · spawn ${s.id}: ${nomeDe(keyDoSpawn(s))}` : ''}`;
+  const zona = ehCasaSegura(seguras, z, casa.x, casa.y) ? ' · zona segura' : '';
+  return `x ${casa.x}, y ${casa.y}, andar ${z} · ${!stacks[i]?.length ? 'vazio' : blocked[i] ? 'bloqueado' : 'andável'}${zona}${s ? ` · spawn ${s.id}: ${nomeDe(keyDoSpawn(s))}` : ''}`;
 }
+
+/*
+ * ---- As SAFE ZONES no editor (dono, 10/10 — `systems/protecao.mjs`) ----
+ * Casas marcadas por andar: lá o jogador não ataca nem apanha, e nenhum bicho nasce, pisa ou persegue. No editor elas são um `Map` de
+ * andar → `Set` de "x,y" (pintar e apagar com o pincel, casa a casa ou arrastando); no arquivo, `{ "<andar>": [[x, y], ...] }`.
+ */
+export function segurasDoMapaAberto(mapa) {
+  const porAndar = new Map();
+  for (const [z, lista] of Object.entries(mapa?.seguras ?? {})) if (Array.isArray(lista)) porAndar.set(Number(z), new Set(lista.map(([x, y]) => `${x},${y}`)));
+  return porAndar;
+}
+export const ehCasaSegura = (seguras, z, x, y) => !!seguras?.get(z)?.has(`${x},${y}`);
+
+/** Marca (`segura`) ou desmarca (`apagarSegura`) uma casa dentro do mapa. Devolve se mudou. */
+export function pintarSegura(seguras, mapa, z, x, y, ferramenta) {
+  if (!FERRAMENTAS_DE_ZONA.has(ferramenta) || x < 0 || y < 0 || x >= mapa.width || y >= mapa.height) return false;
+  const k = `${x},${y}`;
+  if (ferramenta === 'segura') {
+    if (!seguras.has(z)) seguras.set(z, new Set());
+    if (seguras.get(z).has(k)) return false;
+    seguras.get(z).add(k);
+    return true;
+  }
+  if (!seguras.get(z)?.delete(k)) return false;
+  if (!seguras.get(z).size) seguras.delete(z);
+  return true;
+}
+
+/** As casas seguras no formato do arquivo (ordenadas; sem andar vazio), ou null sem nenhuma. */
+export function segurasParaSalvar(seguras) {
+  const saida = {};
+  for (const [z, casas] of [...(seguras ?? new Map())].sort((a, b) => a[0] - b[0])) {
+    if (!casas.size) continue;
+    saida[z] = [...casas].map((k) => k.split(',').map(Number)).sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+  }
+  return Object.keys(saida).length ? saida : null;
+}
+
+/** Quantas casas seguras no andar e no mapa (a contagem do painel). */
+export const contagemDeSeguras = (seguras, z) => ({ andar: seguras?.get(z)?.size ?? 0, total: [...(seguras?.values() ?? [])].reduce((n, s) => n + s.size, 0) });
 
 /** F21/F22: pinta uma casa (pincel = andável com o piso; parede = bloqueado). Mapa real não pinta. Devolve se mudou. */
 export function pintarCasa(mapa, z, x, y, ferramenta, piso, real) {
@@ -150,13 +193,18 @@ export function spawnsPorAndar(spawns, mapa) {
   return (mapa.levels ?? [mapa.z]).map((z) => ({ z, entrada: z === mapa.z, spawns: spawns.filter((s) => zDoSpawn(s, mapa) === z).length }));
 }
 
-/** F5/F6/F8: o corpo do POST de salvar — mapa do editor grava tudo; mapa real só os spawns (e exige o mesmo id aberto). */
-export function corpoDeSalvar({ id, mapa, spawns, real, idAberto }) {
+/**
+ * F5/F6/F8: o corpo do POST de salvar — mapa do editor grava tudo; mapa real só os spawns (e exige o mesmo id aberto). As Safe Zones vão
+ * nos dois quando o editor as passa (`seguras`, o `Map` do editor → o formato do arquivo, ou null sem nenhuma, que apaga); sem o campo, o
+ * servidor deixa as do arquivo como estão.
+ */
+export function corpoDeSalvar({ id, mapa, spawns, real, idAberto, seguras }) {
   if (!id) return { erro: 'Escreva um id (ex.: minha-caverna).' };
   if (!ID_VALIDO.test(id)) return { erro: 'Id inválido — só letras minúsculas, números e hífen (3 a 40).' };
   if (real && id !== idAberto) return { erro: 'Mapa real: salve com o mesmo id que foi aberto.' };
   const { stacks, blocked } = gradeDe(mapa, 7);
-  return { corpo: real ? { id, soSpawns: true, spawns } : { id, width: mapa.width, height: mapa.height, blocked, stacks, spawns } };
+  const zonas = seguras !== undefined ? { seguras: segurasParaSalvar(seguras) } : {};
+  return { corpo: real ? { id, soSpawns: true, spawns, ...zonas } : { id, width: mapa.width, height: mapa.height, blocked, stacks, spawns, ...zonas } };
 }
 export const mensagemDeSalvo = (id, real, n) => (real ? `Spawns de "${id}" salvos (${n}).` : `Salvo — já dá pra jogar com startHunt "${id}".`);
 

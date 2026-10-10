@@ -86,8 +86,14 @@ export const SISTEMAS = {
       /^percurso/, /^progresso-da-hunt/, /^alvo-mais-perto/, /^kite-parede-diagonal/, /^caminho/, /^andares/, /^agua/, /^moverMonstros/, /^setores/,
       /^escalonamento/, /^familiar-anda/, /^mapa-spawns/, /^aquecer-grades/, /^hunt-gravada/, /^hunts-painel/, /^xp-da-hunt/, /^regen-na-cidade/,
       /^andar/, /^morte/, /^rentabilidade/, /^limpeza-do-chao/, /^item-no-chao/, /^raridade-dos-mapas/, /^loot-/, /^bonus-online/, /^bloqueio/,
-      /^chefe-do-ato-na-fase/, /^portal-de-viagem/, /^mapas-endgame/,
+      /^chefe-do-ato-na-fase/, /^portal-de-viagem/, /^mapas-endgame/, /^safe-zones/, /^protecao-/,
     ],
+  },
+  protecao: {
+    nome: 'Proteção de entrada, Safe Zones e o portal de viagem',
+    apelidos: ['safe-zone', 'zona-segura', 'portal', 'carregamento'],
+    fontes: [/^systems\/protecao\.mjs$/, /^gamedata\/protecao\.json$/, /^frontend\/client\/src\/portal-ciclo\.mjs$/],
+    testes: [/^protecao-/, /^safe-zones/, /^portal-ciclo/, /^portal-de-viagem/, /^moverMonstros/, /^cidades-instancias/, /^editor-mapas/],
   },
   mapas: {
     nome: 'Mapas do endgame (T1–T16, o Dispositivo de Mapas)',
@@ -111,7 +117,7 @@ export const SISTEMAS = {
     nome: 'Party',
     apelidos: ['grupo'],
     fontes: [/^systems\/(party|party-recompensas)\.mjs$/, /^systems\/hunt\/(aliados|sala|escalonamento)\.mjs$/],
-    testes: [/^party-/, /^avancar-em-grupo/, /^escalonamento/, /^conta-char/, /^bonus-online/, /^setores/, /^portal-de-viagem/, /^chefe-do-ato-na-fase/],
+    testes: [/^party-/, /^avancar-em-grupo/, /^escalonamento/, /^conta-char/, /^bonus-online/, /^setores/, /^portal-de-viagem/, /^chefe-do-ato-na-fase/, /^protecao-party/],
   },
   sessao: {
     nome: 'Sessão e WebSocket',
@@ -120,7 +126,7 @@ export const SISTEMAS = {
     testes: [
       /^limites/, /^quadro/, /^fila-de-transacoes/, /^chat-broadcast/, /^jogadores-na-praca/, /^welcome-cidade/, /^fatias-do-relogio/, /^regen-na-cidade/,
       /^andar/, /^historico-da-loja/, /^economia/, /^conta-char/, /^melhorias-da-conta/, /^chegadas/, /^party-(ver-aliados|volta-na-cacada|persistencia)/,
-      /^relatorio-da-ausencia/, /^personagens-legado/, /^estaticos/, /^conteudo-privado/, /^versao-do-cliente/,
+      /^relatorio-da-ausencia/, /^personagens-legado/, /^estaticos/, /^conteudo-privado/, /^versao-do-cliente/, /^protecao-/,
     ],
   },
   banco: {
@@ -139,7 +145,7 @@ export const SISTEMAS = {
     testes: [
       /^estaticos/, /^precomprimidos-em-dia/, /^artes-em-dia/, /^versao-do-cliente/, /^hot-reload-cliente/, /^mochila-redesenho/, /^minimapa/,
       /^nameplate-do-jogador/, /^world-camera-modo-leve/, /^interpolacao/, /^top5-balao/, /^sockets-toque/, /^tooltip-/, /^andar-por-clique/,
-      /^bloqueio-animacao/, /^conteudo-privado/, /^icones/, /^world-dados/, /^item-no-chao/, /^bolsa-mover/,
+      /^bloqueio-animacao/, /^conteudo-privado/, /^icones/, /^world-dados/, /^item-no-chao/, /^bolsa-mover/, /^portal-ciclo/,
     ],
   },
   editor: {
@@ -154,7 +160,7 @@ export const SISTEMAS = {
       /^editor-/, /^infra-editores/, /^sprites-/, /^biblioteca/, /^mapa-editor/, /^mapa-fundo/, /^atos-editor-tela/, /^campanha-editor/, /^item-power/,
       /^itens-poe-(telas|pendencias)/, /^classes/, /^overrides/, /^hot-reload/, /^versoes/, /^validacao/, /^acesso/, /^isolamento-dos-testes/, /^git-/,
       /^publicacao/, /^operacao/, /^modo-beta/, /^itens-novos-sprites/, /^efeitos-visuais/, /^conjuntos/, /^atos-armazem/, /^atos-versoes/,
-      /^raridade-dos-mapas/, /^apagar-arquivados/,
+      /^raridade-dos-mapas/, /^apagar-arquivados/, /^safe-zones/,
     ],
   },
   loot: {

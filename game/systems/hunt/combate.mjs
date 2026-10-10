@@ -72,6 +72,7 @@ import * as Tags from '../skills/tags.mjs';
 import * as GemasDeSkill from '../skills/gemas.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
 import * as FrascosPoe from '../itens-poe/frascos.mjs';
+import * as Protecao from '../protecao.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -1165,6 +1166,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
   const eventos = [];
   // Arena x1: durante a largada ninguém luta, nem os bichos (`Arena.antesDoTique`).
   if (hunt.largadaAte && Date.now() < hunt.largadaAte) return eventos;
+  // Numa Safe Zone, nenhum bicho fere o jogador: nem o golpe, nem a magia, nem o comportamento do boss (`protecao.mjs`).
+  if (Protecao.imune(hunt)) return eventos;
   const agora = hunt.clock ?? 0;
   // As magias (área, feixe e no alvo) de boss e de bicho: não pedem estar
   // colado, só estar na tela (`ALCANCE_DAS_MAGIAS`).

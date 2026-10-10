@@ -72,6 +72,7 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Poderes from './poderes.mjs';
+import * as Protecao from './protecao.mjs';
 import * as Areas from '../engine/areas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import { podeEntrar } from './itens-poe/so-itens-do-poe.mjs';
@@ -585,7 +586,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   for (const p of comInstancia ? [] : posicoes) {
     const z = andarDe(p);
     if (!andaresDaRota.has(z)) continue;
-    const g = andarDaGrade(grade, z);
+    // (Nunca numa Safe Zone: a grade dos bichos — `protecao.mjs`.)
+    const g = Protecao.gradeDosBichos(andarDaGrade(grade, z));
     for (let k = 0; k < densidade; k++) {
       const casa = casaLivrePerto(g, p, (c) => casasDeSpawn.has(`${c.x},${c.y},${z}`));
       if (!casa) break;
@@ -767,6 +769,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     // A cortina "Traçando a rota" (`mostrarViagem`, no client) sai no primeiro
     // `state` da hunt nova — a sessão manda uma vez e apaga.
     viagem: { hunt: hunt?.name ?? huntId, motivo: 'partida' },
+    // Uma ENTRADA nova: a sessão protege o jogador até o mapa carregar (`protecao.mjs`).
+    entrada: Protecao.novaEntrada(),
   };
   // "A espera começa quando você ENTRA — mesmo que ele não caia." (Menos a primeira do boss de ato.)
   if (boss && !primeiraDoAto) Bosses.marcarEntrada(estado, boss.id);
@@ -910,6 +914,8 @@ export function disparoManual(estado, personagem, slot, mira = null) {
   const alvo = alvoAtual(hunt);
   // A casa que o jogador escolheu na MIRA (runa/magia de área com `miraNoChao`): é lá que a área cai.
   const noChao = mira && Number.isInteger(mira.x) && Number.isInteger(mira.y) ? { x: mira.x, y: mira.y } : null;
+  // O clique chega entre os tiques: a Safe Zone é conferida aqui, na casa de agora (`protecao.mjs`).
+  Protecao.marcarImune(hunt, Protecao.ehSegura(andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z), hunt.pos.x, hunt.pos.y));
   const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo, { mira: noChao, manual: true });
   if (!resultado.ok) return resultado;
   processarMortes(estado, personagem, resultado.eventos);
@@ -970,6 +976,8 @@ export function entrarNaSala(estado, sala, gente = []) {
     campanha: sala.campanha ?? null, escala: sala.escala ?? null,
     startedAt: Date.now(), sessao: novaSessao(estado, dados.name ?? sala.huntId, 'auto'),
     viagem: { hunt: dados.name ?? sala.huntId, motivo: 'partida' },
+    // Uma ENTRADA nova: a sessão protege o jogador até o mapa carregar (`protecao.mjs`).
+    entrada: Protecao.novaEntrada(),
   };
   ligarAoDono(estado.hunt, sala);
   // Chega por um portal de viagem, na casa livre dele perto do dono (todos da sala veem).
@@ -1226,6 +1234,8 @@ export function novaInstancia(estado, pronta = null) {
   const ocupadas = new Set([...hunt.monstros.filter((m) => m.hp > 0).map((m) => `${m.x},${m.y}`), `${novo.inicio.x},${novo.inicio.y}`]);
   const casas = casasDaChegada(grade, novo.inicio, convidados.length, ocupadas);
   convidados.forEach((o, i) => chegarNaInstancia(o.hunt, casas[i] ?? novo.inicio, novo.andarInicial));
+  // Instância nova = ENTRADA nova para cada um da sala: a sessão de cada um protege até o cliente confirmar (`protecao.mjs`).
+  for (const h of [hunt, ...convidados.map((o) => o.hunt)]) h.entrada = Protecao.novaEntrada();
   EventosDeEncontro.empurrar(hunt, [novo.inicio, ...casas].map((c) => portalDeViagem(c, { chegada: true })));
   return true;
 }
@@ -1702,7 +1712,8 @@ export function tique(estado, personagem, agora = Date.now()) {
    */
   const gradeDaCacada = gradeDaHunt(huntOuMapaCustom(hunt.huntId));
   // A grade do andar fica à mão do combate (o Empurrão do PoE só move o bicho para uma casa andável) — fora do estado salvo.
-  ModsPoe.definirGradeDoCombate(hunt, () => andarDaGrade(gradeDaCacada, hunt.z));
+  // (A dos BICHOS: o empurrão nunca joga um bicho para dentro de uma Safe Zone — `protecao.mjs`.)
+  ModsPoe.definirGradeDoCombate(hunt, () => Protecao.gradeDosBichos(andarDaGrade(gradeDaCacada, hunt.z)));
   // Convidado da party: o dono mudou de andar, ele vai junto (ver `trocarDeAndar`).
   const sala = salaDe(hunt);
   if (sala !== hunt && sala.z != null && sala.z !== hunt.z) {
@@ -1950,11 +1961,27 @@ export function tique(estado, personagem, agora = Date.now()) {
   // Subiu ou desceu neste passo: o resto do tique já é no andar novo.
   grade = andarDaGrade(gradeDaCacada, hunt.z);
 
-  if (donoDaSala) moverMonstros(hunt, grade, agora);
+  /*
+   * ---- As SAFE ZONES (dono, 10/10 — `protecao.mjs`) ----
+   * Numa casa segura o jogador não ataca nem apanha neste tique (`imune`: o golpe básico, a barra, a conjuração, o familiar e os lacaios
+   * param; o golpe, a magia, a mecânica e o dano contínuo dos bichos não o ferem). Os bichos andam pela grade SEM as casas seguras (não
+   * pisam, não atravessam, não perseguem para dentro), e o que estiver numa delas (o mapa carregou assim, a configuração mudou) sai dela.
+   */
+  const naZonaSegura = Protecao.ehSegura(grade, hunt.pos.x, hunt.pos.y);
+  Protecao.marcarImune(hunt, naZonaSegura);
+  if (donoDaSala) {
+    const gradeDosBichos = Protecao.gradeDosBichos(grade);
+    if (gradeDosBichos !== grade) {
+      const gente = aliadosPorCasa(hunt);
+      Protecao.tirarBichosDaZona(hunt, grade, (c) => (c.x === hunt.pos.x && c.y === hunt.pos.y) || gente.has(`${c.x},${c.y}`));
+    }
+    moverMonstros(hunt, gradeDosBichos, agora, { semPerseguir: naZonaSegura });
+  }
 
   const eventos = [];
   // Congelado ou atordoado (controle de boss/elite): a conjuração em andamento se perde, e o jogador não age até acabar.
-  const livre = Controle.podeAgir(hunt);
+  // (Na Safe Zone, também: o jogador não ataca dali.)
+  const livre = Controle.podeAgir(hunt) && !naZonaSegura;
   if (!livre) hunt.conjurando = null;
   // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
   eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
@@ -2171,7 +2198,8 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
    * O golpe segue sendo o de sempre (`Summon.fracao` do golpe do dono, em volta do alvo) — o familiar não tem habilidades próprias —, mas só sai com o alvo ao alcance.
    */
   const alcanceDeAtaque = f.alcanceDeAtaque ?? Summon.familiarDe(estado).alcanceDeAtaque ?? 1;
-  const alvo = alvoDoFamiliar(hunt, f, agora);
+  // (Com o dono numa Safe Zone, o familiar só o acompanha: dali não se ataca — `protecao.mjs`.)
+  const alvo = Protecao.imune(hunt) ? null : alvoDoFamiliar(hunt, f, agora);
   if (!alvo) {
     andarFamiliar(hunt, grade, f, agora);
     return eventos;
@@ -2310,7 +2338,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (l.hp <= 0) continue;
     if (l.tipo === 'totem') {
       if (l.x === hunt.pos.x && l.y === hunt.pos.y) passoDoFamiliar(hunt, grade, l, agora, hunt.pos, { pararEm: (d) => d >= 1 });
-      if (!R.jaPode(agora, l.proximoGolpe)) continue;
+      if (!R.jaPode(agora, l.proximoGolpe) || Protecao.imune(hunt)) continue;
       let alvo = null;
       for (const m of hunt.monstros) if (m.hp > 0 && !m.dummy && distancia(m, l) <= l.alcanceDeAtaque && (!alvo || distancia(m, l) < distancia(alvo, l))) alvo = m;
       if (!alvo) continue;
@@ -2319,6 +2347,11 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     }
     // A AURA (os robôs rastejantes): a cada segundo, um pouco do golpe em quem está em volta (resfria/eletriza na cor).
     const est = l.estilo ?? {};
+    // Com o dono numa Safe Zone, os lacaios só o acompanham: dali não se ataca (`protecao.mjs`).
+    if (Protecao.imune(hunt)) {
+      andarFamiliar(hunt, grade, l, agora);
+      continue;
+    }
     if (est.aura) {
       if (!R.jaPode(agora, l.proximoGolpe)) { andarFamiliar(hunt, grade, l, agora); continue; }
       l.proximoGolpe = agora + 1000;
@@ -2600,6 +2633,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
   if (mandarMapa) hunt.mapaEnviado = true;
   return {
     mapId: hunt.huntId,
+    // A ENTRADA neste mapa (a caçada, a sala da party, a instância): o cliente confirma o carregamento dela (`protecao.mjs`).
+    entrada: hunt.entrada ?? null,
     z: hunt.z,
     ...(mandarMapa ? { map: gradeDaHunt(hd).mapa } : {}),
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).

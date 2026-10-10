@@ -29,6 +29,7 @@ import { salaDe } from './sala.mjs';
 import { sortearCriatura } from '../mapa/spawns.mjs';
 import * as Encontros from '../encontros/estado.mjs';
 import { mapaDeSetores } from './setores.mjs';
+import * as Protecao from '../protecao.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/instancias.json', import.meta.url), 'utf8'));
 
@@ -153,7 +154,8 @@ export function chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarE
   }
   fundo ??= inicio ? { x: inicio.x, y: inicio.y, z: zDaEntrada } : null;
   if (!fundo) return null;
-  const casa = casaNoSpawn(andarDaGrade(grade, fundo.z), alcancaveis.get(fundo.z), { x: fundo.x, y: fundo.y, z: fundo.z, raio: 8 }, ocupada);
+  // (A casa do bicho nunca é numa Safe Zone: a grade dos bichos — `protecao.mjs`.)
+  const casa = casaNoSpawn(Protecao.gradeDosBichos(andarDaGrade(grade, fundo.z)), alcancaveis.get(fundo.z), { x: fundo.x, y: fundo.y, z: fundo.z, raio: 8 }, ocupada);
   if (!casa) return null;
   const m = aplicarEscala(criarMonstro({ key: chave, x: casa.x, y: casa.y, z: fundo.z }, dadosDaHunt), escala);
   if (!m) return null;
@@ -186,7 +188,8 @@ export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplic
   for (const s of spawns) {
     const casas = alcancaveis.get(s.z);
     if (!casas) continue; // andar por onde a rota não passa: ninguém chega lá
-    const g = andarDaGrade(grade, s.z);
+    // (A casa do bicho nunca é numa Safe Zone: a grade dos bichos — `protecao.mjs`. O alcance segue o do jogador, que passa por elas.)
+    const g = Protecao.gradeDosBichos(andarDaGrade(grade, s.z));
     const bruto = s.quantidade * fatorDoGrupo;
     const quantos = fatorDoGrupo === 1 ? s.quantidade : Math.floor(bruto) + (rng() < bruto - Math.floor(bruto) ? 1 : 0);
     for (let i = 0; i < quantos; i++) {

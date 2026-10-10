@@ -96,6 +96,7 @@ import { aplicarRemendo } from '/packages/shared/src/remendo.mjs';
 import { initMobile, ehCelular } from './mobile.mjs';
 import { initMinimapa, atualizarMinimapa } from './minimapa.mjs';
 import { instalarArrastoDoMouse } from './arrasto-do-mouse.mjs';
+import { CICLO_PADRAO, duracao as duracaoDoCiclo, chaveDaCena, abrePortal } from './portal-ciclo.mjs';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, className, text) => {
@@ -355,6 +356,9 @@ function connect() {
     // `sessao`: o analisador também chega picado. Ver `sessaoDelta`, abaixo.
     // `fundo`: e os campos que mudaram por dentro chegam como remendo. Ver `aplicarRemendo`.
     socket.send(JSON.stringify({ t: 'delta', on: true, sessao: true, fundo: true }));
+    // A proteção de entrada (`systems/protecao.mjs`): esta tela confirma o carregamento de cada mapa (`mapaPronto`) — e, por isso, o
+    // servidor segura a caçada até ela confirmar. Ver `confirmarCarregamento`.
+    socket.send(JSON.stringify({ t: 'carregamento', versao: 1 }));
     /*
      * "Já guardo o catálogo e os itens": depois da primeira vez, o servidor
      * deixa de mandá-los de novo nesta conexão (eram 4,8 MB em cada `account`
@@ -726,6 +730,11 @@ function handle(message) {
       // Antes de qualquer coisa: o código desta aba ainda é o que o servidor
       // está servindo? Ver `conferirVersao`.
       conferirVersao(message.versao, message.novidades);
+      // Conexão nova (a reconexão também): a proteção recomeça no servidor, e o mapa na tela é confirmado de novo. Entrar no mundo não é
+      // viajar: o primeiro quadro desta conexão entra sem o portal de saída.
+      entradaConfirmada = null;
+      cenaNaTela = null;
+      if (message.cicloDoPortal) cicloDoPortal = message.cicloDoPortal;
       // Máquina que não dá conta do enfeite: o jogo se deixa leve sozinho, uma
       // vez, e diz onde desfazer. Ver `vigiarLentidao`, em graficos.mjs.
       if (!vigiouLentidao) {
@@ -988,6 +997,12 @@ function handle(message) {
      */
     case 'events':
       if (!abaEscondida) mapView.addEvents(message.events ?? []);
+      break;
+    // O mapa não carregou no prazo: o servidor mandou de novo (`systems/protecao.mjs`) — esta tela carrega e confirma outra vez.
+    case 'carregarDeNovo':
+      entradaConfirmada = null;
+      if (message.notice) notice(message.notice);
+      confirmarCarregamento();
       break;
     case 'ranking':
       state.ranking = message.ranking;
@@ -1387,6 +1402,8 @@ function handle(message) {
       logSystem(message.arena ? `Você venceu a onda ${message.arena.wave} da arena.` : `Você derrotou ${message.boss}.`);
       break;
     case 'death':
+      // Morrer não é viajar: a volta para a cidade não abre o portal de saída.
+      morreuEm = Date.now();
       // A caixa de morte toma a tela; o registro fica no chat para depois.
       mostrarMorte(message);
       logSystem(
@@ -1834,6 +1851,9 @@ function juntarOsRemendos(message) {
 }
 
 function applyState(message) {
+  // O mapa da caçada VEIO neste quadro (o primeiro da caçada, o pedido de volta, o reenvio do servidor): a confirmação do carregamento vale
+  // a partir dele — esta tela confirma de novo (ver `confirmarCarregamento`). Lido antes das junções, que trazem o mapa guardado junto.
+  if (!message.huntDelta && message.hunt?.map) entradaConfirmada = null;
   // Os remendos viram valores antes de qualquer outra coisa. Ver `aplicarRemendo`.
   juntarOsRemendos(message);
   /*
@@ -2068,7 +2088,21 @@ function applyState(message) {
   conferirPisada(message.city);
   acompanharTroca(message);
 
-  mapView.setSnapshot(message.hunt ?? message.city, message.character);
+  /*
+   * ---- A VIAGEM PELO PORTAL (dono, 10/10 — `portal-ciclo.mjs`) ----
+   * A cena mudou (outra caçada, instância, sala, cidade): a de onde se sai fica CONGELADA na tela com o portal de saída — aberto, com a
+   * barra, e o fechamento levando o personagem. O servidor já o pôs no mapa novo, protegido até esta tela confirmar o carregamento
+   * (`confirmarCarregamento`). A cena nova (e os eventos e a cortina dela) entra quando o portal fecha; o mapa dela já vai baixando.
+   */
+  const cenaNova = chaveDaCena({ hunt: message.hunt, city: message.city });
+  if (!viagemDoPortal && abrePortal({ antes: cenaNaTela, depois: cenaNova, morreu: Date.now() - morreuEm < 8000, pvp: !!message.hunt?.pvp }) && mapView.snapshot?.player) abrirViagemDoPortal();
+  if (viagemDoPortal) {
+    adiantarMapa(message.hunt ?? message.city);
+  } else {
+    mapView.setSnapshot(message.hunt ?? message.city, message.character);
+    cenaNaTela = cenaNova;
+  }
+  confirmarCarregamento();
   atualizarBotaoDeInteragir();
   atualizarBotaoDoPortal();
   // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
@@ -2102,8 +2136,9 @@ function applyState(message) {
     send({ t: 'pedirMapa' });
   }
   if (message.events?.length) {
-    // Efeito de tela com a aba no fundo é desenho para ninguém.
-    if (!abaEscondida) mapView.addEvents(message.events);
+    // Efeito de tela com a aba no fundo é desenho para ninguém. (Durante o portal de saída, os da cena nova esperam ela entrar.)
+    if (viagemDoPortal) guardarEventosDaViagem(message.events);
+    else if (!abaEscondida) mapView.addEvents(message.events);
     feedEvents(message.events, state.items, state.character?.name);
     acompanharConjuracao(message.events, state.character?.name);
 
@@ -2161,8 +2196,11 @@ function applyState(message) {
       }
     }
   }
-  // A cortina sobe antes do aviso: ela é quem cobre a troca de mapa.
-  if (message.viagem) mostrarViagem(message.viagem);
+  // A cortina sobe antes do aviso: ela é quem cobre a troca de mapa. (Com o portal de saída na tela, ela espera ele fechar.)
+  if (message.viagem) {
+    if (viagemDoPortal) viagemDoPortal.cortina = message.viagem;
+    else mostrarViagem(message.viagem);
+  }
   if (message.notice) notice(message.notice);
   /*
    * Arco novo na mão: a lista de aljavas se abre sozinha.
@@ -7528,6 +7566,76 @@ function esconderViagem(forcado = false) {
   }
   clearTimeout(viagemTimer);
   caixa.hidden = true;
+}
+
+/*
+ * ---- O PORTAL DE SAÍDA e a CONFIRMAÇÃO DO CARREGAMENTO (dono, 10/10) ----
+ *
+ * "O jogador só começa a caçar quando duas condições forem verdadeiras: o mapa terminou de carregar e o tempo mínimo da transição
+ * terminou." O servidor guarda a proteção (`systems/protecao.mjs`); esta tela faz a parte dela:
+ *
+ *   1. o portal de saída na cena antiga, congelada (`portal-ciclo.mjs`: aberto com a barra, e o fechamento levando o personagem) — o mapa
+ *      novo vai baixando por baixo (`adiantarMapa`);
+ *   2. a cena nova entra quando o portal fecha (com a cortina, se o mapa ainda não chegou);
+ *   3. com a cena desta entrada na tela e o mapa desenhável (`mapaCarregado`), `mapaPronto` vai UMA vez por entrada e por conexão.
+ *
+ * Um timer só por vez (o do portal e o da nova tentativa de confirmar), e nada roda por quadro além do desenho.
+ */
+let cenaNaTela = null;
+let viagemDoPortal = null;
+let entradaConfirmada = null;
+let morreuEm = 0;
+let cicloDoPortal = CICLO_PADRAO;
+let confirmacaoTimer = null;
+const EVENTOS_GUARDADOS_NA_VIAGEM = 80;
+
+function abrirViagemDoPortal() {
+  const eu = mapView.snapshot.player;
+  mapView.abrirPortalDeSaida({ x: eu.x, y: eu.y, ciclo: cicloDoPortal });
+  viagemDoPortal = { eventos: [], cortina: null, timer: setTimeout(fecharViagemDoPortal, duracaoDoCiclo(cicloDoPortal)) };
+}
+
+function guardarEventosDaViagem(eventos) {
+  const lista = viagemDoPortal.eventos;
+  lista.push(...eventos);
+  if (lista.length > EVENTOS_GUARDADOS_NA_VIAGEM) lista.splice(0, lista.length - EVENTOS_GUARDADOS_NA_VIAGEM);
+}
+
+/** O atlas do mapa novo começa a baixar já, enquanto o portal anima. */
+function adiantarMapa(retrato) {
+  const atlas = retrato?.map?.atlas;
+  if (atlas) imagemPronta(`/gamedata/sprites/${atlas}.png`);
+}
+
+function fecharViagemDoPortal() {
+  const v = viagemDoPortal;
+  if (!v) return;
+  clearTimeout(v.timer);
+  viagemDoPortal = null;
+  mapView.fecharPortalDeSaida();
+  // A cena nova é a do último quadro (o servidor seguiu mandando enquanto o portal animava).
+  if (state.hunt || state.city) {
+    mapView.setSnapshot(state.hunt ?? state.city, state.character);
+    cenaNaTela = chaveDaCena({ hunt: state.hunt, city: state.city });
+    atualizarMinimapa(!!state.hunt);
+  }
+  if (v.eventos.length && !abaEscondida) mapView.addEvents(v.eventos);
+  // A cortina só cobre o que falta: com o mapa já baixado durante o portal, a cena entra direto.
+  if (v.cortina && !mapaCarregado()) mostrarViagem(v.cortina);
+  confirmarCarregamento();
+}
+
+/** `mapaPronto` da entrada de agora, quando a cena dela está na tela com o mapa desenhável. Até lá, tenta de novo a cada 250 ms. */
+function confirmarCarregamento() {
+  clearTimeout(confirmacaoTimer);
+  const entrada = state.hunt?.entrada;
+  if (!entrada || entrada === entradaConfirmada || viagemDoPortal) return;
+  if (mapView.snapshot?.entrada !== entrada || !mapaCarregado()) {
+    confirmacaoTimer = setTimeout(confirmarCarregamento, 250);
+    return;
+  }
+  entradaConfirmada = entrada;
+  send({ t: 'mapaPronto', entrada });
 }
 
 /*

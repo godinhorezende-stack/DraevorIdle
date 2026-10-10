@@ -88,6 +88,7 @@ import * as ItensDoJogo from '../systems/itens/item.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as MapasDispositivo from '../systems/mapas-dispositivo.mjs';
 import * as MapaAberto from '../systems/itens-poe/mapa-aberto.mjs';
+import * as Protecao from '../systems/protecao.mjs';
 import * as Cidades from '../systems/cidades.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
@@ -907,6 +908,8 @@ export class Sessao {
    * passa por `aplicar` (que só manda `state`, sem eventos).
    */
   dispararAcaoManual({ slot, x, y }) {
+    // Protegido na entrada: o mapa ainda não está pronto, ninguém ataca (nem a cura sai: a caçada está parada).
+    if (this.protegidoNaEntrada()) return this.erro('Aguarde: o mapa ainda está carregando.');
     // `x, y`: a casa da mira (o cliente manda quando a runa/magia de área foi armada e o jogador clicou no chão).
     const resultado = Cacadas.disparoManual(this.estado, this.personagem, slot, { x, y });
     if (!resultado.ok) return this.erro(resultado.erro);
@@ -915,6 +918,87 @@ export class Sessao {
     // tela no quadro inteiro seguinte, até 1 s depois.
     this.characterSujo = true;
     this.mandarEstado(false, resultado.eventos);
+  }
+
+  /*
+   * ---- A PROTEÇÃO DE ENTRADA (dono, 10/10 — `systems/protecao.mjs`) ----
+   *
+   * "O jogador não pode começar a caçar nem ficar exposto aos ataques dos monstros antes que o mapa esteja pronto para jogar." Cada
+   * caçada tem um id de ENTRADA (`hunt.entrada`: caçada nova, sala da party, instância nova); quando ele muda — ou a sessão é nova (a
+   * reconexão) —, começa uma proteção: a caçada fica PARADA (o tique não roda: nada anda, ninguém bate, nem o golpe automático, nem o
+   * projétil ou o dano contínuo que já estava no ar) até as duas condições — o cliente confirmou que carregou o mapa DESTA entrada
+   * (`mapaPronto`, aceito só depois de o mapa ter ido para ele) E passou o tempo mínimo. Sem confirmação no prazo, o mapa vai de novo
+   * (`carregarDeNovo`); acabadas as tentativas, o jogador volta para a cidade com um aviso — nunca fica protegido para sempre.
+   *
+   * Tudo no relógio do tique (sem timer à parte): trocar de mapa no meio troca a entrada e a proteção recomeça; a sessão que cai leva a
+   * dela junto. Só com o aviso do cliente (`carregamento`): as ferramentas, os testes e as abas velhas seguem como sempre. Sem aba (o char
+   * trazido para a party) não há quem carregue, e o duelo da Arena tem a largada dele.
+   */
+  protecaoDaEntrada(h, agora = Date.now()) {
+    if (!this.carregamento || this.semAba || !h || h.pvp) return null;
+    h.entrada ??= Protecao.novaEntrada(agora);
+    if (this.protecao?.entrada !== h.entrada) {
+      this.protecao = Protecao.iniciar(h.entrada, agora);
+      // O mapa pode ter ido no quadro do próprio comando que entrou (antes do primeiro tique) — ou é o mesmo da instância de antes, que
+      // esta conexão já mandou (a instância nova não manda o mapa de novo).
+      this.protecao.mapaEnviado = !!this.mapasEnviados?.has(h.huntId);
+    }
+    return this.protecao;
+  }
+
+  /** Protegido agora (a caçada parada à espera do mapa)? */
+  protegidoNaEntrada() {
+    const h = this.estado?.hunt;
+    const p = h ? this.protecaoDaEntrada(h) : null;
+    return !!p && p.liberadaEm == null;
+  }
+
+  /** O tique da caçada espera neste tique? Libera, reenvia o mapa ou desiste (de volta à cidade) quando é a hora. */
+  segurarNaEntrada(h, agora = Date.now()) {
+    const p = this.protecaoDaEntrada(h, agora);
+    if (!p || p.liberadaEm != null) return false;
+    if (Protecao.liberada(p, agora)) {
+      p.liberadaEm = agora;
+      // O relógio da caçada segue daqui: o tempo parado não vira um tique gigante (nem regeneração, nem golpe acumulado).
+      h.ultimoTique = agora;
+      return false;
+    }
+    // O mapa ainda não foi para esta conexão (a reconexão com a tela antiga, que não pede): vai agora — a confirmação só vale depois dele.
+    if (!p.mapaEnviado) this.mandarEstado(true);
+    const venceu = Protecao.vencimento(p, agora);
+    if (venceu === 'desistir') {
+      this.desistirDaEntrada();
+      return true;
+    }
+    if (venceu === 'reenviar') {
+      // A recuperação: o mapa (e o quadro inteiro) de novo, e o cliente sabe que tem de carregar e confirmar outra vez.
+      this.enviar({ t: 'carregarDeNovo', entrada: p.entrada, notice: 'O mapa está demorando para carregar — enviando de novo.' });
+      this.recomecarQuadros();
+      this.mandarEstado(true);
+    }
+    // Parada: o relógio da caçada não anda.
+    h.ultimoTique = agora;
+    return true;
+  }
+
+  /** `{t:'mapaPronto', entrada}` — o cliente carregou o mapa da entrada. Só vale a da caçada de agora, com o mapa já enviado a ele. */
+  confirmarMapa(m) {
+    const h = this.estado?.hunt;
+    const p = h ? this.protecaoDaEntrada(h) : null;
+    if (p) Protecao.confirmar(p, m?.entrada);
+  }
+
+  /**
+   * O mapa não carregou depois de todas as tentativas: o jogador volta para a cidade, em segurança (a party fica onde está — só ele sai,
+   * como quem fecha a caçada; o mapa do endgame fica aberto, sem gastar portal).
+   */
+  desistirDaEntrada() {
+    this.protecao = null;
+    const portal = Party.portalDeSaida(this);
+    Party.antesDeSairDaCacada(this);
+    this.aplicar(Cacadas.sair(this.estado));
+    portal();
+    this.avisoPendente = 'O mapa não carregou a tempo: você voltou para a cidade em segurança. Tente entrar de novo.';
   }
 
   // ------------------------------------------------------------- handshake
@@ -1004,6 +1088,13 @@ export class Sessao {
     // O medidor de ping do client (`medidor.mjs`): `{t:'ping', at}` → `{t:'pong', at}`.
     // Sem resposta, o número mostrava há quanto tempo o ping saiu — só subia.
     if (m.t === 'ping') return this.enviar({ t: 'pong', at: m.at });
+    // A PROTEÇÃO DE ENTRADA (`systems/protecao.mjs`): o cliente avisa, na conexão, que confirma o carregamento dos mapas — só então a
+    // sessão segura a caçada até a confirmação (sem o aviso — ferramentas, testes, abas velhas —, nada muda). E a confirmação de um mapa.
+    if (m.t === 'carregamento') {
+      this.carregamento = Number(m.versao) >= 1;
+      return;
+    }
+    if (m.t === 'mapaPronto') return this.confirmarMapa(m);
     // A ficha de combate (Ficha.combate) fica guardada entre uma invalidação e
     // outra (ver o comentário em game/systems/ficha.mjs); um comando pode equipar,
     // forjar ou imbuir SEM passar por `aplicar()` (forja e craft respondem
@@ -2110,6 +2201,8 @@ export class Sessao {
       ...(itensNesteWelcome ? { items: ITEM_CATALOG } : {}),
       // As cores do nome por raridade do mob (gamedata/mobs/raridades.json) — a tela pinta o nome com elas.
       mobRaridades: Raridade.coresParaCliente(),
+      // O ciclo do portal de viagem (aberto e fechamento — `gamedata/protecao.json`): a tela anima com ele.
+      cicloDoPortal: Protecao.config().portal,
       // O texto de cada modificador, pelo nome (o tooltip do mob — fase 3).
       mobModificadores: Raridade.modificadoresParaCliente(),
       // O top 25 de experiência, como no welcome do original.
@@ -2410,8 +2503,17 @@ export class Sessao {
       msg.charDelta = true;
     }
     const city = naHunt ? null : snapshotDaPraca(this.estado, comMapa, this);
+    // (A entrada da caçada vai no retrato: o cliente confirma o carregamento dela — ver `protecaoDaEntrada`.)
+    if (naHunt) this.estado.hunt.entrada ??= Protecao.novaEntrada();
     const hunt = naHunt ? Cacadas.snapshotDaHunt(this.estado, comMapa) : null;
     if (hunt) Object.assign(hunt, Party.extrasDoRetrato(this), Arena.extrasDoRetrato(this));
+    if (hunt && 'map' in hunt) {
+      // O mapa foi para ESTE cliente: a partir daqui a confirmação dele vale (esta entrada e as próximas no mesmo mapa).
+      (this.mapasEnviados ??= new Set()).add(hunt.mapId);
+      if (this.protecao?.entrada === hunt.entrada) this.protecao.mapaEnviado = true;
+    }
+    // Protegido (a caçada parada à espera do mapa): a tela mostra o escudo.
+    if (hunt && this.protecao?.entrada === hunt.entrada && this.protecao.liberadaEm == null && this.carregamento && !this.semAba) hunt.protegido = true;
     /*
      * ---- A praça por delta ----
      *
@@ -2572,6 +2674,8 @@ export class Sessao {
         // Arena x1: a largada, o degrau dos bichos e o golpe no adversário.
         Arena.antesDoTique(this);
         if (!this.estado.hunt) return this.mandarEstado();
+        // A PROTEÇÃO DE ENTRADA: até o mapa carregar no cliente E passar o tempo mínimo, a caçada fica parada — ninguém anda, ninguém bate.
+        if (this.segurarNaEntrada(this.estado.hunt, Date.now())) return this.mandarEstado();
         // Fase 5: hunt SOLO (sem grupo, sem arena) pode rodar num worker —
         // decidido de novo a cada tique, porque quem entra/sai de grupo muda
         // isso na hora. `h.partilha.membros.length > 1` é o mesmo sinal que
@@ -2638,6 +2742,8 @@ export class Sessao {
       }
       return;
     }
+    // Fora do mapa, nenhuma proteção de entrada fica pendurada (a próxima caçada começa a dela).
+    this.protecao = null;
     const agora = Date.now();
     // Saiu de uma sala de boss (vitória, 25 min, teleporte): a rotação espera a pausa.
     if (this.ultimoBoss) {

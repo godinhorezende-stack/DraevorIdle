@@ -6,7 +6,8 @@ import { casasDoEvento } from '/packages/shared/src/areas.mjs';
 import { comecarPasso, teleportar } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
-import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais } from './efeitos-visuais.mjs';
+import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais, desenharQuadroDeAsset, duracaoDoAsset } from './efeitos-visuais.mjs';
+import { quadroDoCiclo } from './portal-ciclo.mjs';
 /** A cortina "Traçando a rota" (`mostrarViagem`, main.mjs) está cobrindo a tela? */
 const cortinaDeViagemNaTela = () => typeof document !== 'undefined' && document.getElementById('viagem')?.hidden === false;
 /** Os eventos que a camada de efeitos desenha (os outros — números, falas — seguem aqui no mapa). */
@@ -868,6 +869,8 @@ export class MapView {
   handleClick(event, botao = 'esquerdo') {
     const responder = botao === 'direito' ? this.onTileRight : this.onTileClick;
     if (!responder) return;
+    // Com o portal de saída na tela, a cena é a de onde se sai (congelada): um clique nela mandaria a casa errada para o mapa novo.
+    if (this.portalDeSaida) return;
     const casa = this.casaDoEvento(event);
     if (!casa) return;
     // O evento vai junto: o menu do botão direito precisa saber ONDE abrir.
@@ -2625,6 +2628,22 @@ export class MapView {
      * `time`. Tudo o mais — moldura de alvo, nome, barra de vida — continua
      * valendo, e e por isso que este e um `if` no meio e nao uma saida cedo.
      */
+    /*
+     * ---- A ABSORÇÃO no portal de saída (`portal-ciclo.mjs`) ----
+     * No fechamento do portal o personagem some junto, encolhendo para o centro da casa — a sensação de ser puxado para dentro. O nome
+     * dele sai enquanto o portal está aberto: a barra do portal fica no lugar.
+     */
+    const absorcao = entity.isPlayer && this.portalDeSaida ? this.quadroDoPortal(now)?.personagem : null;
+    if (absorcao && absorcao.alpha <= 0.01) return;
+    if (absorcao) {
+      ctx.save();
+      ctx.globalAlpha *= absorcao.alpha;
+      const cx = px + TILE / 2;
+      const cy = py + TILE / 2;
+      ctx.translate(cx, cy);
+      ctx.scale(absorcao.escala, absorcao.escala);
+      ctx.translate(-cx, -cy);
+    }
     if (!info && entity.lookItem) {
       drawItem(ctx, entity.lookItem, px, py, { time: now });
     } else {
@@ -2642,6 +2661,10 @@ export class MapView {
         px,
         py
       );
+    }
+    if (absorcao) {
+      ctx.restore();
+      return;
     }
 
     // Moldura vermelha em cima do alvo, como o quadrado de ataque do client.
@@ -3428,6 +3451,172 @@ export class MapView {
     ctx.globalAlpha = 1;
   }
 
+  /*
+   * ---- O PORTAL DE SAÍDA da viagem (dono, 10/10 — `portal-ciclo.mjs`) ----
+   * Quem chama é a tela (`main.mjs`), com a cena de onde se sai congelada: aberto `abertoMs` com a barra diminuindo acima dele, e o
+   * fechamento em `fechamentoMs`, o portal e o personagem sumindo juntos. Tudo no relógio local: nenhuma mensagem por quadro.
+   */
+  abrirPortalDeSaida({ x, y, ciclo, agora = performance.now() }) {
+    // O portal de viagem que o servidor abriu na mesma casa (a troca de instância) é este: não ficam dois.
+    this.effects = this.effects.filter((e) => !(e.rotulo === 'portal' && e.x === x && e.y === y));
+    this.portalDeSaida = { x, y, ciclo, inicio: agora };
+    this.precisaDesenhar = true;
+  }
+
+  fecharPortalDeSaida() {
+    if (!this.portalDeSaida) return;
+    this.portalDeSaida = null;
+    this.precisaDesenhar = true;
+  }
+
+  /** O quadro do ciclo agora (`quadroDoCiclo`), ou null sem portal. */
+  quadroDoPortal(now) {
+    const p = this.portalDeSaida;
+    return p ? quadroDoCiclo(now - p.inicio, p.ciclo) : null;
+  }
+
+  drawPortalDeSaida(now) {
+    const q = this.quadroDoPortal(now);
+    if (!q || q.fase === 'fim') return;
+    const { x, y } = this.portalDeSaida;
+    const ctx = this.ctx;
+    const cx = x * TILE + TILE / 2 - this.camera.x;
+    const cy = y * TILE + TILE / 2 - this.camera.y;
+    const fechando = q.fase === 'fechando';
+    ctx.save();
+    // A energia: um halo que pulsa (violeta no aberto, brasa no fechamento) e o anel girando.
+    const raio = TILE * 0.78 * q.portal.escala;
+    const halo = ctx.createRadialGradient(cx, cy, raio * 0.15, cx, cy, raio * 1.35);
+    halo.addColorStop(0, fechando ? 'rgba(255,170,120,0.55)' : 'rgba(205,170,255,0.55)');
+    halo.addColorStop(0.55, fechando ? 'rgba(170,40,30,0.32)' : 'rgba(110,60,190,0.32)');
+    halo.addColorStop(1, 'rgba(10,6,16,0)');
+    ctx.globalAlpha = q.portal.alpha * (0.65 + 0.35 * q.energia);
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(cx, cy, raio * 1.35, 0, Math.PI * 2);
+    ctx.fill();
+    // O vórtice da Arena de Efeitos (`fabrica-portal-de-viagem`), quando o servidor publicou o desenho dele.
+    const asset = visuaisAtuais().assets?.['fabrica-portal-de-viagem'];
+    if (asset) {
+      ctx.globalAlpha = q.portal.alpha;
+      ctx.translate(cx, cy);
+      ctx.scale(q.portal.escala, q.portal.escala);
+      const natural = duracaoDoAsset(asset) || 600;
+      desenharQuadroDeAsset(ctx, asset, ((now - this.portalDeSaida.inicio) % natural) / natural, 0, 0);
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = q.portal.alpha * (0.7 + 0.3 * q.energia);
+    ctx.strokeStyle = fechando ? '#e0663f' : '#b78cff';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.lineDashOffset = -((now - this.portalDeSaida.inicio) / 40);
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 4, raio, raio * 0.55, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+    // A barra: na camada de texto (nítida em qualquer zoom), logo acima do portal, acompanhando a casa dele na tela.
+    this.drawBarraDoPortal(x, y, q);
+  }
+
+  drawBarraDoPortal(x, y, q) {
+    const ctx = this.octx;
+    const tela = this.toScreen(x * TILE + TILE / 2, y * TILE);
+    const telefone = ehTelefone();
+    const largura = Math.round(Math.max(telefone ? 46 : 40, TILE * 1.1 * this.zoom * 0.75));
+    const altura = Math.max(telefone ? 6 : 5, Math.round(2.6 * this.zoom));
+    const esq = this.nitido(tela.x - largura / 2);
+    const topo = this.nitido(tela.y - altura - 10);
+    const fechando = q.fase === 'fechando';
+    ctx.save();
+    ctx.globalAlpha = fechando ? Math.max(0.35, q.portal.alpha) : 1;
+    // A moldura escura (legível sobre chão claro e escuro) e o fundo.
+    ctx.fillStyle = 'rgba(8,6,12,0.85)';
+    ctx.fillRect(esq - 2, topo - 2, largura + 4, altura + 4);
+    ctx.strokeStyle = fechando ? '#5a2018' : '#3d2a5c';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(esq - 1.5, topo - 1.5, largura + 3, altura + 3);
+    const cheio = Math.max(0, Math.round(largura * q.barra));
+    if (cheio > 0) {
+      const g = ctx.createLinearGradient(esq, topo, esq, topo + altura);
+      g.addColorStop(0, fechando ? '#ffb07a' : '#dcc4ff');
+      g.addColorStop(1, fechando ? '#a3271b' : '#6b3fb3');
+      ctx.fillStyle = g;
+      ctx.fillRect(esq, topo, cheio, altura);
+    }
+    ctx.restore();
+  }
+
+  /*
+   * ---- As SAFE ZONES na tela (dono, 10/10 — `systems/protecao.mjs`) ----
+   * As casas seguras do andar (`map.seguras[z]`, marcadas no editor de mapas): um véu claro e a borda da área, só nas casas que a câmera
+   * vê. O conjunto é montado uma vez por mapa/andar.
+   */
+  drawZonasSeguras() {
+    const mapa = this.snapshot?.map;
+    const z = this.snapshot?.z ?? mapa?.z;
+    const lista = mapa?.seguras?.[z];
+    if (!lista?.length) return;
+    if (this.zonasSeguras?.lista !== lista) this.zonasSeguras = { lista, casas: new Set(lista.map(([cx, cy]) => cx * 65536 + cy)) };
+    const casas = this.zonasSeguras.casas;
+    const ctx = this.ctx;
+    const x0 = Math.floor(this.camera.x / TILE) - 1;
+    const y0 = Math.floor(this.camera.y / TILE) - 1;
+    const x1 = Math.ceil((this.camera.x + this.canvas.width) / TILE) + 1;
+    const y1 = Math.ceil((this.camera.y + this.canvas.height) / TILE) + 1;
+    const segura = (cx, cy) => casas.has(cx * 65536 + cy);
+    ctx.save();
+    ctx.fillStyle = 'rgba(150,200,255,0.10)';
+    ctx.strokeStyle = 'rgba(170,215,255,0.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let cy = y0; cy <= y1; cy++) {
+      for (let cx = x0; cx <= x1; cx++) {
+        if (!segura(cx, cy)) continue;
+        const px = cx * TILE - this.camera.x;
+        const py = cy * TILE - this.camera.y;
+        ctx.fillRect(px, py, TILE, TILE);
+        // A borda: só os lados que dão para fora da zona.
+        if (!segura(cx, cy - 1)) { ctx.moveTo(px, py + 0.5); ctx.lineTo(px + TILE, py + 0.5); }
+        if (!segura(cx, cy + 1)) { ctx.moveTo(px, py + TILE - 0.5); ctx.lineTo(px + TILE, py + TILE - 0.5); }
+        if (!segura(cx - 1, cy)) { ctx.moveTo(px + 0.5, py); ctx.lineTo(px + 0.5, py + TILE); }
+        if (!segura(cx + 1, cy)) { ctx.moveTo(px + TILE - 0.5, py); ctx.lineTo(px + TILE - 0.5, py + TILE); }
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /**
+   * O SELO no alto do mapa: "Protegido" enquanto o servidor segura a caçada à espera do mapa (`snapshot.protegido`) e "Zona segura" com o
+   * personagem numa casa segura — lá ele não ataca nem apanha.
+   */
+  drawSeloDeProtecao() {
+    const snap = this.snapshot;
+    const eu = snap?.player;
+    if (!snap || !eu || this.portalDeSaida) return;
+    const naZona = !!this.zonasSeguras?.casas?.has(eu.x * 65536 + eu.y) && this.zonasSeguras.lista === snap.map?.seguras?.[snap.z ?? snap.map?.z];
+    const texto = snap.protegido ? 'Protegido — preparando o mapa' : naZona ? 'Zona segura' : null;
+    if (!texto) return;
+    const ctx = this.octx;
+    const tela = this.toScreen(this.camera.x + this.canvas.width / 2, this.camera.y);
+    ctx.save();
+    ctx.font = `600 ${ehTelefone() ? 13 : 12}px Verdana, "Segoe UI", sans-serif`;
+    const largura = Math.ceil(ctx.measureText(texto).width) + 20;
+    const esq = this.nitido(tela.x - largura / 2);
+    const topo = this.nitido(tela.y + 10);
+    ctx.fillStyle = 'rgba(8,10,16,0.78)';
+    ctx.fillRect(esq, topo, largura, 22);
+    ctx.strokeStyle = snap.protegido ? 'rgba(183,140,255,0.8)' : 'rgba(170,215,255,0.8)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(esq + 0.5, topo + 0.5, largura - 1, 21);
+    ctx.fillStyle = snap.protegido ? '#dcc4ff' : '#cfe6ff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(texto, esq + largura / 2, topo + 11.5);
+    ctx.restore();
+  }
+
   /** Efeitos e projéteis passam por cima das criaturas. */
   drawEffects(now) {
     const ctx = this.ctx;
@@ -3481,6 +3670,8 @@ export class MapView {
   podePularQuadro(now) {
     // Sem retrato não há o que comparar, e a tela precisa do fundo preto.
     if (!this.snapshot) return false;
+    // O portal de saída anima a cada quadro (a energia, a barra, o fade).
+    if (this.portalDeSaida) return false;
     // Redraw obrigatório: o canvas foi redimensionado (e portanto apagado), ou
     // chegou um retrato novo do servidor.
     if (this.precisaDesenhar) {
@@ -3834,9 +4025,14 @@ export class MapView {
     if (this.snapshot?.instancia?.encontros?.length) {
       desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player, desenharItem: drawItem });
     }
+    // As SAFE ZONES do andar (`map.seguras`, o editor de mapas): um véu e a borda, por baixo dos efeitos.
+    this.drawZonasSeguras();
     if (graficoLigado('efeitos')) this.drawEffects(now);
     if (graficoLigado('projeteis')) this.drawMissiles(now);
+    // O portal de saída da viagem: sempre (não é enfeite — é a viagem), por cima de tudo, com a barra na camada de texto.
+    this.drawPortalDeSaida(now);
     this.drawTexts(now);
+    this.drawSeloDeProtecao();
 
     /*
      * ---- E o desenho anota o que acabou de pintar ----
