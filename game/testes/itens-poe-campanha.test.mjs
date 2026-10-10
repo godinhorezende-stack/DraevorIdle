@@ -204,3 +204,13 @@ test('a campanha do PoE é uma passada só: o Cruel e o Merciless não abrem, e 
   }
   assert.equal(Cacadas.entrar(personagemDeTeste({ level: 30 }), { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' }).ok, true, 'o Normal entra');
 });
+
+test('a tela da campanha só recebe o Normal: o Cruel e o Merciless não existem no PoE (nem como aba bloqueada)', async () => {
+  const Campanha = await import('../systems/campanha.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  assert.deepEqual(Campanha.dificuldadesDoJogo(), ['facil']);
+  const tela = Campanha.paraCliente(personagemDeTeste({ level: 30 }));
+  assert.deepEqual(tela.dificuldades.map((d) => [d.id, d.nome, d.faixa]), [['facil', 'Normal', [1, 69]]]);
+  assert.equal(tela.dificuldades[0].liberada, true);
+});
+

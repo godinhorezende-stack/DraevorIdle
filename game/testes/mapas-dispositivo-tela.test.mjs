@@ -48,17 +48,18 @@ globalThis.document = {
 };
 No.prototype.nodeType = 1;
 
-const { desenharDispositivo } = await import('../frontend/client/src/mapas-dispositivo.mjs');
+const { desenharDispositivo, faixaDosMapas } = await import('../frontend/client/src/mapas-dispositivo.mjs');
 
 const peca = (tier, raridade, linhas = []) => ({ id: 7_700_000 + tier, count: 1, poe: { classe: 'Maps', base: `Maps/Map_Tier_${tier}`, raridade, nome: `Mapa (Nível ${tier})`, mapa: { tier, nivel: 67 + tier, quantidade: 13, raridade: 8, grupo: 5, linhas } } });
 const TIERS = Array.from({ length: 16 }, (_, i) => ({ tier: i + 1, nivel: 68 + i }));
-function desenhar(mapas) {
+function desenhar(mapas, faixaDaCampanha = null) {
   const enviados = [];
   let fechou = 0;
   let voltou = 0;
   const body = new No('div');
   desenharDispositivo(body, {
     mapas,
+    faixaDaCampanha,
     h: { send: (m) => enviados.push(m), itemCanvas: (id) => Object.assign(new No('canvas'), { idDoItem: id }), tipFor: (n, id, _x, _s, p) => Object.assign(n, { peca: p }), voltarParaCampanha: () => voltou++, fechar: () => fechou++ },
   });
   return { body, enviados, fechou: () => fechou, voltou: () => voltou };
@@ -118,3 +119,13 @@ test('com um mapa aberto: portais, "Voltar ao mapa", "Abrir" travado e desistir 
   desistir.onclick();
   assert.deepEqual(t.enviados.at(-1), { t: 'abandonarMapa' });
 });
+
+test('as abas dizem os níveis: a Campanha (Nível 1 – 69) e os Mapas (do T1 ao último tier: Nível 68 – 83)', () => {
+  const t = desenhar({ liberado: true, ato: 10, portais: 6, aberto: null, mapas: [], estatisticas: {}, tiers: TIERS }, [1, 69]);
+  const [campanha, mapas] = t.body.achar('w2-dif');
+  assert.match(campanha.textContent, /CampanhaNível 1 – 69/);
+  assert.match(mapas.textContent, /MapasNível 68 – 83/);
+  assert.equal(faixaDosMapas({ tiers: TIERS }), 'Nível 68 – 83');
+  assert.equal(faixaDosMapas({ tiers: [...TIERS, { tier: 17, nivel: 84 }] }), 'Nível 68 – 84', 'segue os tiers configurados');
+});
+

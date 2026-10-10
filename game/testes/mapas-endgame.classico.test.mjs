@@ -9,6 +9,7 @@ const Dispositivo = await import('../systems/mapas-dispositivo.mjs');
 const MapasAreas = await import('../systems/itens-poe/mapas-areas.mjs');
 const Mapas = await import('../systems/itens-poe/mapas.mjs');
 const { CATALOGO, ITEM_CATALOG } = await import('../systems/dados.mjs');
+const Campanha = await import('../systems/campanha.mjs');
 
 test('no clássico não há mapas: nem a classe, nem as hunts, nem o dispositivo (e a tela não recebe a aba)', () => {
   assert.equal(Catalogo.ligado(), false);
@@ -21,3 +22,9 @@ test('no clássico não há mapas: nem a classe, nem as hunts, nem o dispositivo
   assert.match(Dispositivo.abrir({ inventory: [] }, {}).erro, /jogo oficial/);
   assert.equal(Mapas.addsNoJogador({ hunt: { mapa: { efeitos: { jogador: { fire_res_max: -10 } } } } }).fire_res_max, -10, 'o efeito só existe com um mapa (que o clássico nunca abre)');
 });
+
+test('no clássico as três dificuldades continuam na tela da campanha (só o jogo oficial ficou com o Normal)', () => {
+  assert.deepEqual(Campanha.dificuldadesDoJogo(), ['facil', 'medio', 'dificil']);
+  assert.deepEqual(Campanha.paraCliente({ level: 8 }).dificuldades.map((d) => d.nome), ['Normal', 'Cruel', 'Merciless']);
+});
+

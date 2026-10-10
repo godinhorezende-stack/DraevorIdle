@@ -37,6 +37,9 @@ const LIDA = JSON.parse(readFileSync(process.env.DRAEVOR_CAMPANHA || new URL('..
 // A campanha do PoE é uma passada só, do nível 1 ao 69: a faixa do Normal diz isso (Cruel e Merciless ficam fechados).
 export const CAMPANHA = itensPoeLigado() ? { ...LIDA, fases: [], bosses: {}, dificuldades: { ...LIDA.dificuldades, facil: { ...LIDA.dificuldades.facil, faixa: [1, 69] } } } : LIDA;
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
+/** As dificuldades que EXISTEM para o jogador (a tela): no jogo oficial só o Normal — o Cruel e o Merciless não existem mais no PoE (dono,
+ * 10/10: "tire ali cruel e merciless que n existe mais"); no clássico, as três. */
+export const dificuldadesDoJogo = () => (itensPoeLigado() ? DIFICULDADES.slice(0, 1) : DIFICULDADES);
 export const FASES = CAMPANHA.fases;
 const INDICE = new Map(FASES.map((f, i) => [f.huntId, i]));
 const FASES_POR_ATO = 12;
@@ -427,7 +430,7 @@ export function paraCliente(estado) {
     atos: atosDoConteudo(),
     mundo: Object.fromEntries(FASES.filter(visivel).map((f) => [f.huntId, mundoDaFase(estado, f)]).filter(([, v]) => Object.keys(v).length)),
     bossesDerrotados: Object.entries(vitorias).map(([id, vezes]) => ({ id, nome: nomes[id] ?? id, vezes })),
-    dificuldades: DIFICULDADES.map((dif) => {
+    dificuldades: dificuldadesDoJogo().map((dif) => {
       const p = progresso(estado, dif);
       return {
         id: dif,

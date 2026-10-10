@@ -24,6 +24,11 @@ const tempo = (ms) => {
   return s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}min` : s >= 60 ? `${Math.floor(s / 60)}min ${s % 60}s` : `${s}s`;
 };
 
+/** "Nível 68 – 83": a faixa dos níveis de área dos mapas (do T1 ao último tier configurado), como a da dificuldade da campanha. */
+export const faixaDosMapas = (m) => {
+  const niveis = (m?.tiers ?? []).map((t) => t.nivel).filter(Number.isFinite);
+  return niveis.length ? `Nível ${Math.min(...niveis)} – ${Math.max(...niveis)}` : 'Mapas';
+};
 /** Os portais: um ponto aceso por portal que sobra (6, como no PoE). */
 function portais(sobra, total) {
   const n = el('span', 'mp-portais');
@@ -52,19 +57,19 @@ function resumoDaPeca(peca) {
 }
 
 /**
- * Desenha o dispositivo dentro de `body`. `mapas`: o que o servidor mandou. `h`: `send(msg)`, `itemCanvas(id, tamanho)`,
- * `tipFor(el, id, extra, slot, peca)`, `voltarParaCampanha()`, `fechar()`.
+ * Desenha o dispositivo dentro de `body`. `mapas`: o que o servidor mandou; `faixaDaCampanha`: os níveis da campanha (a aba dela). `h`:
+ * `send(msg)`, `itemCanvas(id, tamanho)`, `tipFor(el, id, extra, slot, peca)`, `voltarParaCampanha()`, `fechar()`.
  */
-export function desenharDispositivo(body, { mapas, h }) {
+export function desenharDispositivo(body, { mapas, faixaDaCampanha = null, h }) {
   const raiz = el('div', 'w2 w2-mapas');
   // ---- o topo: as mesmas abas da Campanha (Campanha | Mapas)
   const abas = el('nav', 'w2-dificuldades');
   abas.setAttribute('aria-label', 'Campanha ou Mapas');
   const campanha = botao('w2-dif aberta', null, () => h.voltarParaCampanha());
-  campanha.append(el('b', null, 'Campanha'), el('small', null, 'Atos I – X'));
+  campanha.append(el('b', null, 'Campanha'), el('small', null, faixaDaCampanha ? `Nível ${faixaDaCampanha[0]} – ${faixaDaCampanha[1]}` : 'Atos I – X'));
   const aba = botao('w2-dif selecionada mapas', null);
   aba.setAttribute('aria-pressed', 'true');
-  aba.append(el('b', null, 'Mapas'), el('small', null, 'Endgame · T1 – T16'));
+  aba.append(el('b', null, 'Mapas'), el('small', null, faixaDosMapas(mapas)));
   abas.append(campanha, aba);
   raiz.append(abas);
 
