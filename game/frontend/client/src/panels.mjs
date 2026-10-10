@@ -3028,12 +3028,12 @@ const LINHAS_POE = {
   ],
 };
 /** Uma fileira de botões de uma chave de `settings` (grava e pinta na hora, como as outras do filtro). */
-function fileiraPoe(titulo, chave, atual) {
+function fileiraPoe(titulo, chave, atual, opcoes = LINHAS_POE[chave]) {
   const { state, send } = ctx;
   const bloco = el('div', 'filtro-atributos-fileira');
   bloco.append(el('span', 'filtro-sockets-rotulo', titulo));
   const linha = el('div', 'filtro-afixo-opcoes');
-  for (const opcao of LINHAS_POE[chave]) {
+  for (const opcao of opcoes) {
     const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
     botao.type = 'button';
     botao.dataset.regra = chave;
@@ -3070,7 +3070,10 @@ function resumoDoFiltroPoe() {
   const f = frasesPoe();
   const partes = [f.mods && `mods: ${f.mods}`, f.sockets && `sockets: ${f.sockets}`, f.ilvl, f.raridade && `raridade: ${f.raridade}`].filter(Boolean);
   const especificas = (ctx.state.character?.lootRegras ?? []).filter((r) => r.poe && r.ativa !== false).length;
-  return `Coleta: ${partes.length ? `pega ${partes.join(' OU ')} (e os Únicos, os frascos e as moedas); o resto fica no chão` : 'pega tudo (nenhuma seção escolhida)'}.${especificas ? ` E ${especificas} regra${especificas === 1 ? '' : 's'} específica${especificas === 1 ? '' : 's'} antes.` : ''}`;
+  // As abas com raridade própria (armas, armaduras, acessórios, frascos).
+  const abas = ABAS_DA_RARIDADE_POE.filter((a) => a.id !== 'geral' && raridadeDaAbaPoe(a.chave) != null).map((a) => `${a.rotulo.toLowerCase()}: ${textoDaRaridadePoe(raridadeDaAbaPoe(a.chave))}`);
+  const frascos = raridadeDaAbaPoe('guardarRaridadePoeFrascos') ?? secoesPoe().raridade;
+  return `Coleta: ${partes.length || abas.length ? `pega ${[...partes, ...abas].join(' OU ')} (e os Únicos, as moedas e os mapas${frascos ? '' : ', e os frascos'}); o resto fica no chão` : 'pega tudo (nenhuma seção escolhida)'}.${especificas ? ` E ${especificas} regra${especificas === 1 ? '' : 's'} específica${especificas === 1 ? '' : 's'} antes.` : ''}`;
 }
 function escolhaDeModsPoe() {
   const s = secoesPoe();
@@ -3092,12 +3095,61 @@ function escolhaDoIlvlPoe() {
   caixa.append(fileiraPoe('Mínimo', 'guardarIlvlPoe', secoesPoe().ilvl));
   return caixa;
 }
+/*
+ * ---- As ABAS da raridade por TIPO de item (dono, 10/10: "abas de tipos de itens para selecionar outros tipos, raridades diferentes") ----
+ * A Geral vale para todo equipamento e para os frascos; cada aba troca a raridade só daquele tipo (`guardarRaridadePoe<Tipo>` — "Igual à
+ * Geral" apaga a escolha). A regra é a do servidor (`Afixos.decisaoDoLootPoe`): as moedas e os mapas sempre vêm.
+ */
+const ABAS_DA_RARIDADE_POE = [
+  { id: 'geral', rotulo: 'Geral', chave: 'guardarRaridadePoe' },
+  { id: 'armas', rotulo: 'Armas', chave: 'guardarRaridadePoeArmas', dica: 'armas de uma e duas mãos, arcos, varinhas e aljavas' },
+  { id: 'armaduras', rotulo: 'Armaduras', chave: 'guardarRaridadePoeArmaduras', dica: 'peitorais, elmos, luvas, botas e escudos' },
+  { id: 'acessorios', rotulo: 'Acessórios', chave: 'guardarRaridadePoeAcessorios', dica: 'anéis, amuletos e cintos' },
+  { id: 'frascos', rotulo: 'Frascos', chave: 'guardarRaridadePoeFrascos', dica: 'frascos de vida, de mana, híbridos e de utilidade' },
+];
+const LINHAS_DA_ABA_POE = [
+  { valor: null, rotulo: 'Igual à Geral', dica: 'este tipo segue a raridade da aba Geral' },
+  { valor: 0, rotulo: 'Qualquer', dica: 'a raridade não decide nada para este tipo' },
+  { valor: 1, rotulo: 'Mágico para cima', raridade: 'magico', dica: 'pega Mágicos, Raros e Únicos deste tipo' },
+  { valor: 2, rotulo: 'Raro para cima', raridade: 'raro', dica: 'pega Raros e Únicos deste tipo' },
+  { valor: 3, rotulo: 'Só Único', raridade: 'unico', dica: 'pega só os Únicos deste tipo' },
+];
+let abaDaRaridadePoe = 'geral';
+/** A raridade escolhida na aba (0–3), ou null (igual à Geral). */
+function raridadeDaAbaPoe(chave) {
+  const v = ctx.state.character?.settings?.[chave];
+  return v == null || v === '' || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(3, Math.round(Number(v))));
+}
+const textoDaRaridadePoe = (n) => (n === 3 ? 'só Únicos' : n ? `${NOME_DA_RARIDADE_POE[RARIDADES_POE[n]]} para cima` : 'qualquer raridade');
 function escolhaDeRaridadePoe() {
   const caixa = el('div', 'filtro-afixo filtro-raridade');
   caixa.append(el('b', null, 'Raridade'));
+  const abas = el('div', 'filtro-afixo-opcoes filtro-abas-raridade');
+  for (const aba of ABAS_DA_RARIDADE_POE) {
+    const propria = aba.id !== 'geral' && raridadeDaAbaPoe(aba.chave) != null;
+    const botao = el('button', `filtro-afixo-opcao${aba.id === abaDaRaridadePoe ? ' ativo' : ''}`);
+    botao.type = 'button';
+    botao.dataset.aba = aba.id;
+    botao.append(el('span', null, propria ? `${aba.rotulo} •` : aba.rotulo));
+    botao.title = aba.id === 'geral' ? 'a raridade de todo equipamento e dos frascos' : `${aba.dica}${propria ? ` — ${textoDaRaridadePoe(raridadeDaAbaPoe(aba.chave))}` : ' — igual à Geral'}`;
+    botao.onclick = () => {
+      abaDaRaridadePoe = aba.id;
+      ctx.redraw?.();
+    };
+    abas.append(botao);
+  }
+  caixa.append(abas);
+  const aba = ABAS_DA_RARIDADE_POE.find((a) => a.id === abaDaRaridadePoe) ?? ABAS_DA_RARIDADE_POE[0];
   const f = frasesPoe();
-  caixa.append(el('em', 'filter-legend', `${f.raridade ? `Pega ${f.raridade}, com qualquer mod. Normal (branco), Mágico (azul), Raro (amarelo) e Único (laranja), como no PoE.` : 'A raridade não decide nada. O Único sempre vem.'} Vale só para equipamento: frascos e moedas sempre vêm (só a lista "Não coletar" ou uma regra da classe do frasco os deixa no chão).`));
-  caixa.append(fileiraPoe('A partir de', 'guardarRaridadePoe', secoesPoe().raridade));
+  if (aba.id === 'geral') {
+    caixa.append(el('em', 'filter-legend', `${f.raridade ? `Pega ${f.raridade}, com qualquer mod. Normal (branco), Mágico (azul), Raro (amarelo) e Único (laranja), como no PoE.` : 'A raridade não decide nada. O Único sempre vem.'} Vale para todo equipamento e para os frascos; cada aba troca a raridade só daquele tipo. As moedas e os mapas sempre vêm (só a lista "Não coletar" os deixa no chão).`));
+    caixa.append(fileiraPoe('A partir de', 'guardarRaridadePoe', secoesPoe().raridade));
+  } else {
+    const propria = raridadeDaAbaPoe(aba.chave);
+    const vale = propria ?? secoesPoe().raridade;
+    caixa.append(el('em', 'filter-legend', `${aba.rotulo} (${aba.dica}): ${propria == null ? `igual à Geral — ${textoDaRaridadePoe(vale)}` : textoDaRaridadePoe(vale)}.${aba.id === 'frascos' ? ' Só a raridade decide o frasco (as seções de mods, sockets e Item Level são de equipamento).' : ' Entra no OU com as outras seções, como a Geral.'}`));
+    caixa.append(fileiraPoe('A partir de', aba.chave, propria, LINHAS_DA_ABA_POE));
+  }
   return caixa;
 }
 function escolhaDeSocketsPoe() {

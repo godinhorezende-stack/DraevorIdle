@@ -3,5 +3,14 @@
  "minimoMs": 3000,
  "esperaMaximaMs": 30000,
  "tentativas": 2,
- "portal": { "abertoMs": 3000, "fechamentoMs": 3000 }
+ "portal": {
+  "abertoMs": 1500,
+  "fechamentoMs": 1500
+ },
+ "_notaDaChegada": "Saída e chegada com 3 s cada (dono, 10/10: \"queria colocar saída e chegada algo com 3 s cada\"). SAÍDA (`portal`): o portal abre na casa AO LADO dele, ele fica olhando e entra no fim de `abertoMs` (o passo de 0,5 s), e some lá dentro em `fechamentoMs` (o portal fecha junto). CHEGADA (`chegada`): o portal abre ao lado de onde ele fica; ele vai aparecendo dentro dele em `surgindoMs` (a barra conta), anda a casa até o lugar dele em `passoMs` — só então a tela confirma o carregamento e o combate começa — e o portal some sozinho em `fechamentoMs`.",
+ "chegada": {
+  "surgindoMs": 1500,
+  "passoMs": 500,
+  "fechamentoMs": 1000
+ }
 }

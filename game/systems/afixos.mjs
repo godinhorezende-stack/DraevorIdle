@@ -421,6 +421,33 @@ export function regraDasSecoesPoe(s = {}) {
     rgb: s.guardarRgbPoe === true,
   };
 }
+/*
+ * ---- As ABAS do filtro do PoE por TIPO de item (dono, 10/10: "quero que no loot filter trate abas de tipos de itens para selecionar
+ * outros tipos, raridades diferentes") ----
+ * A raridade da seção (`guardarRaridadePoe`) é a GERAL: vale para todo equipamento e, desde 10/10, para os FRASCOS ("mudar só para
+ * frascos" — as moedas e os mapas seguem vindo sempre). Cada aba troca a raridade só daquele tipo (`guardarRaridadePoe<Tipo>`): sem
+ * escolha (null), igual à geral; 0 = a raridade não decide nada para o tipo; 1–3 = Mágico/Raro/Único para cima.
+ */
+export const TIPOS_DO_FILTRO_POE = ['armas', 'armaduras', 'acessorios', 'frascos'];
+export const CHAVE_DA_RARIDADE_DO_TIPO = Object.freeze({ armas: 'guardarRaridadePoeArmas', armaduras: 'guardarRaridadePoeArmaduras', acessorios: 'guardarRaridadePoeAcessorios', frascos: 'guardarRaridadePoeFrascos' });
+const CLASSES_DE_ARMADURA = new Set(['Body_Armours', 'Helmets', 'Boots', 'Gloves', 'Shields']);
+const CLASSES_DE_ACESSORIO = new Set(['Rings', 'Amulets', 'Belts']);
+const CLASSES_DE_ARMA = new Set(['One_Hand_Swords', 'Thrusting_One_Hand_Swords', 'Two_Hand_Swords', 'One_Hand_Axes', 'Two_Hand_Axes', 'One_Hand_Maces', 'Two_Hand_Maces', 'Sceptres', 'Staves', 'Warstaves', 'Claws', 'Daggers', 'Rune_Daggers', 'Bows', 'Wands', 'Quivers']);
+/** O tipo da peça do PoE para as abas do filtro ('armas' | 'armaduras' | 'acessorios' | 'frascos'), ou null (o resto: só a geral). */
+export function tipoDoFiltroPoe(p) {
+  if (FrascosPoe.ehFrasco(p)) return 'frascos';
+  const classe = p?.poe?.classe;
+  if (CLASSES_DE_ARMA.has(classe)) return 'armas';
+  if (CLASSES_DE_ARMADURA.has(classe)) return 'armaduras';
+  if (CLASSES_DE_ACESSORIO.has(classe)) return 'acessorios';
+  return null;
+}
+/** A raridade escolhida na aba do tipo (0–3), ou null (igual à geral). */
+export function raridadeDoTipoPoe(s = {}, tipo) {
+  const v = tipo ? s[CHAVE_DA_RARIDADE_DO_TIPO[tipo]] : null;
+  return v == null || v === '' || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(3, Math.round(Number(v))));
+}
+
 /** A peça passa em "pelo menos `mods` mods e (com `tier`) um deles T`tier` ou melhor"? */
 function passaModsPoe(p, mods, tier) {
   const lista = modsExplicitos(p);
@@ -473,9 +500,9 @@ export function sanearRegraDeLootPoe(r) {
  * tudo; com alguma, só o que ela pega (as seções com OU). O Único sempre é pego, a não ser que uma regra específica diga o contrário.
  *
  * FRASCO e MOEDA (dono, 08/10: "frascos e moedas têm raridade, mas no loot filter não era para ser considerado"): as seções e as regras são
- * para escolher EQUIPAMENTO — com "Raro para cima" o frasco Normal/Mágico ficava no chão. O frasco sempre vem; só a lista "Não coletar" ou
- * uma regra específica da CLASSE dele (Frascos de Vida, de Mana, Utilitários) o deixa no chão. A moeda nem chega aqui: o drop dela passa só
- * pela lista (`Bolsa.ignora` sem a peça).
+ * para escolher EQUIPAMENTO. A moeda nem chega aqui: o drop dela passa só pela lista (`Bolsa.ignora` sem a peça). O FRASCO, desde 10/10
+ * (dono: "mudar só para frascos"), segue a RARIDADE — a da aba Frascos ou, sem ela, a geral (com "Só Único", o frasco Normal fica no chão);
+ * as outras seções (mods, sockets, Item Level) continuam sem valer para ele, e a regra específica da CLASSE dele decide antes.
  */
 export function decisaoDoLootPoe(estado, p) {
   const frasco = FrascosPoe.ehFrasco(p);
@@ -486,10 +513,17 @@ export function decisaoDoLootPoe(estado, p) {
   for (const [i, r] of regras.entries()) {
     if (regraPoeBate(r, p)) return { acao: r.acao === 'naoColetar' ? 'naoColetar' : 'naoVender', motivo: `regra específica ${i + 1}` };
   }
-  if (frasco) return { acao: 'naoVender', motivo: 'frasco (sempre)' };
+  // A raridade que vale para esta peça: a da aba do tipo dela, ou a geral.
+  const settings = estado?.settings ?? {};
+  const s = regraDasSecoesPoe(settings);
+  const doTipo = raridadeDoTipoPoe(settings, tipoDoFiltroPoe(p));
+  if (doTipo != null) s.raridade = doTipo;
+  if (frasco) {
+    if (s.raridade && indiceDaRaridadePoe(p) < s.raridade) return { acao: 'naoColetar', motivo: 'raridade do frasco' };
+    return { acao: 'naoVender', motivo: s.raridade ? 'frasco (raridade)' : 'frasco (sempre)' };
+  }
   if (mapa) return { acao: 'naoVender', motivo: 'mapa (sempre)' };
   if (p.poe.raridade === 'unico') return { acao: 'naoVender', motivo: 'Único (sempre)' };
-  const s = regraDasSecoesPoe(estado?.settings ?? {});
   const algumaSecao = s.mods > 0 || s.tier > 0 || s.abertos > 0 || s.ligados > 1 || s.rgb || s.ilvl > 0 || s.raridade > 0;
   if (!algumaSecao) return { acao: 'naoVender', motivo: 'sem filtro: pega tudo' };
   if (s.mods > 0 && passaModsPoe(p, s.mods, s.tier)) return { acao: 'naoVender', motivo: 'mods da peça' };
@@ -510,6 +544,9 @@ const EXEMPLOS_DO_FILTRO_POE = [
   { rotulo: 'Raro, 6 mods com um T1', raridade: 'raro', tiers: [1, 3, 4, 5, 6, 7], ilvl: 84, abertos: 4 },
   { rotulo: 'Único', raridade: 'unico', tiers: [], ilvl: 70, abertos: 2 },
   { rotulo: 'Frasco de Vida Mágico', raridade: 'magico', tiers: [7], ilvl: 40, abertos: 0, classe: 'Life_Flasks' },
+  // (As abas por tipo: uma arma e um acessório — os de cima, sem classe, são armaduras.)
+  { rotulo: 'Arma: Machado Raro, 3 mods', raridade: 'raro', tiers: [5, 6, 7], ilvl: 50, abertos: 3, classe: 'Two_Hand_Axes' },
+  { rotulo: 'Acessório: Anel Mágico, 1 mod', raridade: 'magico', tiers: [6], ilvl: 40, abertos: 0, classe: 'Rings' },
 ];
 function previaDoFiltroPoe(estado) {
   const base = { ...estado, itemRules: { ...(estado.itemRules ?? {}), noLoot: [], noSell: [] } };

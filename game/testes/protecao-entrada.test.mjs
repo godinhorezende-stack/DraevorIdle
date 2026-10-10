@@ -243,3 +243,38 @@ test('o ciclo do portal vai para a tela no welcome (a mesma configuração do se
   // A configuração vem do arquivo e aceita só números válidos.
   assert.deepEqual(Protecao.lerConfig({ minimoMs: -5, esperaMaximaMs: 'x', tentativas: 99, portal: { abertoMs: 1500 } }), { minimoMs: 3000, esperaMaximaMs: 30000, tentativas: 5, portal: { abertoMs: 1500, fechamentoMs: 3000 } });
 });
+
+test('o ciclo da CHEGADA vai para a tela no welcome (3 s ao todo: surgindo, o passo para o lado, o portal sumindo), com números válidos', () => {
+  assert.deepEqual({ ...Protecao.chegada() }, { surgindoMs: 1500, passoMs: 500, fechamentoMs: 1000 });
+  assert.deepEqual({ ...Protecao.lerChegada({ surgindoMs: -1, fechamentoMs: 1200 }) }, { surgindoMs: 1500, passoMs: 500, fechamentoMs: 1200 });
+});
+
+test('o LOOP da fase: limpou a instância → o tique troca sozinho (instância nova ou próxima fase) → protegido de novo, até a tela confirmar', async (t) => {
+  const { s, enviados } = sessao();
+  entrarNaCacada(s);
+  const primeira = s.estado.hunt.entrada;
+  s.receber({ t: 'mapaPronto', entrada: primeira });
+  await passar(s, MINIMO + 500);
+  assert.equal(s.protegidoNaEntrada(), false);
+  const h = s.estado.hunt;
+  if (!h.instancia) return t.skip('a hunt de teste não é uma instância (não há loop de limpeza)');
+  // Todos os bichos da instância morrem (em todos os andares): o tique conclui a limpeza e, passada a pausa, troca sozinho.
+  for (const m of h.monstros) m.hp = 0;
+  for (const lista of Object.values(h.outrosAndares ?? {})) for (const m of lista) m.hp = 0;
+  let trocou = false;
+  for (let t = 0; t < 240 && !trocou; t++) {
+    await passar(s, R.PASSO_MS);
+    trocou = !!s.estado.hunt && s.estado.hunt.entrada !== primeira;
+  }
+  assert.ok(trocou, 'o loop levou a uma entrada nova');
+  const nova = s.estado.hunt;
+  await passar(s, R.PASSO_MS);
+  assert.equal(s.protegidoNaEntrada(), true, 'protegido na volta do loop');
+  const relogio = nova.clock;
+  await passar(s, 2000);
+  assert.equal(nova.clock, relogio, 'a caçada nova espera a tela');
+  assert.ok(enviados.some((m) => m.hunt?.entrada === nova.entrada), 'a tela recebeu a entrada nova');
+  s.receber({ t: 'mapaPronto', entrada: nova.entrada });
+  await passar(s, MINIMO);
+  assert.equal(s.protegidoNaEntrada(), false);
+});

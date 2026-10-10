@@ -2205,6 +2205,8 @@ export class Sessao {
       mobRaridades: Raridade.coresParaCliente(),
       // O ciclo do portal de viagem (aberto e fechamento — `gamedata/protecao.json`): a tela anima com ele.
       cicloDoPortal: Protecao.config().portal,
+      // E o da chegada (o personagem surge do portal; depois o portal fecha sozinho).
+      cicloDaChegada: Protecao.chegada(),
       // O texto de cada modificador, pelo nome (o tooltip do mob — fase 3).
       mobModificadores: Raridade.modificadoresParaCliente(),
       // O top 25 de experiência, como no welcome do original.

@@ -96,7 +96,7 @@ import { aplicarRemendo } from '/packages/shared/src/remendo.mjs';
 import { initMobile, ehCelular } from './mobile.mjs';
 import { initMinimapa, atualizarMinimapa } from './minimapa.mjs';
 import { instalarArrastoDoMouse } from './arrasto-do-mouse.mjs';
-import { CICLO_PADRAO, duracao as duracaoDoCiclo, chaveDaCena, abrePortal } from './portal-ciclo.mjs';
+import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, prontoNaChegada, chaveDaCena, abrePortal } from './portal-ciclo.mjs';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, className, text) => {
@@ -734,7 +734,9 @@ function handle(message) {
       // viajar: o primeiro quadro desta conexão entra sem o portal de saída.
       entradaConfirmada = null;
       cenaNaTela = null;
+      cancelarChegada();
       if (message.cicloDoPortal) cicloDoPortal = message.cicloDoPortal;
+      if (message.cicloDaChegada) cicloDaChegada = message.cicloDaChegada;
       // Máquina que não dá conta do enfeite: o jogo se deixa leve sozinho, uma
       // vez, e diz onde desfazer. Ver `vigiarLentidao`, em graficos.mjs.
       if (!vigiouLentidao) {
@@ -2101,6 +2103,9 @@ function applyState(message) {
   } else {
     mapView.setSnapshot(message.hunt ?? message.city, message.character);
     cenaNaTela = cenaNova;
+    // Sem tela preta (dono, 10/10: "se a tela estiver preta pode usar aquele carregando mapa; o que não pode é deixar tela preta"): o mapa
+    // desta cena ainda não chegou (a reconexão, um mapa que se perdeu) — a cortina cobre até ele estar desenhável.
+    if (mapView.faltaOMapa() && $('entrada')?.hidden !== false && $('viagem')?.hidden !== false) mostrarViagem({ hunt: message.hunt ? nomeDaCena(message.hunt) : '', motivo: 'carregando' });
   }
   confirmarCarregamento();
   atualizarBotaoDeInteragir();
@@ -7355,15 +7360,24 @@ const VIAGEM_MINIMO = 1100;
 const VIAGEM_TETO = 6000;
 const artesQuebradas = new Set();
 let viagemAte = 0;
+let viagemDesde = 0;
 let viagemTimer = null;
+/*
+ * O teto NÃO derruba a cortina enquanto o mapa ainda falta (dono, 10/10: "o que não pode é deixar tela preta"): ela fica dizendo que o mapa
+ * está carregando. Só passado este tempo — mais que a espera do servidor, que reenvia o mapa e, sem confirmação, devolve o jogador à cidade
+ * (`systems/protecao.mjs`) — ela sai de qualquer jeito, para não virar uma tela de carregamento eterna.
+ */
+const VIAGEM_TETO_SEM_MAPA = 70000;
 
 const TITULO_VIAGEM = {
   partida: 'Traçando a rota',
+  carregando: 'Carregando o mapa',
   rota: 'Percurso concluído',
   relogio: 'Trocando de hunt',
 };
 const NOTA_VIAGEM = {
   partida: 'preparando o terreno e posicionando as criaturas',
+  carregando: 'só um instante — o mapa está chegando',
   rota: 'o último waypoint foi alcançado — seguindo o ciclo',
   relogio: 'tempo nesta hunt esgotado — seguindo o ciclo',
 };
@@ -7397,6 +7411,7 @@ function mostrarViagem({ hunt, motivo }) {
   }
 
   caixa.hidden = false;
+  viagemDesde = Date.now();
   viagemAte = Date.now() + VIAGEM_MINIMO;
   clearTimeout(viagemTimer);
   viagemTimer = setTimeout(() => esconderViagem(true), VIAGEM_TETO);
@@ -7541,7 +7556,9 @@ async function entrarNoPersonagem(message) {
  * quebrado.
  */
 function mapaCarregado() {
-  const mapa = mapView?.snapshot?.map;
+  // Sem retrato com mapa na tela, nada está desenhável (é a tela preta que a cortina existe para cobrir).
+  if (!mapView?.snapshot) return false;
+  const mapa = mapView.snapshot.map;
   if (!mapa?.atlas) return true; // cidade e mapas gerados não têm atlas próprio
   return !!imagemPronta(`/gamedata/sprites/${mapa.atlas}.png`);
 }
@@ -7558,7 +7575,7 @@ function esconderViagem(forcado = false) {
    * se o atlas nunca chegar, é melhor ver o jogo do que uma tela de
    * carregamento eterna.
    */
-  if (!forcado && !mapaCarregado()) {
+  if (!mapaCarregado() && (!forcado || Date.now() - viagemDesde < VIAGEM_TETO_SEM_MAPA)) {
     $('viagem-nota').textContent = 'carregando o mapa desta hunt…';
     clearTimeout(viagemTimer);
     viagemTimer = setTimeout(() => esconderViagem(), 200);
@@ -7586,12 +7603,18 @@ let viagemDoPortal = null;
 let entradaConfirmada = null;
 let morreuEm = 0;
 let cicloDoPortal = CICLO_PADRAO;
+let cicloDaChegada = CHEGADA_PADRAO;
 let confirmacaoTimer = null;
+// A CHEGADA depois do portal de saída: `{ etapa: 'esperando' }` (o mapa novo ainda carregando, sob a cortina) → `{ etapa: 'surgindo' }`
+// (o personagem saindo do portal) → null (o portal fecha sozinho no mapa; a tela confirma o carregamento).
+let chegada = null;
+let chegadaTimer = null;
 const EVENTOS_GUARDADOS_NA_VIAGEM = 80;
 
 function abrirViagemDoPortal() {
+  cancelarChegada();
   const eu = mapView.snapshot.player;
-  mapView.abrirPortalDeSaida({ x: eu.x, y: eu.y, ciclo: cicloDoPortal });
+  mapView.abrirPortalDeSaida({ x: eu.x, y: eu.y, dir: eu.dir, ciclo: cicloDoPortal });
   viagemDoPortal = { eventos: [], cortina: null, timer: setTimeout(fecharViagemDoPortal, duracaoDoCiclo(cicloDoPortal)) };
 }
 
@@ -7619,17 +7642,57 @@ function fecharViagemDoPortal() {
     cenaNaTela = chaveDaCena({ hunt: state.hunt, city: state.city });
     atualizarMinimapa(!!state.hunt);
   }
-  if (v.eventos.length && !abaEscondida) mapView.addEvents(v.eventos);
-  // A cortina só cobre o que falta: com o mapa já baixado durante o portal, a cena entra direto.
-  if (v.cortina && !mapaCarregado()) mostrarViagem(v.cortina);
+  // O portal de chegada que o servidor mandou para a casa dele vira a CHEGADA animada (os da party, nas casas deles, seguem como vieram).
+  const eu = (state.hunt ?? state.city)?.player ?? null;
+  const eventos = eu ? v.eventos.filter((ev) => !(ev.t === 'portal' && ev.chegada && ev.x === eu.x && ev.y === eu.y)) : v.eventos;
+  if (eventos.length && !abaEscondida) mapView.addEvents(eventos);
+  // A cortina só cobre o que falta: com o mapa já baixado durante o portal, a cena entra direto. Faltando, nunca a tela preta.
+  if (!mapaCarregado()) mostrarViagem(v.cortina ?? { hunt: state.hunt ? nomeDaCena(state.hunt) : '', motivo: 'carregando' });
+  if (eu) {
+    chegada = { etapa: 'esperando' };
+    comecarChegada();
+  }
   confirmarCarregamento();
+}
+
+/** O nome da caçada para a cortina (o da sessão do analisador, ou o id do mapa). */
+const nomeDaCena = (hunt) => hunt?.session?.hunts?.[0] ?? hunt?.nome ?? hunt?.mapId ?? '';
+
+/*
+ * ---- A CHEGADA (dono, 10/10: "no outro lado, 3 s ele vai aparecendo e, depois que o boneco anda 1 tile para o lado, em 1 s o portal
+ * some") ----
+ * Com o mapa novo desenhável e a cortina fora: o portal abre AO LADO de onde ele está, ele SURGE lá (com a barra) e anda a casa até o
+ * lugar dele — a caçada segue parada no servidor; só então vai o `mapaPronto` e o combate começa. O portal some sozinho depois (`map.mjs`).
+ */
+function comecarChegada() {
+  clearTimeout(chegadaTimer);
+  if (chegada?.etapa !== 'esperando') return;
+  const eu = mapView.snapshot?.player;
+  if (!eu || !mapaCarregado() || $('viagem')?.hidden === false) {
+    chegadaTimer = setTimeout(comecarChegada, 150);
+    return;
+  }
+  mapView.abrirPortalDeChegada({ x: eu.x, y: eu.y, ciclo: cicloDaChegada });
+  chegada = { etapa: 'surgindo' };
+  // Confirma quando ele já surgiu E andou a casa até o lugar dele; o portal some depois, sozinho.
+  chegadaTimer = setTimeout(() => {
+    chegada = null;
+    confirmarCarregamento();
+  }, prontoNaChegada(cicloDaChegada));
+}
+
+/** Outra viagem começou (ou a conexão é nova): a chegada pendente não acontece. */
+function cancelarChegada() {
+  clearTimeout(chegadaTimer);
+  chegada = null;
+  mapView?.fecharPortalDeChegada?.();
 }
 
 /** `mapaPronto` da entrada de agora, quando a cena dela está na tela com o mapa desenhável. Até lá, tenta de novo a cada 250 ms. */
 function confirmarCarregamento() {
   clearTimeout(confirmacaoTimer);
   const entrada = state.hunt?.entrada;
-  if (!entrada || entrada === entradaConfirmada || viagemDoPortal) return;
+  if (!entrada || entrada === entradaConfirmada || viagemDoPortal || chegada) return;
   if (mapView.snapshot?.entrada !== entrada || !mapaCarregado()) {
     confirmacaoTimer = setTimeout(confirmarCarregamento, 250);
     return;
@@ -8009,8 +8072,9 @@ function renderAll() {
    */
   atualizarDesgaste();
 
-  // O primeiro quadro da hunt nova derruba a cortina — respeitado o mínimo.
-  if (state.hunt) {
+  // O primeiro quadro da hunt nova derruba a cortina — respeitado o mínimo (e com o mapa desenhável: ver `esconderViagem`). Na cidade
+  // também, para a cortina que cobriu um mapa faltando.
+  if (state.hunt || state.city) {
     if (Date.now() >= viagemAte) esconderViagem();
     else setTimeout(() => esconderViagem(), viagemAte - Date.now());
   }
