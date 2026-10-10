@@ -98,6 +98,22 @@ export const partesDaCampanha = (atos) => [...new Set(atos.map((a) => a.parte).f
 
 /** A fase em que o jogador está agora: a primeira aberta e ainda não concluída (ou a última aberta). */
 export const faseDaFronteira = (escolhida) => escolhida.fases.find((f) => f.liberada && !f.completa && !f.pular) ?? escolhida.fases.findLast((f) => f.liberada) ?? escolhida.fases[0];
+/**
+ * ONDE O PERSONAGEM ESTÁ no mapa da campanha — o nó azul (dono, 10/10: "tem que marcar azul onde o boneco está; agora ele está na cidade").
+ * Caçando numa fase: a fase; na sala do boss do ato: o boss; fora da caçada: a CIDADE do ato da última fase em que caçou (`atoDaCidade`,
+ * do servidor — sem nenhuma, a do ato da fronteira). Caçando fora da campanha (um mapa do endgame): nenhum nó.
+ * `{ tipo: 'fase' | 'boss' | 'cidade', id, ato }` (o `id` do nó na tela) ou null.
+ */
+export function ondeEstaNoMapa({ huntId = null, escolhida, atoDaCidade = null }) {
+  if (huntId) {
+    const f = escolhida.fases.find((x) => x.huntId === huntId);
+    if (f) return { tipo: 'fase', id: f.huntId, ato: f.ato };
+    const b = (escolhida.bosses ?? []).find((x) => x.bossId === huntId);
+    return b ? { tipo: 'boss', id: `boss:${b.ato}`, ato: b.ato } : null;
+  }
+  const ato = atoDaCidade ?? faseDaFronteira(escolhida)?.ato ?? null;
+  return ato != null ? { tipo: 'cidade', id: `cidade:${ato}`, ato } : null;
+}
 
 // ---------------------------------------------------------------- tipo e posição dos nós
 

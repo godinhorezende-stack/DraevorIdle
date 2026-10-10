@@ -641,6 +641,8 @@ function campanhaCards(body) {
       bestiario: catalog,
       h: {
         figuraDaCriatura,
+        // Onde o personagem está (o nó azul do mapa): a caçada dele agora, ou nenhuma (na cidade).
+        huntIdAtual: () => ctx.state.hunt?.huntId ?? null,
         entrarNaFase: (hunt, lista) => {
           rolagemDaLista.hunts = document.getElementById('modal-body')?.scrollTop ?? 0;
           askRunMode(hunt, lista);

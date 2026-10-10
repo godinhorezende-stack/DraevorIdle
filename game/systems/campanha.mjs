@@ -430,6 +430,8 @@ export function paraCliente(estado) {
     atos: atosDoConteudo(),
     mundo: Object.fromEntries(FASES.filter(visivel).map((f) => [f.huntId, mundoDaFase(estado, f)]).filter(([, v]) => Object.keys(v).length)),
     bossesDerrotados: Object.entries(vitorias).map(([id, vezes]) => ({ id, nome: nomes[id] ?? id, vezes })),
+    // A cidade onde o personagem fica fora da caçada (o nó azul do mapa): a do ato da última fase em que ele caçou (`Cacadas.entrar`).
+    atoDaCidade: Number(estado.atoDaCidade) || null,
     dificuldades: dificuldadesDoJogo().map((dif) => {
       const p = progresso(estado, dif);
       return {
