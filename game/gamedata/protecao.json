@@ -3,7 +3,14 @@
  "minimoMs": 3000,
  "esperaMaximaMs": 30000,
  "tentativas": 2,
- "portal": { "abertoMs": 3000, "fechamentoMs": 3000 },
- "_notaDaChegada": "`chegada` (dono, 10/10: \"quando ele aparece na fase, a animação dos 3 segundos aparecendo no teletransporte tem que ter; quem some sozinho é o portal\"): na cena nova o portal abre onde ele chega e o personagem SURGE dele em `surgindoMs` (a barra conta) — só então a tela confirma o carregamento e o combate começa —, e depois o portal fecha sozinho em `fechamentoMs` (o personagem fica).",
- "chegada": { "surgindoMs": 3000, "fechamentoMs": 3000 }
+ "portal": {
+  "abertoMs": 3000,
+  "fechamentoMs": 3000
+ },
+ "_notaDaChegada": "`chegada` (dono, 10/10: \"no outro lado, 3 s ele vai aparecendo e, depois que o boneco anda 1 tile para o lado, em 1 s o portal some\"): na cena nova o portal abre na casa AO LADO de onde ele fica; o personagem surge dentro dele em `surgindoMs` (a barra conta), anda a casa até o lugar dele em `passoMs` — só então a tela confirma o carregamento e o combate começa — e o portal some sozinho em `fechamentoMs`. Na saída (`portal`), o portal abre ao lado dele, ele fica olhando e entra no fim de `abertoMs`, e some lá dentro em `fechamentoMs`.",
+ "chegada": {
+  "surgindoMs": 3000,
+  "passoMs": 600,
+  "fechamentoMs": 1000
+ }
 }

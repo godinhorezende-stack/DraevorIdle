@@ -81,17 +81,18 @@ test('o portal de saída abre só numa VIAGEM: com cena antes, cena diferente e 
   assert.equal(abrePortal({ antes: 'c:city:0', depois: 'h:duelo', pvp: true }), false, 'o duelo da Arena (sem proteção de entrada, com a largada dele) entra direto');
 });
 
-test('a CHEGADA: o personagem SURGE do portal em 3 s (com a barra) e depois o portal fecha SOZINHO — o personagem fica', async () => {
-  const { CHEGADA_PADRAO, duracaoDaChegada, quadroDaChegada } = await import('../frontend/client/src/portal-ciclo.mjs');
-  assert.deepEqual({ ...CHEGADA_PADRAO }, { surgindoMs: 3000, fechamentoMs: 3000 });
+test('a CHEGADA: 3 s ele vai aparecendo no portal (com a barra), anda 1 casa até o lugar dele, e em 1 s o portal some sozinho', async () => {
+  const { CHEGADA_PADRAO, duracaoDaChegada, prontoNaChegada, quadroDaChegada, PASSO_NO_PORTAL_MS } = await import('../frontend/client/src/portal-ciclo.mjs');
+  assert.deepEqual({ ...CHEGADA_PADRAO }, { surgindoMs: 3000, passoMs: PASSO_NO_PORTAL_MS, fechamentoMs: 1000 });
   assert.deepEqual(CHEGADA_PADRAO, { ...Protecao.chegada() }, 'o mesmo ciclo que o servidor manda no welcome');
-  assert.equal(duracaoDaChegada(), 6000);
+  const P = PASSO_NO_PORTAL_MS;
+  assert.equal(duracaoDaChegada(), 3000 + P + 1000);
+  assert.equal(prontoNaChegada(), 3000 + P, 'a tela confirma quando ele já está no lugar');
   const em = (t) => quadroDaChegada(t);
   assert.equal(em(0).fase, 'surgindo');
-  perto(em(0).personagem.alpha, 0, 'ele começa invisível');
-  perto(em(0).barra, 1);
+  perto(em(0).personagem.alpha, 0, 'ele começa invisível, dentro do portal');
+  assert.equal(em(0).passo, 0);
   perto(em(1500).barra, 0.5, 'a barra conta os 3 s');
-  // Surge aos poucos, sem pulo, e termina inteiro no fim da fase.
   let antes = em(0);
   for (let t = 50; t <= 3000; t += 50) {
     const q = em(t);
@@ -99,13 +100,53 @@ test('a CHEGADA: o personagem SURGE do portal em 3 s (com a barra) e depois o po
     antes = q;
   }
   assert.ok(em(2999).personagem.alpha > 0.99, 'inteiro no fim do surgimento');
-  assert.equal(em(3000).fase, 'fechando');
-  perto(em(3000).personagem.alpha, 1, 'o personagem fica');
-  perto(em(3000).portal.alpha, 1, 'o portal começa a fechar inteiro');
-  assert.equal(em(3000).barra, 0, 'no fechamento sozinho, sem barra');
-  assert.ok(em(4500).portal.alpha < 1 && em(4500).portal.escala < 1, 'o portal some (e encolhe) sozinho');
-  perto(em(4500).personagem.alpha, 1);
-  const fim = em(6000);
-  assert.deepEqual([fim.fase, fim.portal.alpha, fim.personagem.alpha, fim.barra], ['fim', 0, 1, 0], 'no fim: nada do portal fica, o personagem sim');
-  assert.equal(quadroDaChegada(1000, { surgindoMs: 1000, fechamentoMs: 500 }).fase, 'fechando', 'segue a configuração');
+  assert.equal(em(2999).passo, 0, 'surge parado, no portal');
+  // O passo: do portal para a casa dele, com a passada.
+  assert.equal(em(3000).fase, 'saindo');
+  perto(em(3000 + P / 2).passo, 0.5, 'no meio da casa');
+  assert.equal(em(3000 + P / 2).andando, true);
+  assert.equal(em(3000 + P / 2).barra, 0);
+  perto(em(3000 + P / 2).portal.alpha, 1, 'o portal segue aberto enquanto ele sai');
+  // Depois que ele andou: em 1 s o portal some, sozinho; ele fica (passo 1, inteiro).
+  const fechando = em(3000 + P + 500);
+  assert.equal(fechando.fase, 'fechando');
+  assert.deepEqual([fechando.passo, fechando.andando, fechando.personagem.alpha], [1, false, 1]);
+  assert.ok(fechando.portal.alpha < 1 && fechando.portal.escala < 1, 'o portal some (e encolhe)');
+  const fim = em(3000 + P + 1000);
+  assert.deepEqual([fim.fase, fim.portal.alpha, fim.personagem.alpha, fim.barra, fim.passo], ['fim', 0, 1, 0, 1], 'no fim: nada do portal fica; o boneco, no lugar dele');
+  assert.equal(quadroDaChegada(1000, { surgindoMs: 1000, passoMs: 200, fechamentoMs: 500 }).fase, 'saindo', 'segue a configuração');
+});
+
+test('a SAÍDA com o portal ao lado: olhando para ele durante a abertura, ENTRA no fim dos 3 s e some nos 3 s seguintes', async () => {
+  const { PASSO_NO_PORTAL_MS } = await import('../frontend/client/src/portal-ciclo.mjs');
+  const P = PASSO_NO_PORTAL_MS;
+  const em = (t) => quadroDoCiclo(t);
+  assert.deepEqual([em(0).passo, em(0).andando], [0, false], 'ao lado do portal, parado');
+  assert.equal(em(3000 - P - 1).passo, 0, 'parado até o portal estar todo aberto');
+  perto(em(3000 - P / 2).passo, 0.5, 'entrando');
+  assert.equal(em(3000 - P / 2).andando, true);
+  perto(em(3000 - P / 2).personagem.alpha, 1, 'entra inteiro');
+  perto(em(3000 - P / 2).portal.alpha, 1, 'com o portal todo aberto');
+  assert.deepEqual([em(3000).passo, em(3000).andando], [1, false], 'dentro do portal quando a abertura acaba');
+  assert.ok(em(4500).personagem.alpha < 1 && em(4500).passo === 1, 'e vai sumindo lá dentro');
+  assert.equal(em(6000).passo, 1);
+});
+
+test('a CASA do portal: ao lado dele — na saída à frente (para onde está virado), na chegada a um lado; sem casa livre, a própria', async () => {
+  const { casaDoPortal, ordemDaSaida, ORDEM_DA_CHEGADA, direcaoDoPasso } = await import('../frontend/client/src/portal-ciclo.mjs');
+  const tudoLivre = () => true;
+  const p = { x: 10, y: 10 };
+  assert.deepEqual(casaDoPortal(p, ordemDaSaida(0), tudoLivre), { x: 10, y: 9 }, 'virado para o norte: o portal ao norte');
+  assert.deepEqual(casaDoPortal(p, ordemDaSaida(1), tudoLivre), { x: 11, y: 10 }, 'virado para o leste: a leste');
+  assert.deepEqual(casaDoPortal(p, ORDEM_DA_CHEGADA, tudoLivre), { x: 9, y: 10 }, 'na chegada, ao lado (oeste)');
+  // A frente bloqueada: a próxima livre.
+  const semNorte = (x, y) => !(x === 10 && y === 9);
+  assert.deepEqual(casaDoPortal(p, ordemDaSaida(0), semNorte), { x: 11, y: 10 });
+  assert.deepEqual(casaDoPortal(p, ORDEM_DA_CHEGADA, (x) => x !== 9), { x: 11, y: 10 }, 'o outro lado');
+  assert.deepEqual(casaDoPortal(p, ORDEM_DA_CHEGADA, () => false), { x: 10, y: 10 }, 'cercado: o portal sob ele, como antes');
+  // Para onde ele olha/anda.
+  assert.equal(direcaoDoPasso(p, { x: 10, y: 9 }), 0);
+  assert.equal(direcaoDoPasso({ x: 9, y: 10 }, p), 1, 'saindo do portal a oeste, anda para o leste');
+  assert.equal(direcaoDoPasso(p, p, 3), 3, 'sem passo, a direção de antes');
+  assert.deepEqual(ordemDaSaida(undefined), [2, 1, 3, 0], 'sem direção: o sul primeiro');
 });

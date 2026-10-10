@@ -96,7 +96,7 @@ import { aplicarRemendo } from '/packages/shared/src/remendo.mjs';
 import { initMobile, ehCelular } from './mobile.mjs';
 import { initMinimapa, atualizarMinimapa } from './minimapa.mjs';
 import { instalarArrastoDoMouse } from './arrasto-do-mouse.mjs';
-import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, chaveDaCena, abrePortal } from './portal-ciclo.mjs';
+import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, prontoNaChegada, chaveDaCena, abrePortal } from './portal-ciclo.mjs';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, className, text) => {
@@ -7614,7 +7614,7 @@ const EVENTOS_GUARDADOS_NA_VIAGEM = 80;
 function abrirViagemDoPortal() {
   cancelarChegada();
   const eu = mapView.snapshot.player;
-  mapView.abrirPortalDeSaida({ x: eu.x, y: eu.y, ciclo: cicloDoPortal });
+  mapView.abrirPortalDeSaida({ x: eu.x, y: eu.y, dir: eu.dir, ciclo: cicloDoPortal });
   viagemDoPortal = { eventos: [], cortina: null, timer: setTimeout(fecharViagemDoPortal, duracaoDoCiclo(cicloDoPortal)) };
 }
 
@@ -7659,9 +7659,10 @@ function fecharViagemDoPortal() {
 const nomeDaCena = (hunt) => hunt?.session?.hunts?.[0] ?? hunt?.nome ?? hunt?.mapId ?? '';
 
 /*
- * ---- A CHEGADA (dono, 10/10: "quando ele aparece na fase, a animação dos 3 segundos aparecendo; quem some sozinho é o portal") ----
- * Com o mapa novo desenhável e a cortina fora: o portal abre onde ele está e ele SURGE (`cicloDaChegada.surgindoMs`, com a barra) — a
- * caçada segue parada no servidor; só no fim disto vai o `mapaPronto` e o combate começa. O portal fecha sozinho depois (`map.mjs`).
+ * ---- A CHEGADA (dono, 10/10: "no outro lado, 3 s ele vai aparecendo e, depois que o boneco anda 1 tile para o lado, em 1 s o portal
+ * some") ----
+ * Com o mapa novo desenhável e a cortina fora: o portal abre AO LADO de onde ele está, ele SURGE lá (com a barra) e anda a casa até o
+ * lugar dele — a caçada segue parada no servidor; só então vai o `mapaPronto` e o combate começa. O portal some sozinho depois (`map.mjs`).
  */
 function comecarChegada() {
   clearTimeout(chegadaTimer);
@@ -7673,10 +7674,11 @@ function comecarChegada() {
   }
   mapView.abrirPortalDeChegada({ x: eu.x, y: eu.y, ciclo: cicloDaChegada });
   chegada = { etapa: 'surgindo' };
+  // Confirma quando ele já surgiu E andou a casa até o lugar dele; o portal some depois, sozinho.
   chegadaTimer = setTimeout(() => {
     chegada = null;
     confirmarCarregamento();
-  }, Math.max(0, cicloDaChegada.surgindoMs));
+  }, prontoNaChegada(cicloDaChegada));
 }
 
 /** Outra viagem começou (ou a conexão é nova): a chegada pendente não acontece. */

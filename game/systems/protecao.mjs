@@ -38,7 +38,10 @@ export function lerConfig(bruto = null) {
   });
 }
 
-/** O ciclo da CHEGADA (`chegada` no mesmo arquivo): o personagem surge do portal em `surgindoMs`, e o portal fecha sozinho em `fechamentoMs`. */
+/**
+ * O ciclo da CHEGADA (`chegada` no mesmo arquivo): o personagem surge no portal ao lado em `surgindoMs`, anda a casa até o lugar dele em
+ * `passoMs`, e o portal some sozinho em `fechamentoMs`.
+ */
 export function lerChegada(bruto = null) {
   let c = bruto;
   if (!c) {
@@ -49,7 +52,7 @@ export function lerChegada(bruto = null) {
     }
   }
   const ms = (v, padrao) => (Number.isFinite(Number(v)) && Number(v) >= 0 ? Math.round(Number(v)) : padrao);
-  return Object.freeze({ surgindoMs: ms(c.surgindoMs, 3000), fechamentoMs: ms(c.fechamentoMs, 3000) });
+  return Object.freeze({ surgindoMs: ms(c.surgindoMs, 3000), passoMs: ms(c.passoMs, 600), fechamentoMs: ms(c.fechamentoMs, 1000) });
 }
 const CHEGADA = lerChegada();
 /** O ciclo da chegada em uso (vai para a tela no `welcome`). */
