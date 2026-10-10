@@ -45,6 +45,7 @@ import { armaDoPersonagem, alcanceDaArma, categoriaDaArma, armorDoPersonagem, de
 import { distancia } from './hunt/caminho.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as CondicoesPoe from './itens-poe/condicoes-poe.mjs';
 import { GRUPO_DO_POE } from './acoes.mjs';
 
 const ARENAS = JSON.parse(readFileSync(new URL('../gamedata/arenas.json', import.meta.url), 'utf8')).arenas;
@@ -639,11 +640,14 @@ function golpeNoAdversario(s, outro, arma, id) {
   }
   const eventos = [];
   const { dano: bruto, crit } = Ficha.rolarCritico(s.estado, base, { key: null, uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y }, eventos, ficha);
-  const protegido = Math.round(bruto * (1 - Math.min(100, fo.protection?.[elemento] ?? 0) / 100));
+  // PoE 1 (dono, 10/10): no golpe físico a armadura e a redução física adicional do adversário SOMAM, no teto de 90%
+  // (`fracaoFisicaRecebida`); fora do PoE, a proteção corta antes e a armadura depois.
+  const somaFisica = elemento === 'physical' && CondicoesPoe.somaFisicaDoPoe();
+  const protegido = somaFisica ? bruto * CondicoesPoe.fracaoFisicaRecebida(fo, bruto, armorDoPersonagem(outro.estado)) : Math.round(bruto * (1 - Math.min(100, fo.protection?.[elemento] ?? 0) / 100));
   // O Energy Shield do adversário absorve antes da vida.
   // (Arredondado, como o golpe do bicho no personagem — `combate.mjs`: a armadura no modo 'poe' corta uma FRAÇÃO do golpe físico, e sem
   // isto o número na tela e a vida do adversário ficavam quebrados — 14,24, 107,01...)
-  const dano = Defesa.absorver(outro.estado, fo, Math.max(0, Math.round(elemento === 'physical' ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido)));
+  const dano = Defesa.absorver(outro.estado, fo, Math.max(0, Math.round(elemento === 'physical' && !somaFisica ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido)));
   outro.estado.hp = Math.max(0, outro.estado.hp - dano);
   // PoE: o frasco com "Efeito é removido quando Acertado por um Jogador" acaba.
   if (FrascosPoe.aoSerAcertadoPorJogador(outro.estado)) Ficha.invalidar(outro.estado);

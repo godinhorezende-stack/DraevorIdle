@@ -45,17 +45,36 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
 
 /**
  * `valor` de dano do `tipo` depois das defesas do bicho: a ARMADURA (só no golpe FÍSICO — com a `ficha` do atacante, que marca o golpe; o
- * dano contínuo não passa por ela), a redução de dano do bicho (separada), a resistência ao elemento e a penetração do atacante.
+ * dano contínuo não passa por ela), a redução de dano do bicho (separada), a resistência ao elemento e a penetração do atacante. (No PoE, o
+ * físico: a armadura e a redução física adicional somadas, com teto — `fracaoFisicaDoPoe`.)
  * (`mobs/atributos.mjs`: armadura, bloqueio e redução vêm da espécie e dos modificadores.)
  */
 export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = true } = {}) {
   let v = valor;
   // PoE: "Acertos ignoram a Redução de Dano Físico dos Monstros Inimigos" (a ficha do golpe sorteou): sem armadura nem resistência física.
   if (ficha?.ignoraReducaoFisica && tipo === 'physical') return Math.max(0, Math.round(v));
-  if (ficha && armadura && tipo === 'physical') v *= 1 - AtributosDoMob.reducaoDeArmadura(alvo, Atributos.levelDoBicho(hunt, alvo), valor, Formulas.PARAMETROS.armadura.poe.coeficiente);
+  // PoE 1 (dono, 10/10): no físico, a armadura e a redução física adicional SOMAM, no teto de 90% (`fracaoFisicaDoPoe`) — no lugar da
+  // armadura daqui e da resistência física do fim.
+  const somaDoPoe = tipo === 'physical' && ModsPoe.somaFisicaDoPoe();
+  if (somaDoPoe) v *= fracaoFisicaDoPoe(hunt, alvo, valor, ficha, { armadura });
+  else if (ficha && armadura && tipo === 'physical') v *= 1 - AtributosDoMob.reducaoDeArmadura(alvo, Atributos.levelDoBicho(hunt, alvo), valor, Formulas.PARAMETROS.armadura.poe.coeficiente);
   const reducao = AtributosDoMob.reducaoDeDano(alvo);
   if (reducao > 0) v *= 1 - reducao;
   // (+ os estados do PoE no bicho: Cinzas, Intimidado, Definhado.)
   if (ficha) v *= ModsPoe.fatorRecebidoPeloBicho(alvo, tipo, ficha, hunt?.clock ?? 0);
+  if (somaDoPoe) return Math.max(0, Math.round(v));
   return Math.max(0, Math.round(Limites.danoAposResistencia(v, resistenciaEfetivaDe(hunt, alvo, tipo, ficha))));
+}
+
+/**
+ * A fração do dano FÍSICO que passa pela defesa física do bicho no PoE 1 (dono, 10/10): a armadura (só no golpe — com a `ficha` do atacante e
+ * `armadura`) + a redução física adicional (a "resistência" física: bestiário, modificadores, buffs), SOMADAS no teto de 90%, menos a
+ * penetração física (Overwhelm) do atacante depois do teto. A fraqueza física (a adicional negativa: a janela de vulnerabilidade do boss)
+ * aumenta o dano por cima, como antes.
+ */
+export function fracaoFisicaDoPoe(hunt, alvo, valor, ficha = null, { armadura = true } = {}) {
+  const adicional = resistenciaDe(hunt, alvo, 'physical');
+  const daArmadura = ficha && armadura ? AtributosDoMob.reducaoDeArmadura(alvo, Atributos.levelDoBicho(hunt, alvo), valor, Formulas.PARAMETROS.armadura.poe.coeficiente) : 0;
+  const total = Limites.reducaoFisicaTotal(daArmadura, adicional, Limites.penetracaoDe(ficha?.penetracao, 'physical'));
+  return (1 - total / 100) * (adicional < 0 ? 1 - adicional / 100 : 1);
 }

@@ -47,6 +47,16 @@ export function resistenciaEfetiva(resistencia, penetracao = 0) {
 /** O teto (0–1) da redução do dano físico pela armadura — jogador e monstro (PoE: 90%). */
 export const reducaoMaximaDaArmadura = () => limitar(LIMITES.armadura.reducaoMaxima, 100) / 100;
 
+/**
+ * A REDUÇÃO DE DANO FÍSICO TOTAL do PoE 1 (em %; dono, 10/10): a da armadura (`armadura`, a fração 0–1 do golpe) + a ADICIONAL (`adicional`,
+ * em %), SOMADAS, no MESMO teto da armadura (`armadura.reducaoMaxima`, 90%); a penetração física (Overwhelm) tira DEPOIS do teto e nunca
+ * deixa abaixo de 0. A adicional negativa não entra (a fraqueza fica com quem chama).
+ */
+export function reducaoFisicaTotal(armadura = 0, adicional = 0, overwhelm = 0) {
+  const soma = Math.max(0, Number(armadura) || 0) * 100 + Math.max(0, Number(adicional) || 0);
+  return Math.max(0, Math.min(limitar(LIMITES.armadura.reducaoMaxima, 100), soma) - limitar(overwhelm, LIMITES.penetracao.maximo));
+}
+
 /** O dano depois da resistência efetiva (sem arredondar: quem chama arredonda UMA vez). 100% = nada passa. */
 export const danoAposResistencia = (valor, resistenciaEfetivaPct) => Math.max(0, valor * (1 - Math.min(100, resistenciaEfetivaPct) / 100));
 

@@ -238,7 +238,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (O MAPA do endgame: o dano extra por elemento em % do dano da magia — `bicho.danoExtraPct`.)
   const daMagia = sortear(a.min, a.max) * forcaDaMagia;
   const extraDoMapa = AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + daMagia * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento), 0);
-  const bruto = daMagia * fatorDaResistencia + doutrosTipos + extraDoMapa;
+  // PoE 1 (dono, 10/10): a magia FÍSICA do bicho também é um acerto físico — passa pela armadura do personagem, somada à redução física
+  // adicional, no teto de 90% (`ModsPoe.acertoFisicoRecebido`), como o golpe corpo a corpo.
+  const bruto = (a.elemento === 'physical' && ModsPoe.somaFisicaDoPoe() ? ModsPoe.acertoFisicoRecebido(ficha, daMagia, ficha.armor ?? 0) : daMagia * fatorDaResistencia) + doutrosTipos + extraDoMapa;
   // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance) — sorteada ANTES das
   // afecções: "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" (a árvore) as tira da magia suprimida.
   const suprimiu = (ficha.supressaoDeMagia ?? 0) > 0 && Math.random() < ficha.supressaoDeMagia;

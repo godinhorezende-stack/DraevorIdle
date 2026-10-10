@@ -1060,7 +1060,13 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Golpe corpo a corpo é físico: a proteção física do equipamento corta em %.
   // (PoE: o Físico recebido com as conversões dele — "X% do Dano Físico sofrido como Dano de Fogo" —, o "Dano Físico recebido aumentado"
   // e o fixo por golpe — "-25 de Dano Físico sofrido dos Acertos de Ataques".)
-  const protegido = Math.max(0, Math.round(bruto * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true })));
+  // PoE 1 (dono, 10/10): a armadura e a redução física adicional SOMAM, no teto de 90% (`ModsPoe.acertoFisicoRecebido`, que já traz a
+  // armadura, calculada sobre o golpe físico bruto); fora do PoE, a proteção corta antes e a armadura depois (`R.danoRecebido`, abaixo).
+  const somaFisica = ModsPoe.somaFisicaDoPoe();
+  const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true });
+  const protegido = somaFisica
+    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, bruto, armorDoPersonagem(estado), { fixo: fixoFisico })))
+    : Math.max(0, Math.round(bruto * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));
   // O dano de OUTROS tipos do mesmo golpe (`danoExtra` da espécie): cada um passa pela proteção do SEU elemento (a armadura é só do físico).
   // (PoE: com as conversões do dano recebido — "X% do Dano de Fogo dos Acertos recebido como Dano de Gelo" — e o "Recebe X% do Dano Físico
   // como Dano Extra de um Elemento aleatório".)
@@ -1068,7 +1074,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => n + Math.round((x.min + Math.floor(Math.random() * (x.max - x.min + 1))) * forcaDoGolpe * critDoMob.fator * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, bruto)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
-  let final = Math.round((R.danoRecebido(protegido, armorDoPersonagem(estado)) + doutrosTipos) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  let final = Math.round(((somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado))) + doutrosTipos) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
   // Energy Shield: absorve antes do magic shield e da vida.
