@@ -3028,23 +3028,26 @@ const LINHAS_POE = {
   ],
 };
 /** Uma fileira de botões de uma chave de `settings` (grava e pinta na hora, como as outras do filtro). */
+/** `chave` pode ser uma LISTA (as abas de raridade marcadas juntas): o clique grava o mesmo valor em todas. */
 function fileiraPoe(titulo, chave, atual, opcoes = LINHAS_POE[chave]) {
   const { state, send } = ctx;
+  const chaves = Array.isArray(chave) ? chave : [chave];
   const bloco = el('div', 'filtro-atributos-fileira');
   bloco.append(el('span', 'filtro-sockets-rotulo', titulo));
   const linha = el('div', 'filtro-afixo-opcoes');
   for (const opcao of opcoes) {
     const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
     botao.type = 'button';
-    botao.dataset.regra = chave;
+    botao.dataset.regra = chaves.join(',');
     botao.dataset.valor = String(opcao.valor);
     const rotulo = el('span', null, opcao.rotulo);
     if (opcao.raridade) rotulo.style.color = COR_DA_RARIDADE_POE[opcao.raridade];
     botao.append(rotulo);
     botao.title = opcao.dica;
     botao.onclick = () => {
-      send({ t: 'settings', [chave]: opcao.valor });
-      state.character.settings = { ...(state.character.settings ?? {}), [chave]: opcao.valor };
+      const mudanca = Object.fromEntries(chaves.map((k) => [k, opcao.valor]));
+      send({ t: 'settings', ...mudanca });
+      state.character.settings = { ...(state.character.settings ?? {}), ...mudanca };
       ctx.redraw?.();
     };
     linha.append(botao);
@@ -3114,7 +3117,12 @@ const LINHAS_DA_ABA_POE = [
   { valor: 2, rotulo: 'Raro para cima', raridade: 'raro', dica: 'pega Raros e Únicos deste tipo' },
   { valor: 3, rotulo: 'Só Único', raridade: 'unico', dica: 'pega só os Únicos deste tipo' },
 ];
-let abaDaRaridadePoe = 'geral';
+/*
+ * As abas marcadas (dono, 10/10: "posso marcar vários e desmarcar"): os TIPOS se marcam juntos — Armas e Armaduras, por exemplo — e a
+ * raridade escolhida vale para todos os marcados; clicar num marcado o desmarca. A Geral é sozinha (marcá-la desmarca os tipos), e sem
+ * nenhum tipo marcado volta a Geral.
+ */
+let abasDaRaridadePoe = new Set(['geral']);
 /** A raridade escolhida na aba (0–3), ou null (igual à Geral). */
 function raridadeDaAbaPoe(chave) {
   const v = ctx.state.character?.settings?.[chave];
@@ -3127,29 +3135,54 @@ function escolhaDeRaridadePoe() {
   const abas = el('div', 'filtro-afixo-opcoes filtro-abas-raridade');
   for (const aba of ABAS_DA_RARIDADE_POE) {
     const propria = aba.id !== 'geral' && raridadeDaAbaPoe(aba.chave) != null;
-    const botao = el('button', `filtro-afixo-opcao${aba.id === abaDaRaridadePoe ? ' ativo' : ''}`);
+    const marcada = abasDaRaridadePoe.has(aba.id);
+    const botao = el('button', `filtro-afixo-opcao${marcada ? ' ativo' : ''}`);
     botao.type = 'button';
     botao.dataset.aba = aba.id;
+    botao.setAttribute('aria-pressed', String(marcada));
     botao.append(el('span', null, propria ? `${aba.rotulo} •` : aba.rotulo));
-    botao.title = aba.id === 'geral' ? 'a raridade de todo equipamento e dos frascos' : `${aba.dica}${propria ? ` — ${textoDaRaridadePoe(raridadeDaAbaPoe(aba.chave))}` : ' — igual à Geral'}`;
+    botao.title = aba.id === 'geral'
+      ? 'a raridade de todo equipamento e dos frascos'
+      : `${aba.dica}${propria ? ` — ${textoDaRaridadePoe(raridadeDaAbaPoe(aba.chave))}` : ' — igual à Geral'}. ${marcada ? 'Clique para desmarcar.' : 'Clique para marcar junto com os outros tipos.'}`;
     botao.onclick = () => {
-      abaDaRaridadePoe = aba.id;
+      if (aba.id === 'geral') abasDaRaridadePoe = new Set(['geral']);
+      else {
+        abasDaRaridadePoe.delete('geral');
+        if (marcada) abasDaRaridadePoe.delete(aba.id);
+        else abasDaRaridadePoe.add(aba.id);
+        if (!abasDaRaridadePoe.size) abasDaRaridadePoe.add('geral');
+      }
       ctx.redraw?.();
     };
     abas.append(botao);
   }
   caixa.append(abas);
-  const aba = ABAS_DA_RARIDADE_POE.find((a) => a.id === abaDaRaridadePoe) ?? ABAS_DA_RARIDADE_POE[0];
   const f = frasesPoe();
-  if (aba.id === 'geral') {
-    caixa.append(el('em', 'filter-legend', `${f.raridade ? `Pega ${f.raridade}, com qualquer mod. Normal (branco), Mágico (azul), Raro (amarelo) e Único (laranja), como no PoE.` : 'A raridade não decide nada. O Único sempre vem.'} Vale para todo equipamento e para os frascos; cada aba troca a raridade só daquele tipo. As moedas e os mapas sempre vêm (só a lista "Não coletar" os deixa no chão).`));
+  if (abasDaRaridadePoe.has('geral')) {
+    caixa.append(el('em', 'filter-legend', `${f.raridade ? `Pega ${f.raridade}, com qualquer mod. Normal (branco), Mágico (azul), Raro (amarelo) e Único (laranja), como no PoE.` : 'A raridade não decide nada. O Único sempre vem.'} Vale para todo equipamento e para os frascos; marque um ou mais tipos para trocar a raridade só deles. As moedas e os mapas sempre vêm (só a lista "Não coletar" os deixa no chão).`));
     caixa.append(fileiraPoe('A partir de', 'guardarRaridadePoe', secoesPoe().raridade));
-  } else {
-    const propria = raridadeDaAbaPoe(aba.chave);
-    const vale = propria ?? secoesPoe().raridade;
-    caixa.append(el('em', 'filter-legend', `${aba.rotulo} (${aba.dica}): ${propria == null ? `igual à Geral — ${textoDaRaridadePoe(vale)}` : textoDaRaridadePoe(vale)}.${aba.id === 'frascos' ? ' Só a raridade decide o frasco (as seções de mods, sockets e Item Level são de equipamento).' : ' Entra no OU com as outras seções, como a Geral.'}`));
-    caixa.append(fileiraPoe('A partir de', aba.chave, propria, LINHAS_DA_ABA_POE));
+    return caixa;
   }
+  const marcadas = ABAS_DA_RARIDADE_POE.filter((a) => abasDaRaridadePoe.has(a.id));
+  const juntar = (lista) => (lista.length > 1 ? `${lista.slice(0, -1).join(', ')} e ${lista.at(-1)}` : lista[0]);
+  const valores = marcadas.map((a) => raridadeDaAbaPoe(a.chave));
+  // Todos os marcados com o mesmo valor: ele fica aceso; valores diferentes: nenhum aceso (o clique iguala todos).
+  const comum = valores.every((v) => v === valores[0]) ? valores[0] : undefined;
+  const situacao = marcadas.map((a) => {
+    const propria = raridadeDaAbaPoe(a.chave);
+    return `${a.rotulo}: ${propria == null ? `igual à Geral (${textoDaRaridadePoe(secoesPoe().raridade)})` : textoDaRaridadePoe(propria)}`;
+  });
+  const soFrascos = marcadas.length === 1 && marcadas[0].id === 'frascos';
+  caixa.append(
+    el(
+      'em',
+      'filter-legend',
+      marcadas.length === 1
+        ? `${marcadas[0].rotulo} (${marcadas[0].dica}): ${situacao[0].slice(marcadas[0].rotulo.length + 2)}.${soFrascos ? ' Só a raridade decide o frasco (as seções de mods, sockets e Item Level são de equipamento).' : ' Entra no OU com as outras seções, como a Geral.'}`
+        : `${juntar(marcadas.map((a) => a.rotulo))} marcados: a escolha abaixo vale para todos. Hoje — ${situacao.join('; ')}.`
+    )
+  );
+  caixa.append(fileiraPoe('A partir de', marcadas.map((a) => a.chave), comum, LINHAS_DA_ABA_POE));
   return caixa;
 }
 function escolhaDeSocketsPoe() {
