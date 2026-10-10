@@ -12,7 +12,8 @@ import * as R from '../regras.mjs';
 import * as Limites from './limites.mjs';
 import * as F from './formulas.mjs';
 import { criarMonstro, BESTIARY } from '../hunt/monstros.mjs';
-import { resistenciaEfetivaDe } from '../hunt/resistencia.mjs';
+import { resistenciaEfetivaDe, fracaoFisicaDoPoe } from '../hunt/resistencia.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 /** Um gerador pseudo-aleatório com semente (mulberry32): a mesma entrada dá o mesmo resultado. */
 function semente(n) {
@@ -73,8 +74,15 @@ function defesasContra(ficha, m, nivelDoMob, a, danoMedio) {
     protecao: 1 - prot / 100,
     gemas: 1 - (ficha.danoRecebidoDasGemas ?? 0),
     critico: fatorCritico,
+    // PoE 1 (dono, 10/10): no físico, a armadura e a redução física adicional SOMAM, no teto (`fatorFisico`).
+    soma: a.elemento === 'physical' && ModsPoe.somaFisicaDoPoe() ? { armadura, adicional: ModsPoe.reducaoFisicaAdicional(ficha) } : null,
   };
 }
+
+/** A armadura × a proteção do golpe (`d`, de `defesasContra`) — no PoE, a soma das duas no teto. `sem`: a defesa a ignorar. */
+const fatorFisico = (d, sem = null) => (d.soma
+  ? 1 - Limites.reducaoFisicaTotal(sem === 'armadura' ? 0 : d.soma.armadura, sem === 'protecao' ? 0 : d.soma.adicional) / 100
+  : (sem === 'armadura' ? 1 : d.armadura) * (sem === 'protecao' ? 1 : d.protecao));
 
 /** O dano por segundo que o mob causa no jogador, por esperança, com (ou sem) cada defesa. `sem`: o nome da defesa a ignorar. */
 function dpsDoMob(ficha, m, nivelDoMob, ataques, sem = null) {
@@ -85,7 +93,7 @@ function dpsDoMob(ficha, m, nivelDoMob, ataques, sem = null) {
     const d = defesasContra(ficha, m, nivelDoMob, a, dano);
     const f = (k) => (sem === k ? 1 : d[k]);
     const tentativasPorS = (a.chance / 100) * (1000 / a.intervaloMs);
-    const primario = dano * f('esquiva') * f('bloqueio') * f('armadura') * f('protecao') * f('gemas') * d.critico;
+    const primario = dano * f('esquiva') * f('bloqueio') * fatorFisico(d, sem) * f('gemas') * d.critico;
     porElemento[a.elemento] = (porElemento[a.elemento] ?? 0) + primario * tentativasPorS;
     let porGolpe = primario;
     // O dano de outros tipos no mesmo golpe (cada um com a proteção do seu tipo; sem armadura).
@@ -112,7 +120,9 @@ function dpsDoJogador(ficha, m, nivelDoMob) {
   const resEfetiva = resistenciaEfetivaDe(hunt, m, 'physical', ficha);
   const crit = Math.min(1, ficha.critChance ?? 0);
   const fatorCritico = 1 + crit * ((ficha.critMultiplier ?? 1.5) - 1);
-  const porGolpe = medio * (1 - armadura) * (1 - reducao) * Limites.danoAposResistencia(1, resEfetiva) * fatorCritico * acerto * (1 - bloqueio);
+  // (No PoE, o físico: a armadura e a redução física adicional do bicho somadas, no teto — `fracaoFisicaDoPoe`, a mesma conta do golpe.)
+  const fisico = ModsPoe.somaFisicaDoPoe() ? fracaoFisicaDoPoe(hunt, m, medio, ficha) : (1 - armadura) * Limites.danoAposResistencia(1, resEfetiva);
+  const porGolpe = medio * fisico * (1 - reducao) * fatorCritico * acerto * (1 - bloqueio);
   const golpesPorS = 1000 / Math.max(1, ficha.intervaloDoGolpeMs ?? 2000);
   return { dps: porGolpe * golpesPorS * (1 + (ficha.ataqueDuplo ?? 0)), acerto, golpesPorS, armadura, reducao, bloqueio };
 }
@@ -158,7 +168,7 @@ export function simularLuta(estado, { mob, level = estado.level ?? 1, lutas = 30
         const crit = Mobs.critico(m);
         const fator = crit.chance > 0 && rng() < crit.chance ? crit.fator : 1;
         const sorteado = a.min + rng() * (a.max - a.min);
-        let dano = sorteado * d.armadura * d.protecao * d.gemas * fator;
+        let dano = sorteado * fatorFisico(d) * d.gemas * fator;
         for (const x of a.extras ?? []) dano += (x.min + rng() * (x.max - x.min)) * (1 - Limites.resistenciaDoJogador(ficha.protection?.[x.elemento] ?? 0) / 100) * d.gemas * fator;
         hp -= dano;
         danoTotal += dano;

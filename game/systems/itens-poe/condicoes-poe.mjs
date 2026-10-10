@@ -11,6 +11,8 @@
 //     acerto (`fichaDoGolpe`), que devolve a ficha daquele golpe com o "aumentado", o crítico, a penetração e as afecções dele.
 import { ligado } from './catalogo.mjs';
 import { maldicoesNoJogador as maldicoesDoMapa } from './mapas.mjs';
+import * as Limites from '../combate/limites.mjs';
+import * as Formulas from '../combate/formulas.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -1057,8 +1059,16 @@ export function controleNoJogador(ficha, efeito, rng = Math.random, hunt = null)
 export function fatorDaResistenciaRecebida(ficha, elemento, protecao = ficha?.protection ?? {}) {
   const res = (el) => Math.min(100, protecao[el] ?? 0);
   if (!ligado() || !ficha?.afPoe || !['fire', 'ice', 'energy', 'physical', 'chaos'].includes(elemento)) return 1 - res(elemento) / 100;
+  const { convertido, resto } = conversoesRecebidas(ficha, elemento, res);
+  return (convertido + resto * (1 - res(elemento) / 100)) * fatorDoDanoRecebido(ficha, elemento);
+}
+/**
+ * As CONVERSÕES do dano recebido de `elemento`: `{ convertido, resto }` — `convertido`: a fração do golpe que vai para outros tipos, já com a
+ * resistência de cada um (`res`); `resto`: a fração que continua `elemento`.
+ */
+function conversoesRecebidas(ficha, elemento, res) {
   let resto = 1;
-  let fator = 0;
+  let convertido = 0;
   const v = (k) => Number(ficha.afPoe[k]) || 0;
   // (+ os "Elemental … sofrido como Físico/Caos" valem para cada elemento.)
   const elemental = ['fire', 'ice', 'energy'].includes(elemento);
@@ -1066,9 +1076,33 @@ export function fatorDaResistenciaRecebida(ficha, elemento, protecao = ficha?.pr
     if (outro === elemento) continue;
     const pct = v(`recebe_${elemento}_como_${outro}`) + (elemental ? v(`recebe_elemental_como_${outro}`) : 0);
     const parte = Math.min(resto, pct / 100);
-    if (parte > 0) { fator += parte * (1 - res(outro) / 100); resto -= parte; }
+    if (parte > 0) { convertido += parte * (1 - res(outro) / 100); resto -= parte; }
   }
-  return (fator + resto * (1 - res(elemento) / 100)) * fatorDoDanoRecebido(ficha, elemento);
+  return { convertido, resto };
+}
+
+// ---------------------------------------------------------------- a DEFESA FÍSICA do PoE 1 (dono, 10/10)
+
+/** A armadura e a redução física adicional SOMAM, com teto (`Limites.reducaoFisicaTotal`): com o PoE ligado e a armadura no modo 'poe'. */
+export const somaFisicaDoPoe = () => ligado() && Formulas.PARAMETROS.armadura.modo === 'poe';
+/**
+ * A redução física ADICIONAL do personagem (em %: Cargas de Tolerância, Adrenalina, peças) inteira — sem o teto de 75% das resistências da
+ * ficha (o excedente volta): no PoE só o total, somado à armadura, tem teto.
+ */
+export const reducaoFisicaAdicional = (ficha, protecao = ficha?.protection ?? {}) => Math.max(0, (Number(protecao.physical) || 0) + (Number(ficha?.excedentes?.protection?.physical) || 0));
+/** A fração de um golpe FÍSICO (`golpe`) que passa pela defesa física do personagem: a armadura contra esse golpe + a adicional, no teto. */
+export const fracaoFisicaRecebida = (ficha, golpe, armadura, { overwhelm = 0, protecao = ficha?.protection ?? {} } = {}) => 1 - Limites.reducaoFisicaTotal(Formulas.reducaoDeArmaduraPoe(armadura, golpe), reducaoFisicaAdicional(ficha, protecao), overwhelm) / 100;
+/**
+ * O ACERTO FÍSICO recebido no PoE 1, já com a defesa física: as conversões ("X% do Dano Físico sofrido como Dano de Fogo") saem antes, cada
+ * parte com a resistência do seu tipo; o que CONTINUA Físico passa pela armadura (calculada sobre essa parte do golpe) e pela redução física
+ * adicional SOMADAS, no teto (`fracaoFisicaRecebida`); o `fixo` ("−25 de Dano Físico sofrido dos Acertos") vem depois da defesa, e o "Dano
+ * Físico recebido aumentado" por cima de tudo. `bruto`: o golpe antes disso tudo; `armadura`: a do personagem.
+ */
+export function acertoFisicoRecebido(ficha, bruto, armadura, { fixo = 0, overwhelm = 0, protecao = ficha?.protection ?? {} } = {}) {
+  const res = (el) => Math.min(100, protecao[el] ?? 0);
+  const { convertido, resto } = ficha?.afPoe ? conversoesRecebidas(ficha, 'physical', res) : { convertido: 0, resto: 1 };
+  const fisico = bruto * resto;
+  return (bruto * convertido + Math.max(0, fisico * fracaoFisicaRecebida(ficha, fisico, armadura, { overwhelm, protecao }) + fixo)) * fatorDoDanoRecebido(ficha, 'physical');
 }
 /** "Recebe X% de Dano Físico como Dano Extra de um Elemento aleatório": o dano EXTRA (já resistido) a partir do Físico bruto. */
 export function extraDoFisicoRecebido(ficha, fisico, rng = Math.random) {
