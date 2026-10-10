@@ -7,6 +7,7 @@ import { casaLivrePerto } from '../hunt/caminho.mjs';
 import { criarMonstro } from '../hunt/monstros.mjs';
 import { aplicarEscala } from '../campanha.mjs';
 import * as Raridade from '../mobs/raridade.mjs';
+import * as Protecao from '../protecao.mjs';
 
 /** Todos os bichos da sala, em todos os andares. */
 export const bichosDaSala = (hunt) => {
@@ -21,10 +22,10 @@ export const listaDoAndar = (hunt, z) => {
   return (sala.outrosAndares ??= {})[z] ?? (sala.outrosAndares[z] = []);
 };
 
-/** Uma casa livre perto de `p` no andar `z`. `null` = sem lugar. */
+/** Uma casa livre perto de `p` no andar `z` (nunca numa Safe Zone — `protecao.mjs`). `null` = sem lugar. */
 export function casaLivre(hunt, p, z) {
   const sala = salaDe(hunt);
-  const grade = andarDaGrade(gradeDaHunt(huntOuMapaCustom(sala.huntId)), z ?? sala.z);
+  const grade = Protecao.gradeDosBichos(andarDaGrade(gradeDaHunt(huntOuMapaCustom(sala.huntId)), z ?? sala.z));
   const lista = listaDoAndar(hunt, z);
   return casaLivrePerto(grade, p, (c) => lista.some((m) => m.hp > 0 && m.x === c.x && m.y === c.y) || (sala.pos.x === c.x && sala.pos.y === c.y));
 }

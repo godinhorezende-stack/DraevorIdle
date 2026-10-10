@@ -14,13 +14,15 @@ const AJUDA = {
   apagarSpawn: 'Clique num spawn para apagá-lo.',
   pincel: 'Arraste para pintar chão andável com o piso escolhido (só em mapa novo).',
   parede: 'Arraste para bloquear casas (só em mapa novo).',
+  segura: 'Arraste para marcar SAFE ZONE (vale em qualquer mapa): lá o jogador não ataca nem apanha, e nenhum monstro nasce, pisa ou persegue.',
+  apagarSegura: 'Arraste para tirar casas da Safe Zone.',
 };
-const NOME_DA_FERRAMENTA = { spawn: 'Spawn (marcar / selecionar)', apagarSpawn: 'Apagar spawn', pincel: 'Pincel (andável)', parede: 'Parede (bloqueado)' };
+const NOME_DA_FERRAMENTA = { spawn: 'Spawn (marcar / selecionar)', apagarSpawn: 'Apagar spawn', pincel: 'Pincel (andável)', parede: 'Parede (bloqueado)', segura: 'Safe Zone (marcar)', apagarSegura: 'Safe Zone (apagar)' };
 
 export function criarEditorDeMapas({ api, raiz, sujo }) {
   const M = {
     opcoes: null, bestiario: [], porKey: new Map(), raridades: [], modificadores: [], tipoDoSpawn: {},
-    ids: [], id: null, mapa: null, real: false, andar: 7, escala: 1, spawns: [], sel: -1,
+    ids: [], id: null, mapa: null, real: false, andar: 7, escala: 1, spawns: [], sel: -1, seguras: new Map(),
     proximo: { raridade: 'normal', modificadores: [], raio: 0, quantidade: 1 },
     ferramenta: 'spawn', piso: PISOS_PADRAO, bicho: null, hover: null, verBloqueio: false, verRaio: true, filtro: '',
     errosDaValidacao: [], pedidoValidar: 0, pedidoAtributos: 0, nivelCalculo: 100, aviso: null, arrastando: false, historicoAberto: false,
@@ -29,9 +31,10 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
   let fundo; let marcas; let ctxFundo; let ctxMarcas; let faltouSprite = null; let esperandoValidar = null; let pronto = false;
 
   const H = L.criarHistorico({
-    foto: () => ({ spawns: M.spawns, grade: M.mapa ? { stacks: L.gradeDe(M.mapa, M.mapa.z).stacks, blocked: L.gradeDe(M.mapa, M.mapa.z).blocked } : null }),
+    foto: () => ({ spawns: M.spawns, seguras: L.segurasParaSalvar(M.seguras), grade: M.mapa ? { stacks: L.gradeDe(M.mapa, M.mapa.z).stacks, blocked: L.gradeDe(M.mapa, M.mapa.z).blocked } : null }),
     restaurar: (f) => {
       M.spawns = f.spawns;
+      M.seguras = L.segurasDoMapaAberto({ seguras: f.seguras });
       if (f.grade && M.mapa) {
         const g = L.gradeDe(M.mapa, M.mapa.z);
         g.stacks.splice(0, g.stacks.length, ...f.grade.stacks);
@@ -152,6 +155,23 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
       for (let y = 0; y <= M.mapa.height; y++) { ctxMarcas.moveTo(0, y * t + 0.5); ctxMarcas.lineTo(M.mapa.width * t, y * t + 0.5); }
       ctxMarcas.stroke();
     }
+    // As SAFE ZONES do andar: o véu azul e a borda da área (os lados que dão para fora dela).
+    const zona = M.seguras.get(M.andar);
+    if (zona?.size) {
+      ctxMarcas.fillStyle = 'rgba(90, 170, 255, 0.28)';
+      ctxMarcas.strokeStyle = 'rgba(150, 210, 255, 0.9)';
+      ctxMarcas.lineWidth = 1;
+      ctxMarcas.beginPath();
+      for (const k of zona) {
+        const [x, y] = k.split(',').map(Number);
+        ctxMarcas.fillRect(x * t, y * t, t, t);
+        if (!zona.has(`${x},${y - 1}`)) { ctxMarcas.moveTo(x * t, y * t + 0.5); ctxMarcas.lineTo((x + 1) * t, y * t + 0.5); }
+        if (!zona.has(`${x},${y + 1}`)) { ctxMarcas.moveTo(x * t, (y + 1) * t - 0.5); ctxMarcas.lineTo((x + 1) * t, (y + 1) * t - 0.5); }
+        if (!zona.has(`${x - 1},${y}`)) { ctxMarcas.moveTo(x * t + 0.5, y * t); ctxMarcas.lineTo(x * t + 0.5, (y + 1) * t); }
+        if (!zona.has(`${x + 1},${y}`)) { ctxMarcas.moveTo((x + 1) * t - 0.5, y * t); ctxMarcas.lineTo((x + 1) * t - 0.5, (y + 1) * t); }
+      }
+      ctxMarcas.stroke();
+    }
     let incompleto = false;
     M.spawns.forEach((s, i) => {
       if (L.zDoSpawn(s, M.mapa) !== M.andar) return;
@@ -203,6 +223,12 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
   const spawnNa = (x, y) => M.spawns.findIndex((s) => s.x === x && s.y === y && L.zDoSpawn(s, M.mapa) === M.andar);
 
   function aplicarFerramenta(x, y, primeiro) {
+    // A Safe Zone vale em qualquer mapa (o real inclusive): não mexe no chão, só marca as casas.
+    if (L.FERRAMENTAS_DE_ZONA.has(M.ferramenta)) {
+      if (primeiro) H.registrar();
+      if (L.pintarSegura(M.seguras, M.mapa, M.andar, x, y, M.ferramenta)) { depoisDeEditar(); atualizarContagemDeSeguras(); }
+      return;
+    }
     if (M.ferramenta === 'pincel' || M.ferramenta === 'parede') {
       if (M.real) return primeiro && dizer('Mapa real: o chão não é editado aqui — só os spawns.', true);
       if (primeiro) H.registrar();
@@ -232,6 +258,12 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
     document.querySelectorAll('.mp-ferramenta').forEach((b) => b.classList.toggle('ativa', b.dataset.f === nome));
     const aj = $m('ajuda');
     if (aj) aj.textContent = AJUDA[nome];
+  }
+  function atualizarContagemDeSeguras() {
+    const caixa = $m('seguras');
+    if (!caixa || !M.mapa) return;
+    const c = L.contagemDeSeguras(M.seguras, M.andar);
+    caixa.textContent = c.total ? `Safe Zone: ${c.andar} casa(s) neste andar · ${c.total} no mapa` : 'Sem Safe Zone neste mapa.';
   }
 
   function montarPaleta() {
@@ -391,6 +423,7 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
     M.real = L.ehMapaReal(novo, M.opcoes.cidade);
     M.andar = novo.z ?? 7;
     M.spawns = L.spawnsDoMapaAberto(novo);
+    M.seguras = L.segurasDoMapaAberto(novo);
     M.sel = -1;
     M.errosDaValidacao = [];
     M.escala = novo.width * novo.height > 20000 ? 0.5 : 1;
@@ -411,7 +444,7 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
   }
   async function salvar() {
     const id = $m('id').value.trim();
-    const r = L.corpoDeSalvar({ id, mapa: M.mapa, spawns: M.spawns, real: M.real, idAberto: M.id });
+    const r = L.corpoDeSalvar({ id, mapa: M.mapa, spawns: M.spawns, real: M.real, idAberto: M.id, seguras: M.seguras });
     if (r.erro) return dizer(r.erro, true);
     const resposta = await fetch('/api/mapas', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(r.corpo) }).then((x) => x.json()).catch(() => ({ ok: false, erro: 'Sem resposta do servidor.' }));
     if (!resposta.ok) return dizer(resposta.erro, true);
@@ -450,13 +483,14 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
     montarPaleta();
     montarListaDeBichos();
     selecionarFerramenta(M.ferramenta);
-    $m('selo').textContent = M.real ? 'Mapa real — só os spawns são editados (o chão fica como está)' : M.id ? 'Mapa do editor — chão e spawns' : 'Mapa novo';
+    $m('selo').textContent = M.real ? 'Mapa real — só os spawns e a Safe Zone são editados (o chão fica como está)' : M.id ? 'Mapa do editor — chão, spawns e Safe Zone' : 'Mapa novo';
     $m('selo').classList.toggle('real', M.real);
     document.querySelectorAll('.mp-ferramenta[data-f=pincel], .mp-ferramenta[data-f=parede]').forEach((b) => { b.disabled = M.real; });
     $m('zoom').value = String(M.escala);
     montarEdicao();
     atualizarListaDeSpawns();
     atualizarBarraDoHistorico();
+    atualizarContagemDeSeguras();
   }
 
   function esqueleto() {
@@ -476,8 +510,8 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
       const c = casaDoEvento(e);
       const mudou = c?.x !== M.hover?.x || c?.y !== M.hover?.y;
       M.hover = c;
-      if (c) $m('status').textContent = L.textoDaCasa(M.mapa, M.andar, c, M.spawns, nomeDe);
-      if (M.arrastando && c && (M.ferramenta === 'pincel' || M.ferramenta === 'parede')) aplicarFerramenta(c.x, c.y, false);
+      if (c) $m('status').textContent = L.textoDaCasa(M.mapa, M.andar, c, M.spawns, nomeDe, M.seguras);
+      if (M.arrastando && c && (M.ferramenta === 'pincel' || M.ferramenta === 'parede' || L.FERRAMENTAS_DE_ZONA.has(M.ferramenta))) aplicarFerramenta(c.x, c.y, false);
       else if (mudou) desenharMarcas();
     });
     marcas.addEventListener('mouseleave', () => { M.hover = null; desenharMarcas(); });
@@ -491,13 +525,13 @@ export function criarEditorDeMapas({ api, raiz, sujo }) {
         el('label', { class: 'campo mp-curto' }, 'Carregar', el('select', { id: 'mp-lista' })), el('button', { type: 'button', onclick: () => abrirPeloId($m('lista').value) }, 'Abrir'),
         el('span', { id: 'mp-selo', class: 'selo' }, 'Mapa novo')),
       el('div', { class: 'mp-barra' },
-        el('label', { class: 'campo mp-curto' }, 'Andar', el('select', { id: 'mp-andar', onchange: (e) => { M.andar = Number(e.target.value); selecionar(-1); desenharFundo(); } })),
+        el('label', { class: 'campo mp-curto' }, 'Andar', el('select', { id: 'mp-andar', onchange: (e) => { M.andar = Number(e.target.value); selecionar(-1); desenharFundo(); atualizarContagemDeSeguras(); } })),
         el('label', { class: 'campo mp-curto' }, 'Zoom', el('select', { id: 'mp-zoom', onchange: (e) => { M.escala = Number(e.target.value); ajustarCanvas(); desenharFundo(); } }, [['0.25', '25%'], ['0.5', '50%'], ['0.75', '75%'], ['1', '100%'], ['1.5', '150%']].map(([v, n]) => el('option', { value: v }, n)))),
         el('label', { class: 'marca' }, el('input', { type: 'checkbox', onchange: (e) => { M.verBloqueio = e.target.checked; desenharMarcas(); } }), 'Mostrar bloqueado'),
         el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: true, onchange: (e) => { M.verRaio = e.target.checked; desenharMarcas(); } }), 'Mostrar raio dos spawns'),
         el('span', { id: 'mp-status', class: 'dica' })),
       el('div', { class: 'mp-corpo' },
-        el('aside', { class: 'mp-esq' }, el('h4', {}, 'Ferramenta'), L.FERRAMENTAS.map((f) => el('button', { type: 'button', class: 'mp-ferramenta', 'data-f': f, onclick: () => selecionarFerramenta(f) }, NOME_DA_FERRAMENTA[f])), el('div', { id: 'mp-ajuda', class: 'dica' }), el('h4', {}, 'Piso (sprites reais)'), el('div', { id: 'mp-paleta' })),
+        el('aside', { class: 'mp-esq' }, el('h4', {}, 'Ferramenta'), L.FERRAMENTAS.map((f) => el('button', { type: 'button', class: 'mp-ferramenta', 'data-f': f, onclick: () => selecionarFerramenta(f) }, NOME_DA_FERRAMENTA[f])), el('div', { id: 'mp-ajuda', class: 'dica' }), el('div', { id: 'mp-seguras', class: 'dica' }), el('h4', {}, 'Piso (sprites reais)'), el('div', { id: 'mp-paleta' })),
         el('div', { id: 'mp-wrap', class: 'mp-wrap' }, el('div', { id: 'mp-camadas', class: 'mp-camadas' }, fundo, marcas)),
         el('aside', { class: 'mp-dir' },
           el('h4', {}, 'Criatura do próximo spawn'), el('input', { type: 'search', placeholder: 'buscar no bestiário…', oninput: (e) => { M.filtro = e.target.value; montarListaDeBichos(); } }), el('div', { id: 'mp-bichos', class: 'mp-bichos' }),

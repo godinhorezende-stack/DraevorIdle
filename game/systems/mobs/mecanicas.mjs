@@ -27,6 +27,7 @@ import { andarDaGrade } from '../hunt/andares.mjs';
 import { daSala } from '../hunt/instancia.mjs';
 import * as Dot from '../combate/dot.mjs';
 import * as ModsPoe from '../itens-poe/mods-poe.mjs';
+import * as Protecao from '../protecao.mjs';
 
 // A geometria das áreas é a compartilhada (`engine/areas.mjs`): a distância em casas e o quadrado do raio.
 const distancia = Areas.distancia;
@@ -38,11 +39,11 @@ function ferirJogador(estado, hunt, personagem, m, valor, elemento, eventos, gol
   return Poderes.danoDeElementoNoJogador(estado, hunt, personagem, m, valor, elemento, eventos, golpe, Ficha.combate(estado), temEscudo(hunt));
 }
 
-/** As casas livres em volta de (x, y), andáveis e sem bicho vivo. */
+/** As casas livres em volta de (x, y), andáveis e sem bicho vivo (nunca numa Safe Zone — `protecao.mjs`). */
 function casasLivres(hunt, x, y, quantas) {
   let grade = null;
   try {
-    grade = andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z);
+    grade = Protecao.gradeDosBichos(andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z));
   } catch {
     grade = null;
   }

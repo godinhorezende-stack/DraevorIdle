@@ -51,6 +51,7 @@ import * as Estados from './skills/estados.mjs';
 import * as Poder from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
+import * as Protecao from './protecao.mjs';
 
 // A BARRA DO PoE (dono, 07/10: "frascos 1 a 5 e mais 8 que podem ser ataques, auras, suporte e etc"): com o PoE ligado a barra tem
 // 8 slots de HABILIDADE numa fileira só (qualquer gema cabe em qualquer um — não há mais os ofícios vida/mana/velocidade/suporte/ataque
@@ -1167,6 +1168,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // configurar o slot, mas um arranjo salvo (`actionPresets`) antes de um
   // level up, por exemplo, não passa por ali de novo.
   if (bloqueio(entry, estado)) return { ok: false, erro: 'Você não pode mais usar isso.', motivo: 'BLOQUEADA' };
+  // Numa Safe Zone o jogador não ataca (`protecao.mjs`): a cura, o buff e a poção saem; a magia de ataque, não.
+  if (entry.papeis?.[0] === 'attack' && Protecao.imune(hunt)) return { ok: false, erro: 'Numa zona segura não se ataca.', motivo: 'ZONA_SEGURA' };
   // A magia ligada a um suporte de gatilho só sai pelo gatilho (como no PoE: não se conjura à mão).
   if (!gatilho && entry.poeGema && Gemas.ativadaPor(estado, entry.id)) return { ok: false, erro: `Ativada por ${Gemas.ativadaPor(estado, entry.id)}.`, motivo: 'ATIVADA_POR_GATILHO' };
   // A habilidade que um ÚNICO ativa ("Ativa X quando…"): só sai pelo evento, como no PoE.

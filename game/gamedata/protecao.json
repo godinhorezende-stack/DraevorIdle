@@ -1,0 +1,7 @@
+{
+ "_nota": "A PROTEÇÃO ao entrar num mapa e as SAFE ZONES (dono, 10/10 — `systems/protecao.mjs`). Ao entrar (caçada, instância nova, sala da party, reconexão), o jogador fica protegido — não ataca e não apanha; a caçada dele fica parada — até o cliente confirmar que carregou o mapa E passar `minimoMs`. Sem confirmação em `esperaMaximaMs`, o servidor manda o mapa de novo (até `tentativas`) e, no fim, devolve o jogador à cidade: nunca fica protegido para sempre. `portal`: o ciclo da animação do portal de viagem (aberto, com a barra, e o fechamento com o fade do portal e do personagem).",
+ "minimoMs": 3000,
+ "esperaMaximaMs": 30000,
+ "tentativas": 2,
+ "portal": { "abertoMs": 3000, "fechamentoMs": 3000 }
+}

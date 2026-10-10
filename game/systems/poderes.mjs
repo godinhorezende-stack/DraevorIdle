@@ -36,6 +36,7 @@ import * as Defesa from './personagem/defesa.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
+import * as Protecao from './protecao.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -155,6 +156,8 @@ export function alcanca(a, bicho, alvo) {
  * mecânicas dos mobs (explosão, aura, veneno, reflexo — `mobs/mecanicas.mjs`).
  */
 export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) {
+  // Numa Safe Zone, nada fere o jogador — magia, mecânica, dano contínuo (`protecao.mjs`).
+  if (Protecao.imune(hunt)) return 0;
   // PoE: o dano de CAOS atravessa o Escudo de Energia (a menos que um único diga que não); a espera da recarga reinicia do mesmo jeito.
   if (elemento === 'chaos' && ModsPoe.caosAtravessaOEscudo(ficha)) estado.esEspera = Defesa.esperaDaRecarga(ficha);
   else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
@@ -290,7 +293,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
  * gemas e `aplicarNoJogador`. `golpe`: o nome que aparece ("Explosão"...).
  */
 export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, elemento, eventos, golpe, ficha, temEscudo) {
-  if (!(valor > 0) || estado.hp <= 0) return 0;
+  if (!(valor > 0) || estado.hp <= 0 || Protecao.imune(hunt)) return 0;
   const dano = Math.round(valor * ModsPoe.fatorDaResistenciaRecebida(ficha, elemento) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
   const base = { uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe };
   return dano > 0 ? aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) : 0;

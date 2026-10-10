@@ -5,7 +5,9 @@ import * as Raridade from '../mobs/raridade.mjs';
 import { aliadosPorCasa } from './aliados.mjs';
 import { aplicarEscala } from '../campanha.mjs';
 import * as R from '../regras.mjs';
-import { huntOuMapaCustom } from './terreno.mjs';
+import { huntOuMapaCustom, gradeDaHunt } from './terreno.mjs';
+import { andarDaGrade } from './andares.mjs';
+import * as Protecao from '../protecao.mjs';
 import { VIZINHANCA_8, VIZINHANCA_4, bfsDistancias, distancia } from './caminho.mjs';
 import * as Charms from '../charms.mjs';
 import * as Estados from '../skills/estados.mjs';
@@ -172,6 +174,10 @@ export function renascer(hunt) {
     const m = aplicarEscala(criarMonstro(r, dados), hunt.escala);
     return m ? Raridade.aplicar(m, { ...Raridade.doSpawn(r), sortear: true }) : m;
   };
+  // A Safe Zone (`protecao.mjs`): o bicho cujo ponto ficou numa casa segura renasce na casa livre mais perto FORA dela (sem nenhuma por
+  // perto, não renasce). A grade só é lida se o mapa tem casa segura.
+  let grade;
+  const gradeDoAndar = () => (grade ??= Protecao.temSeguras(gradeDaHunt(dados)?.mapa) ? andarDaGrade(gradeDaHunt(dados), hunt.z) : null);
   // No lugar (splice), e não `hunt.respawns = ...`: numa caçada em grupo a fila
   // é a MESMA para todos da sala (ver `entrarNaSala`).
   const fica = fila.filter((r) => {
@@ -183,10 +189,16 @@ export function renascer(hunt) {
       return false;
     }
     // Não nasce em cima do personagem (nem de outro da party) nem de outro bicho — tenta de novo depois.
-    const ocupado = (hunt.pos.x === r.x && hunt.pos.y === r.y) || aliadosPorCasa(hunt).has(`${r.x},${r.y}`) || hunt.monstros.some((m) => m.x === r.x && m.y === r.y);
-    if (ocupado) return true;
+    const casaOcupada = (c) => (hunt.pos.x === c.x && hunt.pos.y === c.y) || aliadosPorCasa(hunt).has(`${c.x},${c.y}`) || hunt.monstros.some((m) => m.x === c.x && m.y === c.y);
+    let onde = r;
+    if (gradeDoAndar() && Protecao.ehSegura(gradeDoAndar(), r.x, r.y)) {
+      onde = Protecao.casaForaDaZona(Protecao.gradeDosBichos(gradeDoAndar()), r, casaOcupada);
+      if (!onde) return false;
+      onde = { ...r, x: onde.x, y: onde.y };
+    }
+    if (casaOcupada(onde)) return true;
     // Na campanha, o bicho renasce com a força da fase (ver `systems/campanha.mjs`).
-    const novo = criarMonstroDoSpawn(r);
+    const novo = criarMonstroDoSpawn(onde);
     if (novo) hunt.monstros.push(novo);
     return false;
   });
@@ -223,7 +235,16 @@ export function passoDoBicho(m, diagonal = false) {
   return R.duracaoDoPasso(speed, { diagonal, tick: R.PASSO_MS });
 }
 
-export function moverMonstros(hunt, grade, agora) {
+/*
+ * ---- As SAFE ZONES (dono, 10/10 — `protecao.mjs`) ----
+ * A caçada passa aqui a grade DOS BICHOS (sem as casas seguras): a BFS não passa por elas e nenhum passo cai nelas. Com o jogador numa
+ * delas (`semPerseguir`), ninguém o persegue: a IA larga a perseguição em vez de ficar rondando a borda à espera dele.
+ */
+export function moverMonstros(hunt, grade, agora, { semPerseguir = false } = {}) {
+  if (semPerseguir) {
+    for (const m of hunt.monstros) m.perseguindo = false;
+    return;
+  }
   const pronto = (m) => R.jaPode(agora, m.proximoPasso);
   const perseguindo = hunt.monstros.some((m) => {
     const d = distancia(hunt.pos, m);
