@@ -3855,7 +3855,7 @@ function renderBolsaOrganizada(body, pouch) {
       );
     } else if (secao.id !== 'equipamentos') {
       acoes.append(
-        botao('Tudo para a mochila', { ico: 'mochila', dica: `Leva ${secao.itens.length === 1 ? 'o item' : `os ${secao.itens.length} itens`} desta seção para a mochila. O que não couber fica na bolsa.` }, () =>
+        botao('Mochila', { ico: 'mochila', dica: `Leva ${secao.itens.length === 1 ? 'o item' : `os ${secao.itens.length} itens`} desta seção para a mochila. O que não couber fica na bolsa.` }, () =>
           send({ t: 'moverSelecao', itens: pedido(secao.itens) })
         )
       );
