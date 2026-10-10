@@ -142,6 +142,17 @@ export function chaveDaCena({ hunt = null, city = null } = {}) {
 }
 
 /**
+ * O NOME do mapa que está carregando, para a cortina "Carregando" (dono, 10/10: "coloque 'carregando' e o nome do mapa que está
+ * carregando"): a fase da campanha, a caçada (o nome dela no analisador) ou a cidade do ato. Sem nenhum, vazio.
+ */
+export function nomeDaCena({ hunt = null, city = null } = {}) {
+  if (hunt) return hunt.fase?.nome ?? hunt.session?.hunts?.at?.(-1) ?? '';
+  const cidade = city?.cidade;
+  if (cidade?.nome) return cidade.ato != null ? `Ato ${cidade.ato} · ${cidade.nome}` : cidade.nome;
+  return '';
+}
+
+/**
  * A ENTRADA mudou no MESMO mapa (a instância nova do loop da fase, a sala da party)? Então ninguém "vem andando" da instância de antes:
  * o mapa recomeça as criaturas, como numa troca de mapa (dono, 10/10: "quando completa 100% e está em loop, fica arrastando para o
  * começo de forma não natural" — o boneco deslizava da posição velha até a entrada). Sem entrada (a cidade, servidor antigo) ou na

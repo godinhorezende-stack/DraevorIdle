@@ -96,7 +96,7 @@ import { aplicarRemendo } from '/packages/shared/src/remendo.mjs';
 import { initMobile, ehCelular } from './mobile.mjs';
 import { initMinimapa, atualizarMinimapa } from './minimapa.mjs';
 import { instalarArrastoDoMouse } from './arrasto-do-mouse.mjs';
-import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, prontoNaChegada, chaveDaCena, abrePortal } from './portal-ciclo.mjs';
+import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, prontoNaChegada, chaveDaCena, nomeDaCena, abrePortal } from './portal-ciclo.mjs';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, className, text) => {
@@ -2105,7 +2105,7 @@ function applyState(message) {
     cenaNaTela = cenaNova;
     // Sem tela preta (dono, 10/10: "se a tela estiver preta pode usar aquele carregando mapa; o que não pode é deixar tela preta"): o mapa
     // desta cena ainda não chegou (a reconexão, um mapa que se perdeu) — a cortina cobre até ele estar desenhável.
-    if (mapView.faltaOMapa() && $('entrada')?.hidden !== false && $('viagem')?.hidden !== false) mostrarViagem({ hunt: message.hunt ? nomeDaCena(message.hunt) : '', motivo: 'carregando' });
+    if (mapView.faltaOMapa() && $('entrada')?.hidden !== false && $('viagem')?.hidden !== false) mostrarViagem({ hunt: nomeDaCena({ hunt: message.hunt, city: message.city }), motivo: 'carregando' });
   }
   confirmarCarregamento();
   atualizarBotaoDeInteragir();
@@ -7361,6 +7361,7 @@ const VIAGEM_TETO = 6000;
 const artesQuebradas = new Set();
 let viagemAte = 0;
 let viagemDesde = 0;
+let viagemMotivo = null;
 let viagemTimer = null;
 /*
  * O teto NÃO derruba a cortina enquanto o mapa ainda falta (dono, 10/10: "o que não pode é deixar tela preta"): ela fica dizendo que o mapa
@@ -7371,13 +7372,14 @@ const VIAGEM_TETO_SEM_MAPA = 70000;
 
 const TITULO_VIAGEM = {
   partida: 'Traçando a rota',
-  carregando: 'Carregando o mapa',
+  carregando: 'Carregando',
   rota: 'Percurso concluído',
   relogio: 'Trocando de hunt',
 };
 const NOTA_VIAGEM = {
   partida: 'preparando o terreno e posicionando as criaturas',
-  carregando: 'só um instante — o mapa está chegando',
+  // (Dono, 10/10: "não precisa colocar 'só um instante, o mapa está chegando' — coloque 'carregando' e o nome do mapa".)
+  carregando: '',
   rota: 'o último waypoint foi alcançado — seguindo o ciclo',
   relogio: 'tempo nesta hunt esgotado — seguindo o ciclo',
 };
@@ -7386,9 +7388,12 @@ function mostrarViagem({ hunt, motivo }) {
   const caixa = $('viagem');
   if (!caixa) return;
 
+  viagemMotivo = motivo;
   $('viagem-titulo').textContent = TITULO_VIAGEM[motivo] ?? 'Viajando';
   $('viagem-hunt').textContent = hunt ?? '';
   $('viagem-nota').textContent = NOTA_VIAGEM[motivo] ?? '';
+  // Sem frase (a cortina "Carregando"), a linha some — não fica um espaço vazio embaixo do trilho.
+  $('viagem-nota').hidden = !$('viagem-nota').textContent;
 
   /*
    * Uma arte por motivo: partir e chegar são momentos diferentes.
@@ -7576,7 +7581,11 @@ function esconderViagem(forcado = false) {
    * carregamento eterna.
    */
   if (!mapaCarregado() && (!forcado || Date.now() - viagemDesde < VIAGEM_TETO_SEM_MAPA)) {
-    $('viagem-nota').textContent = 'carregando o mapa desta hunt…';
+    // (Na cortina "Carregando" o nome do mapa já diz tudo: sem a frase.)
+    if (viagemMotivo !== 'carregando') {
+      $('viagem-nota').textContent = 'carregando o mapa desta hunt…';
+      $('viagem-nota').hidden = false;
+    }
     clearTimeout(viagemTimer);
     viagemTimer = setTimeout(() => esconderViagem(), 200);
     return;
@@ -7647,7 +7656,7 @@ function fecharViagemDoPortal() {
   const eventos = eu ? v.eventos.filter((ev) => !(ev.t === 'portal' && ev.chegada && ev.x === eu.x && ev.y === eu.y)) : v.eventos;
   if (eventos.length && !abaEscondida) mapView.addEvents(eventos);
   // A cortina só cobre o que falta: com o mapa já baixado durante o portal, a cena entra direto. Faltando, nunca a tela preta.
-  if (!mapaCarregado()) mostrarViagem(v.cortina ?? { hunt: state.hunt ? nomeDaCena(state.hunt) : '', motivo: 'carregando' });
+  if (!mapaCarregado()) mostrarViagem({ hunt: nomeDaCena({ hunt: state.hunt, city: state.city }) || v.cortina?.hunt || '', motivo: 'carregando' });
   if (eu) {
     chegada = { etapa: 'esperando' };
     comecarChegada();
@@ -7655,8 +7664,6 @@ function fecharViagemDoPortal() {
   confirmarCarregamento();
 }
 
-/** O nome da caçada para a cortina (o da sessão do analisador, ou o id do mapa). */
-const nomeDaCena = (hunt) => hunt?.session?.hunts?.[0] ?? hunt?.nome ?? hunt?.mapId ?? '';
 
 /*
  * ---- A CHEGADA (dono, 10/10: "no outro lado, 3 s ele vai aparecendo e, depois que o boneco anda 1 tile para o lado, em 1 s o portal

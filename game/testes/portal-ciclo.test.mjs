@@ -173,3 +173,19 @@ test('o LOOP da fase no MESMO mapa: entrada nova recomeça a cena (o boneco apar
   const trecho = fonte.slice(fonte.indexOf('if (entradaNova(this.entrada, payload.entrada)) {'));
   assert.ok(trecho.length > 0 && /this\.entities\.clear\(\);/.test(trecho.slice(0, 200)), 'entrada nova → as criaturas recomeçam');
 });
+
+test('a cortina "Carregando" leva o NOME do mapa: a fase, a caçada ou a cidade do ato (sem a frase "só um instante")', async () => {
+  // Dono, 10/10: "não precisa colocar 'só um instante, o mapa está chegando'; coloque 'carregando' e o nome do mapa que está carregando".
+  const { nomeDaCena } = await import('../frontend/client/src/portal-ciclo.mjs');
+  assert.equal(nomeDaCena({ hunt: { fase: { nome: 'A Costa' }, session: { hunts: ['poe-a1-the-coast'] } } }), 'A Costa', 'a fase da campanha');
+  assert.equal(nomeDaCena({ hunt: { session: { hunts: ['Mapa T1', 'Mapa T2'] } } }), 'Mapa T2', 'fora da campanha: a caçada de agora no analisador');
+  assert.equal(nomeDaCena({ city: { cidade: { id: 'poe-a2', nome: 'Acampamento da Floresta', ato: 2 } } }), 'Ato 2 · Acampamento da Floresta');
+  assert.equal(nomeDaCena({ city: { cidade: { id: 'city', nome: 'Draevor', ato: null } } }), 'Draevor', 'o clássico: a cidade única');
+  assert.equal(nomeDaCena({}), '');
+  // A tela: título "Carregando", sem frase de espera.
+  const { readFileSync } = await import('node:fs');
+  const main = readFileSync(new URL('../frontend/client/src/main.mjs', import.meta.url), 'utf8');
+  assert.match(main, /carregando: 'Carregando',/);
+  assert.match(main, /carregando: '',/);
+  assert.doesNotMatch(main, /'só um instante — o mapa está chegando'/, 'a frase da tela saiu');
+});
