@@ -11,6 +11,7 @@ process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
 const Afixos = await import('../systems/afixos.mjs');
 const Bolsa = await import('../systems/bolsa.mjs');
+const FiltroDaConta = await import('../systems/filtro-da-conta.mjs');
 const { personagemDeTeste } = await import('./apoio.mjs');
 const SEM = !existsSync(Catalogo.ARQUIVO) && 'catálogo do PoE não importado nesta máquina';
 
@@ -134,36 +135,87 @@ test('caçando no PoE: com "Só Único" nenhuma peça Normal/Mágica/Rara entra 
   assert.ok(soUnico.ignoradas > 0, 'ficaram no chão ("Ignorado" no relatório da caçada)');
 });
 
-test('frasco e moeda: a raridade e as outras seções não decidem (são para equipamento) — só a lista ou uma regra da classe do frasco', { skip: SEM }, async () => {
-  // Dono, 08/10: "frascos e moedas têm raridade, mas no loot filter não era para ser considerado". Com "Raro para cima" o frasco
-  // Normal/Mágico ficava no chão.
+test('frasco e moeda: o frasco segue a RARIDADE (a geral ou a da aba Frascos); as outras seções não decidem; a moeda, só a lista', { skip: SEM }, async () => {
+  // Dono, 08/10: "frascos e moedas têm raridade, mas no loot filter não era para ser considerado". Revisto em 10/10 ("mudar só para
+  // frascos", com as abas por tipo): o frasco segue a raridade; as outras seções (de equipamento) continuam sem valer para ele, e a
+  // moeda segue só a lista.
   const frasco = (raridade) => peca({ raridade, tiers: raridade === 'magico' ? [7] : [], abertos: 0, ilvl: 20, classe: 'Life_Flasks', id: 7001009 });
-  for (const settings of [{ guardarRaridadePoe: 2 }, { guardarRaridadePoe: 3 }, { guardarModsPoe: 4 }, { guardarIlvlPoe: 84 }, { guardarSockets: 4 }, { guardarLigados: 4 }]) {
-    for (const raridade of ['normal', 'magico']) {
-      const d = Afixos.decisaoDoLoot(quem(settings), frasco(raridade));
-      assert.deepEqual([d.acao, d.motivo], ['naoVender', 'frasco (sempre)'], `${JSON.stringify(settings)}: o frasco ${raridade} vem`);
-    }
+  for (const [settings, normal, magico] of [
+    [{ guardarRaridadePoe: 1 }, 'naoColetar', 'naoVender'],
+    [{ guardarRaridadePoe: 2 }, 'naoColetar', 'naoColetar'],
+    [{ guardarRaridadePoe: 3 }, 'naoColetar', 'naoColetar'],
+    [{ guardarModsPoe: 4 }, 'naoVender', 'naoVender'],
+    [{ guardarIlvlPoe: 84 }, 'naoVender', 'naoVender'],
+    [{ guardarSockets: 4 }, 'naoVender', 'naoVender'],
+    [{ guardarLigados: 4 }, 'naoVender', 'naoVender'],
+  ]) {
+    assert.equal(acao(quem(settings), frasco('normal')), normal, `${JSON.stringify(settings)}: o frasco Normal`);
+    assert.equal(acao(quem(settings), frasco('magico')), magico, `${JSON.stringify(settings)}: o frasco Mágico`);
   }
+  assert.equal(Afixos.decisaoDoLoot(quem({ guardarRaridadePoe: 3 }), frasco('normal')).motivo, 'raridade do frasco');
+  assert.equal(Afixos.decisaoDoLoot(quem({ guardarModsPoe: 4 }), frasco('normal')).motivo, 'frasco (sempre)', 'sem raridade, o frasco vem sempre');
+  assert.equal(acao(quem({ guardarRaridadePoe: 3 }), frasco('unico')), 'naoVender', 'o frasco Único vem');
   assert.equal(acao(quem({ guardarRaridadePoe: 2 }), peca({ raridade: 'normal' })), 'naoColetar', 'o equipamento Normal continua no chão');
-  // A regra específica sem classe (ou de outra classe) não pega o frasco; a da classe dele, sim.
-  const e = quem({ guardarRaridadePoe: 2 });
+  // A aba Frascos troca a raridade só deles: "Só Único" na geral e "qualquer" (0) ou "Mágico para cima" (1) nos frascos.
+  assert.equal(acao(quem({ guardarRaridadePoe: 3, guardarRaridadePoeFrascos: 0 }), frasco('normal')), 'naoVender');
+  assert.equal(acao(quem({ guardarRaridadePoe: 3, guardarRaridadePoeFrascos: 1 }), frasco('magico')), 'naoVender');
+  assert.equal(acao(quem({ guardarRaridadePoe: 3, guardarRaridadePoeFrascos: 1 }), frasco('normal')), 'naoColetar');
+  assert.equal(acao(quem({ guardarRaridadePoeFrascos: 2 }), frasco('magico')), 'naoColetar', 'só a aba, sem a geral');
+  // A regra específica sem classe (ou de outra classe) não pega o frasco; a da classe dele, sim (antes da raridade).
+  const e = quem({});
   e.lootRegras = [Afixos.sanearRegraDeLootPoe({ raridade: 'normal', acao: 'naoColetar' })];
   assert.equal(acao(e, frasco('normal')), 'naoVender', 'a regra de raridade sem classe é de equipamento');
   assert.equal(acao(e, peca({ raridade: 'normal' })), 'naoColetar');
   e.lootRegras = [Afixos.sanearRegraDeLootPoe({ classe: 'Life_Flasks', acao: 'naoColetar' })];
   assert.equal(acao(e, frasco('magico')), 'naoColetar', 'a regra da classe do frasco decide');
   assert.equal(acao(e, peca({ raridade: 'normal', classe: 'Mana_Flasks', abertos: 0 })), 'naoVender', 'outra classe de frasco não');
-  // A lista "Não coletar".
+  const comRegra = quem({ guardarRaridadePoe: 3 });
+  comRegra.lootRegras = [Afixos.sanearRegraDeLootPoe({ classe: 'Life_Flasks', acao: 'naoVender' })];
+  assert.equal(acao(comRegra, frasco('normal')), 'naoVender', 'a regra da classe vem antes da raridade');
+  // A lista "Não coletar" e a bolsa.
   const f = frasco('normal');
-  assert.equal(Bolsa.ignora(quem({ guardarRaridadePoe: 3 }), f.id, f), false, 'com "Só Único" o frasco entra');
-  const naLista = quem({ guardarRaridadePoe: 3 });
+  assert.equal(Bolsa.ignora(quem({ guardarRaridadePoe: 3 }), f.id, f), true, 'com "Só Único" o frasco Normal fica no chão');
+  assert.equal(Bolsa.ignora(quem({}), f.id, f), false, 'sem raridade, entra');
+  const naLista = quem({});
   naLista.itemRules.noLoot.push(f.id);
   assert.equal(Bolsa.ignora(naLista, f.id, f), true, 'na lista: fica no chão');
   // A moeda: nenhuma seção (nem "Só Único") a deixa no chão.
   const MoedasPoe = await import('../systems/itens-poe/moedas.mjs');
   for (const m of MoedasPoe.dropDoMonstro('unico', () => 0, 50)) assert.equal(Bolsa.ignora(quem({ guardarRaridadePoe: 3, guardarModsPoe: 6, guardarIlvlPoe: 86 }), m.id), false, `a moeda ${m.id} vem`);
-  // A prévia da tela mostra o frasco vindo.
-  assert.ok(Afixos.previaDoFiltro(quem({ guardarRaridadePoe: 3 })).some((l) => /Frasco/.test(l.rotulo) && l.acao === 'naoVender'));
+  // A prévia da tela mostra o frasco Mágico pela raridade dele.
+  const previa = (settings) => Afixos.previaDoFiltro(quem(settings)).find((l) => /Frasco/.test(l.rotulo))?.acao;
+  assert.equal(previa({ guardarRaridadePoe: 3 }), 'naoColetar');
+  assert.equal(previa({ guardarRaridadePoe: 3, guardarRaridadePoeFrascos: 1 }), 'naoVender');
+});
+
+test('as ABAS por tipo: armas, armaduras e acessórios com a raridade de cada um; sem escolha, a geral (dono, 10/10)', { skip: SEM }, () => {
+  const arma = (raridade) => peca({ raridade, classe: 'Two_Hand_Axes', abertos: 0 });
+  const armadura = (raridade) => peca({ raridade, classe: 'Body_Armours', abertos: 0 });
+  const anel = (raridade) => peca({ raridade, classe: 'Rings', abertos: 0 });
+  assert.deepEqual([arma('normal'), armadura('normal'), anel('normal'), peca({ classe: 'Life_Flasks' }), peca({ classe: 'Jewels' })].map((p) => Afixos.tipoDoFiltroPoe(p)), ['armas', 'armaduras', 'acessorios', 'frascos', null]);
+  assert.equal(Afixos.tipoDoFiltroPoe(peca({ classe: 'Quivers' })), 'armas', 'a aljava vai com as armas');
+  // A geral "Só Único" e as armas "Raro para cima": a arma Rara vem; a armadura Rara não; o anel segue a geral.
+  const e = quem({ guardarRaridadePoe: 3, guardarRaridadePoeArmas: 2 });
+  assert.equal(acao(e, arma('raro')), 'naoVender');
+  assert.equal(acao(e, arma('magico')), 'naoColetar');
+  assert.equal(acao(e, armadura('raro')), 'naoColetar');
+  assert.equal(acao(e, anel('raro')), 'naoColetar');
+  // "Qualquer" (0) na aba: a raridade não decide aquele tipo — sem outra seção, ele vem todo.
+  const acessorios = quem({ guardarRaridadePoe: 3, guardarRaridadePoeAcessorios: 0 });
+  assert.equal(acao(acessorios, anel('normal')), 'naoVender');
+  assert.equal(acao(acessorios, armadura('raro')), 'naoColetar', 'os outros tipos seguem a geral');
+  // Só a aba (sem a geral): ela vale para o tipo; os outros pegam tudo.
+  const soArmaduras = quem({ guardarRaridadePoeArmaduras: 1 });
+  assert.equal(acao(soArmaduras, armadura('normal')), 'naoColetar');
+  assert.equal(acao(soArmaduras, armadura('magico')), 'naoVender');
+  assert.equal(acao(soArmaduras, arma('normal')), 'naoVender');
+  // A raridade da aba entra no OU das seções, como a geral: com "4+ mods", a armadura Normal com 4 mods vem.
+  assert.equal(acao(quem({ guardarRaridadePoeArmaduras: 3, guardarModsPoe: 4 }), peca({ raridade: 'normal', tiers: [7, 7, 7, 7], abertos: 0 })), 'naoVender');
+  // Vazio ('' ou null) = igual à geral; valores fora da faixa são cortados.
+  assert.equal(Afixos.raridadeDoTipoPoe({ guardarRaridadePoeArmas: null }, 'armas'), null);
+  assert.equal(Afixos.raridadeDoTipoPoe({ guardarRaridadePoeArmas: 9 }, 'armas'), 3);
+  // "Toda a conta" leva as abas.
+  for (const chave of Object.values(Afixos.CHAVE_DA_RARIDADE_DO_TIPO)) assert.ok(FiltroDaConta.CHAVES_DE_GUARDAR.includes(chave), chave);
 });
 
 // (Dono, 08/10: "o máximo de slot na bag é 20" — como no inventário do PoE, a pilha também ocupa uma vaga. De 07/10 a 08/10 as pilhas não

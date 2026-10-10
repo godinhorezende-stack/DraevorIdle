@@ -19,6 +19,8 @@ import * as Bolsa from './bolsa.mjs';
 export const CHAVES_DE_GUARDAR = [
   'guardarRaridade', 'guardarNivel', 'guardarQuantos', 'guardarAfixo', 'guardarEstrelas', 'guardarSockets', 'guardarLigados', 'guardarAtributos', 'guardarNivelMinimo',
   'guardarRaridadePoe', 'guardarModsPoe', 'guardarTierPoe', 'guardarIlvlPoe', 'guardarRgbPoe',
+  // (As abas por tipo de item do filtro do PoE — `Afixos.CHAVE_DA_RARIDADE_DO_TIPO`.)
+  'guardarRaridadePoeArmas', 'guardarRaridadePoeArmaduras', 'guardarRaridadePoeAcessorios', 'guardarRaridadePoeFrascos',
 ];
 const LISTAS = ['noLoot', 'noSell', 'soAfixo'];
 
