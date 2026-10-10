@@ -1,7 +1,7 @@
 // A folga da interpolação do passo no cliente (dono, 03/10): com jitter nos pacotes, o boneco não pode parar no meio da caminhada, nem saltar, nem ficar muito atrás.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { comecarPasso, duracaoDaInterpolacao, FOLGA_DA_INTERPOLACAO } from '../frontend/client/src/interpolacao.mjs';
+import { comecarPasso, duracaoDaInterpolacao, FOLGA_DA_INTERPOLACAO, teleportar } from '../frontend/client/src/interpolacao.mjs';
 
 const POSICAO = (e, now) => e.fromX + (e.x - e.fromX) * Math.min(1, (now - e.since) / e.duration);
 
@@ -64,3 +64,20 @@ test('sem jitter o desenho é suave e acompanha o servidor de perto; ao parar, c
   const e = { x: 5, y: 0, fromX: 4, fromY: 0, since: 0, duration: duracaoDaInterpolacao(250) };
   assert.equal(POSICAO(e, 10_000), 5);
 });
+
+test('o TELETRANSPORTE (viagem entre cidades): o boneco aparece na casa nova no mesmo instante, sem passar pelas casas do meio', () => {
+  // Andando: o desenho está no meio de um passo de 99,65 para 100,65.
+  const e = { x: 100, y: 65, fromX: 99, fromY: 65, since: 0, duration: duracaoDaInterpolacao(250) };
+  const now = 100;
+  assert.ok(POSICAO(e, now) > 99 && POSICAO(e, now) < 100, 'no meio do passo');
+  // Viajou: a casa nova é longe (40 casas). Sem o teletransporte, o passo seguinte desenharia o boneco cruzando a praça.
+  e.x = 140;
+  e.y = 30;
+  teleportar(e, now);
+  for (const t of [now, now + 1, now + 50, now + 400]) {
+    assert.equal(POSICAO(e, t), 140, `x em ${t - now} ms`);
+    assert.equal(e.fromY + (e.y - e.fromY) * Math.min(1, (t - e.since) / e.duration), 30, `y em ${t - now} ms`);
+  }
+  assert.equal(e.walkUntil, 0, 'sem a pose de andar');
+});
+

@@ -8,6 +8,18 @@ export const DURACAO_MINIMA_MS = 120;
 /** Quanto dura o desenho de UM passo cujo tempo real é `moveMs`. */
 export const duracaoDaInterpolacao = (moveMs) => Math.max(DURACAO_MINIMA_MS, (moveMs ?? 500) * FOLGA_DA_INTERPOLACAO);
 
+/**
+ * O TELETRANSPORTE (a viagem entre cidades): a entidade aparece na casa nova SEM o desenho do caminho — o passo "já terminou" (desde, e
+ * não puxada pela tela até lá). Muda `entity` no lugar; `entity.x/y` são a casa nova.
+ */
+export function teleportar(entity, now) {
+  entity.fromX = entity.x;
+  entity.fromY = entity.y;
+  entity.since = now - 9999;
+  entity.duration = 1;
+  entity.walkUntil = 0;
+}
+
 /** Começa o desenho de um passo novo: continua de onde o desenho parou (não do ponto final do passo anterior) e marca o início. Muda `entity` no lugar. */
 export function comecarPasso(entity, now, moveMs) {
   const progress = Math.min(1, (now - entity.since) / entity.duration);

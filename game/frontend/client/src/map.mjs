@@ -3,7 +3,7 @@
 // tile) num canvas do tamanho da tela dividido pelo zoom, e o zoom é sempre
 // inteiro, aplicado pelo CSS com image-rendering: pixelated.
 import { casasDoEvento } from '/packages/shared/src/areas.mjs';
-import { comecarPasso } from './interpolacao.mjs';
+import { comecarPasso, teleportar } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais } from './efeitos-visuais.mjs';
@@ -1158,7 +1158,14 @@ export class MapView {
       this.entities.set(key, entity);
     }
 
-    if (entity.x !== data.x || entity.y !== data.y) {
+    // O TELETRANSPORTE (a viagem entre cidades — `teleporte`, o contador do servidor): o boneco aparece na casa nova, sem o desenho do caminho
+    // (antes ele era "puxado" pela praça até lá); a câmera vai junto, e o portal de chegada é um evento à parte.
+    if (data.teleporte != null && data.teleporte !== entity.teleporte) {
+      entity.teleporte = data.teleporte;
+      entity.x = data.x;
+      entity.y = data.y;
+      teleportar(entity, now);
+    } else if (entity.x !== data.x || entity.y !== data.y) {
       // Continua de onde o desenho parou: nada de teleporte quando dois passos
       // se encavalam entre dois pacotes do servidor.
       // (A conta, com a folga contra o jitter da rede, mora em `interpolacao.mjs` e é testada lá.)
