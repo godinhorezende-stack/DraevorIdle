@@ -1861,6 +1861,8 @@ export function tique(estado, personagem, agora = Date.now()) {
         hunt.casaAnterior = { x: hunt.pos.x, y: hunt.pos.y };
         hunt.pos.x = destino.x;
         hunt.pos.y = destino.y;
+        // O suporte Momentum do PoE: "Perca todo o Momentum ao se Mover".
+        ModsPoe.perderMomentum(hunt);
       }
       // Chegou onde clicou/tocou.
       if (hunt.destino && hunt.pos.x === hunt.destino.x && hunt.pos.y === hunt.destino.y) hunt.destino = null;

@@ -1069,6 +1069,20 @@ export function marcarRecargaDaPocao(estado, entry) {
  * multiplicam (`castTimePct`). A LENTIDÃO do personagem (resfriado, Lentidão — menos velocidade de ação) segura o ataque e a magia como segura
  * o golpe básico (`cacadas.tique`); a recarga não. `doJogador: false` (o totem usa a gema do dono): sem a lentidão do personagem.
  */
+/**
+ * A velocidade de ataque "aumentada" CONDICIONAL dos suportes do PoE, no estado de agora: o Momentum ("N% por Momentum" × o Momentum
+ * acumulado — `ModsPoe.ganharMomentum`) e a Fúria ("N% enquanto você tiver ao menos M de Fúria": `velAtaquePct@furia:M`). Antes o da Fúria
+ * valia sempre e o Momentum não fazia nada (o suporte ficava travado como "sem sistema" por citar a canalização).
+ */
+function velocidadeCondicional(estado, efeito) {
+  if (!efeito) return 0;
+  let pct = (Number(efeito.velAtaquePorMomentumPct) || 0) * ModsPoe.momentumAtual(estado);
+  for (const [k, v] of Object.entries(efeito)) {
+    const m = k.match(/^velAtaquePct@furia:(\d+)$/);
+    if (m && ModsPoe.furiaAtual(estado) >= Number(m[1])) pct += Number(v) || 0;
+  }
+  return pct;
+}
 /** A gema instantânea (sem tempo de uso: 0 de conjuração, ou "Utilizar Habilidades Suportadas é Instantâneo") ocupa um tique. */
 const USO_DA_INSTANTANEA_MS = 250;
 export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), ficha = Ficha.combate(estado), { doJogador = true } = {}) {
@@ -1080,7 +1094,8 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const castSpeed = (ficha.castSpeed ?? 0) + (porTag.cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
   // O ataque: o intervalo da ficha (`1000 / APS` ÷ (1 + aumentos globais)) com os aumentos da gema somados aos globais.
   const global = ficha.velocidadeDeAtaque ?? 0;
-  const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + (efeitoDaGema?.velAtaquePct ?? 0)) / 100);
+  const daGema = (efeitoDaGema?.velAtaquePct ?? 0) + (doJogador ? velocidadeCondicional(estado, efeitoDaGema) : 0);
+  const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + daGema) / 100);
   const lentidao = doJogador ? Controle.fatorDeLentidao(estado.hunt) : 1;
   const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, castSpeed) / 100)) * lentidao;
   const recarga = t.recargaMs ? Math.round((t.recargaMs / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0)) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
@@ -1588,6 +1603,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (a gema do PoE soma as chances dela que não são afecção — o empalamento — `GemasPoe.fichaComAsChancesDaGema`)
       const fichaDoAcerto = entry.poeGema ? GemasPoe.fichaComAsChancesDaGema(ficha, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha;
       const doAcerto = ModsPoe.aoAcertar(estado, hunt, bicho, fichaDoAcerto, { dano, fisico: fisicoDoAcerto, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: pedacos ? pedacos.map((p) => p.elemento) : [tipo] });
+      // O suporte Fúria: "Ganhe 3 de Fúria no Acerto com Ataques" (cada acerto do ataque suportado, como o "Fúria com Acertos" das peças).
+      if (efeitoDaGema?.furiaNoAcerto > 0 && entry.poeGema?.ataque) ModsPoe.ganharFuria(hunt, efeitoDaGema.furiaNoAcerto, agora);
       // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
       // As cargas do PoE no acerto da skill (crítico, não crítico, atordoou, Inimigo Único).
       if (CargasPoe.reageAoAcerto(ficha.cargas)) {
@@ -1728,6 +1745,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const doGrupo = tempoPoe ? tempoPoe.uso : Math.round(recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0)) / (entry.kind === 'spell' ? 1 + (fichaDaRecarga.castSpeed ?? 0) / 100 : 1));
     cds[grupoQueConta] = { ate: inicio + doGrupo, total: doGrupo };
   }
+  // O suporte Momentum: +1 de Momentum a cada uso (DEPOIS do tempo deste uso, que já contou o Momentum de antes); no máximo, perde tudo e
+  // ganha Rapidez — a ficha muda (a velocidade de movimento).
+  if (!gatilho && entry.poeGema && efeitoDaGema?.momentumPorUso > 0 && ModsPoe.ganharMomentum(hunt, efeitoDaGema, inicio)) Ficha.invalidar(estado);
   if (entry.kind === 'item') cds[grupo] = { ate: inicio + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
   // (Gema do PoE: o golpe básico espera o tempo de uso dela pelo `GRUPO_DO_POE` acima, no relógio da caçada — `cacadas.tique`. Antes era
   // `hunt.proximoGolpeEm`, que é do relógio de PAREDE do tique: o `inicio` + uso, pequeno, nunca passava dele e o básico não esperava nada.)

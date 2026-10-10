@@ -30,8 +30,24 @@ const PADRAO = new Set(['Nível', 'RequerNível', 'Experiência', 'Base Damage',
 const linhaDoNivel = (s, n) => s.linhas[Math.min(Math.max(1, n), s.linhas.length) - 1] ?? [];
 const interpolar = (t, f) => t.replace(FAIXA, (_, a, b) => String(Math.round((parseFloat(a) + (parseFloat(b) - parseFloat(a)) * f) * 10) / 10));
 /** A coluna com os valores do nível no lugar dos números do cabeçalho (o sinal do cabeçalho fica: "-19%" com a célula 19). */
-const substituir = (cab, celula) => {
+const substituir = (cab, celula, doNivel1 = null) => {
   let v = String(celula).split(/,\s*/).filter(Boolean);
+  // A ORDEM da célula nem sempre é a do texto ("Ao atingir 3 de Momentum … Rapidez por 1.5 segundos" com a célula "1.5, 3"), e a célula
+  // pode ter menos números que o texto ("Ganhe 1 de Momentum … a cada 0.7 segundos" com só "0.7"). O cabeçalho mostra os números do
+  // NÍVEL 1: cada valor deste nível vai para o número do texto que tinha o MESMO valor no nível 1; o que não casa fica como está. Antes o
+  // Momentum nível 10 saía "Ganhe 0.61 de Momentum" e "Ao atingir 1.5 de Momentum … Rapidez por 4 segundos".
+  const base = doNivel1 != null ? String(doNivel1).split(/,\s*/).filter(Boolean) : null;
+  const doTexto = cab.includes('#') ? [] : cab.match(NUM) ?? [];
+  const numero = (x) => Number(String(x).replace(',', '.'));
+  if (base && base.length === v.length && doTexto.length && base.every((b) => doTexto.some((t) => numero(t) === numero(b)))) {
+    const usados = new Set();
+    return cab.replace(NUM, (o) => {
+      const k = base.findIndex((b, i) => !usados.has(i) && numero(b) === numero(o));
+      if (k < 0) return o;
+      usados.add(k);
+      return v[k];
+    });
+  }
   // Célula com mais valores que o cabeçalho tem números ("100, 528" para "sofrer 528 de Dano"): os do FIM são os do texto.
   const vagas = (cab.match(/#/g) ?? cab.match(NUM) ?? []).length;
   if (vagas && v.length > vagas) v = v.slice(-vagas);
@@ -46,12 +62,12 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
   const n = Math.max(1, Math.min(nivel | 0 || 1, s.linhas.length || 1));
   const linha = linhaDoNivel(s, n);
   const porMolde = new Map();
-  s.colunas.forEach((c, i) => { if (!PADRAO.has(c)) porMolde.set(molde(c), { cab: c, valor: linha[i] }); });
+  s.colunas.forEach((c, i) => { if (!PADRAO.has(c)) porMolde.set(molde(c), { cab: c, valor: linha[i], doNivel1: s.linhas[0]?.[i] }); });
   const out = [];
   const add = (t) => t && !out.includes(t) && out.push(t);
   for (const m of [...s.mods, ...(s.implicitos ?? []).filter((t) => !/^Mana:/.test(t))]) {
     const col = porMolde.get(molde(m));
-    if (col) col.valor !== undefined && col.valor !== '' && add(substituir(col.cab, col.valor));
+    if (col) col.valor !== undefined && col.valor !== '' && add(substituir(col.cab, col.valor, col.doNivel1));
     else add(m.includes('—') ? interpolar(m, (n - 1) / 19) : m);
   }
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
@@ -119,6 +135,16 @@ const REGRAS = [
   // (`velAtaquePct`/`velConjuracaoPct` → `Acoes.temposDaGemaPoe`). Antes o "aumentada" também multiplicava: Ataques Acelerados nv 10 (31%) com
   // +40% global fazia a Cutilada em 440 ms em vez dos 472 do PoE (1,55 × 0,8 × 1,71).
   [new RegExp(`têm ${N}% (mais|menos) Velocidade de (Ataque|Conjuração)( Corpo a Corpo)?`, 'i'), (m, t, a) => ((m[3] === 'Ataque' && !temTag(a, 'Ataque')) || (m[3] === 'Conjuração' && !temTag(a, 'Magia')) || (m[4] && !temTag(a, 'Corpo a Corpo')) ? null : { castTimePct: tempoDaVelocidade((m[2] === 'mais' ? 1 : -1) * num(m[1])) })],
+  // O Momentum e a Fúria (as velocidades CONDICIONAIS — antes da regra geral do "aumentada", que pegava o começo delas e valia sempre):
+  // "N% por Momentum" (× o Momentum na hora: `Acoes.temposDaGemaPoe`), "enquanto você tiver ao menos M de Fúria" (`velAtaquePct@furia:M`), o
+  // Momentum de cada uso, o máximo que vira Rapidez e a Fúria no acerto (`ModsPoe.ganharMomentum`, `Acoes`).
+  [new RegExp(`têm Velocidade de Ataque aumentada em ${N}% por Momentum`, 'i'), (m, t, a) => (temTag(a, 'Ataque') ? { velAtaquePorMomentumPct: num(m[1]) } : null)],
+  [new RegExp(`têm Velocidade de Ataque aumentada em ${N}% enquanto você tiver ao menos ${N} de Fúria`, 'i'), (m, t, a) => (temTag(a, 'Ataque') ? { [`velAtaquePct@furia:${num(m[2])}`]: num(m[1]) } : null)],
+  [new RegExp(`^Ganhe ${N} de Momentum quando você Usar uma Habilidade Suportada`, 'i'), (m) => ({ momentumPorUso: num(m[1]) })],
+  [new RegExp(`^Ao atingir ${N} de Momentum, perca todo o Momentum e ganhe Rapidez por ${N} segundos`, 'i'), (m) => ({ momentumMaximo: num(m[1]), rapidezMs: Math.round(num(m[2]) * 1000) })],
+  [new RegExp(`^Rapidez concede Velocidade de Movimento aumentada em ${N}% por Momentum perdido`, 'i'), (m) => ({ rapidezMovimentoPct: num(m[1]) })],
+  [new RegExp(`^Rapidez du(?:d)?ra \\+?${N} segundos`, 'i'), (m) => ({ rapidezMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Ganhe ${N} de Fúria no Acerto com Ataques`, 'i'), (m) => ({ furiaNoAcerto: num(m[1]) })],
   [new RegExp(`têm Velocidade de (Ataque|Conjuração) aumentada em ${N}%`, 'i'), (m, t, a) => (temTag(a, m[1] === 'Ataque' ? 'Ataque' : 'Magia') ? { [m[1] === 'Ataque' ? 'velAtaquePct' : 'velConjuracaoPct']: num(m[2]) } : null)],
   [new RegExp(`têm ${N}% de Velocidade de (Ataque|Conjuração) aumentada`, 'i'), (m, t, a) => (temTag(a, m[2] === 'Ataque' ? 'Ataque' : 'Magia') ? { [m[2] === 'Ataque' ? 'velAtaquePct' : 'velConjuracaoPct']: num(m[1]) } : null)],
   // Projéteis, alvos, perfurar, bifurcar, encadear.
@@ -220,9 +246,12 @@ export const algumDe = (s) => (s.tags.includes('Ricochete') && !s.tags.includes(
 
 // ---------------------------------------------------------------- status, ids, registro
 
+const MOMENTUM_CANALIZANDO = /Ganhe \S+ de Momentum a cada \S+ segundos enquanto Canalizando uma Habilidade suportada/gi;
 function avaliar(s) {
   // Pelo que o suporte É (as tags) e pelo gatilho dos mods — a descrição fala do que ele NÃO suporta ("não pode suportar totens").
-  const tudo = [s.tags.join(' '), ...s.mods, ...(s.implicitos ?? [])].join(' ');
+  // (O Momentum cita a canalização só como OUTRO jeito de ganhar Momentum — "a cada N segundos enquanto Canalizando" —, que o jogo não tem;
+  // o ganho a cada uso, sim: essa frase não trava o suporte.)
+  const tudo = [s.tags.join(' '), ...s.mods, ...(s.implicitos ?? [])].join(' ').replace(MOMENTUM_CANALIZANDO, '');
   const sem = SEM_SISTEMA.find(([re]) => re.test(tudo));
   if (sem) return { status: 'nao', motivos: [sem[1]] };
   const nivel = Math.min(20, s.linhas.length || 1);
