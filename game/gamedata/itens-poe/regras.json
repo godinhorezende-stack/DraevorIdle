@@ -64,6 +64,8 @@
       "_nota": "Números do dono (05/10): Normal ~0,80–0,90, Mágico ~0,10–0,15, Raro ~0,02–0,04, Único ~0,0001–0,001 — aqui o ponto médio de cada faixa. São PESOS relativos (o sorteio divide pela soma), valendo para cada peça que cai."
     },
     "ilvlMaximo": 100,
+    "janelaDaBase": 3,
+    "_notaJanelaDaBase": "Dono (10/10): a BASE sorteada (Normal, Mágica, Rara) exige um nível perto do da área — requisito entre ilvl − janelaDaBase e ilvl + janelaDaBase (no PoE puro caía qualquer base com nível ≤ ilvl, ex.: Cutelo de nível 16 num mapa 78). Classe sem base nessa faixa (anéis, amuletos, joias, frascos) cai com as bases de requisito mais alto que ainda cabem (≤ ilvl + janela). O Único não segue a janela. null/0 desliga.",
   "qualidade": {"chance": 0.125, "maximo": 20, "_nota": "Dono (07/10): parte das armas, armaduras e frascos cai Superior, com 1 a `maximo`% de qualidade (chance por peça); o resto cai com 0%, como no PoE."}
  },
   "ouro": {
