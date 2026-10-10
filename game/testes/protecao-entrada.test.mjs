@@ -278,3 +278,40 @@ test('o LOOP da fase: limpou a instância → o tique troca sozinho (instância 
   await passar(s, MINIMO);
   assert.equal(s.protegidoNaEntrada(), false);
 });
+
+test('os portais de viagem do servidor dizem de QUEM são (a entrada): a chegada, o portal antes da troca de instância e a instância nova', async (t) => {
+  const { s, enviados } = sessao();
+  entrarNaCacada(s);
+  const h = s.estado.hunt;
+  const portais = () => enviados.flatMap((m) => (m.events ?? []).filter((e) => e.t === 'portal' && e.asset === 'fabrica-portal-de-viagem'));
+  // A chegada sai quando a proteção libera — com a entrada dele (a tela dele a pula: ela já animou a chegada).
+  s.receber({ t: 'mapaPronto', entrada: h.entrada });
+  await passar(s, MINIMO + 500);
+  const chegada = portais().find((e) => e.chegada);
+  assert.ok(chegada, 'o portal de chegada saiu');
+  assert.equal(chegada.entrada, h.entrada);
+  if (!h.instancia) return t.skip('a hunt de teste não é uma instância');
+  // O loop: o portal sob ele antes da troca leva a entrada de agora; o da chegada na instância nova, a nova.
+  enviados.length = 0;
+  const velha = h.entrada;
+  for (const m of h.monstros) m.hp = 0;
+  for (const lista of Object.values(h.outrosAndares ?? {})) for (const m of lista) m.hp = 0;
+  for (let i = 0; i < 240 && s.estado.hunt?.entrada === velha; i++) await passar(s, R.PASSO_MS);
+  const nova = s.estado.hunt.entrada;
+  assert.notEqual(nova, velha, 'trocou de instância');
+  assert.ok(portais().some((e) => !e.chegada && e.entrada === velha), 'o portal de saída do servidor leva a entrada de antes');
+  assert.ok(portais().some((e) => e.chegada && e.entrada === nova), 'o de chegada, a entrada nova');
+  assert.ok(portais().every((e) => e.entrada === velha || e.entrada === nova), 'nenhum portal de viagem sem dono');
+});
+
+test('a viagem entre CIDADES: o portal de chegada que o servidor manda é marcado como da própria viagem (a tela anima a dela)', async (t) => {
+  const Cidades = await import('../systems/cidades.mjs');
+  if (!Cidades.porAto()) return t.skip('só com uma cidade por ato (o jogo oficial)');
+  const { s, enviados } = sessao();
+  s.estado.atoDaCidade = 1;
+  s.estado.pos = { ...R.POSICAO_INICIAL, x: R.POSICAO_INICIAL.x + 5 };
+  s.receber({ t: 'irParaCidade', ato: 2 });
+  const portal = enviados.flatMap((m) => m.events ?? []).find((e) => e.t === 'portal');
+  assert.ok(portal, 'o portal de chegada');
+  assert.deepEqual([portal.chegada, portal.proprio], [true, true]);
+});

@@ -96,7 +96,7 @@ import { aplicarRemendo } from '/packages/shared/src/remendo.mjs';
 import { initMobile, ehCelular } from './mobile.mjs';
 import { initMinimapa, atualizarMinimapa } from './minimapa.mjs';
 import { instalarArrastoDoMouse } from './arrasto-do-mouse.mjs';
-import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, prontoNaChegada, chaveDaCena, nomeDaCena, abrePortal } from './portal-ciclo.mjs';
+import { CICLO_PADRAO, CHEGADA_PADRAO, duracao as duracaoDoCiclo, prontoNaChegada, chaveDaCena, nomeDaCena, abrePortal, meuPortalDeViagem } from './portal-ciclo.mjs';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, className, text) => {
@@ -2143,7 +2143,7 @@ function applyState(message) {
   if (message.events?.length) {
     // Efeito de tela com a aba no fundo é desenho para ninguém. (Durante o portal de saída, os da cena nova esperam ela entrar.)
     if (viagemDoPortal) guardarEventosDaViagem(message.events);
-    else if (!abaEscondida) mapView.addEvents(message.events);
+    else if (!abaEscondida) mapView.addEvents(semMeusPortais(message.events));
     feedEvents(message.events, state.items, state.character?.name);
     acompanharConjuracao(message.events, state.character?.name);
 
@@ -7653,7 +7653,7 @@ function fecharViagemDoPortal() {
   }
   // O portal de chegada que o servidor mandou para a casa dele vira a CHEGADA animada (os da party, nas casas deles, seguem como vieram).
   const eu = (state.hunt ?? state.city)?.player ?? null;
-  const eventos = eu ? v.eventos.filter((ev) => !(ev.t === 'portal' && ev.chegada && ev.x === eu.x && ev.y === eu.y)) : v.eventos;
+  const eventos = semMeusPortais(eu ? v.eventos.filter((ev) => !(ev.t === 'portal' && ev.chegada && ev.x === eu.x && ev.y === eu.y)) : v.eventos);
   if (eventos.length && !abaEscondida) mapView.addEvents(eventos);
   // A cortina só cobre o que falta: com o mapa já baixado durante o portal, a cena entra direto. Faltando, nunca a tela preta.
   if (!mapaCarregado()) mostrarViagem({ hunt: nomeDaCena({ hunt: state.hunt, city: state.city }) || v.cortina?.hunt || '', motivo: 'carregando' });
@@ -7686,6 +7686,15 @@ function comecarChegada() {
     chegada = null;
     confirmarCarregamento();
   }, prontoNaChegada(cicloDaChegada));
+}
+
+/**
+ * Os eventos sem os portais de viagem do servidor que são da MINHA viagem (`meuPortalDeViagem`): a tela já anima a saída e a chegada dele
+ * — desenhar os do servidor também punha um segundo portal do lado. As entradas que são dele: a desta caçada e a da cena na tela.
+ */
+function semMeusPortais(eventos) {
+  const entradas = [state.hunt?.entrada, mapView?.snapshot?.entrada].filter(Boolean);
+  return eventos.filter((ev) => !meuPortalDeViagem(ev, entradas));
 }
 
 /** Outra viagem começou (ou a conexão é nova): a chegada pendente não acontece. */

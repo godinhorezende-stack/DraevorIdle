@@ -189,3 +189,17 @@ test('a cortina "Carregando" leva o NOME do mapa: a fase, a caçada ou a cidade 
   assert.match(main, /carregando: '',/);
   assert.doesNotMatch(main, /'só um instante — o mapa está chegando'/, 'a frase da tela saiu');
 });
+
+test('os portais de viagem do SERVIDOR que são da minha viagem não são desenhados (a tela anima a dela); os dos outros e o do chefe, sim', async () => {
+  // Dono, 10/10: "quando chego de tp na hunt, em vez de sumir, aparece outro tp do lado e some"; "no fim do loop aparece em 2 locais".
+  const { meuPortalDeViagem, PORTAL_DE_VIAGEM } = await import('../frontend/client/src/portal-ciclo.mjs');
+  const portal = (extra) => ({ t: 'portal', x: 5, y: 5, ms: 1300, asset: PORTAL_DE_VIAGEM, ...extra });
+  const minhas = ['inst-nova', 'inst-velha'];
+  assert.equal(meuPortalDeViagem(portal({ chegada: true, entrada: 'inst-nova' }), minhas), true, 'a minha chegada');
+  assert.equal(meuPortalDeViagem(portal({ entrada: 'inst-velha' }), minhas), true, 'o portal sob mim antes da troca de instância');
+  assert.equal(meuPortalDeViagem(portal({ chegada: true, proprio: true }), []), true, 'a viagem entre cidades');
+  assert.equal(meuPortalDeViagem(portal({ chegada: true, entrada: 'inst-do-amigo' }), minhas), false, 'o do colega da party aparece');
+  assert.equal(meuPortalDeViagem(portal({ chegada: true }), minhas), false, 'sem dono (servidor antigo): aparece');
+  assert.equal(meuPortalDeViagem({ t: 'portal', x: 5, y: 5, asset: 'fabrica-portal-do-chefe', entrada: 'inst-nova' }, minhas), false, 'o portal do chefe não é de viagem');
+  assert.equal(meuPortalDeViagem({ t: 'dmg', entrada: 'inst-nova' }, minhas), false);
+});

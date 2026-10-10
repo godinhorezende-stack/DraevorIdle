@@ -1502,7 +1502,8 @@ export class Sessao {
           // Chega pelo portal de viagem (o mesmo de quem chega numa caçada).
           this.avisoPendente = `Você chegou em ${destino.nome}.`;
           this.characterSujo = true;
-          this.mandarEstado(false, [Cacadas.portalDeViagem(this.estado.pos, { chegada: true })]);
+          // (`proprio`: a viagem é dele — a tela anima a própria chegada e não desenha este por cima.)
+          this.mandarEstado(false, [Cacadas.portalDeViagem(this.estado.pos, { chegada: true, proprio: true })]);
         } else this.aplicar({ ok: true });
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
