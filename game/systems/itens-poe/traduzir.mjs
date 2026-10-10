@@ -183,6 +183,9 @@ function temEfeito(e) {
   return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvoVenenos:\d+$/.test(c));
 }
 
+/** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */
+export const atributoTemEfeito = (stat) => temEfeito({ stat });
+
 const PIOR = ['lembrete', 'equivalente', 'aproximado', 'novo', 'inerte', 'registrado'];
 /** Traduz um mod inteiro (`{ modelo, valores }`): híbridos "A / B" viram as partes; o estado do mod é o PIOR das partes. */
 export function traduzirMod(mod, opcoes) {

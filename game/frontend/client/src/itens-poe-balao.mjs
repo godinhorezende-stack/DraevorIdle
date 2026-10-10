@@ -58,16 +58,22 @@ function resumoDoFrasco(f) {
 }
 
 /** O MAPA (o servidor manda `poe.mapa` — `itens-poe/mapas.mjs`): o tier e o nível da área, a quantidade e a raridade de itens e o tamanho do
- * grupo (a soma dos mods e da qualidade), e o que das linhas ainda não age (as parciais). */
+ * grupo (a soma dos mods e da qualidade), e a VALIDAÇÃO das linhas (dono, 10/10: "fazendo a validação e colocando também no tooltip"):
+ * quantas agem no jogo, o que age só em parte e o que não age (com o porquê) — a mesma conta da aba Mapas do endgame da engine. */
 function resumoDoMapa(m) {
   const pct = (v) => `+${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
-  const parciais = (m.linhas ?? []).filter((l) => l.estado === 'parcial' && l.nota).map((l) => l.nota);
+  const linhas = m.linhas ?? [];
+  const parciais = linhas.filter((l) => l.estado === 'parcial' && l.nota).map((l) => l.nota);
+  const inertes = linhas.filter((l) => l.estado === 'inerte' && l.nota).map((l) => l.nota);
+  const agem = linhas.filter((l) => l.estado !== 'inerte').length;
   return no('div', 'poe-props poe-mapa-resumo',
     no('div', null, `Tier ${m.tier} · Nível da Área ${m.nivel}`),
     m.quantidade ? no('div', null, 'Quantidade de Itens: ', no('b', 'poe-aumentado', pct(m.quantidade))) : null,
     m.raridade ? no('div', null, 'Raridade de Itens: ', no('b', 'poe-aumentado', pct(m.raridade))) : null,
     m.grupo ? no('div', null, 'Tamanho do Grupo: ', no('b', 'poe-aumentado', pct(m.grupo))) : null,
+    linhas.length ? no('div', `poe-validacao${agem === linhas.length ? ' ok' : ''}`, `Modificadores com efeito no jogo: ${agem} de ${linhas.length}`) : null,
     parciais.length ? no('div', 'poe-aviso', `Em parte: ${[...new Set(parciais)].join('; ')}.`) : null,
+    inertes.length ? no('div', 'poe-aviso', `Sem efeito no jogo: ${[...new Set(inertes)].join('; ')}.`) : null,
     no('div', null, 'Use no Dispositivo de Mapas (depois do Ato 10).'));
 }
 

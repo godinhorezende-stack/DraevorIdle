@@ -920,7 +920,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // ganha o mesmo mapa em dobro.
   if (noMapa) {
     const tipo = tipoDoBicho(alvo);
-    const sorteados = Mapas.sortearDrops({ tierDaArea: noMapa.tier, tipo, bonusDeQuantidade: Number(REGRAS_POE.drop?.bonusDeQuantidade?.[tipo]) || 0, quantidadePct: noMapa.quantidade, chefeDoMapa: !!alvo.chefeDoMapa });
+    // (O chefe do mapa ÚNICO: "Chefes Únicos derrubam N Mapas adicionais" — `efeitos.chefe.mapasExtras`.)
+    const sorteados = Mapas.sortearDrops({ tierDaArea: noMapa.tier, tipo, bonusDeQuantidade: Number(REGRAS_POE.drop?.bonusDeQuantidade?.[tipo]) || 0, quantidadePct: noMapa.quantidade, chefeDoMapa: !!alvo.chefeDoMapa, mapasExtras: alvo.chefeDoMapa ? noMapa.efeitos?.chefe?.mapasExtras : 0 });
     for (const { tier } of sorteados) {
       const mapa = ItensPoeJogo.mapaSorteado(tier, { raridadeAumentada: raridadeDoMorto });
       if (!mapa) continue;
@@ -934,7 +935,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     }
   }
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
-  for (const moeda of MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador)) {
+  // (+ as do chefe do mapa ÚNICO — "Chefe Único derruba N Itens Monetários adicionais": `efeitos.chefe.moedasExtras`.)
+  const moedasDoChefe = noMapa && alvo.chefeDoMapa ? MoedasPoe.moedasAvulsas(Number(noMapa.efeitos?.chefe?.moedasExtras) || 0) : [];
+  for (const moeda of [...MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador), ...moedasDoChefe]) {
     // A moeda marcada em "Não coletar" (a lista) fica no chão.
     if (Bolsa.ignora(estado, moeda.id)) {
       conta('ignorado', moeda.id, moeda.count);

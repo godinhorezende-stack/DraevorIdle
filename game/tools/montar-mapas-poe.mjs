@@ -38,14 +38,15 @@ const EFEITOS = {
   MapMonsterLightningDamage: [{ alvo: 'monstros', stat: 'danoExtraPct.energy', de: 0 }],
   MapMonsterPhysicalResistance: [{ alvo: 'monstros', stat: 'resist.physical', de: 0 }],
   MapMonstersAllResistances: [{ alvo: 'monstros', stat: 'resist.chaos', de: 0 }, { alvo: 'monstros', stat: 'resist.fire', de: 1 }, { alvo: 'monstros', stat: 'resist.ice', de: 1 }, { alvo: 'monstros', stat: 'resist.energy', de: 1 }],
-  MapMonsterFast: [{ alvo: 'monstros', stat: 'velocidadePct', de: 0 }, { alvo: 'monstros', stat: 'velocidadeDeAtaquePct', de: 1, parcial: 'a velocidade de conjuração dos monstros ainda não existe no jogo' }],
+  // (A Velocidade de Conjuração: as magias dos monstros saem mais vezes — `poderes.lancar`.)
+  MapMonsterFast: [{ alvo: 'monstros', stat: 'velocidadePct', de: 0 }, { alvo: 'monstros', stat: 'velocidadeDeAtaquePct', de: 1 }, { alvo: 'monstros', stat: 'velocidadeDeConjuracaoPct', de: 2 }],
   MapMonsterCriticalStrikesAndDamage: [{ alvo: 'monstros', stat: 'critChance', de: 0, escala: 0.05 }, { alvo: 'monstros', stat: 'critMultiplicador', de: 1 }],
   MapMonstersMaximumLifeAddedEnergyShield: [{ alvo: 'monstros', stat: 'esPct', de: 0 }],
   MapMonsterAccuracyPlayersUnlockyDodge: [{ alvo: 'monstros', stat: 'precisaoPct', de: 0, parcial: 'o azar na supressão de dano mágico ainda não existe no jogo' }],
   MapNemesisModOnRares: [{ alvo: 'instancia', stat: 'rarosPct', de: 0 }],
   MapBloodlinesModOnMagics: [{ alvo: 'instancia', stat: 'magicosPct', de: 0 }],
-  MapBossMod: [{ alvo: 'chefe', stat: 'danoPct', de: 0, parcial: 'a velocidade de conjuração do chefe ainda não existe no jogo' }],
-  MapDangerousBoss: [{ alvo: 'chefe', stat: 'danoPct', de: 0, parcial: 'a velocidade de conjuração do chefe ainda não existe no jogo' }],
+  MapBossMod: [{ alvo: 'chefe', stat: 'danoPct', de: 0 }, { alvo: 'chefe', stat: 'velocidadeDeConjuracaoPct', de: 1 }],
+  MapDangerousBoss: [{ alvo: 'chefe', stat: 'danoPct', de: 0 }, { alvo: 'chefe', stat: 'velocidadeDeConjuracaoPct', de: 1 }],
   MapMassiveBoss: [{ alvo: 'chefe', stat: 'vidaPct', de: 0, parcial: 'o efeito em área do chefe ainda não existe no jogo' }],
   MapTwoBosses: [{ alvo: 'instancia', stat: 'chefes', fixo: 2 }],
   MapPlayerCurse: [{ alvo: 'jogador', stat: 'maldicao', fixo: 'fraquezaElemental' }],
@@ -66,6 +67,15 @@ const EFEITOS_POR_TEXTO = [
   [/Amaldiçoados com Fraqueza Elemental/i, [{ alvo: 'jogador', stat: 'maldicao', fixo: 'fraquezaElemental' }]],
   [/Amaldiçoados com Vulnerabilidade/i, [{ alvo: 'jogador', stat: 'maldicao', fixo: 'vulnerabilidade' }]],
   [/Amaldiçoados com Debilitar/i, [{ alvo: 'jogador', stat: 'maldicao', fixo: 'enfraquecer' }]],
+  // A família do dano elemental extra dos tiers baixos (MapMonsterElementalDamage) também tem uma versão por elemento: cada uma é o SEU
+  // (antes o Gelo e o Raio davam Fogo).
+  [/como Dano de Fogo extra$/i, [{ alvo: 'monstros', stat: 'danoExtraPct.fire', de: 0 }]],
+  [/como Dano de Gelo extra$/i, [{ alvo: 'monstros', stat: 'danoExtraPct.ice', de: 0 }]],
+  [/como Dano de Raio extra$/i, [{ alvo: 'monstros', stat: 'danoExtraPct.energy', de: 0 }]],
+  // E a do chefe dos tiers baixos (MapBossMod) tem as duas versões do PoE: o dano e a conjuração, ou a VIDA e o efeito em área (antes a Vida
+  // aumentada virava Dano aumentado).
+  [/^Chefe Único causa Dano aumentado em .* Velocidade de Conjuração aumentada$/i, [{ alvo: 'chefe', stat: 'danoPct', de: 0 }, { alvo: 'chefe', stat: 'velocidadeDeConjuracaoPct', de: 1 }]],
+  [/^Chefe Único tem sua Vida aumentada em /i, [{ alvo: 'chefe', stat: 'vidaPct', de: 0, parcial: 'o efeito em área do chefe ainda não existe no jogo' }]],
 ];
 /** A versão de uma família que ainda NÃO age (a família tem efeito, esta versão não): fica fora do sorteio, com o motivo. */
 const NAO_IMPLEMENTADOS_POR_TEXTO = [
@@ -164,7 +174,8 @@ const classe = {
     requisitos: { nivel: null, forca: null, destreza: null, inteligencia: null },
     atributos: { tier, nivel_area: nivel }, implicitos: [], icone: `poe-itens/Mapas/icones/Map_Tier_${tier}.png`, iconeLado: 80, pool: faixaDoTier(tier),
   })),
-  paginas, unicos: [],
+  // (Os MAPAS ÚNICOS são de `tools/importar-mapas-unicos.mjs`, com os efeitos escolhidos à mão: rodar este de novo os preserva.)
+  paginas, unicos: antigo.classe?.unicos ?? [],
 };
 const saida = {
   _nota: 'Os MAPAS do endgame do PoE (T1–T16). `classe` e os mods (`classe.paginas`) são gerados por tools/montar-mapas-poe.mjs a partir do poedb (rodar de novo refaz só eles); `tiers`, `drop`, `dispositivo` e `instancia` são a CONFIGURAÇÃO do jogo, editável aqui e preservada pelo gerador. Só entram no pool as famílias com `efeitos` (o que age de verdade no jogo); as outras ficam em `naoImplementados`, com o motivo.',

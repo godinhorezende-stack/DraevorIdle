@@ -137,5 +137,10 @@ export function aplicarEfeitos(m, ef) {
   for (const [el, v] of Object.entries(ef.resist ?? {})) if (Number(v)) m.resist = { ...(m.resist ?? {}), [el]: (m.resist?.[el] ?? 0) + Number(v) };
   for (const [el, v] of Object.entries(ef.danoExtraPct ?? {})) if (Number(v) > 0) m.danoExtraPct = { ...(m.danoExtraPct ?? {}), [el]: (m.danoExtraPct?.[el] ?? 0) + Number(v) };
   if (n('imuneAtordoamento') > 0) m.imuneAtordoamento = true;
+  // (Os dos MAPAS ÚNICOS:) a experiência que o monstro dá ("Ganho de Experiência aumentado", "Chefe Único aumenta X% de Experiência"),
+  // "Monstros não são Afetados por Eletrizações" e a Velocidade de Conjuração (as magias saem mais vezes — `poderes.mjs`).
+  if (n('experienciaPct')) m.exp = Math.round((Number(m.exp) || 0) * Math.max(0, 1 + n('experienciaPct') / 100));
+  if (n('imuneChoque') > 0) m.imuneChoque = true;
+  if (n('velocidadeDeConjuracaoPct')) m.velocidadeDeConjuracao = (m.velocidadeDeConjuracao ?? 1) * (1 + n('velocidadeDeConjuracaoPct') / 100);
   return m;
 }

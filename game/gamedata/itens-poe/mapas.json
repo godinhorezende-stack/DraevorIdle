@@ -67,8 +67,9 @@
   }
  ],
  "drop": {
-  "_nota": "Os DROPS de mapa (dono, 10/10: valores próximos aos do PoE, ajustáveis aqui). Só caem dentro de um mapa (a área é o tier dele) e do chefe do Ato 10. Por monstro: chanceBase × (1 + o bônus de quantidade do tipo — os mesmos do loot, regras.json → drop.bonusDeQuantidade) × (1 + a Quantidade de Itens do mapa); o tamanho da party não muda (como no PoE). O tier: o da área, ou um acima com `tierAcima[tipo]` (o normal só dá o tier da área; o T16 só dá T16). O chefe do mapa garante `chefe.garantidos` mapas (e `chefe.chanceDeMaisUm` de mais um) — a progressão não depende só da sorte. A raridade do mapa que cai: os pesos do loot (regras.json → drop.raridades), com a Raridade de Itens do mapa.",
+  "_nota": "Os DROPS de mapa (dono, 10/10: valores próximos aos do PoE, ajustáveis aqui). Só caem dentro de um mapa (a área é o tier dele) e do chefe do Ato 10. Por monstro: chanceBase × (1 + o bônus de quantidade do tipo — os mesmos do loot, regras.json → drop.bonusDeQuantidade) × (1 + a Quantidade de Itens do mapa); o tamanho da party não muda (como no PoE). O tier: o da área, ou um acima com `tierAcima[tipo]` (o normal só dá o tier da área; o T16 só dá T16). O chefe do mapa garante `chefe.garantidos` mapas (e `chefe.chanceDeMaisUm` de mais um) — a progressão não depende só da sorte. A raridade do mapa que cai: Normal/Mágico/Raro pelos pesos do loot (regras.json → drop.raridades) e o MAPA ÚNICO pela chance própria `chanceDoUnico` (dono, 10/10: 2% dos mapas que caem, no tier do drop), todos com a Raridade de Itens do mapa.",
   "chanceBase": 0.004,
+  "chanceDoUnico": 0.02,
   "tierAcima": {
    "normal": 0,
    "modificado": 0.25,
@@ -810,7 +811,7 @@
       "efeitos": [
        {
         "alvo": "monstros",
-        "stat": "danoExtraPct.fire",
+        "stat": "danoExtraPct.ice",
         "de": 0
        }
       ],
@@ -845,7 +846,7 @@
       "efeitos": [
        {
         "alvo": "monstros",
-        "stat": "danoExtraPct.fire",
+        "stat": "danoExtraPct.energy",
         "de": 0
        }
       ],
@@ -894,8 +895,12 @@
        {
         "alvo": "monstros",
         "stat": "velocidadeDeAtaquePct",
-        "de": 1,
-        "parcial": "a velocidade de conjuração dos monstros ainda não existe no jogo"
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 2
        }
       ],
       "recompensa": {
@@ -934,8 +939,12 @@
        {
         "alvo": "chefe",
         "stat": "danoPct",
-        "de": 0,
-        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+        "de": 0
+       },
+       {
+        "alvo": "chefe",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 1
        }
       ],
       "recompensa": {
@@ -973,9 +982,9 @@
       "efeitos": [
        {
         "alvo": "chefe",
-        "stat": "danoPct",
+        "stat": "vidaPct",
         "de": 0,
-        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+        "parcial": "o efeito em área do chefe ainda não existe no jogo"
        }
       ],
       "recompensa": {
@@ -1698,8 +1707,12 @@
        {
         "alvo": "monstros",
         "stat": "velocidadeDeAtaquePct",
-        "de": 1,
-        "parcial": "a velocidade de conjuração dos monstros ainda não existe no jogo"
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 2
        }
       ],
       "recompensa": {
@@ -1738,8 +1751,12 @@
        {
         "alvo": "chefe",
         "stat": "danoPct",
-        "de": 0,
-        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+        "de": 0
+       },
+       {
+        "alvo": "chefe",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 1
        }
       ],
       "recompensa": {
@@ -2677,8 +2694,12 @@
        {
         "alvo": "monstros",
         "stat": "velocidadeDeAtaquePct",
-        "de": 1,
-        "parcial": "a velocidade de conjuração dos monstros ainda não existe no jogo"
+        "de": 1
+       },
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 2
        }
       ],
       "recompensa": {
@@ -2717,8 +2738,12 @@
        {
         "alvo": "chefe",
         "stat": "danoPct",
-        "de": 0,
-        "parcial": "a velocidade de conjuração do chefe ainda não existe no jogo"
+        "de": 0
+       },
+       {
+        "alvo": "chefe",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 1
        }
       ],
       "recompensa": {
@@ -3299,7 +3324,3093 @@
     ]
    }
   },
-  "unicos": []
+  "unicos": [
+   {
+    "slug": "Actons_Nightmare",
+    "nome": "Pesadelo de Acton",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7708000,
+    "icone": "poe-itens/Mapas/unicos/Actons_Nightmare.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/musicbox",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Área possui trechos de Solo Ardente",
+      "modelo": "Área possui trechos de Solo Ardente",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o solo ardente/gélido/profano ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área é habitada por Esqueletos",
+      "modelo": "Área é habitada por Esqueletos",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros da área são os do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mortos Inquietos",
+      "modelo": "Mortos Inquietos",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros da área são os do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área é um imenso Labirinto",
+      "modelo": "Área é um imenso Labirinto",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o terreno é o do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém um Grande Baú",
+      "modelo": "Área contém um Grande Baú",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as áreas dos mapas não têm baús"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (80—100)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        80,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (220—250)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        220,
+        250
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "The_Cowards_Trial",
+    "nome": "Julgamento do Covarde",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7709000,
+    "icone": "poe-itens/Mapas/unicos/The_Cowards_Trial.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/UndeadSiege",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Contém ondas de Monstros",
+      "modelo": "Contém ondas de Monstros",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Contém ondas adicionais de Monstros Mortos-Vivos",
+      "modelo": "Contém ondas adicionais de Monstros Mortos-Vivos",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém ondas de Fantasmas adicionais",
+      "modelo": "Área contém ondas de Fantasmas adicionais",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém ondas de Zumbis Oriatianos adicionais",
+      "modelo": "Área contém ondas de Zumbis Oriatianos adicionais",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém ondas de Espíritos adicionais",
+      "modelo": "Área contém ondas de Espíritos adicionais",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém ondas de Espíritos Furiosos adicionais",
+      "modelo": "Área contém ondas de Espíritos Furiosos adicionais",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém ondas de Rhoas de Osso adicionais",
+      "modelo": "Área contém ondas de Rhoas de Osso adicionais",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém ondas de Mandíbulas Devastadoras adicionais",
+      "modelo": "Área contém ondas de Mandíbulas Devastadoras adicionais",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém ondas de Zumbis adicionais",
+      "modelo": "Área contém ondas de Zumbis adicionais",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as ondas de monstros ainda não existem no jogo"
+     }
+    ]
+   },
+   {
+    "slug": "Maelström_of_Chaos",
+    "nome": "Vórtice do Caos",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7710000,
+    "icone": "poe-itens/Mapas/unicos/Maelstrm_of_Chaos.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/MaelstromofChaos",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Área possui trechos de solo congelado",
+      "modelo": "Área possui trechos de solo congelado",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o solo ardente/gélido/profano ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "% do Dano dos Monstros é convertido em Raio",
+      "modelo": "% do Dano dos Monstros é convertido em Raio",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o poedb não traz o valor"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros causam 50% de Dano Físico como Dano de Raio extra",
+      "modelo": "Monstros causam {0}% de Dano Físico como Dano de Raio extra",
+      "faixas": [
+       [
+        50,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.energy",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros são Imunes a Atordoamentos ou Afecções Elementais aleatórias",
+      "modelo": "Monstros são Imunes a Atordoamentos ou Afecções Elementais aleatórias",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "a imunidade a afecções dos monstros ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Ataques Corpo a Corpo dos Monstros aplicam Feitiços aleatórios ao Acertar",
+      "modelo": "Ataques Corpo a Corpo dos Monstros aplicam Feitiços aleatórios ao Acertar",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os feitiços dos monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros Refletem Feitiços",
+      "modelo": "Monstros Refletem Feitiços",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os feitiços dos monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (40—60)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        40,
+        60
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (200—400)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        200,
+        400
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Mao_Kun",
+    "nome": "Mao Kun",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7707000,
+    "icone": "poe-itens/Mapas/unicos/Mao_Kun.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/FairgravesMap01",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em (60—100)%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        60,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "% do Dano dos Monstros é convertido em Raio",
+      "modelo": "% do Dano dos Monstros é convertido em Raio",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o poedb não traz o valor"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros causam (175—190)% de Dano Físico como Dano de Raio extra",
+      "modelo": "Monstros causam {0}% de Dano Físico como Dano de Raio extra",
+      "faixas": [
+       [
+        175,
+        190
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.energy",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros ganham uma Carga de Tolerância ao Acertar",
+      "modelo": "Monstros ganham uma Carga de Tolerância ao Acertar",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros ainda não ganham cargas"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros ganham uma Carga de Poder ao Acertar",
+      "modelo": "Monstros ganham uma Carga de Poder ao Acertar",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros ainda não ganham cargas"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (100—120)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        120
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Olmecs_Sanctum",
+    "nome": "Santuário Olmeca",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7701000,
+    "icone": "poe-itens/Mapas/unicos/Olmecs_Sanctum.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/olmec",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "(40—50)% mais Vida de Monstros",
+      "modelo": "{0}% mais Vida de Monstros",
+      "faixas": [
+       [
+        40,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Dano dos Monstros aumentado em (30—40)%",
+      "modelo": "Dano dos Monstros aumentado em {0}%",
+      "faixas": [
+       [
+        30,
+        40
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Final derruba Itens de Níveis maiores",
+      "modelo": "Chefe Final derruba Itens de Níveis maiores",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o nível dos itens do chefe ainda não sobe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (120—200)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        120,
+        200
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Poorjoys_Asylum",
+    "nome": "Hospício de Poorjoy",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7711000,
+    "icone": "poe-itens/Mapas/unicos/Poorjoys_Asylum.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/PoorjoysAsylum",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 150%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        150,
+        150
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "(140—160)% mais Vida de Monstros",
+      "modelo": "{0}% mais Vida de Monstros",
+      "faixas": [
+       [
+        140,
+        160
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Dano dos Monstros aumentado em (140—160)%",
+      "modelo": "Dano dos Monstros aumentado em {0}%",
+      "faixas": [
+       [
+        140,
+        160
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Movimento dos Monstros aumentada em 25%",
+      "modelo": "Velocidade de Movimento dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Ataque dos Monstros aumentada em 25%",
+      "modelo": "Velocidade de Ataque dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeAtaquePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Conjuração dos Monstros aumentada em 25%",
+      "modelo": "Velocidade de Conjuração dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área é um imenso Labirinto",
+      "modelo": "Área é um imenso Labirinto",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o terreno é o do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único derruba (10—15) Raro adicional (0—23)",
+      "modelo": "Chefe Único derruba {0} Raro adicional {1}",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        0,
+        23
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os Raros a mais do chefe ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em 250%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        250,
+        250
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Vaults_of_Atziri",
+    "nome": "Relíquias de Atziri",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7712000,
+    "icone": "poe-itens/Mapas/unicos/Vaults_of_Atziri.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/UniqueMap1",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Baús têm a Raridade de Itens aumentada em (2500—3500)%",
+      "modelo": "Baús têm a Raridade de Itens aumentada em {0}%",
+      "faixas": [
+       [
+        2500,
+        3500
+       ]
+      ],
+      "efeitos": [],
+      "nota": "as áreas dos mapas não têm baús"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área não contém monstros",
+      "modelo": "Área não contém monstros",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as áreas dos mapas sempre têm monstros"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Itens Encontrados têm (20—40)% de chance de caírem Corrompidos na Área",
+      "modelo": "Itens Encontrados têm {0}% de chance de caírem Corrompidos na Área",
+      "faixas": [
+       [
+        20,
+        40
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o item corrompido no drop ainda não existe no jogo"
+     }
+    ]
+   },
+   {
+    "slug": "Death_and_Taxes",
+    "nome": "Morte e Impostos",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7704000,
+    "icone": "poe-itens/Mapas/unicos/Death_and_Taxes.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/DeathandTaxes",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único causa Dano aumentado em (30—35)%",
+      "modelo": "Chefe Único causa Dano aumentado em {0}%",
+      "faixas": [
+       [
+        30,
+        35
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único tem (25—30)% de sua Velocidade de Conjuração aumentada",
+      "modelo": "Chefe Único tem {0}% de sua Velocidade de Conjuração aumentada",
+      "faixas": [
+       [
+        25,
+        30
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único aumenta 20000% de Experiência",
+      "modelo": "Chefe Único aumenta {0}% de Experiência",
+      "faixas": [
+       [
+        20000,
+        20000
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único derruba (12—20) Itens Monetários adicionais",
+      "modelo": "Chefe Único derruba {0} Itens Monetários adicionais",
+      "faixas": [
+       [
+        12,
+        20
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "moedasExtras",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 150%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        150,
+        150
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Obas_Cursed_Trove",
+    "nome": "Tesouro Maldito de Oba",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7713000,
+    "icone": "poe-itens/Mapas/unicos/Obas_Cursed_Trove.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/oba",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Área possui trechos de solo profano",
+      "modelo": "Área possui trechos de solo profano",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o solo ardente/gélido/profano ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "(40—50)% mais Vida de Monstros",
+      "modelo": "{0}% mais Vida de Monstros",
+      "faixas": [
+       [
+        40,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Dano dos Monstros aumentado em (30—40)%",
+      "modelo": "Dano dos Monstros aumentado em {0}%",
+      "faixas": [
+       [
+        30,
+        40
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área se torna fatal após algum tempo",
+      "modelo": "Área se torna fatal após algum tempo",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "a área que fica fatal ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 40%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        40,
+        40
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Whakawairua_Tuahu",
+    "nome": "Whakawairua Tuahu",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7714000,
+    "icone": "poe-itens/Mapas/unicos/Whakawairua_Tuahu.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/UniqueMapEye",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Área possui muitos Totens",
+      "modelo": "Área possui muitos Totens",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros da área são os do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Maldições têm seu efeito em Monstros reduzido em 50%",
+      "modelo": "Maldições têm seu efeito em Monstros reduzido em {0}%",
+      "faixas": [
+       [
+        50,
+        50
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os feitiços dos monstros ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (40—60)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        40,
+        60
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (120—160)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        120,
+        160
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Hall_of_Grandmasters",
+    "nome": "Salão dos Grão-Mestres",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7715000,
+    "icone": "poe-itens/Mapas/unicos/Hall_of_Grandmasters.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/HallOfGrandmasters",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Contém os Grão-Mestres Imortalizados / Escalonamento de dano de PvP em efeito",
+      "modelo": "Contém os Grão-Mestres Imortalizados / Escalonamento de dano de PvP em efeito",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os Grão-Mestres ainda não existem no jogo"
+     }
+    ]
+   },
+   {
+    "slug": "The_Vinktar_Square",
+    "nome": "A Praça Vinktar",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7702000,
+    "icone": "poe-itens/Mapas/unicos/The_Vinktar_Square.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/TheVinktarSquare",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "20% mais Vida de Monstros",
+      "modelo": "{0}% mais Vida de Monstros",
+      "faixas": [
+       [
+        20,
+        20
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros não são Afetados por Eletrizações",
+      "modelo": "Monstros não são Afetados por Eletrizações",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "imuneChoque",
+        "fixo": 1
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Dano dos Monstros aumentado em 20%",
+      "modelo": "Dano dos Monstros aumentado em {0}%",
+      "faixas": [
+       [
+        20,
+        20
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "+35% de Resistência a Raio para Monstros",
+      "modelo": "+{0}% de Resistência a Raio para Monstros",
+      "faixas": [
+       [
+        35,
+        35
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "resist.energy",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros causam 35% de Dano Físico como Dano de Raio extra",
+      "modelo": "Monstros causam {0}% de Dano Físico como Dano de Raio extra",
+      "faixas": [
+       [
+        35,
+        35
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoExtraPct.energy",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (100—150)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        150
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (100—150)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        150
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em (30—50)%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        30,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Caer_Blaidd,_Wolfpacks_Den",
+    "nome": "Caer Blaidd, Toca dos Lobos",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7703000,
+    "icone": "poe-itens/Mapas/unicos/Caer_Blaidd_Wolfpacks_Den.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/WolfMap",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Chefes Únicos derrubam 4 Mapas adicionais",
+      "modelo": "Chefes Únicos derrubam {0} Mapas adicionais",
+      "faixas": [
+       [
+        4,
+        4
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "mapasExtras",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros Mágicos aumentados em (20—50)%",
+      "modelo": "Monstros Mágicos aumentados em {0}%",
+      "faixas": [
+       [
+        20,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "magicosPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Número de Monstros Raros aumentado em (20—50)%",
+      "modelo": "Número de Monstros Raros aumentado em {0}%",
+      "faixas": [
+       [
+        20,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "instancia",
+        "stat": "rarosPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "25% mais Vida de Monstros",
+      "modelo": "{0}% mais Vida de Monstros",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Dano dos Monstros aumentado em 30%",
+      "modelo": "Dano dos Monstros aumentado em {0}%",
+      "faixas": [
+       [
+        30,
+        30
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 150%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        150,
+        150
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em 150%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        150,
+        150
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "The_Putrid_Cloister",
+    "nome": "O Claustro Pútrido",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7706000,
+    "icone": "poe-itens/Mapas/unicos/The_Putrid_Cloister.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/PutridCloister",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores são Amaldiçoados com Vulnerabilidade",
+      "modelo": "Jogadores são Amaldiçoados com Vulnerabilidade",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "vulnerabilidade"
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores são Amaldiçoados com Flamabilidade",
+      "modelo": "Jogadores são Amaldiçoados com Flamabilidade",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "flamabilidade"
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores são Amaldiçoados com Congelabilidade",
+      "modelo": "Jogadores são Amaldiçoados com Congelabilidade",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "congelabilidade"
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores são Amaldiçoados com Condutividade",
+      "modelo": "Jogadores são Amaldiçoados com Condutividade",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "condutividade"
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores são Amaldiçoados com Desespero",
+      "modelo": "Jogadores são Amaldiçoados com Desespero",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "desespero"
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único derruba cartas de adivinhação",
+      "modelo": "Chefe Único derruba cartas de adivinhação",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "as cartas de adivinhação não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 90%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        90,
+        90
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em 45%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        45,
+        45
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Hallowed_Ground",
+    "nome": "Terras Sagradas",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7705000,
+    "icone": "poe-itens/Mapas/unicos/Hallowed_Ground.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/HallowedGround",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Chefes Únicos derrubam 3 Mapas adicionais",
+      "modelo": "Chefes Únicos derrubam {0} Mapas adicionais",
+      "faixas": [
+       [
+        3,
+        3
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "mapasExtras",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único aumenta 2000% de Experiência",
+      "modelo": "Chefe Único aumenta {0}% de Experiência",
+      "faixas": [
+       [
+        2000,
+        2000
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "chefe",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "0.5 Cargas de Frasco recuperadas a cada 3 segundos",
+      "modelo": "{0} Cargas de Frasco recuperadas a cada {1} segundos",
+      "faixas": [
+       [
+        0.5,
+        0.5
+       ],
+       [
+        3,
+        3
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "frasco_regen_n:todos",
+        "de": 0
+       },
+       {
+        "alvo": "jogador",
+        "stat": "frasco_regen_s:todos",
+        "de": 1
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "(-2—2) ao Nível dos Monstros da Área",
+      "modelo": "{0} ao Nível dos Monstros da Área",
+      "faixas": [
+       [
+        -2,
+        2
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em 100%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Pillars_of_Arun",
+    "nome": "Pilares de Arun",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7716000,
+    "icone": "poe-itens/Mapas/unicos/Pillars_of_Arun.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/PillarsOfVastiri",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em (60—100)%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        60,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém brechas sem passagem atravessar",
+      "modelo": "Área contém brechas sem passagem atravessar",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o terreno é o do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros têm 50% de chance de Evitarem Afecções",
+      "modelo": "Monstros têm {0}% de chance de Evitarem Afecções",
+      "faixas": [
+       [
+        50,
+        50
+       ]
+      ],
+      "efeitos": [],
+      "nota": "a imunidade a afecções dos monstros ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Movimento dos Monstros aumentada em (20—25)%",
+      "modelo": "Velocidade de Movimento dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Ataque dos Monstros aumentada em (20—25)%",
+      "modelo": "Velocidade de Ataque dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeAtaquePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Conjuração dos Monstros aumentada em (20—25)%",
+      "modelo": "Velocidade de Conjuração dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores têm a Habilidade Avanço Nível 20",
+      "modelo": "Jogadores têm a Habilidade Avanço Nível {0}",
+      "faixas": [
+       [
+        20,
+        20
+       ]
+      ],
+      "efeitos": [],
+      "nota": "as habilidades de movimento ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores têm 200% de Velocidade de Recarga aumentada para Habilidades de Movimento",
+      "modelo": "Jogadores têm {0}% de Velocidade de Recarga aumentada para Habilidades de Movimento",
+      "faixas": [
+       [
+        200,
+        200
+       ]
+      ],
+      "efeitos": [],
+      "nota": "as habilidades de movimento ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (100—150)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        150
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (200—300)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        200,
+        300
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "The_Twilight_Temple",
+    "nome": "Templo do Crepúsculo",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7717000,
+    "icone": "poe-itens/Mapas/unicos/The_Twilight_Temple.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/Celestial",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em %",
+      "modelo": "Ganho de Experiência aumentado em %",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o poedb não traz o valor"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área possui aumento na variedade de monstros",
+      "modelo": "Área possui aumento na variedade de monstros",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros da área são os do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores são Amaldiçoados com Flamabilidade",
+      "modelo": "Jogadores são Amaldiçoados com Flamabilidade",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "flamabilidade"
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores são Amaldiçoados com Congelabilidade",
+      "modelo": "Jogadores são Amaldiçoados com Congelabilidade",
+      "faixas": [],
+      "efeitos": [
+       {
+        "alvo": "jogador",
+        "stat": "maldicao",
+        "fixo": "congelabilidade"
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área é habitada por seguidores de Lunaris",
+      "modelo": "Área é habitada por seguidores de Lunaris",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros da área são os do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área é habitada por seguidores de Solaris",
+      "modelo": "Área é habitada por seguidores de Solaris",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "os monstros da área são os do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (75—100)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        75,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (125—175)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        125,
+        175
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em (25—50)%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        25,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Doryanis_Machinarium",
+    "nome": "Maquinário de Doryani",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7718000,
+    "icone": "poe-itens/Mapas/unicos/Doryanis_Machinarium.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/Doryanis",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em (20—50)%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        20,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único é ampliado pelas escolhas do Jogador",
+      "modelo": "Chefe Único é ampliado pelas escolhas do Jogador",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "a escolha do chefe ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (40—60)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        40,
+        60
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (40—60)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        40,
+        60
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Itens Encontrados têm 10% de chance de caírem Corrompidos na Área",
+      "modelo": "Itens Encontrados têm {0}% de chance de caírem Corrompidos na Área",
+      "faixas": [
+       [
+        10,
+        10
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o item corrompido no drop ainda não existe no jogo"
+     }
+    ]
+   },
+   {
+    "slug": "Cortex",
+    "nome": "Cortex",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7719000,
+    "icone": "poe-itens/Mapas/unicos/Cortex.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/SynthesisBossGuardianMap",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 100%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Nível dos Monstros: 83",
+      "modelo": "Nível dos Monstros: {0}",
+      "faixas": [
+       [
+        83,
+        83
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa possui (3—5) Modificadores aleatórios adicionais",
+      "modelo": "Mapa possui {0} Modificadores aleatórios adicionais",
+      "faixas": [
+       [
+        3,
+        5
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa tem (4—6) Modificadores Synthesis Globais adicionais",
+      "modelo": "Mapa tem {0} Modificadores Synthesis Globais adicionais",
+      "faixas": [
+       [
+        4,
+        6
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 25%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Altered_Distant_Memory",
+    "nome": "Memória Distante Alterada",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7720000,
+    "icone": "poe-itens/Mapas/unicos/Altered_Distant_Memory.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/SynthesisColdGuardianMap",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 100%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Nível dos Monstros: 81",
+      "modelo": "Nível dos Monstros: {0}",
+      "faixas": [
+       [
+        81,
+        81
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa possui (3—5) Modificadores aleatórios adicionais",
+      "modelo": "Mapa possui {0} Modificadores aleatórios adicionais",
+      "faixas": [
+       [
+        3,
+        5
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa tem (2—4) Modificadores Synthesis Globais adicionais",
+      "modelo": "Mapa tem {0} Modificadores Synthesis Globais adicionais",
+      "faixas": [
+       [
+        2,
+        4
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 25%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Augmented_Distant_Memory",
+    "nome": "Memória Distante Aumentada",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7721000,
+    "icone": "poe-itens/Mapas/unicos/Augmented_Distant_Memory.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/SynthesisFireGuardianMap",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 100%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Nível dos Monstros: 81",
+      "modelo": "Nível dos Monstros: {0}",
+      "faixas": [
+       [
+        81,
+        81
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa possui (3—5) Modificadores aleatórios adicionais",
+      "modelo": "Mapa possui {0} Modificadores aleatórios adicionais",
+      "faixas": [
+       [
+        3,
+        5
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa tem (2—4) Modificadores Synthesis Globais adicionais",
+      "modelo": "Mapa tem {0} Modificadores Synthesis Globais adicionais",
+      "faixas": [
+       [
+        2,
+        4
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 25%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Twisted_Distant_Memory",
+    "nome": "Memória Distante Distorcida",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7722000,
+    "icone": "poe-itens/Mapas/unicos/Twisted_Distant_Memory.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/SynthesisLightningGuardianMap",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 100%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Nível dos Monstros: 81",
+      "modelo": "Nível dos Monstros: {0}",
+      "faixas": [
+       [
+        81,
+        81
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa possui (3—5) Modificadores aleatórios adicionais",
+      "modelo": "Mapa possui {0} Modificadores aleatórios adicionais",
+      "faixas": [
+       [
+        3,
+        5
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa tem (2—4) Modificadores Synthesis Globais adicionais",
+      "modelo": "Mapa tem {0} Modificadores Synthesis Globais adicionais",
+      "faixas": [
+       [
+        2,
+        4
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 25%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Rewritten_Distant_Memory",
+    "nome": "Memória Distante Reescrita",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7723000,
+    "icone": "poe-itens/Mapas/unicos/Rewritten_Distant_Memory.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/SynthesisGolemGuardianMap",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 100%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Nível dos Monstros: 81",
+      "modelo": "Nível dos Monstros: {0}",
+      "faixas": [
+       [
+        81,
+        81
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa possui (3—5) Modificadores aleatórios adicionais",
+      "modelo": "Mapa possui {0} Modificadores aleatórios adicionais",
+      "faixas": [
+       [
+        3,
+        5
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa tem (2—4) Modificadores Synthesis Globais adicionais",
+      "modelo": "Mapa tem {0} Modificadores Synthesis Globais adicionais",
+      "faixas": [
+       [
+        2,
+        4
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 25%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Replica_Cortex",
+    "nome": "Réplica: Córtex",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7724000,
+    "icone": "poe-itens/Mapas/unicos/Replica_Cortex.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/SynthesisBossGuardianMap",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 200%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        200,
+        200
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Nível dos Monstros: 84",
+      "modelo": "Nível dos Monstros: {0}",
+      "faixas": [
+       [
+        84,
+        84
+       ]
+      ],
+      "efeitos": [],
+      "nota": "o nível dos monstros é o do tier do mapa (ainda não muda por modificador)"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa possui (6—8) Modificadores aleatórios adicionais",
+      "modelo": "Mapa possui {0} Modificadores aleatórios adicionais",
+      "faixas": [
+       [
+        6,
+        8
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Mapa tem (4—6) Modificadores Synthesis Globais adicionais",
+      "modelo": "Mapa tem {0} Modificadores Synthesis Globais adicionais",
+      "faixas": [
+       [
+        4,
+        6
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os modificadores a mais do mapa ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 25%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Replica_Pillars_of_Arun",
+    "nome": "Réplica: Pilares de Arun",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7725000,
+    "icone": "poe-itens/Mapas/unicos/Replica_Pillars_of_Arun.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/PillarsOfVastiri",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em (60—100)%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        60,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área contém brechas sem passagem atravessar",
+      "modelo": "Área contém brechas sem passagem atravessar",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o terreno é o do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros têm 50% de chance de Evitarem Afecções",
+      "modelo": "Monstros têm {0}% de chance de Evitarem Afecções",
+      "faixas": [
+       [
+        50,
+        50
+       ]
+      ],
+      "efeitos": [],
+      "nota": "a imunidade a afecções dos monstros ainda não existe no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Dano dos Monstros aumentado em 100%",
+      "modelo": "Dano dos Monstros aumentado em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Movimento dos Monstros aumentada em (20—25)%",
+      "modelo": "Velocidade de Movimento dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Ataque dos Monstros aumentada em (20—25)%",
+      "modelo": "Velocidade de Ataque dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeAtaquePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Conjuração dos Monstros aumentada em (20—25)%",
+      "modelo": "Velocidade de Conjuração dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        20,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores têm a Habilidade Avanço Nível 20",
+      "modelo": "Jogadores têm a Habilidade Avanço Nível {0}",
+      "faixas": [
+       [
+        20,
+        20
+       ]
+      ],
+      "efeitos": [],
+      "nota": "as habilidades de movimento ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Jogadores têm 200% de Velocidade de Recarga aumentada para Habilidades de Movimento",
+      "modelo": "Jogadores têm {0}% de Velocidade de Recarga aumentada para Habilidades de Movimento",
+      "faixas": [
+       [
+        200,
+        200
+       ]
+      ],
+      "efeitos": [],
+      "nota": "as habilidades de movimento ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em (200—250)%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        200,
+        250
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em (200—300)%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        200,
+        300
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 30%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        30,
+        30
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "slug": "Replica_Poorjoys_Asylum",
+    "nome": "Réplica: Hospício de Poorjoy",
+    "base": "Mapa (Nível 1)",
+    "itemIdBase": 7726000,
+    "icone": "poe-itens/Mapas/unicos/Replica_Poorjoys_Asylum.png",
+    "iconeLado": 80,
+    "arte": "Art/2DItems/Maps/PoorjoysAsylum",
+    "requisitos": {
+     "nivel": 58,
+     "forca": null,
+     "destreza": null,
+     "inteligencia": null
+    },
+    "atributosDaBase": {},
+    "modificadores": [
+     {
+      "tipo": "explicit",
+      "texto": "Ganho de Experiência aumentado em 200%",
+      "modelo": "Ganho de Experiência aumentado em {0}%",
+      "faixas": [
+       [
+        200,
+        200
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "experienciaPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "(140—160)% mais Vida de Monstros",
+      "modelo": "{0}% mais Vida de Monstros",
+      "faixas": [
+       [
+        140,
+        160
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "vidaPct",
+        "de": 0,
+        "mais": true
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Monstros têm a Chance de Crítico aumentada em (500—1000)%",
+      "modelo": "Monstros têm a Chance de Crítico aumentada em {0}%",
+      "faixas": [
+       [
+        500,
+        1000
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "critChance",
+        "de": 0,
+        "escala": 0.05
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "+(60—100)% ao Multiplicador de Crítico do Monstro",
+      "modelo": "+{0}% ao Multiplicador de Crítico do Monstro",
+      "faixas": [
+       [
+        60,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "critMultiplicador",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Dano dos Monstros aumentado em (140—160)%",
+      "modelo": "Dano dos Monstros aumentado em {0}%",
+      "faixas": [
+       [
+        140,
+        160
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "danoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Movimento dos Monstros aumentada em 25%",
+      "modelo": "Velocidade de Movimento dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Ataque dos Monstros aumentada em 25%",
+      "modelo": "Velocidade de Ataque dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeAtaquePct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Velocidade de Conjuração dos Monstros aumentada em 25%",
+      "modelo": "Velocidade de Conjuração dos Monstros aumentada em {0}%",
+      "faixas": [
+       [
+        25,
+        25
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "velocidadeDeConjuracaoPct",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Área é um imenso Labirinto",
+      "modelo": "Área é um imenso Labirinto",
+      "faixas": [],
+      "efeitos": [],
+      "nota": "o terreno é o do tier do mapa"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Chefe Único derruba (10—15) Raro adicional (0—23)",
+      "modelo": "Chefe Único derruba {0} Raro adicional {1}",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        0,
+        23
+       ]
+      ],
+      "efeitos": [],
+      "nota": "os Raros a mais do chefe ainda não existem no jogo"
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Quantidade de Itens encontrados nesta Área aumentada em 100%",
+      "modelo": "Quantidade de Itens encontrados nesta Área aumentada em {0}%",
+      "faixas": [
+       [
+        100,
+        100
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "quantidade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Raridade de Itens encontrados nessa Área aumentada em 250%",
+      "modelo": "Raridade de Itens encontrados nessa Área aumentada em {0}%",
+      "faixas": [
+       [
+        250,
+        250
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "raridade",
+        "de": 0
+       }
+      ]
+     },
+     {
+      "tipo": "explicit",
+      "texto": "Tamanho do Grupo aumentado em 50%",
+      "modelo": "Tamanho do Grupo aumentado em {0}%",
+      "faixas": [
+       [
+        50,
+        50
+       ]
+      ],
+      "efeitos": [
+       {
+        "alvo": "mapa",
+        "stat": "grupo",
+        "de": 0
+       }
+      ]
+     }
+    ]
+   }
+  ]
  },
  "naoImplementados": [
   {
