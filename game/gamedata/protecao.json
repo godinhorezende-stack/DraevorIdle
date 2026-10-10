@@ -3,5 +3,7 @@
  "minimoMs": 3000,
  "esperaMaximaMs": 30000,
  "tentativas": 2,
- "portal": { "abertoMs": 3000, "fechamentoMs": 3000 }
+ "portal": { "abertoMs": 3000, "fechamentoMs": 3000 },
+ "_notaDaChegada": "`chegada` (dono, 10/10: \"quando ele aparece na fase, a animação dos 3 segundos aparecendo no teletransporte tem que ter; quem some sozinho é o portal\"): na cena nova o portal abre onde ele chega e o personagem SURGE dele em `surgindoMs` (a barra conta) — só então a tela confirma o carregamento e o combate começa —, e depois o portal fecha sozinho em `fechamentoMs` (o personagem fica).",
+ "chegada": { "surgindoMs": 3000, "fechamentoMs": 3000 }
 }

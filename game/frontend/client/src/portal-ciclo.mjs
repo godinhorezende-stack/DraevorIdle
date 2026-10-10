@@ -45,6 +45,38 @@ export function quadroDoCiclo(t, ciclo = CICLO_PADRAO) {
   return { fase: 'fim', barra: 0, portal: { alpha: 0, escala: 0.55 }, personagem: { alpha: 0, escala: 0.65 }, energia: 0 };
 }
 
+/*
+ * ---- A CHEGADA (dono, 10/10: "quando ele aparece na fase, a animação dos 3 segundos aparecendo no teletransporte tem que ter; mas aí
+ * é só de aparecer, e quem some sozinho é o portal") ----
+ * O espelho da saída, na cena NOVA (com o mapa já desenhável):
+ *   SURGINDO (`surgindoMs`, 3 s): o portal abre onde ele chega e o personagem surge de dentro dele (fade-in, crescendo); a barra conta.
+ *            A tela só confirma o carregamento ao fim desta fase — o combate começa com ele inteiro na tela.
+ *   FECHANDO (`fechamentoMs`, 3 s): o portal fecha SOZINHO (fade e encolhe); o personagem fica, já jogando. Sem barra.
+ */
+export const CHEGADA_PADRAO = Object.freeze({ surgindoMs: 3000, fechamentoMs: 3000 });
+
+/** A duração inteira da chegada (ms). */
+export const duracaoDaChegada = (ciclo = CHEGADA_PADRAO) => Math.max(0, ciclo.surgindoMs) + Math.max(0, ciclo.fechamentoMs);
+
+/** O quadro da chegada `t` ms depois do início: o mesmo formato de `quadroDoCiclo` (fases 'surgindo' | 'fechando' | 'fim'). */
+export function quadroDaChegada(t, ciclo = CHEGADA_PADRAO) {
+  const surgindo = Math.max(0, ciclo.surgindoMs);
+  const fechamento = Math.max(0, ciclo.fechamentoMs);
+  const energia = 0.5 + 0.5 * Math.sin((Math.max(0, t) / 420) * Math.PI * 2);
+  if (t < surgindo) {
+    const abrindo = suave(limitar(t / Math.min(ABRINDO_MS, surgindo || 1)));
+    // O personagem começa a surgir logo que o portal acende e termina inteiro no fim da fase.
+    const p = limitar((t - Math.min(ABRINDO_MS, surgindo) * 0.5) / Math.max(1, surgindo - Math.min(ABRINDO_MS, surgindo) * 0.5));
+    const surgiu = suave(p);
+    return { fase: 'surgindo', barra: surgindo ? limitar(1 - t / surgindo) : 0, portal: { alpha: abrindo, escala: 0.55 + 0.45 * abrindo }, personagem: { alpha: surgiu, escala: 0.65 + 0.35 * surgiu }, energia };
+  }
+  if (t < surgindo + fechamento) {
+    const some = suave(limitar((t - surgindo) / (fechamento || 1)));
+    return { fase: 'fechando', barra: 0, portal: { alpha: 1 - some, escala: 1 - 0.45 * some }, personagem: { alpha: 1, escala: 1 }, energia };
+  }
+  return { fase: 'fim', barra: 0, portal: { alpha: 0, escala: 0.55 }, personagem: { alpha: 1, escala: 1 }, energia: 0 };
+}
+
 /**
  * A CENA na tela, numa chave: a caçada pela entrada (cada caçada, instância e sala da party é uma), a cidade pelo id e pelo contador de
  * teletransporte (a viagem entre cidades). Trocar a chave é viajar. null sem cena.

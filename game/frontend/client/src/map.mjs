@@ -7,7 +7,7 @@ import { comecarPasso, teleportar } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais, desenharQuadroDeAsset, duracaoDoAsset } from './efeitos-visuais.mjs';
-import { quadroDoCiclo } from './portal-ciclo.mjs';
+import { quadroDoCiclo, quadroDaChegada } from './portal-ciclo.mjs';
 /** A cortina "Traçando a rota" (`mostrarViagem`, main.mjs) está cobrindo a tela? */
 const cortinaDeViagemNaTela = () => typeof document !== 'undefined' && document.getElementById('viagem')?.hidden === false;
 /** Os eventos que a camada de efeitos desenha (os outros — números, falas — seguem aqui no mapa). */
@@ -2633,7 +2633,10 @@ export class MapView {
      * No fechamento do portal o personagem some junto, encolhendo para o centro da casa — a sensação de ser puxado para dentro. O nome
      * dele sai enquanto o portal está aberto: a barra do portal fica no lugar.
      */
-    const absorcao = entity.isPlayer && this.portalDeSaida ? this.quadroDoPortal(now)?.personagem : null;
+    // (Na CHEGADA, o contrário: ele surge do portal — e o nome volta quando a barra sai.)
+    const chegando = entity.isPlayer && !this.portalDeSaida && this.portalDeChegada ? this.quadroDaChegadaAgora(now) : null;
+    const absorcao = entity.isPlayer && this.portalDeSaida ? this.quadroDoPortal(now)?.personagem : chegando?.personagem ?? null;
+    const semONome = !!(entity.isPlayer && this.portalDeSaida) || chegando?.fase === 'surgindo';
     if (absorcao && absorcao.alpha <= 0.01) return;
     if (absorcao) {
       ctx.save();
@@ -2662,10 +2665,8 @@ export class MapView {
         py
       );
     }
-    if (absorcao) {
-      ctx.restore();
-      return;
-    }
+    if (absorcao) ctx.restore();
+    if (semONome) return;
 
     // Moldura vermelha em cima do alvo, como o quadrado de ataque do client.
     if (this.targetUid != null && entity.uid === this.targetUid) {
@@ -3478,7 +3479,50 @@ export class MapView {
   drawPortalDeSaida(now) {
     const q = this.quadroDoPortal(now);
     if (!q || q.fase === 'fim') return;
-    const { x, y } = this.portalDeSaida;
+    const { x, y, inicio } = this.portalDeSaida;
+    this.desenharVortice(x, y, q, now - inicio);
+    // A barra: na camada de texto (nítida em qualquer zoom), logo acima do portal, acompanhando a casa dele na tela.
+    this.drawBarraDoPortal(x, y, q);
+  }
+
+  /*
+   * ---- O PORTAL DE CHEGADA (dono, 10/10 — `portal-ciclo.mjs`, `quadroDaChegada`) ----
+   * Na cena nova, onde ele chega: o personagem surge do portal (`surgindoMs`, com a barra) e depois o portal fecha SOZINHO
+   * (`fechamentoMs`) — o personagem fica. Some da tela por conta própria no fim (nenhum efeito fica).
+   */
+  abrirPortalDeChegada({ x, y, ciclo, agora = performance.now() }) {
+    // O portal de chegada que o servidor mandou para a mesma casa é este (não ficam dois).
+    this.effects = this.effects.filter((e) => !(e.rotulo === 'portal' && e.x === x && e.y === y));
+    this.portalDeChegada = { x, y, ciclo, inicio: agora };
+    this.precisaDesenhar = true;
+  }
+
+  fecharPortalDeChegada() {
+    if (!this.portalDeChegada) return;
+    this.portalDeChegada = null;
+    this.precisaDesenhar = true;
+  }
+
+  /** O quadro da chegada agora (`quadroDaChegada`), ou null sem portal de chegada. */
+  quadroDaChegadaAgora(now) {
+    const p = this.portalDeChegada;
+    return p ? quadroDaChegada(now - p.inicio, p.ciclo) : null;
+  }
+
+  drawPortalDeChegada(now) {
+    const q = this.quadroDaChegadaAgora(now);
+    if (!q) return;
+    if (q.fase === 'fim') {
+      this.portalDeChegada = null;
+      return;
+    }
+    const { x, y, inicio } = this.portalDeChegada;
+    this.desenharVortice(x, y, q, now - inicio);
+    if (q.barra > 0) this.drawBarraDoPortal(x, y, q);
+  }
+
+  /** O vórtice (o halo que pulsa, o desenho da Arena de Efeitos e o anel girando) na casa (x, y), no quadro `q` do ciclo. */
+  desenharVortice(x, y, q, decorrido) {
     const ctx = this.ctx;
     const cx = x * TILE + TILE / 2 - this.camera.x;
     const cy = y * TILE + TILE / 2 - this.camera.y;
@@ -3502,7 +3546,7 @@ export class MapView {
       ctx.translate(cx, cy);
       ctx.scale(q.portal.escala, q.portal.escala);
       const natural = duracaoDoAsset(asset) || 600;
-      desenharQuadroDeAsset(ctx, asset, ((now - this.portalDeSaida.inicio) % natural) / natural, 0, 0);
+      desenharQuadroDeAsset(ctx, asset, (decorrido % natural) / natural, 0, 0);
     }
     ctx.restore();
     ctx.save();
@@ -3510,13 +3554,11 @@ export class MapView {
     ctx.strokeStyle = fechando ? '#e0663f' : '#b78cff';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([5, 4]);
-    ctx.lineDashOffset = -((now - this.portalDeSaida.inicio) / 40);
+    ctx.lineDashOffset = -(decorrido / 40);
     ctx.beginPath();
     ctx.ellipse(cx, cy + 4, raio, raio * 0.55, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
-    // A barra: na camada de texto (nítida em qualquer zoom), logo acima do portal, acompanhando a casa dele na tela.
-    this.drawBarraDoPortal(x, y, q);
   }
 
   drawBarraDoPortal(x, y, q) {
@@ -3594,7 +3636,7 @@ export class MapView {
   drawSeloDeProtecao() {
     const snap = this.snapshot;
     const eu = snap?.player;
-    if (!snap || !eu || this.portalDeSaida) return;
+    if (!snap || !eu || this.portalDeSaida || this.quadroDaChegadaAgora(performance.now())?.fase === 'surgindo') return;
     const naZona = !!this.zonasSeguras?.casas?.has(eu.x * 65536 + eu.y) && this.zonasSeguras.lista === snap.map?.seguras?.[snap.z ?? snap.map?.z];
     const texto = snap.protegido ? 'Protegido — preparando o mapa' : naZona ? 'Zona segura' : null;
     if (!texto) return;
@@ -3670,8 +3712,8 @@ export class MapView {
   podePularQuadro(now) {
     // Sem retrato não há o que comparar, e a tela precisa do fundo preto.
     if (!this.snapshot) return false;
-    // O portal de saída anima a cada quadro (a energia, a barra, o fade).
-    if (this.portalDeSaida) return false;
+    // Os portais de saída e de chegada animam a cada quadro (a energia, a barra, o fade).
+    if (this.portalDeSaida || this.portalDeChegada) return false;
     // Redraw obrigatório: o canvas foi redimensionado (e portanto apagado), ou
     // chegou um retrato novo do servidor.
     if (this.precisaDesenhar) {
@@ -4031,6 +4073,7 @@ export class MapView {
     if (graficoLigado('projeteis')) this.drawMissiles(now);
     // O portal de saída da viagem: sempre (não é enfeite — é a viagem), por cima de tudo, com a barra na camada de texto.
     this.drawPortalDeSaida(now);
+    this.drawPortalDeChegada(now);
     this.drawTexts(now);
     this.drawSeloDeProtecao();
 

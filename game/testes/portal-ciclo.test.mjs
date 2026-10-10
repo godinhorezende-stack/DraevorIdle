@@ -80,3 +80,32 @@ test('o portal de saída abre só numa VIAGEM: com cena antes, cena diferente e 
   assert.equal(abrePortal({ antes: 'h:x1', depois: 'c:city:0', morreu: true }), false, 'morrer não é viajar');
   assert.equal(abrePortal({ antes: 'c:city:0', depois: 'h:duelo', pvp: true }), false, 'o duelo da Arena (sem proteção de entrada, com a largada dele) entra direto');
 });
+
+test('a CHEGADA: o personagem SURGE do portal em 3 s (com a barra) e depois o portal fecha SOZINHO — o personagem fica', async () => {
+  const { CHEGADA_PADRAO, duracaoDaChegada, quadroDaChegada } = await import('../frontend/client/src/portal-ciclo.mjs');
+  assert.deepEqual({ ...CHEGADA_PADRAO }, { surgindoMs: 3000, fechamentoMs: 3000 });
+  assert.deepEqual(CHEGADA_PADRAO, { ...Protecao.chegada() }, 'o mesmo ciclo que o servidor manda no welcome');
+  assert.equal(duracaoDaChegada(), 6000);
+  const em = (t) => quadroDaChegada(t);
+  assert.equal(em(0).fase, 'surgindo');
+  perto(em(0).personagem.alpha, 0, 'ele começa invisível');
+  perto(em(0).barra, 1);
+  perto(em(1500).barra, 0.5, 'a barra conta os 3 s');
+  // Surge aos poucos, sem pulo, e termina inteiro no fim da fase.
+  let antes = em(0);
+  for (let t = 50; t <= 3000; t += 50) {
+    const q = em(t);
+    assert.ok(q.personagem.alpha >= antes.personagem.alpha - 1e-9 && q.personagem.alpha - antes.personagem.alpha < 0.06, `surge suave em ${t}`);
+    antes = q;
+  }
+  assert.ok(em(2999).personagem.alpha > 0.99, 'inteiro no fim do surgimento');
+  assert.equal(em(3000).fase, 'fechando');
+  perto(em(3000).personagem.alpha, 1, 'o personagem fica');
+  perto(em(3000).portal.alpha, 1, 'o portal começa a fechar inteiro');
+  assert.equal(em(3000).barra, 0, 'no fechamento sozinho, sem barra');
+  assert.ok(em(4500).portal.alpha < 1 && em(4500).portal.escala < 1, 'o portal some (e encolhe) sozinho');
+  perto(em(4500).personagem.alpha, 1);
+  const fim = em(6000);
+  assert.deepEqual([fim.fase, fim.portal.alpha, fim.personagem.alpha, fim.barra], ['fim', 0, 1, 0], 'no fim: nada do portal fica, o personagem sim');
+  assert.equal(quadroDaChegada(1000, { surgindoMs: 1000, fechamentoMs: 500 }).fase, 'fechando', 'segue a configuração');
+});
