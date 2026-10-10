@@ -389,6 +389,8 @@ export const BUFFS = {
   danCaCarmesim: { nome: 'Dança Carmesim', af: {} },
   confluxo: { nome: 'Confluxo Elemental', af: { chance_ignite: 100, chance_freeze: 100, chance_shock: 100 } },
   altarMenor: { nome: 'Altar Menor', af: { dmg_inc: 10 } },
+  // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
+  rapidez: { nome: 'Rapidez', af: (estado) => ({ move_speed: estado?.hunt?.rapidez?.movimentoPct ?? 0 }) },
 };
 /** O buff está ativo? (ganho por evento, ou "sempre" pela soma). */
 export function buffAtivo(estado, nome, total = null) {
@@ -416,7 +418,7 @@ export function adds(estado, total = null) {
   for (const [nome, b] of Object.entries(BUFFS)) {
     if (!buffAtivo(estado, nome, total)) continue;
     const efeito = 1 + (Number(total?.[`efeito_buff:${nome}`]) || 0) / 100;
-    for (const [k, v] of Object.entries(b.af)) saida[k] = (saida[k] ?? 0) + v * efeito;
+    for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * efeito;
   }
   return Object.keys(saida).length ? saida : null;
 }
@@ -685,6 +687,35 @@ export function ganharFuria(hunt, n, agora = hunt?.clock ?? 0) {
   f.ganhou = agora;
   f.perdeu = agora;
 }
+// ---------------------------------------------------------------- o Momentum (suporte do PoE)
+
+/**
+ * O MOMENTUM (suporte do PoE): "Ganhe 1 de Momentum quando você Usar uma Habilidade Suportada", "Perca todo o Momentum ao se Mover" e "Ao
+ * atingir N de Momentum, perca todo o Momentum e ganhe Rapidez por D segundos" (a Rapidez: velocidade de movimento por Momentum perdido).
+ * A velocidade de ataque "por Momentum" é lida na hora do uso (`Acoes.temposDaGemaPoe`). `efeito`: o da gema (`Gemas.efeitoNaSkill`).
+ * Devolve `{ perdido }` quando chegou no máximo (a ficha muda com a Rapidez), senão null.
+ */
+export const momentumAtual = (estado) => Math.max(0, estado?.hunt?.momentum?.n | 0);
+export function ganharMomentum(hunt, efeito, agora = hunt?.clock ?? 0) {
+  const porUso = Number(efeito?.momentumPorUso) || 0;
+  if (!hunt || !(porUso > 0)) return null;
+  const m = (hunt.momentum ??= { n: 0 });
+  m.n = (m.n | 0) + porUso;
+  const maximo = Number(efeito.momentumMaximo) || 0;
+  if (!(maximo > 0) || m.n < maximo) return null;
+  const perdido = m.n;
+  m.n = 0;
+  if (efeito.rapidezMs > 0) {
+    hunt.rapidez = { movimentoPct: (Number(efeito.rapidezMovimentoPct) || 0) * perdido };
+    ganharBuff(hunt, 'rapidez', efeito.rapidezMs / 1000, agora);
+  }
+  return { perdido };
+}
+/** Andou: perde todo o Momentum. */
+export function perderMomentum(hunt) {
+  if (hunt?.momentum?.n) hunt.momentum.n = 0;
+}
+
 /** O tique da Fúria (a caçada chama): sem ganhar há `esperaMs`, perde 1 a cada `perdaMs`. */
 export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
   const f = hunt?.furia;
