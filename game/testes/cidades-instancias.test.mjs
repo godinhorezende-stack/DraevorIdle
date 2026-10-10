@@ -106,3 +106,29 @@ test('o ato da fronteira é a cidade de quem ainda não tem uma (a sessão põe 
   assert.equal(Campanha.atoDaFronteira(novo), 1);
   assert.equal(Campanha.atoDaFronteira(personagemDeTeste({ level: 30 })) >= 1, true);
 });
+
+test('a viagem é um TELETRANSPORTE: a praça marca a chegada (o cliente não puxa o boneco), o caminho acaba e o portal de chegada aparece', { skip: SEM }, () => {
+  const enviados = [];
+  const s = new Sessao({ readyState: 1, send: (t) => enviados.push(JSON.parse(t)) });
+  s.personagem = { id: 0, nome: 'Teletransportado' };
+  s.estado = personagemDeTeste({ level: 30 });
+  s.estado.atoDaCidade = 1;
+  // Andando para longe do centro (um clique no mapa).
+  s.estado.pos = { x: R.POSICAO_INICIAL.x + 9, y: R.POSICAO_INICIAL.y, z: 7, dir: 2 };
+  s.estado.destino = { x: R.POSICAO_INICIAL.x + 15, y: R.POSICAO_INICIAL.y };
+  s.receber({ t: 'irParaCidade', ato: 2 });
+  assert.equal(s.estado.destino, null, 'o caminho que ele andava acabou');
+  const quadro = enviados.find((m) => m.city?.player && m.events?.some((ev) => ev.t === 'portal'));
+  assert.ok(quadro, 'o quadro da chegada leva a casa nova e o portal');
+  assert.deepEqual([quadro.city.player.x, quadro.city.player.y], [R.POSICAO_INICIAL.x, R.POSICAO_INICIAL.y]);
+  assert.equal(quadro.city.player.teleporte, 1, 'marcado como teletransporte');
+  const portal = quadro.events.find((ev) => ev.t === 'portal');
+  assert.deepEqual([portal.x, portal.y, portal.chegada], [R.POSICAO_INICIAL.x, R.POSICAO_INICIAL.y, true], 'o portal de viagem na chegada');
+  assert.equal(quadro.city.cidade.ato, 2);
+  // Ir para a cidade em que já está: nada de teletransporte.
+  enviados.length = 0;
+  s.receber({ t: 'irParaCidade', ato: 2 });
+  assert.ok(!enviados.some((m) => m.events?.some((ev) => ev.t === 'portal')), 'sem portal');
+  assert.equal(s.teleporte, 1, 'o contador não andou');
+});
+

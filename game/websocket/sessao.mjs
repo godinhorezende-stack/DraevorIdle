@@ -287,7 +287,8 @@ function snapshotDaPraca(estado, comMapa, sessao = null) {
     cidade,
     z: estado.pos.z ?? R.POSICAO_INICIAL.z,
     ...(comMapa ? { map: CITY_MAP } : {}),
-    player: { x: estado.pos.x, y: estado.pos.y, dir: estado.pos.dir ?? 2, moveMs: R.PASSO_MS },
+    // (`teleporte`: o contador das viagens da sessão — mudou, o cliente põe o boneco na casa nova sem desenhar o caminho.)
+    player: { x: estado.pos.x, y: estado.pos.y, dir: estado.pos.dir ?? 2, moveMs: R.PASSO_MS, ...(sessao?.teleporte ? { teleporte: sessao.teleporte } : {}) },
     monsters: [],
     // Os outros jogadores na tela, como no original (até 25) — ver `Chat.jogadoresNaPraca`.
     ...(() => {
@@ -1386,11 +1387,24 @@ export class Sessao {
         const destino = Cidades.daCidadeDoAto(m.ato);
         if (!destino) return this.erro('Essa cidade não existe.');
         if (!Campanha.atoAberto(this.estado, destino.ato)) return this.erro(`O Ato ${destino.ato} ainda não está aberto para você.`);
-        if (this.estado.hunt) this.voltarParaACidade();
         const mudou = Number(this.estado.atoDaCidade) !== destino.ato;
+        // A cidade e a casa de chegada ANTES de sair da caçada: o primeiro quadro da praça já é o da cidade nova.
         this.estado.atoDaCidade = destino.ato;
-        if (mudou) this.estado.pos = { ...R.POSICAO_INICIAL };
-        this.aplicar({ ok: true, ...(mudou ? { notice: `Você chegou em ${destino.nome}.` } : {}) });
+        if (mudou) {
+          // Um TELETRANSPORTE (dono, 10/10: "de forma natural, tipo teletransporte, sem eu ver o boneco sendo puxado"): a casa de chegada
+          // vai marcada (`teleporte`, contador da sessão — o cliente põe o boneco lá sem desenhar o caminho) e o caminho que ele andava acaba.
+          this.estado.pos = { ...R.POSICAO_INICIAL };
+          this.estado.rumo = null;
+          this.estado.destino = null;
+          this.teleporte = (this.teleporte ?? 0) + 1;
+        }
+        if (this.estado.hunt) this.voltarParaACidade();
+        if (mudou) {
+          // Chega pelo portal de viagem (o mesmo de quem chega numa caçada).
+          this.avisoPendente = `Você chegou em ${destino.nome}.`;
+          this.characterSujo = true;
+          this.mandarEstado(false, [Cacadas.portalDeViagem(this.estado.pos, { chegada: true })]);
+        } else this.aplicar({ ok: true });
         return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
       case 'huntTarget':
