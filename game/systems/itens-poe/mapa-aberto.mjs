@@ -38,7 +38,7 @@ const novoId = () => `m${Date.now().toString(36)}${Math.floor(Math.random() * 1e
 /** Registra o mapa aberto (a peça já validada; quem consome a peça é o dispositivo, DEPOIS de a instância nascer). */
 export function abrir(estado, peca, { agora = Date.now() } = {}) {
   const st = doPersonagem(estado);
-  const tier = Mapas.tierDaBase(peca?.poe?.base);
+  const tier = Mapas.tierDaPeca(peca);
   st.aberto = {
     id: novoId(),
     tier,

@@ -355,3 +355,46 @@ test('desempenho: party de 5 (o líder e 4 seguindo, atravessando uma sala com 1
   const dists = js.slice(1).map((j) => cheb(pos(j), pos(js[0])));
   for (const j of js.slice(1)) assert.ok(cheb(pos(j), pos(js[0])) <= 12, `ninguém ficou para trás: ${dists.join(', ')}`);
 });
+
+// (Dono, 10/10: "o follow da party está estranho: às vezes quem está seguindo fica na frente".)
+test('corredor: quem segue não passa para a frente de quem ele segue (não troca de lugar com ele) — espera atrás, por mais que fique travado', async () => {
+  const { js } = await partyNaGrade([
+    '############',
+    '21.......m..',
+    '############',
+  ], 2);
+  const [lider, seguidor] = js;
+  // O líder parou (o teste não o move); o bicho está do outro lado dele. Antes, travado atrás do líder por 1,5 s, o seguidor trocava de
+  // lugar com ele e passava para a frente.
+  assert.ok(Party.comandoDaCaca(seguidor.s, { action: 'coleira', valor: 5 }).ok);
+  const casas = rodar([seguidor], 40);
+  assert.ok(casas[0].every((c) => Number(c.split(',')[0]) < pos(lider).x), `passou para a frente do líder: ${casas[0].join(' ')}`);
+  assert.deepEqual([pos(lider).x, pos(lider).y], [1, 1], 'o líder ficou onde estava (ninguém trocou de lugar com ele)');
+  // Numa fila (C segue B, B segue o líder), C também não passa nem por B nem pelo líder.
+  const fila = await partyNaGrade([
+    '############',
+    '321......m..',
+    '############',
+  ], 3);
+  assert.ok(Party.comandoDaCaca(fila.js[2].s, { action: 'seguirQuem', name: fila.js[1].nome }).ok);
+  const fc = rodar([fila.js[1], fila.js[2]], 40);
+  assert.ok(fc[0].every((c) => Number(c.split(',')[0]) < pos(fila.js[0]).x), `B passou o líder: ${fc[0].join(' ')}`);
+  assert.ok(fc[1].every((c, i) => Number(c.split(',')[0]) < Number(fc[0][i].split(',')[0])), `C passou B: ${fc[1].join(' ')}`);
+  // O contrário continua: quem está à frente (o líder voltando pela fila) troca de lugar com quem o segue, senão os dois travam.
+  assert.equal(Party.guia(lider.s), null, 'o líder não segue ninguém');
+  assert.ok(Party.guia(seguidor.s).acima.includes(pos(lider)), 'o líder está à frente do seguidor na fila');
+});
+
+test('coleira: quem segue caça DENTRO dos N sqm de quem segue — não corre até o bicho além da coleira (nem vai e volta)', async () => {
+  const { js } = await partyNaGrade([
+    '....................',
+    '.21...........m.....',
+    '....................',
+  ], 2);
+  const [lider, seguidor] = js;
+  assert.ok(Party.comandoDaCaca(seguidor.s, { action: 'coleira', valor: 2 }).ok);
+  const casas = rodar([seguidor], 40);
+  const longe = casas[0].map((c) => { const [x, y] = c.split(',').map(Number); return cheb({ x, y }, pos(lider)); });
+  assert.ok(Math.max(...longe) <= 2, `saiu da coleira: distâncias ${longe.join(' ')}`);
+  assert.equal(retornos(casas[0]), 0, `vaivém: ${casas[0].join(' ')}`);
+});

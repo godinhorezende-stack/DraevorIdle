@@ -20,6 +20,7 @@ import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstr
 import * as GemasPoe from './gemas-poe.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../systems/dados.mjs';
 import * as MonstrosPoe from '../systems/itens-poe/monstros.mjs';
+import * as MapasValidacao from '../systems/itens-poe/mapas-validacao.mjs';
 const BESTIARY = CATALOGO.bestiary;
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
@@ -175,6 +176,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Cada peça vem com a TRADUÇÃO para os atributos do Draevor (o que somaria na ficha) e o estado de cada mod.
     return json(res, 200, { pecas: pecas.map((p) => (p.erro ? p : { ...p, traducao: Traduzir.traduzirPeca(p) })) }), true;
   }
+  // (10/10) A aba Mapas (endgame): os modificadores dos mapas por raridade (Normal, Mágico, Raro, Único), cada efeito validado no caminho do jogo.
+  if (rota === 'mapas-endgame') return json(res, 200, MapasValidacao.validarTudo()), true;
   // A aba Pendências de modificadores: o estado de cada mod que pode cair (afixos, implícitos, únicos, frascos).
   if (rota === 'pendencias') {
     if (q.get('recalcular')) { Pendencias.esquecer(); AbasPoedb.esquecer(); }

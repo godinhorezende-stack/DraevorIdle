@@ -437,6 +437,11 @@ export const MALDICOES_DOS_MONSTROS = {
   fraquezaElemental: { nome: 'Fraqueza Elemental', af: { fire_res: -20, ice_res: -20, energy_res: -20 } },
   vulnerabilidade: { nome: 'Vulnerabilidade', af: { dano_physical_recebido_inc: 20 } },
   enfraquecer: { nome: 'Enfraquecer', af: { mais_dano: -20 } },
+  // (As dos MAPAS ÚNICOS — O Claustro Pútrido —, com os valores do poedb: "inflige -17% de Resistência a Fogo/Gelo/Raio", "-15% a Caos".)
+  flamabilidade: { nome: 'Flamabilidade', af: { fire_res: -17 } },
+  congelabilidade: { nome: 'Congelabilidade', af: { ice_res: -17 } },
+  condutividade: { nome: 'Condutividade', af: { energy_res: -17 } },
+  desespero: { nome: 'Desespero', af: { chaos_res: -15 } },
 };
 export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
 /** Põe uma maldição em você (renova a mesma): `{ nome, af, ms }`. */

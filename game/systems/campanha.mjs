@@ -608,14 +608,16 @@ function motivoNoGrafo(estado, dif, f, nomeDif) {
   if (faltaExigida) return `Complete antes ${nomeDe(faltaExigida)} no ${nomeDif} para abrir esta.`;
   return `Complete ${antes.length > 1 ? `uma de: ${antes.join(', ')}` : (antes[0] ?? 'a fase anterior')} no ${nomeDif} para abrir esta.`;
 }
+/**
+ * A próxima do "Avançar sozinho" num ato do editor (grafo): a de MENOR NÚMERO do ato (a numeração do mapa — a `ordem` da fase; `FASES` está
+ * nessa ordem) que está aberta e ainda não foi feita (dono, 10/10: "a numeração dos atos no mapa está bugando para avançar sozinho" →
+ * "seguir a numeração"). Antes seguia só as ligações da fase atual, na ordem do arquivo: pulava números (1 → 2 → 4) e parava no beco (a
+ * área lateral — a Ilha da Maré, a Gruta…) com o resto do ato aberto. A numeração tem de ser um caminho (cada número abre com os de antes
+ * feitos): `atos-modelo.validarAto` avisa quando não é.
+ */
 function proximaNoGrafo(estado, dif, f) {
-  const g = ATOS_DO_EDITOR.get(f.ato);
-  if (!g) return null;
-  for (const c of g.ato.conexoes.filter((x) => x.de === f.grafo.faseId)) {
-    const huntId = g.huntPorFase.get(c.para);
-    if (huntId && !faseCompleta(estado, dif, huntId) && faseLiberada(estado, dif, huntId)) return faseDe(huntId);
-  }
-  return null;
+  if (!ATOS_DO_EDITOR.get(f.ato)) return null;
+  return FASES.find((x) => x.ato === f.ato && x.huntId !== f.huntId && !faseCompleta(estado, dif, x.huntId) && faseLiberada(estado, dif, x.huntId)) ?? null;
 }
 
 /** O boss é de ato: sem recarga (catálogo e `semEspera`), igual aos legados. */

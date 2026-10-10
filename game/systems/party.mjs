@@ -724,7 +724,10 @@ export function partilha(s) {
   return { ...base, ativa: true, motivo: null, bonus: BONUS_POR_VOCACOES[Math.min(4, base.vocacoes)] };
 }
 
-/** Quem este membro segue e a quantos sqm (`{pos, coleira}` ou null). */
+/**
+ * Quem este membro segue e a quantos sqm: `{pos, coleira, acima}` ou null. `acima`: as posições de quem está à FRENTE dele na fila (quem
+ * ele segue, quem esse segue… até a ponta) — com esses ele não troca de lugar na colisão (`cacadas.mjs`): quem segue fica atrás.
+ */
 export function guia(s) {
   const p = minhaParty(s);
   if (!p) return null;
@@ -745,8 +748,15 @@ export function guia(s) {
     }
     visto.add(n);
   }
-  const quem = sessaoDe(alvo && nomes.includes(alvo) ? alvo : ponta);
-  return quem?.estado?.hunt ? { pos: quem.estado.hunt.pos, coleira: p.coleiras.get(nomeDe(s)) ?? 5 } : null;
+  const seguido = alvo && nomes.includes(alvo) ? alvo : ponta;
+  const quem = sessaoDe(seguido);
+  if (!quem?.estado?.hunt) return null;
+  const acima = [];
+  for (let n = seguido, passos = 0; n && passos <= nomes.length; n = n === ponta ? null : p.seguir.get(n) ?? ponta, passos++) {
+    const h = sessaoDe(n)?.estado?.hunt;
+    if (h && nomes.includes(n) && !acima.includes(h.pos)) acima.push(h.pos);
+  }
+  return { pos: quem.estado.hunt.pos, coleira: p.coleiras.get(nomeDe(s)) ?? 5, acima };
 }
 
 /**
@@ -976,23 +986,40 @@ export function seguirOLider(lider) {
 /*
  * ---- "Avançar sozinho" em grupo ----
  *
- * O dono (29/09): "na party, se eu tiver avançar sozinho e ele também, a gente segue junto para a
- * próxima hunt". Quem completa a fase e tem o "Avançar sozinho" (`settings.aoCompletarFase ===
- * 'seguir'`) vai para a próxima; os da party que estão NA MESMA sala e também marcaram "Avançar
- * sozinho" vão junto. Quem deixou em "Ficar na fase" fica onde está. As portas valem como sempre
- * (`juntar`): a fase liberada para ELE, o teto da sala... — quem não pode ir recebe o porquê.
+ * Quem DECIDE é o LÍDER (dono, 10/10: "quando estou em party o avançar tem que funcionar seguindo o
+ * líder: se o líder marcar avançar, tem que funcionar"). Com o "Avançar sozinho" do líder ligado
+ * (`settings.aoCompletarFase === 'seguir'`) e a fase completa, ele vai para a próxima — mesmo estando
+ * na sala de outro membro (antes só o dono da sala avançava, e o "Avançar" do líder convidado não fazia
+ * nada) — e TODOS da party que estão na mesma sala vão junto, com ou sem a marca. Na sala do líder,
+ * o membro não avança sozinho: segue a decisão dele. Sem o líder na sala (a party caçando separada),
+ * vale a regra de 29/09: avança o dono da sala, e vão junto os da sala que também marcaram "Avançar
+ * sozinho". As portas valem como sempre (`juntar`): a fase liberada para ELE, o teto da sala... — quem
+ * não pode ir recebe o porquê.
  *
  * `quemAvancaJunto` roda ANTES de o dono sair da fase (a saída passa a sala para quem fica e muda
  * quem está nela); `avancarJunto` roda depois de ele entrar na próxima.
  */
+/**
+ * Quem decide o "Avançar sozinho" de `s`: `'eu'` — `s` é o líder da party (avança mesmo sendo convidado, e a sala vai junto); `'lider'`
+ * — o líder está na mesma sala e não é `s` (não avança sozinho: segue o líder); `null` — sem party, ou o líder em outra sala (a regra de
+ * sempre: só o dono da sala avança).
+ */
+export function quemDecideOAvancar(s) {
+  const p = minhaParty(s);
+  if (!p) return null;
+  if (p.lider === nomeDe(s)) return 'eu';
+  return naMesmaSala(s).some((o) => o !== s && nomeDe(o) === p.lider) ? 'lider' : null;
+}
+
 export function quemAvancaJunto(dono) {
   const p = minhaParty(dono);
   const sala = dono.estado?.hunt ? Cacadas.salaDe(dono.estado.hunt) : null;
   if (!p || !sala || sala.isBoss) return [];
+  const doLider = p.lider === nomeDe(dono);
   return p.membros
     .filter((n) => n !== nomeDe(dono))
     .map(sessaoDe)
-    .filter((o) => o?.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala && o.estado.settings?.aoCompletarFase === 'seguir');
+    .filter((o) => o?.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala && (doLider || o.estado.settings?.aoCompletarFase === 'seguir'));
 }
 
 export function avancarJunto(dono, membros) {

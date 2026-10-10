@@ -12,7 +12,7 @@
   },
   "progressao": {},
   "estado": "publicado",
-  "versao": 4,
+  "versao": 5,
   "inicio": "poe-a2-the-southern-forest",
   "cidade": {
     "nome": "Acampamento da Floresta",
@@ -145,10 +145,38 @@
       }
     },
     {
+      "id": "poe-a2-the-fellshrine-ruins",
+      "nome": "Ruínas do Santuário Caído",
+      "descricao": "O chão sofre com a profanação. A chuva tem sabor de ferrugem.",
+      "ordem": 5,
+      "huntId": "poe-a2-the-fellshrine-ruins",
+      "tipo": "hunt-normal",
+      "nivel": {
+        "facil": 16,
+        "medio": 16,
+        "dificil": 16
+      },
+      "obrigatoria": false,
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 350
+      }
+    },
+    {
       "id": "poe-a2-the-crypt-level-1",
       "nome": "Cripta Nível 1",
       "descricao": "Pedras suavizadas por séculos de devoção.",
-      "ordem": 5,
+      "ordem": 6,
       "huntId": "poe-a2-the-crypt-level-1",
       "tipo": "hunt-normal",
       "nivel": {
@@ -176,7 +204,7 @@
       "id": "poe-a2-the-crypt-level-2",
       "nome": "Cripta Nível 2",
       "descricao": "",
-      "ordem": 6,
+      "ordem": 7,
       "huntId": "poe-a2-the-crypt-level-2",
       "tipo": "hunt-normal",
       "nivel": {
@@ -204,7 +232,7 @@
       "id": "poe-a2-the-chamber-of-sins-level-1",
       "nome": "Câmara dos Pecados Nível 1",
       "descricao": "Sussurros fantasmas de uma paixão maníaca.",
-      "ordem": 7,
+      "ordem": 8,
       "huntId": "poe-a2-the-chamber-of-sins-level-1",
       "tipo": "hunt-normal",
       "nivel": {
@@ -232,7 +260,7 @@
       "id": "poe-a2-the-chamber-of-sins-level-2",
       "nome": "Câmara dos Pecados Nível 2",
       "descricao": "",
-      "ordem": 8,
+      "ordem": 9,
       "huntId": "poe-a2-the-chamber-of-sins-level-2",
       "tipo": "hunt-normal",
       "nivel": {
@@ -260,7 +288,7 @@
       "id": "poe-a2-the-broken-bridge",
       "nome": "Ponte Quebrada",
       "descricao": "Um rio puro e plácido que já esteve vermelho e cheio com as vítimas de guerra.",
-      "ordem": 9,
+      "ordem": 10,
       "huntId": "poe-a2-the-broken-bridge",
       "tipo": "hunt-normal",
       "nivel": {
@@ -311,7 +339,7 @@
       "id": "poe-a2-the-riverways",
       "nome": "Caminhos Fluviais",
       "descricao": "Os rios que já foram domados hoje correm livres.",
-      "ordem": 10,
+      "ordem": 11,
       "huntId": "poe-a2-the-riverways",
       "tipo": "hunt-normal",
       "nivel": {
@@ -338,34 +366,6 @@
       "posicao": {
         "x": 252,
         "y": 367
-      }
-    },
-    {
-      "id": "poe-a2-the-northern-forest",
-      "nome": "Floresta do Norte",
-      "descricao": "A luz do dia é exilada aqui.",
-      "ordem": 11,
-      "huntId": "poe-a2-the-northern-forest",
-      "tipo": "hunt-normal",
-      "nivel": {
-        "facil": 21,
-        "medio": 21,
-        "dificil": 21
-      },
-      "obrigatoria": false,
-      "requisitos": {
-        "exige": []
-      },
-      "objetivos": [],
-      "conclusao": {
-        "tipo": "limpar-hunt"
-      },
-      "recompensas": null,
-      "eventos": [],
-      "sobrescritas": {},
-      "posicao": {
-        "x": 557,
-        "y": 207
       }
     },
     {
@@ -458,43 +458,10 @@
       }
     },
     {
-      "id": "poe-a2-the-vaal-ruins",
-      "nome": "Ruínas Vaal",
-      "descricao": "Sombras arranhando a pedra aprisionadora.",
-      "ordem": 14,
-      "huntId": "poe-a2-the-vaal-ruins",
-      "tipo": "hunt-normal",
-      "nivel": {
-        "facil": 20,
-        "medio": 20,
-        "dificil": 20
-      },
-      "obrigatoria": false,
-      "requisitos": {
-        "exige": []
-      },
-      "objetivos": [
-        {
-          "missao": "A Raiz do Problema",
-          "texto": "Encontre um caminho através das Ruínas Vaal"
-        }
-      ],
-      "conclusao": {
-        "tipo": "limpar-hunt"
-      },
-      "recompensas": null,
-      "eventos": [],
-      "sobrescritas": {},
-      "posicao": {
-        "x": 455,
-        "y": 260
-      }
-    },
-    {
       "id": "poe-a2-the-wetlands",
       "nome": "Terras Inundadas",
       "descricao": "Águas corrompidas, jorrando do Manto acima.",
-      "ordem": 15,
+      "ordem": 14,
       "huntId": "poe-a2-the-wetlands",
       "tipo": "hunt-normal",
       "nivel": {
@@ -546,10 +513,71 @@
       }
     },
     {
+      "id": "poe-a2-the-vaal-ruins",
+      "nome": "Ruínas Vaal",
+      "descricao": "Sombras arranhando a pedra aprisionadora.",
+      "ordem": 15,
+      "huntId": "poe-a2-the-vaal-ruins",
+      "tipo": "hunt-normal",
+      "nivel": {
+        "facil": 20,
+        "medio": 20,
+        "dificil": 20
+      },
+      "obrigatoria": false,
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "A Raiz do Problema",
+          "texto": "Encontre um caminho através das Ruínas Vaal"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {},
+      "posicao": {
+        "x": 455,
+        "y": 260
+      }
+    },
+    {
+      "id": "poe-a2-the-northern-forest",
+      "nome": "Floresta do Norte",
+      "descricao": "A luz do dia é exilada aqui.",
+      "ordem": 16,
+      "huntId": "poe-a2-the-northern-forest",
+      "tipo": "hunt-normal",
+      "nivel": {
+        "facil": 21,
+        "medio": 21,
+        "dificil": 21
+      },
+      "obrigatoria": false,
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {},
+      "posicao": {
+        "x": 557,
+        "y": 207
+      }
+    },
+    {
       "id": "poe-a2-the-dread-thicket",
       "nome": "Matagal Horrendo",
       "descricao": "Natureza irrestrita. Ferocidade livre.",
-      "ordem": 16,
+      "ordem": 17,
       "huntId": "poe-a2-the-dread-thicket",
       "tipo": "hunt-normal",
       "nivel": {
@@ -582,7 +610,7 @@
       "id": "poe-a2-the-caverns",
       "nome": "As Cavernas",
       "descricao": "Dois mil anos de arrependimento.",
-      "ordem": 17,
+      "ordem": 18,
       "huntId": "poe-a2-the-caverns",
       "tipo": "hunt-normal",
       "nivel": {
@@ -615,7 +643,7 @@
       "id": "poe-a2-the-ancient-pyramid",
       "nome": "Pirâmide Antiga",
       "descricao": "",
-      "ordem": 18,
+      "ordem": 19,
       "huntId": "poe-a2-the-ancient-pyramid",
       "tipo": "fase-final-do-ato",
       "nivel": {
@@ -637,34 +665,6 @@
       "posicao": {
         "x": 760,
         "y": 100
-      }
-    },
-    {
-      "id": "poe-a2-the-fellshrine-ruins",
-      "nome": "Ruínas do Santuário Caído",
-      "descricao": "O chão sofre com a profanação. A chuva tem sabor de ferrugem.",
-      "ordem": 19,
-      "huntId": "poe-a2-the-fellshrine-ruins",
-      "tipo": "hunt-normal",
-      "nivel": {
-        "facil": 16,
-        "medio": 16,
-        "dificil": 16
-      },
-      "obrigatoria": false,
-      "requisitos": {
-        "exige": []
-      },
-      "objetivos": [],
-      "conclusao": {
-        "tipo": "limpar-hunt"
-      },
-      "recompensas": null,
-      "eventos": [],
-      "sobrescritas": {},
-      "posicao": {
-        "x": 455,
-        "y": 350
       }
     }
   ],

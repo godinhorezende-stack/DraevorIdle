@@ -140,6 +140,19 @@ export function iniciar(itemCatalog) {
     REG.mapas.set(b.id, id);
     REG.porId.set(id, b.id);
   }
+  // Os MAPAS ÚNICOS: um id FIXO por tier (`itemIdBase` + tier: 7.701.001 … — `Mapas.idDoUnico`), com o desenho do único no PoE e o número
+  // romano do tier por cima (dono, 10/10: "coloque o número romano em cima dos únicos para facilitar"). O tier da peça vem da base dela.
+  for (const u of Mapas.unicos()) {
+    for (const b of Mapas.bases()) {
+      const tier = b.atributos?.tier;
+      const id = Mapas.idDoUnico(u.slug, tier);
+      if (!id) continue;
+      itemCatalog[id] = {
+        id, name: u.nome, type: 'maps', weight: 1, hasSprite: false, rarity: 'comum', stackable: false, mapa: true,
+        poe: { base: b.id, classe: Mapas.CLASSE, unico: u.slug, icone: Mapas.iconeDoUnico(u, tier), iconeLado: u.iconeLado ?? 64, tier, nivel: b.atributos?.nivel_area },
+      };
+    }
+  }
   // Os itens de missão (Acts do PoE: o item que o monstro alvo solta) entram junto.
   DropsPorMonstro.registrarItens(itemCatalog);
   return REG;
@@ -221,11 +234,14 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   }
   // O MAPA: não dá atributo ao personagem (os mods mexem na INSTÂNCIA — `itens-poe/mapas.mjs`); a peça leva o resumo (tier, nível da área,
   // quantidade/raridade de itens, tamanho do grupo, os efeitos) e o estado de cada linha.
+  // (O MAPA ÚNICO leva qual é — `unico`, o slug —: os efeitos de cada linha vêm do cadastro dele; e as notas das linhas sem efeito.)
   if (gerada.classe === Mapas.CLASSE) {
-    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome,
+    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const mapa = Mapas.resumo({ poe });
-    return { id, count: 1, poe: { ...poe, estados: Mapas.estadosDasLinhas(poe, mapa), af: {}, mapa, tv: VERSAO_DA_TRADUCAO } };
+    // (O único tem o id dele no tier — o desenho do único com o número —; sem id cadastrado, o da base do tier.)
+    const idDoMapa = (gerada.unico && Mapas.idDoUnico(gerada.unico, Mapas.tierDaPeca({ poe }))) || id;
+    return { id: idDoMapa, count: 1, poe: { ...poe, estados: Mapas.estadosDasLinhas(poe, mapa), notas: Mapas.notasDasLinhas(poe, mapa), af: {}, mapa, tv: VERSAO_DA_TRADUCAO } };
   }
   // Os sockets (regra do dono: pela classe e pelo item level, quantidade e links ao acaso — `itens-poe/sockets.mjs`).
   // As cores pesam pelo requisito de atributo da base (`ITEM_CATALOG[id].poe.requisitos`).
@@ -312,6 +328,7 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   if (p.classe === Mapas.CLASSE) {
     p.mapa = Mapas.resumo({ poe: p });
     p.estados = Mapas.estadosDasLinhas(p, p.mapa);
+    p.notas = Mapas.notasDasLinhas(p, p.mapa);
     p.af = {};
     p.tv = VERSAO_DA_TRADUCAO;
     return peca;
@@ -464,17 +481,22 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   if (!cat || !D) return null;
   // PoE: a "Raridade de Itens encontrados aumentada" do personagem multiplica a chance de Mágico, Raro e Único (a Normal fica).
   const fatorDeRaridade = Math.max(0, 1 + (Number(raridadeAumentada) || 0) / 100);
-  const pesos = Object.entries(D.raridades ?? {}).filter(([r, p]) => p > 0 && regras.raridades[r]).map(([r, p]) => [r, r === 'normal' ? p : p * fatorDeRaridade]);
+  // O MAPA ÚNICO tem a chance PRÓPRIA (mapas.json → drop.chanceDoUnico; dono, 10/10: "2% dos mapas que caem"), também multiplicada pela
+  // Raridade de Itens: o Único sai do sorteio comum do mapa (com os 0,055% do loot, quase nunca caía).
+  const ehMapa = !!baseFixa && baseFixa.split('/')[0] === Mapas.CLASSE;
+  const pesos = Object.entries(D.raridades ?? {}).filter(([r, p]) => p > 0 && regras.raridades[r] && !(ehMapa && r === 'unico')).map(([r, p]) => [r, r === 'normal' ? p : p * fatorDeRaridade]);
   const total = pesos.reduce((n, [, p]) => n + p, 0);
   if (!(total > 0)) return null;
   let sorte = rng() * total;
   let raridade = pesos.find(([, p]) => (sorte -= p) < 0)?.[0] ?? pesos[pesos.length - 1][0];
+  if (ehMapa && regras.raridades.unico && rng() < (Number(Mapas.DROP.chanceDoUnico) || 0) * fatorDeRaridade) raridade = 'unico';
   const ilvl = Math.max(1, Math.min(D.ilvlMaximo ?? 100, Math.round(Number(nivelDoBicho) || 1)));
   if (baseFixa) {
     const [classe] = baseFixa.split('/');
     const c = cat.classes[classe];
     const b = c?.bases.find((x) => x.id === baseFixa);
     if (!b) return null;
+    // (O MAPA ÚNICO está em todas as bases de mapa — `catalogo.mjs` —: o Único sorteado num drop de mapa sai no tier dele.)
     if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) raridade = 'raro';
     if (!podeCairComo(c, b, raridade)) return null;
     const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
@@ -518,8 +540,9 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
 
 /**
  * Um MAPA do tier (`itens-poe/mapas.mjs`): a peça inteira, como cai do monstro. `raridade`: a fixa (o mapa garantido do Kitava); sem ela,
- * os pesos do loot (regras.json → drop.raridades) com a Raridade de Itens (`raridadeAumentada`, do mapa em que caiu). Mapa Único ainda não
- * existe: o Único sorteado vira Raro. Null fora do PoE ou sem o tier.
+ * os pesos do loot (regras.json → drop.raridades) para Normal/Mágico/Raro e a chance própria do MAPA ÚNICO (mapas.json →
+ * drop.chanceDoUnico), todos com a Raridade de Itens (`raridadeAumentada`, do mapa em que caiu). O Único sai no tier do drop (os únicos
+ * estão em todas as bases de mapa — `catalogo.mjs`). Null fora do PoE ou sem o tier.
  */
 export function mapaSorteado(tier, { rng = Math.random, raridade = null, raridadeAumentada = 0, regras = Catalogo.REGRAS } = {}) {
   const cat = Catalogo.catalogo();

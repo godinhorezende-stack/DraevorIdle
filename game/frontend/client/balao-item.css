@@ -293,6 +293,8 @@
 .poe-frasco-num { font-size: 9px; color: #bbb; font-variant-numeric: tabular-nums; }
 .poe-frasco.ativo .cell { box-shadow: 0 0 6px 1px #f0d36b; }
 .poe-balao .poe-frasco-resumo { color: #8fd0ff; }
+/* A validação das linhas do MAPA (quantas agem no jogo): amarelo quando alguma não age, verde quando todas agem. */
+.poe-balao .poe-validacao { color: #e5c07b; } .poe-balao .poe-validacao.ok { color: #5cc28a; }
 
 /* ---- A grade do corpo como no PoE (inventory.mjs `SLOT_LAYOUT_COM_LUVAS`; só com ITENS_POE=1): arma e mão secundária altas nas laterais,
    elmo e amuleto em cima, armadura no meio com um anel de cada lado, luvas, cinto e botas embaixo. As mesmas 3 colunas da grade do Draevor

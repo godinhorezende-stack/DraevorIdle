@@ -218,7 +218,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const p = a.permanente ?? {};
     if ((congela && p.congelado > 0) || (lento && p.resfriado > 0)) e.permanente = { ...(e.permanente ?? {}), ...(p.congelado > 0 ? { congelado: p.congelado, congeladoMax: p.congeladoMax } : {}), ...(p.resfriado > 0 ? { resfriado: p.resfriado, resfriadoMax: p.resfriadoMax } : {}) };
   }
-  if (raio > 0 && (crit || sorte(chance('eletrizacao')))) {
+  // ("Monstros não são Afetados por Eletrizações" — o mapa único A Praça Vinktar: `imuneChoque`.)
+  if (raio > 0 && !bicho.imuneChoque && (crit || sorte(chance('eletrizacao')))) {
     // O máximo ("+X% ao Máximo de Efeito da Eletrização" ou "Efeito Máximo … é igual a X%"), o efeito (+ a Mana máxima aumentada e o do
     // crítico) e o mínimo ("sempre aumentam o Dano recebido em ao menos X%").
     const maxEl = a.eletrizacaoMaximoFixo > 0 ? a.eletrizacaoMaximoFixo : BASE.eletrizacao.maximo + (a.eletrizacaoMaximo ?? 0);

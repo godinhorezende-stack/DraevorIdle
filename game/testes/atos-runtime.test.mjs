@@ -105,15 +105,23 @@ test('R4. portal do boss final do ato do editor: só abre limpando a hunt NESTA 
   assert.equal(e.hunt.portalDoBoss, undefined, 'ato já concluído: precisa limpar de novo');
 });
 
-test('R5. "Seguir" (Caça Automática) anda pelo grafo: a próxima aberta e ainda não feita', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
+// (Dono, 10/10: o "Avançar sozinho" segue a NUMERAÇÃO do mapa — a de menor número aberta e ainda não feita —, e não mais só as ligações da
+// fase atual. Antes, depois da fase 3, ia para a 5 (a ligada à 3) com a 4 aberta, e num beco parava.)
+test('R5. "Seguir" (Caça Automática) anda na numeração do mapa: a de menor número aberta e ainda não feita', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {
   registrar();
   const e = novo();
   jogar(e, h1);
-  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h1).huntId, h2);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h1).huntId, h2, 'a 6 (o ramal) também abriu, mas o 2 vem antes');
   jogar(e, h2);
-  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h2).huntId, h3, 'na bifurcação, o primeiro caminho');
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h2).huntId, h3, 'na bifurcação, o menor número');
   jogar(e, h3);
-  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h3).huntId, h5);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h3).huntId, h4, 'a 4 está aberta (pela 2): vem antes da 5, ligada à 3');
+  jogar(e, h4);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h4).huntId, h5);
+  jogar(e, h5);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h5).huntId, h6, 'a 5 não tem saída (leva ao boss): o ramal que sobrou');
+  jogar(e, h6);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', h6), null, 'tudo feito: fica');
 });
 
 test('R6. estado beta só vale com o modo beta ligado; desligado, o ato some do cliente e fecha', { skip: aAdaptar("O editor de Atos é o mesmo no PoE (gamedata/atos/poe-ato-N.json); o teste monta um ato com hunts do Draevor, que o oficial ignora (campanha.mjs:639) — \"Esta hunt não existe\"") }, () => {

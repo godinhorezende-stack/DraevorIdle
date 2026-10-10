@@ -26,6 +26,30 @@ export const idDoTier = (tier) => BASES.get(baseDoTier(tier))?.itemId ?? null;
 export const tierDaBase = (base) => BASES.get(base)?.atributos?.tier ?? null;
 /** A peça é um mapa? */
 export const ehMapa = (peca) => peca?.poe?.classe === CLASSE;
+/*
+ * ---- Os MAPAS ÚNICOS (dono, 10/10 — `classe.unicos`, `tools/importar-mapas-unicos.mjs`) ----
+ * Em TODOS os tiers (dono: "até T16 — a área não vai ser só de nível 68"): o catálogo põe cada único em cada base de mapa
+ * (`catalogo.mjs`; `tiers` restringe), e o Único sorteado num drop de mapa sai no tier daquele drop — a área e os monstros são os desse
+ * tier, com os modificadores do único por cima (os mesmos em qualquer tier). Cada linha leva os efeitos que já agem no jogo (`efeitos`);
+ * a que ainda não tem mecânica fica sem efeito, com a nota (`nota`).
+ */
+const UNICOS = new Map((DADOS.classe?.unicos ?? []).map((u) => [u.slug, u]));
+/** O mapa único pelo slug (ou null). */
+export const unicoDoMapa = (slug) => UNICOS.get(slug) ?? null;
+/** Os mapas únicos do jogo. */
+export const unicos = () => [...UNICOS.values()];
+/**
+ * O id do mapa único no tier (`itemIdBase` + tier — o ícone é por id, e cada tier tem o seu: o desenho do único com o número romano), ou
+ * null (sem o único, sem o tier ou sem id cadastrado).
+ */
+export const idDoUnico = (slug, tier) => {
+  const u = unicoDoMapa(slug);
+  return u?.itemIdBase && nivelDoTier(tier) ? u.itemIdBase + Number(tier) : null;
+};
+/** O ícone do único no tier: o desenho com o número romano (`tools/importar-mapas-unicos.mjs` → `<desenho>_T<N>.png`). */
+export const iconeDoUnico = (u, tier) => (u?.icone ? u.icone.replace(/\.png$/, `_T${tier}.png`) : null);
+/** O tier de uma peça de mapa (a base dela: o único também — ele sai na base do tier em que caiu). */
+export const tierDaPeca = (peca) => tierDaBase(peca?.poe?.base);
 /** As bases do catálogo (para registrar no `ITEM_CATALOG`). */
 export const bases = () => [...BASES.values()];
 
@@ -42,7 +66,7 @@ function grupoDoMod(base, m) {
  * Soma um efeito no lugar dele (`resist.chaos`, `danoExtraPct.fire`…); `maldicao` vira a lista das maldições; `chefes` fica o maior. O
  * "mais" do PoE (`mais: true` — "40% mais Vida de Monstros") MULTIPLICA com o que já está lá: dois dão (1 + a) × (1 + b) − 1.
  */
-function somar(efeitos, e, valores) {
+export function somar(efeitos, e, valores) {
   const valor = e.fixo ?? (Number(valores?.[e.de]) || 0) * (e.escala ?? 1);
   const alvo = (efeitos[e.alvo] ??= {});
   if (e.stat === 'maldicao') {
@@ -64,7 +88,7 @@ function somar(efeitos, e, valores) {
  * (`equivalente` — age inteira; `parcial` — parte dela ainda não existe no jogo, com a nota).
  */
 export function resumo({ poe }) {
-  const tier = tierDaBase(poe?.base);
+  const tier = tierDaPeca({ poe });
   let quantidade = Number(poe?.qualidade) || 0;
   let raridade = 0;
   let grupo = 0;
@@ -83,11 +107,34 @@ export function resumo({ poe }) {
     const parciais = (g.efeitos ?? []).filter((e) => e.parcial).map((e) => e.parcial);
     linhas.push({ texto: m.texto, estado: parciais.length ? 'parcial' : 'equivalente', ...(parciais.length ? { nota: parciais.join('; ') } : {}) });
   }
+  // As linhas do MAPA ÚNICO (`poe.modificadores`, sorteadas na faixa de cada uma): os efeitos da linha no único (pelo modelo do texto). A
+  // Quantidade/Raridade de Itens e o Tamanho do Grupo (`alvo: 'mapa'`) somam no resumo, com o valor sorteado.
+  const doUnico = unicoDoMapa(poe?.unico);
+  for (const m of poe?.modificadores ?? []) {
+    const def = doUnico?.modificadores?.find((x) => x.modelo === m.modelo) ?? null;
+    if (!def?.efeitos?.length) {
+      linhas.push({ texto: m.texto, estado: 'inerte', nota: def?.nota ?? 'ainda não tem a mecânica no jogo' });
+      continue;
+    }
+    for (const e of def.efeitos) {
+      if (e.alvo === 'mapa') {
+        const v = e.fixo ?? (Number(m.valores?.[e.de]) || 0);
+        if (e.stat === 'quantidade') quantidade += v;
+        else if (e.stat === 'raridade') raridade += v;
+        else if (e.stat === 'grupo') grupo += v;
+        continue;
+      }
+      somar(efeitos, e, m.valores);
+    }
+    linhas.push({ texto: m.texto, estado: def.parcial ? 'parcial' : 'equivalente', ...(def.parcial ? { nota: def.parcial } : {}) });
+  }
   return { tier, nivel: nivelDoTier(tier), quantidade, raridade, grupo, efeitos, linhas };
 }
 
-/** Os estados das linhas na ordem da peça (implícitos, prefixos, sufixos) — o mesmo formato de `poe.estados` das outras peças. */
+/** Os estados das linhas na ordem da peça (implícitos, prefixos, sufixos, as do único) — o mesmo formato de `poe.estados` das outras peças. */
 export const estadosDasLinhas = (poe, r = resumo({ poe })) => [...(poe?.implicitos ?? []).map(() => 'equivalente'), ...r.linhas.map((l) => l.estado)];
+/** As notas das linhas na mesma ordem (o balão mostra a da linha sem efeito ao passar o mouse) — o formato de `poe.notas`. */
+export const notasDasLinhas = (poe, r = resumo({ poe })) => [...(poe?.implicitos ?? []).map(() => null), ...r.linhas.map((l) => (l.estado === 'inerte' ? l.nota ?? null : null))];
 
 // ---------------------------------------------------------------- os DROPS (mapas.json → `drop`)
 
@@ -104,11 +151,13 @@ export function tierDoDrop(tierDaArea, tipo = 'normal', rng = Math.random) {
  * (`hunt/escalonamento.tipoDoBicho`); `bonusDeQuantidade`: o da raridade do monstro (regras.json → drop.bonusDeQuantidade); `quantidadePct`: a
  * Quantidade de Itens do mapa; `chefeDoMapa`: o chefe garante os dele. Fora de um mapa (sem tier), nada.
  */
-export function sortearDrops({ tierDaArea, tipo = 'normal', bonusDeQuantidade = 0, quantidadePct = 0, chefeDoMapa = false, rng = Math.random }) {
+export function sortearDrops({ tierDaArea, tipo = 'normal', bonusDeQuantidade = 0, quantidadePct = 0, chefeDoMapa = false, mapasExtras = 0, rng = Math.random }) {
   if (!(Number(tierDaArea) >= 1)) return [];
   const saida = [];
   if (chefeDoMapa) {
-    for (let i = 0; i < (Number(DROP.chefe?.garantidos) || 0); i++) saida.push({ tier: tierDoDrop(tierDaArea, 'boss', rng) });
+    // (+ os do mapa único — "Chefes Únicos derrubam N Mapas adicionais": `efeitos.chefe.mapasExtras`.)
+    const garantidos = (Number(DROP.chefe?.garantidos) || 0) + Math.max(0, Math.round(Number(mapasExtras) || 0));
+    for (let i = 0; i < garantidos; i++) saida.push({ tier: tierDoDrop(tierDaArea, 'boss', rng) });
     if (rng() < (Number(DROP.chefe?.chanceDeMaisUm) || 0)) saida.push({ tier: tierDoDrop(tierDaArea, 'boss', rng) });
     return saida;
   }

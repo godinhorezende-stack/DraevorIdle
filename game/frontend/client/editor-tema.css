@@ -1182,6 +1182,16 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .pend-partes { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; font-size: 12px; }
 .pend-partes .poe-tr { width: auto; text-align: left; font-family: inherit; }
 
+/* ---- Mapas do endgame (PoE): os modificadores por raridade e a validação (editor-mapas-endgame.mjs) ---- */
+.pend-barra.erro { background: #ff5b4f; } .pend-num.erro, .pend-marca.erro { color: #ff6b6b; }
+.mapas-efeitos { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; }
+.mapas-efeitos .poe-tr { width: auto; text-align: left; font-family: var(--eng-mono); font-weight: 500; }
+.mapas-unicos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: var(--eng-e3); align-items: start; }
+.mapas-unico-topo { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+.mapas-unico-topo img { flex: none; }
+.mapas-unico-nome { color: #c7834e; }
+.mapas-unico-linha { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 6px; padding: 4px 0; border-top: 1px solid var(--eng-linha); font-size: 13px; }
+
 /* ---- Abas do PoEDB (PoE): cada aba das páginas de classe do poedb × o jogo (editor-abas-poedb.mjs) ---- */
 .abas-pools { max-height: none; margin-bottom: var(--eng-e3); }
 .abas-efeito { display: flex; align-items: center; gap: 8px; min-width: 180px; }

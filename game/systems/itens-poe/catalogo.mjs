@@ -37,6 +37,10 @@ export function catalogo() {
   if (!cache) {
     cache = JSON.parse(readFileSync(ARQUIVO, 'utf8'));
     const mapas = existsSync(ARQUIVO_DOS_MAPAS) ? JSON.parse(readFileSync(ARQUIVO_DOS_MAPAS, 'utf8')).classe : null;
+    // Os MAPAS ÚNICOS em TODOS os tiers (dono, 10/10: "queria colocar esses únicos até T16 — a área não vai ser só de nível 68"): o arquivo
+    // guarda cada único uma vez (o poedb dá a base "Mapa (Nível 1)"), e aqui ele vale em cada base de mapa (T1…T16, ou só os `tiers` dele) —
+    // o Único sorteado num drop de mapa sai no tier daquele drop, com a área desse tier.
+    if (mapas) mapas.unicos = (mapas.unicos ?? []).flatMap((u) => (mapas.bases ?? []).filter((b) => !u.tiers?.length || u.tiers.includes(b.atributos?.tier)).map((b) => ({ ...u, base: b.nome })));
     if (mapas) cache.classes[mapas.id] = mapas;
   }
   return cache;

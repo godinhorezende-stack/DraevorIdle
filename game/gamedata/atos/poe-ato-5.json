@@ -12,7 +12,7 @@
   },
   "progressao": {},
   "estado": "publicado",
-  "versao": 4,
+  "versao": 5,
   "inicio": "poe-a5-the-slave-pens",
   "cidade": {
     "nome": "Torre do Capataz",
@@ -126,49 +126,10 @@
       }
     },
     {
-      "id": "poe-a5-the-ruined-square",
-      "nome": "Praça Arruinada",
-      "descricao": "O coração sangrento de Oriath é o prato principal em um terrível banquete.",
-      "ordem": 4,
-      "huntId": "poe-a5-the-ruined-square",
-      "tipo": "hunt-normal",
-      "nivel": {
-        "facil": 44,
-        "medio": 44,
-        "dificil": 44
-      },
-      "obrigatoria": false,
-      "requisitos": {
-        "exige": []
-      },
-      "objetivos": [
-        {
-          "missao": "Banquete do Rei",
-          "texto": "Mate Utula"
-        },
-        {
-          "missao": "O Rei Voraz",
-          "texto": "Encontre a entrada para o Ossuário Procure pelo Sinal da Pureza no Ossuário"
-        }
-      ],
-      "conclusao": {
-        "tipo": "matar-chefe",
-        "monstro": "Utula,_Stone_and_Steel",
-        "nome": "Utula, Pedra e Aço"
-      },
-      "recompensas": null,
-      "eventos": [],
-      "sobrescritas": {},
-      "posicao": {
-        "x": 673,
-        "y": 146
-      }
-    },
-    {
       "id": "poe-a5-the-templar-courts",
       "nome": "Corte Templária",
       "descricao": "Apenas aqueles com olhos fieis podem entrar nestas câmaras solenes voluntariamente.",
-      "ordem": 5,
+      "ordem": 4,
       "huntId": "poe-a5-the-templar-courts",
       "tipo": "hunt-normal",
       "nivel": {
@@ -198,38 +159,10 @@
       }
     },
     {
-      "id": "poe-a5-the-torched-courts",
-      "nome": "Corte Incendiada",
-      "descricao": "Carregado por sangue e caos, um inferno sombrio engole os salões da justiça.",
-      "ordem": 6,
-      "huntId": "poe-a5-the-torched-courts",
-      "tipo": "hunt-normal",
-      "nivel": {
-        "facil": 44,
-        "medio": 44,
-        "dificil": 44
-      },
-      "obrigatoria": false,
-      "requisitos": {
-        "exige": []
-      },
-      "objetivos": [],
-      "conclusao": {
-        "tipo": "limpar-hunt"
-      },
-      "recompensas": null,
-      "eventos": [],
-      "sobrescritas": {},
-      "posicao": {
-        "x": 586,
-        "y": 191
-      }
-    },
-    {
       "id": "poe-a5-the-chamber-of-innocence",
       "nome": "Câmara de Innocence",
       "descricao": "No santuário mais sagrado, o Alto Templário comunga com Deus e entrega Seu divino julgamento.",
-      "ordem": 7,
+      "ordem": 5,
       "huntId": "poe-a5-the-chamber-of-innocence",
       "tipo": "hunt-normal",
       "nivel": {
@@ -266,6 +199,73 @@
       "posicao": {
         "x": 499,
         "y": 237
+      }
+    },
+    {
+      "id": "poe-a5-the-torched-courts",
+      "nome": "Corte Incendiada",
+      "descricao": "Carregado por sangue e caos, um inferno sombrio engole os salões da justiça.",
+      "ordem": 6,
+      "huntId": "poe-a5-the-torched-courts",
+      "tipo": "hunt-normal",
+      "nivel": {
+        "facil": 44,
+        "medio": 44,
+        "dificil": 44
+      },
+      "obrigatoria": false,
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {},
+      "posicao": {
+        "x": 586,
+        "y": 191
+      }
+    },
+    {
+      "id": "poe-a5-the-ruined-square",
+      "nome": "Praça Arruinada",
+      "descricao": "O coração sangrento de Oriath é o prato principal em um terrível banquete.",
+      "ordem": 7,
+      "huntId": "poe-a5-the-ruined-square",
+      "tipo": "hunt-normal",
+      "nivel": {
+        "facil": 44,
+        "medio": 44,
+        "dificil": 44
+      },
+      "obrigatoria": false,
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Banquete do Rei",
+          "texto": "Mate Utula"
+        },
+        {
+          "missao": "O Rei Voraz",
+          "texto": "Encontre a entrada para o Ossuário Procure pelo Sinal da Pureza no Ossuário"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Utula,_Stone_and_Steel",
+        "nome": "Utula, Pedra e Aço"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {},
+      "posicao": {
+        "x": 673,
+        "y": 146
       }
     },
     {

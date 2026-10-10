@@ -732,6 +732,18 @@ export function dropDoMonstro(tipo, rng = Math.random, fator = 1) {
   }
   return saida;
 }
+/** `n` moedas avulsas, pelos mesmos pesos do drop (o chefe do mapa único "derruba N Itens Monetários adicionais"). */
+export function moedasAvulsas(n, rng = Math.random) {
+  const cfg = R().moedas?.drop;
+  if (!Catalogo.ligado() || !cfg || !(n > 0)) return [];
+  const pesos = Object.entries(cfg.pesos ?? {}).filter(([s]) => POR_SLUG.has(s));
+  const saida = [];
+  for (let i = 0; i < Math.round(n); i++) {
+    const slug = Gerar.porPeso(pesos, rng);
+    if (slug) saida.push({ id: idDa(slug), count: 1 });
+  }
+  return saida;
+}
 /** As linhas da loja da Zuma (`regras.moedas.loja`: slug → preço em gold). */
 export function linhasDaLoja(estado) {
   if (!Catalogo.ligado()) return [];

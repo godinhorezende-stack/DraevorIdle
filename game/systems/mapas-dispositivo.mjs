@@ -50,7 +50,7 @@ export function mapasCarregados(estado) {
   for (const onde of ONDES) {
     (estado?.[onde] ?? []).forEach((peca, indice) => {
       if (!Mapas.ehMapa(peca)) return;
-      const tier = Mapas.tierDaBase(peca.poe.base);
+      const tier = Mapas.tierDaPeca(peca);
       saida.push({ onde, indice, assinatura: assinatura(peca), id: peca.id, tier, nivel: Mapas.nivelDoTier(tier), raridade: peca.poe.raridade ?? 'normal', nome: peca.poe.nome ?? `Mapa (Nível ${tier})`, peca });
     });
   }
@@ -72,7 +72,7 @@ export function abrir(estado, { onde = 'inventory', indice, assinatura: aDaTela,
   const peca = Number.isInteger(i) && i >= 0 ? lista[i] : null;
   if (!Mapas.ehMapa(peca)) return { ok: false, erro: 'Isso não é um mapa.' };
   if (aDaTela == null || assinatura(peca) !== String(aDaTela)) return { ok: false, erro: 'Esse mapa mudou de lugar: abra a lista de novo.' };
-  const tier = Mapas.tierDaBase(peca.poe.base);
+  const tier = Mapas.tierDaPeca(peca);
   const huntId = MapasAreas.huntIdDoTier(tier);
   if (!huntId || !Mapas.nivelDoTier(tier)) return { ok: false, erro: `O Mapa (Nível ${tier}) não existe no jogo.` };
   antes?.();

@@ -317,7 +317,8 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     // Morto no meio do tique (a magia anterior matou): as outras não saem — nem o dano depois
     // da morte, nem a recarga gasta à toa (elas esperam a próxima luta).
     if ((estado.hp ?? 0) <= 0) return;
-    bicho.proximoPoder[i] = agora + a.intervalo;
+    // (A Velocidade de Conjuração do monstro — o mapa único "Chefe Único tem X% de sua Velocidade de Conjuração aumentada": a magia sai mais vezes.)
+    bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, Number(bicho.velocidadeDeConjuracao) || 1);
     if (Math.random() * 100 >= a.chance || !alcanca(a, bicho, alvo)) return;
     total += dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a);
   });

@@ -2013,10 +2013,13 @@ export class Sessao {
 
   /** "Seguir" da campanha (ver `Cacadas.faseParaSeguir`): entra na próxima fase e traz quem segue o líder. */
   seguirParaAProximaFase() {
-    const proxima = Cacadas.faseParaSeguir(this.estado);
+    // Na party, quem decide é o LÍDER (`Party.quemDecideOAvancar`): na sala dele o membro não avança sozinho; ele avança mesmo convidado.
+    const quemDecide = Party.quemDecideOAvancar(this);
+    if (quemDecide === 'lider') return;
+    const proxima = Cacadas.faseParaSeguir(this.estado, { mesmoConvidado: quemDecide === 'eu' });
     if (!proxima) return;
     const h = this.estado.hunt;
-    // Quem da party também marcou "Avançar sozinho" e está nesta sala vai junto (antes de a sala mudar de mão).
+    // Quem vai junto (antes de a sala mudar de mão): o líder leva a sala inteira; sem o líder, os da sala que também marcaram "Avançar sozinho".
     const juntos = Party.quemAvancaJunto(this);
     Party.antesDeSairDaCacada(this);
     const r = Cacadas.entrar(this.estado, { huntId: proxima.huntId, mode: h.modo, strategy: h.strategy, dificuldade: proxima.dificuldade });
