@@ -21,6 +21,7 @@ import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt } f
 import * as BossesUnicos from '../bosses-unicos/catalogo.mjs';
 import * as Campanha from '../campanha.mjs';
 import { lerExecutaveis } from '../atos-carregar.mjs';
+import * as Cidades from '../cidades.mjs';
 
 const C = Monstros.CAMPANHA;
 
@@ -279,6 +280,8 @@ export function iniciar() {
     }
     atos.push(r.numero);
   }
+  // As CIDADES de cada ato registrado (a Vigília de Lioneye, o Acampamento da Floresta…): uma instância por cidade (`systems/cidades.mjs`).
+  Cidades.registrar(Object.values(C.areas).filter((a) => a.cidade && atos.includes(a.ato)).map((a) => ({ id: a.id, nome: a.nome, ato: a.ato })));
   INICIADO = { areas, atos, problemas };
   return INICIADO;
 }

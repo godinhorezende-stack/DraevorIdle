@@ -7793,7 +7793,7 @@ function renderAll() {
    */
   const comEscudoDeMana =
     !!character.escudoDoAnel || (state.hunt?.buffs ?? []).some((buff) => buff.tipo === 'shield');
-  renderHud(character, state.catalog, state.hunt?.party ?? null, comEscudoDeMana, state.hunt);
+  renderHud(character, state.catalog, state.hunt?.party ?? null, comEscudoDeMana, state.hunt, state.city?.cidade ?? null);
   // O cinto de frascos do PoE, junto das réguas de vida e mana (só com ITENS_POE=1).
   renderCintoDeFrascos();
   // O presente vive do mesmo estado: aparece e some junto com o resto da tela.

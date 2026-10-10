@@ -10,6 +10,7 @@ import * as Requisitos from './personagem/requisitos.mjs';
 import * as Equipamento from './itens/equipamento.mjs';
 import * as ItensPoeCatalogo from './itens-poe/catalogo.mjs';
 import * as R from './regras.mjs';
+import * as Cidades from './cidades.mjs';
 import * as Acoes from './acoes.mjs';
 // Inventário e o chão da praça: equipar de início, peso carregado, destruir,
 // largar e pegar item do chão. Funções puras sobre `estado` — quem manda a
@@ -279,12 +280,22 @@ export function limparMochila(estado, { fora }) {
  * partir daí, largar e pegar mudam este Map, e `CITY_META.chao` original
  * nunca mais é lido direto — ele já cumpriu o papel de semente.
  */
+// (Cada CIDADE é uma instância — `cidades.mjs`: um chão por cidade, `cidade → Map("x,y" → pilha)`, e quem está numa só vê e pega o chão
+// dela. A semente capturada é a da cidade de sempre, `CIDADE_UNICA`.)
 const CHAO = new Map();
+const chaoDa = (cidade) => {
+  let chao = CHAO.get(cidade);
+  if (!chao) CHAO.set(cidade, (chao = new Map()));
+  return chao;
+};
+/** As pilhas de todas as cidades: `[chave "x,y", pilha, chão da cidade]`. */
+const todasAsPilhas = () => [...CHAO.values()].flatMap((chao) => [...chao.entries()].map(([chave, pilha]) => [chave, pilha, chao]));
 
-export function semearChao(chaoCapturado) {
+export function semearChao(chaoCapturado, cidade = Cidades.CIDADE_UNICA.id) {
+  const chao = chaoDa(cidade);
   for (const pilha of chaoCapturado ?? []) {
-    const chave = `${pilha.x},${pilha.y}`;
-    CHAO.set(chave, (pilha.pilha ?? []).map((p) => ({ id: p.item, count: p.count })));
+    const chave = chaveDoTile(pilha.x, pilha.y);
+    chao.set(chave, (pilha.pilha ?? []).map((p) => ({ id: p.item, count: p.count })));
   }
 }
 
@@ -300,22 +311,24 @@ const chaveDoTile = (x, y) => `${x},${y}`;
  */
 export const contarPecasNoChao = () => {
   let n = 0;
-  for (const pilha of CHAO.values()) n += pilha.length;
+  for (const [, pilha] of todasAsPilhas()) n += pilha.length;
   return n;
 };
 
-/** A foto das pilhas do chão agora: `[chave, pilha][]`. */
-export const fotoDoChao = () => [...CHAO.entries()].filter(([, pilha]) => pilha.length);
+/** A foto das pilhas do chão agora (de todas as cidades): `[chave, pilha][]`. */
+export const fotoDoChao = () => todasAsPilhas().filter(([, pilha]) => pilha.length).map(([chave, pilha]) => [chave, pilha]);
 
 /** Apaga as pilhas da foto (um lote). Devolve `{ pilhas, pecas }` realmente removidas. */
 export function limparPilhasDoChao(lote) {
   let pilhas = 0;
   let pecas = 0;
   for (const [chave, pilha] of lote) {
-    if (CHAO.get(chave) !== pilha) continue; // a casa mudou (pegaram tudo / outra pilha): não é mais a da foto
+    // A cidade cuja casa ainda tem ESTA pilha; nenhuma: a casa mudou (pegaram tudo / outra pilha) — não é mais a da foto.
+    const chao = [...CHAO.values()].find((c) => c.get(chave) === pilha);
+    if (!chao) continue;
     pecas += pilha.length;
     pilhas++;
-    CHAO.delete(chave);
+    chao.delete(chave);
   }
   return { pilhas, pecas };
 }
@@ -330,10 +343,10 @@ export function limparPilhasDoChao(lote) {
  */
 const noAlcance = (pos, x, y) => Math.max(Math.abs(pos.x - x), Math.abs(pos.y - y)) <= 1;
 
-/** O `chao` do snapshot da cidade — mesmo formato que o `welcome` real mandava. */
-export function chaoParaCliente() {
+/** O `chao` do snapshot da cidade — mesmo formato que o `welcome` real mandava. `cidade`: só o chão dela (sem: o de todas). */
+export function chaoParaCliente(cidade = null) {
   const lista = [];
-  for (const [chave, pilha] of CHAO) {
+  for (const [chave, pilha] of cidade == null ? todasAsPilhas() : [...chaoDa(cidade).entries()]) {
     if (!pilha.length) continue;
     const [x, y] = chave.split(',').map(Number);
     const topo = pilha[pilha.length - 1];
@@ -364,18 +377,19 @@ export function chaoParaCliente() {
 export function largar(estado, { id, count = 1, x, y, de, deIndice, alvo }) {
   if (de) {
     if (!noAlcance(estado.pos, de.x, de.y)) return { ok: false, erro: 'Está muito longe.' };
+    const chao = chaoDa(Cidades.idDaCidade(estado));
     const chaveDe = chaveDoTile(de.x, de.y);
-    const pilhaDe = CHAO.get(chaveDe);
+    const pilhaDe = chao.get(chaveDe);
     if (!pilhaDe?.length) return { ok: false, erro: 'Não há nada aí.' };
     const i = deIndice == null ? pilhaDe.length - 1 : deIndice;
     const peca = pilhaDe[i];
     if (!peca) return { ok: false, erro: 'Não há nada aí.' };
     pilhaDe.splice(i, 1);
-    if (!pilhaDe.length) CHAO.delete(chaveDe);
+    if (!pilhaDe.length) chao.delete(chaveDe);
     const chave = chaveDoTile(x, y);
-    const pilha = CHAO.get(chave) ?? [];
+    const pilha = chao.get(chave) ?? [];
     pilha.push(peca);
-    CHAO.set(chave, pilha);
+    chao.set(chave, pilha);
     return { ok: true };
   }
   /*
@@ -412,18 +426,20 @@ export function largar(estado, { id, count = 1, x, y, de, deIndice, alvo }) {
     }
     peca = { id, count };
   }
+  const chao = chaoDa(Cidades.idDaCidade(estado));
   const chave = chaveDoTile(x, y);
-  const pilha = CHAO.get(chave) ?? [];
+  const pilha = chao.get(chave) ?? [];
   pilha.push(peca);
-  CHAO.set(chave, pilha);
+  chao.set(chave, pilha);
   return { ok: true };
 }
 
 /** `send({t:'pegar', x, y, indice})` — `indice: null` é sempre o topo da pilha. */
 export function pegar(estado, { x, y, indice }) {
   if (!noAlcance(estado.pos, x, y)) return { ok: false, erro: 'Está muito longe.' };
+  const chao = chaoDa(Cidades.idDaCidade(estado));
   const chave = chaveDoTile(x, y);
-  const pilha = CHAO.get(chave);
+  const pilha = chao.get(chave);
   if (!pilha?.length) return { ok: false, erro: 'Não há nada aí.' };
 
   const i = indice == null ? pilha.length - 1 : indice;
@@ -434,7 +450,7 @@ export function pegar(estado, { x, y, indice }) {
   if (!VALOR_DA_MOEDA[peca.id] && !cabeNoPeso(estado, peca.id, peca.count)) return { ok: false, erro: erroDeEspaco(estado, peca.id, peca.count) };
 
   pilha.splice(i, 1);
-  if (!pilha.length) CHAO.delete(chave);
+  if (!pilha.length) chao.delete(chave);
   // A peça INTEIRA (raridade, afixos...), e não um item-base novo pelo id.
   darPeca(estado, peca);
   return { ok: true };

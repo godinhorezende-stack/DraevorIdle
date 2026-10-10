@@ -691,9 +691,20 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       corpo.append(el('div', 'w2-chips', chip('Aberta', 'aberta'), chip(TIPOS_DE_NO.cidade), onde?.id === `cidade:${atoAtual.ato}` ? chip('Você está aqui', 'atual') : null), el('p', 'w2-desc', 'O ponto de partida do Ato: loja, depósito e os serviços da vila. Daqui saem as estradas para as primeiras fases.'));
       const saidas = el('ul', 'w2-lista', ...(c.conexoes ?? []).map((huntId) => { const f = escolhida.fases.find((x) => x.huntId === huntId); return el('li', f?.completa ? 'feito' : null, `${f?.completa ? '✓ ' : ''}${f?.nome ?? huntId}`); }));
       corpo.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Estradas daqui'), saidas));
-      const voltar = botao('w2-entrar', 'Voltar à cidade');
-      voltar.onclick = () => h.voltarParaCidade?.();
-      acao.append(voltar, el('p', 'w2-nota', 'Encerra a caçada atual (se houver) e volta para a vila.'));
+      if (campanha.cidadesPorAto && h.irParaCidade) {
+        // Cada cidade é uma INSTÂNCIA (o jogo oficial — `systems/cidades.mjs`): daqui se vai para ESTA cidade (saindo da caçada, se for o
+        // caso); estando nela, nada a fazer.
+        const aqui = onde?.id === `cidade:${atoAtual.ato}`;
+        const cacando = !!h.huntIdAtual?.();
+        const ir = botao('w2-entrar', aqui ? 'Você está aqui' : cacando ? `Voltar para ${c.nome}` : `Ir para ${c.nome}`);
+        ir.disabled = aqui;
+        ir.onclick = () => h.irParaCidade(atoAtual.ato);
+        acao.append(ir, el('p', 'w2-nota', aqui ? 'Quem está nesta cidade vê você; nas outras cidades, não.' : cacando ? 'Encerra a caçada atual e vai para esta cidade.' : 'Viaja para esta cidade (cada cidade tem os seus jogadores).'));
+      } else {
+        const voltar = botao('w2-entrar', 'Voltar à cidade');
+        voltar.onclick = () => h.voltarParaCidade?.();
+        acao.append(voltar, el('p', 'w2-nota', 'Encerra a caçada atual (se houver) e volta para a vila.'));
+      }
       // O Dispositivo de Mapas fica na cidade do Ato dele (as Docas de Oriath): o atalho para a aba Mapas.
       if (campanha.mapas && h.abrirMapas && atoAtual.ato === campanha.mapas.ato) {
         const dispositivo = botao('w2-entrar w2-dispositivo', 'Dispositivo de Mapas');

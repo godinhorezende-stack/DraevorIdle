@@ -674,6 +674,11 @@ function campanhaCards(body) {
               ctx.redraw();
             }
           : null,
+        // A CIDADE de um ato (o jogo oficial: cada uma é uma instância): sai da caçada, se estiver numa, e vai para ela — o servidor confere.
+        irParaCidade: (ato) => {
+          send({ t: 'irParaCidade', ato });
+          ctx.closeModal();
+        },
         // A CIDADE (o nó de partida do ato): estando numa caçada, volta para a cidade pelo mesmo fluxo do botão Parar.
         voltarParaCidade: () => {
           if (ctx.state.hunt) send({ t: 'stopHunt' });

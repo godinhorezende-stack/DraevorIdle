@@ -25,6 +25,7 @@
 import { naTela, JANELA } from '../websocket/quadro.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Guildas from './guildas.mjs';
+import * as Cidades from './cidades.mjs';
 
 export const MAX_TEXTO = 200;
 export const MAX_AUDIO_S = 30;
@@ -47,9 +48,9 @@ const sessaoDe = (nome) => {
 /** Na praça (fora de caçada) e no mesmo andar. */
 const naPraca = (s) => !!s?.estado && !s.estado.hunt && s.estado.pos;
 
-/** Quem vê quem: na praça, a tela; na caçada, a mesma sala. */
+/** Quem vê quem: na praça, a MESMA cidade (cada uma é uma instância — `cidades.mjs`) e a tela; na caçada, a mesma sala. */
 function perto(a, b) {
-  if (naPraca(a) && naPraca(b)) return (a.estado.pos.z ?? 7) === (b.estado.pos.z ?? 7) && naTela(a.estado.pos, b.estado.pos);
+  if (naPraca(a) && naPraca(b)) return Cidades.idDaCidade(a.estado) === Cidades.idDaCidade(b.estado) && (a.estado.pos.z ?? 7) === (b.estado.pos.z ?? 7) && naTela(a.estado.pos, b.estado.pos);
   if (a.estado?.hunt && b.estado?.hunt) return Cacadas.salaDe(a.estado.hunt) === Cacadas.salaDe(b.estado.hunt);
   return false;
 }
@@ -113,7 +114,8 @@ function garantirIndice() {
       // Quem é de guilda leva o nome dela; o brasão vai uma vez em `brasoes` (ver `brasoesDaPraca`).
       ...(guilda ? { guilda: guilda.nome } : {}),
     };
-    const chave = `${Math.floor(p.x / TAM_DA_CELULA)},${Math.floor(p.y / TAM_DA_CELULA)},${p.z ?? 7}`;
+    // (A célula leva a CIDADE: quem está noutra cidade nunca cai na mesma vizinhança.)
+    const chave = `${Cidades.idDaCidade(e)}|${Math.floor(p.x / TAM_DA_CELULA)},${Math.floor(p.y / TAM_DA_CELULA)},${p.z ?? 7}`;
     let lista = indice.get(chave);
     if (!lista) indice.set(chave, (lista = []));
     lista.push({ s, cartao });
@@ -134,10 +136,11 @@ export function jogadoresNaPraca(eu) {
   const idx = garantirIndice();
   const cx = Math.floor(p.x / TAM_DA_CELULA);
   const cy = Math.floor(p.y / TAM_DA_CELULA);
+  const cidade = Cidades.idDaCidade(eu.estado);
   const candidatos = [];
   for (let dx = -1; dx <= 1; dx++) {
     for (let dy = -1; dy <= 1; dy++) {
-      const vizinhos = idx.get(`${cx + dx},${cy + dy},${z}`);
+      const vizinhos = idx.get(`${cidade}|${cx + dx},${cy + dy},${z}`);
       if (!vizinhos) continue;
       for (const { s, cartao } of vizinhos) {
         // O `z` já veio igual pela chave da célula — só falta a tela (`naTela`, a mesma conta do `perto`).
