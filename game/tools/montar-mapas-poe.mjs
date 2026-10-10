@@ -1,7 +1,8 @@
 // Os MAPAS do PoE (endgame T1–T16, 10/10) a partir do poedb guardado pelo Scrapling (`/home/deploy/scrapling/saida/html`, fora do repo):
 //   - `Maps_low_tier`, `Maps_mid_tier`, `Maps_top_tier`: os modificadores de mapa de cada faixa (o poedb traz o JSON dos mods na página);
-//   - `Map_(Tier_N)`: a base de cada tier ("Mapa (Nível N)", `MapKeyTierN`; a sprite `MapNumbersN`, baixada à parte para
-//     `gamedata/itens-poe/icones-itens/poe-itens/Mapas/icones/`).
+//   - `Map_(Tier_N)`: a base de cada tier ("Mapa (Nível N)", `MapKeyTierN`). O ícone é o do dono (10/10): a moeda com o número do tier,
+//     importada por `tools/importar-icones-mapas.mjs` para `gamedata/itens-poe/icones-itens/poe-itens/Mapas/icones/Map_Tier_N.png` (a sprite
+//     `MapNumbersN` do poedb era só a camada do número).
 // Saída: `gamedata/itens-poe/mapas.json` — a CLASSE Mapas no formato do catálogo (bases e páginas de mods, para o gerador, as moedas e o
 // balão funcionarem sem um segundo sistema), o EFEITO de cada família no jogo (`EFEITOS`, abaixo: só entra no pool o que age de verdade) e
 // a lista do que ainda não tem mecânica (`naoImplementados`, com o motivo — não sorteia). As seções feitas à mão (`tiers`, `drop`,
@@ -161,7 +162,7 @@ const classe = {
   bases: tiers.map(({ tier, nivel }) => ({
     id: `Maps/Map_Tier_${tier}`, slug: `Map_Tier_${tier}`, nome: `Mapa (Nível ${tier})`, itemId: ID_BASE + tier,
     requisitos: { nivel: null, forca: null, destreza: null, inteligencia: null },
-    atributos: { tier, nivel_area: nivel }, implicitos: [], icone: `poe-itens/Mapas/icones/Map_Tier_${tier}.webp`, iconeLado: 80, pool: faixaDoTier(tier),
+    atributos: { tier, nivel_area: nivel }, implicitos: [], icone: `poe-itens/Mapas/icones/Map_Tier_${tier}.png`, iconeLado: 80, pool: faixaDoTier(tier),
   })),
   paginas, unicos: [],
 };
