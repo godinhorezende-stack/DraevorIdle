@@ -27,6 +27,7 @@ import { lerExecutaveis } from './atos-carregar.mjs';
 import * as RecompensasDeEncontro from './encontros/recompensas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as MissoesDeGemas from './itens-poe/missoes-de-gemas.mjs';
+import * as Cidades from './cidades.mjs';
 
 /*
  * Com o sistema de itens do PoE ligado (ITENS_POE=1, só local), a campanha é a do PoE (decisão do dono, 05/10): os 4 atos do Draevor saem
@@ -349,6 +350,17 @@ export function proximaParaSeguir(estado, dif, huntId) {
   return null;
 }
 
+/**
+ * O ato da FRONTEIRA (a próxima fase a fazer, no Normal): a primeira fase aberta e não completa; sem nenhuma, a última aberta. É a cidade de
+ * quem ainda não caçou nesta versão (`estado.atoDaCidade` vazio — a sessão põe no login).
+ */
+export function atoDaFronteira(estado, dif = DIFICULDADES[0]) {
+  const f = FASES.find((x) => !x.pular && faseLiberada(estado, dif, x.huntId) && !faseCompleta(estado, dif, x.huntId)) ?? FASES.findLast((x) => faseLiberada(estado, dif, x.huntId));
+  return f?.ato ?? FASES[0]?.ato ?? 1;
+}
+/** O ato está aberto para `estado` (alguma fase dele liberada no Normal)? É o que deixa viajar até a cidade dele. */
+export const atoAberto = (estado, ato, dif = DIFICULDADES[0]) => FASES.some((f) => f.ato === Number(ato) && faseLiberada(estado, dif, f.huntId));
+
 /** O boss do ato caiu: a primeira vitória libera o ato seguinte (ou a dificuldade seguinte). */
 export function venceuBoss(estado, dif, ato) {
   const p = progresso(estado, dif);
@@ -430,8 +442,10 @@ export function paraCliente(estado) {
     atos: atosDoConteudo(),
     mundo: Object.fromEntries(FASES.filter(visivel).map((f) => [f.huntId, mundoDaFase(estado, f)]).filter(([, v]) => Object.keys(v).length)),
     bossesDerrotados: Object.entries(vitorias).map(([id, vezes]) => ({ id, nome: nomes[id] ?? id, vezes })),
-    // A cidade onde o personagem fica fora da caçada (o nó azul do mapa): a do ato da última fase em que ele caçou (`Cacadas.entrar`).
+    // A cidade onde o personagem fica fora da caçada (o nó azul do mapa): a do ato da última fase em que ele caçou (`Cacadas.entrar`) ou da
+    // cidade para onde viajou. `cidadesPorAto`: cada cidade é uma instância e se viaja até ela pelo mapa (`cidades.mjs`, o jogo oficial).
     atoDaCidade: Number(estado.atoDaCidade) || null,
+    ...(Cidades.porAto() ? { cidadesPorAto: true } : {}),
     dificuldades: dificuldadesDoJogo().map((dif) => {
       const p = progresso(estado, dif);
       return {

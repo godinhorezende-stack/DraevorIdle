@@ -88,6 +88,7 @@ import * as ItensDoJogo from '../systems/itens/item.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as MapasDispositivo from '../systems/mapas-dispositivo.mjs';
 import * as MapaAberto from '../systems/itens-poe/mapa-aberto.mjs';
+import * as Cidades from '../systems/cidades.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
@@ -279,8 +280,11 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
  * cliente perder o que já tinha e pedir de volta.
  */
 function snapshotDaPraca(estado, comMapa, sessao = null) {
+  // A cidade em que ele está (cada ato tem a sua instância — `cidades.mjs`): o nome vai para a tela, e o chão é só o dela.
+  const cidade = Cidades.cidadeDe(estado);
   return {
     mapId: 'city',
+    cidade,
     z: estado.pos.z ?? R.POSICAO_INICIAL.z,
     ...(comMapa ? { map: CITY_MAP } : {}),
     player: { x: estado.pos.x, y: estado.pos.y, dir: estado.pos.dir ?? 2, moveMs: R.PASSO_MS },
@@ -292,7 +296,7 @@ function snapshotDaPraca(estado, comMapa, sessao = null) {
     })(),
     npcs: CITY_META.npcs,
     objetos: CITY_META.objetos,
-    chao: Inventario.chaoParaCliente(),
+    chao: Inventario.chaoParaCliente(cidade.id),
   };
 }
 
@@ -1374,18 +1378,20 @@ export class Sessao {
         return this.entrarNoPortalDoBoss();
       case 'entrarNaArena':
         return this.entrarNaArena();
-      case 'stopHunt': {
-        // "Caçada encerrada": o relatório da sessão, antes de a hunt sumir.
-        const report = this.estado?.hunt ? Cacadas.relatorio(this.estado) : null;
-        // Quem segue o líder volta junto (antes de ele sair: é pela sala dele que se acha quem estava junto).
-        Party.voltarComOLider(this, 'voltou para a cidade');
-        // Quem fica na sala o vê ir embora pelo portal de viagem.
-        const portal = Party.portalDeSaida(this);
-        Party.antesDeSairDaCacada(this);
-        const resultado = this.aplicar(Cacadas.sair(this.estado));
-        portal();
-        if (report) this.enviar({ t: 'runReport', report });
-        return resultado;
+      case 'stopHunt':
+        return this.voltarParaACidade();
+      // A CIDADE de outro ato (o mapa da campanha — `cidades.mjs`): sai da caçada (se estiver numa) e vai para a cidade do ato pedido, se o
+      // ato estiver aberto para ele. Chega no ponto de entrada da cidade.
+      case 'irParaCidade': {
+        const destino = Cidades.daCidadeDoAto(m.ato);
+        if (!destino) return this.erro('Essa cidade não existe.');
+        if (!Campanha.atoAberto(this.estado, destino.ato)) return this.erro(`O Ato ${destino.ato} ainda não está aberto para você.`);
+        if (this.estado.hunt) this.voltarParaACidade();
+        const mudou = Number(this.estado.atoDaCidade) !== destino.ato;
+        this.estado.atoDaCidade = destino.ato;
+        if (mudou) this.estado.pos = { ...R.POSICAO_INICIAL };
+        this.aplicar({ ok: true, ...(mudou ? { notice: `Você chegou em ${destino.nome}.` } : {}) });
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       }
       case 'huntTarget':
         return this.aplicar(Cacadas.definirAlvo(this.estado, m));
@@ -1779,6 +1785,8 @@ export class Sessao {
     // Os bichos da caçada voltam completos (ver `Cacadas.huntParaGravar`).
     Cacadas.huntAoCarregar(estado.hunt);
     estado.pos = corrigirPosicaoAntiga(estado.pos);
+    // A CIDADE dele (uma instância por ato — `cidades.mjs`): quem ainda não tem fica na do ato da próxima fase da campanha.
+    if (Cidades.porAto() && !estado.atoDaCidade) estado.atoDaCidade = Campanha.atoDaFronteira(estado);
     // Migração: personagens salvos antes do sistema de recompensas existir
     // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
     // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
@@ -2664,6 +2672,24 @@ export class Sessao {
    * `real: false` é a saída por erro do servidor (o `catch` do tique): um bug
    * nosso não pode custar nada. Devolve os campos do `death`.
    */
+  /**
+   * Sai da caçada para a cidade (o botão Parar, `stopHunt`): o relatório da sessão, quem segue o líder volta junto, quem fica na sala o vê
+   * ir pelo portal de viagem. Devolve o `aplicar`.
+   */
+  voltarParaACidade() {
+    // "Caçada encerrada": o relatório da sessão, antes de a hunt sumir.
+    const report = this.estado?.hunt ? Cacadas.relatorio(this.estado) : null;
+    // Quem segue o líder volta junto (antes de ele sair: é pela sala dele que se acha quem estava junto).
+    Party.voltarComOLider(this, 'voltou para a cidade');
+    // Quem fica na sala o vê ir embora pelo portal de viagem.
+    const portal = Party.portalDeSaida(this);
+    Party.antesDeSairDaCacada(this);
+    const resultado = this.aplicar(Cacadas.sair(this.estado));
+    portal();
+    if (report) this.enviar({ t: 'runReport', report });
+    return resultado;
+  }
+
   morrerNaHunt({ real = true } = {}) {
     if (real) Party.voltarComOLider(this, 'morreu');
     Party.antesDeSairDaCacada(this);

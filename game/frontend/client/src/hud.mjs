@@ -2283,10 +2283,21 @@ export function pintarBotaoDaFase(botao, modo) {
   botao.querySelector('.modo-curto').textContent = seguir ? 'Avançar' : 'Ficar';
 }
 
-function barraDaFase(hunt) {
+function barraDaFase(hunt, cidade = null) {
   const caixa = $('barra-da-fase');
   if (!caixa) return;
   const f = hunt?.fase;
+  // Na CIDADE de um ato (o jogo oficial: uma instância por ato — `systems/cidades.mjs`): a mesma faixa diz em qual cidade ele está.
+  const naCidade = !hunt && cidade?.ato != null;
+  caixa.classList.toggle('cidade', naCidade);
+  if (naCidade) {
+    caixa.hidden = false;
+    caixa.classList.remove('completa', 'limpa');
+    $('fase-titulo').textContent = `Ato ${cidade.ato} · ${cidade.nome}`;
+    $('fase-conta').textContent = 'Cidade';
+    $('fase-conta').title = 'Cada cidade é uma instância: aqui você vê quem está nesta cidade.';
+    return;
+  }
   if (!f || f.tipo !== 'fase') {
     caixa.hidden = true;
     return;
@@ -2315,9 +2326,9 @@ function barraDaFase(hunt) {
   if (modo && modo.dataset.modo !== f.aoCompletar) pintarBotaoDaFase(modo, f.aoCompletar ?? 'repetir');
 }
 
-export function renderHud(character, catalog, party = null, escudoDeMana = false, hunt = null) {
+export function renderHud(character, catalog, party = null, escudoDeMana = false, hunt = null, cidade = null) {
   barraDoBoss(hunt);
-  barraDaFase(hunt);
+  barraDaFase(hunt, cidade);
   barrasDaArena(hunt, catalog);
   const { derived, progress } = character;
 
