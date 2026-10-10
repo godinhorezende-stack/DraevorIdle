@@ -235,7 +235,10 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const forcaDaMagia = Reforcos.forcaDoBicho(bicho, agora) * fatorDoBloqueio * critDoMob.fator * ModsPoe.doBicho(bicho, agora).danoFator;
   // `extras` da magia: dano de OUTROS tipos no mesmo lançamento, cada um com a proteção do SEU elemento.
   const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => n + sortear(x.min, x.max) * forcaDaMagia * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento), 0);
-  const bruto = sortear(a.min, a.max) * forcaDaMagia * fatorDaResistencia + doutrosTipos;
+  // (O MAPA do endgame: o dano extra por elemento em % do dano da magia — `bicho.danoExtraPct`.)
+  const daMagia = sortear(a.min, a.max) * forcaDaMagia;
+  const extraDoMapa = AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + daMagia * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento), 0);
+  const bruto = daMagia * fatorDaResistencia + doutrosTipos + extraDoMapa;
   // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance) — sorteada ANTES das
   // afecções: "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" (a árvore) as tira da magia suprimida.
   const suprimiu = (ficha.supressaoDeMagia ?? 0) > 0 && Math.random() < ficha.supressaoDeMagia;

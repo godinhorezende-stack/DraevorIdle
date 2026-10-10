@@ -270,3 +270,63 @@
 .atos-mapa .w2-dica { font: 11px system-ui, sans-serif; letter-spacing: 0; text-transform: none; }
 /* No EDITOR (a vista Mapa dos atos e a prévia do mapa mundo) os nomes ficam sempre visíveis: lá se posiciona pelo nome. */
 .atos-mapa-palco .w-placa, .eng-previa-mapa .w-placa { opacity: 1; }
+
+/* ---- O DISPOSITIVO DE MAPAS (o endgame do PoE: a aba Mapas e o atalho das Docas de Oriath — `client/src/mapas-dispositivo.mjs`) ----
+   A mesma identidade da Campanha: o carvão, o bronze e o ouro; a raridade de cada mapa na cor do PoE (Normal claro, Mágico azul, Raro
+   amarelo) e os portais como pontos acesos em ciano (onde o jogador ainda pode entrar). */
+.w2-dif.mapas.aberta b { color: #e8d9a8; }
+.w2-dispositivo { margin-top: 4px; }
+.w2-mapas { --mp-normal: #e8e2d0; --mp-magico: #8888ff; --mp-raro: #ffff77; --mp-unico: #f0a050; --mp-parcial: #e5c07b; }
+.mp-corpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 10px; align-items: start; }
+.mp-cartao { padding: 12px 14px; background: linear-gradient(180deg, #121518, #0b0d0f); border: 1px solid var(--w-metal); border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(240, 210, 126, .06), inset 0 0 14px #0008; }
+.mp-aviso { padding: 6px 10px; border: 1px solid #7a3a3a; background: #2a1414; color: #ffd0cc; border-radius: 3px; font-size: 12.5px; }
+.mp-aberto { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 240px); gap: 12px; align-items: center; }
+.mp-aberto.vazio { grid-template-columns: minmax(0, 1fr); }
+.mp-fechado { grid-column: 1 / -1; display: grid; justify-items: center; gap: 6px; text-align: center; padding: 28px 16px; }
+.mp-fechado .w2-cad .w2-ico { width: 28px; height: 28px; }
+.mp-fechado h4, .mp-titulo { margin: 0; font: 700 14px var(--font-heading, Cinzel, serif); letter-spacing: .12em; text-transform: uppercase; color: var(--w-ouro2); }
+.mp-fechado p { margin: 0; max-width: 46ch; color: var(--w-txt2); }
+.mp-fig { position: relative; display: grid; place-items: center; width: 56px; height: 56px; background: radial-gradient(circle, #1b2127, #0a0c0e 70%); border: 1px solid var(--w-cinza-aco); border-radius: 4px; }
+.mp-tier { position: absolute; right: -6px; bottom: -6px; padding: 0 5px; font: 700 10px var(--font-heading, Cinzel, serif); color: #f7e3a6; background: #2a1f0b; border: 1px solid var(--w-bronze2); border-radius: 2px; font-variant-numeric: tabular-nums; }
+.mp-info { display: grid; gap: 3px; min-width: 0; }
+.mp-rotulo { font: 600 10px var(--font-heading, Cinzel, serif); letter-spacing: .14em; text-transform: uppercase; color: var(--w-txt3); }
+.mp-nome { margin: 0; font: 700 15px var(--font-heading, Cinzel, serif); letter-spacing: .04em; overflow-wrap: anywhere; }
+h5.mp-nome { font-size: 13.5px; }
+.mp-nome.r-normal { color: var(--mp-normal); } .mp-nome.r-magico { color: var(--mp-magico); } .mp-nome.r-raro { color: var(--mp-raro); } .mp-nome.r-unico { color: var(--mp-unico); }
+.mp-linha { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--w-txt2); }
+.mp-portais { display: inline-flex; gap: 4px; }
+.mp-portais i { width: 9px; height: 9px; border-radius: 50%; background: #1b2127; border: 1px solid var(--w-cinza-aco2); }
+.mp-portais i.aceso { background: var(--w-ciano); border-color: var(--w-ciano2); box-shadow: 0 0 6px var(--w-ciano-fraco); }
+.mp-acoes { display: grid; gap: 6px; }
+.mp-desistir { min-height: 34px; cursor: pointer; border-radius: 3px; font: 600 12px var(--font-heading, Cinzel, serif); letter-spacing: .08em; text-transform: uppercase;
+  color: #e7b3ac; background: #1c1010; border: 1px solid #5a2a26; }
+.mp-desistir[data-certeza] { color: #fff; background: var(--w-vermelho2); border-color: var(--w-vermelho); }
+.mp-nota { margin: 0; font-size: 12px; color: var(--w-apagado); }
+.mp-lista { display: grid; gap: 8px; min-width: 0; }
+.mp-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 8px; }
+.mp-mapa { display: grid; gap: 8px; align-content: start; padding: 10px; background: linear-gradient(180deg, #121518, #0b0d0f); border: 1px solid #2f3236; border-left-width: 3px; border-radius: 4px; }
+.mp-mapa.r-normal { border-left-color: var(--mp-normal); } .mp-mapa.r-magico { border-left-color: var(--mp-magico); } .mp-mapa.r-raro { border-left-color: var(--mp-raro); } .mp-mapa.r-unico { border-left-color: var(--mp-unico); }
+.mp-mapa header { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; }
+.mp-mapa .mp-fig { width: 48px; height: 48px; }
+.mp-resumo { display: grid; gap: 6px; }
+.mp-numeros { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--w-txt3); }
+.mp-numeros b { color: var(--w-ouro2); font-variant-numeric: tabular-nums; }
+.mp-afixos { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.mp-afixo { font-size: 12px; line-height: 1.35; color: #c9d4ff; }
+.mp-afixo.parcial { color: var(--mp-parcial); }
+.mp-afixo.parcial::before { content: "◐ "; }
+.mp-afixo.inerte { color: var(--w-txt3); text-decoration: line-through; }
+.mp-sem-afixo { margin: 0; font-size: 11.5px; color: var(--w-txt3); }
+.mp-abrir { min-height: 40px; font-size: 13px; }
+.mp-estat { display: grid; gap: 10px; }
+.mp-tiers { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+.mp-tierbar { display: grid; grid-template-rows: 34px auto; justify-items: center; gap: 2px; }
+.mp-tierbar i { align-self: end; width: 100%; min-height: 2px; background: #22272c; border-radius: 2px 2px 0 0; }
+.mp-tierbar.feito i { background: linear-gradient(180deg, var(--w-ouro2), var(--w-bronze)); }
+.mp-tierbar small { font-size: 9.5px; color: var(--w-txt3); font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .mp-corpo { grid-template-columns: minmax(0, 1fr); }
+  .mp-aberto { grid-template-columns: auto minmax(0, 1fr); }
+  .mp-aberto .mp-acoes { grid-column: 1 / -1; }
+}

@@ -27,6 +27,8 @@ export function levarDaSala(hunt, sala) {
   if (!sala || sala === hunt) return;
   if (!hunt.instancia && sala.instancia) hunt.instancia = structuredClone(sala.instancia);
   if (!hunt.outrosAndares && sala.outrosAndares) hunt.outrosAndares = structuredClone(sala.outrosAndares);
+  // O MAPA do endgame (os efeitos e o drop dele) vai com a instância: quem fica com a sala continua no mesmo mapa.
+  if (!hunt.mapa && sala.mapa) hunt.mapa = structuredClone(sala.mapa);
 }
 /** `salaAntiga`: a sala de quem saiu — o novo dono fica com a instância dela (uma cópia; quem saiu segue com a dele). */
 export const virarDono = (hunt, salaAntiga = null) => {

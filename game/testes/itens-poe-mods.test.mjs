@@ -13,6 +13,7 @@ const SEM = !existsSync(Catalogo.ARQUIVO) && 'catálogo do PoE não está nesta 
 const { ITEM_CATALOG } = await import('../systems/dados.mjs');
 const Jogo = await import('../systems/itens-poe/jogo.mjs');
 const Fr = await import('../systems/itens-poe/frascos.mjs');
+const Mapas = await import('../systems/itens-poe/mapas.mjs');
 const { traduzirParte, traduzirMod, NOVOS } = await import('../systems/itens-poe/traduzir.mjs');
 const Gerar = await import('../systems/itens-poe/gerar.mjs');
 const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
@@ -42,6 +43,21 @@ test('cobertura: nenhum afixo, implícito ou mod de frasco das classes que caem 
   const registrados = [];
   for (const [cls, c] of Object.entries(Catalogo.catalogo().classes)) {
     if (FORA_DO_JOGO.has(cls)) continue;
+    // O MAPA do endgame (dono, 10/10) age na INSTÂNCIA, não no personagem: cada linha pelo sistema dos mapas (`itens-poe/mapas.mjs`), como
+    // o frasco pelo dele — inteira ou parcial (com a nota do que falta); nenhuma só registrada. (O que não tem mecânica nem entra no pool.)
+    if (cls === Mapas.CLASSE) {
+      for (const [pagina, pool] of Object.entries(c.paginas)) {
+        const base = (c.bases ?? []).find((b) => b.pool === pagina)?.id;
+        for (const g of [...pool.prefixos, ...pool.sufixos]) for (const t of g.tiers) {
+          const r = Mapas.resumo({ poe: { base, prefixos: [{ familia: g.familia, modelo: t.modelo, texto: t.texto, valores: (t.faixas ?? []).map((f) => f[0]) }] } });
+          for (const l of r.linhas) {
+            if (!['equivalente', 'parcial'].includes(l.estado)) registrados.push(`${cls}: ${l.texto}`);
+            if (l.estado === 'parcial') assert.ok(l.nota, `${l.texto}: o parcial explica o que falta`);
+          }
+        }
+      }
+      continue;
+    }
     const ver = (m) => {
       if (/Flasks/.test(cls)) {
         const par = Fr.parametros({ poe: { classe: cls, base: `${cls}/x`, atributos: {}, implicitos: [], prefixos: [{ modelo: m.modelo, valores: (m.faixas ?? []).map((f) => f[0]) }], sufixos: [] } });

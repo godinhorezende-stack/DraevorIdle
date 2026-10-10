@@ -14,7 +14,7 @@ import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
 import { temHabilidade } from '../passivas/arvore.mjs';
 import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
-import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
+import { ligado as itensPoeLigado, REGRAS as REGRAS_POE } from '../itens-poe/catalogo.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Equipamento from '../itens/equipamento.mjs';
@@ -45,6 +45,7 @@ import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as MoedasPoe from '../itens-poe/moedas.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
+import * as Mapas from '../itens-poe/mapas.mjs';
 import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
 import * as Tarefas from '../tarefas.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
@@ -347,6 +348,14 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
       itens.push(peca);
       Anuncios.dropRaro({ quem, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
+  }
+  // O ENDGAME (os mapas do PoE — `itens-poe/mapas.mjs`): o chefe do Ato 10 garante o primeiro mapa — o T1 mágico na primeira vitória deste
+  // personagem, um T1 normal nas outras (ninguém fica sem acesso). A sacola é de cada um da party: cada um leva o seu, sem duplicar.
+  if (atoDoChefe && itensPoeLigado()) {
+    const dif = hunt.campanha?.dificuldade ?? Campanha.DIFICULDADES[0];
+    const doEndgame = Mapas.mapaDoChefeDoAto(atoDoChefe, { primeiraVitoria: !Campanha.bossVencido(estado, dif, atoDoChefe) });
+    const mapa = doEndgame ? ItensPoeJogo.mapaSorteado(doEndgame.tier, { raridade: doEndgame.raridade }) : null;
+    if (mapa) itens.push(mapa);
   }
   // Sistema de itens do PoE (só com ITENS_POE=1): o drop do PoE do boss (raridade do monstro: Único) e, no chefe pináculo, 1 Único
   // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
@@ -877,8 +886,11 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
   // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho × os modificadores de quantidade do loot
   // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
-  const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt);
-  for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoDrop(estado, alvo))) {
+  // (No MAPA do endgame: × a Quantidade de Itens dele, e a Raridade de Itens dele soma na sua — como no PoE.)
+  const noMapa = salaDe(hunt)?.mapa ?? null;
+  const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt) * (1 + Math.max(0, Number(noMapa?.quantidade) || 0) / 100);
+  const raridadeDoMorto = raridadeDoDrop(estado, alvo) + (Number(noMapa?.raridade) || 0);
+  for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoMorto)) {
     // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").
     if (Bolsa.ignora(estado, daPoe.id, daPoe)) {
       conta('ignorado', daPoe.id, 1);
@@ -890,6 +902,24 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
     Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: daPoe, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
     DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
+  }
+  // Os MAPAS (o endgame — `itens-poe/mapas.mjs`, mapas.json → drop): dentro de um mapa, o monstro solta mapas do tier da área ou um acima
+  // (o comum, só o da área; o T16, só o T16) e o chefe do mapa garante os dele. Um sorteio por morte, para quem matou: na party, ninguém
+  // ganha o mesmo mapa em dobro.
+  if (noMapa) {
+    const tipo = tipoDoBicho(alvo);
+    const sorteados = Mapas.sortearDrops({ tierDaArea: noMapa.tier, tipo, bonusDeQuantidade: Number(REGRAS_POE.drop?.bonusDeQuantidade?.[tipo]) || 0, quantidadePct: noMapa.quantidade, chefeDoMapa: !!alvo.chefeDoMapa });
+    for (const { tier } of sorteados) {
+      const mapa = ItensPoeJogo.mapaSorteado(tier, { raridadeAumentada: raridadeDoMorto });
+      if (!mapa) continue;
+      if (Bolsa.ignora(estado, mapa.id, mapa)) {
+        conta('ignorado', mapa.id, 1);
+        continue;
+      }
+      if (!Bolsa.porNaBolsa(estado, mapa.id, 1, mapa)) break;
+      caiu.push({ id: mapa.id, count: 1 });
+      conta('loot', mapa.id, 1);
+    }
   }
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
   for (const moeda of MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador)) {
@@ -1034,7 +1064,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // O dano de OUTROS tipos do mesmo golpe (`danoExtra` da espécie): cada um passa pela proteção do SEU elemento (a armadura é só do físico).
   // (PoE: com as conversões do dano recebido — "X% do Dano de Fogo dos Acertos recebido como Dano de Gelo" — e o "Recebe X% do Dano Físico
   // como Dano Extra de um Elemento aleatório".)
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => n + Math.round((x.min + Math.floor(Math.random() * (x.max - x.min + 1))) * forcaDoGolpe * critDoMob.fator * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, bruto));
+  // (O MAPA do endgame: "Monstros causam X% do Dano como Dano Extra de Fogo/Gelo/Raio" — `bicho.danoExtraPct`, do golpe com o crítico.)
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => n + Math.round((x.min + Math.floor(Math.random() * (x.max - x.min + 1))) * forcaDoGolpe * critDoMob.fator * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, bruto)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   let final = Math.round((R.danoRecebido(protegido, armorDoPersonagem(estado)) + doutrosTipos) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));

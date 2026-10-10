@@ -15,6 +15,7 @@ import { darPeca } from '../inventario.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Frascos from './frascos.mjs';
+import * as Mapas from './mapas.mjs';
 
 export const PRIMEIRO_ID = 7_000_000;
 
@@ -53,12 +54,14 @@ export const CLASSES_DO_JOGO = {
   Wands: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', range: 6, alcanceMetros: 12, shoot: 'energy', peso: 27 },
 };
 
-const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [] };
+// (`mapas`: as bases dos MAPAS do endgame, à parte — `porBase` é a lista das bases equipáveis e dos frascos, que o drop comum e a prévia
+// da área percorrem; o mapa só cai pelas regras dele, `itens-poe/mapas.mjs`.)
+const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [], mapas: new Map() };
 /** As classes de frasco que entram no jogo (o cinto de frascos — `itens-poe/frascos.mjs`). As Tinturas ainda não. */
 export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks'];
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
-export const idDaBase = (base) => REG.porBase.get(base) ?? null;
+export const idDaBase = (base) => REG.porBase.get(base) ?? REG.mapas.get(base) ?? null;
 /** A base (`Classe/Slug`) de um id virtual do PoE, ou null. */
 export const baseDoId = (id) => REG.porId.get(Number(id)) ?? null;
 
@@ -125,6 +128,17 @@ export function iniciar(itemCatalog) {
       REG.porBase.set(b.id, id);
       REG.porId.set(id, b.id);
     }
+  }
+  // Os MAPAS do endgame (T1–T16, `itens-poe/mapas.mjs`): sem slot (vão para a bolsa/mochila/depósito e para o Dispositivo de Mapas), com o
+  // id FIXO da base (7.700.000 + tier) — fora da sequência acima, para nunca mudar nem empurrar o id de outra peça.
+  for (const b of Mapas.bases()) {
+    const id = b.itemId;
+    itemCatalog[id] = {
+      id, name: b.nome, type: 'maps', weight: 1, hasSprite: false, rarity: 'comum', stackable: false, mapa: true,
+      poe: { base: b.id, classe: Mapas.CLASSE, icone: b.icone ?? null, iconeLado: b.iconeLado ?? 64, tier: b.atributos?.tier, nivel: b.atributos?.nivel_area },
+    };
+    REG.mapas.set(b.id, id);
+    REG.porId.set(id, b.id);
   }
   // Os itens de missão (Acts do PoE: o item que o monstro alvo solta) entram junto.
   DropsPorMonstro.registrarItens(itemCatalog);
@@ -205,6 +219,14 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
     const par = Frascos.parametros({ poe });
     return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, af: {}, frasco: Frascos.resumo({ poe }), tv: VERSAO_DA_TRADUCAO } };
   }
+  // O MAPA: não dá atributo ao personagem (os mods mexem na INSTÂNCIA — `itens-poe/mapas.mjs`); a peça leva o resumo (tier, nível da área,
+  // quantidade/raridade de itens, tamanho do grupo, os efeitos) e o estado de cada linha.
+  if (gerada.classe === Mapas.CLASSE) {
+    const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome,
+      atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
+    const mapa = Mapas.resumo({ poe });
+    return { id, count: 1, poe: { ...poe, estados: Mapas.estadosDasLinhas(poe, mapa), af: {}, mapa, tv: VERSAO_DA_TRADUCAO } };
+  }
   // Os sockets (regra do dono: pela classe e pelo item level, quantidade e links ao acaso — `itens-poe/sockets.mjs`).
   // As cores pesam pelo requisito de atributo da base (`ITEM_CATALOG[id].poe.requisitos`).
   // "Possui N Encaixes" (o implícito de algumas bases: anel/amuleto/cinto Desmontado, aljava Ornamentada): o número de sockets é esse.
@@ -284,6 +306,13 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
     p.estados = par.estadosPorMod;
     p.af = {};
     p.frasco = Frascos.resumo({ poe: p });
+    p.tv = VERSAO_DA_TRADUCAO;
+    return peca;
+  }
+  if (p.classe === Mapas.CLASSE) {
+    p.mapa = Mapas.resumo({ poe: p });
+    p.estados = Mapas.estadosDasLinhas(p, p.mapa);
+    p.af = {};
     p.tv = VERSAO_DA_TRADUCAO;
     return peca;
   }
@@ -407,7 +436,7 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
   const candidatas = [];
   for (const baseId of REG.porBase.keys()) {
     const [classe] = baseId.split('/');
-    if (FRASCOS.includes(classe)) continue;
+    if (FRASCOS.includes(classe) || classe === Mapas.CLASSE) continue;
     const b = cat.classes[classe]?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > 1 || b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
     if (!podeCairComo(cat.classes[classe], b, 'normal')) continue;
@@ -454,6 +483,8 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   const candidatas = [];
   for (const baseId of REG.porBase.keys()) {
     const [classe] = baseId.split('/');
+    // (O MAPA não cai como loot comum: só pelas regras de drop dos mapas — `itens-poe/mapas.mjs`.)
+    if (classe === Mapas.CLASSE) continue;
     const c = cat.classes[classe];
     const b = c?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > ilvl) continue;
@@ -469,6 +500,20 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   // Frasco não é Raro no PoE (só Normal, Mágico e Único): o Raro sorteado vira Mágico.
   const r = raridade === 'raro' && FRASCOS.includes(base.split('/')[0]) ? 'magico' : raridade;
   return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: r, ilvl, rng }), regras, rng), rng, regras);
+}
+
+/**
+ * Um MAPA do tier (`itens-poe/mapas.mjs`): a peça inteira, como cai do monstro. `raridade`: a fixa (o mapa garantido do Kitava); sem ela,
+ * os pesos do loot (regras.json → drop.raridades) com a Raridade de Itens (`raridadeAumentada`, do mapa em que caiu). Mapa Único ainda não
+ * existe: o Único sorteado vira Raro. Null fora do PoE ou sem o tier.
+ */
+export function mapaSorteado(tier, { rng = Math.random, raridade = null, raridadeAumentada = 0, regras = Catalogo.REGRAS } = {}) {
+  const cat = Catalogo.catalogo();
+  const base = Mapas.baseDoTier(tier);
+  if (!cat || !base) return null;
+  const ilvl = Mapas.nivelDoTier(tier);
+  if (raridade) return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade, ilvl, rng }), regras, rng);
+  return pecaSorteada(ilvl, rng, regras, raridadeAumentada, base);
 }
 
 /** As peças do PoE que caem do bicho morto (lista, talvez vazia). Só com o sistema ligado. */

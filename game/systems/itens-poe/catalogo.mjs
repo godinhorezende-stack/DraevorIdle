@@ -28,10 +28,17 @@ export const ligado = () => !classico() && TEM_DADOS;
 export const dadosAusentes = () => (classico() || TEM_DADOS ? null : `o catálogo do PoE não está em ${ARQUIVO} (ele é do repositório: confira o checkout, ou gere com node tools/importar-poe-itens.mjs)`);
 
 let cache = null;
+// Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
+// refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).
+const ARQUIVO_DOS_MAPAS = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
 /** O catálogo importado (lido uma vez), ou null quando desligado. */
 export function catalogo() {
   if (!ligado()) return null;
-  cache ??= JSON.parse(readFileSync(ARQUIVO, 'utf8'));
+  if (!cache) {
+    cache = JSON.parse(readFileSync(ARQUIVO, 'utf8'));
+    const mapas = existsSync(ARQUIVO_DOS_MAPAS) ? JSON.parse(readFileSync(ARQUIVO_DOS_MAPAS, 'utf8')).classe : null;
+    if (mapas) cache.classes[mapas.id] = mapas;
+  }
   return cache;
 }
 // ---- Os POOLS ESPECIAIS do PoE (influências, corrompido, bancada do mestre, essência, fósseis, velado, eldritch, síntese,

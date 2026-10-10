@@ -30,6 +30,7 @@ import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
+import * as Mapas from './itens-poe/mapas.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -154,6 +155,9 @@ export function soma(estado) {
   // Os mods CONDICIONAIS do PoE ("segurando um Escudo", "se você Matou Recentemente"…) e os "por X" (por nível, a cada N de Destreza, por
   // carga…): os que valem agora entram no atributo-base.
   if (!itensPoeLigado()) return total;
+  // + o MAPA do endgame em que você está (`itens-poe/mapas.mjs`): o máximo de resistência menor, a recuperação reduzida, menos precisão…
+  const doMapa = Mapas.addsNoJogador(estado);
+  if (doMapa) for (const [k, v] of Object.entries(doMapa)) total[k] = (total[k] ?? 0) + v;
   const resolvido = ModsPoe.resolver(estado, total, Atributos.principais(estado, total));
   // + as MALDIÇÕES dos monstros em você (Fraqueza Elemental, Vulnerabilidade, Enfraquecer; as refletidas): depois das condições, porque a
   // imunidade e o efeito delas podem ser condicionais ("Imune a Maldições enquanto possuir ao menos N de Fúria").
@@ -475,11 +479,15 @@ export function sanearRegraDeLootPoe(r) {
  */
 export function decisaoDoLootPoe(estado, p) {
   const frasco = FrascosPoe.ehFrasco(p);
-  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false && r.poe && (!frasco || r.classe === p.poe.classe));
+  // O MAPA do endgame é como o frasco: só uma regra específica da classe Mapas o deixa no chão (as seções de mods/raridade/item level são
+  // das peças de equipar — sem isto, com qualquer seção ligada, o mapa Normal sumia), e nunca vai para o NPC.
+  const mapa = Mapas.ehMapa(p);
+  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false && r.poe && (!(frasco || mapa) || r.classe === p.poe.classe));
   for (const [i, r] of regras.entries()) {
     if (regraPoeBate(r, p)) return { acao: r.acao === 'naoColetar' ? 'naoColetar' : 'naoVender', motivo: `regra específica ${i + 1}` };
   }
   if (frasco) return { acao: 'naoVender', motivo: 'frasco (sempre)' };
+  if (mapa) return { acao: 'naoVender', motivo: 'mapa (sempre)' };
   if (p.poe.raridade === 'unico') return { acao: 'naoVender', motivo: 'Único (sempre)' };
   const s = regraDasSecoesPoe(estado?.settings ?? {});
   const algumaSecao = s.mods > 0 || s.tier > 0 || s.abertos > 0 || s.ligados > 1 || s.rgb || s.ilvl > 0 || s.raridade > 0;

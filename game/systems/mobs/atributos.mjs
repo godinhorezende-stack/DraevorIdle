@@ -143,5 +143,12 @@ export function danoExtraDoGolpe(m, ataque = null) {
   return lista.filter((x) => x?.elemento && Math.max(x.min ?? 0, x.max ?? 0) > 0).map((x) => ({ elemento: x.elemento, min: Math.max(0, Math.min(x.min ?? 0, x.max ?? 0)), max: Math.max(0, x.min ?? 0, x.max ?? 0) }));
 }
 
+/**
+ * O dano EXTRA por elemento em % do golpe (o mapa do endgame: "Monstros causam X% do Dano como Dano Extra de Fogo" — `m.danoExtraPct`,
+ * `itens-poe/mapas-areas.aplicarEfeitos`): `[{ elemento, pct }]`.
+ */
+const SEM_DANO_EXTRA = Object.freeze([]);
+export const danoExtraPctDoBicho = (m) => (m?.danoExtraPct ? Object.entries(m.danoExtraPct).filter(([, v]) => Number(v) > 0).map(([elemento, pct]) => ({ elemento, pct: Number(pct) })) : SEM_DANO_EXTRA);
+
 /** Os efeitos de dano contínuo que o golpe do mob põe no jogador: `[{ tipo, chance, pctDoGolpe, duracaoMs? }]` (espécie + ataque). */
 export const efeitosDoGolpe = (m, ataque = null) => [...(especieDe(m)?.efeitos ?? []), ...(ataque?.efeitos ?? [])].filter((x) => x?.tipo && x.pctDoGolpe > 0);

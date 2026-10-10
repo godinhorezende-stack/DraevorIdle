@@ -443,7 +443,8 @@ export function emprestarDoCatalogo(catalogo) {
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
     // Item do sistema de itens do PoE (só com ITENS_POE=1 no servidor local): o ícone 64×64 da coleção de referência, servido pela engine.
-    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, umaCasa: true, gerada: `/api/jogo/poe/icone/item/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
+    // (O lado vem do catálogo quando o ícone não é 64×64: as sprites dos MAPAS, do cdn do poedb, são 80×80.)
+    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: meta.poe.iconeLado ?? 64, h: meta.poe.iconeLado ?? 64, x: 0, y: 0, umaCasa: true, gerada: `/api/jogo/poe/icone/item/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
   }
   // Quem saiu com o "?" antes deste empréstimo (gema, `spriteDe`) e agora tem figura: refaz.
   for (const canvas of globalThis.document?.querySelectorAll?.('canvas[data-sem-icone]') ?? []) {

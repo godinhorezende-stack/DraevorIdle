@@ -86,6 +86,8 @@ import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
 import * as ItensDoJogo from '../systems/itens/item.mjs';
 import * as Campanha from '../systems/campanha.mjs';
+import * as MapasDispositivo from '../systems/mapas-dispositivo.mjs';
+import * as MapaAberto from '../systems/itens-poe/mapa-aberto.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
@@ -1047,7 +1049,7 @@ export class Sessao {
       // Sem personagem em jogo (a tela de escolha — onde o arquivado do Draevor fica) não há campanha a mostrar.
       case 'campanha':
         if (!this.estado) return;
-        return this.enviar({ t: 'campanha', campanha: Campanha.paraCliente(this.estado) });
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
       case 'walk':
         return this.andar(m);
       case 'walkTo':
@@ -1351,6 +1353,22 @@ export class Sessao {
         if (entrou.ok) Party.seguirOLider(this);
         return;
       }
+      // O DISPOSITIVO DE MAPAS (endgame do PoE — `systems/mapas-dispositivo.mjs`): abrir a peça (tudo no servidor: liberado, a peça é a que
+      // a tela mostrou, a instância nasce e só então a peça é gasta), voltar ao mapa aberto e desistir dele. A party que segue o líder vem junto.
+      case 'abrirMapa':
+      case 'voltarAoMapa': {
+        const pedido = { onde: m.onde, indice: m.indice, assinatura: m.assinatura, mode: m.mode, strategy: m.strategy };
+        const antes = { antes: () => Party.antesDeSairDaCacada(this) };
+        const r = m.t === 'abrirMapa' ? MapasDispositivo.abrir(this.estado, pedido, antes) : MapasDispositivo.voltar(this.estado, pedido, antes);
+        this.aplicar(r);
+        if (r.ok) Party.seguirOLider(this);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
+      case 'abandonarMapa': {
+        const r = MapasDispositivo.abandonar(this.estado);
+        this.aplicar(r);
+        return this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
+      }
       // O portal do boss do ato (aberto na última fase concluída): valida no servidor e leva para a arena, sem recarga.
       case 'portalDoBoss':
         return this.entrarNoPortalDoBoss();
@@ -1400,7 +1418,7 @@ export class Sessao {
         const r = Cacadas.definirAoCompletarFase(this.estado, m);
         this.aplicar(r);
         // O painel da campanha mostra a escolha: vai a campanha de novo.
-        if (r.ok) this.enviar({ t: 'campanha', campanha: Campanha.paraCliente(this.estado) });
+        if (r.ok) this.enviar({ t: 'campanha', campanha: campanhaComMapas(this.estado) });
         return;
       }
       case 'actions':
@@ -2653,6 +2671,10 @@ export class Sessao {
     if (real) Bosses.pararPorMorte(this.estado);
     const morte = real ? Morte.morrer(this.estado, descerDeLevel) : { lost: 0, goldLost: 0 };
     if (real) Ficha.totais(this.estado).deaths += 1;
+    // No SEU mapa aberto: a morte gasta um portal (sem portal, o mapa acaba) e os monstros que ficaram esperam a volta. A saída por erro do
+    // servidor não gasta portal.
+    const doMapa = MapaAberto.guardarAoSair(this.estado, { morreu: real });
+    if (doMapa) morte.mapa = doMapa;
     this.estado.hunt = null;
     this.estado.hp = this.estado.maxHp;
     this.estado.es = null; // Energy Shield cheio de novo
@@ -2693,6 +2715,13 @@ export class Sessao {
  * Quem liga é o `index.mjs` (`ligarRelogio`); os testes criam sessões sem
  * ele e tocam `tique()` à mão — o relógio nunca entra no meio de um teste.
  */
+/** A campanha para a tela, com o DISPOSITIVO DE MAPAS junto (o endgame do PoE — a aba Mapas e o atalho da cidade do Ato 10). */
+function campanhaComMapas(estado) {
+  const campanha = Campanha.paraCliente(estado);
+  const mapas = MapasDispositivo.paraTela(estado);
+  return mapas ? { ...campanha, mapas } : campanha;
+}
+
 /**
  * Grava todo mundo que está jogando (o mesmo do fechar a aba: a caçada segue offline) e a party, e ESPERA o banco — até `prazoMs`.
  * O desligamento (o SIGTERM do Docker no deploy, o reinício pela Engine) saía logo depois de MANDAR gravar: o que ainda não tinha

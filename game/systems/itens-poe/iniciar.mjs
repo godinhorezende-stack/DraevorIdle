@@ -15,6 +15,7 @@ import * as ModificadoresMonstroPoe from './modificadores-monstro.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import * as SuportesPoe from './suportes-poe.mjs';
 import * as MoedasPoe from './moedas.mjs';
+import * as MapasAreas from './mapas-areas.mjs';
 
 /** Os ganchos do jogo de verdade (a magia de cada gema, a gema ativa, o reforço, o suporte) e o catálogo de itens. */
 async function ganchosDoJogo() {
@@ -52,6 +53,10 @@ async function carregar({ log = () => {}, ...dados }) {
   if (pinaculos.length) log(`chefes pináculo do PoE: ${pinaculos.length} no painel de Bosses (${pinaculos.join(', ')})`);
   // A campanha do PoE no lugar da do Draevor (os 10 atos, as áreas sobre os mapas do Draevor, os chefes de ato).
   const campanha = CampanhaPoe.iniciar();
+  // As áreas dos MAPAS do endgame (T1–T16): o terreno, os monstros e o chefe de cada tier no nível do mapa (depois da campanha: usa os
+  // monstros dela).
+  const mapas = MapasAreas.iniciar();
+  if (mapas.tiers || mapas.problemas.length) log(`mapas do endgame: ${mapas.tiers} tiers${mapas.problemas.length ? ` — ${mapas.problemas.length} problemas: ${mapas.problemas.slice(0, 3).join(' | ')}` : ''}`);
   // Os modificadores de monstro do PoE (Mágico 1, Raro 2 a 4) e os ocultos de cada raridade.
   const modsDeMonstro = ModificadoresMonstroPoe.iniciar();
   if (modsDeMonstro.modificadores) log(`modificadores de monstro do PoE: ${modsDeMonstro.modificadores}`);

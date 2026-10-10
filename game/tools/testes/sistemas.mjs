@@ -86,8 +86,17 @@ export const SISTEMAS = {
       /^percurso/, /^progresso-da-hunt/, /^alvo-mais-perto/, /^kite-parede-diagonal/, /^caminho/, /^andares/, /^agua/, /^moverMonstros/, /^setores/,
       /^escalonamento/, /^familiar-anda/, /^mapa-spawns/, /^aquecer-grades/, /^hunt-gravada/, /^hunts-painel/, /^xp-da-hunt/, /^regen-na-cidade/,
       /^andar/, /^morte/, /^rentabilidade/, /^limpeza-do-chao/, /^item-no-chao/, /^raridade-dos-mapas/, /^loot-/, /^bonus-online/, /^bloqueio/,
-      /^chefe-do-ato-na-fase/, /^portal-de-viagem/,
+      /^chefe-do-ato-na-fase/, /^portal-de-viagem/, /^mapas-endgame/,
     ],
+  },
+  mapas: {
+    nome: 'Mapas do endgame (T1–T16, o Dispositivo de Mapas)',
+    apelidos: ['endgame', 'atlas', 'dispositivo'],
+    fontes: [
+      /^systems\/mapas-dispositivo\.mjs$/, /^systems\/itens-poe\/(mapas|mapas-areas|mapa-aberto)\.mjs$/, /^gamedata\/itens-poe\/mapas\.json$/,
+      /^gamedata\/itens-poe\/icones-itens\/poe-itens\/Mapas\//, /^tools\/montar-mapas-poe\.mjs$/, /^frontend\/client\/src\/mapas-dispositivo\.mjs$/,
+    ],
+    testes: [/^mapas-endgame/, /^mapas-dispositivo/, /^chefe-do-ato-na-fase/, /^itens-poe-frascos/, /^raridade-dos-mapas/],
   },
   offline: {
     nome: 'Caçada offline e Server Save',
