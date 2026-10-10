@@ -620,6 +620,7 @@ function campanhaCards(body) {
     if (ctx.tabs.campanhaMapas && campanha.mapas) {
       return void desenharDispositivo(body, {
         mapas: campanha.mapas,
+        faixaDaCampanha: campanha.dificuldades[0]?.faixa ?? null,
         h: {
           send,
           itemCanvas,

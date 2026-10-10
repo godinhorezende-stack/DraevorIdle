@@ -9,6 +9,7 @@
 // Os dados e as contas moram em `world-dados.mjs` (testável sem DOM); a arte procedural em `world-arte.mjs`.
 import { LARGURA, ALTURA, RAIO_DA_FASE, RAIO_DO_BOSS, TIPOS_DE_NO, TEXTO_DO_ESTADO, atosDaCampanha, faseDaFronteira, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, estadoDoNo } from './world-dados.mjs';
 import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, iconeDeBotao } from './world-arte.mjs';
+import { faixaDosMapas } from './mapas-dispositivo.mjs';
 
 export { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from './world-dados.mjs';
 
@@ -318,7 +319,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   if (campanha.mapas && h.abrirMapas) {
     const m = campanha.mapas;
     const b = botao(`w2-dif mapas ${m.liberado ? 'aberta' : 'bloqueada'}`, null);
-    b.append(el('b', null, m.liberado ? null : el('i', 'w2-cad', iconeDeBotao('cadeado')), 'Mapas'), el('small', null, m.liberado ? (m.aberto ? `T${m.aberto.tier} aberto` : 'Endgame · T1 – T16') : `Depois do Ato ${romano(m.ato)}`));
+    b.append(el('b', null, m.liberado ? null : el('i', 'w2-cad', iconeDeBotao('cadeado')), 'Mapas'), el('small', null, faixaDosMapas(m)));
     b.onclick = () => (m.liberado ? h.abrirMapas() : mostrarAviso(m.motivo ?? `Os mapas abrem depois do chefe do Ato ${romano(m.ato)}.`));
     dif.append(b);
   }
