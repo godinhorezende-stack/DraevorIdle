@@ -44,6 +44,9 @@ export function resistenciaEfetiva(resistencia, penetracao = 0) {
   return Math.min(100, Math.max(0, r - limitar(penetracao, LIMITES.penetracao.maximo)));
 }
 
+/** O teto (0–1) da redução do dano físico pela armadura — jogador e monstro (PoE: 90%). */
+export const reducaoMaximaDaArmadura = () => limitar(LIMITES.armadura.reducaoMaxima, 100) / 100;
+
 /** O dano depois da resistência efetiva (sem arredondar: quem chama arredonda UMA vez). 100% = nada passa. */
 export const danoAposResistencia = (valor, resistenciaEfetivaPct) => Math.max(0, valor * (1 - Math.min(100, resistenciaEfetivaPct) / 100));
 

@@ -92,6 +92,18 @@ test('armadura desligada na config: volta a ser só um dado; sem dano ou sem arm
   assert.equal(M.reducaoDeArmadura(sem, 100, 500, 5), 0);
 });
 
+test('a armadura do mob corta no máximo 90% do golpe físico (teto do PoE): a arma inicial (10) contra 65.664 de armadura tira 1, não 0', () => {
+  comConfig(() => {
+    const m = troll();
+    assert.equal(M.armaduraDe(m, 78), 65664);
+    // Sem o teto: 65.664 / (65.664 + 5 × 10) = 99,92% e o golpe virava 0. Com o teto, passam 10% do golpe.
+    assert.equal(M.reducaoDeArmadura(m, 78, 10, 5), 0.9);
+    assert.equal(resistido({ escala: { nivel: 78 } }, m, 'physical', 10, { penetracao: {} }), 1);
+    // Abaixo do teto, a fórmula de sempre.
+    assert.ok(Math.abs(M.reducaoDeArmadura(m, 78, 10000, 5) - 65664 / (65664 + 5 * 10000)) < 1e-12);
+  }, (c) => { c.porEspecie.especies = { troll: { fixos: { armadura: 65664 - BESTIARY.troll.armor } } }; });
+});
+
 test('a redução de dano do bicho é separada da armadura e da resistência, tem teto, e nenhum mob tem por padrão', () => {
   assert.equal(M.reducaoDeDano(troll()), 0);
   const m = troll({ reducaoDeDano: 20 });
