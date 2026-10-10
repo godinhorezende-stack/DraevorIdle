@@ -284,6 +284,37 @@ export function moverMoedasDaBolsa(estado, { tipo } = {}) {
 }
 
 /**
+ * `send({t:'moverSelecao', itens:[{i, id}], para:'deposito'})` (via `Bolsa.moverSelecao`) — o botão "Depósito" de cada seção da bolsa organizada (dono, 10/10: "todos vão ter
+ * Depósito e Mochila"): leva as pilhas marcadas (ou a seção inteira) para as caixas do depósito, pela AFINIDADE — os Orbs para as caixas
+ * de Orbs, as outras moedas para as de Currency, o resto para as caixas sem afinidade; sem a caixa da afinidade (ou cheia), a primeira
+ * caixa comum com lugar. A peça vai inteira (mods, sockets), sem o cadeado (lá não há limpeza). O que não couber fica na bolsa.
+ */
+export function moverDaBolsaParaODeposito(estado, { itens } = {}) {
+  Bolsa.garantir(estado);
+  if (!Array.isArray(itens) || !itens.length) return { ok: false, erro: 'Nada marcado.' };
+  // Na ORDEM da bolsa (a caixa recebe na mesma ordem); as que foram saem da bolsa no fim, da maior para a menor.
+  const indices = [...new Set(itens.filter((f) => Number.isInteger(f?.i) && estado.pouch[f.i]?.id === Number(f.id)).map((f) => f.i))].sort((a, b) => a - b);
+  if (!indices.length) return { ok: false, erro: 'A bolsa mudou — tente de novo.' };
+  const sairam = [];
+  const numeradas = garantir(estado).filter((c) => !c.chegadas && !c.compartilhada).sort((a, b) => a.indice - b.indice);
+  const daAfinidade = (afinidade) => numeradas.filter((c) => c.afinidade === afinidade);
+  const comuns = numeradas.filter((c) => !c.afinidade);
+  for (const i of indices) {
+    const p = estado.pouch[i];
+    const moeda = MoedasPoe.ehMoeda(p.id);
+    const preferidas = moeda ? [...(MoedasPoe.ehOrbe(p.id) ? daAfinidade('orbs') : []), ...daAfinidade('currency')] : [];
+    const { count, trava, ...extras } = p;
+    const caixa = (preferidas.length && porNaCaixa(estado, p.id, count ?? 1, extras, null, preferidas)) || porNaCaixa(estado, p.id, count ?? 1, extras, null, comuns);
+    if (caixa) sairam.push(i);
+  }
+  for (const i of sairam.reverse()) estado.pouch.splice(i, 1);
+  const foram = sairam.length;
+  const ficaram = indices.length - foram;
+  if (!foram) return { ok: false, erro: 'As caixas do depósito estão cheias: nada saiu da bolsa.' };
+  return { ok: true, notice: ficaram ? `${foram} foram para o depósito; ${ficaram} ficaram na bolsa (sem espaço nas caixas).` : `${foram} ${foram === 1 ? 'item foi' : 'itens foram'} para o depósito.` };
+}
+
+/**
  * `store buy 'cofre-vagas'` — mais vagas na Compartilhada: +`vagasPorCompra`
  * por `coinsPorCompra` Draevor Coins, até `vagasNoMaximo` (os números do molde real).
  */

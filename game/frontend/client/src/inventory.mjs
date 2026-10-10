@@ -3200,7 +3200,7 @@ let linhaDeAcoes = null;
  */
 function limparPoupandoAsAcoes(body) {
   // (E a barra de abas/busca/ordem da bolsa organizada: a busca não pode perder o foco a cada loot.)
-  const poupar = [linhaDeAcoes?.caixa, barraDaBolsa?.caixa];
+  const poupar = [linhaDeAcoes?.caixa, barraDaBolsa?.caixa, barraDaBolsa?.abas];
   for (const filho of [...body.childNodes]) if (!poupar.includes(filho)) filho.remove();
 }
 
@@ -3432,22 +3432,8 @@ export function renderPouch() {
    * "Moedas → Depósito": toda moeda vai para as caixas do depósito de afinidade Currency; "Gemas → Mochila": as gemas vão para a mochila.
    * O que não couber fica na bolsa, com o aviso. O "Orbs" (só os Orbs, para o destino escolhido no depósito) mora na seção Moedas.
    */
-  if (character.filtroPoe) {
-    const ehMoeda = (p) => !!state.items[p.id]?.moedaPoe;
-    const moedas = pouch.filter(ehMoeda).length;
-    // (O "Orbs →" saiu daqui — dono, 10/10: "tire orbs lá em cima"; ele continua no cabeçalho da seção Moedas.)
-    const currency = el('button', 'bag-clear bag-organizar', 'Moedas → Depósito');
-    currency.disabled = !moedas;
-    tipTexto(currency, moedas ? `Leva as moedas da bolsa (${moedas} pilha(s), Orbs inclusive) para as caixas do depósito de afinidade Currency. O que não couber fica na bolsa.` : 'Não há moedas na bolsa.');
-    currency.onclick = () => send({ t: 'moverMoedas', tipo: 'currency' });
-    // As GEMAS vão para a mochila (dono, 10/10) — todas as da bolsa, pelo mesmo caminho do "Mover seleção".
-    const gemas = pouch.map((p, i) => ({ i, id: p.id })).filter(({ id }) => state.items[id]?.gemaDef);
-    const botaoGemas = el('button', 'bag-clear bag-organizar', 'Gemas → Mochila');
-    botaoGemas.disabled = !gemas.length;
-    tipTexto(botaoGemas, gemas.length ? `Leva as gemas da bolsa (${gemas.length}) para a mochila. O que não couber fica na bolsa.` : 'Não há gemas na bolsa.');
-    botaoGemas.onclick = () => send({ t: 'moverSelecao', itens: gemas });
-    botoes.append(currency, botaoGemas);
-  }
+  // (No jogo oficial a linha de cima não tem atalhos — dono, 10/10: "tire isso, tá redundante": cada seção tem Depósito e Mochila, e o
+  // rodapé tem o "Limpar itens restantes". Lá em cima ficam o Loot filter e a busca.)
 
   const limpar = el('button', 'bag-clear', 'Limpar');
   limpar.disabled = !pouch.length;
@@ -3458,6 +3444,8 @@ export function renderPouch() {
       : 'A bolsa está vazia.'
   );
   limpar.onclick = () => ctx.openLimparBolsa?.();
+  // O jogo oficial: o Limpar mora no rodapé da bolsa organizada ("Limpar itens restantes").
+  limpar.hidden = !!character.filtroPoe;
   botoes.append(limpar);
 
   /*
@@ -3532,7 +3520,7 @@ export function renderPouch() {
   }
 
   // O jogo oficial (PoE): a bolsa ORGANIZADA — seções, abas, busca, ordem e seleção (ver `renderBolsaOrganizada`).
-  if (barraDaBolsa) barraDaBolsa.caixa.hidden = !character.filtroPoe;
+  if (barraDaBolsa) barraDaBolsa.caixa.hidden = barraDaBolsa.abas.hidden = !character.filtroPoe;
   body.classList.toggle('bolsa-org', !!character.filtroPoe);
   if (character.filtroPoe) return void renderBolsaOrganizada(body, pouch);
 
@@ -3685,7 +3673,7 @@ const ICONE_DA_SECAO = { currency: 'moedas', equipamentos: 'equipaveis', frascos
 /** A barra de cima: as abas (com a contagem), a busca e a ordem. Montada uma vez; o que muda é atualizado no lugar. */
 function barraDaBolsaOrganizada(body, contagem, total) {
   if (!barraDaBolsa) {
-    const caixa = el('div', 'bolsa-barra');
+    const caixa = el('div', 'bolsa-barra-linha');
     const abas = el('div', 'bolsa-abas');
     const campo = el('label', 'bolsa-busca');
     const busca = el('input');
@@ -3714,9 +3702,8 @@ function barraDaBolsaOrganizada(body, contagem, total) {
     };
     const ordenar = el('label', 'bolsa-ordenar');
     ordenar.append(el('span', null, 'Ordenar'), ordem, sentido);
-    const linha = el('div', 'bolsa-barra-linha');
-    linha.append(campo, ordenar);
-    caixa.append(abas, linha);
+    // A busca e a ordem sobem para a linha do Loot filter (dono, 10/10: "coloque isso em cima"); as abas ficam logo abaixo.
+    caixa.append(campo, ordenar);
     barraDaBolsa = { caixa, abas, busca, ordem, sentido };
   }
   const { caixa, abas, busca, ordem, sentido } = barraDaBolsa;
@@ -3743,6 +3730,7 @@ function barraDaBolsaOrganizada(body, contagem, total) {
   sentido.textContent = bolsaOrg.desc ? '↑' : '↓';
   sentido.title = bolsaOrg.desc ? 'Ordem invertida — clique para a normal' : 'Ordem normal — clique para inverter';
   if (caixa.parentElement !== body) body.append(caixa);
+  if (abas.parentElement !== body) body.append(abas);
   return caixa;
 }
 
@@ -3831,32 +3819,27 @@ function renderBolsaOrganizada(body, pouch) {
       redesenharBolsa();
     });
 
-    // Os botões só do que dá para fazer AGORA: com itens marcados nesta seção, mover e proteger os marcados; sem, a ação da seção inteira.
+    // Toda seção tem DEPÓSITO e MOCHILA (dono, 10/10: "todos vão ter Depósito e Mochila"): com itens marcados nesta seção, eles (e o
+    // cadeado); sem, a seção inteira. O depósito segue a afinidade das caixas (Orbs, Currency, comuns) — `moverDaBolsaParaODeposito`.
     const acoes = el('div', 'bolsa-secao-acoes');
+    const alvo = marcadas.length ? marcadas : secao.itens;
+    const quantos = marcadas.length ? ` (${marcadas.length})` : '';
+    const oQue = marcadas.length ? (marcadas.length === 1 ? 'o item marcado' : `os ${marcadas.length} marcados`) : secao.itens.length === 1 ? 'o item desta seção' : `os ${secao.itens.length} itens desta seção`;
+    acoes.append(
+      botao(`Depósito${quantos}`, { ico: 'bau', dica: `Leva ${oQue} para as caixas do depósito (pela afinidade: Orbs, Currency ou as comuns). O que não couber fica na bolsa.` }, () => {
+        send({ t: 'moverSelecao', para: 'deposito', itens: pedido(alvo) });
+        desmarcar(alvo);
+      }),
+      botao(`Mochila${quantos}`, { ico: 'mochila', classe: marcadas.length ? 'principal' : '', dica: `Leva ${oQue} para a mochila. O que não couber fica na bolsa.` }, () => {
+        send({ t: 'moverSelecao', itens: pedido(alvo) });
+        desmarcar(alvo);
+      })
+    );
     if (marcadas.length) {
       const todasTravadas = marcadas.every(({ entry }) => entry.trava);
       acoes.append(
-        botao(`Mochila (${marcadas.length})`, { ico: 'mochila', classe: 'principal', dica: 'Leva os marcados para a mochila. O que não couber fica na bolsa.' }, () => {
-          send({ t: 'moverSelecao', itens: pedido(marcadas) });
-          desmarcar(marcadas);
-        }),
         botao(null, { ico: todasTravadas ? 'aberto' : 'cadeado', classe: 'so-icone', dica: todasTravadas ? 'Tirar o cadeado dos marcados (voltam a sair na limpeza)' : 'Pôr o cadeado nos marcados (não saem na limpeza)' }, () =>
           send({ t: 'travar', lista: pedido(marcadas), valor: !todasTravadas })
-        )
-      );
-    } else if (secao.id === 'currency') {
-      acoes.append(
-        botao('Depósito', { ico: 'bau', dica: 'Leva as moedas (Orbs inclusive) para as caixas do depósito com afinidade Currency. O que não couber fica na bolsa.' }, () =>
-          send({ t: 'moverMoedas', tipo: 'currency' })
-        ),
-        botao('Orbs', { ico: state.character.settings?.destinoDosOrbs === 'mochila' ? 'mochila' : 'bau', dica: 'Leva só os Orbs para o destino escolhido no depósito (as caixas de afinidade Orbs ou a mochila).' }, () =>
-          send({ t: 'moverMoedas', tipo: 'orbs' })
-        )
-      );
-    } else if (secao.id !== 'equipamentos') {
-      acoes.append(
-        botao('Mochila', { ico: 'mochila', dica: `Leva ${secao.itens.length === 1 ? 'o item' : `os ${secao.itens.length} itens`} desta seção para a mochila. O que não couber fica na bolsa.` }, () =>
-          send({ t: 'moverSelecao', itens: pedido(secao.itens) })
         )
       );
     }
@@ -3890,6 +3873,10 @@ function renderBolsaOrganizada(body, pouch) {
     resumo.append(el('b', null, String(todasAsMarcadas.length)), el('span', null, todasAsMarcadas.length === 1 ? ' selecionado' : ' selecionados'));
     rodape.append(
       resumo,
+      botao('Depósito', { ico: 'bau', dica: 'Leva os marcados para as caixas do depósito (pela afinidade). O que não couber fica na bolsa.' }, () => {
+        send({ t: 'moverSelecao', para: 'deposito', itens: pedido(todasAsMarcadas) });
+        bolsaOrg.selecao.clear();
+      }),
       botao('Mochila', { ico: 'mochila', classe: 'principal', dica: 'Leva os marcados para a mochila. O que não couber fica na bolsa.' }, () => {
         send({ t: 'moverSelecao', itens: pedido(todasAsMarcadas) });
         bolsaOrg.selecao.clear();
