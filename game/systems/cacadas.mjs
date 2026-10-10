@@ -775,7 +775,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // "A espera começa quando você ENTRA — mesmo que ele não caia." (Menos a primeira do boss de ato.)
   if (boss && !primeiraDoAto) Bosses.marcarEntrada(estado, boss.id);
   // Ele chega por um portal de viagem (o cliente o mostra quando a cortina "Traçando a rota" sai).
-  if (!arenaPvp) EventosDeEncontro.empurrar(estado.hunt, [portalDeViagem(estado.hunt.pos, { chegada: true })]);
+  // (Com a ENTRADA de quem chega: a tela dele anima a própria chegada e pula este — os outros da sala o veem.)
+  if (!arenaPvp) EventosDeEncontro.empurrar(estado.hunt, [portalDeViagem(estado.hunt.pos, { chegada: true, entrada: estado.hunt.entrada })]);
   return { ok: true };
 }
 
@@ -981,7 +982,7 @@ export function entrarNaSala(estado, sala, gente = []) {
   };
   ligarAoDono(estado.hunt, sala);
   // Chega por um portal de viagem, na casa livre dele perto do dono (todos da sala veem).
-  EventosDeEncontro.empurrar(sala, [portalDeViagem(inicio, { chegada: true })]);
+  EventosDeEncontro.empurrar(sala, [portalDeViagem(inicio, { chegada: true, entrada: estado.hunt.entrada })]);
   return { ok: true };
 }
 
@@ -1236,7 +1237,8 @@ export function novaInstancia(estado, pronta = null) {
   convidados.forEach((o, i) => chegarNaInstancia(o.hunt, casas[i] ?? novo.inicio, novo.andarInicial));
   // Instância nova = ENTRADA nova para cada um da sala: a sessão de cada um protege até o cliente confirmar (`protecao.mjs`).
   for (const h of [hunt, ...convidados.map((o) => o.hunt)]) h.entrada = Protecao.novaEntrada();
-  EventosDeEncontro.empurrar(hunt, [novo.inicio, ...casas].map((c) => portalDeViagem(c, { chegada: true })));
+  // (Cada portal com a entrada nova de quem chega por ele: a tela de cada um pula o seu — ela anima a própria chegada.)
+  EventosDeEncontro.empurrar(hunt, [portalDeViagem(novo.inicio, { chegada: true, entrada: hunt.entrada }), ...convidados.map((o, i) => portalDeViagem(casas[i] ?? novo.inicio, { chegada: true, entrada: o.hunt.entrada }))]);
   return true;
 }
 
@@ -1686,7 +1688,8 @@ export function tique(estado, personagem, agora = Date.now()) {
             hunt.instancia.viajaEm = (hunt.clock ?? 0) + ENTRAR_NO_PORTAL_MS;
             const cacadasDaSala = quemEstaNaSala(estado, hunt).map((o) => (o === estado ? hunt : o.hunt));
             for (const h of cacadasDaSala) h.proximoPassoEm = Math.max(h.proximoPassoEm ?? 0, agora + ENTRAR_NO_PORTAL_MS);
-            EventosDeEncontro.empurrar(hunt, cacadasDaSala.map((h) => portalDeViagem(h.pos, { z: h.z ?? 0 })));
+            // (Com a entrada de cada um: a tela dele pula o próprio — ela abre o portal de saída dela ao lado dele.)
+            EventosDeEncontro.empurrar(hunt, cacadasDaSala.map((h) => portalDeViagem(h.pos, { z: h.z ?? 0, entrada: h.entrada })));
           }
         } else if ((hunt.clock ?? 0) >= hunt.instancia.viajaEm) {
           const pronta = instanciasProntas.get(hunt) ?? null;

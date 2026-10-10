@@ -230,7 +230,7 @@
      "nivel_area": 68
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_1.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_1.png",
     "iconeLado": 80,
     "pool": "baixo"
    },
@@ -250,7 +250,7 @@
      "nivel_area": 69
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_2.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_2.png",
     "iconeLado": 80,
     "pool": "baixo"
    },
@@ -270,7 +270,7 @@
      "nivel_area": 70
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_3.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_3.png",
     "iconeLado": 80,
     "pool": "baixo"
    },
@@ -290,7 +290,7 @@
      "nivel_area": 71
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_4.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_4.png",
     "iconeLado": 80,
     "pool": "baixo"
    },
@@ -310,7 +310,7 @@
      "nivel_area": 72
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_5.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_5.png",
     "iconeLado": 80,
     "pool": "baixo"
    },
@@ -330,7 +330,7 @@
      "nivel_area": 73
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_6.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_6.png",
     "iconeLado": 80,
     "pool": "medio"
    },
@@ -350,7 +350,7 @@
      "nivel_area": 74
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_7.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_7.png",
     "iconeLado": 80,
     "pool": "medio"
    },
@@ -370,7 +370,7 @@
      "nivel_area": 75
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_8.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_8.png",
     "iconeLado": 80,
     "pool": "medio"
    },
@@ -390,7 +390,7 @@
      "nivel_area": 76
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_9.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_9.png",
     "iconeLado": 80,
     "pool": "medio"
    },
@@ -410,7 +410,7 @@
      "nivel_area": 77
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_10.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_10.png",
     "iconeLado": 80,
     "pool": "medio"
    },
@@ -430,7 +430,7 @@
      "nivel_area": 78
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_11.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_11.png",
     "iconeLado": 80,
     "pool": "alto"
    },
@@ -450,7 +450,7 @@
      "nivel_area": 79
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_12.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_12.png",
     "iconeLado": 80,
     "pool": "alto"
    },
@@ -470,7 +470,7 @@
      "nivel_area": 80
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_13.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_13.png",
     "iconeLado": 80,
     "pool": "alto"
    },
@@ -490,7 +490,7 @@
      "nivel_area": 81
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_14.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_14.png",
     "iconeLado": 80,
     "pool": "alto"
    },
@@ -510,7 +510,7 @@
      "nivel_area": 82
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_15.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_15.png",
     "iconeLado": 80,
     "pool": "alto"
    },
@@ -530,7 +530,7 @@
      "nivel_area": 83
     },
     "implicitos": [],
-    "icone": "poe-itens/Mapas/icones/Map_Tier_16.webp",
+    "icone": "poe-itens/Mapas/icones/Map_Tier_16.png",
     "iconeLado": 80,
     "pool": "alto"
    }

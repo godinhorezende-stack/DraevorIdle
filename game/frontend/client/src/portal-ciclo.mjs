@@ -142,6 +142,30 @@ export function chaveDaCena({ hunt = null, city = null } = {}) {
 }
 
 /**
+ * O portal de viagem do SERVIDOR é da MINHA viagem? (dono, 10/10: "quando chego de tp na hunt, em vez de sumir, aparece outro tp do lado e
+ * some — era para sumir só o criado"; "no fim do loop o teletransporte aparece em 2 locais".) A tela anima a própria viagem (o portal de
+ * saída e o de chegada, ao lado dele), então pula o portal que o servidor manda para ela: o que leva a ENTRADA dela (a desta caçada ou a
+ * da cena que estava na tela — a chegada e o portal antes da troca de instância) ou `proprio` (a viagem entre cidades). Os portais dos
+ * outros da party, com a entrada deles, continuam aparecendo; o do chefe (outro desenho) não entra aqui.
+ */
+export const PORTAL_DE_VIAGEM = 'fabrica-portal-de-viagem';
+export function meuPortalDeViagem(ev, entradas = []) {
+  if (ev?.t !== 'portal' || ev.asset !== PORTAL_DE_VIAGEM) return false;
+  return ev.proprio === true || (ev.entrada != null && entradas.includes(ev.entrada));
+}
+
+/**
+ * O NOME do mapa que está carregando, para a cortina "Carregando" (dono, 10/10: "coloque 'carregando' e o nome do mapa que está
+ * carregando"): a fase da campanha, a caçada (o nome dela no analisador) ou a cidade do ato. Sem nenhum, vazio.
+ */
+export function nomeDaCena({ hunt = null, city = null } = {}) {
+  if (hunt) return hunt.fase?.nome ?? hunt.session?.hunts?.at?.(-1) ?? '';
+  const cidade = city?.cidade;
+  if (cidade?.nome) return cidade.ato != null ? `Ato ${cidade.ato} · ${cidade.nome}` : cidade.nome;
+  return '';
+}
+
+/**
  * A ENTRADA mudou no MESMO mapa (a instância nova do loop da fase, a sala da party)? Então ninguém "vem andando" da instância de antes:
  * o mapa recomeça as criaturas, como numa troca de mapa (dono, 10/10: "quando completa 100% e está em loop, fica arrastando para o
  * começo de forma não natural" — o boneco deslizava da posição velha até a entrada). Sem entrada (a cidade, servidor antigo) ou na

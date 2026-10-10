@@ -436,7 +436,7 @@ export function portalDeSaida(s) {
   const hunt = s.estado?.hunt;
   const ficam = hunt?.pos ? outrosNaSala(s) : [];
   if (!ficam.length) return () => {};
-  const portal = Cacadas.portalDeViagem(hunt.pos, { z: hunt.z ?? 0 });
+  const portal = Cacadas.portalDeViagem(hunt.pos, { z: hunt.z ?? 0, entrada: hunt.entrada });
   return () => {
     const quem = ficam.find((o) => o.estado?.hunt);
     if (quem) Cacadas.empurrarEventos(quem.estado.hunt, [portal]);
