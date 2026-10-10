@@ -164,7 +164,12 @@ function projetar(estado, base, fator, multExp = 1) {
   projetarNaInstancia(estado, extra.kills);
   estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
-  for (const [id, n] of Object.entries(base.itens.loot)) {
+  // As peças do PoE se projetam pelos DROPS (as coletadas e as que o filtro deixou no chão): cada uma é sorteada de novo e passa pelo filtro
+  // de agora. Pelas coletadas só, um filtro "Raro para cima" projetava os raros sorteados de novo — e quase todos viravam Normal/Mágico e
+  // ficavam no chão outra vez: a volta do offline rendia uma fração da caçada.
+  const projetaveis = { ...base.itens.loot };
+  for (const [id, n] of Object.entries(base.itens.ignorado ?? {})) if (ItensPoeJogo.baseDoId(Number(id))) projetaveis[id] = (projetaveis[id] ?? 0) + n;
+  for (const [id, n] of Object.entries(projetaveis)) {
     // Sessão gravada antes da correção pode ter o item fantasma ("undefined"): não projeta.
     if (!Number.isFinite(Number(id))) continue;
     const qtd = Math.round(n * fator);

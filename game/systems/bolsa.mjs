@@ -17,6 +17,7 @@ import { pecaEspecial } from './itens/item.mjs';
 import { precoNpc } from './hunt/rentabilidade.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import { pilhaMaxima } from './itens/pilha.mjs';
+import * as MoedasPoe from './itens-poe/moedas.mjs';
 
 export const VAGAS_DA_BOLSA = 1000;
 export const VENDA_A_CADA_S = 120;
@@ -225,7 +226,16 @@ export function regraDeItem(estado, { rule, id, only }) {
   }
   const i = lista.indexOf(id);
   if (i >= 0 && !only) lista.splice(i, 1);
-  else if (i < 0) lista.push(id);
+  else if (i < 0) {
+    lista.push(id);
+    // No jogo oficial "Sempre coletar" (`noSell`) e "Não coletar" (`noLoot`) se contradizem: marcar uma tira da outra (a tela diz "um item
+    // fica numa lista só"). No clássico as duas convivem ("não coleta e não vende").
+    if (itensPoeLigado() && (rule === 'noLoot' || rule === 'noSell')) {
+      const outra = estado.itemRules[rule === 'noLoot' ? 'noSell' : 'noLoot'];
+      const j = outra.indexOf(id);
+      if (j >= 0) outra.splice(j, 1);
+    }
+  }
   return { ok: true };
 }
 
@@ -324,13 +334,36 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   return { ok: true, ...(aviso ? { notice: aviso } : {}) };
 }
 
-/** `send({t:'clearPouch', fora:[{i, id}]})` — o "Jogar fora" da tela Limpar Bolsa. */
+/**
+ * A peça PROTEGIDA da limpeza da bolsa (dono, 10/10 — o LOCK): a pilha com cadeado (`trava`, as moedas e os Orbs que o jogador travou) e o
+ * Único do PoE (sempre, sem precisar travar). A limpeza, manual ou em massa, não a tira.
+ */
+export const protegidaDaLimpeza = (p) => !!p?.trava || p?.poe?.raridade === 'unico';
+
+/** `send({t:'clearPouch', fora:[{i, id}]})` — o "Jogar fora" da tela Limpar Bolsa. A peça protegida fica (`protegidaDaLimpeza`). */
 export function limparBolsa(estado, { fora }) {
   garantir(estado);
   if (!Array.isArray(fora) || !fora.length) return { ok: false, erro: 'Nada marcado para jogar fora.' };
-  const indices = [...new Set(fora.filter((f) => Number.isInteger(f?.i) && estado.pouch[f.i]?.id === f.id).map((f) => f.i))];
-  if (!indices.length) return { ok: false, erro: 'A bolsa mudou — abra a tela de novo.' };
+  const pedidas = [...new Set(fora.filter((f) => Number.isInteger(f?.i) && estado.pouch[f.i]?.id === f.id).map((f) => f.i))];
+  if (!pedidas.length) return { ok: false, erro: 'A bolsa mudou — abra a tela de novo.' };
+  const indices = pedidas.filter((i) => !protegidaDaLimpeza(estado.pouch[i]));
+  const ficaram = pedidas.length - indices.length;
+  if (!indices.length) return { ok: false, erro: 'Só havia itens protegidos (com cadeado ou Únicos): nada foi jogado fora.' };
   for (const i of indices.sort((a, b) => b - a)) estado.pouch.splice(i, 1);
+  return { ok: true, ...(ficaram ? { notice: `${ficaram} ${ficaram === 1 ? 'item protegido ficou' : 'itens protegidos ficaram'} na bolsa (com cadeado ou Únicos).` } : {}) };
+}
+
+/**
+ * `send({t:'travar', i, id})` — o CADEADO de uma pilha de moeda/Orb da bolsa (liga e desliga): a pilha travada não sai na limpeza. Só moeda
+ * (os Únicos já são protegidos sempre). Fica na pilha (`trava`), gravada com o personagem.
+ */
+export function travar(estado, { i, id }) {
+  garantir(estado);
+  const p = Number.isInteger(i) ? estado.pouch[i] : null;
+  if (!p || p.id !== Number(id)) return { ok: false, erro: 'A bolsa mudou — tente de novo.' };
+  if (!MoedasPoe.ehMoeda(p.id)) return { ok: false, erro: 'Só moedas e Orbs têm cadeado (os Únicos já ficam protegidos da limpeza).' };
+  if (p.trava) delete p.trava;
+  else p.trava = true;
   return { ok: true };
 }
 

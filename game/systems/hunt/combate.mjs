@@ -355,13 +355,16 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
     const dif = hunt.campanha?.dificuldade ?? Campanha.DIFICULDADES[0];
     const doEndgame = Mapas.mapaDoChefeDoAto(atoDoChefe, { primeiraVitoria: !Campanha.bossVencido(estado, dif, atoDoChefe) });
     const mapa = doEndgame ? ItensPoeJogo.mapaSorteado(doEndgame.tier, { raridade: doEndgame.raridade }) : null;
-    if (mapa) itens.push(mapa);
+    if (mapa && !Bolsa.ignora(estado, mapa.id, mapa)) itens.push(mapa);
   }
   // Sistema de itens do PoE (só com ITENS_POE=1): o drop do PoE do boss (raridade do monstro: Único) e, no chefe pináculo, 1 Único
   // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
   {
     const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
+    // (O FILTRO DE LOOT vale na sacola também — dono, 10/10: como no PoE, onde ele decide tudo o que cai; o Único, o mapa e o frasco seguem
+    // vindo sempre, pelas regras dele.)
     for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo))) {
+      if (Bolsa.ignora(estado, daPoe.id, daPoe)) continue;
       itens.push(daPoe);
       // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
       Anuncios.dropRaro({ quem, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
@@ -369,13 +372,13 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
       DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
     }
     // As moedas do PoE que o boss solta (`itens-poe/moedas.mjs`, `regras.json → moedas.drop`).
-    itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade));
+    itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade).filter((moeda) => !Bolsa.ignora(estado, moeda.id)));
     if (BESTIARY[alvo.key]?.poe) {
       const ouro = ItensPoeJogo.ouroDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, 1 + (Ficha.combate(estado).goldFind ?? 0) / 100);
       if (ouro > 0) itens.push({ id: 3031, count: ouro });
     }
     const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
-    if (exclusivo) {
+    if (exclusivo && !Bolsa.ignora(estado, exclusivo.id, exclusivo)) {
       itens.push(exclusivo);
       Anuncios.dropRaro({ quem, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
       DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo }).catch((e) => console.error('drops-do-site', e.message));
@@ -530,14 +533,19 @@ export function fichaDoBicho(estado, hunt, key, { huntId = null, dificuldade = n
  * sorteia-se de novo — o item não se perde enquanto alguém puder levar, e nunca vai para dois. `verificar: false` (gemas e
  * orbes) só exige que a bolsa aceite. Devolve `{ dono, ignorado }` (`ignorado`: todos filtraram o item).
  */
-function escolherDono({ estado, personagem, juntos, id, peca, origem, verificar = true }) {
+/**
+ * (`verificar: false`: o drop extra — gema, orbe — vai sem conferir o peso; `soOFiltro`: mesmo assim, o filtro de loot de cada um decide —
+ * no PoE os orbes de socket que caem passam pelo "Não coletar" como as outras moedas.)
+ */
+function escolherDono({ estado, personagem, juntos, id, peca, origem, verificar = true, soOFiltro = false }) {
   const fila = juntos ?? [{ estado, nome: personagem?.nome }];
-  let ignorado = verificar;
+  let ignorado = verificar || soOFiltro;
   let candidatos = fila.filter((m) => {
-    if (!verificar) return true;
+    if (!verificar && !soOFiltro) return true;
     // A peça já sorteada (raridade e atributos) vai junto: as regras específicas de "não coletar" olham os atributos reais.
     if (Bolsa.ignora(m.estado, id, peca)) return false;
     ignorado = false;
+    if (!verificar) return true;
     return pesoDoInventario(m.estado) + (ITEM_CATALOG[id]?.weight ?? 0) <= Afixos.capacidade(m.estado);
   });
   const concorrentes = candidatos.map((m) => m.nome);
@@ -847,8 +855,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   const darExtra = (item, peca = undefined) => {
     // No jogo oficial só entra item do PoE: as gemas/suportes, a lapidadora e a fundidora do Draevor não caem.
     if (!item || !podeEntrar(item.id, peca)) return;
-    const { dono } = escolherDono({ estado, personagem, juntos, id: item.id, peca, origem: alvo.name, verificar: false });
-    if (!dono) return;
+    const { dono, ignorado } = escolherDono({ estado, personagem, juntos, id: item.id, peca, origem: alvo.name, verificar: false, soOFiltro: itensPoeLigado() });
+    if (!dono) {
+      // Ninguém pega pelo filtro (o "Não coletar"): fica no chão, "Ignorado" no relatório, como as outras moedas.
+      if (ignorado) conta('ignorado', item.id, 1);
+      return;
+    }
     if (dono.estado === estado) {
       caiu.push({ id: item.id, count: 1 });
       conta('loot', item.id, 1);

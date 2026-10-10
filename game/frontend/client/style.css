@@ -4532,6 +4532,12 @@ body {
   border-radius: 5px; display: grid; place-items: center; position: relative; cursor: pointer;
 }
 .cell:hover { border-color: var(--accent-dim); }
+/* O CADEADO (o LOCK da bolsa de loot, o jogo oficial): a pilha travada — e o Único na tela Limpar — não sai na limpeza. */
+.cell.travada { position: relative; box-shadow: inset 0 0 0 1px #c9a24a; }
+.cell .selo-cadeado { position: absolute; top: -3px; right: -3px; font-size: 10px; font-style: normal; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1px #000); }
+/* Os botões da organização da bolsa ("Currency →", "Orbs →") e os seletores de afinidade do depósito. */
+.bagline .bag-organizar { min-width: max-content; }
+.deposito-afinidade { max-width: 100%; font-size: 12px; padding: 2px 4px; background: var(--panel-2, #1a1f24); color: var(--text); border: 1px solid var(--border, #333); border-radius: 4px; }
 /*
  * ---- O quadradinho fixo da Boss Pouch, no começo da mochila ----
  *

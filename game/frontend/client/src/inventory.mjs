@@ -876,6 +876,10 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
      */
     // Com `pilha`/`alvo`: a peça estrelada tocada vai INTEIRA (ver `moverBolsa`).
     from === 'pouch' ? { label: 'Mover para a mochila', action: () => send({ t: 'pouch', id, count: 9999, to: 'bag', pilha, alvo }) } : null,
+    // O CADEADO das moedas e Orbs da bolsa (o jogo oficial): a pilha travada não sai na limpeza.
+    from === 'pouch' && meta?.moedaPoe && Number.isInteger(pilha)
+      ? { label: state.character.pouch?.[pilha]?.trava ? 'Destravar (pode sair na limpeza)' : 'Travar 🔒 (não sai na limpeza)', action: () => send({ t: 'travar', i: pilha, id }) }
+      : null,
     /*
      * ---- Guardar no depósito, direto ----
      *
@@ -1958,6 +1962,11 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
   const rules = state.character.itemRules ?? { noLoot: [], noSell: [] };
   if (rules.noSell.includes(entry.id)) cell.classList.add('protected');
   if (rules.noLoot.includes(entry.id)) cell.classList.add('ignored');
+  // O CADEADO da pilha (o LOCK da bolsa de loot — `Bolsa.travar`): não sai na limpeza.
+  if (entry.trava) {
+    cell.classList.add('travada');
+    cell.append(el('i', 'selo-cadeado', '🔒'));
+  }
 
   // A entrada inteira: é ela que tem o tier e os imbuements desta peça.
   tipFor(cell, entry.id, entry.count > 1 ? `${entry.count} unidades` : null, null, entry);
@@ -3257,7 +3266,7 @@ export function renderPouch() {
   const falta0 = character.vendaFaltaSegundos;
   const assinatura = JSON.stringify([
     pouch, character.pouchSlots, espera0, falta0 == null, character.derived?.capacity, character.weight,
-    character.itemRules, paginaDaBolsa, state.catalog?.quickSellRate,
+    character.itemRules, paginaDaBolsa, state.catalog?.quickSellRate, character.settings?.destinoDosOrbs ?? null,
   ]);
   const relogioNaTela = body.querySelector('.bag-timer b');
   if (relogioNaTela && body.dataset.assinaturaDaBolsa === assinatura) {
@@ -3414,12 +3423,34 @@ export function renderPouch() {
    * espaço com o loot nem fica encostado nos botões que se apertam sem pensar.
    * Aqui ele só abre a confirmação; quem destrói é ela.
    */
+  /*
+   * ---- A ORGANIZAÇÃO da bolsa (o jogo oficial — auditoria de 10/10) ----
+   * "Currency →": toda moeda vai para as caixas do depósito de afinidade Currency; "Orbs →": os "Orbe …" vão para o destino escolhido no
+   * depósito (as caixas de afinidade Orbs ou a mochila). O que não couber fica na bolsa, com o aviso. Depois, avaliar as peças e Limpar.
+   */
+  if (character.filtroPoe) {
+    const ehMoeda = (p) => !!state.items[p.id]?.moedaPoe;
+    const ehOrbe = (p) => ehMoeda(p) && /^Orbe\b/i.test(state.items[p.id]?.name ?? '');
+    const moedas = pouch.filter(ehMoeda).length;
+    const orbes = pouch.filter(ehOrbe).length;
+    const paraMochila = character.settings?.destinoDosOrbs === 'mochila';
+    const currency = el('button', 'bag-clear bag-organizar', 'Currency →');
+    currency.disabled = !moedas;
+    tipTexto(currency, moedas ? `Leva as moedas da bolsa (${moedas} pilha(s), Orbs inclusive) para as caixas do depósito de afinidade Currency. O que não couber fica na bolsa.` : 'Não há moedas na bolsa.');
+    currency.onclick = () => send({ t: 'moverMoedas', tipo: 'currency' });
+    const orbs = el('button', 'bag-clear bag-organizar', 'Orbs →');
+    orbs.disabled = !orbes;
+    tipTexto(orbs, orbes ? `Leva os Orbs (${orbes} pilha(s)) para ${paraMochila ? 'a mochila' : 'as caixas do depósito de afinidade Orbs'} (escolha no depósito). O que não couber fica na bolsa.` : 'Não há Orbs na bolsa.');
+    orbs.onclick = () => send({ t: 'moverMoedas', tipo: 'orbs' });
+    botoes.append(currency, orbs);
+  }
+
   const limpar = el('button', 'bag-clear', 'Limpar');
   limpar.disabled = !pouch.length;
   tipTexto(
     limpar,
     pouch.length
-      ? 'Joga fora o que está na bolsa. A tela seguinte mostra o que vai sumir e deixa escolher o que fica.'
+      ? 'Joga fora o que está na bolsa. A tela seguinte mostra o que vai sumir e deixa escolher o que fica. O que tem cadeado 🔒 e os Únicos ficam sempre.'
       : 'A bolsa está vazia.'
   );
   limpar.onclick = () => ctx.openLimparBolsa?.();

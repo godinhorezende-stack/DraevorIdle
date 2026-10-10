@@ -22,6 +22,13 @@ export const MOEDAS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/
 const POR_SLUG = new Map(MOEDAS.map((m) => [m.slug, m]));
 const POR_ID = new Map(MOEDAS.map((m) => [m.itemId, m]));
 export const moedaDoItem = (id) => POR_ID.get(Number(id)) ?? null;
+/**
+ * A CURRENCY e os ORBS da bolsa de loot (os botões "Mover Currency" e "Mover Orbs" — `deposito.moverMoedasDaBolsa`; o cadeado — `Bolsa.travar`):
+ * currency é TODA moeda do PoE (dono, 10/10: "Currency = todas" — pergaminhos, fragmentos, essências, amoladores e os orbes); orb é a que se
+ * chama "Orbe …" (o Caos, o Exaltado, a Alquimia, o Joalheiro…).
+ */
+export const ehMoeda = (id) => POR_ID.has(Number(id));
+export const ehOrbe = (id) => ehMoeda(id) && /^Orbe\b/i.test(ITEM_CATALOG[Number(id)]?.name ?? POR_ID.get(Number(id))?.nome ?? '');
 export const idDa = (slug) => POR_SLUG.get(slug)?.itemId ?? null;
 const R = () => Catalogo.REGRAS;
 const CAT = () => Catalogo.catalogo();

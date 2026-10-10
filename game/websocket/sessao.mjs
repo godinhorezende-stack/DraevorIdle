@@ -1291,6 +1291,12 @@ export class Sessao {
         return this.aplicar(Bolsa.moverBolsa(this.estado, m));
       case 'clearPouch':
         return this.aplicar(Bolsa.limparBolsa(this.estado, m));
+      // A organização da bolsa de loot (o jogo oficial): o cadeado de uma pilha de moeda/Orb e os botões "Mover Currency"/"Mover Orbs"
+      // (para as caixas de afinidade do depósito, ou os Orbs para a mochila — `Deposito.moverMoedasDaBolsa`).
+      case 'travar':
+        return this.aplicar(Bolsa.travar(this.estado, m));
+      case 'moverMoedas':
+        return this.aplicar(Deposito.moverMoedasDaBolsa(this.estado, m));
       case 'market':
         return this.despacharMercado(m);
       case 'coinMarket':

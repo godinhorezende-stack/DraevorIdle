@@ -9,6 +9,16 @@ import * as R from './regras.mjs';
 import { ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
 import { pesoDoInventario, cabeNoPeso, guardarMoeda, erroDeEspaco, pecasNaMochila, vagasDaMochila, darItem } from './inventario.mjs';
 import * as ItensPoeCatalogo from './itens-poe/catalogo.mjs';
+import * as MoedasPoe from './itens-poe/moedas.mjs';
+import * as Bolsa from './bolsa.mjs';
+
+/**
+ * A AFINIDADE de uma caixa (dono, 10/10 — a organização da bolsa de loot): a caixa de `currency` recebe o "Mover Currency" (toda moeda) e a de
+ * `orbs` o "Mover Orbs" (quando os Orbs vão para o baú — `settings.destinoDosOrbs`). Só as caixas numeradas; nenhuma = caixa comum.
+ */
+export const AFINIDADES = { currency: 'Currency', orbs: 'Orbs' };
+/** Para onde o "Mover Orbs" leva: as caixas de afinidade Orbs (`bau`, o padrão) ou a mochila. */
+export const destinoDosOrbs = (estado) => (estado?.settings?.destinoDosOrbs === 'mochila' ? 'mochila' : 'bau');
 
 /*
  * As caixas, como o client as separa (`openLocker`, panels.mjs):
@@ -178,6 +188,15 @@ export function comando(estado, m, contaCaixa = null) {
     caixa.nome = nome || nomeDeFabrica(caixa);
     return { ok: true, renomeou: true };
   }
+  // A AFINIDADE da caixa (Currency, Orbs ou nenhuma): só nas numeradas.
+  if (m.action === 'afinidade') {
+    if (caixa.chegadas || caixa.compartilhada) return { ok: false, erro: 'A afinidade é só das caixas numeradas.' };
+    const valor = m.afinidade == null || m.afinidade === '' ? null : String(m.afinidade);
+    if (valor != null && !AFINIDADES[valor]) return { ok: false, erro: 'Afinidade desconhecida.' };
+    if (valor) caixa.afinidade = valor;
+    else delete caixa.afinidade;
+    return { ok: true, notice: valor ? `${caixa.nome}: afinidade ${AFINIDADES[valor]}.` : `${caixa.nome}: sem afinidade.` };
+  }
   // As Chegadas só recebem o que chega (Store, Mercado): nada se guarda nelas à mão.
   if ((m.action === 'storeAll' || m.action === 'store') && caixa.chegadas) return { ok: false, erro: 'As Chegadas só recebem o que chega (compras da Store e do Mercado). Guarde numa caixa numerada.' };
   if (m.action === 'storeAll') {
@@ -217,6 +236,51 @@ export function comando(estado, m, contaCaixa = null) {
     return { ok: true };
   }
   return { ok: false, erro: 'Ação desconhecida.' };
+}
+
+/**
+ * `send({t:'moverMoedas', tipo})` — a ORGANIZAÇÃO da bolsa de loot (dono, 10/10): `currency` leva toda moeda da bolsa para as caixas de
+ * afinidade Currency; `orbs` leva os Orbs para o destino escolhido (`destinoDosOrbs`: as caixas de afinidade Orbs ou a mochila). Pilha a
+ * pilha, na ordem das caixas: a que não cabe em nenhuma FICA na bolsa (nada some nem duplica), e o aviso diz quantas ficaram.
+ */
+export function moverMoedasDaBolsa(estado, { tipo } = {}) {
+  Bolsa.garantir(estado);
+  if (tipo !== 'currency' && tipo !== 'orbs') return { ok: false, erro: 'Escolha Currency ou Orbs.' };
+  const doTipo = tipo === 'orbs' ? MoedasPoe.ehOrbe : MoedasPoe.ehMoeda;
+  const rotulo = tipo === 'orbs' ? 'Orbs' : 'Currency';
+  const antes = estado.pouch.filter((p) => doTipo(p.id));
+  if (!antes.length) return { ok: false, erro: tipo === 'orbs' ? 'Não há Orbs na bolsa.' : 'Não há moedas na bolsa.' };
+  const pilhasAntes = antes.length;
+  // Os Orbs para a MOCHILA: o mesmo caminho do "Mover para a mochila" (o que couber nas vagas; o resto fica na bolsa).
+  if (tipo === 'orbs' && destinoDosOrbs(estado) === 'mochila') {
+    const unidades = () => estado.pouch.filter((p) => doTipo(p.id)).reduce((n, p) => n + (p.count ?? 1), 0);
+    const antesDeMover = unidades();
+    for (const id of [...new Set(antes.map((p) => p.id))]) {
+      const total = estado.pouch.filter((p) => p.id === id).reduce((n, p) => n + (p.count ?? 1), 0);
+      Bolsa.moverBolsa(estado, { id, count: total, to: 'bag' });
+    }
+    const ficaram = unidades();
+    if (ficaram === antesDeMover) return { ok: false, erro: 'A mochila está cheia: os Orbs ficaram na bolsa.' };
+    return { ok: true, notice: ficaram ? `Orbs na mochila; ${ficaram} ficaram na bolsa: a mochila encheu.` : 'Os Orbs foram para a mochila.' };
+  }
+  const afinidade = tipo === 'orbs' ? 'orbs' : 'currency';
+  const caixas = garantir(estado).filter((c) => c.afinidade === afinidade && !c.chegadas && !c.compartilhada).sort((a, b) => a.indice - b.indice);
+  if (!caixas.length) return { ok: false, erro: `Nenhuma caixa do depósito tem a afinidade ${AFINIDADES[afinidade]}: escolha uma no depósito.` };
+  let movidas = 0;
+  const ficam = [];
+  for (const p of estado.pouch) {
+    if (!doTipo(p.id)) {
+      ficam.push(p);
+      continue;
+    }
+    const { count, trava, ...extras } = p;
+    if (porNaCaixa(estado, p.id, count ?? 1, extras, null, caixas)) movidas++;
+    else ficam.push(p);
+  }
+  estado.pouch = ficam;
+  const sobraram = pilhasAntes - movidas;
+  if (!movidas) return { ok: false, erro: `As caixas de ${AFINIDADES[afinidade]} estão cheias: nada saiu da bolsa.` };
+  return { ok: true, notice: `${movidas} pilha(s) de ${rotulo} foram para ${caixas.length === 1 ? caixas[0].nome : `as caixas de ${AFINIDADES[afinidade]}`}.${sobraram ? ` ${sobraram} ficaram na bolsa: sem espaço.` : ''}` };
 }
 
 /**
