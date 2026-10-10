@@ -425,6 +425,8 @@ function pintarAvisoDeObra() {
    * partida pode topar com um bug novo. Enquanto isso for verdade, o aviso e'
    * informacao, e nao estorvo. No dia em que sair do beta, quem apaga o aviso
    * e' o `avisoDeDesenvolvimento` do config: vazio, some o cartaz e a faixa.
+   * (Dono, 10/10: "tire isso e da página quando entra" — o config está vazio desde então; o Reportar do computador foi para o canto da
+   * barra de cima, ver `buildTopbar`.)
    *
    * O `minimizado` fica em memoria, e nao no `localStorage`: e' isso que faz
    * ele voltar na proxima entrada sem precisar de nenhuma data de validade.
@@ -3965,6 +3967,13 @@ function buildTopbar() {
   opcoes.onclick = () => openBarSettings();
 
   /*
+   * Reportar, antes de Opções (dono, 10/10: tirou a faixa "em desenvolvimento" e o cartaz de beta). O REPORTAR do computador morava
+   * nos dois; sem eles, o caminho do report fica aqui — o mesmo do "Reportar bug" do "Mais" no telefone.
+   */
+  const reportar = doCanto('quests', '!', 'Reportar', () => 'Achou um bug? Conte pra gente.');
+  reportar.onclick = () => openReport('bug');
+
+  /*
    * Opções antes de Sair.
    *
    * Sair é o último botão da fileira porque é o único que tira o jogador do
@@ -3980,8 +3989,8 @@ function buildTopbar() {
    * dela come toda a sobra e joga os dois para a borda.
    */
   const canto = el('span', 'canto-da-barra');
-  /* Cidade, Opções, Sair: os três que tiram o jogador de onde ele está. */
-  canto.append(ferramentaLigada(CIDADE), opcoes, exit);
+  /* Cidade, Reportar, Opções, Sair. */
+  canto.append(ferramentaLigada(CIDADE), reportar, opcoes, exit);
   nav.append(canto);
 }
 
