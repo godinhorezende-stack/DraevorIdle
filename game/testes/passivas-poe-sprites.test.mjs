@@ -78,6 +78,23 @@ test('sprites da árvore: cada classe tem o medalhão do PoE, e a ilustração g
   }
 });
 
+test('sprites da árvore: cada ascendência tem o fundo redondo do PoE, e ele (centrado no início) cobre todos os nós dela; as molduras de ascendência estão na folha', () => {
+  const arvore = P.arvore();
+  const slugs = Object.keys(arvore.ascendencias);
+  assert.equal(slugs.length, 21);
+  for (const m of ['AscendancyFrameLargeNormal', 'AscendancyFrameLargeAllocated', 'AscendancyFrameSmallNormal', 'AscendancyFrameSmallCanAllocate', 'AscendancyMiddle']) assert.ok(S.coords.ascendancy?.[m], m);
+  for (const slug of slugs) {
+    const a = S.ascendencias[slug];
+    assert.ok(a, `${slug}: fundo`);
+    const c = S.coords[a.tipo]?.[a.fundo];
+    assert.ok(c && existsSync(new URL(S.tipos[a.tipo], PASTA)), `${slug}: ${a.fundo} na folha ${S.tipos[a.tipo]}`);
+    const inicio = arvore.porId.get(arvore.ascendencias[slug].inicio);
+    const raio = c[3] / 2 / S.zoom; // o círculo do fundo, em unidades da árvore
+    const fora = arvore.nos.filter((n) => n.ascendencia === slug && Math.hypot(n.x - inicio.x, n.y - inicio.y) > raio);
+    assert.deepEqual(fora.map((n) => n.nome), [], `${slug}: nós fora do fundo (raio ${Math.round(raio)})`);
+  }
+});
+
 /** Uma resposta falsa: o que o servidor escreveu (cabeçalho e corpo). */
 function resposta() {
   const r = { status: 0, cabecalho: {}, partes: [], fim: null };

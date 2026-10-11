@@ -9,6 +9,8 @@
 // não está nas folhas, vai o ícone avulso do CDN do poedb (`arvore-sprites/avulsos/`, 64×64).
 // (11/10, dono: "coloque os fundos dos grupos e a arte das classes") Também os FUNDOS DOS GRUPOS (`grupos`, na posição da árvore do poedb —
 // a do jogo) e a ARTE DAS CLASSES (`classes`: o fundo de todo início, o medalhão da classe e a ilustração grande dela, do CDN do poedb).
+// (11/10, dono: "coloque a arte das ascendências na tela da Engine também") E a ARTE DAS ASCENDÊNCIAS (`ascendencias`: o fundo redondo de cada
+// uma e as molduras próprias delas), das folhas da 3.29 que a árvore do poedb usa (no CDN da GGG).
 //
 // Uso (na pasta game/): node tools/importar-arvore-poeskilltree.mjs
 //   POESKILLTREE=<pasta da versão raspada>  (padrão /home/deploy/scrapling/saida/poeskilltree/3.25.0)
@@ -117,14 +119,54 @@ for (const n of jogo.nos.filter((x) => x.tipo === 'start' && !x.ascendencia)) {
 // As folhas (só as que os nós usam), com o nome do site (o "-3" é o zoom): o que sobrou de uma importação anterior sai.
 const tipos = {};
 for (const t of Object.keys(coords)) tipos[t] = arquivoDa(t);
+
+// A ARTE DAS ASCENDÊNCIAS: o fundo redondo de cada uma (Classes<Ascendência>, centrado no início dela — as posições do jogo são as da 3.29) e as
+// molduras próprias (grande no notável, pequena no comum, o miolo no início). Das folhas da 3.29 que a árvore do poedb usa, no CDN da GGG — a
+// 3.25 do site não tem a Luminar nem a Relicária, e a folha dela tem 6,7 MB (a da 3.29, 455 KB); a Guardiã, que lá virou Linhagem, vem da folha
+// das Linhagens. Baixadas a cada importação (a GGG troca o arquivo quando muda).
+const MOLDURAS_DA_ASCENDENCIA = ['AscendancyFrameLargeNormal', 'AscendancyFrameLargeCanAllocate', 'AscendancyFrameLargeAllocated', 'AscendancyFrameSmallNormal', 'AscendancyFrameSmallCanAllocate', 'AscendancyFrameSmallAllocated', 'AscendancyMiddle'];
+const sprite329 = (tipo) => poedbTudo?.sprites?.[tipo]?.[zoom];
+const da329 = {};
+const usar329 = (tipo, nome) => {
+  const f = sprite329(tipo);
+  const c = f?.coords?.[nome];
+  if (!c) return false;
+  (coords[tipo] ??= {})[nome] = [c.x, c.y, c.w, c.h];
+  tipos[tipo] = f.filename.split('/').pop().split('?')[0];
+  da329[tipos[tipo]] = { url: f.filename, w: f.w, h: f.h };
+  return true;
+};
+const ascendencias = {};
+if (!poedbTudo?.sprites) console.warn(`sem a árvore do poedb (${POEDB}): sem a arte das ascendências`);
+else {
+  for (const m of MOLDURAS_DA_ASCENDENCIA) if (!usar329('ascendancy', m)) throw new Error(`moldura ${m} não está na folha das ascendências da 3.29`);
+  for (const slug of Object.keys(jogo.ascendencias ?? {})) {
+    const fundo = `Classes${slug}`;
+    const tipo = ['ascendancy', 'azmeriBloodline'].find((t) => usar329(t, fundo));
+    if (tipo) ascendencias[slug] = { fundo, tipo };
+    else relatorio.semIcone.push(`fundo da ascendência ${slug}`);
+  }
+}
+
 const folhas = {};
 mkdirSync(PASTA, { recursive: true });
 const manter = new Set(Object.values(tipos));
 for (const f of readdirSync(PASTA, { withFileTypes: true })) if (f.isFile() && !manter.has(f.name)) rmSync(join(PASTA, f.name));
 for (const arquivo of manter) {
+  if (da329[arquivo]) continue;
   copyFileSync(join(ORIGEM, 'assets', arquivo), join(PASTA, arquivo));
   const t = Object.keys(tipos).find((k) => tipos[k] === arquivo);
   folhas[arquivo] = { w: sprite(t).w, h: sprite(t).h };
+}
+for (const [arquivo, f] of Object.entries(da329)) {
+  let r = null;
+  for (let tentativa = 1; tentativa <= 3 && !r?.ok; tentativa++) {
+    await esperar(300 * tentativa);
+    r = await fetch(f.url, { headers: { 'user-agent': AGENTE, referer: 'https://poedb.tw/pt/Passive_Skill_Tree', accept: 'image/webp,image/*,*/*' } }).catch(() => null);
+  }
+  if (!r?.ok) throw new Error(`a folha ${f.url} não veio (${r?.status ?? 'sem resposta'})`);
+  writeFileSync(join(PASTA, arquivo), Buffer.from(await r.arrayBuffer()));
+  folhas[arquivo] = { w: f.w, h: f.h };
 }
 
 // Os avulsos: do CDN do poedb (o mesmo de tools/baixar-ascendencias-poedb.mjs). O que já existe é pulado.
@@ -168,7 +210,7 @@ if (erros.length) {
 }
 
 const saida = {
-  _nota: `Os ícones e as molduras dos nós da árvore de passivas do PoE, raspados do poeskilltree.com (${versao}, zoom ${zoom}) por tools/importar-arvore-poeskilltree.mjs. "folhas": as folhas de sprites em arvore-sprites/ (servidas em /api/jogo/poe/icone/arvore/); "tipos": a folha de cada tipo de sprite; "coords": [x, y, l, a] de cada ícone usado (a chave é o caminho do PoE sem "Art/2DArt/SkillIcons/passives/" e ".png") e das molduras; "nos": o ícone de cada nó (a maestria: [sem ligação, ligada, escolhida]); "joias": os encaixes de joia (só a moldura); "avulsos": os ícones fora das folhas (nós posteriores à ${versao}, do CDN do poedb); "grupos": [x, y, fundo, meio] de cada grupo com fundo (a posição da árvore do poedb, a do jogo; meio = a metade de cima, repetida girada embaixo); "classes": o medalhão (center<classe>) e a ilustração grande de cada classe (classes/<atributo>.webp, do CDN do poedb: o canto de cima à esquerda em x, y e o tamanho l × a, em unidades da árvore).`,
+  _nota: `Os ícones e as molduras dos nós da árvore de passivas do PoE, raspados do poeskilltree.com (${versao}, zoom ${zoom}) por tools/importar-arvore-poeskilltree.mjs. "folhas": as folhas de sprites em arvore-sprites/ (servidas em /api/jogo/poe/icone/arvore/); "tipos": a folha de cada tipo de sprite; "coords": [x, y, l, a] de cada ícone usado (a chave é o caminho do PoE sem "Art/2DArt/SkillIcons/passives/" e ".png") e das molduras; "nos": o ícone de cada nó (a maestria: [sem ligação, ligada, escolhida]); "joias": os encaixes de joia (só a moldura); "avulsos": os ícones fora das folhas (nós posteriores à ${versao}, do CDN do poedb); "grupos": [x, y, fundo, meio] de cada grupo com fundo (a posição da árvore do poedb, a do jogo; meio = a metade de cima, repetida girada embaixo); "classes": o medalhão (center<classe>) e a ilustração grande de cada classe (classes/<atributo>.webp, do CDN do poedb: o canto de cima à esquerda em x, y e o tamanho l × a, em unidades da árvore); "ascendencias": o fundo redondo de cada ascendência (Classes<Ascendência>, centrado no início dela) e o tipo de sprite (as folhas delas e as molduras Ascendancy* são as da 3.29, do CDN da GGG).`,
   versao,
   zoom: Number(zoom),
   fonte,
@@ -180,7 +222,8 @@ const saida = {
   joias,
   grupos,
   classes,
+  ascendencias,
 };
 writeFileSync(DESTINO, JSON.stringify(saida) + '\n');
-console.log(JSON.stringify({ ...relatorio, semIcone: relatorio.semIcone.length, comIcone: Object.keys(nos).length, grupos: grupos.length, ilustracoes: Object.values(classes).filter((c) => c.ilustracao).length, folhas: Object.keys(folhas) }), '→', DESTINO.pathname);
+console.log(JSON.stringify({ ...relatorio, semIcone: relatorio.semIcone.length, comIcone: Object.keys(nos).length, grupos: grupos.length, ilustracoes: Object.values(classes).filter((c) => c.ilustracao).length, ascendencias: Object.keys(ascendencias).length, folhas: Object.keys(folhas) }), '→', DESTINO.pathname);
 if (relatorio.semIcone.length) console.log('sem ícone:', relatorio.semIcone.join('; '));
