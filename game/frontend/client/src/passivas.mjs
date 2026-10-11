@@ -453,7 +453,8 @@ function montar(body) {
   function spritesDaArvore() {
     if (!pediuSprites && arvore()?.poe) {
       pediuSprites = true;
-      fetch('/api/jogo/poe/arvore-sprites')
+      // (`no-cache`: confere com o servidor — ETag, 304 se não mudou — mesmo que o navegador tenha guardado um mapa antigo)
+      fetch('/api/jogo/poe/arvore-sprites', { cache: 'no-cache' })
         .then((r) => (r.ok ? r.json() : null))
         .then((s) => {
           if (!s) return;
@@ -470,7 +471,9 @@ function montar(body) {
     if (!img) {
       img = new Image();
       img.onload = pedir;
-      img.src = `/api/jogo/poe/icone/arvore/${arquivo.split('/').map(encodeURIComponent).join('/')}`;
+      // (a versão do arquivo no endereço: imagem trocada num deploy é endereço novo — o navegador guarda cada versão por um ano)
+      const v = sprites?.v?.[arquivo];
+      img.src = `/api/jogo/poe/icone/arvore/${arquivo.split('/').map(encodeURIComponent).join('/')}${v ? `?v=${v}` : ''}`;
       folhas.set(arquivo, img);
     }
     return img.complete && img.naturalWidth ? img : null;
