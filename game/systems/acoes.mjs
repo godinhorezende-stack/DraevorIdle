@@ -1036,6 +1036,9 @@ function comOsAlvosDaGema(entry, efeito, estado = null) {
   // fração vira chance, para a média bater) — `itens-poe/mods-poe.mjs`.
   const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, Ficha.combate(estado), entry, tagsPoeDaSkill(entry), Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide + (dasPecas?.projeteis ?? 0);
+  // (11/10) A quantidade BASE de projéteis da gema ("Dispara 15 projéteis") e "em sequência": a emissão em `Secundarios.resolver`.
+  if ((a.base ?? 0) > 1) e.projeteisBase = a.base;
+  if (a.sequencia) e.sequencia = true;
   // (09/10, a maestria da árvore) "Habilidades de Golpe Não Vaal focam em N Inimigo próximo adicional": a gema de Golpear (não Vaal).
   const gemaDoGolpe = GemasPoe.doSlug(entry.poeGema.slug)?.gema;
   if (estado && gemaDoGolpe?.tags?.includes('Golpear') && !gemaDoGolpe.tags.includes('Vaal')) e.alvosExtras += Math.max(0, Math.round(ModsPoe.valor(Ficha.combate(estado), 'golpe_alvos_extra')));
@@ -1996,7 +1999,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
        * em CADA impacto, 3×3 em volta dele). Aqui só se aplica, um acerto por vez, na
        * ordem: quem morreu no meio do caminho não leva o resto.
        */
-      const { golpes, explosoes } = Secundarios.resolver({
+      const { golpes, explosoes, emitidos } = Secundarios.resolver({
         efeito: efeitoDaGema,
         tags: Tags.tagsDaAcao(entry),
         origem: { x, y },
@@ -2004,12 +2007,17 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         atingidos,
         vivos,
         alcance: entry.range || ALCANCE_PADRAO,
+        area: !!casas,
       });
+      // A EMISSÃO na tela: cada projétil do total da skill sai de quem lança (o principal já saiu, acima) — o que acerta e o que erra,
+      // mesmo que o bicho dele morra antes.
+      if (entry.projetil) for (const p of emitidos.slice(alvo && !casas ? 1 : 0)) eventos.push({ t: 'shot', id: entry.projetil, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y });
       // A explosão na tela: UM evento por detonação (o cliente desenha o quadrado inteiro).
       for (const ex of explosoes) eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: ex.x, y: ex.y, lado: ex.lado });
       for (const s of golpes) {
         if (s.bicho.hp <= 0) continue;
-        if (s.tipo !== 'explosao' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y });
+        // (o 1º voo de cada projétil já foi desenhado na emissão; aqui, os saltos: perfuração, bifurcação, encadeamento, retorno)
+        if (s.tipo !== 'explosao' && s.tipo !== 'projetil' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y });
         acertar(s.bicho, s.pct, s.tipo);
       }
     };
