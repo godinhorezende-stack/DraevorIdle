@@ -11,7 +11,7 @@
 // Atributo CONDICIONAL (`dmg_inc@corpo`, `atk_speed@comEscudo` — `mods-poe.mjs`): vale o estado do atributo-base, se as condições existem.
 import { readFileSync } from 'node:fs';
 import { FICHAS } from '../afixos.mjs';
-import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, SO_NO_CRITICO, dinamicoValido, escalaValida, slugDoNome, gemaConhecida } from './condicoes-poe.mjs';
+import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, SO_NO_CRITICO, SO_AO_ATORDOAR, dinamicoValido, escalaValida, slugDoNome, gemaConhecida } from './condicoes-poe.mjs';
 
 export const TABELA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao.json', import.meta.url), 'utf8'));
 export const NOVOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/atributos-novos.json', import.meta.url), 'utf8')).atributos;
@@ -204,8 +204,9 @@ function temEfeito(e) {
   if (!escalaValida(escala)) return false;
   // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo`)
   // (+ `gema:<nome>` — a gema pelo nome, no nível das gemas: `skills/gemas.extrasDaGemaPoe`)
-  // (+ `critico` — só no golpe crítico, para os atributos que o acerto lê assim: `SO_NO_CRITICO`)
-  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^gema:[\w-]+$/.test(c) || (c === 'critico' && SO_NO_CRITICO.has(stat)));
+  // (+ `critico` — só no golpe crítico, para os atributos que o acerto lê assim: `SO_NO_CRITICO`; `golpeAtordoou`, o mesmo — `SO_AO_ATORDOAR`)
+  const soNoAcerto = { critico: SO_NO_CRITICO, golpeAtordoou: SO_AO_ATORDOAR };
+  return conds.every((c) => (soNoAcerto[c] ? soNoAcerto[c].has(stat) : ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^gema:[\w-]+$/.test(c)));
 }
 
 /** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */

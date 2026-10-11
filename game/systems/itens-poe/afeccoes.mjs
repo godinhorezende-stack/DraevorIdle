@@ -53,6 +53,8 @@ export function daSoma(af = {}) {
     danoIncendio: n('ignite_dmg_inc'),
     // ("Incêndios infligidos com esta Arma causam X% mais Dano")
     incendioMais: n('incendio_mais'),
+    // (a Chama Voraz: "Você pode infligir um incêndio adicional em cada inimigo"; "A duração base do incêndio é de N segundo")
+    incendiosExtra: n('incendios_extra'), incendioDuracaoBaseMs: n('incendio_duracao_base_s') * 1000,
     danoSangramento: n('bleed_dmg_inc'),
     danoVeneno: n('poison_dmg_inc'),
     duracaoIncendio: n('duracao_incendio') + n('duracao_afeccoes_elementais'),
@@ -92,6 +94,8 @@ export function daSoma(af = {}) {
     // o veneno em inimigo não envenenado / sangrando; o sangramento por empalamento, as pilhas (Dança Carmesim) e o "menos dano"
     venenoNaoEnvenenado: n('veneno_nao_envenenado_inc'), multiplicadorVenenoSangrando: n('dot_multi_poison_sangrando'),
     multiplicadorSangramentoPorEmpalamento: n('dot_multi_bleed_por_empalamento'), sangramentoPilhas: n('sangramento_pilhas'), sangramentoMenos: n('sangramento_menos'),
+    // (11/10) "Sangramentos que você infligir são Agravados"; a Dança Carmesim — "Seu Sangramento não causa Dano extra enquanto o Inimigo se move"
+    sangramentoAgravado: n('sangramento_agravado') > 0, sangramentoSemMovimento: n('sangramento_sem_movimento') > 0,
     // o Congelamento: o mínimo, o Resfriamento ao descongelar e o dano "permanente" por segundo Congelado/Resfriado
     congelamentoMinimoMs: n('congelamento_minimo_s') * 1000, resfriarAoDescongelar: n('resfriar_ao_descongelar'),
     permanente: { congelado: n('dano_perm_congelado'), congeladoMax: n('dano_perm_congelado_max'), resfriado: n('dano_perm_resfriado'), resfriadoMax: n('dano_perm_resfriado_max') },
@@ -154,11 +158,11 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const multiplicadorBase = (a.agoniaPerfeita ? Math.max(0, (a.multiplicadorDoCritico ?? 1.5) * 100 - 100) : a.multiplicador ?? 0) + (crit ? a.multiplicadorCritico ?? 0 : 0);
   // `aumentado`: o "Dano Degenerativo aumentado" daquela afecção. "X% mais rápido": a mesma soma em menos tempo. `mais`: o "X% mais/menos
   // dano" daquela afecção (multiplica). `chave`: a pilha do sangramento (a Dança Carmesim).
-  const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0, { mais = 0, chave = null } = {}) => {
+  const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0, { mais = 0, chave = null, agravado = false, semMovimento = false } = {}) => {
     if (!(base > 0)) return null;
     const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100);
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0)) / 100)));
-    const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}) }, agora);
+    const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
     return estado;
   };
@@ -171,6 +175,14 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     if (pilhas.length < n) { for (let k = 0; k < n; k++) if (!pilhas.some((d) => d.chave === `pilha:${k}`)) return `pilha:${k}`; }
     return pilhas.reduce((x, d) => (x && x.falta <= d.falta ? x : d), null)?.chave ?? 'pilha:0';
   };
+  // (a Chama Voraz: os incêndios a mais — cada um à parte, como as pilhas do Sangramento; cheio, o novo renova o mais fraco)
+  const chaveDoIncendio = () => {
+    const n = 1 + Math.floor(a.incendiosExtra ?? 0);
+    if (n <= 1) return null;
+    const pilhas = (bicho.dots ?? []).filter((d) => d.tipo === 'queimadura' && d.falta > 0 && String(d.chave ?? '').startsWith('incendio:'));
+    if (pilhas.length < n) { for (let k = 0; k < n; k++) if (!pilhas.some((d) => d.chave === `incendio:${k}`)) return `incendio:${k}`; }
+    return pilhas.reduce((x, d) => (x && x.falta <= d.falta ? x : d), null)?.chave ?? 'incendio:0';
+  };
   const fogo = baseDe('incendio');
   const fisico = baseDe('sangramento');
   const gelo = baseDe('congelamento');
@@ -179,12 +191,12 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const caos = dano('chaos');
   // Incêndio: pela chance, ou crítico com dano de Fogo.
   if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
-    const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), a.danoIncendio ?? 0, { mais: a.incendioMais ?? 0 });
+    const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), a.danoIncendio ?? 0, { mais: a.incendioMais ?? 0, chave: chaveDoIncendio() });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
   }
   // (+ "+X% de Multiplicador … para Sangramentos por Empalamento no Inimigo"; a Dança Carmesim: as pilhas e o "X% menos Dano com Sangramento")
-  if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0), fisico, multiplicadorBase + (a.multiplicadorSangramento ?? 0) + empalamentos * (a.multiplicadorSangramentoPorEmpalamento ?? 0) + (crit ? a.multiplicadorSangramentoCritico ?? 0 : 0), a.danoSangramento ?? 0, { mais: -(a.sangramentoMenos ?? 0), chave: chaveDoSangramento() });
+  if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0), fisico, multiplicadorBase + (a.multiplicadorSangramento ?? 0) + empalamentos * (a.multiplicadorSangramentoPorEmpalamento ?? 0) + (crit ? a.multiplicadorSangramentoCritico ?? 0 : 0), a.danoSangramento ?? 0, { mais: -(a.sangramentoMenos ?? 0), chave: chaveDoSangramento(), agravado: !!a.sangramentoAgravado && !a.sangramentoSemMovimento, semMovimento: !!a.sangramentoSemMovimento });
   // Veneno: do dano Físico e de Caos (ou de TODO o dano, com "Todo o Dano … pode Envenenar").
   const todos = ['physical', 'fire', 'ice', 'energy', 'chaos'].reduce((x, el) => x + dano(el), 0);
   const baseDoVeneno = a.naoPode?.veneno ? 0 : a.qualquerDanoEnvenena ? todos : dano('physical') + caos + (a.pode?.veneno ?? []).filter((el) => !['physical', 'chaos'].includes(el)).reduce((x, el) => x + dano(el), 0);

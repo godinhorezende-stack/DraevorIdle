@@ -277,6 +277,25 @@ const LETRA_DA_CLASSE = { knight: 'K', paladin: 'P', sorcerer: 'S', druid: 'D', 
 // A marca da tradução de cada linha de um nó da árvore do PoE (as mesmas do balão das peças do PoE).
 // (dono, 09/10: "o que tiver funcionando coloque só o certo verde e o que não tiver um x vermelho"): ✓ com efeito no jogo, ✗ sem efeito.
 const MARCA_DO_ESTADO = { equivalente: ['✓', 'tem efeito no jogo (mesma conta do PoE)'], aproximado: ['✓', 'tem efeito no jogo (com diferença)'], novo: ['✓', 'atributo do PoE, com efeito no jogo'], registrado: ['✗', 'ainda sem efeito no jogo'], inerte: ['✗', 'mecânica do PoE que o jogo não tem'] };
+/** (ciclo 7) A linha que não se aplica ao jogo (a nota da regra começa assim): a marca é "–", não "✗" — não há o que fazer funcionar. */
+const NAO_SE_APLICA = /^não se aplica ao jogo:/i;
+/**
+ * (ciclo 7) Uma linha do balão da árvore do PoE: a marca do estado, o texto e — na linha sem efeito igual — o PORQUÊ (a nota da regra:
+ * "nenhum monstro do jogo faz isso…", a diferença do aproximado), em itálico pequeno embaixo.
+ */
+function linhaDaArvore(t, est, nota) {
+  const linha = el('div', est === 'nota' ? 'poe-nota-arvore' : null);
+  const naoSeAplica = est === 'inerte' && NAO_SE_APLICA.test(nota ?? '');
+  const marca = naoSeAplica ? ['–', 'não se aplica ao jogo'] : MARCA_DO_ESTADO[est];
+  if (marca) {
+    const m = el('em', `poe-tr ${naoSeAplica ? 'naoSeAplica' : est}`, marca[0]);
+    m.title = nota ? `${marca[1]} — ${nota}` : marca[1];
+    linha.append(m, ' ');
+  }
+  linha.append(t);
+  if (nota && est !== 'nota') linha.append(el('div', 'poe-porque', nota.replace(NAO_SE_APLICA, '').trim()));
+  return linha;
+}
 // A cor do emblema por cluster (o "ícone" do nó): o elemento/tema dele.
 const COR_DO_CLUSTER = {
   fire: '#ff7a3c', ice: '#7fd0ff', earth: '#7fc05a', energy: '#b58cff', holy: '#ffe07a', death: '#9c7ab8', physical: '#c9b8a0',
@@ -1107,36 +1126,14 @@ function montar(body) {
       stats.append(el('div', 'poe-nota-arvore', escolhida ? 'Opção escolhida:' : 'Escolha 1 efeito ao alocar (abre com um notável do grupo):'));
       for (const o of n.opcoes ?? []) {
         if (escolhida && o.id !== escolhida) continue;
-        o.textos.forEach((t, i) => {
-          const est = o.estados?.[i];
-          const linha = el('div', est === 'nota' ? 'poe-nota-arvore' : null);
-          const marca = MARCA_DO_ESTADO[est];
-          if (marca) {
-            const m = el('em', `poe-tr ${est}`, marca[0]);
-            m.title = marca[1];
-            linha.append(m, ' ');
-          }
-          linha.append(t);
-          stats.append(linha);
-        });
+        o.textos.forEach((t, i) => stats.append(linhaDaArvore(t, o.estados?.[i], o.notas?.[i])));
       }
       corpo.append(stats);
     } else if (n.textos?.length) {
       // Nó da árvore do PoE: os textos como no PoE, cada linha com a marca da tradução; o texto explicativo (nota) em itálico.
       corpo.append(sep());
       const stats = el('div', 'poe-stats');
-      n.textos.forEach((t, i) => {
-        const estadoDaLinha = n.estados?.[i];
-        const linha = el('div', estadoDaLinha === 'nota' ? 'poe-nota-arvore' : null);
-        const marca = MARCA_DO_ESTADO[estadoDaLinha];
-        if (marca) {
-          const m = el('em', `poe-tr ${estadoDaLinha}`, marca[0]);
-          m.title = marca[1];
-          linha.append(m, ' ');
-        }
-        linha.append(t);
-        stats.append(linha);
-      });
+      n.textos.forEach((t, i) => stats.append(linhaDaArvore(t, n.estados?.[i], n.notas?.[i])));
       corpo.append(stats);
     } else if (n.efeitos.length) {
       corpo.append(sep());

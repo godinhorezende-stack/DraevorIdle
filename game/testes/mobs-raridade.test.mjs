@@ -22,8 +22,9 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
     for (const k of ['vida', 'dano', 'exp', 'loot']) assert.ok(Number.isFinite(r[k]), `${id}.${k}`);
   }
   // (+ os do PoE que o mob aplica desde 09/10: o escudo de energia, a espera da recarga, à prova de maldições e "Reflete Feitiços" — `raridade.aplicar`)
+  // (+ 11/10, decisão do dono: "Vida Não Pode ser Drenada" — `semDreno`, o dreno de vida não pega nele)
   const STATS = new Set(['vidaPct', 'danoPct', 'velocidadePct', 'velocidadeDeAtaquePct', 'regenPct', 'resist', 'precisaoPct', 'evasaoPct', 'armaduraPct', 'bloqueio', 'reducaoDeDano', 'critChance', 'critMultiplicador',
-    'esPct', 'esAtrasoMenosPct', 'aProvaDeMaldicoes', 'refleteFeiticos']);
+    'esPct', 'esAtrasoMenosPct', 'aProvaDeMaldicoes', 'refleteFeiticos', 'semDreno']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);

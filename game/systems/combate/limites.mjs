@@ -29,6 +29,8 @@ export function penetracaoDe(penetracao, tipo) {
   if (!penetracao) return 0;
   const max = LIMITES.penetracao.maximo;
   if (tipo === 'physical') return limitar(penetracao.fisica, max);
+  // (PoE, ciclo 7: o Caos não é elemental — só a penetração de Caos dele, `porElemento.chaos`; o Draevor não tem Caos.)
+  if (tipo === 'chaos') return limitar(Number(penetracao.porElemento?.chaos) || 0, max);
   // (Penetração NEGATIVA do PoE — "Seus Acertos Lidam com a Resistência a Gelo como se fossem X% maiores" — aumenta a resistência efetiva.)
   const doElemento = Number(penetracao.porElemento?.[tipo]) || 0;
   if (doElemento < 0) return limitar(penetracao.elemental, max) + doElemento;

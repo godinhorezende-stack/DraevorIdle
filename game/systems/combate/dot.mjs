@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { resistido } from '../hunt/resistencia.mjs';
 import * as R from '../regras.mjs';
 import { registrarGolpe } from './registro.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/combate/dot.json', import.meta.url), 'utf8'));
 
@@ -27,7 +28,7 @@ export const restante = (m, tipo) => dosDoTipo(m, tipo).reduce((n, d) => n + d.f
  * Põe um efeito no bicho. `total`: o dano que o efeito paga ao todo (antes da resistência); `origem`: `{ fonte, habilidade?, atacante? }`.
  * Devolve o nome do ESTADO posto (`'queimando'`, `'envenenado'`...) ou null se não entrou (mais fraco que o que já vale, sem dano...).
  */
-export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, chave = null }, agora) {
+export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, chave = null, agravado = false, semMovimento = false }, agora) {
   const t = CONFIG.tipos[tipo];
   if (!t || !(total > 0) || bicho.hp <= 0) return null;
   const dots = (bicho.dots ??= []);
@@ -45,6 +46,10 @@ export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, c
     proximo: agora + t.pulsoMs,
     origem,
     ...(chave != null ? { chave } : {}),
+    // (PoE: o Sangramento Agravado dói sempre como em movimento; o da Dança Carmesim não dói mais em movimento — `fatorDoMovimento`)
+    desde: agora,
+    ...(agravado ? { agravado: true } : {}),
+    ...(semMovimento ? { semMovimento: true } : {}),
   });
   const limite = CONFIG.limites.efeitosPorBicho;
   if (t.acumulacao === 'empilha') {
@@ -63,8 +68,9 @@ export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, c
       if (dots.length >= limite) return null;
       dots.push(novo());
     } else {
-      // Renova a duração e fica com o maior dano que falta; o relógio dos pulsos continua.
+      // Renova a duração e fica com o maior dano que falta; o relógio dos pulsos continua. (O Agravado continua Agravado.)
       atual.ate = agora + duracao;
+      if (agravado) atual.agravado = true;
       if (total > atual.falta) {
         atual.falta = total;
         atual.porPulso = total / Math.max(1, Math.round(duracao / t.pulsoMs));
@@ -86,6 +92,20 @@ export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null, c
 }
 
 /**
+ * (PoE, 11/10) O SANGRAMENTO EM MOVIMENTO (o lembrete do PoE: "O Dano é 200% maior enquanto em movimento"; "Sangramento que foi Agravado
+ * sempre causa Dano maior como se o alvo estivesse se movendo"): × 3 no pulso — o total que falta pagar não muda. O alvo anda: `andouEm` (o
+ * passo do monstro, o empurrão) há até 1 s. A Dança Carmesim (`semMovimento`) não tem o extra nem pode ser Agravada. Só no modo PoE.
+ */
+export const MOVIMENTO = { fator: 3, janelaMs: 1000 };
+export const fatorDoMovimento = (d, alvo, agora) => (itensPoeLigado() && d.tipo === 'sangramento' && !d.semMovimento && (d.agravado || (alvo?.andouEm != null && agora - alvo.andouEm <= MOVIMENTO.janelaMs)) ? MOVIMENTO.fator : 1);
+/** Agrava os Sangramentos do bicho (`maisAntigosQueMs`: só os que já duram isso — "Agravam qualquer Sangramento mais antigos que N segundos"). */
+export function agravar(bicho, agora, maisAntigosQueMs = 0) {
+  let n = 0;
+  for (const d of bicho?.dots ?? []) if (d.tipo === 'sangramento' && d.falta > 0 && !d.semMovimento && !d.agravado && agora - (d.desde ?? agora) >= maisAntigosQueMs) { d.agravado = true; n++; }
+  return n;
+}
+
+/**
  * Um tique da caçada: os pulsos de todos os efeitos de todos os bichos. O dano sai direto na vida, depois da resistência do bicho ao
  * elemento; quem cair é recolhido por `processarMortes`. Devolve o dano total do tique.
  */
@@ -102,7 +122,8 @@ export function tique(hunt, eventos, agora) {
       if (!t) continue;
       while (d.falta > 0 && R.jaPode(agora, d.proximo) && d.proximo <= d.ate + t.pulsoMs && m.hp > 0) {
         const parte = Math.max(1, Math.round(Math.min(d.falta, d.porPulso)));
-        const v = resistido(hunt, m, d.elemento, parte);
+        // (o Sangramento no bicho em movimento ou Agravado: × 3 no pulso — `fatorDoMovimento`)
+        const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora));
         m.hp -= v;
         d.falta -= parte;
         d.proximo += t.pulsoMs;

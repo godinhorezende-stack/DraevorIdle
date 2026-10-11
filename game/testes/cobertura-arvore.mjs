@@ -6,8 +6,11 @@
 //   CONDICOES / ESCALAS / EVENTOS — as condições, escalas e eventos com teste próprio (o arquivo citado), que completam a validação de uma
 //                    chave condicional (`block@comEscudo` = o `block` daqui + o `comEscudo` com teste).
 //
-// Uma medida: `{ preparar?(e), medir(ctx) → número, esperado(antes, valor, ctx) → número, tolerancia? }`, `ctx = { e, f (a ficha), af (a
-// soma), pct(...chaves) (a soma dessas chaves de %), golpe(tags) (a ficha do golpe) }`.
+// Uma medida: `{ preparar?(e), medir(ctx) → número, esperado(antes, valor, ctx) → número, tolerancia?, junto? }`, `ctx = { e, f (a ficha), af
+// (a soma), pct(...chaves) (a soma dessas chaves de %), golpe(tags) (a ficha do golpe), forca }`.
+// `junto` (ciclo 7, dono 11/10: "ajustar o seletor"): quando nenhum nó tem SÓ o atributo — as outras linhas do nó passaram a funcionar —, o nó
+// pode ter também estas chaves: `[regex, (efeito, ctx, match) → o que ela soma no MESMO número medido]` (0 = não mexe nele). A asserção
+// continua exata: o esperado leva a soma das linhas que mexem no número.
 import * as R from '../systems/regras.mjs';
 
 const PECA_COM_DEFESAS = { id: 3357, count: 1, base: { armor: [400, 400], evasion: [400, 400], es: [400, 400] }, poe: { classe: 'Body_Armours', base: 'Body_Armours/X', af: {}, prefixos: [], sufixos: [], implicitos: [] } };
@@ -29,7 +32,9 @@ export const MEDIDAS = {
   armour_pct: { preparar: (e) => { e.equipment = { body: structuredClone(PECA_COM_DEFESAS) }; }, medir: ({ f }) => f.armor, esperado: razao(['armour_pct']), tolerancia: 1 },
   evasion_pct: { preparar: (e) => { e.equipment = { body: structuredClone(PECA_COM_DEFESAS) }; }, medir: ({ f }) => f.evasion, esperado: razao(['evasion_pct', 'atr:evasaoPct']), tolerancia: 1 },
   es_pct: { preparar: (e) => { e.equipment = { body: structuredClone(PECA_COM_DEFESAS) }; }, medir: ({ f }) => f.energyShield, esperado: razao(['es_pct', 'atr:energyShieldPct']), tolerancia: 1 },
-  'block@comEscudo': { preparar: (e) => { e.equipment = { shield: structuredClone(ESCUDO) }; }, medir: ({ f }) => Math.round(f.blockChance * 1000) / 10, esperado: soma, tolerancia: 0.05 },
+  // ("Bloqueio com Escudos e Recuperação de Bloqueio": + "Recuperação de Bloqueio aumentada", que não mexe na chance de bloqueio — 11/10.)
+  'block@comEscudo': { preparar: (e) => { e.equipment = { shield: structuredClone(ESCUDO) }; }, medir: ({ f }) => Math.round(f.blockChance * 1000) / 10, esperado: soma, tolerancia: 0.05,
+    junto: [[/^block_recovery$/, () => 0]] },
   // resistências (abaixo do teto)
   fire_res: { medir: ({ f }) => f.protection.fire, esperado: soma },
   ice_res: { medir: ({ f }) => f.protection.ice, esperado: soma },
@@ -53,7 +58,9 @@ export const MEDIDAS = {
   move_speed: { medir: ({ f }) => f.speed, esperado: (antes, v, ctx) => antes + (R.baseSpeed(ctx.e.level ?? 1) * v) / 100, tolerancia: 1 },
   crit_chance_inc: { medir: ({ f }) => f.critInc, esperado: soma },
   crit_dmg: { medir: ({ f }) => Math.round(f.critMultiplier * 1000) / 1000, esperado: (antes, v) => Math.round((antes + v / 100) * 1000) / 1000 },
-  accuracy: { medir: ({ f }) => f.accuracy, esperado: (antes, v, ctx) => antes + v * (1 + ctx.pct('stat:accuracy', 'accuracy_inc') / 100), tolerancia: 1 },
+  // ("Inegável": +500 de Precisão, "Ganha Precisão igual a duas vezes sua Força" — soma no mesmo número — e Velocidade de Ataque por Precisão.)
+  accuracy: { medir: ({ f }) => f.accuracy, esperado: (antes, v, ctx) => antes + v * (1 + ctx.pct('stat:accuracy', 'accuracy_inc') / 100), tolerancia: 1,
+    junto: [[/^atk_speed%precisao:\d+$/, () => 0], [/^accuracy%atr:str:(\d+)$/, (x, ctx, m) => x.valor * Math.floor(ctx.forca / Number(m[1]))]] },
   'stat:accuracy': { medir: ({ f }) => f.accuracy, esperado: razao(['stat:accuracy', 'accuracy_inc']), tolerancia: 1 },
   // recuperação
   life_regen_max_pct: { medir: ({ f }) => f.regenPoe.vidaPctDoMax, esperado: soma },
@@ -75,7 +82,8 @@ export const MEDIDAS = {
   dot_multi_bleed: { medir: ({ f }) => f.afeccoes.multiplicadorSangramento, esperado: soma },
   efeito_resfriamento: { medir: ({ f }) => f.afeccoes.efeitoResfriamento, esperado: soma },
   efeito_eletrizacao: { medir: ({ f }) => f.afeccoes.efeitoEletrizacao, esperado: soma },
-  duracao_congelamento: { medir: ({ f }) => f.afeccoes.duracaoCongelamento, esperado: soma },
+  // ("Abraço Invernal": + "Dano aumentado em 30% se você Estilhaçou um Inimigo Recentemente", que não mexe na duração.)
+  duracao_congelamento: { medir: ({ f }) => f.afeccoes.duracaoCongelamento, esperado: soma, junto: [[/^dmg_inc@estilhacouRecente$/, () => 0]] },
   // os lidos NO ACERTO (`ModsPoe.valor` da ficha do golpe — o efeito no monstro está em passivas-poe-afeccoes.test.mjs)
   stun_duration: { medir: ({ f }) => Number(f.afPoe.stun_duration) || 0, esperado: soma },
   enemy_stun_threshold_red: { medir: ({ f }) => Number(f.afPoe.enemy_stun_threshold_red) || 0, esperado: soma },
@@ -174,3 +182,33 @@ CONDICOES['alvoVenenos:*'] = 'passivas-poe-afeccoes-nos-monstros ("ao menos N Ve
 EVENTOS['incendiarNovo:vidaPct'] = 'passivas-poe-afeccoes-nos-monstros (o primeiro incêndio cura)';
 EVENTOS['incendiar:alvo'] = 'passivas-poe-afeccoes-nos-monstros (Coberto de Cinzas)';
 EVENTOS['congelar:alvo'] = 'passivas-poe-afeccoes-nos-monstros (Coberto de Gelo)';
+// (11/10, as linhas que "não se aplicavam ao jogo" e passaram a valer — passivas-poe-nao-se-aplica-faceis/medios.test.mjs: o nó real → onde a
+// linha age: o acerto, a trava do bloqueio, o totem, o Sangramento no monstro, o alcance, o raio da aura, a janela da Retaliação, a percepção)
+for (const k of ['block_recovery', 'clamor_nao_impele_movimento', 'totem_sem_lentidao', 'distancia_empurrao']) MECANICAS[k] = 'passivas-poe-nao-se-aplica-faceis';
+CONDICOES.alvoSemDreno = 'passivas-poe-nao-se-aplica-faceis (o monstro "Vida Não Pode ser Drenada")';
+for (const k of ['chance_agravar', 'agravar_sangramento_apos_s', 'sangramento_agravado', 'sangramento_sem_movimento', 'alcance_corpo_m', 'retaliacao_outra_chance', 'retaliacao_janela_inc',
+  'retaliacao_janela_s', 'retaliacao_nao_consumir', 'retaliacao_quarta_critica', 'retaliacao_a_cada_acertos', 'furtividade', 'abrir_bau_ao_conjurar']) MECANICAS[k] = 'passivas-poe-nao-se-aplica-medios';
+// (as chaves inteiras: a soma POR TAG da ficha — só nas gemas de Aura; o raio e a duração que ela dá estão em passivas-poe-nao-se-aplica-medios)
+const daTag = (stat, tag) => ({ f }) => (f.porTag ?? []).filter((x) => x.stat === stat && x.tags.includes(tag)).reduce((n, x) => n + x.valor, 0);
+MEDIDAS['area_inc@aura'] = { medir: daTag('area_inc', 'aura'), esperado: soma };
+MEDIDAS['duracao_habilidades@aura'] = { medir: daTag('duracao_habilidades', 'aura'), esperado: soma };
+CONDICOES['inimigosPertoMin:*'] = 'passivas-poe-nao-se-aplica-medios ("enquanto com ao menos N Inimigos Próximos")';
+CONDICOES.critico ??= 'passivas-poe-nao-se-aplica-medios (o Agravar só no acerto crítico)';
+CONDICOES.impelido ??= 'passivas-poe-nao-se-aplica-medios (o Agravar só no ataque Impelido)';
+// (as decisões do dono, 11/10: o ESTANDARTE PLANTADO e o Sangramento em você — passivas-poe-nao-se-aplica-medios.test.mjs)
+for (const k of ['estandarte_vida_por_valor', 'estandarte_cargas_cheio', 'estandarte_remove_afeccao_min', 'valor_com_estandarte_plantado', 'estandarte_fica_s', 'estandarte_sair_recupera_valor_pct',
+  'sangrar_andando_sem_extra']) MECANICAS[k] = 'passivas-poe-nao-se-aplica-medios';
+MEDIDAS['area_inc@estandarte'] = { medir: daTag('area_inc', 'estandarte'), esperado: soma };
+MEDIDAS['duracao_habilidades@estandarte'] = { medir: daTag('duracao_habilidades', 'estandarte'), esperado: soma };
+ESCALAS.valorDoEstandarte = 'passivas-poe-nao-se-aplica-medios (a regeneração pelo Valor consumido do Estandarte plantado)';
+CONDICOES.estandarteAtivo ??= 'passivas-poe-nao-se-aplica-medios (com o Estandarte plantado)';
+// (11/10, as keystones e as ascendências que ainda não funcionavam — passivas-poe-keystones-ascendencias.test.mjs)
+for (const k of ['so_dano', 'raio_max_mais', 'raio_min_mais', 'incendios_extra', 'incendio_duracao_base_s', 'evasao_projetil_dobrada', 'evasao_corpo_menos', 'acrobacia_esquiva_pct',
+  'esquiva_magica_max', 'clamor_sem_buff_em_voce', 'clamor_duracao_mais', 'sem_dano_proprio', 'desafio_ao_perder_vida', 'desafio_perde_em', 'desafio_cura_faltante_pct',
+  'forca_ventos_ao_usar', 'forca_ventos_perde_ao_ser_acertado', 'fanaticas_max', 'fanaticas_por_segundo', 'fanaticas_perde_no_max', 'fanatismo_ao_max_s', 'convergencia_cada_s',
+  'aura_crit_mult_menos', 'aura_dano_elem_menos', 'aura_fisico_em_fogo', 'aura_recarga_menos', 'incendiados_fisico_em_fogo', 'armadura_no_caos_pct', 'dano_degen_recebido_pct',
+  'proximos_lentos_degen_menos', 'bloqueio_escudo_fixo', 'definhamento_expira_lento', 'definhamento_maximo_chance', 'crit_base_arma_fixa']) MECANICAS[k] ??= 'passivas-poe-keystones-ascendencias';
+ESCALAS.forcaDosVentos ??= 'passivas-poe-keystones-ascendencias (a redução de dano por Força dos Ventos)';
+CONDICOES['semBuff:*'] ??= 'passivas-poe-keystones-ascendencias (a área sem Convergência)';
+CONDICOES.custaVida ??= 'passivas-poe-keystones-ascendencias (o Dano Físico das habilidades que custam Vida)';
+

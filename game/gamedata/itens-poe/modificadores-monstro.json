@@ -4898,9 +4898,11 @@
    "nivel": 27,
    "pesoMagico": 3000,
    "pesoRaro": 3000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "semDreno": 1
+   },
+   "estado": "efeito",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -6297,10 +6299,6 @@
    "pesoMagico": 0,
    "pesoRaro": 1000,
    "stats": {},
-   "estado": "aproximado",
-   "valem": 1,
-   "total": 1,
-   "statsPoe": [],
    "mecanicas": [
     {
      "gatilho": "aoAtacar",
@@ -6313,7 +6311,11 @@
      ],
      "duracaoMs": 6000
     }
-   ]
+   ],
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": []
   },
   {
    "id": "MonsterModMirrorImage",

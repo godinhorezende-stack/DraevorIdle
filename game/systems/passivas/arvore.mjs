@@ -74,7 +74,8 @@ export function validar(arvore) {
 }
 
 // (09/10, a árvore do PoE: também as chaves dos mods com condição, escala e as dinâmicas — `ModsPoe.resolver` decide quando valem.)
-const ADDS_PERMITIDOS = /^[a-z_][\w:%@+.-]*$/i;
+// (+ ciclo 7: o `~` do teto da escala — `area_inc%matouRecente~50`)
+const ADDS_PERMITIDOS = /^[a-z_][\w:%@+.~-]*$/i;
 function efeitoValido(ef) {
   if (!ef || typeof ef !== 'object') return false;
   if (ef.tag) return Number.isFinite(ef.dano);
@@ -575,6 +576,8 @@ export function arvoreParaCliente() {
       efeitos: n.efeitos ?? [],
       // Árvore do PoE: os textos originais de cada linha e o estado da tradução (o balão mostra como no PoE).
       ...(n.textos ? { textos: n.textos, estados: n.estados ?? [] } : {}),
+      // (ciclo 7) o porquê de cada linha sem efeito igual ("não se aplica ao jogo: …", a diferença do aproximado) — o balão mostra.
+      ...(n.notas ? { notas: n.notas } : {}),
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
       ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
       // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
@@ -584,7 +587,7 @@ export function arvoreParaCliente() {
       ...(n.opcaoDe != null ? { opcaoDe: n.opcaoDe } : {}),
       // A keystone do PoE aproximada: a diferença para o PoE (o balão mostra).
       ...(n.keystone?.nota ? { notaDoDraevor: n.keystone.nota } : {}),
-      ...(n.opcoes ? { opcoes: n.opcoes.map((o) => ({ id: o.id, textos: o.textos, estados: o.estados, efeitos: o.efeitos })) } : {}),
+      ...(n.opcoes ? { opcoes: n.opcoes.map((o) => ({ id: o.id, textos: o.textos, estados: o.estados, ...(o.notas ? { notas: o.notas } : {}), efeitos: o.efeitos })) } : {}),
       descricao: n.descricao ?? null,
       // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).
       flavor: n.flavor ?? null,
@@ -599,7 +602,11 @@ export function arvoreParaCliente() {
 }
 
 // (09/10) "se você tiver ao menos N Maestrias de Vida alocadas" (as maestrias da árvore do PoE): as maestrias alocadas cujo nome tem o tema.
-definirLeitorDeMaestrias((estado, tema) => (estado?.passivas?.alocados ?? []).filter((id) => {
-  const n = ARVORE.porId.get(id);
-  return n?.tipo === 'mastery' && new RegExp(`\\b${tema}\\b`, 'i').test(n.nome ?? '');
-}).length);
+// (ciclo 7, lote F) `tema` null: todas as maestrias alocadas ("por Habilidade Passiva de Maestria Alocada"); '*': os TIPOS diferentes (os nomes
+// distintos — "para cada tipo diferente de Maestria Alocada por você").
+definirLeitorDeMaestrias((estado, tema) => {
+  const maestrias = (estado?.passivas?.alocados ?? []).map((id) => ARVORE.porId.get(id)).filter((n) => n?.tipo === 'mastery');
+  if (tema == null) return maestrias.length;
+  if (tema === '*') return new Set(maestrias.map((n) => n.nome)).size;
+  return maestrias.filter((n) => new RegExp(`\\b${tema}\\b`, 'i').test(n.nome ?? '')).length;
+});

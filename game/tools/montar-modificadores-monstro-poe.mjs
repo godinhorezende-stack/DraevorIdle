@@ -40,6 +40,9 @@ const MAPA = {
   hexproof: { f: (t) => (t.aProvaDeMaldicoes = 1) },
   // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para você (`skills/reforcos.marcar` → `condicoes-poe.amaldicoarJogador`).
   'reflect hexes chance %': { f: (t, v) => (t.refleteFeiticos += v) },
+  // (11/10, a árvore: "X% mais Dano com Acertos contra Inimigos que não podem ter Vida Drenada deles") — o dreno de vida não pega nele
+  // (`Ficha.aplicarLeech`, a tag `alvoSemDreno`).
+  'cannot have life leeched from': { f: (t) => (t.semDreno = 1) },
   'life regeneration rate per minute %': { f: (t, v) => (t.regenPct += v / 60) },
   'monster base block %': { f: (t, v) => (t.bloqueio += v) },
   'base additional physical damage reduction %': { f: (t, v) => (t.resist.physical = (t.resist.physical ?? 0) + v), aprox: true },
@@ -74,7 +77,7 @@ function mecanicasDosDots(dots) {
     .map(([el, d]) => ({ gatilho: 'aoAtacar', efeito: 'debuff', elemento: el, chance: BASE_DO_DOT[el].chance, danoPctDoGolpe: Math.round(BASE_DO_DOT[el].pct * (1 + d.mais / 100)), duracaoMs: Math.round((BASE_DO_DOT[el].ms * (1 + d.duracao / 100)) / 1000) * 1000 }));
 }
 
-const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, resist: {}, _dots: {} });
+const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
 const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots').filter(([k, v]) => (k === 'resist' ? Object.keys(v).length : v)).map(([k, v]) => [k, k === 'resist' ? v : Math.round(v * 100) / 100]));
 
 /**
@@ -85,6 +88,14 @@ const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !==
 const HABILIDADES = {
   MonsterModHexingEffigy: { mecanicas: [{ gatilho: 'aoAtacar', efeito: 'maldicao', chance: 100, maldicoes: ['fraquezaElemental', 'vulnerabilidade', 'enfraquecer'], duracaoMs: 6000 }], linhas: ['Amaldiçoa com Fraqueza Elemental, Vulnerabilidade ou Enfraquecer ao Acertar'] },
 };
+
+/**
+ * (11/10) Os modificadores cuja IDENTIDADE ainda não existe no jogo: um stat menor que já vale não liga o modificador (ele apareceria com o
+ * nome e quase sem efeito). O Vampírico é o monstro que DRENA vida — o "não pode ter Vida Drenada" dele sozinho não é o modificador.
+ */
+const SEM_A_IDENTIDADE = new Set(['MonsterArchnemesisVampiric']);
+/** O poedb escreve "Seus Acertos empre Incendeiam/Eletrizam" (sem o s): a linha sai certa. */
+const corrigirTexto = (l) => String(l).replace(/\bempre\b/g, 'sempre');
 
 /** Os stats do PoE → os do Draevor e o estado. */
 export function traduzir(statsPoe) {
@@ -129,13 +140,13 @@ function principal() {
   // Fora o que o poedb lista sem nome nem stat nenhum (1: um modificador de escaravelho vazio).
   const mods = d.mods.filter((m) => m.nome || m.nomeEn || m.stats?.length).map((m) => {
     const hab = HABILIDADES[m.id];
-    const tr = hab ? { stats: {}, mecanicas: hab.mecanicas, estado: 'aproximado', valem: 1, total: 1 } : traduzir(m.stats);
+    const tr = hab ? { stats: {}, mecanicas: hab.mecanicas, estado: 'aproximado', valem: 1, total: 1 } : SEM_A_IDENTIDADE.has(m.id) ? { stats: {}, estado: 'registrado', valem: 0, total: (m.stats ?? []).length } : traduzir(m.stats);
     const pesoRaro = m.pesos?.rare ?? m.pesos?.default ?? 0;
     const pesoMagico = m.pesos?.magic ?? m.pesos?.default ?? 0;
     // Sem id no poedb (3: Frostweaver, Hexer, Farrul's Wild Presence): o do nome em inglês. Sem linha visível (o efeito é só uma habilidade
     // do monstro, como o Ecoante): as ocultas, senão os stats do PoE.
     const id = m.id ?? `Sem_${String(m.nomeEn ?? m.nome).replace(/[^A-Za-z0-9]+/g, '_')}`;
-    const linhas = hab?.linhas ?? (m.linhas?.length ? m.linhas : m.ocultas?.length ? m.ocultas : m.stats?.length ? m.stats.map((x) => `${x.stat} ${x.min === x.max ? x.min : `${x.min}–${x.max}`}`) : [m.nomeEn ?? m.nome]);
+    const linhas = (hab?.linhas ?? (m.linhas?.length ? m.linhas : m.ocultas?.length ? m.ocultas : m.stats?.length ? m.stats.map((x) => `${x.stat} ${x.min === x.max ? x.min : `${x.min}–${x.max}`}`) : [m.nomeEn ?? m.nome])).map(corrigirTexto);
     return { id, nome: m.nome, nomeEn: m.nomeEn, tipo: m.tipo, familia: m.familia ?? null, linhas, nivel: m.nivelEfetivo ?? m.nivel ?? 1, pesoMagico, pesoRaro, ...tr, statsPoe: m.stats };
   });
   const ocultos = Object.fromEntries(Object.entries(d.ocultos).map(([r, l]) => [r, ocultosDe(l)]));

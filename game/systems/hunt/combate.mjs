@@ -217,7 +217,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // As cargas do PoE no acerto da varinha (Poder no crítico, no crítico com varinhas, no acerto não crítico...).
   if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit, varinha: true }).length) Ficha.invalidar(estado);
   if (!segundo) {
-    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key, { danoCritico: crit ? golpe : 0 });
+    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key, { danoCritico: crit ? golpe : 0, semDrenoDeVida: alvo.semDreno ? golpe : 0 });
     Charms.aoAcertar(estado, hunt, alvo, eventos);
   }
   return true;
@@ -1030,6 +1030,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     // PoE: "Inflige Causticar/Enfraquecer/Exaurir em Inimigos ao Bloquear seu Dano" e os eventos "ao Bloquear" dos únicos.
     ModsPoe.aoBloquear(hunt, bicho, ficha, { eventos });
     ModsPoe.marcar(hunt, 'bloqueou');
+    // (PoE: o bloqueio do golpe de um Elite/Chefe trava a próxima ação — a Recuperação de Bloqueio encurta.)
+    if (itensPoeLigado()) {
+      Controle.travarNoBloqueio(hunt, bicho, ficha);
+      // (e abre a janela da Retaliação — "Se Torna Utilizável … quando você Bloquear um Acerto")
+      ModsPoe.abrirRetaliacao(hunt, 'bloquear', ficha.afPoe);
+    }
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
     // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
     ModsPoe.evento(estado, hunt, 'bloquearAtaque', ficha, { alvo: bicho, eventos, personagem });
@@ -1066,7 +1072,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
   // (PoE: × o Exaurido — "Inflige Exaurir … ao Bloquear": o bicho causa 10% menos dano.)
-  const forcaDoGolpe = Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now()) * fatorDoBloqueio * ModsPoe.doBicho(bicho, hunt.clock ?? 0).danoFator;
+  const forcaDoGolpe = Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now()) * fatorDoBloqueio * ModsPoe.doBicho(bicho, hunt.clock ?? 0, { ficha }).danoFator;
   // "O Dano dos Inimigos Acertando você é Azarado/Sortudo" (PoE): o DANO do golpe rola duas vezes (o pior / o melhor); a chance de o golpe
   // sair não muda (a segunda rolagem só conta se também saiu).
   const golpe = () => Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho);
@@ -1081,10 +1087,18 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (PoE: a chance × o Cego, e o dano extra × "Dano Extra recebido de Acertos Críticos reduzido".)
   const critDoMob = ModsPoe.criticoDoBicho(AtributosDoMob.critico(bicho), bicho, ficha, hunt.clock ?? 0) ?? AtributosDoMob.rolarCritico(bicho);
   const bruto = brutoSemCritico * critDoMob.fator;
+  // (PoE, as ascendências — `mods-poe.aurasProximas`: "Inimigos Próximos Convertem X% de seu Dano Físico para Fogo", "Inimigos Incendiados por
+  // você têm X% do Dano Físico causado por eles convertido para Fogo" — essa parte do golpe é de Fogo; "Inimigos próximos causam X% menos Dano
+  // Elemental" — as partes elementais.)
+  const agoraDoGolpe = hunt.clock ?? 0;
+  const emFogoPct = ModsPoe.ativo(bicho.estados?.fisicoEmFogo, agoraDoGolpe) ? bicho.estados.fisicoEmFogo.pct : 0;
+  const elemFator = (el) => (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho.estados?.elemMenos, agoraDoGolpe) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
+  const brutoFisico = bruto * (1 - emFogoPct / 100);
   // O golpe ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
-    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0);
+    // (PoE: o golpe corpo a corpo sem dano de outro tipo é "apenas Dano Físico" — `imune_atordoamento_so_fisico`.)
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado });
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: controle, de: bicho.name });
   }
   // Os EFEITOS do golpe (`efeitos` da espécie): dano contínuo no jogador pelo motor `combate/dot.mjs` — do dano antes da defesa e do crítico.
@@ -1102,8 +1116,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const somaFisica = ModsPoe.somaFisicaDoPoe();
   const fixoFisico = ModsPoe.fixoRecebido(ficha, 'physical', { ataque: true });
   const protegido = somaFisica
-    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, bruto, armorDoPersonagem(estado), { fixo: fixoFisico })))
-    : Math.max(0, Math.round(bruto * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));
+    ? Math.max(0, Math.round(ModsPoe.acertoFisicoRecebido(ficha, brutoFisico, armorDoPersonagem(estado), { fixo: fixoFisico })))
+    : Math.max(0, Math.round(brutoFisico * (itensPoeLigado() ? ModsPoe.fatorDaResistenciaRecebida(ficha, 'physical') : 1 - Math.min(100, ficha.protection.physical ?? 0) / 100) + fixoFisico));
+  // (PoE: o Físico NEGADO pela defesa — o "Regenerado como Escudo de Energia/Vida por segundo" do Escudo Divino.)
+  ModsPoe.registrarFisicoNegado(hunt, Math.max(0, brutoFisico - protegido));
   // O dano de OUTROS tipos do mesmo golpe (`danoExtra` da espécie): cada um passa pela proteção do SEU elemento (a armadura é só do físico).
   // (PoE: com as conversões do dano recebido — "X% do Dano de Fogo dos Acertos recebido como Dano de Gelo" — e o "Recebe X% do Dano Físico
   // como Dano Extra de um Elemento aleatório".)
@@ -1114,11 +1130,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // ("Excomunga inimigos…": o excomungado não causa dano de Caos.)
   const excomungado = ModsPoe.semCaos(bicho, hunt.clock ?? 0);
   const rolarParte = (x) => { const r = () => x.min + Math.floor(Math.random() * (x.max - x.min + 1)); return excomungado && x.elemento === 'chaos' ? 0 : raioSortudo && x.elemento === 'energy' ? Math.max(r(), r()) : r(); };
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator; return n + Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte)); }, 0) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, bruto)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte)); }, 0) + Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire')) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
-  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0));
+  // (PoE: "X% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente" — o golpe do monstro é o ataque dele.)
+  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
@@ -1128,6 +1145,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round(fisicoProtegido * fatorFinal)) : 0;
   if (fisicoDireto > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
   final = fisicoDireto + Defesa.absorver(estado, ficha, final - fisicoDireto, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
+  // (o "X% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua" sai no `Arvore.danoRecebido`, logo abaixo.)
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
   if (final > 0 && Acoes.temBuff(hunt, 'shield') && (estado.mana ?? 0) > 0) {
     const daMana = Math.min(estado.mana, final);
@@ -1355,8 +1373,12 @@ export function round(estado, personagem) {
     hunt.avisouSemMunicao = true;
     estado.avisoDaHunt = 'Sem munição compatível equipada: o arco e a besta só atiram com a munição do tipo deles (flecha no arco, bolt na besta).';
   } else if (!semMunicao) hunt.avisouSemMunicao = false;
-  if (!hunt.lurando && alvo && !semMunicao && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
+  // (PoE, o Vínculo Ancestral: "Você não pode causar Dano com Habilidades por si só" — o golpe básico também é uma habilidade sua: não sai.)
+  const semDanoProprio = itensPoeLigado() && ModsPoe.valor(Ficha.combate(estado), 'sem_dano_proprio') > 0;
+  if (!hunt.lurando && alvo && !semMunicao && !semDanoProprio && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
     bateu = true;
+    // (o golpe básico é um ataque: "se tiver Atacado no segundo anterior" — as Cargas Fanáticas, `condicoes-poe.tiqueDasCargasFanaticas`)
+    if (itensPoeLigado()) ModsPoe.marcar(hunt, 'usou:ataque');
     // O golpe básico também vira o personagem para o alvo.
     Acoes.virarParaOAlvo(hunt, alvo);
     if (categoriaDaArma(arma) === 'magica') {
@@ -1382,6 +1404,8 @@ export function round(estado, personagem) {
         // a dele), e o golpe leva o dano e o CRÍTICO da arma dela (`Ficha.fichaDaMao`: a base × o crítico local da arma da vez).
         const daSecundaria = !!fichaDoPersonagem.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);
         const ficha = ModsPoe.fichaDoGolpe(daSecundaria ? Ficha.fichaDaMao(fichaDoPersonagem, 'secundaria') : fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma)), { alvo, estado });
+        // (PoE: o golpe Impelido por um Clamor gasta um — a tag `impelido` já está na ficha deste golpe.)
+        if (!segundo && hunt.impelidos?.n > 0) hunt.impelidos.n--;
         const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
         if (Defesa.errou(ficha, hunt, alvo)) {
@@ -1407,7 +1431,9 @@ export function round(estado, personagem) {
         const fisico = 1 + (fisicoDoGolpe + (poe ? 0 : Ficha.afinidadePara(ficha, tagsDoGolpe).pct) + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
         // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
         // (Duas armas: a faixa da mão escolhida no começo do golpe.)
-        const [faixaMin, faixaMax] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
+        const [faixaMin, faixaMax0] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
+        // (PoE: "X% mais Dano Físico Máximo de Ataques" — o máximo da arma.)
+        const faixaMax = poe ? faixaMax0 * Math.max(0, 1 + ModsPoe.valor(ficha, 'fisico_max_mais') / 100) : faixaMax0;
         const fisicoCheio = (R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level)) * fisico * fatorDoGolpe;
         // PoE: "Ganha X% do Dano Físico como Dano de Caos/Fogo extra" e "X% do Dano Físico … Convertido para um Elemento Aleatório" — do Físico
         // BASE do golpe (antes dos "aumentado"); o convertido sai do Físico. As partes extras entram como o dano somado (`danoSomadoDoPoe`).
@@ -1433,7 +1459,7 @@ export function round(estado, personagem) {
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
         if (!segundo) {
           const doGolpe = golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra;
-          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoCritico: critico ? doGolpe : 0 });
+          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoCritico: critico ? doGolpe : 0, semDrenoDeVida: alvo.semDreno ? doGolpe : 0 });
         }
         // Vida/mana por acerto (proficiência).
         // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").

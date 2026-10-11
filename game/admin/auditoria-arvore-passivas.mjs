@@ -86,7 +86,7 @@ export function arquivosQueLeem(k) {
 }
 /** Uma condição de estado/tag de golpe é PRODUZIDA em algum lugar (além da declaração)? */
 function condicaoProduzida(x) {
-  if (/^(atrMin|atrMaior|buff|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|alvoVenenos):/.test(x)) return true; // `vale` lê o estado (`alvoVenenos:N`: `tagsDoAlvo`)
+  if (/^(atrMin|atrMaior|buff|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|alvoVenenos|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|semBuff|bloqueioEscudoMin|vidaManaPerto):/.test(x)) return true; // `vale` lê o estado (`alvoVenenos:N`: `tagsDoAlvo`)
   const n = (codigo().match(new RegExp(`['"]${esc(x)}['"]`, 'g')) ?? []).length;
   return n >= 2;
 }
@@ -111,7 +111,8 @@ export function conexaoDoAdd(chave) {
   } else if (!(Cond.dinamicoValido(stat) || atributoLido(stat))) faltas.push(`atributo sem leitor: ${stat}`);
   if (escala && !Cond.escalaValida(escala)) faltas.push(`escala desconhecida: ${escala}`);
   for (const x of conds) {
-    if (!(Cond.ehCondDeEstado(x) || Cond.TAGS_DE_GOLPE.has(x))) faltas.push(`condição desconhecida: ${x}`);
+    // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo` monta a tag com o número)
+    if (!(Cond.ehCondDeEstado(x) || Cond.TAGS_DE_GOLPE.has(x) || /^alvoVenenos:\d+$/.test(x))) faltas.push(`condição desconhecida: ${x}`);
     else if (!condicaoProduzida(x)) faltas.push(`condição nunca produzida: ${x}`);
   }
   return { ok: !faltas.length, faltas, stat };
