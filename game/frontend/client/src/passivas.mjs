@@ -563,6 +563,63 @@ function montar(body) {
     g.drawImage(pronta, Math.round((p.x - lado / 2) * dpr) / dpr, Math.round((p.y - lado / 2) * dpr) / dpr, lado, lado);
     return true;
   }
+  /*
+   * ---- Os FUNDOS DOS GRUPOS e a ARTE DAS CLASSES do PoE (dono, 11/10) ----
+   * Presos à árvore (crescem com o zoom, como no PoE): a folha está no zoom `s.zoom`, então 1 pixel dela vale 1/s.zoom unidades da árvore.
+   * A ilustração grande é só a da classe do jogador (como no PoE); o início de toda classe leva o fundo do PoE, e o do jogador, o medalhão.
+   */
+  function desenharFundosDoPoe(a) {
+    const s = spritesDaArvore();
+    if (!s?.grupos) return false;
+    const il = s.classes?.[a.porId.get(vista()?.inicio)?.classe];
+    const ilustracao = il?.ilustracao ? folha(il.ilustracao) : null;
+    if (ilustracao) {
+      const p = paraTela(il);
+      const l = il.l * cam.zoom;
+      const h = il.a * cam.zoom;
+      if (p.x < largura && p.y < altura && p.x + l > 0 && p.y + h > 0) g.drawImage(ilustracao, p.x, p.y, l, h);
+    }
+    const img = folha(s.tipos.groupBackground);
+    if (!img) return true;
+    const k = cam.zoom / s.zoom;
+    for (const [x, y, fundo, meio] of s.grupos) {
+      const c = s.coords.groupBackground[fundo];
+      if (!c) continue;
+      const w = c[2] * k;
+      const h = c[3] * k;
+      const p = paraTela({ x, y });
+      const alto = meio ? h : h / 2;
+      if (p.x + w / 2 < 0 || p.x - w / 2 > largura || p.y + alto < 0 || p.y - alto > altura) continue;
+      if (!meio) {
+        g.drawImage(img, c[0], c[1], c[2], c[3], p.x - w / 2, p.y - h / 2, w, h);
+        continue;
+      }
+      // A metade de cima com a base no centro do grupo; embaixo, a mesma girada 180° (como o site).
+      g.drawImage(img, c[0], c[1], c[2], c[3], p.x - w / 2, p.y - h, w, h);
+      g.save();
+      g.translate(p.x, p.y);
+      g.rotate(Math.PI);
+      g.drawImage(img, c[0], c[1], c[2], c[3], -w / 2, -h, w, h);
+      g.restore();
+    }
+    return true;
+  }
+  /** O início de uma classe com a arte do PoE: o fundo de todo início e, no da classe do jogador, o medalhão dela. `false`: sem a arte. */
+  function desenharInicioDoPoe(n, p, minha) {
+    const s = spritesDaArvore();
+    const cl = s?.classes?.[n.classe];
+    if (!cl || !folha(s.tipos.startNode)) return false;
+    const k = cam.zoom / s.zoom;
+    recorte(g, s.tipos.startNode, s.coords.startNode.PSStartNodeBackgroundInactive, p, k);
+    if (minha) recorte(g, s.tipos.startNode, s.coords.startNode[cl.centro], p, k);
+    return true;
+  }
+  /** O raio (na tela) da arte do PoE de um início — para o nome da classe ficar embaixo dela. 0 sem a arte. */
+  function raioDaArteDoInicio(n) {
+    const s = sprites;
+    if (n.ascendencia || !s?.classes?.[n.classe] || !folhas.get(s.tipos.startNode)?.naturalWidth) return 0;
+    return (s.coords.startNode.PSStartNodeBackgroundInactive[3] / 2) * (cam.zoom / s.zoom);
+  }
   const ESCALA_MINIMA = 0.5;
   const escala = () => Math.max(ESCALA_MINIMA, Math.min(1.6, cam.zoom * 1.8));
   const raio = (n) => (n.atributo ? 6.5 : { small: 10, notable: 17, keystone: 25, start: 38, mastery: 15 }[n.tipo] ?? 10) * escala();
@@ -603,6 +660,7 @@ function montar(body) {
     }
     if (n.tipo === 'start') {
       const minha = n.classe && vista()?.inicio === n.id;
+      if (!n.ascendencia && desenharInicioDoPoe(n, p, minha)) return;
       const corClasse = COR_DO_ATRIBUTO[COR_DA_CLASSE[n.classe]] ?? '#888';
       g.save();
       g.globalAlpha = minha ? 1 : 0.55;
@@ -709,8 +767,8 @@ function montar(body) {
     const caminho = new Set(selecionado && !mine.has(selecionado.id) ? caminhoAte(selecionado.id) ?? [] : []);
     const visivel = (p, folga) => p.x > -folga && p.y > -folga && p.x < largura + folga && p.y < altura + folga;
 
-    // A região de cada classe, tingida pela cor do atributo dela.
-    for (const n of a.nos.filter((x) => x.tipo === 'start' && !x.ascendencia)) {
+    // A região de cada classe, tingida pela cor do atributo dela — ou, na árvore do PoE, os fundos do próprio PoE (os grupos e a classe).
+    if (!desenharFundosDoPoe(a)) for (const n of a.nos.filter((x) => x.tipo === 'start' && !x.ascendencia)) {
       const p = paraTela(n);
       const r = 1500 * cam.zoom;
       const cor = COR_DO_ATRIBUTO[COR_DA_CLASSE[n.classe]] ?? '#888888';
@@ -802,9 +860,10 @@ function montar(body) {
         g.textAlign = 'center';
         g.lineWidth = 3;
         g.strokeStyle = 'rgba(0,0,0,0.85)';
-        g.strokeText(n.nome, p.x, p.y + r + 16);
+        const y = p.y + Math.max(r, raioDaArteDoInicio(n)) + 16;
+        g.strokeText(n.nome, p.x, y);
         g.fillStyle = vista()?.inicio === n.id ? CORES.ouroVivo : '#bfae86';
-        g.fillText(n.nome, p.x, p.y + r + 16);
+        g.fillText(n.nome, p.x, y);
       }
     }
   }
