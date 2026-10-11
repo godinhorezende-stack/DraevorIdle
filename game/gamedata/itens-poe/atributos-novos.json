@@ -1629,6 +1629,12 @@
       "combate": true,
       "efeito": "itens-poe/gerar"
     },
+    "magnitude_implicitos": {
+      "nome": "Magnitude dos implícitos (do único)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/gerar e itens-poe/moedas (os implícitos × 1 + isto: Olhos do Lobo Grandioso, Corda da Servidão, Nebulis)"
+    },
     "so_dano_de": {
       "nome": "Só gera mods de dano de um tipo",
       "unidade": "",
@@ -3933,12 +3939,6 @@
       "combate": true,
       "efeito": "acoes (o Eco)"
     },
-    "magnitude_implicitos": {
-      "nome": "Magnitude dos Implícitos (da própria peça)",
-      "unidade": "%",
-      "combate": true,
-      "efeito": "itens-poe/gerar (o gerador lê do texto do único)"
-    },
     "mana_frasco_tambem_vida": {
       "nome": "A Mana não-instantânea dos Frascos também recupera Vida",
       "unidade": "",
@@ -4340,6 +4340,54 @@
       "unidade": "",
       "combate": true,
       "efeito": "personagem/atributos.efeitos"
+    },
+    "fire_as_extra_chaos": {
+      "nome": "Dano de Fogo como Dano de Caos Extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.transformarPartes"
+    },
+    "ice_as_extra_chaos": {
+      "nome": "Dano de Gelo como Dano de Caos Extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.transformarPartes"
+    },
+    "energy_as_extra_chaos": {
+      "nome": "Dano de Raio como Dano de Caos Extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.transformarPartes"
+    },
+    "reducao_fisica_zero": {
+      "nome": "Redução de dano físico é zero",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fracaoFisicaRecebida"
+    },
+    "evasao_no_dano_magico": {
+      "nome": "Aumentos e reduções à Evasão também se aplicam ao Dano Mágico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.soma"
+    },
+    "dot_multi_ignite_critico": {
+      "nome": "Multiplicador de Dano Degenerativo para Incêndio dos Golpes Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes (o Incêndio)"
+    },
+    "salmoura_chance": {
+      "nome": "Chance de ganhar uma Carga de Salmoura em vez de uma de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas.ganhar"
+    },
+    "lacaio_tempo_da_arma": {
+      "nome": "O tempo de ataque base dos lacaios não espectrais é o da arma da mão principal",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas (o golpe dos lacaios)"
     }
   }
 }

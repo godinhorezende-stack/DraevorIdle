@@ -4,7 +4,10 @@
 // Atrofia nos envenenados, as auras que já são só suas, a Nebulis, os venenos com mais dano e o dreno máximo pela vida reservada. Lote B: a
 // conjuração mais lenta dos eletrizados, os clamores (empurram; sem recarga), o bloqueio e a armadura contra projéteis, o Físico como Gelo ou
 // Raio extra e o Raio a mais por eletrizado morto. Lote C: as cargas ao acertar inimigos sem Armadura / sem Evasão e ao empurrar, o
-// Combatente Versátil e o bônus da Força da Fortaleza de Ferro.
+// Combatente Versátil e o bônus da Força da Fortaleza de Ferro. Lote D: as redações novas da auditoria dos únicos (`unicos-correcoes.json`)
+// para efeitos que o jogo já tem — o elemento como Caos extra, a escala por gema encaixada e por encaixe vazio da própria peça, a redução
+// física zero, a evasão no Dano Mágico e o multiplicador do Incêndio crítico. Lote E: as Cargas de Salmoura do Divisor de Águas e o tempo
+// de ataque dos lacaios igual ao da arma (a Réplica: Ensinamentos de Maata).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -16,6 +19,8 @@ const T = await import('../systems/itens-poe/traduzir.mjs');
 const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
 const Ficha = await import('../systems/ficha.mjs');
 const Afeccoes = await import('../systems/itens-poe/afeccoes.mjs');
+const Afixos = await import('../systems/afixos.mjs');
+const CargasPoe = await import('../systems/itens-poe/cargas.mjs');
 const Pendencias = await import('../admin/itens-poe-pendencias.mjs');
 const Poderes = await import('../systems/poderes.mjs');
 const Acoes = await import('../systems/acoes.mjs');
@@ -241,6 +246,69 @@ test('o Combatente Versátil (o bloqueio de ataque excedente vira bloqueio mági
   const e = comAf({ forca_dano_pct: 3, forca_dano_cada: 10 });
   const f = Ficha.combate(e);
   assert.equal(f.danoFisicoDaForca, Math.floor(f.atributos.str / 10) * 3);
+});
+
+test('lote D: as redações novas da auditoria viram os atributos', { skip: SEM }, () => {
+  const casos = {
+    'Receba {0}% do Dano de Raio como Dano de Gelo Extra': ['energy_as_extra_ice'],
+    'Receba {0}% do Dano de Fogo como Dano de Caos Extra': ['fire_as_extra_chaos'],
+    'Eficiência de custo de mana aumentada em {0}% por carga de tolerância': ['eficiencia_custo_mana%carga:tolerancia'],
+    'Eficiência de custo de mana de habilidades de lacaio aumentada em {0}%': ['eficiencia_custo_mana@lacaio'],
+    'Lacaios convertem {0}% do dano físico em dano de fogo por gema vermelha encaixada': ['minion_conv_fire%gemaLocal:R'],
+    'Lacaios convertem {0}% do dano físico em dano de caos por encaixe vazio': ['minion_conv_chaos%encaixeVazioLocal'],
+    'Área de efeito aumentada em {0}% por encaixe vermelho': ['area_inc%encaixeLocal:R'],
+    'Defesas globais aumentadas em {0}% por encaixe vazio': ['armour_pct%encaixeVazioLocal', 'evasion_pct%encaixeVazioLocal', 'es_pct%encaixeVazioLocal'],
+    'Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico': ['evasao_no_dano_magico'],
+    'Redução de dano físico é zero': ['reducao_fisica_zero'],
+    'Duração do Totem aumentada em {0}%': ['lacaio_duracao:totem'],
+    '+{0}% de Multiplicador de Dano Degenerativoto para Incêndio dos Golpes Críticos': ['dot_multi_ignite_critico'],
+  };
+  for (const [texto, stats] of Object.entries(casos)) {
+    const t = traduz(texto);
+    assert.deepEqual(t.efeitos.map((x) => x.stat), stats, texto);
+    assert.notEqual(t.estado, 'registrado', `${texto}: com efeito`);
+  }
+});
+
+test('lote D: por gema encaixada e por encaixe vazio da peça, o Fogo como Caos extra, a redução física zero, a evasão no Dano Mágico e o Incêndio crítico', { skip: SEM }, () => {
+  const luvas = { id: 9, soquetes: { abertos: 3, cores: ['R', 'R', 'B'], gemas: [{ id: 1 }, null, null] }, poe: { af: { 'minion_conv_fire%gemaLocal:R': 10, 'minion_conv_chaos%encaixeVazioLocal': 5 } } };
+  const soma = Afixos.somaDeItens({ equipment: { gloves: luvas } });
+  assert.equal(soma.minion_conv_fire, 10, 'um encaixe vermelho com gema');
+  assert.equal(soma.minion_conv_chaos, 10, 'dois encaixes vazios');
+  const f = Ficha.combate(comAf({ fire_as_extra_chaos: 50 }));
+  assert.deepEqual(ModsPoe.transformarPartes(f, { fire: [100, 100] }).chaos, [50, 50]);
+  assert.equal(ModsPoe.fracaoFisicaRecebida(Ficha.combate(comAf({ reducao_fisica_zero: 1 })), 100, 5000), 1, 'a armadura não corta');
+  assert.ok(ModsPoe.fracaoFisicaRecebida(Ficha.combate(comAf({})), 100, 5000) < 1);
+  const sem = Ficha.combate(comAf({ evasion_pct: 80 })).afPoe;
+  const com = Ficha.combate(comAf({ evasion_pct: 80, evasao_no_dano_magico: 100 })).afPoe;
+  assert.equal((com.spell_dmg ?? 0) - (sem.spell_dmg ?? 0), 80);
+  const queima = (af, crit) => {
+    const alvo = { uid: 'a', hp: 1e6, maxHp: 1e6, estados: {}, dots: [] };
+    Afeccoes.aoAcertar(alvo, [{ elemento: 'fire', dano: 100 }], { afeccoes: Afeccoes.daSoma({ chance_ignite: 100, ...af }), crit, agora: 0, rng: () => 0 });
+    return alvo.dots.find((d) => d.tipo === 'queimadura')?.falta ?? 0;
+  };
+  assert.ok(queima({ dot_multi_ignite_critico: 50 }, true) > queima({}, true), 'no crítico, mais');
+  assert.equal(queima({ dot_multi_ignite_critico: 50 }, false), queima({}, false), 'fora do crítico, igual');
+});
+
+test('lote E: as Cargas de Salmoura (no lugar da Tolerância, até o máximo dela, 4% do Físico como Gelo e Raio extras cada) e o tempo de ataque dos lacaios', { skip: SEM }, () => {
+  const linha = traduz('{0}% de chance de ganhar {1} carga de salmoura em vez de {2} carga de tolerância');
+  assert.deepEqual(linha.efeitos.map((x) => x.stat), ['salmoura_chance', 'phys_as_extra_ice%carga:salmoura', 'phys_as_extra_energy%carga:salmoura']);
+  assert.deepEqual(traduz('Tempo de ataque base dos lacaios não espectrais é equivalente ao tempo de ataque da arma da sua mão principal').efeitos.map((x) => x.stat), ['lacaio_tempo_da_arma']);
+  const e = comAf({ salmoura_chance: 100, 'phys_as_extra_ice%carga:salmoura': 4, 'phys_as_extra_energy%carga:salmoura': 4 });
+  e.hunt = { clock: 0 };
+  const regras = Ficha.combate(e).cargas;
+  for (let i = 0; i < 5; i++) CargasPoe.ganhar(e, 'tolerancia', regras);
+  assert.equal(e.hunt.cargasPoe.tolerancia, undefined, 'no lugar da Tolerância');
+  assert.equal(e.hunt.cargasPoe.salmoura.n, CargasPoe.maximo(regras, 'tolerancia'), 'até o máximo de Tolerância');
+  Ficha.invalidar(e);
+  const af = Ficha.combate(e).afPoe;
+  assert.equal(af.phys_as_extra_ice, 4 * e.hunt.cargasPoe.salmoura.n);
+  assert.equal(af.phys_as_extra_energy, 4 * e.hunt.cargasPoe.salmoura.n);
+  // Vencem como as outras.
+  e.hunt.clock = 60_000;
+  CargasPoe.tique(e, regras);
+  assert.equal(e.hunt.cargasPoe.salmoura, undefined);
 });
 
 test('trava contra regressão: as linhas de armas, armaduras e amuletos únicos que não funcionam não voltam a subir (rodada 9)', { skip: SEM }, () => {

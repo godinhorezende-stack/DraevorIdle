@@ -5480,6 +5480,42 @@
       "_nova": true
     },
     {
+      "padrao": "^Magnitudes dos Modificadores Implícitos são dobradas$",
+      "efeitos": [
+        {
+          "stat": "magnitude_implicitos",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra do único: os implícitos da peça saem com o valor dobrado (Olhos do Lobo Grandioso)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitudes dos Modificadores Implícitos são triplicadas$",
+      "efeitos": [
+        {
+          "stat": "magnitude_implicitos",
+          "valor": "200"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra do único: os implícitos da peça saem com o valor triplicado (Corda da Servidão)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitudes dos Implícitos dos Modificadores aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "magnitude_implicitos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra do único: os implícitos da peça saem com o valor aumentado (Nebulis)",
+      "_nova": true
+    },
+    {
       "padrao": "^Não gera modificadores de dano que não sejam (?:de )?(frio|fogo|elétrico|físico|caos)$",
       "efeitos": [
         {
@@ -8254,6 +8290,222 @@
       "estado": "aproximado",
       "nota": "no dano físico todo (o bônus da Força no jogo não separa o corpo a corpo).",
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)"
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano de Raio como Dano de Gelo Extra$",
+      "efeitos": [
+        {
+          "stat": "energy_as_extra_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano de Gelo como Dano de Fogo Extra$",
+      "efeitos": [
+        {
+          "stat": "ice_as_extra_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano de Fogo como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "fire_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Eficiência de custo de mana aumentada em \\{(\\d+)\\}% por carga de tolerância$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana%carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Eficiência de custo de mana de habilidades de lacaio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana@lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do dano físico em dano de fogo por gema vermelha encaixada$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_fire%gemaLocal:R",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do dano físico em dano de frio por gema verde encaixada$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_ice%gemaLocal:G",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do dano físico em dano elétrico por gema azul encaixada$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_energy%gemaLocal:B",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do dano físico em dano de caos por encaixe vazio$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_chaos%encaixeVazioLocal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Área de efeito aumentada em \\{(\\d+)\\}% por encaixe vermelho$",
+      "efeitos": [
+        {
+          "stat": "area_inc%encaixeLocal:R",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Chance global de causar golpe crítico aumentada em \\{(\\d+)\\}% por encaixe azul$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%encaixeLocal:B",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Defesas globais aumentadas em \\{(\\d+)\\}% por encaixe vazio$",
+      "efeitos": [
+        {
+          "stat": "armour_pct%encaixeVazioLocal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct%encaixeVazioLocal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct%encaixeVazioLocal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico$",
+      "efeitos": [
+        {
+          "stat": "evasao_no_dano_magico",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Redução de dano físico é zero$",
+      "efeitos": [
+        {
+          "stat": "reducao_fisica_zero",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Duração do Totem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_duracao:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo(?:to)? para Incêndio dos Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_ignite_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar \\{(\\d+)\\} carga de salmoura em vez de \\{(\\d+)\\} carga de tolerância$",
+      "efeitos": [
+        {
+          "stat": "salmoura_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_ice%carga:salmoura",
+          "valor": "4"
+        },
+        {
+          "stat": "phys_as_extra_energy%carga:salmoura",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "as Cargas de Salmoura duram e vencem como as de Tolerância; os 4% por carga são os do lembrete do item.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Tempo de ataque base dos lacaios não espectrais é equivalente ao tempo de ataque da arma da sua mão principal$",
+      "efeitos": [
+        {
+          "stat": "lacaio_tempo_da_arma",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
     },
     {
       "padrao": "^.*Joias? Abissa(?:l|is).*|.*Encaixes? Abissa(?:l|is).*|.*Olho (?:Medonho|Hipnótico|Pavoroso|Assassino|Perscrutador).*$",
@@ -27605,28 +27857,6 @@
         {
           "stat": "sem_critico_fora_da_final",
           "valor": "1"
-        }
-      ],
-      "_nova": true,
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)"
-    },
-    {
-      "padrao": "^Magnitudes dos Implícitos dos Modificadores aumentadas em \\{(\\d+)\\}%$",
-      "efeitos": [
-        {
-          "stat": "magnitude_implicitos",
-          "valor": "{1}"
-        }
-      ],
-      "_nova": true,
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)"
-    },
-    {
-      "padrao": "^Magnitudes dos Modificadores Implícitos são dobradas$",
-      "efeitos": [
-        {
-          "stat": "magnitude_implicitos",
-          "valor": "100"
         }
       ],
       "_nova": true,

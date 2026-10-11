@@ -243,6 +243,16 @@ const PASTA_DAS_MOEDAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-moe
 let origemDasGemas = null;
 const ORIGEM_DAS_GEMAS = () => (origemDasGemas ??= JSON.parse(readFileSync(new URL('../gamedata/itens-poe/origem-das-gemas.json', import.meta.url), 'utf8')));
 const PASTA_DAS_ASCENDENCIAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-ascendencias', import.meta.url));
+// (11/10) Os ÍCONES e as MOLDURAS dos nós da árvore de passivas (as folhas de sprites raspadas do poeskilltree.com —
+// tools/importar-arvore-poeskilltree.mjs) e o mapa de cada nó (`arvore-sprites.json`), que a árvore do jogo pede uma vez.
+const PASTA_DA_ARVORE = fileURLToPath(new URL('../gamedata/itens-poe/arvore-sprites', import.meta.url));
+let spritesDaArvore = null;
+const SPRITES_DA_ARVORE = () => (spritesDaArvore ??= (() => {
+  const arquivo = new URL('../gamedata/itens-poe/arvore-sprites.json', import.meta.url);
+  if (!existsSync(arquivo)) return null;
+  const { _nota, ...dados } = JSON.parse(readFileSync(arquivo, 'utf8'));
+  return JSON.stringify(dados);
+})());
 // (09/10) Os ícones das HABILIDADES (a barra de slots — tools/importar-poedb-gemas.mjs).
 const PASTA_DAS_HABILIDADES = fileURLToPath(new URL('../gamedata/itens-poe/icones-habilidades', import.meta.url));
 const imagem = (res, pasta, relativo) => {
@@ -263,6 +273,14 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   // Os ícones dos orbes do PoE (Joalheiro, Fusão, Cromático): no repositório (`gamedata/itens-poe/icones-moedas`).
   // Os ícones das passivas de ascendência (`tools/baixar-ascendencias-poedb.mjs`): a árvore do jogo e da Engine desenham com eles.
   if (rota.startsWith('icone/ascendencia/')) return nomes(rota.slice('icone/ascendencia/'.length)).some((n) => imagem(res, PASTA_DAS_ASCENDENCIAS, n)) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/arvore/')) return nomes(rota.slice('icone/arvore/'.length)).some((n) => imagem(res, PASTA_DA_ARVORE, n)) || (json(res, 404, { ok: false }), true);
+  if (rota === 'arvore-sprites') {
+    const corpo = SPRITES_DA_ARVORE();
+    if (!corpo) return json(res, 404, { ok: false }), true;
+    res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=86400' });
+    res.end(corpo);
+    return true;
+  }
   if (rota.startsWith('icone/habilidade/')) return nomes(rota.slice('icone/habilidade/'.length)).some((n) => imagem(res, PASTA_DAS_HABILIDADES, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/moeda/')) return nomes(rota.slice('icone/moeda/'.length)).some((n) => imagem(res, PASTA_DAS_MOEDAS, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_DAS_IMAGENS, n)) || (json(res, 404, { ok: false }), true);

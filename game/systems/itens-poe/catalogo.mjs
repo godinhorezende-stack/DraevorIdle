@@ -28,6 +28,55 @@ export const ligado = () => !classico() && TEM_DADOS;
 export const dadosAusentes = () => (classico() || TEM_DADOS ? null : `o catálogo do PoE não está em ${ARQUIVO} (ele é do repositório: confira o checkout, ou gere com node tools/importar-poe-itens.mjs)`);
 
 let cache = null;
+const ARQUIVO_DAS_CORRECOES = new URL('../../gamedata/itens-poe/unicos-correcoes.json', import.meta.url);
+/**
+ * As CORREÇÕES DOS ÚNICOS pelo poedb (dono, 11/10 — `tools/auditar-unicos-poedb.mjs --corrigir`): o catálogo vem da coleção (importada) e
+ * alguns únicos estavam numa versão antiga do PoE, com texto em outro idioma ou vazios. Aqui as linhas do poedb entram no lugar das do
+ * catálogo (e a base, quando faltava ou era de outra versão), e os que faltavam entram — por cima do arquivo importado, para uma nova
+ * importação não desfazer.
+ */
+function corrigirUnicos(cat) {
+  if (!existsSync(ARQUIVO_DAS_CORRECOES)) return;
+  const { unicos = {}, novos = [] } = JSON.parse(readFileSync(ARQUIVO_DAS_CORRECOES, 'utf8'));
+  for (const [slug, c] of Object.entries(unicos)) {
+    const u = cat.classes[c.classe]?.unicos?.find((x) => x.slug === slug);
+    if (!u) continue;
+    if (c.base) u.base = c.base;
+    u.modificadores = c.modificadores;
+    u.corrigidoPeloPoedb = true;
+  }
+  for (const n of novos) {
+    const classe = cat.classes[n.classe];
+    if (!classe || classe.unicos?.some((x) => x.slug === n.slug)) continue;
+    (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: null, corrigidoPeloPoedb: true });
+  }
+}
+const ARQUIVO_DOS_IMPLICITOS_SORTEADOS = new URL('../../gamedata/itens-poe/implicitos-sorteados.json', import.meta.url);
+/**
+ * Os IMPLÍCITOS SORTEADOS (dono, 11/10 — `gamedata/itens-poe/implicitos-sorteados.json`, do poedb): a base que no PoE não tem implícito
+ * fixo e sorteia alguns de uma lista — o Talismã do Lobo Grandioso, 2 dos 33 implícitos de talismã. A coleção não traz; entra por cima
+ * na leitura, como `implicitosSorteados: { quantidade, opcoes }` da base (o gerador sorteia — `gerar.implicitosDaBase`).
+ * E o ÚNICO cuja regra TROCA o implícito (a Corda da Servidão: 1 corrompido; o Nebulis: 1 a 3 de Síntese): `implicitosSorteados` do
+ * único, com as famílias do pool especial (`grupos`) lidas só na primeira vez que ele é gerado — o pool de síntese tem 4,8 MB.
+ */
+function implicitosSorteados(cat) {
+  if (!existsSync(ARQUIVO_DOS_IMPLICITOS_SORTEADOS)) return;
+  const { bases = {}, unicos = {} } = JSON.parse(readFileSync(ARQUIVO_DOS_IMPLICITOS_SORTEADOS, 'utf8'));
+  for (const [id, s] of Object.entries(bases)) {
+    const b = cat.classes[id.split('/')[0]]?.bases?.find((x) => x.id === id);
+    if (b) b.implicitosSorteados = { quantidade: s.quantidade, opcoes: s.implicitos };
+  }
+  for (const [slug, s] of Object.entries(unicos)) {
+    const c = cat.classes[s.classe];
+    const u = c?.unicos?.find((x) => x.slug === slug);
+    const base = u && c.bases.find((b) => b.nome === u.base);
+    if (!base) continue;
+    const regra = { substitui: s.substitui, quantidade: s.quantidade, pesoIgual: !!s.pesoIgual, corrompido: !!s.corrompido, origem: s.pool };
+    let grupos = null;
+    Object.defineProperty(regra, 'grupos', { get: () => (grupos ??= poolEspecialDa(s.pool, s.classe, base.pool)?.implicitos ?? []) });
+    u.implicitosSorteados = regra;
+  }
+}
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
 // refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).
 const ARQUIVO_DOS_MAPAS = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
@@ -42,6 +91,8 @@ export function catalogo() {
     // o Único sorteado num drop de mapa sai no tier daquele drop, com a área desse tier.
     if (mapas) mapas.unicos = (mapas.unicos ?? []).flatMap((u) => (mapas.bases ?? []).filter((b) => !u.tiers?.length || u.tiers.includes(b.atributos?.tier)).map((b) => ({ ...u, base: b.nome })));
     if (mapas) cache.classes[mapas.id] = mapas;
+    corrigirUnicos(cache);
+    implicitosSorteados(cache);
   }
   return cache;
 }

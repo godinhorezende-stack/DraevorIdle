@@ -59,19 +59,23 @@ export function efeitos(p, af = null) {
   // Terror dos Magos "Destreza não concede nenhum bônus inerente à Evasão".)
   const semEsDaInt = Number(af?.sem_es_da_int) > 0;
   const semEvasaoDaDes = Number(af?.sem_evasao_da_des) > 0;
+  // (11/10, inspeção da árvore) No PoE o bônus é por CADA N pontos inteiros: "+1 de Vida a cada 2 de Força", "1% de Escudo de Energia a cada
+  // 5 de Inteligência" — 137 de Inteligência dão 68 de mana e 27% de ES, não 68,5 e 27,4%. O Draevor continua contínuo.
+  const poe = itensPoeLigado();
+  const cada = (v) => (poe ? Math.floor(v + 1e-9) : v);
   return {
-    vida: p.str * E.STR_LIFE_PER_POINT,
+    vida: cada(p.str * E.STR_LIFE_PER_POINT),
     // (PoE, A Fortaleza de Ferro: "O Bônus de Dano da Força concede X% de aumento do Dano Físico Corpo a Corpo por cada Y de Força" — no lugar
     // do bônus de sempre.)
-    danoFisicoPct: Number(af?.forca_dano_cada) > 0 ? Math.floor(p.str / Number(af.forca_dano_cada)) * (Number(af?.forca_dano_pct) || 0) : p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT,
-    precisao: p.dex * E.DEX_ACCURACY_PER_POINT,
-    evasao: p.dex * E.DEX_EVASION_PER_POINT,
-    velocidadeDeAtaquePct: p.dex * E.DEX_ATTACK_SPEED_PER_POINT,
-    mana: p.int * E.INT_MANA_PER_POINT,
-    danoMagicoPct: p.int * E.INT_MAGIC_DAMAGE_PER_POINT,
+    danoFisicoPct: Number(af?.forca_dano_cada) > 0 ? Math.floor(p.str / Number(af.forca_dano_cada)) * (Number(af?.forca_dano_pct) || 0) : cada(p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT),
+    precisao: cada(p.dex * E.DEX_ACCURACY_PER_POINT),
+    evasao: cada(p.dex * E.DEX_EVASION_PER_POINT),
+    velocidadeDeAtaquePct: cada(p.dex * E.DEX_ATTACK_SPEED_PER_POINT),
+    mana: cada(p.int * E.INT_MANA_PER_POINT),
+    danoMagicoPct: cada(p.int * E.INT_MAGIC_DAMAGE_PER_POINT),
     // Bônus em % da DEX sobre a Evasion e da INT sobre o Energy Shield (0 de fábrica: o jogo de antes não muda; liga-se no Editor de Classes).
-    evasaoPct: semEvasaoDaDes ? 0 : p.dex * (E.DEX_EVASION_PCT_PER_POINT ?? 0),
-    energyShieldPct: semEsDaInt ? 0 : p.int * (E.INT_ENERGY_SHIELD_PCT_PER_POINT ?? 0),
+    evasaoPct: semEvasaoDaDes ? 0 : cada(p.dex * (E.DEX_EVASION_PCT_PER_POINT ?? 0)),
+    energyShieldPct: semEsDaInt ? 0 : cada(p.int * (E.INT_ENERGY_SHIELD_PCT_PER_POINT ?? 0)),
   };
 }
 

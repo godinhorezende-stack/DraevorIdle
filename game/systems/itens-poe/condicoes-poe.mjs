@@ -914,10 +914,12 @@ export function daPeca(chave, valor, peca, estado = null) {
     const base = escala ? `${stat}%${escala}${teto != null ? `~${teto}` : ''}` : stat;
     return daPeca(resto.length ? `${base}@${resto.join('+')}` : base, valor, peca, estado);
   }
-  const m = /^encaixeLocal:([RGBW])$/.exec(escala ?? '');
+  // (+ `gemaLocal:R` — "por gema vermelha encaixada": os encaixes daquela cor COM gema — e `encaixeVazioLocal` — "por encaixe vazio".)
+  const m = /^(encaixeLocal|gemaLocal):([RGBW])$|^(encaixeVazioLocal)$/.exec(escala ?? '');
   if (!m) return [chave, valor];
   const s = peca?.soquetes;
-  const n = (s?.cores ?? []).slice(0, s?.abertos ?? 0).filter((c) => c === m[1]).length;
+  const abertos = (s?.cores ?? []).slice(0, s?.abertos ?? 0);
+  const n = m[3] ? abertos.filter((c, i) => !s?.gemas?.[i]).length : abertos.filter((c, i) => c === m[2] && (m[1] === 'encaixeLocal' || !!s?.gemas?.[i])).length;
   return [conds.length ? `${stat}@${conds.join('+')}` : stat, comTeto(valor, n, teto)];
 }
 
@@ -982,7 +984,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e) => !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|encaixeVazio|vidaReservada|manaReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e);
+export const escalaValida = (e) => !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e);
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -1357,7 +1359,8 @@ export const somaFisicaDoPoe = () => ligado() && Formulas.PARAMETROS.armadura.mo
  */
 export const reducaoFisicaAdicional = (ficha, protecao = ficha?.protection ?? {}) => Math.max(0, (Number(protecao.physical) || 0) + (Number(ficha?.excedentes?.protection?.physical) || 0));
 /** A fração de um golpe FÍSICO (`golpe`) que passa pela defesa física do personagem: a armadura contra esse golpe + a adicional, no teto. */
-export const fracaoFisicaRecebida = (ficha, golpe, armadura, { overwhelm = 0, protecao = ficha?.protection ?? {} } = {}) => 1 - Limites.reducaoFisicaTotal(Formulas.reducaoDeArmaduraPoe(armadura, golpe), reducaoFisicaAdicional(ficha, protecao), overwhelm) / 100;
+// ("Redução de dano físico é zero" — `reducao_fisica_zero`: nem a armadura nem a redução adicional cortam o físico.)
+export const fracaoFisicaRecebida = (ficha, golpe, armadura, { overwhelm = 0, protecao = ficha?.protection ?? {} } = {}) => (Number(ficha?.afPoe?.reducao_fisica_zero) > 0 ? 1 : 1 - Limites.reducaoFisicaTotal(Formulas.reducaoDeArmaduraPoe(armadura, golpe), reducaoFisicaAdicional(ficha, protecao), overwhelm) / 100);
 /**
  * O ACERTO FÍSICO recebido no PoE 1, já com a defesa física: as conversões ("X% do Dano Físico sofrido como Dano de Fogo") saem antes, cada
  * parte com a resistência do seu tipo; o que CONTINUA Físico passa pela armadura (calculada sobre essa parte do golpe) e pela redução física
@@ -1459,7 +1462,9 @@ export function transformarPartes(ficha, partes) {
     for (const para of ['fire', 'ice', 'energy']) if (para !== de) mover(de, para, v(`conv_${de}_${para}`));
   }
   const antes = Object.fromEntries(ELS.map((el) => [el, [...p[el]]]));
-  for (const de of ['fire', 'ice', 'energy']) { ganharDe(antes, p, de, 'chaos', v('elem_as_extra_chaos')); for (const para of ['fire', 'ice', 'energy']) if (para !== de) ganharDe(antes, p, de, para, v(`${de}_as_extra_${para}`)); }
+  // (+ o de UM elemento para Caos — "Receba X% do Dano de Fogo como Dano de Caos Extra".)
+  const paraCaos = { fire: 'fire_as_extra_chaos', ice: 'ice_as_extra_chaos', energy: 'energy_as_extra_chaos' };
+  for (const de of ['fire', 'ice', 'energy']) { ganharDe(antes, p, de, 'chaos', v('elem_as_extra_chaos') + v(paraCaos[de])); for (const para of ['fire', 'ice', 'energy']) if (para !== de) ganharDe(antes, p, de, para, v(`${de}_as_extra_${para}`)); }
   for (const de of ['physical', 'fire', 'ice', 'energy']) ganharDe(antes, p, de, 'chaos', v('naocaos_as_extra_chaos'));
   // A máscara.
   const so = ELS.find((el) => v(`so_dano:${el}`) > 0);

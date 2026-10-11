@@ -172,6 +172,8 @@ export function soma(estado) {
   // por aqui, e não pela tradução, para duas peças com a keystone não dobrarem os bônus)
   const vinteAbates = Number(resolvido.rampage) > 0 ? ModsPoe.fatorDaEscala(estado, resolvido, null, 'rampage:20') : 0;
   if (vinteAbates) { resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + 2 * vinteAbates; resolvido.move_speed = (resolvido.move_speed ?? 0) + vinteAbates; }
+  // ("Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico" — O Olho Aberto: o "aumentado" da evasão entra no Dano Mágico.)
+  if (Number(resolvido.evasao_no_dano_magico) > 0 && resolvido.evasion_pct) resolvido.spell_dmg = (resolvido.spell_dmg ?? 0) + (resolvido.evasion_pct * resolvido.evasao_no_dano_magico) / 100;
   // (as Transfigurações — keystones dos únicos: "Aumentos e Reduções ao Escudo de Energia Máximo também são aplicados ao Dano Mágico em 30%
   // de seu valor", "à Vida Máxima … ao Dano de Ataque", "à Mana Máxima … ao Dano")
   const transf = (chave, de) => (Number(resolvido[chave]) || 0) * (Number(resolvido[de]) || 0) / 100;

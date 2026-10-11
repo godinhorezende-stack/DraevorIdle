@@ -87,7 +87,7 @@ export function daSoma(af = {}) {
     // o Resfriamento: o mínimo, o máximo ("podem reduzir… até um máximo de X%") e o "reduz o Dano causado pela metade do Efeito"
     resfriamentoMinimo: n('resfriamento_minimo'), resfriamentoMaximo: n('resfriamento_maximo'), resfriamentoReduzDano: n('resfriamento_reduz_dano') > 0,
     // o crítico: o efeito das não danificadoras, o multiplicador degenerativo (de todas e do veneno), o "mais dano" do veneno; a Agonia Perfeita
-    efeitoNaoDanoCritico: n('efeito_nao_dano_critico'), multiplicadorCritico: n('dot_multi_critico'), multiplicadorVenenoCritico: n('dot_multi_poison_critico'), multiplicadorSangramentoCritico: n('dot_multi_bleed_critico'),
+    efeitoNaoDanoCritico: n('efeito_nao_dano_critico'), multiplicadorCritico: n('dot_multi_critico'), multiplicadorVenenoCritico: n('dot_multi_poison_critico'), multiplicadorSangramentoCritico: n('dot_multi_bleed_critico'), multiplicadorIncendioCritico: n('dot_multi_ignite_critico'),
     venenoCriticoMais: n('veneno_critico_mais'), venenoMaisChance: n('veneno_mais_chance'), venenoMaisPct: n('veneno_mais_pct'), agoniaPerfeita: n('agonia_perfeita') > 0, semAfeccaoSemCritico: n('sem_afeccao_sem_critico') > 0,
     // o veneno em inimigo não envenenado / sangrando; o sangramento por empalamento, as pilhas (Dança Carmesim) e o "menos dano"
     venenoNaoEnvenenado: n('veneno_nao_envenenado_inc'), multiplicadorVenenoSangrando: n('dot_multi_poison_sangrando'),
@@ -179,7 +179,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const caos = dano('chaos');
   // Incêndio: pela chance, ou crítico com dano de Fogo.
   if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
-    const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo, a.danoIncendio ?? 0, { mais: a.incendioMais ?? 0 });
+    const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), a.danoIncendio ?? 0, { mais: a.incendioMais ?? 0 });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
   }
