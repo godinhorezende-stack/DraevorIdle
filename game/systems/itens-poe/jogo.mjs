@@ -274,7 +274,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (7 — 09/10: a "Velocidade de Ataque aumentada" da arma passa a ser LOCAL, `atk_speed_local` — `separarLocaisDaArma`.)
 // (8 — 09/10: "X% menos Velocidade de Ataque" (o Legado do Guerreiro) multiplica — `atk_speed_mais`, não mais somado como "reduzida".)
 // (9 — 09/10: a "Chance de Crítico aumentada" da arma passa a ser LOCAL, `crit_chance_local` — cada mão com o crítico da sua arma.)
-export const VERSAO_DA_TRADUCAO = 9;
+// (10 — 11/10: o único com implícito próprio perde o implícito da BASE, que entrava somado — `semImplicitoDaBaseNoUnico`.)
+export const VERSAO_DA_TRADUCAO = 10;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -306,9 +307,19 @@ export function refazerPecasAntigas(estado) {
  * linhas), o dano/defesa da base e o nome/cor da raridade. A QUALIDADE (`poe.qualidade`, o Amolador e a Sucata) aumenta o dano físico da
  * arma e a defesa da armadura em qualidade%, como no PoE. Sockets, gemas e o resto da peça ficam como estão.
  */
+/**
+ * O ÚNICO com implícito próprio (a linha `implicit` dos `modificadores`) não leva o implícito da BASE: antes (até a versão 9 da tradução)
+ * ele vinha junto e o valor somava duas vezes. Saem só os da base — o corrompido (Orbe Vaal) e o eldritch (`origem`) ficam.
+ */
+function semImplicitoDaBaseNoUnico(p) {
+  if (p.raridade !== 'unico' || !(p.modificadores ?? []).some((m) => m.tipo === 'implicit') || !p.implicitos?.length) return;
+  p.implicitos = p.implicitos.filter((m) => m.corrompido || m.origem);
+}
+
 export function recalcular(peca, regras = Catalogo.REGRAS) {
   const p = peca?.poe;
   if (!p) return peca;
+  semImplicitoDaBaseNoUnico(p);
   const a = p.atributos ?? {};
   const fq = 1 + (Number(p.qualidade) || 0) / 100;
   const R = regras.raridades[p.raridade] ?? {};

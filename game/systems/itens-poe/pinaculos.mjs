@@ -82,8 +82,12 @@ export function exclusivosEquipaveis(c) {
   if (!cat) return [];
   return c.unicos
     .map((u) => {
-      const b = cat.classes[u.classe]?.bases.find((x) => x.nome === u.base);
-      return b && idDaBase(b.id) ? { ...u, baseId: b.id } : null;
+      // A base ATUAL do único no catálogo (as correções do poedb — `unicos-correcoes.json` — trocam a de alguns, como o Atirador do Vazio);
+      // a do pinaculos.json só se o catálogo não tiver o único.
+      const doCatalogo = cat.classes[u.classe]?.unicos?.find((x) => x.slug === u.slug);
+      const nome = doCatalogo?.base || u.base;
+      const b = cat.classes[u.classe]?.bases.find((x) => x.nome === nome);
+      return b && idDaBase(b.id) ? { ...u, base: nome, baseId: b.id } : null;
     })
     .filter(Boolean);
 }

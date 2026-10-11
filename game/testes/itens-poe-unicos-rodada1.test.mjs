@@ -97,11 +97,14 @@ test('as regras novas: o atributo, a condição ou o evento que o jogo já tem',
   assert.match(traduz('Inimigos Congelados por você têm {0}% de Dano sofrido aumentado').nota, /dos seus acertos/);
 });
 
-test('trava contra regressão: as linhas de armas e armaduras únicas que não funcionam não voltam a subir (rodada 1: 960 → 838)', { skip: SEM }, () => {
+// (Dono, 11/10: a trava sobe para 848 — a auditoria dos únicos × poedb pôs 35 únicos na versão ATUAL do PoE (unicos-correcoes.json), com
+// ~10 mecânicas que o jogo ainda não tem: Scaeva por cor de encaixe, carga de salmoura, implícitos dobrados, eficiência de custo de mana…)
+test('trava contra regressão: as linhas de armas e armaduras únicas que não funcionam não voltam a subir (rodada 1: 960 → 838; únicos atualizados pelo poedb: 848)', { skip: SEM }, () => {
   const ARMAS = /One_Hand|Two_Hand|Thrusting|Sceptres|Staves|Warstaves|Claws|Daggers|Rune_Daggers|Bows|Wands/;
   const ARMADURAS = /Body_Armours|Helmets|Gloves|Boots|Shields|Quivers/;
   const d = Pendencias.pendencias();
   const ruins = d.linhas.filter((l) => l.origem === 'unico' && l.classes.some((c) => ARMAS.test(c) || ARMADURAS.test(c)) && ['pendente', 'inexiste'].includes(l.estado));
-  assert.ok(ruins.length <= 838, `${ruins.length} linhas sem funcionar (eram 838 depois da rodada 1)`);
-  assert.ok(d.unicos.completos >= 553, `${d.unicos.completos} únicos com todos os mods funcionando (eram 553)`);
+  assert.ok(ruins.length <= 848, `${ruins.length} linhas sem funcionar (eram 848 depois da atualização dos únicos pelo poedb)`);
+  // (553 → 543 pela mesma razão: os 10 únicos que ganharam uma mecânica nova da versão atual do PoE ainda não estão completos.)
+  assert.ok(d.unicos.completos >= 543, `${d.unicos.completos} únicos com todos os mods funcionando (eram 543 depois da atualização pelo poedb)`);
 });

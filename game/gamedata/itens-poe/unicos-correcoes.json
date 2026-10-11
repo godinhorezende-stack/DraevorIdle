@@ -1,0 +1,2698 @@
+{
+ "_nota": "As CORREÇÕES dos únicos pelo poedb (tools/auditar-unicos-poedb.mjs --corrigir): o catálogo (catalogo-itens.json, gerado da coleção) aplica isto por cima ao carregar (systems/itens-poe/catalogo.mjs). `unicos`: as linhas do poedb no lugar das do catálogo (a versão atual do único; a base, quando o catálogo não tinha). `novos`: os que faltavam e têm base no jogo.",
+ "unicos": {
+  "Abberaths_Horn": {
+   "classe": "Wands",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Adiciona (1—2) a (3—4) de Dano de Fogo a Magias e Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo a Magias e Ataques",
+     "faixas": [
+      [
+       1,
+       2
+      ],
+      [
+       3,
+       4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(30—50)% de Multiplicador de Dano Degenerativoto para Incêndio dos Golpes Críticos",
+     "modelo": "+{0}% de Multiplicador de Dano Degenerativoto para Incêndio dos Golpes Críticos",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (4—6) a (8—12) de Dano de Fogo a Magias",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo a Magias",
+     "faixas": [
+      [
+       4,
+       6
+      ],
+      [
+       8,
+       12
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Chance Global de Crítico aumentada em (80—120)%",
+     "modelo": "Chance Global de Crítico aumentada em {0}%",
+     "faixas": [
+      [
+       80,
+       120
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ganha 10 de Vida por Inimigo Incendiado Morto",
+     "modelo": "Ganha {0} de Vida por Inimigo Incendiado Morto",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Duração do Incêndio em Inimigos reduzida em 25%",
+     "modelo": "Duração do Incêndio em Inimigos reduzida em {0}%",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    }
+   ]
+  },
+  "Shimmeron": {
+   "classe": "Wands",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Dano Mágico aumentado em (35—39)%",
+     "modelo": "Dano Mágico aumentado em {0}%",
+     "faixas": [
+      [
+       35,
+       39
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+1 ao Máximo de Cargas de Poder",
+     "modelo": "+{0} ao Máximo de Cargas de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(6—10)% ao Multiplicador de Crítico por Carga de Poder",
+     "modelo": "+{0}% ao Multiplicador de Crítico por Carga de Poder",
+     "faixas": [
+      [
+       6,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+0.3% de chance de golpe crítico por carga de poder",
+     "modelo": "+{0}% de chance de golpe crítico por carga de poder",
+     "faixas": [
+      [
+       0.3,
+       0.3
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+2% de Chance de Bloquear o Dano Mágico por Carga de Poder",
+     "modelo": "+{0}% de Chance de Bloquear o Dano Mágico por Carga de Poder",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona 3 a (15—25) de Dano de Raio à Magias por Carga de Poder",
+     "modelo": "Adiciona {0} a {1} de Dano de Raio à Magias por Carga de Poder",
+     "faixas": [
+      [
+       3,
+       3
+      ],
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "300 do Dano de Raio recebido por segundo por Carga de Poder caso suas Habilidades tenham causado um Acerto Crítico Recentemente",
+     "modelo": "{0} do Dano de Raio recebido por segundo por Carga de Poder caso suas Habilidades tenham causado um Acerto Crítico Recentemente",
+     "faixas": [
+      [
+       300,
+       300
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Recentemente se refere aos últimos 4 segundos)",
+     "modelo": "(Recentemente se refere aos últimos {0} segundos)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    }
+   ]
+  },
+  "Scaeva": {
+   "classe": "One_Hand_Swords",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "40% de aumento da Precisão Global",
+     "modelo": "{0}% de aumento da Precisão Global",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (75—92) a (125—154) de Dano Físico",
+     "modelo": "Adiciona {0} a {1} de Dano Físico",
+     "faixas": [
+      [
+       75,
+       92
+      ],
+      [
+       125,
+       154
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Chance de Crítico aumentada em (30—50)%",
+     "modelo": "Chance de Crítico aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Área de efeito aumentada em (8—12)% por encaixe vermelho",
+     "modelo": "Área de efeito aumentada em {0}% por encaixe vermelho",
+     "faixas": [
+      [
+       8,
+       12
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(10—15)% de Multiplicador de Golpes Críticos por Encaixe Verde",
+     "modelo": "+{0}% de Multiplicador de Golpes Críticos por Encaixe Verde",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Chance global de causar golpe crítico aumentada em (20—30)% por encaixe azul",
+     "modelo": "Chance global de causar golpe crítico aumentada em {0}% por encaixe azul",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Defesas globais aumentadas em (6—8)% por encaixe vazio",
+     "modelo": "Defesas globais aumentadas em {0}% por encaixe vazio",
+     "faixas": [
+      [
+       6,
+       8
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(10—15)% de Chance de Bloquear o Dano de Ataques quando na Mão Secundária",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques quando na Mão Secundária",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Defesas são Armadura, Evasão e Escudo de Energia)",
+     "modelo": "(Defesas são Armadura, Evasão e Escudo de Energia)",
+     "faixas": []
+    }
+   ]
+  },
+  "Singularity": {
+   "classe": "Sceptres",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Dano Elemental aumentado em 30%",
+     "modelo": "Dano Elemental aumentado em {0}%",
+     "faixas": [
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (1—10) a (150—200) de Dano de Raio a Magias",
+     "modelo": "Adiciona {0} a {1} de Dano de Raio a Magias",
+     "faixas": [
+      [
+       1,
+       10
+      ],
+      [
+       150,
+       200
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Conjuração aumentada em (14—18)%",
+     "modelo": "Velocidade de Conjuração aumentada em {0}%",
+     "faixas": [
+      [
+       14,
+       18
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Inimigos Próximos estão Lentos com 25% de Velocidade de Movimento reduzida",
+     "modelo": "Inimigos Próximos estão Lentos com {0}% de Velocidade de Movimento reduzida",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano com Acertos e Afecções aumentado em 100% contra Inimigos Lentos",
+     "modelo": "Dano com Acertos e Afecções aumentado em {0}% contra Inimigos Lentos",
+     "faixas": [
+      [
+       100,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Eficiência de custo de mana aumentada em (15—25)%",
+     "modelo": "Eficiência de custo de mana aumentada em {0}%",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Lentidão reduz a velocidade de movimento por 4 segundos)",
+     "modelo": "(Lentidão reduz a velocidade de movimento por {0} segundos)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Afecções que causam Dano são Sangramento, Incêndio e Veneno)",
+     "modelo": "(Afecções que causam Dano são Sangramento, Incêndio e Veneno)",
+     "faixas": []
+    }
+   ]
+  },
+  "Yaomacs_Accord": {
+   "classe": "Sceptres",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Dano Elemental aumentado em 32%",
+     "modelo": "Dano Elemental aumentado em {0}%",
+     "faixas": [
+      [
+       32,
+       32
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano com Habilidades Vaal aumentado em (80—120)%",
+     "modelo": "Dano com Habilidades Vaal aumentado em {0}%",
+     "faixas": [
+      [
+       80,
+       120
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Duração da Prevenção do Ganho de Almas reduzida em (6—8)%",
+     "modelo": "Duração da Prevenção do Ganho de Almas reduzida em {0}%",
+     "faixas": [
+      [
+       6,
+       8
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ganha uma Carga de Tolerância, Frenesi e Poder ao usar uma Habilidade Vaal",
+     "modelo": "Ganha uma Carga de Tolerância, Frenesi e Poder ao usar uma Habilidade Vaal",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(1—2) ao Nível de Todas as Gemas de Habilidades Vaal",
+     "modelo": "+{0} ao Nível de Todas as Gemas de Habilidades Vaal",
+     "faixas": [
+      [
+       1,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Pastor das Almas",
+     "modelo": "Pastor das Almas",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Habilidades vaal sem aura custam 80% menos almas. Habilidades vaal sem aura têm 100% de custo de almas aumentado por habilidade vaal usada nos últimos 8 segundos)",
+     "modelo": "(Habilidades vaal sem aura custam {0}% menos almas. Habilidades vaal sem aura têm {1}% de custo de almas aumentado por habilidade vaal usada nos últimos {2} segundos)",
+     "faixas": [
+      [
+       80,
+       80
+      ],
+      [
+       100,
+       100
+      ],
+      [
+       8,
+       8
+      ]
+     ]
+    }
+   ]
+  },
+  "The_Crustaceans_Call": {
+   "classe": "Staves",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear Dano Mágico",
+     "modelo": "+{0}% de Chance de Bloquear Dano Mágico",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Magias encaixadas recebem reforço de Totem de Caranguejo nível 20",
+     "modelo": "Magias encaixadas recebem reforço de Totem de Caranguejo nível {0}",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Totens têm a velocidade de movimento aumentada em 100%",
+     "modelo": "Totens têm a velocidade de movimento aumentada em {0}%",
+     "faixas": [
+      [
+       100,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano Mágico aumentado em (150—200)%",
+     "modelo": "Dano Mágico aumentado em {0}%",
+     "faixas": [
+      [
+       150,
+       200
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Duração do Totem aumentada em (50—75)%",
+     "modelo": "Duração do Totem aumentada em {0}%",
+     "faixas": [
+      [
+       50,
+       75
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+2 ao número máximo de Totens Convocados",
+     "modelo": "+{0} ao número máximo de Totens Convocados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "The_Searing_Touch": {
+   "classe": "Staves",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear Dano Mágico",
+     "modelo": "+{0}% de Chance de Bloquear Dano Mágico",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(40—60)% de Multiplicador do Dano Degenerativo de Fogo",
+     "modelo": "+{0}% de Multiplicador do Dano Degenerativo de Fogo",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano de Fogo aumentado em (70—90)%",
+     "modelo": "Dano de Fogo aumentado em {0}%",
+     "faixas": [
+      [
+       70,
+       90
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Conjuração aumentada em (20—40)%",
+     "modelo": "Velocidade de Conjuração aumentada em {0}%",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+2 ao Nível de todas as Gemas Habilidades de Magias de Fogo",
+     "modelo": "+{0} ao Nível de todas as Gemas Habilidades de Magias de Fogo",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Chama Voraz",
+     "modelo": "Chama Voraz",
+     "faixas": []
+    }
+   ]
+  },
+  "Cane_of_Unravelling": {
+   "classe": "Warstaves",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear o Dano de Ataques",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(40—55)% do Multiplicador de Dano de Caos",
+     "modelo": "+{0}% do Multiplicador de Dano de Caos",
+     "faixas": [
+      [
+       40,
+       55
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+2 ao Nível de todas as Gemas Habilidades de Magias de Caos",
+     "modelo": "+{0} ao Nível de todas as Gemas Habilidades de Magias de Caos",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+1 ao Máximo de Cargas de Poder",
+     "modelo": "+{0} ao Máximo de Cargas de Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Conjuração aumentada em 5% por Carga de Poder",
+     "modelo": "Velocidade de Conjuração aumentada em {0}% por Carga de Poder",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "5 de Mana Regenerada por Segundo por Carga de Poder",
+     "modelo": "{0} de Mana Regenerada por Segundo por Carga de Poder",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ganha uma Carga de Poder após Gastar um total de 200 de Mana",
+     "modelo": "Ganha uma Carga de Poder após Gastar um total de {0} de Mana",
+     "faixas": [
+      [
+       200,
+       200
+      ]
+     ]
+    }
+   ]
+  },
+  "Taryns_Shiver": {
+   "classe": "Warstaves",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear o Dano de Ataques",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano de Gelo aumentado em (80—140)%",
+     "modelo": "Dano de Gelo aumentado em {0}%",
+     "faixas": [
+      [
+       80,
+       140
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Conjuração aumentada em (10—20)%",
+     "modelo": "Velocidade de Conjuração aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(2—4) ao Nível de todas as Gemas de Habilidades de Magias de Gelo",
+     "modelo": "+{0} ao Nível de todas as Gemas de Habilidades de Magias de Gelo",
+     "faixas": [
+      [
+       2,
+       4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(25—50)% de chance de Congelar",
+     "modelo": "{0}% de chance de Congelar",
+     "faixas": [
+      [
+       25,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Inimigos Congelados por você têm 20% de Dano sofrido aumentado",
+     "modelo": "Inimigos Congelados por você têm {0}% de Dano sofrido aumentado",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Geada Cortante",
+     "modelo": "Geada Cortante",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "modelo": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "faixas": []
+    }
+   ]
+  },
+  "Jiquanis_Potential": {
+   "classe": "Staves",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear Dano Mágico",
+     "modelo": "+{0}% de Chance de Bloquear Dano Mágico",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Inteligência aumentada em (1—7)%",
+     "modelo": "Inteligência aumentada em {0}%",
+     "faixas": [
+      [
+       1,
+       7
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Vida máxima reduzida em (-17—17)%",
+     "modelo": "Vida máxima reduzida em {0}%",
+     "faixas": [
+      [
+       -17,
+       17
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Custo de Habilidades aumentado em 31%",
+     "modelo": "Custo de Habilidades aumentado em {0}%",
+     "faixas": [
+      [
+       31,
+       31
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona de 1 a (24—35) de dano elétrico a magias por 10 de Inteligência",
+     "modelo": "Adiciona de {0} a {1} de dano elétrico a magias por {2} de Inteligência",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       24,
+       35
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Magia Sanguínea",
+     "modelo": "Magia Sanguínea",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Remove toda mana. 10% mais Vida. Habilidades Custam Vida ao invés de Mana. Habilidades Reservam Vida ao invés de Mana)",
+     "modelo": "(Remove toda mana. {0}% mais Vida. Habilidades Custam Vida ao invés de Mana. Habilidades Reservam Vida ao invés de Mana)",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    }
+   ]
+  },
+  "The_Grey_Spire": {
+   "classe": "Warstaves",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear o Dano de Ataques",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Não Possui Encaixes",
+     "modelo": "Não Possui Encaixes",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(300—400)% de aumento do Dano Físico Global",
+     "modelo": "{0}% de aumento do Dano Físico Global",
+     "faixas": [
+      [
+       300,
+       400
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Ataque aumentada em (20—30)%",
+     "modelo": "Velocidade de Ataque aumentada em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(1—5)% de todas Resistências máximas",
+     "modelo": "+{0}% de todas Resistências máximas",
+     "faixas": [
+      [
+       1,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Magnitudes dos Modificadores Implícitos são dobradas",
+     "modelo": "Magnitudes dos Modificadores Implícitos são dobradas",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Resistêcias Máximas não podem ser aumentadas acima de 90%)",
+     "modelo": "(Resistêcias Máximas não podem ser aumentadas acima de {0}%)",
+     "faixas": [
+      [
+       90,
+       90
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Modificadores Implícitos são aqueles que vêm do tipo do item ao invés de suas propriedades aleatórias)",
+     "modelo": "(Modificadores Implícitos são aqueles que vêm do tipo do item ao invés de suas propriedades aleatórias)",
+     "faixas": []
+    }
+   ]
+  },
+  "Atziris_Rule": {
+   "classe": "Warstaves",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+25% de Chance de Bloquear o Dano de Ataques",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Ordem da Rainha Nível 20",
+     "modelo": "Concede a Habilidade Ordem da Rainha Nível {0}",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ordem da Rainha pode Ativar Chamas do Julgamento Nível 20",
+     "modelo": "Ordem da Rainha pode Ativar Chamas do Julgamento Nível {0}",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ordem da Rainha pode Ativar Tormenta do Julgamento Nível 20",
+     "modelo": "Ordem da Rainha pode Ativar Tormenta do Julgamento Nível {0}",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Chance de Golpe Crítico com Magias aumentada em (100—300)%",
+     "modelo": "Chance de Golpe Crítico com Magias aumentada em {0}%",
+     "faixas": [
+      [
+       100,
+       300
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Não Pode ser Atordoado",
+     "modelo": "Não Pode ser Atordoado",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano não pode ser Refletido",
+     "modelo": "Dano não pode ser Refletido",
+     "faixas": []
+    }
+   ]
+  },
+  "Tidebreaker": {
+   "classe": "Two_Hand_Maces",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Força aumentada em 10%",
+     "modelo": "Força aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Gemas Encaixadas são Suportadas por Carga de Tolerância ao Atordoar em Corpo a Corpo Nível 20",
+     "modelo": "Gemas Encaixadas são Suportadas por Carga de Tolerância ao Atordoar em Corpo a Corpo Nível {0}",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+40 de Inteligência",
+     "modelo": "+{0} de Inteligência",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (70—80) a (340—375) de Dano Físico",
+     "modelo": "Adiciona {0} a {1} de Dano Físico",
+     "faixas": [
+      [
+       70,
+       80
+      ],
+      [
+       340,
+       375
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ponto de Atordoamento Inimigo reduzido em (20—30)% com esta Arma",
+     "modelo": "Ponto de Atordoamento Inimigo reduzido em {0}% com esta Arma",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "50% de chance de ganhar 1 carga de salmoura em vez de 1 carga de tolerância",
+     "modelo": "{0}% de chance de ganhar {1} carga de salmoura em vez de {2} carga de tolerância",
+     "faixas": [
+      [
+       50,
+       50
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Você ganha 4% de dano físico como dano de frio e elétrico adicionais por carga de salmoura O número máximo de cargas de salmoura é equivalente ao número máximo de cargas de tolerância)",
+     "modelo": "(Você ganha {0}% de dano físico como dano de frio e elétrico adicionais por carga de salmoura O número máximo de cargas de salmoura é equivalente ao número máximo de cargas de tolerância)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(O Ponto de Atordoamento determina a quantidade de Dano para Atordoar algo)",
+     "modelo": "(O Ponto de Atordoamento determina a quantidade de Dano para Atordoar algo)",
+     "faixas": []
+    }
+   ]
+  },
+  "Lioneyes_Remorse": {
+   "classe": "Shields",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+(20—30) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Armadura aumentada em (180—220)%",
+     "modelo": "Armadura aumentada em {0}%",
+     "faixas": [
+      [
+       180,
+       220
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(160—180) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       160,
+       180
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Movimento reduzida em 5%",
+     "modelo": "Velocidade de Movimento reduzida em {0}%",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Recuperação de Atordoamentos e Bloqueios aumentada em 40%",
+     "modelo": "Recuperação de Atordoamentos e Bloqueios aumentada em {0}%",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "-150 de Dano Físico sofrido por Ataques de Projéteis",
+     "modelo": "{0} de Dano Físico sofrido por Ataques de Projéteis",
+     "faixas": [
+      [
+       -150,
+       -150
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+5% de Chance de Bloqueio",
+     "modelo": "+{0}% de Chance de Bloqueio",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    }
+   ]
+  },
+  "The_Draugurs_Lantern": {
+   "classe": "Shields",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Dano Mágico aumentado em (5—10)%",
+     "modelo": "Dano Mágico aumentado em {0}%",
+     "faixas": [
+      [
+       5,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(15—20)% de Chance de Bloquear o Dano Mágico",
+     "modelo": "{0}% de Chance de Bloquear o Dano Mágico",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(66—99) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       66,
+       99
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Incêndios infligidos por você causam Dano (15—20)% mais rápido",
+     "modelo": "Incêndios infligidos por você causam Dano {0}% mais rápido",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "As Chamas de Draugur queimam os inimigos ao seu redor por 8 segundos após você incendiar um alvo",
+     "modelo": "As Chamas de Draugur queimam os inimigos ao seu redor por {0} segundos após você incendiar um alvo",
+     "faixas": [
+      [
+       8,
+       8
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Eles causarão o mesmo dano total por uma curta duração)",
+     "modelo": "(Eles causarão o mesmo dano total por uma curta duração)",
+     "faixas": []
+    }
+   ]
+  },
+  "Honourhome": {
+   "classe": "Helmets",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "+2 ao Nível das Gemas Encaixadas",
+     "modelo": "+{0} ao Nível das Gemas Encaixadas",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona 1 a 30 de Dano de Raio em Magias e Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Raio em Magias e Ataques",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Armadura e Escudo de Energia aumentados em (100—150)%",
+     "modelo": "Armadura e Escudo de Energia aumentados em {0}%",
+     "faixas": [
+      [
+       100,
+       150
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Raridade de Itens encontrados aumentada em (10—20)%",
+     "modelo": "Raridade de Itens encontrados aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Eficiência de custo de mana aumentada em (30—50)%",
+     "modelo": "Eficiência de custo de mana aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    }
+   ]
+  },
+  "The_Unblinking_Eye": {
+   "classe": "Helmets",
+   "base": "Máscara do Arlequim",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "+(15—20)% de chance de Suprimir Dano Mágico",
+     "modelo": "+{0}% de chance de Suprimir Dano Mágico",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(50—100) de Destreza",
+     "modelo": "+{0} de Destreza",
+     "faixas": [
+      [
+       50,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Evasão e Escudo de Energia aumentados em (120—160)%",
+     "modelo": "Evasão e Escudo de Energia aumentados em {0}%",
+     "faixas": [
+      [
+       120,
+       160
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico",
+     "modelo": "Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Redução de dano físico é zero",
+     "modelo": "Redução de dano físico é zero",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(40% do dano causado por ataques suprimidos e das afecções por eles infligidas é evitado)",
+     "modelo": "({0}% do dano causado por ataques suprimidos e das afecções por eles infligidas é evitado)",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    }
+   ]
+  },
+  "Maw_of_Mischief": {
+   "classe": "Helmets",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Lacaios causam Dano aumentado em (15—20)%",
+     "modelo": "Lacaios causam Dano aumentado em {0}%",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Desejo Mortal Nível 20",
+     "modelo": "Concede a Habilidade Desejo Mortal Nível {0}",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(45—65) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       45,
+       65
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Eficiência de custo de mana de habilidades de lacaio aumentada em (40—60)%",
+     "modelo": "Eficiência de custo de mana de habilidades de lacaio aumentada em {0}%",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Lacaios são Agressivos",
+     "modelo": "Lacaios são Agressivos",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Lacaios Agressivos tem seu alcance de foco aumentado para um valor mínimo)",
+     "modelo": "(Lacaios Agressivos tem seu alcance de foco aumentado para um valor mínimo)",
+     "faixas": []
+    }
+   ]
+  },
+  "Stasis_Prison": {
+   "classe": "Body_Armours",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+(20—25) de Mana máxima",
+     "modelo": "+{0} de Mana máxima",
+     "faixas": [
+      [
+       20,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Magnitudes dos Implícitos dos Modificadores aumentadas em (80—100)%",
+     "modelo": "Magnitudes dos Implícitos dos Modificadores aumentadas em {0}%",
+     "faixas": [
+      [
+       80,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Evasão e Escudo de Energia aumentados em (140—160)%",
+     "modelo": "Evasão e Escudo de Energia aumentados em {0}%",
+     "faixas": [
+      [
+       140,
+       160
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Fenda Temporal não tem Reserva",
+     "modelo": "Fenda Temporal não tem Reserva",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(80—100)% do Dano sofrido é Recuperado como Vida",
+     "modelo": "{0}% do Dano sofrido é Recuperado como Vida",
+     "faixas": [
+      [
+       80,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Debuffs em você expiram (80—100)% mais rápido",
+     "modelo": "Debuffs em você expiram {0}% mais rápido",
+     "faixas": [
+      [
+       80,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Somente o Dano de Acertos pode ser Recuperado, durante 4 segundos após o Acerto)",
+     "modelo": "(Somente o Dano de Acertos pode ser Recuperado, durante {0} segundos após o Acerto)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Modificadores Implícitos são aqueles que vêm do tipo do item ao invés de suas propriedades aleatórias)",
+     "modelo": "(Modificadores Implícitos são aqueles que vêm do tipo do item ao invés de suas propriedades aleatórias)",
+     "faixas": []
+    }
+   ]
+  },
+  "Doryanis_Delusion": {
+   "classe": "Boots",
+   "base": "Grevas do Leviatã",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Concede a habilidade Pureza do Fogo nível 30",
+     "modelo": "Concede a habilidade Pureza do Fogo nível {0}",
+     "faixas": [
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (25—30) a (40—45) de Dano de Fogo a Magias e Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo a Magias e Ataques",
+     "faixas": [
+      [
+       25,
+       30
+      ],
+      [
+       40,
+       45
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Armadura aumentada em (0—200)%",
+     "modelo": "Armadura aumentada em {0}%",
+     "faixas": [
+      [
+       0,
+       200
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(0—100) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       0,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Movimento aumentada em 30%",
+     "modelo": "Velocidade de Movimento aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       30
+      ]
+     ]
+    }
+   ]
+  },
+  "Beacon_of_Madness": {
+   "classe": "Boots",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+(8—12)% de Resistências a Fogo e Raio",
+     "modelo": "+{0}% de Resistências a Fogo e Raio",
+     "faixas": [
+      [
+       8,
+       12
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Concede a Habilidade Abraçar a Loucura Nível 1",
+     "modelo": "Concede a Habilidade Abraçar a Loucura Nível {0}",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Movimento aumentada em 30%",
+     "modelo": "Velocidade de Movimento aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Efeito de Afecções Não-Danificadoras aumentado em (20—40)%",
+     "modelo": "Efeito de Afecções Não-Danificadoras aumentado em {0}%",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Você possui Confluxo de Incêndio, Resfriamento e Eletrização enquanto afetado por Loucura Gloriosa",
+     "modelo": "Você possui Confluxo de Incêndio, Resfriamento e Eletrização enquanto afetado por Loucura Gloriosa",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Imune a Afecções Elementais enquanto afetado por Loucura Gloriosa",
+     "modelo": "Imune a Afecções Elementais enquanto afetado por Loucura Gloriosa",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Concede Loucura Gloriosa. Enquanto estiver sob o efeito de Loucura Gloriosa, você ganhará uma penalidade \"Tocado\" aleatória a cada 2 segundos. Usar esta habilidade novamente removerá a Loucura Gloriosa e as penalidades de \"Tocado\" que ela inflige, mas você não poderá Abraçar a Loucura novamente até que o tempo de recarga expire)",
+     "modelo": "(Concede Loucura Gloriosa. Enquanto estiver sob o efeito de Loucura Gloriosa, você ganhará uma penalidade \"Tocado\" aleatória a cada {0} segundos. Usar esta habilidade novamente removerá a Loucura Gloriosa e as penalidades de \"Tocado\" que ela inflige, mas você não poderá Abraçar a Loucura novamente até que o tempo de recarga expire)",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Afecções que não causam Dano são: Resfriamento, Congelamento, Causticado, Fragilizado, Exaurido e Eletrização)",
+     "modelo": "(Afecções que não causam Dano são: Resfriamento, Congelamento, Causticado, Fragilizado, Exaurido e Eletrização)",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Enquanto você estiver com Confluência Elemental, todo Dano de Acertos Resfriará, Eletrizará e Incendiará)",
+     "modelo": "(Enquanto você estiver com Confluência Elemental, todo Dano de Acertos Resfriará, Eletrizará e Incendiará)",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Afecções Elementais são Incêndio, Resfriamento, Congelamento e Eletrização, Fragilizado, Causticado e Exaurido)",
+     "modelo": "(Afecções Elementais são Incêndio, Resfriamento, Congelamento e Eletrização, Fragilizado, Causticado e Exaurido)",
+     "faixas": []
+    }
+   ]
+  },
+  "Wyrmsign": {
+   "classe": "Gloves",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Gemas Encaixadas são Suportadas por Efeito Concentrado nível 5",
+     "modelo": "Gemas Encaixadas são Suportadas por Efeito Concentrado nível {0}",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Armadura e Evasão aumentados em (120—160)%",
+     "modelo": "Armadura e Evasão aumentados em {0}%",
+     "faixas": [
+      [
+       120,
+       160
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(50—70) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       50,
+       70
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Ganha Fúria quando no Máximo de Cargas de Tolerância",
+     "modelo": "Ganha Fúria quando no Máximo de Cargas de Tolerância",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Perde todas Cargas de Tolerância quando a Fúria termina",
+     "modelo": "Perde todas Cargas de Tolerância quando a Fúria termina",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Eficiência de custo de mana aumentada em 10% por carga de tolerância",
+     "modelo": "Eficiência de custo de mana aumentada em {0}% por carga de tolerância",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Você ganha bônus de Ímpeto ao Matar múltiplos Inimigos em uma rápida sucessão)",
+     "modelo": "(Você ganha bônus de Ímpeto ao Matar múltiplos Inimigos em uma rápida sucessão)",
+     "faixas": []
+    }
+   ]
+  },
+  "Triad_Grip": {
+   "classe": "Gloves",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Armadura e Escudo de Energia aumentados em (80—120)%",
+     "modelo": "Armadura e Escudo de Energia aumentados em {0}%",
+     "faixas": [
+      [
+       80,
+       120
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Lacaios convertem 25% do dano físico em dano de fogo por gema vermelha encaixada",
+     "modelo": "Lacaios convertem {0}% do dano físico em dano de fogo por gema vermelha encaixada",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Lacaios convertem 25% do dano físico em dano de frio por gema verde encaixada",
+     "modelo": "Lacaios convertem {0}% do dano físico em dano de frio por gema verde encaixada",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Lacaios convertem 25% do dano físico em dano elétrico por gema azul encaixada",
+     "modelo": "Lacaios convertem {0}% do dano físico em dano elétrico por gema azul encaixada",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Lacaios convertem 25% do dano físico em dano de caos por encaixe vazio",
+     "modelo": "Lacaios convertem {0}% do dano físico em dano de caos por encaixe vazio",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Lacaios tem (5—10)% de chance de Congelar, Eletrizar e Incendiar",
+     "modelo": "Lacaios tem {0}% de chance de Congelar, Eletrizar e Incendiar",
+     "faixas": [
+      [
+       5,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "modelo": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Eletrização aumenta o Dano sofrido em até 50%, dependendo da quantidade de Dano de Raio no acerto, por 2 segundos)",
+     "modelo": "(Eletrização aumenta o Dano sofrido em até {0}%, dependendo da quantidade de Dano de Raio no acerto, por {1} segundos)",
+     "faixas": [
+      [
+       50,
+       50
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Incêndio causa Dano Degenerativo de Fogo baseado no Dano de Fogo base da Habilidade por 4 segundos)",
+     "modelo": "(Incêndio causa Dano Degenerativo de Fogo baseado no Dano de Fogo base da Habilidade por {0} segundos)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    }
+   ]
+  },
+  "Sibyls_Lament": {
+   "classe": "Rings",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+(20—30) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (8—15) a (20—28) de Dano de Fogo em Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo em Ataques",
+     "faixas": [
+      [
+       8,
+       15
+      ],
+      [
+       20,
+       28
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Raridade de Itens encontrados reduzida em (10—20)%",
+     "modelo": "Raridade de Itens encontrados reduzida em {0}%",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano Elemental aumentado em (20—30)% com Habilidades de Ataque",
+     "modelo": "Dano Elemental aumentado em {0}% com Habilidades de Ataque",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Espaço de anel esquerdo: você e seus lacaios evitam +100% do dano elemental refletido",
+     "modelo": "Espaço de anel esquerdo: você e seus lacaios evitam +{0}% do dano elemental refletido",
+     "faixas": [
+      [
+       100,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Espaço de anel direito: você e seus lacaios evitam +100% do dano físico refletido",
+     "modelo": "Espaço de anel direito: você e seus lacaios evitam +{0}% do dano físico refletido",
+     "faixas": [
+      [
+       100,
+       100
+      ]
+     ]
+    }
+   ]
+  },
+  "Praxis": {
+   "classe": "Rings",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+(20—30) de Mana máxima",
+     "modelo": "+{0} de Mana máxima",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(30—60) de Mana máxima",
+     "modelo": "+{0} de Mana máxima",
+     "faixas": [
+      [
+       30,
+       60
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(3—6) de Mana Regenerada por segundo",
+     "modelo": "{0} de Mana Regenerada por segundo",
+     "faixas": [
+      [
+       3,
+       6
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(-8—-4) ao Custo de Mana Total das Habilidades",
+     "modelo": "{0} ao Custo de Mana Total das Habilidades",
+     "faixas": [
+      [
+       -8,
+       -4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "8% do Dano sofrido é Recuperado como Mana",
+     "modelo": "{0}% do Dano sofrido é Recuperado como Mana",
+     "faixas": [
+      [
+       8,
+       8
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Eficiência de custo de mana aumentada em (20—30)%",
+     "modelo": "Eficiência de custo de mana aumentada em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Somente o Dano de Acertos pode ser Recuperado, durante 4 segundos após o Acerto)",
+     "modelo": "(Somente o Dano de Acertos pode ser Recuperado, durante {0} segundos após o Acerto)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    }
+   ]
+  },
+  "Precursors_Emblem": {
+   "classe": "Rings",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+(20—30)% de Resistência a Raio",
+     "modelo": "+{0}% de Resistência a Raio",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+20 de Inteligência",
+     "modelo": "+{0} de Inteligência",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Escudo de Energia máximo aumentado em 5%",
+     "modelo": "Escudo de Energia máximo aumentado em {0}%",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Vida máxima aumentada em 5%",
+     "modelo": "Vida máxima aumentada em {0}%",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "[Three Power Charge mods]",
+     "modelo": "[Three Power Charge mods]",
+     "faixas": []
+    }
+   ]
+  },
+  "Ngamahus_Sign": {
+   "classe": "Rings",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "+(20—30)% de Resistência a Fogo",
+     "modelo": "+{0}% de Resistência a Fogo",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(15—25) de Força",
+     "modelo": "+{0} de Força",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (20—25) a (30—35) de Dano de Fogo a Magias e Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Fogo a Magias e Ataques",
+     "faixas": [
+      [
+       20,
+       25
+      ],
+      [
+       30,
+       35
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(400—600) de Armadura",
+     "modelo": "+{0} de Armadura",
+     "faixas": [
+      [
+       400,
+       600
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Duração do Incêndio em Inimigos aumentada em 15%",
+     "modelo": "Duração do Incêndio em Inimigos aumentada em {0}%",
+     "faixas": [
+      [
+       15,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "10% de chance de Incendiar",
+     "modelo": "{0}% de chance de Incendiar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Recupera (20—30) de Vida quando você Incendeia um Inimigo",
+     "modelo": "Recupera {0} de Vida quando você Incendeia um Inimigo",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Incêndio causa Dano Degenerativo de Fogo baseado no Dano de Fogo base da Habilidade por 4 segundos)",
+     "modelo": "(Incêndio causa Dano Degenerativo de Fogo baseado no Dano de Fogo base da Habilidade por {0} segundos)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    }
+   ]
+  },
+  "Tawhanukus_Timing": {
+   "classe": "Rings",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Velocidade de Conjuração aumentada em (7—10)%",
+     "modelo": "Velocidade de Conjuração aumentada em {0}%",
+     "faixas": [
+      [
+       7,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano Mágico aumentado em (30—40)%",
+     "modelo": "Dano Mágico aumentado em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(60—80) de Escudo de Energia máximo",
+     "modelo": "+{0} de Escudo de Energia máximo",
+     "faixas": [
+      [
+       60,
+       80
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(60—80) de Mana máxima",
+     "modelo": "+{0} de Mana máxima",
+     "faixas": [
+      [
+       60,
+       80
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(5—10)% de chance de Congelar, Eletrizar e Incendiar",
+     "modelo": "{0}% de chance de Congelar, Eletrizar e Incendiar",
+     "faixas": [
+      [
+       5,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Magias fazem você ganhar escudo de energia equivalente ao custo inicial delas a cada três vezes que você pagar por ele",
+     "modelo": "Magias fazem você ganhar escudo de energia equivalente ao custo inicial delas a cada três vezes que você pagar por ele",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "modelo": "(Congelamento desacelera os Inimigos completamente, prevenindo que realizem qualquer ação. A Duração é baseada no Dano de Gelo do Acerto)",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Eletrização aumenta o Dano sofrido em até 50%, dependendo da quantidade de Dano de Raio no acerto, por 2 segundos)",
+     "modelo": "(Eletrização aumenta o Dano sofrido em até {0}%, dependendo da quantidade de Dano de Raio no acerto, por {1} segundos)",
+     "faixas": [
+      [
+       50,
+       50
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Incêndio causa Dano Degenerativo de Fogo baseado no Dano de Fogo base da Habilidade por 4 segundos)",
+     "modelo": "(Incêndio causa Dano Degenerativo de Fogo baseado no Dano de Fogo base da Habilidade por {0} segundos)",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Custos Diretos são todos os custos que não são pagos por segundo)",
+     "modelo": "(Custos Diretos são todos os custos que não são pagos por segundo)",
+     "faixas": []
+    }
+   ]
+  },
+  "Blightwell": {
+   "classe": "Amulets",
+   "base": "Talismã de Caranguejo-escudo",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "+(50—100) de Escudo de Energia máximo",
+     "modelo": "+{0} de Escudo de Energia máximo",
+     "faixas": [
+      [
+       50,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(15—30)% de Resistência a Fogo",
+     "modelo": "+{0}% de Resistência a Fogo",
+     "faixas": [
+      [
+       15,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(15—30)% de Resistência a Raio",
+     "modelo": "+{0}% de Resistência a Raio",
+     "faixas": [
+      [
+       15,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Início da Recarga do Escudo de Energia é 50% mais lento durante qualquer Efeito de Frasco",
+     "modelo": "Início da Recarga do Escudo de Energia é {0}% mais lento durante qualquer Efeito de Frasco",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade da Recarga do Escudo de Energia aumentada em (150—200)% durante qualquer Efeito de Frasco",
+     "modelo": "Velocidade da Recarga do Escudo de Energia aumentada em {0}% durante qualquer Efeito de Frasco",
+     "faixas": [
+      [
+       150,
+       200
+      ]
+     ]
+    }
+   ]
+  },
+  "Rigwalds_Curse": {
+   "classe": "Amulets",
+   "base": "Talismã de Lobo Alfa",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "+(5—10)% de Chance de Golpe Crítico do Ataque Corpo a Corpo Desarmado",
+     "modelo": "+{0}% de Chance de Golpe Crítico do Ataque Corpo a Corpo Desarmado",
+     "faixas": [
+      [
+       5,
+       10
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Modificadores de Dano de Garras também se aplicam ao Dano de Ataque Desarmado com Habiliades Corpo a Corpo",
+     "modelo": "Modificadores de Dano de Garras também se aplicam ao Dano de Ataque Desarmado com Habiliades Corpo a Corpo",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Modificadores da Velocidade de Ataque com Garras também se aplicam a Velocidade de Ataque com Habilidades Corpo a Corpo",
+     "modelo": "Modificadores da Velocidade de Ataque com Garras também se aplicam a Velocidade de Ataque com Habilidades Corpo a Corpo",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Modificadores da Chance de Golpe Crítico com Garras também se aplicam a Chance de Golpe Crítico com Habilidades Corpo a Corpo",
+     "modelo": "Modificadores da Chance de Golpe Crítico com Garras também se aplicam a Chance de Golpe Crítico com Habilidades Corpo a Corpo",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Ataques Desarmados são qualquer Ataque feito com uma mão que não está segurando nenhum Item)",
+     "modelo": "(Ataques Desarmados são qualquer Ataque feito com uma mão que não está segurando nenhum Item)",
+     "faixas": []
+    }
+   ]
+  },
+  "Natural_Hierarchy": {
+   "classe": "Amulets",
+   "base": "Talismã de Rhex",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Receba (10—15)% do Dano Físico como Dano de Raio Extra",
+     "modelo": "Receba {0}% do Dano Físico como Dano de Raio Extra",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Receba (15—20)% do Dano de Raio como Dano de Gelo Extra",
+     "modelo": "Receba {0}% do Dano de Raio como Dano de Gelo Extra",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Receba (20—25)% do Dano de Gelo como Dano de Fogo Extra",
+     "modelo": "Receba {0}% do Dano de Gelo como Dano de Fogo Extra",
+     "faixas": [
+      [
+       20,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Receba (25—30)% do Dano de Fogo como Dano de Caos Extra",
+     "modelo": "Receba {0}% do Dano de Fogo como Dano de Caos Extra",
+     "faixas": [
+      [
+       25,
+       30
+      ]
+     ]
+    }
+   ]
+  },
+  "Unholy_Accomplice": {
+   "classe": "Belts",
+   "base": "Cinto de Pano",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Recuperação de Atordoamentos e Bloqueios aumentada em (15—25)%",
+     "modelo": "Recuperação de Atordoamentos e Bloqueios aumentada em {0}%",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Dano Mágico aumentado em (30—50)%",
+     "modelo": "Dano Mágico aumentado em {0}%",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(50—77) de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       50,
+       77
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(23—37)% de Resistência a Raio e Caos",
+     "modelo": "+{0}% de Resistência a Raio e Caos",
+     "faixas": [
+      [
+       23,
+       37
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Habilidades de pacto têm a velocidade de conjuração aumentada em (30—50)%",
+     "modelo": "Habilidades de pacto têm a velocidade de conjuração aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Habilidades de pacto têm a velocidade de recarga aumentada em (30—50)%",
+     "modelo": "Habilidades de pacto têm a velocidade de recarga aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Habilidades de pacto concedem Dádivas em vez de Aflições",
+     "modelo": "Habilidades de pacto concedem Dádivas em vez de Aflições",
+     "faixas": []
+    }
+   ]
+  },
+  "Stormblood": {
+   "classe": "Utility_Flasks",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "(20—40)% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico",
+     "modelo": "{0}% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Todo dano causado por golpes críticos pode aplicar afecções de frio durante o efeito",
+     "modelo": "Todo dano causado por golpes críticos pode aplicar afecções de frio durante o efeito",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Duração reduzida em 50%",
+     "modelo": "Duração reduzida em {0}%",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(As afecções relacionadas ao frio são: esfriamento, congelamento e fragilização. Ataques têm 100% de chance de infligir esfriamento, e golpes críticos têm 100% de chance de infligir congelamento)",
+     "modelo": "(As afecções relacionadas ao frio são: esfriamento, congelamento e fragilização. Ataques têm {0}% de chance de infligir esfriamento, e golpes críticos têm {1}% de chance de infligir congelamento)",
+     "faixas": [
+      [
+       100,
+       100
+      ],
+      [
+       100,
+       100
+      ]
+     ]
+    }
+   ]
+  },
+  "Voidfletcher": {
+   "classe": "Quivers",
+   "base": "Aljava Ornamentada",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Possui 1 Encaixes",
+     "modelo": "Possui {0} Encaixes",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Possui 2 Encaixes",
+     "modelo": "Possui {0} Encaixes",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Consome uma Carga do Vazio para Ativar Tiro do Vazio Nível 20 ao disparar Flechas com uma Habilidade não Ativada",
+     "modelo": "Consome uma Carga do Vazio para Ativar Tiro do Vazio Nível {0} ao disparar Flechas com uma Habilidade não Ativada",
+     "faixas": [
+      [
+       20,
+       20
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Adiciona (30—40) a (80—100) de Dano de Gelo em Ataques",
+     "modelo": "Adiciona {0} a {1} de Dano de Gelo em Ataques",
+     "faixas": [
+      [
+       30,
+       40
+      ],
+      [
+       80,
+       100
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(80—120) de Escudo de Energia máximo",
+     "modelo": "+{0} de Escudo de Energia máximo",
+     "faixas": [
+      [
+       80,
+       120
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(20—30)% de Resistência a Gelo",
+     "modelo": "+{0}% de Resistência a Gelo",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "5 ao Máximo de Cargas do Vazio",
+     "modelo": "{0} ao Máximo de Cargas do Vazio",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Recebe uma Carga do Vácuo por segundo",
+     "modelo": "Recebe uma Carga do Vácuo por segundo",
+     "faixas": []
+    }
+   ]
+  },
+  "Eyes_of_the_Greatwolf": {
+   "classe": "Amulets",
+   "modificadores": [
+    {
+     "tipo": "explicit",
+     "texto": "Magnitudes dos Modificadores Implícitos são dobradas",
+     "modelo": "Magnitudes dos Modificadores Implícitos são dobradas",
+     "faixas": []
+    },
+    {
+     "tipo": "explicit",
+     "texto": "(Modificadores Implícitos são aqueles que vêm do tipo do item ao invés de suas propriedades aleatórias)",
+     "modelo": "(Modificadores Implícitos são aqueles que vêm do tipo do item ao invés de suas propriedades aleatórias)",
+     "faixas": []
+    }
+   ],
+   "base": "Talismã do Lobo Grandioso"
+  }
+ },
+ "novos": [
+  {
+   "classe": "Sceptres",
+   "slug": "Replica_Maatas_Teaching",
+   "nome": "Réplica: Ensinamentos de Maata",
+   "base": "Cetro Karui",
+   "modificadores": [
+    {
+     "tipo": "implicit",
+     "texto": "Dano Elemental aumentado em 26%",
+     "modelo": "Dano Elemental aumentado em {0}%",
+     "faixas": [
+      [
+       26,
+       26
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "+(30—40) de Inteligência",
+     "modelo": "+{0} de Inteligência",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Velocidade de Ataque aumentada em (8—16)%",
+     "modelo": "Velocidade de Ataque aumentada em {0}%",
+     "faixas": [
+      [
+       8,
+       16
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Lacaios têm (15—30)% da Velocidade de Movimento aumentada",
+     "modelo": "Lacaios têm {0}% da Velocidade de Movimento aumentada",
+     "faixas": [
+      [
+       15,
+       30
+      ]
+     ]
+    },
+    {
+     "tipo": "explicit",
+     "texto": "Tempo de ataque base dos lacaios não espectrais é equivalente ao tempo de ataque da arma da sua mão principal",
+     "modelo": "Tempo de ataque base dos lacaios não espectrais é equivalente ao tempo de ataque da arma da sua mão principal",
+     "faixas": []
+    }
+   ]
+  }
+ ]
+}

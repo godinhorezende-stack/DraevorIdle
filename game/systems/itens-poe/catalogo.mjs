@@ -28,6 +28,29 @@ export const ligado = () => !classico() && TEM_DADOS;
 export const dadosAusentes = () => (classico() || TEM_DADOS ? null : `o catálogo do PoE não está em ${ARQUIVO} (ele é do repositório: confira o checkout, ou gere com node tools/importar-poe-itens.mjs)`);
 
 let cache = null;
+const ARQUIVO_DAS_CORRECOES = new URL('../../gamedata/itens-poe/unicos-correcoes.json', import.meta.url);
+/**
+ * As CORREÇÕES DOS ÚNICOS pelo poedb (dono, 11/10 — `tools/auditar-unicos-poedb.mjs --corrigir`): o catálogo vem da coleção (importada) e
+ * alguns únicos estavam numa versão antiga do PoE, com texto em outro idioma ou vazios. Aqui as linhas do poedb entram no lugar das do
+ * catálogo (e a base, quando faltava ou era de outra versão), e os que faltavam entram — por cima do arquivo importado, para uma nova
+ * importação não desfazer.
+ */
+function corrigirUnicos(cat) {
+  if (!existsSync(ARQUIVO_DAS_CORRECOES)) return;
+  const { unicos = {}, novos = [] } = JSON.parse(readFileSync(ARQUIVO_DAS_CORRECOES, 'utf8'));
+  for (const [slug, c] of Object.entries(unicos)) {
+    const u = cat.classes[c.classe]?.unicos?.find((x) => x.slug === slug);
+    if (!u) continue;
+    if (c.base) u.base = c.base;
+    u.modificadores = c.modificadores;
+    u.corrigidoPeloPoedb = true;
+  }
+  for (const n of novos) {
+    const classe = cat.classes[n.classe];
+    if (!classe || classe.unicos?.some((x) => x.slug === n.slug)) continue;
+    (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: null, corrigidoPeloPoedb: true });
+  }
+}
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
 // refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).
 const ARQUIVO_DOS_MAPAS = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
@@ -42,6 +65,7 @@ export function catalogo() {
     // o Único sorteado num drop de mapa sai no tier daquele drop, com a área desse tier.
     if (mapas) mapas.unicos = (mapas.unicos ?? []).flatMap((u) => (mapas.bases ?? []).filter((b) => !u.tiers?.length || u.tiers.includes(b.atributos?.tier)).map((b) => ({ ...u, base: b.nome })));
     if (mapas) cache.classes[mapas.id] = mapas;
+    corrigirUnicos(cache);
   }
   return cache;
 }
