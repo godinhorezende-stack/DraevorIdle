@@ -2279,16 +2279,50 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
  * usa a skill da gema no bicho mais perto a até `alcanceDeAtaque` casas: o dano é a conta do jogo para aquela skill (`Acoes.danoMostrado`)
  * e o desenho é o dela (o projétil e o impacto, com o `sk`). Os bichos colados num lacaio batem nele; morreu, ou acabou a duração, some.
  */
-/** O roubo de vida e as chances do PoE no acerto de um lacaio (`l.poe`, de `LacaiosPoe.oQueInvoca`). Devolve os eventos. */
-function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo) {
+/**
+ * As PARTES do golpe de um lacaio por elemento (dono, 11/10: os únicos): a conversão do dano Físico ("Lacaios convertem X% do Dano Físico
+ * para Dano de Gelo", o Avatar do Fogo de um tipo) — acima de 100% no total, cada uma cai na proporção, como no PoE — e o "só causa dano de
+ * X" (o resto some). Sem conversão: o golpe inteiro no tipo dele. `[{ tipo, f }]` (a fração do golpe).
+ */
+export function partesDoGolpeDoLacaio(l, tipo) {
+  const c = l.conversao;
+  let partes = [{ tipo, f: 1 }];
+  if (c && tipo === 'physical') {
+    const total = Object.values(c).reduce((n, v) => n + Math.max(0, v), 0);
+    const escala = total > 100 ? 100 / total : 1;
+    partes = Object.entries(c).filter(([, v]) => v > 0).map(([el, v]) => ({ tipo: el, f: (v * escala) / 100 }));
+    const resto = 1 - partes.reduce((n, x) => n + x.f, 0);
+    if (resto > 1e-9) partes.push({ tipo: 'physical', f: resto });
+  }
+  return l.soDano ? partes.filter((x) => x.tipo === l.soDano) : partes;
+}
+
+/**
+ * O roubo de vida e as chances do PoE no acerto de um lacaio (`l.poe`, de `LacaiosPoe.oQueInvoca`). Devolve os eventos. `ctx`: o dono
+ * (`estado`, `ficha`, `personagem` — o dreno para ele), se o alvo estava envenenado e se é Raro/Único (antes do golpe).
+ */
+export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
   const eventos = [];
   const p = l.poe;
-  if (p.roubo > 0) l.hp = Math.min(l.maxHp, l.hp + (dano * p.roubo) / 100);
-  if (alvo.hp <= 0) return eventos;
   const agora = hunt.clock ?? 0;
-  const e = (alvo.estados ??= {});
   const sorte = (pct) => pct > 0 && Math.random() * 100 < pct;
+  if (p.roubo > 0) l.hp = Math.min(l.maxHp, l.hp + (dano * p.roubo) / 100);
+  // (11/10, os únicos:) o dano drenado como vida para o DONO ("X% do Dano causado pelos seus Zumbis é Drenado para você como Vida"), e a
+  // duração renovada no acerto em Raro/Único ("Fantasmas Convocados têm X% de chance de atualizarem sua Duração").
+  if (p.drenoDono > 0 && ctx.estado) Ficha.drenarPoe(ctx.estado, { vida: (dano * p.drenoDono) / 100 }, ctx.ficha, eventos, ctx.personagem?.nome, hunt.pos);
+  if (p.renova > 0 && l.ate && l.duracaoMs && ctx.raroOuUnico && sorte(p.renova)) l.ate = agora + l.duracaoMs;
+  if (alvo.hp <= 0) {
+    // O inimigo MORTO pelo acerto: "Lacaios Recuperam X% de Vida ao Matar um Inimigo Envenenado"; "Inimigos Mortos pelos Acertos de Zumbis
+    // Explodem, causando X% de suas Vidas como Dano de Fogo".
+    if (p.vidaAoMatarEnvenenado > 0 && ctx.envenenado) l.hp = Math.min(l.maxHp, l.hp + (l.maxHp * p.vidaAoMatarEnvenenado) / 100);
+    if (p.explodir > 0) ModsPoe.explodirMorto(hunt, alvo, p.explodir, eventos);
+    return eventos;
+  }
+  const e = (alvo.estados ??= {});
   const ev = (st) => eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
+  // ("Lacaios têm X% de chance de infligir Definhamento ao Acertar" — 2 s, até 15; "Zumbis Erguidos Cobrem Inimigos em Cinzas ao Acertar".)
+  if (sorte(p.chances.definhar)) { ModsPoe.porNoAlvo(alvo, 'definhado', agora + 2000); ev('definhado'); }
+  if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000); ev('cinzas'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
   if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs }; ev('provocado'); }
   if (sorte(p.chances.desacelerar)) {
@@ -2303,6 +2337,18 @@ function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo) {
   if (sorte(p.chances.envenenar) && ['physical', 'chaos'].includes(tipo)) dot('venenoPoe', 0.3, 2000);
   if (sorte(p.chances.incendiar) && tipo === 'fire') dot('queimadura', 0.9, 4000);
   return eventos;
+}
+
+/**
+ * O lacaio BLOQUEIA o golpe de um bicho? (a Oferenda de Osso e o "+X% de Chance de Bloquear" dos lacaios das peças; e "Lacaios Recuperam X%
+ * de suas Vidas quando Bloqueiam"). Põe o evento do bloqueio.
+ */
+export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random) {
+  const chance = (oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0);
+  if (!(chance > 0) || rng() * 100 >= chance) return false;
+  eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true });
+  if (l.poe?.vidaAoBloquear > 0) l.hp = Math.min(l.maxHp, l.hp + (l.maxHp * l.poe.vidaAoBloquear) / 100);
+  return true;
 }
 
 /**
@@ -2353,7 +2399,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     for (const b of hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
       // A Oferenda de Osso: o lacaio bloqueia o golpe.
-      if ((oferenda?.bloqueioPct || l.poe?.bloqueio) && Math.random() * 100 < (oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0)) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true }); continue; }
+      if (lacaioBloqueia(l, oferenda, eventos)) continue;
       // (PoE: o golpe do bicho com o dano de outros tipos dele passando pelas resistências do lacaio, e o "Lacaios sofrem Dano aumentado/reduzido".)
       const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(75, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? l.poe.res : 0) / 100), 0) : 0;
       const d = Math.max(1, Math.round((R.ataqueDoMonstro(b) * 0.5 + extras) * Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator));
@@ -2414,18 +2460,23 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     l.proximoGolpe = agora + Math.max(250, Math.round((l.intervaloMs * (est.rapido ?? 1)) / vel));
     l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
     // O ELEMENTO do golpe (o mago varia entre fogo, gelo e raio) e o desenho dele.
-    const tipo = est.magia ? est.elementos[Math.floor(Math.random() * est.elementos.length)] : est.elemento ?? l.elemento ?? 'physical';
+    const tipoBase = est.magia ? est.elementos[Math.floor(Math.random() * est.elementos.length)] : est.elemento ?? l.elemento ?? 'physical';
+    // (A conversão do dano dos únicos: as partes por elemento; o `tipo` do golpe — a cor, as chances que dependem do elemento — é a maior.)
+    const partes = partesDoGolpeDoLacaio(l, tipoBase);
+    if (!partes.length) continue;
+    const tipo = partes.reduce((a, b) => (b.f > a.f ? b : a)).tipo;
     const PROJETIL = { fire: 4, ice: 37, energy: 36, chaos: 11, physical: 12 };
     const IMPACTO = { fire: 16, ice: 44, energy: 176, chaos: 17, physical: 10 };
-    if (resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100) continue;
+    if (partes.every((x) => resistenciaEfetivaDe(hunt, alvo, x.tipo, ficha) >= 100)) continue;
     // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito).
     const chanceCrit = Math.min(100, (l.critChance ?? 5) * (1 + (oferenda?.critInc ?? 0) / 100));
     const crit = Math.random() * 100 < chanceCrit;
     const bruto = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? (l.critMult ?? 1.5) + (oferenda?.critMult ?? 0) / 100 : 1);
-    const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, bruto, ficha)));
+    const antes = l.poe ? { envenenado: (alvo.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(alvo.raridade ?? alvo.raridadePoe) || !!alvo.boss || !!alvo.chefe } : null;
+    const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, alvo, x.tipo, bruto * x.f, ficha), 0)));
     alvo.hp -= dano;
     // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
-    if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo));
+    if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, { ...antes, estado, ficha, personagem }));
     const deLonge = l.alcanceDeAtaque > 1;
     // O golpe do LACAIO tem o desenho do tipo dele (o mago no elemento da vez): sem o `sk` da gema, que é o da invocação.
     if (deLonge) eventos.push({ t: 'shot', id: est.projetil ?? PROJETIL[tipo] ?? 12, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
@@ -2443,7 +2494,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'explosao', id: est.area.efeito, x: alvo.x, y: alvo.y, lado: 3 });
       for (const m of hunt.monstros) {
         if (m === alvo || m.hp <= 0 || m.dummy || distancia(m, alvo) > 1) continue;
-        const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto * 0.6, ficha)));
+        const d = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, m, x.tipo, bruto * 0.6 * x.f, ficha), 0)));
         m.hp -= d;
         eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       }

@@ -303,14 +303,16 @@ function calcularCombate(estado, extrasDoPoe = null) {
   // (× o "X% mais/menos Chance de Crítico" do PoE; "Nunca causa Acertos Críticos" zera.)
   const critMais = itensPoeLigado() ? (af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100)) : 1;
   const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais;
-  const critChance = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critBruto));
+  // O teto da chance: o da configuração, ou o menor de uma peça do PoE ("Chance de Golpe Crítico Máxima é N%" — `crit_chance_teto`).
+  const tetoDoCritico = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, itensPoeLigado() && af.crit_chance_teto > 0 ? af.crit_chance_teto / 100 : 1);
+  const critChance = Math.min(tetoDoCritico, Math.max(0, critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
   // PoE, DUAS ARMAS: o golpe da mão secundária usa o crítico da arma DELA (a base × o local dela) no lugar do da principal; o resto (os
   // "+% de chance" fixos, os aumentos globais, o "mais") é o mesmo. `fichaDaMao` troca na hora do golpe.
   const critLocalSecundaria = armaSecundariaFinal ? (armaSecundariaFinal.critChance.final - armaSecundariaFinal.critChance.base) / 10000 : 0;
   const critPontosSecundaria = armaSecundaria ? critPontos - ((w?.critChance ?? 0) / 10000 + critLocalDaArma) + ((armaSecundaria.critChance ?? 0) / 10000 + critLocalSecundaria) : null;
   // Nas magias o PoE ainda soma o "Chance de Golpe Crítico com Magias aumentada" (`spell_crit_chance_inc`).
-  const critChanceMagia = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
+  const critChanceMagia = Math.min(tetoDoCritico, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
   // A magia do PoE: a chance-base é a da GEMA (somada a estes "+% de chance" fixos) × (1 + o "aumentada" geral e o de magias).
   const critMagiaPoe = itensPoeLigado() ? { fixa: (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0), aumentada: (af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0), mais: af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100) } : null;
   // O dano elemental SOMADO das peças do PoE (`added_<el>_dmg_min/max`): faixa por elemento, nos ataques e nas magias.
@@ -384,17 +386,17 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // Para o crítico de CADA golpe (os "aumentada" com condição — `itens-poe/mods-poe.mjs → fichaDoGolpe`): os pontos, os "aumentada" e o teto.
     critPontos,
     // (Duas armas no PoE: os pontos e a chance da mão secundária — `fichaDaMao`.)
-    ...(critPontosSecundaria != null ? { critPontosSecundaria, critChanceSecundaria: Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontosSecundaria * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais)) } : {}),
+    ...(critPontosSecundaria != null ? { critPontosSecundaria, critChanceSecundaria: Math.min(tetoDoCritico, Math.max(0, critPontosSecundaria * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais)) } : {}),
     critMais,
     critInc: af.crit_chance_inc ?? 0,
     critIncMagia: af.spell_crit_chance_inc ?? 0,
-    critTeto: Limites.LIMITES.critico.chanceMaxima / 100,
+    critTeto: tetoDoCritico,
     // Os mods condicionais do PoE que dependem do GOLPE (tags) e os números dos mods do PoE que o combate lê (`ModsPoe.resumo`).
     ...(itensPoeLigado() ? { porTag: ModsPoe.porTag(estado, af, principais), afPoe: af, recalcularAfeccoes: AfeccoesPoe.daSoma, eventosPoe: ModsPoe.eventosDa(af) } : {}),
     // Os números da PRÓPRIA arma (base, qualidade, locais → dano físico final, APS, crítico, DPS físico da arma): o que o tooltip e o editor mostram. `null` sem arma.
     arma: armaFinal,
-    // (PoE: "Seus Acertos Críticos não causam Dano extra" — o multiplicador fica em 100%.)
-    critMultiplier: itensPoeLigado() && af.critico_sem_dano_extra ? 1 : MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
+    // (PoE: "Seus Acertos Críticos não causam Dano extra" — o multiplicador fica em 100%; "Seu Multiplicador de Acerto Crítico é N%" — fixo.)
+    critMultiplier: itensPoeLigado() && af.critico_sem_dano_extra ? 1 : itensPoeLigado() && af.crit_multi_fixo > 0 ? af.crit_multi_fixo / 100 : MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
     // (o mesmo, sem o "Golpes Críticos não causam Dano extra": a Agonia Perfeita usa nas afecções — `condicoes-poe.finalizar`)
     critMultiplierBruto: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
     // "Acertos não podem ser Evadidos" (peça do PoE): o golpe nunca erra (`personagem/defesa.errou`).
@@ -509,7 +511,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
     resistenciaAControle: Limites.limitar(af.control_resist ?? 0, Limites.LIMITES.resistenciaAControle.maximo),
     // Bloqueio de MAGIA (add Spell Block Chance), no teto do tipo (`combate/formulas.json`, + "+X% à Chance máxima de Bloquear Dano
     // Mágico" — `spell_block_max`); só vale com `bloqueio.modo` = 'poe'.
-    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal((af.spell_block ?? 0) / 100, 'magia', (af.spell_block_max ?? 0) / 100),
+    // (+ "Chance de Bloquear o Dano Mágico é dobrada" — `spell_block_dobrado`; "Você está no Máximo de Chance de Bloquear Dano Mágico se você
+    // não Bloqueou Recentemente" — `bloqueio_magia_no_maximo`, com a condição já resolvida na soma.)
+    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal(af.bloqueio_magia_no_maximo > 0 ? Infinity : ((af.spell_block ?? 0) / 100) * (af.spell_block_dobrado > 0 ? 2 : 1), 'magia', (af.spell_block_max ?? 0) / 100),
     // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
     armaEquipada: armaEquipadaDaFicha(estado),
     // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".
@@ -801,7 +805,7 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const doCharm = Charms.criticoExtra(estado, alvo?.key);
   // O teto da chance FINAL (a ficha + os suportes, os reforços, os charms e o crítico do golpe básico somam depois dela): `combate/limites.json`.
   // (+ o Fragilizado do PoE: "+6% de chance de crítico contra" o bicho — "Inflige Enfraquecer … ao Bloquear".)
-  const chanceDeCritico = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
+  const chanceDeCritico = Math.min(ficha.critTeto ?? Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
   // ("Sua Chance de Golpe Crítico é Sortuda": rola duas vezes e fica com a melhor — `ModsPoe.sorteado`.)
   const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'));
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
@@ -810,7 +814,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
   const daArvore = (1 + (ficha.danoDaArvore ?? 0)) * Arvore.fatorDasHabilidades(estado, alvo) * AfeccoesPoe.fatorDeEletrizacao(alvo, estado.hunt?.clock ?? 0) * (ficha.fatorDasCargas ?? 1);
   // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
-  const dano = Math.round(base * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
+  // ("Golpes Críticos não causam Dano", "Golpes não-críticos causam N% menos Dano": `mais_dano_critico` / `mais_dano_nao_critico`, o golpe inteiro.)
+  const doTipoDeGolpe = Math.max(0, 1 + ModsPoe.valor(ficha, crit ? 'mais_dano_critico' : 'mais_dano_nao_critico') / 100);
+  const dano = Math.round(base * doTipoDeGolpe * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught, chance: chanceDeCritico };
 }
@@ -840,7 +846,8 @@ function bloqueioDaFicha(estado, escudo, w, shielding, af = {}) {
   // + o add Block Chance (em %), com o teto da configuração (+ "+X% à Chance máxima de Bloquear o Dano de Ataques" — `block_max`).
   const extra2 = (af.block ?? 0) / 100;
   const teto = Atributos.CONFIG.bloqueio.MAX + (af.block_max ?? 0) / 100;
-  const com = (d) => Math.min(teto, R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0));
+  // ("Você está na Chance Máxima de Bloquear o Dano de Ataques caso não tenha Bloqueado Recentemente" — `bloqueio_no_maximo`: o teto.)
+  const com = (d) => (af.bloqueio_no_maximo > 0 ? teto : Math.min(teto, R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0)));
   return {
     blockChance: com(Math.round((defMin + defMax) / 2)),
     blockChanceMin: com(defMin),
@@ -914,7 +921,12 @@ export function tetoDoRouboPct(ficha, recurso) {
 }
 const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
 const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0 } = {}) {
+  // (PoE, os únicos: "X% do Dano de Golpes Críticos é Drenado como Vida" — `roubo_vida_critico`, sobre a parte do dano que veio de crítico —
+  // e "Não pode Drenar Vida com Golpes Críticos" — `sem_roubo_vida_critico`: essa parte não drena.)
+  const critico = itensPoeLigado() ? Math.min(Math.max(0, Number(danoCritico) || 0), Math.max(0, danoTotal)) : 0;
+  const semCritico = critico > 0 && ModsPoe.valor(ficha, 'sem_roubo_vida_critico') > 0;
+  const vidaDoCritico = critico > 0 && !semCritico ? (critico * (ModsPoe.valor(ficha, 'roubo_vida_critico') + (ataque ? ModsPoe.valor(ficha, 'roubo_vida_critico_ataque') : 0))) / 100 : 0;
   // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
   if (itensPoeLigado() && !ataque) {
     const pct = ModsPoe.valor(ficha, 'es_leech_magia') + ModsPoe.valor(ficha, 'es_leech');
@@ -926,8 +938,9 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
     // ("X% de Dano Mágico Drenado como Vida enquanto você possuir Fúria Arcana" — a magia que drena vida, com as regras do roubo.)
     const pctVida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : ModsPoe.valor(ficha, 'vida_leech_magia');
     const maxVida = estado.maxHp ?? 0;
-    if (pctVida > 0 && maxVida > 0 && estado.hunt) {
-      const quanto = Math.min((danoTotal * pctVida) / 100, (maxVida * LEECH_POE.porInstanciaPct) / 100);
+    const doCritico = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : vidaDoCritico;
+    if ((pctVida > 0 || doCritico > 0) && maxVida > 0 && estado.hunt) {
+      const quanto = Math.min(((danoTotal - (semCritico ? critico : 0)) * pctVida) / 100 + doCritico, (maxVida * LEECH_POE.porInstanciaPct) / 100);
       if (quanto > 0) (estado.hunt.roubos ??= []).push({ recurso: 'vida', restante: quanto, porSegundo: (maxVida * LEECH_POE.taxaDaInstanciaPct) / 100 });
     }
     return;
@@ -935,7 +948,7 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
   // (PoE, únicos: "Não Pode Drenar Vida/Mana".)
-  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
+  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor((danoTotal - (semCritico ? critico : 0)) * ((ficha.lifeLeech ?? 0) + doCharm.vida) + vidaDoCritico);
   const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
   if (itensPoeLigado()) {
     // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).

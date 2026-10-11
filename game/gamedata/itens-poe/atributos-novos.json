@@ -3368,6 +3368,252 @@
       "unidade": "%",
       "combate": true,
       "efeito": "lacaios-poe: soma ao golpe do lacaio de Fogo/Gelo/Raio"
+    },
+    "mais_dano_critico": {
+      "nome": "Mais/menos Dano dos Golpes Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.rolarCritico: multiplica o golpe crítico inteiro (-100 = sem dano)"
+    },
+    "mais_dano_nao_critico": {
+      "nome": "Mais/menos Dano dos Golpes Não Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.rolarCritico: multiplica o golpe não crítico inteiro (-100 = sem dano)"
+    },
+    "crit_chance_teto": {
+      "nome": "Chance de Golpe Crítico máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha: o teto da chance de crítico (critTeto), se menor que o da configuração"
+    },
+    "crit_multi_fixo": {
+      "nome": "Multiplicador de Golpe Crítico fixo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.critMultiplier fixo (o do golpe não soma)"
+    },
+    "bloqueio_no_maximo": {
+      "nome": "Na Chance Máxima de Bloquear o Dano de Ataques",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.bloqueioDaFicha: o bloqueio de ataques vai ao teto"
+    },
+    "bloqueio_magia_no_maximo": {
+      "nome": "Na Chance Máxima de Bloquear o Dano Mágico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.bloqueioDeMagia: vai ao teto"
+    },
+    "spell_block_dobrado": {
+      "nome": "Chance de Bloquear o Dano Mágico dobrada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.bloqueioDeMagia: o spell_block × 2, antes do teto"
+    },
+    "max_frenesi_igual_poder": {
+      "nome": "Máximo de Cargas de Frenesi igual ao de Poder",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas.maximo"
+    },
+    "cargas_max_fixo": {
+      "nome": "Máximo de Cargas de Tolerância, Frenesi e Poder (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas.maximo (com cargas_max_fixo_tem)"
+    },
+    "cargas_max_fixo_tem": {
+      "nome": "Máximo de Cargas fixo (marca)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas.maximo: o fixo vale, mesmo 0"
+    },
+    "minion_conv_fire": {
+      "nome": "Lacaios: Dano Físico convertido em Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.conversao → cacadas.partesDoGolpeDoLacaio"
+    },
+    "minion_conv_ice": {
+      "nome": "Lacaios: Dano Físico convertido em Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.conversao → cacadas.partesDoGolpeDoLacaio"
+    },
+    "minion_conv_energy": {
+      "nome": "Lacaios: Dano Físico convertido em Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.conversao → cacadas.partesDoGolpeDoLacaio"
+    },
+    "minion_conv_chaos": {
+      "nome": "Lacaios: Dano Físico convertido em Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.conversao → cacadas.partesDoGolpeDoLacaio"
+    },
+    "minion_so_gelo": {
+      "nome": "Lacaios não causam Dano Não-Gélido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "lacaios-poe.soDano = ice"
+    },
+    "minion_crit_inc": {
+      "nome": "Chance de Golpe Crítico dos Lacaios aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: critChance × (1 + isto)"
+    },
+    "minion_chance_definhar": {
+      "nome": "Lacaios: chance de Definhar ao Acertar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.efeitosDoLacaioNoAcerto (2 s, até 15)"
+    },
+    "minion_vida_ao_bloquear": {
+      "nome": "Lacaios recuperam Vida ao Bloquear",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios (o bloqueio do lacaio)"
+    },
+    "minion_vida_ao_matar_envenenado": {
+      "nome": "Lacaios recuperam Vida ao Matar um Envenenado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.efeitosDoLacaioNoAcerto"
+    },
+    "lacaio_vida_em_voce": {
+      "nome": "A Vida aumentada dos lacaios também em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.soma: life_inc += minion_life × isto"
+    },
+    "lacaio_dano_em_voce": {
+      "nome": "O Dano aumentado dos lacaios também em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.soma: dmg_inc += minion_dmg × isto"
+    },
+    "roubo_vida_critico": {
+      "nome": "Dano de Golpes Críticos Drenado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech: sobre o dano que veio de crítico"
+    },
+    "roubo_vida_critico_ataque": {
+      "nome": "Dano de Ataques Drenado como Vida com Golpes Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech: só nos ataques"
+    },
+    "sem_roubo_vida_critico": {
+      "nome": "Não pode Drenar Vida com Golpes Críticos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech: o dano do crítico não drena vida"
+    },
+    "resistido_pela_menor": {
+      "nome": "Dano Elemental resistido pela menor Resistência Elemental",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/resistencia.resistenciaEfetivaDe"
+    },
+    "res_elemental_invertida": {
+      "nome": "Resistências Elementais dos monstros invertidas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/resistencia.resistenciaEfetivaDe"
+    },
+    "res_caos_invertida": {
+      "nome": "Resistência a Caos dos monstros invertida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/resistencia.resistenciaEfetivaDe"
+    },
+    "sem_penetracao_elemental": {
+      "nome": "Seus Acertos não podem Penetrar Resistências Elementais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/resistencia.resistenciaEfetivaDe"
+    },
+    "magias_desabilitadas": {
+      "nome": "Suas Magias são desabilitadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes: a gema com a tag Magia não sai"
+    },
+    "sangrar_ao_ser_atacado": {
+      "nome": "Chance de Sangrar quando Acertado por um Ataque",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (o sangramento em você)"
+    },
+    "veneno_ao_ser_magia": {
+      "nome": "Chance de os Acertos Mágicos contra você Envenenarem",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (o veneno em você)"
+    },
+    "chance_ser_eletrizacao": {
+      "nome": "Chance a mais de ser Eletrizado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate e poderes: a chance do efeito do monstro"
+    },
+    "chance_ser_veneno": {
+      "nome": "Chance a mais de ser Envenenado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate e poderes: a chance do efeito do monstro"
+    },
+    "imune_apos_resfriamento": {
+      "nome": "Não pode ser Resfriado por N s depois de Resfriado",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.imunidadeApos (controle)"
+    },
+    "imune_apos_congelamento": {
+      "nome": "Não pode ser Congelado por N s depois de Congelado",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.imunidadeApos (controle)"
+    },
+    "imune_apos_incendio": {
+      "nome": "Não pode ser Incendiado por N s depois de Incendiado",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.imunidadeApos (dotNoJogador)"
+    },
+    "imune_apos_eletrizacao": {
+      "nome": "Não pode ser Eletrizado por N s depois de Eletrizado",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.imunidadeApos (dotNoJogador)"
+    },
+    "poder_perde_a_cada_s": {
+      "nome": "Perde uma Carga de Poder a cada N s",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "cargas.tique"
+    },
+    "frenesi_perde_a_cada_s": {
+      "nome": "Perde uma Carga de Frenesi a cada N s",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "cargas.tique"
+    },
+    "tolerancia_perde_a_cada_s": {
+      "nome": "Perde uma Carga de Tolerância a cada N s",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "cargas.tique"
+    },
+    "gatilho_sem_custo": {
+      "nome": "As magias encaixadas ativadas pela peça não têm custo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (os gatilhos das peças)"
     }
   }
 }

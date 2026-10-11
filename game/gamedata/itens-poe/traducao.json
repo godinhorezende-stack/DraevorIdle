@@ -23157,40 +23157,37 @@
       "padrao": "^Dano aumentado em \\{(\\d+)\\}% por cada Envenenamento em você, até um máximo de \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc%venenoEmVoce",
+          "stat": "dmg_inc%venenoEmVoce~{V2}",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "sem o teto do PoE (o máximo de N%).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_de_teto": "11/10 — o teto \"até N\" (rodada 3)"
     },
     {
       "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% por cada Envenenamento em você até um máximo de \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "move_speed%venenoEmVoce",
+          "stat": "move_speed%venenoEmVoce~{V2}",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "sem o teto do PoE (o máximo de N%).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_de_teto": "11/10 — o teto \"até N\" (rodada 3)"
     },
     {
       "padrao": "^\\{(\\d+)\\} da Regeneração do Escudo de Energia por Segundo por Veneno em você, até \\{(\\d+)\\} por segundo$",
       "efeitos": [
         {
-          "stat": "es_regen%venenoEmVoce",
+          "stat": "es_regen%venenoEmVoce~{V2}",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "sem o teto do PoE (o máximo por segundo).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_de_teto": "11/10 — o teto \"até N\" (rodada 3)"
     },
     {
       "padrao": "^Mais \\{(\\d+)\\}% de evasão por \\{(\\d+)\\} de mana máximo$",
@@ -24142,6 +24139,1134 @@
       "estado": "aproximado",
       "nota": "só o Incendiar (os lacaios ainda não congelam nem eletrizam).",
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
+    },
+    {
+      "padrao": "^Empunhadura de Ferro$",
+      "efeitos": [
+        {
+          "stat": "forca_em_projeteis",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Juventude Eterna$",
+      "efeitos": [
+        {
+          "stat": "regen_vida_menos",
+          "valor": "50"
+        },
+        {
+          "stat": "roubo_teto_vida_menos",
+          "valor": "50"
+        },
+        {
+          "stat": "recarga_es_na_vida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você tem Agonia Perfeita se causou um Golpe Crítico recentemente$",
+      "efeitos": [
+        {
+          "stat": "sempre:agoniaPerfeita@criticoRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você tem Pacto Vaal se você causou um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "sempre:pactoVaal@criticoRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você tem Juramento do Zelote caso não tenha sido acertado recentemente$",
+      "efeitos": [
+        {
+          "stat": "sempre:juramentoDoZelote@naoAcertadoRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Golpes Críticos não causam Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_critico",
+          "valor": "-100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Golpes Não Críticos não causam Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_nao_critico",
+          "valor": "-100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Golpes não-críticos causam \\{(\\d+)\\}% menos Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_nao_critico",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico M[áa][xc]ima é \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_teto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Seu Multiplicador de (?:Acerto|Golpe) Crítico é \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_multi_fixo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Golpes Críticos não aplicam Afecções não-Danificador[ae]s de forma inerente$",
+      "efeitos": [
+        {
+          "stat": "critico_sem_afeccao_inerente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você está na Chance Máxima de Bloquear o Dano de Ataques caso não tenha Bloqueado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_no_maximo@naoBloqueouRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você está no Máximo de Chance de Bloquear Dano Mágico se você não Bloqueou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_magia_no_maximo@naoBloqueouRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Chance de Bloquear o Dano Mágico é dobrada$",
+      "efeitos": [
+        {
+          "stat": "spell_block_dobrado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Bloquear o Dano Mágico caso tenha Bloqueado o Dano de Ataques Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_block@bloqueouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale depois de qualquer bloqueio recente (no PoE, só o de ataques).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Seu Máximo de Cargas de Frenesi é igual ao Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "max_frenesi_igual_poder",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Máximo de Cargas de Tolerância, Frenesi e Poder é \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "cargas_max_fixo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cargas_max_fixo_tem",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Sangramentos infligidos por você causam Dano \\{(\\d+)\\}% mais rápido por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "sangramento_mais_rapido%carga:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Efeito de Elusivo em você aumentado em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:elusivo%carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} de Vida por segundo se nenhum Item Equipado for Corrompido$",
+      "efeitos": [
+        {
+          "stat": "life_regen@semItemCorrompido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Vida Máxima aumentada em \\{(\\d+)\\}% se nenhum Item Equipado for Corrompido$",
+      "efeitos": [
+        {
+          "stat": "life_inc@semItemCorrompido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} de Escudo de Energia por segundo se todos Itens Equipados forem Corrompidos$",
+      "efeitos": [
+        {
+          "stat": "es_regen@todosCorrompidos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} de Mana por segundo se todos Itens Equipados forem Corrompidos$",
+      "efeitos": [
+        {
+          "stat": "mana_regen@todosCorrompidos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Inimigos Marcados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoMarcado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoMarcado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% a cada \\{(\\d+)\\} de Evasão, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed%evasao:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por Inimigo morto recentemente, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc%matouRecente~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Menos \\{(\\d+)\\}% de dano sofrido por \\{(\\d+)\\} de Fúria, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%furia:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "somado à redução de dano das gemas (o PoE multiplica cada \"menos\").",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Máximo de Efeito de Eletrização$",
+      "efeitos": [
+        {
+          "stat": "eletrizacao_maximo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Velocidade de Recuperação da Recarga para lançar Armadilhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Efeitos do Dreno de Escudo de Energia dos Ataques não são removidos em Escudo de Energia Cheio$",
+      "efeitos": [
+        {
+          "stat": "roubo_es_nao_para_no_cheio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Adiciona a \\{(\\d+)\\} de Dano de Raio aos Ataques por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min%atr:int:{V2}",
+          "valor": "1"
+        },
+        {
+          "stat": "added_energy_dmg_max%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "o mínimo do dano é 1 por cada N de Inteligência (o \"1 a\" que o texto do poedb em português não traz).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do Dano Físico para Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios não causam Dano Não-Gélido$",
+      "efeitos": [
+        {
+          "stat": "minion_so_gelo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do Dano Físico para Dano de Fogo por Encaixe Vermelho$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_fire%encaixeLocal:R",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do Dano Físico para Dano de Gelo por Encaixe Verde$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_ice%encaixeLocal:G",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do Dano Físico para Dano de Raio por Encaixe Azul$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_energy%encaixeLocal:B",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios convertem \\{(\\d+)\\}% do Dano Físico para Dano de Caos por Encaixe Branco$",
+      "efeitos": [
+        {
+          "stat": "minion_conv_chaos%encaixeLocal:W",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Zumbis Erguidos têm Avatar do Fogo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_so_fogo:zumbi",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Esqueletos Convocados possuem Avatar do Fogo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_so_fogo:esqueleto",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Zumbis Erguidos Cobrem Inimigos em Cinzas ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cinzas:zumbi",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Esqueletos Convocados Cobrem Inimigos com Cinzas ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cinzas:esqueleto",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Os Acertos dos Espíritos Furiosos sempre Incendeiam$",
+      "efeitos": [
+        {
+          "stat": "lacaio_incendiar:espirito",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Fantasmas Convocados têm \\{(\\d+)\\}% de chance de atualizarem sua Duração ao Acertar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "lacaio_renova:fantasma",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Espíritos Furiosos Convocados têm \\{(\\d+)\\}% de chance de atualizarem sua Duração ao Acertar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "lacaio_renova:espirito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Com \\{(\\d+)\\} ou mais de Força, \\{(\\d+)\\}% de Dano causado pelos seus Zumbis é Drenado para você como Vida$",
+      "efeitos": [
+        {
+          "stat": "lacaio_dreno_dono:zumbi@atrMin:str:{V1}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Inimigos Mortos pelos Acertos de Zumbis Explodem, causando \\{(\\d+)\\}% de suas Vidas como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_explodir:zumbi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Golens têm \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico de Ataques Adicional$",
+      "efeitos": [
+        {
+          "stat": "lacaio_somado_min:golem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_somado_max:golem",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios têm Chance de Golpe Crítico aumentada em \\{(\\d+)\\}% por Carga de Poder Máxima que você possuir$",
+      "efeitos": [
+        {
+          "stat": "minion_crit_inc%cargaMax:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de infligir Definhamento ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_definhar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios Recuperam \\{(\\d+)\\}% de suas Vidas quando Bloqueiam$",
+      "efeitos": [
+        {
+          "stat": "minion_vida_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Lacaios Recuperam \\{(\\d+)\\}% de Vida ao Matar um Inimigo Envenenado$",
+      "efeitos": [
+        {
+          "stat": "minion_vida_ao_matar_envenenado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você não pode ter Lacaios não-Golens$",
+      "efeitos": [
+        {
+          "stat": "so_lacaio:golem",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você não pode ter Lacaios Não-Espectrais$",
+      "efeitos": [
+        {
+          "stat": "so_lacaio:espectro",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você não pode ter lacaios que não sejam animados nem manifestados$",
+      "efeitos": [
+        {
+          "stat": "so_lacaio:arma",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "só os animados (o Dervixe Dançarino Manifestado não existe no jogo).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Aumentos e reduções à vida máxima de lacaio também se aplicam a você em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vida_em_voce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções ao Dano de Lacaios também afetam você em \\{(\\d+)\\}% de seus valores$",
+      "efeitos": [
+        {
+          "stat": "lacaio_dano_em_voce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Golpes Críticos é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "roubo_vida_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano de Ataques Drenado como Vida com Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "roubo_vida_critico_ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Não pode Drenar Vida com Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "sem_roubo_vida_critico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Perde \\{(\\d+)\\} de Vida para cada Inimigo acertado por seus Ataques$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:perdeVida@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Perde \\{(\\d+)\\} de Vida para cada Inimigo acertado por suas Magias$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:perdeVida@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Armadura é aumentada pela Resistência a Fogo Excedente$",
+      "efeitos": [
+        {
+          "stat": "armour_pct%resFogoExcedente:1",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Evasão é aumentada pela Resistência a Gelo Excedente$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct%resGeloExcedente:1",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico é aumentada pela Resistência a Raio Excedente$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%resRaioExcedente:1",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Vida dos Lacaios é aumentada por sua Resistência a Fogo Sobreexcedente$",
+      "efeitos": [
+        {
+          "stat": "minion_life%resFogoExcedente:1",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Dano Elemental Causado por você com Acertos é Resistido pela Resistência Elemental mais baixa ao invés$",
+      "efeitos": [
+        {
+          "stat": "resistido_pela_menor",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Trata os valores das Resistências Elementais dos Monstros Inimigos como invertidos$",
+      "efeitos": [
+        {
+          "stat": "res_elemental_invertida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Considera os valores de resistência a dano de caos dos monstros inimigos como invertidos$",
+      "efeitos": [
+        {
+          "stat": "res_caos_invertida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Seus Acertos não podem Penetrar ou ignorar Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "sem_penetracao_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Resistência a Raio não afeta o Dano de Raio sofrido$",
+      "efeitos": [
+        {
+          "stat": "res_fixa:energy",
+          "valor": "0"
+        },
+        {
+          "stat": "res_fixa_tem:energy",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a Resistência a Raio fica em 0 (também nas escalas \"por % de Resistência a Raio\"); no PoE ela continua valendo, só não reduz o dano.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Habilidades de Magia não causam Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@magia",
+          "valor": "-100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Suas Magias são desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "magias_desabilitadas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de evitar ser Atordoado por cada Buff de Arauto te afetando$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento%arautosAtivos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ser infligido com Sangramento quando Acertado por um Ataque$",
+      "efeitos": [
+        {
+          "stat": "sangrar_ao_ser_atacado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "do dano que passou; os golpes de longe dos monstros contam como magia.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance dos Acertos Mágicos contra você infligirem Veneno$",
+      "efeitos": [
+        {
+          "stat": "veneno_ao_ser_magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "do dano que passou; os golpes de longe dos monstros contam como magia.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de ser Eletrizado$",
+      "efeitos": [
+        {
+          "stat": "chance_ser_eletrizacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "soma à chance dos monstros que já eletrizam.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de ser Envenenado$",
+      "efeitos": [
+        {
+          "stat": "chance_ser_veneno",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "soma à chance dos monstros que já envenenam.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você não pode ser Resfriado durante \\{(\\d+)\\} segundos depois de ter sido Resfriado$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_resfriamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você não pode ser Congelado durante \\{(\\d+)\\} segundos depois de ter sido Congelado$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_congelamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você não pode ser Incendiado durante \\{(\\d+)\\} segundos depois de ter sido Incendiado$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_incendio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Você não pode ser Eletrizado durante \\{(\\d+)\\} segundos depois de ter sido Eletrizado$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_eletrizacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Lançar uma Armadilha$",
+      "efeitos": [
+        {
+          "stat": "ev:lancarArmadilha:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Perca uma Carga de Poder por segundo caso não tenha Detonado Minas Recentemente$",
+      "efeitos": [
+        {
+          "stat": "poder_perde_a_cada_s@naoDetonouMinaRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano causado por suas Minas é Drenado por você como Vida$",
+      "efeitos": [
+        {
+          "stat": "vida_leech_magia@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Magia Encaixada quando você Atacar com esta Arma, com Recarga de \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:usarAtaque:magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Magia Encaixada quando você Atacar com um Arco, com Recarga de \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:usarAtaque:magia@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Habilidade de Arco quando você Atacar com um Arco, com Recarga de \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:usarAtaque:arco@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Habilidade de Arco quando você Conjurar uma Magia enquanto portando um Arco, com Recarga de \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:usarMagia:arco@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Magia Elemental Encaixada ao Bloquear, com \\{(\\d+)\\} segundo de Recarga$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:bloquear:elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma magia encaixada ao bloquear, com tempo de recarga de \\{(\\d+)\\},\\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:bloquear:magia",
+          "valor": "0.25"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Magia Maldição Encaixada quando você conjurar uma Magia, com \\{(\\d+)\\} segundo da Recarga$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:usarMagia:maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma magia encaixada ao causar golpe crítico corpo a corpo desarmado, com recarga de \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:critico:magia@corpo+desarmado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Magia de Gelo Encaixada no Golpe Crítico Corpo a Corpo, com um de Recarga de \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:critico:gelo@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Magia de Raio Encaixada ao Acertar, com uma Recarga de \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:acertar:raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Magias de Raio Encaixadas não têm Custo se Ativadas$",
+      "efeitos": [
+        {
+          "stat": "gatilho_sem_custo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma magia encaixada quando um acerto desta arma congela um alvo, com tempo de recarga de \\{(\\d+)\\},\\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:congelar:magia",
+          "valor": "0.25"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale em qualquer congelamento seu (no PoE, só o do acerto desta arma).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Ativa uma Habilidade de Clamor Encaixada quando você perder Cargas de Tolerância, com Recarga de \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "gatilho_local:perderTolerancia:clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^shield trigger a socketed skill on block \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "lembrete",
+      "nota": "parte interna do escudo (sem texto no PoE): o efeito é o da linha \"Ativa uma Magia … Encaixada ao Bloquear\".",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
     }
   ]
 }

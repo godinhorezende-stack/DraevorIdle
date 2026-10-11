@@ -19,9 +19,15 @@ export const NOME = { tolerancia: 'Tolerância', frenesi: 'Frenesi', poder: 'Pod
 export const BASE = { maximo: 3, duracaoMs: 10_000, recentementeMs: 4000 };
 
 const n = (af, k) => Number(af?.[k]) || 0;
-/** O máximo de cargas do tipo (3 + os mods; o Executor: Tolerância = o máximo de Frenesi). */
+/**
+ * O máximo de cargas do tipo (3 + os mods; o Executor: Tolerância = o máximo de Frenesi; o Distintivo da Irmandade: Frenesi = o máximo de
+ * Poder). "Máximo de Cargas de Tolerância, Frenesi e Poder é N" (a Danação Eterna: 0) fixa os três — `cargas_max_fixo`, com
+ * `cargas_max_fixo_tem` para o 0 valer.
+ */
 export function maximo(af, tipo) {
+  if (n(af, 'cargas_max_fixo_tem')) return Math.max(0, n(af, 'cargas_max_fixo'));
   if (tipo === 'tolerancia' && n(af, 'max_tolerancia_igual_frenesi')) return maximo(af, 'frenesi');
+  if (tipo === 'frenesi' && n(af, 'max_frenesi_igual_poder')) return maximo(af, 'poder');
   return Math.max(0, BASE.maximo + n(af, `max_${tipo}`));
 }
 /** O mínimo de cargas do tipo (0 + "+N ao Mínimo"), nunca acima do máximo. */
@@ -33,10 +39,10 @@ export const duracao = (af, tipo) => Math.round(BASE.duracaoMs * (1 + (n(af, `du
 const CHAVES = [
   ...TIPOS.flatMap((t) => [`max_${t}`, `min_${t}`, `duracao_${t}`, `carga_${t}_ao_matar`, `carga_${t}_ao_bloquear`]),
   'duracao_cargas', 'carga_qualquer_ao_matar', 'carga_frenesi_ao_acertar_unico', 'dano_por_poder', 'dano_por_tolerancia', 'dano_por_frenesi', 'dano_por_carga',
-  'max_tolerancia_igual_frenesi', 'chance_tolerancia_maxima', 'carga_tolerancia_ao_ser_acertado', 'carga_tolerancia_ao_atordoar', 'carga_poder_ao_atordoar',
+  'max_tolerancia_igual_frenesi', 'max_frenesi_igual_poder', 'cargas_max_fixo', 'cargas_max_fixo_tem', 'chance_tolerancia_maxima', 'carga_tolerancia_ao_ser_acertado', 'carga_tolerancia_ao_atordoar', 'carga_poder_ao_atordoar',
   'carga_poder_ao_critico', 'carga_poder_ao_critico_varinha', 'carga_tolerancia_ao_critico_corpo', 'carga_poder_ao_acerto_nao_critico',
   'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta', 'carga_periodica_n', 'carga_periodica_s',
-  'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s',
+  'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
 ];
 export const regrasDaSoma = (af) => Object.fromEntries(CHAVES.filter((k) => n(af, k)).map((k) => [k, n(af, k)]));
 
@@ -161,6 +167,22 @@ export function tique(estado, af = {}) {
       tempo[chave] = agora + cada * 1000;
       mudou = ganhar(estado, t, af) || mudou;
     }
+  }
+  // "Perca uma Carga de Poder por segundo caso não tenha Detonado Minas Recentemente" (`poder_perde_a_cada_s` = 1, a condição já resolvida
+  // na soma): uma de cada vez, até o mínimo.
+  for (const t of TIPOS) {
+    const cada = n(af, `${t}_perde_a_cada_s`);
+    const chave = `perde_${t}`;
+    if (!(cada > 0)) { delete tempo[chave]; continue; }
+    tempo[chave] ??= agora + cada * 1000;
+    if (agora < tempo[chave]) continue;
+    tempo[chave] = agora + cada * 1000;
+    const x = hunt.cargasPoe?.[t];
+    if (!(x?.n > minimo(af, t))) continue;
+    x.n--;
+    if (!x.n) delete hunt.cargasPoe[t];
+    aoMudar?.(estado, t, 'perdeu');
+    mudou = true;
   }
   // "Ganha N Cargas de Tolerância, Frenesi ou Poder a cada S segundos": o tipo é sorteado a cada vez.
   const periodoS = n(af, 'carga_periodica_s');

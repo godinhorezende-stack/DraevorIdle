@@ -615,6 +615,29 @@ export function gruposComGatilho(estado) {
   }
   return saida;
 }
+/**
+ * As gemas ATIVAS encaixadas numa peça (qualquer grupo de ligação), com o filtro do gatilho da peça ("Ativa uma Magia ELEMENTAL Encaixada ao
+ * Bloquear" — dono, 11/10: os únicos): `magia` (Magia sem Ataque), `elemental`, `fogo`/`gelo`/`raio`, `maldicao`, `arco`, `clamor`, `lacaio`.
+ * Devolve as ações (`def.acao`).
+ */
+const FILTROS_DO_GATILHO = {
+  magia: (t) => t.includes('poe:Magia') && !t.includes('poe:Ataque'),
+  elemental: (t) => FILTROS_DO_GATILHO.magia(t) && ['poe:Fogo', 'poe:Gelo', 'poe:Raio'].some((x) => t.includes(x)),
+  fogo: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Fogo'),
+  gelo: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Gelo'),
+  raio: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Raio'),
+  maldicao: (t) => t.includes('poe:Maldição'),
+  arco: (t) => t.includes('poe:Arco'),
+  clamor: (t) => t.includes('poe:Clamor'),
+  lacaio: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Lacaio'),
+};
+export const FILTROS_DE_GATILHO_LOCAL = Object.keys(FILTROS_DO_GATILHO);
+export function encaixadasNaPeca(peca, filtro = 'magia') {
+  const s = peca && soquetesDe(peca);
+  const f = FILTROS_DO_GATILHO[filtro];
+  if (!s || !f) return [];
+  return s.gemas.map((g) => g && DEFS.get(Number(g.id))).filter((d) => d?.tipo === 'ativa' && f(d.tags ?? [])).map((d) => d.acao);
+}
 /** O suporte de gatilho que ativa esta magia (o nome), ou null: a magia ligada a ele não se conjura à mão. */
 export function ativadaPor(estado, acao) {
   return gruposComGatilho(estado).find((g) => g.magias.includes(acao))?.nome ?? null;

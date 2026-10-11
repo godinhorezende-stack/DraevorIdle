@@ -252,7 +252,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const semElementais = suprimiu && (Number(ficha.afPoe?.suprimido_sem_afeccao_elemental) || 0) > 0;
   // Os EFEITOS da magia (`efeitos` do ataque): dano contínuo no jogador pelo motor `combate/dot.mjs`.
   for (const ef of AtributosDoMob.efeitosDoGolpe(null, a)) {
-    if (Math.random() * 100 >= (ef.chance ?? 100)) continue;
+    if (Math.random() * 100 >= (ef.chance ?? 100) + ModsPoe.chanceExtraDeSer(ficha, ef.tipo)) continue;
     if (semElementais && ['queimadura', 'choque', 'gelo'].includes(ef.tipo)) continue;
     const posto = ModsPoe.dotNoJogador(hunt, { tipo: ef.tipo, total: (sortear(a.min, a.max) * ef.pctDoGolpe) / 100, duracaoMs: ef.duracaoMs ?? null, origem: { fonte: 'mob', mob: bicho.name, uid: bicho.uid, key: bicho.key } }, hunt.clock ?? agora);
     if (posto) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: posto, de: bicho.name });

@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { valor, marcar, ganharFuria, ativo, fichaDa, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno } from './condicoes-poe.mjs';
+import { valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -224,6 +224,14 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   hunt.poeAcertosParaFrascos = (hunt.poeAcertosParaFrascos ?? 0) + 1;
   const v = (k) => valor(ficha, k);
   evento(estado, hunt, 'serAcertado', ficha, { alvo: bicho, eventos, agora });
+  // ("X% de chance de ser infligido com Sangramento quando Acertado por um Ataque", "X% de chance dos Acertos Mágicos contra você infligirem
+  // Veneno": a afecção em você, do dano que passou — o sangramento a 70% por segundo, o veneno a 30%, na duração base de cada um, como no PoE.)
+  const emVoce = (tipo, pctPorSegundo) => {
+    const posto = dotNoJogador(hunt, { tipo, total: (dano * pctPorSegundo * (Dot.CONFIG.tipos[tipo]?.duracaoMs ?? 4000)) / 1000, origem: { fonte: 'proprio' } }, agora, rng);
+    if (posto) eventos.push({ t: 'estado', uid: 'player', x: hunt.pos?.x, y: hunt.pos?.y, estado: posto });
+  };
+  if (dano > 0 && corpoACorpo && v('sangrar_ao_ser_atacado') > 0 && rng() * 100 < v('sangrar_ao_ser_atacado')) emVoce('sangramento', 0.7);
+  if (dano > 0 && !corpoACorpo && v('veneno_ao_ser_magia') > 0 && rng() * 100 < v('veneno_ao_ser_magia')) emVoce('venenoPoe', 0.3);
   // (+ os Reflexos elementais e de Caos dos únicos, e o "X% do Dano Físico Corpo a Corpo recebido é refletido aos Agressores".)
   const reflete = corpoACorpo ? v('reflect_phys_melee') + v('reflect_fire_melee') + v('reflect_ice_melee') + v('reflect_energy_melee') + v('reflect_chaos_melee') + (dano * v('reflete_fisico_pct')) / 100 : 0;
   if (reflete > 0 && bicho && bicho.hp > 0 && !bicho.dummy) {
@@ -276,6 +284,11 @@ export function jaTemAfeccao(hunt, danifica, agora = hunt?.clock ?? 0) {
  * "Imunidade a …", "Duração do … em você reduzida" (a mesma dor por segundo, por mais ou menos tempo) e o efeito das Maldições/Eletrização/
  * Resfriamento em você. Devolve o estado posto (ou null). Sem o PoE, igual a `Dot.aplicarNoJogador`.
  */
+/** A chance A MAIS de o monstro pôr a afecção do `tipo` (o do motor) em você ("+X% de chance de ser Eletrizado / Envenenado"). */
+export function chanceExtraDeSer(ficha, tipo) {
+  const a = AFECCAO_DO_DOT[tipo];
+  return a ? valor(ficha, `chance_ser_${a.nome}`) : 0;
+}
 export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   const ficha = ligado() ? fichaDa(hunt) : null;
   const a = ficha?.afPoe ? AFECCAO_DO_DOT[ef.tipo] : null;
@@ -293,7 +306,9 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   const dur = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100);
   const efeito = Math.max(0, 1 + v(`efeito_${a.nome}_proprio`) / 100);
   const base = Dot.CONFIG.tipos[ef.tipo]?.duracaoMs ?? 4000;
-  return Dot.aplicarNoJogador(hunt, { ...ef, total: ef.total * dur * efeito, duracaoMs: Math.round((ef.duracaoMs ?? base) * dur) }, agora);
+  const posto = Dot.aplicarNoJogador(hunt, { ...ef, total: ef.total * dur * efeito, duracaoMs: Math.round((ef.duracaoMs ?? base) * dur) }, agora);
+  if (posto) imunidadeApos(hunt, ficha, a.nome, agora);
+  return posto;
 }
 
 
@@ -337,6 +352,18 @@ const ESTADOS_NO_ALVO = {
   definhado: (e, ate) => (e.definhado = { ate, n: Math.min(15, (e.definhado?.ate > 0 ? e.definhado.n : 0) + 1) }),
 };
 const SEGUNDOS_PADRAO = 4;
+/** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
+export const porNoAlvo = (alvo, nome, ate) => ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate);
+/** O morto EXPLODE: `pct`% da vida máxima dele em quem está em volta (1 casa) — o "Explodem ao morrer" (o do personagem e o dos lacaios). */
+export function explodirMorto(hunt, alvo, pct, eventos) {
+  const dano = Math.max(1, Math.round(((alvo.maxHp ?? 0) * pct) / 100));
+  for (const m of hunt.monstros ?? []) {
+    if (m === alvo || m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) > 1) continue;
+    m.hp -= dano;
+    eventos?.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: dano, foe: true, alvo: m.name, color: '#ff9000' });
+  }
+  eventos?.push({ t: 'explosao', id: 6, x: alvo.x, y: alvo.y, lado: 3 });
+}
 
 /**
  * Um EVENTO do PoE aconteceu (`matar`, `critico`, `bloquear`, `serAcertado`…): roda os mods `ev:<evento>:<ação>` da ficha cujas condições
@@ -355,9 +382,13 @@ export function eventosDoFrasco(estado, classe, ficha, ctx = {}) {
   if (classe === 'Mana_Flasks') evento(estado, hunt, 'usarFrascoMana', ficha, ctx);
 }
 
+/** Os GATILHOS das peças ("Ativa uma Magia Encaixada quando você Atacar com esta Arma"): quem registra é `acoes.mjs` (o disparo das gemas). */
+// eslint-disable-next-line no-var
+var gatilhosDeItem;
+export function definirGatilhosDeItem(fn) { gatilhosDeItem = fn; }
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
-  const lista = ficha?.eventosPoe;
-  if (!ligado() || !hunt || !lista?.length) return;
+  if (!ligado() || !hunt) return;
+  const lista = ficha?.eventosPoe ?? [];
   const agora = ctx.agora ?? hunt.clock ?? 0;
   const rng = ctx.rng ?? Math.random;
   const alvo = ctx.alvo ?? null;
@@ -371,6 +402,8 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
     }
     aplicarAcao(estado, hunt, ev, ficha, { ...ctx, alvo, agora, rng });
   }
+  // (+ os gatilhos das peças no mesmo evento — `acoes.mjs`.)
+  gatilhosDeItem?.(estado, hunt, nome, ficha, { ...ctx, alvo, agora, tagsAlvo });
 }
 
 function aplicarAcao(estado, hunt, ev, ficha, ctx) {
@@ -407,6 +440,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'es': return curar('es', esMax, v);
     case 'esPct': return curar('es', esMax, (esMax * v) / 100);
     case 'perdeVidaPct': return perder('hp', 1, ((estado.maxHp ?? 0) * v) / 100);
+    // ("Perde N de Vida para cada Inimigo acertado por seus Ataques": a perda não mata — fica em 1.)
+    case 'perdeVida': return perder('hp', 1, v);
     case 'perdeEsPct': return perder('es', 0, (esMax * v) / 100);
     case 'perdeManaPct': return perder('mana', 0, ((estado.maxMana ?? 0) * v) / 100);
     case 'carga': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ev.param, 1); return;
@@ -467,15 +502,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     // `explodirChance:<pct da vida>` = a CHANCE (%) de o morto explodir ("Inimigos Queimando mortos por você têm X% de chance de Explodirem").
     case 'explodirChance': if (!sorte(v)) return; return aplicarAcao(estado, hunt, { ...ev, acao: 'explodir', valor: Number(ev.param) || 10 }, ficha, ctx);
     case 'explodir': {
-      // O morto explode: X% da vida máxima dele em quem está em volta (1 casa).
       if (!alvo || !hunt.pos) return;
-      const dano = Math.max(1, Math.round(((alvo.maxHp ?? 0) * v) / 100));
-      for (const m of hunt.monstros ?? []) {
-        if (m === alvo || m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) > 1) continue;
-        m.hp -= dano;
-        eventos?.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: dano, foe: true, alvo: m.name, color: '#ff9000' });
-      }
-      eventos?.push({ t: 'explosao', id: 6, x: alvo.x, y: alvo.y, lado: 3 });
+      explodirMorto(hunt, alvo, v, eventos);
       return;
     }
     case 'espalhar': {

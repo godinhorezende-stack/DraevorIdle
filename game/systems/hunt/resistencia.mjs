@@ -40,7 +40,20 @@ export function resistenciaDe(hunt, alvo, tipo) {
  * Sem `ficha`, é a resistência do bicho no teto (sem penetração).
  */
 export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
-  return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(resistenciaDe(hunt, alvo, tipo)), Limites.penetracaoDe(ficha?.penetracao, tipo));
+  let res = resistenciaDe(hunt, alvo, tipo);
+  let pen = Limites.penetracaoDe(ficha?.penetracao, tipo);
+  // As regras dos únicos do PoE (o atacante — `ficha.afPoe`): "Dano Elemental Causado por você com Acertos é Resistido pela Resistência
+  // Elemental mais baixa ao invés"; "Trata os valores das Resistências Elementais (a de Caos) dos Monstros Inimigos como invertidos" (a
+  // positiva vira negativa e a fraqueza vira resistência); "Seus Acertos não podem Penetrar ou ignorar Resistências Elementais" (a penetração
+  // negativa — "como se fosse X% maior" — fica).
+  const af = ficha?.afPoe;
+  if (af) {
+    const elemental = ['fire', 'ice', 'energy'].includes(tipo);
+    if (elemental && Number(af.resistido_pela_menor) > 0) res = Math.min(...['fire', 'ice', 'energy'].map((t) => resistenciaDe(hunt, alvo, t)));
+    if ((elemental && Number(af.res_elemental_invertida) > 0) || (tipo === 'chaos' && Number(af.res_caos_invertida) > 0)) res = -res;
+    if (elemental && Number(af.sem_penetracao_elemental) > 0) pen = Math.min(0, pen);
+  }
+  return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(res), pen);
 }
 
 /**

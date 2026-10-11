@@ -77,5 +77,8 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
     c[efeito] = { ate: agora + duracao };
     c.imuneAte = agora + duracao + CONFIG.jogador.imunidadeMs;
   }
+  // (PoE: "Você não pode ser Congelado / Resfriado durante N segundos depois de ter sido" — `ModsPoe.imunidadeApos`.)
+  const nome = { congelado: 'congelamento', lento: 'resfriamento' }[efeito];
+  if (nome) ModsPoe.imunidadeApos(hunt, ficha, nome, agora);
   return efeito;
 }

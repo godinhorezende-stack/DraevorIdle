@@ -215,7 +215,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // As cargas do PoE no acerto da varinha (Poder no crítico, no crítico com varinhas, no acerto não crítico...).
   if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit, varinha: true }).length) Ficha.invalidar(estado);
   if (!segundo) {
-    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
+    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key, { danoCritico: crit ? golpe : 0 });
     Charms.aoAcertar(estado, hunt, alvo, eventos);
   }
   return true;
@@ -1078,7 +1078,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   }
   // Os EFEITOS do golpe (`efeitos` da espécie): dano contínuo no jogador pelo motor `combate/dot.mjs` — do dano antes da defesa e do crítico.
   for (const ef of AtributosDoMob.efeitosDoGolpe(bicho)) {
-    if (Math.random() * 100 >= (ef.chance ?? 100) || !(brutoSemCritico > 0)) continue;
+    // (+ "+X% de chance de ser Eletrizado / Envenenado" — a chance a mais do monstro que já põe a afecção.)
+    if (Math.random() * 100 >= (ef.chance ?? 100) + ModsPoe.chanceExtraDeSer(ficha, ef.tipo) || !(brutoSemCritico > 0)) continue;
     const estadoPosto = ModsPoe.dotNoJogador(hunt, { tipo: ef.tipo, total: (brutoSemCritico * ef.pctDoGolpe) / 100, duracaoMs: ef.duracaoMs ?? null, origem: { fonte: 'mob', mob: bicho.name, uid: bicho.uid, key: bicho.key } }, hunt.clock ?? 0);
     if (estadoPosto) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: estadoPosto, de: bicho.name });
   }
@@ -1405,7 +1406,10 @@ export function round(estado, personagem) {
         // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
         // O 2º golpe do ataque duplo não repete o que vem DEPOIS do golpe (árvore, roubo de vida e mana, vida/mana por acerto, charms).
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
-        if (!segundo) Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
+        if (!segundo) {
+          const doGolpe = golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra;
+          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoCritico: critico ? doGolpe : 0 });
+        }
         // Vida/mana por acerto (proficiência).
         // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").
         if (!segundo && (ficha.vidaPorAcerto || ficha.manaPorAcerto)) Ficha.curar(estado, ficha.vidaPorAcerto, ficha.manaPorAcerto, eventos, personagem.nome, hunt.pos);
