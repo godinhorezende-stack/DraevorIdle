@@ -326,17 +326,100 @@ export function criarTelaDaArvorePoe({ raiz }) {
     return [canvas.width / 2 + (n.x - c.cx) * c.esc, canvas.height / 2 + (n.y - c.cy) * c.esc];
   };
 
-  // Os ícones das passivas de ascendência (a arte do PoE): carrega uma vez e redesenha quando chega.
+  // Os ícones das passivas de ascendência (a arte do PoE): carrega uma vez e redesenha quando chega (o canvas à vista: o palco o recria).
+  const redesenhar = () => {
+    const c = document.querySelector('#pa-palco .pa-canvas');
+    if (c) desenharCanvas(c);
+  };
   const imagens = new Map();
-  function imagemDoNo(caminho, canvas) {
+  function imagemDoNo(caminho) {
     let img = imagens.get(caminho);
     if (!img) {
       img = new Image();
-      img.onload = () => desenharCanvas(canvas);
+      img.onload = redesenhar;
       img.src = `/api/jogo/poe/icone/ascendencia/${caminho.split('/').map(encodeURIComponent).join('/')}`;
       imagens.set(caminho, img);
     }
     return img.complete && img.naturalWidth ? img : null;
+  }
+  /*
+   * ---- A ARTE DAS ASCENDÊNCIAS (dono, 11/10: "coloque a arte das ascendências na tela da Engine também") ----
+   * As folhas do PoE que a árvore do jogo usa (`/api/jogo/poe/arvore-sprites` — tools/importar-arvore-poeskilltree.mjs): na vista de uma
+   * ascendência, o fundo redondo dela atrás dos nós (centrado no início) e cada nó com a moldura de ascendência e o ícone dentro, presos à
+   * árvore (crescem com o zoom), como no PoE. A moldura diz o que se vê: escolhido (alocada), achado na busca (alcançável), os outros (normal).
+   * Sem as folhas, os pontos coloridos de sempre.
+   */
+  let sprites = null;
+  let pediuSprites = false;
+  function spritesDaArvore() {
+    if (!pediuSprites) {
+      pediuSprites = true;
+      fetch('/api/jogo/poe/arvore-sprites', { cache: 'no-cache' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((x) => {
+          sprites = x;
+          if (x) redesenhar();
+        })
+        .catch(() => {});
+    }
+    return sprites;
+  }
+  const folhas = new Map();
+  function folha(arquivo) {
+    let img = folhas.get(arquivo);
+    if (!img) {
+      img = new Image();
+      img.onload = redesenhar;
+      const v = sprites?.v?.[arquivo];
+      img.src = `/api/jogo/poe/icone/arvore/${arquivo.split('/').map(encodeURIComponent).join('/')}${v ? `?v=${v}` : ''}`;
+      folhas.set(arquivo, img);
+    }
+    return img.complete && img.naturalWidth ? img : null;
+  }
+  /** A arte da ascendência à vista: `{ s, a, k, molduras }` (k: pixels da folha → canvas) — `null` fora dela ou sem as folhas. */
+  function arteDaAscendencia(canvas) {
+    if (T.modo !== 'asc') return null;
+    const s = spritesDaArvore();
+    const a = s?.ascendencias?.[T.asc];
+    const molduras = a ? folha(s.tipos.ascendancy) : null;
+    return molduras ? { s, a, k: camera(canvas).esc / s.zoom, molduras } : null;
+  }
+  /** O fundo redondo da ascendência, centrado no início dela (recortado no círculo, como o site). */
+  function fundoDaAscendencia(g, canvas, { s, a, k }) {
+    const inicio = T.porId.get(String(T.dados.ascendencias[T.asc]?.inicio));
+    const img = inicio ? folha(s.tipos[a.tipo]) : null;
+    const c = s.coords[a.tipo]?.[a.fundo];
+    if (!img || !c) return;
+    const [x, y] = naTela(canvas, inicio);
+    const w = c[2] * k;
+    const h = c[3] * k;
+    g.save();
+    g.beginPath();
+    g.arc(x, y, h / 2, 0, Math.PI * 2);
+    g.clip();
+    g.drawImage(img, c[0], c[1], c[2], c[3], x - w / 2, y - h / 2, w, h);
+    g.restore();
+  }
+  /** Um nó da ascendência com a moldura e o ícone do PoE, centrado em (x, y). Devolve o raio desenhado (0: sem a moldura). */
+  function noDaAscendencia(g, { s, k, molduras }, n, x, y, estado) {
+    const inicio = n.id === String(T.dados.ascendencias[T.asc]?.inicio);
+    const c = s.coords.ascendancy[inicio ? 'AscendancyMiddle' : `AscendancyFrame${n.t === 'notable' ? 'Large' : 'Small'}${estado}`];
+    if (!c) return 0;
+    const w = c[2] * k;
+    const h = c[3] * k;
+    const icone = !inicio && n.icone ? imagemDoNo(n.icone) : null;
+    if (icone) {
+      // o ícone na proporção do PoE dentro da moldura (notável 37 em 58; comum 26 em 39)
+      const d = w * (n.t === 'notable' ? 37 / 58 : 26 / 39);
+      g.save();
+      g.beginPath();
+      g.arc(x, y, d / 2, 0, Math.PI * 2);
+      g.clip();
+      g.drawImage(icone, x - d / 2, y - d / 2, d, d);
+      g.restore();
+    }
+    g.drawImage(molduras, c[0], c[1], c[2], c[3], x - w / 2, y - h / 2, w, h);
+    return Math.max(w, h) / 2;
   }
   function desenharCanvas(canvas) {
     const g = canvas.getContext('2d');
@@ -346,8 +429,10 @@ export function criarTelaDaArvorePoe({ raiz }) {
     const l = visiveis();
     const ids = new Set(l.map((n) => n.id));
     const esc = camera(canvas).esc;
-    g.strokeStyle = 'rgba(140,150,170,.28)';
-    g.lineWidth = 1;
+    const arteAsc = arteDaAscendencia(canvas);
+    if (arteAsc) fundoDaAscendencia(g, canvas, arteAsc);
+    g.strokeStyle = arteAsc ? 'rgba(214,196,150,.6)' : 'rgba(140,150,170,.28)';
+    g.lineWidth = arteAsc ? 2 : 1;
     g.beginPath();
     for (const n of l) {
       const [ax, ay] = naTela(canvas, n);
@@ -362,19 +447,36 @@ export function criarTelaDaArvorePoe({ raiz }) {
     }
     g.stroke();
     const buscando = T.achados.size > 0;
+    T.raios = new Map();
     for (const n of l) {
       const [x, y] = naTela(canvas, n);
-      if (x < -10 || y < -10 || x > canvas.width + 10 || y > canvas.height + 10) continue;
       const base = { small: 2.2, notable: 4, keystone: 6, mastery: 3.6, start: 6 }[n.t] ?? 2;
-      const r = Math.max(1.5, base * Math.min(3, Math.max(0.6, esc * 18)));
-      g.globalAlpha = buscando && !T.achados.has(n.id) ? 0.18 : 1;
-      g.fillStyle = T.cor === 'tipo' ? COR_DO_TIPO[n.t] ?? '#999' : COR_DO_ESTADO[estadoDoNo(n)];
-      g.beginPath();
-      if (n.t === 'mastery') g.rect(x - r, y - r, r * 2, r * 2);
-      else g.arc(x, y, r, 0, Math.PI * 2);
-      g.fill();
+      let r = Math.max(1.5, base * Math.min(3, Math.max(0.6, esc * 18)));
+      const margem = arteAsc ? 60 * arteAsc.k : 10;
+      if (x < -margem || y < -margem || x > canvas.width + margem || y > canvas.height + margem) continue;
+      g.globalAlpha = buscando && !T.achados.has(n.id) ? (arteAsc ? 0.35 : 0.18) : 1;
+      // Na vista da ascendência com as folhas do PoE: a moldura e o ícone, no tamanho do PoE (no lugar do ponto colorido).
+      const rArte = arteAsc ? noDaAscendencia(g, arteAsc, n, x, y, n.id === T.sel ? 'Allocated' : buscando && T.achados.has(n.id) ? 'CanAllocate' : 'Normal') : 0;
+      if (rArte) {
+        r = rArte;
+        // (com "Cor: estado da tradução", o estado continua à vista: um aro na cor dele em volta da moldura)
+        if (T.cor === 'estado') {
+          g.strokeStyle = COR_DO_ESTADO[estadoDoNo(n)];
+          g.lineWidth = 3;
+          g.beginPath();
+          g.arc(x, y, r + 1, 0, Math.PI * 2);
+          g.stroke();
+        }
+      } else {
+        g.fillStyle = T.cor === 'tipo' ? COR_DO_TIPO[n.t] ?? '#999' : COR_DO_ESTADO[estadoDoNo(n)];
+        g.beginPath();
+        if (n.t === 'mastery') g.rect(x - r, y - r, r * 2, r * 2);
+        else g.arc(x, y, r, 0, Math.PI * 2);
+        g.fill();
+      }
+      T.raios.set(n.id, r);
       // A arte do PoE no nó de ascendência (quando o zoom deixa ver).
-      const arte = n.icone && r >= 6 ? imagemDoNo(n.icone, canvas) : null;
+      const arte = !rArte && n.icone && r >= 6 ? imagemDoNo(n.icone) : null;
       if (arte) {
         const k = Math.min((r * 1.8) / arte.naturalWidth, (r * 1.8) / arte.naturalHeight);
         g.save();
@@ -388,7 +490,7 @@ export function criarTelaDaArvorePoe({ raiz }) {
         g.strokeStyle = n.id === T.sel ? '#ffffff' : '#ffd166';
         g.lineWidth = 2;
         g.beginPath();
-        g.arc(x, y, r + 3, 0, Math.PI * 2);
+        g.arc(x, y, r + (rArte ? 6 : 3), 0, Math.PI * 2);
         g.stroke();
       }
       if (n.t === 'keystone' || (n.t === 'notable' && esc > 0.09) || (T.modo === 'asc' && n.t !== 'small')) {
@@ -426,11 +528,12 @@ export function criarTelaDaArvorePoe({ raiz }) {
       if (mexeu) return;
       const [x, y] = ponto(e);
       let melhor = null;
-      let dist = 14 * 14;
+      let dist = Infinity;
       for (const n of visiveis()) {
         const [nx, ny] = naTela(canvas, n);
         const d = (nx - x) ** 2 + (ny - y) ** 2;
-        if (d < dist) [melhor, dist] = [n, d];
+        // (o raio desenhado — a moldura do PoE na vista da ascendência é grande —, ao menos 14 px)
+        if (d < Math.max(14, T.raios?.get(n.id) ?? 0) ** 2 && d < dist) [melhor, dist] = [n, d];
       }
       if (melhor) {
         T.sel = melhor.id;
