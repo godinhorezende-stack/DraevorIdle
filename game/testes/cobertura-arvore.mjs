@@ -6,8 +6,11 @@
 //   CONDICOES / ESCALAS / EVENTOS — as condições, escalas e eventos com teste próprio (o arquivo citado), que completam a validação de uma
 //                    chave condicional (`block@comEscudo` = o `block` daqui + o `comEscudo` com teste).
 //
-// Uma medida: `{ preparar?(e), medir(ctx) → número, esperado(antes, valor, ctx) → número, tolerancia? }`, `ctx = { e, f (a ficha), af (a
-// soma), pct(...chaves) (a soma dessas chaves de %), golpe(tags) (a ficha do golpe) }`.
+// Uma medida: `{ preparar?(e), medir(ctx) → número, esperado(antes, valor, ctx) → número, tolerancia?, junto? }`, `ctx = { e, f (a ficha), af
+// (a soma), pct(...chaves) (a soma dessas chaves de %), golpe(tags) (a ficha do golpe), forca }`.
+// `junto` (ciclo 7, dono 11/10: "ajustar o seletor"): quando nenhum nó tem SÓ o atributo — as outras linhas do nó passaram a funcionar —, o nó
+// pode ter também estas chaves: `[regex, (efeito, ctx, match) → o que ela soma no MESMO número medido]` (0 = não mexe nele). A asserção
+// continua exata: o esperado leva a soma das linhas que mexem no número.
 import * as R from '../systems/regras.mjs';
 
 const PECA_COM_DEFESAS = { id: 3357, count: 1, base: { armor: [400, 400], evasion: [400, 400], es: [400, 400] }, poe: { classe: 'Body_Armours', base: 'Body_Armours/X', af: {}, prefixos: [], sufixos: [], implicitos: [] } };
@@ -53,7 +56,9 @@ export const MEDIDAS = {
   move_speed: { medir: ({ f }) => f.speed, esperado: (antes, v, ctx) => antes + (R.baseSpeed(ctx.e.level ?? 1) * v) / 100, tolerancia: 1 },
   crit_chance_inc: { medir: ({ f }) => f.critInc, esperado: soma },
   crit_dmg: { medir: ({ f }) => Math.round(f.critMultiplier * 1000) / 1000, esperado: (antes, v) => Math.round((antes + v / 100) * 1000) / 1000 },
-  accuracy: { medir: ({ f }) => f.accuracy, esperado: (antes, v, ctx) => antes + v * (1 + ctx.pct('stat:accuracy', 'accuracy_inc') / 100), tolerancia: 1 },
+  // ("Inegável": +500 de Precisão, "Ganha Precisão igual a duas vezes sua Força" — soma no mesmo número — e Velocidade de Ataque por Precisão.)
+  accuracy: { medir: ({ f }) => f.accuracy, esperado: (antes, v, ctx) => antes + v * (1 + ctx.pct('stat:accuracy', 'accuracy_inc') / 100), tolerancia: 1,
+    junto: [[/^atk_speed%precisao:\d+$/, () => 0], [/^accuracy%atr:str:(\d+)$/, (x, ctx, m) => x.valor * Math.floor(ctx.forca / Number(m[1]))]] },
   'stat:accuracy': { medir: ({ f }) => f.accuracy, esperado: razao(['stat:accuracy', 'accuracy_inc']), tolerancia: 1 },
   // recuperação
   life_regen_max_pct: { medir: ({ f }) => f.regenPoe.vidaPctDoMax, esperado: soma },
@@ -75,7 +80,8 @@ export const MEDIDAS = {
   dot_multi_bleed: { medir: ({ f }) => f.afeccoes.multiplicadorSangramento, esperado: soma },
   efeito_resfriamento: { medir: ({ f }) => f.afeccoes.efeitoResfriamento, esperado: soma },
   efeito_eletrizacao: { medir: ({ f }) => f.afeccoes.efeitoEletrizacao, esperado: soma },
-  duracao_congelamento: { medir: ({ f }) => f.afeccoes.duracaoCongelamento, esperado: soma },
+  // ("Abraço Invernal": + "Dano aumentado em 30% se você Estilhaçou um Inimigo Recentemente", que não mexe na duração.)
+  duracao_congelamento: { medir: ({ f }) => f.afeccoes.duracaoCongelamento, esperado: soma, junto: [[/^dmg_inc@estilhacouRecente$/, () => 0]] },
   // os lidos NO ACERTO (`ModsPoe.valor` da ficha do golpe — o efeito no monstro está em passivas-poe-afeccoes.test.mjs)
   stun_duration: { medir: ({ f }) => Number(f.afPoe.stun_duration) || 0, esperado: soma },
   enemy_stun_threshold_red: { medir: ({ f }) => Number(f.afPoe.enemy_stun_threshold_red) || 0, esperado: soma },

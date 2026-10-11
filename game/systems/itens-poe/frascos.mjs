@@ -111,6 +111,8 @@ export function parametros(peca, afDoPersonagem = null) {
   p.quantidadePct += tipo === 'vida' ? n('frasco_vida_rec') : tipo === 'mana' ? n('frasco_mana_rec') : 0;
   if (tipo === 'utilidade') { p.duracaoPct += n('frasco_duracao'); p.efeitoPct += n('frasco_efeito'); }
   p.custoPct -= n('frasco_cargas_usadas_red');
+  // (ciclo 7, lote F) "Velocidade de Recuperação dos Frascos aumentada em X%".
+  p.velocidadePct += n('frasco_velocidade');
   // ("Frascos de Vida usados enquanto em Vida Baixa aplicam sua Recuperação Instantaneamente", o mesmo da Mana em Mana Baixa.)
   if (tipo && n(`frasco_instantaneo_baixa:${tipo}`) > 0) p.instantaneoNaVidaBaixa = true;
   const durante = {};
@@ -267,7 +269,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   const st = estadoDaCacada(hunt);
   const agora = hunt.clock ?? 0;
   if (st.ativos[v]?.ate > agora) return false;
-  peca.poe.cargas = cargas - par.cargasPorUso;
+  // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
+  if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   aoUsarOFrasco(estado, par, eventos, quem);
   if (par.tipo === 'utilidade') {
     st.ativos[v] = { ate: agora + par.duracaoMs, af: par.af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}) };
@@ -464,12 +467,18 @@ export function encherNaCidade(estado) {
 }
 
 /** Matou um monstro: cargas para todos os frascos do cinto, pela raridade dele (× a Recuperação de Cargas de cada frasco). */
-export function aoMatar(estado, tipoDoMonstro = 'normal') {
+export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
   if (!ligado()) return;
   const base = Number(F().cargasPorMorte?.[tipoDoMonstro] ?? F().cargasPorMorte?.normal ?? 1) || 0;
-  // (+ a "Recarga de Frasco recebida aumentada" do personagem.)
+  // (+ a "Recarga de Frasco recebida aumentada" do personagem; + ciclo 7, lote E: "Inimigos que você Matar sob efeito de Afecções Elementais
+  // concedem X% de Cargas de Frascos aumentadas" — o morto Incendiado, Congelado, Eletrizado ou Resfriado.)
   const afp = doPersonagem(estado);
-  const doPersonagemPct = Number(afp.frasco_cargas_recebidas) || 0;
+  const agora = estado?.hunt?.clock ?? 0;
+  const e = morto?.estados ?? {};
+  const elemental = !!morto && (['congelado', 'chocado', 'lento'].some((k) => e[k]?.ate > agora) || (morto.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0));
+  // (+ lote F: "Inimigo Marcado concede Cargas de Frasco aumentadas em X% a Você" — a sua Marca no morto.)
+  const marcado = !!morto && Object.values(morto.maldicoes ?? {}).some((m) => m?.marca && m.ate > agora);
+  const doPersonagemPct = (Number(afp.frasco_cargas_recebidas) || 0) + (elemental ? Number(afp.frasco_cargas_morto_elemental) || 0 : 0) + (marcado ? Number(afp.frasco_cargas_marcado) || 0 : 0);
   for (const p of cinto(estado)) {
     if (!p) continue;
     const par = parametros(p, afp);

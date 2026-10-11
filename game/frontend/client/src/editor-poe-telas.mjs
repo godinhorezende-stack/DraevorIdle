@@ -14,9 +14,11 @@ import { arenaDeEfeitos } from './editor-arena-efeitos.mjs';
 const BASE = '/api/mapas/_engine/itens-poe/';
 const api = async (rota, corpo) => (await fetch(BASE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
 const num = (n) => (n == null ? '—' : Number(n).toLocaleString('pt-BR'));
-const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○', nota: '·' };
-const ESTADO = { equivalente: 'tem efeito no Draevor (mesma conta)', aproximado: 'tem efeito no Draevor (com diferença)', novo: 'atributo novo do PoE, com efeito', registrado: 'registrado, ainda sem efeito', nota: 'texto explicativo (sem número)' };
-const marca = (e) => el('em', { class: `poe-tr ${e}`, title: ESTADO[e] ?? e }, SIMBOLO[e] ?? '?');
+const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○', inerte: '✗', naoSeAplica: '–', nota: '·' };
+const ESTADO = { equivalente: 'tem efeito no Draevor (mesma conta)', aproximado: 'tem efeito no Draevor (com diferença)', novo: 'atributo novo do PoE, com efeito', registrado: 'registrado, ainda sem efeito', inerte: 'sem efeito: o jogo não tem a mecânica', naoSeAplica: 'não se aplica ao jogo (não há o que mudar)', nota: 'texto explicativo (sem número)' };
+const marca = (e, nota = null) => el('em', { class: `poe-tr ${e}`, title: nota ? `${ESTADO[e] ?? e} — ${nota}` : ESTADO[e] ?? e }, SIMBOLO[e] ?? '?');
+/** (ciclo 7) A linha `inerte` com a nota "não se aplica ao jogo: …" mostra o estado à parte. */
+const estadoDaLinha = (e, nota) => (e === 'inerte' && /^não se aplica ao jogo:/i.test(nota ?? '') ? 'naoSeAplica' : e);
 const ROTULO_COMP = { magia: 'Magia', 'area-telegrafada': 'Área avisada', area: 'Área avisada', invocar: 'Invocação', escudo: 'Escudo' };
 
 /** Sem o sistema ligado, a mesma explicação nas três telas. */
@@ -235,11 +237,11 @@ export function criarTelaDosChefesPoe({ raiz }) {
 // ================================================================ ÁRVORE
 
 const COR_DO_TIPO = { small: '#7d8597', notable: '#e2b85c', keystone: '#ff7a59', mastery: '#7fc8ff', start: '#ffffff' };
-const COR_DO_ESTADO = { equivalente: '#5cc28a', aproximado: '#e9c34f', novo: '#c79bff', registrado: '#6f7889', nota: '#4a5160' };
-const PIOR = ['equivalente', 'novo', 'aproximado', 'registrado'];
+const COR_DO_ESTADO = { equivalente: '#5cc28a', aproximado: '#e9c34f', novo: '#c79bff', registrado: '#6f7889', inerte: '#c0504d', naoSeAplica: '#4a5160', nota: '#4a5160' };
+const PIOR = ['naoSeAplica', 'equivalente', 'novo', 'aproximado', 'registrado', 'inerte'];
 /** O estado "do nó" para colorir: o pior entre as linhas com número (as notas não contam). */
 const estadoDoNo = (n) => {
-  const l = [...n.estados, ...(n.opcoes ?? []).flatMap((o) => o.estados ?? [])].filter((e) => e !== 'nota');
+  const l = [...n.estados.map((e, i) => estadoDaLinha(e, n.notas?.[i])), ...(n.opcoes ?? []).flatMap((o) => (o.estados ?? []).map((e, i) => estadoDaLinha(e, o.notas?.[i])))].filter((e) => e !== 'nota');
   return l.length ? l.reduce((p, e) => (PIOR.indexOf(e) > PIOR.indexOf(p) ? e : p), 'equivalente') : 'nota';
 };
 
@@ -554,7 +556,11 @@ export function criarTelaDaArvorePoe({ raiz }) {
     }, { passive: false });
   }
 
-  const linhaDeTexto = (texto, estado, efeitos) => el('div', { class: 'pa-linha' }, marca(estado ?? 'registrado'), el('span', {}, texto));
+  // (ciclo 7: + o porquê da linha sem efeito igual — a nota da regra)
+  const linhaDeTexto = (texto, estado, nota = null) => {
+    const e = estadoDaLinha(estado ?? 'registrado', nota);
+    return el('div', { class: 'pa-linha' }, marca(e, nota), el('span', {}, texto, nota && e !== 'nota' && e !== 'equivalente' ? el('div', { class: 'dica' }, nota.replace(/^não se aplica ao jogo:\s*/i, '')) : null));
+  };
   const efeitosEmTexto = (ef) => (ef ?? []).map((f) => (f.add ? `${f.add} +${f.valor}` : f.stat ? `${f.stat} ${f.pct ?? f.valor ?? ''}${f.pct != null ? '%' : ''}` : f.tag ? `tag ${f.tag} ${f.dano ?? ''}` : JSON.stringify(f))).join(' · ');
 
   function pintarPainel() {
@@ -568,10 +574,10 @@ export function criarTelaDaArvorePoe({ raiz }) {
       el('div', { class: 'bib-painel-topo' }, n.icone ? el('img', { class: 'pa-icone', src: `/api/jogo/poe/icone/ascendencia/${n.icone.split('/').map(encodeURIComponent).join('/')}`, alt: '', width: 64, height: 64 }) : null, el('div', { class: 'bib-painel-titulo' }, el('h2', { class: 'bib-nome' }, n.nome), el('div', { class: 'dica' }, `${n.en ?? ''}`),
         el('div', { class: 'linha' }, el('span', { class: 'selo', style: `flex:none;border-color:${COR_DO_TIPO[n.t]}` }, TIPO[n.t] ?? n.t), n.asc ? el('span', { class: 'selo aviso', style: 'flex:none' }, `Ascendência ${n.asc}`) : null, el('span', { class: 'eng-id', style: 'flex:none' }, `nó ${n.id}`), el('span')))),
       el('div', { class: 'bib-painel-corpo' },
-        n.textos.length ? [el('h4', {}, 'Texto do PoE e estado'), el('div', { class: 'pa-linhas' }, n.textos.map((t, i) => linhaDeTexto(t, n.estados[i])))] : null,
+        n.textos.length ? [el('h4', {}, 'Texto do PoE e estado'), el('div', { class: 'pa-linhas' }, n.textos.map((t, i) => linhaDeTexto(t, n.estados[i], n.notas?.[i])))] : null,
         n.efeitos.length ? [el('h4', {}, 'O que soma no Draevor'), el('p', { class: 'eng-id' }, efeitosEmTexto(n.efeitos))] : n.t !== 'mastery' && n.t !== 'start' ? el('p', { class: 'dica' }, 'Nenhum efeito numérico (linhas registradas ou explicativas).') : null,
         n.keystone ? [el('h4', {}, 'Regra da keystone'), el('p', {}, el('span', { class: 'selo' }, n.keystone.regra), ' ', el('span', { class: 'eng-id' }, n.keystone.id ?? '—'), n.keystone.regra === 'texto' ? el('div', { class: 'dica' }, 'Só texto: ainda não muda o combate.') : el('div', { class: 'dica' }, 'Aplicada no jogo (ficha/combate).'))] : null,
-        n.opcoes ? [el('h4', {}, `Opções da maestria (${n.opcoes.length}) — escolhe uma`), el('div', { class: 'pa-opcoes' }, n.opcoes.map((o) => el('div', { class: 'pa-opcao' }, o.textos.map((t, i) => linhaDeTexto(t, o.estados?.[i])), o.efeitos?.length ? el('div', { class: 'eng-id' }, efeitosEmTexto(o.efeitos)) : null)))] : null,
+        n.opcoes ? [el('h4', {}, `Opções da maestria (${n.opcoes.length}) — escolhe uma`), el('div', { class: 'pa-opcoes' }, n.opcoes.map((o) => el('div', { class: 'pa-opcao' }, o.textos.map((t, i) => linhaDeTexto(t, o.estados?.[i], o.notas?.[i])), o.efeitos?.length ? el('div', { class: 'eng-id' }, efeitosEmTexto(o.efeitos)) : null)))] : null,
         vizinhos.length ? [el('h4', {}, `Ligado a (${vizinhos.length})`), el('div', { class: 'eng-card-selos' }, vizinhos.map((v) => el('button', { type: 'button', class: 'selo', onclick: () => { T.sel = v.id; pintarPainel(); const c = document.querySelector('.pa-canvas'); if (c) desenharCanvas(c); } }, v.nome)))] : null));
   }
 
@@ -583,20 +589,20 @@ export function criarTelaDaArvorePoe({ raiz }) {
       el('div', { class: 'bib-tabela' }, el('table', {},
         el('thead', {}, el('tr', {}, ['Keystone', 'Texto do PoE', 'Regra no jogo'].map((h) => el('th', {}, h)))),
         el('tbody', {}, l.map((n) => el('tr', { style: 'cursor:pointer', class: n.id === T.sel ? 'selecionada' : '', onclick: () => { T.sel = n.id; pintarPainel(); } },
-          el('td', {}, el('b', {}, n.nome), el('div', { class: 'dica' }, n.en ?? '')), el('td', {}, n.textos.map((t, i) => linhaDeTexto(t, n.estados[i]))),
+          el('td', {}, el('b', {}, n.nome), el('div', { class: 'dica' }, n.en ?? '')), el('td', {}, n.textos.map((t, i) => linhaDeTexto(t, n.estados[i], n.notas?.[i]))),
           el('td', {}, n.keystone?.regra === 'texto' || !n.keystone ? el('span', { class: 'selo aviso' }, 'só texto') : el('span', { class: 'selo usos' }, `${n.keystone.regra}${n.keystone.id ? ` · ${n.keystone.id}` : ''}`))))))));
   }
 
   function tabelaDeCobertura() {
     const cob = T.dados.cobertura;
     const NOME = { small: 'Pequenos', notable: 'Notáveis', keystone: 'Keystones', mastery: 'Maestrias (opções)', start: 'Inícios', ascendencia: 'Ascendências' };
-    const estados = ['equivalente', 'aproximado', 'novo', 'registrado', 'nota'];
+    const estados = ['equivalente', 'aproximado', 'novo', 'registrado', 'inerte', 'naoSeAplica', 'nota'];
     return el('div', {},
-      el('div', { class: 'bib-contagem' }, el('b', {}, 'Cobertura da tradução (linhas)'), el('span', { class: 'dica' }, '✓ ≈ ◆ têm efeito no Draevor; ○ registrada sem efeito; · texto explicativo')),
+      el('div', { class: 'bib-contagem' }, el('b', {}, 'Cobertura da tradução (linhas)'), el('span', { class: 'dica' }, '✓ ≈ ◆ têm efeito no Draevor; ○ registrada sem efeito; ✗ o jogo não tem a mecânica; – não se aplica ao jogo; · texto explicativo. "Com efeito": sobre as linhas com número que se aplicam ao jogo.')),
       el('div', { class: 'bib-tabela' }, el('table', {},
         el('thead', {}, el('tr', {}, ['Tipo', 'Nós', ...estados.map((e) => `${SIMBOLO[e]} ${e}`), 'Com efeito'].map((h) => el('th', {}, h)))),
         el('tbody', {}, Object.entries(cob).map(([k, v]) => {
-          const total = estados.filter((e) => e !== 'nota').reduce((s, e) => s + (v.estados[e] ?? 0), 0) || 1;
+          const total = estados.filter((e) => e !== 'nota' && e !== 'naoSeAplica').reduce((s, e) => s + (v.estados[e] ?? 0), 0) || 1;
           const efeito = ['equivalente', 'aproximado', 'novo'].reduce((s, e) => s + (v.estados[e] ?? 0), 0);
           return el('tr', {}, el('td', {}, NOME[k] ?? k), el('td', { class: 'num' }, v.nos), ...estados.map((e) => el('td', { class: 'num' }, v.estados[e] ?? 0)), el('td', { class: 'num' }, `${Math.round((efeito / total) * 100)}%`));
         })))));

@@ -126,22 +126,31 @@ export function arvore() {
   if (A?.id !== 'poe') return { ligada: false };
   const nos = Object.values(A.nos).map((n) => ({
     id: n.id, nome: n.nome, en: n.nomeEn ?? null, t: n.tipo, x: n.x, y: n.y, c: n.conexoes ?? [], asc: n.ascendencia ?? null, ...(n.icone ? { icone: n.icone } : {}),
-    textos: n.textos ?? [], estados: n.estados ?? [], efeitos: n.efeitos ?? [],
+    textos: n.textos ?? [], estados: n.estados ?? [], efeitos: n.efeitos ?? [], ...(n.notas ? { notas: n.notas } : {}),
     ...(n.keystone ? { keystone: n.keystone } : {}),
     ...(n.opcoes ? { opcoes: n.opcoes } : {}), ...(n.grupo != null ? { grupo: n.grupo } : {}),
   }));
   return { ligada: true, relatorio: A.relatorio ?? null, inicios: A.inicios, ascendencias: A.ascendencias ?? {}, pontos: A.pontos ?? null, nos };
 }
 
-/** O resumo de cobertura da árvore (por tipo: quantas linhas em cada estado). */
+/**
+ * O resumo de cobertura da árvore (por tipo: quantas linhas em cada estado). (ciclo 7) A linha `inerte` cuja nota é "não se aplica ao jogo: …"
+ * conta à parte (`naoSeAplica`): a mecânica do PoE não tem o que mudar no jogo (luz, mercenários, posicionamento…).
+ */
+export const NAO_SE_APLICA = /^não se aplica ao jogo:/i;
 export function coberturaDaArvore() {
   const A = Arvore.arvore();
   const por = {};
+  const contar = (k, estados = [], notas = []) => estados.forEach((e, i) => {
+    const x = e === 'inerte' && NAO_SE_APLICA.test(notas[i] ?? '') ? 'naoSeAplica' : e;
+    por[k].estados[x] = (por[k].estados[x] ?? 0) + 1;
+  });
   for (const n of Object.values(A?.nos ?? {})) {
     const k = n.ascendencia ? 'ascendencia' : n.tipo;
     por[k] ??= { nos: 0, estados: {} };
     por[k].nos++;
-    for (const e of [...(n.estados ?? []), ...(n.opcoes ?? []).flatMap((o) => o.estados ?? [])]) por[k].estados[e] = (por[k].estados[e] ?? 0) + 1;
+    contar(k, n.estados, n.notas);
+    for (const o of n.opcoes ?? []) contar(k, o.estados, o.notas);
   }
   return por;
 }

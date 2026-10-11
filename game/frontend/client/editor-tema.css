@@ -601,6 +601,8 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .pa-icone { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; background: #0a0d12; border: 1px solid var(--eng-linha); flex: none; }
 .pa-opcao { border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); padding: 6px; background: var(--eng-s1); }
 .poe-tr.nota { color: var(--eng-txt3); }
+/* (ciclo 7) a árvore do PoE: a linha que não se aplica ao jogo */
+.poe-tr.naoSeAplica { color: var(--eng-txt3); }
 .poe-v.poe-larga { grid-template-columns: 180px minmax(0, 1.7fr) minmax(340px, 1fr); }
 .pa-barra { flex-wrap: wrap; gap: 8px; }
 .pa-barra input[type=search] { flex: 1 1 200px; min-width: 0; }

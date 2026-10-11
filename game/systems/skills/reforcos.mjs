@@ -67,7 +67,8 @@ const fatorDoExpirou = (m, agora) => 1 + (m.expirou ?? []).reduce((s, x) => s + 
 export function regrasDasMaldicoes(bicho, agora) {
   const ativas = maldicoesAtivas(bicho, agora);
   return {
-    regenMenos: Math.max(0, ...ativas.map((m) => m.regenMenos ?? 0)),
+    // (ciclo 7: + "Inimigos Marcados não podem Regenerar Vida")
+    regenMenos: Math.max(0, ...ativas.map((m) => (m.daMarca?.semRegen ? 100 : m.regenMenos ?? 0))),
     semRecargaEs: ativas.some((m) => m.semRecargaEs),
     destruir: ativas.some((m) => m.destruir),
   };
@@ -166,7 +167,9 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       if (!cabe) continue;
       dur ||= 6000;
       maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}),
-        ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}) };
+        ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
+        // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
+        ...(regras.daMarca ? { daMarca: regras.daMarca } : {}) };
       amaldicoou = true;
       // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
       if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {

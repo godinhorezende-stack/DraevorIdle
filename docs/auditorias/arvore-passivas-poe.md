@@ -1,7 +1,7 @@
 # Auditoria da árvore de passivas do PoE no Draevor
 
 Página auditada: `http://localhost:8099/editor/conteudo#poe-arvore-poedb` (Engine › Árvore × PoEDB) e a árvore em uso no jogo com `ITENS_POE=1`.
-Ciclos 1, 2, 3 (maldições e dreno instantâneo) 4 (totens, dano excedente, monstros à prova e amaldiçoados, maldições em você) 5 (afecções em você) e 6 (afecções do personagem nos monstros) — 09/10/2026. Inventário verificável (gerado, rastreável por id):
+Ciclos 1, 2, 3 (maldições e dreno instantâneo) 4 (totens, dano excedente, monstros à prova e amaldiçoados, maldições em você) 5 (afecções em você) e 6 (afecções do personagem nos monstros) — 09/10/2026; **ciclo 7 (tudo o que não funcionava — 11/10/2026, seção 3.1g)**. Inventário verificável (gerado, rastreável por id):
 - [`arvore-passivas-poe-inventario.md`](arvore-passivas-poe-inventario.md);
 - [`arvore-passivas-poe-inventario.json`](arvore-passivas-poe-inventario.json).
 
@@ -9,20 +9,34 @@ Ciclos 1, 2, 3 (maldições e dreno instantâneo) 4 (totens, dano excedente, mon
 
 ## 1. Resumo executivo
 
-| | Antes (commit `de2be187`) | Ciclo 1 | Ciclo 2 | Ciclo 3 | Ciclo 4 | Ciclo 5 | **Ciclo 6** |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Nós analisados (principal + maestrias + ascendências) | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 |
-| Auditáveis (sem os 28 inícios) | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 |
-| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | 1.712 (61,5%) | 1.728 (62,1%) | 1.730 (62,2%) | 1.734 (62,3%) | **1.753 (63,0%)** |
-| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) | 147 (5,3%) | 147 (5,3%) | 147 (5,3%) | 148 (5,3%) |
-| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | 400 (14,4%) | 395 (14,2%) | 401 (14,4%) | 403 (14,5%) | **406 (14,6%)** |
-| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | 419 (15,1%) | 402 (14,5%) | 394 (14,2%) | 388 (13,9%) | **365 (13,1%)** |
-| Não classificáveis (sem linhas: 57 encaixes de joia, 53 outros) | 110 | 110 | 110 | 110 | 110 | 110 | 110 |
-| Falhas no motor (alocar → somar → tirar), em todos os nós | 5 | 0 | 0 | 0 | 0 | 0 | **0** |
-| Efeitos traduzidos que nada no código lê | 84 em 5 causas | 0 | 0 | 0 | 0 | 0 | **0** |
-| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | 66,6% | 67,4% | 67,5% | 67,6% | **68,3%** |
+| | Antes (commit `de2be187`) | Ciclo 1 | Ciclo 2 | Ciclo 3 | Ciclo 4 | Ciclo 5 | Ciclo 6 | **Ciclo 7** |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Nós analisados (principal + maestrias + ascendências) | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 |
+| Auditáveis (sem os 28 inícios) | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 |
+| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | 1.712 (61,5%) | 1.728 (62,1%) | 1.730 (62,2%) | 1.734 (62,3%) | 1.753 (63,0%) | **2.124 (76,3%)** |
+| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) | 147 (5,3%) | 147 (5,3%) | 147 (5,3%) | 148 (5,3%) | 165 (5,9%) |
+| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | 400 (14,4%) | 395 (14,2%) | 401 (14,4%) | 403 (14,5%) | 406 (14,6%) | **265 (9,5%)** |
+| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | 419 (15,1%) | 402 (14,5%) | 394 (14,2%) | 388 (13,9%) | 365 (13,1%) | **118 (4,2%)** |
+| Não classificáveis (sem linhas: 57 encaixes de joia, 53 outros) | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 |
+| Falhas no motor (alocar → somar → tirar), em todos os nós | 5 | 0 | 0 | 0 | 0 | 0 | 0 | **0** |
+| Efeitos traduzidos que nada no código lê | 84 em 5 causas | 0 | 0 | 0 | 0 | 0 | 0 | **0** |
+| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | 66,6% | 67,4% | 67,5% | 67,6% | 68,3% | **82,3%** |
 
 Linhas, no ciclo 1: 4.075 com efeito real, 1.515 pendentes, 455 que o jogo marca como inexistentes (com o porquê) e 756 lembretes do PoE.
+
+**Linhas no ciclo 7** (a árvore inteira, cada opção de maestria conta; `arvore-poe.json`):
+
+| | Antes do ciclo 7 | Depois |
+|---|---:|---:|
+| Com efeito no jogo (igual, aproximado ou atributo novo) | 4.381 | **5.386** (+1.005) |
+| Sem regra (registradas, sem efeito) | 1.220 | **115** |
+| Inertes: falta mecânica, gema ou item no jogo | 444 | **245** |
+| Inertes: dependem de ligar mecânicas de MONSTRO (reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar em você) — **decisão do dono** | — | **75** |
+| Inertes: **não se aplicam ao jogo** (luz, mercenários, baús, alcance em décimos de metro, posicionamento…) — não há o que fazer funcionar | — | **215** |
+| **Não funcionam (soma)** | **1.664** | **650** (dos quais 215 não se aplicam) |
+| Lembretes / textos explicativos | 756 | 765 |
+
+Cada linha que não funciona agora diz o PORQUÊ (a nota da regra) no balão da árvore do jogo e no painel da Engine (seção 3.1g).
 
 ### A escada de cobertura (ciclo 6; entre parênteses, o ciclo 2)
 
@@ -342,6 +356,72 @@ Afecções e controle: de 413 para 541 linhas com efeito (88%); pendentes de 169
 
 Teste: `testes/passivas-poe-afeccoes-nos-monstros.test.mjs` (11 testes, nós reais; 31 mecânicas conferidas por mutação).
 
+### 3.1g Corrigidas no ciclo 7 (tudo o que não funcionava — 11/10/2026)
+
+Pedido do dono: "faça a inspeção de tudo na árvore de habilidades que não está funcionando … tente resolver tudo … ficando próximo de 0 não
+funcionando". Levantamento por modelo de linha (números → #), agrupado por família, e oito lotes. Linhas que não funcionavam: **1.664 → 650**
+(e 215 das 650 não se aplicam ao jogo). Regras novas: 458 (no topo de `traducao.json`, marcadas `_ciclo7`); atributos novos: 137 (548 → 685 em `atributos-novos.json`).
+
+- **Lote A — Retaliação** (as 7 gemas são golpes comuns no jogo): dano, velocidade, recarga, área, afecções, Debilitar, armadura por gema
+  diferente usada (`distintas:retaliacao:N`), atordoamento, Fúria, bloqueio "se usou uma Retaliação Recentemente" (`usouTag:<tag>`). Ganho de
+  quebra: `atk_speed@<tag>` (ex.: `@movimento`) nunca entrava no tempo da gema; agora entra (`acoes.temposDaGemaPoe`). O Debilitar contava
+  19% (Debilitado + Exaurido); agora 10%, como no PoE.
+- **Lote B — Lacaios e totens** (`lacaios-poe.mjs`, o tique dos lacaios em `cacadas`): crítico, área, recarga, bloqueio mágico, redução física,
+  escudo da vida, máximo das resistências, recuperação, vida na morte de outro lacaio e ao bloquear, dano dobrado, ignorar redução física,
+  penetração nos amaldiçoados, dreno para o dono, Poder Profano e Agressividade ao matar, a explosão em vida baixa, golens imunes a elemental,
+  Arqueiros Ilusórios e Balistas, totens (provocar ao invocar, dois por uso, por totem invocado), "dano/velocidade de lacaio também te afetam".
+- **Lote C — Marcas e Precisão**: o efeito da Marca, transferir ao matar, sem regeneração/sem crítico/precisão e dano no Marcado, Cegar os
+  vizinhos, Frenesi ao acertar o Marcado, "X% mais Precisão" contra o Marcado/Único/de perto (`personagem/defesa.precisaoMaisContra`),
+  Runas e Vínculo (velocidade, duração, efeito do buff). Os vínculos presos ao inimigo/aliado ficam inertes, com o porquê.
+- **Lote D — Fortificação, Atordoamento, Cegueira, Esmagar, Provocar**: a **Fortificação** (estado novo: 1% menos dano de acertos por
+  Fortificação, até 20 + o máximo, 6 s; o Acerto Fortificante dá 1 por 1% da vida do alvo tirada) e as 20 linhas dela; **ser atordoado**
+  (`combate/controle.tentar` → `mods-poe.aoSerAtordoado`: regeneração, Adrenalina pela duração, vida do golpe, atordoar os vizinhos, só-físico,
+  escudo no Ponto de Atordoamento); o golpe ganha as tags do que **fez** (`critico`, `golpeAtordoou`: Golpe de Misericórdia, duração do
+  atordoamento); Esmagado (−15% de redução física), duração da Cegueira e da Provocação, provocados não evadem, mão principal/secundária.
+- **Lote E — o que liga em mecânica que já existia**: teto do bloqueio, bloqueio Sortudo, cadáveres (`hunt.cadaveres`: consumir a cada N s),
+  Exposição mínima/extra, resistência invertida, Físico como elemento aleatório com chance, Caos que passa pelo escudo, Raio Azarado, cargas
+  de frasco do morto com afecção, eficiência de custo por tag, encaixes da arma, regeneração dos inimigos próximos, magias usadas
+  recentemente (`usos:<tag>`), Totem que leva parte do golpe, Minas (no jogo detonam no alvo: o "Dano sofrido/causado" acumula no alvo).
+- **Lote F — dano, velocidade, Fúria, recursos, frascos, projéteis**: bônus por tempo dos eventos (`ev:<evento>:stat:<atributo>:<s>`), teto
+  das escalas (`~<máximo>`), projéteis pela distância ao alvo, auras nos inimigos próximos (resistência, dano elemental, velocidade de ação),
+  resistências que seguem a de Fogo, Supressão (Sortuda, impedir mais, por acerto suprimido), Poder do Clamor, crítico Sortudo, evasão "mais",
+  dano Azarado dos inimigos, Fúria (efeito, perda), Fúria Arcana, Vento Favorável, aljava, regeneração da defesa, remover afecções.
+- **Lote G — quatro mecânicas que as gemas já tinham pela metade**: o **Solo Sagrado** (6% da vida por segundo — o poedb: 360 por minuto;
+  criar ao acertar/ficar parado, efeito, precisão, perdurar, inimigos sobre ele sofrem mais), a **Postura** (Sangue por padrão, Areia com a gema
+  Sangue e Areia; mudar de postura), o **Valor** dos Estandartes (o lembrete do PoE: +1 por abate ou acerto corpo a corpo em Raro/Único, a
+  cada 0,5 s, até 50; no jogo reforça a aura do Estandarte em 1% por Valor — aproximado) e o **Impelir** dos Clamores (a gema diz quantos).
+  Bug corrigido: a condição "enquanto Elusivo" nunca valia, mesmo com o buff.
+- **Lote H — keystones e o resto**: Inoculação do Caos (vida 1, imune a Caos e Veneno), O Agnóstico (sem Escudo de Energia + mana pela vida),
+  Mente sobre Matéria ("X% do dano removido da Mana antes da Vida"), Mortalhas Fantasmas, penetração de Caos. Correção: a penetração
+  **elemental** valia também no Caos (o Caos não é elemental no PoE).
+- **Keystones inteiras** (a regra da R1: nunca só a vantagem ou só a desvantagem): completadas a Geada Cortante (os Resfriados sofrem mais
+  Gelo pelo efeito do Resfriamento), o Combatente Versátil (o excedente do bloqueio de ataques vira bloqueio mágico), a Guarda Desequilibrada
+  (o teto de 50% na redução física) e o Escudo Divino (o Físico negado vira Escudo por segundo). Ficam **inertes inteiras**, com o porquê, a
+  Tempestade Turbulenta, a Chama Voraz e a Dança da Flecha (falta a parte boa delas). **Antigas, para decidir:** o Vínculo Ancestral tem só
+  a vantagem (+1 Totem; "não pode causar Dano com Habilidades por si só" ainda não age) e o Mesclador de Runas só a desvantagem (−1 Totem; a
+  Marca adicional Vinculada não existe no jogo).
+- **O porquê de cada linha**: `arvore-poe.json` guarda `notas` (a nota da regra) por linha; o balão da árvore do jogo mostra a nota embaixo da
+  linha, com a marca "–" para o que **não se aplica ao jogo**; a Engine mostra o estado `inerte` (antes não aparecia nem colorria o nó) e o
+  `naoSeAplica`, com a nota, e a cobertura conta à parte o que não se aplica.
+
+Testes novos (nós reais da árvore, o número medido onde a linha age): `passivas-poe-retaliacao-lacaios-marcas` (7),
+`passivas-poe-fortificacao-atordoamento` (9), `passivas-poe-bloqueio-cadaveres-minas` (7), `passivas-poe-tempo-distancia-auras` (7),
+`passivas-poe-solo-postura-estandarte` (4), `passivas-poe-inoculacao-mortalha` (3) — 37 testes.
+
+**O que ficou (650 linhas), pelo porquê:**
+
+| Porquê | Linhas | O que precisa |
+|---|---:|---|
+| Não se aplica ao jogo (luz e campo de visão, mercenários, baús, alcance em décimos de metro, aura sem área/duração, Estandarte plantado, sangramento em movimento/agravado, projétil sem trajetória, janela da Retaliação, posicionamento) | 215 | nada — a mecânica do PoE não tem o que mudar no jogo |
+| **Mecânicas de monstro desligadas** (reflexo de dano, Cegueira, Sangue Corrompido, Mutilar e Empalar em você, Exposição em você) | 75 | **decisão do dono**: ligar os modificadores de monstro/mapa que já estão no catálogo (mexe na dificuldade) |
+| Sem regra ainda (1 ou 2 linhas cada, quase todas de ascendências novas: Desafio, Força dos Ventos, Casca, Chama Santificada, Fanatismo, Convergência, frascos consumidos) | 115 | uma mecânica pequena por ascendência |
+| Tinturas (a classe de item não existe) | 58 | criar a Tintura (item novo) — **decisão do dono** |
+| Runas e Vínculos presos ao alvo | 51 | sistema de prender/ligar (design) |
+| Armadilha e Mina plantadas (limite, duração, detonar ao mover) | 34 | no jogo elas disparam na hora — mudar só com sistema de armar (R7) |
+| Convocar o Aço (Call of Steel) | 20 | a habilidade concedida pelas gemas de Aço |
+| Suportes que ainda não agem (Crueldade, Impiedade, Lâmina Noturna, Selos do Libertar, a reserva do Feiticeiro) | 38 | o efeito no motor de suportes |
+| Outros (Intensidade, Portador da Praga, Égides, gemas que não estão no jogo) | 40 | gemas/mecânicas próprias |
+
 ### 3.2 Restantes (por causa técnica)
 
 As linhas pendentes, agrupadas por tema, com o que cada tema precisa, estão no inventário ("Linhas sem tradução com efeito"). Os maiores grupos:
@@ -501,6 +581,15 @@ L4) vieram em seguida, no mesmo ciclo.
 | Afecções em você | `game/systems/itens-poe/mods-poe.mjs` (`dotNoJogador`, `jaTemAfeccao`, o evento `ganharAdrenalina`); `game/systems/itens-poe/condicoes-poe.mjs` (`controleNoJogador`, `ganharBuff`); `game/systems/poderes.mjs` (a supressão antes das afecções); `game/systems/combate/controle.mjs` (`tentar`: sem afecção elemental); `game/systems/combate/dot.mjs` (o tipo no pulso); `game/systems/mobs/mecanicas.mjs` (inafetado, o primeiro segundo do dano contínuo) |
 | Dados e testes | `traducao.json` (15 regras); `atributos-novos.json` (9); `testes/passivas-poe-afeccoes-em-voce.test.mjs` (novo, 7 testes); `testes/cobertura-arvore.mjs` |
 
+### Arquivos do ciclo 7
+
+| Correção | Arquivos |
+|---|---|
+| Motor | `game/systems/itens-poe/condicoes-poe.mjs` (Fortificação, Solo Sagrado, Postura, Estandarte/Valor, escalas novas e o teto `~`, condições e tags novas, `controleNoJogador`, `fichaDoGolpe`, `doBicho`, `fatorRecebidoPeloBicho`, o tique); `game/systems/itens-poe/mods-poe.mjs` (`aoAcertar`, `aoSerAcertado`, `aoSerAtordoado`, ações novas, periódicos, auras nos inimigos, `parteNoTotem`, `poderDoClamor`); `game/systems/itens-poe/lacaios-poe.mjs`; `game/systems/cacadas.mjs` (o tique dos lacaios); `game/systems/acoes.mjs` (custo e recarga por tag, Impelir, Marca); `game/systems/hunt/combate.mjs` e `game/systems/poderes.mjs` (o golpe e a magia dos monstros no personagem); `game/systems/combate/controle.mjs`; `game/systems/personagem/defesa.mjs`; `game/systems/ficha.mjs`; `game/systems/afixos.mjs` (a aljava, a Inoculação do Caos); `game/systems/itens-poe/frascos.mjs`; `game/systems/itens-poe/gemas-poe.mjs`; `game/systems/hunt/resistencia.mjs`; `game/systems/skills/estados.mjs` e `reforcos.mjs`; `game/systems/combate/limites.mjs` (penetração de Caos); `game/systems/passivas/arvore.mjs` (maestrias contadas, `notas`); `game/systems/itens-poe/arvore.mjs` (`notas`, o "ㅤ" das ascendências novas) |
+| Tela | `game/frontend/client/src/passivas.mjs` (o porquê de cada linha, a marca "–"); `game/frontend/client/src/editor-poe-telas.mjs` e `game/admin/itens-poe-telas.mjs` (os estados `inerte`/`naoSeAplica` e as notas na Engine); CSS |
+| Dados | `traducao.json` (458 regras `_ciclo7`), `atributos-novos.json` (+137), `arvore-poe.json` (remontada, com `notas`) |
+| Auditoria | `game/admin/auditoria-arvore-passivas.mjs` (as condições novas; `alvoVenenos:N` não é mais "desconhecida") |
+
 ### Arquivos do ciclo 6
 
 | Correção | Arquivos |
@@ -518,6 +607,15 @@ L4) vieram em seguida, no mesmo ciclo.
   máquina, porque ela hospeda o servidor do jogo.
 
 ---
+
+**Ciclo 7 (11/10/2026):**
+- 6 arquivos novos de teste da árvore (37 testes, nós reais), três rodadas seguidas sem falha intermitente.
+- `passivas*` + `itens-poe*` (51 arquivos, 477 testes): 0 falhas. Três testes antigos com o **seletor de nó ajustado** (decisão do dono,
+  11/10): `passivas-poe-cobertura` ("accuracy", "duracao_congelamento") e `passivas-poe-frascos` procuravam um nó com UMA linha só, e esses
+  nós ganharam linhas que agora funcionam. O seletor aceita as outras linhas declaradas em `junto`; a asserção continua exata, e na
+  Precisão o esperado soma a linha "Precisão igual a duas vezes sua Força" (a mutação que zera essa linha é pega: 782 × 718).
+- **FULL por exceção** (dono, 11/10 — o pre-commit exige a FULL por `cacadas.mjs`, `acoes.mjs` e `afixos.mjs`): 4.046 testes, 3.416 passam,
+  **0 falhas**, 628 pulados (clássico) e os 2 TODO de sempre. Commit com `--no-verify`.
 
 ## 8. Próxima prioridade recomendada
 

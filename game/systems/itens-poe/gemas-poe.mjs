@@ -112,6 +112,15 @@ export function textosDaGema(slug, nivel = 1) {
   return { linhas: COMPILADOR.textosDoNivel(g, n), props: COMPILADOR.propsDoNivel(g, n), requer: COMPILADOR.basicosDoNivel(g, n).nivelReq ?? g.nivelReq ?? 1, nome: g.nome, tags: g.tags ?? [] };
 }
 
+/** (ciclo 7, lote G) Quantos ataques o CLAMOR Impele ("Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar"): 0 se não Impele. */
+export function impelidosDaGema(slug, nivel = 1) {
+  for (const l of textosDaGema(slug, nivel).linhas) {
+    const m = /Impele (?:os próximos|o próximo) (\d+) Ataques?/i.exec(l);
+    if (m) return Number(m[1]) || 0;
+  }
+  return 0;
+}
+
 /** As linhas da gema que o jogo agora faz (saem de "não simulado"). */
 export const ehLinhaDeAlvos = (linha) => REGRAS_DE_ALVOS.some(([re]) => re.test(linha));
 const ALVOS = new Map();
@@ -525,11 +534,15 @@ export const daAcao = (acao) => (String(acao).startsWith(PREFIXO) ? REGISTRO.get
  * Ira possui 20% de aumento do Efeito de Aura": `efeito_buff_gema:ira@unicoNaPresenca`), quando a condição vale agora. (Aqui não dá para ler
  * a ficha: `adds` é parte da soma que monta a ficha.)
  */
+// (ciclo 7) O leitor da ÁRVORE (as passivas alocadas — registrado por `acoes.mjs`, que as lê sem ciclo de imports).
+// eslint-disable-next-line no-var
+var leitorDaArvore;
+export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
 function doEquipamento(estado, chave) {
   let conds = null;
   let n = 0;
-  for (const p of Object.values(estado?.equipment ?? {})) {
-    for (const [k, v] of Object.entries(p?.poe?.af ?? {})) {
+  const somar = (af) => {
+    for (const [k, v] of Object.entries(af ?? {})) {
       if (k !== chave && !k.startsWith(`${chave}@`)) continue;
       const cs = partir(k).conds;
       if (cs.length) {
@@ -538,10 +551,15 @@ function doEquipamento(estado, chave) {
       }
       n += Number(v) || 0;
     }
-  }
+  };
+  for (const p of Object.values(estado?.equipment ?? {})) somar(p?.poe?.af);
+  // (+ a árvore: "Efeito dos Buffs de Arauto em você aumentado em X%")
+  somar(leitorDaArvore?.(estado));
   return n;
 }
 
+/** (ciclo 7) As tags de gema que têm "Efeito do Buff" próprio na árvore (as que o arquétipo não separa). */
+const TAGS_DE_BUFF = { Vínculo: 'vinculo', Guarda: 'guarda' };
 export function adds(estado) {
   const hunt = estado?.hunt;
   if (!hunt?.buffs && !hunt?.lacaios?.length) return null;
@@ -553,7 +571,11 @@ export function adds(estado) {
   const efeitoDe = (tipo, id) => {
     const g = String(id ?? '').startsWith(PREFIXO) ? REGISTRO.get(String(id).slice(PREFIXO.length))?.gema : null;
     const daGema = g?.nome ? `efeito_buff_gema:${slugDoNome(g.nome)}` : null;
-    return 1 + (doEquipamento(estado, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(estado, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(estado, daGema) : 0)) / 100;
+    // (ciclo 7) + pela TAG da gema ("Habilidades de Vínculo têm Efeito do Buff aumentado" — o Vínculo não tem arquétipo próprio)
+    const porTag = (g?.tags ?? []).filter((t) => TAGS_DE_BUFF[t]).reduce((n, t) => n + doEquipamento(estado, `efeito_buff_gema:${TAGS_DE_BUFF[t]}`), 0);
+    // (ciclo 7, lote G) o ESTANDARTE: "Habilidades de Estandarte têm Efeito de Aura aumentado" e o Valor (1% por Valor — `condicoes-poe.ganharValor`).
+    const estandarte = /_Banner/.test(String(id)) ? doEquipamento(estado, 'efeito_buff_gema:estandarte') + Math.max(0, estado?.hunt?.valor?.n ?? 0) : 0;
+    return 1 + (doEquipamento(estado, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(estado, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(estado, daGema) : 0) + porTag + estandarte) / 100;
   };
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo, id); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
   // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...); o Golem Carniçal, dano físico

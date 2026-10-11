@@ -805,12 +805,17 @@ export function desligarAurasForaDaBarra(estado, hunt) {
  */
 // O nível das gemas pela árvore ("+2 ao Nível de todas as Gemas de Habilidade Maldição"): o leitor que `skills/gemas` usa.
 Gemas.definirLeitorDaArvore((e) => efeitosDaArvore(e)?.adds ?? null);
+// (ciclo 7) E o do EFEITO DOS BUFFS das gemas ("Efeito dos Buffs de Arauto em você aumentado", "Habilidades de Vínculo têm Efeito do Buff
+// aumentado"): antes só as peças vestidas contavam — a árvore não.
+GemasPoe.definirLeitorDaArvore((e) => efeitosDaArvore(e)?.adds ?? null);
 /** A duração "infinita" dos Feitiços do Mestre dos Feitiços (a marca dura até o monstro morrer ou outra maldição a substituir). */
 export const DURACAO_INFINITA_MS = 1e12;
 export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = null) {
   const f = estado && itensPoeLigado() ? Ficha.combate(estado) : null;
   const nome = entry?.poeGema?.slug ? GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome : null;
-  const dasPecas = f ? valorPoe(f, 'efeito_maldicao') + (nome ? valorPoe(f, `efeito_maldicao_gema:${slugDoNome(nome)}`) : 0) : 0;
+  // (ciclo 7: + "Efeito das suas Marcas aumentado em X%" — só nas gemas com a tag Marca)
+  const ehMarca = (GemasPoe.doSlug(entry?.poeGema?.slug)?.gema?.tags ?? []).includes('Marca');
+  const dasPecas = f ? valorPoe(f, 'efeito_maldicao') + (nome ? valorPoe(f, `efeito_maldicao_gema:${slugDoNome(nome)}`) : 0) + (ehMarca ? valorPoe(f, 'efeito_marca') : 0) : 0;
   const pct = (Number(efeitoDaGema?.efeitoMaldicaoPct) || 0) + dasPecas;
   // (09/10, auditoria de dependências) "Duração da Maldição aumentada em X%" (a árvore, as peças): a marca da maldição dura mais no monstro.
   const duracao = f ? valorPoe(f, 'duracao_maldicao') : 0;
@@ -833,11 +838,16 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   // (+ à prova de maldições: o Feitiço não pega, salvo "Seus Feitiços podem afetar Inimigos a Prova de Maldições"; "têm Regeneração de Vida
   // reduzida", "não podem Recuperar Escudo de Energia" e "Mortos por você são destruídos" — `Reforcos.marcar` guarda na maldição do monstro.)
   const regenMenos = valorPoe(f, 'amaldicoado_regen_menos');
+  // (ciclo 7) As regras da árvore no INIMIGO MARCADO (só a Marca): "não podem Regenerar Vida", "não podem causar Golpes Críticos", "tem
+  // Precisão reduzida em X%", "sofre Dano aumentado em X%", "Inimigos próximos do seu Inimigo Marcado são Cegados" e "Sua Marca se transfere
+  // para outro Inimigo quando o Inimigo Marcado morrer" — `Reforcos.marcar` guarda na Marca; `condicoes-poe` lê no monstro.
+  const daMarca = marca ? Object.fromEntries([['semRegen', 'marcado_sem_regen'], ['semCritico', 'marcado_sem_critico'], ['precisaoMenos', 'marcado_precisao_menos'], ['danoSofrido', 'marcado_dano_sofrido'], ['cegaProximos', 'marcado_cega_proximos'], ['transfere', 'marca_transfere']].map(([k, a]) => [k, valorPoe(f, a)]).filter(([, v]) => v)) : {};
   return [...saida, {
     efeito: 'maldicaoRegras', limite: marca ? 1 : 1 + Math.max(0, valorPoe(f, 'maldicoes_adicionais')), nome: GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? null,
     ...(marca ? { marca: true } : {}), ...(ehFeitico ? { feitico: true } : {}), ...(valorPoe(f, 'feitico_afeta_aprova') > 0 ? { afetaAProva: true } : {}),
     ...(expirou.length ? { expirou } : {}), ...(desacelera ? { desacelera } : {}), ...(regenMenos ? { regenMenos } : {}),
     ...(valorPoe(f, 'amaldicoado_sem_recarga_es') > 0 ? { semRecargaEs: true } : {}), ...(valorPoe(f, 'amaldicoado_destruido') > 0 ? { destruir: true } : {}),
+    ...(Object.keys(daMarca).length ? { daMarca } : {}),
   }];
 }
 
@@ -938,7 +948,9 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
     }
     return eventos;
   }
-  for (let i = 0; i < q.porUso; i++) {
+  // (ciclo 7) "Habilidades que invocam um Totem têm X% de chance de invocar dois em vez de um".
+  const porUso = q.tipo === 'totem' && estado && Math.random() * 100 < ModsPoe.valor(Ficha.combate(estado), 'totem_dois_chance') ? Math.max(q.porUso, 2) : q.porUso;
+  for (let i = 0; i < porUso; i++) {
     const l = {
       uid: `lacaio:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, gema: slug, acao: entry.id, tipo: q.tipo, nome: q.nome, nivel: q.nivel,
       x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir ?? 2, look: q.desenho.look, lookItem: q.desenho.lookItem ?? 0, colors: q.desenho.colors,
@@ -964,8 +976,17 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
           espectro: { key: corpo.key, fator: (l.dano.max * 1.5) / maior }, proximoPoder: {} });
       }
     }
+    // (ciclo 7) os mods da árvore no lacaio recém-invocado: o Escudo de Energia ("ganham X% da Vida Máxima como Escudo de Energia").
+    LacaiosPoe.aplicarNoLacaio(l);
     hunt.lacaios.push(l);
     eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
+    // (ciclo 7) "Totens Provocam Inimigos ao redor deles por N segundo quando Convocados".
+    const provoca = q.tipo === 'totem' && estado ? ModsPoe.valor(Ficha.combate(estado), 'totem_provoca_s') : 0;
+    if (provoca > 0) for (const m of hunt.monstros ?? []) {
+      if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - l.x), Math.abs(m.y - l.y)) > 3) continue;
+      (m.estados ??= {}).provocado = { ate: agora + provoca * 1000, por: l.nome };
+      eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
+    }
   }
   // Passou do máximo da gema: os mais velhos saem.
   const desta = hunt.lacaios.filter((l) => l.gema === slug);
@@ -1095,11 +1116,17 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const castSpeed = (ficha.castSpeed ?? 0) + (porTag.cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
   // O ataque: o intervalo da ficha (`1000 / APS` ÷ (1 + aumentos globais)) com os aumentos da gema somados aos globais.
   const global = ficha.velocidadeDeAtaque ?? 0;
-  const daGema = (efeitoDaGema?.velAtaquePct ?? 0) + (doJogador ? velocidadeCondicional(estado, efeitoDaGema) : 0);
+  // (ciclo 7) + a velocidade de ataque "com Habilidades de X" (`atk_speed@<tag>` — Retaliação, Movimento…): antes não entrava em lugar nenhum.
+  const daGema = (efeitoDaGema?.velAtaquePct ?? 0) + (doJogador ? velocidadeCondicional(estado, efeitoDaGema) : 0) + (porTag.atk_speed ?? 0);
   const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + daGema) / 100);
   const lentidao = doJogador ? Controle.fatorDeLentidao(estado.hunt) : 1;
   const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, castSpeed) / 100)) * lentidao;
-  const recarga = t.recargaMs ? Math.round((t.recargaMs / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0)) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
+  // (ciclo 7) + a "Recuperação da Recarga" de UMA gema ("Convocação tem Recuperação da Recarga aumentada"): `recarga_gema:<slug>` — vale também
+  // nas versões transfiguradas (o slug começa igual: Blink_Arrow → Blink_Arrow_of_Prismatic_Clones).
+  const daGemaNomeada = Object.entries(ficha.afPoe ?? {}).reduce((n, [k, v]) => (k.startsWith('recarga_gema:') && typeof v === 'number' && entry.poeGema.slug.startsWith(k.slice('recarga_gema:'.length)) ? n + v : n), 0);
+  // (+ ciclo 7, lote G: "Habilidades de Postura têm +N segundos de Recarga" — `recarga_extra_s@postura`, somado à base.)
+  const baseDaRecarga = Math.max(0, (t.recargaMs ?? 0) + 1000 * (porTag.recarga_extra_s ?? 0));
+  const recarga = baseDaRecarga > 0 ? Math.round((baseDaRecarga / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0) + daGemaNomeada) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
   // (O piso de 250 ms é só da INSTANTÂNEA, um tique; o resto vai até `R.INTERVALO_MINIMO_DA_ACAO_MS` — mais de uma ação cabe num tique.)
   const uso = bruto > 0 ? Math.max(R.INTERVALO_MINIMO_DA_ACAO_MS, Math.round(bruto)) : USO_DA_INSTANTANEA_MS;
   return { uso, recarga, ataque, conjuracaoMs: ataque ? 0 : Math.round(bruto), conjuracaoBaseMs: t.conjuracaoMs, velAtaqueBase: t.velAtaqueBase, cargas: t.cargas };
@@ -1241,7 +1268,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (A MINA do PoE reserva mana enquanto está armada — no jogo, a reserva dela é o custo de cada uma: a Eficácia da Reserva de mana, a geral
   // e a "das Habilidades que arremessam Minas" o reduzem.)
   const eficaciaDaMina = entry.poeGema?.arquetipo === 'mina' ? ModsPoe.valor(fichaDoCusto, 'eficiencia_reserva') + ModsPoe.valor(fichaDoCusto, 'eficiencia_reserva_mana') + ModsPoe.valor(fichaDoCusto, 'eficiencia_reserva_minas') : 0;
-  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') / 100)) / Math.max(0.1, 1 + ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
+  // (ciclo 7, lote E: a eficiência e o "não custam mana" por TAG da habilidade — "Eficiência de custo de mana de magias aumentada",
+  // "…de habilidades de Retaliação", "Habilidades de marca não custam mana".)
+  const doCustoPorTag = entry.poeGema ? ModsPoe.somaPorTags(fichaDoCusto, tagsPoeDaSkill(entry)) : {};
+  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || (doCustoPorTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(Ficha.combate(estado), 'keystone_magia_sanguinea') > 0) && custoDeMana > 0;
@@ -1723,10 +1753,24 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const tagsPoe = tagsPoeDaSkill(entry);
     const fichaDoUso = Ficha.combate(estado);
     ModsPoe.marcar(hunt, 'usouHabilidade');
+    // (ciclo 7) O uso por TAG — "se você usou uma Habilidade de Retaliação Recentemente", "conjurou uma Magia de Runa/Marca Recentemente" — e
+    // QUAIS gemas de cada tag ("por cada Habilidade de Retaliação diferente que você tenha usado nos últimos N segundos").
+    ModsPoe.marcarUsoPorTag(hunt, tagsPoe, entry.poeGema.slug, inicio);
+    // (ciclo 7, lote G) IMPELIR: o Clamor Impele os próximos N ataques (os da gema, + "Clamores Impelem 1 Ataque adicional", "têm X% de chance
+    // de Impelir N Ataques adicionais", "Impelem duas vezes mais Ataques"); o ataque usado gasta um (a tag `impelido` do golpe).
+    if (tagsPoe.includes('clamor')) {
+      let n = GemasPoe.impelidosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
+      if (n > 0) {
+        n += ModsPoe.valor(fichaDoUso, 'clamor_impele_extra');
+        for (const [k, x] of Object.entries(fichaDoUso.afPoe ?? {})) if (k.startsWith('clamor_impele_chance:') && Math.random() * 100 < x) n += Number(k.slice('clamor_impele_chance:'.length)) || 0;
+        if (ModsPoe.valor(fichaDoUso, 'clamor_impele_dobro') > 0) n *= 2;
+        hunt.impelidos = { n: Math.max(hunt.impelidos?.ate > inicio ? hunt.impelidos.n : 0, n), ate: inicio + 20000 };
+      }
+    } else if (tagsPoe.includes('ataque') && hunt.impelidos?.n > 0) hunt.impelidos.n--;
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
-    for (const [tag, rec, ev] of [['movimento', 'usouMovimento', 'usarMovimento'], ['vaal', 'usouVaal', 'usarVaal'], ['clamor', 'clamou', 'usarClamor'], ['maldicao', null, 'conjurarMaldicao'], ['guarda', null, 'usarGuarda']]) {
+    for (const [tag, rec, ev] of [['movimento', 'usouMovimento', 'usarMovimento'], ['vaal', 'usouVaal', 'usarVaal'], ['clamor', 'clamou', 'usarClamor'], ['maldicao', null, 'conjurarMaldicao'], ['guarda', null, 'usarGuarda'], ['armadilha', null, 'armadilha'], ['mina', null, 'mina']]) {
       if (!tagsPoe.includes(tag)) continue;
       if (rec) ModsPoe.marcar(hunt, rec);
       ModsPoe.evento(estado, hunt, ev, fichaDoUso, ctxDoUso);

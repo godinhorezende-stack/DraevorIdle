@@ -27,9 +27,13 @@ export function resistenciaDe(hunt, alvo, tipo) {
   // (- o Causticar do PoE nas resistências elementais: "Inflige Causticar em Inimigos ao Bloquear" — `itens-poe/mods-poe.mjs`.)
   // (- as resistências que as afecções do personagem tiram: "Incendiados ou Resfriados por você têm −X% de Resistências Elementais",
   // "Envenenados por você têm −X% de Resistência a Caos".)
-  const causticado = (['fire', 'ice', 'energy'].includes(tipo) ? ModsPoe.causticado(alvo, hunt?.clock ?? 0) + ModsPoe.exposicao(alvo, hunt?.clock ?? 0, tipo) : 0) + ModsPoe.resMenosDasAfeccoes(alvo, hunt?.clock ?? 0, tipo);
+  // (+ a Exposição com o "aplicam X% extra / ao menos X%" de quem a infligiu — a ficha do personagem da caçada.)
+  const causticado = (['fire', 'ice', 'energy'].includes(tipo) ? ModsPoe.causticado(alvo, hunt?.clock ?? 0) + ModsPoe.exposicao(alvo, hunt?.clock ?? 0, tipo, ModsPoe.fichaDa(hunt)?.afPoe) : 0) + ModsPoe.resMenosDasAfeccoes(alvo, hunt?.clock ?? 0, tipo);
   // (+ o Equilíbrio Elemental do PoE: +25 / −50 pelos elementos que acertaram o bicho por último.)
-  const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0) + BuffsDeMob.resistencia(alvo, hunt?.clock ?? 0, tipo) - vulneravel - causticado + ModsPoe.equilibrio(alvo, hunt?.clock ?? 0, tipo);
+  // (+ o Esmagado do PoE: −15 na redução física.)
+  // (+ lote F: "Inimigos Próximos possuem −X% de Resistência a <tipo>" — a aura do personagem.)
+  const esmagado = (tipo === 'physical' ? ModsPoe.esmagado(alvo, hunt?.clock ?? 0) : 0) + ModsPoe.resMenosDaAura(alvo, hunt?.clock ?? 0, tipo);
+  const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0) + BuffsDeMob.resistencia(alvo, hunt?.clock ?? 0, tipo) - vulneravel - causticado - esmagado + ModsPoe.equilibrio(alvo, hunt?.clock ?? 0, tipo);
   const comBoss = hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
   // A fraqueza só vai até o piso (`fraquezaMaxima`); o teto de cima fica para `resistenciaEfetivaDe`.
   return Math.max(-Limites.LIMITES.resistenciaDoMob.fraquezaMaxima, comBoss);
@@ -40,7 +44,11 @@ export function resistenciaDe(hunt, alvo, tipo) {
  * Sem `ficha`, é a resistência do bicho no teto (sem penetração).
  */
 export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
-  return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(resistenciaDe(hunt, alvo, tipo)), Limites.penetracaoDe(ficha?.penetracao, tipo));
+  const r = Limites.resistenciaDoMob(resistenciaDe(hunt, alvo, tipo));
+  // (ciclo 7, lote E) "Acertos têm X% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos": o
+  // golpe sorteado (`ModsPoe.fichaDoGolpe` → `resInvertida`) usa a resistência elemental com o sinal trocado.
+  const invertida = ficha?.resInvertida && ['fire', 'ice', 'energy'].includes(tipo) ? -r : r;
+  return Limites.resistenciaEfetiva(invertida, Limites.penetracaoDe(ficha?.penetracao, tipo));
 }
 
 /**

@@ -14,6 +14,5352 @@
   ],
   "regras": [
     {
+      "padrao": "^Habilidades de Retaliação causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação têm Velocidade aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@retaliacao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação têm Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação têm Área de Efeito aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração das Afecções infligidas por Habilidade de Retaliação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação Debilitam Inimigos por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:debilitado:{V1}@retaliacao",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Armadura aumentada em \\{(\\d+)\\}% por cada Habilidade de Retaliação diferente que você tenha usado nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "armour_pct%distintas:retaliacao:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação têm Duração do Atordoamento nos Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação têm Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Habilidades de Retaliação$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:furia@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Bloquear o Dano de Ataques caso tenha usado uma Habilidade de Retaliação Recentemente$",
+      "efeitos": [
+        {
+          "stat": "block@usouTag:retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Bloquear o Dano Mágico caso você tenha usado uma Habilidade de Retaliação Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_block@usouTag:retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos dos Lacaios têm \\{(\\d+)\\}% de chance de ignorar a Redução de Dano Físico Inimiga$",
+      "efeitos": [
+        {
+          "stat": "minion_ignora_reducao_fisica",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios Penetram \\{(\\d+)\\}% das Resistências Elementais dos Inimigos Amaldiçoados$",
+      "efeitos": [
+        {
+          "stat": "minion_pen_amaldicoados",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios tem \\{(\\d+)\\}% de chance de ganhar Poder Profano por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "minion_poder_profano_ao_matar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_poder_profano_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios tem \\{(\\d+)\\}% de chance de ganhar Agressividade por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "minion_agressividade_ao_matar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_agressividade_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_area",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios têm Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_cdr",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios tem \\+?\\{(\\d+)\\}% de máximo de todas as Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "minion_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios têm Recuperação de Vida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_recuperacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios Recuperam \\{(\\d+)\\}% de Vida na Mor[dt]e de Lacaios$",
+      "efeitos": [
+        {
+          "stat": "minion_vida_na_morte_lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios têm \\+?\\{(\\d+)\\}% de Multiplicador de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "minion_crit_mult",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios têm Chance de Acerto Crítico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_crit_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios tem \\+?\\{(\\d+)\\}% de Chance de Bloquear o Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "minion_spell_block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os monstros só batem nos lacaios de perto: o golpe de um monstro que conjura magias conta como magia",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios tem \\{(\\d+)\\}% de Redução de Dano Físico adicional$",
+      "efeitos": [
+        {
+          "stat": "minion_phys_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios ganham \\{(\\d+)\\}% de sua Vida Máxima como Escudo de Energia Máximo$",
+      "efeitos": [
+        {
+          "stat": "minion_es_da_vida",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios Recuperam \\{(\\d+)\\}% de suas Vidas quando Bloqueiam$",
+      "efeitos": [
+        {
+          "stat": "minion_vida_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios tem \\{(\\d+)\\}% de chance de causar Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "minion_dano_dobrado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Causado pelos seus Lacaios é Drenado como Vida para você$",
+      "efeitos": [
+        {
+          "stat": "minion_dreno_dono",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios tem \\{(\\d+)\\}% mais Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vida_mais:qualquer",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios causam \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "lacaio_mais_dano:qualquer",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios têm Poder Profano$",
+      "efeitos": [
+        {
+          "stat": "minion_poder_profano",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Aumentos e reduções de Dano de Lacaio também afetam você$",
+      "efeitos": [
+        {
+          "stat": "lacaio_dano_te_afeta",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Aumentos e Reduções à Velocidade de Ataque dos Lacaios também te afetam$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_ataque_te_afeta",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Lacaios explodem quando reduzidos à Vida Baixa, causando \\{(\\d+)\\}% de suas vidas máximas como Dano de Fogo em inimigos próximos$",
+      "efeitos": [
+        {
+          "stat": "minion_explode_vida_baixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Golens Convocados são Imunes ao Dano Elemental$",
+      "efeitos": [
+        {
+          "stat": "lacaio_imune_elemental:golem",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração do Arqueiro Ilusório aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_duracao:arqueiro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao número máximo de Arqueiros Ilusórios Convocados$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio:arqueiro",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração do Totem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_duracao:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Ataque tem \\+?\\{(\\d+)\\} de número máximo aos Totens Balista Convocados$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio:balista",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Totens Provocam Inimigos ao redor deles por \\{(\\d+)\\} segundos?quando Convocados$",
+      "efeitos": [
+        {
+          "stat": "totem_provoca_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Totens Provocam Inimigos ao redor deles por \\{(\\d+)\\} segundos? quando Convocados$",
+      "efeitos": [
+        {
+          "stat": "totem_provoca_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades que invocam um Totem têm \\{(\\d+)\\}% de chance de invocar dois em vez de um$",
+      "efeitos": [
+        {
+          "stat": "totem_dois_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% por Totem Convocado$",
+      "efeitos": [
+        {
+          "stat": "move_speed%lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano por Totem Convocado$",
+      "efeitos": [
+        {
+          "stat": "mais_dano%lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% da Mana por segundo para cada Totem Convocado$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_max_pct%lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você e seus Totens Regeneram \\{(\\d+)\\}% de Vida por segundo para cada Totem Convocado$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a regeneração vale em você; a dos totens ainda não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional por Lacaio, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_res%lacaio::{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Convocação tem Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recarga_gema:Convocation",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Flecha Ilusória e Flecha Espelhada têm Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recarga_gema:Blink_Arrow",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recarga_gema:Mirror_Arrow",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Convocação de Runas tem sua Velocidade de Recuperação de Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "recarga_gema:Brand_Recall",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Convocar o Aço .*$|^Chamado do Aço .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o Convocar o Aço (Call of Steel), que as gemas de Aço concedem no PoE, não está no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito das suas Marcas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_marca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Sua Marca se transfere para outro Inimigo quando o Inimigo Marcado morrer$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:transferirMarca",
+          "valor": "1"
+        },
+        {
+          "stat": "marca_transfere",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Marcados não podem Regenerar Vida$",
+      "efeitos": [
+        {
+          "stat": "marcado_sem_regen",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos próximos do seu Inimigo Marcado são Cegados$",
+      "efeitos": [
+        {
+          "stat": "marcado_cega_proximos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi quando você Acertar seu Inimigo Marcado$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:frenesi@alvoMarcado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Marcados não podem causar Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "marcado_sem_critico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Precisão contra o Inimigo Marcado$",
+      "efeitos": [
+        {
+          "stat": "accuracy_mais@alvoMarcado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Precisão contra Inimigos Únicos$",
+      "efeitos": [
+        {
+          "stat": "accuracy_mais@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Precisão em Curta Distância$",
+      "efeitos": [
+        {
+          "stat": "accuracy_mais@alvoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Precisão enquanto empunhando uma Espada$",
+      "efeitos": [
+        {
+          "stat": "accuracy_mais@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Precisão por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "accuracy_mais%carga:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Inimigos Marcados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoMarcado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigo Marcado tem Precisão reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "marcado_precisao_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigo Marcado sofre Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "marcado_dano_sofrido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Golpe de Misericórdia contra Inimigos Marcados$",
+      "efeitos": [
+        {
+          "stat": "culling@alvoMarcado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inteligência é adicionada à Precisão com Varinhas$",
+      "efeitos": [
+        {
+          "stat": "accuracy%atr:int:1@comVarinha",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha Precisão igual a duas vezes sua Força$",
+      "efeitos": [
+        {
+          "stat": "accuracy%atr:str:1",
+          "valor": "2"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Precisão$",
+      "efeitos": [
+        {
+          "stat": "atk_speed%precisao:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Precisão aumentada em \\{(\\d+)\\}%, se você tiver pelo menos \\{(\\d+)\\} aliados? por perto$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@lacaio:qualquer",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "aliado = um lacaio seu em campo (o jogo não mede a distância dele)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Precisão da Mão Secundária é igual a da Mão Primária enquanto portando uma Espada$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "no jogo a Precisão é uma só para as duas mãos: a linha já vale por si",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração com Habilidades de Runas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@runa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentado em \\{(\\d+)\\}% se você conjurou uma Magia de Runa Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@usouTag:runa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% se você conjurou uma Magia de Marca Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@usouTag:marca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Runas têm Área de Efeito aumentada em \\{(\\d+)\\}% caso \\{(\\d+)\\}% da Duração do Vínculo tenha expirado$",
+      "efeitos": [
+        {
+          "stat": "area_inc@runa",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Runas do jogo não ficam presas ao inimigo: a área vale sempre",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Vínculo têm Velocidade de Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Vínculo têm Duração do Efeito da Habilidade aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Vínculo têm Efeito do Buff aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao Nível de todas as Gemas de Habilidade de Vínculo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Alcance do Vínculo de Runas .*$|^Você pode Conjurar .* Runas Adicionais$|^Runas se Vinculam .*$|^Recupera .* quando uma Runa expira enquanto Vinculada$|^Inimigos sofrem Dano aumentado em .* Runas Vinculadas a eles$|^Você pode ter uma Marca adicional Vinculada .*$|^Habilidades de Vínculo podem focar .*$|^Inimigos em seus Feixes de Vínculo .*$|^Inimigos próximos dos seus alvos Vinculados .*$|^Vínculos demoram .*$|^Habilidades de Vínculo têm .* alvo aleatório adicional$|^Alvos Vinculados compartilham .*$|^Sua Velocidade de Movimento é igual a maior .* Vinculados$|^Defesas aumentadas .* alvos Vinculados$|^Velocidade de Movimento aumentada .* alvov?s Vinculados$|^Efeito do Buff dos seus Vínculos aumentado .* Expirado$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as Runas e os Vínculos do jogo não ficam presos ao inimigo nem a aliados: a habilidade de Vínculo reforça só você",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao máximo de Fortificações$",
+      "efeitos": [
+        {
+          "stat": "max_fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Fortificantes concedem Fortificação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fortificacao_ganho_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Fortificantes contra Inimigos Únicos concedem Fortificação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fortificacao_ganho_inc@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração da Fortificação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fortificacao_duracao_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:fortificacao@armaCorpo+alvoRaro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matar:fortificacao@armaCorpo+alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "\"Corpo a Corpo\": com uma arma corpo a corpo empunhada",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo Fortificam$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo têm \\{(\\d+)\\}% de chance de Fortificar$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo que Atordoam têm \\{(\\d+)\\}% de chance de Fortificar$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+golpeAtordoou",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação Fortificam no Acerto Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@retaliacao+corpo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você atingiu sua fortificação máxima$",
+      "efeitos": [
+        {
+          "stat": "fortificacao_sempre_max",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\} de Vida por cada Fortificação perdida$",
+      "efeitos": [
+        {
+          "stat": "vida_por_fortificacao_perdida",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração de Afecções inflgidas em Você reduzida em \\{(\\d+)\\}% por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_propria%fortificacao",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupração de Atordoamento e Bloqueio aumentada em \\{(\\d+)\\}% por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "stun_recovery%fortificacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano Degenerativo Sofrido reduzido em \\{(\\d+)\\}% enquanto você tiver ao menos \\{(\\d+)\\} Fortificações$",
+      "efeitos": [
+        {
+          "stat": "dano_degen_recebido_menos@fortMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano com Habilidades de Ataque aumentado em \\{(\\d+)\\}% enquanto Fortificado$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+fortificado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Armadura e Evasão aumentadas em \\{(\\d+)\\}% enquanto Fortificado$",
+      "efeitos": [
+        {
+          "stat": "armour_pct@fortificado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct@fortificado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais armadura e evasão para cada Fortificação acima de \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "armour_mais%fortificacaoAcima:{V2}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_mais%fortificacaoAcima:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais velocidade de ataque para cada Fortificação acima de \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "atk_speed_mais%fortificacaoAcima:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Atordoamentos dos Golpes Criticos têm Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration@critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Duração de Atordoamentos com Armas de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "stun_duration_mais@duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos que Atordoarem os Inimigos possuem Golpe de Misericórdia$",
+      "efeitos": [
+        {
+          "stat": "culling@golpeAtordoou",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Atordoam como se causassem \\{(\\d+)\\}% mais Dano de Fogo Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "atordoar_como_fogo_mais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale no acerto corpo a corpo que tem Fogo, sobre o dano inteiro dele",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ignorar Atordoamentos enquanto Conjurando$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento@conjurando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do seu Escudo de Energia é adicionado ao seu Ponto de Atordoamento$",
+      "efeitos": [
+        {
+          "stat": "es_no_ponto_atordoamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos contra voê Não podem ser Golpes Críticos se você foi Atordoado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "sem_critico_recebido@atordoadoRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar um Acerto Atordoador aos Monstros Inimigos Próximos quando você for Atordoado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAtordoado:atordoarProximos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha Adrenalina quando Atordoado, por \\{(\\d+)\\} segundos por cada \\{(\\d+)\\}ms de Duração do Atordoamento$",
+      "efeitos": [
+        {
+          "stat": "adrenalina_por_atordoamento:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode ser Atordoado por Acertos que causem apenas Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento_so_fisico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada Fúria também concede Ponto de Atordoamento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ponto_atordoamento_inc%furia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode ser Atordoado enquanto possuir Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento@comEscudoDeEnergia",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode ser Atordoado enquanto Drenando$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento@drenando",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode ser Atordoado enquanto ainda possuir ao menos \\{(\\d+)\\} de Ira$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento@furiaMin:{V1}",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido de Acertos Atordoadores é Recuperado como Vida$",
+      "efeitos": [
+        {
+          "stat": "vida_do_acerto_atordoador",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia durante \\{(\\d+)\\} segundos? quando Atordoado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAtordoado:regenPct:es:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida durante \\{(\\d+)\\} segundos? quando Atordoado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAtordoado:regenPct:hp:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano Mágico se você foi Atordoado enquanto Conjurando Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@magia+atordoadoConjurandoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_cegar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cega Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_cegar",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos com Acertos da Mão Secundária$",
+      "efeitos": [
+        {
+          "stat": "chance_cegar@maoSecundaria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração da Cegueira aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_cegueira",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano Sofrido de Inimigos Cegos reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_de_cegos_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Esmaga Inimigos ao acertar com Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "chance_esmagar@comMaca",
+          "valor": "100"
+        },
+        {
+          "stat": "chance_esmagar@comCetro",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Esmaga Inimigos por \\{(\\d+)\\} segundos quando você Acertá-los enquanto estiverem em Vida Cheia$",
+      "efeitos": [
+        {
+          "stat": "esmagar_s@alvoVidaCheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Seus Acertos Intimidam permanentemente Inimigos com Vida Cheia$",
+      "efeitos": [
+        {
+          "stat": "intimidar_permanente@alvoVidaCheia",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos são Intimidados enquanto você tiver Fúria$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:intimidado@furiaMin:1",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Provocar ao Atingir$",
+      "efeitos": [
+        {
+          "stat": "chance_provocar",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração da Provocação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_provocacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Provocados por você não podem Evadir Ataques$",
+      "efeitos": [
+        {
+          "stat": "provocados_nao_evadem",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Defender com \\{(\\d+)\\}% de Armadura$",
+      "efeitos": [
+        {
+          "stat": "defender_armadura:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Defender com \\{(\\d+)\\}% de Armadura por cada \\{(\\d+)\\}% de Escudo de Energia faltando$",
+      "efeitos": [
+        {
+          "stat": "defender_armadura:{V2}%esFaltando:{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Mutilar Inimigos com Acertos da Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "chance_mutilar@maoPrincipal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano de Ataque com a Mão Principal aumentado em \\{(\\d+)\\}% enquanto em Empunhadura Dupla$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+maoPrincipal+duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de Chance de Golpe Crítico da Mão Secundária enquanto em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "crit_base_secundaria@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Empurra Inimigos se você tiver um Golpe Crítico com Dano de Projéteis$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@critico+projetil",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos são Empurrados caso você acerte um Golpe Crítico com um Cajado$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@critico+comCajado",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Chance de Golpe Crítico enquanto empunhando uma Adaga$",
+      "efeitos": [
+        {
+          "stat": "crit_mais_pct@comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Chance de Crítico contra Inimigos com Vida Baixa$",
+      "efeitos": [
+        {
+          "stat": "crit_mais_pct@alvoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de chance de golpe crítico contra inimigos que não estiverem em vida baixa$",
+      "efeitos": [
+        {
+          "stat": "crit_mais_pct@alvoNaoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% ao multiplicador de golpe crítico contra inimigos em vida baixa$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@alvoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% ao multiplicador de golpe crítico contra inimigos que não estiverem em vida baixa$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@alvoNaoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico contra inimigos com Exposição a Raio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@alvoExposicaoRaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de golpe crítico aumentada em \\{(\\d+)\\}%, se você criou um totem recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@usouTag:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% à Chance máxima de Bloquear Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "max_spell_block",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% à Chance máxima de Bloquear o Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "max_block",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% ao máximo de Chance de Bloqueio do Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "max_block",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% ao máximo de Chance de Bloqueio do Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "max_spell_block",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dupla Empunhadura não concede chance de Bloquear o Dano de Ataques de forma inerente$",
+      "efeitos": [
+        {
+          "stat": "sem_bloqueio_duas_armas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Elusivo ao Bloquear enquanto em Empunhadura Dupla$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:buffChance:elusivo:4@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Elusivo dura 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de Bloquear o Dano Mágico ou de Ataques é Sortuda se você Bloqueou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_sortudo@bloqueouRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance da Recarga do Escudo de Energia iniciar quando você Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:recargaEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Caso tenha sido Atacado Recentemente, você e Aliados possuem \\+?\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "block@acertadoAtaqueRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em você; os aliados não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Caso tenha Conjurado uma Magia Recentemente, você e Aliados próximos possuem \\+?\\{(\\d+)\\}% de Chance de Bloquear o Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "spell_block@usouTag:magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em você; os aliados não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\}% de Chance de Bloquear Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct%bloqueioMagico:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeitos de Recuperação de Vida ocorrem durante \\{(\\d+)\\} segundos ao invés$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_vida_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, Consome um Cadáver próximo para Recuperar \\{(\\d+)\\}% de Vida$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:consumirCadaver:hp",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos,\\s*Recupere \\{(\\d+)\\} de vida por cada \\{(\\d+)\\} Vida Recuperada por segundo da Regeneração$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:vidaDaRegen:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Regeneração de Vida reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_regen_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Regeneração de Vida de Inimigos Próximos reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_regen_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia durante \\{(\\d+)\\} segundos ao Consumir um cadáver$",
+      "efeitos": [
+        {
+          "stat": "ev:consumirCadaver:regenPct:es:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Mana durante \\{(\\d+)\\} segundos ao Consumir um cadáver$",
+      "efeitos": [
+        {
+          "stat": "ev:consumirCadaver:regenPct:mana:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Se tiver Consumido um cadáver Recentemente, você e seus Lacaios tem Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@consumiuCadaverRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_area@consumiuCadaverRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Com ao menos um cadáver próximo, Inimigos próximos causam Dano reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_dano_menos@cadaverPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Com ao menos um cadáver próximo, você e Aliados próximos causam \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@cadaverPerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em você; os aliados não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Para cada cadáver próximo, você e Aliados próximos Regeneram \\{(\\d+)\\}% do Escudo de Energia por segundo, até \\{(\\d+)\\}% por segundo$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct%cadaveresPerto::10",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em você; os aliados não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você e Aliados próximos Regeneram \\{(\\d+)\\} de Mana por segundo para cada cadáver próximo, até \\{(\\d+)\\} por segundo$",
+      "efeitos": [
+        {
+          "stat": "mana_regen%cadaveresPerto::10",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em você; os aliados não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidades de Ataque e Conjuração aumentadas em \\{(\\d+)\\}% por cada cadáver Consumido Recentemente, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed%usos:cadaver:4:50",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed%usos:cadaver:4:50",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Exposições infligidas por você aplicam ao menos \\{(\\d+)\\}% à Resistência afetada$",
+      "efeitos": [
+        {
+          "stat": "exposicao_minima",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Exposições infligidas por você aplicam \\{(\\d+)\\}% extra à Resistência afetada$",
+      "efeitos": [
+        {
+          "stat": "exposicao_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inflige Exposição a Fogo, Gelo e raio nos Inimigos quando você Suprimir seu Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "ev:suprimir:alvo:exposicaoFogo",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:suprimir:alvo:exposicaoGelo",
+          "valor": "100"
+        },
+        {
+          "stat": "ev:suprimir:alvo:exposicaoRaio",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Mana por segundo se você infligiu Exposição Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_max_pct@exposicaoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos têm \\{(\\d+)\\}% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos$",
+      "efeitos": [
+        {
+          "stat": "chance_res_invertida",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Acertos causarem \\{(\\d+)\\}% do Dano Físico como Dano Extra de um Elemento aleatório$",
+      "efeitos": [
+        {
+          "stat": "phys_extra_aleatorio_chance:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano de caos sofrido não ignora o escudo de energia$",
+      "efeitos": [
+        {
+          "stat": "caos_pelo_escudo_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado$",
+      "efeitos": [
+        {
+          "stat": "raio_azarado_eletrizado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos que você Matar sob efeito de Afecções Elementais concedem \\{(\\d+)\\}% de Cargas de Frascos aumentadas$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_morto_elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cargas de Frasco recebidas aumentadas em \\{(\\d+)\\}% caso você tenha causado um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_recebidas@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Eficiência de custo de habilidades de retaliação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Eficiência de custo de mana de magias aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Eficiência de custo de mana de habilidades de maldição aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Eficiência de custo de mana de habilidades de conexão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana@vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Eficiência de custo de mana de habilidades de marca aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana@marca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de marca não custam mana$",
+      "efeitos": [
+        {
+          "stat": "sem_custo_mana@marca",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito das suas habilidades de marca aumentado em \\{(\\d+)\\}% por carga de poder máxima$",
+      "efeitos": [
+        {
+          "stat": "efeito_marca%cargaMax:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Vida e mana máximos aumentados em \\{(\\d+)\\}%, se o seu cajado equipado tiver um encaixe azul e vermelho$",
+      "efeitos": [
+        {
+          "stat": "life_inc@comCajado+armaComEncaixes:BR",
+          "valor": "{1}"
+        },
+        {
+          "stat": "mana_inc@comCajado+armaComEncaixes:BR",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Armadura e evasão aumentadas em \\{(\\d+)\\}%, se a arma da sua mão principal tiver um encaixe verde e vermelho$",
+      "efeitos": [
+        {
+          "stat": "armour_pct@armaComEncaixes:GR",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct@armaComEncaixes:GR",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração aumentada em \\{(\\d+)\\}% por cada Magia Não Instantânea que você tenha Conjurado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "cast_speed%usos:magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano de Ataque por cada Magia Não Instantânea que você tenha Conjurado nos últimos \\{(\\d+)\\} segundos nos últimos \\{(\\d+)\\} segundos, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mais_dano%usos:magia:{V2}:3@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha uma carga de poder por segundo enquanto canaliza uma magia$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:carga:poder@canalizando",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua$",
+      "efeitos": [
+        {
+          "stat": "dano_no_totem_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada Totem aplica Dano aumentado em \\{(\\d+)\\}% sofrido pelos Inimigos próximos a ele$",
+      "efeitos": [
+        {
+          "stat": "totem_fragiliza",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada Mina aplica Dano sofrido aumentado em \\{(\\d+)\\}% aos Inimigos próximos a ela, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mina_fragiliza:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Mina detona no alvo: soma no alvo de cada Mina, por 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada Mina aplica Dano sofrido reduzido em \\{(\\d+)\\}% aos Inimigos próximos a ela, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mina_enfraquece:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no PoE é o dano que o inimigo causa (o poedb traduz \"sofrido\"); soma no alvo de cada Mina, por 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito de Auras das Minas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_aura_mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por Segundo se você Detonou uma Mina Recentemente$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@usouTag:mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Vida Regenerada por Segundo para cada uma das suas Minas Detonadas Recentemente, até \\{(\\d+)\\}% por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%usos:mina:4:5",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% da Vida Regenerada por Segundo para cada uma de suas Armadilhas Ativadas Recentemente, até \\{(\\d+)\\}% por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%usos:armadilha:4:5",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades usadas por Minas têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades usadas por Minas têm Efeito em Área aumentado em \\{(\\d+)\\}% caso tenha Detonado uma Mina Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@mina+usouTag:mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades usadas por Minas causam Dano em Área aumentado em \\{(\\d+)\\}% caso tenha Detonado uma Mina Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@mina+area+usouTag:mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Minas Desaceleram Inimigos próximos delas por \\{(\\d+)\\} segundos quando são Plantadas$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:lento:{V1}@mina",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Mina detona no alvo: desacelera quem ela acerta",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance das Armadilhas Ativarem uma vez adicional$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a ativação a mais vira o dano dobrado do golpe da Armadilha",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Minas têm uma chance de \\{(\\d+)\\}% de serem Detonadas uma Vez Adicional$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@mina",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a detonação a mais vira o dano dobrado do golpe da Mina",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga do Poder quando sua Armadilha for ativada por um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:armadilha:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga do Poder quando sua Mina for Detonada por um Inimigo alvo$",
+      "efeitos": [
+        {
+          "stat": "ev:mina:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico aumentada em \\{(\\d+)\\}% por cada Mina Detonada$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%usos:mina@mina",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "conta as Minas detonadas nos últimos 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de Multiplicador de Golpes Críticos para cada Mina Detonada$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg%usos:mina@mina",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "conta as Minas detonadas nos últimos 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Recuperação da Recarga para lançar Armadilhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Pode ter até .* (?:Armadilhas|Minas Remotas) adicionais plantadas por vez$|^(?:Minas|Armadilhas) não podem ser Danificadas$|^Detonar Minas é Ativado enquanto você se mover$|^Minas tem Velocidade de Detonação aumentada em .*$|^Duração da Mina aumentada em .*$|^Quando suas Armadilhas Ativarem, suas Armadilhas próximas também Ativam$|^Habilidades que Arremessam Armadilhas têm .* Uso de Recarga$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "no jogo a Armadilha e a Mina disparam na hora, no alvo (não ficam plantadas): não há limite, duração, dano nelas nem detonação",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@caos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale nos golpes com a tag Caos (o golpe inteiro)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale nos golpes com a tag Gelo (o golpe inteiro)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano com Magias Ativadas$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@ativada",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Enquanto houver no máximo um Inimigo Raro ou Único próximo, você causa \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@maxUmRaroPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano para cada tipo diferente de Maestria Alocada por você$",
+      "efeitos": [
+        {
+          "stat": "mais_dano%tiposDeMaestria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Causa \\{(\\d+)\\}% mais Dano com Acertos e Afecções contra Inimigos Raros e Únicos por cada segundo que passarem em sua Presença, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_presenca:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Causa \\{(\\d+)\\}% mais Dano de Caos aos inimigos que tiverem Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@caos+alvoComEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale nos golpes com a tag Caos (o golpe inteiro)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano penetra \\{(\\d+)\\}% das Resistências Elementais do Inimigo$",
+      "efeitos": [
+        {
+          "stat": "elem_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% se você Estilhaçou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@estilhacouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% para cada vez que você Clamou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%usos:clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos têm \\{(\\d+)\\}% de chance de causar \\{(\\d+)\\}% mais Dano em Área$",
+      "efeitos": [
+        {
+          "stat": "chance_mais_dano_area:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% do Dano Físico da Varinha como Dano Extra de Raio$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_energy@comVarinha+ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado com Ataques se o Tempo de Ataque for maior que \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@ataque+ataqueLento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Projéteis causam Dano com Acertos aumentado em \\{(\\d+)\\}% aos alvos no início de seu movimento, reduzido para \\{(\\d+)\\}% na medida em que viajam adiante$",
+      "efeitos": [
+        {
+          "stat": "projetil_perto_dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "pela distância até o alvo: tudo colado, nada a 6 casas",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos dos Ataques de Projéteis causam até \\{(\\d+)\\}% mais Dano aos alvos no inicio de seu movimento, causando menos Dano aos alvos na medida em que o projétil viaja.*$",
+      "efeitos": [
+        {
+          "stat": "projetil_perto_mais@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "pela distância até o alvo: tudo colado, nada a 6 casas",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Projéteis ganham Dano ao viajar adiante, causando até \\{(\\d+)\\}% mais Dano com Acertos e Afecções$",
+      "efeitos": [
+        {
+          "stat": "projetil_longe_mais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "pela distância até o alvo: nada colado, tudo a 6 casas",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Flechas ganham Chance de Golpe Crítico enquanto viajam adiante, máximo de até \\{(\\d+)\\}% de Chance de Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "flecha_longe_crit_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "Chance de Crítico aumentada pela distância até o alvo: nada colado, tudo a 6 casas",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades atiram \\{(\\d+)\\} Projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades atiram um Projétil adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% enquanto Drenando$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@drenando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada Fúria também concede Velocidade de Ataque aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed%furia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha Velocidade de Ataque aumentada em \\{(\\d+)\\}% por \\{(\\d+)\\} segundos quando Matar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:stat:atk_speed:{V2}@alvoRaro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matar:stat:atk_speed:{V2}@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de aumento da Velocidade de Movimento por \\{(\\d+)\\} segundos ao Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:stat:move_speed:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Bônus Inerente de Velocidade de Ataque da Empunhadura Dupla é dobrado enquanto portando Garras$",
+      "efeitos": [
+        {
+          "stat": "velocidade_duas_armas_dobrada@comGarra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Bônus Inerentes da Empunhadura Dupla são dobrados$",
+      "efeitos": [
+        {
+          "stat": "bonus_duas_armas_dobrado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Sua Velocidade de Ação é de ao menos \\{(\\d+)\\}% do valor base$",
+      "efeitos": [
+        {
+          "stat": "velocidade_acao_minima",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Ação não pode ser modificada para abaixo do valor base$",
+      "efeitos": [
+        {
+          "stat": "velocidade_acao_minima",
+          "valor": "100"
+        },
+        {
+          "stat": "imune_lento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento não pode ser modificada para abaixo do valor base$",
+      "efeitos": [
+        {
+          "stat": "imune_lento",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a lentidão dos monstros não pega",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Magias Conjuradas por Totens têm \\{(\\d+)\\}% de Velocidade de Conjuração aumentada$",
+      "efeitos": [
+        {
+          "stat": "totem_vel_magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Totens possuem \\{(\\d+)\\}% de Redução de Dano Físico adicional$",
+      "efeitos": [
+        {
+          "stat": "totem_phys_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por Inimigo morto recentemente, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc%matouRecente~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}% enquanto você possuir Fúria Arcana$",
+      "efeitos": [
+        {
+          "stat": "area_inc@buff:furiaArcana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Área de Efeito enquanto empunhando uma Maça ou Cetro$",
+      "efeitos": [
+        {
+          "stat": "area_inc@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "area_inc@comCetro",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"mais\" entra como aumentado",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Arauto têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano sofrido reduzido em \\{(\\d+)\\}% enquanto Drenando$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_inc@drenando",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Menos \\{(\\d+)\\}% de dano sofrido enquanto houver pelo menos dois inimigos raros ou únicos por perto$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_mais@doisRarosPerto",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dano_ataque_recebido_mais@acertadoAtaqueRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} menos dano de Ataque sofrido se você não foi Acertado por um Ataque Recentemente$",
+      "efeitos": [
+        {
+          "stat": "physical_sofrido_ataque@naoAcertadoAtaqueRecente",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no golpe físico dos monstros",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais chance de Evadir Ataques se você foi Acertado por um Ataque Recentemente$",
+      "efeitos": [
+        {
+          "stat": "chance_evadir_mais@acertadoAtaqueRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais chance de Evadir Ataques Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_evadir_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não Evade Ataques inimigos$",
+      "efeitos": [
+        {
+          "stat": "sem_evasao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^O dano dos inimigos que te atingem é azarado$",
+      "efeitos": [
+        {
+          "stat": "dano_inimigo_azarado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Armadura aumentada em \\{(\\d+)\\}% por segundo que você tenha ficado parado, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct%paradoS~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Armadura do Peitoral Equipado é dobrada$",
+      "efeitos": [
+        {
+          "stat": "armour_pct_peitoral",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} para o escudo de energia máximo por \\{(\\d+)\\} de evasão no peitoral equipado$",
+      "efeitos": [
+        {
+          "stat": "energy_shield%evasaoPeitoral:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de Evasão por cada \\{(\\d+)\\} de Escudo de Energia Máximo no Elmo Equipado$",
+      "efeitos": [
+        {
+          "stat": "evasion%esElmo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você e Aliados próximos têm \\+?\\{(\\d+)\\}% de Todas as Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em você; os aliados não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Modificadores à Resistência a Fogo Máxima também se aplicam ao Máximo das Resistências a Gelo e Raio$",
+      "efeitos": [
+        {
+          "stat": "res_max_fogo_vale_todas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Modificadores à Resistência a Fogo também se aplicam à Resistência a Gelo e Raio em \\{(\\d+)\\}% de seu Valor$",
+      "efeitos": [
+        {
+          "stat": "res_fogo_vale_gelo_raio_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Resistências Elementais são limitadas pelo seu maior Máximo de Resistência Elemental ao invés$",
+      "efeitos": [
+        {
+          "stat": "res_max_pelo_maior",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você não sofre Dano Extra de Golpes Críticos enquanto Elusivo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red@buff:elusivo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode Recuperar Escudo de Energia acima da Evasão$",
+      "efeitos": [
+        {
+          "stat": "es_ate_evasao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode Recuperar Escudo de Energia acima da Armadura$",
+      "efeitos": [
+        {
+          "stat": "es_ate_armadura",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ignora \\+?\\{(\\d+)\\}% do Dano Mágico Suprimido$",
+      "efeitos": [
+        {
+          "stat": "supressao_impede",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Impede \\+?\\{(\\d+)\\}% do Dano Mágico Suprimido enquanto em Escudo de Energia Cheio$",
+      "efeitos": [
+        {
+          "stat": "supressao_impede@escudoCheio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Impede \\+?\\{(\\d+)\\}% do Dano Mágico Suprimido por Acerto Suprimido Recentemente$",
+      "efeitos": [
+        {
+          "stat": "supressao_impede%usos:ev.suprimir",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Suprimir Dano Mágico por Acerto Suprimido Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression%usos:ev.suprimir",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você tem Trespassar se você Suprimiu Dano Mágico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "sempre:trespassar@evRecente:suprimir",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de chance de Suprimir Dano Mágico enquanto Trepassando$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de Suprimir Dano Mágico é Sortuda$",
+      "efeitos": [
+        {
+          "stat": "supressao_sortuda",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance da Recarga do Escudo de Energia começar quando você Suprimir Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "ev:suprimir:recargaEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Frascos de Vida ganham \\{(\\d+)\\} quando você Suprimir Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "ev:suprimir:frasco",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as cargas vão para todos os frascos do cinto",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito da Fúria aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_furia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Perda Inerente de Fúria é \\{(\\d+)\\}% mais rápida$",
+      "efeitos": [
+        {
+          "stat": "furia_perda_lenta",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Perna Inerente de Fúria começa \\{(\\d+)\\} segundos? depois$",
+      "efeitos": [
+        {
+          "stat": "furia_atraso_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Perca \\{(\\d+)\\}% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria$",
+      "efeitos": [
+        {
+          "stat": "perde_vida_pct_s%furia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale com qualquer Fúria",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito da Fúria Arcana aumentado em \\{(\\d+)\\}% em você$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:furiaArcana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Fúria Arcana também concede \\+?\\{(\\d+)\\}% de dano mágico a você$",
+      "efeitos": [
+        {
+          "stat": "furia_arcana_dano_magico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recebe Fúria Arcana quando você ou seus Totens Acertarem um Inimigo com uma Magia$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:furiaArcana@magia",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Fúria Arcana ao Matar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:furiaArcana:4",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você e Aliados próximos têm Vento Favorável$",
+      "efeitos": [
+        {
+          "stat": "sempre:ventoFavoravel",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "Vento Favorável: +10% de velocidade de ataque, conjuração e movimento",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito dos Buffs de Arauto em você aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Vïnculo têm Efeito do Buff aumentado em \\{(\\d+)\\}% se você se Vinculou a um alvo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:vinculo@usouTag:vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Sua Chance de Crítico é Sortuda$",
+      "efeitos": [
+        {
+          "stat": "critico_sortudo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Golpes Críticos ignoram as Resistências Elementais de Monstros Inimigos$",
+      "efeitos": [
+        {
+          "stat": "critico_ignora_res",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de Multiplicador de Acerto Crítico por Inimigo Próximo, máximo de \\+?\\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg%inimigosPerto:4~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico aumentada em \\{(\\d+)\\}% por ponto em Força ou Inteligência, o que for menor$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%menorEntre:str:int",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de precisão, se tiver a quantidade máxima de cargas de frenesi$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc@cargasMax:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% ao multiplicador de golpe crítico, se você não tiver cargas de frenesi$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@semCargas:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, Regenera \\{(\\d+)\\}% de Vida durante um segundo$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:regenPct:hp:1",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, Regenere Escudo de Energia igual a \\{(\\d+)\\}% da Evasão durante \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:regenDaDefesa:es:evasao:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, Regenere Vida igual a \\{(\\d+)\\}% da sua Armadura e Evasão durante \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:regenDaDefesa:hp:armaduraEvasao:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Escudo de Energia durante \\{(\\d+)\\} segundos? quando você sofrer Dano Físico de um Acerto Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:sofrerFisico:regenPct:es:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recuperação do Escudo de Energia aumentada em \\{(\\d+)\\}% se você não foi Acertado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_es_inc@naoAcertadoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}% se a Recarga do Escudo de Energia iniciou nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct@recargaEsIniciouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "\"Recentemente\" (4 s)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Perca \\{(\\d+)\\}% de Vida e Escudo de Energia ao usar uma Habilidade de Caos$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:perdeVidaPct@caos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:usarHabilidade:perdeEsPct@caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance da Recarga do Escudo de Energia começar quando você se Vincular a um alvo$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:recargaEs@vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Vida ao Matar para cada tipo diferente de Maestria Alocada por você$",
+      "efeitos": [
+        {
+          "stat": "vida_ao_matar_pct%tiposDeMaestria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Mana ao Matar para cada tipo diferente de Maestria Alocada por você$",
+      "efeitos": [
+        {
+          "stat": "mana_ao_matar_pct%tiposDeMaestria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Escudo de Energia ao Matar para cada tipo diferente de Maestria Alocada por você$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:esPct%tiposDeMaestria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Vida por Inimigo Acertado com Ataques de Garras na Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "life_on_hit@comGarra+ataque+maoPrincipal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária$",
+      "efeitos": [
+        {
+          "stat": "mana_on_hit@comGarra+ataque+maoSecundaria",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "conta a Garra da mão principal",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana Máxima, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg%manaMax:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Enquanto não estiver em Vida Cheia, Sacrifica \\{(\\d+)\\}% da Mana por Segundo para Recuperar a mesma quantidade de Vida$",
+      "efeitos": [
+        {
+          "stat": "mana_para_vida_pct_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Adicional de \\{(\\d+)\\}% à Regeneração de Mana por segundo$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos que você ou seus Totens Matarem têm \\{(\\d+)\\}% de chance de Explodir, causando \\{(\\d+)\\}% de sua Vida Máxima como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Mata Inimigos que possuem \\{(\\d+)\\}% ou menos de Vida quando Acertado por suas Habilidades$",
+      "efeitos": [
+        {
+          "stat": "culling_limiar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Vida Máxima dos Golens aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vida:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de (?:Força) por Habilidade Passiva de Maestria Alocada$",
+      "efeitos": [
+        {
+          "stat": "str%maestrias",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de (?:Inteligência) por Habilidade Passiva de Maestria Alocada$",
+      "efeitos": [
+        {
+          "stat": "int%maestrias",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} de (?:Destreza) por Habilidade Passiva de Maestria Alocada$",
+      "efeitos": [
+        {
+          "stat": "dex%maestrias",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Frascos recebem \\{(\\d+)\\} Cargas a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V2}:frasco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Frascos usados por você não consumirem Cargas$",
+      "efeitos": [
+        {
+          "stat": "frasco_sem_consumo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Recuperação dos Frascos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_velocidade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Acertado pelos Ataques se você usou um Frasco de Mana nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "mana_on_hit@ataque+evRecente:usarFrascoMana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "\"Recentemente\" (4 s)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove Mutilação e Desaceleração ao usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:lento",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recuperação de Mana aumentada em \\{(\\d+)\\}% durante o Efeito de qualquer Frasco de Mana$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_mana_inc@duranteFrasco",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "durante qualquer frasco",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por Segundo se você usou um Frasco de Vida nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@evRecente:usarFrasco",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "qualquer frasco, \"Recentemente\" (4 s)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove Afecções Elementais quando você usa um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:elementais",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove Sangramento ao usar o Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:removerAfeccao:sangramento",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove Sangramento quando você usar uma Habilidade de Guarda$",
+      "efeitos": [
+        {
+          "stat": "ev:usarGuarda:removerAfeccao:sangramento",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha uma Carga de Frasco ao causar um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:frasco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Vida Recuperada de Frascos$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_rec",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"menos\" entra como reduzido",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Frascos Utilitários Mágicos aplicados em você têm Efeito aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em todos os frascos de Utilidade",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga de Tolerância por segundo se foi Acertado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:carga:tolerancia@acertadoRecente",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe uma Carga de Frenesi por segundo enquanto se Move$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:carga:frenesi@movendo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Roubar Cargas de Poder, Frenesi e Tolerância ao Acertar com Garras$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:roubarCargas@comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos próximos Sofrem \\{(\\d+)\\}% de Dano Elemental aumentado$",
+      "efeitos": [
+        {
+          "stat": "aura_elem_fragil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos possuem \\{(\\d+)\\}% de Resistência a Gelo$",
+      "efeitos": [
+        {
+          "stat": "aura_res_menos:ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos próximos possuem \\{(\\d+)\\}% de Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "aura_res_menos:chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Ação dos Monstros Inimigos Próximos é no máximo de \\{(\\d+)\\}% do valor base$",
+      "efeitos": [
+        {
+          "stat": "aura_acao_maxima",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos são Cobertos em Cinzas se você não se moveu nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:cinzas@parado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "parado: sem andar há pouco",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cobrir Inimigos Raros ou Únicos em Cinzas por \\{(\\d+)\\} Segundos quando você Acertá-los$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:cinzas:{V2}@alvoRaro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:acertar:alvo:cinzas:{V2}@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada segundo, causa Definhando em Inimigos próximos por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:proximos:definhado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, \\{(\\d+)\\}% de chance de Congelar Inimigos próximos Não Congelados por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:congelarProximos:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove maldições e afecções de você a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:removerAfeccao:todas",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito do Definhamento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_definhamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Duração do Envenamento aumentada em \\{(\\d+)\\}% para cada Veneno que você tenha infligido Recentemente, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "poison_duration%usos:ev.envenenar~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ao matar um inimigo envenenado durante o efeito de um frasco, os inimigos em um raio de .* metros? também ficam envenenados$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:espalhar:veneno@duranteFrasco+alvoEnvenenado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Mortos pelos seus Acertos são destruídos$",
+      "efeitos": [
+        {
+          "stat": "mortos_destruidos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Guarda tem sua Velocidade de Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@guarda",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de dano degenerativo com habilidades mágicas$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@magia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"mais\" entra como aumentado",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de bloquear magias aumenta o seu escudo de energia máximo$",
+      "efeitos": [
+        {
+          "stat": "es_pct%bloqueioMagico:1",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "1% de Escudo de Energia máximo aumentado por 1% de chance de Bloquear Magias",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Campo de Visão é baseado no Escudo de Energia em vez de na Vida$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o jogo não tem raio de luz nem campo de visão",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*metros ao Alcance de Golpes Corpo a Corpo.*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o alcance do jogo é em casas (2 m): décimos de metro não mudam casa",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Distância do Empurrão aumentada em .*$|^Não Pode ser Empurrado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o Empurrão do jogo é de uma casa, e os monstros não empurram você",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*(?:chance de abrir Baús próximos).*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: as caçadas não têm baús",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*[Mm]ercenário.*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o jogo não tem mercenários",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recuperação de Bloqueio aumentada em .*$|^Recupração de Atordoamento e Bloqueio.*por Fortificação$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: bloquear não trava o personagem no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis.*$|^.*que uma Habilidade de Retaliação diferente se torne Utilizável$|^.*Habilidades de Retaliação utilizadas continuarem Utilizáveis.*$|^Habilidades de Retaliação Nocivas se tornam Utilizáveis.*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: as habilidades de Retaliação do jogo são usáveis sempre (não têm a janela do PoE)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$|^Alcance do Ricochete aumentado.*$|^Barragens de Projéteis não se propagam$|^Projéteis têm .* chance de conseguirem Ricochetear ao colidirem com o terreno$|^Projéteis são disparados em direções aleatórias$|^Projéteis têm .* chance de Retornarem a você$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o projétil do jogo vai direto ao alvo: sem velocidade, ângulo, terreno ou volta",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: os monstros não deixam os totens lentos",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Bônus do seu estandarte permanecem por .* segundos após você sair da área$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o Estandarte do jogo é uma aura em você (não tem área no chão)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em .*$|^Efeito em Área de Habilidades de Aura aumentado em .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: a aura do jogo fica ligada enquanto a gema está na barra e vale em você (sem duração nem área)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*Agrava.*Sangramento.*$|^Sangramentos que você infligir são Agravados$|^Mover enquanto Sangrando faz com que você não sofra Dano extra$|^Seu Sangramento não causa Dano extra enquanto o Inimigo se move$|^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o Sangramento do jogo não tem o dano extra em movimento (que o Agravar dá)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Golpe também miram no local anterior que foram Usadas$|^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: é posicionamento do PoE; o jogo não tem isso",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados$|^Alvos Vinculados compartilham Cargas de Tolerância, Frenesi e Poder com você$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: a habilidade de Vínculo do jogo reforça só você (não liga outros jogadores)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Penalidades de Movimento das Armaduras são Ignoradas$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: as armaduras do jogo não tiram velocidade de movimento",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos:$|^Recentemente, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "pedaço da linha de cima",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Duração do Efeito de Habilidades$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"mais\" entra como aumentado",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Duração do Efeito de Habilidades$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"menos\" entra como reduzido",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dreno de vida é instantâneo$",
+      "efeitos": [
+        {
+          "stat": "roubo_instantaneo_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do roubo de recursos é instantâneo por carga de poder máxima$",
+      "efeitos": [
+        {
+          "stat": "roubo_instantaneo_pct%cargaMax:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% menos Dano de Acertos por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:10:stat:dmg_reduction:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a cada 10 segundos (a linha de cima)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% menos Dano Degenerativo por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:10:stat:dano_degen_recebido_menos:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a cada 10 segundos (a linha de cima)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, ganhe \\{(\\d+)\\}% do Dano Físico como Dano Extra de Fogo por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:stat:phys_as_extra_fire:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados Mortos por você ou seus Lacaios possuem \\{(\\d+)\\}% de chance de Explodir, causando um quarto de sua Vida máxima como Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:25@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar \\{(\\d+)\\} de Vida ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:vidaChance:{V2}@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Frascos de Vida ganham uma Carga quando você acertar um Inimigo, não mais que uma vez por segundo$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:frasco@acertouRecente",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "uma carga por segundo para os frascos do cinto, se você acertou há pouco",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigo Marcado concede Cargas de Frasco aumentadas em \\{(\\d+)\\}% a Você$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_marcado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida por Debuff de Definhamento em cada Inimigo que você Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPorDefinhamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida por Veneno afetando Inimigos mortos por Você$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPorVeneno",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos Resfriados causam Dano reduzido em \\{(\\d+)\\}% com Acertos$",
+      "efeitos": [
+        {
+          "stat": "resfriados_dano_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Bônus recebidos da Aljava Equipada aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "bonus_aljava",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores têm um mínimo de \\{(\\d+)\\} de Poder$",
+      "efeitos": [
+        {
+          "stat": "clamor_poder_minimo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Poder total contado por Clamores aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "clamor_poder_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores têm poder infinito$",
+      "efeitos": [
+        {
+          "stat": "clamor_poder_infinito",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores concedem \\{(\\d+)\\} de Fúria por cada \\{(\\d+)\\} de Poder Inimigo, até \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:furiaPorPoder:{V2}:{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano Corpo a Corpo aumentado em \\{(\\d+)\\}% para cada segundo que você for afetado por um Buff de Clamor, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%desdeUsou:clamor~{V2}@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "conta os segundos desde o último Clamor",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Evita .* do dano .*refletido$|^Não pode sofrer Dano .*Refletido$|^Dano não pode ser Refletido$|^Empalamentos removidos desta forma multiplicam seu Dano Refletido.*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "nenhum monstro do jogo faz isso ainda (os modificadores de monstro e de mapa com reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar estão desligados — decisão do dono)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*Evitar Cegueira$|^Não pode ser Cegado$|^Não pode ser afetado por Sangue Corrompido$|^remove Sangue Corrompido ao usar uma Habilidade de Guarda$|^Efeito de Exposições em você reduzido em .*$|^Monstros Inimigos não podem ganhar Cargas de Poder, Frenesi ou Tolerância$|^Chance de Inimigos Bloquearem Ataques com Espada reduzida em .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "nenhum monstro do jogo faz isso ainda (os modificadores de monstro e de mapa com reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar estão desligados — decisão do dono)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Magias que podem ganhar Intensidade têm .* de Intensidade máxima$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a Intensidade (das magias que a acumulam) não existe no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades suportadas por Liberar tem .* ao número máximo de Selos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os Selos do suporte Libertar não existem no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito da Crueldade aumentado em .*$|^Acertos Impiedosos Intimidam Inimigos por .* segundos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a Crueldade e o Golpe Impiedoso (dos suportes Crueldade e Impiedade) ainda não agem no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades Suportadas por Lâmina Noturna têm Efeito do Elusivo .*$|^Elusivo concede .* às Habilidades Suportadas por Lâmina Noturna$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o suporte Lâmina Noturna ainda não age no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Portador da Praga .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a gema Portador da Praga não está no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Furtividade aumentada em .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o jogo não tem Furtividade (os monstros sempre veem você)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Projéteis causam Dano aumentado em .* para cada Inimigo Atravessado$|^Projéteis causam Dano aumentado em .* para cada vez que Ricochetearam$|^Projéteis têm .* chance de receber um Projétil adicional quando Difundindo$|^Projéteis que Ricochetearam ganham .*$|^Projéteis ganham Dano conforme viajam adiante, causando$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito de Solos Sagrados Criados por você aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_solo_sagrado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeitos do Solo Sagrado criado por você Perduram por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "solo_sagrado_perdura_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Sagrado no Golpe Corpo a Corpo, durante \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:soloSagrado:{V2}@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Sagrado ao Acertar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:soloSagrado:4@alvoRaro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:acertar:soloSagrado:4@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Solo dura 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Enquanto parado, a área ao seu redor será Solo Sagrado$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:soloSagrado:2@parado",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Seu chão consagrado concede precisão aumentada em \\{(\\d+)\\}% para você e seus aliados$",
+      "efeitos": [
+        {
+          "stat": "solo_sagrado_precisao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Solo Sagrado criado por você faz com que a Regeneração de Vida também Recupere Escudo de Energia para você e Aliados$",
+      "efeitos": [
+        {
+          "stat": "solo_sagrado_es",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Solo Sagrado criado por você aplica Dano sofrido aumentado em \\{(\\d+)\\}% aos Inimigos$",
+      "efeitos": [
+        {
+          "stat": "solo_sagrado_fragiliza",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% enquanto na Postura de Sangue$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@posturaSangue",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano de Ataque aumentado em \\{(\\d+)\\}% enquanto na Postura do Sangue$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+posturaSangue",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}% enquanto na Postura da Areia$",
+      "efeitos": [
+        {
+          "stat": "area_inc@posturaAreia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% enquanto na Postura da Areia$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@posturaAreia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você tem Agressividade se você mudou de Postura Recentemente$",
+      "efeitos": [
+        {
+          "stat": "sempre:agressividade@mudouPosturaRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove Afecções Danificadoras quando você Mudar de Postura$",
+      "efeitos": [
+        {
+          "stat": "ev:mudarPostura:removerAfeccao:danificadoras",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Postura têm \\+?\\{(\\d+)\\} segundos de Recarga$",
+      "efeitos": [
+        {
+          "stat": "recarga_extra_s@postura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade da Recarga para Habilidades de Postura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@postura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Valor recebido aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "valor_recebido_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao máximo de Valor$",
+      "efeitos": [
+        {
+          "stat": "max_valor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Valor quando você Clamar, se possível$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:valor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Estandarte têm Efeito de Aura aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:estandarte",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Estandartes também concedem \\+?\\{(\\d+)\\}% de todas as Resistências Elementais a Você e Aliados$",
+      "efeitos": [
+        {
+          "stat": "fire_res@estandarteAtivo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res@estandarteAtivo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res@estandarteAtivo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos próximos ao seu Estandarte são Mutilados$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:mutilado@estandarteAtivo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos próximos ao seu Estandarte sofrem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_dano_sofrido@estandarteAtivo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Mortos próximos ao seu Estandarte têm \\{(\\d+)\\}% de chance de Explodir, causando um décimo de sua Vida como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:10@estandarteAtivo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você e Aliados próximos dos seus Estandartes Regeneram \\{(\\d+)\\}% de Vida por segundo por cada Valor consumido por tal Estandarte$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%valor@estandarteAtivo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "pelo Valor de agora (o Estandarte do jogo não se planta)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Estandarte têm (?:Duração|Área de Efeito) aumentada em .*$|^.*consumir .*Valor.* para plantar um Estandarte$|^.*Valor consumido para plantar um Estandarte$|^Ter um Estandarte plantado não impede que você ganhe Valor$|^Quando você deixar a Área do seu Estandarte.*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: no jogo o Estandarte é uma aura em você: não se planta (o Valor reforça a aura em 1% por Valor)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ataques Impelidos causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@impelido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores Impelem \\{(\\d+)\\} Ataques? adiciona(?:l|is)$",
+      "efeitos": [
+        {
+          "stat": "clamor_impele_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores Impelem duas vezes mais Ataques$",
+      "efeitos": [
+        {
+          "stat": "clamor_impele_dobro",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores têm \\{(\\d+)\\}% de chance de Impelir \\{(\\d+)\\} Ataques adicionais$",
+      "efeitos": [
+        {
+          "stat": "clamor_impele_chance:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores não podem Impelir Habilidades de Deslocamento$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: as habilidades de deslocamento do jogo não são Impelidas",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Aliados Próximos contam como tendo Fortificação igual a sua$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a Fortificação vale só em você (os lacaios ainda não a contam)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cadáveres Criados por você tem Vida Máxima aumentada em .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: os cadáveres do jogo não têm vida",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Vida Máxima torna-se \\{(\\d+)\\}, Imune a Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "vida_vira_1",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_caos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove todo Escudo Mágico$",
+      "efeitos": [
+        {
+          "stat": "sem_escudo_energia",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano é removido da Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_pela_mana_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, ganhe uma Mortalha Fantasma, máximo de \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:mortalha:{V2}",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Quando Acertado, perca uma Mortalha Fantasma para Recuperar Escudo de Energia igual a \\{(\\d+)\\}% da sua Evasão$",
+      "efeitos": [
+        {
+          "stat": "mortalha_es_da_evasao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% da Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "chaos_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano sofrido dos outros Inimigos próximos do Inimigo Marcado$",
+      "efeitos": [
+        {
+          "stat": "menos_dano_perto_do_marcado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Provocados por seus Clamores sofrem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "provocados_dano_sofrido",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em qualquer inimigo Provocado por você",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos que você Provocar recebem Dano aumentado \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "provocados_dano_sofrido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Aumentos e Reduções à Velocidade de Projéteis também se aplicam ao Dano com Arcos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%stat:projectile_speed@arco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Aumentos e Reduções à Armadura também se aplicam à Recarga do Escudo de Energia em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "es_recharge%stat:armour_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "conta os aumentos de Armadura em % (o valor/100 vira a fração)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao multiplicador de dano de gelo degenerativo por \\{(\\d+)\\}% de resistência a dano de gelo excedente$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_cold%resGeloExcedente:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Causa até \\{(\\d+)\\}% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@corpo+alvoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o golpe corpo a corpo do jogo é sempre de perto: o máximo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Área de efeito de ataques aumentada em \\{(\\d+)\\}%, se você tiver pelo menos \\{(\\d+)\\} aliados? por perto$",
+      "efeitos": [
+        {
+          "stat": "area_inc@ataque+lacaio:qualquer",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "aliado: um lacaio vivo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^-?\\{(\\d+)\\}% de custo de habilidades de conexão$",
+      "efeitos": [
+        {
+          "stat": "custo_mana_inc@vinculo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Guarda têm Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@guarda",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode causar dano que não seja de frio$",
+      "efeitos": [
+        {
+          "stat": "so_dano:ice",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Joias Não Únicas .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o jogo não tem joias na árvore",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de conexão têm duração de fixação infinita$|^Runas têm .* se .* da Duração de Vínculo houver expirado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: as Runas e os Vínculos do jogo não ficam presos ao alvo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Profanar e Desenterrar tem .* cadáveres permitidos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as gemas Profanar e Desenterrar não estão no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^As primeiras .* Queimas de Mana aplicadas em você não tem efeito$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as Tinturas não existem no jogo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*Arremessar até .* Armadilhas adicionais$|^.*arremessar até .* Armadilhas adicionais$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "no jogo a Armadilha e a Mina disparam na hora, no alvo (não ficam plantadas): não há limite, duração, dano nelas nem detonação",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A Resistência dos Monstros Inimigos Próximos contra$|^Dano aumentado em até .*% com Acertos em alvos$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "linha cortada no poedb",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*Raio de Iluminação.*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*contra Inimigos que não podem ter Vida Drenada deles$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: no jogo todo inimigo pode ter a vida drenada",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada quarta Habilidade de Retaliação que você usar sempre será um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o jogo ainda não conta os usos de Retaliação (a quarta sempre crítica)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos esfriados pelos seus ataques sofrem dano de frio aumentado pelo esfriamento$",
+      "efeitos": [
+        {
+          "stat": "resfriado_fragil",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos nas suas áreas frias sofrem dano de frio aumentado pelo esfriamento$",
+      "efeitos": [
+        {
+          "stat": "resfriado_fragil",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo não tem áreas frias no chão: vale o Resfriamento no inimigo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de Chance de Bloqueio Mágico para cada \\{(\\d+)\\}% de Chance de Bloqueio do Dano de Ataques Excedente$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_magico_por_excedente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Redução de Dano Máxima para qualquer Tipo de Dano é \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "reducao_maxima",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o teto vale na redução de dano físico (armadura + redução adicional)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico negado de Acertos Recentes é Regenerado como Escudo de Energia por segundo$",
+      "efeitos": [
+        {
+          "stat": "fisico_negado_em_es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Total de Dano Físico dos Acertos impedido nos últimos \\{(\\d+)\\} segundos é Regenerado como Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "fisico_negado_em_vida_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode causar dano que não seja elétrico$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a keystone só entra inteira: falta o dano elétrico mínimo/máximo da Tempestade Turbulenta",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode causar dano que não seja de fogo$|^A duração base do incêndio é de .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a keystone só entra inteira: falta o Incêndio adicional em cada inimigo da Chama Voraz",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*% menos Evasão contra Ataques Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a keystone só entra inteira: o jogo ainda não separa os ataques de projétil dos monstros (a Evasão Dobrada contra eles, da Dança da Flecha)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
       "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas Encaixadas$",
       "efeitos": [
         {

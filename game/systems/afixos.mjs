@@ -137,6 +137,14 @@ export function rerrolar(slot, af, indice, itemId = null) {
 export function soma(estado) {
   const total = somaDeItens(estado);
   for (const [k, v] of Object.entries(Passivas.efeitos(estado).adds)) total[k] = (total[k] ?? 0) + v;
+  // (ciclo 7, lote F) "Bônus recebidos da Aljava Equipada aumentado em X%": a aljava (o espaço do escudo) soma X% a mais do que ela dá.
+  const aljava = estado.equipment?.shield;
+  if (itensPoeLigado() && Number(total.bonus_aljava) > 0 && aljava?.poe?.classe === 'Quivers') {
+    for (const [k0, v] of Object.entries(aljava.poe.af ?? {})) {
+      const k = typeof v === 'number' && ModsPoe.ehCondicional(k0) ? ModsPoe.doAnel(k0, 'shield') : k0;
+      if (k && typeof v === 'number' && Number.isFinite(v)) total[k] = (total[k] ?? 0) + (v * Number(total.bonus_aljava)) / 100;
+    }
+  }
   // + o altar ativado nesta caçada (temporário): mesma chave dos adds de item.
   const altar = efeitosDeAltar(estado);
   if (altar) for (const [k, v] of Object.entries(altar)) total[k] = (total[k] ?? 0) + v;
@@ -645,6 +653,8 @@ export function sincronizarMaximos(estado) {
   const vidaConvertida = converte > 0 ? Math.round(((base.maxHp + quer.hp) * converte) / 100) : 0;
   quer.hp -= vidaConvertida;
   estado.vidaConvertidaPoe = vidaConvertida;
+  // (ciclo 7, lote H) A Inoculação do Caos: "Vida Máxima torna-se 1, Imune a Dano de Caos".
+  if (itensPoeLigado() && Number(t.vida_vira_1) > 0) quer.hp = 1 - base.maxHp;
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };
   if (quer.hp === tem.hp && quer.mana === tem.mana) return;
   estado.maxHp = (estado.maxHp ?? 0) + quer.hp - tem.hp;
