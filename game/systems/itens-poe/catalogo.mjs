@@ -51,6 +51,20 @@ function corrigirUnicos(cat) {
     (classe.unicos ??= []).push({ slug: n.slug, nome: n.nome, base: n.base, requisitos: {}, atributosDaBase: {}, modificadores: n.modificadores, icone: null, corrigidoPeloPoedb: true });
   }
 }
+const ARQUIVO_DOS_IMPLICITOS_SORTEADOS = new URL('../../gamedata/itens-poe/implicitos-sorteados.json', import.meta.url);
+/**
+ * Os IMPLÍCITOS SORTEADOS (dono, 11/10 — `gamedata/itens-poe/implicitos-sorteados.json`, do poedb): a base que no PoE não tem implícito
+ * fixo e sorteia alguns de uma lista — o Talismã do Lobo Grandioso, 2 dos 33 implícitos de talismã. A coleção não traz; entra por cima
+ * na leitura, como `implicitosSorteados: { quantidade, opcoes }` da base (o gerador sorteia — `gerar.implicitosDaBase`).
+ */
+function implicitosSorteados(cat) {
+  if (!existsSync(ARQUIVO_DOS_IMPLICITOS_SORTEADOS)) return;
+  const { bases = {} } = JSON.parse(readFileSync(ARQUIVO_DOS_IMPLICITOS_SORTEADOS, 'utf8'));
+  for (const [id, s] of Object.entries(bases)) {
+    const b = cat.classes[id.split('/')[0]]?.bases?.find((x) => x.id === id);
+    if (b) b.implicitosSorteados = { quantidade: s.quantidade, opcoes: s.implicitos };
+  }
+}
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
 // refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).
 const ARQUIVO_DOS_MAPAS = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
@@ -66,6 +80,7 @@ export function catalogo() {
     if (mapas) mapas.unicos = (mapas.unicos ?? []).flatMap((u) => (mapas.bases ?? []).filter((b) => !u.tiers?.length || u.tiers.includes(b.atributos?.tier)).map((b) => ({ ...u, base: b.nome })));
     if (mapas) cache.classes[mapas.id] = mapas;
     corrigirUnicos(cache);
+    implicitosSorteados(cache);
   }
   return cache;
 }

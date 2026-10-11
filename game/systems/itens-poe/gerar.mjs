@@ -44,6 +44,39 @@ export function acharBase(catalogo, id) {
   return base ? { classe: c, base } : null;
 }
 
+/**
+ * Os IMPLÍCITOS de uma peça nova: os fixos da base (sorteados nas faixas) e, na base de implícito SORTEADO (o Talismã do Lobo Grandioso —
+ * `catalogo.implicitosSorteados`), `quantidade` implícitos distintos da lista dela, com a mesma chance cada. A base sem a lista não gasta
+ * sorteio a mais (a peça com semente sai igual).
+ */
+export function implicitosDaBase(base, rng) {
+  const fixos = (base?.implicitos ?? []).map((t) => rolarTexto(t, rng));
+  const s = base?.implicitosSorteados;
+  if (!s?.opcoes?.length) return fixos;
+  const resto = [...s.opcoes];
+  const sorteados = [];
+  for (let i = 0; i < Math.min(s.quantidade ?? 1, s.opcoes.length); i++) sorteados.push(rolarTexto(resto.splice(Math.floor(rng() * resto.length), 1)[0], rng));
+  return [...fixos, ...sorteados];
+}
+/** O molde (as faixas) de um implícito da base pelo modelo — um fixo ou um da lista dos sorteados: o Orbe Abençoado sorteia de novo nele. */
+export const moldeDoImplicito = (base, modelo) => [...(base?.implicitos ?? []), ...(base?.implicitosSorteados?.opcoes ?? [])].find((t) => t.modelo === modelo) ?? null;
+
+/** A MAGNITUDE DOS IMPLÍCITOS que o único dá (% a mais): "Magnitudes dos Modificadores Implícitos são dobradas" (Olhos do Lobo Grandioso) = 100. */
+export const magnitudeDosImplicitos = (modificadores = []) => ((modificadores ?? []).some((m) => /^Magnitudes dos Modificadores Implícitos são dobradas$/.test(m.modelo ?? m.texto ?? '')) ? 100 : 0);
+/**
+ * Os implícitos da peça com a magnitude do único (no PoE o item mostra o valor já dobrado). O valor sem ela fica em `valoresSemMagnitude`:
+ * o Abençoado e o Vaal recalculam a partir dele, sem dobrar duas vezes.
+ */
+export function comMagnitudeDosImplicitos(implicitos, modificadores) {
+  const pct = magnitudeDosImplicitos(modificadores);
+  return (implicitos ?? []).map((m) => {
+    const { valoresSemMagnitude, ...resto } = m;
+    const valores = valoresSemMagnitude ?? m.valores;
+    if (!pct) return valoresSemMagnitude ? { ...resto, valores, texto: escrever(m.modelo, valores) } : m;
+    return { ...comMagnitude({ ...resto, valores }, pct), valoresSemMagnitude: valores };
+  });
+}
+
 /** O pool `normal` da base (`{ prefixos, sufixos }`), ou null quando a coleção não tem pool para ela. */
 export const poolDa = (classe, base) => (base?.pool ? classe?.paginas?.[base.pool] ?? null : null);
 
@@ -123,7 +156,7 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
   const peca = {
     base: base.id, classe: classe.id, raridade, ilvl: nivel, nome: base.nome,
     atributos: rolarAtributos(base.atributos, rng),
-    implicitos: (base.implicitos ?? []).map((t) => rolarTexto(t, rng)),
+    implicitos: implicitosDaBase(base, rng),
     prefixos: [], sufixos: [],
   };
   if (R.fixos) {
@@ -132,8 +165,10 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     if (!u) return { erro: `nenhum único com a base ${base.nome}` };
     // O implícito do ÚNICO é o da página dele (poedb: a linha `implicitMod`), e não o da base SOMADO a ele: com os dois, a Vergôntea dava
     // Dano Mágico 8–12% duas vezes (achado da auditoria dos únicos, 11/10). Único sem implícito próprio fica com o da base.
+    // (Os Olhos do Lobo Grandioso dobram os implícitos da base — `comMagnitudeDosImplicitos`.)
     const proprios = u.modificadores.some((m) => m.tipo === 'implicit');
-    return { ...peca, ...(proprios ? { implicitos: [] } : {}), nome: u.nome, unico: u.slug, modificadores: u.modificadores.map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) })) };
+    const modificadores = u.modificadores.map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) }));
+    return { ...peca, implicitos: proprios ? [] : comMagnitudeDosImplicitos(peca.implicitos, modificadores), nome: u.nome, unico: u.slug, modificadores };
   }
   const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
   if (!quantos) return peca;
