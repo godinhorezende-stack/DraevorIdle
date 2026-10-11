@@ -85,7 +85,7 @@ export function daSoma(af = {}) {
     // o Resfriamento: o mínimo, o máximo ("podem reduzir… até um máximo de X%") e o "reduz o Dano causado pela metade do Efeito"
     resfriamentoMinimo: n('resfriamento_minimo'), resfriamentoMaximo: n('resfriamento_maximo'), resfriamentoReduzDano: n('resfriamento_reduz_dano') > 0,
     // o crítico: o efeito das não danificadoras, o multiplicador degenerativo (de todas e do veneno), o "mais dano" do veneno; a Agonia Perfeita
-    efeitoNaoDanoCritico: n('efeito_nao_dano_critico'), multiplicadorCritico: n('dot_multi_critico'), multiplicadorVenenoCritico: n('dot_multi_poison_critico'),
+    efeitoNaoDanoCritico: n('efeito_nao_dano_critico'), multiplicadorCritico: n('dot_multi_critico'), multiplicadorVenenoCritico: n('dot_multi_poison_critico'), multiplicadorSangramentoCritico: n('dot_multi_bleed_critico'),
     venenoCriticoMais: n('veneno_critico_mais'), agoniaPerfeita: n('agonia_perfeita') > 0, semAfeccaoSemCritico: n('sem_afeccao_sem_critico') > 0,
     // o veneno em inimigo não envenenado / sangrando; o sangramento por empalamento, as pilhas (Dança Carmesim) e o "menos dano"
     venenoNaoEnvenenado: n('veneno_nao_envenenado_inc'), multiplicadorVenenoSangrando: n('dot_multi_poison_sangrando'),
@@ -182,7 +182,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
   }
   // (+ "+X% de Multiplicador … para Sangramentos por Empalamento no Inimigo"; a Dança Carmesim: as pilhas e o "X% menos Dano com Sangramento")
-  if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0), fisico, multiplicadorBase + (a.multiplicadorSangramento ?? 0) + empalamentos * (a.multiplicadorSangramentoPorEmpalamento ?? 0), a.danoSangramento ?? 0, { mais: -(a.sangramentoMenos ?? 0), chave: chaveDoSangramento() });
+  if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0), fisico, multiplicadorBase + (a.multiplicadorSangramento ?? 0) + empalamentos * (a.multiplicadorSangramentoPorEmpalamento ?? 0) + (crit ? a.multiplicadorSangramentoCritico ?? 0 : 0), a.danoSangramento ?? 0, { mais: -(a.sangramentoMenos ?? 0), chave: chaveDoSangramento() });
   // Veneno: do dano Físico e de Caos (ou de TODO o dano, com "Todo o Dano … pode Envenenar").
   const todos = ['physical', 'fire', 'ice', 'energy', 'chaos'].reduce((x, el) => x + dano(el), 0);
   const baseDoVeneno = a.naoPode?.veneno ? 0 : a.qualquerDanoEnvenena ? todos : dano('physical') + caos + (a.pode?.veneno ?? []).filter((el) => !['physical', 'chaos'].includes(el)).reduce((x, el) => x + dano(el), 0);

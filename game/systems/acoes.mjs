@@ -889,11 +889,18 @@ function comOsAlvosDaGema(entry, efeito, estado = null) {
   if (dasPecas?.area) e.areaExtra = (e.areaExtra ?? 0) + dasPecas.area;
   // "Habilidades Ricocheteiam +N vezes": os ricochetes do projétil (os saltos da cadeia, na magia de cadeia).
   if (dasPecas?.ricochetes) e.encadear = (e.encadear ?? 0) + dasPecas.ricochetes;
-  e.bifurcar = Math.max(e.bifurcar ?? 0, a.bifurcar);
+  e.bifurcar = Math.max(e.bifurcar ?? 0, a.bifurcar) + (dasPecas?.bifurcar ?? 0);
   if (entry.cadeia) {
     e.cadeiaPoe = { saltos: a.saltos + (e.encadear ?? 0), pct: a.pctPorRestante };
     e.encadear = 0;
   } else e.encadear = (e.encadear ?? 0) + a.saltos;
+  // ("Projéteis param ao colidir com um alvo": sem perfurar, difundir nem ricochetear.)
+  if (dasPecas?.param) {
+    e.perfurar = 0;
+    e.bifurcar = 0;
+    e.encadear = 0;
+    if (e.cadeiaPoe) e.cadeiaPoe = { ...e.cadeiaPoe, saltos: 0 };
+  }
   return e;
 }
 
@@ -1236,7 +1243,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    * Não custa: LIGA, trancando a % da mana máxima (ou o valor fixo) enquanto estiver na barra — se couber na parte livre. Com o suporte
    * que reserva Vida ou o Magia Sanguínea, a reserva sai da vida.
    */
-  const reservaEmVida = !!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(fichaDoCusto, 'keystone_magia_sanguinea') > 0;
+  // (+ "Habilidades de maldição com aura reservam vida em vez de mana": a maldição em aura — a Blasfêmia.)
+  const reservaEmVida = !!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(fichaDoCusto, 'keystone_magia_sanguinea') > 0 || (Reserva.ehMaldicaoEmAura(entry, efeitoDaGema) && ModsPoe.valor(fichaDoCusto, 'maldicao_aura_reserva_vida') > 0);
   const reserva = Reserva.pedida(estado, entry, efeitoDaGema, fichaDoCusto, reservaEmVida);
   if (reserva && !Reserva.cabe(estado, entry.id, reserva)) {
     return { ok: false, erro: `Sem ${reserva.recurso} livre para reservar: ${entry.name} reserva ${reserva.valor}.`, motivo: 'RESERVA' };
@@ -1738,6 +1746,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
+    // ("se você usou uma Habilidade de Fogo Recentemente"; "por cada Magia Não Instantânea que você tenha Conjurado Recentemente".)
+    if (tagsPoe.includes('fogo')) ModsPoe.marcar(hunt, 'usouFogo');
+    if (tagsPoe.includes('magia') && (tempoPoe?.conjuracaoMs ?? 0) > 0) hunt.poeMagiasRecentes = [...(hunt.poeMagiasRecentes ?? []).filter((t) => (hunt.clock ?? 0) - t <= ModsPoe.RECENTE_MS), hunt.clock ?? 0].slice(-20);
     for (const [tag, rec, ev] of [['movimento', 'usouMovimento', 'usarMovimento'], ['vaal', 'usouVaal', 'usarVaal'], ['clamor', 'clamou', 'usarClamor'], ['maldicao', null, 'conjurarMaldicao'], ['guarda', null, 'usarGuarda']]) {
       if (!tagsPoe.includes(tag)) continue;
       if (rec) ModsPoe.marcar(hunt, rec);

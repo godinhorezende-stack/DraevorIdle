@@ -12,6 +12,7 @@
 import { CATALOGO } from '../dados.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
+import { slugDoNome } from './condicoes-poe.mjs';
 
 const BESTIARY = CATALOGO.bestiary;
 /** As palavras de cada tipo de lacaio nos mods das peças (`max_lacaio:golem`, `lacaio_dano:espirito`…). */
@@ -136,6 +137,12 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   const texto = `${nome} ${t.nome} ${r.gema?.en ?? ''}`;
   const porTipo = (campo) => Object.entries(af ?? {}).reduce((n, [k, v]) => { const m = new RegExp(`^${campo}:(\\w+)$`).exec(k); return n + (m && typeof v === 'number' && PALAVRA_DO_TIPO[m[1]]?.test(totem && m[1] === 'totem' ? 'totem' : texto) ? v : 0); }, 0);
   maximo += porTipo('max_lacaio');
+  // (11/10, os únicos:) o máximo de UMA gema de totem ("Balista Estilhaçante tem +1 ao número máximo de Totens Convocados por cada 25 de
+  // Força" — `max_totem_gema:<nome>`) e o teto por tipo ("Você não pode ter mais de N totens invocados do mesmo tipo").
+  if (totem) {
+    maximo += m0(`max_totem_gema:${slugDoNome(t.nome)}`);
+    if (m0('max_totem_mesmo_tipo') > 0) maximo = Math.min(maximo, m0('max_totem_mesmo_tipo'));
+  }
   // "Número máximo de Zumbis Erguidos reduzido em X%" (o % do máximo).
   maximo = Math.max(1, Math.round(maximo * (1 + porTipo('max_lacaio_pct') / 100)));
   // As OFERENDAS (Osso, Carne, Espírito) e a CONVOCAÇÃO não invocam: dão bônus aos lacaios em campo / chamam todos para perto.

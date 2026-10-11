@@ -2369,7 +2369,8 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   const tipo = entry?.element ?? l.elemento ?? 'physical';
   const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, conta.min + Math.random() * Math.max(0, conta.max - conta.min), ficha)));
   alvo.hp -= dano;
-  const drenoDoTotem = tipo === 'physical' && entry?.poeGema?.ataque ? ModsPoe.valor(ficha, 'totem_roubo_vida_fisico') : 0;
+  // (+ "X% do Dano causado pelos seus Totens é Drenado como Vida para você" — de todo dano, `totem_roubo_vida`.)
+  const drenoDoTotem = (tipo === 'physical' && entry?.poeGema?.ataque ? ModsPoe.valor(ficha, 'totem_roubo_vida_fisico') : 0) + ModsPoe.valor(ficha, 'totem_roubo_vida');
   if (drenoDoTotem > 0) Ficha.drenarPoe(estado, { vida: (dano * drenoDoTotem) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
   if (entry?.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y, sk: l.acao });
   eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });

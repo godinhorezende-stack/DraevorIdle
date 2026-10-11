@@ -3614,6 +3614,174 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes (os gatilhos das peças)"
+    },
+    "reserva_arauto_fixa": {
+      "nome": "Reserva de Mana dos Arautos fixa",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva.pedida (a reserva do Arauto no lugar da da gema)"
+    },
+    "reserva_vida_pct": {
+      "nome": "Reserva de Vida (sem aura)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva.reservadas e condicoes-poe.reservadoAgora"
+    },
+    "eficiencia_reserva_local": {
+      "nome": "Eficácia da Reserva das Gemas Encaixadas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe → reserva.fator"
+    },
+    "custo_vida_local": {
+      "nome": "Gemas Encaixadas Custam e Reservam Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe → efeitoDaGema.custoEmVida"
+    },
+    "fisico_ignora_escudo": {
+      "nome": "Dano Físico sofrido ignora o Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate (golpe corpo a corpo) e poderes (magia física)"
+    },
+    "dano_na_mana_pct": {
+      "nome": "Dano sofrido na Mana antes da Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido (com a Mente Sobre Matéria)"
+    },
+    "dano_na_mana_pct_chaos": {
+      "nome": "Dano de Caos sofrido na Mana antes da Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido (o elemento do golpe)"
+    },
+    "dano_na_mana_pct_energy": {
+      "nome": "Dano de Raio sofrido na Mana antes da Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido (o elemento do golpe)"
+    },
+    "dano_por_afeccao_no_alvo": {
+      "nome": "Inimigos sofrem Dano aumentado por tipo de Afecção neles",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho"
+    },
+    "added_chaos_por_maldicao_min": {
+      "nome": "Dano de Caos adicionado por Maldição no inimigo (mínimo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fichaDoGolpe"
+    },
+    "added_chaos_por_maldicao_max": {
+      "nome": "Dano de Caos adicionado por Maldição no inimigo (máximo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fichaDoGolpe"
+    },
+    "bifurcar": {
+      "nome": "Projéteis Difundem (vezes)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.alvosDasPecas → acoes.comOsAlvosDaGema"
+    },
+    "projeteis_param": {
+      "nome": "Projéteis param ao colidir com um alvo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.comOsAlvosDaGema (sem perfurar, difundir nem ricochetear)"
+    },
+    "evitar_projeteis": {
+      "nome": "Chance de evitar Projéteis",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes (a magia de longe com projétil do monstro)"
+    },
+    "fisico_sofrido_projetil": {
+      "nome": "Dano Físico sofrido por Ataques de Projéteis",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes (o projétil físico do monstro)"
+    },
+    "block_vs_amaldicoado": {
+      "nome": "Chance de Bloquear Ataques de Inimigos Amaldiçoados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate.contraAtaque (o bicho amaldiçoado por você)"
+    },
+    "duracao_maldicao_propria": {
+      "nome": "Duração das Maldições em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.amaldicoarJogador"
+    },
+    "duracao_atordoamento_propria": {
+      "nome": "Duração dos Atordoamentos em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.controleNoJogador (pelo nome da afecção: duracao_<afecção>_propria)"
+    },
+    "dano_magico_de_cegos_red": {
+      "nome": "Dano Mágico sofrido de Inimigos Cegos reduzido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes (a magia do bicho cego)"
+    },
+    "duracao_provocacao": {
+      "nome": "Duração da Provocação",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (o Provocar)"
+    },
+    "dot_multi_bleed_critico": {
+      "nome": "Multiplicador de Dano Degenerativo do Sangramento dos Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (o sangramento do crítico)"
+    },
+    "mais_dano_local": {
+      "nome": "Mais Dano das Gemas Encaixadas na peça",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe → efeitoDaGema.fatorDeDano"
+    },
+    "custo_local": {
+      "nome": "Custo de Mana das Gemas Encaixadas na peça (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe → efeitoDaGema.custoPct"
+    },
+    "maldicao_aura_reserva_vida": {
+      "nome": "Maldições em aura reservam Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (a reserva da Blasfêmia em vida)"
+    },
+    "totem_roubo_vida": {
+      "nome": "Dano dos Totens Drenado como Vida para você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.golpeDoTotem (de todo dano)"
+    },
+    "max_totem_mesmo_tipo": {
+      "nome": "Máximo de totens do mesmo tipo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "lacaios-poe.oQueInvoca (o teto do totem)"
+    },
+    "dano_no_totem_pct": {
+      "nome": "Dano dos Acertos sofrido na Vida do Totem mais próximo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido"
+    },
+    "dano_nos_espectros_pct": {
+      "nome": "Dano dos Acertos sofrido pela Vida dos Espectros",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido"
     }
   }
 }

@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno } from './condicoes-poe.mjs';
+import { valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -82,7 +82,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     ev('lento');
   }
   if (sorte(v('chance_provocar'))) {
-    e.provocado = { ate: agora + NO_ACERTO.provocar.duracaoMs, por: estado?.nome ?? null };
+    // (+ "Duração da Provocação aumentada em X%".)
+    e.provocado = { ate: agora + Math.round(NO_ACERTO.provocar.duracaoMs * Math.max(0.1, 1 + v('duracao_provocacao') / 100)), por: estado?.nome ?? null };
     ev('provocado');
   }
   if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) ev('empurrado');
@@ -103,7 +104,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   // O EMPALAMENTO: o efeito (+ "em Inimigos não Empalados"), os acertos ("duram por N Acerto adicional"), a duração, os "N Empalamentos
   // adicionais" e o espalhar ("também Empalam outros Inimigos próximos deles" — O Empalador), com o "Por N segundos … não podem ser Empalados
   // novamente".
-  if (fisico > 0 && sorte(v('chance_empalar'))) {
+  // (+ "Golpes Críticos com Magias infligem Empalamento": `chance_empalar@critico+magia` — só no crítico.)
+  if (fisico > 0 && sorte(v('chance_empalar') + (crit ? somaPorTagsDe(ficha, [...tags, 'critico']).chance_empalar ?? 0 : 0))) {
     const empalar = (m) => {
       const em = (m.estados ??= {});
       if ((em.empalarBloqueadoAte ?? 0) > agora) return false;
@@ -350,6 +352,8 @@ const ESTADOS_NO_ALVO = {
   exposicaoFogo: (e, ate) => (e.exposicao = { ...(e.exposicao ?? {}), fire: ate }), exposicaoGelo: (e, ate) => (e.exposicao = { ...(e.exposicao ?? {}), ice: ate }),
   exposicaoRaio: (e, ate) => (e.exposicao = { ...(e.exposicao ?? {}), energy: ate }), amaldicoado: (e, ate) => (e.amaldicoado = { ate }),
   definhado: (e, ate) => (e.definhado = { ate, n: Math.min(15, (e.definhado?.ate > 0 ? e.definhado.n : 0) + 1) }),
+  // (a aura "Inimigos Próximos não podem causar Acertos Críticos" — `condicoes-poe.criticoDoBicho`)
+  semCritico: (e, ate) => (e.semCritico = { ate }),
 };
 const SEGUNDOS_PADRAO = 4;
 /** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
@@ -400,7 +404,9 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
       conds ??= condicoesDe(estado, ficha.afPoe);
       if (!ev.conds.every((c) => (ehCondDeEstado(c) ? vale(conds, c) : tagsAlvo.has(c)))) continue;
     }
-    aplicarAcao(estado, hunt, ev, ficha, { ...ctx, alvo, agora, rng });
+    // (o evento com ESCALA: o valor × o fator agora — "por Carga de Frenesi", com o teto)
+    const acao = ev.escala ? { ...ev, valor: comTeto(ev.valor, fatorDaEscala(estado, ficha.afPoe, null, ev.escala), ev.teto) } : ev;
+    if (acao.valor) aplicarAcao(estado, hunt, acao, ficha, { ...ctx, alvo, agora, rng });
   }
   // (+ os gatilhos das peças no mesmo evento — `acoes.mjs`.)
   gatilhosDeItem?.(estado, hunt, nome, ficha, { ...ctx, alvo, agora, tagsAlvo });
@@ -442,6 +448,14 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'perdeVidaPct': return perder('hp', 1, ((estado.maxHp ?? 0) * v) / 100);
     // ("Perde N de Vida para cada Inimigo acertado por seus Ataques": a perda não mata — fica em 1.)
     case 'perdeVida': return perder('hp', 1, v);
+    // ("Recupera Escudo de Energia igual a X% da Armadura quando você Bloquear".)
+    case 'esDaArmadura': return curar('es', esMax, ((Number(ficha?.armor) || 0) * v) / 100);
+    // ("Sacrifica X% de Vida para receber a mesma quantidade em Escudo de Energia ao Conjurar uma Magia": a vida não mata — fica em 1.)
+    case 'vidaParaEs': {
+      const antes = estado.hp ?? 0;
+      perder('hp', 1, ((estado.maxHp ?? 0) * v) / 100);
+      return curar('es', esMax, antes - (estado.hp ?? 0));
+    }
     case 'perdeEsPct': return perder('es', 0, (esMax * v) / 100);
     case 'perdeManaPct': return perder('mana', 0, ((estado.maxMana ?? 0) * v) / 100);
     case 'carga': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ev.param, 1); return;

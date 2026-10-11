@@ -346,15 +346,20 @@ export function aoBloquear(estado, eventos, pos, quem) {
  * "Dano recebido" da árvore, a Última muralha, o escudo da Fonte viva e o
  * Não cai nunca. Devolve o que sobra para a vida.
  */
-export function danoRecebido(estado, final, eventos, pos, quem) {
+export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, elemento = null } = {}) {
   if (!(final > 0)) return final;
   const b = bonus(estado);
   let v = final * (1 - Math.min(0.9, b.absorb ?? 0)) * (1 + (b.danoRecebido ?? 0));
   if ((estado.hp ?? 0) < 0.3 * (estado.maxHp ?? 1) && tem(estado, 'ultimaMuralha')) v *= 0.85;
   v = Math.round(v);
-  // Mente Sobre Matéria (keystone do PoE): 40% do dano sai da mana antes da vida (até a mana que houver).
-  if (v > 0 && tem(estado, 'menteSobreMateria')) {
-    const daMana = Math.min(Math.floor(estado.mana ?? 0), Math.round(v * 0.4));
+  // Mente Sobre Matéria (keystone do PoE): 40% do dano sai da mana antes da vida (até a mana que houver). (+ os das peças do PoE: "X% de
+  // Dano é descontado da Mana antes da Vida por Carga de Poder" — `dano_na_mana_pct`; "Dano de Caos é sofrido na Mana antes da Vida", "X% do
+  // Dano de Raio é sofrido na Mana antes da Vida" — `dano_na_mana_pct_<elemento>`, com o elemento do golpe.)
+  const af = ficha?.afPoe ?? {};
+  const doElemento = { chaos: 'dano_na_mana_pct_chaos', energy: 'dano_na_mana_pct_energy' }[elemento];
+  const pctNaMana = Math.min(100, (tem(estado, 'menteSobreMateria') ? 40 : 0) + (Number(af.dano_na_mana_pct) || 0) + (doElemento ? Number(af[doElemento]) || 0 : 0));
+  if (v > 0 && pctNaMana > 0) {
+    const daMana = Math.min(Math.floor(estado.mana ?? 0), Math.round((v * pctNaMana) / 100));
     if (daMana > 0) {
       estado.mana -= daMana;
       v -= daMana;
@@ -362,6 +367,20 @@ export function danoRecebido(estado, final, eventos, pos, quem) {
   }
   const hunt = estado.hunt;
   const agora = relogio(estado);
+  // (PoE, os únicos: "X% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua", "X% do Dano dos Acertos é sofrido pela
+  // Vida dos Espectros antes de você": a parte vai para o lacaio vivo mais perto, até a vida dele.)
+  const desviar = (pct, quem) => {
+    if (!(pct > 0) || !(v > 0) || !hunt?.pos) return;
+    const l = (hunt.lacaios ?? []).filter((x) => x.hp > 0 && quem(x)).sort((a, b) => Math.max(Math.abs(a.x - hunt.pos.x), Math.abs(a.y - hunt.pos.y)) - Math.max(Math.abs(b.x - hunt.pos.x), Math.abs(b.y - hunt.pos.y)))[0];
+    if (!l) return;
+    const parte = Math.min(Math.floor(l.hp), Math.round((v * Math.min(100, pct)) / 100));
+    if (!(parte > 0)) return;
+    l.hp -= parte;
+    v -= parte;
+    eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: parte, foe: false, lacaio: true, color: '#ff8a8a' });
+  };
+  desviar(Number(af.dano_no_totem_pct) || 0, (x) => x.tipo === 'totem');
+  desviar(Number(af.dano_nos_espectros_pct) || 0, (x) => !!x.espectro);
   // Fonte viva: o escudo que a cura deixou segura primeiro.
   const escudo = hunt?.arvoreEscudo;
   if (escudo && escudo.ate > agora && escudo.v > 0 && v > 0) {

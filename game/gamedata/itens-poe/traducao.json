@@ -7508,6 +7508,193 @@
       "_de": "09/10 — maldições e dreno instantâneo"
     },
     {
+      "padrao": "^Eficácia da Reserva das Habilidades reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana de Habilidades aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_mana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} do total de Atributos$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_mana%atributos:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^(.+?) tem Eficácia da Reserva de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^(.+?) (?:não tem|não possui) (?:custo de )?Reserva(?: se Conjurad[ao] como (?:uma )?Aura)?$",
+      "efeitos": [
+        {
+          "stat": "sem_reserva:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Reserva de Mana de Habilidades de Arauto é sempre \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "reserva_arauto_fixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Reserva \\{(\\d+)\\}% da Vida$",
+      "efeitos": [
+        {
+          "stat": "reserva_vida_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Escudo de Energia máximo por cada \\{(\\d+)\\} de Vida Reservada$",
+      "efeitos": [
+        {
+          "stat": "energy_shield%vidaReservada:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Armadura aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana Reservada$",
+      "efeitos": [
+        {
+          "stat": "armour_pct%manaReservada:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Gemas Encaixadas têm Eficácia da Reserva aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_local",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Gemas de Maldição Encaixadas têm Eficácia da Reserva aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_local@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Gemas Encaixadas Custam e Reservam Vida ao invés de Mana$",
+      "efeitos": [
+        {
+          "stat": "custo_vida_local",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Gemas Encaixadas nos Encaixes Vermelhos têm \\+\\{(\\d+)\\} de Nível$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@encaixeVermelho",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Gemas Encaixadas nos Encaixes Verdes têm \\+\\{(\\d+)\\} de Qualidade$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@encaixeVerde",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} ao nível das Gemas de Habilidade Encaixadas por Gema Encaixada$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local%gemasNaPeca@habilidade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Adrenalina por \\{(\\d+)\\} Segundos quando o Dreno for removido Preenchendo a Vida Não Reservada$",
+      "efeitos": [
+        {
+          "stat": "ev:drenoCheio:buffChance:adrenalina:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Agressividade por \\{(\\d+)\\} Segundos quando o Dreno for removido Preenchendo a Vida Não Reservada$",
+      "efeitos": [
+        {
+          "stat": "ev:drenoCheio:buffChance:agressividade:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
       "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
       "efeitos": [
         {
@@ -25267,6 +25454,656 @@
       "estado": "lembrete",
       "nota": "parte interna do escudo (sem texto no PoE): o efeito é o da linha \"Ativa uma Magia … Encaixada ao Bloquear\".",
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 3)"
+    },
+    {
+      "padrao": "^Recupera Escudo de Energia igual a \\{(\\d+)\\}% da Armadura quando você Bloquear$",
+      "efeitos": [
+        {
+          "stat": "ev:bloquear:esDaArmadura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Sacrifica \\{(\\d+)\\}% de Vida para receber a mesma quantidade em Escudo de Energia ao Conjurar uma Magia$",
+      "efeitos": [
+        {
+          "stat": "ev:usarMagia:vidaParaEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\} da Vida por \\{(\\d+)\\} segundo quando você Conjurar uma Magia$",
+      "efeitos": [
+        {
+          "stat": "ev:usarMagia:vida",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a vida vem na hora (no PoE, ao longo do segundo).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia por segundo se voc6?e causou um Golpe Crítico com esta arma Recentemente$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale com o crítico de qualquer arma.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Dano Físico sofrido ignora o Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "fisico_ignora_escudo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano é descontado da Mana antes da Vida por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "dano_na_mana_pct%carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Dano de Caos é sofrido na Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_na_mana_pct_chaos",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "nos golpes de magia e de longe dos monstros (o dano extra desse elemento no golpe corpo a corpo deles não).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Raio é sofrido na Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_na_mana_pct_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "nos golpes de magia e de longe dos monstros (o dano extra desse elemento no golpe corpo a corpo deles não).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Inimigos sofrem Dano aumentado em \\{(\\d+)\\}% por cada tipo de Afecção que você infligiu neles$",
+      "efeitos": [
+        {
+          "stat": "dano_por_afeccao_no_alvo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos para cada Maldição no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_por_maldicao_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_por_maldicao_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Golpes Críticos com Magias infligem Empalamento$",
+      "efeitos": [
+        {
+          "stat": "chance_empalar@critico+magia",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Flechas Difundem$",
+      "efeitos": [
+        {
+          "stat": "bifurcar@arco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Projéteis dos Ataques Difundem$",
+      "efeitos": [
+        {
+          "stat": "bifurcar@ataque",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Projéteis dos Ataques podem Difundir \\{(\\d+)\\} vezes adicionais$",
+      "efeitos": [
+        {
+          "stat": "bifurcar@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Flechas Perfuram todos Alvos$",
+      "efeitos": [
+        {
+          "stat": "perfurar@arco",
+          "valor": "99"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Ataques Ricocheteiam \\{(\\d+)\\} vezes adicionais quando na Mão Principal$",
+      "efeitos": [
+        {
+          "stat": "ricochetes@ataque+naMaoPrincipal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Projéteis param ao colidir com um alvo$",
+      "efeitos": [
+        {
+          "stat": "projeteis_param",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de evitar Projéteis$",
+      "efeitos": [
+        {
+          "stat": "evitar_projeteis",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "os golpes de longe com projétil dos monstros (no jogo, as magias com tiro).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Projéteis enquanto Trespassando$",
+      "efeitos": [
+        {
+          "stat": "evitar_projeteis@buff:trespassar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "os golpes de longe com projétil dos monstros (no jogo, as magias com tiro).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Dano Físico sofrido por Ataques de Projéteis$",
+      "efeitos": [
+        {
+          "stat": "fisico_sofrido_projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "os golpes de longe com projétil dos monstros (no jogo, as magias com tiro).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Para cada cadáver próximo, Regenera \\{(\\d+)\\} de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen%cadaveresPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "os mortos da caçada que ficaram no chão (os 10 últimos — os do Espectro), a até 4 casas.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Para cada cadáver próximo, Velocidade de Movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed%cadaveresPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "os mortos da caçada que ficaram no chão (os 10 últimos — os do Espectro), a até 4 casas.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Ganha uma carga de Poder por Segundo se não perdeu Cargas de Poder Recentemente$",
+      "efeitos": [
+        {
+          "stat": "poder_a_cada_s@naoPerdeuPoderRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Vida ganha por Carga de Frenesi ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vida%carga:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Você ganha Agressividade durante \\{(\\d+)\\} segundos por Carga de Tolerância quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:buff:agressividade%carga:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Ganha até o máximo de Cargas de Tolerância ao sofrer um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertadoCritico:cargaMax:tolerancia",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Inimigos Próximos não podem causar Acertos Críticos$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:semCritico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques de Inimigos Amaldiçoados$",
+      "efeitos": [
+        {
+          "stat": "block_vs_amaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Duração das Maldições em você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_maldicao_propria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Duração de Atordoamentos em você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_atordoamento_propria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Dano Mágico Sofrido de Inimigos Cegos reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dano_magico_de_cegos_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Duração da Provocação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_provocacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo para Sangramento de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_bleed_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Habilidades Encaixadas causam Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_local",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Gemas encaixadas custam \\{(\\d+)\\}% de mana$",
+      "efeitos": [
+        {
+          "stat": "custo_local",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Habilidades de maldição com aura reservam vida em vez de mana$",
+      "efeitos": [
+        {
+          "stat": "maldicao_aura_reserva_vida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Resfriado ou Congelado se você usou uma Habilidade de Fogo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "evitar_resfriamento@usouFogoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evitar_congelamento@usouFogoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano Mágico Drenado como Vida caso o Escudo Equipado possua ao menos \\{(\\d+)\\}% de Chance de Bloquear$",
+      "efeitos": [
+        {
+          "stat": "vida_leech_magia@bloqueioEscudoMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Velocidade de Conjuração aumentada em \\{(\\d+)\\}% por cada Magia Não Instantânea que você tenha Conjurado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "cast_speed%magiasRecentes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Efeito dos Empalamentos infligidos por suas Magias aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_empalamento@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Ataques com Arco disparam \\{(\\d+)\\} Flechas adicionais se você não Conjurou Avanço recentemente$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@arco+naoConjurouAvancoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Duração de Cargas de Frenesi reduzida em \\{(\\d+)\\}% por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "duracao_frenesi%carga:frenesi",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Dano Físico Degenerativo aumentado em \\{(\\d+)\\}% a cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "bleed_dmg_inc%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vira o Dano do Sangramento aumentado (o dano físico degenerativo do jogo).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano de Gelo como Dano de Fogo Extra contra Inimigos Congelados$",
+      "efeitos": [
+        {
+          "stat": "ice_as_extra_fire@alvoCongelado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Velocidade de Ação não pode ser modificada para abaixo do valor base$",
+      "efeitos": [
+        {
+          "stat": "imune_lento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "imune à Lentidão e ao Resfriamento (no jogo, as reduções de velocidade); o Congelamento ainda vale.",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura por Totem Convocado$",
+      "efeitos": [
+        {
+          "stat": "armor_flat%lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Você e seus Totens Regeneram \\{(\\d+)\\}% de Vida por segundo para cada Totem Convocado$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "a regeneração em você (a dos totens não).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano causado pelos seus Totens é Drenado como Vida para você$",
+      "efeitos": [
+        {
+          "stat": "totem_roubo_vida",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} to maximum number of Summoned Totems$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% increased Totem Duration$",
+      "efeitos": [
+        {
+          "stat": "lacaio_duracao:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque possuem \\+\\{(\\d+)\\} ao número máximo de Totens Convocados$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "vale para todos os totens (no PoE, só os de ataque).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^(.+?) (?:tem|possui) \\+\\{(\\d+)\\} ao número máximo de Totens Convocados por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "max_totem_gema:{NOME}%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^(.+?) (?:tem|possui) \\+\\{(\\d+)\\} ao número máximo de Totens Convocados por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "max_totem_gema:{NOME}%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Você não pode ter mais de \\{(\\d+)\\} totens invocados do mesmo tipo$",
+      "efeitos": [
+        {
+          "stat": "max_totem_mesmo_tipo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua$",
+      "efeitos": [
+        {
+          "stat": "dano_no_totem_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano dos Acertos é sofrido pela Vida dos Espectros antes de você$",
+      "efeitos": [
+        {
+          "stat": "dano_nos_espectros_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
     }
   ]
 }

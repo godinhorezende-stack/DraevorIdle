@@ -1025,7 +1025,11 @@ export function recuperarRoubo(estado, ms) {
     const naoPara = { vida: 'roubo_vida_nao_para_no_cheio', es: 'roubo_es_nao_para_no_cheio' }[recurso];
     if (max > 0 && (estado[campo] ?? 0) >= cheio[recurso] && !(naoPara && ModsPoe.valor(fRoubo, naoPara) > 0)) {
       for (const x of ativas) x.restante = 0;
-      if (recurso === 'vida') (estado.hunt.poeRecente ??= {}).drenoCheio = estado.hunt.clock ?? 0;
+      if (recurso === 'vida') {
+        (estado.hunt.poeRecente ??= {}).drenoCheio = estado.hunt.clock ?? 0;
+        // ("X% de chance de ganhar Adrenalina por N Segundos quando o Dreno for removido Preenchendo a Vida Não Reservada")
+        ModsPoeEfeitos.evento(estado, estado.hunt, 'drenoCheio', fRoubo, {});
+      }
       continue;
     }
     const pedido = ativas.reduce((n, x) => n + Math.min(x.restante, x.porSegundo * s), 0);

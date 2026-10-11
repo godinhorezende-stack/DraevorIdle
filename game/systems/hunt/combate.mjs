@@ -1005,7 +1005,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Bloqueio: a chance da ficha (`blockChance`, fórmula real do client) apara o
   // golpe inteiro — o `block` que o original manda, visto ao vivo.
   // A chance sorteia entre o pior e o melhor bloqueio da faixa das peças (escudo e arma) a cada golpe.
-  const chanceDeBloquear = (ficha.blockChanceMin ?? ficha.blockChance) + Math.random() * ((ficha.blockChanceMax ?? ficha.blockChance) - (ficha.blockChanceMin ?? ficha.blockChance));
+  // (+ PoE: "+X% de Chance de Bloquear o Dano de Ataques de Inimigos Amaldiçoados" — o bicho amaldiçoado por você; no teto do bloqueio.)
+  const contraAmaldicoado = ModsPoe.amaldicoadoPorVoce(bicho, hunt.clock ?? 0) ? ModsPoe.valor(ficha, 'block_vs_amaldicoado') / 100 : 0;
+  const tetoDoBloqueio = AtributosDoPersonagem.CONFIG.bloqueio.MAX + (Number(ficha.afPoe?.block_max) || 0) / 100;
+  const chanceDeBloquear = Math.min(Math.max(tetoDoBloqueio, ficha.blockChance ?? 0), (ficha.blockChanceMin ?? ficha.blockChance) + Math.random() * ((ficha.blockChanceMax ?? ficha.blockChance) - (ficha.blockChanceMin ?? ficha.blockChance)) + contraAmaldicoado);
   // `bloqueio.modo` (`combate/formulas.json`): 'draevor' bloqueia ANTES da esquiva (como sempre); 'poe' só depois que o golpe ACERTOU (esquiva primeiro).
   // `glancingPct`: o golpe bloqueado ainda causa esta % do dano (0 = o bloqueio anula o golpe).
   let fatorDoBloqueio = 1;
@@ -1100,11 +1103,17 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => n + Math.round((x.min + Math.floor(Math.random() * (x.max - x.min + 1))) * forcaDoGolpe * critDoMob.fator * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, bruto)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
-  let final = Math.round(((somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado))) + doutrosTipos) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
+  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0));
+  let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
   // Energy Shield: absorve antes do magic shield e da vida.
-  final = Defesa.absorver(estado, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
+  // ("Dano Físico sofrido ignora o Escudo de Energia": a parte física do golpe vai direto — a espera da recarga reinicia do mesmo jeito; o
+  // resto passa pelo escudo.)
+  const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round(fisicoProtegido * fatorFinal)) : 0;
+  if (fisicoDireto > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
+  final = fisicoDireto + Defesa.absorver(estado, ficha, final - fisicoDireto, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
   if (final > 0 && Acoes.temBuff(hunt, 'shield') && (estado.mana ?? 0) > 0) {
     const daMana = Math.min(estado.mana, final);
@@ -1114,11 +1123,13 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   }
   // Absorção e "Dano recebido" da árvore, Última muralha, o escudo da Fonte
   // viva e o Não cai nunca (ver `Arvore.danoRecebido`).
-  final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome);
+  final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome, { ficha, elemento: 'physical' });
   // As cargas do PoE: "acertado recentemente" e a chance de Tolerância quando acertado.
   if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   // PoE: o "acertado/dano recentemente", o Reflexo aos agressores corpo a corpo, a recuperação do dano sofrido e o congelar quem acerta.
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, final), corpoACorpo: true, tipo: 'physical', eventos });
+  // ("ao sofrer um Golpe Crítico": "Ganha até o máximo de Cargas de Tolerância ao sofrer um Golpe Crítico".)
+  if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
   registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
   if (final > 0) {
     estado.hp = Math.max(0, estado.hp - final);

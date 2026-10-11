@@ -160,6 +160,8 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   if (Protecao.imune(hunt)) return 0;
   // PoE: o dano de CAOS atravessa o Escudo de Energia (a menos que um único diga que não); a espera da recarga reinicia do mesmo jeito.
   if (elemento === 'chaos' && ModsPoe.caosAtravessaOEscudo(ficha)) estado.esEspera = Defesa.esperaDaRecarga(ficha);
+  // ("Dano Físico sofrido ignora o Escudo de Energia".)
+  else if (elemento === 'physical' && ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
   else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
   if (dano > 0 && temEscudo && (estado.mana ?? 0) > 0) {
     const daMana = Math.min(estado.mana, dano);
@@ -167,7 +169,7 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
     dano -= daMana;
     eventos.push({ t: 'dmg', ...base, v: daMana, color: '#4fc3ff' });
   }
-  dano = Arvore.danoRecebido(estado, dano, eventos, { x: base.x, y: base.y }, base.quem);
+  dano = Arvore.danoRecebido(estado, dano, eventos, { x: base.x, y: base.y }, base.quem, { ficha, elemento });
   // As cargas do PoE: a magia do bicho também conta como "acertado" (recentemente, e a chance de Tolerância).
   if (ficha?.cargas) CargasPoe.aoSerAcertado(estado, ficha.cargas);
   if (dano <= 0) return 0;
@@ -192,7 +194,10 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // + a esquiva de magia de LONGE dos reforços (Divine Defiance): só se o bicho não está colado.
   const deLonge = Math.max(Math.abs(bicho.x - alvo.x), Math.abs(bicho.y - alvo.y)) > 1;
   const esquivaDeLonge = deLonge ? Reforcos.bonus(hunt, 'esquivaDeLonge') / 100 : 0;
-  const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha) || (esquivaDeLonge > 0 && Math.random() < esquivaDeLonge);
+  // (+ PoE: "X% de chance de evitar Projéteis" — a magia de longe com projétil do bicho.)
+  const projetil = a.tiro != null;
+  const evitaProjetil = projetil ? ModsPoe.valor(ficha, 'evitar_projeteis') : 0;
+  const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha) || (esquivaDeLonge > 0 && Math.random() < esquivaDeLonge) || (evitaProjetil > 0 && Math.random() * 100 < evitaProjetil);
   // Dodge (charm) também: sai o `block` dele e o golpe não pega.
   const doCharm = !esquivou && Charms.desviou(estado, hunt, personagem, bicho, eventos);
   // Bloqueio de MAGIA (`bloqueio.modo` = 'poe', `combate/formulas.json`): depois da esquiva, a magia pode ser bloqueada (`ficha.bloqueioDeMagia`);
@@ -237,11 +242,14 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // O CRÍTICO do mob (só quem tem — `mobs/atributos.json`): rola UMA vez e vale para a magia toda, todos os tipos de dano.
   // (PoE: a chance × o Cego, o dano extra × "Dano Extra recebido de Acertos Críticos reduzido"; o Exaurido causa 10% menos dano.)
   const critDoMob = ModsPoe.criticoDoBicho(AtributosDoMob.critico(bicho, a), bicho, ficha, agora) ?? AtributosDoMob.rolarCritico(bicho, a);
-  const forcaDaMagia = Reforcos.forcaDoBicho(bicho, agora) * fatorDoBloqueio * critDoMob.fator * ModsPoe.doBicho(bicho, agora).danoFator;
+  // (+ PoE: "Dano Mágico Sofrido de Inimigos Cegos reduzido em X%" — o bicho cego.)
+  const deCego = ModsPoe.ativo(bicho?.estados?.cego, agora) ? Math.max(0, 1 - ModsPoe.valor(ficha, 'dano_magico_de_cegos_red') / 100) : 1;
+  const forcaDaMagia = Reforcos.forcaDoBicho(bicho, agora) * fatorDoBloqueio * critDoMob.fator * ModsPoe.doBicho(bicho, agora).danoFator * deCego;
   // `extras` da magia: dano de OUTROS tipos no mesmo lançamento, cada um com a proteção do SEU elemento.
   const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => n + sortear(x.min, x.max) * forcaDaMagia * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento), 0);
   // (O MAPA do endgame: o dano extra por elemento em % do dano da magia — `bicho.danoExtraPct`.)
-  const daMagia = sortear(a.min, a.max) * forcaDaMagia;
+  // ("-N de Dano Físico sofrido por Ataques de Projéteis": o fixo a menos no projétil físico do bicho.)
+  const daMagia = Math.max(0, sortear(a.min, a.max) * forcaDaMagia + (projetil && a.elemento === 'physical' ? ModsPoe.valor(ficha, 'fisico_sofrido_projetil') : 0));
   const extraDoMapa = AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + daMagia * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento), 0);
   // PoE 1 (dono, 10/10): a magia FÍSICA do bicho também é um acerto físico — passa pela armadura do personagem, somada à redução física
   // adicional, no teto de 90% (`ModsPoe.acertoFisicoRecebido`), como o golpe corpo a corpo.
@@ -284,6 +292,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo });
   // PoE: o "acertado/dano recentemente", a recuperação do dano sofrido e o congelar quem acerta (a magia não é corpo a corpo: sem Reflexo).
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: false, tipo: a.elemento, eventos });
+  if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
   if (dano <= 0) return 0;
   if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
   return dano;
