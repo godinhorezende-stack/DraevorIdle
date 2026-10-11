@@ -32,7 +32,9 @@ export const MEDIDAS = {
   armour_pct: { preparar: (e) => { e.equipment = { body: structuredClone(PECA_COM_DEFESAS) }; }, medir: ({ f }) => f.armor, esperado: razao(['armour_pct']), tolerancia: 1 },
   evasion_pct: { preparar: (e) => { e.equipment = { body: structuredClone(PECA_COM_DEFESAS) }; }, medir: ({ f }) => f.evasion, esperado: razao(['evasion_pct', 'atr:evasaoPct']), tolerancia: 1 },
   es_pct: { preparar: (e) => { e.equipment = { body: structuredClone(PECA_COM_DEFESAS) }; }, medir: ({ f }) => f.energyShield, esperado: razao(['es_pct', 'atr:energyShieldPct']), tolerancia: 1 },
-  'block@comEscudo': { preparar: (e) => { e.equipment = { shield: structuredClone(ESCUDO) }; }, medir: ({ f }) => Math.round(f.blockChance * 1000) / 10, esperado: soma, tolerancia: 0.05 },
+  // ("Bloqueio com Escudos e Recuperação de Bloqueio": + "Recuperação de Bloqueio aumentada", que não mexe na chance de bloqueio — 11/10.)
+  'block@comEscudo': { preparar: (e) => { e.equipment = { shield: structuredClone(ESCUDO) }; }, medir: ({ f }) => Math.round(f.blockChance * 1000) / 10, esperado: soma, tolerancia: 0.05,
+    junto: [[/^block_recovery$/, () => 0]] },
   // resistências (abaixo do teto)
   fire_res: { medir: ({ f }) => f.protection.fire, esperado: soma },
   ice_res: { medir: ({ f }) => f.protection.ice, esperado: soma },
@@ -180,3 +182,23 @@ CONDICOES['alvoVenenos:*'] = 'passivas-poe-afeccoes-nos-monstros ("ao menos N Ve
 EVENTOS['incendiarNovo:vidaPct'] = 'passivas-poe-afeccoes-nos-monstros (o primeiro incêndio cura)';
 EVENTOS['incendiar:alvo'] = 'passivas-poe-afeccoes-nos-monstros (Coberto de Cinzas)';
 EVENTOS['congelar:alvo'] = 'passivas-poe-afeccoes-nos-monstros (Coberto de Gelo)';
+// (11/10, as linhas que "não se aplicavam ao jogo" e passaram a valer — passivas-poe-nao-se-aplica-faceis/medios.test.mjs: o nó real → onde a
+// linha age: o acerto, a trava do bloqueio, o totem, o Sangramento no monstro, o alcance, o raio da aura, a janela da Retaliação, a percepção)
+for (const k of ['block_recovery', 'clamor_nao_impele_movimento', 'totem_sem_lentidao', 'distancia_empurrao']) MECANICAS[k] = 'passivas-poe-nao-se-aplica-faceis';
+CONDICOES.alvoSemDreno = 'passivas-poe-nao-se-aplica-faceis (o monstro "Vida Não Pode ser Drenada")';
+for (const k of ['chance_agravar', 'agravar_sangramento_apos_s', 'sangramento_agravado', 'sangramento_sem_movimento', 'alcance_corpo_m', 'retaliacao_outra_chance', 'retaliacao_janela_inc',
+  'retaliacao_janela_s', 'retaliacao_nao_consumir', 'retaliacao_quarta_critica', 'retaliacao_a_cada_acertos', 'furtividade', 'abrir_bau_ao_conjurar']) MECANICAS[k] = 'passivas-poe-nao-se-aplica-medios';
+// (as chaves inteiras: a soma POR TAG da ficha — só nas gemas de Aura; o raio e a duração que ela dá estão em passivas-poe-nao-se-aplica-medios)
+const daTag = (stat, tag) => ({ f }) => (f.porTag ?? []).filter((x) => x.stat === stat && x.tags.includes(tag)).reduce((n, x) => n + x.valor, 0);
+MEDIDAS['area_inc@aura'] = { medir: daTag('area_inc', 'aura'), esperado: soma };
+MEDIDAS['duracao_habilidades@aura'] = { medir: daTag('duracao_habilidades', 'aura'), esperado: soma };
+CONDICOES['inimigosPertoMin:*'] = 'passivas-poe-nao-se-aplica-medios ("enquanto com ao menos N Inimigos Próximos")';
+CONDICOES.critico ??= 'passivas-poe-nao-se-aplica-medios (o Agravar só no acerto crítico)';
+CONDICOES.impelido ??= 'passivas-poe-nao-se-aplica-medios (o Agravar só no ataque Impelido)';
+// (as decisões do dono, 11/10: o ESTANDARTE PLANTADO e o Sangramento em você — passivas-poe-nao-se-aplica-medios.test.mjs)
+for (const k of ['estandarte_vida_por_valor', 'estandarte_cargas_cheio', 'estandarte_remove_afeccao_min', 'valor_com_estandarte_plantado', 'estandarte_fica_s', 'estandarte_sair_recupera_valor_pct',
+  'sangrar_andando_sem_extra']) MECANICAS[k] = 'passivas-poe-nao-se-aplica-medios';
+MEDIDAS['area_inc@estandarte'] = { medir: daTag('area_inc', 'estandarte'), esperado: soma };
+MEDIDAS['duracao_habilidades@estandarte'] = { medir: daTag('duracao_habilidades', 'estandarte'), esperado: soma };
+ESCALAS.valorDoEstandarte = 'passivas-poe-nao-se-aplica-medios (a regeneração pelo Valor consumido do Estandarte plantado)';
+CONDICOES.estandarteAtivo ??= 'passivas-poe-nao-se-aplica-medios (com o Estandarte plantado)';

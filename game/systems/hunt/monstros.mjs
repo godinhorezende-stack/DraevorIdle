@@ -240,7 +240,7 @@ export function passoDoBicho(m, diagonal = false) {
  * A caçada passa aqui a grade DOS BICHOS (sem as casas seguras): a BFS não passa por elas e nenhum passo cai nelas. Com o jogador numa
  * delas (`semPerseguir`), ninguém o persegue: a IA larga a perseguição em vez de ficar rondando a borda à espera dele.
  */
-export function moverMonstros(hunt, grade, agora, { semPerseguir = false } = {}) {
+export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percepcao = ALCANCE_DE_PERCEPCAO } = {}) {
   if (semPerseguir) {
     for (const m of hunt.monstros) m.perseguindo = false;
     return;
@@ -248,7 +248,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false } = {})
   const pronto = (m) => R.jaPode(agora, m.proximoPasso);
   const perseguindo = hunt.monstros.some((m) => {
     const d = distancia(hunt.pos, m);
-    return pronto(m) && d > 1 && (d <= ALCANCE_DE_PERCEPCAO || (m.perseguindo && d <= ALCANCE_DE_PERSEGUICAO));
+    return pronto(m) && d > 1 && (d <= percepcao || (m.perseguindo && d <= ALCANCE_DE_PERSEGUICAO));
   });
   // Um BFS só, a partir do jogador, reaproveitado por todo bicho perseguindo
   // neste tique — bem mais barato do que um BFS por bicho.
@@ -303,7 +303,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false } = {})
     const d = distancia(hunt.pos, m);
     // Quem já está perseguindo não larga o jogador por andar um pouco mais
     // longe (como no Tibia) — só além de `ALCANCE_DE_PERSEGUICAO`.
-    if (d <= ALCANCE_DE_PERCEPCAO) m.perseguindo = true;
+    if (d <= percepcao) m.perseguindo = true;
     else if (d > ALCANCE_DE_PERSEGUICAO) m.perseguindo = false;
     if (d <= 1) {
       // Colado: fica parado, virado para o jogador.
@@ -329,6 +329,8 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false } = {})
     m.x = destino.x;
     m.y = destino.y;
     m.dir = dy < 0 ? 0 : dy > 0 ? 2 : dx > 0 ? 1 : 3;
+    // (PoE: "em movimento" — o Sangramento dói 200% mais no alvo que anda; no relógio da caçada, o do dano contínuo — `combate/dot.tique`.)
+    m.andouEm = hunt.clock ?? 0;
     // Paralisado (charms Cripple e Numb): passo bem mais lento por 10 s.
     // + lento (support Slow): o passo demora mais.
     // + Desacelerado pela maldição do PoE ("Inimigos Amaldiçoados por você são Desacelerados" — `Reforcos.fatorDeDesaceleracao`).

@@ -12,6 +12,7 @@
 import { CATALOGO } from '../dados.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
+import * as Controle from '../combate/controle.mjs';
 
 const BESTIARY = CATALOGO.bestiary;
 /** As palavras de cada tipo de lacaio nos mods das peças (`max_lacaio:golem`, `lacaio_dano:espirito`…). */
@@ -178,6 +179,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       danoDobrado: m0('minion_dano_dobrado'), ignoraReducaoFisica: m0('minion_ignora_reducao_fisica'), penAmaldicoados: m0('minion_pen_amaldicoados'),
       drenoParaODono: m0('minion_dreno_dono'), poderProfano: m0('minion_poder_profano'), explodeVidaBaixaPct: m0('minion_explode_vida_baixa'),
       imuneElemental: porTipo('lacaio_imune_elemental') > 0,
+      // (11/10) "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base" (`controleNoLacaio`).
+      semLentidao: totem && m0('totem_sem_lentidao') > 0,
       aoMatar: { poderProfano: [m0('minion_poder_profano_ao_matar'), m0('minion_poder_profano_s') || 4], agressividade: [m0('minion_agressividade_ao_matar'), m0('minion_agressividade_s') || 4] },
     } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
@@ -244,6 +247,24 @@ export function aplicarNoLacaio(l) {
 export const buffDoLacaio = (l, nome, agora) => (nome === 'poderProfano' && (l?.poe?.poderProfano ?? 0) > 0) || (l?.buffs?.[nome] ?? 0) > agora;
 /** A velocidade de ataque a mais do lacaio agora (%): a Agressividade. */
 export const velocidadeDoLacaio = (l, agora) => (buffDoLacaio(l, 'agressividade', agora) ? AGRESSIVIDADE_PCT : 0);
+/**
+ * (11/10) A LENTIDÃO nos lacaios e totens: o golpe de um Elite/Chefe pode deixá-los lentos, como faz com você (`combate/controle.json`: a chance
+ * e o peso da lentidão de cada classe, a lentidão e a duração do jogador). "A Velocidade de Ação dos Totens não pode ser modificada para abaixo
+ * do valor base": o totem não fica lento (`poe.semLentidao`). Devolve true se pôs.
+ */
+export function controleNoLacaio(l, bicho, hunt, agora, rng = Math.random) {
+  if (!l || l.poe?.semLentidao) return false;
+  const classe = Controle.classeDoMob(bicho, !!hunt?.isBoss);
+  const cfg = classe ? Controle.CONFIG.mobs[classe] : null;
+  const pesos = cfg?.efeitos ?? {};
+  const total = Object.values(pesos).reduce((n, p) => n + p, 0);
+  if (!(pesos.lento > 0) || !(rng() * 100 < (cfg.chance * pesos.lento) / total)) return false;
+  const ate = agora + Controle.CONFIG.jogador.duracaoMs.lento;
+  l.lento = { ate: Math.max(l.lento?.ate ?? 0, ate), pct: Math.min(Controle.CONFIG.jogador.lentidaoMaxima, cfg.lentidaoPct ?? 30) };
+  return true;
+}
+/** Quanto o lacaio LENTO demora a mais no golpe (1 = normal). */
+export const fatorDeLentidao = (l, agora) => (l?.lento?.ate > agora && !l.poe?.semLentidao ? 1 / (1 - l.lento.pct / 100) : 1);
 /** A chance de crítico (%) e o multiplicador do golpe do lacaio, com os da árvore ("Lacaios têm Chance de Acerto Crítico aumentada", "+X% de Multiplicador"). */
 export function criticoDoLacaio(l, oferenda = null) {
   const p = l?.poe ?? {};

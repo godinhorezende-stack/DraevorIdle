@@ -1,15 +1,15 @@
 # Inventário da árvore de passivas do PoE (gerado)
 
-Gerado por `game/tools/auditar-arvore-passivas.mjs` em 2026-10-11T17:08:06.033Z. Não edite à mão: rode de novo.
+Gerado por `game/tools/auditar-arvore-passivas.mjs` em 2026-10-11T18:33:03.597Z. Não edite à mão: rode de novo.
 
 ## Resumo
 
 | Situação | Nós | % dos auditáveis |
 | --- | ---: | ---: |
-| funcional | 2124 | 76.3% |
-| funcional-aproximado | 165 | 5.9% |
-| parcial | 265 | 9.5% |
-| sem-efeito | 118 | 4.2% |
+| funcional | 2187 | 78.6% |
+| funcional-aproximado | 207 | 7.4% |
+| parcial | 181 | 6.5% |
+| sem-efeito | 97 | 3.5% |
 | nao-classificado | 110 | 4.0% |
 | **auditáveis** (sem os inícios) | 2782 | 100% |
 
@@ -28,12 +28,12 @@ Cada nó fica no ÚLTIMO degrau que alcança sem pular nenhum:
 | Degrau | Nós | % dos auditáveis |
 | --- | ---: | ---: |
 | exibido | 0 | 0.0% |
-| alocavel | 228 | 8.2% |
-| interpretado | 42 | 1.5% |
-| aplicado | 1340 | 48.2% |
-| validado | 1172 | 42.1% |
+| alocavel | 207 | 7.4% |
+| interpretado | 33 | 1.2% |
+| aplicado | 1304 | 46.9% |
+| validado | 1238 | 44.5% |
 
-Como o "aplicado" foi observado: ficha 1733 · combate 779 · sem efeito 228 · condicional 42. Legenda:
+Como o "aplicado" foi observado: ficha 1744 · combate 798 · sem efeito 207 · condicional 33. Legenda:
 
 - **ficha**: um número da ficha efetiva mudou (vida, armadura, golpe…);
 - **combate**: o valor está no que o combate lê no acerto/tique (`afPoe`, eventos, golpe por tag);
@@ -42,35 +42,35 @@ Como o "aplicado" foi observado: ficha 1733 · combate 779 · sem efeito 228 · 
 
 | Categoria | exibido | alocavel | interpretado | aplicado | validado |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| notavel | 0 | 15 | 12 | 295 | 132 |
-| comum | 0 | 79 | 8 | 541 | 890 |
+| notavel | 0 | 12 | 11 | 287 | 144 |
+| comum | 0 | 65 | 8 | 512 | 933 |
 | encaixe-de-joia | 0 | 57 | 0 | 0 | 0 |
-| keystone | 0 | 9 | 1 | 20 | 18 |
-| maestria | 0 | 9 | 8 | 298 | 0 |
-| ascendencia-comum | 0 | 14 | 1 | 97 | 117 |
-| ascendencia-notavel | 0 | 45 | 12 | 89 | 15 |
+| keystone | 0 | 8 | 1 | 20 | 19 |
+| maestria | 0 | 9 | 0 | 306 | 0 |
+| ascendencia-comum | 0 | 14 | 1 | 91 | 123 |
+| ascendencia-notavel | 0 | 42 | 12 | 88 | 19 |
 
 ## Por categoria
 
 | Categoria | Nós | funcional | funcional-aproximado | parcial | sem-efeito | nao-classificado |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| notavel | 454 | 375 | 32 | 32 | 15 | 0 |
-| comum | 1518 | 1376 | 46 | 17 | 37 | 42 |
+| notavel | 454 | 384 | 40 | 18 | 12 | 0 |
+| comum | 1518 | 1392 | 56 | 5 | 23 | 42 |
 | encaixe-de-joia | 57 | 0 | 0 | 0 | 0 | 57 |
-| keystone | 48 | 28 | 8 | 3 | 9 | 0 |
+| keystone | 48 | 30 | 8 | 2 | 8 | 0 |
 | inicio | 7 | 0 | 0 | 0 | 0 | 0 |
-| maestria | 315 | 94 | 57 | 155 | 9 | 0 |
-| ascendencia-comum | 229 | 184 | 9 | 22 | 14 | 0 |
-| ascendencia-notavel | 161 | 67 | 13 | 36 | 34 | 11 |
+| maestria | 315 | 127 | 77 | 102 | 9 | 0 |
+| ascendencia-comum | 229 | 184 | 11 | 20 | 14 | 0 |
+| ascendencia-notavel | 161 | 70 | 15 | 34 | 31 | 11 |
 | ascendencia-inicio | 21 | 0 | 0 | 0 | 0 | 0 |
 
 ## Matriz por forma do efeito
 
 | Tipo | Efeitos | Nós | Conectados (leitor no código) | Alocação ok / verificados | Cálculo ok / verificados |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| soma simples | 3278 | 1829 | 3278 (100.0%) | 3278/3278 | 3278/3278 |
-| tag de golpe (ataque, magia, projétil…) | 703 | 531 | 703 (100.0%) | 703/703 | 703/703 |
-| condição de estado (com escudo, vida baixa…) | 684 | 388 | 684 (100.0%) | 684/684 | 684/684 |
+| soma simples | 3359 | 1874 | 3359 (100.0%) | 3359/3359 | 3359/3359 |
+| tag de golpe (ataque, magia, projétil…) | 765 | 570 | 765 (100.0%) | 765/765 | 765/765 |
+| condição de estado (com escudo, vida baixa…) | 695 | 395 | 695 (100.0%) | 695/695 | 695/695 |
 | condição de estado + tag de golpe | 508 | 250 | 508 (100.0%) | 508/508 | 508/508 |
 | evento (ao matar, bloquear…) | 284 | 183 | 284 (100.0%) | 284/284 | 284/284 |
 | % de stat (formato das especializações) | 203 | 198 | 203 (100.0%) | 203/203 | 203/203 |
@@ -83,24 +83,24 @@ Como o "aplicado" foi observado: ficha 1733 · combate 779 · sem efeito 228 · 
 
 | Tipo | Efeitos | Nós | Conectados (leitor no código) | Alocação ok / verificados | Cálculo ok / verificados |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| dano % (aumentado e "mais") | 1042 | 673 | 1042 (100.0%) | 1042/1042 | 1042/1042 |
-| outros | 722 | 432 | 722 (100.0%) | 722/722 | 722/722 |
-| afecções e chance no acerto | 443 | 337 | 443 (100.0%) | 443/443 | 443/443 |
-| crítico | 379 | 272 | 379 (100.0%) | 379/379 | 379/379 |
+| dano % (aumentado e "mais") | 1051 | 682 | 1051 (100.0%) | 1051/1051 | 1051/1051 |
+| outros | 803 | 481 | 803 (100.0%) | 803/803 | 803/803 |
+| afecções e chance no acerto | 471 | 354 | 471 (100.0%) | 471/471 | 471/471 |
+| crítico | 380 | 273 | 380 (100.0%) | 380/380 | 380/380 |
 | velocidades | 370 | 325 | 370 (100.0%) | 370/370 | 370/370 |
 | atributos (For/Des/Int) | 305 | 273 | 305 (100.0%) | 305/305 | 305/305 |
 | efeito por evento | 284 | 183 | 284 (100.0%) | 284/284 | 284/284 |
 | armadura e evasão | 274 | 201 | 274 (100.0%) | 274/274 | 274/274 |
 | resistências | 246 | 125 | 246 (100.0%) | 246/246 | 246/246 |
 | vida, regeneração e dreno de vida | 241 | 205 | 241 (100.0%) | 241/241 | 241/241 |
-| lacaios e totens | 184 | 100 | 184 (100.0%) | 184/184 | 184/184 |
+| lacaios e totens | 190 | 100 | 190 (100.0%) | 190/190 | 190/190 |
 | escudo de energia | 176 | 135 | 176 (100.0%) | 176/176 | 176/176 |
 | mana e custo | 175 | 156 | 175 (100.0%) | 175/175 | 175/175 |
-| bloqueio | 158 | 106 | 158 (100.0%) | 158/158 | 158/158 |
+| bloqueio | 165 | 108 | 165 (100.0%) | 165/165 | 165/165 |
 | auras, maldições e reserva | 142 | 121 | 142 (100.0%) | 142/142 | 142/142 |
-| cargas e fúria | 139 | 118 | 139 (100.0%) | 139/139 | 139/139 |
+| cargas e fúria | 141 | 119 | 141 (100.0%) | 141/141 | 141/141 |
+| área e projéteis | 132 | 130 | 132 (100.0%) | 132/132 | 132/132 |
 | atordoamento | 130 | 106 | 130 (100.0%) | 130/130 | 130/130 |
-| área e projéteis | 112 | 110 | 112 (100.0%) | 112/112 | 112/112 |
 | frascos | 111 | 55 | 111 (100.0%) | 111/111 | 111/111 |
 | precisão | 102 | 68 | 102 (100.0%) | 102/102 | 102/102 |
 | vida % | 99 | 99 | 99 (100.0%) | 99/99 | 99/99 |
@@ -137,39 +137,28 @@ Nenhum: todo efeito traduzido tem leitor no código.
 
 ## Nós parciais e sem efeito (lista verificável)
 
-### notavel (47)
+### notavel (30)
 
 - `2275` Composto da Natureza — **sem-efeito**
-- `2599` Resposta Pronta — **sem-efeito**
 - `6289` Sem Sangue — **parcial**
 - `7069` Tiro Partido — **sem-efeito**
-- `7085` Arte da Arma — **parcial**
 - `7136` Mestre Sabotador — **parcial**
 - `8458` Tiro Longo — **parcial**
 - `9055` Minas Voláteis — **sem-efeito**
-- `13703` Postura Desafiadora — **sem-efeito**
 - `14813` Pândega — **parcial**: pendente: Efeito de Auras Não-Maldição de suas Habilidades aumentado em 10% nos Inimigos
 - `15085` Ambidestria — **parcial**: pendente: Velocidade de Ataque com a Mão Secundária aumentada em 30% enquanto em Dupla Empunhadura
-- `15226` Retaliação Cruel — **parcial**
-- `19730` Golpe Certeiro — **parcial**
 - `19794` Força Concussiva — **parcial**: pendente: Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano
 - `21389` Forjador de Runas — **parcial**
 - `21602` Aparato Destrutivo — **parcial**
 - `25409` Exército Indomável — **parcial**
 - `25439` Coveiro — **parcial**
-- `26294` Sangria — **parcial**
 - `26763` Fórmula Aperfeiçoada — **sem-efeito**
 - `27119` Fúria Tribal — **sem-efeito**: pendente: Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor
 - `27190` Super Preparado — **sem-efeito**
 - `29861` Runas Explosivas — **parcial**
-- `30160` Defender-se — **parcial**
-- `33718` Campeão da Causa — **parcial**
-- `34009` Mestre da Arena — **parcial**
 - `34978` Mistura Coloidal — **sem-efeito**
 - `37425` Reaplicação Praticada — **sem-efeito**
 - `39986` Forças Profanadas — **parcial**: pendente: Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você
-- `40619` Admiração e Terror — **parcial**
-- `44207` Tartaruga — **parcial**
 - `44788` Conexões Potentes — **sem-efeito**
 - `45329` Tiro Ardil — **sem-efeito**
 - `46471` Vínculo Poderoso — **sem-efeito**
@@ -178,48 +167,29 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `49416` Inflexível — **parcial**
 - `51108` Capacitor Arcano — **parcial**: pendente: Efeito da Fúria Arcana aumentado em 10% por cada 200 de Mana gasto Recentemente, até 50%
 - `52030` Explosão Enérgica — **sem-efeito**
-- `54268` Barreira de Lâmina — **parcial**
 - `54694` Luz da Divindade — **parcial**
-- `58851` Líder da Matilha — **parcial**
-- `63033` Porta Estandarte — **sem-efeito**
-- `64077` Treinamento de Guerreiro — **parcial**
 - `64355` Equidade de Runas — **parcial**
-- `65093` Dançarino da Lâmina — **parcial**
-- `65097` Liderança — **parcial**
 
-### comum (96)
+### comum (70)
 
 - `655` Queima de Mana mais Lenta — **sem-efeito**
-- `2092` Dano Corpo a Corpo e Alcance de Golpes — **parcial**
 - `2413` Queima de Mana mais Lenta — **sem-efeito**
-- `3319` Bloqueio com Escudos e Recuperação de Bloqueio — **parcial**
 - `3854` Proxy de Posicionamento — **nao-classificado**
 - `4546` Velocidade de Detonação de Minas — **sem-efeito**
-- `5935` Área de Efeito da Aura — **sem-efeito**
 - `6264` Efeito de Tinturas — **sem-efeito**
 - `7609` Ângulo Bifurcado — **sem-efeito**
-- `7728` Duração dos Estandartes — **sem-efeito**
 - `7956` Proxy de Posicionamento — **nao-classificado**
-- `9262` Dano com Espadas e Alcance Corpo a Corpo — **parcial**
-- `9995` Área de Efeito da Aura — **sem-efeito**
 - `10643` Proxy de Posicionamento — **nao-classificado**
 - `11200` Vida do Cadáver — **sem-efeito**
 - `11800` Mana ao Matar com Tinturas — **sem-efeito**
-- `12215` Sangramento Agravado na Chance de Golpe Crítico — **sem-efeito**
 - `13201` Proxy de Posicionamento — **nao-classificado**
 - `13965` Queima de Mana mais Lenta — **sem-efeito**
-- `16245` Duração da Usabilidade das Habilidades de Retaliação — **sem-efeito**
-- `17383` Mana e Área de Efeito de Aura — **parcial**
-- `18009` Dano Corpo a Corpo e Alcance de Golpes — **parcial**
 - `18361` Proxy de Posicionamento — **nao-classificado**
 - `18756` Proxy de Posicionamento — **nao-classificado**
 - `19679` Alcance de Runas e Recuperação da Recarga de Runas — **parcial**
 - `21019` Efeito de Tinturas — **sem-efeito**
-- `21548` Duração dos Estandartes — **sem-efeito**
 - `22046` Proxy de Posicionamento — **nao-classificado**
-- `22577` Recuperação do Bloqueio e Escudo de Energia — **parcial**
 - `22845` Efeito de Tinturas — **sem-efeito**
-- `23237` Área de Efeito das Auras — **sem-efeito**
 - `24452` Proxy de Posicionamento — **nao-classificado**
 - `25134` Proxy de Posicionamento — **nao-classificado**
 - `25441` Proxy de Posicionamento — **nao-classificado**
@@ -228,37 +198,30 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `27819` Proxy de Posicionamento — **nao-classificado**
 - `28018` Proxy de Posicionamento — **nao-classificado**
 - `28650` Proxy de Posicionamento — **nao-classificado**
-- `30038` Duração dos Estandartes — **sem-efeito**
 - `30275` Proxy de Posicionamento — **nao-classificado**
 - `30826` Queima de Mana mais Lenta — **sem-efeito**
 - `31438` Mana ao Matar com Tinturas — **sem-efeito**
-- `32053` Dano Corpo a Corpo e Alcance de Golpes — **parcial**
 - `33374` Chance de uma Difusão Extra de Projéteis — **sem-efeito**
 - `33833` Proxy de Posicionamento — **nao-classificado**
 - `33911` Duração das Minas — **sem-efeito**
 - `34013` Proxy de Posicionamento — **nao-classificado**
 - `35070` Proxy de Posicionamento — **nao-classificado**
 - `35313` Proxy de Posicionamento — **nao-classificado**
-- `35406` Duração e Valor Máximo dos Estandartes — **parcial**
 - `35853` Proxy de Posicionamento — **nao-classificado**
 - `35926` Proxy de Posicionamento — **nao-classificado**
 - `36371` Vida do Cadáver — **sem-efeito**
 - `36414` Proxy de Posicionamento — **nao-classificado**
 - `37147` Proxy de Posicionamento — **nao-classificado**
 - `37898` Proxy de Posicionamento — **nao-classificado**
-- `38772` Dano Corpo a Corpo e Alcance de Golpes — **parcial**
 - `38947` Distância do Ricochete — **sem-efeito**
 - `40114` Proxy de Posicionamento — **nao-classificado**
 - `40409` Velocidade de Detonação de Minas — **sem-efeito**
-- `43413` Bloqueio com Escudo e Recuperação de Bloqueio — **parcial**
 - `43989` Proxy de Posicionamento — **nao-classificado**
 - `44362` Dano de Caos e Expiração do Definhamento — **parcial**: pendente: Definhamentos infligidos por você expiram 10% mais lentamente
 - `44470` Proxy de Posicionamento — **nao-classificado**
 - `45246` Queima de Mana mais Lenta — **sem-efeito**
-- `46585` Área de Efeito dos Estandartes — **sem-efeito**
 - `48128` Proxy de Posicionamento — **nao-classificado**
 - `48132` Proxy de Posicionamento — **nao-classificado**
-- `48284` Blqueio e Recuperação do Bloqueio — **parcial**
 - `49951` Proxy de Posicionamento — **nao-classificado**
 - `50179` Proxy de Posicionamento — **nao-classificado**
 - `50734` Queima de Mana mais Lenta — **sem-efeito**
@@ -267,24 +230,18 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `53203` Proxy de Posicionamento — **nao-classificado**
 - `53882` Efeito de Tinturas e Frascos — **parcial**
 - `54600` Proxy de Posicionamento — **nao-classificado**
-- `54862` Duração da Usabilidade das Habilidades de Retaliação — **sem-efeito**
-- `54880` Área de Efeito dos Estandartes — **sem-efeito**
 - `55706` Proxy de Posicionamento — **nao-classificado**
 - `56439` Proxy de Posicionamento — **nao-classificado**
 - `56671` Dano de Caos e Expiração do Definhamento — **parcial**: pendente: Definhamentos infligidos por você expiram 10% mais lentamente
 - `57194` Proxy de Posicionamento — **nao-classificado**
-- `57651` Sangramento Agravado na Chance de Golpe Crítico — **sem-efeito**
 - `58194` Proxy de Posicionamento — **nao-classificado**
 - `58355` Proxy de Posicionamento — **nao-classificado**
-- `58545` Mana e Área de Efeito de Aura — **parcial**
 - `59070` Alcance de Runas e Recuperação da Recarga de Runas — **parcial**
 - `61573` Efeito de Tinturas — **sem-efeito**
 - `62721` Efeito das Tinturas — **sem-efeito**
 - `63754` Proxy de Posicionamento — **nao-classificado**
 - `64166` Proxy de Posicionamento — **nao-classificado**
-- `64265` Área de Efeito da Aura — **sem-efeito**
 - `64888` Efeito das Tinturas — **sem-efeito**
-- `65456` Distância do Empurrão — **sem-efeito**
 
 ### encaixe-de-joia (57)
 
@@ -346,11 +303,9 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `61834` Encaixe de Joia Básico — **nao-classificado**
 - `64583` Encaixe de Joia Média — **nao-classificado**
 
-### keystone (12)
+### keystone (10)
 
 - `13019` Lâmina Ensanguentada — **sem-efeito**
-- `17818` Dança Carmesim — **parcial**
-- `21210` Arsenal da Vingança — **sem-efeito**
 - `23090` Mobilização — **sem-efeito**: pendente: Seus Clamores não concedem Buffs ou Cargas a Você 100% mais Duração dos Clamores
 - `40351` Tempestade Turbulenta — **sem-efeito**: pendente: ㅤ+25% de dano elétrico máximo · pendente: -50% de dano elétrico mínimo
 - `41970` Vínculo Ancestral — **parcial**: pendente: Você não pode causar Dano com Habilidades por si só
@@ -361,7 +316,7 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `54922` Dança da Flecha — **sem-efeito**: pendente: Evasão é Dobrada contra Ataques de Projéteis
 - `63903` Chama Voraz — **sem-efeito**: pendente: Você pode infligir um incêndio adicional em cada inimigo · pendente: -25% de dano de incêndio
 
-### maestria (164)
+### maestria (111)
 
 - `89` Maestria de Minas — **parcial**
 - `857` Maestria de Escudo de Energia — **parcial**
@@ -369,26 +324,18 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `2828` Maestria de Dano Degenerativo — **parcial**
 - `3471` Maestria de Escudo de Energia — **parcial**
 - `3883` Maestria de Evasão — **parcial**
-- `4327` Maestria de Retaliação — **parcial**
 - `4707` Maestria de Cargas — **parcial**
 - `4788` Maestria de Garras — **parcial**
 - `5348` Maestria Elementar — **parcial**
 - `5726` Maestria Elementar — **parcial**
 - `5826` Maestria de Projéteis — **parcial**
 - `6338` Maestria de Escudo de Energia — **parcial**
-- `6384` Maestria de Dreno — **parcial**
-- `6507` Maestria de Reserva — **parcial**
 - `6912` Maestria de Duas Mãos — **parcial**
-- `7488` Maestria de Dreno — **parcial**
 - `7634` Maestria de Adagas — **parcial**
-- `8460` Maestria de Clamores — **parcial**
-- `8556` Maestria de Ataque — **parcial**
-- `8629` Maestria de Ataque — **parcial**
 - `9083` Maestria Defensiva de Lacaios — **parcial**
 - `9213` Maestria de Vínculos — **sem-efeito**
 - `10166` Maestria de Minas — **parcial**
 - `10204` Maestria de Espadas — **parcial**
-- `10245` Maestria de Ataque — **parcial**
 - `10429` Maestria de Armadilhas — **parcial**
 - `10729` Maestria de Escudo de Energia — **parcial**
 - `12169` Maestria Física — **parcial**: pendente: 10% mais Dano Físico Máximo de Ataques · pendente: Dano Físico com Habilidades que Custam Vida aumentado em 40%
@@ -398,11 +345,9 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `12518` Maestria de Garras — **parcial**
 - `12873` Maestria de Proteção — **parcial**
 - `13387` Maestria Elementar — **parcial**
-- `13712` Domínio de Reserva — **parcial**
 - `14113` Maestria de Conjuração — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
 - `15409` Maestria de Adagas — **parcial**
 - `15697` Maestria de Tinturas — **sem-efeito**
-- `16141` Maestria de Dreno — **parcial**
 - `17127` Maestria de Proteção — **parcial**
 - `17411` Maestria de Conjuração — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
 - `17906` Maestria de Armadilhas — **parcial**
@@ -414,123 +359,79 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `21143` Maestria de Runas — **parcial**
 - `21801` Maestria de Caos — **parcial**: pendente: 5% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés
 - `22067` Maestria de Dano Degenerativo — **parcial**
-- `22295` Maestria de Sangramento — **parcial**
 - `22970` Maestria Defensiva de Lacaios — **parcial**
 - `23547` Maestria de Caos — **parcial**: pendente: 5% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés
 - `24334` Maestria de Vínculos — **sem-efeito**
-- `25031` Maestria de Clamores — **parcial**
 - `25313` Domínio do Conjurador — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
-- `25446` Maestria de Dreno — **parcial**
 - `25934` Maestria de Duas Mãos — **parcial**
-- `26037` Maestria de Retaliação — **parcial**
-- `26154` Maestria de Clamores — **parcial**
 - `26393` Maestria Defensiva de Lacaios — **parcial**
-- `26608` Maestria de Totens — **parcial**
 - `26697` Maestria de Espadas — **parcial**
 - `27307` Maestria de Escudo de Energia — **parcial**
 - `27371` Maestria de Evasão — **parcial**
 - `27733` Maestria de Conjuração — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
 - `27872` Maestria de Minas — **parcial**
 - `28680` Maestria de Conjuração — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
-- `28862` Maestria de Dreno — **parcial**
-- `28863` Maestria de Ataque — **parcial**
 - `28903` Maestria de Envenenamentos — **parcial**
 - `31197` Maestria de Adagas — **parcial**
 - `31291` Maestria de Espadas — **parcial**
 - `31400` Maestria de Empalamento — **parcial**
 - `31818` Maestria de Proteção — **parcial**
-- `32242` Maestria de Estandartes — **parcial**
 - `32509` Maestria de Conjuração — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
-- `33037` Maestria de Ataques — **parcial**
 - `33657` Maestria de Proteção — **parcial**
 - `33678` Maestria de Cargas — **parcial**
 - `34317` Maestria Elementar — **parcial**
-- `34487` Maestria de Totens — **parcial**
 - `34723` Maestria de Cargas — **parcial**
 - `35038` Maestria de Varinhas — **parcial**: pendente: Ataques têm 100% de Poder Arcano ao usar uma varinha
 - `35118` Maestria de Duas Mãos — **parcial**
-- `35321` Maestria de Estandartes — **parcial**
-- `35859` Maestria de Dreno — **parcial**
-- `35977` Maestria de Clamores — **parcial**
 - `37616` Maestria de Armadilhas — **parcial**
-- `37956` Maestria de Sangramento — **parcial**
-- `38377` Maestria de Totens — **parcial**
 - `38568` Maestria de Cegueira — **parcial**
 - `38579` Maestria de Envenenamentos — **parcial**
 - `38622` Maestria de Tinturas — **sem-efeito**
 - `39338` Maestria de Duas Mãos — **parcial**
-- `39836` Maestria de Reserva — **parcial**
-- `40170` Maestria de Sangramento — **parcial**
 - `40196` Maestria de Conjuração — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
-- `40383` Maestria de Dreno — **parcial**
 - `40439` Maestria de Runas — **parcial**
 - `41163` Maestria de Evasão — **parcial**
 - `41225` Maestria Defensiva de Lacaios — **parcial**
 - `41273` Domínio de Dano Degenerativo — **parcial**
-- `41744` Maestria de Retaliação — **parcial**
 - `42361` Maestria de Caos — **parcial**: pendente: 5% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés
 - `42792` Maestria de Proteção — **parcial**
-- `43307` Maestria de Estandartes — **parcial**
-- `43495` Maestria de Dreno — **parcial**
-- `43601` Maestria de Sangramento — **parcial**
 - `44206` Maestria de Tinturas — **sem-efeito**
 - `44298` Maestria Elementar — **parcial**
 - `44330` Maestria de Tinturas — **sem-efeito**
 - `44540` Maestria de Armadilhas — **parcial**
-- `45372` Maestria de Ataques — **parcial**
-- `46495` Maestria de Reserva — **parcial**
 - `47059` Maestria de Empalamento — **parcial**
-- `47197` Maestria de Reserva — **parcial**
 - `47212` Maestria de Projéteis — **parcial**
 - `47294` Maestria de Dano Degenerativo — **parcial**
 - `48144` Maestria de Vínculos — **sem-efeito**
 - `48290` Maestria Defensiva de Lacaios — **parcial**
 - `48411` Maestria de Varinhas — **parcial**: pendente: Ataques têm 100% de Poder Arcano ao usar uma varinha
-- `48508` Maestria de Totens — **parcial**
 - `48660` Maestria Elementar — **parcial**
 - `48982` Maestria de Empalamento — **parcial**
-- `49391` Maestria de Ataques — **parcial**
 - `49677` Maestria de Empalamentos — **parcial**
 - `50757` Maestria de Evasão — **parcial**
 - `52074` Maestria de Empalamento — **parcial**
 - `52220` Maestria Física — **parcial**: pendente: 10% mais Dano Físico Máximo de Ataques · pendente: Dano Físico com Habilidades que Custam Vida aumentado em 40%
-- `52875` Maestria de Ataque — **parcial**
 - `53365` Maestria de Garras — **parcial**
-- `53615` Maestria de Reserva — **parcial**
 - `53738` Maestria de Minas — **parcial**
 - `53828` Maestria de Varinhas — **parcial**: pendente: Ataques têm 100% de Poder Arcano ao usar uma varinha
-- `55017` Maestria de Retaliação — **parcial**
-- `55152` Maestria de Totens — **parcial**
-- `55230` Maestria de Dreno — **parcial**
-- `55281` Maestria de Estandartes — **parcial**
-- `55348` Maestria de Ataque — **parcial**
-- `55491` Maestria de Reserva — **parcial**
 - `56023` Maestria de Projéteis — **parcial**
 - `56128` Maestria de Varinhas — **parcial**: pendente: Ataques têm 100% de Poder Arcano ao usar uma varinha
 - `56519` Maestria de Tinturas — **sem-efeito**
-- `56595` Maestria de Ataque — **parcial**
 - `57949` Maestria de Dano Degenerativo — **parcial**
-- `58728` Maestria de Retaliação — **parcial**
 - `59501` Maestria de Cegueira — **parcial**
 - `59926` Maestria de Minas — **parcial**
 - `60210` Maestria de Envenenamentos — **parcial**
 - `60512` Domínio de Conjuração — **parcial**: pendente: Repetição Final das Magias têm Efeito em Área aumentado em 40%
 - `60834` Maestria de Dano Degenerativo — **parcial**
-- `60992` Maestria de Clamores — **parcial**
 - `61343` Maestria de Runas — **parcial**
-- `62015` Maestria de Clamores — **parcial**
 - `62235` Maestria de Armadura e Evasão — **parcial**: pendente: Defende com 120% da Armadura contra Ataques de Projéteis
 - `62853` Maestria de Adagas — **parcial**
 - `63184` Maestria de Espadas — **parcial**
-- `63710` Maestria de Sangramento — **parcial**
 - `64042` Maestria Física — **parcial**: pendente: 10% mais Dano Físico Máximo de Ataques · pendente: Dano Físico com Habilidades que Custam Vida aumentado em 40%
-- `64128` Maestria de Reserva — **parcial**
-- `65154` Maestria de Totens — **parcial**
 - `65528` Maestria de Evasão — **parcial**
 
-### ascendencia-comum (36)
+### ascendencia-comum (34)
 
-- `8592` Dano Físico, Alcance de Golpe Corpo a Corpo [Berserker] — **parcial**
 - `2060` Evasão, Efeito de Tinturas [Warden] — **parcial**
 - `19488` Evasão, Efeito de Tinturas [Warden] — **parcial**
 - `24214` Evasão, Efeito de Tinturas [Warden] — **parcial**
@@ -565,19 +466,13 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `43857` Presa de Arakaali [Reliquarian] — **sem-efeito**
 - `56940` A Apóstata [Reliquarian] — **parcial**
 - `5929` Efeito da Chama Santificada [Guardian] — **sem-efeito**: pendente: Intensidade de Chama Santificada infligida por você aumentada em 20%
-- `32992` Armadura e Escudo de Energia, Recuperação do Bloqueio [Guardian] — **parcial**
 
-### ascendencia-notavel (81)
+### ascendencia-notavel (76)
 
-- `11412` Inspirador [Champion] — **parcial**
 - `13374` Mestre do Metal [Champion] — **parcial**
 - `31700` Fortitude [Champion] — **parcial**
-- `35750` Causas Nobres [Champion] — **sem-efeito**
 - `8419` Sobrevivente Determinado [Gladiator] — **parcial**: pendente: Ganhe 50% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo
-- `15616` Técnica Irregular [Gladiator] — **sem-efeito**
-- `63490` Retaliação Comedida [Gladiator] — **sem-efeito**
 - `17315` Esmagador [Slayer] — **parcial**: pendente: Chance de Acerto Crítico Base para Ataques com Armas é de 8% · pendente: Inimigos Próximos tem -30% de Multiplicador de Acerto Crítico
-- `38180` Impacto [Slayer] — **parcial**
 - `62817` Executor de Lendas [Slayer] — **parcial**
 - `9271` Desafiando a Dor [Berserker] — **sem-efeito**: pendente: Ganha Desafio por 10 segundos ao perder Vida para um Acerto Inimigo, não mais do que uma vez a cada 0.3 segundos · pendente: Perde todo o Desafio quando chegar a 10 de Desafio · pendente: Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio
 - `38999` Fúria Ancestral [Berserker] — **sem-efeito**
@@ -684,7 +579,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `903` | Velocidade de Movimento e Supressão Mágica | comum | supressão de magia, velocidades | funcional | validado | ficha | 2/2 |
 | `918` | Velocidade de Ataque | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `930` | Dano com Arcos | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
-| `1006` | Potência da Vontade | notavel | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `1006` | Potência da Vontade | notavel | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `1031` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `1159` | Dano de Ataques e Velocidade de Ataque com Escudo | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 2/2 |
 | `1201` | Dano com Ataques | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
@@ -717,7 +612,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `1909` | Dano Corpo a Corpo e Velocidade de Ataque com Duas Mãos | comum | dano % (aumentado e "mais"), velocidades | funcional | aplicado | ficha | 0/3 |
 | `1957` | Velocidade de Conjuração | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `2081` | Eficácia da Reserva de mana de Maldições | comum | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
-| `2092` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais") | parcial | validado | ficha | 1/1 |
+| `2092` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais"), outros | funcional-aproximado | validado | ficha | 2/2 |
 | `2094` | Evasão e Vida | comum | armadura e evasão, vida % | funcional-aproximado | aplicado | ficha | 1/2 |
 | `2121` | Velocidade de Ataque com Garras | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `2151` | Inteligência e Regeneração de Mana | comum | mana e custo, atributos (For/Des/Int) | funcional | validado | ficha | 2/2 |
@@ -737,7 +632,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `2474` | Vida Recuperada | comum | vida, regeneração e dreno de vida | funcional | validado | combate | 1/1 |
 | `2491` | Encaixe de Joia Grande | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `2550` | Incendiário | notavel | afecções e chance no acerto, vida, regeneração e dreno de vida | funcional | validado | ficha | 2/2 |
-| `2599` | Resposta Pronta | notavel | — | sem-efeito | alocavel | — | — |
+| `2599` | Resposta Pronta | notavel | outros | funcional | validado | combate | 2/2 |
 | `2715` | Passo Rápido | notavel | supressão de magia, velocidades | funcional | validado | ficha | 2/2 |
 | `2785` | Duração de Maldições | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `2913` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -749,7 +644,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `3187` | Velocidade de Movimento e Supressão Mágica | comum | supressão de magia, velocidades | funcional | validado | ficha | 2/2 |
 | `3309` | Pés Leves | notavel | armadura e evasão, velocidades, outros | funcional | aplicado | ficha | 2/3 |
 | `3314` | Duração da Carga de Frenesi | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
-| `3319` | Bloqueio com Escudos e Recuperação de Bloqueio | comum | bloqueio | parcial | validado | ficha | 1/1 |
+| `3319` | Bloqueio com Escudos e Recuperação de Bloqueio | comum | bloqueio | funcional-aproximado | validado | ficha | 2/2 |
 | `3359` | Velocidade de Conjuração de Maldição | comum | velocidades | funcional | aplicado | combate | 0/1 |
 | `3362` | Velocidade e Chance de Envenenar de Garra | comum | velocidades, afecções e chance no acerto | funcional | validado | ficha | 2/2 |
 | `3398` | Resistência a Eletrização | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
@@ -770,11 +665,11 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `4105` | Vida e Recuperação ao Matar | comum | vida, regeneração e dreno de vida | funcional | aplicado | ficha | 1/2 |
 | `4177` | Ajuda Espiritual | notavel | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/1 |
 | `4184` | Dano Elemental | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
-| `4207` | Janela de Oportunidade | notavel | afecções e chance no acerto | funcional-aproximado | aplicado | combate | 0/2 |
+| `4207` | Janela de Oportunidade | notavel | afecções e chance no acerto | funcional-aproximado | aplicado | combate | 1/2 |
 | `4219` | Evasão e Escudo de Energia | comum | armadura e evasão, escudo de energia | funcional | validado | combate | 2/2 |
 | `4247` | Vida de Lacaios | comum | vida, regeneração e dreno de vida | funcional | validado | combate | 1/1 |
 | `4269` | Dano contra Inimigos Marcados | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/1 |
-| `4270` | Duração de Runas | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `4270` | Duração de Runas | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `4300` | Dano de Totens e Marcas, Velocidade de Posicionamento de Totens | comum | dano % (aumentado e "mais"), velocidades | funcional | aplicado | ficha | 0/2 |
 | `4336` | Dano com Espadas | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `4367` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -814,8 +709,8 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `5408` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `5430` | Golpes Magmáticos | notavel | conversão / dano extra | funcional | aplicado | combate | 0/1 |
 | `5456` | Poder | notavel | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `5462` | Área de Efeito com Cajados | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
-| `5560` | Área de Efeito | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `5462` | Área de Efeito com Cajados | comum | área e projéteis | funcional | validado | combate | 1/1 |
+| `5560` | Área de Efeito | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `5591` | Recarga do Escudo de Energia | comum | escudo de energia | funcional | validado | ficha | 1/1 |
 | `5612` | Dano de Ataque Físico | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `5613` | Dano Físico e Velocidade de Ataque e Conjuração | comum | velocidades, dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 3/3 |
@@ -828,7 +723,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `5823` | Coordenação | notavel | velocidades, atributos (For/Des/Int) | funcional | validado | ficha | 4/4 |
 | `5875` | Velocidade de Conjuração | comum | velocidades, crítico | funcional | aplicado | ficha | 1/2 |
 | `5916` | Multiplicador de Dano Incendiário | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
-| `5935` | Área de Efeito da Aura | comum | — | sem-efeito | alocavel | — | — |
+| `5935` | Área de Efeito da Aura | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `5972` | Dano de Gelo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `6042` | Vida Ganha ao Acertar | comum | vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/1 |
 | `6043` | Máximo de Resistência de Fogo | comum | resistências | funcional | aplicado | combate | 0/1 |
@@ -854,7 +749,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `6580` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `6615` | Golpes Arqueados | notavel | penetração, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `6616` | Velocidade de Conjuração em Dupla Empunhadura e Recuperação da Recarga de Habilidades de Movimento | comum | velocidades, outros | funcional | aplicado | ficha | 1/2 |
-| `6633` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 4/5 |
+| `6633` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 5/5 |
 | `6654` | Dano do Arco e Chance de Golpes Críticos | comum | dano % (aumentado e "mais"), crítico | funcional | aplicado | ficha | 2/3 |
 | `6685` | Velocidade de Ataque e Conjuração de Lacaios | comum | velocidades | funcional | aplicado | combate | 0/2 |
 | `6712` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
@@ -874,7 +769,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `6981` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `7069` | Tiro Partido | notavel | — | sem-efeito | alocavel | — | — |
 | `7082` | Dano da Espada | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
-| `7085` | Arte da Arma | notavel | bloqueio, velocidades | parcial | validado | ficha | 3/3 |
+| `7085` | Arte da Arma | notavel | bloqueio, velocidades, outros | funcional-aproximado | validado | ficha | 4/4 |
 | `7092` | Dano Físico e de Raio | comum | dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 2/2 |
 | `7112` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `7136` | Mestre Sabotador | notavel | dano % (aumentado e "mais"), efeito por evento | parcial | aplicado | ficha | 0/2 |
@@ -885,7 +780,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `7285` | Eficiência de Custo de Ataque | comum | mana e custo | funcional | aplicado | combate | 0/1 |
 | `7335` | Armadura e Regeneração de Vida | comum | armadura e evasão, vida, regeneração e dreno de vida | funcional | validado | ficha | 2/2 |
 | `7347` | Bloqueio Mágico com Cajados | comum | bloqueio | funcional | aplicado | ficha | 0/1 |
-| `7364` | Área de Efeito com Cajados | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `7364` | Área de Efeito com Cajados | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `7374` | Eficiência de Custo e Vida | comum | vida %, mana e custo | funcional | aplicado | ficha | 1/2 |
 | `7388` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `7399` | Resistência a Raio | comum | resistências | funcional | validado | ficha | 1/1 |
@@ -895,11 +790,11 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `7555` | Velocidade Crepitante | notavel | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 2/2 |
 | `7594` | Eficácia da Reserva | comum | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
 | `7609` | Ângulo Bifurcado | comum | — | sem-efeito | alocavel | — | — |
-| `7614` | Duração da Habilidade | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `7614` | Duração da Habilidade | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `7641` | Escudo de Energia e Velocidade da Recarga de Escudo de Energia | comum | escudo de energia | funcional | aplicado | ficha | 1/2 |
 | `7659` | Eficiência de Custo de Mana de Marcas | comum | mana e custo | funcional | aplicado | combate | 0/1 |
-| `7688` | Vínculo Duradouro | notavel | afecções e chance no acerto, lacaios e totens | funcional | aplicado | combate | 0/3 |
-| `7728` | Duração dos Estandartes | comum | — | sem-efeito | alocavel | — | — |
+| `7688` | Vínculo Duradouro | notavel | afecções e chance no acerto, lacaios e totens | funcional | aplicado | combate | 1/3 |
+| `7728` | Duração dos Estandartes | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `7786` | Velocidade de Ataque do Totem | comum | lacaios e totens | funcional | aplicado | combate | 0/1 |
 | `7828` | Velocidade de Ataques Corpo a Corpo | comum | velocidades | funcional | validado | combate | 1/1 |
 | `7898` | Chance de Golpe Crítico de Lacaios | comum | crítico | funcional | aplicado | combate | 0/1 |
@@ -944,7 +839,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `9194` | Espetada Impiedosa | notavel | afecções e chance no acerto, outros | funcional | aplicado | combate | 0/2 |
 | `9206` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `9261` | Discípulo do Proibido | notavel | cargas e fúria, dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/3 |
-| `9262` | Dano com Espadas e Alcance Corpo a Corpo | comum | dano % (aumentado e "mais") | parcial | validado | ficha | 2/2 |
+| `9262` | Dano com Espadas e Alcance Corpo a Corpo | comum | dano % (aumentado e "mais"), outros | funcional-aproximado | validado | ficha | 3/3 |
 | `9294` | Dano de Lacaio e Físico | comum | lacaios e totens, dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 2/2 |
 | `9355` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `9361` | Máximo de Fúria | comum | cargas e fúria | funcional | validado | combate | 1/1 |
@@ -958,7 +853,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `9469` | Chance de Crítico | comum | crítico | funcional | validado | ficha | 1/1 |
 | `9505` | Dano dos Lacaios | comum | lacaios e totens | funcional | validado | combate | 1/1 |
 | `9511` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `9535` | Estratégia do Caçador | notavel | afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/3 |
+| `9535` | Estratégia do Caçador | notavel | afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/3 |
 | `9567` | Devorador da Luz | notavel | escudo de energia, dano % (aumentado e "mais") | funcional | aplicado | combate | 0/3 |
 | `9650` | Dano de Vida de Lacaios | comum | vida, regeneração e dreno de vida, lacaios e totens | funcional | validado | combate | 2/2 |
 | `9695` | Armadura e Resistências Elementais | comum | armadura e evasão, resistências | funcional | validado | ficha | 4/4 |
@@ -970,7 +865,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `9877` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `9933` | Efeito de Marcas | comum | outros | funcional | aplicado | combate | 0/1 |
 | `9976` | Dano com Machados | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
-| `9995` | Área de Efeito da Aura | comum | — | sem-efeito | alocavel | — | — |
+| `9995` | Área de Efeito da Aura | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `10016` | Executor | notavel | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 1/2 |
 | `10017` | Velocidade de Ataque | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `10031` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
@@ -1017,7 +912,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `11456` | Recuperação da Recarga de Habilidades de Postura | comum | outros | funcional | aplicado | combate | 0/1 |
 | `11489` | Chance e Multiplicador de Crítico de Adaga | comum | crítico | funcional | validado | ficha | 2/2 |
 | `11497` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `11515` | Dano Corpo a Corpo e Área de Efeito com Duas Mãos | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 0/3 |
+| `11515` | Dano Corpo a Corpo e Área de Efeito com Duas Mãos | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 1/3 |
 | `11551` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `11568` | Multiplicador de Dano com Sangramento | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `11645` | Sopro Trovejante | notavel | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | validado | ficha | 2/2 |
@@ -1026,7 +921,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `11678` | Dano de Projéteis | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `11688` | Dano Mágico | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `11689` | Dano e Bloqueio Mágico com Escudos | comum | bloqueio, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
-| `11700` | Área de Efeito Corpo a Corpo | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `11700` | Área de Efeito Corpo a Corpo | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `11716` | Multiplicador de Golpes Críticos de Minas | comum | crítico | funcional | aplicado | ficha | 0/1 |
 | `11730` | Tolerância | notavel | cargas e fúria | funcional | validado | ficha | 1/1 |
 | `11784` | Vampirismo | notavel | vida, regeneração e dreno de vida | funcional | aplicado | combate | 1/2 |
@@ -1046,7 +941,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `12143` | Influência | notavel | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
 | `12161` | Encaixe de Joia Pequena | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `12189` | Velocidade de Conjuração | comum | velocidades, crítico | funcional | aplicado | ficha | 1/2 |
-| `12215` | Sangramento Agravado na Chance de Golpe Crítico | comum | — | sem-efeito | alocavel | — | — |
+| `12215` | Sangramento Agravado na Chance de Golpe Crítico | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `12236` | Dano de Ataques com Escudo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `12246` | Escudo de Energia | comum | escudo de energia | funcional | aplicado | combate | 0/1 |
 | `12247` | Eficiência de Custo de Ataque | comum | mana e custo | funcional | aplicado | combate | 0/1 |
@@ -1079,7 +974,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `13164` | Julgamento Divino | notavel | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
 | `13168` | Dano de Envenenamento e Velocidade de Conjuração | comum | velocidades, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `13170` | Encaixe de Joia Média | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
-| `13191` | Duração de Habilidade | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `13191` | Duração de Habilidade | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `13201` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
 | `13202` | Dano de Gelo e Efeito de Afecções de Gelo | comum | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | validado | ficha | 2/2 |
 | `13231` | Velocidade de Ataque com Arcos e Trespassar | comum | velocidades, efeito por evento | funcional | aplicado | ficha | 1/2 |
@@ -1090,7 +985,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `13498` | Chance de Empalamentos | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
 | `13559` | Multiplicador de Dano Incendiário | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `13573` | Dupla Empunhadura e Velocidade de Conjuração e Bloqueio | comum | bloqueio, velocidades | funcional | validado | ficha | 3/3 |
-| `13703` | Postura Desafiadora | notavel | — | sem-efeito | alocavel | — | — |
+| `13703` | Postura Desafiadora | notavel | cargas e fúria | funcional | validado | combate | 2/2 |
 | `13714` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `13753` | Escudo de Energia | comum | escudo de energia | funcional | validado | combate | 1/1 |
 | `13782` | Dano Físico | comum | dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 1/1 |
@@ -1105,7 +1000,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `14040` | Dano de Fogo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `14056` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `14057` | Vida e Escudo de Energia | comum | escudo de energia, vida % | funcional | validado | ficha | 2/2 |
-| `14090` | Duração de Habilidades Reduzida | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `14090` | Duração de Habilidades Reduzida | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `14151` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `14157` | Chance de Crítico com Adagas | comum | crítico | funcional | validado | ficha | 1/1 |
 | `14182` | Escudo de Energia | comum | escudo de energia | funcional | validado | combate | 1/1 |
@@ -1135,13 +1030,13 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `15117` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `15124` | Efeito de Empalar | comum | outros | funcional | aplicado | combate | 0/1 |
 | `15144` | Velocidade de Ataque e Destreza | comum | velocidades, atributos (For/Des/Int) | funcional | validado | ficha | 2/2 |
-| `15163` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 4/5 |
+| `15163` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 5/5 |
 | `15167` | Vida e Efeito do Bônus de Golens | comum | lacaios e totens | funcional | aplicado | combate | 0/2 |
-| `15226` | Retaliação Cruel | notavel | velocidades | parcial | aplicado | combate | 0/2 |
+| `15226` | Retaliação Cruel | notavel | crítico, velocidades | funcional | aplicado | combate | 1/3 |
 | `15228` | Multiplicador de Crítico | comum | crítico | funcional | validado | ficha | 1/1 |
 | `15290` | Torres de Vigílha | notavel | dano % (aumentado e "mais"), lacaios e totens, velocidades | funcional | aplicado | ficha | 1/3 |
 | `15344` | Liberdade de Movimento | notavel | armadura e evasão, velocidades, atributos (For/Des/Int) | funcional | aplicado | ficha | 1/3 |
-| `15365` | Área de Efeito | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `15365` | Área de Efeito | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `15400` | Runas Escorregadias | notavel | área e projéteis, mana e custo, auras, maldições e reserva | funcional | aplicado | combate | 0/3 |
 | `15405` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `15437` | Deflexão | notavel | bloqueio, cargas e fúria | funcional | aplicado | ficha | 1/2 |
@@ -1156,7 +1051,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `15614` | Garras do Gavião | notavel | crítico | funcional | validado | ficha | 2/2 |
 | `15631` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `15678` | Multiplicador de Crítico Corpo a Corpo | comum | crítico | funcional | validado | ficha | 1/1 |
-| `15711` | Raio da Explosão | notavel | área e projéteis, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
+| `15711` | Raio da Explosão | notavel | área e projéteis, dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `15716` | Chance e Multiplicador de Crítico com Cajados | comum | crítico | funcional | validado | ficha | 2/2 |
 | `15727` | Chance de Incêndio com Ataques | comum | afecções e chance no acerto | funcional | aplicado | ficha | 0/1 |
 | `15783` | Efeito de Chão Consagrado | comum | outros | funcional | aplicado | combate | 0/1 |
@@ -1164,8 +1059,8 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `15842` | Um Com a Natureza | notavel | resistências, crítico, dano % (aumentado e "mais") | funcional | validado | ficha | 7/7 |
 | `15852` | Banquete Etéreo | notavel | escudo de energia | funcional | aplicado | combate | 0/2 |
 | `15868` | Vida e Armadura | comum | armadura e evasão, vida % | funcional | validado | ficha | 2/2 |
-| `15880` | Área de Efeito de Ataque e Precisão | comum | área e projéteis, precisão % | funcional | aplicado | ficha | 1/2 |
-| `15973` | Dano e Duração de Runas | comum | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
+| `15880` | Área de Efeito de Ataque e Precisão | comum | área e projéteis, precisão % | funcional | validado | ficha | 2/2 |
+| `15973` | Dano e Duração de Runas | comum | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | validado | ficha | 2/2 |
 | `16079` | Evasão Por Carga de Frenesi | comum | armadura e evasão | funcional | aplicado | combate | 0/1 |
 | `16113` | Bloqueio com Cajados | comum | bloqueio | funcional | aplicado | ficha | 1/2 |
 | `16167` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -1173,7 +1068,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `16218` | Encaixe de Joia Pequena | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `16236` | Golpes Tóxicos | notavel | afecções e chance no acerto | funcional | validado | ficha | 2/2 |
 | `16243` | Fuzilaria | notavel | velocidades, precisão | funcional | aplicado | ficha | 1/2 |
-| `16245` | Duração da Usabilidade das Habilidades de Retaliação | comum | — | sem-efeito | alocavel | — | — |
+| `16245` | Duração da Usabilidade das Habilidades de Retaliação | comum | outros | funcional | validado | combate | 1/1 |
 | `16380` | Precisão e Chance de Crítico | comum | crítico, precisão % | funcional | validado | ficha | 2/2 |
 | `16544` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `16602` | Duração de Frascos e Frascos de Vida | comum | frascos | funcional | validado | combate | 2/2 |
@@ -1196,7 +1091,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `17236` | Escudo de Energia e Velocidade da Recarga de Escudo de Energia | comum | escudo de energia | funcional | aplicado | ficha | 1/2 |
 | `17251` | Armadura e Escudo de Energia | comum | armadura e evasão, escudo de energia | funcional | validado | combate | 2/2 |
 | `17352` | Mana e Vida | comum | vida %, mana % | funcional | validado | ficha | 2/2 |
-| `17383` | Mana e Área de Efeito de Aura | comum | mana % | parcial | validado | ficha | 1/1 |
+| `17383` | Mana e Área de Efeito de Aura | comum | mana %, área e projéteis | funcional | validado | ficha | 2/2 |
 | `17412` | Dano e Precisão do Lacaio | comum | vida, regeneração e dreno de vida | funcional | validado | combate | 1/1 |
 | `17421` | Mana e Cargas de Frasco Recebidas | comum | mana %, frascos | funcional | validado | ficha | 2/2 |
 | `17429` | Chance de Empalamento e Velocidade de Ataque | comum | velocidades, afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
@@ -1212,13 +1107,13 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `17788` | Cargas de Frasco Recebidas | comum | frascos | funcional | validado | combate | 1/1 |
 | `17790` | Cargas de Frasco Recebidas | comum | frascos | funcional | validado | combate | 1/1 |
 | `17814` | Evasão e Supressão Mágica | comum | supressão de magia, armadura e evasão | funcional | validado | ficha | 2/2 |
-| `17818` | Dança Carmesim | keystone | outros | parcial | validado | ficha | 2/2 |
+| `17818` | Dança Carmesim | keystone | outros | funcional | validado | ficha | 3/3 |
 | `17821` | Vida e Regeneração de Mana | comum | vida %, mana e custo | funcional | validado | ficha | 2/2 |
 | `17833` | Dano e Multiplicador de Sangramento | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `17849` | Dano da Mina | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/1 |
 | `17908` | Dano e Velocidade de Ataque da Garra | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 3/3 |
 | `17934` | Dano de Ataques e Velocidade | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 3/3 |
-| `18009` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais") | parcial | validado | ficha | 1/1 |
+| `18009` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais"), outros | funcional-aproximado | validado | ficha | 2/2 |
 | `18025` | Batidas Fortes | notavel | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `18033` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `18103` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -1268,7 +1163,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `19635` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `19679` | Alcance de Runas e Recuperação da Recarga de Runas | comum | cargas e fúria | parcial | aplicado | combate | 0/1 |
 | `19711` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `19730` | Golpe Certeiro | notavel | dano % (aumentado e "mais") | parcial | validado | ficha | 1/1 |
+| `19730` | Golpe Certeiro | notavel | dano % (aumentado e "mais"), outros | funcional-aproximado | validado | ficha | 2/2 |
 | `19732` | O Agnóstico | keystone | outros, mana e custo | funcional | aplicado | combate | 0/2 |
 | `19782` | Defesas com Escudo | comum | armadura e evasão | funcional | aplicado | combate | 0/1 |
 | `19794` | Força Concussiva | notavel | atordoamento | parcial | aplicado | combate | 0/1 |
@@ -1294,7 +1189,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `20807` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `20812` | Evasão e Supressão Mágica | comum | supressão de magia, armadura e evasão | funcional | validado | ficha | 2/2 |
 | `20832` | Santuário | notavel | bloqueio, resistências | funcional | aplicado | ficha | 1/5 |
-| `20835` | Diplomacia Arriscada | notavel | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `20835` | Diplomacia Arriscada | notavel | área e projéteis | funcional | validado | combate | 1/1 |
 | `20844` | Velocidade de Ataque e Precisão da Varinha | comum | velocidades, precisão | funcional | aplicado | ficha | 1/2 |
 | `20852` | Dano de Fogo e Gelo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `20913` | Fúria ao Acertar | comum | cargas e fúria | funcional | validado | combate | 1/1 |
@@ -1307,7 +1202,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `21075` | Dano de Área de Efeito | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `21170` | Efeito de Resfriamentos | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `21184` | Prevenção de Interrupções enquanto Conjurando | comum | atordoamento | funcional | interpretado | condicional | 0/1 |
-| `21210` | Arsenal da Vingança | keystone | — | sem-efeito | alocavel | — | — |
+| `21210` | Arsenal da Vingança | keystone | outros | funcional | validado | combate | 1/1 |
 | `21228` | Tiros Perfurantes | notavel | área e projéteis | funcional | aplicado | combate | 0/1 |
 | `21262` | Dano Elemental | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
 | `21297` | Altamente Explosivos | notavel | crítico, efeito por evento | funcional | aplicado | ficha | 0/3 |
@@ -1317,7 +1212,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `21413` | Vigor de Combate | notavel | armadura e evasão, vida %, vida, regeneração e dreno de vida | funcional | validado | ficha | 3/3 |
 | `21435` | Pano e Malha | notavel | armadura e evasão, resistências | funcional | validado | ficha | 5/5 |
 | `21460` | Sopro Glacial | notavel | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 2/3 |
-| `21548` | Duração dos Estandartes | comum | — | sem-efeito | alocavel | — | — |
+| `21548` | Duração dos Estandartes | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `21575` | Dano Elemental | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
 | `21602` | Aparato Destrutivo | notavel | velocidades | parcial | aplicado | combate | 0/1 |
 | `21634` | Química Arcana | notavel | mana %, frascos | funcional | aplicado | ficha | 3/4 |
@@ -1352,7 +1247,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `22488` | Velocidade de Arremesso com Armadilhas | comum | velocidades | funcional | aplicado | combate | 0/1 |
 | `22497` | Velocidade de Conjuração | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `22535` | Sussurros da Ruína | notavel | outros | funcional | validado | combate | 1/1 |
-| `22577` | Recuperação do Bloqueio e Escudo de Energia | comum | escudo de energia | parcial | aplicado | combate | 0/1 |
+| `22577` | Recuperação do Bloqueio e Escudo de Energia | comum | bloqueio, escudo de energia | funcional-aproximado | aplicado | combate | 1/2 |
 | `22618` | Mana | comum | mana % | funcional | validado | ficha | 1/1 |
 | `22627` | Vida e Armadura | comum | armadura e evasão, vida % | funcional-aproximado | aplicado | ficha | 1/2 |
 | `22647` | Chance de Incêndio | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
@@ -1362,7 +1257,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `22728` | Dano Elemental de Cajados e Penetração | comum | dano % (aumentado e "mais"), penetração | funcional | aplicado | ficha | 3/4 |
 | `22748` | Encaixe de Joia Pequena | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `22845` | Efeito de Tinturas | comum | — | sem-efeito | alocavel | — | — |
-| `22893` | Duração de Habilidade | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `22893` | Duração de Habilidade | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `22908` | Valor Máximo dos Estandartes | comum | outros | funcional | aplicado | combate | 0/1 |
 | `22972` | Defensor com Varinha | notavel | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 2/2 |
 | `22994` | Encaixe de Joia Média | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
@@ -1375,7 +1270,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `23185` | Resistência a Dano de Caos e Dano dos Lacaios | comum | resistências, lacaios e totens | funcional | validado | ficha | 2/2 |
 | `23199` | Dano e Chance de Sangramento | comum | afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `23215` | Maldições e Resistência a Caos | comum | resistências, auras, maldições e reserva | funcional | aplicado | ficha | 1/2 |
-| `23237` | Área de Efeito das Auras | comum | — | sem-efeito | alocavel | — | — |
+| `23237` | Área de Efeito das Auras | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `23334` | Dano de Projétil | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `23407` | Agonia Perfeita | keystone | outros, crítico | funcional | validado | ficha | 3/3 |
 | `23438` | Duração de Frascos e Frascos de Vida | comum | frascos | funcional | validado | combate | 2/2 |
@@ -1406,13 +1301,13 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `24157` | Dano e Velocidade de Posicionamento de Totens | comum | dano % (aumentado e "mais"), velocidades | funcional | aplicado | ficha | 0/2 |
 | `24229` | Dano e Chance de Crítico com Cajados | comum | crítico | funcional | validado | ficha | 1/1 |
 | `24256` | Dínamo | notavel | mana %, afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
-| `24324` | Impacto Explosivo | notavel | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 1/2 |
+| `24324` | Impacto Explosivo | notavel | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 2/2 |
 | `24362` | Pensamentos Profundos | notavel | mana %, mana e custo, atributos (For/Des/Int) | funcional | validado | ficha | 3/3 |
 | `24377` | Velocidade de Ataque | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `24383` | Sangue do Guerreiro | notavel | vida, regeneração e dreno de vida, atordoamento, atributos (For/Des/Int) | funcional | aplicado | ficha | 2/3 |
 | `24426` | Devastador Fantasma | keystone | outros, escudo de energia, cargas e fúria | funcional | validado | combate | 3/3 |
 | `24452` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
-| `24472` | Duração da Habilidade | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `24472` | Duração da Habilidade | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `24496` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `24544` | Chance de Sangramento | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `24641` | Dano com Dupla Empunhadura | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
@@ -1421,7 +1316,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `24716` | Transe de Batalha | notavel | cargas e fúria | funcional | validado | combate | 1/1 |
 | `24720` | Guarda Desequilibrada | keystone | outros | funcional-aproximado | aplicado | combate | 0/2 |
 | `24721` | Esmagador de Tórax | notavel | dano % (aumentado e "mais"), velocidades, área e projéteis | funcional | aplicado | ficha | 5/6 |
-| `24772` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 4/5 |
+| `24772` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 5/5 |
 | `24824` | Velocidade de Ataque e Conjuração do Lacaio | comum | velocidades | funcional | aplicado | combate | 0/2 |
 | `24858` | Lançador de Arpão | notavel | afecções e chance no acerto, outros | funcional | aplicado | combate | 1/3 |
 | `24865` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -1473,7 +1368,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `26188` | Dano e Chance de Crítico de Machado | comum | dano % (aumentado e "mais"), crítico | funcional | validado | ficha | 3/3 |
 | `26196` | Encaixe de Joia Básico | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `26270` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `26294` | Sangria | notavel | afecções e chance no acerto | parcial | validado | ficha | 1/1 |
+| `26294` | Sangria | notavel | afecções e chance no acerto | funcional | validado | ficha | 2/2 |
 | `26365` | Chance de Incêndio com Ataques | comum | afecções e chance no acerto | funcional | aplicado | ficha | 0/1 |
 | `26456` | Dano e Velocidade de Ataque da Maça | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 5/5 |
 | `26471` | Anulação de Eletriações | comum | outros | funcional | aplicado | combate | 0/1 |
@@ -1584,11 +1479,11 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `29933` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `29937` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `30030` | Dano e Velocidade de Ataque do Machado | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 3/3 |
-| `30038` | Duração dos Estandartes | comum | — | sem-efeito | alocavel | — | — |
+| `30038` | Duração dos Estandartes | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `30110` | Multiplicador de Dano Degenerativo de Caos | comum | afecções e chance no acerto | funcional | aplicado | ficha | 0/1 |
 | `30148` | Precisão | comum | precisão, precisão % | funcional | validado | ficha | 2/2 |
 | `30155` | Dano de Projétil | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
-| `30160` | Defender-se | notavel | afecções e chance no acerto | parcial | aplicado | combate | 0/1 |
+| `30160` | Defender-se | notavel | afecções e chance no acerto, outros | funcional-aproximado | aplicado | combate | 1/2 |
 | `30170` | Decaimento Lento da Fúria | comum | armadura e evasão, cargas e fúria | funcional | validado | combate | 2/2 |
 | `30205` | Dano Físico | comum | dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 1/1 |
 | `30225` | Andarilho do Raio | notavel | dano % (aumentado e "mais"), velocidades, resistências | funcional | aplicado | ficha | 2/3 |
@@ -1604,7 +1499,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `30439` | Açoite de Lava | notavel | penetração, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `30455` | Chance e Multiplicador de Crítico com Ataques de Projéteis | comum | crítico | funcional | validado | ficha | 2/2 |
 | `30471` | Golpe Certeiro | notavel | crítico | funcional | validado | ficha | 2/2 |
-| `30547` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 4/5 |
+| `30547` | Dano de Ataque e Área de Efeito com Maças | comum | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 5/5 |
 | `30626` | Chance de Crítico com Duas Mãos | comum | crítico | funcional | validado | ficha | 1/1 |
 | `30658` | Vida e Resistências Elementais de Lacaios | comum | vida, regeneração e dreno de vida, resistências | funcional | aplicado | combate | 1/2 |
 | `30679` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -1654,7 +1549,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `31961` | Técnica Resoluta | keystone | — | funcional | aplicado | combate | — |
 | `31973` | Área de Efeito da Maldição | comum | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
 | `32024` | Vida do Lacaio | comum | vida, regeneração e dreno de vida | funcional | validado | combate | 1/1 |
-| `32053` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais") | parcial | validado | ficha | 1/1 |
+| `32053` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais"), outros | funcional-aproximado | validado | ficha | 2/2 |
 | `32059` | Impactos Titânicos | notavel | crítico | funcional | aplicado | ficha | 0/1 |
 | `32075` | Velocidade de Conjuração de Maldições | comum | velocidades | funcional | aplicado | combate | 0/1 |
 | `32091` | Evasão e Supressão Mágica | comum | supressão de magia, armadura e evasão | funcional | validado | ficha | 2/2 |
@@ -1701,7 +1596,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `33582` | Espetada Forçada | notavel | afecções e chance no acerto, outros | funcional | aplicado | combate | 0/2 |
 | `33623` | Efeito do Buff de Clamores | comum | outros | funcional | aplicado | combate | 0/1 |
 | `33631` | Encaixe de Joia Básico | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
-| `33718` | Campeão da Causa | notavel | auras, maldições e reserva | parcial | aplicado | combate | 0/2 |
+| `33718` | Campeão da Causa | notavel | área e projéteis, auras, maldições e reserva | funcional | aplicado | combate | 1/3 |
 | `33725` | Presunção | notavel | bloqueio, cargas e fúria | funcional | aplicado | ficha | 1/2 |
 | `33740` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `33753` | Encaixe de Joia Média | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
@@ -1717,7 +1612,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `33943` | Regeneração de Vida | comum | vida, regeneração e dreno de vida | funcional | validado | ficha | 1/1 |
 | `33988` | Dano Corpo a Corpo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `33989` | Encaixe de Joia Básico | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
-| `34009` | Mestre da Arena | notavel | vida, regeneração e dreno de vida, dano % (aumentado e "mais"), atributos (For/Des/Int) | parcial | validado | ficha | 3/3 |
+| `34009` | Mestre da Arena | notavel | vida, regeneração e dreno de vida, dano % (aumentado e "mais"), outros, atributos (For/Des/Int) | funcional-aproximado | validado | ficha | 4/4 |
 | `34013` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
 | `34031` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `34098` | Mente Sobre Matéria | keystone | — | funcional | aplicado | combate | — |
@@ -1774,9 +1669,9 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `35288` | Armadura | comum | armadura e evasão | funcional | validado | combate | 1/1 |
 | `35313` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
 | `35334` | Multiplicador e Chance de Golpes Críticos com Minas | comum | crítico | funcional | aplicado | ficha | 0/2 |
-| `35362` | Dano Corpo a Corpo e Área de Efeito com Duas Mãos | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 0/3 |
+| `35362` | Dano Corpo a Corpo e Área de Efeito com Duas Mãos | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 1/3 |
 | `35384` | Dano e Velocidade de Ataque da Garra | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 3/3 |
-| `35406` | Duração e Valor Máximo dos Estandartes | comum | outros | parcial | aplicado | combate | 0/1 |
+| `35406` | Duração e Valor Máximo dos Estandartes | comum | afecções e chance no acerto, outros | funcional | aplicado | combate | 1/2 |
 | `35436` | Impactos Cinéticos | notavel | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 0/4 |
 | `35503` | Resistência a Raio | comum | resistências | funcional | validado | ficha | 1/1 |
 | `35507` | Velocidade do Dreno de Vida | comum | outros | funcional | validado | combate | 1/1 |
@@ -1800,7 +1695,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `36047` | Vida e Armadura | comum | armadura e evasão, vida % | funcional | validado | ficha | 2/2 |
 | `36107` | Eficácia de Reserva de Arautos | comum | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
 | `36121` | Dano de Raio | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
-| `36200` | Velocidade de Clamores e Dano de Ataques Impelidos | comum | velocidades, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 0/2 |
+| `36200` | Velocidade de Clamores e Dano de Ataques Impelidos | comum | velocidades, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/2 |
 | `36221` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `36222` | Dano de Projétil | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `36225` | Chance e Multiplicador de Crítico da Garra | comum | crítico | funcional | validado | ficha | 2/2 |
@@ -1871,7 +1766,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `38246` | Presságio | notavel | área e projéteis, auras, maldições e reserva | funcional | aplicado | combate | 0/2 |
 | `38344` | Velocidade de Ataque | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `38348` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `38450` | Área de Efeito | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `38450` | Área de Efeito | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `38462` | Velocidade das Habilidades de Retaliação | comum | velocidades | funcional | aplicado | combate | 0/2 |
 | `38508` | Duração da Carga de Tolerância | comum | afecções e chance no acerto | funcional | aplicado | ficha | 0/1 |
 | `38516` | Decreto Justo | notavel | mana %, mana e custo | funcional | aplicado | ficha | 1/2 |
@@ -1881,14 +1776,14 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `38662` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `38664` | Chance de Crítico Corpo a Corpo | comum | crítico | funcional | validado | ficha | 1/1 |
 | `38701` | Escudo de Energia e Mana | comum | escudo de energia, mana % | funcional | validado | ficha | 2/2 |
-| `38772` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais") | parcial | validado | ficha | 1/1 |
+| `38772` | Dano Corpo a Corpo e Alcance de Golpes | comum | dano % (aumentado e "mais"), outros | funcional-aproximado | validado | ficha | 2/2 |
 | `38777` | Dano Corpo a Corpo | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `38789` | Duração e Chance de Incendiar | comum | afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
-| `38805` | Área de Efeito | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `38805` | Área de Efeito | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `38836` | Armadura e Escudo de Energia | comum | armadura e evasão, escudo de energia | funcional | validado | combate | 2/2 |
 | `38849` | Calor Cauterizante | notavel | outros | funcional | aplicado | ficha | 0/1 |
 | `38864` | Dano e Velocidade de Ataque da Adaga | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 3/3 |
-| `38900` | Área de Efeito | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `38900` | Área de Efeito | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `38906` | Armadura e Escudo de Energia | comum | armadura e evasão, escudo de energia | funcional | validado | combate | 2/2 |
 | `38922` | Golias | notavel | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
 | `38947` | Distância do Ricochete | comum | — | sem-efeito | alocavel | — | — |
@@ -1932,7 +1827,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `40189` | Máximo de Fúria | comum | cargas e fúria | funcional | validado | combate | 1/1 |
 | `40229` | Recuperação da Recarga de Clamores e Área de Efeito | comum | outros, área e projéteis | funcional | aplicado | combate | 0/2 |
 | `40287` | Golpes Críticos contra Inimigos Cegos | comum | crítico | funcional | aplicado | ficha | 0/1 |
-| `40291` | Dano de Fogo e Velocidade de Conjuração com Habilidades de Fogo | comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 1/2 |
+| `40291` | Dano de Fogo e Velocidade de Conjuração com Habilidades de Fogo | comum | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 2/2 |
 | `40351` | Tempestade Turbulenta | keystone | — | sem-efeito | alocavel | — | — |
 | `40362` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `40366` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -1942,10 +1837,10 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `40508` | Armadura e Escudo de Energia | comum | armadura e evasão, escudo de energia | funcional | validado | combate | 2/2 |
 | `40535` | Dano Corpo a Corpo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `40609` | Dano de Gelo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
-| `40619` | Admiração e Terror | notavel | efeito por evento | parcial | interpretado | condicional | 0/1 |
+| `40619` | Admiração e Terror | notavel | efeito por evento, área e projéteis | funcional | aplicado | combate | 1/2 |
 | `40637` | Dano de Vida de Lacaios | comum | vida, regeneração e dreno de vida, lacaios e totens | funcional | validado | combate | 2/2 |
 | `40644` | Dano Elemental | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
-| `40645` | Quebra-Osso | notavel | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 4/5 |
+| `40645` | Quebra-Osso | notavel | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 5/5 |
 | `40653` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `40705` | Multiplicador de Dano de Gelo Degenerativo | comum | afecções e chance no acerto | funcional | aplicado | ficha | 0/1 |
 | `40743` | Pele de Cristal | notavel | resistências, afecções e chance no acerto | funcional | aplicado | combate | 1/4 |
@@ -1957,9 +1852,9 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `40841` | Chance e Dano de Ataque Físico de Empalar | comum | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
 | `40867` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `40907` | Postura Inabalável | keystone | — | funcional-aproximado | aplicado | ficha | — |
-| `40927` | Área de Efeito | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `40927` | Área de Efeito | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `41026` | Mana e Recuperação da Recarga de Habilidades de Guarda | comum | mana %, outros | funcional | aplicado | ficha | 1/2 |
-| `41047` | Área de Efeito com Arcos | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `41047` | Área de Efeito com Arcos | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `41068` | Duração do Sangramento | comum | afecções e chance no acerto | funcional | aplicado | ficha | 0/1 |
 | `41119` | Letalidade | notavel | crítico | funcional | validado | ficha | 2/2 |
 | `41137` | Medicina de Campo | notavel | frascos | funcional-aproximado | aplicado | combate | 1/2 |
@@ -2028,7 +1923,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `43374` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `43385` | Espírito Invernal | notavel | conversão / dano extra | funcional | aplicado | combate | 0/1 |
 | `43412` | Dano Corpo a Corpo com Duas Mãos | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/2 |
-| `43413` | Bloqueio com Escudo e Recuperação de Bloqueio | comum | bloqueio | parcial | validado | ficha | 1/1 |
+| `43413` | Bloqueio com Escudo e Recuperação de Bloqueio | comum | bloqueio | funcional-aproximado | validado | ficha | 2/2 |
 | `43457` | Evasão e Efeito da Cegueira | comum | armadura e evasão, outros | funcional | aplicado | combate | 1/2 |
 | `43491` | Cargas Usadas de Frascos | comum | frascos | funcional | aplicado | combate | 0/1 |
 | `43514` | Chance de Golpes Críticos e Precisão com Espadas | comum | precisão, crítico | funcional | aplicado | ficha | 1/2 |
@@ -2049,7 +1944,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `44184` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `44191` | Como a Montanha | notavel | bloqueio | funcional | aplicado | ficha | 2/3 |
 | `44202` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `44207` | Tartaruga | notavel | bloqueio, efeito por evento | parcial | aplicado | ficha | 1/2 |
+| `44207` | Tartaruga | notavel | bloqueio, efeito por evento | funcional-aproximado | aplicado | ficha | 2/3 |
 | `44268` | Área de Efeito das Habilidades de Retaliação | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
 | `44306` | Dano e Velocidade de Projéteis | comum | velocidades, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `44339` | Dano de Raio da Arma | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
@@ -2126,7 +2021,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `46471` | Vínculo Poderoso | notavel | — | sem-efeito | alocavel | — | — |
 | `46519` | Encaixe de Joia Média | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `46578` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `46585` | Área de Efeito dos Estandartes | comum | — | sem-efeito | alocavel | — | — |
+| `46585` | Área de Efeito dos Estandartes | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `46636` | Armadura e Escudo de Energia | comum | armadura e evasão, escudo de energia | funcional | validado | combate | 2/2 |
 | `46672` | Dano Elemental de Cajados e Penetração | comum | dano % (aumentado e "mais"), penetração | funcional | aplicado | ficha | 3/4 |
 | `46694` | Evasão e Efeito da Cegueira | comum | armadura e evasão, outros | funcional | aplicado | combate | 1/2 |
@@ -2143,7 +2038,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `47030` | Dano de Projétil | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `47062` | Dano Mágico e Inteligência | comum | dano % (aumentado e "mais"), atributos (For/Des/Int) | funcional | validado | ficha | 2/2 |
 | `47065` | Mestre das Lâminas | notavel | outros, atributos (For/Des/Int), dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 2/3 |
-| `47085` | Multiplicador de Dano de Magia Degenerativo e Duração | comum | afecções e chance no acerto | funcional | aplicado | ficha | 0/2 |
+| `47085` | Multiplicador de Dano de Magia Degenerativo e Duração | comum | afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
 | `47251` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `47306` | Engasgador | notavel | crítico | funcional | validado | ficha | 1/1 |
 | `47312` | Dano Elemental | comum | resistências, dano % (aumentado e "mais") | funcional | validado | ficha | 6/6 |
@@ -2172,7 +2067,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `48199` | Fúria ao Acertar | comum | cargas e fúria | funcional | validado | combate | 1/1 |
 | `48275` | Prevenção de Interrupções enquanto Conjurando | comum | atordoamento | funcional | interpretado | condicional | 0/1 |
 | `48282` | Chance de Crítico de Cajado | comum | crítico | funcional | validado | ficha | 1/1 |
-| `48284` | Blqueio e Recuperação do Bloqueio | comum | bloqueio | parcial | validado | ficha | 2/2 |
+| `48284` | Blqueio e Recuperação do Bloqueio | comum | bloqueio | funcional-aproximado | validado | ficha | 3/3 |
 | `48287` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `48298` | Inspirador | notavel | escudo de energia, mana %, mana e custo | funcional | aplicado | ficha | 2/3 |
 | `48362` | Mana e Vida | comum | vida %, mana % | funcional | validado | ficha | 2/2 |
@@ -2269,18 +2164,18 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `50858` | Admoestador | notavel | velocidades, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/2 |
 | `50862` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `50904` | Vida e Armadura | comum | armadura e evasão, vida, regeneração e dreno de vida | funcional-aproximado | aplicado | ficha | 1/2 |
-| `50969` | Área de Efeito Corpo a Corpo | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `50969` | Área de Efeito Corpo a Corpo | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `51108` | Capacitor Arcano | notavel | mana %, efeito por evento | parcial | aplicado | ficha | 1/2 |
 | `51146` | Precisão e Velocidade de Ataque da Varinha | comum | velocidades, precisão | funcional | aplicado | ficha | 1/2 |
 | `51191` | Duração de Maldições | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `51198` | Encaixe de Joia Pequena | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
-| `51212` | Entropia | notavel | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
+| `51212` | Entropia | notavel | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | validado | ficha | 2/2 |
 | `51213` | Eficácia de Reserva de Arautos | comum | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
 | `51219` | Dreno de Escudo de Energia | comum | escudo de energia | funcional | aplicado | combate | 0/1 |
 | `51220` | Dano Físico e de Caos | comum | dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/2 |
 | `51233` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
 | `51235` | Prevenção de Atordoamento | comum | atordoamento | funcional | aplicado | combate | 0/1 |
-| `51291` | Área de Efeito | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `51291` | Área de Efeito | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `51382` | Duração de Maldições | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `51404` | Dano de Gelo da Arma | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `51420` | Drenagem de Mana | comum | mana e custo | funcional | aplicado | ficha | 0/1 |
@@ -2302,7 +2197,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `52031` | Desintegração | notavel | crítico, atributos (For/Des/Int) | funcional | validado | ficha | 3/3 |
 | `52090` | Ladrão de Inimigos | notavel | dano % (aumentado e "mais"), crítico, precisão | funcional | validado | ficha | 4/4 |
 | `52095` | Resistência a Caos | comum | resistências | funcional | validado | ficha | 1/1 |
-| `52099` | Duração de Habilidades Reduzida | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `52099` | Duração de Habilidades Reduzida | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `52157` | Sifão d'Alma | notavel | mana e custo, mana % | funcional | aplicado | ficha | 1/3 |
 | `52213` | Dano da Espada e Bloqueio | comum | bloqueio, dano % (aumentado e "mais") | funcional | validado | ficha | 4/4 |
 | `52230` | Caçador Veterano | notavel | precisão, resistências, precisão % | funcional | validado | ficha | 5/5 |
@@ -2313,17 +2208,17 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `52502` | Dano Elemental | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
 | `52522` | Chance de Golpes Críticos de Minas | comum | crítico | funcional | aplicado | ficha | 0/1 |
 | `52632` | Precisão | comum | precisão % | funcional | validado | ficha | 1/1 |
-| `52655` | Duração de Runas | comum | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `52655` | Duração de Runas | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `52714` | Proeza | notavel | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `52742` | Morte Apressada | notavel | dano % (aumentado e "mais"), velocidades, afecções e chance no acerto | funcional-aproximado | aplicado | ficha | 1/3 |
+| `52742` | Morte Apressada | notavel | dano % (aumentado e "mais"), velocidades, afecções e chance no acerto | funcional-aproximado | aplicado | ficha | 2/3 |
 | `52789` | Círculo da Vida | notavel | vida, regeneração e dreno de vida | funcional | aplicado | ficha | 1/2 |
 | `52848` | Chance e Multiplicador de Crítico de Varinha | comum | crítico | funcional | validado | ficha | 2/2 |
 | `52904` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `53002` | Armadura, Evasão e Efeito de Agressividade | comum | armadura e evasão, outros | funcional | aplicado | combate | 2/3 |
 | `53005` | Chance de Congelamento | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
-| `53013` | Atrofia | notavel | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 0/2 |
-| `53018` | Dano e Duração de Runas | comum | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
-| `53042` | Performance Excepcional | notavel | afecções e chance no acerto | funcional | aplicado | combate | 0/1 |
+| `53013` | Atrofia | notavel | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 1/2 |
+| `53018` | Dano e Duração de Runas | comum | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | validado | ficha | 2/2 |
+| `53042` | Performance Excepcional | notavel | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `53072` | Multiplicador de Dano Ardente com Ataques | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `53114` | Vingança dos Caçados | notavel | armadura e evasão, vida %, supressão de magia | funcional | aplicado | ficha | 2/3 |
 | `53118` | Barbarismo | notavel | vida %, resistências | funcional | aplicado | ficha | 2/3 |
@@ -2358,13 +2253,13 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `54142` | Sutileza | notavel | velocidades, atributos (For/Des/Int), precisão % | funcional | validado | ficha | 3/3 |
 | `54144` | Dupla Empunhadura e Velocidade de Conjuração e Bloqueio | comum | bloqueio, velocidades | funcional | validado | ficha | 3/3 |
 | `54267` | Resistência a Dano de Caos e Dano dos Lacaios | comum | resistências, lacaios e totens | funcional | validado | ficha | 2/2 |
-| `54268` | Barreira de Lâmina | notavel | bloqueio, dano % (aumentado e "mais") | parcial | validado | ficha | 2/2 |
+| `54268` | Barreira de Lâmina | notavel | bloqueio, dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 3/3 |
 | `54307` | Acrobacia | keystone | — | sem-efeito | alocavel | — | — |
 | `54338` | Dano Físico | comum | dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 1/1 |
 | `54354` | Dano da Espada | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `54396` | Multiplicador de Dano Incendiário | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `54452` | Aumento do Dreno de Escudo de Energia | comum | escudo de energia | funcional | aplicado | combate | 0/1 |
-| `54574` | Área de Ativação de Armadilhas | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
+| `54574` | Área de Ativação de Armadilhas | comum | área e projéteis | funcional | aplicado | ficha | 0/1 |
 | `54600` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
 | `54629` | Inexorável | notavel | cargas e fúria, armadura e evasão | funcional | aplicado | ficha | 0/2 |
 | `54645` | Multiplicador de Golpe Crítico de Raio | comum | crítico | funcional | aplicado | ficha | 0/1 |
@@ -2374,10 +2269,10 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `54713` | Modelador de Força | notavel | conversão / dano extra, velocidades | funcional | aplicado | ficha | 2/3 |
 | `54776` | Fluxo de Mana | notavel | mana %, mana e custo, atributos (For/Des/Int) | funcional | validado | ficha | 3/3 |
 | `54791` | Garras da Gralha | notavel | dano % (aumentado e "mais"), velocidades, efeito por evento | funcional | aplicado | ficha | 3/4 |
-| `54862` | Duração da Usabilidade das Habilidades de Retaliação | comum | — | sem-efeito | alocavel | — | — |
+| `54862` | Duração da Usabilidade das Habilidades de Retaliação | comum | outros | funcional | validado | combate | 1/1 |
 | `54868` | Dano com Arcos | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/1 |
 | `54872` | Velocidade do Dreno de Mana | comum | outros | funcional | validado | combate | 1/1 |
-| `54880` | Área de Efeito dos Estandartes | comum | — | sem-efeito | alocavel | — | — |
+| `54880` | Área de Efeito dos Estandartes | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `54922` | Dança da Flecha | keystone | — | sem-efeito | alocavel | — | — |
 | `54954` | Maldições e Resistência a Caos | comum | resistências, auras, maldições e reserva | funcional | aplicado | ficha | 1/2 |
 | `54974` | Área de Ativação de Armadilhas | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
@@ -2393,7 +2288,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `55307` | Anulação de Incêndios | comum | outros | funcional | aplicado | combate | 0/1 |
 | `55332` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `55373` | Vida e Força | comum | vida, regeneração e dreno de vida, atributos (For/Des/Int) | funcional | validado | ficha | 2/2 |
-| `55380` | Construção Inteligente | notavel | dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/1 |
+| `55380` | Construção Inteligente | notavel | dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 0/1 |
 | `55381` | Retaliação Arcana | notavel | dano % (aumentado e "mais") | funcional | interpretado | condicional | 0/1 |
 | `55392` | Armadura e Evasão | comum | armadura e evasão | funcional | validado | combate | 2/2 |
 | `55414` | Dano da Adaga | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
@@ -2478,7 +2373,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `57457` | Velocidade de Ataque e Conjuração em Dupla Empunhadura | comum | velocidades | funcional | validado | ficha | 2/2 |
 | `57565` | Eficiência de Custo de Mana de Conexão | comum | mana e custo | funcional | aplicado | combate | 0/1 |
 | `57615` | Velocidade de Arremesso de Minas | comum | velocidades | funcional | aplicado | combate | 0/1 |
-| `57651` | Sangramento Agravado na Chance de Golpe Crítico | comum | — | sem-efeito | alocavel | — | — |
+| `57651` | Sangramento Agravado na Chance de Golpe Crítico | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `57736` | Efeito da Aura | comum | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
 | `57746` | Resistência a Caos e Prevenção | comum | resistências, outros | funcional | aplicado | ficha | 1/3 |
 | `57819` | Velocidade de Ataque e Precisão do Arco | comum | velocidades, precisão | funcional | aplicado | ficha | 1/2 |
@@ -2506,7 +2401,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `58453` | Dano Elemental | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
 | `58474` | Dano Físico como Dano de Gelo Extra | comum | conversão / dano extra | funcional | aplicado | combate | 0/1 |
 | `58541` | Dano e Velocidade de Ataque com Maças | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 5/5 |
-| `58545` | Mana e Área de Efeito de Aura | comum | mana % | parcial | validado | ficha | 1/1 |
+| `58545` | Mana e Área de Efeito de Aura | comum | mana %, área e projéteis | funcional | validado | ficha | 2/2 |
 | `58556` | Escudo Divino | keystone | escudo de energia | funcional | aplicado | combate | 0/2 |
 | `58603` | Chance de Congelar | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `58604` | Dano de Raio | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
@@ -2514,7 +2409,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `58763` | Dano de Gelo e Raio | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `58803` | Chance de Crítico e Precisão Corpo a Corpo com Duas Mãos | comum | precisão, crítico | funcional | aplicado | ficha | 0/2 |
 | `58831` | Estripar | notavel | crítico | funcional | validado | ficha | 2/2 |
-| `58851` | Líder da Matilha | notavel | auras, maldições e reserva | parcial | aplicado | combate | 0/1 |
+| `58851` | Líder da Matilha | notavel | área e projéteis, auras, maldições e reserva | funcional | aplicado | combate | 1/2 |
 | `58854` | Evasão | comum | armadura e evasão | funcional | validado | combate | 1/1 |
 | `58869` | Velocidade de Conjuração de Maldições | comum | velocidades | funcional | aplicado | combate | 0/1 |
 | `58921` | Discipulo da Matança | notavel | cargas e fúria, dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/3 |
@@ -2533,7 +2428,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `59494` | Precisão e Chance de Crítico | comum | crítico, precisão % | funcional | validado | ficha | 2/2 |
 | `59556` | Munições Rápidas | notavel | área e projéteis, velocidades | funcional | aplicado | combate | 0/2 |
 | `59585` | Encaixe de Joia Pequena | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
-| `59605` | Munições Instáveis | notavel | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 0/3 |
+| `59605` | Munições Instáveis | notavel | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 1/3 |
 | `59606` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `59650` | Escudo de Energia e Regeneração de Mana | comum | escudo de energia, mana e custo | funcional | aplicado | ficha | 1/2 |
 | `59699` | Dreno de Escudo de Energia | comum | escudo de energia | funcional | aplicado | combate | 0/1 |
@@ -2581,7 +2476,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `61007` | Precisão | comum | precisão, precisão % | funcional | validado | ficha | 2/2 |
 | `61039` | Voracidade Selvagem | notavel | vida, regeneração e dreno de vida, outros | funcional | validado | ficha | 2/2 |
 | `61050` | Multiplicador de Crítico com Espadas | comum | crítico | funcional | validado | ficha | 1/1 |
-| `61190` | Ícone da União | notavel | outros, resistências | funcional | aplicado | combate | 0/4 |
+| `61190` | Ícone da União | notavel | outros, resistências | funcional | aplicado | combate | 3/4 |
 | `61198` | Coração do Guerreiro | notavel | vida, regeneração e dreno de vida, vida %, atributos (For/Des/Int) | funcional | validado | ficha | 3/3 |
 | `61217` | Dano Elemental | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 3/3 |
 | `61262` | Força | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -2590,7 +2485,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `61288` | Encaixe de Joia Média | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `61305` | Encaixe de Joia Pequena | encaixe-de-joia | — | nao-classificado | alocavel | — | — |
 | `61306` | Destreza | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `61308` | Amplificar | notavel | área e projéteis, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
+| `61308` | Amplificar | notavel | área e projéteis, dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `61320` | Vida e Escudo de Energia | comum | escudo de energia, vida % | funcional | validado | ficha | 2/2 |
 | `61327` | Dano de Gelo da Arma | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `61351` | Redução do Ponto de Atordoamento | comum | atordoamento | funcional | validado | combate | 1/1 |
@@ -2642,8 +2537,8 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `62849` | Jaula Glacial | notavel | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `62879` | Dano com Habilidades de Retaliação e Bloqueio com Escudos | comum | bloqueio, velocidades | funcional | aplicado | ficha | 0/3 |
 | `62970` | Velocidade de Conjuração de Escudos | comum | velocidades | funcional | validado | ficha | 1/1 |
-| `63027` | Dano de Ataques Impelidos | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/1 |
-| `63033` | Porta Estandarte | notavel | — | sem-efeito | alocavel | — | — |
+| `63027` | Dano de Ataques Impelidos | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
+| `63033` | Porta Estandarte | notavel | outros, afecções e chance no acerto | funcional | validado | combate | 2/2 |
 | `63039` | Efeito de Buff de Arautos | comum | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
 | `63048` | Vida e Armadura | comum | armadura e evasão, vida % | funcional | validado | ficha | 2/2 |
 | `63067` | Dano e Velocidade de Ataque da Varinha | comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 2/2 |
@@ -2684,7 +2579,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `63965` | Dano Elemental | comum | dano % (aumentado e "mais"), mana e custo | funcional | aplicado | ficha | 1/2 |
 | `63976` | Modelador | notavel | mana e custo, vida, regeneração e dreno de vida | funcional | validado | ficha | 2/2 |
 | `64024` | Multiplicador de Crítico com Espadas | comum | crítico | funcional | validado | ficha | 1/1 |
-| `64077` | Treinamento de Guerreiro | notavel | área e projéteis | parcial | aplicado | combate | 0/1 |
+| `64077` | Treinamento de Guerreiro | notavel | outros, área e projéteis | funcional-aproximado | validado | combate | 2/2 |
 | `64166` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
 | `64181` | Área de Efeito de Clamores | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
 | `64210` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
@@ -2695,9 +2590,9 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `64239` | Dano Físico da Varinha | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `64241` | Anulação de Resfriamentos e Congelamentos | comum | outros | funcional | aplicado | combate | 0/2 |
 | `64257` | Velocidade das Habilidades de Retaliação | comum | velocidades | funcional | aplicado | combate | 0/2 |
-| `64265` | Área de Efeito da Aura | comum | — | sem-efeito | alocavel | — | — |
+| `64265` | Área de Efeito da Aura | comum | área e projéteis | funcional | validado | combate | 1/1 |
 | `64284` | Recuperação da Recarga de Habilidades de Postura | comum | outros | funcional | aplicado | combate | 0/1 |
-| `64355` | Equidade de Runas | notavel | afecções e chance no acerto, cargas e fúria | parcial | aplicado | combate | 0/2 |
+| `64355` | Equidade de Runas | notavel | afecções e chance no acerto, cargas e fúria | parcial | aplicado | combate | 1/2 |
 | `64395` | Contusão | notavel | crítico, afecções e chance no acerto | funcional | aplicado | ficha | 2/3 |
 | `64401` | Vida e Mana ao Matar contra Inimigos Amaldiçoados | comum | efeito por evento | funcional | aplicado | combate | 0/2 |
 | `64426` | Resistências Elementais com Escudo | comum | resistências | funcional | validado | ficha | 3/3 |
@@ -2716,8 +2611,8 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `65033` | Velocidade de Ataque | comum | velocidades | funcional | validado | ficha | 1/1 |
 | `65034` | Vida | comum | vida % | funcional | validado | ficha | 1/1 |
 | `65053` | Seiva da Essência | notavel | mana e custo, outros | funcional | aplicado | ficha | 2/3 |
-| `65093` | Dançarino da Lâmina | notavel | dano % (aumentado e "mais") | parcial | validado | ficha | 2/2 |
-| `65097` | Liderança | notavel | auras, maldições e reserva | parcial | aplicado | combate | 0/1 |
+| `65093` | Dançarino da Lâmina | notavel | dano % (aumentado e "mais"), outros | funcional-aproximado | validado | ficha | 3/3 |
+| `65097` | Liderança | notavel | área e projéteis, auras, maldições e reserva | funcional | aplicado | combate | 1/2 |
 | `65107` | Quebra-bastião | notavel | dano % (aumentado e "mais"), outros | funcional | aplicado | ficha | 1/2 |
 | `65108` | Incansável | notavel | vida %, mana e custo | funcional | aplicado | ficha | 1/2 |
 | `65112` | Máximo de Fortificações | comum | outros | funcional | aplicado | combate | 0/1 |
@@ -2729,9 +2624,9 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `65224` | Aspecto da Águia | notavel | dano % (aumentado e "mais"), velocidades, precisão | funcional | aplicado | ficha | 2/4 |
 | `65273` | Alcance Enigmático | notavel | área e projéteis, efeito por evento, bloqueio | funcional | aplicado | ficha | 0/3 |
 | `65308` | Pele de Diamante | notavel | resistências | funcional | validado | ficha | 3/3 |
-| `65400` | Recuperação da Recarga de Clamores e Dano de Ataques Impelidos | comum | outros, dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/2 |
+| `65400` | Recuperação da Recarga de Clamores e Dano de Ataques Impelidos | comum | outros, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `65427` | Velocidade de Ataque | comum | velocidades | funcional | validado | ficha | 1/1 |
-| `65456` | Distância do Empurrão | comum | — | sem-efeito | alocavel | — | — |
+| `65456` | Distância do Empurrão | comum | outros | funcional-aproximado | validado | combate | 1/1 |
 | `65485` | Armadura por Carga de Tolerância | comum | armadura e evasão | funcional | aplicado | combate | 0/1 |
 | `65502` | Perfurador | notavel | crítico | funcional | validado | ficha | 1/1 |
 | `89` | Maestria de Minas | maestria | outros, auras, maldições e reserva, vida, regeneração e dreno de vida | parcial | aplicado | combate | 0/4 |
@@ -2740,39 +2635,39 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `857` | Maestria de Escudo de Energia | maestria | resistências, escudo de energia, outros | parcial | aplicado | combate | 0/5 |
 | `1205` | Maestria de Envenenamentos | maestria | outros, afecções e chance no acerto, crítico, efeito por evento | parcial | aplicado | ficha | 3/5 |
 | `1215` | Maestria de Evasão e Escudo de Energia | maestria | armadura e evasão, escudo de energia, outros | funcional-aproximado | aplicado | ficha | 4/8 |
-| `2828` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/4 |
+| `2828` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/4 |
 | `2841` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `3042` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
 | `3471` | Maestria de Escudo de Energia | maestria | resistências, escudo de energia, outros | parcial | aplicado | combate | 0/5 |
 | `3571` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `3883` | Maestria de Evasão | maestria | atordoamento, armadura e evasão, velocidades, outros, supressão de magia | parcial | aplicado | ficha | 1/7 |
 | `4139` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
-| `4327` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, mana e custo | parcial | aplicado | ficha | 0/4 |
+| `4327` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, outros, mana e custo | funcional | aplicado | ficha | 1/5 |
 | `4424` | Maestria de Machados | maestria | outros, dano % (aumentado e "mais"), área e projéteis, cargas e fúria | funcional | aplicado | ficha | 1/7 |
 | `4492` | Maestria de Atributos | maestria | atributos (For/Des/Int), dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/7 |
 | `4707` | Maestria de Cargas | maestria | outros, afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/5 |
-| `4788` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/5 |
+| `4788` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/6 |
 | `5230` | Maestria de Cajados | maestria | efeito por evento, armadura e evasão, escudo de energia, bloqueio, vida, regeneração e dreno de vida, mana e custo, crítico | funcional | aplicado | ficha | 3/10 |
 | `5348` | Maestria Elementar | maestria | outros, afecções e chance no acerto | parcial | aplicado | combate | 0/3 |
 | `5368` | Maestria de Bloqueio | maestria | bloqueio, efeito por evento | funcional | aplicado | combate | 0/5 |
 | `5726` | Maestria Elementar | maestria | outros, afecções e chance no acerto | parcial | aplicado | combate | 0/3 |
 | `5826` | Maestria de Projéteis | maestria | dano % (aumentado e "mais"), afecções e chance no acerto | parcial | aplicado | ficha | 1/2 |
 | `6338` | Maestria de Escudo de Energia | maestria | resistências, escudo de energia, outros | parcial | aplicado | combate | 0/5 |
-| `6384` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
-| `6427` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/7 |
-| `6507` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
+| `6384` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
+| `6427` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 1/7 |
+| `6507` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
 | `6570` | Maestria de Maldições | maestria | afecções e chance no acerto, crítico, efeito por evento, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 4/10 |
 | `6588` | Maestria de Atordoamentos | maestria | atordoamento, crítico, efeito por evento | funcional | aplicado | ficha | 2/7 |
 | `6912` | Maestria de Duas Mãos | maestria | dano % (aumentado e "mais"), armadura e evasão, atordoamento, velocidades | parcial | aplicado | ficha | 1/9 |
 | `6968` | Maestria de Cajados | maestria | efeito por evento, armadura e evasão, escudo de energia, bloqueio, vida, regeneração e dreno de vida, mana e custo, crítico | funcional | aplicado | ficha | 3/10 |
 | `7023` | Maestria de Gelo | maestria | outros, efeito por evento, resistências, afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 4/8 |
-| `7488` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
+| `7488` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
 | `7528` | Maestria de Fúria | maestria | atordoamento, velocidades, cargas e fúria, efeito por evento, outros, auras, maldições e reserva | funcional | aplicado | combate | 3/7 |
 | `7634` | Maestria de Adagas | maestria | crítico, outros, supressão de magia, dano % (aumentado e "mais"), velocidades | parcial | aplicado | ficha | 1/5 |
 | `8370` | Maestria de Atributos | maestria | atributos (For/Des/Int), dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/7 |
-| `8460` | Maestria de Clamores | maestria | efeito por evento, cargas e fúria, outros | parcial | aplicado | combate | 0/5 |
-| `8556` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
-| `8629` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `8460` | Maestria de Clamores | maestria | outros, efeito por evento, cargas e fúria | funcional-aproximado | aplicado | combate | 1/6 |
+| `8556` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
+| `8629` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `8732` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `8872` | Maestria de Dupla Empunhadura | maestria | bloqueio, crítico, dano % (aumentado e "mais"), efeito por evento, afecções e chance no acerto | funcional-aproximado | aplicado | ficha | 1/8 |
 | `9083` | Maestria Defensiva de Lacaios | maestria | resistências, lacaios e totens, cargas e fúria, vida, regeneração e dreno de vida | parcial | aplicado | combate | 1/6 |
@@ -2780,11 +2675,11 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `9393` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
 | `9458` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
 | `9471` | Maestria de Fúria | maestria | atordoamento, velocidades, cargas e fúria, efeito por evento, outros, auras, maldições e reserva | funcional | aplicado | combate | 3/7 |
-| `9586` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 1/6 |
+| `9586` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
 | `10141` | Maestria de Recuperação | maestria | efeito por evento, outros, auras, maldições e reserva, vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/7 |
 | `10166` | Maestria de Minas | maestria | outros, auras, maldições e reserva, vida, regeneração e dreno de vida | parcial | aplicado | combate | 0/4 |
-| `10204` | Maestria de Espadas | maestria | afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 2/4 |
-| `10245` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `10204` | Maestria de Espadas | maestria | outros, afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 3/5 |
+| `10245` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `10414` | Maestria de Recuperação | maestria | efeito por evento, outros, auras, maldições e reserva, vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/7 |
 | `10429` | Maestria de Armadilhas | maestria | dano % (aumentado e "mais"), área e projéteis, efeito por evento | parcial | aplicado | combate | 0/3 |
 | `10495` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
@@ -2798,39 +2693,39 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `12244` | Maestria de Vínculos | maestria | — | sem-efeito | alocavel | — | — |
 | `12382` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
 | `12503` | Maestria de Proteção | maestria | auras, maldições e reserva, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 3/4 |
-| `12518` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/5 |
+| `12518` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/6 |
 | `12873` | Maestria de Proteção | maestria | auras, maldições e reserva, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 3/4 |
 | `13387` | Maestria Elementar | maestria | outros, afecções e chance no acerto | parcial | aplicado | combate | 0/3 |
-| `13712` | Domínio de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
+| `13712` | Domínio de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
 | `13862` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
-| `14113` | Maestria de Conjuração | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
+| `14113` | Maestria de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
 | `14122` | Maestria de Raio | maestria | outros, crítico | funcional | aplicado | ficha | 3/6 |
 | `14505` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
 | `14832` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | combate | 1/14 |
 | `15409` | Maestria de Adagas | maestria | crítico, outros, supressão de magia, dano % (aumentado e "mais"), velocidades | parcial | aplicado | ficha | 1/5 |
 | `15697` | Maestria de Tinturas | maestria | — | sem-efeito | alocavel | — | — |
-| `16123` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 1/6 |
-| `16141` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
+| `16123` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
+| `16141` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
 | `16810` | Maestria de Escudos | maestria | atordoamento, bloqueio, efeito por evento, afecções e chance no acerto, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 4/6 |
 | `17127` | Maestria de Proteção | maestria | auras, maldições e reserva, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 3/4 |
 | `17380` | Maestria de Gelo | maestria | outros, efeito por evento, resistências, afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 4/8 |
-| `17411` | Maestria de Conjuração | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
-| `17906` | Maestria de Armadilhas | maestria | dano % (aumentado e "mais"), área e projéteis, efeito por evento | parcial | aplicado | ficha | 0/3 |
-| `17945` | Domínio de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/4 |
+| `17411` | Maestria de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
+| `17906` | Maestria de Armadilhas | maestria | dano % (aumentado e "mais"), área e projéteis, efeito por evento | parcial | aplicado | combate | 0/3 |
+| `17945` | Domínio de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/4 |
 | `18240` | Maestria de Escudo de Energia | maestria | resistências, escudo de energia, outros | parcial | aplicado | combate | 0/5 |
 | `18750` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
-| `19050` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/5 |
+| `19050` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/6 |
 | `19725` | Maestria de Atordoamentos | maestria | atordoamento, crítico, efeito por evento | funcional | aplicado | ficha | 2/7 |
 | `19749` | Maestria de Fogo | maestria | outros, efeito por evento, afecções e chance no acerto, vida, regeneração e dreno de vida, crítico, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/8 |
 | `19750` | Maestria de Armadura e Evasão | maestria | afecções e chance no acerto, armadura e evasão, atordoamento, outros | parcial | aplicado | combate | 0/9 |
 | `20675` | Maestria Física | maestria | atordoamento, outros, afecções e chance no acerto | parcial | aplicado | ficha | 1/3 |
 | `20730` | Maestria de Supressão Mágica | maestria | supressão de magia, efeito por evento, outros | funcional | aplicado | combate | 1/10 |
 | `20736` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
-| `21143` | Maestria de Runas | maestria | área e projéteis, cargas e fúria | parcial | aplicado | combate | 0/2 |
+| `21143` | Maestria de Runas | maestria | área e projéteis, cargas e fúria | parcial | aplicado | combate | 1/2 |
 | `21324` | Maestria de Bloqueio | maestria | bloqueio, efeito por evento | funcional | aplicado | combate | 0/5 |
 | `21801` | Maestria de Caos | maestria | efeito por evento, outros, resistências, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/7 |
-| `22067` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/4 |
-| `22295` | Maestria de Sangramento | maestria | crítico, afecções e chance no acerto | parcial | aplicado | ficha | 0/2 |
+| `22067` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/4 |
+| `22295` | Maestria de Sangramento | maestria | outros, afecções e chance no acerto, crítico | funcional | aplicado | ficha | 3/6 |
 | `22480` | Maestria de Bloqueio | maestria | bloqueio, efeito por evento | funcional | aplicado | combate | 0/5 |
 | `22959` | Maestria de Maldições | maestria | afecções e chance no acerto, crítico, efeito por evento, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 4/10 |
 | `22970` | Maestria Defensiva de Lacaios | maestria | resistências, lacaios e totens, cargas e fúria, vida, regeneração e dreno de vida | parcial | aplicado | combate | 1/6 |
@@ -2839,78 +2734,78 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `24224` | Maestria de Machados | maestria | outros, dano % (aumentado e "mais"), área e projéteis, cargas e fúria | funcional | aplicado | ficha | 1/7 |
 | `24334` | Maestria de Vínculos | maestria | — | sem-efeito | alocavel | — | — |
 | `24481` | Maestria de Recuperação | maestria | efeito por evento, outros, auras, maldições e reserva, vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/7 |
-| `24552` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/7 |
+| `24552` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 1/7 |
 | `25011` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
-| `25031` | Maestria de Clamores | maestria | efeito por evento, cargas e fúria, outros | parcial | aplicado | combate | 0/5 |
+| `25031` | Maestria de Clamores | maestria | outros, efeito por evento, cargas e fúria | funcional-aproximado | aplicado | combate | 1/6 |
 | `25186` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `25281` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
-| `25313` | Domínio do Conjurador | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
-| `25349` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/7 |
-| `25446` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
+| `25313` | Domínio do Conjurador | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
+| `25349` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 1/7 |
+| `25446` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
 | `25535` | Maestria de Escudos | maestria | atordoamento, bloqueio, efeito por evento, afecções e chance no acerto, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 4/6 |
 | `25934` | Maestria de Duas Mãos | maestria | dano % (aumentado e "mais"), armadura e evasão, atordoamento, velocidades | parcial | aplicado | ficha | 1/9 |
-| `26037` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, mana e custo | parcial | aplicado | ficha | 0/4 |
+| `26037` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, outros, mana e custo | funcional | aplicado | ficha | 1/5 |
 | `26148` | Maestria de Precisão | maestria | precisão | funcional-aproximado | aplicado | ficha | 3/6 |
-| `26154` | Maestria de Clamores | maestria | efeito por evento, cargas e fúria, outros | parcial | aplicado | combate | 0/5 |
+| `26154` | Maestria de Clamores | maestria | outros, efeito por evento, cargas e fúria | funcional-aproximado | aplicado | combate | 1/6 |
 | `26393` | Maestria Defensiva de Lacaios | maestria | resistências, lacaios e totens, cargas e fúria, vida, regeneração e dreno de vida | parcial | aplicado | combate | 1/6 |
-| `26608` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | parcial | aplicado | combate | 1/5 |
-| `26697` | Maestria de Espadas | maestria | afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 2/4 |
+| `26608` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 2/6 |
+| `26697` | Maestria de Espadas | maestria | outros, afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 3/5 |
 | `27157` | Domínio de Precisão | maestria | precisão | funcional-aproximado | aplicado | ficha | 3/6 |
 | `27193` | Maestria de Recuperação | maestria | efeito por evento, outros, auras, maldições e reserva, vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/7 |
 | `27235` | Maestria de Recuperação | maestria | efeito por evento, outros, auras, maldições e reserva, vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/7 |
 | `27307` | Maestria de Escudo de Energia | maestria | resistências, escudo de energia, outros | parcial | aplicado | combate | 0/5 |
 | `27371` | Maestria de Evasão | maestria | atordoamento, armadura e evasão, velocidades, outros, supressão de magia | parcial | aplicado | ficha | 1/7 |
-| `27733` | Maestria de Conjuração | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
-| `27865` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/7 |
+| `27733` | Maestria de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
+| `27865` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 1/7 |
 | `27872` | Maestria de Minas | maestria | outros, auras, maldições e reserva, vida, regeneração e dreno de vida | parcial | aplicado | combate | 0/4 |
 | `27931` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | combate | 1/14 |
 | `28039` | Maestria de Machados | maestria | outros, dano % (aumentado e "mais"), área e projéteis, cargas e fúria | funcional | aplicado | ficha | 1/7 |
 | `28284` | Maestria de Atributos | maestria | atributos (For/Des/Int), dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/7 |
-| `28680` | Maestria de Conjuração | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
-| `28862` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
-| `28863` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `28680` | Maestria de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
+| `28862` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
+| `28863` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `28903` | Maestria de Envenenamentos | maestria | outros, afecções e chance no acerto, crítico, efeito por evento | parcial | aplicado | ficha | 3/5 |
-| `29993` | Maestria de Duração | maestria | afecções e chance no acerto | funcional-aproximado | aplicado | combate | 1/4 |
+| `29993` | Maestria de Duração | maestria | afecções e chance no acerto | funcional-aproximado | aplicado | combate | 3/4 |
 | `30393` | Maestria de Armadura e Escudo de Energia | maestria | outros, efeito por evento, crítico, escudo de energia, armadura e evasão, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/7 |
-| `31039` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 1/6 |
+| `31039` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
 | `31197` | Maestria de Adagas | maestria | crítico, outros, supressão de magia, dano % (aumentado e "mais"), velocidades | parcial | aplicado | ficha | 1/5 |
-| `31291` | Maestria de Espadas | maestria | afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 2/4 |
-| `31292` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | combate | 1/14 |
+| `31291` | Maestria de Espadas | maestria | outros, afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 3/5 |
+| `31292` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | ficha | 1/14 |
 | `31400` | Maestria de Empalamento | maestria | outros | parcial | aplicado | combate | 3/4 |
 | `31818` | Maestria de Proteção | maestria | auras, maldições e reserva, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 3/4 |
 | `32241` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
-| `32242` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, dano % (aumentado e "mais") | parcial | aplicado | combate | 0/3 |
+| `32242` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 2/5 |
 | `32278` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
-| `32509` | Maestria de Conjuração | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
+| `32509` | Maestria de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
 | `32657` | Maestria de Marcas | maestria | outros, efeito por evento, crítico, precisão | funcional | aplicado | combate | 0/7 |
-| `33037` | Maestria de Ataques | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `33037` | Maestria de Ataques | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `33657` | Maestria de Proteção | maestria | auras, maldições e reserva, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 3/4 |
 | `33678` | Maestria de Cargas | maestria | outros, afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/5 |
-| `33823` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 1/6 |
+| `33823` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
 | `34317` | Maestria Elementar | maestria | outros, afecções e chance no acerto | parcial | aplicado | combate | 0/3 |
-| `34487` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | parcial | aplicado | combate | 1/5 |
+| `34487` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 2/6 |
 | `34552` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
 | `34723` | Maestria de Cargas | maestria | outros, afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/5 |
 | `34927` | Maestria de Fogo | maestria | outros, efeito por evento, afecções e chance no acerto, vida, regeneração e dreno de vida, crítico, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/8 |
 | `35038` | Maestria de Varinhas | maestria | crítico, área e projéteis, vida, regeneração e dreno de vida, mana e custo, precisão | parcial | aplicado | ficha | 2/5 |
-| `35085` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 1/6 |
+| `35085` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
 | `35118` | Maestria de Duas Mãos | maestria | dano % (aumentado e "mais"), armadura e evasão, atordoamento, velocidades | parcial | aplicado | ficha | 1/9 |
 | `35221` | Maestria de Precisão | maestria | precisão | funcional-aproximado | aplicado | ficha | 3/6 |
-| `35321` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, dano % (aumentado e "mais") | parcial | aplicado | combate | 0/3 |
-| `35859` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
-| `35977` | Maestria de Clamores | maestria | efeito por evento, cargas e fúria, outros | parcial | aplicado | combate | 0/5 |
-| `37502` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/7 |
+| `35321` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 2/5 |
+| `35859` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
+| `35977` | Maestria de Clamores | maestria | outros, efeito por evento, cargas e fúria | funcional-aproximado | aplicado | combate | 1/6 |
+| `37502` | Maestria de Arcos | maestria | cargas e fúria, área e projéteis, crítico, lacaios e totens, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 1/7 |
 | `37532` | Maestria de Raio | maestria | outros, crítico | funcional | aplicado | ficha | 3/6 |
 | `37616` | Maestria de Armadilhas | maestria | dano % (aumentado e "mais"), área e projéteis, efeito por evento | parcial | aplicado | combate | 0/3 |
 | `37641` | Maestria de Armadura e Escudo de Energia | maestria | outros, efeito por evento, crítico, escudo de energia, armadura e evasão, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/7 |
 | `37698` | Maestria de Atordoamentos | maestria | atordoamento, crítico, efeito por evento | funcional | aplicado | ficha | 2/7 |
 | `37795` | Maestria de Escudos | maestria | atordoamento, bloqueio, efeito por evento, afecções e chance no acerto, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 4/6 |
 | `37911` | Maestria Flamejante | maestria | outros, efeito por evento, afecções e chance no acerto, vida, regeneração e dreno de vida, crítico, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/8 |
-| `37956` | Maestria de Sangramento | maestria | crítico, afecções e chance no acerto | parcial | aplicado | ficha | 0/2 |
+| `37956` | Maestria de Sangramento | maestria | outros, afecções e chance no acerto, crítico | funcional | aplicado | ficha | 3/6 |
 | `38207` | Maestria de Gelo | maestria | outros, efeito por evento, resistências, afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 4/8 |
 | `38235` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
 | `38320` | Maestria de Fogo | maestria | outros, efeito por evento, afecções e chance no acerto, vida, regeneração e dreno de vida, crítico, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/8 |
-| `38377` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | parcial | aplicado | combate | 1/5 |
+| `38377` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 2/6 |
 | `38436` | Maestria de Escudos | maestria | atordoamento, bloqueio, efeito por evento, afecções e chance no acerto, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 4/6 |
 | `38568` | Maestria de Cegueira | maestria | outros, afecções e chance no acerto, crítico | parcial | aplicado | ficha | 0/3 |
 | `38579` | Maestria de Envenenamentos | maestria | outros, afecções e chance no acerto, crítico, efeito por evento | parcial | aplicado | ficha | 3/5 |
@@ -2920,26 +2815,26 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `39332` | Maestria de Cajados | maestria | efeito por evento, armadura e evasão, escudo de energia, bloqueio, vida, regeneração e dreno de vida, mana e custo, crítico | funcional | aplicado | ficha | 3/10 |
 | `39338` | Maestria de Duas Mãos | maestria | dano % (aumentado e "mais"), armadura e evasão, atordoamento, velocidades | parcial | aplicado | ficha | 1/9 |
 | `39416` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
-| `39836` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
-| `40170` | Maestria de Sangramento | maestria | crítico, afecções e chance no acerto | parcial | aplicado | ficha | 0/2 |
-| `40196` | Maestria de Conjuração | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
+| `39836` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
+| `40170` | Maestria de Sangramento | maestria | outros, afecções e chance no acerto, crítico | funcional | aplicado | ficha | 3/6 |
+| `40196` | Maestria de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
 | `40271` | Maestria de Fogo | maestria | outros, efeito por evento, afecções e chance no acerto, vida, regeneração e dreno de vida, crítico, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/8 |
-| `40383` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
-| `40439` | Maestria de Runas | maestria | área e projéteis, cargas e fúria | parcial | aplicado | combate | 0/2 |
+| `40383` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
+| `40439` | Maestria de Runas | maestria | área e projéteis, cargas e fúria | parcial | aplicado | combate | 1/2 |
 | `40698` | Maestria de Fúria | maestria | atordoamento, velocidades, cargas e fúria, efeito por evento, outros, auras, maldições e reserva | funcional | aplicado | combate | 3/7 |
 | `41016` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
 | `41163` | Maestria de Evasão | maestria | atordoamento, armadura e evasão, velocidades, outros, supressão de magia | parcial | aplicado | ficha | 1/7 |
 | `41225` | Maestria Defensiva de Lacaios | maestria | resistências, lacaios e totens, cargas e fúria, vida, regeneração e dreno de vida | parcial | aplicado | combate | 1/6 |
-| `41273` | Domínio de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/4 |
+| `41273` | Domínio de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/4 |
 | `41415` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
-| `41522` | Maestria de Duração | maestria | afecções e chance no acerto | funcional-aproximado | aplicado | combate | 1/4 |
-| `41744` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, mana e custo | parcial | aplicado | ficha | 0/4 |
+| `41522` | Maestria de Duração | maestria | afecções e chance no acerto | funcional-aproximado | aplicado | combate | 3/4 |
+| `41744` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, outros, mana e custo | funcional | aplicado | ficha | 1/5 |
 | `42361` | Maestria de Caos | maestria | efeito por evento, outros, resistências, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/7 |
 | `42533` | Maestria de Precisão | maestria | precisão | funcional-aproximado | aplicado | ficha | 3/6 |
 | `42792` | Maestria de Proteção | maestria | auras, maldições e reserva, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 3/4 |
-| `43307` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, dano % (aumentado e "mais") | parcial | aplicado | combate | 0/3 |
-| `43495` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
-| `43601` | Maestria de Sangramento | maestria | crítico, afecções e chance no acerto | parcial | aplicado | ficha | 0/2 |
+| `43307` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 2/5 |
+| `43495` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
+| `43601` | Maestria de Sangramento | maestria | outros, afecções e chance no acerto, crítico | funcional | aplicado | ficha | 3/6 |
 | `43647` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
 | `43818` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
 | `44179` | Maestria de Gelo | maestria | outros, efeito por evento, resistências, afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 4/8 |
@@ -2951,16 +2846,16 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `44948` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `45019` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
 | `45358` | Maestria de Armadura | maestria | armadura e evasão, crítico, outros, resistências | funcional | aplicado | ficha | 0/9 |
-| `45372` | Maestria de Ataques | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `45372` | Maestria de Ataques | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `45558` | Maestria de Escudos | maestria | atordoamento, bloqueio, efeito por evento, afecções e chance no acerto, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 4/6 |
-| `46495` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
+| `46495` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
 | `46665` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
 | `46761` | Maestria de Frascos | maestria | frascos, efeito por evento | funcional-aproximado | aplicado | combate | 7/9 |
 | `47059` | Maestria de Empalamento | maestria | outros | parcial | aplicado | combate | 3/4 |
-| `47197` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
+| `47197` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
 | `47212` | Maestria de Projéteis | maestria | dano % (aumentado e "mais"), afecções e chance no acerto | parcial | aplicado | ficha | 1/2 |
 | `47242` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
-| `47294` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/4 |
+| `47294` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/4 |
 | `48007` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `48144` | Maestria de Vínculos | maestria | — | sem-efeito | alocavel | — | — |
 | `48267` | Maestria de Fogo | maestria | outros, efeito por evento, afecções e chance no acerto, vida, regeneração e dreno de vida, crítico, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/8 |
@@ -2968,18 +2863,18 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `48349` | Maestria de Cajados | maestria | efeito por evento, armadura e evasão, escudo de energia, bloqueio, vida, regeneração e dreno de vida, mana e custo, crítico | funcional | aplicado | ficha | 3/10 |
 | `48411` | Maestria de Varinhas | maestria | crítico, área e projéteis, vida, regeneração e dreno de vida, mana e custo, precisão | parcial | aplicado | ficha | 2/5 |
 | `48505` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
-| `48508` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | parcial | aplicado | combate | 1/5 |
+| `48508` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 2/6 |
 | `48660` | Maestria Elementar | maestria | outros, afecções e chance no acerto | parcial | aplicado | combate | 0/3 |
 | `48717` | Maestria de Armadura | maestria | armadura e evasão, crítico, outros, resistências | funcional | aplicado | ficha | 0/9 |
 | `48859` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `48982` | Maestria de Empalamento | maestria | outros | parcial | aplicado | combate | 3/4 |
-| `49391` | Maestria de Ataques | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `49391` | Maestria de Ataques | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `49677` | Maestria de Empalamentos | maestria | outros | parcial | aplicado | combate | 3/4 |
 | `49820` | Maestria de Supressão Mágica | maestria | supressão de magia, efeito por evento, outros | funcional | aplicado | combate | 1/10 |
 | `50071` | Maestria de Dupla Empunhadura | maestria | bloqueio, crítico, dano % (aumentado e "mais"), efeito por evento, afecções e chance no acerto | funcional-aproximado | aplicado | ficha | 1/8 |
 | `50540` | Maestria de Maldições | maestria | afecções e chance no acerto, crítico, efeito por evento, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 4/10 |
 | `50757` | Maestria de Evasão | maestria | atordoamento, armadura e evasão, velocidades, outros, supressão de magia | parcial | aplicado | ficha | 1/7 |
-| `51583` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 1/6 |
+| `51583` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
 | `51761` | Maestria de Dupla Empunhadura | maestria | bloqueio, crítico, dano % (aumentado e "mais"), efeito por evento, afecções e chance no acerto | funcional-aproximado | aplicado | ficha | 1/8 |
 | `51974` | Maestria de Fortificação | maestria | vida, regeneração e dreno de vida, efeito por evento, afecções e chance no acerto, atordoamento, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/8 |
 | `52018` | Maestria de Empunhadura Dupla | maestria | bloqueio, crítico, dano % (aumentado e "mais"), efeito por evento, afecções e chance no acerto | funcional-aproximado | aplicado | ficha | 1/8 |
@@ -2987,34 +2882,34 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `52074` | Maestria de Empalamento | maestria | outros | parcial | aplicado | combate | 3/4 |
 | `52220` | Maestria Física | maestria | atordoamento, outros, afecções e chance no acerto | parcial | aplicado | ficha | 1/3 |
 | `52462` | Maestria de Armadura | maestria | armadura e evasão, crítico, outros, resistências | funcional | aplicado | ficha | 0/9 |
-| `52875` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `52875` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `53188` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `53216` | Maestria de Atordoamentos | maestria | atordoamento, crítico, efeito por evento | funcional | aplicado | ficha | 2/7 |
-| `53365` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/5 |
+| `53365` | Maestria de Garras | maestria | vida, regeneração e dreno de vida, mana e custo, velocidades, dano % (aumentado e "mais"), outros | parcial | aplicado | ficha | 2/6 |
 | `53517` | Maestria de Recuperação | maestria | efeito por evento, outros, auras, maldições e reserva, vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/7 |
-| `53615` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
+| `53615` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
 | `53738` | Maestria de Minas | maestria | outros, auras, maldições e reserva, vida, regeneração e dreno de vida | parcial | aplicado | combate | 0/4 |
 | `53828` | Maestria de Varinhas | maestria | crítico, área e projéteis, vida, regeneração e dreno de vida, mana e custo, precisão | parcial | aplicado | ficha | 2/5 |
 | `54340` | Maestria de Armadura | maestria | armadura e evasão, crítico, outros, resistências | funcional | aplicado | ficha | 0/9 |
 | `54413` | Maestria de Supressão Mágica | maestria | supressão de magia, efeito por evento, outros | funcional | aplicado | combate | 1/10 |
 | `54849` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
 | `54887` | Maestria de Gelo | maestria | outros, efeito por evento, resistências, afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 4/8 |
-| `55017` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, mana e custo | parcial | aplicado | ficha | 0/4 |
-| `55152` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | parcial | aplicado | combate | 1/5 |
-| `55230` | Maestria de Dreno | maestria | outros, armadura e evasão, vida, regeneração e dreno de vida | parcial | aplicado | combate | 4/6 |
-| `55281` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, dano % (aumentado e "mais") | parcial | aplicado | combate | 0/3 |
-| `55348` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
-| `55491` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
+| `55017` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, outros, mana e custo | funcional | aplicado | ficha | 1/5 |
+| `55152` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 2/6 |
+| `55230` | Maestria de Dreno | maestria | outros, armadura e evasão, dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | aplicado | ficha | 4/7 |
+| `55281` | Maestria de Estandartes | maestria | auras, maldições e reserva, efeito por evento, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 2/5 |
+| `55348` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
+| `55491` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
 | `56023` | Maestria de Projéteis | maestria | dano % (aumentado e "mais"), afecções e chance no acerto | parcial | aplicado | ficha | 1/2 |
 | `56128` | Maestria de Varinhas | maestria | crítico, área e projéteis, vida, regeneração e dreno de vida, mana e custo, precisão | parcial | aplicado | ficha | 2/5 |
 | `56519` | Maestria de Tinturas | maestria | — | sem-efeito | alocavel | — | — |
-| `56595` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | parcial | aplicado | combate | 0/6 |
+| `56595` | Maestria de Ataque | maestria | outros, efeito por evento, cargas e fúria, velocidades, mana e custo | funcional-aproximado | aplicado | combate | 1/7 |
 | `56865` | Maestria de Marcas | maestria | outros, efeito por evento, crítico, precisão | funcional | aplicado | combate | 0/7 |
-| `57949` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/4 |
+| `57949` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/4 |
 | `58302` | Maestria de Precisão | maestria | precisão | funcional-aproximado | aplicado | ficha | 3/6 |
 | `58540` | Maestria de Machados | maestria | outros, dano % (aumentado e "mais"), área e projéteis, cargas e fúria | funcional | aplicado | ficha | 1/7 |
 | `58563` | Maestria de Marcas | maestria | outros, efeito por evento, crítico, precisão | funcional | aplicado | combate | 0/7 |
-| `58728` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, mana e custo | parcial | aplicado | ficha | 0/4 |
+| `58728` | Maestria de Retaliação | maestria | afecções e chance no acerto, efeito por evento, armadura e evasão, outros, mana e custo | funcional | aplicado | ficha | 1/5 |
 | `58816` | Maestria de Raio | maestria | outros, crítico | funcional | aplicado | ficha | 3/6 |
 | `59013` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | combate | 1/14 |
 | `59335` | Maestria de Fortificação | maestria | vida, regeneração e dreno de vida, efeito por evento, afecções e chance no acerto, atordoamento, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/8 |
@@ -3022,14 +2917,14 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `59926` | Maestria de Minas | maestria | outros, auras, maldições e reserva, vida, regeneração e dreno de vida | parcial | aplicado | combate | 0/4 |
 | `60170` | Maestria de Gelo | maestria | outros, efeito por evento, resistências, afecções e chance no acerto, dano % (aumentado e "mais") | funcional | aplicado | ficha | 4/8 |
 | `60210` | Maestria de Envenenamentos | maestria | outros, afecções e chance no acerto, crítico, efeito por evento | parcial | aplicado | ficha | 3/5 |
-| `60512` | Domínio de Conjuração | maestria | cargas e fúria, velocidades | parcial | interpretado | condicional | 0/2 |
-| `60834` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/4 |
-| `60992` | Maestria de Clamores | maestria | efeito por evento, cargas e fúria, outros | parcial | aplicado | combate | 0/5 |
-| `61343` | Maestria de Runas | maestria | área e projéteis, cargas e fúria | parcial | aplicado | combate | 0/2 |
+| `60512` | Domínio de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
+| `60834` | Maestria de Dano Degenerativo | maestria | afecções e chance no acerto, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/4 |
+| `60992` | Maestria de Clamores | maestria | outros, efeito por evento, cargas e fúria | funcional-aproximado | aplicado | combate | 1/6 |
+| `61343` | Maestria de Runas | maestria | área e projéteis, cargas e fúria | parcial | aplicado | combate | 1/2 |
 | `61529` | Maestria de Recuperação | maestria | efeito por evento, outros, auras, maldições e reserva, vida, regeneração e dreno de vida | funcional | aplicado | ficha | 0/7 |
 | `61785` | Maestria de Maldições | maestria | afecções e chance no acerto, crítico, efeito por evento, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 4/10 |
 | `61992` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
-| `62015` | Maestria de Clamores | maestria | efeito por evento, cargas e fúria, outros | parcial | aplicado | combate | 0/5 |
+| `62015` | Maestria de Clamores | maestria | outros, efeito por evento, cargas e fúria | funcional-aproximado | aplicado | combate | 1/6 |
 | `62023` | Maestria de Atordoamentos | maestria | atordoamento, crítico, efeito por evento | funcional | aplicado | ficha | 2/7 |
 | `62235` | Maestria de Armadura e Evasão | maestria | afecções e chance no acerto, armadura e evasão, atordoamento, outros | parcial | aplicado | combate | 0/9 |
 | `62416` | Maestria de Cajados | maestria | efeito por evento, armadura e evasão, escudo de energia, bloqueio, vida, regeneração e dreno de vida, mana e custo, crítico | funcional | aplicado | ficha | 3/10 |
@@ -3037,27 +2932,27 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `62588` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
 | `62759` | Maestria de Marcas | maestria | outros, efeito por evento, crítico, precisão | funcional | aplicado | combate | 0/7 |
 | `62853` | Maestria de Adagas | maestria | crítico, outros, supressão de magia, dano % (aumentado e "mais"), velocidades | parcial | aplicado | ficha | 1/5 |
-| `63184` | Maestria de Espadas | maestria | afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 2/4 |
+| `63184` | Maestria de Espadas | maestria | outros, afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 3/5 |
 | `63268` | Maestria de Fogo | maestria | outros, efeito por evento, afecções e chance no acerto, vida, regeneração e dreno de vida, crítico, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/8 |
 | `63482` | Maestria de Raio | maestria | outros, crítico | funcional | aplicado | ficha | 3/6 |
 | `63559` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
-| `63710` | Maestria de Sangramento | maestria | crítico, afecções e chance no acerto | parcial | aplicado | ficha | 0/2 |
-| `63861` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 1/6 |
+| `63710` | Maestria de Sangramento | maestria | outros, afecções e chance no acerto, crítico | funcional | aplicado | ficha | 3/6 |
+| `63861` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
 | `64042` | Maestria Física | maestria | atordoamento, outros, afecções e chance no acerto | parcial | aplicado | ficha | 1/3 |
-| `64128` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva | parcial | aplicado | combate | 1/6 |
+| `64128` | Maestria de Reserva | maestria | dano % (aumentado e "mais"), resistências, auras, maldições e reserva, área e projéteis, afecções e chance no acerto | funcional | aplicado | combate | 3/8 |
 | `64406` | Maestria de Armadura | maestria | armadura e evasão, crítico, outros, resistências | funcional | aplicado | ficha | 0/9 |
-| `65154` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | parcial | aplicado | combate | 1/5 |
+| `65154` | Maestria de Totens | maestria | lacaios e totens, dano % (aumentado e "mais"), crítico | funcional | aplicado | combate | 2/6 |
 | `65395` | Maestria de Mana | maestria | mana e custo, efeito por evento, outros, auras, maldições e reserva | funcional-aproximado | aplicado | ficha | 0/6 |
 | `65528` | Maestria de Evasão | maestria | atordoamento, armadura e evasão, velocidades, outros, supressão de magia | parcial | aplicado | ficha | 1/7 |
 | `6982` | Armadura e Evasão, Duração de Provocar [Champion] | ascendencia-comum | armadura e evasão, afecções e chance no acerto | funcional | aplicado | combate | 2/3 |
-| `11412` | Inspirador [Champion] | ascendencia-notavel | auras, maldições e reserva, vida, regeneração e dreno de vida | parcial | aplicado | combate | 0/2 |
+| `11412` | Inspirador [Champion] | ascendencia-notavel | auras, maldições e reserva, vida, regeneração e dreno de vida, outros | funcional-aproximado | aplicado | combate | 2/3 |
 | `13374` | Mestre do Metal [Champion] | ascendencia-notavel | outros | parcial | validado | combate | 1/1 |
 | `25111` | Armadura e Evasão, Efeito da Aura [Champion] | ascendencia-comum | armadura e evasão, auras, maldições e reserva | funcional | aplicado | combate | 2/3 |
 | `27604` | Primeiro a Bater, Último a Cair [Champion] | ascendencia-notavel | outros, efeito por evento | funcional | aplicado | combate | 3/4 |
 | `31700` | Fortitude [Champion] | ascendencia-notavel | outros | parcial | aplicado | ficha | 0/1 |
 | `33940` | Herói Incontrolável [Champion] | ascendencia-notavel | armadura e evasão, velocidades | funcional | interpretado | condicional | 0/3 |
 | `35185` | Armadura e Evasão, Dano de Ataque Enquanto Fortificado [Champion] | ascendencia-comum | armadura e evasão, dano % (aumentado e "mais") | funcional | aplicado | combate | 2/3 |
-| `35750` | Causas Nobres [Champion] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
+| `35750` | Causas Nobres [Champion] | ascendencia-notavel | outros, afecções e chance no acerto | funcional | validado | combate | 2/2 |
 | `41433` | Armadura e Evasão, Chance de Empalar [Champion] | ascendencia-comum | armadura e evasão, afecções e chance no acerto | funcional | aplicado | combate | 2/3 |
 | `43725` | Armadura e Evasão, Dano de Ataque [Champion] | ascendencia-comum | dano % (aumentado e "mais"), armadura e evasão | funcional | validado | ficha | 3/3 |
 | `56967` | Inimigo Digno [Champion] | ascendencia-notavel | afecções e chance no acerto, dano % (aumentado e "mais"), outros | funcional | aplicado | combate | 0/3 |
@@ -3069,30 +2964,30 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `3651` | Velocidade de Ataque e Dano com Uma Mão [Gladiator] | ascendencia-comum | velocidades, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `8419` | Sobrevivente Determinado [Gladiator] | ascendencia-notavel | outros | parcial | aplicado | combate | 0/1 |
 | `14726` | Velocidade de Ataque, Dano com Ataques [Gladiator] | ascendencia-comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 2/2 |
-| `15616` | Técnica Irregular [Gladiator] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
+| `15616` | Técnica Irregular [Gladiator] | ascendencia-notavel | outros | funcional | validado | combate | 1/1 |
 | `24538` | Velocidade de Ataque, Chance de Bloqueio [Gladiator] | ascendencia-comum | velocidades, bloqueio | funcional | validado | ficha | 2/2 |
 | `27864` | Violência Gratuita [Gladiator] | ascendencia-notavel | efeito por evento | funcional-aproximado | aplicado | combate | 0/1 |
 | `33179` | Velocidade de Ataque, Chance de Sangramento [Gladiator] | ascendencia-comum | velocidades, afecções e chance no acerto | funcional | validado | ficha | 2/2 |
 | `37623` | Velocidade de Ataque, Chance de Bloqueio [Gladiator] | ascendencia-comum | velocidades, bloqueio | funcional | validado | ficha | 2/2 |
 | `48760` | Velocidade de Ataque, Chance de Sangramento [Gladiator] | ascendencia-comum | velocidades, afecções e chance no acerto | funcional | validado | ficha | 2/2 |
-| `52575` | Mestre das Armas [Gladiator] | ascendencia-notavel | precisão, área e projéteis, crítico, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 1/6 |
-| `63490` | Retaliação Comedida [Gladiator] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
+| `52575` | Mestre das Armas [Gladiator] | ascendencia-notavel | precisão, área e projéteis, crítico, outros, dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 3/6 |
+| `63490` | Retaliação Comedida [Gladiator] | ascendencia-notavel | outros | funcional | validado | combate | 2/2 |
 | `3184` | Carrasco [Slayer] | ascendencia-notavel | outros, efeito por evento | funcional | aplicado | combate | 0/4 |
 | `10143` | Fervor Brutal [Slayer] | ascendencia-notavel | outros, dano % (aumentado e "mais") | funcional | aplicado | combate | 1/3 |
 | `15286` | Dano de Ataque, Velocidade de Ataque [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 2/2 |
 | `16306` | Forma Magistral [Slayer] | ascendencia-notavel | cargas e fúria | funcional | aplicado | ficha | 1/2 |
 | `17315` | Esmagador [Slayer] | ascendencia-notavel | crítico | parcial | interpretado | condicional | 0/1 |
-| `20954` | Dano de Ataque, Área de Efeito [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), área e projéteis | funcional | aplicado | ficha | 1/2 |
+| `20954` | Dano de Ataque, Área de Efeito [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), área e projéteis | funcional | validado | ficha | 2/2 |
 | `34215` | Dano de Ataque, Drenagem de Vida [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | validado | ficha | 2/2 |
 | `34484` | Apetite Insaciável [Slayer] | ascendencia-notavel | outros, velocidades, atordoamento | funcional | aplicado | combate | 3/4 |
-| `38180` | Impacto [Slayer] | ascendencia-notavel | área e projéteis, dano % (aumentado e "mais"), precisão % | parcial | aplicado | ficha | 1/3 |
+| `38180` | Impacto [Slayer] | ascendencia-notavel | outros, área e projéteis, dano % (aumentado e "mais"), precisão % | funcional-aproximado | aplicado | ficha | 2/4 |
 | `42293` | Dano de Ataque, Velocidade de Ataque [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 2/2 |
 | `45696` | Dano de Ataque, Drenagem de Vida [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), vida, regeneração e dreno de vida | funcional | validado | ficha | 2/2 |
 | `50845` | Dano de Ataque, Duração de Cargas de Frenesi e Tolerância [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 2/3 |
 | `61393` | Dano de Ataque, Chance de Crítico [Slayer] | ascendencia-comum | dano % (aumentado e "mais"), crítico | funcional | validado | ficha | 2/2 |
 | `62817` | Executor de Lendas [Slayer] | ascendencia-notavel | dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/2 |
 | `5865` | Dano Físico, Armadura [Berserker] | ascendencia-comum | armadura e evasão, dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 2/2 |
-| `8592` | Dano Físico, Alcance de Golpe Corpo a Corpo [Berserker] | ascendencia-comum | dano % (aumentado e "mais") | parcial | validado | ficha | 1/1 |
+| `8592` | Dano Físico, Alcance de Golpe Corpo a Corpo [Berserker] | ascendencia-comum | outros, dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 2/2 |
 | `9271` | Desafiando a Dor [Berserker] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
 | `24528` | Frenesi de Combate [Berserker] | ascendencia-notavel | velocidades, cargas e fúria | funcional | aplicado | combate | 0/2 |
 | `29630` | Dançarino Sanguinolento [Berserker] | ascendencia-notavel | outros | funcional | validado | combate | 1/1 |
@@ -3209,7 +3104,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `31598` | Destreza [Ascendant] | ascendencia-comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `33875` | Ponto de Passiva [Ascendant] | ascendencia-comum | outros | funcional | validado | combate | 1/1 |
 | `34567` | Atiradora [Ascendant] | ascendencia-comum | outros, área e projéteis | funcional-aproximado | aplicado | ficha | 0/4 |
-| `34774` | Gladiador [Ascendant] | ascendencia-comum | outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 0/2 |
+| `34774` | Gladiador [Ascendant] | ascendencia-comum | afecções e chance no acerto, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 1/3 |
 | `38689` | Ponto de Passiva [Ascendant] | ascendencia-comum | outros | funcional | validado | combate | 1/1 |
 | `39598` | Campeão [Ascendant] | ascendencia-comum | afecções e chance no acerto, auras, maldições e reserva, outros, dano % (aumentado e "mais") | funcional | aplicado | combate | 0/5 |
 | `41534` | Ponto de Passiva [Ascendant] | ascendencia-comum | outros | funcional | validado | combate | 1/1 |
@@ -3230,7 +3125,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `57052` | Chefe Guerreiro [Ascendant] | ascendencia-comum | efeito por evento, outros, atributos (For/Des/Int) | funcional | aplicado | ficha | 0/5 |
 | `57429` | Ponto de Passiva [Ascendant] | ascendencia-comum | outros | funcional | validado | combate | 1/1 |
 | `58029` | Inteligência [Ascendant] | ascendencia-comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
-| `58827` | Sabotador [Ascendant] | ascendencia-comum | área e projéteis, outros, dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 0/4 |
+| `58827` | Sabotador [Ascendant] | ascendencia-comum | área e projéteis, outros, dano % (aumentado e "mais"), afecções e chance no acerto | funcional | aplicado | ficha | 1/4 |
 | `61072` | Destruidor [Ascendant] | ascendencia-comum | precisão, outros, atordoamento, dano % (aumentado e "mais"), cargas e fúria | funcional | aplicado | ficha | 1/5 |
 | `61437` | Ascensão do Marauder [Ascendant] | ascendencia-notavel | — | nao-classificado | alocavel | — | — |
 | `62162` | Ponto de Passiva [Ascendant] | ascendencia-comum | outros | funcional | validado | combate | 1/1 |
@@ -3307,26 +3202,26 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `48239` | Mortífero [Assassin] | ascendencia-notavel | mana e custo, outros | parcial | aplicado | combate | 0/3 |
 | `51402` | Chance de Causar Golpe Crítico, Vida [Assassin] | ascendencia-comum | vida %, crítico | funcional | validado | ficha | 2/2 |
 | `55686` | Chance de Causar Golpe Crítico, Efeito de Marca [Assassin] | ascendencia-comum | outros, crítico | funcional | aplicado | ficha | 1/2 |
-| `869` | Área de Efeito, Velocidade de Movimento [Saboteur] | ascendencia-comum | velocidades, área e projéteis | funcional | aplicado | ficha | 1/2 |
-| `1953` | Área de Efeito, Velocidade de Arremessar Armadilhas e Minas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 0/3 |
+| `869` | Área de Efeito, Velocidade de Movimento [Saboteur] | ascendencia-comum | velocidades, área e projéteis | funcional | validado | ficha | 2/2 |
+| `1953` | Área de Efeito, Velocidade de Arremessar Armadilhas e Minas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 1/3 |
 | `5087` | Nascido nas Sombras [Saboteur] | ascendencia-notavel | dano % (aumentado e "mais"), auras, maldições e reserva, afecções e chance no acerto | parcial | aplicado | combate | 0/3 |
 | `14103` | Risco Calculado [Saboteur] | ascendencia-notavel | crítico, dano % (aumentado e "mais") | parcial | aplicado | combate | 0/2 |
-| `16212` | Área de Efeito, Velocidade de Arremesso de Armadilhas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 0/2 |
+| `16212` | Área de Efeito, Velocidade de Arremesso de Armadilhas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 1/2 |
 | `16940` | Ataque Cegante [Saboteur] | ascendencia-notavel | outros, vida, regeneração e dreno de vida | funcional | aplicado | combate | 0/4 |
-| `25167` | Área de Efeito, Velocidade de Arremesso de Minas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 0/2 |
-| `26446` | Área de Efeito, Velocidade de Arremesso de Armadilhas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 0/2 |
+| `25167` | Área de Efeito, Velocidade de Arremesso de Minas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 1/2 |
+| `26446` | Área de Efeito, Velocidade de Arremesso de Armadilhas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 1/2 |
 | `28535` | Crime Perfeito [Saboteur] | ascendencia-notavel | dano % (aumentado e "mais") | parcial | aplicado | ficha | 0/1 |
 | `38918` | Reação em Cadeia [Saboteur] | ascendencia-notavel | área e projéteis | parcial | aplicado | combate | 0/1 |
 | `39834` | Especialista em Demolições [Saboteur] | ascendencia-notavel | auras, maldições e reserva, efeito por evento | funcional-aproximado | aplicado | combate | 0/2 |
-| `41081` | Área de Efeito, Velocidade de Movimento [Saboteur] | ascendencia-comum | velocidades, área e projéteis | funcional | aplicado | ficha | 1/2 |
-| `47366` | Área de Efeito, Velocidade de Arremesso de Minas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 0/2 |
+| `41081` | Área de Efeito, Velocidade de Movimento [Saboteur] | ascendencia-comum | velocidades, área e projéteis | funcional | validado | ficha | 2/2 |
+| `47366` | Área de Efeito, Velocidade de Arremesso de Minas [Saboteur] | ascendencia-comum | área e projéteis, velocidades | funcional | aplicado | combate | 1/2 |
 | `47778` | Especialista em Bombas [Saboteur] | ascendencia-notavel | dano % (aumentado e "mais") | parcial | aplicado | combate | 0/1 |
 | `51462` | Como Relógio [Saboteur] | ascendencia-notavel | outros | parcial | aplicado | ficha | 0/1 |
 | `57175` | Especialista de Estilhaços [Saboteur] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
-| `62067` | Área de Efeito, Dano em Área [Saboteur] | ascendencia-comum | área e projéteis, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
-| `63135` | Área de Efeito, Dano de Área [Saboteur] | ascendencia-comum | área e projéteis, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
+| `62067` | Área de Efeito, Dano em Área [Saboteur] | ascendencia-comum | área e projéteis, dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
+| `63135` | Área de Efeito, Dano de Área [Saboteur] | ascendencia-comum | área e projéteis, dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `64785` | Velocidade de Projétil, Dano de Projétil [Saboteur] | ascendencia-comum | velocidades, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
-| `64842` | Área de Efeito, Efeito de Cegamentos [Saboteur] | ascendencia-comum | área e projéteis, outros | funcional | aplicado | combate | 0/2 |
+| `64842` | Área de Efeito, Efeito de Cegamentos [Saboteur] | ascendencia-comum | área e projéteis, outros | funcional | aplicado | combate | 1/2 |
 | `65085` | Velocidade de Projétil, Dano de Projétil [Saboteur] | ascendencia-comum | velocidades, dano % (aumentado e "mais") | funcional | aplicado | ficha | 1/2 |
 | `2336` | Evasão e Escudo de Energia, Dreno de Escudo de Energia [Trickster] | ascendencia-comum | armadura e evasão, escudo de energia | funcional | aplicado | combate | 2/3 |
 | `13219` | Evasão e Escudo de Energia, Dano [Trickster] | ascendencia-comum | dano % (aumentado e "mais"), armadura e evasão, escudo de energia | funcional | validado | ficha | 3/3 |
@@ -3349,7 +3244,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `19641` | Cruzada Implacável [Guardian] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
 | `20050` | Armadura e Escudo de Energia, Efeito de Aura [Guardian] | ascendencia-comum | armadura e evasão, escudo de energia, auras, maldições e reserva | funcional | aplicado | combate | 2/3 |
 | `32364` | Armadura e Escudo de Energia, Regeneração de Vida [Guardian] | ascendencia-comum | armadura e evasão, escudo de energia, vida, regeneração e dreno de vida | funcional | validado | ficha | 3/3 |
-| `32992` | Armadura e Escudo de Energia, Recuperação do Bloqueio [Guardian] | ascendencia-comum | armadura e evasão, escudo de energia | parcial | validado | combate | 2/2 |
+| `32992` | Armadura e Escudo de Energia, Recuperação do Bloqueio [Guardian] | ascendencia-comum | bloqueio, armadura e evasão, escudo de energia | funcional-aproximado | validado | combate | 3/3 |
 | `37419` | Armadura e Escudo de Energia, Efeito de Aura [Guardian] | ascendencia-comum | armadura e evasão, escudo de energia, auras, maldições e reserva | funcional | aplicado | combate | 2/3 |
 | `39728` | Baluarte da Esperança [Guardian] | ascendencia-notavel | bloqueio | funcional-aproximado | interpretado | condicional | 0/2 |
 | `40010` | Armadura e Escudo de Energia, Dano do Lacaio [Guardian] | ascendencia-comum | armadura e evasão, escudo de energia, lacaios e totens | funcional | validado | combate | 3/3 |
@@ -3410,14 +3305,14 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `5415` | Dano do Lacaio, Efeito de Aura [Necromancer] | ascendencia-comum | lacaios e totens, auras, maldições e reserva | funcional | aplicado | combate | 1/2 |
 | `11490` | Portador da Infestação [Necromancer] | ascendencia-notavel | área e projéteis, lacaios e totens, dano % (aumentado e "mais") | funcional-aproximado | interpretado | condicional | 0/4 |
 | `14603` | Barreira Óssea [Necromancer] | ascendencia-notavel | resistências, lacaios e totens, escudo de energia | funcional | aplicado | combate | 0/3 |
-| `18309` | Dano de Lacaios, Duração de Habilidades [Necromancer] | ascendencia-comum | afecções e chance no acerto, lacaios e totens | funcional | aplicado | combate | 1/2 |
+| `18309` | Dano de Lacaios, Duração de Habilidades [Necromancer] | ascendencia-comum | afecções e chance no acerto, lacaios e totens | funcional | validado | combate | 2/2 |
 | `18574` | Dano de Lacaio, Mana [Necromancer] | ascendencia-comum | mana %, lacaios e totens | funcional | validado | ficha | 2/2 |
 | `23509` | Dano de Lacaio, Velocidade de Conjuração [Necromancer] | ascendencia-comum | velocidades, lacaios e totens | funcional | validado | ficha | 2/2 |
 | `23572` | Pacto Cadavérico [Necromancer] | ascendencia-notavel | velocidades | parcial | interpretado | condicional | 0/2 |
 | `26298` | Vida e Dano de Lacaios [Necromancer] | ascendencia-comum | vida, regeneração e dreno de vida, lacaios e totens | funcional | validado | combate | 2/2 |
 | `36017` | Comandante das Trevas [Necromancer] | ascendencia-notavel | resistências | parcial | validado | ficha | 3/3 |
 | `39818` | Vida e Dano de Lacaios [Necromancer] | ascendencia-comum | vida, regeneração e dreno de vida, lacaios e totens | funcional | validado | combate | 2/2 |
-| `48719` | Dama do Sacrifício [Necromancer] | ascendencia-notavel | afecções e chance no acerto | parcial | aplicado | combate | 0/1 |
+| `48719` | Dama do Sacrifício [Necromancer] | ascendencia-notavel | afecções e chance no acerto | parcial | validado | combate | 1/1 |
 | `54159` | Agressão Desmedida [Necromancer] | ascendencia-notavel | lacaios e totens, dano % (aumentado e "mais") | funcional | aplicado | combate | 0/2 |
 | `55646` | Dano e Vida de Lacaios [Necromancer] | ascendencia-comum | vida, regeneração e dreno de vida, lacaios e totens | funcional | validado | combate | 2/2 |
 | `60547` | Dano de Lacaios, Velocidade de Conjuração [Necromancer] | ascendencia-comum | velocidades, lacaios e totens | funcional | validado | ficha | 2/2 |

@@ -14,6 +14,458 @@
   ],
   "regras": [
     {
+      "padrao": "^Habilidades de Estandarte têm Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@estandarte",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a duração do Estandarte plantado (10 s na gema)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Estandarte têm Área de Efeito aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@estandarte",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o raio do Estandarte plantado (2,4 m na gema; cada 2 m uma casa)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Remove uma Afecção aleatória de você quando você consumir ao menos \\{(\\d+)\\} de Valor para plantar um Estandarte$",
+      "efeitos": [
+        {
+          "stat": "estandarte_remove_afeccao_min",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "tira o dano contínuo mais antigo em você",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Vida por cada \\{(\\d+)\\} de Valor consumido para plantar um Estandarte$",
+      "efeitos": [
+        {
+          "stat": "estandarte_vida_por_valor:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} Cargas de Tolerância ao consumir o Valor máximo para plantar um Estandarte$",
+      "efeitos": [
+        {
+          "stat": "estandarte_cargas_cheio:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} Cargas de Frenesi ao consumir o Valor máximo para plantar um Estandarte$",
+      "efeitos": [
+        {
+          "stat": "estandarte_cargas_cheio:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ter um Estandarte plantado não impede que você ganhe Valor$",
+      "efeitos": [
+        {
+          "stat": "valor_com_estandarte_plantado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Quando você deixar a Área do seu Estandarte ?, recupere \\{(\\d+)\\}% do Valor consumido para tal Estandarte$",
+      "efeitos": [
+        {
+          "stat": "estandarte_sair_recupera_valor_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Bônus do seu estandarte permanecem por \\{(\\d+)\\} segundos após você sair da área$",
+      "efeitos": [
+        {
+          "stat": "estandarte_fica_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você e Aliados próximos dos seus Estandartes Regeneram \\{(\\d+)\\}% de Vida por segundo por cada Valor consumido por tal Estandarte$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct%valorDoEstandarte@estandarteAtivo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "vale em você (na área do Estandarte plantado); nos aliados ainda não",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Mover enquanto Sangrando faz com que você não sofra Dano extra$",
+      "efeitos": [
+        {
+          "stat": "sangrar_andando_sem_extra",
+          "valor": "1"
+        }
+      ],
+      "nota": "o Sangramento em você triplica enquanto você anda (o lembrete do PoE)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: os lacaios do jogo não sangram (o golpe do monstro neles não põe afecção)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Agravar o Sangramento em alvos que você Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_agravar@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Agravar o Sangramento em alvos que você Acertar um Ataques Impelidos$",
+      "efeitos": [
+        {
+          "stat": "chance_agravar@ataque+impelido",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Agravar o Sangramento em alvos que você Golpear com um Crítico com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_agravar@ataque+critico",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Agravar o Sangramento em alvos que você Atordoar com Acertos de Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_agravar@ataque+golpeAtordoou",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos de Ataques Agravam qualquer Sangramento mais antigos que \\{(\\d+)\\} segundos nos alvos$",
+      "efeitos": [
+        {
+          "stat": "agravar_sangramento_apos_s@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Sangramentos que você infligir são Agravados$",
+      "efeitos": [
+        {
+          "stat": "sangramento_agravado",
+          "valor": "1"
+        }
+      ],
+      "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Seu Sangramento não causa Dano extra enquanto o Inimigo se move$",
+      "efeitos": [
+        {
+          "stat": "sangramento_sem_movimento",
+          "valor": "1"
+        }
+      ],
+      "nota": "o Sangramento Agravado (e o do monstro que anda) causa o triplo por pulso — \"O Dano é 200% maior enquanto em movimento\" (`combate/dot`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Mover enquanto Sangrando faz com que você não sofra Dano extra$|^Se Mover enquanto Sangrando não faz com que Lacaios sofram Dano extra$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o Sangramento em você (e nos lacaios) não tem o dano extra em movimento: não há o que tirar",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "alcance_corpo_m",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo com Espadas$",
+      "efeitos": [
+        {
+          "stat": "alcance_corpo_m@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos \\{(\\d+)\\} Inimigos Próximos$",
+      "efeitos": [
+        {
+          "stat": "alcance_corpo_m@inimigosPertoMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais; \"Próximos\" = a até 2 casas",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@aura",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "no jogo a área da aura é o raio em que ela vale nos companheiros de grupo (`gemas-poe.adds`)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@aura",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a duração das auras Vaal e dos Estandartes (as outras ficam ligadas)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, ao usar uma Habilidade de Retaliação, que uma Habilidade de Retaliação diferente se torne Utilizável$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_outra_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis por um tempo \\{(\\d+)\\}% maior$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_janela_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis por \\{(\\d+)\\} segundos adicionais$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_janela_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance das Habilidades de Retaliação utilizadas continuarem Utilizáveis e não consumirem um uso de Recarga$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_nao_consumir",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada quarta Habilidade de Retaliação que você usar sempre será um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_quarta_critica",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Retaliação Nocivas se tornam Utilizáveis a cada sexto Acerto dos Inimigos$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_a_cada_acertos",
+          "valor": "6"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Furtividade aumentada em \\{(\\d+)\\}% caso você tenha Acertado com uma Garra Recentemente$",
+      "efeitos": [
+        {
+          "stat": "furtividade@acertouRecente+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de abrir Baús próximos quando você Conjurar uma Magia$",
+      "efeitos": [
+        {
+          "stat": "abrir_bau_ao_conjurar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos contra Inimigos que não podem ter Vida Drenada deles$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@alvoSemDreno",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Recuperação de Bloqueio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "block_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Clamores não podem Impelir Habilidades de Deslocamento$",
+      "efeitos": [
+        {
+          "stat": "clamor_nao_impele_movimento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base$",
+      "efeitos": [
+        {
+          "stat": "totem_sem_lentidao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Distância do Empurrão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "distancia_empurrao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "cada 100% é uma casa a mais; o resto, a chance de mais uma",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
       "padrao": "^Habilidades de Retaliação causam Dano aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
@@ -4017,7 +4469,7 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Distância do Empurrão aumentada em .*$|^Não Pode ser Empurrado$",
+      "padrao": "^Não Pode ser Empurrado$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -4025,7 +4477,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "não se aplica ao jogo: o Empurrão do jogo é de uma casa, e os monstros não empurram você",
+      "nota": "não se aplica ao jogo: os monstros do jogo não empurram você",
       "_nova": true,
       "_ciclo7": true
     },
@@ -4056,19 +4508,6 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Recuperação de Bloqueio aumentada em .*$|^Recupração de Atordoamento e Bloqueio.*por Fortificação$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: bloquear não trava o personagem no jogo",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
       "padrao": "^Habilidades de Retaliação se tornam Utilizáveis.*$|^.*que uma Habilidade de Retaliação diferente se torne Utilizável$|^.*Habilidades de Retaliação utilizadas continuarem Utilizáveis.*$|^Habilidades de Retaliação Nocivas se tornam Utilizáveis.*$",
       "efeitos": [
         {
@@ -4091,19 +4530,6 @@
       ],
       "estado": "inerte",
       "nota": "não se aplica ao jogo: o projétil do jogo vai direto ao alvo: sem velocidade, ângulo, terreno ou volta",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os monstros não deixam os totens lentos",
       "_nova": true,
       "_ciclo7": true
     },
@@ -4826,32 +5252,6 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Você e Aliados próximos dos seus Estandartes Regeneram \\{(\\d+)\\}% de Vida por segundo por cada Valor consumido por tal Estandarte$",
-      "efeitos": [
-        {
-          "stat": "life_regen_max_pct%valor@estandarteAtivo",
-          "valor": "{1}"
-        }
-      ],
-      "estado": "aproximado",
-      "nota": "pelo Valor de agora (o Estandarte do jogo não se planta)",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Habilidades de Estandarte têm (?:Duração|Área de Efeito) aumentada em .*$|^.*consumir .*Valor.* para plantar um Estandarte$|^.*Valor consumido para plantar um Estandarte$|^Ter um Estandarte plantado não impede que você ganhe Valor$|^Quando você deixar a Área do seu Estandarte.*$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: no jogo o Estandarte é uma aura em você: não se planta (o Valor reforça a aura em 1% por Valor)",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
       "padrao": "^Ataques Impelidos causam Dano aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
@@ -4892,19 +5292,6 @@
           "valor": "{1}"
         }
       ],
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Clamores não podem Impelir Habilidades de Deslocamento$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as habilidades de deslocamento do jogo não são Impelidas",
       "_nova": true,
       "_ciclo7": true
     },
@@ -5221,32 +5608,6 @@
       ],
       "estado": "inerte",
       "nota": "não se aplica ao jogo: no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^.*contra Inimigos que não podem ter Vida Drenada deles$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: no jogo todo inimigo pode ter a vida drenada",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Cada quarta Habilidade de Retaliação que você usar sempre será um Golpe Crítico$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o jogo ainda não conta os usos de Retaliação (a quarta sempre crítica)",
       "_nova": true,
       "_ciclo7": true
     },

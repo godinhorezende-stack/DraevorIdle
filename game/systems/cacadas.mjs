@@ -35,7 +35,7 @@ import * as Estados from './skills/estados.mjs';
 import * as RegrasDeUso from './skills/regras-de-uso.mjs';
 import * as Bosses from './bosses.mjs';
 import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt, encontrosDaHunt } from './hunt/terreno.mjs';
-import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
+import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe, ALCANCE_DE_PERCEPCAO } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
 import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho, bfsDistancias } from './hunt/caminho.mjs';
 import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/relatorio.mjs';
@@ -2001,7 +2001,9 @@ export function tique(estado, personagem, agora = Date.now()) {
       const gente = aliadosPorCasa(hunt);
       Protecao.tirarBichosDaZona(hunt, grade, (c) => (c.x === hunt.pos.x && c.y === hunt.pos.y) || gente.has(`${c.x},${c.y}`));
     }
-    moverMonstros(hunt, gradeDosBichos, agora, { semPerseguir: naZonaSegura });
+    // (PoE, 11/10) A Furtividade encolhe o raio em que os bichos notam você (`ModsPoe.percepcaoComFurtividade`).
+    const percepcao = itensPoeLigado() ? ModsPoe.percepcaoComFurtividade(ALCANCE_DE_PERCEPCAO, Ficha.combate(estado)) : ALCANCE_DE_PERCEPCAO;
+    moverMonstros(hunt, gradeDosBichos, agora, { semPerseguir: naZonaSegura, percepcao });
   }
 
   const eventos = [];
@@ -2320,7 +2322,8 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   const conta = entry ? Acoes.danoMostrado(estado, entry) : l.dano;
   // (O totem não fica lento com o dono: a lentidão do personagem não entra no tempo do golpe dele.)
   const uso = entry ? Acoes.temposDaGemaPoe(estado, entry, undefined, undefined, { doJogador: false }).uso : l.intervaloMs;
-  l.proximoGolpe = agora + Math.max(400, uso);
+  // (+ a lentidão que os Elites/Chefes põem no totem — `LacaiosPoe.fatorDeLentidao`.)
+  l.proximoGolpe = agora + Math.max(400, Math.round(uso * LacaiosPoe.fatorDeLentidao(l, agora)));
   l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
   const tipo = entry?.element ?? l.elemento ?? 'physical';
   const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, conta.min + Math.random() * Math.max(0, conta.max - conta.min), ficha)));
@@ -2377,6 +2380,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const d = Math.max(1, Math.round(noLacaio));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
+      // (PoE: o golpe de um Elite/Chefe pode deixar o lacaio/totem LENTO, como faz com você — `LacaiosPoe.controleNoLacaio`.)
+      if (itensPoeLigado() && LacaiosPoe.controleNoLacaio(l, b, hunt, agora)) eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: 'lento' });
     }
     // (ciclo 7) a Instabilidade do Lacaio: em Vida Baixa ele explode em Fogo nos bichos colados e morre.
     const explosao = l.poe ? LacaiosPoe.explosaoDoLacaio(l, hunt.monstros) : null;
@@ -2441,7 +2446,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (!R.jaPode(agora, l.proximoGolpe)) continue;
     // A velocidade: a do monstro do nível × o jeito (o espírito é rápido) ÷ os bônus (a gema, a Oferenda de Carne, a Agressividade).
     const vel = 1 + ((l.velAtaquePct ?? 0) + (oferenda?.velAtaquePct ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora)) / 100;
-    l.proximoGolpe = agora + Math.max(250, Math.round((l.intervaloMs * (est.rapido ?? 1)) / vel));
+    l.proximoGolpe = agora + Math.max(250, Math.round(((l.intervaloMs * (est.rapido ?? 1)) / vel) * LacaiosPoe.fatorDeLentidao(l, agora)));
     l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
     // O ELEMENTO do golpe (o mago varia entre fogo, gelo e raio) e o desenho dele.
     const tipo = est.magia ? est.elementos[Math.floor(Math.random() * est.elementos.length)] : est.elemento ?? l.elemento ?? 'physical';

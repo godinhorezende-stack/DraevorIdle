@@ -31,6 +31,22 @@ export function ativosNoJogador(hunt, agora = hunt?.clock ?? 0) {
   return c ? ['congelado', 'atordoado', 'lento'].filter((n) => ativo(c[n], agora)) : [];
 }
 
+/**
+ * (PoE, 11/10) A RECUPERAÇÃO DE BLOQUEIO: bloquear o golpe de um Elite ou Chefe (os que atordoam no jogo — o bloqueio do PoE trava como um
+ * atordoamento curto) trava a próxima ação por 0,35 s ÷ (1 + "Recuperação de Bloqueio" + "Recuperação de Atordoamentos e Bloqueios"). A trava
+ * entra na fila de ações do PoE (o grupo `grupo:poe` de `acoes.mjs` — o golpe básico e as gemas esperam). Devolve os ms travados (0: nada).
+ */
+export const BLOQUEIO_TRAVA_MS = 350;
+export function travarNoBloqueio(hunt, bicho, ficha, agora = hunt?.clock ?? 0) {
+  if (!hunt || !classeDoMob(bicho, !!hunt.isBoss) || !ficha?.afPoe) return 0;
+  const rec = (Number(ficha.afPoe.block_recovery) || 0) + (Number(ficha.afPoe.stun_recovery) || 0);
+  const ms = Math.round(BLOQUEIO_TRAVA_MS / Math.max(0.1, 1 + rec / 100));
+  const cds = (hunt.cooldowns ??= {});
+  const atual = cds['grupo:poe'];
+  if (!(atual?.ate > agora + ms)) cds['grupo:poe'] = { ate: agora + ms, total: ms, bloqueio: true };
+  return ms;
+}
+
 /** A classe do mob para o controle: `'boss'`, `'elite'` ou null (mob comum não controla). */
 export function classeDoMob(bicho, salaDeBoss = false) {
   if (ehChefe(bicho, salaDeBoss)) return 'boss';

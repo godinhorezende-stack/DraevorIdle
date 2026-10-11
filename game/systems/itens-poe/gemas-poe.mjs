@@ -112,6 +112,19 @@ export function textosDaGema(slug, nivel = 1) {
   return { linhas: COMPILADOR.textosDoNivel(g, n), props: COMPILADOR.propsDoNivel(g, n), requer: COMPILADOR.basicosDoNivel(g, n).nivelReq ?? g.nivelReq ?? 1, nome: g.nome, tags: g.tags ?? [] };
 }
 
+/**
+ * (11/10) A RETALIAÇÃO do PoE: "Não pode ser usado por padrão — Se Torna Utilizável uma vez por 2 segundos quando você Bloquear um Acerto"
+ * (`'bloquear'`) ou "quando você sofrer um Acerto Selvagem" (`'selvagem'` — o Clamor Vingativo). Null: a gema usa-se sempre.
+ */
+export function gatilhoDeRetaliacao(slug) {
+  for (const l of textosDaGema(slug, 1).linhas) {
+    if (!/Se Torna Utilizável/i.test(l)) continue;
+    if (/Bloquear um Acerto/i.test(l)) return 'bloquear';
+    if (/Acerto Selvagem/i.test(l)) return 'selvagem';
+  }
+  return null;
+}
+
 /** (ciclo 7, lote G) Quantos ataques o CLAMOR Impele ("Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar"): 0 se não Impele. */
 export function impelidosDaGema(slug, nivel = 1) {
   for (const l of textosDaGema(slug, nivel).linhas) {
@@ -316,8 +329,21 @@ export function buffNoNivel(slug, nivel) {
   if (m.lentidao) motivos.push('a lentidão da maldição ainda não existe no jogo');
   if (h.arquetipo === 'clamor') efeitos.push({ efeito: 'provocar', raio: Math.max(3, Math.round(st.raioFinal ?? 4)) });
   // Aura e arauto: ligados enquanto a gema estiver encaixada (o uso automático renova); guarda e grito: a duração da gema.
-  const dur = ['aura', 'arauto'].includes(h.arquetipo) ? 60000 : Math.round(Math.max(2, st.duracao ?? 6) * 1000);
-  return { efeitos, af, dur, motivos };
+  // (11/10: a aura VAAL tem a duração dela — "Duração base é de 4 segundos" —, e o "Duração de Aura aumentada" passa a valer nela.)
+  const vaalComDuracao = h.arquetipo === 'aura' && /^Vaal_/.test(slug) && st.duracao > 0;
+  // (11/10) O ESTANDARTE do PoE atual se PLANTA: dura o da gema ("Duração base é de 10 segundos") e cresce com o Valor consumido ("X% mais Área de
+  // Efeito / Efeito de Aura por Valor consumido", do nível — `porValor`, `mods-poe.plantarEstandarte`).
+  const estandarte = /_Banner$/.test(slug);
+  const comDuracao = vaalComDuracao || estandarte;
+  const dur = ['aura', 'arauto'].includes(h.arquetipo) && !comDuracao ? 60000 : Math.round(Math.max(comDuracao ? 1 : 2, st.duracao ?? (estandarte ? 10 : 6)) * 1000);
+  const porValor = estandarte ? (() => {
+    const linhas = textosDaGema(slug, nivel).linhas;
+    const achar = (re) => Number(linhas.map((l) => re.exec(l)?.[1]).find((x) => x != null)) || 0;
+    return { efeito: achar(/([\d.]+) ?% mais Efeito de Aura por Valor consumido/), area: achar(/([\d.]+) ?% mais Área de Efeito por Valor consumido/) };
+  })() : null;
+  // (11/10) O RAIO da aura em casas (1 casa = 2 m): ela vale nos companheiros de grupo a esse raio (`adds`). (`raioM`: em metros, sem arredondar.)
+  const raio = h.arquetipo === 'aura' ? Math.max(1, Math.round((st.raioFinal ?? 4) / 2)) : null;
+  return { efeitos, af, dur, motivos, ...(raio ? { raio, raioM: st.raioFinal ?? 4 } : {}), ...(porValor ? { porValor } : {}) };
 }
 
 // ---- o STATUS NO JOGO ----
@@ -562,22 +588,38 @@ function doEquipamento(estado, chave) {
 const TAGS_DE_BUFF = { Vínculo: 'vinculo', Guarda: 'guarda' };
 export function adds(estado) {
   const hunt = estado?.hunt;
-  if (!hunt?.buffs && !hunt?.lacaios?.length) return null;
+  if (!hunt?.buffs && !hunt?.lacaios?.length && !hunt?.partilha?.naSala?.length) return null;
   const agora = hunt.clock ?? 0;
   const total = {};
   // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas — e o
   // de UMA gema ("Ira possui 20% de aumento do Efeito de Aura", "Efeito do Buff da Armadura Ártica aumentado": `efeito_buff_gema:<nome da gema>`,
   // os implícitos eldritch e os únicos — 09/10).)
-  const efeitoDe = (tipo, id) => {
+  // (11/10: o efeito é o do DONO da aura — `dono` — porque a aura de um companheiro de grupo também vale aqui)
+  const efeitoDe = (tipo, id, dono = estado, b = null) => {
     const g = String(id ?? '').startsWith(PREFIXO) ? REGISTRO.get(String(id).slice(PREFIXO.length))?.gema : null;
     const daGema = g?.nome ? `efeito_buff_gema:${slugDoNome(g.nome)}` : null;
     // (ciclo 7) + pela TAG da gema ("Habilidades de Vínculo têm Efeito do Buff aumentado" — o Vínculo não tem arquétipo próprio)
-    const porTag = (g?.tags ?? []).filter((t) => TAGS_DE_BUFF[t]).reduce((n, t) => n + doEquipamento(estado, `efeito_buff_gema:${TAGS_DE_BUFF[t]}`), 0);
-    // (ciclo 7, lote G) o ESTANDARTE: "Habilidades de Estandarte têm Efeito de Aura aumentado" e o Valor (1% por Valor — `condicoes-poe.ganharValor`).
-    const estandarte = /_Banner/.test(String(id)) ? doEquipamento(estado, 'efeito_buff_gema:estandarte') + Math.max(0, estado?.hunt?.valor?.n ?? 0) : 0;
-    return 1 + (doEquipamento(estado, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(estado, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(estado, daGema) : 0) + porTag + estandarte) / 100;
+    const porTag = (g?.tags ?? []).filter((t) => TAGS_DE_BUFF[t]).reduce((n, t) => n + doEquipamento(dono, `efeito_buff_gema:${TAGS_DE_BUFF[t]}`), 0);
+    // (ciclo 7, lote G) o ESTANDARTE: "Habilidades de Estandarte têm Efeito de Aura aumentado"; (11/10) e o "X% mais Efeito de Aura por Valor
+    // consumido" do Estandarte plantado (`estandarte.efeitoMais` — `mods-poe.plantarEstandarte`), que multiplica.
+    const estandarte = /_Banner/.test(String(id)) ? doEquipamento(dono, 'efeito_buff_gema:estandarte') : 0;
+    const mais = 1 + Math.max(0, Number(b?.estandarte?.efeitoMais) || 0) / 100;
+    return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte) / 100) * mais;
   };
-  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo, id); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
+  // (11/10) As AURAS dos COMPANHEIROS de grupo na mesma sala, a até o raio da aura deles (`raio` em casas, com o "Efeito em Área de Habilidades
+  // de Aura aumentado" de quem lançou): valem em você como no PoE ("você e Aliados"). Cada aura uma vez: a sua, se você também tem a mesma.
+  for (const outro of hunt.partilha?.naSala ?? []) {
+    if (!outro || outro === estado || !outro.hunt?.pos || !hunt.pos || (outro.hunt.z ?? 0) !== (hunt.z ?? 0)) continue;
+    for (const [id, b] of Object.entries(outro.hunt.buffs ?? {})) {
+      // (o Estandarte plantado vale em volta DELE, não de quem o plantou)
+      const centro = b.estandarte ?? outro.hunt.pos;
+      const longe = Math.max(Math.abs(centro.x - hunt.pos.x), Math.abs(centro.y - hunt.pos.y));
+      if (b.tipo !== 'poe-aura' || !b.afPoe || !(b.ate > (outro.hunt.clock ?? agora)) || !(b.raio > 0) || longe > b.raio || hunt.buffs?.[id]?.ate > agora) continue;
+      const f = efeitoDe(b.tipo, id, outro, b);
+      for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f;
+    }
+  }
   // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...); o Golem Carniçal, dano físico
   // adicional por lacaio não-golem em campo.
   const vivos = (hunt.lacaios ?? []).filter((l) => l.hp > 0);

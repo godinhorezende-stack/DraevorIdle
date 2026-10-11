@@ -1,5 +1,5 @@
 // A árvore do PoE, ciclo 7, lote G (11/10 — "tente resolver tudo que não está funcionando"): o SOLO SAGRADO (6% da vida por segundo), a
-// POSTURA (Sangue por padrão, Areia com a gema Sangue e Areia), o VALOR dos Estandartes (reforça a aura) e os ataques IMPELIDOS pelos
+// POSTURA (Sangue por padrão, Areia com a gema Sangue e Areia), o VALOR dos Estandartes (11/10: plantar o consome) e os ataques IMPELIDOS pelos
 // Clamores. Cada teste aloca o nó REAL pelo servidor e mede onde a linha age.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -101,21 +101,33 @@ test('POSTURA: Sangue por padrão, Areia com a gema Sangue e Areia ligada; ao mu
   assert.ok(ModsPoe.condicoesDe(r.e, ficha(r.e).afPoe).has('mudouPosturaRecente'));
 });
 
-test('VALOR: só com um Estandarte ligado; "+N ao máximo de Valor"; o Valor reforça a aura do Estandarte em 1% por Valor', { skip: SEM }, () => {
+// (11/10 — dono: "Plantar como no PoE": o Valor se ganha com uma habilidade de Estandarte na barra e SEM Estandarte plantado; plantar o
+// consome inteiro e a aura cresce "X% mais Efeito de Aura por Valor consumido". Antes: só com o Estandarte ligado, +1% por Valor.)
+test('VALOR: com o Estandarte na barra e nenhum plantado; "+N ao máximo de Valor"; plantar consome o Valor e a aura cresce X% mais por Valor', { skip: SEM }, () => {
   const { e, valor } = com(/^max_valor$/);
   const af = ficha(e).afPoe;
+  ModsPoe.aurasProximas(e, e.hunt, ficha(e));
   ModsPoe.ganharValor(e.hunt, 1, af);
-  assert.equal(ModsPoe.valorAtual(e.hunt), 0, 'sem Estandarte, nada');
-  e.hunt.buffs = { 'poe-gema:War_Banner': { ate: e.hunt.clock + 1e7, tipo: 'poe-aura', afPoe: { dmg_inc: 10 } } };
+  assert.equal(ModsPoe.valorAtual(e.hunt), 0, 'sem Estandarte na barra, nada');
+  e.actions = [{ id: 'poe-gema:War_Banner', enabled: true }];
+  ModsPoe.aurasProximas(e, e.hunt, ficha(e));
   ModsPoe.ganharValor(e.hunt, 1, af);
   ModsPoe.ganharValor(e.hunt, 1, af);
   assert.equal(ModsPoe.valorAtual(e.hunt), 1, 'uma vez a cada 0,5 s');
   for (let i = 0; i < 200; i++) { e.hunt.clock += 500; ModsPoe.ganharValor(e.hunt, 1, af); }
   assert.equal(ModsPoe.valorAtual(e.hunt), 50 + valor);
-  assert.ok(Math.abs(GemasPoe.adds(e).dmg_inc - 10 * (1 + (50 + valor) / 100)) < 1e-9);
+  // plantar: consome tudo; o efeito da aura × (1 + 10% × Valor)
+  const p = ModsPoe.plantarEstandarte(e, e.hunt, ficha(e), { efeito: 10, area: 10 });
+  assert.deepEqual([p.valor, p.efeitoMais, ModsPoe.valorAtual(e.hunt)], [50 + valor, 10 * (50 + valor), 0]);
+  e.hunt.buffs = { 'poe-gema:War_Banner': { ate: e.hunt.clock + 1e7, tipo: 'poe-aura', afPoe: { dmg_inc: 10 }, estandarte: { x: 0, y: 0, z: 0, valor: p.valor, efeitoMais: p.efeitoMais } } };
+  assert.ok(Math.abs(GemasPoe.adds(e).dmg_inc - 10 * (1 + p.efeitoMais / 100)) < 1e-9);
+  e.hunt.clock += 500;
+  ModsPoe.ganharValor(e.hunt, 1, af);
+  assert.equal(ModsPoe.valorAtual(e.hunt), 0, 'com um Estandarte plantado, não ganha');
   // o acerto corpo a corpo num Raro dá Valor; o de longe, não
   const o = novo();
-  o.hunt.buffs = { 'poe-gema:War_Banner': { ate: o.hunt.clock + 60000 } };
+  o.actions = [{ id: 'poe-gema:War_Banner', enabled: true }];
+  ModsPoe.aurasProximas(o, o.hunt, ficha(o));
   ModsPoe.aoAcertar(o, o.hunt, bicho({ raridade: 'raro' }), golpe(o, ['ataque', 'projetil']), { dano: 1, rng: () => 0.999 });
   assert.equal(ModsPoe.valorAtual(o.hunt), 0);
   ModsPoe.aoAcertar(o, o.hunt, bicho({ raridade: 'raro' }), golpe(o, ['ataque', 'corpo']), { dano: 1, rng: () => 0.999 });

@@ -52,6 +52,8 @@ import * as Poder from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as Protecao from './protecao.mjs';
+import { daSala } from './hunt/instancia.mjs';
+import * as Encontros from './encontros/estado.mjs';
 
 // A BARRA DO PoE (dono, 07/10: "frascos 1 a 5 e mais 8 que podem ser ataques, auras, suporte e etc"): com o PoE ligado a barra tem
 // 8 slots de HABILIDADE numa fileira só (qualquer gema cabe em qualquer um — não há mais os ofícios vida/mana/velocidade/suporte/ataque
@@ -114,15 +116,42 @@ const custoDaSkill = (entry, efeitoDaGema) => (entry.poeGema
 const DRAEVOR_PARA_POE = { spell: 'magia', melee: 'corpo', ranged: 'projetil', projectile: 'projetil', area: 'area', wave: 'area', fire: 'fogo', ice: 'gelo', energy: 'raio', physical: 'fisico', summon: 'lacaio' };
 export function tagsPoeDaSkill(entry) {
   const daGema = entry?.poeGema ? GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tags : null;
-  if (daGema) return [...ModsPoe.tagsDoPoe(daGema), 'habilidade'];
+  // (11/10: as gemas de Estandarte não trazem a tag — "Habilidades de Estandarte têm Duração/Área de Efeito aumentada")
+  if (daGema) return [...ModsPoe.tagsDoPoe(daGema), ...(/_Banner$/.test(entry.poeGema.slug) ? ['estandarte'] : []), 'habilidade'];
   const t = new Set(Tags.tagsDaAcao(entry).map((x) => DRAEVOR_PARA_POE[x]).filter(Boolean));
   if (t.has('corpo') || (t.has('fisico') && t.has('projetil') && !t.has('magia'))) t.add('ataque');
   if (t.has('fogo') || t.has('gelo') || t.has('raio')) t.add('elemental');
   return [...t, 'habilidade'];
 }
 
+/**
+ * (PoE, 11/10) "X% de chance de abrir Baús próximos quando você Conjurar uma Magia": cada BAÚ da sala (encontro `bau-*` disponível, no seu
+ * andar) a até `RAIO_DOS_BAUS` casas abre com a chance como se você o abrisse (`Encontros.ativar`: a chave, a armadilha e os guardiões valem igual).
+ */
+export const RAIO_DOS_BAUS = 4;
+export function abrirBausAoConjurar(estado, hunt, personagem, chance, rng = Math.random) {
+  if (!(chance > 0) || !hunt?.pos) return 0;
+  const inst = daSala(hunt);
+  let abertos = 0;
+  for (const e of Object.values(inst?.encontros ?? {})) {
+    if (!String(e.tipo).startsWith('bau') || e.estado !== 'disponivel' || e.x == null || (e.z != null && e.z !== hunt.z)) continue;
+    if (Math.max(Math.abs(hunt.pos.x - e.x), Math.abs(hunt.pos.y - e.y)) > RAIO_DOS_BAUS || !(rng() * 100 < chance)) continue;
+    if (Encontros.ativar(inst, e.id, { quem: personagem?.nome ?? null, agora: (hunt.anfitriao ?? hunt).clock ?? 0, hunt, estado, personagem }).ok) abertos++;
+  }
+  return abertos;
+}
+
+/**
+ * (PoE, 11/10) O RAIO da aura em casas: o da gema (`GemasPoe.buffNoNivel`) × √(1 + a "Área de Efeito aumentada" — a geral e a das tags dela,
+ * "Efeito em Área de Habilidades de Aura aumentado"). É até onde ela vale nos companheiros de grupo (`GemasPoe.adds`).
+ */
+export function raioDaAuraDe(estado, entry, base, mais = 1) {
+  const f = Ficha.combate(estado);
+  return Math.max(1, Math.round(base * Math.sqrt(Math.max(0.1, 1 + (ModsPoe.valor(f, 'area_inc') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).area_inc ?? 0)) / 100) * Math.max(0.1, mais))));
+}
+
 /** PoE: a "Duração do Efeito de Habilidades" das peças (com condição: "Habilidades de Armadilha…", o anel do lado certo), em %. */
-function duracaoDasPecas(estado, entry) {
+export function duracaoDasPecas(estado, entry) {
   const f = Ficha.combate(estado);
   return ModsPoe.valor(f, 'duracao_habilidades') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).duracao_habilidades ?? 0);
 }
@@ -1225,6 +1254,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     return { ok: false, erro: 'Aguarde o cooldown global.', motivo: 'COOLDOWN_GLOBAL', faltaMs: globalLibera - agora };
   }
   if (cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
+  // (PoE, 11/10) A RETALIAÇÃO só se usa na janela: depois de bloquear um acerto (ou de um Acerto Selvagem) — `ModsPoe.abrirRetaliacao`.
+  const gatilhoDaRetaliacao = !gatilho && entry.poeGema ? GemasPoe.gatilhoDeRetaliacao(entry.poeGema.slug) : null;
+  if (gatilhoDaRetaliacao && !concluir && !ModsPoe.retaliacaoUsavel(hunt, gatilhoDaRetaliacao, entry.poeGema.slug, hunt.clock ?? 0)) {
+    return { ok: false, erro: gatilhoDaRetaliacao === 'selvagem' ? 'Só depois de sofrer um Acerto Selvagem (Retaliação).' : 'Só depois de bloquear um acerto (Retaliação).', motivo: 'RETALIACAO' };
+  }
   const grupo = `grupo:${entry.group ?? entry.kind}`;
   // Magias: recarga do grupo (attack/healing/support). Poções: uma recarga só
   // para todas, como no Tibia (vida e mana não saem no mesmo instante). Runa
@@ -1365,6 +1399,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // Suporte: não relança enquanto o efeito dele ainda está ligado.
   const buff = BUFFS[entry.id];
   if (buff && !R.jaPode(agora, hunt.buffs?.[entry.id]?.ate)) return { ok: false, erro: 'Ainda está ativo.', motivo: 'EFEITO_ATIVO' };
+  // (PoE, 11/10) O ESTANDARTE se planta consumindo o Valor: sem Valor, não sai; no automático, só com o Valor no máximo (o clique planta com o que
+  // tiver) — `ModsPoe.plantarEstandarte`.
+  if (buff && entry.poeGema && /_Banner$/.test(entry.poeGema.slug) && itensPoeLigado()) {
+    const v = Math.floor(ModsPoe.valorAtual(hunt));
+    const max = ModsPoe.valorMaximo(Ficha.combate(estado).afPoe);
+    if (v < 1 || (!manual && v < max)) return { ok: false, erro: v < 1 ? 'Sem Valor para plantar o Estandarte.' : `Juntando Valor para o Estandarte (${v}/${max}).`, motivo: 'SEM_VALOR' };
+  }
   // A skill que desliga um reforço (dados: `cancelamentos`) só sai com ele ligado.
   const cancela = Reforcos.CANCELA[entry.id];
   if (cancela && !temBuff(hunt, cancela)) return { ok: false, erro: 'Não há o que cancelar.', motivo: cancela === 'shield' ? 'SEM_ESCUDO' : 'SEM_REFORCO' };
@@ -1493,8 +1534,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // A gema do PoE: os efeitos e os atributos do NÍVEL dela (`GemasPoe.buffNoNivel`) ficam no buff; a ficha é refeita (atributos novos).
     const doPoe = entry.poeGema?.buff ? GemasPoe.buffNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
     // (A aura que reserva fica LIGADA — sem expirar — e guarda a reserva dela: o recurso, a % ou o fixo, e o fator dos suportes/eficácia.)
+    // (11/10: o RAIO da aura em casas, × √ do "Efeito em Área de Habilidades de Aura aumentado" de quem lança — os companheiros a esse raio
+    // também a recebem: `GemasPoe.adds`.)
+    // (11/10) O ESTANDARTE: plantar consome o Valor — a aura fica no chão, onde você está, maior e mais forte pelo Valor consumido
+    // (`ModsPoe.plantarEstandarte`; o efeito multiplica os efeitos do nível — `fator` — e os atributos — `GemasPoe.adds`).
+    const plantado = doPoe?.porValor ? ModsPoe.plantarEstandarte(estado, hunt, Ficha.combate(estado), doPoe.porValor, agora) : null;
+    const raioDaAura = plantado ? raioDaAuraDe(estado, entry, (doPoe.raioM ?? 2) / 2, 1 + plantado.areaMais / 100) : doPoe?.raio ? raioDaAuraDe(estado, entry, doPoe.raio) : null;
     (hunt.buffs ??= {})[entry.id] = doPoe
-      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * (1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100)), desde: agora, tipo: buff.tipo, fator: 1, efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
+      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * (1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
+        ...(plantado ? { estandarte: { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, valor: plantado.valor, efeitoMais: plantado.efeitoMais } } : {}),
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
@@ -1563,7 +1611,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const fichaDaGema = Ficha.combate(estado);
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
     const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null);
+    // (PoE, 11/10: "Cada quarta Habilidade de Retaliação que você usar sempre será um Golpe Crítico" — este uso é o quarto?)
+    const retaliacaoCritica = !!gatilhoDaRetaliacao && ModsPoe.valor(ficha, 'retaliacao_quarta_critica') > 0 && ((hunt.retaliacaoUsos ?? 0) + 1) % 4 === 0;
     let total = 0;
+    // (PoE: o dano nos monstros com "Vida Não Pode ser Drenada" — fora do dreno de vida, `Ficha.aplicarLeech`.)
+    let totalSemDreno = 0;
     const danos = [];
     /*
      * UM acerto num bicho, com `pct`% do golpe — o golpe principal (100%) e os
@@ -1603,7 +1655,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const base = pedacos ? Math.round(pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, ficha), 0)) : resistido(hunt, bicho, tipo, bruto, ficha);
       // (a maldição amaldiçoa no acerto; "Recupera X% de Vida quando você Amaldiçoar um Inimigo sem Maldições")
       if (Reforcos.marcar(hunt, bicho, agora).amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: bicho, eventos, personagem });
-      const rolado = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
+      const rolado = Ficha.rolarCritico(estado, base, bicho, eventos, retaliacaoCritica ? { ...ficha, critChance: 1, critChanceMagia: 1 } : ficha);
       // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros" — no crítico, a parte elemental sem a resistência positiva.
       if (rolado.crit && base > 0 && ModsPoe.valor(ficha, 'critico_ignora_res') > 0) {
         const semRes = pedacos ? pedacos.reduce((t, p) => t + (['fire', 'ice', 'energy'].includes(p.elemento) ? Math.max(p.dano, resistido(hunt, bicho, p.elemento, p.dano, ficha)) : resistido(hunt, bicho, p.elemento, p.dano, ficha)), 0) : (['fire', 'ice', 'energy'].includes(tipo) ? Math.max(bruto, base) : base);
@@ -1620,6 +1672,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         detalhe: { min, max, daPericia, multiplicador: mult, fatorDaGema, porcentagemDoGolpe: pct, fatorDoAtaque, ataqueDuplo: fatorDoAtaque !== 100, ...(pedacos ? { porElemento: Object.fromEntries(pedacos.map((p) => [p.elemento, Math.round(p.dano)])) } : {}) },
       }));
       total += dano;
+      if (bicho.semDreno) totalSemDreno += dano;
       danos.push({ bicho, dano });
       // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado — `mobs/mecanicas.mjs`).
       Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos);
@@ -1718,7 +1771,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
     // (No PoE as magias não roubam: só os ataques — `Ficha.aplicarLeech`.)
-    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha, null, { ataque: !ehMagiaDaConta });
+    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha, null, { ataque: !ehMagiaDaConta, semDrenoDeVida: Math.min(total, totalSemDreno) });
     // Life Leech / Mana Leech (supports): % do dano desta skill volta em vida/mana.
     const vidaDoLeech = Math.round((total * (efeitoDaGema?.leechVidaPct ?? 0)) / 100);
     const manaDoLeech = Math.round((total * (efeitoDaGema?.leechManaPct ?? 0)) / 100);
@@ -1756,6 +1809,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (ciclo 7) O uso por TAG — "se você usou uma Habilidade de Retaliação Recentemente", "conjurou uma Magia de Runa/Marca Recentemente" — e
     // QUAIS gemas de cada tag ("por cada Habilidade de Retaliação diferente que você tenha usado nos últimos N segundos").
     ModsPoe.marcarUsoPorTag(hunt, tagsPoe, entry.poeGema.slug, inicio);
+    // (a Retaliação usada: gasta o uso na janela — `ModsPoe.usarRetaliacao`)
+    if (gatilhoDaRetaliacao) ModsPoe.usarRetaliacao(hunt, gatilhoDaRetaliacao, entry.poeGema.slug, fichaDoUso.afPoe, hunt.clock ?? 0);
+    // ("X% de chance de abrir Baús próximos quando você Conjurar uma Magia" — `abrirBausAoConjurar`)
+    if (tagsPoe.includes('magia')) abrirBausAoConjurar(estado, hunt, personagem, ModsPoe.valor(fichaDoUso, 'abrir_bau_ao_conjurar'));
     // (ciclo 7, lote G) IMPELIR: o Clamor Impele os próximos N ataques (os da gema, + "Clamores Impelem 1 Ataque adicional", "têm X% de chance
     // de Impelir N Ataques adicionais", "Impelem duas vezes mais Ataques"); o ataque usado gasta um (a tag `impelido` do golpe).
     if (tagsPoe.includes('clamor')) {
@@ -1766,7 +1823,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         if (ModsPoe.valor(fichaDoUso, 'clamor_impele_dobro') > 0) n *= 2;
         hunt.impelidos = { n: Math.max(hunt.impelidos?.ate > inicio ? hunt.impelidos.n : 0, n), ate: inicio + 20000 };
       }
-    } else if (tagsPoe.includes('ataque') && hunt.impelidos?.n > 0) hunt.impelidos.n--;
+    } else if (tagsPoe.includes('ataque') && hunt.impelidos?.n > 0 && !(tagsPoe.includes('movimento') && ModsPoe.valor(fichaDoUso, 'clamor_nao_impele_movimento') > 0)) hunt.impelidos.n--;
     const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
     ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);

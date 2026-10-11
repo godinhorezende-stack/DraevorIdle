@@ -1,29 +1,29 @@
 {
- "geradoEm": "2026-10-11T17:08:06.033Z",
+ "geradoEm": "2026-10-11T18:33:03.597Z",
  "resumo": {
   "nos": 2810,
   "auditaveis": 2782,
   "porSituacao": {
-   "funcional": 2124,
-   "funcional-aproximado": 165,
-   "sem-efeito": 118,
-   "parcial": 265,
-   "nao-classificado": 110
+   "funcional": 2187,
+   "funcional-aproximado": 207,
+   "sem-efeito": 97,
+   "nao-classificado": 110,
+   "parcial": 181
   },
   "verificadosNoMotor": 2782,
   "falhasDeMotor": 0,
   "porNivel": {
    "exibido": 0,
-   "alocavel": 228,
-   "interpretado": 42,
-   "aplicado": 1340,
-   "validado": 1172
+   "alocavel": 207,
+   "interpretado": 33,
+   "aplicado": 1304,
+   "validado": 1238
   },
   "porAplicado": {
-   "ficha": 1733,
-   "combate": 779,
-   "sem efeito": 228,
-   "condicional": 42
+   "ficha": 1744,
+   "combate": 798,
+   "sem efeito": 207,
+   "condicional": 33
   }
  },
  "nos": [
@@ -983,16 +983,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -2132,12 +2132,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@corpo"
+    "dmg_inc@corpo",
+    "alcance_corpo_m"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -2147,14 +2149,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -2815,26 +2817,31 @@
    "nomeEn": "Prepared Response",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "retaliacao_outra_chance",
+    "retaliacao_janela_inc"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -3225,12 +3232,13 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "block@comEscudo"
+    "block@comEscudo",
+    "block_recovery"
    ],
    "tipos": [
     "bloqueio"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -3240,14 +3248,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -3965,7 +3973,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 1,
@@ -4094,16 +4102,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -5482,16 +5490,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -5516,16 +5524,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -5970,26 +5978,30 @@
    "nomeEn": "Aura Area of Effect",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "area_inc@aura"
+   ],
+   "tipos": [
+    "área e projéteis"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -6873,16 +6885,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "4/5",
+   "cobertura": "5/5",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -7562,13 +7574,15 @@
    "chaves": [
     "block@duasArmas",
     "block@comEscudo",
-    "atk_speed"
+    "atk_speed",
+    "alcance_corpo_m"
    ],
    "tipos": [
     "bloqueio",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -7578,14 +7592,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "3/3",
+   "cobertura": "4/4",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [],
    "desconectados": []
@@ -7954,16 +7968,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -8297,16 +8311,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -8412,7 +8426,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -8430,26 +8444,30 @@
    "nomeEn": "Banner Duration",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "duracao_habilidades@estandarte"
+   ],
+   "tipos": [
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -9994,12 +10012,14 @@
    "ascendencia": null,
    "chaves": [
     "dmg_inc@ataque+comEspada",
-    "ailment_dmg_inc@ataque+comEspada"
+    "ailment_dmg_inc@ataque+comEspada",
+    "alcance_corpo_m@comEspada"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -10009,14 +10029,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -10494,7 +10514,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -10900,26 +10920,30 @@
    "nomeEn": "Aura Area of Effect",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "area_inc@aura"
+   ],
+   "tipos": [
+    "área e projéteis"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -12536,7 +12560,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -12841,16 +12865,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -13528,26 +13552,30 @@
    "nomeEn": "Aggravate Bleeding On Critical Strike Chance",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "chance_agravar@ataque+critico"
+   ],
+   "tipos": [
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -14685,16 +14713,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -15055,26 +15083,31 @@
    "nomeEn": "Defiant Stand",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "estandarte_cargas_cheio:tolerancia",
+    "estandarte_cargas_cheio:frenesi"
+   ],
+   "tipos": [
+    "cargas e fúria"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -15574,16 +15607,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -16625,16 +16658,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "4/5",
+   "cobertura": "5/5",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -16688,13 +16721,15 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "retaliacao_quarta_critica",
     "atk_speed@retaliacao",
     "cast_speed_tag@retaliacao"
    ],
    "tipos": [
+    "crítico",
     "velocidades"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -16704,14 +16739,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -16839,16 +16874,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -17366,16 +17401,16 @@
     "dano % (aumentado e \"mais\")"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -17652,16 +17687,16 @@
     "precisão %"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -17688,16 +17723,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -17953,26 +17988,30 @@
    "nomeEn": "Retaliation Skill Usable Duration",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "retaliacao_janela_inc"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -18753,12 +18792,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "stat:mana"
+    "stat:mana",
+    "area_inc@aura"
    ],
    "tipos": [
-    "mana %"
+    "mana %",
+    "área e projéteis"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -18768,14 +18809,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -19314,12 +19355,13 @@
    "ascendencia": null,
    "chaves": [
     "sangramento_pilhas",
+    "sangramento_sem_movimento",
     "sangramento_menos"
    ],
    "tipos": [
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -19329,14 +19371,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [],
    "desconectados": []
@@ -19526,12 +19568,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@corpo"
+    "dmg_inc@corpo",
+    "alcance_corpo_m"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -19541,14 +19585,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -21275,12 +21319,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@corpo"
+    "dmg_inc@corpo",
+    "alcance_corpo_m@inimigosPertoMin:5"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -21290,14 +21336,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -22192,16 +22238,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -22631,26 +22677,30 @@
    "nomeEn": "Arsenal of Vengeance",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "retaliacao_a_cada_acertos"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -22988,26 +23038,30 @@
    "nomeEn": "Banner Duration",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "duracao_habilidades@estandarte"
+   ],
+   "tipos": [
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -24199,12 +24253,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
+    "block_recovery",
     "es_pct_escudo"
    ],
    "tipos": [
+    "bloqueio",
     "escudo de energia"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -24214,14 +24270,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -24548,16 +24604,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -24992,26 +25048,30 @@
    "nomeEn": "Aura Area of Effect",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "area_inc@aura"
+   ],
+   "tipos": [
+    "área e projéteis"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -26072,16 +26132,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -26284,16 +26344,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -26611,16 +26671,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "4/5",
+   "cobertura": "5/5",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -28413,12 +28473,13 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "dot_multi_bleed"
+    "dot_multi_bleed",
+    "chance_agravar@ataque"
    ],
    "tipos": [
     "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -28428,14 +28489,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -32262,26 +32323,30 @@
    "nomeEn": "Banner Duration",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "duracao_habilidades@estandarte"
+   ],
+   "tipos": [
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -32397,12 +32462,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "chance_empurrar"
+    "chance_empurrar",
+    "distancia_empurrao"
    ],
    "tipos": [
-    "afecções e chance no acerto"
+    "afecções e chance no acerto",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -32412,14 +32479,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -32965,16 +33032,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "4/5",
+   "cobertura": "5/5",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -34694,12 +34761,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@corpo"
+    "dmg_inc@corpo",
+    "alcance_corpo_m"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -34709,14 +34778,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -36337,13 +36406,15 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "area_inc@aura",
     "eficiencia_reserva",
     "efeito_buff_gema:aura"
    ],
    "tipos": [
+    "área e projéteis",
     "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -36353,14 +36424,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [],
    "desconectados": []
@@ -36877,14 +36948,16 @@
    "chaves": [
     "life_regen_max_pct",
     "phys_dmg@corpo",
+    "alcance_corpo_m",
     "str"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
     "dano % (aumentado e \"mais\")",
+    "outros",
     "atributos (For/Des/Int)"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -36894,14 +36967,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "3/3",
+   "cobertura": "4/4",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 0,
+    "funciona": 4,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 3
+    "efetivas": 4
    },
    "pendentes": [],
    "desconectados": []
@@ -38834,7 +38907,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -38890,12 +38963,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
+    "duracao_habilidades@estandarte",
     "max_valor"
    ],
    "tipos": [
+    "afecções e chance no acerto",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -38905,14 +38980,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -39753,7 +39828,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 1,
@@ -42211,16 +42286,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -42555,12 +42630,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@corpo"
+    "dmg_inc@corpo",
+    "alcance_corpo_m"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -42570,14 +42647,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -42665,16 +42742,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -42806,16 +42883,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -44331,16 +44408,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -44658,29 +44735,31 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "ev:matar:explodirChance:10@estandarteAtivo"
+    "ev:matar:explodirChance:10@estandarteAtivo",
+    "area_inc@estandarte"
    ],
    "tipos": [
-    "efeito por evento"
+    "efeito por evento",
+    "área e projéteis"
    ],
-   "situacao": "parcial",
-   "nivel": "interpretado",
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/1",
+   "aplicado": "combate",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -44775,16 +44854,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "4/5",
+   "cobertura": "5/5",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -45186,16 +45265,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -45256,16 +45335,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -47675,12 +47754,13 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "block@comEscudo"
+    "block@comEscudo",
+    "block_recovery"
    ],
    "tipos": [
     "bloqueio"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -47690,14 +47770,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -48410,13 +48490,14 @@
    "ascendencia": null,
    "chaves": [
     "block@comEscudo",
+    "block_recovery",
     "ev:bloquear:vida"
    ],
    "tipos": [
     "bloqueio",
     "efeito por evento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -48426,14 +48507,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [],
    "desconectados": []
@@ -51113,26 +51194,30 @@
    "nomeEn": "Banner Area of Effect",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "area_inc@estandarte"
+   ],
+   "tipos": [
+    "área e projéteis"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -51726,7 +51811,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -52753,12 +52838,13 @@
    "ascendencia": null,
    "chaves": [
     "block@duasArmas",
-    "block@comEscudo"
+    "block@comEscudo",
+    "block_recovery"
    ],
    "tipos": [
     "bloqueio"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -52768,14 +52854,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -56181,16 +56267,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -56385,16 +56471,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -56586,16 +56672,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -57349,16 +57435,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -57742,16 +57828,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -57823,7 +57909,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 1,
@@ -58034,7 +58120,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -58061,16 +58147,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -58095,16 +58181,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -59307,13 +59393,14 @@
    "ascendencia": null,
    "chaves": [
     "block@duasArmas",
+    "block_recovery",
     "dmg_inc@ataque+duasArmas"
    ],
    "tipos": [
     "bloqueio",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -59323,14 +59410,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [],
    "desconectados": []
@@ -59556,7 +59643,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
+   "aplicado": "ficha",
    "cobertura": "0/1",
    "linhas": {
     "funciona": 1,
@@ -59897,26 +59984,30 @@
    "nomeEn": "Retaliation Skill Usable Duration",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "retaliacao_janela_inc"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -59995,26 +60086,30 @@
    "nomeEn": "Banner Area of Effect",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "area_inc@estandarte"
+   ],
+   "tipos": [
+    "área e projéteis"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -60559,7 +60654,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
+   "aplicado": "ficha",
    "cobertura": "0/1",
    "linhas": {
     "funciona": 1,
@@ -63520,26 +63615,30 @@
    "nomeEn": "Aggravate Bleeding On Critical Strike Chance",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "chance_agravar@ataque+critico"
+   ],
+   "tipos": [
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -64500,12 +64599,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "stat:mana"
+    "stat:mana",
+    "area_inc@aura"
    ],
    "tipos": [
-    "mana %"
+    "mana %",
+    "área e projéteis"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -64515,14 +64616,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -64809,12 +64910,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "area_inc@aura",
     "eficiencia_reserva"
    ],
    "tipos": [
+    "área e projéteis",
     "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -64824,14 +64927,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -65486,7 +65589,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -67171,7 +67274,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/4",
+   "cobertura": "3/4",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -67470,16 +67573,16 @@
     "dano % (aumentado e \"mais\")"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -69300,16 +69403,16 @@
     "dano % (aumentado e \"mais\")"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -69327,26 +69430,32 @@
    "nomeEn": "Bannerman",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "estandarte_fica_s",
+    "duracao_habilidades@estandarte"
+   ],
+   "tipos": [
+    "outros",
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -70755,29 +70864,31 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "area_inc@corpo"
    ],
    "tipos": [
+    "outros",
     "área e projéteis"
    ],
-   "situacao": "parcial",
-   "nivel": "aplicado",
+   "situacao": "funcional-aproximado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -71131,26 +71242,30 @@
    "nomeEn": "Aura Area of Effect",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "area_inc@aura"
+   ],
+   "tipos": [
+    "área e projéteis"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -71213,7 +71328,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -71854,12 +71969,14 @@
    "ascendencia": null,
    "chaves": [
     "dmg_inc@ataque+comEspada",
-    "ailment_dmg_inc@ataque+comEspada"
+    "ailment_dmg_inc@ataque+comEspada",
+    "alcance_corpo_m@comEspada"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -71869,14 +71986,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
+    "funciona": 2,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -71888,12 +72005,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
+    "area_inc@aura",
     "efeito_buff_gema:aura"
    ],
    "tipos": [
+    "área e projéteis",
     "auras, maldições e reserva"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -71903,14 +72022,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -72335,7 +72454,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -72387,26 +72506,30 @@
    "nomeEn": "Knockback Distance",
    "categoria": "comum",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "distancia_empurrao"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional-aproximado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
+    "funciona": 1,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -72749,7 +72872,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -73021,15 +73144,17 @@
     "ailment_duration@retaliacao",
     "ev:acertar:alvo:debilitado:3@retaliacao",
     "armour_pct%distintas:retaliacao:10",
+    "retaliacao_outra_chance",
     "eficiencia_custo_mana@retaliacao"
    ],
    "tipos": [
     "afecções e chance no acerto",
     "efeito por evento",
     "armadura e evasão",
+    "outros",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -73039,14 +73164,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -73186,7 +73311,8 @@
     "mana_on_hit@comGarra+ataque+maoSecundaria",
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
-    "roubo_instantaneo_pct%armas:comGarra"
+    "roubo_instantaneo_pct%armas:comGarra",
+    "furtividade@acertouRecente+comGarra"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -73205,14 +73331,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
-    "aproximado": 1,
+    "funciona": 6,
+    "aproximado": 2,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -73465,15 +73591,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -73482,15 +73610,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -73528,7 +73656,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/7",
+   "cobertura": "1/7",
    "linhas": {
     "funciona": 6,
     "aproximado": 1,
@@ -73552,14 +73680,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -73569,14 +73701,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -73818,15 +73950,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -73835,15 +73969,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -73983,6 +74117,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "clamor_nao_impele_movimento",
     "ev:usarClamor:vidaPct",
     "clamor_poder_minimo",
     "ev:usarClamor:proximos:debilitado:1",
@@ -73990,11 +74125,11 @@
     "clamor_impele_chance:3"
    ],
    "tipos": [
+    "outros",
     "efeito por evento",
-    "cargas e fúria",
-    "outros"
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -74004,14 +74139,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/5",
+   "cobertura": "1/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -74023,6 +74158,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -74037,7 +74173,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -74047,14 +74183,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -74066,6 +74202,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -74080,7 +74217,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -74090,14 +74227,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -74421,7 +74558,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "2/6",
    "linhas": {
     "funciona": 6,
     "aproximado": 0,
@@ -74522,12 +74659,14 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m@comEspada",
     "chance_empalar@ataque",
     "carga_frenesi_ao_acertar_unico",
     "crit_chance_inc@ataque+comEspada",
     "crit_dmg@ataque+comEspada"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "cargas e fúria",
     "crítico"
@@ -74542,14 +74681,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/4",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 4,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 1,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -74561,6 +74700,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -74575,7 +74715,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -74585,14 +74725,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -75144,7 +75284,8 @@
     "mana_on_hit@comGarra+ataque+maoSecundaria",
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
-    "roubo_instantaneo_pct%armas:comGarra"
+    "roubo_instantaneo_pct%armas:comGarra",
+    "furtividade@acertouRecente+comGarra"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -75163,14 +75304,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
-    "aproximado": 1,
+    "funciona": 6,
+    "aproximado": 2,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -75263,14 +75404,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -75280,14 +75425,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -75342,30 +75487,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -75607,7 +75754,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "2/6",
    "linhas": {
     "funciona": 6,
     "aproximado": 0,
@@ -75629,15 +75776,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -75646,15 +75795,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -75795,30 +75944,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -75850,7 +76001,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "ficha",
+   "aplicado": "combate",
    "cobertura": "0/3",
    "linhas": {
     "funciona": 3,
@@ -75889,7 +76040,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -75995,7 +76146,8 @@
     "mana_on_hit@comGarra+ataque+maoSecundaria",
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
-    "roubo_instantaneo_pct%armas:comGarra"
+    "roubo_instantaneo_pct%armas:comGarra",
+    "furtividade@acertouRecente+comGarra"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -76014,14 +76166,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
-    "aproximado": 1,
+    "funciona": 6,
+    "aproximado": 2,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -76314,7 +76466,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 1,
@@ -76436,7 +76588,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -76455,14 +76607,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "sangrar_andando_sem_extra",
+    "chance_agravar@ataque+golpeAtordoou",
+    "agravar_sangramento_apos_s@ataque",
     "crit_chance_inc@alvoSangrando",
-    "dot_multi_bleed%carga:tolerancia"
+    "dot_multi_bleed%carga:tolerancia",
+    "chance_agravar@ataque+impelido"
    ],
    "tipos": [
-    "crítico",
-    "afecções e chance no acerto"
+    "outros",
+    "afecções e chance no acerto",
+    "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76472,14 +76629,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/6",
    "linhas": {
-    "funciona": 2,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 4,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -76851,7 +77008,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/7",
+   "cobertura": "1/7",
    "linhas": {
     "funciona": 6,
     "aproximado": 1,
@@ -76911,6 +77068,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "clamor_nao_impele_movimento",
     "ev:usarClamor:vidaPct",
     "clamor_poder_minimo",
     "ev:usarClamor:proximos:debilitado:1",
@@ -76918,11 +77076,11 @@
     "clamor_impele_chance:3"
    ],
    "tipos": [
+    "outros",
     "efeito por evento",
-    "cargas e fúria",
-    "outros"
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76932,14 +77090,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/5",
+   "cobertura": "1/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -77035,30 +77193,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -77098,7 +77258,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/7",
+   "cobertura": "1/7",
    "linhas": {
     "funciona": 6,
     "aproximado": 1,
@@ -77120,15 +77280,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -77137,15 +77299,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -77249,15 +77411,17 @@
     "ailment_duration@retaliacao",
     "ev:acertar:alvo:debilitado:3@retaliacao",
     "armour_pct%distintas:retaliacao:10",
+    "retaliacao_outra_chance",
     "eficiencia_custo_mana@retaliacao"
    ],
    "tipos": [
     "afecções e chance no acerto",
     "efeito por evento",
     "armadura e evasão",
+    "outros",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -77267,14 +77431,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -77325,6 +77489,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "clamor_nao_impele_movimento",
     "ev:usarClamor:vidaPct",
     "clamor_poder_minimo",
     "ev:usarClamor:proximos:debilitado:1",
@@ -77332,11 +77497,11 @@
     "clamor_impele_chance:3"
    ],
    "tipos": [
+    "outros",
     "efeito por evento",
-    "cargas e fúria",
-    "outros"
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -77346,14 +77511,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/5",
+   "cobertura": "1/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -77407,6 +77572,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "totem_sem_lentidao",
     "totem_dois_chance",
     "dano_no_totem_pct",
     "totem_roubo_vida_fisico",
@@ -77418,7 +77584,7 @@
     "dano % (aumentado e \"mais\")",
     "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -77428,14 +77594,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -77447,12 +77613,14 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m@comEspada",
     "chance_empalar@ataque",
     "carga_frenesi_ao_acertar_unico",
     "crit_chance_inc@ataque+comEspada",
     "crit_dmg@ataque+comEspada"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "cargas e fúria",
     "crítico"
@@ -77467,14 +77635,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/4",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 4,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 1,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -77696,30 +77864,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -77759,7 +77929,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/7",
+   "cobertura": "1/7",
    "linhas": {
     "funciona": 6,
     "aproximado": 1,
@@ -77953,30 +78123,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -77993,15 +78165,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78010,15 +78184,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -78030,6 +78204,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -78044,7 +78219,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78054,14 +78229,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -78131,7 +78306,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/4",
+   "cobertura": "3/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 3,
@@ -78217,7 +78392,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "2/6",
    "linhas": {
     "funciona": 6,
     "aproximado": 0,
@@ -78278,12 +78453,14 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m@comEspada",
     "chance_empalar@ataque",
     "carga_frenesi_ao_acertar_unico",
     "crit_chance_inc@ataque+comEspada",
     "crit_dmg@ataque+comEspada"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "cargas e fúria",
     "crítico"
@@ -78298,14 +78475,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/4",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 4,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 1,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -78348,7 +78525,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
+   "aplicado": "ficha",
    "cobertura": "1/14",
    "linhas": {
     "funciona": 6,
@@ -78487,14 +78664,17 @@
    "chaves": [
     "aura_proximos:mutilado@estandarteAtivo",
     "ev:usarClamor:valor",
+    "estandarte_remove_afeccao_min",
+    "estandarte_vida_por_valor:5",
     "aura_dano_sofrido@estandarteAtivo"
    ],
    "tipos": [
     "auras, maldições e reserva",
     "efeito por evento",
+    "outros",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78504,14 +78684,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -78567,30 +78747,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -78647,6 +78829,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -78661,7 +78844,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78671,14 +78854,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -78791,7 +78974,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "2/6",
    "linhas": {
     "funciona": 6,
     "aproximado": 0,
@@ -78847,6 +79030,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "totem_sem_lentidao",
     "totem_dois_chance",
     "dano_no_totem_pct",
     "totem_roubo_vida_fisico",
@@ -78858,7 +79042,7 @@
     "dano % (aumentado e \"mais\")",
     "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78868,14 +79052,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -79082,7 +79266,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "2/6",
    "linhas": {
     "funciona": 6,
     "aproximado": 0,
@@ -79187,14 +79371,17 @@
    "chaves": [
     "aura_proximos:mutilado@estandarteAtivo",
     "ev:usarClamor:valor",
+    "estandarte_remove_afeccao_min",
+    "estandarte_vida_por_valor:5",
     "aura_dano_sofrido@estandarteAtivo"
    ],
    "tipos": [
     "auras, maldições e reserva",
     "efeito por evento",
+    "outros",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -79204,14 +79391,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -79226,15 +79413,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -79243,15 +79432,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -79263,6 +79452,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "clamor_nao_impele_movimento",
     "ev:usarClamor:vidaPct",
     "clamor_poder_minimo",
     "ev:usarClamor:proximos:debilitado:1",
@@ -79270,11 +79460,11 @@
     "clamor_impele_chance:3"
    ],
    "tipos": [
+    "outros",
     "efeito por evento",
-    "cargas e fúria",
-    "outros"
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -79284,14 +79474,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/5",
+   "cobertura": "1/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -79329,7 +79519,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/7",
+   "cobertura": "1/7",
    "linhas": {
     "funciona": 6,
     "aproximado": 1,
@@ -79603,14 +79793,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "sangrar_andando_sem_extra",
+    "chance_agravar@ataque+golpeAtordoou",
+    "agravar_sangramento_apos_s@ataque",
     "crit_chance_inc@alvoSangrando",
-    "dot_multi_bleed%carga:tolerancia"
+    "dot_multi_bleed%carga:tolerancia",
+    "chance_agravar@ataque+impelido"
    ],
    "tipos": [
-    "crítico",
-    "afecções e chance no acerto"
+    "outros",
+    "afecções e chance no acerto",
+    "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -79620,14 +79815,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/6",
    "linhas": {
-    "funciona": 2,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 4,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -79771,6 +79966,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "totem_sem_lentidao",
     "totem_dois_chance",
     "dano_no_totem_pct",
     "totem_roubo_vida_fisico",
@@ -79782,7 +79978,7 @@
     "dano % (aumentado e \"mais\")",
     "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -79792,14 +79988,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -80184,14 +80380,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80201,14 +80401,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -80220,14 +80420,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "sangrar_andando_sem_extra",
+    "chance_agravar@ataque+golpeAtordoou",
+    "agravar_sangramento_apos_s@ataque",
     "crit_chance_inc@alvoSangrando",
-    "dot_multi_bleed%carga:tolerancia"
+    "dot_multi_bleed%carga:tolerancia",
+    "chance_agravar@ataque+impelido"
    ],
    "tipos": [
-    "crítico",
-    "afecções e chance no acerto"
+    "outros",
+    "afecções e chance no acerto",
+    "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80237,14 +80442,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/6",
    "linhas": {
-    "funciona": 2,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 4,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -80257,30 +80462,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -80343,15 +80550,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80360,15 +80569,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -80397,7 +80606,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 1,
@@ -80609,7 +80818,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -80686,7 +80895,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/4",
+   "cobertura": "3/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 3,
@@ -80708,15 +80917,17 @@
     "ailment_duration@retaliacao",
     "ev:acertar:alvo:debilitado:3@retaliacao",
     "armour_pct%distintas:retaliacao:10",
+    "retaliacao_outra_chance",
     "eficiencia_custo_mana@retaliacao"
    ],
    "tipos": [
     "afecções e chance no acerto",
     "efeito por evento",
     "armadura e evasão",
+    "outros",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80726,14 +80937,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -80870,14 +81081,17 @@
    "chaves": [
     "aura_proximos:mutilado@estandarteAtivo",
     "ev:usarClamor:valor",
+    "estandarte_remove_afeccao_min",
+    "estandarte_vida_por_valor:5",
     "aura_dano_sofrido@estandarteAtivo"
    ],
    "tipos": [
     "auras, maldições e reserva",
     "efeito por evento",
+    "outros",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80887,14 +81101,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -80909,15 +81123,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80926,15 +81142,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -80946,14 +81162,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "sangrar_andando_sem_extra",
+    "chance_agravar@ataque+golpeAtordoou",
+    "agravar_sangramento_apos_s@ataque",
     "crit_chance_inc@alvoSangrando",
-    "dot_multi_bleed%carga:tolerancia"
+    "dot_multi_bleed%carga:tolerancia",
+    "chance_agravar@ataque+impelido"
    ],
    "tipos": [
-    "crítico",
-    "afecções e chance no acerto"
+    "outros",
+    "afecções e chance no acerto",
+    "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80963,14 +81184,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/6",
    "linhas": {
-    "funciona": 2,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 4,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -81417,6 +81638,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -81431,7 +81653,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -81441,14 +81663,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -81509,14 +81731,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -81526,14 +81752,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -81673,14 +81899,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -81690,14 +81920,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -81807,7 +82037,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -82120,6 +82350,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "totem_sem_lentidao",
     "totem_dois_chance",
     "dano_no_totem_pct",
     "totem_roubo_vida_fisico",
@@ -82131,7 +82362,7 @@
     "dano % (aumentado e \"mais\")",
     "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -82141,14 +82372,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -82321,6 +82552,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -82335,7 +82567,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -82345,14 +82577,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -82603,7 +82835,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "2/6",
    "linhas": {
     "funciona": 6,
     "aproximado": 0,
@@ -82926,6 +83158,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -82940,7 +83173,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -82950,14 +83183,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -83057,7 +83290,8 @@
     "mana_on_hit@comGarra+ataque+maoSecundaria",
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
-    "roubo_instantaneo_pct%armas:comGarra"
+    "roubo_instantaneo_pct%armas:comGarra",
+    "furtividade@acertouRecente+comGarra"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -83076,14 +83310,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
-    "aproximado": 1,
+    "funciona": 6,
+    "aproximado": 2,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -83143,14 +83377,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83160,14 +83398,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -83443,15 +83681,17 @@
     "ailment_duration@retaliacao",
     "ev:acertar:alvo:debilitado:3@retaliacao",
     "armour_pct%distintas:retaliacao:10",
+    "retaliacao_outra_chance",
     "eficiencia_custo_mana@retaliacao"
    ],
    "tipos": [
     "afecções e chance no acerto",
     "efeito por evento",
     "armadura e evasão",
+    "outros",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83461,14 +83701,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -83480,6 +83720,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "totem_sem_lentidao",
     "totem_dois_chance",
     "dano_no_totem_pct",
     "totem_roubo_vida_fisico",
@@ -83491,7 +83732,7 @@
     "dano % (aumentado e \"mais\")",
     "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83501,14 +83742,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -83523,15 +83764,17 @@
     "roubo_instantaneo_pct",
     "armour_pct@drenando",
     "evasion_pct@drenando",
+    "mais_dano@alvoSemDreno",
     "recoup_life@drenoRemovidoCheio",
     "roubo_teto_inc"
    ],
    "tipos": [
     "outros",
     "armadura e evasão",
+    "dano % (aumentado e \"mais\")",
     "vida, regeneração e dreno de vida"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83540,15 +83783,15 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
-   "cobertura": "4/6",
+   "aplicado": "ficha",
+   "cobertura": "4/7",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -83562,14 +83805,17 @@
    "chaves": [
     "aura_proximos:mutilado@estandarteAtivo",
     "ev:usarClamor:valor",
+    "estandarte_remove_afeccao_min",
+    "estandarte_vida_por_valor:5",
     "aura_dano_sofrido@estandarteAtivo"
    ],
    "tipos": [
     "auras, maldições e reserva",
     "efeito por evento",
+    "outros",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83579,14 +83825,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -83598,6 +83844,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -83612,7 +83859,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83622,14 +83869,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -83646,14 +83893,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83663,14 +83914,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -83792,6 +84043,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m",
     "golpe_alvos_extra",
     "ev:mudarPostura:removerAfeccao:danificadoras",
     "recarga_extra_s@postura",
@@ -83806,7 +84058,7 @@
     "velocidades",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83816,14 +84068,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/6",
+   "cobertura": "1/7",
    "linhas": {
-    "funciona": 6,
-    "aproximado": 0,
+    "funciona": 7,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -83897,7 +84149,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -84044,15 +84296,17 @@
     "ailment_duration@retaliacao",
     "ev:acertar:alvo:debilitado:3@retaliacao",
     "armour_pct%distintas:retaliacao:10",
+    "retaliacao_outra_chance",
     "eficiencia_custo_mana@retaliacao"
    ],
    "tipos": [
     "afecções e chance no acerto",
     "efeito por evento",
     "armadura e evasão",
+    "outros",
     "mana e custo"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -84062,14 +84316,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -84382,30 +84636,32 @@
    "ascendencia": null,
    "chaves": [
     "periodico:1:carga:poder@canalizando",
-    "cast_speed%usos:magia"
+    "cast_speed%usos:magia",
+    "abrir_bau_ao_conjurar"
    ],
    "tipos": [
     "cargas e fúria",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
    "situacao": "parcial",
-   "nivel": "interpretado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/2",
+   "aplicado": "combate",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 1,
-    "inexiste": 3,
+    "inexiste": 2,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
@@ -84438,7 +84694,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -84457,6 +84713,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "clamor_nao_impele_movimento",
     "ev:usarClamor:vidaPct",
     "clamor_poder_minimo",
     "ev:usarClamor:proximos:debilitado:1",
@@ -84464,11 +84721,11 @@
     "clamor_impele_chance:3"
    ],
    "tipos": [
+    "outros",
     "efeito por evento",
-    "cargas e fúria",
-    "outros"
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -84478,14 +84735,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/5",
+   "cobertura": "1/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -84514,7 +84771,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 1,
@@ -84665,6 +84922,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "clamor_nao_impele_movimento",
     "ev:usarClamor:vidaPct",
     "clamor_poder_minimo",
     "ev:usarClamor:proximos:debilitado:1",
@@ -84672,11 +84930,11 @@
     "clamor_impele_chance:3"
    ],
    "tipos": [
+    "outros",
     "efeito por evento",
-    "cargas e fúria",
-    "outros"
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -84686,14 +84944,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/5",
+   "cobertura": "1/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -85015,12 +85273,14 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "alcance_corpo_m@comEspada",
     "chance_empalar@ataque",
     "carga_frenesi_ao_acertar_unico",
     "crit_chance_inc@ataque+comEspada",
     "crit_dmg@ataque+comEspada"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "cargas e fúria",
     "crítico"
@@ -85035,14 +85295,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/4",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 4,
-    "aproximado": 0,
+    "funciona": 5,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 1,
     "lembrete": 1,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -85182,14 +85442,19 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "sangrar_andando_sem_extra",
+    "chance_agravar@ataque+golpeAtordoou",
+    "agravar_sangramento_apos_s@ataque",
     "crit_chance_inc@alvoSangrando",
-    "dot_multi_bleed%carga:tolerancia"
+    "dot_multi_bleed%carga:tolerancia",
+    "chance_agravar@ataque+impelido"
    ],
    "tipos": [
-    "crítico",
-    "afecções e chance no acerto"
+    "outros",
+    "afecções e chance no acerto",
+    "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -85199,14 +85464,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/2",
+   "cobertura": "3/6",
    "linhas": {
-    "funciona": 2,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 4,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -85240,7 +85505,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "2/6",
    "linhas": {
     "funciona": 6,
     "aproximado": 0,
@@ -85305,14 +85570,18 @@
     "ice_res_max@reservouVidaEMana",
     "energy_res_max@reservouVidaEMana",
     "eficiencia_reserva_vida",
-    "efeito_buff_gema:aura"
+    "area_inc@aura",
+    "efeito_buff_gema:aura",
+    "duracao_habilidades@aura"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "resistências",
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "área e projéteis",
+    "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -85322,14 +85591,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/6",
+   "cobertura": "3/8",
    "linhas": {
-    "funciona": 4,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -85386,6 +85655,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "totem_sem_lentidao",
     "totem_dois_chance",
     "dano_no_totem_pct",
     "totem_roubo_vida_fisico",
@@ -85397,7 +85667,7 @@
     "dano % (aumentado e \"mais\")",
     "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -85407,14 +85677,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -85550,13 +85820,15 @@
    "ascendencia": "Champion",
    "chaves": [
     "efeito_buff_gema:aura",
-    "life_regen_max_pct%valor@estandarteAtivo"
+    "life_regen_max_pct%valorDoEstandarte@estandarteAtivo",
+    "estandarte_sair_recupera_valor_pct"
    ],
    "tipos": [
     "auras, maldições e reserva",
-    "vida, regeneração e dreno de vida"
+    "vida, regeneração e dreno de vida",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -85566,14 +85838,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [],
    "desconectados": []
@@ -85801,26 +86073,32 @@
    "nomeEn": "Worthy Causes",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Champion",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "valor_com_estandarte_plantado",
+    "duracao_habilidades@estandarte"
+   ],
+   "tipos": [
+    "outros",
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -86259,26 +86537,30 @@
    "nomeEn": "Jagged Technique",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Gladiator",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "sangramento_agravado"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
    "pendentes": [],
    "desconectados": []
@@ -86492,7 +86774,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/6",
+   "cobertura": "3/6",
    "linhas": {
     "funciona": 5,
     "aproximado": 1,
@@ -86510,26 +86792,31 @@
    "nomeEn": "Measured Retaliation",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Gladiator",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "retaliacao_janela_s",
+    "retaliacao_nao_consumir"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 2,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -86762,16 +87049,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -86865,16 +87152,18 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Slayer",
    "chaves": [
+    "alcance_corpo_m",
     "area_inc%matouRecente~50",
     "mais_dano@corpo+alvoPerto",
     "stat:accuracy"
    ],
    "tipos": [
+    "outros",
     "área e projéteis",
     "dano % (aumentado e \"mais\")",
     "precisão %"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -86884,14 +87173,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/4",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
+    "funciona": 4,
+    "aproximado": 2,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 3
+    "efetivas": 4
    },
    "pendentes": [],
    "desconectados": []
@@ -87149,12 +87438,14 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Berserker",
    "chaves": [
+    "alcance_corpo_m",
     "phys_dmg"
    ],
    "tipos": [
+    "outros",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -87164,14 +87455,14 @@
     "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 1,
+    "funciona": 2,
+    "aproximado": 2,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
    "pendentes": [],
    "desconectados": []
@@ -91456,10 +91747,12 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Ascendant",
    "chaves": [
+    "chance_agravar@ataque",
     "bonus_duas_armas_dobrado",
     "mais_dano_presenca:50"
    ],
    "tipos": [
+    "afecções e chance no acerto",
     "outros",
     "dano % (aumentado e \"mais\")"
    ],
@@ -91473,14 +91766,14 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
     "pendente": 1,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [
     "Ganhe 50% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo"
@@ -92224,7 +92517,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/4",
+   "cobertura": "1/4",
    "linhas": {
     "funciona": 4,
     "aproximado": 0,
@@ -94973,16 +95266,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95019,7 +95312,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 0,
@@ -95131,7 +95424,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95205,7 +95498,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95241,7 +95534,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95374,16 +95667,16 @@
     "área e projéteis"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95419,7 +95712,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95548,16 +95841,16 @@
     "dano % (aumentado e \"mais\")"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95584,16 +95877,16 @@
     "dano % (aumentado e \"mais\")"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -95665,7 +95958,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "1/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -96544,14 +96837,16 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Guardian",
    "chaves": [
+    "block_recovery",
     "armour_pct",
     "es_pct"
    ],
    "tipos": [
+    "bloqueio",
     "armadura e evasão",
     "escudo de energia"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -96561,14 +96856,14 @@
     "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "2/2",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
+    "funciona": 3,
+    "aproximado": 1,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 2
+    "efetivas": 3
    },
    "pendentes": [],
    "desconectados": []
@@ -98916,16 +99211,16 @@
     "lacaios e totens"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "2/2",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -99167,16 +99462,16 @@
     "afecções e chance no acerto"
    ],
    "situacao": "parcial",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/1",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,

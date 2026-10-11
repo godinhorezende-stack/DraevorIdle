@@ -4112,6 +4112,132 @@
       "unidade": "%",
       "combate": true,
       "efeito": "o tique (`condicoes-poe.tique`, `registrarFisicoNegado`)"
+    },
+    "block_recovery": {
+      "nome": "Recuperação de Bloqueio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a trava do bloqueio de golpe de Elite/Chefe (`combate/controle.travarNoBloqueio`)"
+    },
+    "clamor_nao_impele_movimento": {
+      "nome": "Clamores não Impelem Deslocamento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Impelir (`acoes`, `condicoes-poe.fichaDoGolpe`)"
+    },
+    "totem_sem_lentidao": {
+      "nome": "Totens não ficam lentos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o totem (`lacaios-poe.controleNoLacaio`)"
+    },
+    "distancia_empurrao": {
+      "nome": "Distância do Empurrão",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o Empurrão do acerto (`mods-poe.aoAcertar`)"
+    },
+    "chance_agravar": {
+      "nome": "Chance de Agravar o Sangramento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o acerto (`mods-poe.aoAcertar` → `combate/dot.agravar`)"
+    },
+    "agravar_sangramento_apos_s": {
+      "nome": "Agrava o Sangramento mais antigo que N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o acerto (`mods-poe.aoAcertar` → `combate/dot.agravar`)"
+    },
+    "sangramento_agravado": {
+      "nome": "Sangramentos infligidos são Agravados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Sangramento (`itens-poe/afeccoes` → `combate/dot.aplicar`)"
+    },
+    "sangramento_sem_movimento": {
+      "nome": "Sangramento sem dano extra em movimento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Sangramento (`itens-poe/afeccoes` → `combate/dot.fatorDoMovimento`)"
+    },
+    "retaliacao_outra_chance": {
+      "nome": "Retaliação: chance de outra se tornar Utilizável",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o uso da Retaliação (`condicoes-poe.usarRetaliacao`)"
+    },
+    "retaliacao_janela_inc": {
+      "nome": "Retaliação: Utilizável por mais tempo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a janela da Retaliação (`condicoes-poe.abrirRetaliacao`)"
+    },
+    "retaliacao_janela_s": {
+      "nome": "Retaliação: segundos adicionais Utilizável",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "a janela da Retaliação (`condicoes-poe.abrirRetaliacao`)"
+    },
+    "retaliacao_nao_consumir": {
+      "nome": "Retaliação: chance de não consumir o uso",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o uso da Retaliação (`condicoes-poe.usarRetaliacao`)"
+    },
+    "retaliacao_quarta_critica": {
+      "nome": "Cada quarta Retaliação é Crítica",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o crítico da Retaliação (`acoes`)"
+    },
+    "retaliacao_a_cada_acertos": {
+      "nome": "Retaliação Utilizável a cada N acertos sofridos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto sofrido (`mods-poe.aoSerAcertado`)"
+    },
+    "furtividade": {
+      "nome": "Furtividade",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o raio em que os monstros notam você (`condicoes-poe.percepcaoComFurtividade`)"
+    },
+    "abrir_bau_ao_conjurar": {
+      "nome": "Chance de abrir Baús próximos ao Conjurar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a magia usada (`acoes.abrirBausAoConjurar`)"
+    },
+    "estandarte_remove_afeccao_min": {
+      "nome": "Plantar o Estandarte remove uma Afecção (Valor mínimo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o plantar (`mods-poe.plantarEstandarte`)"
+    },
+    "valor_com_estandarte_plantado": {
+      "nome": "Ganha Valor com o Estandarte plantado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Valor (`condicoes-poe.ganharValor`)"
+    },
+    "estandarte_sair_recupera_valor_pct": {
+      "nome": "Recupera Valor ao sair da área do Estandarte",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a área do Estandarte (`mods-poe.aurasProximas`)"
+    },
+    "estandarte_fica_s": {
+      "nome": "Bônus do Estandarte permanecem depois de sair da área",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "a área do Estandarte (`mods-poe.aurasProximas`)"
+    },
+    "sangrar_andando_sem_extra": {
+      "nome": "Sem o dano extra do Sangramento ao andar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Sangramento em você (`mobs/mecanicas.tique`)"
     }
   }
 }

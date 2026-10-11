@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, vidaSoPeloDreno, transferirMarca, ganharFortificacao } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, vidaSoPeloDreno, transferirMarca, ganharFortificacao } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -124,9 +124,23 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
       e[campo] = { ate: agora + 4000, pct: Math.min(Number(mm[2]), antes + x * Math.max(0, 1 + v('efeito_aura_mina') / 100)) };
     }
   }
+  // (11/10) AGRAVAR o Sangramento do alvo: "X% de chance de Agravar o Sangramento em alvos que você Acertar com Ataques / Golpear com um Crítico /
+  // Atordoar / Acertar com Ataques Impelidos" (`chance_agravar` com a tag) e "Acertos de Ataques Agravam qualquer Sangramento mais antigos que N
+  // segundos" (`agravar_sangramento_apos_s@ataque`) — `combate/dot.agravar`.
+  if (alvo.dots?.length) {
+    if (sorte(v('chance_agravar'))) Dot.agravar(alvo, agora);
+    const apos = v('agravar_sangramento_apos_s');
+    if (apos > 0) Dot.agravar(alvo, agora, apos * 1000);
+  }
   // "Seus Acertos Intimidam permanentemente Inimigos com Vida Cheia" (a tag `alvoVidaCheia` do golpe).
   if (v('intimidar_permanente') > 0) e.intimidado = { ate: agora + 3600 * 1000 };
-  if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) ev('empurrado');
+  if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) {
+    ev('empurrado');
+    // (11/10) "Distância do Empurrão aumentada em X%": cada 100% é uma casa a mais; o resto, a chance de mais uma.
+    const aMais = Math.max(0, v('distancia_empurrao'));
+    const casas = Math.floor(aMais / 100) + (rng() * 100 < aMais % 100 ? 1 : 0);
+    for (let i = 0; i < casas && mover(alvo); i++);
+  }
   // (09/10) INTIMIDAR (o alvo sofre 10% mais dano de Ataques) e INERVAR (10% mais dano de Magias) — "X% de chance de Intimidar Inimigos por N
   // segundos no Acerto" (N: `intimidar_s`/`inervar_s`; sem ele, 4 s, o padrão do PoE).
   if (sorte(v('chance_intimidar'))) { e.intimidado = { ate: agora + 1000 * (v('intimidar_s') || 4) }; ev('intimidado'); }
@@ -273,6 +287,15 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   if (at && at.desde === agora && !at.reagiu) {
     at.reagiu = true;
     aoSerAtordoado(estado, hunt, bicho, ficha, { dano, duracaoMs: at.ms ?? 0, agora, eventos });
+  }
+  // (11/10) A RETALIAÇÃO: o Acerto Selvagem ("Um Acerto que remove ao menos 15% da Vida Máxima") abre a janela das que dependem dele; "Habilidades
+  // de Retaliação Nocivas se tornam Utilizáveis a cada sexto Acerto dos Inimigos" (o Arsenal da Vingança) abre a das que causam dano (as do
+  // bloqueio — o Clamor Vingativo, do Acerto Selvagem, não causa dano) a cada N acertos.
+  if (dano > 0 && (estado.maxHp ?? 0) > 0 && dano >= (estado.maxHp * RETALIACAO.selvagemPct) / 100) abrirRetaliacao(hunt, 'selvagem', ficha.afPoe, agora);
+  const aCada = v('retaliacao_a_cada_acertos');
+  if (aCada > 0) {
+    hunt.poeAcertosSofridos = (hunt.poeAcertosSofridos ?? 0) + 1;
+    if (hunt.poeAcertosSofridos % Math.max(1, Math.round(aCada)) === 0) abrirRetaliacao(hunt, 'bloquear', ficha.afPoe, agora);
   }
   // (lote H) "Quando Acertado, perca uma Mortalha Fantasma para Recuperar Escudo de Energia igual a X% da sua Evasão".
   const daMortalha = v('mortalha_es_da_evasao');
@@ -731,8 +754,48 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
  * As AURAS dos únicos em quem está perto (a até 3 casas): "Inimigos Próximos são Cegados / Resfriados / Causticados / Intimidados / Lentos /
  * Cobertos em Cinzas" — `aura_proximos:<estado>`. A caçada chama a cada tique; o estado dura 1 s e é renovado enquanto o bicho está perto.
  */
+/**
+ * (11/10) PLANTAR o Estandarte (o PoE atual: "consome todo o Valor para plantar um Estandarte com uma aura. A aura será maior e mais poderosa
+ * quanto mais Valor for consumido"): zera o Valor e devolve `{ valor, efeitoMais, areaMais }` (o "X% mais Efeito de Aura / Área de Efeito por
+ * Valor consumido" da gema — `porValor`). Os gatilhos de plantar: "Recupera X% da Vida por cada N de Valor consumido"
+ * (`estandarte_vida_por_valor:<N>`), "Remove uma Afecção aleatória de você quando você consumir ao menos N de Valor"
+ * (`estandarte_remove_afeccao_min`) e "Ganhe N Cargas de Frenesi/Tolerância ao consumir o Valor máximo" (`estandarte_cargas_cheio:<tipo>`).
+ */
+export function plantarEstandarte(estado, hunt, ficha, porValor = {}, agora = hunt?.clock ?? 0, rng = Math.random) {
+  const v = Math.floor(valorAtual(hunt));
+  const cheio = v > 0 && v >= valorMaximo(ficha?.afPoe);
+  if (hunt?.valor) hunt.valor.n = 0;
+  if (ligado() && ficha?.afPoe && v > 0) {
+    const acao = (a, x, param = '') => aplicarAcao(estado, hunt, { evento: 'plantarEstandarte', acao: a, param, conds: [], valor: x }, ficha, { alvo: null, agora, rng, eventos: null });
+    for (const [k, x] of Object.entries(ficha.afPoe)) {
+      if (!(x > 0)) continue;
+      const vida = /^estandarte_vida_por_valor:(\d+)$/.exec(k);
+      if (vida) acao('vidaPct', x * Math.floor(v / Math.max(1, Number(vida[1]))));
+      const cargas = /^estandarte_cargas_cheio:(frenesi|tolerancia|poder)$/.exec(k);
+      if (cargas && cheio) for (let i = 0; i < x; i++) acao('carga', 100, cargas[1]);
+    }
+    const min = valor(ficha, 'estandarte_remove_afeccao_min');
+    if (min > 0 && v >= min) acao('removerAfeccao', 100);
+  }
+  return { valor: v, efeitoMais: (Number(porValor?.efeito) || 0) * v, areaMais: (Number(porValor?.area) || 0) * v };
+}
+
 export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt?.pos || !ficha?.afPoe) return;
+  // (11/10) O VALOR se ganha "enquanto você tem uma habilidade de Estandarte" (na barra — `condicoes-poe.ganharValor`).
+  hunt.poeTemEstandarte = (estado.actions ?? []).some((a) => /_Banner$/.test(String(a?.id ?? '')));
+  // (11/10) O ESTANDARTE PLANTADO: sair da área dele o encerra ("termina antes se você sair da aura"); "Bônus do seu estandarte permanecem por N
+  // segundos após você sair da área" o segura N s; "Quando você deixar a Área do seu Estandarte, recupere X% do Valor consumido para tal Estandarte".
+  for (const b of Object.values(hunt.buffs ?? {})) {
+    const p = b?.estandarte;
+    if (!p || !(b.ate > agora) || p.saiu != null) continue;
+    const fora = (hunt.z ?? 0) !== (p.z ?? 0) || Math.max(Math.abs(hunt.pos.x - p.x), Math.abs(hunt.pos.y - p.y)) > (b.raio ?? 1);
+    if (!fora) continue;
+    p.saiu = agora;
+    b.ate = Math.min(b.ate, agora + 1000 * Math.max(0, valor(ficha, 'estandarte_fica_s')));
+    const volta = valor(ficha, 'estandarte_sair_recupera_valor_pct');
+    if (volta > 0 && p.valor > 0) { const v = (hunt.valor ??= { n: 0, ultimo: -Infinity }); v.n = Math.min(valorMaximo(ficha.afPoe), v.n + (p.valor * volta) / 100); }
+  }
   // O evento "ao atingir Vida Baixa" (cruzou os 50% para baixo).
   const baixa = (estado.maxHp ?? 0) > 0 && (estado.hp ?? 0) > 0 && estado.hp <= estado.maxHp * 0.5;
   if (baixa && !hunt.poeVidaBaixa) evento(estado, hunt, 'vidaBaixa', ficha, { agora });
@@ -745,14 +808,16 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   }
   hunt.poePostura = postura;
   // (lote G) "Solo Sagrado criado por você aplica Dano sofrido aumentado em X% aos Inimigos" (quem está sobre ele) e "Inimigos próximos ao seu
-  // Estandarte sofrem Dano aumentado em X%" (`aura_dano_sofrido` — o Estandarte é uma aura em você).
+  // Estandarte sofrem Dano aumentado em X%" (`aura_dano_sofrido` — 11/10: em volta do Estandarte PLANTADO, no raio dele).
   const doSolo = valor(ficha, 'solo_sagrado_fragiliza');
   const daAura = valor(ficha, 'aura_dano_sofrido');
+  const plantado = estandartePlantado(hunt, agora);
+  const centroDoEstandarte = plantado?.estandarte ? { x: plantado.estandarte.x, y: plantado.estandarte.y, raio: plantado.raio ?? 1 } : hunt.pos ? { x: hunt.pos.x, y: hunt.pos.y, raio: 3 } : null;
   if (doSolo > 0 || daAura > 0) {
     for (const m of hunt.monstros ?? []) {
       if (!(m.hp > 0) || m.dummy) continue;
       if (doSolo > 0 && (hunt.solosSagrados ?? []).some((s) => s.ate > agora && Math.max(Math.abs(s.x - m.x), Math.abs(s.y - m.y)) <= s.raio)) (m.estados ??= {}).soloFragil = { ate: agora + 1000, pct: doSolo };
-      if (daAura > 0 && hunt.pos && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3) (m.estados ??= {}).auraFragil = { ate: agora + 1000, pct: daAura };
+      if (daAura > 0 && centroDoEstandarte && Math.max(Math.abs(m.x - centroDoEstandarte.x), Math.abs(m.y - centroDoEstandarte.y)) <= centroDoEstandarte.raio) (m.estados ??= {}).auraFragil = { ate: agora + 1000, pct: daAura };
     }
   }
   // "Efeitos do Solo Sagrado criado por você Perduram por N segundos": quem está sobre ele leva o efeito por mais N s.

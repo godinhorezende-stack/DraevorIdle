@@ -943,7 +943,9 @@ export function tetoDoRouboPct(ficha, recurso) {
 }
 const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
 const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, semDrenoDeVida = 0 } = {}) {
+  // (PoE: o dano em monstros com "Vida Não Pode ser Drenada" não drena vida — `semDrenoDeVida`, a parte do total que foi neles.)
+  const paraVida = Math.max(0, danoTotal - (Number(semDrenoDeVida) || 0));
   // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
   if (itensPoeLigado() && !ataque) {
     const pct = ModsPoe.valor(ficha, 'es_leech_magia') + ModsPoe.valor(ficha, 'es_leech');
@@ -956,7 +958,7 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
     const pctVida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : ModsPoe.valor(ficha, 'vida_leech_magia');
     const maxVida = estado.maxHp ?? 0;
     if (pctVida > 0 && maxVida > 0 && estado.hunt) {
-      const quanto = Math.min((danoTotal * pctVida) / 100, (maxVida * LEECH_POE.porInstanciaPct) / 100);
+      const quanto = Math.min((paraVida * pctVida) / 100, (maxVida * LEECH_POE.porInstanciaPct) / 100);
       if (quanto > 0) (estado.hunt.roubos ??= []).push({ recurso: 'vida', restante: quanto, porSegundo: (maxVida * LEECH_POE.taxaDaInstanciaPct) / 100 });
     }
     return;
@@ -964,7 +966,7 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
   // (PoE, únicos: "Não Pode Drenar Vida/Mana".)
-  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
+  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(paraVida * ((ficha.lifeLeech ?? 0) + doCharm.vida));
   const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
   if (itensPoeLigado()) {
     // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).
