@@ -1010,7 +1010,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // `glancingPct`: o golpe bloqueado ainda causa esta % do dano (0 = o bloqueio anula o golpe).
   let fatorDoBloqueio = 1;
   const bloquear = () => {
-    if (!(Math.random() < chanceDeBloquear)) return false;
+    // ("Chance de Bloquear é Sortuda/Azarada": a chance rola duas vezes — `ModsPoe.sorteado`.)
+    if (!ModsPoe.sorteado(chanceDeBloquear, ModsPoe.valor(ficha, 'bloqueio_sortudo'), ModsPoe.valor(ficha, 'bloqueio_azarado'))) return false;
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
     // As cargas do PoE "ao Bloquear".
@@ -1055,7 +1056,16 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
   // (PoE: × o Exaurido — "Inflige Exaurir … ao Bloquear": o bicho causa 10% menos dano.)
   const forcaDoGolpe = Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now()) * fatorDoBloqueio * ModsPoe.doBicho(bicho, hunt.clock ?? 0).danoFator;
-  const brutoSemCritico = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * forcaDoGolpe;
+  // "O Dano dos Inimigos Acertando você é Azarado/Sortudo" (PoE): o DANO do golpe rola duas vezes (o pior / o melhor); a chance de o golpe
+  // sair não muda (a segunda rolagem só conta se também saiu).
+  const golpe = () => Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho);
+  let doGolpe = golpe();
+  const sorteDoRecebido = (ModsPoe.valor(ficha, 'dano_recebido_sortudo') > 0 ? 1 : 0) - (ModsPoe.valor(ficha, 'dano_recebido_azarado') > 0 ? 1 : 0);
+  if (sorteDoRecebido && doGolpe > 0) {
+    const outra = golpe();
+    if (outra > 0) doGolpe = sorteDoRecebido > 0 ? Math.max(doGolpe, outra) : Math.min(doGolpe, outra);
+  }
+  const brutoSemCritico = doGolpe * forcaDoGolpe;
   // O CRÍTICO do mob (só quem tem — `mobs/atributos.json`): rola UMA vez e vale para o golpe todo, todos os tipos de dano.
   // (PoE: a chance × o Cego, e o dano extra × "Dano Extra recebido de Acertos Críticos reduzido".)
   const critDoMob = ModsPoe.criticoDoBicho(AtributosDoMob.critico(bicho), bicho, ficha, hunt.clock ?? 0) ?? AtributosDoMob.rolarCritico(bicho);

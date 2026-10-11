@@ -371,8 +371,12 @@ export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t 
 // (`Passivas.efeitos(estado).adds`) — daqui importar a árvore fecharia um ciclo de imports.
 let leitorDaArvore = null;
 export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
+// (A COR da gema — o atributo dela: "+1 ao Nível das Gemas de Força Encaixadas" vale nas vermelhas; e a gema pelo NOME — "+1 ao Nível de
+// todas as Gemas Evocar Zumbi" é `gem_level@gema:evocar-zumbi`. Dono, 11/10: os únicos.)
+const ATRIBUTO_DA_COR = [[/verm/i, 'forca'], [/verd/i, 'destreza'], [/azul/i, 'inteligencia']];
 export function extrasDaGemaPoe(estado, peca, def) {
-  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade']);
+  const cor = ATRIBUTO_DA_COR.find(([re]) => re.test(def?.poe?.cor ?? ''))?.[1];
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(cor ? [cor] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
   const vale = (chave, base) => {
     const { stat, conds } = ModsPoe.partir(chave);
     return stat === base && conds.every((c) => tags.has(c));

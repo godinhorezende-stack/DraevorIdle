@@ -1827,6 +1827,17 @@ ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = [
 });
 
 /**
+ * A MALDIÇÃO que um ÚNICO põe num evento ("Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear" — `mods-poe.evento`, ação `maldicao`): a
+ * gema pelo nome, os efeitos dela no nível do item (`GemasPoe.buffNoNivel`), no monstro (`Reforcos.amaldicoar`).
+ */
+ModsPoe.definirMaldicao((hunt, alvo, nome, nivel, semLimite, agora) => {
+  const def = Gemas.ativaPeloNome(nome);
+  if (!def?.poe?.slug) return;
+  const b = GemasPoe.buffNoNivel(def.poe.slug, nivel);
+  if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, def.acao, b.efeitos, { agora, dur: b.dur || 6000, ignorarLimite: semLimite });
+});
+
+/**
  * O DANO RECEBIDO pelo personagem ("Conjurar ao Receber Dano"): soma no grupo e, passando do limiar do nível do suporte, ativa as magias
  * dele e zera a conta. Quem chama: o golpe do bicho no personagem (`hunt/combate.mjs`).
  */

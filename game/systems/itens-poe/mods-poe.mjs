@@ -303,6 +303,10 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
 // eslint-disable-next-line no-var
 var disparoDeGatilho;
 export function definirDisparo(fn) { disparoDeGatilho = fn; }
+/** A MALDIÇÃO posta por item ("Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear"): quem registra é `acoes.mjs` (as gemas e os reforços). */
+// eslint-disable-next-line no-var
+var maldicaoDeItem;
+export function definirMaldicao(fn) { maldicaoDeItem = fn; }
 /** O ganho de cargas (`cargas.mjs`): registrado pela ficha (o máximo depende da soma). */
 // eslint-disable-next-line no-var
 var leitorDeCargas;
@@ -488,6 +492,13 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         if (!(alvo.estados?.[chave]?.ate > agora)) return;
         for (const m of hunt.monstros ?? []) if (m !== alvo && m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) <= casas) (m.estados ??= {})[chave] = { ...alvo.estados[chave] };
       }
+      return;
+    }
+    // `maldicao:<gema>:<nível>[:semLimite]` = a CHANCE (%) de amaldiçoar o alvo com a maldição da gema naquele nível ("ignorando o Limite de
+    // Maldições" = `semLimite`).
+    case 'maldicao': {
+      const [gema, nivel, semLimite] = String(ev.param).split(':');
+      if (maldicaoDeItem && alvo && alvo.hp > 0 && sorte(v)) maldicaoDeItem(hunt, alvo, gema, Number(nivel) || 10, semLimite === 'semLimite', agora);
       return;
     }
     // `gatilho:<gema>[:chance]` = o NÍVEL da habilidade ativada.

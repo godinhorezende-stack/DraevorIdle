@@ -63,6 +63,7 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   'Resfriamento Ósseo': 'Suporte Resfriamento Ósseo', 'Carga de Tolerância ao Atordoar em Corpo a Corpo': 'Carga de Tolerância ao Atordoar Corpo a Corpo',
   'Efeito em Área Aumentado': 'Área de Efeito Aumentada', 'Dano de Caos Adicionado': 'Dano Adicional de Caos', 'Gelo para Fogo': 'Gelo a Fogo',
   'Rajada Maior': 'Grande Rajada', 'Eco Mágico Maior': 'Eco Mágico Maior (Reforço)', Contaminar: 'Profanar',
+  'Erguer Zumbi': 'Evocar Zumbi', 'Erguer Espectro': 'Evocar Espectro',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 
@@ -201,7 +202,8 @@ function temEfeito(e) {
   if (!(FICHAS[stat] || NOVOS[stat]?.combate || dinamicoValido(stat))) return false;
   if (!escalaValida(escala)) return false;
   // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo`)
-  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvoVenenos:\d+$/.test(c));
+  // (+ `gema:<nome>` — a gema pelo nome, no nível das gemas: `skills/gemas.extrasDaGemaPoe`)
+  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvoVenenos:\d+$/.test(c) || /^gema:[\w-]+$/.test(c));
 }
 
 /** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */

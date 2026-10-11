@@ -158,9 +158,9 @@ export function intervaloBaseDoGolpe(arma, secundaria = null) {
   const de = (s) => s?.aps.intervaloMs || desarmado;
   return secundaria ? (de(arma) + de(secundaria)) / 2 : de(arma);
 }
-function comDuasArmas(bloqueio, armaSecundaria) {
+function comDuasArmas(bloqueio, armaSecundaria, af = {}) {
   if (!armaSecundaria) return bloqueio;
-  const teto = Atributos.CONFIG.bloqueio.MAX;
+  const teto = Atributos.CONFIG.bloqueio.MAX + (af.block_max ?? 0) / 100;
   const mais = (v) => Math.min(teto, (v ?? 0) + BONUS_DE_DUAS_ARMAS.bloqueio);
   return { ...bloqueio, blockChance: mais(bloqueio.blockChance), blockChanceMin: mais(bloqueio.blockChanceMin), blockChanceMax: mais(bloqueio.blockChanceMax) };
 }
@@ -403,7 +403,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
     // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
-    ...comDuasArmas(bloqueioDaFicha(estado, escudo, w, shielding, af), armaSecundaria),
+    ...comDuasArmas(bloqueioDaFicha(estado, escudo, w, shielding, af), armaSecundaria, af),
     // O dano da arma da mão secundária (PoE, duas armas): o golpe alterna entre as duas (`hunt/combate.mjs`).
     ...(armaSecundaria
       ? (() => {
@@ -507,8 +507,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
     ataqueDuplo,
     // A resistência do JOGADOR aos efeitos de controle dos mobs (add Control Resistance), no teto (`combate/limites.json`), em %.
     resistenciaAControle: Limites.limitar(af.control_resist ?? 0, Limites.LIMITES.resistenciaAControle.maximo),
-    // Bloqueio de MAGIA (add Spell Block Chance), no teto do tipo (`combate/formulas.json`); só vale com `bloqueio.modo` = 'poe'.
-    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal((af.spell_block ?? 0) / 100, 'magia'),
+    // Bloqueio de MAGIA (add Spell Block Chance), no teto do tipo (`combate/formulas.json`, + "+X% à Chance máxima de Bloquear Dano
+    // Mágico" — `spell_block_max`); só vale com `bloqueio.modo` = 'poe'.
+    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal((af.spell_block ?? 0) / 100, 'magia', (af.spell_block_max ?? 0) / 100),
     // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
     armaEquipada: armaEquipadaDaFicha(estado),
     // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".
@@ -801,7 +802,8 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // O teto da chance FINAL (a ficha + os suportes, os reforços, os charms e o crítico do golpe básico somam depois dela): `combate/limites.json`.
   // (+ o Fragilizado do PoE: "+6% de chance de crítico contra" o bicho — "Inflige Enfraquecer … ao Bloquear".)
   const chanceDeCritico = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
-  const crit = mesmaRolagem ? mesmaRolagem.crit : Math.random() < chanceDeCritico;
+  // ("Sua Chance de Golpe Crítico é Sortuda": rola duas vezes e fica com a melhor — `ModsPoe.sorteado`.)
+  const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'));
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
@@ -835,9 +837,9 @@ function bloqueioDaFicha(estado, escudo, w, shielding, af = {}) {
   const defMin = eMin + Math.floor(aMin / 2) + extra;
   const defMax = eMax + Math.floor(aMax / 2) + extra;
   // A defesa da arma bloqueia mesmo SEM escudo (só que 0 de defesa = 0% de bloqueio).
-  // + o add Block Chance (em %), com o teto da configuração.
+  // + o add Block Chance (em %), com o teto da configuração (+ "+X% à Chance máxima de Bloquear o Dano de Ataques" — `block_max`).
   const extra2 = (af.block ?? 0) / 100;
-  const teto = Atributos.CONFIG.bloqueio.MAX;
+  const teto = Atributos.CONFIG.bloqueio.MAX + (af.block_max ?? 0) / 100;
   const com = (d) => Math.min(teto, R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0));
   return {
     blockChance: com(Math.round((defMin + defMax) / 2)),

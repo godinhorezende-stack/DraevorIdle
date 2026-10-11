@@ -3284,6 +3284,90 @@
       "unidade": "%",
       "combate": true,
       "efeito": "afeccoes → skills/estados.tique (09/10)"
+    },
+    "block_max": {
+      "nome": "Chance máxima de Bloquear o Dano de Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.bloqueioDaFicha: soma pontos no teto do bloqueio de ataques (Atributos.CONFIG.bloqueio.MAX)"
+    },
+    "spell_block_max": {
+      "nome": "Chance máxima de Bloquear Dano Mágico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha: soma pontos no teto do bloqueio de magia (formulas.bloqueioFinal, bonusDeLimite)"
+    },
+    "bloqueio_sortudo": {
+      "nome": "Chance de Bloquear é Sortuda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "combate.contraAtaque e poderes (bloqueio de magia): a chance rola duas vezes, fica a melhor (ModsPoe.sorteado)"
+    },
+    "bloqueio_azarado": {
+      "nome": "Chance de Bloquear é Azarada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "combate.contraAtaque e poderes: a chance rola duas vezes, fica a pior (ModsPoe.sorteado)"
+    },
+    "bloqueio_magia_azarado": {
+      "nome": "Chance de Bloquear o Dano Mágico é Azarada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes (bloqueio de magia): rola duas vezes, fica a pior"
+    },
+    "critico_sortudo": {
+      "nome": "Chance de Golpe Crítico é Sortuda",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.rolarCritico: rola duas vezes, fica a melhor"
+    },
+    "critico_azarado": {
+      "nome": "Chance de Golpe Crítico é Azarada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.rolarCritico: rola duas vezes, fica a pior"
+    },
+    "dano_recebido_azarado": {
+      "nome": "Dano dos Inimigos que acertam você é Azarado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "combate.contraAtaque: o dano do golpe do monstro rola duas vezes, fica o menor"
+    },
+    "dano_recebido_sortudo": {
+      "nome": "Dano dos Inimigos que acertam você é Sortudo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "combate.contraAtaque: o dano do golpe do monstro rola duas vezes, fica o maior"
+    },
+    "minion_fire_res": {
+      "nome": "Resistência a Fogo dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: poe.resFogo (o tique do lacaio)"
+    },
+    "minion_ice_res": {
+      "nome": "Resistência a Gelo dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: poe.resGelo (o tique do lacaio)"
+    },
+    "minion_duracao": {
+      "nome": "Duração dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: a duração do lacaio"
+    },
+    "minion_phys_as_extra": {
+      "nome": "Lacaios: Dano Físico como Dano Extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: soma ao golpe do lacaio físico"
+    },
+    "minion_elem_as_extra": {
+      "nome": "Lacaios: Dano Elemental como Dano Extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe: soma ao golpe do lacaio de Fogo/Gelo/Raio"
     }
   }
 }

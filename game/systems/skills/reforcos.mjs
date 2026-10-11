@@ -93,6 +93,31 @@ export function afDaMaldicaoNoJogador(efeitos) {
   return af;
 }
 
+/**
+ * Amaldiçoa o monstro com a maldição de uma gema FORA do buff dela — a do ITEM ("Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear", dono,
+ * 11/10: os únicos): os efeitos da gema no nível do item (`gemas-poe.buffNoNivel`), no mesmo registro da `marcar` (`bicho.maldicoes[id]`).
+ * A de mesmo id ativa não renova; o LIMITE vale (a nova tira a mais antiga do grupo dos Feitiços), menos com `ignorarLimite` ("ignorando o
+ * Limite de Maldições"). Devolve se amaldiçoou.
+ */
+export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 6000, ignorarLimite = false, limite = 1 } = {}) {
+  if (!bicho || bicho.hp <= 0 || bicho.dummy) return false;
+  const efeitos = [];
+  for (const e of efeitosPoe ?? []) {
+    if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos });
+    if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct });
+  }
+  if (!efeitos.length) return false;
+  const maldicoes = (bicho.maldicoes ??= {});
+  for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) delete maldicoes[k];
+  if (maldicoes[id]) return false;
+  if (!ignorarLimite) {
+    const feiticos = () => Object.entries(maldicoes).filter(([, m]) => !m.marca).sort((a, b) => (a[1].lancada ?? 0) - (b[1].lancada ?? 0));
+    while (feiticos().length >= Math.max(1, limite)) delete maldicoes[feiticos()[0][0]];
+  }
+  maldicoes[id] = { ate: agora + dur, desde: agora, lancada: agora, dur, efeitos, doItem: true };
+  return true;
+}
+
 /** O passo do monstro amaldiçoado e Desacelerado (×; 1 = normal): a maior lentidão entre as maldições ativas. */
 export function fatorDeDesaceleracao(bicho, agora) {
   const pct = Math.max(0, ...maldicoesAtivas(bicho, agora).map((m) => m.desacelera ?? 0));

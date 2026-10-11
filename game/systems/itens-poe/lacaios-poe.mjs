@@ -148,7 +148,11 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // (+ os do TIPO de lacaio: "Golens possuem X% menos Vida", "Espíritos Furiosos Convocados causam Dano aumentado", "Zumbis têm X% da Vida
   // máxima aumentada", "Zumbis causam X% mais Dano Físico", "+N de Vida máxima" dos Zumbis…)
   const vida = Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life') + porTipo('lacaio_vida')) / 100)));
-  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano')) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100);
+  // ("Lacaios ganham X% do Dano Físico / Elemental como Dano de Caos/Fogo Extra" — dono, 11/10: os únicos: o extra entra no golpe do lacaio
+  // do tipo certo — o físico no lacaio físico, o elemental no de Fogo/Gelo/Raio —, sem a resistência do outro elemento.)
+  const fisico = (r.elemento ?? 'physical') === 'physical';
+  const extra = 1 + (fisico ? m0('minion_phys_as_extra') : ['fire', 'ice', 'energy'].includes(r.elemento) ? m0('minion_elem_as_extra') : 0) / 100;
+  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano')) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * extra;
   // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   velAtaquePct += m0('minion_atk_speed') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? m0('minion_cast_speed') : 0);

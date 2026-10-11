@@ -86,6 +86,8 @@ export const TAGS_DE_GOLPE = new Set([
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
   'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
+  // (A cor da GEMA — o atributo dela —, para o nível das gemas encaixadas: `skills/gemas.extrasDaGemaPoe`.)
+  'forca', 'destreza', 'inteligencia',
 ]);
 /**
  * As condições que dependem do ESPAÇO em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`): o anel (esquerdo/direito) e a
@@ -817,6 +819,16 @@ export const RECUPERACAO_MS = 4000;
 // ---------------------------------------------------------------- ler um mod
 
 /** O valor de um atributo do PoE na soma do personagem (`ficha.afPoe`: já com as condições de estado), + o condicional do golpe. */
+/**
+ * "É SORTUDO / AZARADO" (PoE): a chance rola duas vezes — Sortudo fica com o melhor resultado, Azarado com o pior; os dois juntos se anulam.
+ * `sortudo`/`azarado`: os valores dos atributos (> 0 = tem). Devolve se deu certo.
+ */
+export function sorteado(chance, sortudo, azarado, rng = Math.random) {
+  const lado = (Number(sortudo) > 0 ? 1 : 0) - (Number(azarado) > 0 ? 1 : 0);
+  const rolar = () => rng() < chance;
+  return lado > 0 ? rolar() || rolar() : lado < 0 ? rolar() && rolar() : rolar();
+}
+
 export function valor(ficha, stat) {
   const base = Number(ficha?.afPoe?.[stat]) || 0;
   if (!ficha?.tagsDoGolpe) return base;
