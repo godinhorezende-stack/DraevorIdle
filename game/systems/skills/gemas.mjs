@@ -614,6 +614,15 @@ function dasPecas(estado, saida) {
       for (const [d, nivel] of suportes) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
     }
   }
+  // (PoE, o Chefe Tribal — Tukohama: "Habilidades do Peitoral Equipado são Suportadas por X Nível N" — `suporte_peitoral:<nome>` na árvore: as
+  // ativas encaixadas no peitoral.)
+  const doPeitoral = Object.entries(ModsPoe.somaDaArvore(estado)).map(([k, v]) => [/^suporte_peitoral:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d);
+  if (doPeitoral.length) {
+    for (const a of saida.values()) {
+      if (a.onde?.slot !== 'body') continue;
+      for (const [d, nivel] of doPeitoral) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
+    }
+  }
   return saida;
 }
 

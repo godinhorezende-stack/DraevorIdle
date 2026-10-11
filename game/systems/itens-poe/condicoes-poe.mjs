@@ -231,6 +231,10 @@ let leitorDeBase = null;
 let leitorDeMaestrias = null;
 /** Quem conta as maestrias alocadas de um tema (`passivas/arvore.mjs`): `(estado, 'Vida') → n`. */
 export function definirLeitorDeMaestrias(fn) { leitorDeMaestrias = fn; }
+/** (11/10) A soma da ÁRVORE do personagem (quem registra: `afixos.mjs`) — o que as gemas leem sem montar a ficha ("Habilidades do Peitoral …"). */
+let leitorDaArvore = null;
+export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
+export const somaDaArvore = (estado) => leitorDaArvore?.(estado) ?? {};
 export function definirLeitorDeBase(fn) { leitorDeBase = fn; }
 export const defesasDaPeca = (poe) => leitorDeBase?.(poe) ?? null;
 /** A defesa da PEÇA vestida (`{ armadura, evasao, escudo }`): a faixa sorteada dela (`peca.base`); sem faixa, a da base do catálogo. */
@@ -651,6 +655,8 @@ export const BUFFS = {
   // aumentada em 75%"; o Elementalista: "Convergência concede 30% mais Dano Elemental e dura 4 segundos" — aproximado: nas habilidades Elementais.)
   fanatismo: { nome: 'Fanatismo', af: { cast_speed: 75, 'custo_mana_inc@magia': -75, 'area_inc@magia': 75 } },
   convergencia: { nome: 'Convergência', af: { 'mais_dano@elemental': 30 } },
+  // (o suporte Crueldade: "Crueldade: até 40% mais Dano Degenerativo" — aproximado: os 40%; o "Efeito da Crueldade" multiplica)
+  crueldade: { nome: 'Crueldade', af: { dano_dot_mais: 40 } },
   // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
   rapidez: { nome: 'Rapidez', af: (estado) => ({ move_speed: estado?.hunt?.rapidez?.movimentoPct ?? 0 }) },
 };
@@ -685,7 +691,8 @@ export function adds(estado, total = null) {
   for (const x of Object.values(estado?.hunt?.poeTemporarios ?? {})) if (x && x.ate > agoraT) saida[x.stat] = (saida[x.stat] ?? 0) + x.valor;
   for (const [nome, b] of Object.entries(BUFFS)) {
     if (!buffAtivo(estado, nome, total)) continue;
-    const efeito = 1 + (Number(total?.[`efeito_buff:${nome}`]) || 0) / 100;
+    // (+ o efeito que veio junto com o buff — o do suporte que o concedeu: `hunt.poeEfeitoDeBuff`, a Crueldade, o Elusivo da Lâmina Noturna)
+    const efeito = 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0)) / 100;
     for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * efeito;
   }
   // (lote G) Sobre o Solo Sagrado: 6% da Vida por segundo (× "Efeito de Solos Sagrados Criados por você aumentado"), "Seu chão consagrado
@@ -695,6 +702,13 @@ export function adds(estado, total = null) {
     saida.life_regen_max_pct = (saida.life_regen_max_pct ?? 0) + regen;
     if (Number(total?.solo_sagrado_precisao) > 0) saida.accuracy_inc = (saida.accuracy_inc ?? 0) + Number(total.solo_sagrado_precisao);
     if (Number(total?.solo_sagrado_es) > 0) saida.es_regen_pct = (saida.es_regen_pct ?? 0) + regen;
+  }
+  // (o Necromante: "Suas Habilidades de Oferenda também afetam você", "Suas Oferendas possuem X% de redução do Efeito em você" — a Oferenda
+  // usada vale em você: a velocidade de ataque, o crítico, o bloqueio e a regeneração dela — `acoes`, `hunt.oferendaEmVoce`.)
+  const of = estado?.hunt?.oferendaEmVoce;
+  if (of && of.ate > agoraT && Number(total?.oferenda_em_voce) > 0) {
+    const f = Math.max(0, 1 - (Number(total?.oferenda_efeito_reduzido) || 0) / 100);
+    for (const [k, v] of [['atk_speed', of.velAtaquePct], ['crit_chance_inc', of.critInc], ['crit_dmg', of.critMult], ['block', of.bloqueioPct], ['life_regen_max_pct', of.regenPct]]) if (v) saida[k] = (saida[k] ?? 0) + v * f;
   }
   // (lote F) "Fúria Arcana também concede +X% de dano mágico a você".
   if (buffAtivo(estado, 'furiaArcana', total) && Number(total?.furia_arcana_dano_magico) > 0) saida.spell_dmg = (saida.spell_dmg ?? 0) + Number(total.furia_arcana_dano_magico);
@@ -1211,7 +1225,7 @@ export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance
 var conhecePelaGema;
 export function definirGemasConhecidas(fn) { conhecePelaGema = fn; }
 export function gemaConhecida(slug) { return conhecePelaGema ? conhecePelaGema(slug) : undefined; }
-const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|keystone):[\w-]+$/;
+const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|keystone):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
 const TIPOS_DE_LACAIO = '(zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|qualquer)';
@@ -1411,7 +1425,7 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   return { danoFator, precisaoFator, criticoFator };
 }
 /** A resistência elemental a menos do bicho Causticado (pontos), e a chance de crítico a mais contra ele Fragilizado (pontos de %). */
-export const causticado = (bicho, agora) => (ativo(bicho?.estados?.causticado, agora) ? bicho.estados.causticado.pct : 0);
+export const causticado = (bicho, agora) => (ativo(bicho?.estados?.causticado, agora) ? bicho.estados.causticado.pct : 0) + (bicho?.estados?.causticadosPilha ?? []).filter((x) => x.ate > agora).reduce((t, x) => t + x.pct, 0);
 /** O Equilíbrio Elemental no bicho: +25 nos elementos que o acertaram, −50 nos outros (0 sem ele ou fora dos elementais). */
 export function equilibrio(bicho, agora, tipo) {
   const q = bicho?.estados?.equilibrio;
@@ -1433,6 +1447,10 @@ export const resMenosDaAura = (bicho, agora, tipo) => (ativo(bicho?.estados?.aur
 export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;
   hunt.poeEntrou ??= agora; // (lote F: "por segundo que você tenha ficado parado" conta desde a entrada, se ainda não andou)
+  // (11/10) Um buff com tempo acabou neste tique (os nomeados — Crueldade, Elusivo, Fanatismo… — e a Oferenda em você): a ficha é refeita, e o
+  // bônus sai na hora (não no próximo acerto que a refizesse).
+  const venceu = (ate) => typeof ate === 'number' && ate <= agora && ate > agora - Math.max(1, ms);
+  if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate)) hunt.poeFichaMudou = true;
   tiqueDaFuria(hunt, agora);
   tiqueDasCargasFanaticas(hunt, ficha, agora);
   // (ciclo 7) "Inimigos próximos do seu Inimigo Marcado são Cegados" (a até 2 casas dele).

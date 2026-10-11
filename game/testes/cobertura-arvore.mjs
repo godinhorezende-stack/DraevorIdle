@@ -212,3 +212,9 @@ ESCALAS.forcaDosVentos ??= 'passivas-poe-keystones-ascendencias (a redução de 
 CONDICOES['semBuff:*'] ??= 'passivas-poe-keystones-ascendencias (a área sem Convergência)';
 CONDICOES.custaVida ??= 'passivas-poe-keystones-ascendencias (o Dano Físico das habilidades que custam Vida)';
 
+// (11/10, os SUPORTES que não agiam e as SEM REGRA — passivas-poe-suportes-sem-regra.test.mjs: a gema encaixada e usada na caçada, o nó real)
+for (const k of ['efeito_buff:crueldade', 'dano_dot_mais', 'impiedoso_intimida_s', 'lamina_elusivo_efeito', 'lamina_crit_mult_elusivo', 'selos_max_extra', 'intensidade_max_extra',
+  'oferenda_em_voce', 'oferenda_efeito_reduzido', 'veneno_mais_chance', 'veneno_mais_pct', 'destilador_consome', 'destilador_diamante_crit', 'destilador_bismuto_pen',
+  'destilador_ametista_caos', 'frasco_vida_sem_fila', 'incendio_vira_causticacao', 'causticacoes_extra', 'marca_assassino_ao_critico', 'suporte_peitoral:chamado-ancestral',
+  'suporte_peitoral:punho-da-guerra', 'atk_speed_mao_secundaria', 'incendio_atordoante_mais', 'renova_frio_choque_amaldicoado', 'golpe_corpo_propaga', 'repeticao_final_area']) MECANICAS[k] ??= 'passivas-poe-suportes-sem-regra';
+CONDICOES.duranteFrasco ??= 'passivas-poe-suportes-sem-regra (o Veneno do Mestre Toxista só com um frasco ativo)';

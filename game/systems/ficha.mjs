@@ -156,10 +156,12 @@ export const APS_DESARMADO_POE = 1.2;
  * O intervalo BASE do golpe (ms, antes dos aumentos globais): `1000 / APS final` da arma (sem arma, o desarmado). Com DUAS ARMAS (PoE) os
  * golpes alternam e cada um leva o tempo da sua arma: a média dos dois intervalos (a média harmônica dos APS, como no PoE).
  */
-export function intervaloBaseDoGolpe(arma, secundaria = null) {
+export function intervaloBaseDoGolpe(arma, secundaria = null, af = null) {
   const desarmado = itensPoeLigado() ? 1000 / APS_DESARMADO_POE : INTERVALO_BASE_DO_GOLPE_MS;
   const de = (s) => s?.aps.intervaloMs || desarmado;
-  return secundaria ? (de(arma) + de(secundaria)) / 2 : de(arma);
+  // (PoE, a Ambidestria: "Velocidade de Ataque com a Mão Secundária aumentada em X% enquanto em Dupla Empunhadura" — só o golpe da secundária.)
+  const daSecundaria = itensPoeLigado() ? 1 + Math.max(0, Number(af?.atk_speed_mao_secundaria) || 0) / 100 : 1;
+  return secundaria ? (de(arma) + de(secundaria) / daSecundaria) / 2 : de(arma);
 }
 /** O "aumentado" da Velocidade de Conjuração que também vale no ataque (PoE: "…se aplicam à Velocidade de Ataque"). */
 const conjuracaoNoAtaque = (af) => (itensPoeLigado() && Number(af?.conj_em_ataque) > 0 ? Number(af.cast_speed) || 0 : 0);
@@ -482,7 +484,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
     // (PoE: o APS da base do catálogo × a Velocidade de Ataque LOCAL da peça; com duas armas, a média dos tempos das duas — `intervaloBaseDoGolpe`.)
-    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / (1 + (BONUS_DE_DUAS_ARMAS.velocidadeMais - 1) * dobroDasDuasArmas(af, 'velocidade')) : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / (1 + (BONUS_DE_DUAS_ARMAS.velocidadeMais - 1) * dobroDasDuasArmas(af, 'velocidade')) : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal, af) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([

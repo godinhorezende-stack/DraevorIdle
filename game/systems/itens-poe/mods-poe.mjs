@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar } from './condicoes-poe.mjs';
+import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -137,6 +137,12 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     if (sorte(v('chance_agravar'))) Dot.agravar(alvo, agora);
     const apos = v('agravar_sangramento_apos_s');
     if (apos > 0) Dot.agravar(alvo, agora, apos * 1000);
+  }
+  // (PoE, as Forças Profanadas: "Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você" — o acerto no amaldiçoado
+  // renova os 2 s de base do Resfriamento e da Eletrização que ele tem.)
+  if (v('renova_frio_choque_amaldicoado') > 0 && amaldicoadoPorVoce(alvo, agora)) {
+    if (e.lento?.ate > agora) e.lento.ate = Math.max(e.lento.ate, agora + 2000);
+    if (e.chocado?.ate > agora) e.chocado.ate = Math.max(e.chocado.ate, agora + 2000);
   }
   // "Seus Acertos Intimidam permanentemente Inimigos com Vida Cheia" (a tag `alvoVidaCheia` do golpe).
   if (v('intimidar_permanente') > 0) e.intimidado = { ate: agora + 3600 * 1000 };

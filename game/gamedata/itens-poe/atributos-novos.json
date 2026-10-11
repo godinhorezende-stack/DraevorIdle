@@ -5504,6 +5504,132 @@
       "unidade": "%",
       "combate": true,
       "efeito": "a magia de projétil físico do monstro (`poderes`)"
+    },
+    "impiedoso_intimida_s": {
+      "nome": "Acertos Impiedosos Intimidam",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o Golpe Impiedoso (`acoes.efeitosDosSuportesNoAcerto`)"
+    },
+    "lamina_elusivo_efeito": {
+      "nome": "Efeito do Elusivo da Lâmina Noturna",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o Elusivo no crítico (`acoes.efeitosDosSuportesNoAcerto`)"
+    },
+    "lamina_crit_mult_elusivo": {
+      "nome": "Multiplicador de Crítico enquanto Elusivo (Lâmina Noturna)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o crítico da gema (`acoes`)"
+    },
+    "selos_max_extra": {
+      "nome": "Selos máximos do Libertar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "os Selos (`acoes.selosAgora`)"
+    },
+    "intensidade_max_extra": {
+      "nome": "Intensidade máxima",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a Intensidade (`acoes.ganharIntensidade`)"
+    },
+    "dano_dot_mais": {
+      "nome": "Dano Degenerativo (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "as afecções e o degenerativo das gemas (`itens-poe/afeccoes`, `acoes`)"
+    },
+    "oferenda_em_voce": {
+      "nome": "Oferendas também afetam você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a soma (`condicoes-poe.adds` — `hunt.oferendaEmVoce`)"
+    },
+    "oferenda_efeito_reduzido": {
+      "nome": "Efeito das Oferendas em você reduzido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a soma (`condicoes-poe.adds`)"
+    },
+    "destilador_consome": {
+      "nome": "Cargas de frasco consumidas por uso (Destilador)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o uso (`acoes.doDestilador`)"
+    },
+    "destilador_diamante_crit": {
+      "nome": "Destilador: Chance de Crítico (Diamante)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o uso (`acoes.doDestilador`)"
+    },
+    "destilador_bismuto_pen": {
+      "nome": "Destilador: Penetração Elemental (Bismuto)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o uso (`acoes.doDestilador`)"
+    },
+    "destilador_ametista_caos": {
+      "nome": "Destilador: Físico como Caos extra (Ametista)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o uso (`acoes.doDestilador`)"
+    },
+    "frasco_vida_sem_fila": {
+      "nome": "Frasco de Vida não se enfileira",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o frasco (`frascos.usar`)"
+    },
+    "incendio_vira_causticacao": {
+      "nome": "Incêndio vira Causticação",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a afecção (`itens-poe/afeccoes`)"
+    },
+    "causticacoes_extra": {
+      "nome": "Causticações adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a afecção (`itens-poe/afeccoes`)"
+    },
+    "marca_assassino_ao_critico": {
+      "nome": "Marca do Assassino no crítico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto da gema (`acoes.marcaDoAssassino`)"
+    },
+    "atk_speed_mao_secundaria": {
+      "nome": "Velocidade de Ataque da Mão Secundária",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o intervalo do golpe (`ficha.intervaloBaseDoGolpe`)"
+    },
+    "incendio_atordoante_mais": {
+      "nome": "Incêndio do acerto que Atordoa (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a afecção do acerto (`acoes`)"
+    },
+    "renova_frio_choque_amaldicoado": {
+      "nome": "Renova Resfriamento e Eletrização nos amaldiçoados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto (`mods-poe.aoAcertar`)"
+    },
+    "golpe_corpo_propaga": {
+      "nome": "Golpes corpo a corpo propagam",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o golpe (`acoes` — `atacar`)"
+    },
+    "repeticao_final_area": {
+      "nome": "Área da Repetição Final",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a repetição (`acoes`)"
     }
   }
 }

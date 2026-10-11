@@ -31,6 +31,8 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
+// (a soma da árvore para quem não monta a ficha — as gemas do peitoral suportadas pela árvore: `skills/gemas.dasPecas`)
+ModsPoe.definirLeitorDaArvore((estado) => Passivas.efeitos(estado).adds);
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
