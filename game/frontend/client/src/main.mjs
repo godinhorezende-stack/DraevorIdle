@@ -2738,7 +2738,7 @@ function buildWindows() {
     abrirFicha: () => openCharacter('sheet'),
     abrirParty: () => openParty(),
     abrirAparencia: () => openCharacter('look'),
-    sistemas: () => SISTEMAS,
+    sistemas: () => SISTEMAS.filter((entrada) => !entrada.escondido?.()),
     janelaAberta: (id) => isVisible(id),
     abrirJanela: (id) => setVisible(id, true, { gravar: false }),
     fecharJanela: (id) => esconderSemGravar(id),
@@ -2826,8 +2826,13 @@ function buildWindows() {
  * ponto de árvore, fragmento de gema, ponto de charm, ouro na forja. É o grupo
  * que já andava junto na fileira antiga; ganhou uma porta.
  */
+/*
+ * Prey e Charms não existem no jogo oficial (dono, 11/10: "tire o sistema de prey e charms, desktop e mobile"): o `escondido` os tira da
+ * gaveta do computador e do Herói/Mais do telefone (ver `ferramentaLigada`). O servidor também os desligou (`prey.mjs`, `charms.mjs`).
+ */
+const FORA_DO_JOGO_OFICIAL = () => !!state.character?.filtroPoe;
 const SISTEMAS = [
-  { id: 'prey', label: 'Prey', abre: () => openPrey(),
+  { id: 'prey', label: 'Prey', abre: () => openPrey(), escondido: FORA_DO_JOGO_OFICIAL,
     tip: 'Escolhe a presa de cada slot e o bônus que ela dá.',
     /*
      * O balão mostra as três presas ATIVAS, e não só o que o botão faz.
@@ -2886,7 +2891,7 @@ const SISTEMAS = [
   { id: 'gemas', label: 'Gem Atelier', curto: 'Gemas', abre: () => openGemas(),
     tip: 'Revela gemas, encaixa nos domínios da árvore e sobe o grau dos modificadores com fragmentos.',
     corpo: () => resumoDasGemasParaBalao() },
-  { id: 'charms', label: 'Charms', abre: () => openCharms(),
+  { id: 'charms', label: 'Charms', abre: () => openCharms(), escondido: FORA_DO_JOGO_OFICIAL,
     tip: 'Gasta os pontos que as mortes do bestiary liberam.',
     corpo: () => resumoDosCharmsParaBalao(),
     /*
@@ -3225,7 +3230,7 @@ const BARRA = [
 
   {
     id: 'sistemas', label: 'Sistemas', icone: 'sistemastopicone', reserva: 'gemas',
-    tip: 'Prey, forja, árvore, gemas e charms.',
+    tip: 'Os sistemas que fazem o personagem crescer: forja, árvore e gemas.',
     gaveta: SISTEMAS },
 
   // Para onde ir. Como VOLTAR mora no canto da direita — ver `CIDADE`.
@@ -3739,6 +3744,12 @@ function ferramentaLigada(entry) {
   const button = toolButton(entry);
   button.dataset.tool = entry.id;
   if (entry.ativo) botoesCondicionais.push({ button, ativo: entry.ativo });
+  // O que não existe neste jogo (Prey e Charms no oficial): some da barra, da gaveta e das folhas do telefone. `display` com
+  // `important`, e não `hidden`: as regras de `.tools button` e de `.folha .cel-mais-item` (esta com `!important`) venceriam.
+  if (entry.escondido) {
+    botoesEscondidos.push({ button, escondido: entry.escondido });
+    esconderSe(button, entry.escondido());
+  }
   if (entry.alerta) botoesEmAlerta.push({ button, alerta: entry.alerta });
 
   if (entry.janela) {
@@ -3897,6 +3908,7 @@ function buildTopbar() {
   // O botão da cidade acende só quando há caçada para encerrar.
   const marcarCondicionais = () => {
     for (const { button, ativo } of botoesCondicionais) button.disabled = !ativo();
+    for (const { button, escondido } of botoesEscondidos) esconderSe(button, escondido());
     for (const { button, alerta } of botoesEmAlerta) {
       const acende = !!alerta();
       button.classList.toggle('alerta', acende);
@@ -9732,6 +9744,9 @@ let onModalClose = null;
 let abertoPor = null;
 // Botões que acendem ou apagam conforme o estado do jogo, como o da cidade.
 const botoesCondicionais = [];
+// Botões do que não existe neste jogo (`escondido`): somem.
+const botoesEscondidos = [];
+const esconderSe = (button, sim) => (sim ? button.style.setProperty('display', 'none', 'important') : button.style.removeProperty('display'));
 // Botões com ponto para gastar: acendem em dourado e pulsam.
 const botoesEmAlerta = [];
 let atualizarBotoes = () => {};

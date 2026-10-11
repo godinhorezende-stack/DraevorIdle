@@ -33,6 +33,12 @@ import { CATALOGO } from './dados.mjs';
 import * as R from './regras.mjs';
 import { resistido } from './hunt/resistencia.mjs';
 import * as Ficha from './ficha.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+
+// No jogo oficial (PoE) os Charms NÃO EXISTEM (dono, 11/10: "tire o sistema de prey e charms, desktop e mobile"): nenhum dispara (`noBicho`
+// é a porta de todos), o painel não aceita comando e a morte não anuncia mais "bestiário completo, +N pontos de charm". O que o personagem
+// tinha (tiers, alvos, pontos, o bestiário) fica guardado, sem efeito.
+export const SEM_CHARMS = () => itensPoeLigado();
 
 const DADOS = JSON.parse(readFileSync(new URL('../gamedata/charms.json', import.meta.url), 'utf8'));
 export const CHARMS = DADOS.charms;
@@ -96,6 +102,8 @@ export function proximoPreco(estado) {
 }
 
 export function paraCliente(estado) {
+  // No jogo oficial, sem pontos nem "próximo preço": nada acende o aviso de charm para comprar.
+  if (SEM_CHARMS()) return { bestiary: estado.bestiary ?? {}, charmPoints: 0, charmNext: null };
   return { bestiary: estado.bestiary ?? {}, charmPoints: pontos(estado), charmNext: proximoPreco(estado) };
 }
 
@@ -111,6 +119,7 @@ export function vista(estado) {
 }
 
 export function comando(estado, m) {
+  if (SEM_CHARMS()) return { ok: false, erro: 'Os Charms não existem no jogo.' };
   garantir(estado);
   if (!m.action) return { ok: true };
   const charm = POR_ID.get(Number(m.id));
@@ -146,14 +155,14 @@ export function contarMorte(estado, key, eventos) {
   if (!b) return;
   garantir(estado);
   const mortes = (estado.bestiary[key] = (estado.bestiary[key] ?? 0) + 1);
-  if (b.toKill > 0 && mortes === b.toKill && b.charmPoints) eventos?.push({ t: 'bestiaryDone', name: b.name, points: b.charmPoints });
+  if (b.toKill > 0 && mortes === b.toKill && b.charmPoints && !SEM_CHARMS()) eventos?.push({ t: 'bestiaryDone', name: b.name, points: b.charmPoints });
 }
 
 // ---------------------------------------------------------------------------
 // No combate.
 
 /** Tier > 0 e apontado para esta criatura. */
-const noBicho = (estado, id, key) => tierDe(estado, id) > 0 && estado.charms?.alvos?.[id] === key;
+const noBicho = (estado, id, key) => !SEM_CHARMS() && tierDe(estado, id) > 0 && estado.charms?.alvos?.[id] === key;
 const dispara = (estado, id) => Math.random() * 100 < chanceDoTier(POR_ID.get(id), tierDe(estado, id));
 
 function bater(estado, hunt, bicho, charm, valor, eventos) {

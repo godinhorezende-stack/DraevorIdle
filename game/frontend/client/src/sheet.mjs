@@ -852,7 +852,8 @@ export function renderSheet(body, { state, send, closeModal }) {
   if (slotsExp.length) {
     bonuses.append(el('div', 'sheet-sub', 'Prey — só contra a criatura escolhida'));
     for (const slot of slotsExp) addRow(nomeDaPresa(slot), `+${slot.percent}%`, false, 'prey');
-  } else {
+  } else if (!character.filtroPoe) {
+    // (No jogo oficial não há Prey — dono, 11/10: a linha vazia "Prey de experiência —" sai da ficha.)
     addRow('Prey de experiência', '—', true, 'prey');
   }
   right.append(bonuses);
