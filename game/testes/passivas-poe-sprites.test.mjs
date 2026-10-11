@@ -1,4 +1,5 @@
-// Os ÍCONES e as MOLDURAS dos nós da árvore do PoE (dono, 11/10: raspados do poeskilltree.com — tools/importar-arvore-poeskilltree.mjs):
+// Os ÍCONES e as MOLDURAS dos nós da árvore do PoE (dono, 11/10: raspados do poeskilltree.com — tools/importar-arvore-poeskilltree.mjs),
+// os FUNDOS DOS GRUPOS e a ARTE DAS CLASSES:
 // todo nó da árvore principal tem arte (ícone ou encaixe de joia), cada ícone está DENTRO da folha dele, as folhas e os avulsos estão no
 // repositório, e o jogo serve as folhas e o mapa (`/api/jogo/poe/icone/arvore/<folha>`, `/api/jogo/poe/arvore-sprites`). Refazer a árvore
 // (tools/montar-arvore-poe.mjs) com nó novo sem rodar o importador quebra aqui.
@@ -49,6 +50,33 @@ test('sprites da árvore: cada ícone e cada moldura estão dentro da folha dele
   for (const m of ['PSSkillFrame', 'PSSkillFrameHighlighted', 'PSSkillFrameActive', 'NotableFrameAllocated', 'KeystoneFrameCanAllocate', 'JewelFrameUnallocated']) assert.ok(S.coords.frame[m], m);
 });
 
+test('sprites da árvore: cada fundo de grupo fica onde estão os nós do grupo (a posição da árvore do jogo)', () => {
+  const nos = P.arvore().nos.filter((n) => !n.ascendencia && n.tipo !== 'start');
+  assert.ok(S.grupos.length > 400, `${S.grupos.length} grupos com fundo`);
+  for (const [x, y, fundo, meio] of S.grupos) {
+    const c = S.coords.groupBackground[fundo];
+    assert.ok(c, fundo);
+    assert.ok(meio === 0 || fundo === 'PSGroupBackground3', `${fundo} só o grande é meia-imagem`);
+    // o raio do fundo em unidades da árvore (a folha está no zoom S.zoom): algum nó do jogo está dentro dele
+    const raio = c[2] / 2 / S.zoom;
+    assert.ok(nos.some((n) => Math.hypot(n.x - x, n.y - y) <= raio), `fundo ${fundo} em ${x},${y} sem nó dentro`);
+  }
+});
+
+test('sprites da árvore: cada classe tem o medalhão do PoE, e a ilustração grande (menos a Herdeira) cobre o início dela', () => {
+  const inicios = P.arvore().nos.filter((n) => n.tipo === 'start' && !n.ascendencia);
+  assert.equal(inicios.length, 7);
+  assert.ok(S.coords.startNode.PSStartNodeBackgroundInactive);
+  for (const n of inicios) {
+    const c = S.classes[n.classe];
+    assert.ok(c && S.coords.startNode[c.centro], `${n.classe}: medalhão`);
+    if (n.classe === 'Scion') { assert.equal(c.ilustracao, undefined, 'a Herdeira não tem ilustração no PoE'); continue; }
+    assert.ok(existsSync(new URL(c.ilustracao, PASTA)), c.ilustracao);
+    assert.ok(c.l > 1000 && c.a > 1000, `${n.classe}: ${c.l}×${c.a}`);
+    assert.ok(n.x > c.x && n.x < c.x + c.l && n.y > c.y && n.y < c.y + c.a, `${n.classe}: o início (${n.x}, ${n.y}) dentro da ilustração ${c.ilustracao}`);
+  }
+});
+
 /** Uma resposta falsa: o que o servidor escreveu (cabeçalho e corpo). */
 function resposta() {
   const r = { status: 0, cabecalho: {}, partes: [], fim: null };
@@ -80,6 +108,10 @@ test('sprites da árvore: o jogo serve o mapa, as folhas e os avulsos — e nada
   const folha = await pedir(`/api/jogo/poe/icone/arvore/${S.tipos.frame}`);
   assert.equal(folha.status, 200);
   assert.equal(folha.tipo, 'image/png');
+  assert.equal((await pedir(`/api/jogo/poe/icone/arvore/${S.tipos.groupBackground}`)).status, 200);
+  const il = await pedir(`/api/jogo/poe/icone/arvore/${S.classes.Witch.ilustracao}`);
+  assert.equal(il.status, 200);
+  assert.equal(il.tipo, 'image/webp');
   const avulso = Object.values(S.avulsos)[0];
   if (avulso) assert.equal((await pedir(`/api/jogo/poe/icone/arvore/${avulso}`)).status, 200);
   assert.equal((await pedir('/api/jogo/poe/icone/arvore/..%2F..%2Farvore-poe.json')).status, 404);
