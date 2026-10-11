@@ -262,6 +262,8 @@ export function aoReceberPassivas(msg) {
  * ligações em ARCO, e uma moldura por tipo: atributo (pedra colorida), pequeno
  * (aro de bronze), notável (moldura dourada dupla), keystone (coroa de pontas),
  * início (medalhão com a letra da classe).
+ * (11/10) Na árvore do PoE, os nós usam a arte do próprio PoE (ícones e molduras raspados do poeskilltree.com — `desenharArteDoPoe`);
+ * este desenho fica para os inícios, para a árvore do Draevor e enquanto as folhas de sprites não chegam.
  */
 const CORES = {
   fundo: '#090c11', aresta: '#3a3326', arestaViva: '#e2b350', arestaPerto: '#6b5f44', caminho: '#6fc8b4',
@@ -439,7 +441,130 @@ function montar(body) {
     g.drawImage(img, p.x - w / 2, p.y - h / 2, w, h);
     g.restore();
   }
-  const escala = () => Math.max(0.5, Math.min(1.6, cam.zoom * 1.8));
+  /*
+   * ---- Os ÍCONES e as MOLDURAS do PoE em todos os nós (dono, 11/10) ----
+   * As folhas de sprites raspadas do poeskilltree.com (`tools/importar-arvore-poeskilltree.mjs`); `/api/jogo/poe/arvore-sprites` diz
+   * onde está cada ícone e qual é o de cada nó. Recorta como o site: o ícone aceso no nó alocado e o apagado no resto, a moldura do
+   * tipo no estado do nó (longe, alcançável, alocado) e a maestria nos três estados (sem ligação, ligada, escolhida). Enquanto as folhas
+   * não chegam — e nos nós sem arte (inícios, ascendências, que têm a própria) — o desenho de sempre.
+   */
+  let sprites = null;
+  let pediuSprites = false;
+  function spritesDaArvore() {
+    if (!pediuSprites && arvore()?.poe) {
+      pediuSprites = true;
+      fetch('/api/jogo/poe/arvore-sprites')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((s) => {
+          if (!s) return;
+          sprites = { ...s, joias: new Set(s.joias ?? []) };
+          pedir();
+        })
+        .catch(() => {});
+    }
+    return sprites;
+  }
+  const folhas = new Map();
+  function folha(arquivo) {
+    let img = folhas.get(arquivo);
+    if (!img) {
+      img = new Image();
+      img.onload = pedir;
+      img.src = `/api/jogo/poe/icone/arvore/${arquivo.split('/').map(encodeURIComponent).join('/')}`;
+      folhas.set(arquivo, img);
+    }
+    return img.complete && img.naturalWidth ? img : null;
+  }
+  const MOLDURA = {
+    small: ['PSSkillFrame', 'PSSkillFrameHighlighted', 'PSSkillFrameActive'],
+    notable: ['NotableFrameUnallocated', 'NotableFrameCanAllocate', 'NotableFrameAllocated'],
+    keystone: ['KeystoneFrameUnallocated', 'KeystoneFrameCanAllocate', 'KeystoneFrameAllocated'],
+    joia: ['JewelFrameUnallocated', 'JewelFrameCanAllocate', 'JewelFrameAllocated'],
+  };
+  const TIPO_DO_ICONE = { small: 'normal', notable: 'notable', keystone: 'keystone' };
+  const TIPOS_DA_MAESTRIA = ['mastery', 'masteryConnected', 'masteryActiveSelected'];
+  /**
+   * Um recorte `[x, y, l, a]` da folha `arquivo` no contexto `t`, centrado em p, na escala k. Sem `clip` (centenas de nós por quadro):
+   * como no site, a moldura desenhada por cima cobre os cantos do ícone quadrado.
+   */
+  function recorte(t, arquivo, c, p, k) {
+    const img = c && arquivo ? folha(arquivo) : null;
+    if (!img) return false;
+    const [x, y, w, h] = c;
+    t.drawImage(img, x, y, w, h, p.x - (w * k) / 2, p.y - (h * k) / 2, w * k, h * k);
+    return true;
+  }
+  /** A arte do PoE de um nó no contexto `t` (a tela ou uma arte pronta). `false`: alguma imagem ainda não chegou. */
+  function arteDoNo(t, s, n, arte, joia, passo, p, r) {
+    if (Array.isArray(arte)) {
+      // A maestria: a arte inteira (já vem redonda), maior que o nó, como no PoE.
+      const tipo = TIPOS_DA_MAESTRIA[passo];
+      const c = s.coords[tipo]?.[arte[passo]];
+      return Boolean(c) && recorte(t, s.tipos[tipo], c, p, (r * 3.3) / c[2]);
+    }
+    const moldura = joia ? MOLDURA.joia : MOLDURA[n.tipo];
+    const cm = moldura && s.coords.frame?.[moldura[passo]];
+    if (!cm || !folha(s.tipos.frame)) return false;
+    // A moldura um pouco maior que o nó; o ícone na proporção do PoE dentro dela.
+    const k = (r * 2.3) / cm[2];
+    const miolo = cm[2] * k * 0.33;
+    if (arte) {
+      const tipo = `${TIPO_DO_ICONE[n.tipo]}${passo === 2 ? 'Active' : 'Inactive'}`;
+      const c = s.coords[tipo]?.[arte];
+      if (c) {
+        if (!recorte(t, s.tipos[tipo], c, p, k)) return false;
+      } else if (s.avulsos?.[arte]) {
+        // Nó posterior à versão do site: o ícone avulso do poedb, apagado em cinza fora do alocado.
+        const img = folha(s.avulsos[arte]);
+        if (!img) return false;
+        const lado = miolo * 2;
+        t.save();
+        t.beginPath();
+        t.arc(p.x, p.y, miolo, 0, Math.PI * 2);
+        t.clip();
+        if (passo < 2) t.filter = 'grayscale(1) brightness(0.6)';
+        t.drawImage(img, p.x - lado / 2, p.y - lado / 2, lado, lado);
+        t.restore();
+      } else return false;
+    } else {
+      t.beginPath();
+      t.arc(p.x, p.y, miolo, 0, Math.PI * 2);
+      t.fillStyle = CORES.noFundo;
+      t.fill();
+    }
+    return recorte(t, s.tipos.frame, cm, p, k);
+  }
+  /*
+   * Afastado, o nó fica no tamanho mínimo e a tela tem centenas (até milhares) deles: cada combinação de ícone, moldura e estado vira uma
+   * ARTE PRONTA (um canvas pequeno, montado uma vez) copiada 1:1, em vez de recortar e escalar das folhas grandes nó por nó.
+   */
+  const prontas = new Map();
+  /** O nó com a arte do PoE. `false`: não há arte para ele (ou as folhas ainda não chegaram) — quem chama desenha como sempre. */
+  function desenharArteDoPoe(n, p, r, estado, noCaminho) {
+    const s = spritesDaArvore();
+    if (!s) return false;
+    const arte = s.nos[n.id];
+    const joia = !arte && s.joias.has(n.id);
+    if (!arte && !joia) return false;
+    const passo = estado === 'alocado' ? 2 : estado === 'disponivel' || noCaminho ? 1 : 0;
+    if (cam.zoom * 1.8 > ESCALA_MINIMA) return arteDoNo(g, s, n, arte, joia, passo, p, r);
+    const dpr = window.devicePixelRatio || 1;
+    const lado = Math.ceil(r * 3.4);
+    const chave = `${n.tipo}|${arte}|${passo}|${lado}|${dpr}`;
+    let pronta = prontas.get(chave);
+    if (!pronta) {
+      pronta = document.createElement('canvas');
+      pronta.width = pronta.height = Math.ceil(lado * dpr);
+      const t = pronta.getContext('2d');
+      t.scale(dpr, dpr);
+      if (!arteDoNo(t, s, n, arte, joia, passo, { x: lado / 2, y: lado / 2 }, r)) return false;
+      prontas.set(chave, pronta);
+    }
+    g.drawImage(pronta, Math.round((p.x - lado / 2) * dpr) / dpr, Math.round((p.y - lado / 2) * dpr) / dpr, lado, lado);
+    return true;
+  }
+  const ESCALA_MINIMA = 0.5;
+  const escala = () => Math.max(ESCALA_MINIMA, Math.min(1.6, cam.zoom * 1.8));
   const raio = (n) => (n.atributo ? 6.5 : { small: 10, notable: 17, keystone: 25, start: 38, mastery: 15 }[n.tipo] ?? 10) * escala();
   const forma = (p, r) => {
     g.beginPath();
@@ -509,6 +634,7 @@ function montar(body) {
       g.restore();
       return;
     }
+    if (desenharArteDoPoe(n, p, r, estado, noCaminho)) return;
     // A maestria (árvore do PoE) tem a própria cor: violeta.
     const corEmblema = n.tipo === 'mastery' ? '#9a7fd1' : COR_DO_CLUSTER[n.cluster] ?? '#aab4b8';
     if (n.tipo === 'keystone') {

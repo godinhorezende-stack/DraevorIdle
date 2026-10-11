@@ -40,6 +40,8 @@ export const MEDIDAS = {
   ice_dmg: { medir: ({ f }) => f.danoDoElemento.ice, esperado: soma },
   energy_dmg: { medir: ({ f }) => f.danoDoElemento.energy, esperado: soma },
   phys_dmg: { medir: ({ f }) => f.danoDoElemento.physical, esperado: soma },
+  // (11/10) o "Dano Mágico aumentado": o % que o golpe das magias soma (`acoes.mjs`, `danoDeMagiaDoPoe`)
+  spell_dmg: { medir: ({ f }) => f.danoDeMagiaDoPoe, esperado: soma },
   'dmg_inc@corpo': { medir: ({ golpe }) => golpe(['ataque', 'corpo']).danoDoElemento.physical, esperado: soma },
   'dmg_inc@projetil': { medir: ({ golpe }) => golpe(['ataque', 'projetil']).danoDoElemento.physical, esperado: soma },
   'dmg_inc@ataque': { medir: ({ golpe }) => golpe(['ataque']).danoDoElemento.physical, esperado: soma },
