@@ -61,11 +61,20 @@ function maisPerto(vivos, ponto, distancia, n, fora) {
  * Só geometria e contas de %: devolve QUEM leva, com quantos %, de ONDE e de que
  * TIPO, e as explosões (para a tela). Quem calcula o dano é o `disparar`
  * (acoes.mjs), um acerto por vez — o mesmo caminho do golpe principal.
+ *
+ * ---- A EMISSÃO (dono, 11/10: "A skill deve disparar os 12 projéteis, independentemente da quantidade de mobs") ----
+ * A skill de projétil (sem área) SEMPRE emite o seu total: a quantidade BASE da gema ("Dispara 15 projéteis" — `projeteisBase`, 1 sem ela)
+ * + os adicionais (`alvosExtras`: a gema, os suportes, as peças). Cada um sai de quem lança com a sua trajetória (`emitidos`: de, para,
+ * o bicho que acerta ou null). Quem acerta continua a regra de antes — o principal no alvo, cada extra num bicho DIFERENTE, o mais perto
+ * (o PoE: projéteis do mesmo uso não acertam o mesmo inimigo) —, e os que sobram sem bicho saem assim mesmo e erram (até o alcance, em
+ * leque). Na gema que "Dispara Projéteis em sequência" (`sequencia`, a Barragem) os que sobram vão no alvo, como no PoE. Sem alvo nenhum
+ * (0 bichos), os projéteis saem todos e erram. A emissão não diminui com quem erra nem com quem morre no meio.
  */
-export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance }) {
+export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null }) {
   const golpes = [];
   const explosoes = [];
-  const r = { golpes, explosoes, cortado: false };
+  const emitidos = [];
+  const r = { golpes, explosoes, emitidos, cortado: false };
   if (!efeito) return r;
   const t = new Set(tags ?? []);
   const cfg = G();
@@ -111,9 +120,23 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     return true;
   };
 
+  // A EMISSÃO: o total de projéteis da skill e a trajetória de cada um (o que erra vai até o alcance, em leque em volta do rumo).
+  const deProjetil = t.has('projectile') && !area;
+  const total = deProjetil ? Math.max(1, Math.round(Number(efeito.projeteisBase) || 1)) + Math.max(0, Math.round(Number(efeito.alvosExtras) || 0)) : 0;
+  const mira = alvo ?? rumo ?? { x: origem.x, y: origem.y + 1 };
+  const anguloDoRumo = Math.atan2(mira.y - origem.y, mira.x - origem.x) || Math.PI / 2;
+  const passo = total > 1 ? Math.min(Math.PI / 8, (2 * Math.PI) / total) : 0;
+  const pontoDoProjetil = (k) => {
+    const a = anguloDoRumo + (k - (total - 1) / 2) * passo;
+    return { x: Math.round(origem.x + Math.cos(a) * alcance), y: Math.round(origem.y + Math.sin(a) * alcance) };
+  };
+  const emitir = (bicho, tipo, k) => emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : pontoDoProjetil(k), bicho: bicho ?? null, tipo });
+
   if (!(t.has('projectile') && alvo)) {
     // Sem projétil (alvo único, cadeia da magia, corpo a corpo com Impact): cada golpe principal é um impacto.
     for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
+    // (a skill de projétil SEM alvo: os projéteis saem todos, e erram)
+    for (let k = 0; k < total; k++) emitir(null, 'projetil', k);
     return r;
   }
 
@@ -177,13 +200,23 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
 
   const base = { perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, encadear: efeito.encadear || 0, volta: efeito.retornar > 0 };
   // O principal: o golpe direto no alvo (já dado) e o que vem dele.
+  emitir(alvo, 'direto', 0);
   voar({ ...base, de: origem, pct: 100 }, alvo, 'direto', true);
   // Outros golpes principais da skill (a cadeia da própria magia): impactos.
   for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);
-  // Os extras: os bichos mais perto de quem lança (fora o alvo), cada um um projétil inteiro.
-  if (efeito.alvosExtras > 0) {
+  // Os extras (o total menos o principal): os bichos mais perto de quem lança (fora o alvo), cada um um projétil inteiro; os que sobram
+  // sem bicho saem e erram — ou, "em sequência", vão no alvo.
+  const extras = total - 1;
+  if (extras > 0) {
     const fora = new Set([alvo, ...atingidos]);
-    for (const b of maisPerto(vivosNoInicio, origem, alcance, efeito.alvosExtras, fora)) voar({ ...base, de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil');
+    const comBicho = maisPerto(vivosNoInicio, origem, alcance, extras, fora);
+    comBicho.forEach((b, i) => { emitir(b, 'projetil', i + 1); voar({ ...base, de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); });
+    for (let k = comBicho.length + 1; k <= extras; k++) {
+      if (efeito.sequencia && alvo.hp > 0) {
+        emitir(alvo, 'projetil', k);
+        voar({ ...base, de: origem, pct: pctDe('danoDosExtrasPct') }, alvo, 'projetil');
+      } else emitir(null, 'projetil', k);
+    }
   }
   return r;
 }

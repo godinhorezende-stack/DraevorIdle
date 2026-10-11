@@ -100,6 +100,11 @@ const REGRAS_DE_ALVOS = [
   [/Perfuram todos (?:os )?Alvos/i, (m, a) => { a.perfurar = 99; }],
   [/Perfuram (\d+) Alvos adiciona/i, (m, a) => { a.perfurar = Math.max(a.perfurar, Number(m[1])); }],
   [/^Dispara (\d+) Projéteis adicionais$/i, (m, a) => { a.projeteis += Number(m[1]); }],
+  // (11/10) A quantidade BASE ("Dispara 15 projéteis", "Dispara 9 Flechas") e "Dispara Projéteis em sequência" (todos podem ir no alvo):
+  // a emissão de `skills/golpes-secundarios.resolver`.
+  // (só aparecem na gema que os declara)
+  [/^Dispara (\d+) (?:projéteis|flechas)$/i, (m, a) => { a.base = Math.max(a.base ?? 0, Number(m[1])); }],
+  [/^Dispara Projéteis em sequência$/i, (m, a) => { a.sequencia = true; }],
   [/^Dispara (?:um|1) Projétil adicional$/i, (m, a) => { a.projeteis += 1; }],
   [/se divide em direção a (\d+) alvos adiciona/i, (m, a) => { a.divide += Number(m[1]); }],
   [/^Projéteis se Difundem$/i, (m, a) => { a.bifurcar = Math.max(a.bifurcar, 2); }],
