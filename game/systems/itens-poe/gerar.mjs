@@ -130,7 +130,10 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     const lista = classe.unicos.filter((u) => u.base === base.nome);
     const u = unico ? lista.find((x) => x.slug === unico) : lista[Math.floor(rng() * lista.length)];
     if (!u) return { erro: `nenhum único com a base ${base.nome}` };
-    return { ...peca, nome: u.nome, unico: u.slug, modificadores: u.modificadores.map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) })) };
+    // O implícito do ÚNICO é o da página dele (poedb: a linha `implicitMod`), e não o da base SOMADO a ele: com os dois, a Vergôntea dava
+    // Dano Mágico 8–12% duas vezes (achado da auditoria dos únicos, 11/10). Único sem implícito próprio fica com o da base.
+    const proprios = u.modificadores.some((m) => m.tipo === 'implicit');
+    return { ...peca, ...(proprios ? { implicitos: [] } : {}), nome: u.nome, unico: u.slug, modificadores: u.modificadores.map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) })) };
   }
   const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
   if (!quantos) return peca;
