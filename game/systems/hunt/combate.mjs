@@ -813,6 +813,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     ModsPoe.marcar(hunt, 'matou');
     (hunt.poeMortesRecentes ??= []).push(hunt.clock ?? 0);
     if (hunt.poeMortesRecentes.length > 50) hunt.poeMortesRecentes.splice(0, hunt.poeMortesRecentes.length - 50);
+    // ("Inimigos mortos por você são Eletrizados": antes dos eventos "ao Matar" — "Inimigos Eletrizados que você Matar Explodem" vale.)
+    if (ModsPoe.valor(f, 'mortos_eletrizados') > 0) (alvo.estados ??= {}).chocado = { ate: (hunt.clock ?? 0) + 2000, pct: Math.max(alvo.estados?.chocado?.pct ?? 0, 15) };
     ModsPoe.evento(estado, hunt, 'matar', f, { alvo, eventos, personagem });
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
@@ -1014,7 +1016,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   let fatorDoBloqueio = 1;
   const bloquear = () => {
     // ("Chance de Bloquear é Sortuda/Azarada": a chance rola duas vezes — `ModsPoe.sorteado`.)
-    if (!ModsPoe.sorteado(chanceDeBloquear, ModsPoe.valor(ficha, 'bloqueio_sortudo'), ModsPoe.valor(ficha, 'bloqueio_azarado'))) return false;
+    if (!ModsPoe.sorteado(chanceDeBloquear, ModsPoe.valor(ficha, 'bloqueio_sortudo'), ModsPoe.valor(ficha, 'bloqueio_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0)) return false;
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
     // As cargas do PoE "ao Bloquear".

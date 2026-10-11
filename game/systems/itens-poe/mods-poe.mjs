@@ -153,8 +153,9 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     e.exaurido = { ate, pct: AO_BLOQUEAR.exaurir };
   }
   // A Fúria ("Ganhe N de Fúria com Acertos Corpo a Corpo").
+  // ("X% de chance de que se você fosse ganhar Fúria ao Acertar, você ganha até o seu máximo de fúria ao invés".)
   const furia = v('furia_por_acerto');
-  if (furia > 0) ganharFuria(hunt, furia, agora);
+  if (furia > 0) ganharFuria(hunt, sorte(v('furia_max_ao_acertar_chance')) ? 9999 : furia, agora);
   // Escudo de Energia por acerto ("Ganha N de Escudo de Energia por Inimigo Acertado com Ataques").
   const es = tags.has('ataque') ? v('es_on_hit') : 0;
   if (es > 0 && estado) estado.es = Math.min(Math.max(0, Math.round(ficha.energyShield ?? 0)), (estado.es ?? 0) + es);
@@ -304,11 +305,15 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   if (quem && ((ef.tipo === 'sangramento' && v('sem_sangramento_de_sangrando') > 0) || (ef.tipo === 'queimadura' && v('sem_incendio_de_incendiado') > 0)) && (quem.dots ?? []).some((d) => d.tipo === ef.tipo && d.falta > 0)) return null;
   const evitar = v(`evitar_${a.nome}`) + (a.elemental ? v('avoid_elem_ailments') : 0);
   if (evitar > 0 && rng() * 100 < evitar) return null;
+  // ("Inimigos Amaldiçoados não podem infligir Afecções Elementais em Você": o monstro amaldiçoado por você.)
+  if (a.elemental && quem && v('amaldicoados_sem_afeccao_elemental') > 0 && Object.values(quem.maldicoes ?? {}).some((m) => m && m.ate > agora)) return null;
+  // (+ "Dano Degenerativo de Caos sofrido reduzido em X%": o veneno em você.)
+  const caos = a.nome === 'veneno' ? Math.max(0, 1 - v('dot_caos_sofrido_red') / 100) : 1;
   // (+ "X% mais Duração de Afecções em você" — multiplica.)
   const dur = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100);
   const efeito = Math.max(0, 1 + v(`efeito_${a.nome}_proprio`) / 100);
   const base = Dot.CONFIG.tipos[ef.tipo]?.duracaoMs ?? 4000;
-  const posto = Dot.aplicarNoJogador(hunt, { ...ef, total: ef.total * dur * efeito, duracaoMs: Math.round((ef.duracaoMs ?? base) * dur) }, agora);
+  const posto = Dot.aplicarNoJogador(hunt, { ...ef, total: ef.total * dur * efeito * caos, duracaoMs: Math.round((ef.duracaoMs ?? base) * dur) }, agora);
   if (posto) imunidadeApos(hunt, ficha, a.nome, agora);
   return posto;
 }
@@ -448,6 +453,13 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'perdeVidaPct': return perder('hp', 1, ((estado.maxHp ?? 0) * v) / 100);
     // ("Perde N de Vida para cada Inimigo acertado por seus Ataques": a perda não mata — fica em 1.)
     case 'perdeVida': return perder('hp', 1, v);
+    // ("Você recebe N de Dano de Caos por segundo durante S segundos ao Matar": `degenEmVoce:<tipo do motor>:<segundos>`.)
+    case 'degenEmVoce': {
+      const [tipo, seg] = String(ev.param).split(':');
+      const s = Number(seg) || 1;
+      dotNoJogador(hunt, { tipo, total: v * s, duracaoMs: s * 1000, origem: { fonte: 'proprio' } }, agora, rng);
+      return;
+    }
     // ("Recupera Escudo de Energia igual a X% da Armadura quando você Bloquear".)
     case 'esDaArmadura': return curar('es', esMax, ((Number(ficha?.armor) || 0) * v) / 100);
     // ("Sacrifica X% de Vida para receber a mesma quantidade em Escudo de Energia ao Conjurar uma Magia": a vida não mata — fica em 1.)
@@ -559,11 +571,31 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   const baixa = (estado.maxHp ?? 0) > 0 && (estado.hp ?? 0) > 0 && estado.hp <= estado.maxHp * 0.5;
   if (baixa && !hunt.poeVidaBaixa) evento(estado, hunt, 'vidaBaixa', ficha, { agora });
   hunt.poeVidaBaixa = baixa;
+  // O buff a cada N segundos ("Você ganha Sobrecarga Elemental por 8 segundos a cada 16 segundos").
+  for (const [k, dur] of Object.entries(ficha.afPoe)) {
+    const p = /^buff_periodico:(\w+):(\d+)$/.exec(k);
+    if (!p || !(dur > 0)) continue;
+    const prox = (hunt.poePeriodicos ??= {});
+    if (agora < (prox[k] ?? 0)) continue;
+    ganharBuff(hunt, p[1], dur, agora);
+    prox[k] = agora + Number(p[2]) * 1000;
+  }
   const auras = Object.entries(ficha.afPoe).filter(([k, x]) => k.startsWith('aura_proximos:') && x > 0).map(([k]) => k.slice('aura_proximos:'.length));
-  if (!auras.length) return;
+  // (as auras com VALOR: a lentidão de X%, as resistências dos de perto, a de um elemento igual à sua)
+  const lento = Number(ficha.afPoe.aura_proximos_lento) || 0;
+  const res = {};
+  for (const el of ['fire', 'ice', 'energy', 'chaos']) {
+    const v = (Number(ficha.afPoe[`aura_proximos_res:${el}`]) || 0) + (Number(ficha.afPoe['aura_proximos_res:todas']) || 0);
+    if (v) res[el] = v;
+  }
+  const igual = Object.fromEntries(['fire', 'ice', 'energy', 'chaos'].filter((el) => Number(ficha.afPoe[`aura_proximos_res_igual:${el}`]) > 0).map((el) => [el, ficha.protection?.[el] ?? 0]));
+  if (!auras.length && !lento && !Object.keys(res).length && !Object.keys(igual).length) return;
   for (const m of hunt.monstros ?? []) {
     if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > 3) continue;
     const e = (m.estados ??= {});
     for (const a of auras) ESTADOS_NO_ALVO[a]?.(e, agora + 1000);
+    if (lento) e.lento = { ate: Math.max(e.lento?.ate ?? 0, agora + 1000), pct: Math.max(e.lento?.ate > agora ? e.lento.pct ?? 0 : 0, lento) };
+    if (Object.keys(res).length) e.resAura = { ...res, ate: agora + 1000 };
+    if (Object.keys(igual).length) e.resIgual = { ...igual, ate: agora + 1000 };
   }
 }

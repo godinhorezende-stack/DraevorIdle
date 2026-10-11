@@ -26104,6 +26104,454 @@
       ],
       "_nova": true,
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
+    },
+    {
+      "padrao": "^Inimigos Próximos estão Lentos com \\{(\\d+)\\}% de Velocidade de Movimento reduzida$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos_lento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos Próximos possuem \\{(\\d+)\\}% de todas as Resistências$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos_res:todas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Resistência a Fogo e Gelo aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos_res:fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aura_proximos_res:ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "soma +X às resistências deles (no PoE, \"aumentada\" multiplica a resistência que eles têm).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Resistência a Raio igual a sua$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos_res_igual:energy",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Você ganha Sobrecarga Elemental por \\{(\\d+)\\} segundos a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "buff_periodico:sobrecargaElemental:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Você tem Técnica Resoluta enquanto você não tiver Sobrecarga Elemental$",
+      "efeitos": [
+        {
+          "stat": "sempre:tecnicaResoluta@semBuff:sobrecargaElemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Fúria máxima é reduzida à metade$",
+      "efeitos": [
+        {
+          "stat": "furia_max_metade",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Perde \\{(\\d+)\\} de Fúria por segundo$",
+      "efeitos": [
+        {
+          "stat": "furia_perde_por_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de que se você fosse ganhar Fúria ao Acertar, você ganha até o seu máximo de fúria ao invés$",
+      "efeitos": [
+        {
+          "stat": "furia_max_ao_acertar_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Conta como ter o número máximo de cargas de poder$",
+      "efeitos": [
+        {
+          "stat": "conta_max_poder",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^A Recarga de Habilidades Clamor é de \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "recarga_clamor_fixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Habilidades de Clamor Encaixadas têm \\+\\{(\\d+)\\} Usos de Recarga$",
+      "efeitos": [
+        {
+          "stat": "usos_local@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Seus efeitos de sorte ou azar usam a melhor ou a pior de três jogadas, em vez de duas$",
+      "efeitos": [
+        {
+          "stat": "sorte_tres_jogadas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano de Gelo como Dano de Fogo Extra por \\{(\\d+)\\}% de Efeito de Resfriamento no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ice_as_extra_fire%resfriamentoNoAlvo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano de Raio como Dano de Gelo Extra por cada \\{(\\d+)\\}% de Efeito de Eletrização no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "energy_as_extra_ice%eletrizacaoNoAlvo:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Dano dos Inimigos te Acertando é Azarado enquanto você tiver um Anel Mágico Equipado$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_azarado@anelMagico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Você é A Prova de Maldições se possuir um Anel Mágico no espaço direito$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao@anelMagicoDireito",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Não sofre Dano Extra de Golpes Críticos se possuir um Anel Mágico no espaço esquerdo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red@anelMagicoEsquerdo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Modificadores de Dano de Garras também se aplicam ao Dano de Ataque Desarmado com Habiliades Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "garra_desarmado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "desarmado, os modificadores \"com Garras\" valem todos (os de dano, velocidade e crítico do PoE e os demais).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Modificadores da Velocidade de Ataque com Garras também se aplicam a Velocidade de Ataque com Habilidades Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "garra_desarmado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "desarmado, os modificadores \"com Garras\" valem todos (os de dano, velocidade e crítico do PoE e os demais).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Modificadores da Chance de Golpe Crítico com Garras também se aplicam a Chance de Golpe Crítico com Habilidades Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "garra_desarmado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "desarmado, os modificadores \"com Garras\" valem todos (os de dano, velocidade e crítico do PoE e os demais).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Dano de Fogo recebido por segundo por Carga de Tolerância caso você tenha sido Acertado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "degen_proprio_fire%carga:tolerancia@acertadoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Dano de Gelo recebido por segundo por Carga de Frenesi enquanto se move$",
+      "efeitos": [
+        {
+          "stat": "degen_proprio_ice%carga:frenesi@movendo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} do Dano de Raio recebido por segundo por Carga de Poder caso suas Habilidades tenham causado um Acerto Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "degen_proprio_energy%carga:poder@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Você recebe \\{(\\d+)\\} de Dano de Caos por segundo durante \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:degenEmVoce:degenCaos:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos Resfriados pelos seus Acertos têm Dano sofrido aumentado pelo Efeito do Resfriamento$",
+      "efeitos": [
+        {
+          "stat": "resfriados_sofrem_mais",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos sofrem Dano Elemental dos seus Acertos aumentado em \\{(\\d+)\\}% por cada Definhamento que tenha infligido neles$",
+      "efeitos": [
+        {
+          "stat": "dano_elemental_por_definhamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados não podem infligir Afecções Elementais em Você$",
+      "efeitos": [
+        {
+          "stat": "amaldicoados_sem_afeccao_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Dano Degenerativo de Caos sofrido reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_caos_sofrido_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado",
+      "nota": "no veneno em você (o dano de Caos contínuo que os monstros põem).",
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos mortos por você são Eletrizados$",
+      "efeitos": [
+        {
+          "stat": "mortos_eletrizados",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Inimigos que você Ataca Refletem \\{(\\d+)\\} de Dano Físico para você$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:dano@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Habilidades de Movimento que não sejam Avanço são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "movimento_so_avanco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo Adicional por cada \\{(\\d+)\\} de Vida Máxima ou Mana Máxima, o que for menor$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min%vidaOuManaMenor:{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max%vidaOuManaMenor:{V3}",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_min%vidaOuManaMenor:{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max%vidaOuManaMenor:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Não Afetado por Incêndio ou Eletrização se a Vida Máxima e Mana Máxima estiverem dentro de \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio@vidaManaPerto:{V1}",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_eletrizacao@vidaManaPerto:{V1}",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Não Afetado por Eletrizações enquanto Drenando Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "imune_eletrizacao@drenandoEs",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Não Afetado por or Resfriamento enquanto Drenando Mana$",
+      "efeitos": [
+        {
+          "stat": "imune_resfriamento@drenandoMana",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Efeito das Eletrizações infligidas por você enquanto Drenando Escudo de Energia aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao@drenandoEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
+    },
+    {
+      "padrao": "^Efeito de dos Resfriamentos infligidas por você enquanto Drenando Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento@drenandoMana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 5)"
     }
   ]
 }

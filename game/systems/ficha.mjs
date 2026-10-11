@@ -807,7 +807,7 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // (+ o Fragilizado do PoE: "+6% de chance de crítico contra" o bicho — "Inflige Enfraquecer … ao Bloquear".)
   const chanceDeCritico = Math.min(ficha.critTeto ?? Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
   // ("Sua Chance de Golpe Crítico é Sortuda": rola duas vezes e fica com a melhor — `ModsPoe.sorteado`.)
-  const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'));
+  const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.

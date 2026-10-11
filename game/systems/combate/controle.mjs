@@ -57,6 +57,8 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
   // (PoE: a magia suprimida com "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" não Congela nem Resfria — o
   // Atordoamento não é afecção.)
   if (semAfeccaoElemental && (efeito === 'congelado' || efeito === 'lento')) return null;
+  // (PoE: "Inimigos Amaldiçoados não podem infligir Afecções Elementais em Você" — o Congelamento e o Resfriamento do monstro amaldiçoado.)
+  if ((efeito === 'congelado' || efeito === 'lento') && Number(ficha?.afPoe?.amaldicoados_sem_afeccao_elemental) > 0 && ModsPoe.amaldicoadoPorVoce(bicho, agora)) return null;
   // PoE (`itens-poe/mods-poe.mjs → controleNoJogador`): evitar e imunidade, a duração em você, a Recuperação de Atordoamentos, o efeito do
   // Resfriamento em você e o "Ponto de Atordoamento reduzido" (mais chance de ser atordoado). Sem o PoE, tudo 1.
   const poe = ModsPoe.controleNoJogador(ficha, efeito, rng, hunt);

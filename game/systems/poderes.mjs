@@ -205,7 +205,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   let fatorDoBloqueio = 1;
   let bloqueouAMagia = false;
   // ("Chance de Bloquear é Sortuda", "A Chance de Bloquear o Dano Mágico é Azarada": rola duas vezes — `ModsPoe.sorteado`.)
-  const bloqueiaMagia = () => ModsPoe.sorteado(ficha.bloqueioDeMagia ?? 0, ModsPoe.valor(ficha, 'bloqueio_sortudo'), ModsPoe.valor(ficha, 'bloqueio_azarado') + ModsPoe.valor(ficha, 'bloqueio_magia_azarado'));
+  const bloqueiaMagia = () => ModsPoe.sorteado(ficha.bloqueioDeMagia ?? 0, ModsPoe.valor(ficha, 'bloqueio_sortudo'), ModsPoe.valor(ficha, 'bloqueio_azarado') + ModsPoe.valor(ficha, 'bloqueio_magia_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
   if (!esquivou && !doCharm && Formulas.PARAMETROS.bloqueio.modo === 'poe' && bloqueiaMagia()) {
     const glancing = Formulas.PARAMETROS.bloqueio.glancingPct;
     if (glancing > 0) fatorDoBloqueio = glancing / 100;

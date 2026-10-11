@@ -3782,6 +3782,120 @@
       "unidade": "%",
       "combate": true,
       "efeito": "arvore.danoRecebido"
+    },
+    "aura_proximos_lento": {
+      "nome": "Inimigos Próximos estão Lentos (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aurasProximas"
+    },
+    "furia_max_metade": {
+      "nome": "Fúria máxima reduzida à metade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.maximoDeFuria"
+    },
+    "furia_perde_por_s": {
+      "nome": "Perde Fúria por segundo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tiqueDaFuria"
+    },
+    "furia_max_ao_acertar_chance": {
+      "nome": "Chance de ganhar a Fúria máxima ao ganhar Fúria no acerto",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar"
+    },
+    "conta_max_poder": {
+      "nome": "Conta como ter o máximo de Cargas de Poder",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.vale (cargasMax:poder)"
+    },
+    "recarga_clamor_fixa": {
+      "nome": "Recarga dos Clamores (fixa)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe"
+    },
+    "usos_local": {
+      "nome": "Usos de Recarga a mais das gemas encaixadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe → acoes.temposDaGemaPoe"
+    },
+    "sorte_tres_jogadas": {
+      "nome": "Sorte e azar com três jogadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.sorteado (o crítico e os bloqueios)"
+    },
+    "garra_desarmado": {
+      "nome": "Os modificadores de Garras valem no desarmado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.condicoesDe (com Garra no desarmado)"
+    },
+    "degen_proprio_fire": {
+      "nome": "Dano de Fogo por segundo em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe (a perda por segundo, pela resistência)"
+    },
+    "degen_proprio_ice": {
+      "nome": "Dano de Gelo por segundo em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe (a perda por segundo, pela resistência)"
+    },
+    "degen_proprio_energy": {
+      "nome": "Dano de Raio por segundo em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe (a perda por segundo, pela resistência)"
+    },
+    "degen_proprio_chaos": {
+      "nome": "Dano de Caos por segundo em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe (a perda por segundo, pela resistência)"
+    },
+    "resfriados_sofrem_mais": {
+      "nome": "Resfriados sofrem Dano aumentado pelo efeito do Resfriamento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho"
+    },
+    "dano_elemental_por_definhamento": {
+      "nome": "Dano Elemental sofrido pelo inimigo por Definhamento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho"
+    },
+    "amaldicoados_sem_afeccao_elemental": {
+      "nome": "Amaldiçoados não podem infligir Afecções Elementais em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador e combate/controle"
+    },
+    "dot_caos_sofrido_red": {
+      "nome": "Dano de Caos Degenerativo sofrido reduzido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador (o veneno em você)"
+    },
+    "mortos_eletrizados": {
+      "nome": "Inimigos mortos por você são Eletrizados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate (antes dos eventos ao Matar)"
+    },
+    "movimento_so_avanco": {
+      "nome": "Só o Avanço entre as habilidades de movimento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (as outras de movimento não saem)"
     }
   }
 }
