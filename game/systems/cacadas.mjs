@@ -755,6 +755,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     // A campanha: a fase (ou o boss do ato) e a dificuldade — o progresso, a
     // escala dos bichos que renascem e o ato/dificuldade do loot saem daqui.
     campanha: fase ? { huntId, dificuldade: dif, ato: fase.ato } : atoDoBoss != null ? { bossDoAto: atoDoBoss, dificuldade: dif, ato: atoDoBoss } : null,
+    // A fase já estava completa ao entrar: o "Avançar sozinho" espera a instância limpar (ver `faseParaSeguir`).
+    ...(fase ? { faseCompletaAoEntrar: Campanha.faseCompleta(estado, dif, huntId) } : {}),
     escala,
     // A instância desta entrada (hunt da campanha): os bichos não renascem, e
     // ela fica CLEAR quando não sobra nenhum (ver `hunt/instancia.mjs`).
@@ -853,18 +855,23 @@ export function definirDistancia(estado, { value }) {
   return { ok: true };
 }
 
-/** `send({t:'aoCompletarFase', value: 'repetir'|'seguir'})` — o que fazer quando a fase da campanha completa. */
+/**
+ * `send({t:'aoCompletarFase', value: 'repetir'|'seguir'})` — o que fazer quando a fase da campanha completa. Ligar o "Avançar sozinho"
+ * numa fase já completa avança na hora (o dono: "se eu clico o seguir ela não vai para a próxima mesmo completa") — `hunt.avancarJa`.
+ */
 export function definirAoCompletarFase(estado, { value }) {
   if (!Campanha.AO_COMPLETAR.includes(value)) return { ok: false, erro: 'Opção inválida.' };
   (estado.settings ??= {}).aoCompletarFase = value;
+  if (estado.hunt?.campanha?.huntId) estado.hunt.avancarJa = value === 'seguir';
   return { ok: true };
 }
 
 /**
- * "Seguir" ligado e a fase ATUAL completa: para onde ir (`{huntId, dificuldade,
- * nome}`), ou `null`. Sem marca de "acabou de completar": ligar o Seguir numa
- * fase já feita também avança (o dono: "se eu clico o seguir ela não vai para
- * a próxima mesmo completa"). Para farmar uma fase completa, é o "Repetir".
+ * "Seguir" ligado e a fase ATUAL concluída NESTA rodada: para onde ir (`{huntId, dificuldade, nome}`), ou `null`. Concluída nesta rodada:
+ * completou agora (não estava completa ao entrar — `hunt.faseCompletaAoEntrar`), ou a instância limpou (os 100%: a fase já feita, repetida), ou o
+ * jogador acabou de ligar o "Avançar sozinho" numa fase completa (`hunt.avancarJa` — o dono: "se eu clico o seguir ela não vai para a
+ * próxima mesmo completa"). Antes valia só "a fase completa" — e, com a próxima pela fase não feita, quem repetia um ato já feito não avançava
+ * nunca (dono, 11/10: "ainda não está funcionando, nem na party nem sozinho"). Para farmar uma fase completa, é o "Repetir".
  * Só a sessão ONLINE chama (offline fica sempre em loop), e só quem caça a
  * PRÓPRIA sala segue: o convidado da party fica com o anfitrião — menos o
  * LÍDER da party (`mesmoConvidado`: ele decide pela sala — `party.quemDecideOAvancar`).
@@ -874,6 +881,9 @@ export function faseParaSeguir(estado, { mesmoConvidado = false } = {}) {
   const c = hunt?.campanha;
   if (!c || c.bossDoAto || Campanha.aoCompletar(estado) !== 'seguir' || (!mesmoConvidado && salaDe(hunt) !== hunt)) return null;
   if (!Campanha.faseCompleta(estado, c.dificuldade, c.huntId)) return null;
+  // (Nos atos do editor — os do PoE. A campanha do Draevor clássico segue a regra de antes: a fase completa basta.)
+  const concluiuAgora = !hunt.faseCompletaAoEntrar || hunt.avancarJa || Instancia.daSala(hunt)?.status === 'limpa';
+  if (Campanha.faseDe(c.huntId)?.grafo && !concluiuAgora) return null;
   const proxima = Campanha.proximaParaSeguir(estado, c.dificuldade, c.huntId);
   return proxima ? { huntId: proxima.huntId, dificuldade: c.dificuldade, nome: proxima.nome } : null;
 }

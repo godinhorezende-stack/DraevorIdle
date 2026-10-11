@@ -90,6 +90,8 @@ test('o líder CONVIDADO na sala de outro, com "Avançar sozinho": avança, e o 
   assert.notEqual(Cacadas.salaDe(lider.s.estado.hunt), lider.s.estado.hunt, 'o líder é convidado (a sala é do outro)');
   assert.equal(Party.quemDecideOAvancar(lider.s), 'eu');
   assert.equal(Party.quemDecideOAvancar(outro.s), 'lider');
+  // (A fase 1 já estava feita ao entrar: o avanço vem do clique no "Avançar sozinho" durante a caçada — ou da instância limpa.)
+  Cacadas.definirAoCompletarFase(lider.s.estado, { value: 'seguir' });
   lider.s.seguirParaAProximaFase();
   assert.equal(lider.s.estado.hunt?.huntId, F2().huntId, 'antes, o "Avançar" do líder convidado não fazia nada');
   assert.equal(outro.s.estado.hunt?.huntId, F2().huntId, 'a sala foi com o líder');
@@ -111,6 +113,7 @@ test('sem o líder na sala (a party caçando separada), o membro com "Avançar s
   Party.antesDeSairDaCacada(lider.s);
   lider.s.estado.hunt = null;
   assert.equal(Party.quemDecideOAvancar(outro.s), null);
+  Cacadas.definirAoCompletarFase(outro.s.estado, { value: 'seguir' });
   outro.s.seguirParaAProximaFase();
   assert.equal(outro.s.estado.hunt?.huntId, F2().huntId);
 });
