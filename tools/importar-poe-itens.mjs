@@ -8,7 +8,8 @@
 // A COLEÇÃO fica fora do repositório (`REFERENCIAS_POE`, padrão `/home/deploy/referencias-poe`): é só a fonte deste tool. O que o JOGO
 // usa entra no repositório (dono, 08/10, revogando a decisão de 04/10 de deixar tudo fora): o catálogo em
 // `game/gamedata/itens-poe/catalogo-itens.json` e SÓ as imagens que ele referencia em `game/gamedata/itens-poe/icones-itens/` (as mesmas
-// pastas relativas de `original/`, para o caminho do ícone no catálogo continuar valendo). Uso:
+// pastas relativas de `original/`, para o caminho do ícone no catálogo continuar valendo; a subpasta `poe-itens/Mapas/` é dos tools dos
+// Mapas e este tool não mexe nela — `PASTAS_DE_OUTROS_TOOLS`). Uso:
 //   node tools/importar-poe-itens.mjs              → grava o catálogo e as imagens dele, e imprime o relatório
 //   node tools/importar-poe-itens.mjs --checar     → só o relatório (não grava)
 //   node tools/importar-poe-itens.mjs --so-imagens → só refaz as imagens do catálogo que já está no repositório
@@ -18,7 +19,7 @@
 // do catálogo (o drop comum só usa o pool `normal`, como na campanha do PoE) e cada um num arquivo: o sistema que precisar dele (orbe Vaal,
 // essência, fóssil, orbe de influência…) lê só o seu, sob demanda (`itens-poe/catalogo.mjs` `poolEspecial`).
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, statSync, copyFileSync, rmSync } from 'node:fs';
-import { join, relative, dirname } from 'node:path';
+import { join, relative, dirname, sep } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
@@ -69,16 +70,41 @@ export function imagensDoCatalogo(dados) {
   return [...refs].sort();
 }
 
-/** Refaz `icones-itens/` com só as imagens referenciadas (a pasta é apagada e copiada de novo). Devolve `{ copiadas, faltando, bytes }`. */
-export function copiarImagens(dados) {
-  rmSync(IMAGENS, { recursive: true, force: true });
+/**
+ * As subpastas de `icones-itens/` (relativas a ela) que são de OUTROS tools, não do catálogo: `copiarImagens` não as apaga. Os MAPAS do
+ * endgame (`poe-itens/Mapas/`: `icones/Map_Tier_N.png`, `unicos/<Único>.png` e `unicos/<Único>_T<N>.png`) são gravados por
+ * game/tools/importar-icones-mapas.mjs, importar-mapas-unicos.mjs e montar-mapas-poe.mjs e referenciados por `mapas.json` (os `_T<N>`
+ * nem aparecem lá: `itens-poe/mapas.mjs` `iconeDoUnico` monta o nome) — apagar a pasta inteira sumia com eles (visto em 11/10).
+ */
+export const PASTAS_DE_OUTROS_TOOLS = ['poe-itens/Mapas'];
+
+/** Apaga o conteúdo de `pasta`, menos os caminhos de `preservar` (relativos a ela) — as pastas no caminho até eles ficam. */
+function limparMenos(pasta, preservar) {
+  const guardar = preservar.map((rel) => join(pasta, rel));
+  const andar = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      if (guardar.includes(p)) continue;
+      if (e.isDirectory() && guardar.some((g) => g.startsWith(p + sep))) andar(p);
+      else rmSync(p, { recursive: true, force: true });
+    }
+  };
+  if (existsSync(pasta)) andar(pasta);
+}
+
+/**
+ * Refaz `icones-itens/` com só as imagens referenciadas: o que é do catálogo é apagado e copiado de novo da coleção; as
+ * `PASTAS_DE_OUTROS_TOOLS` ficam como estão. Devolve `{ copiadas, faltando, bytes }`. `destino`, `original` e `preservar` são para os testes.
+ */
+export function copiarImagens(dados, { destino = IMAGENS, original = ORIGINAL, preservar = PASTAS_DE_OUTROS_TOOLS } = {}) {
+  limparMenos(destino, preservar);
   let copiadas = 0;
   let bytes = 0;
   const faltando = [];
   for (const rel of imagensDoCatalogo(dados)) {
-    const de = join(ORIGINAL, rel);
+    const de = join(original, rel);
     if (!existsSync(de)) { faltando.push(rel); continue; }
-    const para = join(IMAGENS, rel);
+    const para = join(destino, rel);
     mkdirSync(dirname(para), { recursive: true });
     copyFileSync(de, para);
     copiadas++;
