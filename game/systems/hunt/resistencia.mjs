@@ -34,7 +34,9 @@ export function resistenciaDe(hunt, alvo, tipo) {
   const agora = hunt?.clock ?? 0;
   const igual = ModsPoe.ativo(alvo?.estados?.resIgual, agora) ? alvo.estados.resIgual[tipo] : undefined;
   const daAura = ModsPoe.ativo(alvo?.estados?.resAura, agora) ? Number(alvo.estados.resAura[tipo]) || 0 : 0;
-  const daEspecie = igual != null ? igual : (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0);
+  // (+ "as Resistências deles para tais Elementos são zeradas": o bicho que te acertou com aquele elemento.)
+  const zerada = ModsPoe.ativo(alvo?.estados?.resZerada, agora) && alvo.estados.resZerada[tipo];
+  const daEspecie = zerada ? 0 : igual != null ? igual : (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0);
   const r = daEspecie + daAura + BuffsDeMob.resistencia(alvo, agora, tipo) - vulneravel - causticado + ModsPoe.equilibrio(alvo, agora, tipo);
   const comBoss = hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
   // A fraqueza só vai até o piso (`fraquezaMaxima`); o teto de cima fica para `resistenciaEfetivaDe`.

@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno } from './condicoes-poe.mjs';
+import { valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, RAMPAGE, empurrar } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -86,7 +86,11 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     e.provocado = { ate: agora + Math.round(NO_ACERTO.provocar.duracaoMs * Math.max(0.1, 1 + v('duracao_provocacao') / 100)), por: estado?.nome ?? null };
     ev('provocado');
   }
-  if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) ev('empurrado');
+  if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) {
+    ev('empurrado');
+    // ("X% de chance de ganhar uma Carga de Poder se Empurrar um Inimigo com Dano Corpo a Corpo": o evento `empurrar`, com as tags do golpe.)
+    evento(estado, hunt, 'empurrar', ficha, { alvo, eventos, personagem, agora, tags: [...tags] });
+  }
   // (09/10) INTIMIDAR (o alvo sofre 10% mais dano de Ataques) e INERVAR (10% mais dano de Magias) — "X% de chance de Intimidar Inimigos por N
   // segundos no Acerto" (N: `intimidar_s`/`inervar_s`; sem ele, 4 s, o padrão do PoE).
   if (sorte(v('chance_intimidar'))) { e.intimidado = { ate: agora + 1000 * (v('intimidar_s') || 4) }; ev('intimidado'); }
@@ -172,6 +176,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   }
   // Os EVENTOS dos únicos: no acerto, no crítico e ao atordoar (com o alvo e as tags do golpe).
   marcar(hunt, 'acertou', agora);
+  // ("se você Acertou um Inimigo Único Recentemente")
+  if (/unico/.test(alvo?.raridade ?? alvo?.raridadePoe ?? '') || alvo?.boss || alvo?.chefe) marcar(hunt, 'acertouUnico', agora);
   if (saida.atordoou) marcar(hunt, 'atordoou', agora);
   const ctx = { alvo, eventos, personagem, agora, tags: [...tags, ...(crit ? [] : ['naoCritico'])] };
   evento(estado, hunt, 'acertar', ficha, ctx);
@@ -190,12 +196,30 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
     if (rec) marcar(hunt, rec);
     evento(estado, hunt, ev, ficha, { alvo, eventos, personagem });
   }
+  // ("Incêndios que você causar são refletidos para você", "Afecções Elementais infligidas por você são Refletidas à você": o Incêndio volta
+  // com o mesmo dano e o tempo que falta; o Congelamento, pelo tempo dele — aproximado: a Eletrização e o Resfriamento não voltam.)
+  const agoraR = hunt?.clock ?? 0;
+  const refleteTudo = valor(ficha, 'afeccoes_elementais_refletidas') > 0;
+  if (alvo && (refleteTudo || valor(ficha, 'incendio_refletido') > 0) && new Set(postos).has('queimando')) {
+    const d = (alvo.dots ?? []).filter((x) => x.tipo === 'queimadura' && x.falta > 0).sort((x, y) => y.ate - x.ate)[0];
+    if (d) dotNoJogador(hunt, { tipo: 'queimadura', total: d.falta, duracaoMs: Math.max(500, d.ate - agoraR), origem: { fonte: 'reflexo' } }, agoraR);
+  }
+  if (alvo && refleteTudo && new Set(postos).has('congelado') && alvo.estados?.congelado?.ate > agoraR) {
+    const c = (hunt.controle ??= {});
+    if (!((c.imuneAte ?? 0) > agoraR) && !(Number(ficha?.afPoe?.imune_congelamento) > 0)) c.congelado = { ate: Math.max(c.congelado?.ate ?? 0, alvo.estados.congelado.ate) };
+  }
   // "Recupera X% de Vida ao Incendiar um Inimigo não Incendiado" (`afeccoes.aoAcertar` marca o alvo que não queimava).
   if (alvo?.estados?.incendiadoNovo) {
     delete alvo.estados.incendiadoNovo;
     evento(estado, hunt, 'incendiarNovo', ficha, { alvo, eventos, personagem });
   }
   // "Eletrizações infligidas por você se espalham para outros Inimigos dentro de N metros" (1 casa = 2 m): a mesma Eletrização nos de perto.
+  // ("Velocidade de Movimento dos Inimigos Eletrizados por você reduzida em X%": a Eletrização posta também deixa Lento.)
+  const lentoDaEletrizacao = valor(ficha, 'eletrizados_lentos');
+  if (lentoDaEletrizacao > 0 && postos.includes('eletrizado') && alvo?.estados?.chocado) {
+    const e = alvo.estados;
+    e.lento = { ate: Math.max(e.lento?.ate ?? 0, e.chocado.ate), pct: Math.max(e.lento?.ate > (hunt?.clock ?? 0) ? e.lento.pct ?? 0 : 0, lentoDaEletrizacao) };
+  }
   const metros = valor(ficha, 'eletrizacao_espalha_m');
   const s = alvo?.estados?.chocado;
   if (metros > 0 && postos.includes('eletrizado') && s) {
@@ -315,6 +339,13 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   const base = Dot.CONFIG.tipos[ef.tipo]?.duracaoMs ?? 4000;
   const posto = Dot.aplicarNoJogador(hunt, { ...ef, total: ef.total * dur * efeito * caos, duracaoMs: Math.round((ef.duracaoMs ?? base) * dur) }, agora);
   if (posto) imunidadeApos(hunt, ficha, a.nome, agora);
+  // ("Reflete Eletrizações aplicadas em você para todos Inimigos Próximos".)
+  if (posto && a.nome === 'eletrizacao' && v('reflete_eletrizacao') > 0 && hunt.pos) {
+    for (const m of hunt.monstros ?? []) {
+      if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > 3) continue;
+      (m.estados ??= {}).chocado = { ate: agora + (ef.duracaoMs ?? base), pct: Math.max(m.estados.chocado?.ate > agora ? m.estados.chocado.pct ?? 0 : 0, 15) };
+    }
+  }
   return posto;
 }
 
@@ -333,6 +364,40 @@ export function definirMaldicao(fn) { maldicaoDeItem = fn; }
 // eslint-disable-next-line no-var
 var leitorDeCargas;
 export function definirCargas(fn) { leitorDeCargas = fn; }
+
+/**
+ * "Seus Acertos só podem Matar Inimigos Congelados" (`so_mata_congelados`) e "Acertos de Lacaios só podem Matar Inimigos Incendiados"
+ * (`lacaio_so_mata_incendiados`): o acerto que zeraria a vida de quem não está assim o deixa com 1. Quem não pode ser congelado no jogo (os
+ * chefes — `Estados.ehChefe` — e quem tem resistência a controle de 100%) morre normalmente: no PoE eles congelam, aqui não.
+ */
+export function poupar(ficha, hunt, bicho, { lacaio = false, agora = hunt?.clock ?? 0 } = {}) {
+  if (!ligado() || !bicho || bicho.hp > 0 || bicho.dummy) return;
+  if (lacaio) {
+    if (valor(ficha, 'lacaio_so_mata_incendiados') > 0 && !tagsDoAlvo(bicho, agora).includes('alvoIncendiado')) bicho.hp = 1;
+    return;
+  }
+  if (!(valor(ficha, 'so_mata_congelados') > 0) || tagsDoAlvo(bicho, agora).includes('alvoCongelado')) return;
+  if (Estados.ehChefe(bicho, !!hunt?.isBoss) || (Number(bicho.resistControle) || 0) >= 100) return;
+  bicho.hp = 1;
+}
+
+/**
+ * Um abate na keystone FÚRIA (o Rampage do PoE 1) — ou um acerto corpo a corpo, com "Acertos Corpo a Corpo contam como Mortes com Fúria":
+ * soma 1 ao contador (até 1000), que zera se passar 5 s sem matar (`tique`). A cada 20: +2% de Dano e +1% de Velocidade de Movimento (as
+ * escalas `%rampage:20` da tradução); "Recebe uma Carga de Frenesi a cada N Mortes com Fúria". Devolve true quando a ficha precisa ser
+ * refeita (o primeiro e a cada 5 — os "a cada 15/20/25 Mortes" dos únicos).
+ */
+export function contarRampage(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
+  if (!hunt || !(valor(ficha, 'rampage') > 0)) return false;
+  const r = hunt.rampage && hunt.rampage.ate > agora ? hunt.rampage : { n: 0 };
+  const n = Math.min(RAMPAGE.maximo, r.n + 1);
+  hunt.rampage = { n, ate: agora + RAMPAGE.esperaMs };
+  const cada = valor(ficha, 'rampage_frenesi_cada');
+  if (cada > 0 && n % cada === 0) leitorDeCargas?.(estado, 'ganhar', 'frenesi');
+  // ("na Fúria" / "quando Enfurecido": as FAIXAS do contador — 15, 30, 45, 70… abates — disparam o evento `rampage`.)
+  if (n !== r.n && RAMPAGE.faixas.includes(n)) { marcar(hunt, 'enfureceu', agora); evento(estado, hunt, 'rampage', ficha, {}); }
+  return n !== r.n && (n === 1 || n % 5 === 0);
+}
 // O dreno do PoE (`Ficha.drenarPoe` — registrado pela ficha: este módulo não a importa).
 // eslint-disable-next-line no-var
 var drenoDaFicha;
@@ -359,6 +424,8 @@ const ESTADOS_NO_ALVO = {
   definhado: (e, ate) => (e.definhado = { ate, n: Math.min(15, (e.definhado?.ate > 0 ? e.definhado.n : 0) + 1) }),
   // (a aura "Inimigos Próximos não podem causar Acertos Críticos" — `condicoes-poe.criticoDoBicho`)
   semCritico: (e, ate) => (e.semCritico = { ate }),
+  // Excomungado (PoE): o inimigo não causa dano de Caos (`condicoes-poe.semCaos`).
+  excomungado: (e, ate) => (e.excomungado = { ate }),
 };
 const SEGUNDOS_PADRAO = 4;
 /** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
@@ -407,7 +474,8 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
     if (ev.evento !== nome) continue;
     if (ev.conds.length) {
       conds ??= condicoesDe(estado, ficha.afPoe);
-      if (!ev.conds.every((c) => (ehCondDeEstado(c) ? vale(conds, c) : tagsAlvo.has(c)))) continue;
+      // (+ "afetado por MENOS de N Venenos" — `alvoMenosVenenos:N`: o alvo não tem a tag `alvoVenenos:N`.)
+      if (!ev.conds.every((c) => (ehCondDeEstado(c) ? vale(conds, c) : /^alvoMenosVenenos:\d+$/.test(c) ? !tagsAlvo.has(`alvoVenenos:${c.split(':')[1]}`) : tagsAlvo.has(c)))) continue;
     }
     // (o evento com ESCALA: o valor × o fator agora — "por Carga de Frenesi", com o teto)
     const acao = ev.escala ? { ...ev, valor: comTeto(ev.valor, fatorDaEscala(estado, ficha.afPoe, null, ev.escala), ev.teto) } : ev;
@@ -453,7 +521,62 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'perdeVidaPct': return perder('hp', 1, ((estado.maxHp ?? 0) * v) / 100);
     // ("Perde N de Vida para cada Inimigo acertado por seus Ataques": a perda não mata — fica em 1.)
     case 'perdeVida': return perder('hp', 1, v);
+    // ("Feitiços se Transferem para todos os Inimigos dentro de N metros quando o Inimigo Enfeitiçado morrer" — as maldições (não as marcas) do
+    // morto passam aos de perto, com o tempo que faltava; "Sua Marca se transfere para outro Inimigo quando o Inimigo Marcado morrer" — para o
+    // vivo mais perto.)
+    case 'transferirMaldicoes':
+    case 'transferirMarca': {
+      if (!alvo?.maldicoes) return;
+      const marca = ev.acao === 'transferirMarca';
+      const passar = Object.entries(alvo.maldicoes).filter(([, m]) => m && m.ate > agora && !!m.marca === marca);
+      if (!passar.length) return;
+      const casas = Math.max(1, Math.round((Number(ev.param) || 2) / 2));
+      const vivos = (hunt.monstros ?? []).filter((m) => m !== alvo && m.hp > 0 && !m.dummy).map((m) => ({ m, d: Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) }));
+      const destinos = marca ? vivos.sort((a, b) => a.d - b.d).slice(0, 1) : vivos.filter((x) => x.d <= casas);
+      for (const { m } of destinos) for (const [id, mal] of passar) (m.maldicoes ??= {})[id] = { ...mal };
+      return;
+    }
+    // O bônus TEMPORÁRIO com valor: "Velocidade de Movimento aumentada em X% por N segundos ao Jogar uma Armadilha" = `statTemp:<atributo>:<s>`
+    // (renova; o maior vale); "+X% de Chance de Crítico por N segundos quando você Gastar um total de M de Mana" = `statTempPorMana:<atributo>:
+    // <s>:<M>` (a mana gasta acumula até M); "Ganha N de Fúria após Gastar um total de M de Mana" = `furiaPorMana:<M>`.
+    case 'statTemp':
+    case 'statTempPorMana':
+    case 'furiaPorMana': {
+      const [p1, p2, p3] = String(ev.param).split(':');
+      const porMana = ev.acao !== 'statTemp';
+      if (porMana) {
+        const limite = Number(ev.acao === 'furiaPorMana' ? p1 : p3) || 0;
+        if (!(limite > 0)) return;
+        const acc = (hunt.poeManaAcumulada ??= {});
+        const k = `${ev.acao}:${ev.param}`;
+        acc[k] = (acc[k] ?? 0) + (Number(ctx.quantidade) || 0);
+        if (acc[k] < limite) return;
+        acc[k] %= limite;
+      }
+      if (ev.acao === 'furiaPorMana') return ganharFuria(hunt, v, agora);
+      const t = (hunt.poeTemporarios ??= {});
+      const ate = agora + (Number(p2) || 1) * 1000;
+      t[p1] = t[p1] && t[p1].ate > agora ? { stat: p1, valor: Math.max(t[p1].valor, v), ate: Math.max(t[p1].ate, ate) } : { stat: p1, valor: v, ate };
+      return;
+    }
     // ("Você recebe N de Dano de Caos por segundo durante S segundos ao Matar": `degenEmVoce:<tipo do motor>:<segundos>`.)
+    // ("Inflige Decaimento em Inimigos que Amaldiçoar…, causando N de Dano de Caos por Segundo por S Segundos": `degenNoAlvo:<tipo>:<s>`.)
+    case 'degenNoAlvo': {
+      const [tipo, seg] = String(ev.param).split(':');
+      const s = Number(seg) || 1;
+      if (alvo && alvo.hp > 0) Dot.aplicar(alvo, { tipo, total: v * s, duracaoMs: s * 1000, origem: { fonte: 'poe' } }, agora);
+      return;
+    }
+    // ("Suas Habilidades causam X% da Mana Gasta no Custo de Mana Direto da Habilidade como Dano Físico": a vida perdida, sem matar.)
+    case 'danoPorMana': return perder('hp', 1, ((Number(ctx.quantidade) || 0) * v) / 100);
+    // ("Clamores Empurram e Interrompem Inimigos em uma pequena Área": a CHANCE de empurrar quem está a até 2 casas.)
+    case 'empurrarProximos': {
+      if (!hunt.pos || !sorte(v)) return;
+      for (const m of [...(hunt.monstros ?? [])].sort((x, y) => Math.max(Math.abs(y.x - hunt.pos.x), Math.abs(y.y - hunt.pos.y)) - Math.max(Math.abs(x.x - hunt.pos.x), Math.abs(x.y - hunt.pos.y)))) {
+        if (m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 2) empurrar(hunt, m);
+      }
+      return;
+    }
     case 'degenEmVoce': {
       const [tipo, seg] = String(ev.param).split(':');
       const s = Number(seg) || 1;
@@ -512,6 +635,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       }
       return;
     }
+    // `fumaca` = a CHANCE de criar uma Nuvem de Fumaça: no PoE ela Cega quem está dentro — como o frasco, os a até 3 casas, por 4 s.
+    case 'fumaca': return aplicarAcao(estado, hunt, { ...ev, acao: 'proximos', param: 'cego:4' }, ficha, ctx);
     case 'dano': return perder('hp', 0, v);
     case 'vidaFaltaPct': return curar('hp', estado.maxHp ?? 0, (((estado.maxHp ?? 0) - (estado.hp ?? 0)) * v) / 100);
     case 'perdeMana': return perder('mana', 0, v);
@@ -540,6 +665,13 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       if (ev.param === 'incendio') for (const d of (alvo.dots ?? []).filter((x) => x.tipo === 'queimadura' && x.falta > 0)) Dot.aplicar(perto, { tipo: 'queimadura', total: d.falta, origem: { fonte: 'poe' } }, agora);
       if (ev.param === 'eletrizacao' && alvo.estados?.chocado?.ate > agora) (perto.estados ??= {}).chocado = { ...alvo.estados.chocado };
       // "Congelamentos/Eletrizações infligidos por você se espalham para outros Inimigos dentro de N metros" (N = o valor; 1 casa = 2 m).
+      // ("Incêndios infligidos por você se espalham para outros Inimigos dentro de N metros": os Incêndios do alvo nos de perto.)
+      if (ev.param === 'incendioRaio') {
+        const casas = Math.max(1, Math.floor(v / 2));
+        const queimando = (alvo.dots ?? []).filter((x) => x.tipo === 'queimadura' && x.falta > 0);
+        for (const m of hunt.monstros ?? []) if (m !== alvo && m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) <= casas) for (const d of queimando) Dot.aplicar(m, { tipo: 'queimadura', total: d.falta, origem: { fonte: 'poe' } }, agora);
+        return;
+      }
       if (ev.param === 'congelamentoRaio' || ev.param === 'eletrizacaoRaio') {
         const casas = Math.max(1, Math.floor(v / 2));
         const chave = ev.param === 'congelamentoRaio' ? 'congelado' : 'chocado';

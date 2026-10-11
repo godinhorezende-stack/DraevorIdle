@@ -130,7 +130,15 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     const lista = classe.unicos.filter((u) => u.base === base.nome);
     const u = unico ? lista.find((x) => x.slug === unico) : lista[Math.floor(rng() * lista.length)];
     if (!u) return { erro: `nenhum único com a base ${base.nome}` };
-    return { ...peca, nome: u.nome, unico: u.slug, modificadores: u.modificadores.map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) })) };
+    const modificadores = u.modificadores.map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) }));
+    // ("Magnitudes dos Implícitos dos Modificadores aumentadas em X%", "Magnitudes dos Modificadores Implícitos são dobradas": os implícitos da
+    // própria peça — os da base e os do único — com os valores × (1 + X%).)
+    const magnitude = modificadores.reduce((n, m) => n + (/^Magnitudes dos Modificadores Implícitos são dobradas$/.test(m.modelo ?? '') ? 100 : /^Magnitudes dos Implícitos dos Modificadores aumentadas em \{0\}%$/.test(m.modelo ?? '') ? Number(m.valores?.[0]) || 0 : 0), 0);
+    if (magnitude) {
+      peca.implicitos = peca.implicitos.map((m) => comMagnitude(m, magnitude));
+      for (let i = 0; i < modificadores.length; i++) if (modificadores[i].tipo === 'implicit') modificadores[i] = { tipo: 'implicit', ...comMagnitude(modificadores[i], magnitude) };
+    }
+    return { ...peca, nome: u.nome, unico: u.slug, modificadores };
   }
   const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
   if (!quantos) return peca;

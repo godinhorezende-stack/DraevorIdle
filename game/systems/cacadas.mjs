@@ -779,6 +779,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // Ele chega por um portal de viagem (o cliente o mostra quando a cortina "Traçando a rota" sai).
   // (Com a ENTRADA de quem chega: a tela dele anima a própria chegada e pula este — os outros da sala o veem.)
   if (!arenaPvp) EventosDeEncontro.empurrar(estado.hunt, [portalDeViagem(estado.hunt.pos, { chegada: true, entrada: estado.hunt.entrada })]);
+  // (PoE, os únicos: "Seu Escudo de Energia começa do zero" — ao entrar na área.)
+  if (ModsPoe.valor(Ficha.combate(estado), 'es_comeca_zero') > 0) estado.es = 0;
   return { ok: true };
 }
 
@@ -1662,6 +1664,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   // personagem (dano contínuo e controle dos bichos — `itens-poe/mods-poe.mjs`).
   ModsPoe.definirFichaDaCacada(hunt, () => Ficha.combate(estado));
   ModsPoe.tique(estado, hunt, Ficha.combate(estado), passou);
+  // (a Fúria — o Rampage — terminou: os bônus "a cada N Mortes" saem da ficha)
+  if (hunt.poeFichaMudou) { delete hunt.poeFichaMudou; Ficha.invalidar(estado); }
   ModsPoe.aurasProximas(estado, hunt, Ficha.combate(estado));
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
@@ -2476,6 +2480,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     const antes = l.poe ? { envenenado: (alvo.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(alvo.raridade ?? alvo.raridadePoe) || !!alvo.boss || !!alvo.chefe } : null;
     const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, alvo, x.tipo, bruto * x.f, ficha), 0)));
     alvo.hp -= dano;
+    // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")
+    ModsPoe.poupar(ficha, hunt, alvo, { lacaio: true });
     // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
     if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, { ...antes, estado, ficha, personagem }));
     const deLonge = l.alcanceDeAtaque > 1;

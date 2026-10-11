@@ -120,7 +120,8 @@ export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 60
 
 /** O passo do monstro amaldiçoado e Desacelerado (×; 1 = normal): a maior lentidão entre as maldições ativas. */
 export function fatorDeDesaceleracao(bicho, agora) {
-  const pct = Math.max(0, ...maldicoesAtivas(bicho, agora).map((m) => m.desacelera ?? 0));
+  // (+ "ficam Lentos se Y% da Duração da Maldição expirou": a lentidão vale depois daquela parte da duração.)
+  const pct = Math.max(0, ...maldicoesAtivas(bicho, agora).map((m) => Math.max(m.desacelera ?? 0, m.lentoApos && agora - m.desde >= m.lentoApos.apos * m.dur ? m.lentoApos.pct : 0)));
   return pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1;
 }
 
@@ -190,7 +191,7 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       }
       if (!cabe) continue;
       dur ||= 6000;
-      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}),
+      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
         ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}) };
       amaldicoou = true;
       // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).

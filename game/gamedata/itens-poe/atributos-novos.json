@@ -3896,6 +3896,450 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes (as outras de movimento não saem)"
+    },
+    "conj_em_ataque": {
+      "nome": "A Velocidade de Conjuração vale na de Ataque",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.conjuracaoNoAtaque"
+    },
+    "custo_em_es": {
+      "nome": "Habilidades custam Escudo de Energia em vez de Mana",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o custo sai do escudo)"
+    },
+    "custo_vida_extra_pct": {
+      "nome": "Custo de Vida a mais (% do custo de Mana)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (o custo a mais em vida)"
+    },
+    "custo_es_extra_pct": {
+      "nome": "Custo de Escudo de Energia a mais (% do custo de Mana)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (o custo a mais em escudo)"
+    },
+    "critico_repeticao_final": {
+      "nome": "Magias sempre críticas na Repetição final",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o Eco: a repetição final)"
+    },
+    "sem_critico_fora_da_final": {
+      "nome": "Magias sem crítico fora da Repetição final",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o Eco)"
+    },
+    "magnitude_implicitos": {
+      "nome": "Magnitude dos Implícitos (da própria peça)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/gerar (o gerador lê do texto do único)"
+    },
+    "mana_frasco_tambem_vida": {
+      "nome": "A Mana não-instantânea dos Frascos também recupera Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos (a recuperação ao longo do tempo)"
+    },
+    "frasco_mana_nao_para": {
+      "nome": "O frasco de Mana não para com a Mana cheia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_cargas_sangrando": {
+      "nome": "Cargas de Frasco a mais dos mortos Sangrando",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos.aoMatar"
+    },
+    "encaixes_inalteraveis": {
+      "nome": "Os sockets não podem ser modificados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/moedas (os sockets)"
+    },
+    "recarga_local": {
+      "nome": "Recarga a mais das gemas encaixadas na peça",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe → acoes.temposDaGemaPoe"
+    },
+    "critico_magia_da_arma": {
+      "nome": "Crítico das Magias igual ao da Arma Principal",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.contaDoDano (a base do crítico da magia)"
+    },
+    "supressao_prevenida": {
+      "nome": "Dano Mágico Suprimido prevenido a mais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes (a supressão)"
+    },
+    "suprimido_ignora_escudo": {
+      "nome": "Dano Mágico Suprimido que ignora o Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes.aplicarNoJogador"
+    },
+    "suprimido_recupera_es": {
+      "nome": "Dano Mágico Suprimido recuperado como Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes (a supressão)"
+    },
+    "suprimido_sem_atordoamento": {
+      "nome": "Não pode ser Atordoado por Dano Mágico Suprimido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes → combate/controle"
+    },
+    "veneno_max_no_alvo": {
+      "nome": "Não envenena alvos com N venenos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (o teto de venenos no alvo)"
+    },
+    "eletrizados_lentos": {
+      "nome": "Inimigos Eletrizados ficam Lentos (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe (a Eletrização posta)"
+    },
+    "es_comeca_zero": {
+      "nome": "O Escudo de Energia começa do zero",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas.entrar"
+    },
+    "mortos_destruidos": {
+      "nome": "Inimigos mortos pelos seus Acertos são destruídos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate (o cadáver)"
+    },
+    "reducao_elemental_meia_res_caos": {
+      "nome": "Redução de Dano Elemental igual a metade da Resistência a Caos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorDoDanoRecebido"
+    },
+    "reflete_eletrizacao": {
+      "nome": "Reflete as Eletrizações em você para os Inimigos Próximos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador"
+    },
+    "zera_res_de_quem_acerta_s": {
+      "nome": "Zera as Resistências de quem te acerta com dano elemental (s)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "poderes → hunt/resistencia"
+    },
+    "bonus_aljava": {
+      "nome": "Bônus da Aljava Equipada aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.somaDeItens (a aljava vestida)"
+    },
+    "incendio_refletido": {
+      "nome": "Os Incêndios que você causa voltam para você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoPorAfeccoes"
+    },
+    "afeccoes_elementais_refletidas": {
+      "nome": "As Afecções Elementais que você inflige voltam para você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoPorAfeccoes"
+    },
+    "venenos_extras": {
+      "nome": "Envenenamentos adicionais no mesmo alvo ao envenenar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afeccoes.aoAcertar"
+    },
+    "sem_regen_es": {
+      "nome": "Não pode Regenerar Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tique"
+    },
+    "dreno_vida_no_es_cheio": {
+      "nome": "O Dreno de Vida recupera o Escudo de Energia enquanto em Vida Cheia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.recuperarRoubo"
+    },
+    "frenesi_vira_poder": {
+      "nome": "Ganha Cargas de Poder ao invés de Cargas de Frenesi",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas.ganhar"
+    },
+    "transf_es_magia": {
+      "nome": "Aumentos ao Escudo de Energia Máximo também se aplicam ao Dano Mágico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.soma"
+    },
+    "transf_vida_ataque": {
+      "nome": "Aumentos à Vida Máxima também se aplicam ao Dano de Ataque",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.soma"
+    },
+    "transf_mana_dano": {
+      "nome": "Aumentos à Mana Máxima também se aplicam ao Dano",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.soma"
+    },
+    "magia_dano_da_arma": {
+      "nome": "Dano Mágico Adicional igual ao Dano da Arma da Mão Principal (Mago de Batalha)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.danoSomadoMagia"
+    },
+    "mana_vira_vida_pct_s": {
+      "nome": "Fora da Vida Cheia, Sacrifica X% da Mana por segundo para Recuperar Vida (O Agnóstico)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.tique"
+    },
+    "rampage": {
+      "nome": "Fúria (o contador de abates seguidos do PoE)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.contarRampage + afixos.soma"
+    },
+    "rampage_acerto_corpo": {
+      "nome": "Acertos Corpo a Corpo contam como Mortes com Fúria",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes / hunt/combate → contarRampage"
+    },
+    "rampage_frenesi_cada": {
+      "nome": "Recebe uma Carga de Frenesi a cada N Mortes com Fúria",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.contarRampage"
+    },
+    "rampage_perde_tolerancia": {
+      "nome": "Perde todas as Cargas de Tolerância quando a Fúria termina",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tique"
+    },
+    "perde_es_pct_s": {
+      "nome": "Perde X% do Escudo de Energia por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.tique"
+    },
+    "armadura_no_energy": {
+      "nome": "Armadura também se aplica ao Dano de Raio sofrido de Acertos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.armaduraNoElemento (poderes, hunt/combate)"
+    },
+    "armadura_no_chaos": {
+      "nome": "Armadura também se aplica ao Dano de Caos sofrido de Acertos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.armaduraNoElemento (poderes, hunt/combate)"
+    },
+    "res_elemental_inc": {
+      "nome": "Resistências Elementais aumentadas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha (as resistências do PoE)"
+    },
+    "so_mata_congelados": {
+      "nome": "Seus Acertos só podem Matar Inimigos Congelados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.poupar"
+    },
+    "lacaio_so_mata_incendiados": {
+      "nome": "Acertos de Lacaios só podem Matar Inimigos Incendiados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.poupar"
+    },
+    "gatilho_chance_local": {
+      "nome": "A chance do gatilho da peça",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (gatilhos das peças)"
+    },
+    "gatilho_mana_min_local": {
+      "nome": "O mínimo de mana gasta do gatilho da peça",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (gatilhos das peças)"
+    },
+    "gatilho_recarga_local": {
+      "nome": "A recarga do gatilho da peça",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "acoes (gatilhos das peças)"
+    },
+    "dano_physical_recebido_mais": {
+      "nome": "Dano Físico sofrido (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorDoDanoRecebido"
+    },
+    "dano_chaos_recebido_mais": {
+      "nome": "Dano de Caos sofrido (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorDoDanoRecebido"
+    },
+    "tiro_distante": {
+      "nome": "Tiro Distante (o projétil de ataque causa mais dano quanto mais longe)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fichaDoGolpe"
+    },
+    "queima_roupa": {
+      "nome": "Queima-Roupa (o projétil de ataque causa mais dano de perto)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fichaDoGolpe"
+    },
+    "dano_raio_recebido_sortudo": {
+      "nome": "O Dano de Raio dos Inimigos Acertando você é Sortudo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes / hunt/combate"
+    },
+    "sem_empurrao": {
+      "nome": "Não pode Empurrar Inimigos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.empurrar"
+    },
+    "incendio_mais": {
+      "nome": "Incêndios causam mais Dano",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes (o Incêndio)"
+    },
+    "sacrificio_eterno": {
+      "nome": "Sacrifício Eterno (o Escudo cheio vira +5% do Máximo de Resistências)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tique"
+    },
+    "sangramento_em_caos": {
+      "nome": "Você sofre Dano de Caos ao invés de Dano Físico do Sangramento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (o dano contínuo em você)"
+    },
+    "caos_degen_cura_drenando": {
+      "nome": "O Dano de Caos Degenerativo cura enquanto Drenando Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (o dano contínuo em você)"
+    },
+    "raio_nao_critico_sortudo": {
+      "nome": "Dano de Raio com Golpes Não-Críticos é Sortudo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o golpe das habilidades)"
+    },
+    "elemental_sortudo": {
+      "nome": "Dano Elemental com Acertos é Sortudo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o golpe das habilidades)"
+    },
+    "repeticoes_ataque_proprio": {
+      "nome": "Ataques executados por você se repetem mais N vezes",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (as repetições do golpe)"
+    },
+    "es_leech_magia_por_maldicao": {
+      "nome": "Dano Mágico Drenado como Escudo de Energia por Maldição no Inimigo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (acoes)"
+    },
+    "recuperacao_es_menos": {
+      "nome": "Recuperação do Escudo de Energia (menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.tique (a regeneração)"
+    },
+    "veneno_mais_chance": {
+      "nome": "Chance dos Envenenamentos causarem mais Dano",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes (o veneno)"
+    },
+    "veneno_mais_pct": {
+      "nome": "O mais Dano dos Envenenamentos sorteados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes (o veneno)"
+    },
+    "eletrizados_conjuracao_lenta": {
+      "nome": "Velocidade de Conjuração dos Inimigos Eletrizados por você reduzida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes.lancar"
+    },
+    "clamor_sem_recarga": {
+      "nome": "Clamores não instantâneos ignoram o tempo de recarga",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe"
+    },
+    "bloqueio_projetil": {
+      "nome": "Chance de Bloquear o Dano de Ataques de Projéteis",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes (a magia de projétil do bicho)"
+    },
+    "armadura_projetil_inc": {
+      "nome": "Armadura contra Projéteis aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes (a magia de projétil do bicho)"
+    },
+    "phys_as_extra_gelo_ou_raio": {
+      "nome": "Dano Físico como Dano de Gelo ou Raio Extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.extrasDoFisico"
+    },
+    "bloqueio_magico_por_excedente": {
+      "nome": "Chance de Bloqueio Mágico por 1% de Bloqueio de Ataques Excedente",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha (o bloqueio de magia)"
+    },
+    "forca_dano_pct": {
+      "nome": "O Bônus de Dano da Força: X% de Dano Físico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/atributos.efeitos"
+    },
+    "forca_dano_cada": {
+      "nome": "O Bônus de Dano da Força: a cada N de Força",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/atributos.efeitos"
     }
   }
 }

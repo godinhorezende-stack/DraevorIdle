@@ -86,7 +86,8 @@ export function processarMortes(estado, personagem, eventos) {
     if (m.hp > 0) continue;
     // Os CADÁVERES recentes (o Erguer Espectro do PoE ergue o último): o tipo do bicho, o desenho e onde caiu. ("Inimigos Amaldiçoados Mortos
     // por você são destruídos": a maldição do PoE com essa regra não deixa cadáver.)
-    if (!m.boss && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir)) {
+    // (+ "Inimigos Mortos pelos seus Acertos são destruídos": nenhum morto deixa cadáver.)
+    if (!m.boss && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
       hunt.cadaveres = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y }].slice(-10);
     }
     matarMonstro(estado, hunt, personagem, m, eventos);
@@ -208,6 +209,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   const base = resistido(hunt, alvo, element, bruto, ficha);
   const { dano: golpe, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
+  ModsPoe.poupar(ficha, hunt, alvo);
   registrarGolpe(() => ({ origem: segundo ? 'wand-2o-golpe' : 'wand', alvo: alvo.name, tipo: element, danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: resistenciaDe(hunt, alvo, element), penetracao: ficha.penetracao, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, element, ficha), danoAposResistencia: base, chanceCritica: chance, critico: crit, danoFinal: golpe, vidaRestante: Math.max(0, alvo.hp) }));
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
   // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado... — `mobs/mecanicas.mjs`).
@@ -813,14 +815,18 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     ModsPoe.marcar(hunt, 'matou');
     (hunt.poeMortesRecentes ??= []).push(hunt.clock ?? 0);
     if (hunt.poeMortesRecentes.length > 50) hunt.poeMortesRecentes.splice(0, hunt.poeMortesRecentes.length - 50);
+    // ("por cada Inimigo Eletrizado que você Matou Recentemente": a hora do abate do eletrizado — `ModsPoe.fatorDaEscala`)
+    if (ModsPoe.ativo(alvo.estados?.chocado, hunt.clock ?? 0)) { hunt.poeEletrizadosMortos = [...(hunt.poeEletrizadosMortos ?? []), hunt.clock ?? 0].slice(-20); Ficha.invalidar(estado); }
     // ("Inimigos mortos por você são Eletrizados": antes dos eventos "ao Matar" — "Inimigos Eletrizados que você Matar Explodem" vale.)
     if (ModsPoe.valor(f, 'mortos_eletrizados') > 0) (alvo.estados ??= {}).chocado = { ate: (hunt.clock ?? 0) + 2000, pct: Math.max(alvo.estados?.chocado?.pct ?? 0, 15) };
     ModsPoe.evento(estado, hunt, 'matar', f, { alvo, eventos, personagem });
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
+    // (a keystone Fúria — o Rampage: o abate soma no contador; "Recebe uma Carga de Frenesi a cada N Mortes com Fúria")
+    if (ModsPoe.contarRampage(estado, hunt, f)) Ficha.invalidar(estado);
   }
   // As cargas dos FRASCOS do PoE (de quem matou e da party na sala), pela raridade do monstro.
-  FrascosPoe.aoMatar(estado, tipoDoBicho(alvo));
+  FrascosPoe.aoMatar(estado, tipoDoBicho(alvo), alvo);
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) FrascosPoe.aoMatar(m.estado, tipoDoBicho(alvo));
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
   if (hunt.isBoss || alvo.chefeDoAto) return vitoriaNoBoss(estado, hunt, alvo, personagem);
@@ -1102,7 +1108,13 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (PoE: com as conversões do dano recebido — "X% do Dano de Fogo dos Acertos recebido como Dano de Gelo" — e o "Recebe X% do Dano Físico
   // como Dano Extra de um Elemento aleatório".)
   // (O MAPA do endgame: "Monstros causam X% do Dano como Dano Extra de Fogo/Gelo/Raio" — `bicho.danoExtraPct`, do golpe com o crítico.)
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => n + Math.round((x.min + Math.floor(Math.random() * (x.max - x.min + 1))) * forcaDoGolpe * critDoMob.fator * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, bruto)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
+  // (+ "Armadura também é aplicada no Dano de Raio sofrido de Acertos": a armadura sobre a parte daquele tipo.)
+  // ("O Dano de Raio dos Inimigos Acertando você é Sortudo": a parte de Raio rola duas vezes e fica a maior.)
+  const raioSortudo = ModsPoe.valor(ficha, 'dano_raio_recebido_sortudo') > 0;
+  // ("Excomunga inimigos…": o excomungado não causa dano de Caos.)
+  const excomungado = ModsPoe.semCaos(bicho, hunt.clock ?? 0);
+  const rolarParte = (x) => { const r = () => x.min + Math.floor(Math.random() * (x.max - x.min + 1)); return excomungado && x.elemento === 'chaos' ? 0 : raioSortudo && x.elemento === 'energy' ? Math.max(r(), r()) : r(); };
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator; return n + Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte)); }, 0) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, bruto)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
@@ -1444,12 +1456,16 @@ export function round(estado, personagem) {
           eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[d.tipo] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
           eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
         }
+        // ("Seus Acertos só podem Matar Inimigos Congelados": depois de todas as partes do golpe)
+        if (poe) ModsPoe.poupar(ficha, hunt, alvo);
         // As afecções do PoE (incêndio, sangramento, veneno, congelar, eletrizar, resfriar — `itens-poe/afeccoes.mjs`, só com ITENS_POE=1):
         // o golpe da arma é ATAQUE; cada parte (o físico e os elementos) entra com o tipo dela.
         // Os efeitos de acerto do PoE (atordoamento, Mutilar, Cegar, Empalar, Empurrar, Provocar, Fúria, Escudo por acerto — `itens-poe/mods-poe.mjs`).
         const doAcerto = poe ? ModsPoe.aoAcertar(estado, hunt, alvo, ficha, { dano: golpe + (elemental?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0), fisico: golpe, crit: critico, eventos, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: ['physical', ...dosAtributos.map((d) => d.tipo), ...(elemental ? [elemental.tipo ?? arma?.element?.type] : [])] }) : null;
         // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
         if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit: critico, corpoACorpo: categoriaDaArma(arma) !== 'distancia', atordoou: !!doAcerto?.atordoou }).length) Ficha.invalidar(estado);
+        // ("Acertos Corpo a Corpo contam como Mortes com Fúria" — o Rampage.)
+        if (poe && categoriaDaArma(arma) !== 'distancia' && ModsPoe.valor(ficha, 'rampage_acerto_corpo') > 0 && ModsPoe.contarRampage(estado, hunt, ficha)) Ficha.invalidar(estado);
         if (ficha.afeccoes) {
           // O dano das afecções sai do acerto SEM o multiplicador de crítico (como no PoE: o crítico não multiplica o dano ao longo do tempo);
           // o físico já é o de antes da rolagem, e as partes elementais (roladas junto com o crítico) voltam ao valor sem ele.
@@ -1490,3 +1506,6 @@ export function round(estado, personagem) {
   }
   return { eventos, bateu };
 }
+
+// As defesas do bicho para as condições do PoE ("ao Acertar um Inimigo sem Armadura / sem Evasão" — `condicoes-poe.tagsDoAlvo`).
+ModsPoe.definirDefesasDoBicho((m) => (m?.key ? { armadura: AtributosDoMob.armaduraDe(m, m.level ?? 1), evasao: AtributosDoMob.evasaoDe(m, m.level ?? 1) } : null));

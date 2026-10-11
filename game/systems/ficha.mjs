@@ -158,6 +158,8 @@ export function intervaloBaseDoGolpe(arma, secundaria = null) {
   const de = (s) => s?.aps.intervaloMs || desarmado;
   return secundaria ? (de(arma) + de(secundaria)) / 2 : de(arma);
 }
+/** O "aumentado" da Velocidade de Conjuração que também vale no ataque (PoE: "…se aplicam à Velocidade de Ataque"). */
+const conjuracaoNoAtaque = (af) => (itensPoeLigado() && Number(af?.conj_em_ataque) > 0 ? Number(af.cast_speed) || 0 : 0);
 function comDuasArmas(bloqueio, armaSecundaria, af = {}) {
   if (!armaSecundaria) return bloqueio;
   const teto = Atributos.CONFIG.bloqueio.MAX + (af.block_max ?? 0) / 100;
@@ -331,7 +333,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
   const penalidade = itensPoeLigado() ? penalidadeDeResistencia(estado) : 0;
   if (itensPoeLigado()) {
     for (const el of ['fire', 'ice', 'energy', 'chaos']) {
-      const bruto = (el === 'chaos' ? af.chaos_res ?? 0 : brutoDaSoma[el] ?? protection[el] + (excedentes.protection[el] ?? 0)) - penalidade;
+      // ("Resistências Elementais aumentadas em X%": o total de Fogo, Gelo e Raio × (1 + X%), com a penalidade, antes do máximo.)
+      const aumento = el === 'chaos' ? 1 : 1 + (af.res_elemental_inc ?? 0) / 100;
+      const bruto = ((el === 'chaos' ? af.chaos_res ?? 0 : brutoDaSoma[el] ?? protection[el] + (excedentes.protection[el] ?? 0)) - penalidade) * aumento;
       // O MÁXIMO de cada resistência (75%) + o "+X% de Resistência a <elemento> máxima" das peças (até 90%, como no PoE).
       protection[el] = Math.max(-200, Math.min(maximoDaResistencia(af, el), bruto));
       // "Resistência a Fogo é de X%", "Resistências Elementais são Zero", "Resistência a Caos é Zero" (únicos): o valor fixo.
@@ -446,14 +450,15 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
-    velocidadeDeAtaque: (af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed'),
+    // (+ PoE: "Aumentos e Reduções à Velocidade de Conjuração se aplicam à Velocidade de Ataque" — `conj_em_ataque`.)
+    velocidadeDeAtaque: (af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed'),
     // PoE: o "X% mais/menos Velocidade de Ataque" (o Legado do Guerreiro: 20% menos) — multiplica por cima dos aumentos (`fatorDeVelocidadeMais`).
     velocidadeDeAtaqueMais: itensPoeLigado() ? af.atk_speed_mais ?? 0 : 0,
     // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
     // (PoE: o APS da base do catálogo × a Velocidade de Ataque LOCAL da peça; com duas armas, a média dos tempos das duas — `intervaloBaseDoGolpe`.)
-    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([
@@ -475,7 +480,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     afeccoes: itensPoeLigado() ? AfeccoesPoe.daSoma(af) : null,
     // As cargas do PoE: o fator do golpe (4% mais por Frenesi, dano por Poder) e as regras de máximo/duração/ganho (`itens-poe/cargas.mjs`).
     ...(itensPoeLigado() ? { fatorDasCargas: CargasPoe.fatorDeDano(estado, af), cargas: CargasPoe.regrasDaSoma(af) } : {}),
-    danoSomadoMagia: somado('spell_added_'),
+    // (+ o Mago de Batalha: "Ganhe Dano Mágico Adicional igual ao Dano da sua Arma da Mão Principal".)
+    danoSomadoMagia: comDanoDaArma(somado('spell_added_'), af, armaFinal, pecaDaArma),
     vidaPorAbate: af.life_on_kill ?? 0,
     manaPorAbate: af.mana_on_kill ?? 0,
     vidaPorAcerto: af.life_on_hit ?? 0,
@@ -513,7 +519,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // Mágico" — `spell_block_max`); só vale com `bloqueio.modo` = 'poe'.
     // (+ "Chance de Bloquear o Dano Mágico é dobrada" — `spell_block_dobrado`; "Você está no Máximo de Chance de Bloquear Dano Mágico se você
     // não Bloqueou Recentemente" — `bloqueio_magia_no_maximo`, com a condição já resolvida na soma.)
-    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal(af.bloqueio_magia_no_maximo > 0 ? Infinity : ((af.spell_block ?? 0) / 100) * (af.spell_block_dobrado > 0 ? 2 : 1), 'magia', (af.spell_block_max ?? 0) / 100),
+    // (+ o Combatente Versátil: "+2% de Chance de Bloqueio Mágico para cada 1% de Chance de Bloqueio do Dano de Ataques Excedente".)
+    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal(af.bloqueio_magia_no_maximo > 0 ? Infinity : ((af.spell_block ?? 0) / 100) * (af.spell_block_dobrado > 0 ? 2 : 1) + (Number(af.bloqueio_magico_por_excedente) > 0 ? Number(af.bloqueio_magico_por_excedente) * (bloqueioDaFicha(estado, escudo, w, shielding, af).bloqueioExcedente ?? 0) : 0), 'magia', (af.spell_block_max ?? 0) / 100),
     // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
     armaEquipada: armaEquipadaDaFicha(estado),
     // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".
@@ -594,6 +601,18 @@ function comRaioPorPrecisao(somado, af, precisao) {
   const vezes = Math.floor(Math.max(0, precisao) / cada);
   const [a, b] = somado.energy ?? [0, 0];
   return { ...somado, energy: [a + vezes * (af.energy_por_precisao_min ?? 0), b + vezes * (af.energy_por_precisao_max ?? 0)] };
+}
+/**
+ * A keystone Mago de Batalha (`magia_dano_da_arma`): o dano da ARMA da mão principal somado às magias — a faixa física dela (a base com os
+ * locais e a qualidade, `ArmaMod.statsDaArma`) e o dano elemental somado da própria peça.
+ */
+function comDanoDaArma(somado, af, armaFinal, peca) {
+  if (!itensPoeLigado() || !(Number(af.magia_dano_da_arma) > 0) || !armaFinal) return somado;
+  const novo = { ...somado };
+  const soma = (el, a, b) => { if (a > 0 || b > 0) novo[el] = [(novo[el]?.[0] ?? 0) + a, (novo[el]?.[1] ?? 0) + b]; };
+  soma('physical', armaFinal.danoMin ?? 0, armaFinal.danoMax ?? 0);
+  for (const el of ELEMENTOS_DO_POE) soma(el, Number(peca?.poe?.af?.[`added_${el}_dmg_min`]) || 0, Number(peca?.poe?.af?.[`added_${el}_dmg_max`]) || 0);
+  return novo;
 }
 /** Uma velocidade em % com a Velocidade de Ação por cima (sem ela, o mesmo número — sem erro de arredondamento). */
 const comAcao = (pct, af) => (fatorDeAcao(af) === 1 ? pct : ((1 + pct / 100) * fatorDeAcao(af) - 1) * 100);
@@ -847,8 +866,12 @@ function bloqueioDaFicha(estado, escudo, w, shielding, af = {}) {
   const extra2 = (af.block ?? 0) / 100;
   const teto = Atributos.CONFIG.bloqueio.MAX + (af.block_max ?? 0) / 100;
   // ("Você está na Chance Máxima de Bloquear o Dano de Ataques caso não tenha Bloqueado Recentemente" — `bloqueio_no_maximo`: o teto.)
-  const com = (d) => (af.bloqueio_no_maximo > 0 ? teto : Math.min(teto, R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0)));
+  const bruto = (d) => R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0);
+  const com = (d) => (af.bloqueio_no_maximo > 0 ? teto : Math.min(teto, bruto(d)));
   return {
+    // (o que passa do teto — o "Excedente" do Combatente Versátil: "+2% de Chance de Bloqueio Mágico para cada 1% de Chance de Bloqueio do
+    // Dano de Ataques Excedente")
+    bloqueioExcedente: Math.max(0, bruto(Math.round((defMin + defMax) / 2)) - teto),
     blockChance: com(Math.round((defMin + defMax) / 2)),
     blockChanceMin: com(defMin),
     blockChanceMax: com(defMax),
@@ -921,7 +944,7 @@ export function tetoDoRouboPct(ficha, recurso) {
 }
 const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
 const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0 } = {}) {
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0 } = {}) {
   // (PoE, os únicos: "X% do Dano de Golpes Críticos é Drenado como Vida" — `roubo_vida_critico`, sobre a parte do dano que veio de crítico —
   // e "Não pode Drenar Vida com Golpes Críticos" — `sem_roubo_vida_critico`: essa parte não drena.)
   const critico = itensPoeLigado() ? Math.min(Math.max(0, Number(danoCritico) || 0), Math.max(0, danoTotal)) : 0;
@@ -930,9 +953,11 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
   if (itensPoeLigado() && !ataque) {
     const pct = ModsPoe.valor(ficha, 'es_leech_magia') + ModsPoe.valor(ficha, 'es_leech');
+    // (+ "X% do Dano Mágico é Drenado como Escudo de Energia para cada Maldição no Inimigo": o dano de cada alvo × as maldições dele.)
+    const porMaldicao = (Math.max(0, Number(danoVezesMaldicoes) || 0) * ModsPoe.valor(ficha, 'es_leech_magia_por_maldicao')) / 100;
     const max = Math.max(0, Math.round(ficha.energyShield ?? 0));
-    if (pct > 0 && max > 0 && estado.hunt) {
-      const quanto = Math.min((danoTotal * pct) / 100, (max * LEECH_POE.porInstanciaPct) / 100);
+    if ((pct > 0 || porMaldicao > 0) && max > 0 && estado.hunt) {
+      const quanto = Math.min((danoTotal * pct) / 100 + porMaldicao, (max * LEECH_POE.porInstanciaPct) / 100);
       if (quanto > 0) (estado.hunt.roubos ??= []).push({ recurso: 'es', restante: quanto, porSegundo: (max * LEECH_POE.taxaDaInstanciaPct) / 100, max });
     }
     // ("X% de Dano Mágico Drenado como Vida enquanto você possuir Fúria Arcana" — a magia que drena vida, com as regras do roubo.)
@@ -1023,7 +1048,9 @@ export function recuperarRoubo(estado, ms) {
     // de Energia não são removidos quando o Escudo de Energia se Encher" e o "Efeitos do Dreno de Vida não são removidos quando a Vida Não
     // Reservada estiver Cheia". A vida que encerrou o dreno fica marcada ("se o Dreno foi removido Preenchendo a Vida Não Reservada").
     const naoPara = { vida: 'roubo_vida_nao_para_no_cheio', es: 'roubo_es_nao_para_no_cheio' }[recurso];
-    if (max > 0 && (estado[campo] ?? 0) >= cheio[recurso] && !(naoPara && ModsPoe.valor(fRoubo, naoPara) > 0)) {
+    // (a Ambição Imortal: "Dreno de Vida afeta a Recuperação do Escudo de Energia ao invés enquanto em Vida Cheia" — e o dreno não para)
+    const noEscudo = recurso === 'vida' && max > 0 && (estado.hp ?? 0) >= cheio.vida && ModsPoe.valor(fRoubo, 'dreno_vida_no_es_cheio') > 0;
+    if (max > 0 && (estado[campo] ?? 0) >= cheio[recurso] && !noEscudo && !(naoPara && ModsPoe.valor(fRoubo, naoPara) > 0)) {
       for (const x of ativas) x.restante = 0;
       if (recurso === 'vida') {
         (estado.hunt.poeRecente ??= {}).drenoCheio = estado.hunt.clock ?? 0;
@@ -1045,7 +1072,8 @@ export function recuperarRoubo(estado, ms) {
     resto[recurso] += ganho;
     const inteiro = Math.floor(resto[recurso]);
     resto[recurso] -= inteiro;
-    if (inteiro > 0 && (campo !== 'hp' || (estado.hp ?? 0) > 0)) estado[campo] = Math.min(max, (estado[campo] ?? 0) + inteiro);
+    if (noEscudo) { if (inteiro > 0) estado.es = Math.min(Math.max(0, Math.round(fRoubo.energyShield ?? 0)), (estado.es ?? 0) + inteiro); }
+    else if (inteiro > 0 && (campo !== 'hp' || (estado.hp ?? 0) > 0)) estado[campo] = Math.min(max, (estado[campo] ?? 0) + inteiro);
   }
   estado.hunt.roubos = lista.filter((x) => x.restante > 0.001);
 }

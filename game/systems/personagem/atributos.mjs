@@ -61,7 +61,9 @@ export function efeitos(p, af = null) {
   const semEvasaoDaDes = Number(af?.sem_evasao_da_des) > 0;
   return {
     vida: p.str * E.STR_LIFE_PER_POINT,
-    danoFisicoPct: p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT,
+    // (PoE, A Fortaleza de Ferro: "O Bônus de Dano da Força concede X% de aumento do Dano Físico Corpo a Corpo por cada Y de Força" — no lugar
+    // do bônus de sempre.)
+    danoFisicoPct: Number(af?.forca_dano_cada) > 0 ? Math.floor(p.str / Number(af.forca_dano_cada)) * (Number(af?.forca_dano_pct) || 0) : p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT,
     precisao: p.dex * E.DEX_ACCURACY_PER_POINT,
     evasao: p.dex * E.DEX_EVASION_PER_POINT,
     velocidadeDeAtaquePct: p.dex * E.DEX_ATTACK_SPEED_PER_POINT,

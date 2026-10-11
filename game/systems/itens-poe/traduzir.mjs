@@ -54,6 +54,7 @@ function valorDo(expr, indices, valores) {
  */
 export const APELIDOS_DE_GEMA = Object.freeze({
   'Pureza dos Elementos': 'Pureza Elementar', 'Pureza do Fogo': 'Pureza Ardente', 'Pureza do Gelo': 'Pureza Glacial', 'Pureza do Raio': 'Pureza Elétrica',
+  'Chuva de Flexas': 'Chuva de Flechas',
   'Arauto da Agonia': 'Arauto Agonizante', 'Arauto do Trovão': 'Arauto Trovejante', 'Arauto do Gelo': 'Arauto Glacial', 'Arauto das Cinzas': 'Arauto Flamejante',
   'Oferenda de Carne': 'Oferenda Carnal', 'Oferenda de Espíritos': 'Oferenda Espiritual', 'Oferenda Espírito': 'Oferenda Espiritual',
   'Golens de Chamas': 'Convocar Golem Flamejante', 'Golens de Gelo': 'Convocar Golem Glacial', 'Golens de Raio': 'Convocar Golem Relampejante',
@@ -204,7 +205,7 @@ function temEfeito(e) {
   // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo`)
   // (+ `gema:<nome>` — a gema pelo nome, no nível das gemas: `skills/gemas.extrasDaGemaPoe`)
   // (+ `critico` — só no golpe crítico, para os atributos que o acerto lê assim: `SO_NO_CRITICO`)
-  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvoVenenos:\d+$/.test(c) || /^gema:[\w-]+$/.test(c) || (c === 'critico' && SO_NO_CRITICO.has(stat)));
+  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^gema:[\w-]+$/.test(c) || (c === 'critico' && SO_NO_CRITICO.has(stat)));
 }
 
 /** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */

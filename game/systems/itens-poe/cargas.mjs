@@ -42,7 +42,7 @@ const CHAVES = [
   'max_tolerancia_igual_frenesi', 'max_frenesi_igual_poder', 'cargas_max_fixo', 'cargas_max_fixo_tem', 'chance_tolerancia_maxima', 'carga_tolerancia_ao_ser_acertado', 'carga_tolerancia_ao_atordoar', 'carga_poder_ao_atordoar',
   'carga_poder_ao_critico', 'carga_poder_ao_critico_varinha', 'carga_tolerancia_ao_critico_corpo', 'carga_poder_ao_acerto_nao_critico',
   'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta', 'carga_periodica_n', 'carga_periodica_s',
-  'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
+  'frenesi_vira_poder', 'frenesi_a_cada_s', 'poder_a_cada_s', 'tolerancia_a_cada_s', 'frenesi_perde_a_cada_s', 'poder_perde_a_cada_s', 'tolerancia_perde_a_cada_s',
 ];
 export const regrasDaSoma = (af) => Object.fromEntries(CHAVES.filter((k) => n(af, k)).map((k) => [k, n(af, k)]));
 
@@ -73,7 +73,9 @@ export function definirLeitores({ regras, conduite }) {
 }
 
 /** Põe `quantas` cargas do tipo (até o máximo) e renova a duração de todas dele, só neste personagem. */
-function por(estado, tipo, af, quantas = 1, rng = Math.random) {
+function por(estado, tipo0, af, quantas = 1, rng = Math.random) {
+  // (a Convicção Interior: "Ganha Cargas de Poder ao invés de Cargas de Frenesi")
+  const tipo = tipo0 === 'frenesi' && n(af, 'frenesi_vira_poder') ? 'poder' : tipo0;
   const hunt = estado?.hunt;
   const max = maximo(af, tipo);
   if (!hunt || max <= 0) return false;
