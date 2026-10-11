@@ -583,9 +583,8 @@ function montar(body) {
       if (p.x < largura && p.y < altura && p.x + l > 0 && p.y + h > 0) g.drawImage(ilustracao, p.x, p.y, l, h);
     }
     const img = folha(s.tipos.groupBackground);
-    if (!img) return true;
     const k = cam.zoom / s.zoom;
-    for (const [x, y, fundo, meio] of s.grupos) {
+    if (img) for (const [x, y, fundo, meio] of s.grupos) {
       const c = s.coords.groupBackground[fundo];
       if (!c) continue;
       const w = c[2] * k;
@@ -605,6 +604,67 @@ function montar(body) {
       g.drawImage(img, c[0], c[1], c[2], c[3], -w / 2, -h, w, h);
       g.restore();
     }
+    // (11/10) O fundo redondo de cada ASCENDÊNCIA à vista (a escolhida; antes da escolha, as da classe), centrado no início dela e recortado
+    // no círculo, como o site — a folha só é pedida quando uma ascendência aparece na tela, e o recorte é feito uma vez (`fundoRecortado`).
+    for (const [slug, f] of Object.entries(s.ascendencias ?? {})) {
+      const inicio = a.porId.get(a.ascendencias?.[slug]?.inicio);
+      const c = s.coords[f.tipo]?.[f.fundo];
+      if (!inicio || !c || !visivelNaArvore(inicio)) continue;
+      const p = paraTela(inicio);
+      const w = c[2] * k;
+      const h = c[3] * k;
+      if (p.x + w / 2 < 0 || p.x - w / 2 > largura || p.y + h / 2 < 0 || p.y - h / 2 > altura) continue;
+      const fundo = fundoRecortado(s, f, c);
+      if (fundo) g.drawImage(fundo, p.x - w / 2, p.y - h / 2, w, h);
+    }
+    return true;
+  }
+  /** O fundo de uma ascendência já recortado no círculo (no tamanho da folha), montado uma vez: na tela, só a cópia escalada. */
+  const fundosRecortados = new Map();
+  function fundoRecortado(s, f, c) {
+    const chave = `${f.tipo}|${f.fundo}`;
+    if (fundosRecortados.has(chave)) return fundosRecortados.get(chave);
+    const img = folha(s.tipos[f.tipo]);
+    if (!img) return null;
+    const pronto = document.createElement('canvas');
+    pronto.width = c[2];
+    pronto.height = c[3];
+    const t = pronto.getContext('2d');
+    t.beginPath();
+    t.arc(c[2] / 2, c[3] / 2, c[3] / 2, 0, Math.PI * 2);
+    t.clip();
+    t.drawImage(img, c[0], c[1], c[2], c[3], 0, 0, c[2], c[3]);
+    fundosRecortados.set(chave, pronto);
+    return pronto;
+  }
+  /*
+   * A passiva de ASCENDÊNCIA com a arte do PoE (dono, 11/10: "coloque a arte das ascendências na árvore do jogo também"): a moldura de
+   * ascendência (grande no notável, pequena no comum) no estado do nó, com o ícone dentro (apagado fora do alocado, como os da árvore), e o
+   * miolo do PoE no início. Do tamanho dos nós da árvore. `false`: sem a arte — o desenho de sempre.
+   */
+  function desenharAscendenciaDoPoe(n, p, r, estado, noCaminho) {
+    const s = spritesDaArvore();
+    if (!s?.ascendencias?.[n.ascendencia] || !s.coords.ascendancy) return false;
+    const molduras = folha(s.tipos.ascendancy);
+    if (!molduras) return false;
+    const passo = estado === 'alocado' ? 2 : estado === 'disponivel' || noCaminho ? 1 : 0;
+    const inicio = n.tipo === 'start';
+    const c = s.coords.ascendancy[inicio ? 'AscendancyMiddle' : `AscendancyFrame${n.tipo === 'notable' ? 'Large' : 'Small'}${['Normal', 'CanAllocate', 'Allocated'][passo]}`];
+    if (!c) return false;
+    // a moldura um pouco maior que o nó, como as da árvore (o miolo do início na proporção do PoE: 31 para a moldura comum de 39)
+    const k = (r * 2.3) / (inicio ? 39 : c[2]);
+    const icone = !inicio && n.icone ? imagemDoNo(n.icone) : null;
+    if (icone) {
+      const d = c[2] * k * (n.tipo === 'notable' ? 37 / 58 : 26 / 39);
+      g.save();
+      g.beginPath();
+      g.arc(p.x, p.y, d / 2, 0, Math.PI * 2);
+      g.clip();
+      if (passo < 2) g.filter = 'saturate(0.45) brightness(0.6)';
+      g.drawImage(icone, p.x - d / 2, p.y - d / 2, d, d);
+      g.restore();
+    }
+    g.drawImage(molduras, c[0], c[1], c[2], c[3], p.x - (c[2] * k) / 2, p.y - (c[3] * k) / 2, c[2] * k, c[3] * k);
     return true;
   }
   /** O início de uma classe com a arte do PoE: o fundo de todo início e, no da classe do jogador, o medalhão dela. `false`: sem a arte. */
@@ -625,7 +685,8 @@ function montar(body) {
   }
   const ESCALA_MINIMA = 0.5;
   const escala = () => Math.max(ESCALA_MINIMA, Math.min(1.6, cam.zoom * 1.8));
-  const raio = (n) => (n.atributo ? 6.5 : { small: 10, notable: 17, keystone: 25, start: 38, mastery: 15 }[n.tipo] ?? 10) * escala();
+  // (o início de uma ascendência com a arte do PoE é o miolo pequeno: do tamanho de um nó comum)
+  const raio = (n) => (n.atributo ? 6.5 : n.tipo === 'start' && n.ascendencia && sprites?.ascendencias?.[n.ascendencia] ? 10 : { small: 10, notable: 17, keystone: 25, start: 38, mastery: 15 }[n.tipo] ?? 10) * escala();
   const forma = (p, r) => {
     g.beginPath();
     g.arc(p.x, p.y, r, 0, Math.PI * 2);
@@ -661,6 +722,7 @@ function montar(body) {
       aro(p, r, vivo ? CORES.ouroVivo : perto ? CORES.disponivel : CORES.bronze, vivo ? 2 : 1.4);
       return;
     }
+    if (n.ascendencia && desenharAscendenciaDoPoe(n, p, r, estado, noCaminho)) return;
     if (n.tipo === 'start') {
       const minha = n.classe && vista()?.inicio === n.id;
       if (!n.ascendencia && desenharInicioDoPoe(n, p, minha)) return;
