@@ -5,6 +5,7 @@ import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { normalize, join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
 import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
@@ -246,19 +247,25 @@ const PASTA_DAS_ASCENDENCIAS = fileURLToPath(new URL('../gamedata/itens-poe/icon
 // (11/10) Os ÍCONES e as MOLDURAS dos nós da árvore de passivas (as folhas de sprites raspadas do poeskilltree.com —
 // tools/importar-arvore-poeskilltree.mjs) e o mapa de cada nó (`arvore-sprites.json`), que a árvore do jogo pede uma vez.
 const PASTA_DA_ARVORE = fileURLToPath(new URL('../gamedata/itens-poe/arvore-sprites', import.meta.url));
+// (11/10, cache) Como os estáticos (`backend/estaticos.mjs`): o mapa vai com ETag e `no-cache` — o navegador pergunta "mudou?" e ouve 304 —, e
+// leva a VERSÃO de cada imagem (`v`: o começo do sha1 do arquivo); o cliente pede `<imagem>?v=<versão>`, guardada por um ano (versão nova é
+// endereço novo). Antes, um dia de cache no mapa: quem abriu a árvore antes de um deploy ficava sem o que ele trouxe.
 let spritesDaArvore = null;
 const SPRITES_DA_ARVORE = () => (spritesDaArvore ??= (() => {
   const arquivo = new URL('../gamedata/itens-poe/arvore-sprites.json', import.meta.url);
   if (!existsSync(arquivo)) return null;
   const { _nota, ...dados } = JSON.parse(readFileSync(arquivo, 'utf8'));
-  return JSON.stringify(dados);
+  const imagens = [...Object.keys(dados.folhas ?? {}), ...Object.values(dados.avulsos ?? {}), ...Object.values(dados.classes ?? {}).map((c) => c.ilustracao).filter(Boolean)];
+  dados.v = Object.fromEntries(imagens.filter((r) => existsSync(join(PASTA_DA_ARVORE, r))).map((r) => [r, createHash('sha1').update(readFileSync(join(PASTA_DA_ARVORE, r))).digest('hex').slice(0, 10)]));
+  const corpo = JSON.stringify(dados);
+  return { corpo, etag: `"${createHash('sha1').update(corpo).digest('hex').slice(0, 16)}"` };
 })());
 // (09/10) Os ícones das HABILIDADES (a barra de slots — tools/importar-poedb-gemas.mjs).
 const PASTA_DAS_HABILIDADES = fileURLToPath(new URL('../gamedata/itens-poe/icones-habilidades', import.meta.url));
-const imagem = (res, pasta, relativo) => {
+const imagem = (res, pasta, relativo, cache = 'public, max-age=86400') => {
   const alvo = normalize(join(pasta, relativo));
   if (!alvo.startsWith(pasta) || !TIPOS[extname(alvo).toLowerCase()] || !existsSync(alvo) || !statSync(alvo).isFile()) return false;
-  res.writeHead(200, { 'content-type': TIPOS[extname(alvo).toLowerCase()], 'cache-control': 'public, max-age=86400' });
+  res.writeHead(200, { 'content-type': TIPOS[extname(alvo).toLowerCase()], 'cache-control': cache });
   createReadStream(alvo).pipe(res);
   return true;
 };
@@ -273,12 +280,22 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   // Os ícones dos orbes do PoE (Joalheiro, Fusão, Cromático): no repositório (`gamedata/itens-poe/icones-moedas`).
   // Os ícones das passivas de ascendência (`tools/baixar-ascendencias-poedb.mjs`): a árvore do jogo e da Engine desenham com eles.
   if (rota.startsWith('icone/ascendencia/')) return nomes(rota.slice('icone/ascendencia/'.length)).some((n) => imagem(res, PASTA_DAS_ASCENDENCIAS, n)) || (json(res, 404, { ok: false }), true);
-  if (rota.startsWith('icone/arvore/')) return nomes(rota.slice('icone/arvore/'.length)).some((n) => imagem(res, PASTA_DA_ARVORE, n)) || (json(res, 404, { ok: false }), true);
+  // (a imagem da árvore com `?v=`: a versão está no endereço — um ano, `immutable`)
+  if (rota.startsWith('icone/arvore/')) {
+    const cache = url?.searchParams?.has('v') ? 'public, max-age=31536000, immutable' : undefined;
+    return nomes(rota.slice('icone/arvore/'.length)).some((n) => imagem(res, PASTA_DA_ARVORE, n, cache)) || (json(res, 404, { ok: false }), true);
+  }
   if (rota === 'arvore-sprites') {
-    const corpo = SPRITES_DA_ARVORE();
-    if (!corpo) return json(res, 404, { ok: false }), true;
-    res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=86400' });
-    res.end(corpo);
+    const mapa = SPRITES_DA_ARVORE();
+    if (!mapa) return json(res, 404, { ok: false }), true;
+    const cabecalho = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-cache', etag: mapa.etag };
+    if (req.headers?.['if-none-match'] === mapa.etag) {
+      res.writeHead(304, cabecalho);
+      res.end();
+      return true;
+    }
+    res.writeHead(200, cabecalho);
+    res.end(mapa.corpo);
     return true;
   }
   if (rota.startsWith('icone/habilidade/')) return nomes(rota.slice('icone/habilidade/'.length)).some((n) => imagem(res, PASTA_DAS_HABILIDADES, n)) || (json(res, 404, { ok: false }), true);

@@ -134,11 +134,16 @@ function refazerMods(p, raridade, rng) {
   else p.nome = nomeDaBase(p);
 }
 const nomeDaBase = (p) => Gerar.acharBase(CAT(), p.base)?.base?.nome ?? p.nome;
-/** Os valores de um mod de novo, dentro das faixas do tier dele (`tier` outro = troca o tier). */
+/** O lado do mod explícito na peça ('prefixo' | 'sufixo'), ou null (implícito). */
+const ladoDe = (p, m) => ((p.prefixos ?? []).includes(m) ? 'prefixo' : (p.sufixos ?? []).includes(m) ? 'sufixo' : null);
+/**
+ * Os valores de um mod de novo, dentro das faixas do tier dele (`tier` outro = troca o tier). No explícito, com a MAGNITUDE DA BASE do lado
+ * dele (Amuleto Simples/Focal +100%; os anéis de +25–50% nos prefixos ou sufixos): antes o Orbe Divino trazia o valor de volta à metade.
+ */
 function rerolarValores(p, m, rng, tier = null) {
   const t = tier ?? (m.origem ? tierEspecial(p, m) : Gerar.tierDoMod(CAT(), p, m)?.tier);
   if (!t) return false;
-  const novo = Gerar.rolarTexto(t, rng);
+  const novo = Gerar.comMagnitude(Gerar.rolarTexto(t, rng), Gerar.magnitudeDaBase(p, ladoDe(p, m)));
   Object.assign(m, { modelo: novo.modelo, valores: novo.valores, texto: novo.texto, ...(tier ? { tier: tier.tier, nome: tier.nome, ilvl: tier.ilvl } : {}) });
   return true;
 }
@@ -467,7 +472,8 @@ const dominio = ({ p, rng }) => {
   const alvo = sortear(elevaveis, rng);
   tirarMod(p, sortear(influenciados.filter((m) => m !== alvo), rng));
   const t = elevadoDe(p, alvo);
-  const novo = Gerar.rolarTexto(t, rng);
+  // (O Elevado sai com a magnitude da base também — Amuleto Simples/Focal, os anéis.)
+  const novo = Gerar.comMagnitude(Gerar.rolarTexto(t, rng), Gerar.magnitudeDaBase(p, ladoDe(p, alvo)));
   Object.assign(alvo, { nome: t.nome, tier: t.tier, ilvl: t.ilvl, modelo: novo.modelo, valores: novo.valores, texto: novo.texto, elevado: true });
   return { ok: true, notice: `${p.nome}: elevado — ${alvo.texto}.` };
 };

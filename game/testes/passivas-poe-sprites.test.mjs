@@ -6,6 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 process.env.ITENS_POE = '1';
 const P = await import('../systems/passivas/arvore.mjs');
@@ -77,6 +78,23 @@ test('sprites da árvore: cada classe tem o medalhão do PoE, e a ilustração g
   }
 });
 
+test('sprites da árvore: cada ascendência tem o fundo redondo do PoE, e ele (centrado no início) cobre todos os nós dela; as molduras de ascendência estão na folha', () => {
+  const arvore = P.arvore();
+  const slugs = Object.keys(arvore.ascendencias);
+  assert.equal(slugs.length, 21);
+  for (const m of ['AscendancyFrameLargeNormal', 'AscendancyFrameLargeAllocated', 'AscendancyFrameSmallNormal', 'AscendancyFrameSmallCanAllocate', 'AscendancyMiddle']) assert.ok(S.coords.ascendancy?.[m], m);
+  for (const slug of slugs) {
+    const a = S.ascendencias[slug];
+    assert.ok(a, `${slug}: fundo`);
+    const c = S.coords[a.tipo]?.[a.fundo];
+    assert.ok(c && existsSync(new URL(S.tipos[a.tipo], PASTA)), `${slug}: ${a.fundo} na folha ${S.tipos[a.tipo]}`);
+    const inicio = arvore.porId.get(arvore.ascendencias[slug].inicio);
+    const raio = c[3] / 2 / S.zoom; // o círculo do fundo, em unidades da árvore
+    const fora = arvore.nos.filter((n) => n.ascendencia === slug && Math.hypot(n.x - inicio.x, n.y - inicio.y) > raio);
+    assert.deepEqual(fora.map((n) => n.nome), [], `${slug}: nós fora do fundo (raio ${Math.round(raio)})`);
+  }
+});
+
 /** Uma resposta falsa: o que o servidor escreveu (cabeçalho e corpo). */
 function resposta() {
   const r = { status: 0, cabecalho: {}, partes: [], fim: null };
@@ -91,12 +109,13 @@ function resposta() {
   return r;
 }
 const json = (res, status, corpo) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(corpo)); };
-const pedir = async (caminho) => {
+const pedir = async (endereco, headers = {}) => {
   const res = resposta();
-  const tratou = await Http.atenderPublico({ method: 'GET' }, res, caminho, new URL(`http://x${caminho}`), { json, fichaDaGema: () => null });
-  assert.ok(tratou, caminho);
+  const url = new URL(`http://x${endereco}`);
+  const tratou = await Http.atenderPublico({ method: 'GET', headers }, res, decodeURIComponent(url.pathname), url, { json, fichaDaGema: () => null });
+  assert.ok(tratou, endereco);
   await Promise.race([res.fim, new Promise((ok) => setTimeout(ok, 2000))]);
-  return { status: res.status, tipo: res.cabecalho['content-type'], corpo: Buffer.concat(res.partes) };
+  return { status: res.status, tipo: res.cabecalho['content-type'], cabecalho: res.cabecalho, corpo: Buffer.concat(res.partes) };
 };
 
 test('sprites da árvore: o jogo serve o mapa, as folhas e os avulsos — e nada fora da pasta', async () => {
@@ -116,4 +135,25 @@ test('sprites da árvore: o jogo serve o mapa, as folhas e os avulsos — e nada
   if (avulso) assert.equal((await pedir(`/api/jogo/poe/icone/arvore/${avulso}`)).status, 200);
   assert.equal((await pedir('/api/jogo/poe/icone/arvore/..%2F..%2Farvore-poe.json')).status, 404);
   assert.equal((await pedir('/api/jogo/poe/icone/arvore/../arvore-sprites.json')).status, 404);
+});
+
+test('sprites da árvore: o mapa vai com ETag e no-cache (304 se não mudou), e cada imagem com a versão do arquivo no endereço', async () => {
+  const mapa = await pedir('/api/jogo/poe/arvore-sprites');
+  assert.equal(mapa.status, 200);
+  assert.equal(mapa.cabecalho['cache-control'], 'no-cache', 'o navegador confere antes de usar o guardado');
+  assert.match(mapa.cabecalho.etag, /^"[0-9a-f]{16}"$/);
+  const igual = await pedir('/api/jogo/poe/arvore-sprites', { 'if-none-match': mapa.cabecalho.etag });
+  assert.equal(igual.status, 304);
+  assert.equal(igual.corpo.length, 0);
+  assert.equal((await pedir('/api/jogo/poe/arvore-sprites', { 'if-none-match': '"outra"' })).status, 200);
+  // a versão de cada imagem é a do arquivo: trocou a imagem, trocou o endereço
+  const { v } = JSON.parse(mapa.corpo.toString('utf8'));
+  const imagens = [...Object.keys(S.folhas), ...Object.values(S.avulsos), ...Object.values(S.classes).map((c) => c.ilustracao).filter(Boolean)];
+  assert.deepEqual(Object.keys(v).sort(), imagens.sort());
+  for (const r of imagens) assert.equal(v[r], createHash('sha1').update(readFileSync(new URL(r, PASTA))).digest('hex').slice(0, 10), r);
+  // com a versão, um ano; sem ela, o dia de sempre
+  const comVersao = await pedir(`/api/jogo/poe/icone/arvore/${S.tipos.frame}?v=${v[S.tipos.frame]}`);
+  assert.equal(comVersao.status, 200);
+  assert.equal(comVersao.cabecalho['cache-control'], 'public, max-age=31536000, immutable');
+  assert.equal((await pedir(`/api/jogo/poe/icone/arvore/${S.tipos.frame}`)).cabecalho['cache-control'], 'public, max-age=86400');
 });
