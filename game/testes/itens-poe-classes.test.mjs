@@ -47,7 +47,8 @@ test('escala do PoE no personagem: vida 38+12/level, mana 34+6/level (50 e 40 no
   assert.deepEqual(R.statsBase('knight', 1), { maxHp: 50, maxMana: 40 });
   assert.deepEqual(R.statsBase('sorcerer', 13), { maxHp: 194, maxMana: 112 }, 'a vocação não muda a base no PoE');
   const ef = Atributos.efeitos({ str: 32, dex: 14, int: 14 });
-  assert.deepEqual([ef.vida, ef.danoFisicoPct, ef.precisao, ef.evasaoPct, ef.mana, ef.energyShieldPct, ef.velocidadeDeAtaquePct, ef.danoMagicoPct].map((v) => Math.round(v * 100) / 100), [16, 6.4, 28, 2.8, 7, 2.8, 0, 0]);
+  // (dono, 11/10: a regra do PoE — o bônus é a cada 5 pontos INTEIROS: 32 de Força → 6% de físico, 14 de Destreza/Inteligência → 2%)
+  assert.deepEqual([ef.vida, ef.danoFisicoPct, ef.precisao, ef.evasaoPct, ef.mana, ef.energyShieldPct, ef.velocidadeDeAtaquePct, ef.danoMagicoPct].map((v) => Math.round(v * 100) / 100), [16, 6, 28, 2, 7, 2, 0, 0]);
   assert.equal(Atributos.precisaoBase(13), 26);
   for (let i = 0; i < 50; i++) {
     const g = R.golpeDoJogador({ attack: 7, attackMin: 4, attackMax: 9 }, 80, 300);
