@@ -87,8 +87,11 @@ export const TAGS_DE_GOLPE = new Set([
   'alvoLento', 'alvoMutilado', 'alvoProvocado', 'alvoAtordoado', 'alvoEletrizadoOuCongelado', 'guarda', 'gemaCritica', 'alvoRaro', 'alvoUnico', 'alvoMagico', 'alvoVidaCheia', 'alvoPerto', 'canalizar', 'retaliacao',
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
 ]);
-/** As condições que dependem do ANEL em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`). */
-export const CONDICOES_DE_ANEL = { anelEsquerdo: 'ring', anelDireito: 'ring2' };
+/**
+ * As condições que dependem do ESPAÇO em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`): o anel (esquerdo/direito) e a
+ * MÃO ("quando na Mão Principal", "na Mão Secundária" — a arma da mão secundária fica no espaço do escudo; dono, 10/10: os únicos).
+ */
+export const CONDICOES_DE_ANEL = { anelEsquerdo: 'ring', anelDireito: 'ring2', naMaoPrincipal: 'weapon', naMaoSecundaria: 'shield' };
 
 const classeDe = (peca) => peca?.poe?.classe ?? null;
 const recente = (quando, agora) => quando != null && agora - quando <= RECENTE_MS;
@@ -735,7 +738,7 @@ export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
   while (f.n > 0 && agora - f.perdeu >= perdaMs) { f.n--; f.perdeu += perdaMs; }
 }
 
-/** A chave de um atributo da peça vestida em `slot`, resolvendo a condição de ANEL: no anel certo, sem a condição; no outro, null. */
+/** A chave de um atributo da peça vestida em `slot`, resolvendo a condição de ESPAÇO (anel, mão): no espaço certo, sem a condição; noutro, null. */
 export function doAnel(chave, slot) {
   const { stat, escala, conds } = partir(chave);
   const deAnel = conds.filter((c) => CONDICOES_DE_ANEL[c]);
