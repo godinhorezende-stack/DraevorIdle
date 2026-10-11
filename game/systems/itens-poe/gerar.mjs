@@ -74,7 +74,7 @@ export const magnitudeDosImplicitos = (modificadores = []) =>
   (modificadores ?? []).reduce((n, m) => n + (MAGNITUDE_DOS_IMPLICITOS.find(([re]) => re.test(m.modelo ?? m.texto ?? ''))?.[1](m) ?? 0), 0);
 /**
  * Os números do texto que são da DESCRIÇÃO do mod, não valor dele ("a cada 10 de Destreza", "por cada 500 de Mana Máxima", "por 4
- * segundos"): a magnitude não os muda (os índices dos `{i}`).
+ * segundos"): nenhuma magnitude os muda — a dos implícitos do único nem a dos explícitos da base (os índices dos `{i}`; `comMagnitude`).
  */
 const constantesDo = (modelo) => new Set([...String(modelo ?? '').matchAll(/(?:por cada|a cada) \{(\d+)\}|por \{(\d+)\} segundos?/g)].map((x) => Number(x[1] ?? x[2])));
 /** Um implícito com a magnitude `pct` — a partir do valor sem ela (`valoresSemMagnitude`), que fica guardado. */
@@ -83,9 +83,7 @@ function implicitoComMagnitude(m, pct) {
   const { valoresSemMagnitude, ...resto } = m;
   const valores = valoresSemMagnitude ?? m.valores;
   if (!pct) return valoresSemMagnitude ? { ...resto, valores, texto: escrever(m.modelo, valores) } : m;
-  const fixos = constantesDo(m.modelo);
-  const novos = comMagnitude({ ...resto, valores }, pct).valores.map((v, i) => (fixos.has(i) ? valores[i] : v));
-  return { ...resto, valores: novos, texto: escrever(m.modelo, novos), valoresSemMagnitude: valores };
+  return { ...comMagnitude({ ...resto, valores }, pct), valoresSemMagnitude: valores };
 }
 /**
  * A peça (`{ implicitos, modificadores }`) com a magnitude do único nos implícitos — os da peça e as linhas implícitas do próprio único (a
@@ -177,12 +175,29 @@ const permitidoNaBase = (c, regras) => {
   if (regras.soDano && tags.includes('Dano') && !tags.includes(regras.soDano)) return false;
   return true;
 };
-/** Os valores de um mod com a MAGNITUDE da base (% a mais), com as casas decimais da faixa. */
-function comMagnitude(mod, pct) {
+/**
+ * Os valores de um mod com a MAGNITUDE (% a mais), com as casas decimais da faixa. O número da DESCRIÇÃO do mod não muda ("Dano aumentado
+ * em 1% a cada 15 de Força" no Amuleto Simples: 2% a cada 15, não a cada 30 — `constantesDo`).
+ */
+export function comMagnitude(mod, pct) {
   if (!pct) return mod;
-  const valores = mod.valores.map((v) => { const x = Number(v) * (1 + pct / 100); return Number.isInteger(Number(v)) ? Math.round(x) : Math.round(x * 100) / 100; });
+  const fixos = constantesDo(mod.modelo);
+  const valores = mod.valores.map((v, i) => {
+    if (fixos.has(i)) return v;
+    const x = Number(v) * (1 + pct / 100);
+    return Number.isInteger(Number(v)) ? Math.round(x) : Math.round(x * 100) / 100;
+  });
   return { ...mod, valores, texto: escrever(mod.modelo, valores) };
 }
+/**
+ * A MAGNITUDE DA BASE num mod explícito (% a mais): a de todos os explícitos (Amuleto Simples e Focal, +100%) e a do lado dele (os anéis
+ * Engrenado, Geodésico, Coletor e Helicoidal: +25–50% nos prefixos ou nos sufixos). `lado`: 'prefixo' | 'sufixo' (outro: 0).
+ */
+export const magnitudeDaBase = (poe, lado) => {
+  if (lado !== 'prefixo' && lado !== 'sufixo') return 0;
+  const rb = regrasDaBase(poe?.implicitos);
+  return rb.magnitude.todos + rb.magnitude[lado];
+};
 
 /** Os tiers que PODEM sair numa peça de Item Level `ilvl`, por lado (cada item: `{ familia, lado, tier }`). */
 export function elegiveis(pool, ilvl) {
