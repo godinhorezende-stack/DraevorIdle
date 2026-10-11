@@ -609,15 +609,18 @@ function motivoNoGrafo(estado, dif, f, nomeDif) {
   return `Complete ${antes.length > 1 ? `uma de: ${antes.join(', ')}` : (antes[0] ?? 'a fase anterior')} no ${nomeDif} para abrir esta.`;
 }
 /**
- * A próxima do "Avançar sozinho" num ato do editor (grafo): a de MENOR NÚMERO do ato (a numeração do mapa — a `ordem` da fase; `FASES` está
- * nessa ordem) que está aberta e ainda não foi feita (dono, 10/10: "a numeração dos atos no mapa está bugando para avançar sozinho" →
- * "seguir a numeração"). Antes seguia só as ligações da fase atual, na ordem do arquivo: pulava números (1 → 2 → 4) e parava no beco (a
- * área lateral — a Ilha da Maré, a Gruta…) com o resto do ato aberto. A numeração tem de ser um caminho (cada número abre com os de antes
- * feitos): `atos-modelo.validarAto` avisa quando não é.
+ * A próxima do "Avançar sozinho" num ato do editor (grafo): a SEGUINTE na numeração do mapa (a `ordem` da fase; `FASES` está nessa
+ * ordem) que está aberta (dono, 10/10: "a numeração dos atos no mapa está bugando para avançar sozinho" → "seguir a numeração"). Antes
+ * seguia só as ligações da fase atual, na ordem do arquivo: pulava números (1 → 2 → 4) e parava no beco (a área lateral — a Ilha da Maré,
+ * a Gruta…) com o resto do ato aberto. A numeração tem de ser um caminho (cada número abre com os de antes feitos): `atos-modelo.validarAto`
+ * avisa quando não é.
  */
 function proximaNoGrafo(estado, dif, f) {
   if (!ATOS_DO_EDITOR.get(f.ato)) return null;
-  return FASES.find((x) => x.ato === f.ato && x.huntId !== f.huntId && !faseCompleta(estado, dif, x.huntId) && faseLiberada(estado, dif, x.huntId)) ?? null;
+  // A SEGUINTE na numeração que está aberta — feita ou não (dono, 11/10: quem repete um ato já feito também avança; antes, "a menor ainda
+  // não feita" não achava nenhuma e o avançar parava). Depois da última, nada (o chefe do ato é pelo portal).
+  for (let i = f.indice + 1; i < FASES.length && FASES[i].ato === f.ato; i++) if (!FASES[i].pular && faseLiberada(estado, dif, FASES[i].huntId)) return faseDe(FASES[i].huntId);
+  return null;
 }
 
 /** O boss é de ato: sem recarga (catálogo e `semEspera`), igual aos legados. */

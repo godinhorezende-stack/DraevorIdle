@@ -58,3 +58,54 @@ test('a validação do ato avisa a fase que só abre depois de uma de número ma
   ato.fases = [fase('f-a', 1), fase('f-b', 2), fase('f-c', 3)];
   assert.deepEqual(Modelo.validarAto(ato).filter((p) => /só abre depois/.test(p.mensagem)), []);
 });
+
+// ---- (Dono, 11/10: "o Avançar sozinho ainda não está funcionando, nem na party nem sozinho".) Quem repetia um ato já feito nunca
+// avançava: a próxima era "a menor ainda não feita", e num ato feito não sobra nenhuma. Agora: a SEGUINTE na numeração (feita ou não),
+// quando a fase é concluída NESTA rodada — completou agora, a instância limpou (os 100%) ou o botão acabou de ser ligado.
+const Cacadas = await import('../systems/cacadas.mjs');
+const Instancia = await import('../systems/hunt/instancia.mjs');
+const { PERSONAGEM } = await import('./apoio.mjs');
+const doAto1 = () => Campanha.FASES.filter((f) => f.ato === 1);
+function naFase(numero, { completas = [], modo = 'seguir' } = {}) {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 90, campanha: {} });
+  e.campanha = { [Campanha.DIFICULDADES[0]]: { completas: [...completas] } };
+  e.hp = e.maxHp = 1e9;
+  Cacadas.definirAoCompletarFase(e, { value: modo });
+  const r = Cacadas.entrar(e, { huntId: doAto1()[numero - 1].huntId, mode: 'auto', dificuldade: Campanha.DIFICULDADES[0] });
+  assert.equal(r.ok, true, r.erro);
+  return e;
+}
+function limpar(e) {
+  let agora = Date.now();
+  for (const m of e.hunt.monstros) m.hp = 0;
+  for (let i = 0; i < 8; i++) Cacadas.tique(e, PERSONAGEM, (agora += 250));
+}
+
+test('ato já feito: repetindo a fase 3 com "Avançar sozinho", avança para a 4 (feita ou não) quando a instância limpa — não antes', { skip: soNoOficial('os atos do PoE') }, () => {
+  const e = naFase(3, { completas: doAto1().map((f) => f.huntId) });
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'ao entrar numa fase já feita, não pula (senão atravessaria o ato inteiro, um tique por fase)');
+  limpar(e);
+  assert.equal(Instancia.daSala(e.hunt)?.status, 'limpa');
+  assert.equal(Cacadas.faseParaSeguir(e)?.huntId, doAto1()[3].huntId, 'a seguinte na numeração');
+});
+
+test('ligar o "Avançar sozinho" numa fase completa avança na hora; na última fase do ato fica (o chefe é pelo portal); "Ficar na fase" fica', { skip: soNoOficial('os atos do PoE') }, () => {
+  const tudo = doAto1().map((f) => f.huntId);
+  const e = naFase(5, { completas: tudo, modo: 'repetir' });
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'em "Ficar na fase"');
+  limpar(e);
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'limpou, mas está em "Ficar na fase": repete');
+  Cacadas.definirAoCompletarFase(e, { value: 'seguir' });
+  assert.equal(Cacadas.faseParaSeguir(e)?.huntId, doAto1()[5].huntId, 'o clique avança na hora');
+  const ultima = naFase(doAto1().length, { completas: tudo, modo: 'repetir' });
+  Cacadas.definirAoCompletarFase(ultima, { value: 'seguir' });
+  assert.equal(Cacadas.faseParaSeguir(ultima), null);
+});
+
+test('do zero: a fase que completa agora avança logo (o chefe da fase morreu), sem esperar ligar nada', { skip: soNoOficial('os atos do PoE') }, () => {
+  const e = naFase(1);
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'incompleta: fica');
+  limpar(e);
+  assert.equal(Campanha.faseCompleta(e, Campanha.DIFICULDADES[0], doAto1()[0].huntId), true);
+  assert.equal(Cacadas.faseParaSeguir(e)?.huntId, doAto1()[1].huntId);
+});
