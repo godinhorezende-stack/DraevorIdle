@@ -58,6 +58,11 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   'Oferenda de Carne': 'Oferenda Carnal', 'Oferenda de Espíritos': 'Oferenda Espiritual', 'Oferenda Espírito': 'Oferenda Espiritual',
   'Golens de Chamas': 'Convocar Golem Flamejante', 'Golens de Gelo': 'Convocar Golem Glacial', 'Golens de Raio': 'Convocar Golem Relampejante',
   'Golens de Pedra': 'Convocar Golem Pedregulho', 'Golens de Caos': 'Convocar Golem Caótico', 'Golens da Carniça': 'Convocar Golem da Carniça',
+  // (10/10, os únicos: o nome do suporte no texto do mod × o da gema na coleção.)
+  'Ataques Rápidos': 'Ataques Acelerados', 'Golpe Múltiplo': 'Ataques Múltiplos', 'Golpe Propagador': 'Propagar Dano',
+  'Resfriamento Ósseo': 'Suporte Resfriamento Ósseo', 'Carga de Tolerância ao Atordoar em Corpo a Corpo': 'Carga de Tolerância ao Atordoar Corpo a Corpo',
+  'Efeito em Área Aumentado': 'Área de Efeito Aumentada', 'Dano de Caos Adicionado': 'Dano Adicional de Caos', 'Gelo para Fogo': 'Gelo a Fogo',
+  'Rajada Maior': 'Grande Rajada', 'Eco Mágico Maior': 'Eco Mágico Maior (Reforço)', Contaminar: 'Profanar',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 
@@ -102,6 +107,19 @@ export function traduzirParte(parte, valores, opcoes = {}) {
       }
     }
   }
+  // "{n}% de aumento do X" / "{n}% de redução da X" (o poedb em português escreve das duas formas): a forma das regras ("X aumentado em
+  // {n}%"), só quando nenhuma regra casou o texto como está.
+  if (!opcoes?.semForma) {
+    const f = /^\{(\d+)\}% de (aumento|redução) (?:d[aoe]s?|na|no|em) (.+)$/.exec(String(parte).trim());
+    if (f) {
+      const alvo = f[3].charAt(0).toUpperCase() + f[3].slice(1);
+      const [m1, m2] = f[2] === 'aumento' ? ['aumentado', 'aumentada'] : ['reduzido', 'reduzida'];
+      for (const forma of [`${alvo} ${m1} em {${f[1]}}%`, `${alvo} ${m2} em {${f[1]}}%`]) {
+        const r = traduzirParte(forma, valores, { ...opcoes, semForma: true });
+        if (r.estado !== 'registrado') return r;
+      }
+    }
+  }
   // Sem regra: o atributo automático do próprio texto (nada fica de fora). O valor é o número da parte (ou a lista, se forem vários).
   const nums = [...parte.matchAll(/\{(\d+)\}/g)].map((m) => Number(valores[Number(m[1])]));
   return { estado: 'registrado', efeitos: [{ stat: idAutomatico(parte), valor: nums.length === 1 ? nums[0] : nums.length ? nums : 1 }], nota: null, regra: null };
@@ -142,18 +160,21 @@ const SUFIXOS_DE_CONDICAO = [
   [/^(.+?),? durante (?:qualquer|um) Efeito de Frasco$/, 'duranteFrasco'],
   [/^(.+?),? enquanto (?:se move|se movendo|movendo-se)$/, 'movendo'],
   [/^(.+?),? enquanto parado$/, 'parado'],
-  [/^(.+?),? enquanto (?:estiver )?Sangrando$/, 'sangrandoProprio'],
-  [/^(.+?),? enquanto (?:estiver )?Envenenado$/, 'envenenadoProprio'],
-  [/^(.+?),? enquanto (?:estiver )?Inc[eê]?n?diado$/, 'ardendo'],
-  [/^(.+?),? enquanto (?:estiver )?Congelado$/, 'congeladoProprio'],
-  [/^(.+?),? enquanto (?:estiver )?Eletrizado$/, 'eletrizadoProprio'],
-  [/^(.+?),? enquanto (?:estiver )?Resfriado$/, 'resfriadoProprio'],
-  [/^(.+?),? enquanto (?:estiver )?Amaldiçoado$/, 'amaldicoadoProprio'],
+  [/^(.+?),? enquanto (?:você )?(?:estiver )?Sangrando$/, 'sangrandoProprio'],
+  [/^(.+?),? enquanto (?:você )?(?:estiver )?Envenenado$/, 'envenenadoProprio'],
+  [/^(.+?),? enquanto (?:você )?(?:estiver )?Inc[eê]?n?diado$/, 'ardendo'],
+  [/^(.+?),? enquanto (?:você )?(?:estiver )?Congelado$/, 'congeladoProprio'],
+  [/^(.+?),? enquanto (?:você )?(?:estiver )?Eletrizado$/, 'eletrizadoProprio'],
+  [/^(.+?),? enquanto (?:você )?(?:estiver )?Resfriado$/, 'resfriadoProprio'],
+  [/^(.+?),? enquanto (?:você )?(?:estiver )?Amaldiçoado$/, 'amaldicoadoProprio'],
   [/^(.+?),? enquanto não (?:estiver )?Incendiado, Congelado ou Eletrizado$/, 'semAfeccaoElemental'],
   [/^(.+?),? enquanto (?:carregando|empunhando|empunhar|segurando) um Escudo$/, 'comEscudo'],
   [/^(.+?),? enquanto (?:em|estiver em) Dupla Empunhadura$/, 'duasArmas'],
   [/^(.+?),? enquanto (?:carregando|empunhando|empunhar) uma Arma de Duas Mãos$/, 'duasMaos'],
   [/^(.+?),? enquanto um Inimigo Raro ou Único estiver Próximo$/, 'raroOuUnicoPerto'],
+  // (A MÃO em que a arma está — resolvida peça a peça, como o anel: `CONDICOES_DE_ANEL`.)
+  [/^(.+?),? (?:(?:quando|enquanto) (?:estiver )?)?(?:na|com a) [Mm]ão [Pp]rincipal$/, 'naMaoPrincipal'],
+  [/^(.+?),? (?:(?:quando|enquanto) (?:estiver )?)?(?:na|com a) [Mm]ão [Ss]ecundária$/, 'naMaoSecundaria'],
 ];
 const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? enquanto (?:carregando|empunhando|empunhar|segurando) (?:um|uma) (Cajado|Arco|Varinha|Adaga|Garra|Espada|Machado|Maça|Cetro)$/, (m) => ARMA[m[2]]],
@@ -188,8 +209,27 @@ export const atributoTemEfeito = (stat) => temEfeito({ stat });
 
 const PIOR = ['lembrete', 'equivalente', 'aproximado', 'novo', 'inerte', 'registrado'];
 /** Traduz um mod inteiro (`{ modelo, valores }`): híbridos "A / B" viram as partes; o estado do mod é o PIOR das partes. */
+/**
+ * As PARTES de um modelo. O " / " separa os mods híbridos — e também a frase que o poedb quebrou em duas linhas ("Inimigos com Sangramento
+ * Explodem quando você matá-los, / causando {0}% de suas Vidas Máximas com Dano Físico"): a continuação (a parte seguinte começa com
+ * minúscula, ou a de antes termina em vírgula ou numa palavra de ligação) volta a ser UMA frase, senão nenhuma metade casa regra (dono,
+ * 10/10: "resolver todos os modificadores dos únicos"). As linhas internas do poedb ("local use skill on hit % [{0}]") ficam sozinhas.
+ */
+const INTERNA = /\]$|^(?:or|veiled |local |base |map |display |unique |use |summon |shield |ground |consecrate |desecrate |animate )/;
+const LIGA_NO_FIM = /(?:,|\b(?:e|de|da|do|das|dos|em|com|por|para|que|se|quando|ao|aos|à|às|um|uma|contra|igual|como|causam|causa|enquanto|caso|até))$/i;
+export function partesDoModelo(modelo) {
+  const saida = [];
+  for (const p of String(modelo ?? '').split(' / ')) {
+    const antes = saida.length ? saida[saida.length - 1] : null;
+    const continua = antes != null && !INTERNA.test(p.trim()) && !INTERNA.test(antes.trim()) && (/^[a-zà-ú]/.test(p.trim()) || LIGA_NO_FIM.test(antes.trim()));
+    if (continua) saida[saida.length - 1] = `${antes.trim()} ${p.trim()}`;
+    else saida.push(p);
+  }
+  return saida;
+}
+
 export function traduzirMod(mod, opcoes) {
-  const partes = String(mod?.modelo ?? '').split(' / ');
+  const partes = partesDoModelo(mod?.modelo);
   const lista = partes.map((p) => ({ parte: p, ...traduzirParte(p, mod?.valores ?? [], opcoes) }));
   const estado = lista.reduce((pior, x) => (PIOR.indexOf(x.estado) > PIOR.indexOf(pior) ? x.estado : pior), 'lembrete');
   return { estado, partes: lista, efeitos: lista.flatMap((x) => x.efeitos) };

@@ -10,6 +10,7 @@
 // balão da peça mostra. Só leitura; a conta é feita uma vez por processo (o catálogo e as regras só mudam com o servidor reiniciado).
 import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { traduzirParte } from '../systems/itens-poe/traduzir.mjs';
+import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 import * as Frascos from '../systems/itens-poe/frascos.mjs';
 
 /** As classes que não entram no jogo (os mods delas nunca caem). */
@@ -54,7 +55,7 @@ function partesDe(classe, m) {
     const par = Frascos.parametros({ poe: { classe, base: `${classe}/x`, atributos: {}, implicitos: [], prefixos: [{ modelo: m.modelo, valores }], sufixos: [] } });
     return par.linhas.map((l) => ({ texto: l.texto, estado: DO_FRASCO[l.estado] ?? l.estado, nota: null, efeitos: [] }));
   }
-  return String(m.modelo ?? '').split(' / ').filter(Boolean).map((p) => {
+  return Traduzir.partesDoModelo(m.modelo).filter(Boolean).map((p) => {
     const r = traduzirParte(p, valores);
     return { texto: p, estado: r.estado, nota: r.nota ?? null, efeitos: r.efeitos.map((e) => e.stat) };
   });
