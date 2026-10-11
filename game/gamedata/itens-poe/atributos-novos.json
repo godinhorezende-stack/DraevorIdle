@@ -1633,7 +1633,7 @@
       "nome": "Magnitude dos implícitos (do único)",
       "unidade": "%",
       "combate": true,
-      "efeito": "itens-poe/gerar e itens-poe/moedas (os implícitos × 1 + isto: Olhos do Lobo Grandioso)"
+      "efeito": "itens-poe/gerar e itens-poe/moedas (os implícitos × 1 + isto: Olhos do Lobo Grandioso, Corda da Servidão, Nebulis)"
     },
     "so_dano_de": {
       "nome": "Só gera mods de dano de um tipo",

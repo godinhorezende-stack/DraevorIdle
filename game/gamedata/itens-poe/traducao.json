@@ -5492,6 +5492,30 @@
       "_nova": true
     },
     {
+      "padrao": "^Magnitudes dos Modificadores Implícitos são triplicadas$",
+      "efeitos": [
+        {
+          "stat": "magnitude_implicitos",
+          "valor": "200"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra do único: os implícitos da peça saem com o valor triplicado (Corda da Servidão)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitudes dos Implícitos dos Modificadores aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "magnitude_implicitos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra do único: os implícitos da peça saem com o valor aumentado (Nebulis)",
+      "_nova": true
+    },
+    {
       "padrao": "^Não gera modificadores de dano que não sejam (?:de )?(frio|fogo|elétrico|físico|caos)$",
       "efeitos": [
         {

@@ -219,7 +219,10 @@ const divino = ({ p, rng }) => {
   if (ehUnico(p)) {
     const u = cadastroDoUnico(p);
     if (!u) return erro('O cadastro deste único não está no catálogo.');
-    p.modificadores = u.modificadores.map((m) => ({ tipo: m.tipo, ...Gerar.rolarTexto(m, rng) }));
+    // (A linha que a regra do único troca — o "[One to three…]" do Nebulis — não volta; a peça de antes da regra fica com a dela. E a
+    // magnitude nova do Nebulis — 60–120% — vale nos implícitos.)
+    p.modificadores = Gerar.modificadoresDoUnico(u, rng, new Set((p.modificadores ?? []).map((m) => m.modelo)));
+    Object.assign(p, Gerar.comMagnitudeNosImplicitos(p));
     return { ok: true, notice: `${p.nome}: os valores foram sorteados de novo.` };
   }
   const ms = mods(p);
@@ -229,10 +232,19 @@ const divino = ({ p, rng }) => {
 };
 const abencoar = ({ p, rng }) => {
   const base = Gerar.acharBase(CAT(), p.base)?.base;
-  // Implícito de pool (Eldritch): os valores saem de novo na faixa do tier dele — ele não volta a ser o da base.
-  if ((p.implicitos ?? []).some((m) => m.origem)) {
-    for (const m of p.implicitos) if (m.origem) rerolarValores(p, m, rng);
+  // (A magnitude dos implícitos do único — Olhos ×2, Corda ×3, Nebulis +60–120% — vale nos valores novos também.)
+  const pronto = () => {
+    if (ehUnico(p)) Object.assign(p, Gerar.comMagnitudeNosImplicitos(p));
     return { ok: true, notice: `Implícito: ${p.implicitos.map((i) => i.texto).join('; ')}.` };
+  };
+  // Implícito de pool (Eldritch; os de Síntese do Nebulis): os valores saem de novo na faixa do tier dele — ele não volta a ser o da base.
+  if ((p.implicitos ?? []).some((m) => m.origem)) {
+    for (const m of p.implicitos) {
+      if (!m.origem) continue;
+      delete m.valoresSemMagnitude;
+      rerolarValores(p, m, rng);
+    }
+    return pronto();
   }
   if (!base?.implicitos?.length && !base?.implicitosSorteados) return erro('A base desta peça não tem implícito.');
   // "Modificadores Implícitos Não Podem ser Mudados" (a base): o Orbe Abençoado não vale nela, como no PoE.
@@ -247,9 +259,7 @@ const abencoar = ({ p, rng }) => {
       return { ...resto, ...Gerar.rolarTexto(t, rng) };
     });
   } else p.implicitos = base.implicitos.map((t) => Gerar.rolarTexto(t, rng));
-  // (Os Olhos do Lobo Grandioso dobram os implícitos: os valores novos também.)
-  if (ehUnico(p)) p.implicitos = Gerar.comMagnitudeDosImplicitos(p.implicitos, p.modificadores);
-  return { ok: true, notice: `Implícito: ${p.implicitos.map((i) => i.texto).join('; ')}.` };
+  return pronto();
 };
 const sagrado = ({ p, rng }) => {
   const base = Gerar.acharBase(CAT(), p.base)?.base;
@@ -340,8 +350,8 @@ const vaal = (ctx) => {
   const corrompido = Gerar.regrasDaBase(p.implicitos).implicitosFixos ? null : doPool(p, 'corrupted', rng, { lados: ['implicito'] });
   if (!corrompido) return { ok: true, notice: `${p.nome}: corrompida — nada mais mudou.` };
   p.implicitos = [{ ...corrompido.mod, corrompido: true }];
-  // (Nos Olhos do Lobo Grandioso o implícito corrompido também sai dobrado, como no PoE.)
-  if (ehUnico(p)) p.implicitos = Gerar.comMagnitudeDosImplicitos(p.implicitos, p.modificadores);
+  // (Nos únicos com magnitude dos implícitos — Olhos, Nebulis — o implícito corrompido também sai multiplicado, como no PoE.)
+  if (ehUnico(p)) Object.assign(p, Gerar.comMagnitudeNosImplicitos(p));
   return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${p.implicitos[0].texto}.` };
 };
 
