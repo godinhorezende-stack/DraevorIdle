@@ -371,24 +371,56 @@ export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t 
 // (`Passivas.efeitos(estado).adds`) — daqui importar a árvore fecharia um ciclo de imports.
 let leitorDaArvore = null;
 export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
-export function extrasDaGemaPoe(estado, peca, def) {
-  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade']);
+// (A COR da gema — o atributo dela: "+1 ao Nível das Gemas de Força Encaixadas" vale nas vermelhas; e a gema pelo NOME — "+1 ao Nível de
+// todas as Gemas Evocar Zumbi" é `gem_level@gema:evocar-zumbi`. Dono, 11/10: os únicos.)
+const ATRIBUTO_DA_COR = [[/verm/i, 'forca'], [/verd/i, 'destreza'], [/azul/i, 'inteligencia']];
+const ENCAIXE_DA_COR = { R: 'encaixeVermelho', G: 'encaixeVerde', B: 'encaixeAzul', W: 'encaixeBranco' };
+export function extrasDaGemaPoe(estado, peca, def, indice = null) {
+  const cor = ATRIBUTO_DA_COR.find(([re]) => re.test(def?.poe?.cor ?? ''))?.[1];
+  // (+ a cor do ENCAIXE em que a gema está: "Gemas Encaixadas nos Encaixes Vermelhos têm +N de Nível" — `gem_level_local@encaixeVermelho`.)
+  const s = indice != null && peca ? soquetesDe(peca) : null;
+  const doEncaixe = ENCAIXE_DA_COR[s?.cores?.[indice]];
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
+  // A ESCALA (antes ignorada — "+1 ao Nível das Gemas de Habilidade Encaixadas por cada 25 Níveis do Jogador" dava sempre +1): o nível do
+  // personagem, as gemas encaixadas na peça ("-1 … por Gema Encaixada") e as outras escalas do PoE; com o teto.
+  const fator = (escala) => {
+    if (!escala) return 1;
+    if (escala === 'gemasNaPeca') return (peca && soquetesDe(peca)?.gemas.filter(Boolean).length) || 0;
+    return ModsPoe.fatorDaEscala(estado, null, null, escala);
+  };
   const vale = (chave, base) => {
     const { stat, conds } = ModsPoe.partir(chave);
     return stat === base && conds.every((c) => tags.has(c));
   };
-  const somar = (af, base) => Object.entries(af ?? {}).reduce((t, [k, v]) => t + (typeof v === 'number' && vale(k, base) ? v : 0), 0);
+  const somar = (af, base) => Object.entries(af ?? {}).reduce((t, [k, v]) => {
+    if (typeof v !== 'number' || !vale(k, base)) return t;
+    const { escala, teto } = ModsPoe.partir(k);
+    return t + ModsPoe.comTeto(v, fator(escala), teto);
+  }, 0);
   let nivel = somar(peca?.poe?.af, 'gem_level_local');
   let qualidade = somar(peca?.poe?.af, 'gem_quality_local');
   for (const p of Object.values(estado?.equipment ?? {})) {
     if (!p?.poe?.af) continue;
-    nivel += Object.entries(p.poe.af).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_level') ? v : 0), 0);
-    qualidade += Object.entries(p.poe.af).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_quality') ? v : 0), 0);
+    const condicionais = Object.fromEntries(Object.entries(p.poe.af).filter(([k]) => ModsPoe.ehCondicional(k)));
+    nivel += somar(condicionais, 'gem_level');
+    qualidade += somar(condicionais, 'gem_quality');
   }
   // (+ o da árvore: "+N ao Nível de todas as Gemas de Habilidade Maldição" — `gem_level@maldicao` nas passivas alocadas)
   const daArvore = estado && leitorDaArvore ? leitorDaArvore(estado) ?? {} : {};
-  nivel += Object.entries(daArvore).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_level') ? v : 0), 0);
-  return { nivel: Math.round(nivel), qualidade: Math.round(qualidade) };
+  nivel += somar(Object.fromEntries(Object.entries(daArvore).filter(([k]) => ModsPoe.ehCondicional(k))), 'gem_level');
+  // (11/10) A peça onde a gema está: "Gemas Encaixadas têm Eficácia da Reserva aumentada em X%" (`eficiencia_reserva_local`, com a tag da
+  // gema — `@maldicao`) e "Gemas Encaixadas Custam e Reservam Vida ao invés de Mana" (`custo_vida_local`).
+  const eficienciaReserva = somar(peca?.poe?.af, 'eficiencia_reserva_local');
+  const custoEmVida = somar(peca?.poe?.af, 'custo_vida_local') > 0;
+  // (+ "Habilidades Encaixadas causam Dano Dobrado" — `mais_dano_local`, o "mais" das gemas da peça — e "Gemas encaixadas custam -50% de
+  // mana" — `custo_local`, o "mais/menos" do custo.)
+  const maisDano = somar(peca?.poe?.af, 'mais_dano_local');
+  const custo = somar(peca?.poe?.af, 'custo_local');
+  // (+ "Habilidades de Clamor Encaixadas têm +N Usos de Recarga" — `usos_local@clamor`; "Projéteis Mágicos Encaixados têm +N segundos de
+  // Recarga", "Habilidades de Arco Encaixadas ganham N segundos de Recarga" — `recarga_local@<tags>`, em segundos.)
+  const usos = somar(peca?.poe?.af, 'usos_local');
+  const recarga = somar(peca?.poe?.af, 'recarga_local');
+  return { nivel: Math.round(nivel), qualidade: Math.round(qualidade), ...(eficienciaReserva ? { eficienciaReserva } : {}), ...(custoEmVida ? { custoEmVida } : {}), ...(maisDano ? { maisDano } : {}), ...(custo ? { custo } : {}), ...(usos ? { usos } : {}), ...(recarga ? { recarga } : {}) };
 }
 
 // ---------------------------------------------------------------- sockets
@@ -513,7 +545,7 @@ export function skillsAtivas(estado) {
       const supports = noGrupo.filter((x) => x.def.tipo === 'support');
       for (const x of noGrupo.filter((y) => y.def.tipo === 'ativa')) {
         const anterior = saida.get(x.def.acao);
-        const doPoe = extrasDaGemaPoe(estado, peca, x.def);
+        const doPoe = extrasDaGemaPoe(estado, peca, x.def, x.i);
         if (anterior && anterior.nivel >= x.g.nivel + bonus + doPoe.nivel) continue;
         saida.set(x.def.acao, {
           acao: x.def.acao,
@@ -529,9 +561,10 @@ export function skillsAtivas(estado) {
           supports: unicas(
             supports
               .filter((sp) => compativel(sp.def.suporte, x.def.tags))
-              .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
+              .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def, sp.i); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
           ),
           onde: { slot, indice: x.i },
+          ...(doPoe.eficienciaReserva || doPoe.custoEmVida || doPoe.maisDano || doPoe.custo || doPoe.usos || doPoe.recarga ? { local: { eficienciaReserva: doPoe.eficienciaReserva ?? 0, custoEmVida: !!doPoe.custoEmVida, maisDano: doPoe.maisDano ?? 0, custo: doPoe.custo ?? 0, usos: doPoe.usos ?? 0, recarga: doPoe.recarga ?? 0 } } : {}),
         });
       }
     }
@@ -611,6 +644,29 @@ export function gruposComGatilho(estado) {
   }
   return saida;
 }
+/**
+ * As gemas ATIVAS encaixadas numa peça (qualquer grupo de ligação), com o filtro do gatilho da peça ("Ativa uma Magia ELEMENTAL Encaixada ao
+ * Bloquear" — dono, 11/10: os únicos): `magia` (Magia sem Ataque), `elemental`, `fogo`/`gelo`/`raio`, `maldicao`, `arco`, `clamor`, `lacaio`.
+ * Devolve as ações (`def.acao`).
+ */
+const FILTROS_DO_GATILHO = {
+  magia: (t) => t.includes('poe:Magia') && !t.includes('poe:Ataque'),
+  elemental: (t) => FILTROS_DO_GATILHO.magia(t) && ['poe:Fogo', 'poe:Gelo', 'poe:Raio'].some((x) => t.includes(x)),
+  fogo: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Fogo'),
+  gelo: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Gelo'),
+  raio: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Raio'),
+  maldicao: (t) => t.includes('poe:Maldição'),
+  arco: (t) => t.includes('poe:Arco'),
+  clamor: (t) => t.includes('poe:Clamor'),
+  lacaio: (t) => FILTROS_DO_GATILHO.magia(t) && t.includes('poe:Lacaio'),
+};
+export const FILTROS_DE_GATILHO_LOCAL = Object.keys(FILTROS_DO_GATILHO);
+export function encaixadasNaPeca(peca, filtro = 'magia') {
+  const s = peca && soquetesDe(peca);
+  const f = FILTROS_DO_GATILHO[filtro];
+  if (!s || !f) return [];
+  return s.gemas.map((g) => g && DEFS.get(Number(g.id))).filter((d) => d?.tipo === 'ativa' && f(d.tags ?? [])).map((d) => d.acao);
+}
 /** O suporte de gatilho que ativa esta magia (o nome), ou null: a magia ligada a ele não se conjura à mão. */
 export function ativadaPor(estado, acao) {
   return gruposComGatilho(estado).find((g) => g.magias.includes(acao))?.nome ?? null;
@@ -667,6 +723,13 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   }
   // "+N ao Nível das Gemas Suportadas" (Fortalecer, do PoE): o nível que vale (dano, custo, tempos da tabela).
   if (e.nivelExtra) e.nivel += e.nivelExtra;
+  // (11/10) O que a PEÇA onde a gema está dá a ela: a Eficácia da Reserva local e o custo/reserva em Vida (`extrasDaGemaPoe`).
+  if (a.local?.eficienciaReserva) e.eficienciaReservaLocal = a.local.eficienciaReserva;
+  if (a.local?.custoEmVida) e.custoEmVida = 1;
+  if (a.local?.maisDano) e.fatorDeDano *= Math.max(0, 1 + a.local.maisDano / 100);
+  if (a.local?.usos) e.usosExtra = a.local.usos;
+  if (a.local?.recarga) e.recargaExtraMs = a.local.recarga * 1000;
+  if (a.local?.custo) e.custoPct = ((1 + e.custoPct / 100) * Math.max(0, 1 + a.local.custo / 100) - 1) * 100;
   // O lado da explosão (a tela mostra "explode 3×3"): o mesmo número que o motor usa.
   if (e.explosaoPct || e.segundaExplosaoPct) e.explosaoLado = CONFIG.golpesSecundarios?.explosao?.lado ?? 3;
   return e;

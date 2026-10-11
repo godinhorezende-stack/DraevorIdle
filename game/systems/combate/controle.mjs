@@ -48,7 +48,7 @@ function sortearEfeito(pesos, rng) {
  * Um golpe do `bicho` acertou o jogador: sorteia se ele põe controle e qual. `ficha`: a do jogador (`resistenciaAControle`, em %).
  * Devolve o nome do efeito posto ou null (sem sorte, mob comum, jogador imune, já preso ou resistência de 100%).
  */
-export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.random, { semAfeccaoElemental = false } = {}) {
+export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.random, { semAfeccaoElemental = false, semAtordoamento = false } = {}) {
   const classe = classeDoMob(bicho, !!hunt?.isBoss);
   const cfg = classe ? CONFIG.mobs[classe] : null;
   if (!cfg) return null;
@@ -57,6 +57,10 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
   // (PoE: a magia suprimida com "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" não Congela nem Resfria — o
   // Atordoamento não é afecção.)
   if (semAfeccaoElemental && (efeito === 'congelado' || efeito === 'lento')) return null;
+  // ("Não pode ser Atordoado por Dano Mágico Suprimido".)
+  if (semAtordoamento && efeito === 'atordoado') return null;
+  // (PoE: "Inimigos Amaldiçoados não podem infligir Afecções Elementais em Você" — o Congelamento e o Resfriamento do monstro amaldiçoado.)
+  if ((efeito === 'congelado' || efeito === 'lento') && Number(ficha?.afPoe?.amaldicoados_sem_afeccao_elemental) > 0 && ModsPoe.amaldicoadoPorVoce(bicho, agora)) return null;
   // PoE (`itens-poe/mods-poe.mjs → controleNoJogador`): evitar e imunidade, a duração em você, a Recuperação de Atordoamentos, o efeito do
   // Resfriamento em você e o "Ponto de Atordoamento reduzido" (mais chance de ser atordoado). Sem o PoE, tudo 1.
   const poe = ModsPoe.controleNoJogador(ficha, efeito, rng, hunt);
@@ -77,5 +81,8 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
     c[efeito] = { ate: agora + duracao };
     c.imuneAte = agora + duracao + CONFIG.jogador.imunidadeMs;
   }
+  // (PoE: "Você não pode ser Congelado / Resfriado durante N segundos depois de ter sido" — `ModsPoe.imunidadeApos`.)
+  const nome = { congelado: 'congelamento', lento: 'resfriamento' }[efeito];
+  if (nome) ModsPoe.imunidadeApos(hunt, ficha, nome, agora);
   return efeito;
 }

@@ -11,7 +11,7 @@
 // Atributo CONDICIONAL (`dmg_inc@corpo`, `atk_speed@comEscudo` — `mods-poe.mjs`): vale o estado do atributo-base, se as condições existem.
 import { readFileSync } from 'node:fs';
 import { FICHAS } from '../afixos.mjs';
-import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, dinamicoValido, escalaValida, slugDoNome, gemaConhecida } from './condicoes-poe.mjs';
+import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, SO_NO_CRITICO, dinamicoValido, escalaValida, slugDoNome, gemaConhecida } from './condicoes-poe.mjs';
 
 export const TABELA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao.json', import.meta.url), 'utf8'));
 export const NOVOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/atributos-novos.json', import.meta.url), 'utf8')).atributos;
@@ -54,6 +54,7 @@ function valorDo(expr, indices, valores) {
  */
 export const APELIDOS_DE_GEMA = Object.freeze({
   'Pureza dos Elementos': 'Pureza Elementar', 'Pureza do Fogo': 'Pureza Ardente', 'Pureza do Gelo': 'Pureza Glacial', 'Pureza do Raio': 'Pureza Elétrica',
+  'Chuva de Flexas': 'Chuva de Flechas',
   'Arauto da Agonia': 'Arauto Agonizante', 'Arauto do Trovão': 'Arauto Trovejante', 'Arauto do Gelo': 'Arauto Glacial', 'Arauto das Cinzas': 'Arauto Flamejante',
   'Oferenda de Carne': 'Oferenda Carnal', 'Oferenda de Espíritos': 'Oferenda Espiritual', 'Oferenda Espírito': 'Oferenda Espiritual',
   'Golens de Chamas': 'Convocar Golem Flamejante', 'Golens de Gelo': 'Convocar Golem Glacial', 'Golens de Raio': 'Convocar Golem Relampejante',
@@ -63,6 +64,7 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   'Resfriamento Ósseo': 'Suporte Resfriamento Ósseo', 'Carga de Tolerância ao Atordoar em Corpo a Corpo': 'Carga de Tolerância ao Atordoar Corpo a Corpo',
   'Efeito em Área Aumentado': 'Área de Efeito Aumentada', 'Dano de Caos Adicionado': 'Dano Adicional de Caos', 'Gelo para Fogo': 'Gelo a Fogo',
   'Rajada Maior': 'Grande Rajada', 'Eco Mágico Maior': 'Eco Mágico Maior (Reforço)', Contaminar: 'Profanar',
+  'Erguer Zumbi': 'Evocar Zumbi', 'Erguer Espectro': 'Evocar Espectro',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 
@@ -201,7 +203,9 @@ function temEfeito(e) {
   if (!(FICHAS[stat] || NOVOS[stat]?.combate || dinamicoValido(stat))) return false;
   if (!escalaValida(escala)) return false;
   // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo`)
-  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvoVenenos:\d+$/.test(c));
+  // (+ `gema:<nome>` — a gema pelo nome, no nível das gemas: `skills/gemas.extrasDaGemaPoe`)
+  // (+ `critico` — só no golpe crítico, para os atributos que o acerto lê assim: `SO_NO_CRITICO`)
+  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^gema:[\w-]+$/.test(c) || (c === 'critico' && SO_NO_CRITICO.has(stat)));
 }
 
 /** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */

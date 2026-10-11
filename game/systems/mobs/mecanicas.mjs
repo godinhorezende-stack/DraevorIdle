@@ -187,6 +187,15 @@ export function tique(estado, hunt, personagem, eventos) {
   const menosDegen = Math.max(0, 1 - (Number(afPoe?.dano_degen_recebido_menos) || 0) / 100) * Math.max(0, 1 - noInicio / 100);
   // (PoE, "Inafetado por Sangramento" — "enquanto Drenando", o Carrasco: o sangramento corre em você, mas não fere.)
   const inafetado = (tipo) => tipo === 'sangramento' && Number(afPoe?.inafetado_sangramento) > 0;
-  Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome, tipo) => (inafetado(tipo) ? 0 : ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, Math.round(valor * menosDegen), elemento, eventos, nome)), () => estado.hp > 0);
+  // (PoE: "Você sofre Dano de Caos ao invés de Dano Físico do Sangramento"; "Sofrer Dano de Caos Degenerativo te cura ao invés enquanto
+  // Drenando Vida" — o pulso de Caos vira cura enquanto um dreno de vida corre.)
+  const doTipo = (tipo, elemento) => (tipo === 'sangramento' && Number(afPoe?.sangramento_em_caos) > 0 ? 'chaos' : elemento);
+  const cura = (elemento) => elemento === 'chaos' && Number(afPoe?.caos_degen_cura_drenando) > 0 && (hunt.roubos ?? []).some((x) => x.recurso === 'vida' && x.restante > 0);
+  Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome, tipo) => {
+    if (inafetado(tipo)) return 0;
+    const el = doTipo(tipo, elemento);
+    if (cura(el)) { if (!ModsPoe.vidaSoPeloDreno(afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + Math.round(valor * menosDegen)); return 0; }
+    return ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, Math.round(valor * menosDegen), el, eventos, nome);
+  }, () => estado.hp > 0);
 }
 

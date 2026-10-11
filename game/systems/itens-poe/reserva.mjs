@@ -13,7 +13,7 @@
 //   BLASFÊMIA: a maldição ligada à Blasfêmia vira AURA — liga reservando a "Sobreposição de Reserva" do suporte (35%) em vez de custar, e
 //              fica ligada; as marcas dela têm o "menos Efeito" do suporte. A Eficácia da Reserva de "Aura de Maldição" vale para ela; a de
 //              "Postura", para as gemas com a tag Postura. (A dos "suportados por Feiticeiro" não tem efeito: esse suporte não está no jogo.)
-import { compilada } from './gemas-poe.mjs';
+import { compilada, doSlug } from './gemas-poe.mjs';
 /** A maldição vira aura (a Blasfêmia ligada a ela). */
 export const ehMaldicaoEmAura = (entry, efeitoDaGema) => !!efeitoDaGema?.maldicaoEmAura && entry?.poeGema?.arquetipo === 'maldicao';
 import * as ModsPoe from './condicoes-poe.mjs';
@@ -33,10 +33,17 @@ export function daGema(slug, nivel = 1) {
  * O fator da reserva: × o "Multiplicador de Custo & Reserva" dos suportes (`efeitoDaGema.custoPct`, em % acima de 100) ÷ (1 + a Eficácia
  * da Reserva: `eficiencia_reserva` vale para as duas; `_mana`/`_vida`, para a sua; `_arauto`, para a mana dos Arautos).
  */
-export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = null) {
+export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = null, slug = null) {
+  // (11/10, os únicos: "Congelabilidade não tem Reserva se Conjurada como Aura", "Armadura Ártica não tem Reserva" — a gema pelo nome.)
+  const nome = slug ? ModsPoe.slugDoNome(doSlug(slug)?.gema?.nome ?? '') : null;
+  if (nome && ModsPoe.valor(ficha, `sem_reserva:${nome}`) > 0) return 0;
   const mult = Math.max(0, 1 + (Number(efeitoDaGema?.custoPct) || 0) / 100);
   const deMana = recurso === 'mana';
   const eficacia = ModsPoe.valor(ficha, 'eficiencia_reserva')
+    // ("Ódio tem Eficácia da Reserva de Mana aumentada em X%" — a de UMA gema; "Gemas Encaixadas têm Eficácia da Reserva aumentada" — a da
+    // peça onde a gema está, `efeitoDaGema.eficienciaReservaLocal`.)
+    + (nome && deMana ? ModsPoe.valor(ficha, `eficiencia_reserva_gema:${nome}`) : 0)
+    + (Number(efeitoDaGema?.eficienciaReservaLocal) || 0)
     + ModsPoe.valor(ficha, recurso === 'vida' ? 'eficiencia_reserva_vida' : 'eficiencia_reserva_mana')
     + (deMana && arquetipo === 'arauto' ? ModsPoe.valor(ficha, 'eficiencia_reserva_arauto') : 0)
     // A maldição em aura (Blasfêmia) e a postura (a tag "Stance" da gema).
@@ -56,7 +63,9 @@ export function reservadas(estado, exceto = null) {
   const hunt = estado?.hunt;
   const agora = hunt?.clock ?? 0;
   let mana = 0;
-  let vida = 0;
+  // ("Reserva X% da Vida" das peças: a vida trancada sem aura nenhuma.)
+  const pct = Number(ModsPoe.fichaDa(hunt)?.afPoe?.reserva_vida_pct) || 0;
+  let vida = pct > 0 ? Math.ceil(((estado?.maxHp ?? 0) * pct) / 100) : 0;
   for (const [id, b] of Object.entries(hunt?.buffs ?? {})) {
     if (!b?.reserva || !(b.ate > agora) || id === exceto) continue;
     if (b.reserva.recurso === 'vida') vida += valor(estado, b.reserva);
@@ -87,10 +96,13 @@ export function pedida(estado, entry, efeitoDaGema, ficha, emVida = false) {
   if (!entry?.poeGema?.buff) return null;
   const nivel = efeitoDaGema?.nivel ?? 1;
   // A maldição com a Blasfêmia reserva a "Sobreposição de Reserva" do suporte; o resto, a reserva da própria gema.
-  const base = ehMaldicaoEmAura(entry, efeitoDaGema) ? { pct: Number(efeitoDaGema.reservaSobreposta) || 35 } : daGema(entry.poeGema.slug, nivel);
+  let base = ehMaldicaoEmAura(entry, efeitoDaGema) ? { pct: Number(efeitoDaGema.reservaSobreposta) || 35 } : daGema(entry.poeGema.slug, nivel);
   if (!base) return null;
+  // ("Reserva de Mana de Habilidades de Arauto é sempre X%": a reserva fixa da peça no lugar da da gema.)
+  const arautoFixo = entry.poeGema.arquetipo === 'arauto' ? ModsPoe.valor(ficha, 'reserva_arauto_fixa') : 0;
+  if (arautoFixo > 0) base = { pct: arautoFixo };
   const recurso = emVida ? 'vida' : 'mana';
-  const r = { recurso, ...base, fator: fator(ficha, efeitoDaGema, recurso, entry.poeGema.arquetipo, compilada(entry.poeGema.slug, nivel)?.tipos ?? null) };
+  const r = { recurso, ...base, fator: fator(ficha, efeitoDaGema, recurso, entry.poeGema.arquetipo, compilada(entry.poeGema.slug, nivel)?.tipos ?? null, entry.poeGema.slug) };
   return { ...r, valor: valor(estado, r) };
 }
 
