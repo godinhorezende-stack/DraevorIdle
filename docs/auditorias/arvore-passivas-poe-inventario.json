@@ -1,28 +1,28 @@
 {
- "geradoEm": "2026-10-11T19:43:48.075Z",
+ "geradoEm": "2026-10-11T20:48:58.510Z",
  "resumo": {
   "nos": 2810,
   "auditaveis": 2782,
   "porSituacao": {
-   "funcional": 2208,
-   "funcional-aproximado": 222,
-   "sem-efeito": 86,
+   "funcional": 2229,
+   "funcional-aproximado": 238,
+   "sem-efeito": 82,
    "nao-classificado": 110,
-   "parcial": 156
+   "parcial": 123
   },
   "verificadosNoMotor": 2782,
   "falhasDeMotor": 0,
   "porNivel": {
    "exibido": 0,
-   "alocavel": 196,
+   "alocavel": 192,
    "interpretado": 32,
-   "aplicado": 1309,
-   "validado": 1245
+   "aplicado": 1308,
+   "validado": 1250
   },
   "porAplicado": {
-   "ficha": 1742,
+   "ficha": 1746,
    "combate": 812,
-   "sem efeito": 196,
+   "sem efeito": 192,
    "condicional": 32
   }
  },
@@ -16141,14 +16141,12 @@
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 2
    },
-   "pendentes": [
-    "Efeito de Auras Não-Maldição de suas Habilidades aumentado em 10% nos Inimigos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -16468,12 +16466,14 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@ataque+maoPrincipal+duasArmas"
+    "dmg_inc@ataque+maoPrincipal+duasArmas",
+    "atk_speed_mao_secundaria@duasArmas"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "velocidades"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -16483,18 +16483,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Velocidade de Ataque com a Mão Secundária aumentada em 30% enquanto em Dupla Empunhadura"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -21426,12 +21424,13 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "atordoar_como_fogo_mais"
+    "atordoar_como_fogo_mais",
+    "incendio_atordoante_mais"
    ],
    "tipos": [
     "atordoamento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -21441,18 +21440,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 1,
-    "pendente": 1,
+    "funciona": 2,
+    "aproximado": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -29135,30 +29132,32 @@
    "nomeEn": "Tribal Fury",
    "categoria": "notavel",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "golpe_corpo_propaga"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional-aproximado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/1",
    "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 1,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -40002,16 +40001,16 @@
     "dano % (aumentado e \"mais\")"
    ],
    "situacao": "funcional",
-   "nivel": "aplicado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
     "aplicado": true,
-    "validado": false
+    "validado": true
    },
    "aplicado": "ficha",
-   "cobertura": "3/6",
+   "cobertura": "6/6",
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
@@ -44063,13 +44062,15 @@
    "ascendencia": null,
    "chaves": [
     "cast_speed@maldicao",
+    "renova_frio_choque_amaldicoado",
     "ev:conjurarMaldicao:removerAfeccao:elementais"
    ],
    "tipos": [
     "velocidades",
+    "outros",
     "efeito por evento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -44079,18 +44080,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/2",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 3,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -49623,14 +49622,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
-   "pendentes": [
-    "Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -59653,7 +59650,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
+   "aplicado": "ficha",
    "cobertura": "0/1",
    "linhas": {
     "funciona": 1,
@@ -72872,16 +72869,18 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_buff:crueldade",
     "dot_multi@matouRecente",
     "ailment_duration",
     "duracao_habilidades",
     "dano_degen_recebido_menos"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -72891,14 +72890,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -73331,7 +73330,8 @@
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
     "roubo_instantaneo_pct%armas:comGarra",
-    "furtividade@acertouRecente+comGarra"
+    "furtividade@acertouRecente+comGarra",
+    "lamina_elusivo_efeito"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -73340,7 +73340,7 @@
     "dano % (aumentado e \"mais\")",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -73350,14 +73350,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/6",
+   "cobertura": "3/7",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 2,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -73835,15 +73835,17 @@
     "stun_duration_mais@duasMaos",
     "dmg_inc@ataque+duasMaos",
     "ailment_dmg_inc@ataque+duasMaos",
-    "atk_speed"
+    "atk_speed",
+    "impiedoso_intimida_s"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "armadura e evasão",
     "atordoamento",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -73853,14 +73855,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/9",
+   "cobertura": "2/10",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -74057,7 +74059,8 @@
     "culling@critico",
     "spell_suppression%armas:comAdaga",
     "mais_dano@alvoVenenos:5",
-    "projectile_speed@comAdaga"
+    "projectile_speed@comAdaga",
+    "lamina_crit_mult_elusivo"
    ],
    "tipos": [
     "crítico",
@@ -74066,7 +74069,7 @@
     "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -74076,14 +74079,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -75046,7 +75049,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
+   "aplicado": "ficha",
    "cobertura": "1/14",
    "linhas": {
     "funciona": 6,
@@ -75304,7 +75307,8 @@
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
     "roubo_instantaneo_pct%armas:comGarra",
-    "furtividade@acertouRecente+comGarra"
+    "furtividade@acertouRecente+comGarra",
+    "lamina_elusivo_efeito"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -75313,7 +75317,7 @@
     "dano % (aumentado e \"mais\")",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -75323,14 +75327,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/6",
+   "cobertura": "3/7",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 2,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -75505,16 +75509,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -75524,18 +75532,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -75683,7 +75689,8 @@
     "culling@critico",
     "spell_suppression%armas:comAdaga",
     "mais_dano@alvoVenenos:5",
-    "projectile_speed@comAdaga"
+    "projectile_speed@comAdaga",
+    "lamina_crit_mult_elusivo"
    ],
    "tipos": [
     "crítico",
@@ -75692,7 +75699,7 @@
     "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -75702,14 +75709,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -75962,16 +75969,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -75981,18 +75992,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -76040,16 +76049,18 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_buff:crueldade",
     "dot_multi@matouRecente",
     "ailment_duration",
     "duracao_habilidades",
     "dano_degen_recebido_menos"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76059,14 +76070,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -76166,7 +76177,8 @@
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
     "roubo_instantaneo_pct%armas:comGarra",
-    "furtividade@acertouRecente+comGarra"
+    "furtividade@acertouRecente+comGarra",
+    "lamina_elusivo_efeito"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -76175,7 +76187,7 @@
     "dano % (aumentado e \"mais\")",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76185,14 +76197,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/6",
+   "cobertura": "3/7",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 2,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -76586,16 +76598,18 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_buff:crueldade",
     "dot_multi@matouRecente",
     "ailment_duration",
     "duracao_habilidades",
     "dano_degen_recebido_menos"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76605,14 +76619,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -77208,16 +77222,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -77227,18 +77245,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -77387,15 +77403,17 @@
     "stun_duration_mais@duasMaos",
     "dmg_inc@ataque+duasMaos",
     "ailment_dmg_inc@ataque+duasMaos",
-    "atk_speed"
+    "atk_speed",
+    "impiedoso_intimida_s"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "armadura e evasão",
     "atordoamento",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -77405,14 +77423,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/9",
+   "cobertura": "2/10",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -77879,16 +77897,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -77898,18 +77920,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -78034,7 +78054,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
+   "aplicado": "ficha",
    "cobertura": "1/14",
    "linhas": {
     "funciona": 6,
@@ -78138,16 +78158,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78157,18 +78181,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -78431,7 +78453,8 @@
     "culling@critico",
     "spell_suppression%armas:comAdaga",
     "mais_dano@alvoVenenos:5",
-    "projectile_speed@comAdaga"
+    "projectile_speed@comAdaga",
+    "lamina_crit_mult_elusivo"
    ],
    "tipos": [
     "crítico",
@@ -78440,7 +78463,7 @@
     "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78450,14 +78473,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -78762,16 +78785,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -78781,18 +78808,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -79243,14 +79268,12 @@
    "linhas": {
     "funciona": 5,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 2,
     "lembrete": 0,
     "efetivas": 5
    },
-   "pendentes": [
-    "Ataques têm 100% de Poder Arcano ao usar uma varinha"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -79309,15 +79332,17 @@
     "stun_duration_mais@duasMaos",
     "dmg_inc@ataque+duasMaos",
     "ailment_dmg_inc@ataque+duasMaos",
-    "atk_speed"
+    "atk_speed",
+    "impiedoso_intimida_s"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "armadura e evasão",
     "atordoamento",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -79327,14 +79352,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/9",
+   "cobertura": "2/10",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -80311,15 +80336,17 @@
     "stun_duration_mais@duasMaos",
     "dmg_inc@ataque+duasMaos",
     "ailment_dmg_inc@ataque+duasMaos",
-    "atk_speed"
+    "atk_speed",
+    "impiedoso_intimida_s"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")",
     "armadura e evasão",
     "atordoamento",
-    "velocidades"
+    "velocidades",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80329,14 +80356,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/9",
+   "cobertura": "2/10",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -80477,16 +80504,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80496,18 +80527,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -80815,16 +80844,18 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_buff:crueldade",
     "dot_multi@matouRecente",
     "ailment_duration",
     "duracao_habilidades",
     "dano_degen_recebido_menos"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80834,14 +80865,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -82033,16 +82064,18 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_buff:crueldade",
     "dot_multi@matouRecente",
     "ailment_duration",
     "duracao_habilidades",
     "dano_degen_recebido_menos"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -82052,14 +82085,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -82307,14 +82340,12 @@
    "linhas": {
     "funciona": 5,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 2,
     "lembrete": 0,
     "efetivas": 5
    },
-   "pendentes": [
-    "Ataques têm 100% de Poder Arcano ao usar uma varinha"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -83306,7 +83337,8 @@
     "velocidade_duas_armas_dobrada@comGarra",
     "dmg_inc@ataque+comGarra+alvoVidaBaixa",
     "roubo_instantaneo_pct%armas:comGarra",
-    "furtividade@acertouRecente+comGarra"
+    "furtividade@acertouRecente+comGarra",
+    "lamina_elusivo_efeito"
    ],
    "tipos": [
     "vida, regeneração e dreno de vida",
@@ -83315,7 +83347,7 @@
     "dano % (aumentado e \"mais\")",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -83325,14 +83357,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "2/6",
+   "cobertura": "3/7",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 2,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
    "pendentes": [],
    "desconectados": []
@@ -83498,14 +83530,12 @@
    "linhas": {
     "funciona": 5,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 2,
     "lembrete": 0,
     "efetivas": 5
    },
-   "pendentes": [
-    "Ataques têm 100% de Poder Arcano ao usar uma varinha"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -84011,14 +84041,12 @@
    "linhas": {
     "funciona": 5,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 2,
     "lembrete": 0,
     "efetivas": 5
    },
-   "pendentes": [
-    "Ataques têm 100% de Poder Arcano ao usar uma varinha"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -84145,16 +84173,18 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_buff:crueldade",
     "dot_multi@matouRecente",
     "ailment_duration",
     "duracao_habilidades",
     "dano_degen_recebido_menos"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -84164,14 +84194,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -84650,16 +84680,20 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "repeticao_final_area",
     "periodico:1:carga:poder@canalizando",
     "cast_speed%usos:magia",
+    "intensidade_max_extra",
+    "selos_max_extra",
     "abrir_bau_ao_conjurar"
    ],
    "tipos": [
+    "área e projéteis",
     "cargas e fúria",
     "velocidades",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -84669,18 +84703,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "4/6",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 1,
-    "pendente": 1,
-    "inexiste": 2,
+    "funciona": 6,
+    "aproximado": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 6
    },
-   "pendentes": [
-    "Repetição Final das Magias têm Efeito em Área aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -84690,16 +84722,18 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "efeito_buff:crueldade",
     "dot_multi@matouRecente",
     "ailment_duration",
     "duracao_habilidades",
     "dano_degen_recebido_menos"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -84709,14 +84743,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/4",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 4,
+    "funciona": 5,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 4
+    "efetivas": 5
    },
    "pendentes": [],
    "desconectados": []
@@ -85249,7 +85283,8 @@
     "culling@critico",
     "spell_suppression%armas:comAdaga",
     "mais_dano@alvoVenenos:5",
-    "projectile_speed@comAdaga"
+    "projectile_speed@comAdaga",
+    "lamina_crit_mult_elusivo"
    ],
    "tipos": [
     "crítico",
@@ -85258,7 +85293,7 @@
     "dano % (aumentado e \"mais\")",
     "velocidades"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -85268,14 +85303,14 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 5,
+    "funciona": 6,
     "aproximado": 0,
     "pendente": 0,
-    "inexiste": 1,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 5
+    "efetivas": 6
    },
    "pendentes": [],
    "desconectados": []
@@ -88394,31 +88429,33 @@
    "nomeEn": "Tukohama, War's Herald",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Chieftain",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "suporte_peitoral:chamado-ancestral",
+    "suporte_peitoral:punho-da-guerra"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Habilidades do Peitoral Equipado são Suportadas por Chamado Ancestral Nível 30",
-    "Habilidades do Peitoral Equipado são Suportadas por Punho da Guerra Nível 20"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -89707,12 +89744,15 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Pathfinder",
    "chaves": [
-    "ev:matar:espalhar:veneno@duranteFrasco+alvoEnvenenado"
+    "ev:matar:espalhar:veneno@duranteFrasco+alvoEnvenenado",
+    "veneno_mais_chance@duranteFrasco",
+    "veneno_mais_pct@duranteFrasco"
    ],
    "tipos": [
-    "efeito por evento"
+    "efeito por evento",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "interpretado",
    "niveis": {
     "exibido": true,
@@ -89722,18 +89762,16 @@
     "validado": false
    },
    "aplicado": "condicional",
-   "cobertura": "0/1",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Envenenamento causado por você durante o Efeito de Frascos possuem 20% de chance de causar 100% mais Dano"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -89742,33 +89780,37 @@
    "nomeEn": "Master Distiller",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Pathfinder",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "destilador_consome",
+    "destilador_diamante_crit",
+    "destilador_bismuto_pen",
+    "destilador_ametista_caos"
+   ],
+   "tipos": [
+    "outros",
+    "crítico",
+    "penetração"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "4/4",
    "linhas": {
-    "funciona": 0,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 4
    },
-   "pendentes": [
-    "Concede bônus para Habilidades Não Canalizadoras usadas por você consumindo 3 Cargas de um Frasco de cada um dos seguintes tipos, se possível:",
-    "Se Cargas de um Frasco de Diamante forem consumidas, Chance de Golpe Crítico aumentado em 250%",
-    "Se Cargas de um Frasco de Bismuto forem consumidas, Penetra 25% das Resistências Elementais",
-    "Se Cargas de um Frasco de Ametista forem consumidas, 37% do Dano Físico como Dano Extra de Caos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -90131,6 +90173,7 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Pathfinder",
    "chaves": [
+    "frasco_vida_sem_fila",
     "frasco_vida_rec"
    ],
    "tipos": [
@@ -90146,18 +90189,16 @@
     "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 1,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Efeitos do Frasco de Vida não se Enfileram"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -90346,16 +90387,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 3,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 3,
     "lembrete": 1,
     "efetivas": 0
    },
-   "pendentes": [
-    "-25 de dano sofrido de cada tipo de dano por ataques de magia por casca",
-    "Impede +3% do Dano Mágico Suprimido por Casca abaixo do máximo",
-    "Perde 1 Casca quando Acertado por Dano Mágico Inimigo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -90456,14 +90493,12 @@
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 3,
     "efetivas": 1
    },
-   "pendentes": [
-    "Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -90677,31 +90712,33 @@
    "nomeEn": "Oath of Summer",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Warden",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "incendio_vira_causticacao",
+    "causticacoes_extra"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Acertos que causariam Incêndio causam Causticação ao invés",
-    "Você pode infligir uma Causticação adicional em cada Inimgo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -90822,17 +90859,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 4,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 5,
     "lembrete": 1,
     "efetivas": 0
    },
-   "pendentes": [
-    "Ganhe 1 de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada 0.2 segundos por cada tipo de Afecção",
-    "Não pode ganhar Fúria Liberta enquanto Liberto",
-    "Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto",
-    "100% mais Dano Elemental enquanto Liberto"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -91323,7 +91355,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/5",
+   "cobertura": "2/5",
    "linhas": {
     "funciona": 5,
     "aproximado": 0,
@@ -91342,11 +91374,14 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Ascendant",
    "chaves": [
+    "oferenda_em_voce",
+    "oferenda_efeito_reduzido",
     "minion_dmg",
     "area_inc@consumiuCadaverRecente",
     "minion_area@consumiuCadaverRecente"
    ],
    "tipos": [
+    "outros",
     "lacaios e totens",
     "área e projéteis"
    ],
@@ -91360,19 +91395,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "3/5",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
-    "pendente": 2,
+    "funciona": 4,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 3,
-    "efetivas": 2
+    "efetivas": 4
    },
-   "pendentes": [
-    "Suas Habilidades de Oferenda também afetam você",
-    "Suas Oferendas possuem 50% de redução do Efeito em você"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -93389,14 +93421,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 0
    },
-   "pendentes": [
-    "Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -93771,14 +93801,12 @@
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 1,
     "efetivas": 1
    },
-   "pendentes": [
-    "Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -93808,14 +93836,12 @@
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 1,
     "efetivas": 1
    },
-   "pendentes": [
-    "Concede a Habilidade Convocar Grande Emissário das Direções"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -94081,14 +94107,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 1,
     "efetivas": 0
    },
-   "pendentes": [
-    "Cada Fantasma Convocado concede a Você Poder Fantasmal"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -94542,15 +94566,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 2,
     "lembrete": 0,
     "efetivas": 0
    },
-   "pendentes": [
-    "A chance de causar golpe mágico crítico se bifurca",
-    "ㅤ-30% de chance de causar golpe mágico crítico"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -95135,15 +95156,17 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Assassin",
    "chaves": [
+    "marca_assassino_ao_critico",
     "sem_custo_mana@marca",
     "efeito_marca%cargaMax:poder",
     "roubo_instantaneo_pct%cargaMax:poder"
    ],
    "tipos": [
+    "crítico",
     "mana e custo",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -95153,18 +95176,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "1/4",
    "linhas": {
-    "funciona": 3,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 3
+    "efetivas": 4
    },
-   "pendentes": [
-    "Ativa Marca do Assassino nível 30 ao causar golpe crítico com ataques contra um inimigo raro ou único e você não tem uma marca"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -95589,14 +95610,12 @@
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 1,
     "efetivas": 1
    },
-   "pendentes": [
-    "Ativa Convocar Robôs Ativadores Nível 20 quando Alocado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -96626,16 +96645,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 3,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 3,
     "lembrete": 4,
     "efetivas": 0
    },
-   "pendentes": [
-    "Inflige Chama Santificada ao atingir corpo a corpo",
-    "Você pode infligir +1 Chama Santificada nos inimigos",
-    "Ganha 10% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram removidas recentemente por um ataque aliado, até 80%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -96660,14 +96675,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 2,
     "lembrete": 1,
     "efetivas": 0
    },
-   "pendentes": [
-    "20% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -96692,14 +96705,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 3,
     "efetivas": 0
    },
-   "pendentes": [
-    "Intensidade de Chama Santificada infligida por você aumentada em 20%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -96762,14 +96773,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 1,
     "efetivas": 0
    },
-   "pendentes": [
-    "25% de chance de Ativar Convocar Relíquia Elemental Nível 20 quando você ou um Aliado próximo Matar um Inimigo, ou Acertar um Inimigo Raro ou Único"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -97122,14 +97131,12 @@
    "linhas": {
     "funciona": 0,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 1,
     "efetivas": 0
    },
-   "pendentes": [
-    "Ganha um buff de altar aleatório a cada 10 segundos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -98917,14 +98924,12 @@
    "linhas": {
     "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 0,
     "efetivas": 2
    },
-   "pendentes": [
-    "Golens Convocados são Reconvocados 4 segundos após serem Mortos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -99354,14 +99359,12 @@
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 0,
+    "pendente": 0,
+    "inexiste": 1,
     "lembrete": 4,
     "efetivas": 1
    },
-   "pendentes": [
-    "Inimigos próximos a cadáveres Criados por você Recentemente são Resfriados e Eletrizados"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -99479,12 +99482,15 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Necromancer",
    "chaves": [
+    "oferenda_em_voce",
+    "oferenda_efeito_reduzido",
     "duracao_habilidades"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -99494,19 +99500,16 @@
     "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "1/1",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
-    "pendente": 2,
+    "funciona": 3,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 3
    },
-   "pendentes": [
-    "Suas Habilidades de Oferenda também afetam você",
-    "Suas Oferendas possuem 50% de redução do Efeito em você"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {

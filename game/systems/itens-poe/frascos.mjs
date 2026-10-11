@@ -268,7 +268,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (cargas < par.cargasPorUso) return false;
   const st = estadoDaCacada(hunt);
   const agora = hunt.clock ?? 0;
-  if (st.ativos[v]?.ate > agora) return false;
+  // (o Pathfinder: "Efeitos do Frasco de Vida não se Enfileram" — o frasco de vida usado de novo troca o efeito que corre pelo novo.)
+  if (st.ativos[v]?.ate > agora && !(peca.poe?.classe === 'Life_Flasks' && Number(afp.frasco_vida_sem_fila) > 0)) return false;
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   aoUsarOFrasco(estado, par, eventos, quem);

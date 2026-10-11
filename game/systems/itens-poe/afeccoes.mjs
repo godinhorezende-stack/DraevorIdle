@@ -16,6 +16,8 @@ import { ligado } from './catalogo.mjs';
 import * as Dot from '../combate/dot.mjs';
 import * as Estados from '../skills/estados.mjs';
 
+/** (o Warden) A Causticação: a redução das Resistências, pelo Dano de Fogo do acerto (como a Eletrização), até 30%, por 4 s. */
+export const CAUSTICACAO = { duracaoMs: 4000, minimo: 1, maximo: 30 };
 export const BASE = {
   incendio: { porSegundo: 0.9, duracaoMs: 4000 },
   sangramento: { porSegundo: 0.7, duracaoMs: 5000 },
@@ -55,6 +57,8 @@ export function daSoma(af = {}) {
     incendioMais: n('incendio_mais'),
     // (a Chama Voraz: "Você pode infligir um incêndio adicional em cada inimigo"; "A duração base do incêndio é de N segundo")
     incendiosExtra: n('incendios_extra'), incendioDuracaoBaseMs: n('incendio_duracao_base_s') * 1000,
+    // (o Warden: "Acertos que causariam Incêndio causam Causticação ao invés"; "Você pode infligir uma Causticação adicional em cada Inimigo")
+    incendioViraCausticacao: n('incendio_vira_causticacao') > 0, causticacoesExtra: n('causticacoes_extra'),
     danoSangramento: n('bleed_dmg_inc'),
     danoVeneno: n('poison_dmg_inc'),
     duracaoIncendio: n('duracao_incendio') + n('duracao_afeccoes_elementais'),
@@ -64,6 +68,8 @@ export function daSoma(af = {}) {
     efeitoResfriamento: n('efeito_resfriamento'),
     efeitoEletrizacao: n('efeito_eletrizacao'),
     maisRapido: n('dot_mais_rapido'),
+    // (a Crueldade: "mais Dano Degenerativo" — multiplica todas as afecções e o degenerativo das gemas)
+    dotMais: n('dano_dot_mais'),
     qualquerDanoEnvenena: n('envenena_qualquer_dano') > 0,
     mutiladosDot: n('mutilados_dot_inc'),
     // Segredos do Sofrimento (keystone da peça): não Incendeia, Resfria, Congela nem Eletriza (o crítico inflige Causticar/Fragilizar/Exaurir).
@@ -160,7 +166,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   // dano" daquela afecção (multiplica). `chave`: a pilha do sangramento (a Dança Carmesim).
   const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0, { mais = 0, chave = null, agravado = false, semMovimento = false } = {}) => {
     if (!(base > 0)) return null;
-    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100);
+    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
@@ -190,7 +196,22 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const raio = baseDe('eletrizacao');
   const caos = dano('chaos');
   // Incêndio: pela chance, ou crítico com dano de Fogo.
-  if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
+  if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio'))) && a.incendioViraCausticacao) {
+    // (o Warden: a CAUSTICAÇÃO no lugar do Incêndio — "Inimigos Causticados têm suas Resistências reduzidas em até 30%, baseado no Dano de Fogo
+    // do Acerto, por 4 segundos"; com a adicional, as duas mais fortes valem juntas — `condicoes-poe.causticado`.)
+    const pct = forca(fogo, bicho.maxHp ?? bicho.hp, CAUSTICACAO);
+    const e = (bicho.estados ??= {});
+    const ate = agora + duracaoDe(CAUSTICACAO.duracaoMs);
+    if (pct > 0) {
+      if (a.causticacoesExtra > 0) {
+        const pilha = [...(e.causticadosPilha ?? []), ...(e.causticado?.ate > agora ? [e.causticado] : [])].filter((x) => x.ate > agora);
+        pilha.push({ ate, pct });
+        e.causticadosPilha = pilha.sort((x, y) => y.pct - x.pct).slice(0, 1 + Math.floor(a.causticacoesExtra));
+        delete e.causticado;
+      } else if (!(e.causticado?.ate > agora && e.causticado.pct >= pct)) e.causticado = { ate, pct };
+      postos.push('causticado');
+    }
+  } else if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
     const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), a.danoIncendio ?? 0, { mais: a.incendioMais ?? 0, chave: chaveDoIncendio() });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;

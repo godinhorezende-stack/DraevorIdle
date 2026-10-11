@@ -14,6 +14,510 @@
   ],
   "regras": [
     {
+      "padrao": "^Suas Habilidades de Oferenda também afetam você$",
+      "efeitos": [
+        {
+          "stat": "oferenda_em_voce",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a velocidade de ataque, o crítico, o bloqueio e a regeneração da Oferenda",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Suas Oferendas possuem \\{(\\d+)\\}% de redução do Efeito em você$",
+      "efeitos": [
+        {
+          "stat": "oferenda_efeito_reduzido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Envenenamento causado por você durante o Efeito de Frascos possuem \\{(\\d+)\\}% de chance de causar \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "veneno_mais_chance@duranteFrasco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "veneno_mais_pct@duranteFrasco",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Concede bônus para Habilidades Não Canalizadoras usadas por você consumindo \\{(\\d+)\\} Cargas de um Frasco de cada um dos seguintes tipos, se possível:$",
+      "efeitos": [
+        {
+          "stat": "destilador_consome",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Se Cargas de um Frasco de Diamante forem consumidas, Chance de Golpe Crítico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "destilador_diamante_crit",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Se Cargas de um Frasco de Bismuto forem consumidas, Penetra \\{(\\d+)\\}% das Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "destilador_bismuto_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Se Cargas de um Frasco de Ametista forem consumidas, \\{(\\d+)\\}% do Dano Físico como Dano Extra de Caos$",
+      "efeitos": [
+        {
+          "stat": "destilador_ametista_caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeitos do Frasco de Vida não se Enfileram$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_sem_fila",
+          "valor": "1"
+        }
+      ],
+      "nota": "o frasco de vida pode ser usado de novo durante o efeito (o novo troca o que corre)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos que causariam Incêndio causam Causticação ao invés$",
+      "efeitos": [
+        {
+          "stat": "incendio_vira_causticacao",
+          "valor": "1"
+        }
+      ],
+      "nota": "a Causticação: até 30% menos Resistências, pelo Dano de Fogo do acerto, por 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você pode infligir uma Causticação adicional em cada Ini(?:mi|m)go$",
+      "efeitos": [
+        {
+          "stat": "causticacoes_extra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ativa Marca do Assassino nível \\{(\\d+)\\} ao causar golpe crítico com ataques contra um inimigo raro ou único e você não tem uma marca$",
+      "efeitos": [
+        {
+          "stat": "marca_assassino_ao_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades do Peitoral Equipado são Suportadas por Chamado Ancestral N[ií]vel \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_peitoral:chamado-ancestral",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades do Peitoral Equipado são Suportadas por Punho da Guerra N[ií]vel \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "suporte_peitoral:punho-da-guerra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com a Mão Secundária aumentada em \\{(\\d+)\\}% enquanto em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "atk_speed_mao_secundaria@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Incêndios de Acertos Corpo a Corpo Atordoantes causam \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "incendio_atordoante_mais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nas gemas (o golpe básico, não)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você$",
+      "efeitos": [
+        {
+          "stat": "renova_frio_choque_amaldicoado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o acerto no amaldiçoado renova os 2 s de base",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor$",
+      "efeitos": [
+        {
+          "stat": "golpe_corpo_propaga",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o golpe inteiro nos vivos a 1 casa de cada atingido",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Repetição Final das Magias têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "repeticao_final_area",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a última repetição pega a área maior (uma casa a cada ~25%)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos próximos a cadáveres Criados por você Recentemente são Resfriados e Eletrizados$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o jogo não cria cadáveres (os da caçada vêm dos mortos — \"Matar um Inimigo não é Criar um cadáver\")",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria Liberta .*$|^Não pode ganhar Fúria Liberta enquanto Liberto$|^Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto$|^\\d+% mais Dano Elemental enquanto Liberto$|^.*mais Dano Elemental enquanto Liberto$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: a habilidade Avatar Liberto (o Liberto e a Fúria Liberta)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*por casca$|^.*por Casca abaixo do máximo$|^Perde \\{(\\d+)\\} Casca quando Acertado por Dano Mágico Inimigo$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: a Casca do Warden (quantas, como se ganha)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: a Geada (o Congelamento curto demais que vira Geada)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inflige Chama Santificada ao atingir corpo a corpo$|^Você pode infligir \\+?\\{(\\d+)\\} Chama Santificada nos inimigos$|^Ganha .* Chamas Santificadas que foram removidas .*$|^Intensidade de Chama Santificada infligida por você aumentada em .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: a Chama Santificada (só beneficia os ataques dos aliados)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.* é sofrido na vida do seu Sentinela do Resplendor antes da sua$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: o Sentinela do Resplendor",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^.*Ativar Convocar Relíquia Elemental .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: a Relíquia Elemental",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha um buff de altar aleatório a cada .* segundos$|^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: os bônus de altar do PoE (os Santuários)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ativa Rajada Vulcânica .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: a habilidade Rajada Vulcânica",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Grande Emissário das Direções$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: o Grande Emissário das Direções",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Cada Fantasma Convocado concede a Você Poder Fantasmal$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: o Poder Fantasmal",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ativa Convocar Robôs Ativadores .*$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: os Robôs Ativadores",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Golens Convocados são Reconvocados .* após serem Mortos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: reconvocar o golem morto",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A chance de causar golpe mágico crítico se bifurca$|^.*chance de causar golpe mágico crítico$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: a chance de crítico de magia que se bifurca (a Infusão Mística entra inteira)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: passar os bônus do escudo aos lacaios (a Égide Necromântica entra inteira)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em .* nos Inimigos$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: o efeito das auras das gemas nos inimigos",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ataques têm .* de Poder Arcano ao usar uma varinha$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "falta no jogo: o Poder Arcano",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito da Crueldade aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:crueldade",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a Crueldade do suporte Crueldade (mais dano degenerativo)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Impiedosos Intimidam Inimigos por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "impiedoso_intimida_s",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Golpe Impiedoso do suporte Impiedade",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades Suportadas por Lâmina Noturna têm Efeito do Elusivo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lamina_elusivo_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Elusivo concede \\+?\\{(\\d+)\\}% de Multiplicador de Golpes Críticos às Habilidades Suportadas por Lâmina Noturna$",
+      "efeitos": [
+        {
+          "stat": "lamina_crit_mult_elusivo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Habilidades suportadas por Liberar tem \\+?\\{(\\d+)\\} ao número máximo de Selos$",
+      "efeitos": [
+        {
+          "stat": "selos_max_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Magias que podem ganhar Intensidade têm \\+?\\{(\\d+)\\} de Intensidade máxima$",
+      "efeitos": [
+        {
+          "stat": "intensidade_max_extra",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "as magias com o suporte Intensificar",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
       "padrao": "^Dano Físico com Habilidades que Custam Vida aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
@@ -5366,58 +5870,6 @@
       ],
       "estado": "inerte",
       "nota": "nenhum monstro do jogo faz isso ainda (os modificadores de monstro e de mapa com reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar estão desligados — decisão do dono)",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Magias que podem ganhar Intensidade têm .* de Intensidade máxima$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a Intensidade (das magias que a acumulam) não existe no jogo",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Habilidades suportadas por Liberar tem .* ao número máximo de Selos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "os Selos do suporte Libertar não existem no jogo",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Efeito da Crueldade aumentado em .*$|^Acertos Impiedosos Intimidam Inimigos por .* segundos$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a Crueldade e o Golpe Impiedoso (dos suportes Crueldade e Impiedade) ainda não agem no jogo",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Habilidades Suportadas por Lâmina Noturna têm Efeito do Elusivo .*$|^Elusivo concede .* às Habilidades Suportadas por Lâmina Noturna$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "o suporte Lâmina Noturna ainda não age no jogo",
       "_nova": true,
       "_ciclo7": true
     },
