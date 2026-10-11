@@ -47,7 +47,14 @@ test('nenhum único com implícito próprio leva o da base; o único sem implíc
       if (g.erro) continue;
       if (u.modificadores.some((m) => m.tipo === 'implicit')) {
         com++;
-        assert.deepEqual(g.implicitos, [], u.slug);
+        // (Dono, 11/10: o único cuja regra TROCA o implícito — a Corda da Servidão, 1 corrompido; o Nebulis, 1 a 3 de Síntese — sai com
+        // os implícitos da regra: nenhum é o da base, todos vêm do pool dela. Os outros seguem sem implícito nenhum.)
+        const s = u.implicitosSorteados;
+        if (s) {
+          const daBase = new Set(base.implicitos.map((i) => i.modelo));
+          assert.ok(g.implicitos.length >= 1, u.slug);
+          assert.ok(g.implicitos.every((i) => i.origem === s.origem && !daBase.has(i.modelo)), u.slug);
+        } else assert.deepEqual(g.implicitos, [], u.slug);
       } else {
         sem++;
         assert.equal(g.implicitos.length, base.implicitos.length, u.slug);

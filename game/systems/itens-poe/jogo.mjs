@@ -260,6 +260,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
     poe: {
       base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null,
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
+      // (O único que já cai corrompido — a Corda da Servidão — não aceita moeda comum, como no PoE.)
+      ...(gerada.corrompido ? { corrompido: true } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [],
       estados: t.linhas.map((l) => l.estado), notas: notasDe(t), af, tv: VERSAO_DA_TRADUCAO,
     },

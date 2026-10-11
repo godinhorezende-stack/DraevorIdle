@@ -138,23 +138,27 @@ for (const { u, classe } of DO_JOGO.values()) {
   const base = classe.bases.find((b) => b.nome === u.base);
   if (!base) continue;
   sorteio.unicos++;
+  // (A linha que a regra do único TROCA — a Força da Corda da Servidão, o "[One to three…]" do Nebulis — não vai para a peça: no lugar dela
+  // entram os implícitos sorteados. E o valor na faixa é o de antes da magnitude dos implícitos — `valoresSemMagnitude`.)
+  const s = u.implicitosSorteados;
+  const cadastro = u.modificadores.filter((m) => !(s && m.tipo === 'implicit' && m.modelo === s.substitui));
   for (let k = 0; k < 40; k++) {
     const g = gerarPeca({ catalogo: cat, regras: Catalogo.REGRAS, base: base.id, raridade: 'unico', ilvl: 84, rng, unico: u.slug });
     if (g.erro) {
       if (!sorteio.naoGera.includes(u.slug)) sorteio.naoGera.push(u.slug);
       break;
     }
-    if (g.modificadores.length !== u.modificadores.length) {
+    if (g.modificadores.length !== cadastro.length) {
       sorteio.linhasFaltando.push(u.slug);
       break;
     }
     g.modificadores.forEach((m, i) =>
-      (u.modificadores[i].faixas ?? []).forEach((f, n) => {
-        const v = m.valores[n];
+      (cadastro[i].faixas ?? []).forEach((f, n) => {
+        const v = (m.valoresSemMagnitude ?? m.valores)[n];
         if (!(v >= Math.min(...f) && v <= Math.max(...f)) && sorteio.foraDaFaixa.length < 50) sorteio.foraDaFaixa.push(`${u.slug}: ${m.texto} (${fx([f])})`);
       })
     );
-    if (u.modificadores.some((m) => m.tipo === 'implicit') && g.implicitos.length && !sorteio.implicitoEmDobro.includes(u.slug)) sorteio.implicitoEmDobro.push(u.slug);
+    if (!s && cadastro.some((m) => m.tipo === 'implicit') && g.implicitos.length && !sorteio.implicitoEmDobro.includes(u.slug)) sorteio.implicitoEmDobro.push(u.slug);
   }
 }
 // As pontas: a faixa inteira é alcançável (o mínimo e o máximo saem).

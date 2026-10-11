@@ -56,13 +56,25 @@ const ARQUIVO_DOS_IMPLICITOS_SORTEADOS = new URL('../../gamedata/itens-poe/impli
  * Os IMPLÍCITOS SORTEADOS (dono, 11/10 — `gamedata/itens-poe/implicitos-sorteados.json`, do poedb): a base que no PoE não tem implícito
  * fixo e sorteia alguns de uma lista — o Talismã do Lobo Grandioso, 2 dos 33 implícitos de talismã. A coleção não traz; entra por cima
  * na leitura, como `implicitosSorteados: { quantidade, opcoes }` da base (o gerador sorteia — `gerar.implicitosDaBase`).
+ * E o ÚNICO cuja regra TROCA o implícito (a Corda da Servidão: 1 corrompido; o Nebulis: 1 a 3 de Síntese): `implicitosSorteados` do
+ * único, com as famílias do pool especial (`grupos`) lidas só na primeira vez que ele é gerado — o pool de síntese tem 4,8 MB.
  */
 function implicitosSorteados(cat) {
   if (!existsSync(ARQUIVO_DOS_IMPLICITOS_SORTEADOS)) return;
-  const { bases = {} } = JSON.parse(readFileSync(ARQUIVO_DOS_IMPLICITOS_SORTEADOS, 'utf8'));
+  const { bases = {}, unicos = {} } = JSON.parse(readFileSync(ARQUIVO_DOS_IMPLICITOS_SORTEADOS, 'utf8'));
   for (const [id, s] of Object.entries(bases)) {
     const b = cat.classes[id.split('/')[0]]?.bases?.find((x) => x.id === id);
     if (b) b.implicitosSorteados = { quantidade: s.quantidade, opcoes: s.implicitos };
+  }
+  for (const [slug, s] of Object.entries(unicos)) {
+    const c = cat.classes[s.classe];
+    const u = c?.unicos?.find((x) => x.slug === slug);
+    const base = u && c.bases.find((b) => b.nome === u.base);
+    if (!base) continue;
+    const regra = { substitui: s.substitui, quantidade: s.quantidade, pesoIgual: !!s.pesoIgual, corrompido: !!s.corrompido, origem: s.pool };
+    let grupos = null;
+    Object.defineProperty(regra, 'grupos', { get: () => (grupos ??= poolEspecialDa(s.pool, s.classe, base.pool)?.implicitos ?? []) });
+    u.implicitosSorteados = regra;
   }
 }
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador

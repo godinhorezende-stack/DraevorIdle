@@ -51,12 +51,20 @@ test('o sorteio de cada único cai dentro das faixas, com todas as linhas', SKIP
   for (const { u, classe, bases } of doJogo().values()) {
     const base = bases.find((b) => b.nome === u.base);
     if (!base || classe === 'Maps') continue;
+    // (Dono, 11/10 — a premissa mudou com a regra do PoE: a linha de implícito que a regra do único TROCA — a Força da Corda da Servidão, o
+    // "[One to three…]" do Nebulis — sai da peça e vira implícito sorteado; e o valor conferido na faixa é o de ANTES da magnitude dos
+    // implícitos do único, `valoresSemMagnitude` — a Réplica: Nebulis mostra 64–88% no "Dano Elemental 40%".)
+    const s = u.implicitosSorteados;
+    const cadastro = u.modificadores.filter((m) => !(s && m.tipo === 'implicit' && m.modelo === s.substitui));
     for (let k = 0; k < 8; k++) {
       const g = gerarPeca({ catalogo: cat, regras: Catalogo.REGRAS, base: base.id, raridade: 'unico', ilvl: 84, rng, unico: u.slug });
       assert.ok(!g.erro, `${u.slug}: ${g.erro}`);
-      assert.equal(g.modificadores.length, u.modificadores.length, u.slug);
+      assert.equal(g.modificadores.length, cadastro.length, u.slug);
       g.modificadores.forEach((m, i) =>
-        (u.modificadores[i].faixas ?? []).forEach((f, x) => assert.ok(m.valores[x] >= Math.min(...f) && m.valores[x] <= Math.max(...f), `${u.slug}: ${m.texto}`))
+        (cadastro[i].faixas ?? []).forEach((f, x) => {
+          const v = (m.valoresSemMagnitude ?? m.valores)[x];
+          assert.ok(v >= Math.min(...f) && v <= Math.max(...f), `${u.slug}: ${m.texto}`);
+        })
       );
     }
     n++;

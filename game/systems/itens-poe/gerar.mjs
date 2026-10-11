@@ -61,20 +61,82 @@ export function implicitosDaBase(base, rng) {
 /** O molde (as faixas) de um implícito da base pelo modelo — um fixo ou um da lista dos sorteados: o Orbe Abençoado sorteia de novo nele. */
 export const moldeDoImplicito = (base, modelo) => [...(base?.implicitos ?? []), ...(base?.implicitosSorteados?.opcoes ?? [])].find((t) => t.modelo === modelo) ?? null;
 
-/** A MAGNITUDE DOS IMPLÍCITOS que o único dá (% a mais): "Magnitudes dos Modificadores Implícitos são dobradas" (Olhos do Lobo Grandioso) = 100. */
-export const magnitudeDosImplicitos = (modificadores = []) => ((modificadores ?? []).some((m) => /^Magnitudes dos Modificadores Implícitos são dobradas$/.test(m.modelo ?? m.texto ?? '')) ? 100 : 0);
 /**
- * Os implícitos da peça com a magnitude do único (no PoE o item mostra o valor já dobrado). O valor sem ela fica em `valoresSemMagnitude`:
- * o Abençoado e o Vaal recalculam a partir dele, sem dobrar duas vezes.
+ * A MAGNITUDE DOS IMPLÍCITOS que o único dá (% a mais): "…são dobradas" (Olhos do Lobo Grandioso) 100, "…são triplicadas" (Corda da
+ * Servidão) 200, "Magnitudes dos Implícitos dos Modificadores aumentadas em X%" (Nebulis e a Réplica) X — o valor sorteado da linha.
  */
-export function comMagnitudeDosImplicitos(implicitos, modificadores) {
+const MAGNITUDE_DOS_IMPLICITOS = [
+  [/^Magnitudes dos Modificadores Implícitos são dobradas$/, () => 100],
+  [/^Magnitudes dos Modificadores Implícitos são triplicadas$/, () => 200],
+  [/^Magnitudes dos Implícitos dos Modificadores aumentadas em \{0\}%$/, (m) => Number(m.valores?.[0]) || 0],
+];
+export const magnitudeDosImplicitos = (modificadores = []) =>
+  (modificadores ?? []).reduce((n, m) => n + (MAGNITUDE_DOS_IMPLICITOS.find(([re]) => re.test(m.modelo ?? m.texto ?? ''))?.[1](m) ?? 0), 0);
+/**
+ * Os números do texto que são da DESCRIÇÃO do mod, não valor dele ("a cada 10 de Destreza", "por cada 500 de Mana Máxima", "por 4
+ * segundos"): a magnitude não os muda (os índices dos `{i}`).
+ */
+const constantesDo = (modelo) => new Set([...String(modelo ?? '').matchAll(/(?:por cada|a cada) \{(\d+)\}|por \{(\d+)\} segundos?/g)].map((x) => Number(x[1] ?? x[2])));
+/** Um implícito com a magnitude `pct` — a partir do valor sem ela (`valoresSemMagnitude`), que fica guardado. */
+function implicitoComMagnitude(m, pct) {
+  if (!m.valores?.length) return m;
+  const { valoresSemMagnitude, ...resto } = m;
+  const valores = valoresSemMagnitude ?? m.valores;
+  if (!pct) return valoresSemMagnitude ? { ...resto, valores, texto: escrever(m.modelo, valores) } : m;
+  const fixos = constantesDo(m.modelo);
+  const novos = comMagnitude({ ...resto, valores }, pct).valores.map((v, i) => (fixos.has(i) ? valores[i] : v));
+  return { ...resto, valores: novos, texto: escrever(m.modelo, novos), valoresSemMagnitude: valores };
+}
+/**
+ * A peça (`{ implicitos, modificadores }`) com a magnitude do único nos implícitos — os da peça e as linhas implícitas do próprio único (a
+ * Réplica: Nebulis). No PoE o item mostra o valor já multiplicado; o valor sem ela fica em `valoresSemMagnitude`: o Abençoado, o Vaal e o
+ * Divino recalculam a partir dele, sem multiplicar duas vezes. Devolve `{ implicitos, modificadores }`.
+ */
+export function comMagnitudeNosImplicitos({ implicitos = [], modificadores = [] }) {
   const pct = magnitudeDosImplicitos(modificadores);
-  return (implicitos ?? []).map((m) => {
-    const { valoresSemMagnitude, ...resto } = m;
-    const valores = valoresSemMagnitude ?? m.valores;
-    if (!pct) return valoresSemMagnitude ? { ...resto, valores, texto: escrever(m.modelo, valores) } : m;
-    return { ...comMagnitude({ ...resto, valores }, pct), valoresSemMagnitude: valores };
-  });
+  return { implicitos: (implicitos ?? []).map((m) => implicitoComMagnitude(m, pct)), modificadores: (modificadores ?? []).map((m) => (m.tipo === 'implicit' ? implicitoComMagnitude(m, pct) : m)) };
+}
+
+/**
+ * Os mods do ÚNICO sorteados nas faixas. Na regra que TROCA o implícito (`implicitosSorteados` do único — a Corda da Servidão, o Nebulis),
+ * a linha `substitui` sai: no lugar dela entram os implícitos sorteados. `manter`: o modelo que a peça já tinha fica (a peça de antes da
+ * regra, no Orbe Divino, não perde a linha).
+ */
+export function modificadoresDoUnico(u, rng, manter = null) {
+  const s = u.implicitosSorteados;
+  const sai = (m) => s && m.tipo === 'implicit' && m.modelo === s.substitui && !manter?.has(m.modelo);
+  return u.modificadores.filter((m) => !sai(m)).map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) }));
+}
+/**
+ * Os implícitos da REGRA do único (`implicitosSorteados`: `{ quantidade: [mín, máx], grupos, pesoIgual, corrompido, origem }`): a
+ * quantidade, e cada um de uma família diferente, com o tier de iLvl ≤ o da peça — pelo peso do tier, ou com a mesma chance (`pesoIgual`:
+ * o pool de síntese tem os pesos 0). O formato é o do implícito de pool (o do Orbe Vaal): `{ familia, tier, nome, ilvl, modelo, texto,
+ * valores, origem, corrompido? }`.
+ */
+export function implicitosDoUnico(s, ilvl, rng) {
+  const [min, max] = s.quantidade ?? [1, 1];
+  const quantos = min + (max > min ? Math.floor(rng() * (max - min + 1)) : 0);
+  const usadas = new Set();
+  const saida = [];
+  for (let i = 0; i < quantos; i++) {
+    const candidatos = [];
+    for (const g of s.grupos ?? []) {
+      if (usadas.has(g.familia)) continue;
+      for (const t of g.tiers) if ((t.ilvl ?? 1) <= ilvl && (s.pesoIgual || (t.peso ?? 0) > 0)) candidatos.push([g, t]);
+    }
+    if (!candidatos.length) break;
+    let par;
+    if (s.pesoIgual) {
+      const familias = [...new Set(candidatos.map(([g]) => g))];
+      const g = familias[Math.floor(rng() * familias.length)];
+      const daFamilia = candidatos.filter(([x]) => x === g);
+      par = daFamilia[Math.floor(rng() * daFamilia.length)];
+    } else par = porPeso(candidatos.map((c) => [c, c[1].peso]), rng);
+    const [g, t] = par;
+    usadas.add(g.familia);
+    saida.push({ familia: g.familia, tier: t.tier, nome: t.nome, ilvl: t.ilvl, ...rolarTexto(t, rng), origem: s.origem, ...(s.corrompido ? { corrompido: true } : {}) });
+  }
+  return saida;
 }
 
 /** O pool `normal` da base (`{ prefixos, sufixos }`), ou null quando a coleção não tem pool para ela. */
@@ -165,10 +227,13 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     if (!u) return { erro: `nenhum único com a base ${base.nome}` };
     // O implícito do ÚNICO é o da página dele (poedb: a linha `implicitMod`), e não o da base SOMADO a ele: com os dois, a Vergôntea dava
     // Dano Mágico 8–12% duas vezes (achado da auditoria dos únicos, 11/10). Único sem implícito próprio fica com o da base.
-    // (Os Olhos do Lobo Grandioso dobram os implícitos da base — `comMagnitudeDosImplicitos`.)
+    // A regra do único que TROCA o implícito (a Corda da Servidão cai corrompida, com 1 implícito corrompido; o Nebulis, com 1 a 3 de
+    // Síntese): a linha dele sai e entram os sorteados. E a magnitude do único nos implícitos (Olhos ×2, Corda ×3, Nebulis +60–120%).
     const proprios = u.modificadores.some((m) => m.tipo === 'implicit');
-    const modificadores = u.modificadores.map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) }));
-    return { ...peca, implicitos: proprios ? [] : comMagnitudeDosImplicitos(peca.implicitos, modificadores), nome: u.nome, unico: u.slug, modificadores };
+    const s = u.implicitosSorteados;
+    const modificadores = modificadoresDoUnico(u, rng);
+    const implicitos = s ? implicitosDoUnico(s, nivel, rng) : proprios ? [] : peca.implicitos;
+    return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), nome: u.nome, unico: u.slug };
   }
   const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
   if (!quantos) return peca;
