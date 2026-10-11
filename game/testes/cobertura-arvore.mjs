@@ -202,3 +202,13 @@ MEDIDAS['area_inc@estandarte'] = { medir: daTag('area_inc', 'estandarte'), esper
 MEDIDAS['duracao_habilidades@estandarte'] = { medir: daTag('duracao_habilidades', 'estandarte'), esperado: soma };
 ESCALAS.valorDoEstandarte = 'passivas-poe-nao-se-aplica-medios (a regeneração pelo Valor consumido do Estandarte plantado)';
 CONDICOES.estandarteAtivo ??= 'passivas-poe-nao-se-aplica-medios (com o Estandarte plantado)';
+// (11/10, as keystones e as ascendências que ainda não funcionavam — passivas-poe-keystones-ascendencias.test.mjs)
+for (const k of ['so_dano', 'raio_max_mais', 'raio_min_mais', 'incendios_extra', 'incendio_duracao_base_s', 'evasao_projetil_dobrada', 'evasao_corpo_menos', 'acrobacia_esquiva_pct',
+  'esquiva_magica_max', 'clamor_sem_buff_em_voce', 'clamor_duracao_mais', 'sem_dano_proprio', 'desafio_ao_perder_vida', 'desafio_perde_em', 'desafio_cura_faltante_pct',
+  'forca_ventos_ao_usar', 'forca_ventos_perde_ao_ser_acertado', 'fanaticas_max', 'fanaticas_por_segundo', 'fanaticas_perde_no_max', 'fanatismo_ao_max_s', 'convergencia_cada_s',
+  'aura_crit_mult_menos', 'aura_dano_elem_menos', 'aura_fisico_em_fogo', 'aura_recarga_menos', 'incendiados_fisico_em_fogo', 'armadura_no_caos_pct', 'dano_degen_recebido_pct',
+  'proximos_lentos_degen_menos', 'bloqueio_escudo_fixo', 'definhamento_expira_lento', 'definhamento_maximo_chance', 'crit_base_arma_fixa']) MECANICAS[k] ??= 'passivas-poe-keystones-ascendencias';
+ESCALAS.forcaDosVentos ??= 'passivas-poe-keystones-ascendencias (a redução de dano por Força dos Ventos)';
+CONDICOES['semBuff:*'] ??= 'passivas-poe-keystones-ascendencias (a área sem Convergência)';
+CONDICOES.custaVida ??= 'passivas-poe-keystones-ascendencias (o Dano Físico das habilidades que custam Vida)';
+

@@ -53,6 +53,8 @@ export function daSoma(af = {}) {
     danoIncendio: n('ignite_dmg_inc'),
     // ("Incêndios infligidos com esta Arma causam X% mais Dano")
     incendioMais: n('incendio_mais'),
+    // (a Chama Voraz: "Você pode infligir um incêndio adicional em cada inimigo"; "A duração base do incêndio é de N segundo")
+    incendiosExtra: n('incendios_extra'), incendioDuracaoBaseMs: n('incendio_duracao_base_s') * 1000,
     danoSangramento: n('bleed_dmg_inc'),
     danoVeneno: n('poison_dmg_inc'),
     duracaoIncendio: n('duracao_incendio') + n('duracao_afeccoes_elementais'),
@@ -173,6 +175,14 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     if (pilhas.length < n) { for (let k = 0; k < n; k++) if (!pilhas.some((d) => d.chave === `pilha:${k}`)) return `pilha:${k}`; }
     return pilhas.reduce((x, d) => (x && x.falta <= d.falta ? x : d), null)?.chave ?? 'pilha:0';
   };
+  // (a Chama Voraz: os incêndios a mais — cada um à parte, como as pilhas do Sangramento; cheio, o novo renova o mais fraco)
+  const chaveDoIncendio = () => {
+    const n = 1 + Math.floor(a.incendiosExtra ?? 0);
+    if (n <= 1) return null;
+    const pilhas = (bicho.dots ?? []).filter((d) => d.tipo === 'queimadura' && d.falta > 0 && String(d.chave ?? '').startsWith('incendio:'));
+    if (pilhas.length < n) { for (let k = 0; k < n; k++) if (!pilhas.some((d) => d.chave === `incendio:${k}`)) return `incendio:${k}`; }
+    return pilhas.reduce((x, d) => (x && x.falta <= d.falta ? x : d), null)?.chave ?? 'incendio:0';
+  };
   const fogo = baseDe('incendio');
   const fisico = baseDe('sangramento');
   const gelo = baseDe('congelamento');
@@ -181,7 +191,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const caos = dano('chaos');
   // Incêndio: pela chance, ou crítico com dano de Fogo.
   if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
-    const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), a.danoIncendio ?? 0, { mais: a.incendioMais ?? 0 });
+    const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), a.danoIncendio ?? 0, { mais: a.incendioMais ?? 0, chave: chaveDoIncendio() });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
   }

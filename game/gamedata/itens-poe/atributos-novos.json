@@ -5270,6 +5270,240 @@
       "unidade": "",
       "combate": true,
       "efeito": "cacadas (o golpe dos lacaios)"
+    },
+    "raio_max_mais": {
+      "nome": "Dano de Raio máximo (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a parte de Raio do golpe (`condicoes-poe.transformarPartes`)"
+    },
+    "raio_min_mais": {
+      "nome": "Dano de Raio mínimo (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a parte de Raio do golpe (`condicoes-poe.transformarPartes`)"
+    },
+    "incendio_duracao_base_s": {
+      "nome": "Duração base do Incêndio",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o Incêndio (`itens-poe/afeccoes`)"
+    },
+    "incendios_extra": {
+      "nome": "Incêndios adicionais em cada inimigo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Incêndio (`itens-poe/afeccoes` → as pilhas)"
+    },
+    "evasao_projetil_dobrada": {
+      "nome": "Evasão dobrada contra Ataques de Projéteis",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a Evasão (`personagem/defesa.esquivou`, `poderes`)"
+    },
+    "evasao_corpo_menos": {
+      "nome": "Menos Evasão contra Ataques Corpo a Corpo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a Evasão (`personagem/defesa.esquivou`)"
+    },
+    "acrobacia_esquiva_pct": {
+      "nome": "Supressão vira Esquiva Mágica",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a ficha (`ficha.esquivaMagica`) e a magia do monstro (`poderes`)"
+    },
+    "esquiva_magica_max": {
+      "nome": "Esquiva Mágica máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a ficha (`ficha.esquivaMagica`)"
+    },
+    "clamor_sem_buff_em_voce": {
+      "nome": "Clamores não concedem Buffs a você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Clamor (`acoes`)"
+    },
+    "clamor_duracao_mais": {
+      "nome": "Duração dos Clamores (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a provocação do Clamor (`acoes` → `Reforcos.provocar`)"
+    },
+    "sem_dano_proprio": {
+      "nome": "Não causa Dano com Habilidades por si só",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto das gemas (`acoes`) e o golpe básico (`hunt/combate.round`)"
+    },
+    "desafio_ao_perder_vida": {
+      "nome": "Ganha Desafio ao perder Vida para um Acerto",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto sofrido (`mods-poe.aoSerAcertado`)"
+    },
+    "desafio_perde_em": {
+      "nome": "Perde o Desafio ao chegar a N",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto sofrido (`mods-poe.aoSerAcertado`)"
+    },
+    "desafio_cura_faltante_pct": {
+      "nome": "Recupera a vida faltante por Desafio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o acerto sofrido (`mods-poe.aoSerAcertado`)"
+    },
+    "forca_ventos_ao_usar": {
+      "nome": "Ganha Força dos Ventos ao usar uma Habilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o uso (`acoes` → `condicoes-poe.ganharForcaDosVentos`)"
+    },
+    "forca_ventos_perde_ao_ser_acertado": {
+      "nome": "Perde a Força dos Ventos quando Acertado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto sofrido (`mods-poe.aoSerAcertado`)"
+    },
+    "fanatismo_ao_max_s": {
+      "nome": "Fanatismo ao chegar no máximo de Cargas Fanáticas",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o tique (`condicoes-poe.tiqueDasCargasFanaticas`)"
+    },
+    "fanaticas_por_segundo": {
+      "nome": "Cargas Fanáticas por segundo atacando",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o tique (`condicoes-poe.tiqueDasCargasFanaticas`)"
+    },
+    "fanaticas_perde_no_max": {
+      "nome": "Perde as Cargas Fanáticas no máximo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o tique (`condicoes-poe.tiqueDasCargasFanaticas`)"
+    },
+    "fanaticas_max": {
+      "nome": "Máximo de Cargas Fanáticas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o tique (`condicoes-poe.tiqueDasCargasFanaticas`)"
+    },
+    "pen_nao_critico": {
+      "nome": "Penetração Elemental dos Acertos Não Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o acerto da gema (`acoes`)"
+    },
+    "aura_dano_elem_menos": {
+      "nome": "Inimigos próximos causam menos Dano Elemental",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a aura (`mods-poe.aurasProximas`) → o golpe e a magia do monstro"
+    },
+    "convergencia_cada_s": {
+      "nome": "Ganha Convergência ao Acertar um Único",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o acerto (`mods-poe.aoAcertar`)"
+    },
+    "incendiados_fisico_em_fogo": {
+      "nome": "Incendiados convertem Físico em Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a aura (`mods-poe.aurasProximas`) → o golpe do monstro (`hunt/combate`)"
+    },
+    "armadura_no_caos_pct": {
+      "nome": "Parte da Armadura no Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o golpe do monstro (`condicoes-poe.armaduraNoElemento`)"
+    },
+    "crit_base_arma_fixa": {
+      "nome": "Crítico-base da arma fixo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a ficha (`ficha` — `critPontos`)"
+    },
+    "aura_crit_mult_menos": {
+      "nome": "Inimigos próximos: Multiplicador de Crítico a menos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a aura (`mods-poe.aurasProximas`) → `condicoes-poe.criticoDoBicho`"
+    },
+    "dano_acertos_azarado": {
+      "nome": "Dano com Acertos Azarado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o acerto da gema (`acoes`)"
+    },
+    "area_recebida_menos_chance": {
+      "nome": "Chance de sofrer menos Dano em Área",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a magia do monstro (`poderes`)"
+    },
+    "area_recebida_menos_pct": {
+      "nome": "Dano em Área a menos (na chance)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a magia do monstro (`poderes`)"
+    },
+    "aura_recarga_menos": {
+      "nome": "Inimigos próximos: Recuperação da Recarga a menos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a aura (`mods-poe.aurasProximas`) → `poderes`"
+    },
+    "proximos_lentos_degen_menos": {
+      "nome": "Inimigos próximos Desacelerados: menos Dano Degenerativo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano contínuo em você (`mobs/mecanicas.tique`)"
+    },
+    "dano_degen_recebido_pct": {
+      "nome": "Dano Degenerativo sofrido (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano contínuo em você (`mobs/mecanicas.tique`)"
+    },
+    "aura_fisico_em_fogo": {
+      "nome": "Inimigos próximos convertem Físico em Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a aura (`mods-poe.aurasProximas`) → o golpe do monstro (`hunt/combate`)"
+    },
+    "bloqueio_escudo_fixo": {
+      "nome": "Bloqueio do escudo fixo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a soma (`afixos.soma`)"
+    },
+    "definhamento_expira_lento": {
+      "nome": "Definhamento expira mais lentamente",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o Definhamento posto (`mods-poe` → `porComMods`)"
+    },
+    "definhamento_maximo_chance": {
+      "nome": "Chance de Definhamento máximo de uma vez",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o Definhamento posto (`mods-poe` → `porComMods`)"
+    },
+    "fisico_max_mais": {
+      "nome": "Dano Físico Máximo de Ataques (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o golpe de ataque (`acoes.contaDoDano`, `hunt/combate`)"
+    },
+    "armadura_projetil_defende_pct": {
+      "nome": "Defende com X% da Armadura contra Projéteis",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a magia de projétil físico do monstro (`poderes`)"
     }
   }
 }

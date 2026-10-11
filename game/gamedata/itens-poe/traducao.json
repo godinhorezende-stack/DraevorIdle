@@ -14,6 +14,533 @@
   ],
   "regras": [
     {
+      "padrao": "^Dano Físico com Habilidades que Custam Vida aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@custaVida",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a habilidade paga com Vida (inteira ou em parte)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Defende com \\{(\\d+)\\}% da Armadura contra Ataques de Projéteis$",
+      "efeitos": [
+        {
+          "stat": "armadura_projetil_defende_pct",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o projétil físico dos monstros",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha Desafio por \\{(\\d+)\\} segundos ao perder Vida para um Acerto Inimigo, não mais do que uma vez a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "desafio_ao_perder_vida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Perde todo o Desafio quando chegar a \\{(\\d+)\\} de Desafio$",
+      "efeitos": [
+        {
+          "stat": "desafio_perde_em",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio$",
+      "efeitos": [
+        {
+          "stat": "desafio_cura_faltante_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a cura sai junto do golpe, da vida que faltava antes dele",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Força dos Ventos ao usar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "forca_ventos_ao_usar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito do Vento Favorável em você aumentado em \\{(\\d+)\\}% por Força dos Ventos$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:ventoFavoravel%forcaDosVentos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano sofrido por Força dos Ventos$",
+      "efeitos": [
+        {
+          "stat": "dmg_reduction%forcaDosVentos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "na redução do dano de Acertos",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Perde toda a sua Força dos Ventos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "forca_ventos_perde_ao_ser_acertado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "quando Acertado (o PoE: \"when Hit\")",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha Fanatismo por \\{(\\d+)\\} segundos ao atingir o Máximo de Cargas Fanáticas$",
+      "efeitos": [
+        {
+          "stat": "fanatismo_ao_max_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Carga Fanática a cada segundo se tiver Atacado no segundo anterior$",
+      "efeitos": [
+        {
+          "stat": "fanaticas_por_segundo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Perde todas as Cargas Fanáticas ao atingir o Máximo de Cargas Fanáticas$",
+      "efeitos": [
+        {
+          "stat": "fanaticas_perde_no_max",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\} ao Máximo de Car[gt]as Fanáticas$",
+      "efeitos": [
+        {
+          "stat": "fanaticas_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Acertos Não Críticos penetram \\{(\\d+)\\}% das Resistências Elementais do Inimigo$",
+      "efeitos": [
+        {
+          "stat": "pen_nao_critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nas gemas (o golpe básico, não)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos próximos causam \\{(\\d+)\\}% menos Dano Elemental$",
+      "efeitos": [
+        {
+          "stat": "aura_dano_elem_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "convergencia_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "Convergência: 30% mais dano nas habilidades Elementais, por 4 s",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}% enquanto você não possuir Convergência$",
+      "efeitos": [
+        {
+          "stat": "area_inc@semBuff:convergencia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Incendiados por você têm \\{(\\d+)\\}% do Dano Físico causado por eles convertido para Fogo$",
+      "efeitos": [
+        {
+          "stat": "incendiados_fisico_em_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Armadura também é aplicado ao Dano de Caos sofrido dos Acertos$",
+      "efeitos": [
+        {
+          "stat": "armadura_no_caos_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico Base para Ataques com Armas é de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_base_arma_fixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos tem \\{(\\d+)\\}% de Multiplicador de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "aura_crit_mult_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano com Acertos é Azarado$",
+      "efeitos": [
+        {
+          "stat": "dano_acertos_azarado",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "nas gemas (o golpe básico, não)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de sofrer \\{(\\d+)\\}% menos Dano em Área de Acertos$",
+      "efeitos": [
+        {
+          "stat": "area_recebida_menos_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "area_recebida_menos_pct",
+          "valor": "{2}"
+        }
+      ],
+      "nota": "a magia em área dos monstros",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Recuperação da Recarga reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_recarga_menos",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o intervalo das magias dos monstros perto",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos Desacelerados causam \\{(\\d+)\\}% de Dano Degenerativo reduzido$",
+      "efeitos": [
+        {
+          "stat": "proximos_lentos_degen_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Dano Degenerativo é \\{(\\d+)\\}% enquanto você estiver Parado$",
+      "efeitos": [
+        {
+          "stat": "dano_degen_recebido_pct@parado",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano degenerativo que você sofre",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Inimigos Próximos Convertem \\{(\\d+)\\}% de seu Dano Físico para Fogo$",
+      "efeitos": [
+        {
+          "stat": "aura_fisico_em_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_escudo_fixo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o bloqueio-base do escudo vira N (o aumentado local dele não entra)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Definhamentos infligidos por você expiram \\{(\\d+)\\}% mais lentamente$",
+      "efeitos": [
+        {
+          "stat": "definhamento_expira_lento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, quando você infligir Definhamento, infligir até um máximo de \\{(\\d+)\\} Debuffs de Definhamento ao invés$",
+      "efeitos": [
+        {
+          "stat": "definhamento_maximo_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano Físico Máximo de Ataques$",
+      "efeitos": [
+        {
+          "stat": "fisico_max_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Efeito da Fúria Arcana aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana gasto Recentemente, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:furiaArcana%manaGastaRecente:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode causar dano que não seja elétrico$",
+      "efeitos": [
+        {
+          "stat": "so_dano:energy",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de dano elétrico máximo$",
+      "efeitos": [
+        {
+          "stat": "raio_max_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de dano elétrico mínimo$",
+      "efeitos": [
+        {
+          "stat": "raio_min_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Não pode causar dano que não seja de fogo$",
+      "efeitos": [
+        {
+          "stat": "so_dano:fire",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^A duração base do incêndio é de \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "incendio_duracao_base_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você pode infligir um incêndio adicional em cada inimigo$",
+      "efeitos": [
+        {
+          "stat": "incendios_extra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de dano de incêndio$",
+      "efeitos": [
+        {
+          "stat": "incendio_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Evasão é Dobrada contra Ataques de Projéteis$",
+      "efeitos": [
+        {
+          "stat": "evasao_projetil_dobrada",
+          "valor": "1"
+        }
+      ],
+      "nota": "o projétil físico dos monstros é o Ataque de Projétil deles",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Evasão contra Ataques Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "evasao_corpo_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Modificadores de Chance de Suprimir Dano Mágico se aplicam à Chance de Esquivar dos Acertos Mágicos em \\{(\\d+)\\}% de seu valor, ao invés$",
+      "efeitos": [
+        {
+          "stat": "acrobacia_esquiva_pct",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a Esquiva Mágica: a magia inteira não pega (a Supressão some)",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Chance Máxima de Esquiva Mágica é \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "esquiva_magica_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Seus Clamores não concedem Buffs ou Cargas a Você \\{(\\d+)\\}% mais Duração dos Clamores$",
+      "efeitos": [
+        {
+          "stat": "clamor_sem_buff_em_voce",
+          "valor": "1"
+        },
+        {
+          "stat": "clamor_duracao_mais",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Clamor provoca e Impele, sem o buff em você; a provocação dura mais",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
+      "padrao": "^Você não pode causar Dano com Habilidades por si só$",
+      "efeitos": [
+        {
+          "stat": "sem_dano_proprio",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o acerto e o dano degenerativo das suas gemas não ferem (os totens e lacaios, sim); o golpe básico não sai",
+      "_nova": true,
+      "_ciclo7": true
+    },
+    {
       "padrao": "^Habilidades de Estandarte têm Duração aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
@@ -5638,45 +6165,6 @@
           "valor": "{1}"
         }
       ],
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Não pode causar dano que não seja elétrico$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a keystone só entra inteira: falta o dano elétrico mínimo/máximo da Tempestade Turbulenta",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^Não pode causar dano que não seja de fogo$|^A duração base do incêndio é de .*$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a keystone só entra inteira: falta o Incêndio adicional em cada inimigo da Chama Voraz",
-      "_nova": true,
-      "_ciclo7": true
-    },
-    {
-      "padrao": "^.*% menos Evasão contra Ataques Corpo a Corpo$",
-      "efeitos": [
-        {
-          "stat": "inerte",
-          "valor": "1"
-        }
-      ],
-      "estado": "inerte",
-      "nota": "a keystone só entra inteira: o jogo ainda não separa os ataques de projétil dos monstros (a Evasão Dobrada contra eles, da Dança da Flecha)",
       "_nova": true,
       "_ciclo7": true
     },

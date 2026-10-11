@@ -1,28 +1,28 @@
 {
- "geradoEm": "2026-10-11T19:08:09.978Z",
+ "geradoEm": "2026-10-11T19:43:48.075Z",
  "resumo": {
   "nos": 2810,
   "auditaveis": 2782,
   "porSituacao": {
-   "funcional": 2189,
-   "funcional-aproximado": 209,
-   "sem-efeito": 96,
+   "funcional": 2208,
+   "funcional-aproximado": 222,
+   "sem-efeito": 86,
    "nao-classificado": 110,
-   "parcial": 178
+   "parcial": 156
   },
   "verificadosNoMotor": 2782,
   "falhasDeMotor": 0,
   "porNivel": {
    "exibido": 0,
-   "alocavel": 206,
+   "alocavel": 196,
    "interpretado": 32,
-   "aplicado": 1306,
-   "validado": 1238
+   "aplicado": 1309,
+   "validado": 1245
   },
   "porAplicado": {
    "ficha": 1742,
-   "combate": 802,
-   "sem efeito": 206,
+   "combate": 812,
+   "sem efeito": 196,
    "condicional": 32
   }
  },
@@ -13435,7 +13435,7 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/3",
+   "cobertura": "1/3",
    "linhas": {
     "funciona": 3,
     "aproximado": 1,
@@ -24875,30 +24875,34 @@
    "nomeEn": "Call to Arms",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "clamor_sem_buff_em_voce",
+    "clamor_duracao_mais"
+   ],
+   "tipos": [
+    "outros",
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Seus Clamores não concedem Buffs ou Cargas a Você 100% mais Duração dos Clamores"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -44436,31 +44440,34 @@
    "nomeEn": "Roiling Tempest",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "raio_max_mais",
+    "raio_min_mais",
+    "so_dano:energy"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 0,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 3
    },
-   "pendentes": [
-    "ㅤ+25% de dano elétrico máximo",
-    "-50% de dano elétrico mínimo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -46126,12 +46133,14 @@
    "categoria": "keystone",
    "ascendencia": null,
    "chaves": [
+    "sem_dano_proprio",
     "max_lacaio:totem"
    ],
    "tipos": [
+    "dano % (aumentado e \"mais\")",
     "lacaios e totens"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "validado",
    "niveis": {
     "exibido": true,
@@ -46141,18 +46150,16 @@
     "validado": true
    },
    "aplicado": "combate",
-   "cobertura": "1/1",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 2,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Você não pode causar Dano com Habilidades por si só"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -48702,12 +48709,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "chaos_dmg"
+    "chaos_dmg",
+    "definhamento_expira_lento"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -48717,18 +48726,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Definhamentos infligidos por você expiram 10% mais lentamente"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -56327,13 +56334,15 @@
    "ascendencia": null,
    "chaves": [
     "stat:mana",
+    "efeito_buff:furiaArcana%manaGastaRecente:200~50",
     "ev:matar:buffChance:furiaArcana:4"
    ],
    "tipos": [
     "mana %",
+    "cargas e fúria",
     "efeito por evento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -56343,18 +56352,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Efeito da Fúria Arcana aumentado em 10% por cada 200 de Mana gasto Recentemente, até 50%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -59429,31 +59436,33 @@
    "nomeEn": "Acrobatics",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "acrobacia_esquiva_pct",
+    "esquiva_magica_max"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Modificadores de Chance de Suprimir Dano Mágico se aplicam à Chance de Esquivar dos Acertos Mágicos em 50% de seu valor, ao invés",
-    "Chance Máxima de Esquiva Mágica é 75%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -60121,30 +60130,33 @@
    "nomeEn": "Arrow Dancing",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "evasao_projetil_dobrada",
+    "evasao_corpo_menos"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
-    "inexiste": 1,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Evasão é Dobrada contra Ataques de Projéteis"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -62498,12 +62510,14 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "chaos_dmg"
+    "chaos_dmg",
+    "definhamento_expira_lento"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -62513,18 +62527,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Definhamentos infligidos por você expiram 10% mais lentamente"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -70580,31 +70592,36 @@
    "nomeEn": "Voracious Flame",
    "categoria": "keystone",
    "ascendencia": null,
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "incendios_extra",
+    "incendio_duracao_base_s",
+    "incendio_mais",
+    "so_dano:fire"
+   ],
+   "tipos": [
+    "outros",
+    "afecções e chance no acerto"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "ficha",
+   "cobertura": "3/4",
    "linhas": {
-    "funciona": 0,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 2,
-    "inexiste": 2,
+    "pendente": 0,
+    "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 4
    },
-   "pendentes": [
-    "Você pode infligir um incêndio adicional em cada inimigo",
-    "-25% de dano de incêndio"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -75090,13 +75107,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "fisico_max_mais",
     "imune_atordoamento_so_fisico",
     "ignora_reducao_fisica",
+    "phys_dmg@custaVida",
     "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "atordoamento",
     "outros",
+    "atordoamento",
+    "dano % (aumentado e \"mais\")",
     "afecções e chance no acerto"
    ],
    "situacao": "parcial",
@@ -75109,19 +75129,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
-   "pendentes": [
-    "10% mais Dano Físico Máximo de Ataques",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -75131,13 +75148,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "fisico_max_mais",
     "imune_atordoamento_so_fisico",
     "ignora_reducao_fisica",
+    "phys_dmg@custaVida",
     "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "atordoamento",
     "outros",
+    "atordoamento",
+    "dano % (aumentado e \"mais\")",
     "afecções e chance no acerto"
    ],
    "situacao": "parcial",
@@ -75150,19 +75170,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
-   "pendentes": [
-    "10% mais Dano Físico Máximo de Ataques",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -75642,7 +75659,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "ficha",
+   "aplicado": "combate",
    "cobertura": "1/14",
    "linhas": {
     "funciona": 6,
@@ -76275,6 +76292,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "armadura_projetil_defende_pct",
     "chance_evadir_mais",
     "evasion_pct_por_frenesi",
     "armour_pct_por_tolerancia",
@@ -76286,12 +76304,12 @@
     "imune_veneno@elmoEvasaoMaior"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "armadura e evasão",
-    "atordoamento",
-    "outros"
+    "atordoamento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76301,18 +76319,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/9",
+   "cobertura": "0/10",
    "linhas": {
-    "funciona": 9,
+    "funciona": 10,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 9
+    "efetivas": 10
    },
-   "pendentes": [
-    "Defende com 120% da Armadura contra Ataques de Projéteis"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -76322,13 +76338,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "fisico_max_mais",
     "imune_atordoamento_so_fisico",
     "ignora_reducao_fisica",
+    "phys_dmg@custaVida",
     "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "atordoamento",
     "outros",
+    "atordoamento",
+    "dano % (aumentado e \"mais\")",
     "afecções e chance no acerto"
    ],
    "situacao": "parcial",
@@ -76341,19 +76360,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
-   "pendentes": [
-    "10% mais Dano Físico Máximo de Ataques",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -76532,7 +76548,8 @@
     "ev:usarHabilidade:perdeEsPct@caos",
     "chaos_res_max",
     "phys_conv_chaos",
-    "mais_dano@caos+alvoComEscudo"
+    "mais_dano@caos+alvoComEscudo",
+    "definhamento_maximo_chance"
    ],
    "tipos": [
     "efeito por evento",
@@ -76540,7 +76557,7 @@
     "resistências",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76550,18 +76567,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/7",
+   "cobertura": "1/8",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
-   "pendentes": [
-    "5% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -76783,7 +76798,8 @@
     "ev:usarHabilidade:perdeEsPct@caos",
     "chaos_res_max",
     "phys_conv_chaos",
-    "mais_dano@caos+alvoComEscudo"
+    "mais_dano@caos+alvoComEscudo",
+    "definhamento_maximo_chance"
    ],
    "tipos": [
     "efeito por evento",
@@ -76791,7 +76807,7 @@
     "resistências",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -76801,18 +76817,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/7",
+   "cobertura": "1/8",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
-   "pendentes": [
-    "5% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -80964,7 +80978,8 @@
     "ev:usarHabilidade:perdeEsPct@caos",
     "chaos_res_max",
     "phys_conv_chaos",
-    "mais_dano@caos+alvoComEscudo"
+    "mais_dano@caos+alvoComEscudo",
+    "definhamento_maximo_chance"
    ],
    "tipos": [
     "efeito por evento",
@@ -80972,7 +80987,7 @@
     "resistências",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -80982,18 +80997,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/7",
+   "cobertura": "1/8",
    "linhas": {
-    "funciona": 6,
+    "funciona": 7,
     "aproximado": 1,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 6
+    "efetivas": 7
    },
-   "pendentes": [
-    "5% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -83074,13 +83087,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "fisico_max_mais",
     "imune_atordoamento_so_fisico",
     "ignora_reducao_fisica",
+    "phys_dmg@custaVida",
     "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "atordoamento",
     "outros",
+    "atordoamento",
+    "dano % (aumentado e \"mais\")",
     "afecções e chance no acerto"
    ],
    "situacao": "parcial",
@@ -83093,19 +83109,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
-   "pendentes": [
-    "10% mais Dano Físico Máximo de Ataques",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -85007,6 +85020,7 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "armadura_projetil_defende_pct",
     "chance_evadir_mais",
     "evasion_pct_por_frenesi",
     "armour_pct_por_tolerancia",
@@ -85018,12 +85032,12 @@
     "imune_veneno@elmoEvasaoMaior"
    ],
    "tipos": [
+    "outros",
     "afecções e chance no acerto",
     "armadura e evasão",
-    "atordoamento",
-    "outros"
+    "atordoamento"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -85033,18 +85047,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/9",
+   "cobertura": "0/10",
    "linhas": {
-    "funciona": 9,
+    "funciona": 10,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 9
+    "efetivas": 10
    },
-   "pendentes": [
-    "Defende com 120% da Armadura contra Ataques de Projéteis"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -85526,13 +85538,16 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
+    "fisico_max_mais",
     "imune_atordoamento_so_fisico",
     "ignora_reducao_fisica",
+    "phys_dmg@custaVida",
     "dot_multi_bleed_por_empalamento"
    ],
    "tipos": [
-    "atordoamento",
     "outros",
+    "atordoamento",
+    "dano % (aumentado e \"mais\")",
     "afecções e chance no acerto"
    ],
    "situacao": "parcial",
@@ -85545,19 +85560,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/5",
    "linhas": {
-    "funciona": 3,
+    "funciona": 5,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 1,
     "lembrete": 0,
-    "efetivas": 3
+    "efetivas": 5
    },
-   "pendentes": [
-    "10% mais Dano Físico Máximo de Ataques",
-    "Dano Físico com Habilidades que Custam Vida aumentado em 40%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -86468,12 +86480,14 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Gladiator",
    "chaves": [
+    "bloqueio_escudo_fixo",
     "bonus_duas_armas_dobrado"
    ],
    "tipos": [
+    "bloqueio",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -86483,18 +86497,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 2,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Ganhe 50% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -87006,34 +87018,33 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Slayer",
    "chaves": [
-    "crit_dmg%inimigosPerto:4~100"
+    "crit_base_arma_fixa",
+    "crit_dmg%inimigosPerto:4~100",
+    "aura_crit_mult_menos"
    ],
    "tipos": [
     "crítico"
    ],
-   "situacao": "parcial",
-   "nivel": "interpretado",
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/1",
+   "aplicado": "combate",
+   "cobertura": "2/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 3
    },
-   "pendentes": [
-    "Chance de Acerto Crítico Base para Ataques com Armas é de 8%",
-    "Inimigos Próximos tem -30% de Multiplicador de Acerto Crítico"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -87475,32 +87486,34 @@
    "nomeEn": "Defy Pain",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Berserker",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "desafio_ao_perder_vida",
+    "desafio_perde_em",
+    "desafio_cura_faltante_pct"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional-aproximado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "3/3",
    "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
-    "pendente": 3,
+    "funciona": 3,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 3
    },
-   "pendentes": [
-    "Ganha Desafio por 10 segundos ao perder Vida para um Acerto Inimigo, não mais do que uma vez a cada 0.3 segundos",
-    "Perde todo o Desafio quando chegar a 10 de Desafio",
-    "Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -88414,30 +88427,32 @@
    "nomeEn": "Ramako, Sun's Light",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Chieftain",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "dano_degen_recebido_pct@parado"
+   ],
+   "tipos": [
+    "dano % (aumentado e \"mais\")"
+   ],
+   "situacao": "funcional",
+   "nivel": "interpretado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
+    "interpretado": true,
     "aplicado": false,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "condicional",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Dano Degenerativo é -20% enquanto você estiver Parado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -88807,12 +88822,14 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Juggernaut",
    "chaves": [
-    "armour_pct_peitoral"
+    "armour_pct_peitoral",
+    "armadura_no_caos_pct"
    ],
    "tipos": [
-    "armadura e evasão"
+    "armadura e evasão",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -88822,18 +88839,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "15% de Armadura também é aplicado ao Dano de Caos sofrido dos Acertos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -89199,31 +89214,33 @@
    "nomeEn": "Wind Ward",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Deadeye",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "dmg_reduction%forcaDosVentos",
+    "forca_ventos_perde_ao_ser_acertado"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional-aproximado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
-    "pendente": 2,
+    "funciona": 2,
+    "aproximado": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "4% menos Dano sofrido por Força dos Ventos",
-    "Perde toda a sua Força dos Ventos ao Acertar"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -89233,12 +89250,14 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Deadeye",
    "chaves": [
+    "forca_ventos_ao_usar",
+    "efeito_buff:ventoFavoravel%forcaDosVentos",
     "sempre:ventoFavoravel"
    ],
    "tipos": [
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -89248,19 +89267,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 3,
     "aproximado": 1,
-    "pendente": 2,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 1
+    "efetivas": 3
    },
-   "pendentes": [
-    "Ganha 1 de Força dos Ventos ao usar uma Habilidade",
-    "Efeito do Vento Favorável em você aumentado em 10% por Força dos Ventos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -91750,15 +91766,17 @@
    "ascendencia": "Ascendant",
    "chaves": [
     "chance_agravar@ataque",
+    "bloqueio_escudo_fixo",
     "bonus_duas_armas_dobrado",
     "mais_dano_presenca:50"
    ],
    "tipos": [
     "afecções e chance no acerto",
+    "bloqueio",
     "outros",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -91768,18 +91786,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "1/3",
+   "cobertura": "2/4",
    "linhas": {
-    "funciona": 3,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 4,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 3,
-    "efetivas": 3
+    "efetivas": 4
    },
-   "pendentes": [
-    "Ganhe 50% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -93845,12 +93861,14 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Reliquarian",
    "chaves": [
+    "aura_fisico_em_fogo",
     "str_inc"
    ],
    "tipos": [
+    "auras, maldições e reserva",
     "atributos (For/Des/Int)"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -93860,18 +93878,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Inimigos Próximos Convertem 25% de seu Dano Físico para Fogo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -95372,13 +95388,14 @@
    "ascendencia": "Saboteur",
    "chaves": [
     "critico_sortudo",
-    "dano_recebido_azarado"
+    "dano_recebido_azarado",
+    "dano_acertos_azarado"
    ],
    "tipos": [
     "crítico",
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -95388,18 +95405,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/2",
+   "cobertura": "0/3",
    "linhas": {
-    "funciona": 2,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 3,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 2,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Dano com Acertos é Azarado"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -95733,12 +95748,15 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Saboteur",
    "chaves": [
-    "chance_mais_dano_area:50"
+    "chance_mais_dano_area:50",
+    "area_recebida_menos_chance",
+    "area_recebida_menos_pct"
    ],
    "tipos": [
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "área e projéteis"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -95748,18 +95766,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "0/3",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "30% de chance de sofrer 50% menos Dano em Área de Acertos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -95769,12 +95785,14 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Saboteur",
    "chaves": [
-    "cooldown_recovery"
+    "cooldown_recovery",
+    "aura_recarga_menos"
    ],
    "tipos": [
-    "outros"
+    "outros",
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -95784,18 +95802,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Inimigos Próximos têm Recuperação da Recarga reduzido em 10%"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -97908,33 +97924,35 @@
    "nomeEn": "Instruments of Zeal",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Inquisitor",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "fanatismo_ao_max_s",
+    "fanaticas_por_segundo",
+    "fanaticas_perde_no_max",
+    "fanaticas_max"
+   ],
+   "tipos": [
+    "outros"
+   ],
+   "situacao": "funcional",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "4/4",
    "linhas": {
-    "funciona": 0,
+    "funciona": 4,
     "aproximado": 0,
-    "pendente": 4,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 4
    },
-   "pendentes": [
-    "Ganha Fanatismo por 5 segundos ao atingir o Máximo de Cargas Fanáticas",
-    "Ganha 1 Carga Fanática a cada segundo se tiver Atacado no segundo anterior",
-    "Perde todas as Cargas Fanáticas ao atingir o Máximo de Cargas Fanáticas",
-    "+3 ao Máximo de Cartas Fanáticas"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -98165,12 +98183,14 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Inquisitor",
    "chaves": [
-    "aura_elem_fragil"
+    "aura_elem_fragil",
+    "aura_dano_elem_menos"
    ],
    "tipos": [
-    "auras, maldições e reserva"
+    "auras, maldições e reserva",
+    "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -98180,18 +98200,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "1/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Inimigos próximos causam 8% menos Dano Elemental"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -98240,12 +98258,14 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Inquisitor",
    "chaves": [
-    "critico_ignora_res"
+    "critico_ignora_res",
+    "pen_nao_critico"
    ],
    "tipos": [
-    "resistências"
+    "resistências",
+    "crítico"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -98255,18 +98275,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 2,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -98803,13 +98821,14 @@
     "pode:incendio:physical",
     "pode:incendio:ice",
     "pode:incendio:energy",
-    "pode:incendio:chaos"
+    "pode:incendio:chaos",
+    "incendiados_fisico_em_fogo"
    ],
    "tipos": [
     "afecções e chance no acerto",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -98819,18 +98838,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/5",
+   "cobertura": "2/6",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Inimigos Incendiados por você têm 40% do Dano Físico causado por eles convertido para Fogo"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -98916,31 +98933,34 @@
    "nomeEn": "Heart of Destruction",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Elementalist",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "convergencia_cada_s",
+    "area_inc@semBuff:convergencia"
+   ],
+   "tipos": [
+    "outros",
+    "área e projéteis"
+   ],
+   "situacao": "funcional-aproximado",
+   "nivel": "validado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
-    "validado": false
+    "interpretado": true,
+    "aplicado": true,
+    "validado": true
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "2/2",
    "linhas": {
-    "funciona": 0,
-    "aproximado": 0,
-    "pendente": 2,
+    "funciona": 2,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 0
+    "efetivas": 2
    },
-   "pendentes": [
-    "Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada 8 segundos",
-    "Área de Efeito aumentada em 60% enquanto você não possuir Convergência"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -99772,14 +99792,15 @@
    "chaves": [
     "chaos_res",
     "mais_dano@caos",
-    "periodico:1:proximos:definhado:15"
+    "periodico:1:proximos:definhado:15",
+    "proximos_lentos_degen_menos"
    ],
    "tipos": [
     "resistências",
     "dano % (aumentado e \"mais\")",
     "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -99789,18 +99810,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/3",
+   "cobertura": "2/4",
    "linhas": {
-    "funciona": 3,
+    "funciona": 4,
     "aproximado": 1,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 3
+    "efetivas": 4
    },
-   "pendentes": [
-    "Inimigos Próximos Desacelerados causam 15% de Dano Degenerativo reduzido"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {

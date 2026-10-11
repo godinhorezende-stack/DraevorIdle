@@ -9,32 +9,32 @@ Ciclos 1, 2, 3 (maldições e dreno instantâneo) 4 (totens, dano excedente, mon
 
 ## 1. Resumo executivo
 
-| | Antes (commit `de2be187`) | Ciclo 1 | Ciclo 2 | Ciclo 3 | Ciclo 4 | Ciclo 5 | Ciclo 6 | Ciclo 7 | **Não se aplica (11/10)** |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Nós analisados (principal + maestrias + ascendências) | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 |
-| Auditáveis (sem os 28 inícios) | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 |
-| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | 1.712 (61,5%) | 1.728 (62,1%) | 1.730 (62,2%) | 1.734 (62,3%) | 1.753 (63,0%) | **2.124 (76,3%)** | **2.189 (78,7%)** |
-| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) | 147 (5,3%) | 147 (5,3%) | 147 (5,3%) | 148 (5,3%) | 165 (5,9%) | 209 (7,5%) |
-| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | 400 (14,4%) | 395 (14,2%) | 401 (14,4%) | 403 (14,5%) | 406 (14,6%) | **265 (9,5%)** | **178 (6,4%)** |
-| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | 419 (15,1%) | 402 (14,5%) | 394 (14,2%) | 388 (13,9%) | 365 (13,1%) | **118 (4,2%)** | **96 (3,5%)** |
-| Não classificáveis (sem linhas: 57 encaixes de joia, 53 outros) | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 |
-| Falhas no motor (alocar → somar → tirar), em todos os nós | 5 | 0 | 0 | 0 | 0 | 0 | 0 | **0** | **0** |
-| Efeitos traduzidos que nada no código lê | 84 em 5 causas | 0 | 0 | 0 | 0 | 0 | 0 | **0** | **0** |
-| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | 66,6% | 67,4% | 67,5% | 67,6% | 68,3% | **82,3%** | **86,2%** |
+| | Antes (commit `de2be187`) | Ciclo 1 | Ciclo 2 | Ciclo 3 | Ciclo 4 | Ciclo 5 | Ciclo 6 | Ciclo 7 | **Não se aplica (11/10)** | **Keystones e ascendências (11/10)** |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Nós analisados (principal + maestrias + ascendências) | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 |
+| Auditáveis (sem os 28 inícios) | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 |
+| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | 1.712 (61,5%) | 1.728 (62,1%) | 1.730 (62,2%) | 1.734 (62,3%) | 1.753 (63,0%) | **2.124 (76,3%)** | **2.189 (78,7%)** | **2.208 (79,4%)** |
+| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) | 147 (5,3%) | 147 (5,3%) | 147 (5,3%) | 148 (5,3%) | 165 (5,9%) | 209 (7,5%) | 222 (8,0%) |
+| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | 400 (14,4%) | 395 (14,2%) | 401 (14,4%) | 403 (14,5%) | 406 (14,6%) | **265 (9,5%)** | **178 (6,4%)** | **156 (5,6%)** |
+| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | 419 (15,1%) | 402 (14,5%) | 394 (14,2%) | 388 (13,9%) | 365 (13,1%) | **118 (4,2%)** | **96 (3,5%)** | **86 (3,1%)** |
+| Não classificáveis (sem linhas: 57 encaixes de joia, 53 outros) | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 |
+| Falhas no motor (alocar → somar → tirar), em todos os nós | 5 | 0 | 0 | 0 | 0 | 0 | 0 | **0** | **0** | **0** |
+| Efeitos traduzidos que nada no código lê | 84 em 5 causas | 0 | 0 | 0 | 0 | 0 | 0 | **0** | **0** | **0** |
+| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | 66,6% | 67,4% | 67,5% | 67,6% | 68,3% | **82,3%** | **86,2%** | **87,3%** |
 
 Linhas, no ciclo 1: 4.075 com efeito real, 1.515 pendentes, 455 que o jogo marca como inexistentes (com o porquê) e 756 lembretes do PoE.
 
 **Linhas no ciclo 7** (a árvore inteira, cada opção de maestria conta; `arvore-poe.json`):
 
-| | Antes do ciclo 7 | Depois do ciclo 7 | **Depois dos "não se aplica" (11/10)** |
-|---|---:|---:|---:|
-| Com efeito no jogo (igual, aproximado ou atributo novo) | 4.381 | **5.386** (+1.005) | **5.544** (+158) |
-| Sem regra (registradas, sem efeito) | 1.220 | **115** | 111 |
-| Inertes: falta mecânica, gema ou item no jogo | 444 | **245** | 244 |
-| Inertes: dependem de ligar mecânicas de MONSTRO (reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar em você) — **decisão do dono** | — | **75** | 75 |
-| Inertes: **não se aplicam ao jogo** (luz, mercenários, baús, alcance em décimos de metro, posicionamento…) — não há o que fazer funcionar | — | **215** | **62** |
-| **Não funcionam (soma)** | **1.664** | **650** (dos quais 215 não se aplicam) | **492** (dos quais 62 não se aplicam) |
-| Lembretes / textos explicativos | 756 | 765 | 765 |
+| | Antes do ciclo 7 | Depois do ciclo 7 | **Depois dos "não se aplica" (11/10)** | **Depois das keystones e ascendências (11/10)** |
+|---|---:|---:|---:|---:|
+| Com efeito no jogo (igual, aproximado ou atributo novo) | 4.381 | **5.386** (+1.005) | **5.544** (+158) | **5.602** (+58) |
+| Sem regra (registradas, sem efeito) | 1.220 | **115** | 111 | 57 |
+| Inertes: falta mecânica, gema ou item no jogo | 444 | **245** | 244 | 240 |
+| Inertes: dependem de ligar mecânicas de MONSTRO (reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar em você) — **decisão do dono** | — | **75** | 75 | 75 |
+| Inertes: **não se aplicam ao jogo** (luz, mercenários, baús, alcance em décimos de metro, posicionamento…) — não há o que fazer funcionar | — | **215** | **62** | 62 |
+| **Não funcionam (soma)** | **1.664** | **650** (dos quais 215 não se aplicam) | **492** (dos quais 62 não se aplicam) | **434** |
+| Lembretes / textos explicativos | 756 | 765 | 765 | 765 |
 
 Cada linha que não funciona agora diz o PORQUÊ (a nota da regra) no balão da árvore do jogo e no painel da Engine (seção 3.1g).
 
@@ -497,6 +497,41 @@ Testes novos: `passivas-poe-nao-se-aplica-faceis` (5) e `passivas-poe-nao-se-apl
 recusada sem bloquear, liberada depois do bloqueio, e a quarta crítica; o Estandarte da Guerra sem Valor, esperando o máximo, plantado no
 clique e encerrado ao sair da área). `cobertura-arvore.mjs`: as mecânicas novas citadas
 (+ a medida por tag de `area_inc@aura` e `duracao_habilidades@aura`); `mobs-raridade`: `semDreno` na lista de atributos (dono, 11/10).
+
+### 3.1i As keystones incompletas e as mecânicas das ascendências (11/10/2026)
+
+O dono (11/10: "resolver depois as linhas que não funcionam ainda" / "pode seguir"). Linhas que não funcionam: **492 → 434**; nós validados
+por teste: 1.238 → **1.245**. Seis keystones que estavam "inertes inteiras" ou com linha sem regra ficaram **inteiras**:
+- **Tempestade Turbulenta:** só dano de Raio (`so_dano:energy`); "-50% de dano elétrico mínimo" e "+25% de dano elétrico máximo" — o mínimo e
+  o máximo da parte de Raio do golpe (`condicoes-poe.transformarPartes`).
+- **Chama Voraz:** só Fogo; o Incêndio dura 1 s de base; "um incêndio adicional em cada inimigo" (as pilhas, como as do Sangramento); 25% menos
+  dano de incêndio.
+- **Dança da Flecha:** Evasão dobrada contra Ataques de Projéteis e 25% menos contra o corpo a corpo. **Muda o jogo:** o projétil FÍSICO dos
+  monstros passa a poder ser Evadido (no PoE a Evasão vale em todo ataque — antes só no corpo a corpo).
+- **Acrobacia:** a Supressão vira Esquiva Mágica (50% dela, até 75%): a magia inteira não pega.
+- **Mobilização:** o Clamor provoca e Impele, mas o buff dele não fica em você; a provocação dura o dobro. (Corrigido: a provocação do Clamor
+  não tinha duração — o "provocado até" virava NaN.)
+- **Vínculo Ancestral:** as gemas do personagem não ferem (nem o dano degenerativo delas); os totens e lacaios, sim; o golpe básico não sai.
+
+**As ascendências:** o **Desafio** (Berserker: ganha ao perder vida, cura 3% da vida faltante por Desafio, perde tudo em 10), a **Força dos
+Ventos** (Deadeye: +1 por habilidade, até 10, por 4 s; menos dano sofrido e mais Vento Favorável por Força; perde ao ser acertado), as
+**Cargas Fanáticas** e o **Fanatismo** (Inquisidor: +1 por segundo atacando; no máximo, Fanatismo — magias +75% de velocidade, −75% de custo,
++75% de área — e perde as cargas), a penetração no acerto não crítico, a **Convergência** (Elementalista: ao acertar um Único, 30% mais dano
+Elemental por 4 s; a área a mais só sem ela), os Incendiados que convertem Físico em Fogo, a Armadura no Caos (Juggernaut), o crítico-base de 8%
+da arma e o Multiplicador a menos dos monstros perto (Slayer), o dano Azarado, a área recebida e a recarga dos monstros (Sabotador), o
+degenerativo dos lentos perto (Ocultista), o degenerativo parado (Chefe Tribal), o Físico em Fogo dos de perto (Relicário) e o bloqueio fixo do
+escudo (Gladiador, Ascendente). Linhas soltas: o Definhamento (expira mais devagar, 15 de uma vez), o Dano Físico Máximo, a Fúria Arcana pela
+mana gasta, o Dano Físico das habilidades que custam Vida e a Armadura contra projéteis.
+
+**O que fica (434):** mecânicas de monstro (75, decisão do dono), Tinturas (58, decisão do dono), Runas e Vínculos presos ao alvo (51),
+Armadilhas e Minas plantadas (34), não se aplica (62), Convocar o Aço (20), suportes que não agem (Crueldade, Impiedade, Lâmina Noturna,
+Libertar, Feiticeiro — 38), e 57 linhas sem regra: o Guardião (Chama Santificada, Sentinela), o Warden (Casca, Fúria Liberta), o Pathfinder
+(frascos consumidos), as Oferendas em você, os gatilhos de habilidades que não existem (Relíquia, Rajada Vulcânica, Robôs), a Repetição
+Final, o Poder Arcano da varinha, a Égide Necromântica.
+
+Testes novos: `passivas-poe-keystones-ascendencias` (14, nós reais; a Mobilização e o Vínculo Ancestral pela barra de verdade).
+Regressão: 103 arquivos ligados (1.131 testes, 0 falhas); **FULL por exceção** (dono, 11/10): 4.178 testes, 3.548 passam, **0 falhas**,
+628 pulados (clássico), os 2 TODO de sempre. Decisão do dono: a Evasão vale no projétil físico dos monstros para todos (como no PoE).
 
 ### 3.2 Restantes (por causa técnica)
 

@@ -51,14 +51,17 @@ function sorteioDoAcerto(chance, quem, campo) {
 }
 
 /** O jogador esquivou (Evasion) do golpe corpo a corpo de `bicho`? */
-export const esquivou = (ficha, hunt, bicho) => {
+export const esquivou = (ficha, hunt, bicho, { projetil = false } = {}) => {
   // (ciclo 7, lote F: "Não Evade Ataques inimigos".)
   if (itensPoeLigado() && Number(ficha?.afPoe?.sem_evasao) > 0) return false;
   const level = Atributos.levelDoBicho(hunt, bicho);
   // (PoE: o bicho Cego tem 20% menos precisão — `itens-poe/mods-poe.mjs`.)
   // (+ lote F: "X% mais chance de Evadir Ataques [Corpo a Corpo / se você foi Acertado por um Ataque Recentemente]" — o golpe do monstro aqui é o ataque dele.)
   const mais = itensPoeLigado() ? Math.max(0, 1 + (Number(ficha?.afPoe?.chance_evadir_mais) || 0) / 100) : 1;
-  return sorteioDoAcerto(Math.min(0.95, Atributos.chanceDeEsquiva(ficha.evasion ?? 0, level, AtributosDoMob.precisaoDe(bicho, level) * ModsPoe.doBicho(bicho, hunt?.clock ?? 0).precisaoFator) * mais), bicho, 'errosDoBicho');
+  // (a Dança da Flecha: "Evasão é Dobrada contra Ataques de Projéteis"; "X% menos Evasão contra Ataques Corpo a Corpo".)
+  const af = itensPoeLigado() ? ficha?.afPoe ?? {} : {};
+  const daEvasao = projetil ? (Number(af.evasao_projetil_dobrada) > 0 ? 2 : 1) : Math.max(0, 1 - (Number(af.evasao_corpo_menos) || 0) / 100);
+  return sorteioDoAcerto(Math.min(0.95, Atributos.chanceDeEsquiva((ficha.evasion ?? 0) * daEvasao, level, AtributosDoMob.precisaoDe(bicho, level) * ModsPoe.doBicho(bicho, hunt?.clock ?? 0).precisaoFator) * mais), bicho, 'errosDoBicho');
 };
 
 /** "Chance to Avoid Damage": o dano inteiro não pega. */

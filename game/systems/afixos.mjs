@@ -141,6 +141,10 @@ export function soma(estado) {
   // (ciclo 7, lote F) "Bônus recebidos da Aljava Equipada aumentado em X%": a aljava (o espaço do escudo) soma X% a mais do que ela dá. (A
   // linha nas PEÇAS já multiplica a aljava no `somaDeItens`; aqui, só a da ÁRVORE.)
   const aljava = estado.equipment?.shield;
+  // (o Gladiador / Ascendente: "Ganhe N% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo" — o bloqueio-base do escudo
+  // vira N; os "+X% de chance de Bloquear" das outras peças seguem somando.)
+  const escudoFixo = Number(daArvore.bloqueio_escudo_fixo) || 0;
+  if (itensPoeLigado() && escudoFixo > 0 && aljava?.poe?.classe === 'Shields') total.block = (total.block ?? 0) - (Number(aljava.poe.af?.block) || 0) + escudoFixo;
   const bonusDaArvore = Number(daArvore.bonus_aljava) || 0;
   if (itensPoeLigado() && bonusDaArvore > 0 && aljava?.poe?.classe === 'Quivers') {
     for (const [k0, v] of Object.entries(aljava.poe.af ?? {})) {

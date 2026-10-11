@@ -311,7 +311,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
   // O crítico BASE da arma (`critChance` do catálogo, já na soma das peças) × o % de crítico LOCAL dela: só o ACRÉSCIMO local entra aqui (a qualidade não mexe em crítico).
   const critLocalDaArma = armaFinal ? (armaFinal.critChance.final - armaFinal.critChance.base) / 10000 : 0;
   // A chance em pontos (base + o que soma) × o "Chance de Crítico aumentada" RELATIVO das peças do PoE (`crit_chance_inc`, 0 sem elas).
-  const critPontos = CRITICO_BASE + critLocalDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + Aparencia.colecao(estado).critChance;
+  // (o Slayer: "Chance de Acerto Crítico Base para Ataques com Armas é de N%" — o crítico-base da arma vira N.)
+  const baseFixaDaArma = itensPoeLigado() && af.crit_base_arma_fixa > 0 && armaFinal?.critChance ? (af.crit_base_arma_fixa * 100 - (Number(armaFinal.critChance.base) || 0)) / 10000 : 0;
+  const critPontos = CRITICO_BASE + critLocalDaArma + baseFixaDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + Aparencia.colecao(estado).critChance;
   // (× o "X% mais/menos Chance de Crítico" do PoE; "Nunca causa Acertos Críticos" zera.)
   const critMais = itensPoeLigado() ? (af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100)) : 1;
   const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais;
@@ -530,7 +532,10 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // A regeneração do PoE (só com ITENS_POE=1): vida = (+N/s + N% da vida máxima/s) × (1 + aumentada%); mana = (1,8% da máxima + N/s) × (1 + aumentada%).
     regenPoe: itensPoeLigado() ? regenDoPoe(estado, af) : null,
     // A SUPRESSÃO DE FEITIÇO do PoE (chance, 0 a 1): a magia suprimida causa 50% menos dano (`poderes.mjs → dispararMagia`).
-    supressaoDeMagia: Math.min(1, Math.max(0, (af.spell_suppression ?? 0) / 100)),
+    // (a Acrobacia: "Modificadores de Chance de Suprimir Dano Mágico se aplicam à Chance de Esquivar dos Acertos Mágicos em 50% de seu valor, ao
+    // invés"; "Chance Máxima de Esquiva Mágica é 75%" — a Supressão some e vira a Esquiva Mágica: a magia inteira não pega, `poderes`.)
+    supressaoDeMagia: itensPoeLigado() && af.acrobacia_esquiva_pct > 0 ? 0 : Math.min(1, Math.max(0, (af.spell_suppression ?? 0) / 100)),
+    esquivaMagica: itensPoeLigado() && af.acrobacia_esquiva_pct > 0 ? Math.min((af.esquiva_magica_max || 75) / 100, Math.max(0, ((af.spell_suppression ?? 0) * af.acrobacia_esquiva_pct) / 10000)) : 0,
     penalidadeDeResistencia: penalidade,
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao,

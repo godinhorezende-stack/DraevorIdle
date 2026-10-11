@@ -61,6 +61,12 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     ganharFortificacao(hunt, Math.max(1, Math.floor(pct)) * Math.max(0, 1 + v('fortificacao_ganho_inc') / 100), ficha.afPoe, agora);
   };
   fortificar(v('chance_fortificar'));
+  // (11/10, o Elementalista) "Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada N segundos" (4 s — o lembrete).
+  const convCada = v('convergencia_cada_s');
+  if (convCada > 0 && hunt && (alvo.raridade === 'unico' || alvo.boss) && agora - (hunt.poeConvergenciaEm ?? -Infinity) >= convCada * 1000) {
+    hunt.poeConvergenciaEm = agora;
+    ganharBuff(hunt, 'convergencia', 4, agora);
+  }
   // (lote G) O VALOR (com um Estandarte ligado): o acerto corpo a corpo que mata, ou num Raro ou Único — `ganharValor` (uma vez a cada 0,5 s).
   if (tags.has('corpo') && (alvo.hp <= 0 || /raro|unico/.test(alvo.raridade ?? '') || alvo.boss)) ganharValor(hunt, 1, ficha.afPoe, agora);
   if (alvo.hp <= 0) return saida;
@@ -312,6 +318,26 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
     at.reagiu = true;
     aoSerAtordoado(estado, hunt, bicho, ficha, { dano, duracaoMs: at.ms ?? 0, agora, eventos });
   }
+  // (11/10, o Berserker) O DESAFIO: "Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio" (a cura
+  // sai junto do golpe: da vida que faltava antes dele); "Ganha Desafio por 10 segundos ao perder Vida para um Acerto Inimigo, não mais do que
+  // uma vez a cada 0.3 segundos"; "Perde todo o Desafio quando chegar a 10 de Desafio".
+  const porDesafio = v('desafio_cura_faltante_pct');
+  const ganhaDesafio = v('desafio_ao_perder_vida');
+  if ((porDesafio > 0 || ganhaDesafio > 0) && dano > 0) {
+    const d = (hunt.desafio ??= { n: 0, ate: 0, ultimo: -Infinity });
+    if (!(d.ate > agora)) d.n = 0;
+    const faltava = Math.max(0, (estado.maxHp ?? 0) - ((estado.hp ?? 0) + dano));
+    if (porDesafio > 0 && d.n > 0 && faltava > 0 && (estado.hp ?? 0) > 0 && !vidaSoPeloDreno(ficha.afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, estado.hp + Math.round((faltava * porDesafio * d.n) / 100));
+    if (ganhaDesafio > 0 && agora - d.ultimo >= 300) {
+      d.ultimo = agora;
+      d.n += 1;
+      d.ate = agora + 10000;
+      const perdeEm = v('desafio_perde_em');
+      if (perdeEm > 0 && d.n >= perdeEm) d.n = 0;
+    }
+  }
+  // (11/10, o Deadeye) "Perde toda a sua Força dos Ventos ao Acertar" (no PoE: quando Acertado).
+  if (v('forca_ventos_perde_ao_ser_acertado') > 0) delete hunt.forcaDosVentos;
   // (11/10) A RETALIAÇÃO: o Acerto Selvagem ("Um Acerto que remove ao menos 15% da Vida Máxima") abre a janela das que dependem dele; "Habilidades
   // de Retaliação Nocivas se tornam Utilizáveis a cada sexto Acerto dos Inimigos" (o Arsenal da Vingança) abre a das que causam dano (as do
   // bloqueio — o Clamor Vingativo, do Acerto Selvagem, não causa dano) a cada N acertos.
@@ -571,6 +597,16 @@ const ESTADOS_NO_ALVO = {
 const SEGUNDOS_PADRAO = 4;
 /** Põe um estado do PoE (`cego`, `cinzas`, `definhado`…) no alvo até `ate` — o mesmo das auras e dos eventos (o dos lacaios usa). */
 export const porNoAlvo = (alvo, nome, ate) => ESTADOS_NO_ALVO[nome]?.((alvo.estados ??= {}), ate);
+/**
+ * (11/10) Põe o estado com os mods do personagem: o DEFINHAMENTO — "Definhamentos infligidos por você expiram X% mais lentamente" (a duração ÷
+ * (1 − X%)) e "X% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés".
+ */
+function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
+  if (nome !== 'definhado') return fazer(e, ate);
+  const lento = Math.min(90, Math.max(0, valor(ficha, 'definhamento_expira_lento')));
+  fazer(e, agora + Math.round((ate - agora) / (1 - lento / 100)));
+  if (e.definhado && rng() * 100 < valor(ficha, 'definhamento_maximo_chance')) e.definhado.n = 15;
+}
 /** O morto EXPLODE: `pct`% da vida máxima dele em quem está em volta (1 casa) — o "Explodem ao morrer" (o do personagem e o dos lacaios). */
 export function explodirMorto(hunt, alvo, pct, eventos) {
   const dano = Math.max(1, Math.round(((alvo.maxHp ?? 0) * pct) / 100));
@@ -781,7 +817,7 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       const [nomeDoEstado, seg] = String(ev.param).split(':');
       const fazer = ESTADOS_NO_ALVO[nomeDoEstado];
       if (!fazer || !sorte(v)) return;
-      fazer((alvo.estados ??= {}), agora + (Number(seg) || SEGUNDOS_PADRAO) * 1000);
+      porComMods(fazer, nomeDoEstado, (alvo.estados ??= {}), agora + (Number(seg) || SEGUNDOS_PADRAO) * 1000, agora, ficha, rng);
       eventos?.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: nomeDoEstado });
       return;
     }
@@ -792,7 +828,7 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       if (!fazer || !hunt.pos || !sorte(v)) return;
       for (const m of hunt.monstros ?? []) {
         if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > 3) continue;
-        fazer((m.estados ??= {}), agora + (Number(seg) || SEGUNDOS_PADRAO) * 1000);
+        porComMods(fazer, nomeDoEstado, (m.estados ??= {}), agora + (Number(seg) || SEGUNDOS_PADRAO) * 1000, agora, ficha, rng);
       }
       return;
     }
@@ -1026,6 +1062,29 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
     if (agora - p[k] < Number(cada) * 1000) continue;
     p[k] = agora;
     aplicarAcao(estado, hunt, { evento: 'tempo', acao, param: param.join(':'), conds: [], valor: x }, ficha, { alvo: null, agora, rng: Math.random, eventos: null });
+  }
+  // (11/10, as ascendências) As AURAS nos inimigos próximos (a até 3 casas), que o golpe e a magia deles leem: "Inimigos Próximos tem -X% de
+  // Multiplicador de Acerto Crítico" (`critMultMenos` — `condicoes-poe.criticoDoBicho`), "Inimigos próximos causam X% menos Dano Elemental"
+  // (`elemMenos`), "Inimigos Próximos Convertem X% de seu Dano Físico para Fogo" (`fisicoEmFogo`) e "Inimigos Próximos têm Recuperação da
+  // Recarga reduzido em X%" (`recargaMenos` — `poderes`). E "Inimigos Incendiados por você têm X% do Dano Físico causado por eles convertido
+  // para Fogo" (o Incendiado, perto ou não).
+  const critMultMenos = Math.abs(valor(ficha, 'aura_crit_mult_menos'));
+  const elemMenos = valor(ficha, 'aura_dano_elem_menos');
+  const emFogoPerto = valor(ficha, 'aura_fisico_em_fogo');
+  const emFogoIncendiado = valor(ficha, 'incendiados_fisico_em_fogo');
+  const recargaMenos = valor(ficha, 'aura_recarga_menos');
+  if ((critMultMenos > 0 || elemMenos > 0 || emFogoPerto > 0 || emFogoIncendiado > 0 || recargaMenos > 0) && hunt.pos) {
+    for (const m of hunt.monstros ?? []) {
+      if (!(m.hp > 0) || m.dummy) continue;
+      const e = (m.estados ??= {});
+      const perto = Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3;
+      if (perto && critMultMenos > 0) e.critMultMenos = { ate: agora + 1000, pct: critMultMenos };
+      if (perto && elemMenos > 0) e.elemMenos = { ate: agora + 1000, pct: Math.min(100, elemMenos) };
+      if (perto && recargaMenos > 0) e.recargaMenos = { ate: agora + 1000, pct: Math.min(90, recargaMenos) };
+      const incendiado = emFogoIncendiado > 0 && (m.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0);
+      const emFogo = (perto ? emFogoPerto : 0) + (incendiado ? emFogoIncendiado : 0);
+      if (emFogo > 0) e.fisicoEmFogo = { ate: agora + 1000, pct: Math.min(100, emFogo) };
+    }
   }
   // (lote E) "Inimigos Próximos têm Regeneração de Vida reduzida em X%" (a até 3 casas; `skills/estados` lê `regenMenosAura`).
   const regenMenos = valor(ficha, 'aura_regen_menos');
