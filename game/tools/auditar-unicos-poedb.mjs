@@ -36,8 +36,9 @@ const CLASSES_FORA = new Set(['Maps', 'Jewels', 'Abyss_Jewels']);
 // (O Escudeiro: o "Somente Encaixes Brancos" do catálogo é a mecânica dele — o poedb mostra como propriedade, não como mod.)
 const FORA_DA_CORRECAO = new Set(['Pearl_of_Tsoatha', 'Zanas_Ingenuity', 'The_Wellhook', 'The_Squire']);
 const correcoes = { unicos: {}, novos: [] };
-// A base que o único guarda com OUTRO NOME (o catálogo tem as duas traduções com o mesmo id): o sorteio acha a base pelo id e procura o
-// único pelo nome dela — com o nome antigo, o único nunca cai.
+// O único que a coleção põe na OUTRA base de mesmo nome em inglês: o PoE tem dois "Greatwolf Talisman" (o Talismã de 2.1.0, de implícito
+// aleatório — o `BaseType` da página do único no poedb — e o do "Rito da Lua"), e a lista da coleção dá o segundo. (São bases distintas,
+// cada uma com o seu id desde que o importador deixou de repetir `Classe/Slug` — tools/importar-poe-itens.mjs `slugsDistintos`.)
 const BASE_COM_OUTRO_NOME = { 'Talismã do Grande Lobo': 'Talismã do Lobo Grandioso' };
 const achados = { faltando: [], base: [], linhas: [], semPagina: [] };
 const resumo = { poedb: 0, noJogo: 0, iguais: 0, comDiferenca: 0, linhasConferidas: 0 };
@@ -121,11 +122,11 @@ for (const [aba, rotulo] of Object.entries(ABAS)) {
 
 for (const { u, classe } of DO_JOGO.values()) {
   const nome = BASE_COM_OUTRO_NOME[u.base];
-  // (O nome antigo pode até existir no catálogo — com o MESMO id do novo, e o sorteio acha a base pelo id: cai na do outro nome.)
+  // (Só quando a base certa existe na classe.)
   if (!nome || !classe.bases.some((b) => b.nome === nome)) continue;
   const classeId = Object.entries(cat.classes).find(([, c]) => c === classe)?.[0];
   correcoes.unicos[u.slug] = { ...(correcoes.unicos[u.slug] ?? { classe: classeId, modificadores: u.modificadores }), base: nome };
-  achados.base.push({ slug: u.slug, nome: u.nome, poedb: nome, jogo: `${u.base} (outro nome da mesma base: o sorteio não acha o único)` });
+  achados.base.push({ slug: u.slug, nome: u.nome, poedb: nome, jogo: `${u.base} (a outra base de mesmo nome em inglês)` });
 }
 
 // O SORTEIO: cada único do jogo, 40 vezes — todo valor dentro da faixa, as duas pontas alcançáveis, todas as linhas presentes, e (o achado
