@@ -1,0 +1,346 @@
+{
+ "_nota": "Os IMPLÍCITOS SORTEADOS do PoE: a base que não tem implícito fixo e sorteia `quantidade` implícitos distintos (com a mesma chance) da lista `implicitos`. A coleção poe-itens não traz isto; o catálogo (systems/itens-poe/catalogo.mjs) aplica por cima ao carregar, e o gerador (systems/itens-poe/gerar.mjs) sorteia. Os textos são os mesmos dos implícitos dos talismãs do catálogo (a mesma tradução que o jogo já converte em atributo).",
+ "bases": {
+  "Amulets/Greatwolf_Talisman": {
+   "nome": "Talismã do Lobo Grandioso",
+   "quantidade": 2,
+   "fontes": [
+    "https://poedb.tw/pt/Greatwolf_Talisman — a base Metadata/Items/Amulets/Talismans/Talisman4 (Talismã do Lobo Grandioso), sem implícito fixo; a outra \"Greatwolf Talisman\" (TalismanGreatwolf, o Talismã do Grande Lobo) tem o implícito do Rito da Lua",
+    "https://poedb.tw/pt/Modifiers — \"Greatwolf Talisman - has two randomly chosen talisman implicits\"",
+    "https://poedb.tw/pt/Eyes_of_the_Greatwolf — aba \"Modificadores /33\": os implícitos que podem sair na base (o BaseType do único é o Talismã do Lobo Grandioso)"
+   ],
+   "implicitos": [
+    {
+     "texto": "Mana máxima aumentada em (20—30)%",
+     "modelo": "Mana máxima aumentada em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Fogo aumentado em (20—30)%",
+     "modelo": "Dano de Fogo aumentado em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Gelo aumentado em (20—30)%",
+     "modelo": "Dano de Gelo aumentado em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Raio aumentado em (20—30)%",
+     "modelo": "Dano de Raio aumentado em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "(20—30)% de aumento do Dano Físico Global",
+     "modelo": "{0}% de aumento do Dano Físico Global",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Caos aumentado em (19—31)%",
+     "modelo": "Dano de Caos aumentado em {0}%",
+     "faixas": [
+      [
+       19,
+       31
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao número máximo de Zumbis",
+     "modelo": "+{0} ao número máximo de Zumbis",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Chance Global de Crítico aumentada em (40—50)%",
+     "modelo": "Chance Global de Crítico aumentada em {0}%",
+     "faixas": [
+      [
+       40,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "Vida máxima aumentada em (8—12)%",
+     "modelo": "Vida máxima aumentada em {0}%",
+     "faixas": [
+      [
+       8,
+       12
+      ]
+     ]
+    },
+    {
+     "texto": "Atributos aumentados em (12—16)%",
+     "modelo": "Atributos aumentados em {0}%",
+     "faixas": [
+      [
+       12,
+       16
+      ]
+     ]
+    },
+    {
+     "texto": "+(12—18)% de Multiplicador do Dano Degenerativo",
+     "modelo": "+{0}% de Multiplicador do Dano Degenerativo",
+     "faixas": [
+      [
+       12,
+       18
+      ]
+     ]
+    },
+    {
+     "texto": "Dano aumentado em (25—35)%",
+     "modelo": "Dano aumentado em {0}%",
+     "faixas": [
+      [
+       25,
+       35
+      ]
+     ]
+    },
+    {
+     "texto": "+(24—36)% ao Multiplicador Global de Crítico",
+     "modelo": "+{0}% ao Multiplicador Global de Crítico",
+     "faixas": [
+      [
+       24,
+       36
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe (6—12)% de Dano Físico como Dano Extra de um Elemento aleatório",
+     "modelo": "Recebe {0}% de Dano Físico como Dano Extra de um Elemento aleatório",
+     "faixas": [
+      [
+       6,
+       12
+      ]
+     ]
+    },
+    {
+     "texto": "Área de Efeito aumentada em (5—8)%",
+     "modelo": "Área de Efeito aumentada em {0}%",
+     "faixas": [
+      [
+       5,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "50% do Dano de Fogo dos Acertos recebido como Dano de Gelo",
+     "modelo": "{0}% do Dano de Fogo dos Acertos recebido como Dano de Gelo",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "50% do Dano de Fogo dos Acertos recebido como Dano de Raio",
+     "modelo": "{0}% do Dano de Fogo dos Acertos recebido como Dano de Raio",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "50% do Dano de Gelo dos Acertos recebido como Dano de Fogo",
+     "modelo": "{0}% do Dano de Gelo dos Acertos recebido como Dano de Fogo",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "50% do Dano de Gelo dos Acertos recebido como Dano de Raio",
+     "modelo": "{0}% do Dano de Gelo dos Acertos recebido como Dano de Raio",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "50% do Dano de Raio dos Acertos recebido como Dano de Gelo",
+     "modelo": "{0}% do Dano de Raio dos Acertos recebido como Dano de Gelo",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "50% do Dano de Raio dos Acertos recebido como Dano de Fogo",
+     "modelo": "{0}% do Dano de Raio dos Acertos recebido como Dano de Fogo",
+     "faixas": [
+      [
+       50,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "Redução de Dano Físico aumentada em (4—6)%",
+     "modelo": "Redução de Dano Físico aumentada em {0}%",
+     "faixas": [
+      [
+       4,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "2% de Vida Regenerada por segundo",
+     "modelo": "{0}% de Vida Regenerada por segundo",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "(4—6)% de chance de Congelar, Eletrizar e Incendiar",
+     "modelo": "{0}% de chance de Congelar, Eletrizar e Incendiar",
+     "faixas": [
+      [
+       4,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "10% de chance de ganhar uma Carga de Frenesi ao Matar",
+     "modelo": "{0}% de chance de ganhar uma Carga de Frenesi ao Matar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "10% de chance de ganhar uma Carga de Poder ao Matar",
+     "modelo": "{0}% de chance de ganhar uma Carga de Poder ao Matar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "10% de chance de receber uma Carga de Tolerância ao Matar",
+     "modelo": "{0}% de chance de receber uma Carga de Tolerância ao Matar",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Defesas Globais aumentadas em (15—25)%",
+     "modelo": "Defesas Globais aumentadas em {0}%",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Sensibilidade da Fisgada aumentada em (30—40)%",
+     "modelo": "Sensibilidade da Fisgada aumentada em {0}%",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Ataque e Conjuração aumentada em (6—10)%",
+     "modelo": "Velocidade de Ataque e Conjuração aumentada em {0}%",
+     "faixas": [
+      [
+       6,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Mágico aumentado em (20—30)%",
+     "modelo": "Dano Mágico aumentado em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Ataque aumentado em (20—30)%",
+     "modelo": "Dano de Ataque aumentado em {0}%",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Projéteis Perfuram 2 Alvos adicionais",
+     "modelo": "Projéteis Perfuram {0} Alvos adicionais",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

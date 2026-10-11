@@ -234,10 +234,21 @@ const abencoar = ({ p, rng }) => {
     for (const m of p.implicitos) if (m.origem) rerolarValores(p, m, rng);
     return { ok: true, notice: `Implícito: ${p.implicitos.map((i) => i.texto).join('; ')}.` };
   }
-  if (!base?.implicitos?.length) return erro('A base desta peça não tem implícito.');
+  if (!base?.implicitos?.length && !base?.implicitosSorteados) return erro('A base desta peça não tem implícito.');
   // "Modificadores Implícitos Não Podem ser Mudados" (a base): o Orbe Abençoado não vale nela, como no PoE.
   if (Gerar.regrasDaBase(p.implicitos).implicitosFixos) return erro('Os implícitos desta base não podem ser mudados.');
-  p.implicitos = base.implicitos.map((t) => Gerar.rolarTexto(t, rng));
+  // A base de implícito SORTEADO (o Talismã do Lobo Grandioso): os VALORES dos implícitos que a peça tem saem de novo — quais são, não muda.
+  if (base.implicitosSorteados) {
+    if (!p.implicitos?.length) return erro('Esta peça não tem implícito.');
+    p.implicitos = p.implicitos.map((m) => {
+      const t = Gerar.moldeDoImplicito(base, m.modelo);
+      if (!t) return m;
+      const { valoresSemMagnitude, ...resto } = m;
+      return { ...resto, ...Gerar.rolarTexto(t, rng) };
+    });
+  } else p.implicitos = base.implicitos.map((t) => Gerar.rolarTexto(t, rng));
+  // (Os Olhos do Lobo Grandioso dobram os implícitos: os valores novos também.)
+  if (ehUnico(p)) p.implicitos = Gerar.comMagnitudeDosImplicitos(p.implicitos, p.modificadores);
   return { ok: true, notice: `Implícito: ${p.implicitos.map((i) => i.texto).join('; ')}.` };
 };
 const sagrado = ({ p, rng }) => {
@@ -329,7 +340,9 @@ const vaal = (ctx) => {
   const corrompido = Gerar.regrasDaBase(p.implicitos).implicitosFixos ? null : doPool(p, 'corrupted', rng, { lados: ['implicito'] });
   if (!corrompido) return { ok: true, notice: `${p.nome}: corrompida — nada mais mudou.` };
   p.implicitos = [{ ...corrompido.mod, corrompido: true }];
-  return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${corrompido.mod.texto}.` };
+  // (Nos Olhos do Lobo Grandioso o implícito corrompido também sai dobrado, como no PoE.)
+  if (ehUnico(p)) p.implicitos = Gerar.comMagnitudeDosImplicitos(p.implicitos, p.modificadores);
+  return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${p.implicitos[0].texto}.` };
 };
 
 // ---------------------------------------------------------------- as moedas dos POOLS ESPECIAIS
