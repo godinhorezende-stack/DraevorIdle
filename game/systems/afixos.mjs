@@ -136,13 +136,16 @@ export function rerrolar(slot, af, indice, itemId = null) {
  */
 export function soma(estado) {
   const total = somaDeItens(estado);
-  for (const [k, v] of Object.entries(Passivas.efeitos(estado).adds)) total[k] = (total[k] ?? 0) + v;
-  // (ciclo 7, lote F) "Bônus recebidos da Aljava Equipada aumentado em X%": a aljava (o espaço do escudo) soma X% a mais do que ela dá.
+  const daArvore = Passivas.efeitos(estado).adds;
+  for (const [k, v] of Object.entries(daArvore)) total[k] = (total[k] ?? 0) + v;
+  // (ciclo 7, lote F) "Bônus recebidos da Aljava Equipada aumentado em X%": a aljava (o espaço do escudo) soma X% a mais do que ela dá. (A
+  // linha nas PEÇAS já multiplica a aljava no `somaDeItens`; aqui, só a da ÁRVORE.)
   const aljava = estado.equipment?.shield;
-  if (itensPoeLigado() && Number(total.bonus_aljava) > 0 && aljava?.poe?.classe === 'Quivers') {
+  const bonusDaArvore = Number(daArvore.bonus_aljava) || 0;
+  if (itensPoeLigado() && bonusDaArvore > 0 && aljava?.poe?.classe === 'Quivers') {
     for (const [k0, v] of Object.entries(aljava.poe.af ?? {})) {
       const k = typeof v === 'number' && ModsPoe.ehCondicional(k0) ? ModsPoe.doAnel(k0, 'shield') : k0;
-      if (k && typeof v === 'number' && Number.isFinite(v)) total[k] = (total[k] ?? 0) + (v * Number(total.bonus_aljava)) / 100;
+      if (k && typeof v === 'number' && Number.isFinite(v)) total[k] = (total[k] ?? 0) + (v * bonusDaArvore) / 100;
     }
   }
   // + o altar ativado nesta caçada (temporário): mesma chave dos adds de item.
@@ -157,9 +160,6 @@ export function soma(estado) {
   // + os buffs das gemas do PoE ligados (aura, arauto, guarda: armadura, resistências, dano adicionado... — `itens-poe/gemas-poe.mjs`).
   const gemas = GemasPoe.adds(estado);
   if (gemas) for (const [k, v] of Object.entries(gemas)) total[k] = (total[k] ?? 0) + v;
-  // + os BUFFS nomeados do PoE ativos (Agressividade, Adrenalina, Poder Profano… — ganhos por evento ou "sempre" pela peça).
-  const dosBuffs = ModsPoe.adds(estado, total);
-  if (dosBuffs) for (const [k, v] of Object.entries(dosBuffs)) total[k] = (total[k] ?? 0) + v;
   // Os mods CONDICIONAIS do PoE ("segurando um Escudo", "se você Matou Recentemente"…) e os "por X" (por nível, a cada N de Destreza, por
   // carga…): os que valem agora entram no atributo-base.
   if (!itensPoeLigado()) return total;
@@ -167,6 +167,30 @@ export function soma(estado) {
   const doMapa = Mapas.addsNoJogador(estado);
   if (doMapa) for (const [k, v] of Object.entries(doMapa)) total[k] = (total[k] ?? 0) + v;
   const resolvido = ModsPoe.resolver(estado, total, Atributos.principais(estado, total));
+  // + os BUFFS nomeados do PoE ativos (Agressividade, Adrenalina, Poder Profano… — ganhos por evento ou "sempre" pela peça). DEPOIS das
+  // condições: o "sempre" com condição ("Você tem Agonia Perfeita se causou um Golpe Crítico Recentemente" — `sempre:agoniaPerfeita@criticoRecente`)
+  // e o "Efeito do Elusivo aumentado por Carga de Poder" (`efeito_buff:elusivo%carga:poder`) só existem depois do `resolver` (antes, o
+  // buff condicional ficava ativo sem somar nada). Os buffs não somam nada que as condições leiam (velocidade, dano, defesas).
+  const dosBuffs = ModsPoe.adds(estado, resolvido);
+  if (dosBuffs) for (const [k, v] of Object.entries(dosBuffs)) resolvido[k] = (resolvido[k] ?? 0) + v;
+  // ("Aumentos e reduções à vida máxima de lacaio também se aplicam a você em N% de seu valor", "Aumentos e Reduções ao Dano de Lacaios
+  // também afetam você em N%": o "aumentado" dos lacaios entra no seu, na fração.)
+  const vidaDosLacaios = (Number(resolvido.lacaio_vida_em_voce) || 0) * (Number(resolvido.minion_life) || 0);
+  if (vidaDosLacaios) resolvido.life_inc = (resolvido.life_inc ?? 0) + vidaDosLacaios / 100;
+  const danoDosLacaios = (Number(resolvido.lacaio_dano_em_voce) || 0) * (Number(resolvido.minion_dmg) || 0);
+  if (danoDosLacaios) resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + danoDosLacaios / 100;
+  // (a keystone Fúria — o Rampage do PoE: +2% de Dano e +1% de Velocidade de Movimento a cada 20 abates seguidos — `mods-poe.contarRampage`;
+  // por aqui, e não pela tradução, para duas peças com a keystone não dobrarem os bônus)
+  const vinteAbates = Number(resolvido.rampage) > 0 ? ModsPoe.fatorDaEscala(estado, resolvido, null, 'rampage:20') : 0;
+  if (vinteAbates) { resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + 2 * vinteAbates; resolvido.move_speed = (resolvido.move_speed ?? 0) + vinteAbates; }
+  // ("Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico" — O Olho Aberto: o "aumentado" da evasão entra no Dano Mágico.)
+  if (Number(resolvido.evasao_no_dano_magico) > 0 && resolvido.evasion_pct) resolvido.spell_dmg = (resolvido.spell_dmg ?? 0) + (resolvido.evasion_pct * resolvido.evasao_no_dano_magico) / 100;
+  // (as Transfigurações — keystones dos únicos: "Aumentos e Reduções ao Escudo de Energia Máximo também são aplicados ao Dano Mágico em 30%
+  // de seu valor", "à Vida Máxima … ao Dano de Ataque", "à Mana Máxima … ao Dano")
+  const transf = (chave, de) => (Number(resolvido[chave]) || 0) * (Number(resolvido[de]) || 0) / 100;
+  if (transf('transf_es_magia', 'es_pct')) resolvido.spell_dmg = (resolvido.spell_dmg ?? 0) + transf('transf_es_magia', 'es_pct');
+  if (transf('transf_vida_ataque', 'life_inc')) resolvido['dmg_inc@ataque'] = (resolvido['dmg_inc@ataque'] ?? 0) + transf('transf_vida_ataque', 'life_inc');
+  if (transf('transf_mana_dano', 'mana_inc')) resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + transf('transf_mana_dano', 'mana_inc');
   // + as MALDIÇÕES dos monstros em você (Fraqueza Elemental, Vulnerabilidade, Enfraquecer; as refletidas): depois das condições, porque a
   // imunidade e o efeito delas podem ser condicionais ("Imune a Maldições enquanto possuir ao menos N de Fúria").
   const malditas = ModsPoe.addsDasMaldicoesNoJogador(estado, resolvido);
@@ -177,16 +201,21 @@ export function soma(estado) {
 /** Só os adds das peças VESTIDAS (a parte de `soma` que vem do equipamento; a ficha mostra a origem por categoria). */
 export function somaDeItens(estado) {
   const total = {};
+  // (PoE, os únicos: "Bônus recebidos da Aljava Equipada aumentado em X%" — os números da ALJAVA vestida × (1 + X%).)
+  const daAljava = 1 + Object.entries(estado.equipment ?? {}).reduce((n, [slot, p]) => n + (slot !== 'backpack' ? Number(p?.poe?.af?.bonus_aljava) || 0 : 0), 0) / 100;
   for (const [slot, peca] of Object.entries(estado.equipment ?? {})) {
     if (!peca || slot === 'backpack') continue;
+    const fatorDaPeca = daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1;
     for (const a of peca.af ?? []) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
     // A peça no modelo do PoE (sistema de itens do PoE, Fase 1 — só existe com ITENS_POE=1): os mods já traduzidos para os atributos do
     // Draevor e os atributos NOVOS (`itens-poe/atributos-novos.json`), em `peca.poe.af`. Peça comum não tem `poe`: nada muda para ela.
-    for (const [k0, v] of Object.entries(peca.poe?.af ?? {})) {
-      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
-      // "Espaço esquerdo/direito de anel: …": vale só no anel daquele lado (`ring` = esquerdo, `ring2` = direito).
-      const k = ModsPoe.ehCondicional(k0) ? ModsPoe.doAnel(k0, slot) : k0;
-      if (k) total[k] = (total[k] ?? 0) + v;
+    for (const [k0, v0] of Object.entries(peca.poe?.af ?? {})) {
+      if (typeof v0 !== 'number' || !Number.isFinite(v0)) continue;
+      // "Espaço esquerdo/direito de anel: …": vale só no anel daquele lado (`ring` = esquerdo, `ring2` = direito). E a escala da própria
+      // peça ("por Encaixe Vermelho" do Punho da Tríade — `daPeca`).
+      const [k1, v] = ModsPoe.ehCondicional(k0) ? ModsPoe.daPeca(k0, v0, peca, estado) : [k0, v0];
+      const k = ModsPoe.ehCondicional(k1) ? ModsPoe.doAnel(k1, slot) : k1;
+      if (k) total[k] = (total[k] ?? 0) + v * fatorDaPeca;
     }
   }
   return total;

@@ -234,6 +234,50 @@
       ],
       "estado": "equivalente",
       "nota": "o início dessa classe passa a valer como seu: dá para alocar a partir dele (o \"Caminho\" da Ascendente)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% à Chance máxima de Bloquear Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "max_spell_block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nota": "ciclo 7, a árvore: o teto do bloqueio (`ficha.tetoDoBloqueio` soma este e o `block_max` dos únicos)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% à Chance máxima de Bloquear o Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "max_block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nota": "ciclo 7, a árvore: o teto do bloqueio (`ficha.tetoDoBloqueio` soma este e o `block_max` dos únicos)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% ao máximo de Chance de Bloqueio do Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "max_block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nota": "ciclo 7, a árvore: o teto do bloqueio (`ficha.tetoDoBloqueio` soma este e o `block_max` dos únicos)"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% ao máximo de Chance de Bloqueio do Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "max_spell_block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "_nota": "ciclo 7, a árvore: o teto do bloqueio (`ficha.tetoDoBloqueio` soma este e o `block_max` dos únicos)"
     }
   ],
   "_keystones": "As KEYSTONES do PoE com mecânica no Draevor (pelo nome em inglês). Só as que dá para representar dos DOIS lados (o bônus e o custo); as outras ficam com a regra `texto` (sem efeito). `estado`: equivalente ou aproximado (com `nota` dizendo a diferença). `efeitos`: o que o nó soma (o mesmo formato das linhas).",

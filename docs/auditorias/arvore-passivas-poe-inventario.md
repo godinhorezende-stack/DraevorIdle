@@ -1,15 +1,15 @@
 # Inventário da árvore de passivas do PoE (gerado)
 
-Gerado por `game/tools/auditar-arvore-passivas.mjs` em 2026-10-11T18:33:03.597Z. Não edite à mão: rode de novo.
+Gerado por `game/tools/auditar-arvore-passivas.mjs` em 2026-10-11T19:08:09.978Z. Não edite à mão: rode de novo.
 
 ## Resumo
 
 | Situação | Nós | % dos auditáveis |
 | --- | ---: | ---: |
-| funcional | 2187 | 78.6% |
-| funcional-aproximado | 207 | 7.4% |
-| parcial | 181 | 6.5% |
-| sem-efeito | 97 | 3.5% |
+| funcional | 2189 | 78.7% |
+| funcional-aproximado | 209 | 7.5% |
+| parcial | 178 | 6.4% |
+| sem-efeito | 96 | 3.5% |
 | nao-classificado | 110 | 4.0% |
 | **auditáveis** (sem os inícios) | 2782 | 100% |
 
@@ -28,12 +28,12 @@ Cada nó fica no ÚLTIMO degrau que alcança sem pular nenhum:
 | Degrau | Nós | % dos auditáveis |
 | --- | ---: | ---: |
 | exibido | 0 | 0.0% |
-| alocavel | 207 | 7.4% |
-| interpretado | 33 | 1.2% |
-| aplicado | 1304 | 46.9% |
+| alocavel | 206 | 7.4% |
+| interpretado | 32 | 1.2% |
+| aplicado | 1306 | 46.9% |
 | validado | 1238 | 44.5% |
 
-Como o "aplicado" foi observado: ficha 1744 · combate 798 · sem efeito 207 · condicional 33. Legenda:
+Como o "aplicado" foi observado: ficha 1742 · combate 802 · sem efeito 206 · condicional 32. Legenda:
 
 - **ficha**: um número da ficha efetiva mudou (vida, armadura, golpe…);
 - **combate**: o valor está no que o combate lê no acerto/tique (`afPoe`, eventos, golpe por tag);
@@ -48,7 +48,7 @@ Como o "aplicado" foi observado: ficha 1744 · combate 798 · sem efeito 207 · 
 | keystone | 0 | 8 | 1 | 20 | 19 |
 | maestria | 0 | 9 | 0 | 306 | 0 |
 | ascendencia-comum | 0 | 14 | 1 | 91 | 123 |
-| ascendencia-notavel | 0 | 42 | 12 | 88 | 19 |
+| ascendencia-notavel | 0 | 41 | 11 | 90 | 19 |
 
 ## Por categoria
 
@@ -60,16 +60,16 @@ Como o "aplicado" foi observado: ficha 1744 · combate 798 · sem efeito 207 · 
 | keystone | 48 | 30 | 8 | 2 | 8 | 0 |
 | inicio | 7 | 0 | 0 | 0 | 0 | 0 |
 | maestria | 315 | 127 | 77 | 102 | 9 | 0 |
-| ascendencia-comum | 229 | 184 | 11 | 20 | 14 | 0 |
-| ascendencia-notavel | 161 | 70 | 15 | 34 | 31 | 11 |
+| ascendencia-comum | 229 | 184 | 12 | 19 | 14 | 0 |
+| ascendencia-notavel | 161 | 72 | 16 | 32 | 30 | 11 |
 | ascendencia-inicio | 21 | 0 | 0 | 0 | 0 | 0 |
 
 ## Matriz por forma do efeito
 
 | Tipo | Efeitos | Nós | Conectados (leitor no código) | Alocação ok / verificados | Cálculo ok / verificados |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| soma simples | 3359 | 1874 | 3359 (100.0%) | 3359/3359 | 3359/3359 |
-| tag de golpe (ataque, magia, projétil…) | 765 | 570 | 765 (100.0%) | 765/765 | 765/765 |
+| soma simples | 3363 | 1877 | 3363 (100.0%) | 3363/3363 | 3363/3363 |
+| tag de golpe (ataque, magia, projétil…) | 767 | 570 | 767 (100.0%) | 767/767 | 767/767 |
 | condição de estado (com escudo, vida baixa…) | 695 | 395 | 695 (100.0%) | 695/695 | 695/695 |
 | condição de estado + tag de golpe | 508 | 250 | 508 (100.0%) | 508/508 | 508/508 |
 | evento (ao matar, bloquear…) | 284 | 183 | 284 (100.0%) | 284/284 | 284/284 |
@@ -83,10 +83,10 @@ Como o "aplicado" foi observado: ficha 1744 · combate 798 · sem efeito 207 · 
 
 | Tipo | Efeitos | Nós | Conectados (leitor no código) | Alocação ok / verificados | Cálculo ok / verificados |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| dano % (aumentado e "mais") | 1051 | 682 | 1051 (100.0%) | 1051/1051 | 1051/1051 |
-| outros | 803 | 481 | 803 (100.0%) | 803/803 | 803/803 |
+| dano % (aumentado e "mais") | 1054 | 682 | 1054 (100.0%) | 1054/1054 | 1054/1054 |
+| outros | 804 | 482 | 804 (100.0%) | 804/804 | 804/804 |
 | afecções e chance no acerto | 471 | 354 | 471 (100.0%) | 471/471 | 471/471 |
-| crítico | 380 | 273 | 380 (100.0%) | 380/380 | 380/380 |
+| crítico | 381 | 274 | 381 (100.0%) | 381/381 | 381/381 |
 | velocidades | 370 | 325 | 370 (100.0%) | 370/370 | 370/370 |
 | atributos (For/Des/Int) | 305 | 273 | 305 (100.0%) | 305/305 | 305/305 |
 | efeito por evento | 284 | 183 | 284 (100.0%) | 284/284 | 284/284 |
@@ -97,8 +97,8 @@ Como o "aplicado" foi observado: ficha 1744 · combate 798 · sem efeito 207 · 
 | escudo de energia | 176 | 135 | 176 (100.0%) | 176/176 | 176/176 |
 | mana e custo | 175 | 156 | 175 (100.0%) | 175/175 | 175/175 |
 | bloqueio | 165 | 108 | 165 (100.0%) | 165/165 | 165/165 |
+| cargas e fúria | 142 | 120 | 142 (100.0%) | 142/142 | 142/142 |
 | auras, maldições e reserva | 142 | 121 | 142 (100.0%) | 142/142 | 142/142 |
-| cargas e fúria | 141 | 119 | 141 (100.0%) | 141/141 | 141/141 |
 | área e projéteis | 132 | 130 | 132 (100.0%) | 132/132 | 132/132 |
 | atordoamento | 130 | 106 | 130 (100.0%) | 130/130 | 130/130 |
 | frascos | 111 | 55 | 111 (100.0%) | 111/111 | 111/111 |
@@ -118,18 +118,18 @@ Nenhum: todo efeito traduzido tem leitor no código.
 
 | Grupo · tema | Linhas | Nós | O que precisa | Exemplos |
 | --- | ---: | ---: | --- | --- |
-| mecanica · Outros | 61 | 42 | mecânica própria desta linha | Velocidade de Ataque com a Mão Secundária aumentada em 30% enquanto em Dupla Empunhadura / Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você / ㅤ+25% de dano elétrico máximo |
+| mecanica · Outros | 59 | 40 | mecânica própria desta linha | Velocidade de Ataque com a Mão Secundária aumentada em 30% enquanto em Dupla Empunhadura / Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você / ㅤ+25% de dano elétrico máximo |
 | mecanica · Fúria, cargas e poder | 10 | 8 | ganhos e perdas de cargas/fúria em situações específicas | Efeito da Fúria Arcana aumentado em 10% por cada 200 de Mana gasto Recentemente, até 50% / Ataques têm 100% de Poder Arcano ao usar uma varinha / Não pode ganhar Fúria Liberta enquanto Liberto |
 | gema · Canalização e repetição | 10 | 10 | canalização por estágios, intensidade, selos (Liberar) e repetição de magias — no jogo cada uso é um | Repetição Final das Magias têm Efeito em Área aumentado em 40% / Concede bônus para Habilidades Não Canalizadoras usadas por você consumindo 3 Cargas de um Frasco de cada um dos seguintes tipos, se possível: / Intensidade de Chama Santificada infligida por você aumentada em 20% |
 | item · Frascos | 5 | 3 | cargas de frasco por abate/inimigo marcado e efeitos durante o frasco | Envenenamento causado por você durante o Efeito de Frascos possuem 20% de chance de causar 100% mais Dano / Se Cargas de um Frasco de Diamante forem consumidas, Chance de Golpe Crítico aumentado em 250% / Se Cargas de um Frasco de Bismuto forem consumidas, Penetra 25% das Resistências Elementais |
 | mecanica · Afecções e controle | 5 | 4 | afecções em você (limite, "enquanto tiver uma"), empalar em você, resfriamento mínimo, dano por segundo congelado | Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada / Ganhe 1 de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada 0.2 segundos por cada tipo de Afecção / Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto |
 | mecanica · Defesa e armadura | 4 | 4 | defender com armadura extra, bloqueio máximo, evasão condicional | Evasão é Dobrada contra Ataques de Projéteis / Defende com 120% da Armadura contra Ataques de Projéteis / 15% de Armadura também é aplicado ao Dano de Caos sofrido dos Acertos |
 | item · Defesa de uma peça | 4 | 3 | a defesa de UMA peça já existe (`ficha.defesasDaFicha`, lote 5); faltam o que depende da recuperação/recarga do escudo e das condições de outras peças | Ganhe 50% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo / Habilidades do Peitoral Equipado são Suportadas por Chamado Ancestral Nível 30 / Habilidades do Peitoral Equipado são Suportadas por Punho da Guerra Nível 20 |
-| mecanica · Precisão e crítico | 4 | 3 | precisão "mais" contra únicos/de perto, crítico contra o personagem | Chance de Acerto Crítico Base para Ataques com Armas é de 8% / Inimigos Próximos tem -30% de Multiplicador de Acerto Crítico / Chance de Golpe Crítico Mágico de Magias é igual ao da sua Arma Principal |
 | gema · Oferendas, golens e invocações | 4 | 2 | os efeitos específicos de cada invocação | Suas Habilidades de Oferenda também afetam você / Suas Oferendas possuem 50% de redução do Efeito em você |
-| gema · Clamores | 2 | 2 | o Poder dos clamores, a recarga e os bônus do clamor reforçado | Seus Clamores não concedem Buffs ou Cargas a Você 100% mais Duração dos Clamores / A Recarga de Habilidades Clamor é de 4 segundos |
+| mecanica · Precisão e crítico | 3 | 2 | precisão "mais" contra únicos/de perto, crítico contra o personagem | Chance de Acerto Crítico Base para Ataques com Armas é de 8% / Inimigos Próximos tem -30% de Multiplicador de Acerto Crítico / Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo |
 | gema · Maldições | 1 | 1 | as maldições do PoE já amaldiçoam o monstro com limite, duração, "expirou X%", lentidão e o evento "sem Maldições" (`Reforcos.marcar`); o monstro à prova de maldições, a regeneração/escudo do amaldiçoado, o "destruído" e as maldições dos monstros em você também; faltam as auras não-maldição nos inimigos e o redefinir de esfriamentos e eletrificações | Efeito de Auras Não-Maldição de suas Habilidades aumentado em 10% nos Inimigos |
 | mecanica · Atordoamento | 1 | 1 | duração do atordoamento crítico, ignorar atordoamento, atordoar em área ao ser atordoado | Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano |
+| gema · Clamores | 1 | 1 | o Poder dos clamores, a recarga e os bônus do clamor reforçado | Seus Clamores não concedem Buffs ou Cargas a Você 100% mais Duração dos Clamores |
 | gema · Golpes e ataques | 1 | 1 | alcance corpo a corpo, ataques impelidos por clamor, posturas | Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor |
 | gema · Lacaios | 1 | 1 | os atributos dos lacaios além de dano/vida/velocidade (área, recarga, penetração, buffs ao matar, resistências máximas) — o lacaio do jogo ainda não tem esses números | Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
 | gema · Marcas e Runas | 1 | 1 | marcas presas ao inimigo (vínculo, convocação, alcance, duração da marca) | Ativa Marca do Assassino nível 30 ao causar golpe crítico com ataques contra um inimigo raro ou único e você não tem uma marca |
@@ -430,7 +430,7 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `64042` Maestria Física — **parcial**: pendente: 10% mais Dano Físico Máximo de Ataques · pendente: Dano Físico com Habilidades que Custam Vida aumentado em 40%
 - `65528` Maestria de Evasão — **parcial**
 
-### ascendencia-comum (34)
+### ascendencia-comum (33)
 
 - `2060` Evasão, Efeito de Tinturas [Warden] — **parcial**
 - `19488` Evasão, Efeito de Tinturas [Warden] — **parcial**
@@ -458,7 +458,6 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `20160` Espigão de Fidelitas [Reliquarian] — **parcial**
 - `25795` Chamas de Ngamahu [Reliquarian] — **parcial**: pendente: Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo
 - `26055` A Divindade Despedaçada [Reliquarian] — **parcial**: pendente: Concede a Habilidade Convocar Grande Emissário das Direções
-- `27054` Lâmina de Cinturão Verde [Reliquarian] — **parcial**: pendente: A Recarga de Habilidades Clamor é de 4 segundos
 - `33467` Vínculo de Kaom [Reliquarian] — **parcial**: pendente: Inimigos Próximos Convertem 25% de seu Dano Físico para Fogo
 - `35448` Raízes de Kaom [Reliquarian] — **parcial**
 - `36072` Presa Sombria [Reliquarian] — **parcial**
@@ -467,7 +466,7 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `56940` A Apóstata [Reliquarian] — **parcial**
 - `5929` Efeito da Chama Santificada [Guardian] — **sem-efeito**: pendente: Intensidade de Chama Santificada infligida por você aumentada em 20%
 
-### ascendencia-notavel (76)
+### ascendencia-notavel (73)
 
 - `13374` Mestre do Metal [Champion] — **parcial**
 - `31700` Fortitude [Champion] — **parcial**
@@ -528,12 +527,9 @@ Nenhum: todo efeito traduzido tem leitor no código.
 - `19641` Cruzada Implacável [Guardian] — **sem-efeito**: pendente: 25% de chance de Ativar Convocar Relíquia Elemental Nível 20 quando você ou um Aliado próximo Matar um Inimigo, ou Acertar um Inimigo Raro ou Único
 - `42264` Fé Radiante [Guardian] — **sem-efeito**
 - `61372` Harmonia do Propósito [Guardian] — **sem-efeito**: pendente: Ganha um buff de altar aleatório a cada 10 segundos
-- `922` Orientação Divina [Hierophant] — **parcial**: pendente: Transfiguração da Mente
 - `29026` Santuário do Pensamento [Hierophant] — **parcial**
 - `51492` Sinal de Propósito [Hierophant] — **parcial**
-- `3154` Instrumentos de Justiça [Inquisitor] — **sem-efeito**: pendente: Chance de Golpe Crítico Mágico de Magias é igual ao da sua Arma Principal
 - `13851` Instrumentos do Fervor [Inquisitor] — **sem-efeito**: pendente: Ganha Fanatismo por 5 segundos ao atingir o Máximo de Cargas Fanáticas · pendente: Ganha 1 Carga Fanática a cada segundo se tiver Atacado no segundo anterior · pendente: Perde todas as Cargas Fanáticas ao atingir o Máximo de Cargas Fanáticas · pendente: +3 ao Máximo de Cartas Fanáticas
-- `19417` Instrumentos da Virtude [Inquisitor] — **parcial**: pendente: Mago de Batalha
 - `40059` Presságio do Arrependimento [Inquisitor] — **parcial**: pendente: Inimigos próximos causam 8% menos Dano Elemental
 - `48214` Julgamento Inevitável [Inquisitor] — **parcial**: pendente: Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo
 - `4917` Bastião dos Elementos [Elementalist] — **sem-efeito**
@@ -668,7 +664,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `4207` | Janela de Oportunidade | notavel | afecções e chance no acerto | funcional-aproximado | aplicado | combate | 1/2 |
 | `4219` | Evasão e Escudo de Energia | comum | armadura e evasão, escudo de energia | funcional | validado | combate | 2/2 |
 | `4247` | Vida de Lacaios | comum | vida, regeneração e dreno de vida | funcional | validado | combate | 1/1 |
-| `4269` | Dano contra Inimigos Marcados | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/1 |
+| `4269` | Dano contra Inimigos Marcados | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/2 |
 | `4270` | Duração de Runas | comum | afecções e chance no acerto | funcional | validado | combate | 1/1 |
 | `4300` | Dano de Totens e Marcas, Velocidade de Posicionamento de Totens | comum | dano % (aumentado e "mais"), velocidades | funcional | aplicado | ficha | 0/2 |
 | `4336` | Dano com Espadas | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
@@ -2259,7 +2255,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `54354` | Dano da Espada | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
 | `54396` | Multiplicador de Dano Incendiário | comum | afecções e chance no acerto | funcional | validado | ficha | 1/1 |
 | `54452` | Aumento do Dreno de Escudo de Energia | comum | escudo de energia | funcional | aplicado | combate | 0/1 |
-| `54574` | Área de Ativação de Armadilhas | comum | área e projéteis | funcional | aplicado | ficha | 0/1 |
+| `54574` | Área de Ativação de Armadilhas | comum | área e projéteis | funcional | aplicado | combate | 0/1 |
 | `54600` | Proxy de Posicionamento | comum | — | nao-classificado | alocavel | — | — |
 | `54629` | Inexorável | notavel | cargas e fúria, armadura e evasão | funcional | aplicado | ficha | 0/2 |
 | `54645` | Multiplicador de Golpe Crítico de Raio | comum | crítico | funcional | aplicado | ficha | 0/1 |
@@ -2288,7 +2284,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `55307` | Anulação de Incêndios | comum | outros | funcional | aplicado | combate | 0/1 |
 | `55332` | Inteligência | comum | atributos (For/Des/Int) | funcional | validado | ficha | 1/1 |
 | `55373` | Vida e Força | comum | vida, regeneração e dreno de vida, atributos (For/Des/Int) | funcional | validado | ficha | 2/2 |
-| `55380` | Construção Inteligente | notavel | dano % (aumentado e "mais") | funcional-aproximado | aplicado | ficha | 0/1 |
+| `55380` | Construção Inteligente | notavel | dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/1 |
 | `55381` | Retaliação Arcana | notavel | dano % (aumentado e "mais") | funcional | interpretado | condicional | 0/1 |
 | `55392` | Armadura e Evasão | comum | armadura e evasão | funcional | validado | combate | 2/2 |
 | `55414` | Dano da Adaga | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 2/2 |
@@ -2309,7 +2305,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `55804` | Vida Recuperada | comum | vida, regeneração e dreno de vida | funcional | validado | combate | 1/1 |
 | `55854` | Dano Físico | comum | dano % (aumentado e "mais") | funcional-aproximado | validado | ficha | 1/1 |
 | `55866` | Dano Elemental | comum | resistências, dano % (aumentado e "mais") | funcional | validado | ficha | 6/6 |
-| `55880` | Dano contra Inimigos Marcados | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/1 |
+| `55880` | Dano contra Inimigos Marcados | comum | dano % (aumentado e "mais") | funcional | aplicado | ficha | 0/2 |
 | `55906` | Regeneração de Vida | comum | vida, regeneração e dreno de vida | funcional | validado | ficha | 1/1 |
 | `55913` | Dano Corpo a Corpo | comum | dano % (aumentado e "mais") | funcional | validado | ficha | 1/1 |
 | `55926` | Bloqueio com Cajados | comum | bloqueio | funcional | validado | ficha | 1/1 |
@@ -2701,7 +2697,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `14113` | Maestria de Conjuração | maestria | cargas e fúria, velocidades, outros | parcial | aplicado | combate | 1/3 |
 | `14122` | Maestria de Raio | maestria | outros, crítico | funcional | aplicado | ficha | 3/6 |
 | `14505` | Maestria Ofensiva de Lacaios | maestria | lacaios e totens, outros | funcional | aplicado | combate | 0/9 |
-| `14832` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | combate | 1/14 |
+| `14832` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | ficha | 1/14 |
 | `15409` | Maestria de Adagas | maestria | crítico, outros, supressão de magia, dano % (aumentado e "mais"), velocidades | parcial | aplicado | ficha | 1/5 |
 | `15697` | Maestria de Tinturas | maestria | — | sem-efeito | alocavel | — | — |
 | `16123` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
@@ -2770,7 +2766,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `31039` | Maestria de Críticos | maestria | crítico, atordoamento, outros | funcional | aplicado | ficha | 2/6 |
 | `31197` | Maestria de Adagas | maestria | crítico, outros, supressão de magia, dano % (aumentado e "mais"), velocidades | parcial | aplicado | ficha | 1/5 |
 | `31291` | Maestria de Espadas | maestria | outros, afecções e chance no acerto, cargas e fúria, crítico | parcial | aplicado | ficha | 3/5 |
-| `31292` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | ficha | 1/14 |
+| `31292` | Maestria de Maça | maestria | outros, área e projéteis, afecções e chance no acerto, dano % (aumentado e "mais"), atordoamento | funcional | aplicado | combate | 1/14 |
 | `31400` | Maestria de Empalamento | maestria | outros | parcial | aplicado | combate | 3/4 |
 | `31818` | Maestria de Proteção | maestria | auras, maldições e reserva, outros, dano % (aumentado e "mais") | parcial | aplicado | combate | 3/4 |
 | `32241` | Maestria de Vida | maestria | vida, regeneração e dreno de vida, outros, mana e custo | funcional | aplicado | ficha | 1/6 |
@@ -3163,7 +3159,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `22628` | Rompe-amanhecer [Reliquarian] | ascendencia-comum | outros | funcional | aplicado | combate | 0/3 |
 | `25795` | Chamas de Ngamahu [Reliquarian] | ascendencia-comum | penetração | parcial | aplicado | ficha | 0/1 |
 | `26055` | A Divindade Despedaçada [Reliquarian] | ascendencia-comum | atributos (For/Des/Int) | parcial | validado | ficha | 2/2 |
-| `27054` | Lâmina de Cinturão Verde [Reliquarian] | ascendencia-comum | efeito por evento | parcial | aplicado | combate | 0/1 |
+| `27054` | Lâmina de Cinturão Verde [Reliquarian] | ascendencia-comum | efeito por evento, cargas e fúria | funcional-aproximado | aplicado | combate | 0/2 |
 | `33467` | Vínculo de Kaom [Reliquarian] | ascendencia-comum | atributos (For/Des/Int) | parcial | aplicado | ficha | 0/1 |
 | `35448` | Raízes de Kaom [Reliquarian] | ascendencia-comum | vida, regeneração e dreno de vida, velocidades, outros, atordoamento | parcial | aplicado | ficha | 1/5 |
 | `35936` | Ponto Passivo [Reliquarian] | ascendencia-comum | outros | funcional | validado | combate | 1/1 |
@@ -3253,7 +3249,7 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `55146` | Hora da Necessidade [Guardian] | ascendencia-notavel | outros | funcional | aplicado | combate | 0/2 |
 | `61372` | Harmonia do Propósito [Guardian] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
 | `64768` | Fé Inabalável [Guardian] | ascendencia-notavel | auras, maldições e reserva | funcional | aplicado | combate | 0/1 |
-| `922` | Orientação Divina [Hierophant] | ascendencia-notavel | mana %, dano % (aumentado e "mais") | parcial | aplicado | ficha | 1/2 |
+| `922` | Orientação Divina [Hierophant] | ascendencia-notavel | mana %, dano % (aumentado e "mais"), outros | funcional | aplicado | ficha | 1/3 |
 | `1105` | Busca da Fé [Hierophant] | ascendencia-notavel | lacaios e totens, velocidades | funcional | aplicado | combate | 1/3 |
 | `11046` | Regeneração de Mana, Mana [Hierophant] | ascendencia-comum | mana %, mana e custo | funcional | validado | ficha | 2/2 |
 | `14870` | Regeneração de Mana, Velocidade de Posicionamento de Totem [Hierophant] | ascendencia-comum | mana e custo, velocidades | funcional | aplicado | ficha | 1/2 |
@@ -3270,10 +3266,10 @@ A versão completa, com as chaves de cada nó, está em `arvore-passivas-poe-inv
 | `51492` | Sinal de Propósito [Hierophant] | ascendencia-notavel | cargas e fúria | parcial | aplicado | combate | 0/1 |
 | `60462` | Devoção Iluminada [Hierophant] | ascendencia-notavel | afecções e chance no acerto, área e projéteis, vida, regeneração e dreno de vida | funcional | interpretado | condicional | 0/4 |
 | `662` | Dano Elemental, Multiplicador de Crítico [Inquisitor] | ascendencia-comum | dano % (aumentado e "mais"), crítico | funcional | validado | ficha | 4/4 |
-| `3154` | Instrumentos de Justiça [Inquisitor] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
+| `3154` | Instrumentos de Justiça [Inquisitor] | ascendencia-notavel | crítico | funcional | aplicado | combate | 0/1 |
 | `10635` | Dano Elemental, Regeneração de Vida [Inquisitor] | ascendencia-comum | vida, regeneração e dreno de vida, dano % (aumentado e "mais") | funcional | validado | ficha | 4/4 |
 | `13851` | Instrumentos do Fervor [Inquisitor] | ascendencia-notavel | — | sem-efeito | alocavel | — | — |
-| `19417` | Instrumentos da Virtude [Inquisitor] | ascendencia-notavel | dano % (aumentado e "mais") | parcial | interpretado | condicional | 0/1 |
+| `19417` | Instrumentos da Virtude [Inquisitor] | ascendencia-notavel | dano % (aumentado e "mais") | funcional-aproximado | aplicado | combate | 0/2 |
 | `27055` | Dano Elemental, Velocidade de Ataque e Conjuração [Inquisitor] | ascendencia-comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 5/5 |
 | `32816` | Caminho Piedoso [Inquisitor] | ascendencia-notavel | outros | funcional | aplicado | combate | 0/2 |
 | `35739` | Dano Elemental, Ataque e Velocidade de Conjuração [Inquisitor] | ascendencia-comum | dano % (aumentado e "mais"), velocidades | funcional | validado | ficha | 5/5 |

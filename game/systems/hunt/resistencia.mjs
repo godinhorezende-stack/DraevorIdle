@@ -30,10 +30,17 @@ export function resistenciaDe(hunt, alvo, tipo) {
   // (+ a Exposição com o "aplicam X% extra / ao menos X%" de quem a infligiu — a ficha do personagem da caçada.)
   const causticado = (['fire', 'ice', 'energy'].includes(tipo) ? ModsPoe.causticado(alvo, hunt?.clock ?? 0) + ModsPoe.exposicao(alvo, hunt?.clock ?? 0, tipo, ModsPoe.fichaDa(hunt)?.afPoe) : 0) + ModsPoe.resMenosDasAfeccoes(alvo, hunt?.clock ?? 0, tipo);
   // (+ o Equilíbrio Elemental do PoE: +25 / −50 pelos elementos que acertaram o bicho por último.)
-  // (+ o Esmagado do PoE: −15 na redução física.)
-  // (+ lote F: "Inimigos Próximos possuem −X% de Resistência a <tipo>" — a aura do personagem.)
-  const esmagado = (tipo === 'physical' ? ModsPoe.esmagado(alvo, hunt?.clock ?? 0) : 0) + ModsPoe.resMenosDaAura(alvo, hunt?.clock ?? 0, tipo);
-  const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0) + BuffsDeMob.resistencia(alvo, hunt?.clock ?? 0, tipo) - vulneravel - causticado - esmagado + ModsPoe.equilibrio(alvo, hunt?.clock ?? 0, tipo);
+  // (+ as auras do personagem nos de perto: "Inimigos Próximos possuem -10% de todas as Resistências", "têm Resistência a Fogo e Gelo aumentadas";
+  // "têm Resistência a Raio igual a sua" troca a do bicho pela do personagem — `mods-poe.aurasProximas`.)
+  const agora = hunt?.clock ?? 0;
+  const igual = ModsPoe.ativo(alvo?.estados?.resIgual, agora) ? alvo.estados.resIgual[tipo] : undefined;
+  const daAura = ModsPoe.ativo(alvo?.estados?.resAura, agora) ? Number(alvo.estados.resAura[tipo]) || 0 : 0;
+  // (+ "as Resistências deles para tais Elementos são zeradas": o bicho que te acertou com aquele elemento.)
+  const zerada = ModsPoe.ativo(alvo?.estados?.resZerada, agora) && alvo.estados.resZerada[tipo];
+  const daEspecie = zerada ? 0 : igual != null ? igual : (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0);
+  // (+ o Esmagado do PoE: −15 na redução física; + lote F: "Inimigos Próximos possuem −X% de Resistência a <tipo>" — a aura da árvore.)
+  const esmagado = (tipo === 'physical' ? ModsPoe.esmagado(alvo, agora) : 0) + ModsPoe.resMenosDaAura(alvo, agora, tipo);
+  const r = daEspecie + daAura + BuffsDeMob.resistencia(alvo, agora, tipo) - vulneravel - causticado - esmagado + ModsPoe.equilibrio(alvo, agora, tipo);
   const comBoss = hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
   // A fraqueza só vai até o piso (`fraquezaMaxima`); o teto de cima fica para `resistenciaEfetivaDe`.
   return Math.max(-Limites.LIMITES.resistenciaDoMob.fraquezaMaxima, comBoss);
@@ -44,11 +51,24 @@ export function resistenciaDe(hunt, alvo, tipo) {
  * Sem `ficha`, é a resistência do bicho no teto (sem penetração).
  */
 export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
-  const r = Limites.resistenciaDoMob(resistenciaDe(hunt, alvo, tipo));
+  let res = resistenciaDe(hunt, alvo, tipo);
+  let pen = Limites.penetracaoDe(ficha?.penetracao, tipo);
+  // As regras dos únicos do PoE (o atacante — `ficha.afPoe`): "Dano Elemental Causado por você com Acertos é Resistido pela Resistência
+  // Elemental mais baixa ao invés"; "Trata os valores das Resistências Elementais (a de Caos) dos Monstros Inimigos como invertidos" (a
+  // positiva vira negativa e a fraqueza vira resistência); "Seus Acertos não podem Penetrar ou ignorar Resistências Elementais" (a penetração
+  // negativa — "como se fosse X% maior" — fica).
+  const af = ficha?.afPoe;
+  const elemental = ['fire', 'ice', 'energy'].includes(tipo);
+  const sempreInvertida = elemental && Number(af?.res_elemental_invertida) > 0;
+  if (af) {
+    if (elemental && Number(af.resistido_pela_menor) > 0) res = Math.min(...['fire', 'ice', 'energy'].map((t) => resistenciaDe(hunt, alvo, t)));
+    if (sempreInvertida || (tipo === 'chaos' && Number(af.res_caos_invertida) > 0)) res = -res;
+    if (elemental && Number(af.sem_penetracao_elemental) > 0) pen = Math.min(0, pen);
+  }
   // (ciclo 7, lote E) "Acertos têm X% de chance de tratarem os valores da Resistência Elemental dos Monstros Inimigos como invertidos": o
-  // golpe sorteado (`ModsPoe.fichaDoGolpe` → `resInvertida`) usa a resistência elemental com o sinal trocado.
-  const invertida = ficha?.resInvertida && ['fire', 'ice', 'energy'].includes(tipo) ? -r : r;
-  return Limites.resistenciaEfetiva(invertida, Limites.penetracaoDe(ficha?.penetracao, tipo));
+  // golpe sorteado (`ModsPoe.fichaDoGolpe` → `resInvertida`) usa a resistência elemental com o sinal trocado (uma vez só, com a dos únicos).
+  if (ficha?.resInvertida && elemental && !sempreInvertida) res = -res;
+  return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(res), pen);
 }
 
 /**

@@ -1,29 +1,29 @@
 {
- "geradoEm": "2026-10-11T18:33:03.597Z",
+ "geradoEm": "2026-10-11T19:08:09.978Z",
  "resumo": {
   "nos": 2810,
   "auditaveis": 2782,
   "porSituacao": {
-   "funcional": 2187,
-   "funcional-aproximado": 207,
-   "sem-efeito": 97,
+   "funcional": 2189,
+   "funcional-aproximado": 209,
+   "sem-efeito": 96,
    "nao-classificado": 110,
-   "parcial": 181
+   "parcial": 178
   },
   "verificadosNoMotor": 2782,
   "falhasDeMotor": 0,
   "porNivel": {
    "exibido": 0,
-   "alocavel": 207,
-   "interpretado": 33,
-   "aplicado": 1304,
+   "alocavel": 206,
+   "interpretado": 32,
+   "aplicado": 1306,
    "validado": 1238
   },
   "porAplicado": {
-   "ficha": 1744,
-   "combate": 798,
-   "sem efeito": 207,
-   "condicional": 33
+   "ficha": 1742,
+   "combate": 802,
+   "sem efeito": 206,
+   "condicional": 32
   }
  },
  "nos": [
@@ -4062,7 +4062,8 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@alvoMarcado"
+    "dmg_inc@alvoMarcado",
+    "ailment_dmg_inc@alvoMarcado"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")"
@@ -4077,7 +4078,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -59643,7 +59644,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "ficha",
+   "aplicado": "combate",
    "cobertura": "0/1",
    "linhas": {
     "funciona": 1,
@@ -60654,7 +60655,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "ficha",
+   "aplicado": "combate",
    "cobertura": "0/1",
    "linhas": {
     "funciona": 1,
@@ -61371,7 +61372,8 @@
    "categoria": "comum",
    "ascendencia": null,
    "chaves": [
-    "dmg_inc@alvoMarcado"
+    "dmg_inc@alvoMarcado",
+    "ailment_dmg_inc@alvoMarcado"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")"
@@ -61386,7 +61388,7 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
     "funciona": 1,
     "aproximado": 0,
@@ -69784,7 +69786,7 @@
    "categoria": "notavel",
    "ascendencia": null,
    "chaves": [
-    "supressao_impede",
+    "supressao_prevenida",
     "spell_suppression"
    ],
    "tipos": [
@@ -75640,7 +75642,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "combate",
+   "aplicado": "ficha",
    "cobertura": "1/14",
    "linhas": {
     "funciona": 6,
@@ -76361,11 +76363,11 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "supressao_impede",
+    "supressao_prevenida",
     "ev:suprimir:alvo:exposicaoFogo",
     "ev:suprimir:alvo:exposicaoGelo",
     "ev:suprimir:alvo:exposicaoRaio",
-    "supressao_impede%usos:ev.suprimir",
+    "supressao_prevenida%usos:ev.suprimir",
     "spell_suppression%usos:ev.suprimir",
     "suprimido_sem_afeccao_elemental",
     "sempre:trespassar@evRecente:suprimir",
@@ -78525,7 +78527,7 @@
     "aplicado": true,
     "validado": false
    },
-   "aplicado": "ficha",
+   "aplicado": "combate",
    "cobertura": "1/14",
    "linhas": {
     "funciona": 6,
@@ -82633,11 +82635,11 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "supressao_impede",
+    "supressao_prevenida",
     "ev:suprimir:alvo:exposicaoFogo",
     "ev:suprimir:alvo:exposicaoGelo",
     "ev:suprimir:alvo:exposicaoRaio",
-    "supressao_impede%usos:ev.suprimir",
+    "supressao_prevenida%usos:ev.suprimir",
     "spell_suppression%usos:ev.suprimir",
     "suprimido_sem_afeccao_elemental",
     "sempre:trespassar@evRecente:suprimir",
@@ -83545,11 +83547,11 @@
    "categoria": "maestria",
    "ascendencia": null,
    "chaves": [
-    "supressao_impede",
+    "supressao_prevenida",
     "ev:suprimir:alvo:exposicaoFogo",
     "ev:suprimir:alvo:exposicaoGelo",
     "ev:suprimir:alvo:exposicaoRaio",
-    "supressao_impede%usos:ev.suprimir",
+    "supressao_prevenida%usos:ev.suprimir",
     "spell_suppression%usos:ev.suprimir",
     "suprimido_sem_afeccao_elemental",
     "sempre:trespassar@evRecente:suprimir",
@@ -91136,7 +91138,7 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Ascendant",
    "chaves": [
-    "supressao_impede@escudoCheio",
+    "supressao_prevenida@escudoCheio",
     "mais_dano%tiposDeMaestria",
     "es_leech",
     "aura_acao_maxima"
@@ -93807,12 +93809,14 @@
    "categoria": "ascendencia-comum",
    "ascendencia": "Reliquarian",
    "chaves": [
-    "ev:matar:explodirChance:8@alvoProvocado"
+    "ev:matar:explodirChance:8@alvoProvocado",
+    "recarga_clamor_fixa"
    ],
    "tipos": [
-    "efeito por evento"
+    "efeito por evento",
+    "cargas e fúria"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional-aproximado",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -93822,18 +93826,16 @@
     "validado": false
    },
    "aplicado": "combate",
-   "cobertura": "0/1",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
+    "funciona": 2,
     "aproximado": 1,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "A Recarga de Habilidades Clamor é de 4 segundos"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -95370,7 +95372,7 @@
    "ascendencia": "Saboteur",
    "chaves": [
     "critico_sortudo",
-    "dano_inimigo_azarado"
+    "dano_recebido_azarado"
    ],
    "tipos": [
     "crítico",
@@ -96377,7 +96379,7 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Trickster",
    "chaves": [
-    "supressao_impede@escudoCheio",
+    "supressao_prevenida@escudoCheio",
     "ev:suprimir:recargaEs"
    ],
    "tipos": [
@@ -97186,13 +97188,15 @@
    "ascendencia": "Hierophant",
    "chaves": [
     "stat:mana",
-    "dano_pela_mana_pct"
+    "dano_pela_mana_pct",
+    "transf_mana_dano"
    ],
    "tipos": [
     "mana %",
-    "dano % (aumentado e \"mais\")"
+    "dano % (aumentado e \"mais\")",
+    "outros"
    ],
-   "situacao": "parcial",
+   "situacao": "funcional",
    "nivel": "aplicado",
    "niveis": {
     "exibido": true,
@@ -97202,18 +97206,16 @@
     "validado": false
    },
    "aplicado": "ficha",
-   "cobertura": "1/2",
+   "cobertura": "1/3",
    "linhas": {
-    "funciona": 2,
+    "funciona": 3,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 2
+    "efetivas": 3
    },
-   "pendentes": [
-    "Transfiguração da Mente"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -97834,30 +97836,32 @@
    "nomeEn": "Instruments of Justice",
    "categoria": "ascendencia-notavel",
    "ascendencia": "Inquisitor",
-   "chaves": [],
-   "tipos": [],
-   "situacao": "sem-efeito",
-   "nivel": "alocavel",
+   "chaves": [
+    "critico_magia_da_arma"
+   ],
+   "tipos": [
+    "crítico"
+   ],
+   "situacao": "funcional",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
-    "interpretado": false,
-    "aplicado": false,
+    "interpretado": true,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": null,
-   "cobertura": null,
+   "aplicado": "combate",
+   "cobertura": "0/1",
    "linhas": {
-    "funciona": 0,
+    "funciona": 1,
     "aproximado": 0,
-    "pendente": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 0,
-    "efetivas": 0
+    "efetivas": 1
    },
-   "pendentes": [
-    "Chance de Golpe Crítico Mágico de Magias é igual ao da sua Arma Principal"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {
@@ -97940,33 +97944,32 @@
    "categoria": "ascendencia-notavel",
    "ascendencia": "Inquisitor",
    "chaves": [
-    "mais_dano%usos:magia:8:3@ataque"
+    "mais_dano%usos:magia:8:3@ataque",
+    "magia_dano_da_arma"
    ],
    "tipos": [
     "dano % (aumentado e \"mais\")"
    ],
-   "situacao": "parcial",
-   "nivel": "interpretado",
+   "situacao": "funcional-aproximado",
+   "nivel": "aplicado",
    "niveis": {
     "exibido": true,
     "alocavel": true,
     "interpretado": true,
-    "aplicado": false,
+    "aplicado": true,
     "validado": false
    },
-   "aplicado": "condicional",
-   "cobertura": "0/1",
+   "aplicado": "combate",
+   "cobertura": "0/2",
    "linhas": {
-    "funciona": 1,
-    "aproximado": 0,
-    "pendente": 1,
+    "funciona": 2,
+    "aproximado": 1,
+    "pendente": 0,
     "inexiste": 0,
     "lembrete": 1,
-    "efetivas": 1
+    "efetivas": 2
    },
-   "pendentes": [
-    "Mago de Batalha"
-   ],
+   "pendentes": [],
    "desconectados": []
   },
   {

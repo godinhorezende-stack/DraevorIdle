@@ -173,6 +173,8 @@ function virarUnico(p, rng, mesmaClasse = false) {
 function comSockets(peca, fazer) {
   const s = Gemas.soquetesDe(peca);
   if (!s) return erro('Esta peça não tem sockets.');
+  // (o único: "Encaixes não podem ser modificados")
+  if (Number(peca?.poe?.af?.encaixes_inalteraveis) > 0) return erro('Os sockets desta peça não podem ser modificados.');
   return fazer(s);
 }
 
@@ -337,7 +339,7 @@ const vaal = (ctx) => {
   if (caso === 0) return { ok: true, notice: `${p.nome}: corrompida — nada mais mudou.` };
   if (caso === 1) {
     const s = Gemas.soquetesDe(peca);
-    if (s && !s.gemas.some(Boolean)) {
+    if (s && !s.gemas.some(Boolean) && !(Number(peca?.poe?.af?.encaixes_inalteraveis) > 0)) {
       const cores = SocketsPoe.sortearCores(s.max, ITEM_CATALOG[peca.id]?.poe?.requisitos ?? null, rng).map((c) => (rng() < 0.25 ? 'W' : c));
       Gemas.gravarSoquetes(peca, { ...s, cores });
       return { ok: true, notice: `${p.nome}: corrompida — os sockets mudaram de cor (pode haver branco).` };

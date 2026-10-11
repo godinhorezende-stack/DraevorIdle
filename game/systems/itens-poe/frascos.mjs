@@ -368,14 +368,20 @@ export function tique(estado, eventos = null, quem = null) {
     st.cheios = true;
   }
   let mudou = false;
+  // (do personagem: "A Mana não-instantânea recuperada dos Frascos também recupera Vida"; "Efeitos do frasco de mana não são removidos quando o
+  // mana não reservado é preenchido")
+  const doDono = doPersonagem(estado);
   // A recuperação ao longo do tempo e o vencimento.
   for (const [v, a] of Object.entries(st.ativos)) {
     if (a.porMs) {
       const ate = Math.min(agora, a.ate);
-      if (ate > a.ultimo) recuperar(estado, a.recurso, a.porMs * (ate - a.ultimo), eventos, quem, a.extras);
+      if (ate > a.ultimo) {
+        recuperar(estado, a.recurso, a.porMs * (ate - a.ultimo), eventos, quem, a.extras);
+        if (a.recurso === 'mana' && Number(doDono.mana_frasco_tambem_vida) > 0 && !vidaSoPeloDreno(doDono)) recuperar(estado, 'vida', a.porMs * (ate - a.ultimo), eventos, quem);
+      }
       a.ultimo = ate;
       // PoE: o frasco de MANA para quando a mana enche (o "Efeito não é removido quando a Mana Não Reservada Encher" segue).
-      if (a.recurso === 'mana' && !a.naoParaNoCheio && (estado.mana ?? 0) >= (estado.maxMana ?? 0)) a.ate = Math.min(a.ate, agora);
+      if (a.recurso === 'mana' && !a.naoParaNoCheio && !(Number(doDono.frasco_mana_nao_para) > 0) && (estado.mana ?? 0) >= (estado.maxMana ?? 0)) a.ate = Math.min(a.ate, agora);
     }
     if (a.ate <= agora) {
       if (a.noFim > 0) recuperar(estado, a.recurso, a.noFim, eventos, quem, a.extras);
@@ -471,14 +477,16 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
   if (!ligado()) return;
   const base = Number(F().cargasPorMorte?.[tipoDoMonstro] ?? F().cargasPorMorte?.normal ?? 1) || 0;
   // (+ a "Recarga de Frasco recebida aumentada" do personagem; + ciclo 7, lote E: "Inimigos que você Matar sob efeito de Afecções Elementais
-  // concedem X% de Cargas de Frascos aumentadas" — o morto Incendiado, Congelado, Eletrizado ou Resfriado.)
+  // concedem X% de Cargas de Frascos aumentadas" — o morto Incendiado, Congelado, Eletrizado ou Resfriado; + "Inimigos nos quais você infligiu
+  // Sangramento concedem X% de aumento das Cargas de Frasco" — o morto sangrando.)
   const afp = doPersonagem(estado);
   const agora = estado?.hunt?.clock ?? 0;
   const e = morto?.estados ?? {};
   const elemental = !!morto && (['congelado', 'chocado', 'lento'].some((k) => e[k]?.ate > agora) || (morto.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0));
   // (+ lote F: "Inimigo Marcado concede Cargas de Frasco aumentadas em X% a Você" — a sua Marca no morto.)
   const marcado = !!morto && Object.values(morto.maldicoes ?? {}).some((m) => m?.marca && m.ate > agora);
-  const doPersonagemPct = (Number(afp.frasco_cargas_recebidas) || 0) + (elemental ? Number(afp.frasco_cargas_morto_elemental) || 0 : 0) + (marcado ? Number(afp.frasco_cargas_marcado) || 0 : 0);
+  const sangrando = (morto?.dots ?? []).some((d) => d.tipo === 'sangramento' && d.falta > 0);
+  const doPersonagemPct = (Number(afp.frasco_cargas_recebidas) || 0) + (elemental ? Number(afp.frasco_cargas_morto_elemental) || 0 : 0) + (marcado ? Number(afp.frasco_cargas_marcado) || 0 : 0) + (sangrando ? Number(afp.frasco_cargas_sangrando) || 0 : 0);
   for (const p of cinto(estado)) {
     if (!p) continue;
     const par = parametros(p, afp);

@@ -13,14 +13,14 @@ Ciclos 1, 2, 3 (maldições e dreno instantâneo) 4 (totens, dano excedente, mon
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Nós analisados (principal + maestrias + ascendências) | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 | 2.810 |
 | Auditáveis (sem os 28 inícios) | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 | 2.782 |
-| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | 1.712 (61,5%) | 1.728 (62,1%) | 1.730 (62,2%) | 1.734 (62,3%) | 1.753 (63,0%) | **2.124 (76,3%)** | **2.187 (78,6%)** |
-| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) | 147 (5,3%) | 147 (5,3%) | 147 (5,3%) | 148 (5,3%) | 165 (5,9%) | 207 (7,4%) |
-| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | 400 (14,4%) | 395 (14,2%) | 401 (14,4%) | 403 (14,5%) | 406 (14,6%) | **265 (9,5%)** | **181 (6,5%)** |
-| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | 419 (15,1%) | 402 (14,5%) | 394 (14,2%) | 388 (13,9%) | 365 (13,1%) | **118 (4,2%)** | **97 (3,5%)** |
+| **Funcionais** (todas as linhas com efeito real, verificado) | 1.622 (58,3%) | 1.693 (60,9%) | 1.712 (61,5%) | 1.728 (62,1%) | 1.730 (62,2%) | 1.734 (62,3%) | 1.753 (63,0%) | **2.124 (76,3%)** | **2.189 (78,7%)** |
+| Funcionais com aproximação | 158 (5,7%) | 141 (5,1%) | 141 (5,1%) | 147 (5,3%) | 147 (5,3%) | 147 (5,3%) | 148 (5,3%) | 165 (5,9%) | 209 (7,5%) |
+| **Parciais** (parte das linhas com efeito) | 430 (15,5%) | 407 (14,6%) | 400 (14,4%) | 395 (14,2%) | 401 (14,4%) | 403 (14,5%) | 406 (14,6%) | **265 (9,5%)** | **178 (6,4%)** |
+| **Sem efeito real** | 462 (16,6%) | 431 (15,5%) | 419 (15,1%) | 402 (14,5%) | 394 (14,2%) | 388 (13,9%) | 365 (13,1%) | **118 (4,2%)** | **96 (3,5%)** |
 | Não classificáveis (sem linhas: 57 encaixes de joia, 53 outros) | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 | 110 |
 | Falhas no motor (alocar → somar → tirar), em todos os nós | 5 | 0 | 0 | 0 | 0 | 0 | 0 | **0** | **0** |
 | Efeitos traduzidos que nada no código lê | 84 em 5 causas | 0 | 0 | 0 | 0 | 0 | 0 | **0** | **0** |
-| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | 66,6% | 67,4% | 67,5% | 67,6% | 68,3% | **82,3%** | **86,1%** |
+| **Cobertura funcional** (funcionais + aproximados) | 64,0% | 65,9% | 66,6% | 67,4% | 67,5% | 67,6% | 68,3% | **82,3%** | **86,2%** |
 
 Linhas, no ciclo 1: 4.075 com efeito real, 1.515 pendentes, 455 que o jogo marca como inexistentes (com o porquê) e 756 lembretes do PoE.
 
@@ -28,12 +28,12 @@ Linhas, no ciclo 1: 4.075 com efeito real, 1.515 pendentes, 455 que o jogo marca
 
 | | Antes do ciclo 7 | Depois do ciclo 7 | **Depois dos "não se aplica" (11/10)** |
 |---|---:|---:|---:|
-| Com efeito no jogo (igual, aproximado ou atributo novo) | 4.381 | **5.386** (+1.005) | **5.540** (+154) |
-| Sem regra (registradas, sem efeito) | 1.220 | **115** | 115 |
+| Com efeito no jogo (igual, aproximado ou atributo novo) | 4.381 | **5.386** (+1.005) | **5.544** (+158) |
+| Sem regra (registradas, sem efeito) | 1.220 | **115** | 111 |
 | Inertes: falta mecânica, gema ou item no jogo | 444 | **245** | 244 |
 | Inertes: dependem de ligar mecânicas de MONSTRO (reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar em você) — **decisão do dono** | — | **75** | 75 |
 | Inertes: **não se aplicam ao jogo** (luz, mercenários, baús, alcance em décimos de metro, posicionamento…) — não há o que fazer funcionar | — | **215** | **62** |
-| **Não funcionam (soma)** | **1.664** | **650** (dos quais 215 não se aplicam) | **496** (dos quais 62 não se aplicam) |
+| **Não funcionam (soma)** | **1.664** | **650** (dos quais 215 não se aplicam) | **492** (dos quais 62 não se aplicam) |
 | Lembretes / textos explicativos | 756 | 765 | 765 |
 
 Cada linha que não funciona agora diz o PORQUÊ (a nota da regra) no balão da árvore do jogo e no painel da Engine (seção 3.1g).
@@ -426,7 +426,8 @@ Testes novos (nós reais da árvore, o número medido onde a linha age): `passiv
 
 O dono pediu (11/10: "como eu faço para esses 215 aplicarem no game?" → "faça os fáceis, depois os médios"): o jogo ganhou a mecânica que
 faltava e a linha passou a valer. **215 → 62** linhas que não se aplicam; 153 delas funcionam agora (e a "Cada quarta Habilidade de
-Retaliação…", que esperava a contagem, também). Linhas que não funcionam: **650 → 496**. Nós validados por teste: 1.172 → **1.238**.
+Retaliação…", que esperava a contagem, também). Linhas que não funcionam: **650 → 496** (492 depois da junção com a main, abaixo). Nós
+validados por teste: 1.172 → **1.238**.
 Três pontos foram **decisão do dono** (11/10, as recomendações aceitas): a janela da Retaliação, o Sangramento em você triplicar enquanto
 anda e o Estandarte plantado.
 
@@ -475,6 +476,22 @@ anda e o Estandarte plantado.
 **O que segue sem se aplicar (62):** mercenários (18), projétil sem trajetória (14), raio de luz e campo de visão (18), posicionamento (3),
 cadáveres sem vida (2), joias na árvore (2), Runas presas ao alvo (2), penalidade de movimento das armaduras (1), "Não Pode ser Empurrado"
 (os monstros não empurram, 1) e os lacaios que não sangram (1).
+
+**A junção com a main (11/10, as rodadas de únicos — PR #221).** A main mexeu nos mesmos arquivos (73 trechos em conflito, em 15 arquivos) e
+os dois lados tinham implementado **as mesmas mecânicas**; juntas, valeriam em dobro. Ficou uma implementação de cada, e os testes dos dois
+lados passam sem mudança:
+- **mesmo atributo, dois leitores:** Crítico Sortudo (a chance da ficha já Sortuda — `critSortudo` — e o sorteio do golpe só rola duas vezes
+  quando a chance usada é outra: a de magia, a da gema, a da mão secundária), Bloqueio Sortudo (fica o sorteio dos únicos, `sorteado`, com o
+  Azarado e as três jogadas), Bônus da Aljava (a parte das peças no `somaDeItens`; a da árvore no `soma`), Crítico dos Lacaios (sobre a base
+  `critChanceBase`), dano no Totem (fica o `Arvore.danoRecebido`), vida do lacaio ao bloquear (`lacaioBloqueia`), o excedente do bloqueio
+  (`bloqueioExcedente`), mortos destruídos e duração da Provocação (iguais), a Marca que se transfere (fica a do ciclo 7: tira do morto; os
+  Feitiços seguem a dos únicos) e o teto `~N` das escalas (fica o `comTeto` da main);
+- **mesma linha, dois nomes:** "O dano dos inimigos é Azarado" e "Impede X% do Dano Mágico Suprimido" passam a usar os nomes da main
+  (`dano_recebido_azarado`, `supressao_prevenida`); a "Chance máxima de Bloquear" da árvore foi para a tabela própria da árvore
+  (`traducao-arvore.json`, `max_block`/`max_spell_block`) e a das peças é a dos únicos (`block_max`/`spell_block_max`) — a ficha soma os dois
+  (`tetoDoBloqueio`). Renomear o da árvore pede trocar o seletor de um teste do ciclo 7 (**decisão do dono**);
+- as regras dos únicos ligaram 4 linhas da árvore ("Transfiguração da Mente", "Mago de Batalha", a Recarga do Clamor e o crítico mágico da
+  arma); a tag `critico`/`golpeAtordoou` só conta como efeito nos atributos que o acerto lê depois do sorteio (`SO_NO_CRITICO`, `SO_AO_ATORDOAR`).
 
 Testes novos: `passivas-poe-nao-se-aplica-faceis` (5) e `passivas-poe-nao-se-aplica-medios` (12; dois pela barra de verdade: a Eviscerar
 recusada sem bloquear, liberada depois do bloqueio, e a quarta crítica; o Estandarte da Guerra sem Valor, esperando o máximo, plantado no
@@ -688,7 +705,9 @@ L4) vieram em seguida, no mesmo ciclo.
 - 2 arquivos novos (17 testes, nós reais) passam.
 - Regressão de 86 arquivos (passivas, cobertura, mobs, dano ao longo do tempo, movimento dos monstros, combo, barra, reserva, encontros,
   itens-poe, gemas, afecções, controle, lacaios, party, auras, árvore): **883 testes, 812 passam, 0 falhas**, 71 pulados (clássico).
-- FULL: **pendente** — o pre-commit exige (núcleo: `cacadas.mjs`, `acoes.mjs`); só com a exceção do dono.
+- **FULL por exceção** (dono, 11/10): 4.067 testes, 3.437 passam, **0 falhas**, 628 pulados (clássico), os 2 TODO de sempre.
+- **Depois da junção com a main** (PR #221): os 45 arquivos mais ligados aos conflitos — 477 testes, 0 falhas; a **FULL** de novo: 4.164 testes,
+  3.534 passam, **0 falhas**, 628 pulados, os 2 TODO de sempre. Commits com `--no-verify`.
 
 ## 8. Próxima prioridade recomendada
 
