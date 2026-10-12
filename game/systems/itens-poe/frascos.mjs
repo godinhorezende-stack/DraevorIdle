@@ -19,10 +19,13 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { vidaSoPeloDreno } from './condicoes-poe.mjs';
+import { vidaSoPeloDreno, marcar } from './condicoes-poe.mjs';
+import * as Tinturas from './tinturas.mjs';
 
-export const CLASSES = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks'];
-const TIPO_DA_CLASSE = { Life_Flasks: 'vida', Mana_Flasks: 'mana', Utility_Flasks: 'utilidade' };
+// (12/10: + as TINTURAS — `itens-poe/tinturas.mjs`: vão no mesmo cinto, sem cargas; ativam e desativam.)
+export const CLASSES = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', Tinturas.CLASSE];
+const TIPO_DA_CLASSE = { Life_Flasks: 'vida', Mana_Flasks: 'mana', Utility_Flasks: 'utilidade', [Tinturas.CLASSE]: 'tintura' };
+const ehTinturaDoCinto = (p) => Tinturas.ehTintura(p?.poe);
 const F = () => REGRAS.frascos ?? {};
 export const VAGAS = () => F().vagas ?? 5;
 
@@ -100,6 +103,8 @@ const doPersonagem = (estado) => (estado && leitorDoPersonagem ? leitorDoPersona
  */
 export function parametros(peca, afDoPersonagem = null) {
   const poe = peca?.poe ?? {};
+  // (a Tintura tem os parâmetros dela: a Queima de Mana, a recarga, o Efeito — `tinturas.parametros`)
+  if (Tinturas.ehTintura(poe)) return Tinturas.parametros(peca, afDoPersonagem);
   const a = poe.atributos ?? {};
   const tipo = TIPO_DA_CLASSE[poe.classe] ?? null;
   const p = { velocidadePct: 0, quantidadePct: 0, instantaneo: false, recargaPct: 0, cargasMaximas: Number(a.cargas_maximas) || 0, custoPct: 0, duracaoPct: 0, duracaoMenos: 1, efeitoPct: 0, maisNaVidaBaixaPct: 0,
@@ -184,6 +189,7 @@ export function parametros(peca, afDoPersonagem = null) {
 
 /** O resumo para o balão (com os mods já aplicados): recupera, cargas, duração, o efeito da base e os atributos enquanto dura. */
 export function resumo(peca) {
+  if (ehTinturaDoCinto(peca)) return Tinturas.resumo(peca);
   const par = parametros(peca);
   return {
     tipo: par.tipo, recurso: par.recurso, quantidade: par.quantidade, segundos: par.ms / 1000, instantaneo: par.instantaneo,
@@ -226,6 +232,8 @@ export function tirar(estado, { vaga }) {
   c[v] = null;
   darPeca(estado, peca);
   if (estado.hunt?.frascosPoe) delete estado.hunt.frascosPoe.ativos?.[v];
+  // (a Tintura tirada do cinto deixa de valer — ativa ou na recarga)
+  if (estado.hunt?.frascosPoe?.tinturas) delete estado.hunt.frascosPoe.tinturas[v];
   return { ok: true, notice: `${peca.poe?.nome ?? 'Frasco'} de volta à mochila.` };
 }
 
@@ -241,8 +249,9 @@ export function mover(estado, { de, para }) {
   if (!c[a]) return { ok: false, erro: 'Essa vaga do cinto está vazia.' };
   if (a === b) return { ok: true };
   [c[a], c[b]] = [c[b] ?? null, c[a]];
-  const ativos = estado.hunt?.frascosPoe?.ativos;
-  if (ativos) {
+  // (o efeito ativo — e a Tintura ativa ou na recarga — vai junto com a peça)
+  for (const ativos of [estado.hunt?.frascosPoe?.ativos, estado.hunt?.frascosPoe?.tinturas]) {
+    if (!ativos) continue;
     const [xa, xb] = [ativos[a], ativos[b]];
     if (xb === undefined) delete ativos[a]; else ativos[a] = xb;
     if (xa === undefined) delete ativos[b]; else ativos[b] = xa;
@@ -262,6 +271,8 @@ export function usar(estado, v, eventos = null, quem = null) {
   const afp = doPersonagem(estado);
   // "Não pode usar Frascos no Quinto Espaço" (o cinto do PoE); "Não pode usar frascos de vida/mana"; "Frascos não são aplicados em Você".
   if (v === 4 && Number(afp.sem_quinto_frasco) > 0) return false;
+  // A TINTURA: usar ATIVA (ou DESATIVA a que está ativa) — `tinturas.mjs`.
+  if (ehTinturaDoCinto(peca)) return alternarTintura(estado, v, peca, afp);
   if (Number(afp[`sem_frasco:${TIPO_DA_CLASSE[peca.poe?.classe]}`]) > 0 || Number(afp.frascos_nao_aplicam) > 0) return false;
   const par = parametros(peca, afp);
   const cargas = cargasDe(peca, par);
@@ -273,8 +284,15 @@ export function usar(estado, v, eventos = null, quem = null) {
   // (ciclo 7, lote F) "X% de chance de Frascos usados por você não consumirem Cargas".
   if (!(Math.random() * 100 < (Number(afp.frasco_sem_consumo) || 0))) peca.poe.cargas = cargas - par.cargasPorUso;
   aoUsarOFrasco(estado, par, eventos, quem);
+  // (12/10, a Tintura: "…se você usou um Frasco de Vida Recentemente")
+  if (par.tipo === 'vida') marcar(hunt, 'usouFrascoVida', agora);
   if (par.tipo === 'utilidade') {
-    st.ativos[v] = { ate: agora + par.duracaoMs, af: par.af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}) };
+    // ("Frascos adjacentes às Tinturas aplicadas têm Efeito aumentado em 10% quando utilizados se você Acertou um inimigo com uma Arma
+    // Recentemente" — a Maestria de Tinturas: o frasco ao lado de uma Tintura ativa.)
+    const adjacente = Number(afp.tintura_frasco_adjacente_efeito) || 0;
+    const ao = adjacente > 0 && (hunt.poeRecente?.acertou ?? -Infinity) >= agora - 4000 && Tinturas.ativas(st).some(([w]) => Math.abs(Number(w) - v) === 1);
+    const af = ao ? parametros(peca, { ...afp, frasco_efeito: (Number(afp.frasco_efeito) || 0) + adjacente }).af : par.af;
+    st.ativos[v] = { ate: agora + par.duracaoMs, af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}) };
     return true;
   }
   // Vida/Mana: na vida baixa (abaixo de 50%), o "mais Recuperação se usado enquanto em Vida Baixa" (o de mana olha a Mana Baixa).
@@ -296,6 +314,15 @@ export function usar(estado, v, eventos = null, quem = null) {
   if (par.instantaneoNoFim) st.ativos[v] = { ate: agora + par.ms, recurso: par.recurso, nome: peca.poe.nome, noFim: resto, extras };
   else st.ativos[v] = { ate: agora + par.ms, de: agora, ultimo: agora, porMs: resto / par.ms, recurso: par.recurso, nome: peca.poe.nome, extras, ...(par.naoParaNoCheio ? { naoParaNoCheio: true } : {}) };
   return true;
+}
+
+/** A TINTURA da vaga `v`: ativa se está parada (e pronta), desativa se está ativa. Devolve true se mudou. */
+function alternarTintura(estado, v, peca, afp) {
+  const hunt = estado.hunt;
+  const st = estadoDaCacada(hunt);
+  const agora = hunt.clock ?? 0;
+  if (Tinturas.registro(st)[v]?.ativa) return Tinturas.desativar(st, v, peca, afp, agora);
+  return Tinturas.ativar(estado, st, v, peca, afp, agora);
 }
 
 /** O que o frasco faz AO SER USADO (PoE): tirar Maldições/Incêndios, as imunidades "se usado enquanto…", desacelerar/provocar em volta e os solos. */
@@ -365,7 +392,7 @@ export function tique(estado, eventos = null, quem = null) {
   const agora = hunt.clock ?? 0;
   // Entrou na caçada: todos cheios (no PoE, a cidade enche os frascos).
   if (!st.cheios) {
-    for (const p of c) if (p) p.poe.cargas = parametros(p).cargasMaximas;
+    for (const p of c) if (p && !ehTinturaDoCinto(p)) p.poe.cargas = parametros(p).cargasMaximas;
     st.cheios = true;
   }
   let mudou = false;
@@ -406,14 +433,14 @@ export function tique(estado, eventos = null, quem = null) {
     st[chave] ??= agora + cadaS * 1000;
     while (agora >= st[chave]) {
       st[chave] += cadaS * 1000;
-      for (const p of c) if (p && (tipoR === 'todos' || TIPO_DA_CLASSE[p.poe?.classe] === tipoR)) { const par = parametros(p, afp); p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + quantas); }
+      for (const p of c) if (p && !ehTinturaDoCinto(p) && (tipoR === 'todos' || TIPO_DA_CLASSE[p.poe?.classe] === tipoR)) { const par = parametros(p, afp); p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + quantas); }
     }
   }
   const criticos = hunt.poeCriticosParaFrascos ?? 0;
   const acertos = hunt.poeAcertosParaFrascos ?? 0;
   if (criticos || acertos) {
     for (const p of c) {
-      if (!p) continue;
+      if (!p || ehTinturaDoCinto(p)) continue;
       const par = parametros(p, afp);
       let ganho = acertos * par.cargasAoSerAcertado;
       for (let k = 0; k < criticos; k++) if (par.cargaNoCriticoPct > 0 && Math.random() * 100 < par.cargaNoCriticoPct) ganho++;
@@ -422,12 +449,23 @@ export function tique(estado, eventos = null, quem = null) {
     hunt.poeCriticosParaFrascos = 0;
     hunt.poeAcertosParaFrascos = 0;
   }
+  // As TINTURAS: a Queima de Mana, a mana que ela tira, as desativações e as cargas dos frascos adjacentes (`tinturas.tique`).
+  const acertosDaTintura = hunt.tinturaAcertos ?? 0;
+  hunt.tinturaAcertos = 0;
+  if (c.some(ehTinturaDoCinto) || st.tinturas) {
+    const cargasNoFrasco = (w, quantas) => { const p = c[w]; const par = parametros(p, afp); p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + quantas); };
+    if (Tinturas.tique(estado, st, c, afp, agora, { acertos: acertosDaTintura, cargasNoFrasco })) mudou = true;
+  }
   if (estado.hp <= 0) return mudou;
   // O uso automático.
   const emCombate = (hunt.monstros ?? []).some((m) => m.hp > 0);
   const recuperando = (r) => Object.values(st.ativos).some((a) => a.recurso === r && a.ate > agora);
   for (let v = 0; v < c.length; v++) {
     const p = c[v];
+    if (p && ehTinturaDoCinto(p)) {
+      if (automaticoDaTintura(estado, st, v, p, afp, emCombate, agora)) mudou = true;
+      continue;
+    }
     if (!p || st.ativos[v]?.ate > agora || (v === 4 && Number(afp.sem_quinto_frasco) > 0)) continue;
     const tipo = TIPO_DA_CLASSE[p.poe?.classe];
     // A regra de CADA frasco (dono, 07/10: configurada clicando nele na barra): vida/mana abaixo de X%; utilidade em combate.
@@ -439,12 +477,33 @@ export function tique(estado, eventos = null, quem = null) {
   return mudou;
 }
 
+/**
+ * O automático da TINTURA (a regra dela — `regraDe`): "usar sozinha em combate" ATIVA com monstro vivo, pronta e com mana; DESATIVA fora de
+ * combate e com a mana abaixo de `abaixoPct`% (0 = só quando a mana acabar, como no PoE — `tinturas.tique`). Devolve true se mudou.
+ */
+function automaticoDaTintura(estado, st, v, p, afp, emCombate, agora) {
+  const r = regraDe(p);
+  if (!r.emCombate || (v === 4 && Number(afp.sem_quinto_frasco) > 0)) return false;
+  const t = Tinturas.registro(st)[v];
+  if (t?.ativa) {
+    const pouca = r.abaixoPct > 0 && (estado.mana ?? 0) < (estado.maxMana ?? 0) * (r.abaixoPct / 100);
+    return !emCombate || pouca ? Tinturas.desativar(st, v, p, afp, agora) : false;
+  }
+  if (!emCombate || (r.abaixoPct > 0 && (estado.mana ?? 0) < (estado.maxMana ?? 0) * (r.abaixoPct / 100))) return false;
+  return Tinturas.ativar(estado, st, v, p, afp, agora);
+}
+
 // ---------------------------------------------------------------- a regra de uso de cada frasco (dono, 07/10)
 
 /** A regra de uso do frasco: `abaixoPct` (vida/mana abaixo de X% usa) ou `emCombate` (utilidade); o padrão vem de `regras.frascos.usoAutomatico`. */
 export function regraDe(peca) {
   const U = F().usoAutomatico ?? {};
   const tipo = TIPO_DA_CLASSE[peca?.poe?.classe];
+  // (a Tintura: em combate, e a mana abaixo da qual ela desativa — 0 = só quando a mana acabar)
+  if (tipo === 'tintura') {
+    const pct = Number(peca?.poe?.usarAbaixoPct);
+    return { tipo, abaixoPct: Number.isFinite(pct) && pct >= 0 && pct <= 100 ? Math.round(pct) : Tinturas.PADRAO.regra.abaixoPct, emCombate: peca?.poe?.usarEmCombate !== false };
+  }
   const padrao = tipo === 'mana' ? U.manaAbaixoPct ?? 30 : U.vidaAbaixoPct ?? 50;
   const pct = Number(peca?.poe?.usarAbaixoPct);
   return { tipo, abaixoPct: Number.isFinite(pct) && pct >= 1 && pct <= 100 ? Math.round(pct) : padrao, emCombate: peca?.poe?.usarEmCombate !== false && U.utilidadeEmCombate !== false };
@@ -455,6 +514,17 @@ export function configurar(estado, { vaga, abaixoPct, emCombate } = {}) {
   const peca = cinto(estado)[Number(vaga)];
   if (!peca) return { ok: false, erro: 'Essa vaga do cinto está vazia.' };
   const tipo = TIPO_DA_CLASSE[peca.poe?.classe];
+  if (tipo === 'tintura') {
+    if (typeof emCombate === 'boolean') peca.poe.usarEmCombate = emCombate;
+    if (abaixoPct != null) {
+      const pct = Math.round(Number(abaixoPct));
+      if (!(pct >= 0 && pct <= 100)) return { ok: false, erro: 'A porcentagem vai de 0 a 100.' };
+      peca.poe.usarAbaixoPct = pct;
+    }
+    if (typeof emCombate !== 'boolean' && abaixoPct == null) return { ok: false, erro: 'Diga "usar em combate" ou a mana para desativar.' };
+    const r = regraDe(peca);
+    return { ok: true, notice: `${peca.poe.nome}: ${r.emCombate ? `ativa sozinha em combate e desativa ${r.abaixoPct ? `com a mana abaixo de ${r.abaixoPct}%` : 'quando a mana acabar'}` : 'só na tecla'}.` };
+  }
   if (tipo === 'utilidade') {
     if (typeof emCombate !== 'boolean') return { ok: false, erro: 'O frasco de Utilidade só tem a regra "usar em combate".' };
     peca.poe.usarEmCombate = emCombate;
@@ -470,7 +540,7 @@ export function configurar(estado, { vaga, abaixoPct, emCombate } = {}) {
  *  personagem do Draevor como "do PoE" (`personagem/legado.mjs`; `morrerNaHunt` chamava isto também no clássico, 9cc51225). */
 export function encherNaCidade(estado) {
   if (!ligado()) return;
-  for (const p of cinto(estado)) if (p?.poe) p.poe.cargas = parametros(p).cargasMaximas;
+  for (const p of cinto(estado)) if (p?.poe && !ehTinturaDoCinto(p)) p.poe.cargas = parametros(p).cargasMaximas;
 }
 
 /** Matou um monstro: cargas para todos os frascos do cinto, pela raridade dele (× a Recuperação de Cargas de cada frasco). */
@@ -489,10 +559,13 @@ export function aoMatar(estado, tipoDoMonstro = 'normal', morto = null) {
   const sangrando = (morto?.dots ?? []).some((d) => d.tipo === 'sangramento' && d.falta > 0);
   const doPersonagemPct = (Number(afp.frasco_cargas_recebidas) || 0) + (elemental ? Number(afp.frasco_cargas_morto_elemental) || 0 : 0) + (marcado ? Number(afp.frasco_cargas_marcado) || 0 : 0) + (sangrando ? Number(afp.frasco_cargas_sangrando) || 0 : 0);
   for (const p of cinto(estado)) {
-    if (!p) continue;
+    if (!p || ehTinturaDoCinto(p)) continue;
     const par = parametros(p, afp);
     p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + base * Math.max(0, 1 + (par.recargaPct + doPersonagemPct) / 100));
   }
+  // (12/10, A Lâmina Viva: "X% de chance de remover N Queima de Mana ao Matar" — na Tintura ativa.)
+  const chance = Number(afp.tintura_remover_queima_chance) || 0;
+  if (chance > 0 && estado?.hunt?.frascosPoe && Math.random() * 100 < chance) Tinturas.removerQueimas(estado.hunt.frascosPoe, Number(afp.tintura_remover_queima_n) || 1);
 }
 
 /** PoE: o personagem foi acertado por OUTRO JOGADOR (o duelo): os frascos com "Efeito é removido quando Acertado por um Jogador" acabam. */
@@ -511,6 +584,8 @@ export function adds(estado) {
   const agora = estado.hunt.clock ?? 0;
   const total = {};
   for (const a of [...Object.values(st.ativos), ...(st.extras ?? [])]) if (a.af && a.ate > agora) for (const [k, v] of Object.entries(a.af)) total[k] = (total[k] ?? 0) + v;
+  // + as TINTURAS ativas (e as que perduram) — a foto do tique (`tinturas.adds`).
+  for (const [k, v] of Object.entries(Tinturas.adds(st, agora) ?? {})) total[k] = (total[k] ?? 0) + v;
   return Object.keys(total).length ? total : null;
 }
 
@@ -519,7 +594,9 @@ export function buffs(estado) {
   const st = estado?.hunt?.frascosPoe;
   if (!st) return [];
   const agora = estado.hunt.clock ?? 0;
-  return Object.entries(st.ativos).filter(([, a]) => a.ate > agora && (a.af || a.porMs)).map(([v, a]) => ({ icone: null, nome: a.nome, resta: a.ate - agora, tipo: 'frascoPoe', vaga: Number(v) }));
+  // (a Tintura ativa não tem tempo: o cartão mostra a Queima de Mana dela)
+  const tinturas = Tinturas.ativas(st).map(([v, t]) => ({ icone: null, nome: t.nome, resta: null, tipo: 'tinturaPoe', vaga: Number(v), tintura: { queimas: t.queimas ?? 0 } }));
+  return [...Object.entries(st.ativos).filter(([, a]) => a.ate > agora && (a.af || a.porMs)).map(([v, a]) => ({ icone: null, nome: a.nome, resta: a.ate - agora, tipo: 'frascoPoe', vaga: Number(v) })), ...tinturas];
 }
 
 /** O cinto para a tela: cada vaga com o frasco (a peça), as cargas, o custo e se está ativo. */
@@ -529,8 +606,16 @@ export function paraCliente(estado) {
   if (!estado.hunt) encherNaCidade(estado);
   const agora = estado.hunt?.clock ?? 0;
   const ativos = estado.hunt?.frascosPoe?.ativos ?? {};
+  const tinturas = estado.hunt?.frascosPoe?.tinturas ?? {};
   return cinto(estado).map((p, v) => {
     if (!p) return null;
+    // (a Tintura: ativa, as Queimas de Mana, a recarga que falta e a regra)
+    if (ehTinturaDoCinto(p)) {
+      const t = tinturas[v] ?? null;
+      const regra = regraDe(p);
+      const recarga = t && !t.ativa ? Math.max(0, (t.recargaAte ?? 0) - agora) : 0;
+      return { peca: p, tipo: 'tintura', ativa: !!t?.ativa, queimas: t?.ativa ? t.queimas ?? 0 : 0, recargaMs: recarga, recargaTotalMs: recarga ? t.recargaTotal ?? recarga : 0, ativoAte: t?.ativa ? 1 : 0, regra: { abaixoPct: regra.abaixoPct, emCombate: regra.emCombate } };
+    }
     const par = parametros(p, doPersonagem(estado));
     const regra = regraDe(p);
     return { peca: p, cargas: Math.floor(cargasDe(p, par)), cargasMaximas: par.cargasMaximas, cargasPorUso: par.cargasPorUso, tipo: par.tipo, ativoAte: ativos[v]?.ate > agora ? ativos[v].ate - agora : 0, regra: { abaixoPct: regra.abaixoPct, emCombate: regra.emCombate } };

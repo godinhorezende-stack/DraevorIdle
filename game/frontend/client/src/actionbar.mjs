@@ -523,7 +523,7 @@ export function renderActionBar() {
     (state.character.hotkeys ?? []).join(','),
     esperandoTecla ?? '-',
     // Os frascos do cinto (a barra do PoE): o que está em cada vaga, as cargas e se está ativo.
-    ...(state.character.frascosPoe ?? []).map((f) => (f ? `${f.peca.id}:${f.cargas}:${f.ativoAte > 0 ? 1 : 0}:${f.regra?.abaixoPct}:${f.regra?.emCombate}` : '-')),
+    ...(state.character.frascosPoe ?? []).map((f) => (f ? `${f.peca.id}:${f.cargas}:${f.ativoAte > 0 ? 1 : 0}:${f.regra?.abaixoPct}:${f.regra?.emCombate}:${f.queimas ?? ''}:${Math.ceil((f.recargaMs ?? 0) / 1000)}` : '-')),
     ...Array.from({ length: total }, (_, index) => {
       const action = actions[index];
       if (!action) return '-';
@@ -583,7 +583,28 @@ export function configurarFrasco(vaga) {
   if (!f) return;
   const nome = f.peca.poe?.nome ?? 'Frasco';
   ctx.openModal(nome, (body) => {
-    if (f.tipo === 'utilidade') {
+    if (f.tipo === 'tintura') {
+      // (12/10) A TINTURA: ativa sozinha em combate (ou só na tecla) e desativa com a mana abaixo de X% (0% = só quando a mana acabar).
+      body.append(el('p', 'shop-note', 'A Tintura fica ativa até ser desativada: enquanto ativa, põe Queima de Mana em você (cada uma tira 1% da Mana máxima por segundo). Desativar tira a Queima de Mana e começa a recarga. Sozinha, ela ativa em combate e desativa fora dele ou com a mana abaixo desta porcentagem (0% = só quando a mana acabar).'));
+      const linha = el('div', 'frasco-config');
+      const faixa = document.createElement('input');
+      faixa.type = 'range';
+      faixa.min = '0';
+      faixa.max = '90';
+      faixa.step = '5';
+      faixa.value = String(f.regra?.abaixoPct ?? 30);
+      const valor = el('b', 'frasco-config-valor', `${faixa.value}%`);
+      faixa.oninput = () => { valor.textContent = `${faixa.value}%`; };
+      linha.append(el('span', null, 'Desativa com a mana abaixo de'), faixa, valor);
+      body.append(linha);
+      const acoes = el('div', 'confirm-actions');
+      for (const [rotulo, emCombate] of [['Usar sozinha em combate', true], ['Só na tecla', false]]) {
+        const b = el('button', f.regra?.emCombate === emCombate ? 'primary' : '', rotulo);
+        b.onclick = () => { ctx.send({ t: 'frasco', action: 'configurar', vaga, emCombate, abaixoPct: Number(faixa.value) }); ctx.closeModal(); };
+        acoes.append(b);
+      }
+      body.append(acoes);
+    } else if (f.tipo === 'utilidade') {
       body.append(el('p', 'shop-note', 'O frasco de Utilidade pode ser usado sozinho sempre que houver monstro vivo, ou só quando você apertar a tecla.'));
       const acoes = el('div', 'confirm-actions');
       for (const [rotulo, valor] of [['Usar sozinho em combate', true], ['Só na tecla', false]]) {
@@ -613,13 +634,26 @@ export function configurarFrasco(vaga) {
       body.append(acoes);
     }
     const extras = el('div', 'confirm-actions');
-    const usar = el('button', '', 'Beber agora');
+    const usar = el('button', '', f.tipo === 'tintura' ? (f.ativa ? 'Desativar agora' : 'Ativar agora') : 'Beber agora');
     usar.onclick = () => { ctx.send({ t: 'frasco', action: 'usar', vaga }); ctx.closeModal(); };
     const tirar = el('button', 'ghost', 'Tirar do cinto');
     tirar.onclick = () => { ctx.send({ t: 'frasco', action: 'tirar', vaga }); ctx.closeModal(); };
     extras.append(usar, tirar);
     body.append(extras);
   });
+}
+
+/**
+ * A BARRINHA de uma vaga do cinto: as cargas do frasco; na TINTURA (12/10), ativa (cheia, com a Queima de Mana), na recarga (enchendo, com os
+ * segundos) ou pronta.
+ */
+export function barraDoFrasco(f) {
+  if (f.tipo === 'tintura') {
+    if (f.ativa) return { pct: 100, texto: `${f.queimas}×`, dica: `Ativa: ${f.queimas} Queima${f.queimas === 1 ? '' : 's'} de Mana (cada uma tira 1% da Mana máxima por segundo)` };
+    if (f.recargaMs > 0) return { pct: Math.round(100 * (1 - f.recargaMs / Math.max(1, f.recargaTotalMs))), texto: `${Math.ceil(f.recargaMs / 1000)}s`, dica: `Recarga: ${Math.ceil(f.recargaMs / 1000)} s` };
+    return { pct: 100, texto: 'pronta', dica: 'Pronta para ativar' };
+  }
+  return { pct: Math.round((100 * f.cargas) / Math.max(1, f.cargasMaximas)), texto: `${f.cargas}/${f.cargasMaximas}`, dica: `${f.cargas}/${f.cargasMaximas} cargas (usa ${f.cargasPorUso})` };
 }
 
 function montarHotbar(bar, actions, total) {
@@ -654,13 +688,14 @@ function montarHotbar(bar, actions, total) {
       cell.append(itemCanvas(f.peca.id, tamanhoDoIcone()));
       const cargas = el('i', 'frasco-cargas');
       const cheio = el('i');
-      cheio.style.height = `${Math.round((100 * f.cargas) / Math.max(1, f.cargasMaximas))}%`;
+      const { pct, texto, dica } = barraDoFrasco(f);
+      cheio.style.height = `${pct}%`;
       cargas.append(cheio);
-      cell.append(cargas, el('b', 'frasco-num', `${f.cargas}/${f.cargasMaximas}`));
-      cargas.title = `${f.cargas}/${f.cargasMaximas} cargas (usa ${f.cargasPorUso})`;
+      cell.append(cargas, el('b', 'frasco-num', texto));
+      cargas.title = dica;
       tipFor(cell, f.peca.id, null, null, f.peca);
       // A regra de uso no canto (dono, 07/10): "≤50%" no de vida/mana, "auto" no de utilidade; o clique abre a configuração.
-      if (f.regra) cell.append(el('i', 'frasco-regra', f.tipo === 'utilidade' ? (f.regra.emCombate ? 'auto' : 'tecla') : `≤${f.regra.abaixoPct}%`));
+      if (f.regra) cell.append(el('i', 'frasco-regra', f.tipo === 'utilidade' || f.tipo === 'tintura' ? (f.regra.emCombate ? 'auto' : 'tecla') : `≤${f.regra.abaixoPct}%`));
       cell.onclick = () => configurarFrasco(v);
       cell.oncontextmenu = (event) => {
         event.preventDefault();

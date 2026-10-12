@@ -7034,17 +7034,458 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^As primeiras .* Queimas de Mana aplicadas em você não tem efeito$",
+      "padrao": "^As primeiras \\{(\\d+)\\} Queimas de Mana aplicadas em você não tem efeito$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "tintura_queimas_gratis",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas aplicadas em você têm Queima de Mana reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "tintura_queima_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas aplicadas em você têm Queima de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "tintura_queima_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas aplicadas em você têm \\{(\\d+)\\}% menos Queima de Mana$",
+      "efeitos": [
+        {
+          "stat": "tintura_queima_menos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas aplicadas em você têm Efeito aumentado em \\{(\\d+)\\}% se você usou um Frasco de Vida Recentemente$",
+      "efeitos": [
+        {
+          "stat": "tintura_efeito_inc@usouFrascoVidaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas aplicadas em você têm Efeito aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "tintura_efeito_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas aplicadas em você têm Efeito reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "tintura_efeito_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Frascos adjacentes às Tinturas ativas ganham \\{(\\d+)\\} cargas quando você Acertar um Inimigo com uma Arma Corpo a Corpo, não mais que uma vez por segundo$",
+      "efeitos": [
+        {
+          "stat": "tintura_cargas_adjacentes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Recupere \\{(\\d+)\\}% de mana ao Matar enquanto você tiver uma Tintura ativa$",
+      "efeitos": [
+        {
+          "stat": "mana_ao_matar_pct@tinturaAtiva",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas infligem Ferimentos Abertos ao invés de Queima de Mana$",
+      "efeitos": [
+        {
+          "stat": "tintura_ferimentos",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "as Tinturas não existem no jogo",
       "_nova": true,
-      "_ciclo7": true
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Efeitos que interagem com Queima de Mana interagem com Ferimentos Abertos ao invés$",
+      "efeitos": [
+        {
+          "stat": "tintura_ferimentos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Tinturas não infligirem Queima de Mana$",
+      "efeitos": [
+        {
+          "stat": "tintura_sem_queima_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Recuperação da Recarga de Tinturas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "tintura_recarga_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Recupere \\{(\\d+)\\}% de Mana ao ativar uma Tintura$",
+      "efeitos": [
+        {
+          "stat": "tintura_mana_ativar_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}% enquanto você tiver uma Tintura ativa$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct@tinturaAtiva",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Cargas de Frascos recebidas aumentadas em \\{(\\d+)\\}% por Queima de Mana em você$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_por_queima",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Frascos adjacentes às Tinturas aplicadas têm Efeito aumentado em \\{(\\d+)\\}% quando utilizados se você Acertou um inimigo com uma Arma Recentemente$",
+      "efeitos": [
+        {
+          "stat": "tintura_frasco_adjacente_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Tinturas são desativadas quando você tiver \\{(\\d+)\\} ou mais de Queima de Mana$",
+      "efeitos": [
+        {
+          "stat": "tintura_desativa_queimas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Você pode ter uma Tintura adicional ativa$",
+      "efeitos": [
+        {
+          "stat": "tintura_ativas_extra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Efeitos das Tinturas também se aplicam às Armas à Distância$",
+      "efeitos": [
+        {
+          "stat": "tintura_distancia",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Efeitos das Tinturas Perduram em você por \\{(\\d+)\\} segundos por Queima de Mana em você quando a Tintura foi desativada, máximo de \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "tintura_perdura",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de remover \\{(\\d+)\\} Queima de Mana ao Matar$",
+      "efeitos": [
+        {
+          "stat": "tintura_remover_queima_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "tintura_remover_queima_n",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Dano Elemental com Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@ataque+armaCorpo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@ataque+armaCorpo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}% com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Duração do Atordoamento com Armas Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Incendiar com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Dano com Incêndio das Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ignite_dmg_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Efeito do Resfriamento das Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Eletrizar com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_shock@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Efeito da Eletrização de Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Envenenar com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_poison@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Dano com Veneno das Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "poison_dmg_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Sangramento com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Dano com Sangramento de Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "bleed_dmg_inc@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "furia_por_acerto@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos ao Acertar com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "chance_cegar@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Efeito do Cegamento das Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_cegueira@ataque+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Cobre Inimigos com Vida Cheia em Cinzas por \\{(\\d+)\\} segundos no Acerto com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:cinzas:{V1}@ataque+armaCorpo+alvoVidaCheia",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
+    },
+    {
+      "padrao": "^Acertos com Armas Corpo a Corpo Infligem \\{(\\d+)\\} Debuffs de Definhamento por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:definhado:{V2}@ataque+armaCorpo",
+          "valor": "100"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no jogo, 1 Definhamento por acerto (o PoE põe os N de uma vez)",
+      "_nova": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de arremessar até \\{(\\d+)\\} Armadilhas adicionais$",
@@ -15807,9 +16248,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as Tinturas não existem no jogo",
+      "nota": "esta variação das Tinturas ainda não tem efeito no jogo",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote6": "12/10 — a Tintura (lote 6)"
     },
     {
       "padrao": "^.*Barreiras? de Caranguejo.*|.*Aspecto d[oa] (?:Caranguejo|Gato|Ave|Aranha).*|.*(?:Furtividade Felina|Agilidade do Gato|Poder da Ave|Vôo da Ave|Voo da Ave|Teias? de Aranha).*$",

@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5845** — equivalente 1345, novo 4245, aproximado (parcial) 255.
-- ✗ Sem efeito: **129** — na árvore principal 75, nas ascendências 54; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **58 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5903** — equivalente 1345, novo 4303, aproximado (parcial) 255.
+- ✗ Sem efeito: **71** — na árvore principal 26, nas ascendências 45; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -18,12 +18,12 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | Runas presas ao inimigo (lote 4a) | 22 | 0 | a Runa (Brand) vincula ao inimigo e é Ativada a cada N segundos enquanto vinculada (5 s; solta, procura outro por 6 s); até 3 ativas, 1 por inimigo; o automático não reconjura com todas em campo |
 | Vínculos (lote 4b) | 33 | 0 | as 6 gemas de Vínculo criadas: focam um jogador da party na sala (lacaios, com o nó), custam mana por segundo, quebram fora do alcance em 4 s e, se o alvo morre vinculado, você morre; os efeitos de cada uma (Fogo, bloqueio, menos dano e o seu Escudo, crítico, o seu Dreno no alvo) |
 | Convocar o Aço (lote 5) | 26 | 0 | as gemas de Aço concedem o Convocar o Aço, automático: chama os empalamentos dos vivos e dos cadáveres a até 6 casas, reflete em volta de cada um o dano × os acertos que restavam e dá 1 Fragmento de Aço por empalamento; recarrega 4 Fragmentos a cada 0,5 s até 12; o Aço Perfurador, o Aço Violento e o Estraçalhador da Munição e a Balista gastam os Fragmentos como no PoE (mais projéteis, a divisão, a Proteção de Aço); a linha dos "Empalamentos removidos desta forma" é da remoção ao Acertar (a mesma opção da maestria), não do Convocar o Aço |
+| Tinturas (lote 6) | 58 | 0 | as Tinturas criadas: caem (Normal, Mágica, Única), vão no cinto de frascos e ativam sozinhas em combate; ativas, põem Queima de Mana em você (1% da Mana máxima por segundo cada) e dão os mods delas nos ataques com Arma Corpo a Corpo; desativam com a mana acabando (ou abaixo do limite da regra), tiram a Queima de Mana e entram na recarga da base |
 
 ## Sem efeito (✗), pelo motivo
 
 | Linhas | Motivo | Bloco a implementar (dono, 12/10) | Exemplos (nó — texto) |
 |---:|---|---|---|
-| 58 | as Tinturas não existem no jogo | criar a Tintura | Queima de Mana mais Lenta (nó) — Tinturas aplicadas em você têm Queima de Mana reduzida em 5%<br>Composto da Natureza (notável) — Frascos adjacentes às Tinturas ativas ganham 2 cargas quando você Acertar um Inimigo com uma Arma Corpo a Corpo, não mais que uma vez por segundo<br>Evasão, Efeito de Tinturas (asc. Warden) — Tinturas aplicadas em você têm Efeito aumentado em 10% |
 | 10 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | — | Ego Supremo (keystone) — Auras das suas Habilidades só podem afetar você Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem<br>Ego Supremo (keystone) — 40% mais Reserva de Mana de Habilidades Aura<br>Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
 | 10 | o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil | — | Tiro Partido (notável) — Projéteis têm 50% de chance de receber um Projétil adicional quando Difundindo<br>Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando<br>Chance de uma Difusão Extra de Projéteis (nó) — Projéteis têm 25% de chance de receber um Projétil adicional quando Difundindo |
 | 5 | sem aliados nem Vínculos no jogo: o efeito em aliados não tem em quem agir | — | Mestre do Metal (asc. Champion) — Caso tenha Empalado um Inimigo Recentemente, você e Aliados próximos recebem +1000 de Armadura<br>Mestre do Metal (asc. Champion) — Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo<br>Necromante (asc. Ascendant) — Auras das suas Habilidades concedem 2% de aumento das Velocidades de Ataque e Conjuração para você e Aliados |

@@ -97,7 +97,7 @@ export function itens() {
  * Path of Exile: a base, o item level, a raridade (Normal, Mágico, Raro, Único), prefixos e sufixos — e as moedas. Tudo dos dados reais
  * (`gamedata/itens-poe/regras.json`, o catálogo e `moedas.mjs`).
  */
-const FORA_DO_JOGO = new Set(['Trinkets', 'Fishing_Rods', 'Jewels', 'Abyss_Jewels', 'Tinctures']);
+const FORA_DO_JOGO = new Set(['Trinkets', 'Fishing_Rods', 'Jewels', 'Abyss_Jewels']);
 const ORDEM_POE = ['normal', 'magico', 'raro', 'unico'];
 
 export function itensPoe() {

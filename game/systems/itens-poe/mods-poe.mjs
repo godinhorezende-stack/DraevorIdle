@@ -22,6 +22,9 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
   const v = (k) => valor(fichaR, k);
   const tags = new Set(ficha.tagsDoGolpe ?? []);
+  // (12/10, as Tinturas: os acertos de ATAQUE desde o último tique — "quando você Acertar um Inimigo com uma Arma Corpo a Corpo";
+  // `frascos.tique` → `tinturas.tique`, que confere a arma)
+  if (hunt && tags.has('ataque')) hunt.tinturaAcertos = (hunt.tinturaAcertos ?? 0) + 1;
   const salaDeBoss = !!hunt?.isBoss;
   const ev = (estado2) => eventos?.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: estado2 });
   const sorte = (pct) => pct > 0 && rng() * 100 < pct;

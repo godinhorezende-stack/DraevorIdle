@@ -56,6 +56,11 @@ const IMPLEMENTADOS = [
     re: /Convocar o Aço|Chamado do Aço|Empalamentos removidos desta forma/,
     jogo: 'as gemas de Aço concedem o Convocar o Aço, automático: chama os empalamentos dos vivos e dos cadáveres a até 6 casas, reflete em volta de cada um o dano × os acertos que restavam e dá 1 Fragmento de Aço por empalamento; recarrega 4 Fragmentos a cada 0,5 s até 12; o Aço Perfurador, o Aço Violento e o Estraçalhador da Munição e a Balista gastam os Fragmentos como no PoE (mais projéteis, a divisão, a Proteção de Aço); a linha dos "Empalamentos removidos desta forma" é da remoção ao Acertar (a mesma opção da maestria), não do Convocar o Aço',
   },
+  {
+    bloco: 'Tinturas (lote 6)',
+    re: /Tintura|Queimas? de Mana|Ferimentos Abertos/,
+    jogo: 'as Tinturas criadas: caem (Normal, Mágica, Única), vão no cinto de frascos e ativam sozinhas em combate; ativas, põem Queima de Mana em você (1% da Mana máxima por segundo cada) e dão os mods delas nos ataques com Arma Corpo a Corpo; desativam com a mana acabando (ou abaixo do limite da regra), tiram a Queima de Mana e entram na recarga da base',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */
