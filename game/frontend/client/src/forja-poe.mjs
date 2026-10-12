@@ -1,7 +1,8 @@
 // A FORJA do PoE (dono, 07/10: "utilizando a forja refazendo para uso dos itens que têm efeito"; 12/10: "reformulação completa da Forja" —
-// o modelo compacto do UNDECEMBER, a estética do PoE 1). Uma janela só: à esquerda as CATEGORIAS (Sockets, Cores, Links, Atributos,
-// Raridade e as Outras moedas), no meio a PEÇA escolhida com o que a categoria mexe, o RESULTADO DESEJADO, o MATERIAL, a estimativa e a
-// REPETIÇÃO; à direita o INVENTÁRIO (as peças vestidas, a mochila e os materiais — os mesmos do personagem, sem cópia).
+// o modelo compacto do UNDECEMBER, a estética do PoE 1). Uma janela só: à esquerda as CATEGORIAS em grupos (Encaixes, Modificadores,
+// Outros — `engine/forja-poe.mjs` → `GRUPOS`; cada moeda com efeito numa delas), no meio a PEÇA escolhida com o que a categoria mexe,
+// o RESULTADO DESEJADO, o MATERIAL, a estimativa e a REPETIÇÃO; à direita o INVENTÁRIO (as peças vestidas, a mochila e os materiais —
+// os mesmos do personagem, sem cópia).
 //
 // A tela só configura e mostra. Quem valida, sorteia, gasta o material e grava é o servidor (`systems/itens-poe/forja.mjs`): as opções
 // (`{t:'forjaOpcoes'}` → `forjaOpcoes`), a forja em lotes (`{t:'forjaRepetir', id, passo}` → `forjaResultado`; cada lote termina antes de
@@ -10,7 +11,7 @@ import { itemCanvas } from './sprites.mjs';
 import { tipFor, tipTexto } from './tooltip.mjs';
 import { vestirRaridade, selarSoquetes } from './inventory.mjs';
 // As MESMAS regras do servidor (o resultado desejado e o tipo da peça) e a mesma conta dos grupos ligados.
-import { CORES, atingiu, contarCores, maiorGrupo, tipoDaPeca } from '/packages/shared/src/forja-poe.mjs';
+import { CORES, GRUPOS, COM_DESEJO, categoria as cadastroDa, atingiu, contarCores, maiorGrupo, tipoDaPeca } from '/packages/shared/src/forja-poe.mjs';
 import { gruposLigados } from '/packages/shared/src/sockets-de-gema.mjs';
 
 const el = (tag, className, text) => {
@@ -27,22 +28,24 @@ const botao = (className, text, aoClicar, dica = null) => {
   return b;
 };
 
-const CATEGORIAS = [
-  { id: 'sockets', nome: 'Sockets', icone: 'Jewellers_Orb', resumo: 'quantidade de encaixes' },
-  { id: 'cores', nome: 'Cores', icone: 'Chromatic_Orb', resumo: 'cores dos sockets' },
-  { id: 'links', nome: 'Links', icone: 'Orb_of_Fusing', resumo: 'ligações entre sockets' },
-  { id: 'atributos', nome: 'Atributos', icone: 'Chaos_Orb', resumo: 'modificadores e valores' },
-  { id: 'raridade', nome: 'Raridade', icone: 'Orb_of_Alchemy', resumo: 'Normal, Mágico, Raro, Único' },
-  { id: 'outras', nome: 'Outras', icone: 'Vaal_Orb', resumo: 'Vaal, Espelho, gemas…' },
-];
 const AJUDA = {
-  sockets: 'Muda a QUANTIDADE de sockets. O máximo depende da classe da peça e do item level dela (algumas bases têm número fixo). O Orbe do Joalheiro sorteia outro número (sempre diferente do atual) e refaz cores e links; a peça precisa estar sem gemas.',
+  sockets: 'Muda a QUANTIDADE de sockets. O máximo depende da classe da peça e do item level dela (algumas bases têm número fixo). O Orbe do Joalheiro sorteia outro número (sempre diferente do atual) e refaz cores e links; a peça precisa estar sem gemas. O Joalheiro Corroído (peça corrompida) soma ou tira um.',
   cores: 'Muda as CORES dos sockets abertos. O Orbe Cromático sorteia outra combinação, puxando para o atributo que a peça pede (Força → vermelho, Destreza → verde, Inteligência → azul); branco só sai do Cromático Corroído. O desejo conta as cores, sem importar a ordem. A peça precisa estar sem gemas.',
   links: 'Muda as LIGAÇÕES entre sockets vizinhos. O Orbe da Fusão sorteia os links de novo (todos ligados é raro). O desejo é um grupo ligado de N sockets, em qualquer posição. As gemas ficam onde estão.',
-  atributos: 'Muda os MODIFICADORES da peça: sortear de novo (Alteração na Mágica, Caos na Rara), somar (Ampliador, Exaltado), tirar (Anulação), sortear os valores (Divino) e a qualidade. A repetição vale nas moedas que sorteiam de novo; o desejo usa os modificadores que a base e o item level da peça podem dar.',
-  raridade: 'Muda a RARIDADE: Transmutação (Normal → Mágico), Alquimia (Normal → Raro), Régia (Mágico → Raro), Expurgo (volta a Normal), Chance (Normal → Mágico, Raro ou Único). Na Chance, a repetição pode usar o Orbe do Expurgo para voltar a peça a Normal entre as tentativas.',
-  outras: 'As moedas que corrompem, copiam ou trocam o único (Vaal, Espelho de Kalandra, Ancestral), as da gema (Prisma e Lente do Lapidário) e as sem alvo (lascas, Remorso). Uma tentativa por vez.',
+  raridade: 'Muda a RARIDADE: Transmutação (Normal → Mágico), Alquimia e Elo (Normal → Raro), Régia (Mágico → Raro), Expurgo (volta a Normal), Chance (Normal → Mágico, Raro ou Único). Na Chance, a repetição pode usar o Orbe do Expurgo para voltar a peça a Normal entre as tentativas.',
+  atributos: 'Muda os MODIFICADORES explícitos: sortear de novo (Alteração na Mágica, Caos na Rara, Caos Oculto), somar (Ampliador, Exaltado), tirar (Anulação), sortear os valores (Divino) e prender um (Talhador). A repetição vale nas moedas que sorteiam de novo; o desejo usa os modificadores que a base e o item level da peça podem dar.',
+  implicitos: 'O Orbe Abençoado sorteia de novo os VALORES dos implícitos; o Orbe Sagrado sorteia de novo a DEFESA da base (armadura, evasão, escudo de energia). Uma tentativa por vez.',
+  influencia: 'Os Exaltados de influência (Criador, Ancião, Cruzado, Juiz, Caçador, Senhor da Guerra) põem um modificador da influência numa peça Rara sem influência. O Orbe do Domínio eleva um modificador influenciado (pede dois). Uma tentativa por vez.',
+  ancestral: 'As Brasas (Exarca Abrasador) e os Fluidos (Devorador de Mundos) põem o implícito Eldritch em Peitoral, Botas, Luvas ou Elmo, do tier da moeda. Os orbes Ancestrais mexem no lado que domina; o Conflito sobe um implícito e desce o outro. Uma tentativa por vez.',
+  qualidade: 'Sobe a QUALIDADE (até 20%): +5% na Normal, +2% na Mágica, +1% na Rara e na Única. Amolador em arma, Sucata em armadura, Bolha em frasco. O resultado aparece antes de forjar.',
+  corrupcao: 'O Orbe Vaal CORROMPE a peça (permanente: depois só as moedas Corroídas valem nela). As Corroídas valem só em peça corrompida; as de sockets ficam em Sockets, Cores e Links. O Orbe Mítico Corroído pode destruir a peça. Uma tentativa por vez.',
+  especiais: 'O Espelho de Kalandra faz uma cópia espelhada (que não aceita mais moeda); o Orbe Ancestral troca o único por outro da mesma classe; o Orbe do Remorso dá um ponto para tirar um nó da árvore de passivas (não pede peça).',
+  gemas: 'O Prisma do Lapidário sobe 1% de qualidade da gema (até 20%); a Lente do Lapidário troca a gema por outra do mesmo tipo. Escolha a gema no inventário à direita (filtro Gemas).',
+  lascas: 'As LASCAS se juntam: 20 iguais formam 1 orbe inteiro (sem peça). O resultado aparece antes de forjar.',
+  semEfeito: 'Estas moedas são de ligas e sistemas do PoE que o jogo não tem (mapas, Atlas, Bestiário, encantamentos, Ritual…). Ficam cadastradas, mas não fazem nada; o motivo de cada uma está no material.',
 };
+/** As categorias que não precisam de peça (a forja delas não mexe em item). */
+const SEM_PECA = new Set(['lascas', 'semEfeito']);
 const NOME_DA_COR = { R: 'Vermelho', G: 'Verde', B: 'Azul', W: 'Branco' };
 const DICA_DA_COR = { R: 'Força', G: 'Destreza', B: 'Inteligência', W: 'aceita qualquer gema' };
 const NOME_DO_SLOT = { weapon: 'Arma', shield: 'Mão secundária', head: 'Elmo', body: 'Armadura', gloves: 'Luvas', feet: 'Botas', legs: 'Cinto', neck: 'Amuleto', ring: 'Anel', ring2: 'Anel', flask: 'Frasco' };
@@ -159,7 +162,7 @@ function escolherMoeda(id) {
 function escolherPeca(x) {
   if (f.exec?.rodando) return;
   f.peca = marca(x);
-  if (x.gema) f.categoria = 'outras';
+  if (x.gema) f.categoria = 'gemas';
   // Outra peça: os sockets e os links desejados recomeçam (o máximo é outro); cores e raridade ficam; os mods, só na mesma base.
   const antes = f.desejo;
   f.desejo = { cores: antes.cores, raridade: antes.raridade, atributos: antes.atributos?.base === f.peca.base ? antes.atributos : undefined };
@@ -192,7 +195,7 @@ function desejoParaEnviar(categoria) {
   if (categoria === 'cores') return CORES.some((c) => Number(d[c]) > 0) ? { R: d.R, G: d.G, B: d.B, W: d.W } : null;
   if (categoria === 'atributos') return d.mods?.length ? { mods: d.mods.map(({ familia, tierMax, minimo }) => ({ familia, tierMax, minimo })), modo: d.modo } : null;
   if (categoria === 'raridade') return d.raridades?.length ? { raridades: d.raridades } : null;
-  if (categoria === 'outras') return null;
+  if (!COM_DESEJO.has(categoria)) return null;
   return d;
 }
 function mudouDesejo() {
@@ -305,24 +308,31 @@ function desenhar(body) {
   body.append(raiz);
 }
 
-/** As categorias, com o ícone da moeda de cada uma e quanto material dela o personagem tem. */
+/**
+ * As categorias em grupos (Encaixes, Modificadores, Outros), só texto — o nome, o que mexe e quanto material o personagem tem (dono, 12/10:
+ * "tire essas imgs, pode confundir").
+ */
 function trilho() {
   const nav = el('nav', 'fp-trilho');
-  const tem = moedasNaMochila();
   const porCategoria = {};
-  for (const [id, n] of tem) {
+  for (const [id, n] of moedasNaMochila()) {
     const c = itens()[id]?.moedaPoe?.categoria;
-    if (c && itens()[id].moedaPoe.status !== 'nao') porCategoria[c] = (porCategoria[c] ?? 0) + n;
+    if (c) porCategoria[c] = (porCategoria[c] ?? 0) + n;
   }
-  for (const c of CATEGORIAS) {
-    const b = botao(`fp-cat${f.categoria === c.id ? ' ativa' : ''}`, null, () => escolherCategoria(c.id), `${c.nome}: ${c.resumo}`);
-    b.disabled = !!f.exec?.rodando && f.categoria !== c.id;
-    const id = idDoSlug(c.icone);
-    if (id) b.append(itemCanvas(id, 28));
-    const t = el('span', 'fp-cat-texto');
-    t.append(el('b', null, c.nome), el('i', null, porCategoria[c.id] ? `${porCategoria[c.id]} material${porCategoria[c.id] === 1 ? '' : 'is'}` : 'sem material'));
-    b.append(t);
-    nav.append(b);
+  for (const g of GRUPOS) {
+    const grupo = el('div', 'fp-grupo');
+    grupo.append(el('h5', 'fp-grupo-nome', g.nome));
+    for (const c of g.categorias) {
+      const b = botao(`fp-cat${f.categoria === c.id ? ' ativa' : ''}${c.id === 'semEfeito' ? ' apagada' : ''}`, null, () => escolherCategoria(c.id), c.resumo);
+      b.disabled = !!f.exec?.rodando && f.categoria !== c.id;
+      const t = el('span', 'fp-cat-texto');
+      t.append(el('b', null, c.nome), el('i', null, c.resumo));
+      const n = porCategoria[c.id] ?? 0;
+      b.append(t, el('span', `fp-cat-conta${n ? '' : ' zero'}`, n > 9999 ? '9k+' : String(n)));
+      b.setAttribute('aria-label', `${c.nome}: ${n} material${n === 1 ? '' : 'is'}`);
+      grupo.append(b);
+    }
+    nav.append(grupo);
   }
   return nav;
 }
@@ -333,11 +343,12 @@ function centro(x) {
   if (f.ajuda) sec.append(painelDeAjuda());
   sec.append(cartaoDaPeca(x));
   const op = el('div', 'fp-op');
-  op.append(el('h4', 'fp-titulo', CATEGORIAS.find((c) => c.id === f.categoria)?.nome ?? ''));
-  if (!x && f.categoria !== 'outras') op.append(el('p', 'fp-vazio', 'Escolha uma peça no inventário, à direita.'));
+  op.append(el('h4', 'fp-titulo', cadastroDa(f.categoria)?.nome ?? ''));
+  const precisaDePeca = !SEM_PECA.has(f.categoria) && !['gemas', 'especiais'].includes(f.categoria);
+  if (!x && precisaDePeca) op.append(el('p', 'fp-vazio', 'Escolha uma peça no inventário, à direita.'));
   else if (!opcoesValem()) op.append(el('p', 'fp-vazio', 'Carregando…'));
   else {
-    const corpo = { sockets: opSockets, cores: opCores, links: opLinks, atributos: opAtributos, raridade: opRaridade, outras: opOutras }[f.categoria];
+    const corpo = { sockets: opSockets, cores: opCores, links: opLinks, atributos: opAtributos, raridade: opRaridade }[f.categoria] ?? opGeral;
     corpo(op, x);
   }
   sec.append(op, barraDeMateriais(), painelDaRepeticao(), rodape(x));
@@ -346,7 +357,7 @@ function centro(x) {
 
 function painelDeAjuda() {
   const caixa = el('div', 'fp-ajuda');
-  caixa.append(el('b', null, `Como funciona — ${CATEGORIAS.find((c) => c.id === f.categoria)?.nome}`), el('p', null, AJUDA[f.categoria]));
+  caixa.append(el('b', null, `Como funciona — ${cadastroDa(f.categoria)?.nome}`), el('p', null, AJUDA[f.categoria]));
   const meta = itens()[f.moeda[f.categoria]];
   if (meta) caixa.append(el('p', null, `${meta.name}: ${meta.descricao ?? ''}`));
   caixa.append(el('p', 'fp-nota', 'Cada tentativa gasta 1 material, e só quando a peça muda (a moeda que não vale na peça volta sem ser gasta). Quem sorteia e grava é o servidor; a repetição anda em lotes e para ao chegar no resultado, no limite, sem material, quando a peça não aceita mais ou quando você cancela.'));
@@ -358,7 +369,7 @@ function cartaoDaPeca(x) {
   const card = el('div', 'fp-peca');
   if (!x) {
     card.classList.add('vazia');
-    card.append(el('div', 'fp-peca-moldura'), el('p', 'fp-vazio', f.categoria === 'outras' ? 'As moedas sem alvo (lascas, Remorso) não precisam de peça. A gema do Prisma e da Lente se escolhe à direita (filtro Gemas).' : 'Nenhuma peça escolhida.'));
+    card.append(el('div', 'fp-peca-moldura'), el('p', 'fp-vazio', SEM_PECA.has(f.categoria) ? 'Esta categoria não precisa de peça.' : f.categoria === 'gemas' ? 'Escolha a gema no inventário, à direita (Inventário → Gemas).' : 'Nenhuma peça escolhida.'));
     return card;
   }
   const meta = itens()[x.peca.id];
@@ -714,16 +725,80 @@ function opRaridade(op, x) {
   }
 }
 
-function opOutras(op, x) {
-  const material = materialDa('outras');
+/** O que a peça tem de relevante para a categoria (o lado "Na peça" das categorias sem resultado desejado). */
+function naPeca(x) {
+  const lista = el('ul', 'fp-na-peca');
+  const linha = (rotulo, valor, classe = '') => {
+    const li = el('li', classe);
+    li.append(el('span', null, rotulo), el('b', null, valor));
+    lista.append(li);
+  };
+  const p = x?.peca?.poe;
+  if (f.categoria === 'gemas') {
+    if (!x?.gema) return el('p', 'fp-legenda', 'Nenhuma gema escolhida.');
+    linha('Nível', String(x.peca.gema?.nivel ?? 1));
+    linha('Qualidade', `${x.peca.gema?.qualidade ?? 0}% de 20%`);
+    return lista;
+  }
+  if (!p) return el('p', 'fp-legenda', SEM_PECA.has(f.categoria) || f.categoria === 'especiais' ? 'Não precisa de peça.' : 'Nenhuma peça escolhida.');
+  if (f.categoria === 'implicitos') {
+    for (const i of p.implicitos ?? []) linha('Implícito', i.texto, 'impl');
+    if (!(p.implicitos ?? []).length) linha('Implícitos', 'nenhum');
+    const defesa = { armadura: 'Armadura', evasao: 'Evasão', escudo_energia: 'Escudo de Energia' };
+    for (const [k, nome] of Object.entries(defesa)) if (typeof p.atributos?.[k] === 'number') linha(`${nome} da base`, String(p.atributos[k]));
+  } else if (f.categoria === 'influencia') {
+    const NOMES = { shaper: 'Criador', elder: 'Ancião', crusader: 'Cruzado', redeemer: 'Juiz', hunter: 'Caçador', warlord: 'Senhor da Guerra' };
+    linha('Influência', (p.influencias ?? []).map((i) => NOMES[i] ?? i).join(', ') || 'nenhuma');
+    linha('Mods influenciados', String([...(p.prefixos ?? []), ...(p.sufixos ?? [])].filter((m) => m.influencia).length));
+    linha('Raridade', p.raridadeNome ?? p.raridade);
+  } else if (f.categoria === 'ancestral') {
+    const ELDRITCH = { searing: 'Exarca Abrasador', eater: 'Devorador de Mundos' };
+    const eld = (p.implicitos ?? []).filter((i) => ELDRITCH[i.origem]);
+    for (const i of eld) linha(ELDRITCH[i.origem], i.texto, 'impl');
+    if (!eld.length) linha('Implícitos Eldritch', 'nenhum');
+  } else if (f.categoria === 'qualidade') {
+    linha('Qualidade', `${p.qualidade ?? 0}% de 20%`);
+    linha('Raridade', p.raridadeNome ?? p.raridade);
+  } else if (f.categoria === 'corrupcao') {
+    linha('Corrompida', p.corrompido ? 'sim' : 'não', p.corrompido ? 'corrompida' : '');
+    linha('Raridade', p.raridadeNome ?? p.raridade);
+  } else if (f.categoria === 'especiais') {
+    linha('Raridade', p.raridadeNome ?? p.raridade);
+    linha('Espelhada', p.espelhado ? 'sim' : 'não');
+  }
+  return lista;
+}
+/** As categorias sem resultado desejado: o que a peça tem × o que o material faz (e, sem sorteio, o resultado exato). */
+function opGeral(op, x) {
+  const material = materialDa(f.categoria);
   const meta = itens()[material?.id];
-  if (!meta) return void op.append(el('p', 'fp-legenda', 'Escolha um material na barra abaixo.'));
-  const alvo = meta.moedaPoe?.alvo;
-  op.append(el('p', 'fp-legenda', meta.descricao ?? ''));
-  if (alvo === 'gema' && !x?.gema) op.append(el('p', 'fp-aviso', 'Esta moeda vale numa gema da mochila: escolha a gema à direita (Inventário → Gemas).'));
-  else if (alvo === 'nenhum') op.append(el('p', 'fp-legenda', 'Não precisa de peça.'));
-  else if (alvo === 'peca' && !x?.peca?.poe) op.append(el('p', 'fp-aviso', 'Escolha uma peça do PoE.'));
-  if (material?.slug === 'Tainted_Mythic_Orb') op.append(el('p', 'fp-aviso', 'Atenção: o Orbe Mítico Corroído pode DESTRUIR a peça.'));
+  if (f.categoria === 'semEfeito') {
+    const lista = el('ul', 'fp-sem-efeito');
+    for (const m of f.opcoes.materiais ?? []) {
+      const li = el('li');
+      li.append(el('b', null, `${m.nome} (${m.tem})`), el('span', null, String(m.motivo ?? '').replace(/^Sem efeito no jogo: /, '')));
+      lista.append(li);
+    }
+    op.append(lista.childNodes.length ? lista : el('p', 'fp-legenda', 'Você não tem nenhuma moeda sem efeito.'));
+    return;
+  }
+  const faz = el('div');
+  if (!meta) faz.append(el('p', 'fp-legenda', 'Escolha um material na barra abaixo.'));
+  else {
+    faz.append(el('p', 'fp-legenda', meta.descricao ?? ''));
+    if (material.previa) faz.append(el('p', 'fp-resultado', `Resultado: ${material.previa}`));
+    if (material.slug === 'Tainted_Mythic_Orb') faz.append(el('p', 'fp-aviso', 'Atenção: o Orbe Mítico Corroído pode DESTRUIR a peça.'));
+    if (['Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb'].includes(material.slug)) faz.append(el('p', 'fp-aviso', 'A corrupção é permanente: depois só as moedas Corroídas valem nesta peça.'));
+  }
+  const d = el('div', 'fp-lado-d');
+  d.append(el('h5', null, 'O material faz'), faz);
+  // (as lascas não mexem em peça: só o que o material faz)
+  if (SEM_PECA.has(f.categoria)) return void op.append(d);
+  const g = el('div', 'fp-comparar');
+  const a = el('div', 'fp-lado-a');
+  a.append(el('h5', null, f.categoria === 'gemas' ? 'Na gema' : 'Na peça'), naPeca(x));
+  g.append(a, el('div', 'fp-seta', '➜'), d);
+  op.append(g);
 }
 
 /** A barra de materiais da categoria: o ícone, o nome, quanto tem, se vale nesta peça; o escolhido é o que a forja gasta. */
@@ -752,7 +827,7 @@ function barraDeMateriais() {
   const escolhido = lista.find((m) => m.id === f.moeda[f.categoria]);
   if (escolhido) {
     const info = el('div', 'fp-mat-info');
-    info.append(el('b', null, escolhido.nome), el('span', null, `Você tem ${escolhido.tem} · custo: 1 por tentativa${escolhido.repete ? ' · repete' : ' · uma tentativa por vez'}`));
+    info.append(el('b', null, escolhido.nome), el('span', null, escolhido.status === 'nao' ? `Você tem ${escolhido.tem} · sem efeito no jogo` : `Você tem ${escolhido.tem} · custo: 1 por tentativa${escolhido.repete ? ' · repete' : ' · uma tentativa por vez'}`));
     if (escolhido.motivo) info.append(el('em', 'fp-erro', escolhido.motivo));
     else if (escolhido.status === 'parcial') info.append(el('em', 'fp-legenda', `Funciona em parte: ${notaParcial(escolhido.id)}`));
     caixa.append(info);
@@ -765,7 +840,7 @@ const notaParcial = (id) => String(itens()[id]?.descricao ?? '').split(' — no 
 function painelDaRepeticao() {
   const caixa = el('div', 'fp-repeticao');
   const material = materialDa(f.categoria);
-  const podeRepetir = !!material?.repete && f.categoria !== 'outras';
+  const podeRepetir = !!material?.repete && COM_DESEJO.has(f.categoria);
   const modos = el('div', 'fp-segmento');
   for (const [id, rotulo] of MODOS) {
     const b = botao(f.modo === id ? 'ativo' : '', rotulo, () => {
@@ -805,7 +880,7 @@ const pct = (p) => {
 function previa() {
   const caixa = el('div', 'fp-previa');
   const o = f.opcoes;
-  if (!opcoesValem() || f.categoria === 'outras') return caixa;
+  if (!opcoesValem() || !COM_DESEJO.has(f.categoria)) return caixa;
   const material = materialDa(f.categoria);
   if (material && !material.repete) {
     caixa.append(el('p', 'fp-legenda', `${material.nome} é de uma tentativa por vez: use Forjar. O resultado desejado vale nas moedas que sorteiam de novo.`));
@@ -874,7 +949,7 @@ function rodape(x) {
     f.configAberta = !f.configAberta;
     redesenhar();
   }, 'Escolhe o resultado desejado desta categoria (fica guardado enquanto a Forja estiver aberta).');
-  config.disabled = rodando || f.categoria === 'outras' || !x?.peca?.poe;
+  config.disabled = rodando || !COM_DESEJO.has(f.categoria) || !x?.peca?.poe;
   pe.append(config);
   if (rodando) {
     const parar = botao('fp-botao fp-cancelar', f.exec.cancelando ? 'Cancelando…' : 'Cancelar', cancelar, 'Para a repetição (o que já foi feito fica).');
@@ -884,7 +959,7 @@ function rodape(x) {
     const podeRepetir = f.modo === 'uma' || !!material?.repete;
     const valido = f.modo === 'uma' ? !desejoParaEnviar(f.categoria) || !!f.opcoes?.validacao?.ok : !!f.opcoes?.validacao?.ok;
     const repetir = botao('fp-botao fp-repetir', 'Repetir', () => iniciar(true), f.modo === 'uma' ? 'Uma tentativa, conferindo o resultado desejado.' : f.modo === 'limite' ? `Até ${f.limite} tentativas ou até chegar no resultado.` : 'Até chegar no resultado (ou acabar o material).');
-    repetir.disabled = !material || material.tem < 1 || !!material.motivo || !temAlvo || f.categoria === 'outras' || !podeRepetir || !valido;
+    repetir.disabled = !material || material.tem < 1 || !!material.motivo || !temAlvo || !COM_DESEJO.has(f.categoria) || !podeRepetir || !valido;
     pe.append(repetir);
   }
   const forjar = botao('fp-botao fp-forjar', 'Forjar', () => iniciar(false), 'Uma tentativa com o material escolhido.');
@@ -921,26 +996,39 @@ function inventario(x) {
     if (!vistos.length) grade.append(el('p', 'fp-vazio', f.abaInv === 'equipamentos' ? 'Nenhuma peça do PoE vestida.' : 'Nenhuma peça do PoE na mochila.'));
     aside.append(grade);
   } else {
-    const grade = el('div', 'fp-grade');
-    const tem = [...moedasNaMochila()].sort(([a], [b]) => (itens()[a]?.name ?? '').localeCompare(itens()[b]?.name ?? ''));
-    for (const [id, n] of tem) {
-      const meta = itens()[id];
-      const cell = el('button', `cell fp-celula${f.moeda[f.categoria] === id ? ' escolhida' : ''}${meta.moedaPoe.status === 'nao' ? ' sem-efeito' : ''}`);
-      cell.type = 'button';
-      vestirRaridade(cell, meta);
-      cell.disabled = !!f.exec?.rodando;
-      cell.append(itemCanvas(id, 32), el('b', null, n > 9999 ? '9k+' : String(n)));
-      tipFor(cell, id, `Categoria: ${CATEGORIAS.find((k) => k.id === meta.moedaPoe.categoria)?.nome ?? '—'}`);
-      cell.onclick = () => {
-        escolherMoeda(id);
-        f.configAberta = false;
-        pedirOpcoes();
-        redesenhar();
-      };
-      grade.append(cell);
+    // As moedas da mochila separadas pela categoria da Forja (a ordem do trilho); clicar escolhe o material e a categoria dele.
+    const caixa = el('div', 'fp-grade-grupos');
+    const porCategoria = new Map();
+    for (const [id, n] of moedasNaMochila()) {
+      const cat = itens()[id]?.moedaPoe?.categoria ?? 'semEfeito';
+      if (!porCategoria.has(cat)) porCategoria.set(cat, []);
+      porCategoria.get(cat).push([id, n]);
     }
-    if (!tem.length) grade.append(el('p', 'fp-vazio', 'Nenhuma moeda do PoE na mochila.'));
-    aside.append(grade);
+    for (const g of GRUPOS) for (const cat of g.categorias) {
+      const lista = (porCategoria.get(cat.id) ?? []).sort(([a], [b]) => (itens()[a]?.name ?? '').localeCompare(itens()[b]?.name ?? ''));
+      if (!lista.length) continue;
+      caixa.append(el('h5', 'fp-grade-titulo', cat.nome));
+      const grade = el('div', 'fp-grade');
+      for (const [id, n] of lista) {
+        const meta = itens()[id];
+        const cell = el('button', `cell fp-celula${f.moeda[f.categoria] === id ? ' escolhida' : ''}${meta.moedaPoe.status === 'nao' ? ' sem-efeito' : ''}`);
+        cell.type = 'button';
+        vestirRaridade(cell, meta);
+        cell.disabled = !!f.exec?.rodando;
+        cell.append(itemCanvas(id, 32), el('b', null, n > 9999 ? '9k+' : String(n)));
+        tipFor(cell, id, `Categoria: ${cat.nome}`);
+        cell.onclick = () => {
+          escolherMoeda(id);
+          f.configAberta = false;
+          pedirOpcoes();
+          redesenhar();
+        };
+        grade.append(cell);
+      }
+      caixa.append(grade);
+    }
+    if (!porCategoria.size) caixa.append(el('p', 'fp-vazio', 'Nenhuma moeda do PoE na mochila.'));
+    aside.append(caixa);
   }
   // A capacidade: as vagas da mochila (a do PoE não tem peso).
   const mochila = c.equipment?.backpack;
