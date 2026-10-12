@@ -963,9 +963,9 @@ function gastaOrbe(estado, k) {
   if ((inv[k].count ?? 1) > 1) inv[k].count -= 1;
   else inv.splice(k, 1);
 }
-/** A peça vestida em `slot` que aceita a operação, com os sockets normalizados; ou `{ erro }`. */
-function pecaComSockets(estado, slot) {
-  const peca = estado.equipment?.[slot];
+/** A peça vestida em `slot` (ou a peça dada — a da mochila, nos orbes do PoE) que aceita a operação, com os sockets normalizados; ou `{ erro }`. */
+function pecaComSockets(estado, slot, dada = null) {
+  const peca = dada ?? estado.equipment?.[slot];
   if (!peca) return { erro: 'Não há nada vestido nesse slot.' };
   const max = maximoDeSockets(ITEM_CATALOG[peca.id], peca);
   if (!max) return { erro: 'Esse tipo de peça não tem sockets.' };
@@ -1010,16 +1010,19 @@ export function ligarElo(estado, { slot, elo, ligar }) {
 }
 
 /**
- * Usa um ORBE DO PoE (`tipo`: 'joalheiro' | 'fusao' | 'cromatico') na peça vestida em `slot`. Mesma ordem dos orbes do Draevor: valida
- * tudo, muda a peça e só então gasta o orbe. Joalheiro e Cromático pedem a peça SEM gema (nenhuma gema sai sozinha); a Fusão não mexe
- * nas gemas. Recusa sem gastar quando não haveria mudança (peça no máximo de sockets, peça toda ligada).
+ * Usa um ORBE DO PoE (`tipo`: 'joalheiro' | 'fusao' | 'cromatico') na peça vestida em `slot` — ou na `peca` dada (a da MOCHILA: no PoE a
+ * moeda vale em qualquer peça; dono, 12/10, a Forja reformulada). Mesma ordem dos orbes do Draevor: valida tudo, muda a peça e só então
+ * gasta o orbe. Joalheiro e Cromático pedem a peça SEM gema (nenhuma gema sai sozinha); a Fusão não mexe nas gemas. Recusa sem gastar
+ * quando não haveria mudança (peça no máximo de sockets, peça toda ligada).
  */
-export function usarOrbeDoPoe(estado, { slot, tipo }, rng = Math.random) {
+export function usarOrbeDoPoe(estado, { slot, tipo, peca: dada = null }, rng = Math.random) {
   if (!SocketsPoe.poeLigado()) return erro('Este orbe é do modo PoE.');
   const o = ORBES_DO_POE[tipo];
   if (!o?.itemId) return erro('Orbe desconhecido.');
-  const { peca, max, s, erro: e } = pecaComSockets(estado, slot);
+  const { peca, max, s, erro: e } = pecaComSockets(estado, slot, dada);
   if (e) return erro(e);
+  // (o único: "Encaixes não podem ser modificados" — como nas moedas Corroídas, `moedas.comSockets`)
+  if (Number(peca.poe?.af?.encaixes_inalteraveis) > 0) return erro('Os sockets desta peça não podem ser modificados. O orbe não foi gasto.');
   const k = achaOrbe(estado, o.itemId);
   if (k < 0) return erro(`Você não tem ${o.nome}.`);
   const req = ITEM_CATALOG[peca.id]?.poe?.requisitos ?? null;

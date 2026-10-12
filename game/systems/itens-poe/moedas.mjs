@@ -584,10 +584,12 @@ const vaalVolatil = (ctx) => {
 };
 const vaalDjinn = (ctx) => (ehUnico(ctx.p) ? vaal(ctx) : erro('A Orbe Vaal Tocada por Djinn vale em peça Única.'));
 
-/** Os orbes de socket (já existentes, `Gemas.usarOrbeDoPoe`, que gasta o orbe ele mesmo): só na peça vestida. */
-const orbeDeSocket = (tipo) => ({ estado, alvo, rng }) => {
-  if (alvo?.onde !== 'equipment') return erro('Esta moeda vale numa peça vestida (os sockets).');
-  const r = Gemas.usarOrbeDoPoe(estado, { slot: alvo.slot, tipo }, rng);
+/**
+ * Os orbes de socket (já existentes, `Gemas.usarOrbeDoPoe`, que gasta o orbe ele mesmo): na peça vestida ou na da MOCHILA — no PoE a moeda
+ * vale em qualquer peça, como as Corroídas daqui (dono, 12/10: a Forja reformulada mostra o inventário inteiro).
+ */
+const orbeDeSocket = (tipo) => ({ estado, peca, alvo, rng }) => {
+  const r = Gemas.usarOrbeDoPoe(estado, alvo?.onde === 'equipment' ? { slot: alvo.slot, tipo } : { peca, tipo }, rng);
   return r.ok ? { ...r, jaGastou: true } : r;
 };
 
@@ -655,6 +657,33 @@ export const STATUS = Object.fromEntries(MOEDAS.map((m) => {
   return [m.slug, f ? { status: f.parcial ? 'parcial' : 'funciona', motivo: f.parcial ?? null, alvo: f.alvo ?? 'peca' } : { status: 'nao', motivo: motivoDoNao(m), alvo: null }];
 }));
 
+// ---------------------------------------------------------------- as CATEGORIAS da Forja (dono, 12/10 — `itens-poe/forja.mjs`)
+const DA_CATEGORIA = {
+  sockets: ['Jewellers_Orb', 'Tainted_Jewellers_Orb'],
+  cores: ['Chromatic_Orb', 'Tainted_Chromatic_Orb'],
+  links: ['Orb_of_Fusing', 'Tainted_Orb_of_Fusing'],
+  raridade: ['Orb_of_Transmutation', 'Orb_of_Alchemy', 'Regal_Orb', 'Foulborn_Regal_Orb', 'Orb_of_Scouring', 'Orb_of_Chance', 'Orb_of_Binding'],
+  // (corrompem, copiam, trocam o único ou podem destruir a peça)
+  outras: ['Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Tainted_Mythic_Orb'],
+};
+const CATEGORIA_FIXA = new Map(Object.entries(DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
+/**
+ * A categoria da Forja de uma moeda: sockets, cores, links e raridade (as da lista); o resto que mexe na peça (mods, valores, implícitos,
+ * qualidade) é Atributos; a de gema, a sem alvo (lascas, Remorso) e a sem efeito no jogo ficam em Outras.
+ */
+export function categoriaDaMoeda(slug) {
+  if (CATEGORIA_FIXA.has(slug)) return CATEGORIA_FIXA.get(slug);
+  return FAZ[slug] && (FAZ[slug].alvo ?? 'peca') === 'peca' ? 'atributos' : 'outras';
+}
+/**
+ * As moedas que REPETEM na Forja: as que sorteiam de novo a mesma coisa (a peça continua aceitando a moeda depois) e a Chance (com o
+ * Expurgo para voltar a peça a Normal). As que somam ou tiram (Ampliador, Exaltado, Anulação…) vão uma tentativa por vez.
+ */
+export const REPETE = new Set([
+  'Jewellers_Orb', 'Tainted_Jewellers_Orb', 'Chromatic_Orb', 'Tainted_Chromatic_Orb', 'Orb_of_Fusing', 'Tainted_Orb_of_Fusing',
+  'Orb_of_Alteration', 'Chaos_Orb', 'Veiled_Chaos_Orb', 'Eldritch_Chaos_Orb', 'Tainted_Chaos_Orb', 'Divine_Orb', 'Orb_of_Chance',
+].filter((slug) => FAZ[slug]));
+
 // ---------------------------------------------------------------- o catálogo e o uso
 /** Registra as moedas no catálogo de itens (uma vez; só no PoE). Os orbes de socket já estão (`skills/gemas.mjs`) e só ganham o status. */
 export function iniciar() {
@@ -664,13 +693,15 @@ export function iniciar() {
   for (const m of MOEDAS) {
     const st = STATUS[m.slug];
     const descricao = `${m.efeitos.join(' ') || m.nome}${st.status === 'nao' ? ` — sem efeito no jogo: ${st.motivo}.` : st.status === 'parcial' ? ` — no jogo: ${st.motivo}.` : ''}`;
+    // (a categoria da Forja e se repete: a tela da Forja lê do catálogo — `forja-poe.mjs`)
+    const moedaPoe = { slug: m.slug, status: st.status, alvo: st.alvo, categoria: categoriaDaMoeda(m.slug), repete: REPETE.has(m.slug) };
     if (ITEM_CATALOG[m.itemId]) {
-      Object.assign(ITEM_CATALOG[m.itemId], { moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, pilha: PILHA_MAX_POE });
+      Object.assign(ITEM_CATALOG[m.itemId], { moedaPoe, pilha: PILHA_MAX_POE });
       continue;
     }
     ITEM_CATALOG[m.itemId] = {
       id: m.itemId, name: m.nome, weight: 0.1, stackable: true, type: 'moeda', rarity: 'raro', hasSprite: true, spriteDe: 9655,
-      poeMoeda: { icone: m.icone }, moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, descricao, sell: 0,
+      poeMoeda: { icone: m.icone }, moedaPoe, descricao, sell: 0,
       // A pilha de 100 de todo empilhável (dono, 09/10 — `itens/pilha.mjs`); o balão mostra "Tamanho da Pilha: n / 100". O tamanho do
       // PoE (`m.pilha`) fica na ficha da Engine.
       pilha: PILHA_MAX_POE,

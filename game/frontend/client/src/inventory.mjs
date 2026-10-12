@@ -587,7 +587,7 @@ function escolherPecaParaTier() {
  * vazia = socket aberto, apagada = bloqueado; o traço entre duas = link.
  * Com `aoTocar` (a peça vestida), a fileira é um botão: abre a janela de sockets.
  */
-function selarSoquetes(cell, peca, aoTocar = null) {
+export function selarSoquetes(cell, peca, aoTocar = null) {
   const sq = peca?.soquetes;
   if (!sq?.gemas?.length) return;
   const itens = ctx.state.items;
@@ -1893,7 +1893,7 @@ export function atualizarDesgaste() {
  * entrar (a outra metade é o slot, que a silhueta já conta). Era a metade
  * invisível.
  */
-function vestirRaridade(cell, meta, daPeca = null, poe = null) {
+export function vestirRaridade(cell, meta, daPeca = null, poe = null) {
   // A peça do PoE: a borda e a luz na cor da raridade do PoE (Normal, Mágico, Raro, Único — `itens-poe/regras.json`), como no PoE.
   if (poe?.cor) {
     cell.classList.add('raridade', 'poe-raridade', `poe-r-${poe.raridade ?? 'normal'}`);
