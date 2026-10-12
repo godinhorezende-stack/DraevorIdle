@@ -103,6 +103,29 @@ const REGRAS = [
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
   [/não Custam nada/i, () => ({ custoPct: -100 })],
   [/custam Vida ao invés de Mana|Reservam Vida ao invés de Mana/i, () => ({ custoEmVida: 1 })],
+  // (11/10) Os suportes que viraram mecânica (`acoes` — antes das regras gerais de dano: o "mais Dano" deles só vale no caso deles).
+  // A CRUELDADE: os acertos concedem Crueldade (mais dano degenerativo — `condicoes-poe.BUFFS.crueldade`) por N segundos.
+  [new RegExp(`^Crueldade tem Duração Base de ${N} segundos`, 'i'), (m) => ({ crueldadeMs: Math.round(num(m[1]) * 1000) })],
+  [/^Acertos de Habilidades Suportadas concedem Crueldade/i, () => ({ crueldade: 1 })],
+  [new RegExp(`^Efeito da Crueldade concedido por Habilidades Suportadas aumentado em ${N}%`, 'i'), (m) => ({ crueldadeEfeitoPct: num(m[1]) })],
+  // A IMPIEDADE: cada terceiro ataque corpo a corpo é um Golpe Impiedoso (mais dano, mais dano com afecções, o atordoamento).
+  [/Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso/i, () => ({ impiedosoCada: 3 })],
+  [new RegExp(`Golpes Impiedosos com Habilidades Suportadas causam ${N}% mais Dano Corpo a Corpo`, 'i'), (m) => ({ impiedosoMaisDanoPct: num(m[1]) })],
+  [new RegExp(`Golpes Impiedosos com Habilidades Suportadas causam ${N}% mais Dano com Afecções`, 'i'), (m) => ({ impiedosoMaisAfeccaoPct: num(m[1]) })],
+  [new RegExp(`Golpes Impiedosos com Habilidades Suportadas têm uma Duração base de Atordoamento de ${N} segundos`, 'i'), (m) => ({ impiedosoAtordoamentoMs: Math.round(num(m[1]) * 1000) })],
+  // A LÂMINA NOTURNA: Elusivo no crítico; crítico e multiplicador a mais enquanto Elusivo; só com Garras e Adagas.
+  [/concedem Elusivo no Golpe Crítico/i, () => ({ elusivoNoCritico: 1 })],
+  [new RegExp(`tem \\+${N}% de Chance de Golpe Crítico enquanto Elusivo`, 'i'), (m) => ({ critElusivo: num(m[1]) })],
+  [new RegExp(`^Efeito do Elusivo das Habilidades Suportadas aumentado em ${N}%`, 'i'), (m) => ({ elusivoEfeitoPct: num(m[1]) })],
+  [new RegExp(`Elusivo de Habilidades Suportadas também concedem \\+${N}% de Multiplicador de Golpes Críticos`, 'i'), (m) => ({ critMultElusivo: num(m[1]) })],
+  [/só podem ser usadas com Garras e Adagas/i, () => ({ soGarraAdaga: 1 })],
+  // O LIBERTAR: os Selos (um a cada N s, até M); a magia Ocorre Novamente por Selo, com menos dano.
+  [new RegExp(`ganham um Selo a cada ${N} segundos, até um máximo de ${N} Selos`, 'i'), (m) => ({ seloIntervaloMs: Math.round(num(m[1]) * 1000), selosMax: num(m[2]) })],
+  [new RegExp(`causam ${N}% menos Dano quando Ocorrendo Novamente`, 'i'), (m) => ({ selosMenosDanoPct: num(m[1]) })],
+  // O INTENSIFICAR: a Intensidade (ganha ao conjurar, até N; perde andando); mais dano em área e menos área por Intensidade.
+  [new RegExp(`ganham Intensidade quando você as Conjurar, máximo de ${N} Habilidades Suportadas causam ${N}% mais Dano em Área com Acertos por Intensidade Habilidades Suportadas têm ${N}% less Efeito em Área por Intensidade`, 'i'),
+    (m) => ({ intensidadeMax: num(m[1]), intensidadeMaisDanoPct: num(m[2]), intensidadeMenosAreaPct: num(m[3]) })],
+  [new RegExp(`perdem 1 de Intensidade a cada ${N} segundos enquanto se movendo`, 'i'), (m) => ({ intensidadePerdaMs: Math.round(num(m[1]) * 1000) })],
   // A BLASFÊMIA (`itens-poe/reserva.mjs`): a maldição suportada vira AURA — liga e reserva a "Sobreposição de Reserva", com menos efeito.
   [new RegExp(`^(?:Sobreposição de )?Reserva: ${N}% Mana`), (m) => ({ reservaSobreposta: num(m[1]) })],
   [/aplicam suas Maldições como Auras/i, () => ({ maldicaoEmAura: 1 })],
@@ -214,7 +237,8 @@ function gatilhoDe(s, textos) {
 
 /** O que o jogo não tem (o suporte inteiro não age): totens, armadilhas, minas, lacaios, marcas, clamores, estandartes. */
 const SEM_SISTEMA = [
-  [/Armadilha|Minas?\b/i, 'armadilhas e minas ainda não existem no jogo'],
+  // ("Mina" como palavra: o "mina" de "Lâmina Noturna" travava o suporte — 11/10)
+  [/(?<!\p{L})(?:Armadilha|Minas?)(?!\p{L})/iu, 'armadilhas e minas ainda não existem no jogo'],
   [/Sentinela|torres de osso/i, 'esses lacaios especiais ainda não existem no jogo'],
   [/ao Morrer|quando (?:você (?:for|é) )?Atordoad|enquanto (?:você )?Canaliz|Canalização/i, 'esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)'],
 ];

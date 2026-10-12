@@ -139,11 +139,14 @@ export function fichaDaMao(ficha, mao = 'principal', [pesoPrincipal, pesoSecunda
   if (!ficha?.duasArmas || ficha.critPontosSecundaria == null || mao === 'principal') return ficha;
   const pontos = mao === 'secundaria' ? ficha.critPontosSecundaria : (ficha.critPontos * pesoPrincipal + ficha.critPontosSecundaria * pesoSecundaria) / Math.max(1e-9, pesoPrincipal + pesoSecundaria);
   const chance = Math.min(ficha.critTeto ?? 1, Math.max(0, pontos * (1 + (ficha.critInc ?? 0) / 100) * (ficha.critMais ?? 1)));
-  return { ...ficha, critPontos: pontos, critChance: chance, mao };
+  // (a chance refeita não é a Sortuda — `critSortudo` sai: o sorteio do golpe rola duas vezes)
+  return { ...ficha, critPontos: pontos, critChance: chance, critSortudo: false, mao };
 }
 
 /** O bônus de empunhar DUAS ARMAS no PoE: +15% de chance de bloqueio (somada) e 10% mais velocidade de ataque. */
 export const BONUS_DE_DUAS_ARMAS = { bloqueio: 0.15, velocidadeMais: 1.1 };
+/** (ciclo 7, lote F) "Bônus Inerentes da Empunhadura Dupla são dobrados" (os dois); "…de Velocidade de Ataque … dobrado enquanto portando Garras". */
+const dobroDasDuasArmas = (af, oque) => (itensPoeLigado() && (Number(af?.bonus_duas_armas_dobrado) > 0 || (oque === 'velocidade' && Number(af?.velocidade_duas_armas_dobrada) > 0)) ? 2 : 1);
 
 /** Os modificadores LOCAIS da arma (`engine/arma.mjs`): os da peça do Draevor (`peca.locais`) ou, na do PoE, a Velocidade de Ataque e o crítico locais dela. */
 const locaisDaArma = (peca) => (peca?.poe ? { pctVelocidade: Number(peca.poe.af?.atk_speed_local) || 0, pctCritico: Number(peca.poe.af?.crit_chance_local) || 0 } : peca?.locais);
@@ -153,17 +156,26 @@ export const APS_DESARMADO_POE = 1.2;
  * O intervalo BASE do golpe (ms, antes dos aumentos globais): `1000 / APS final` da arma (sem arma, o desarmado). Com DUAS ARMAS (PoE) os
  * golpes alternam e cada um leva o tempo da sua arma: a média dos dois intervalos (a média harmônica dos APS, como no PoE).
  */
-export function intervaloBaseDoGolpe(arma, secundaria = null) {
+export function intervaloBaseDoGolpe(arma, secundaria = null, af = null) {
   const desarmado = itensPoeLigado() ? 1000 / APS_DESARMADO_POE : INTERVALO_BASE_DO_GOLPE_MS;
   const de = (s) => s?.aps.intervaloMs || desarmado;
-  return secundaria ? (de(arma) + de(secundaria)) / 2 : de(arma);
+  // (PoE, a Ambidestria: "Velocidade de Ataque com a Mão Secundária aumentada em X% enquanto em Dupla Empunhadura" — só o golpe da secundária.)
+  const daSecundaria = itensPoeLigado() ? 1 + Math.max(0, Number(af?.atk_speed_mao_secundaria) || 0) / 100 : 1;
+  return secundaria ? (de(arma) + de(secundaria) / daSecundaria) / 2 : de(arma);
 }
 /** O "aumentado" da Velocidade de Conjuração que também vale no ataque (PoE: "…se aplicam à Velocidade de Ataque"). */
 const conjuracaoNoAtaque = (af) => (itensPoeLigado() && Number(af?.conj_em_ataque) > 0 ? Number(af.cast_speed) || 0 : 0);
+/**
+ * O TETO do bloqueio de ataques: o da configuração + "+X% à Chance máxima de Bloquear o Dano de Ataques" (`block_max` dos únicos; `max_block`
+ * da árvore, ciclo 7 — a mesma linha, dois nomes; cada fonte usa um).
+ */
+const tetoDoBloqueio = (af) => Atributos.CONFIG.bloqueio.MAX + ((Number(af?.block_max) || 0) + (itensPoeLigado() ? Number(af?.max_block) || 0 : 0)) / 100;
 function comDuasArmas(bloqueio, armaSecundaria, af = {}) {
   if (!armaSecundaria) return bloqueio;
-  const teto = Atributos.CONFIG.bloqueio.MAX + (af.block_max ?? 0) / 100;
-  const mais = (v) => Math.min(teto, (v ?? 0) + BONUS_DE_DUAS_ARMAS.bloqueio);
+  // (ciclo 7, lote E: "Dupla Empunhadura não concede chance de Bloquear o Dano de Ataques de forma inerente"; o teto — `tetoDoBloqueio`.)
+  if (itensPoeLigado() && Number(af.sem_bloqueio_duas_armas) > 0) return bloqueio;
+  const teto = tetoDoBloqueio(af);
+  const mais = (v) => Math.min(teto, (v ?? 0) + BONUS_DE_DUAS_ARMAS.bloqueio * dobroDasDuasArmas(af, 'bloqueio'));
   return { ...bloqueio, blockChance: mais(bloqueio.blockChance), blockChanceMin: mais(bloqueio.blockChanceMin), blockChanceMax: mais(bloqueio.blockChanceMax) };
 }
 
@@ -301,18 +313,24 @@ function calcularCombate(estado, extrasDoPoe = null) {
   // O crítico BASE da arma (`critChance` do catálogo, já na soma das peças) × o % de crítico LOCAL dela: só o ACRÉSCIMO local entra aqui (a qualidade não mexe em crítico).
   const critLocalDaArma = armaFinal ? (armaFinal.critChance.final - armaFinal.critChance.base) / 10000 : 0;
   // A chance em pontos (base + o que soma) × o "Chance de Crítico aumentada" RELATIVO das peças do PoE (`crit_chance_inc`, 0 sem elas).
-  const critPontos = CRITICO_BASE + critLocalDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + Aparencia.colecao(estado).critChance;
+  // (o Slayer: "Chance de Acerto Crítico Base para Ataques com Armas é de N%" — o crítico-base da arma vira N.)
+  const baseFixaDaArma = itensPoeLigado() && af.crit_base_arma_fixa > 0 && armaFinal?.critChance ? (af.crit_base_arma_fixa * 100 - (Number(armaFinal.critChance.base) || 0)) / 10000 : 0;
+  const critPontos = CRITICO_BASE + critLocalDaArma + baseFixaDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + Aparencia.colecao(estado).critChance;
   // (× o "X% mais/menos Chance de Crítico" do PoE; "Nunca causa Acertos Críticos" zera.)
   const critMais = itensPoeLigado() ? (af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100)) : 1;
   const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais;
   // O teto da chance: o da configuração, ou o menor de uma peça do PoE ("Chance de Golpe Crítico Máxima é N%" — `crit_chance_teto`).
   const tetoDoCritico = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, itensPoeLigado() && af.crit_chance_teto > 0 ? af.crit_chance_teto / 100 : 1);
-  const critChance = Math.min(tetoDoCritico, Math.max(0, critBruto));
+  // (ciclo 7, lote F: "Sua Chance de Crítico é Sortuda" — o melhor de dois sorteios: 1 − (1 − c)², já na chance da ficha — `critSortudo`, e o
+  // sorteio do golpe não rola de novo; com o Azarado junto, os dois se anulam e fica o sorteio comum — `rolarCritico`.)
+  const critSortudo = itensPoeLigado() && af.critico_sortudo > 0 && !(af.critico_azarado > 0);
+  const critChance = Math.min(tetoDoCritico, Math.max(0, critSortudo ? 1 - (1 - Math.min(1, critBruto)) ** 2 : critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
   // PoE, DUAS ARMAS: o golpe da mão secundária usa o crítico da arma DELA (a base × o local dela) no lugar do da principal; o resto (os
   // "+% de chance" fixos, os aumentos globais, o "mais") é o mesmo. `fichaDaMao` troca na hora do golpe.
   const critLocalSecundaria = armaSecundariaFinal ? (armaSecundariaFinal.critChance.final - armaSecundariaFinal.critChance.base) / 10000 : 0;
-  const critPontosSecundaria = armaSecundaria ? critPontos - ((w?.critChance ?? 0) / 10000 + critLocalDaArma) + ((armaSecundaria.critChance ?? 0) / 10000 + critLocalSecundaria) : null;
+  // (+ ciclo 7, lote D: "+X% de Chance de Golpe Crítico da Mão Secundária enquanto em Dupla Empunhadura" — `crit_base_secundaria`, na base dela.)
+  const critPontosSecundaria = armaSecundaria ? critPontos - ((w?.critChance ?? 0) / 10000 + critLocalDaArma) + ((armaSecundaria.critChance ?? 0) / 10000 + critLocalSecundaria) + (itensPoeLigado() ? (Number(af.crit_base_secundaria) || 0) / 100 : 0) : null;
   // Nas magias o PoE ainda soma o "Chance de Golpe Crítico com Magias aumentada" (`spell_crit_chance_inc`).
   const critChanceMagia = Math.min(tetoDoCritico, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
   // A magia do PoE: a chance-base é a da GEMA (somada a estes "+% de chance" fixos) × (1 + o "aumentada" geral e o de magias).
@@ -353,8 +371,12 @@ function calcularCombate(estado, extrasDoPoe = null) {
     elemental: Limites.limitar(af.elem_pen ?? 0, Limites.LIMITES.penetracao.maximo),
     porElemento: Object.fromEntries(Limites.ELEMENTOS_DE_PENETRACAO.map((el) => [el, (af[`${el}_pen`] ?? 0) < 0 ? af[`${el}_pen`] : Limites.limitar(af[`${el}_pen`] ?? 0, Limites.LIMITES.penetracao.maximo)])),
   };
+  // (PoE, ciclo 7: "Dano Penetra X% da Resistência a Caos".)
+  if (itensPoeLigado() && af.chaos_pen) penetracao.porElemento.chaos = Limites.limitar(af.chaos_pen, Limites.LIMITES.penetracao.maximo);
   const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) : 1;
   const defesas = defesasDaFicha(estado, af, doAtributo, espStat);
+  // (ciclo 7: o bloqueio calculado antes da ficha — o Combatente Versátil lê o EXCEDENTE dele para o bloqueio mágico)
+  const bloqueioDoGolpe = comDuasArmas(bloqueioDaFicha(estado, escudo, w, shielding, af), armaSecundaria, af);
   const ficha = {
     // STR/DEX/INT (total, e o que veio da vocação+level — a ficha mostra os dois).
     atributos: { str: principais.str, dex: principais.dex, int: principais.int, daVocacao: principais.daVocacao },
@@ -385,6 +407,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     skillValue: valorDaPericia,
     skillBonus: bonusDePericia,
     critChance,
+    // (a chance já Sortuda — `rolarCritico` não rola de novo)
+    critSortudo,
     critChanceMagia,
     critMagiaPoe,
     // Para o crítico de CADA golpe (os "aumentada" com condição — `itens-poe/mods-poe.mjs → fichaDoGolpe`): os pontos, os "aumentada" e o teto.
@@ -409,7 +433,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
     // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
-    ...comDuasArmas(bloqueioDaFicha(estado, escudo, w, shielding, af), armaSecundaria, af),
+    ...bloqueioDoGolpe,
     // O dano da arma da mão secundária (PoE, duas armas): o golpe alterna entre as duas (`hunt/combate.mjs`).
     ...(armaSecundaria
       ? (() => {
@@ -423,13 +447,15 @@ function calcularCombate(estado, extrasDoPoe = null) {
     energyShield: defesas.energyShield,
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
     // PoE: × (1 + "Precisão Global aumentada") × (1 − "X% menos Precisão").
-    accuracy: Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100)),
+    // (ciclo 7: + o "X% mais Precisão" sem condição do alvo — "5% mais Precisão por Carga de Frenesi")
+    accuracy: Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100) * Math.max(0, 1 + (itensPoeLigado() ? af.accuracy_mais ?? 0 : 0) / 100)),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
     esquiva: gem.esquiva / 100,
     // A mitigação das gemas, a dos poderes (Pele de Pedra, Coração do Titã) e o add Damage Reduction multiplicam: 1 − (1 − a)(1 − b)(1 − c).
-    danoRecebidoDasGemas: 1 - (1 - gem.mitigacao / 100) * (1 - EfeitosDeItem.reducaoDeDano(estado)) * (1 - (af.dmg_reduction ?? 0) / 100),
+    // (+ a Fortificação do PoE: "1% menos Dano de Acertos por Fortificação" — multiplica, é "menos".)
+    danoRecebidoDasGemas: 1 - (1 - gem.mitigacao / 100) * (1 - EfeitosDeItem.reducaoDeDano(estado)) * (1 - (af.dmg_reduction ?? 0) / 100) * (1 - Math.min(100, af.fortificacao_menos_dano ?? 0) / 100),
     // Chance to Avoid Damage: chance de ignorar um golpe OU magia inteiro (a Evasion só pega o golpe).
     evitarDano: (af.avoid_damage ?? 0) / 100,
     magiasDasGemas: gem.magias,
@@ -458,7 +484,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
     // (PoE: o APS da base do catálogo × a Velocidade de Ataque LOCAL da peça; com duas armas, a média dos tempos das duas — `intervaloBaseDoGolpe`.)
-    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / (1 + (BONUS_DE_DUAS_ARMAS.velocidadeMais - 1) * dobroDasDuasArmas(af, 'velocidade')) : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal, af) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([
@@ -508,7 +534,10 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // A regeneração do PoE (só com ITENS_POE=1): vida = (+N/s + N% da vida máxima/s) × (1 + aumentada%); mana = (1,8% da máxima + N/s) × (1 + aumentada%).
     regenPoe: itensPoeLigado() ? regenDoPoe(estado, af) : null,
     // A SUPRESSÃO DE FEITIÇO do PoE (chance, 0 a 1): a magia suprimida causa 50% menos dano (`poderes.mjs → dispararMagia`).
-    supressaoDeMagia: Math.min(1, Math.max(0, (af.spell_suppression ?? 0) / 100)),
+    // (a Acrobacia: "Modificadores de Chance de Suprimir Dano Mágico se aplicam à Chance de Esquivar dos Acertos Mágicos em 50% de seu valor, ao
+    // invés"; "Chance Máxima de Esquiva Mágica é 75%" — a Supressão some e vira a Esquiva Mágica: a magia inteira não pega, `poderes`.)
+    supressaoDeMagia: itensPoeLigado() && af.acrobacia_esquiva_pct > 0 ? 0 : Math.min(1, Math.max(0, (af.spell_suppression ?? 0) / 100)),
+    esquivaMagica: itensPoeLigado() && af.acrobacia_esquiva_pct > 0 ? Math.min((af.esquiva_magica_max || 75) / 100, Math.max(0, ((af.spell_suppression ?? 0) * af.acrobacia_esquiva_pct) / 10000)) : 0,
     penalidadeDeResistencia: penalidade,
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao,
@@ -516,11 +545,11 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // A resistência do JOGADOR aos efeitos de controle dos mobs (add Control Resistance), no teto (`combate/limites.json`), em %.
     resistenciaAControle: Limites.limitar(af.control_resist ?? 0, Limites.LIMITES.resistenciaAControle.maximo),
     // Bloqueio de MAGIA (add Spell Block Chance), no teto do tipo (`combate/formulas.json`, + "+X% à Chance máxima de Bloquear Dano
-    // Mágico" — `spell_block_max`); só vale com `bloqueio.modo` = 'poe'.
+    // Mágico" — `spell_block_max` dos únicos, `max_spell_block` da árvore); só vale com `bloqueio.modo` = 'poe'.
     // (+ "Chance de Bloquear o Dano Mágico é dobrada" — `spell_block_dobrado`; "Você está no Máximo de Chance de Bloquear Dano Mágico se você
     // não Bloqueou Recentemente" — `bloqueio_magia_no_maximo`, com a condição já resolvida na soma.)
     // (+ o Combatente Versátil: "+2% de Chance de Bloqueio Mágico para cada 1% de Chance de Bloqueio do Dano de Ataques Excedente".)
-    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal(af.bloqueio_magia_no_maximo > 0 ? Infinity : ((af.spell_block ?? 0) / 100) * (af.spell_block_dobrado > 0 ? 2 : 1) + (Number(af.bloqueio_magico_por_excedente) > 0 ? Number(af.bloqueio_magico_por_excedente) * (bloqueioDaFicha(estado, escudo, w, shielding, af).bloqueioExcedente ?? 0) : 0), 'magia', (af.spell_block_max ?? 0) / 100),
+    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal(af.bloqueio_magia_no_maximo > 0 ? Infinity : ((af.spell_block ?? 0) / 100) * (af.spell_block_dobrado > 0 ? 2 : 1) + (Number(af.bloqueio_magico_por_excedente) > 0 ? Number(af.bloqueio_magico_por_excedente) * (bloqueioDoGolpe.bloqueioExcedente ?? 0) : 0), 'magia', ((af.spell_block_max ?? 0) + (itensPoeLigado() ? Number(af.max_spell_block) || 0 : 0)) / 100),
     // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
     armaEquipada: armaEquipadaDaFicha(estado),
     // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".
@@ -575,7 +604,7 @@ const somarExtras = (af, extras) => {
 function comOsModsDoPoe(estado, af) {
   if (!itensPoeLigado()) return af;
   const zera = af.sem_escudo > 0 || af.defesas_zero > 0 || af.sem_armadura_escudo > 0;
-  if (!(af.life_as_armour || af.crushed || af.vida_como_escudo || estado.vidaConvertidaPoe || af.mana_como_escudo || zera)) return af;
+  if (!(af.life_as_armour || af.crushed || af.vida_como_escudo || estado.vidaConvertidaPoe || af.mana_como_escudo || zera || af.lacaio_dano_te_afeta || af.lacaio_vel_ataque_te_afeta)) return af;
   const novo = { ...af };
   if (estado.vidaConvertidaPoe) novo.energy_shield = (af.energy_shield ?? 0) + estado.vidaConvertidaPoe;
   if (af.mana_como_escudo) novo.energy_shield = (novo.energy_shield ?? 0) + ((estado.maxMana ?? 0) * af.mana_como_escudo) / 100;
@@ -586,13 +615,23 @@ function comOsModsDoPoe(estado, af) {
   if (af.life_as_armour) novo.armor_flat = (af.armor_flat ?? 0) + ((estado.maxHp ?? 0) * af.life_as_armour) / 100;
   if (af.vida_como_escudo) novo.energy_shield = (af.energy_shield ?? 0) + ((estado.maxHp ?? 0) * af.vida_como_escudo) / 100;
   if (af.crushed) novo.phys_res = (af.phys_res ?? 0) - 15;
+  // (ciclo 7) "Aumentos e reduções de Dano de Lacaio também afetam você" / "à Velocidade de Ataque dos Lacaios também te afetam".
+  if (af.lacaio_dano_te_afeta > 0) novo.dmg_inc = (af.dmg_inc ?? 0) + (af.minion_dmg ?? 0);
+  if (af.lacaio_vel_ataque_te_afeta > 0) novo.atk_speed = (af.atk_speed ?? 0) + (af.minion_atk_speed ?? 0);
+  // (lote F) "Modificadores à Resistência a Fogo também se aplicam à Resistência a Gelo e Raio em X% de seu Valor".
+  const doFogo = Number(af.res_fogo_vale_gelo_raio_pct) || 0;
+  if (doFogo) for (const el of ['ice_res', 'energy_res']) novo[el] = (novo[el] ?? af[el] ?? 0) + ((af.fire_res ?? 0) * doFogo) / 100;
   return novo;
 }
 /** O máximo de uma resistência no PoE: 75% + o "+X% de Resistência a <elemento> máxima" (o teto do PoE é 90%). */
 export function maximoDaResistencia(af, el) {
   // ("Suas Resistências Máximas são X%": o máximo fixo.)
   if (af?.res_max_fixa_tem > 0) return af.res_max_fixa ?? 75;
-  return Math.min(90, Limites.LIMITES.resistenciaDoJogador.maximo + (af?.[`${el}_res_max`] ?? 0));
+  // (ciclo 7, lote F) "Modificadores à Resistência a Fogo Máxima também se aplicam ao Máximo das Resistências a Gelo e Raio"; "Resistências
+  // Elementais são limitadas pelo seu maior Máximo de Resistência Elemental ao invés".
+  const doMax = (e) => (af?.[`${e}_res_max`] ?? 0) + (af?.res_max_fogo_vale_todas > 0 && (e === 'ice' || e === 'energy') ? af?.fire_res_max ?? 0 : 0);
+  const extra = af?.res_max_pelo_maior > 0 && ['fire', 'ice', 'energy'].includes(el) ? Math.max(...['fire', 'ice', 'energy'].map(doMax)) : doMax(el);
+  return Math.min(90, Limites.LIMITES.resistenciaDoJogador.maximo + extra);
 }
 /** "{min} a {max} de Dano de Raio de Ataques Adicional por cada N de Precisão": soma ao dano de Raio dos ataques. */
 function comRaioPorPrecisao(somado, af, precisao) {
@@ -788,7 +827,11 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const armourDaPeca = daPeca('armor', { shield: ['armour_pct_escudo', 'defesas_pct_escudo'], body: ['armour_pct_peitoral'], gloves: ['armour_pct_luvas'], feet: ['armour_pct_botas'] }, armour);
   const evasionDaPeca = daPeca('evasion', { shield: ['defesas_pct_escudo'], body: ['evasion_pct_peitoral'] }, evasion);
   const esDaPeca = daPeca('es', { shield: ['es_pct_escudo', 'defesas_pct_escudo'], head: ['es_pct_elmo'], body: ['es_pct_peitoral'] }, energyShield);
-  return { armour: Math.round(armour + armourDaPeca), evasion: Math.round(evasion + evasionDaPeca), energyShield: Math.round(energyShield + esDaPeca) };
+  // (ciclo 7, lote D: o "mais" do PoE — "3% mais Armadura e Evasão para cada Fortificação acima de 20" — multiplica o total.)
+  const mais = (k) => Math.max(0, 1 + (itensPoeLigado() ? Number(af[k]) || 0 : 0) / 100);
+  // (lote H) O Agnóstico: "Remove todo Escudo Mágico" — sem Escudo de Energia.
+  const semEscudo = itensPoeLigado() && Number(af.sem_escudo_energia) > 0;
+  return { armour: Math.round((armour + armourDaPeca) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round(energyShield + esDaPeca) };
 }
 
 /** Os totais da vida do personagem (monstros, ouro, mortes, tempo caçando). */
@@ -826,7 +869,8 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // (+ o Fragilizado do PoE: "+6% de chance de crítico contra" o bicho — "Inflige Enfraquecer … ao Bloquear".)
   const chanceDeCritico = Math.min(ficha.critTeto ?? Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
   // ("Sua Chance de Golpe Crítico é Sortuda": rola duas vezes e fica com a melhor — `ModsPoe.sorteado`.)
-  const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
+  // (o "Crítico Sortudo" rola duas vezes — salvo se a chance já veio Sortuda da ficha: `critSortudo`)
+  const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ficha.critSortudo ? 0 : ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
@@ -864,7 +908,8 @@ function bloqueioDaFicha(estado, escudo, w, shielding, af = {}) {
   // A defesa da arma bloqueia mesmo SEM escudo (só que 0 de defesa = 0% de bloqueio).
   // + o add Block Chance (em %), com o teto da configuração (+ "+X% à Chance máxima de Bloquear o Dano de Ataques" — `block_max`).
   const extra2 = (af.block ?? 0) / 100;
-  const teto = Atributos.CONFIG.bloqueio.MAX + (af.block_max ?? 0) / 100;
+  // (o teto: + "+X% à Chance máxima de Bloquear o Dano de Ataques" — `tetoDoBloqueio`.)
+  const teto = tetoDoBloqueio(af);
   // ("Você está na Chance Máxima de Bloquear o Dano de Ataques caso não tenha Bloqueado Recentemente" — `bloqueio_no_maximo`: o teto.)
   const bruto = (d) => R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0);
   const com = (d) => (af.bloqueio_no_maximo > 0 ? teto : Math.min(teto, bruto(d)));
@@ -944,12 +989,14 @@ export function tetoDoRouboPct(ficha, recurso) {
 }
 const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
 const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0 } = {}) {
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0, semDrenoDeVida = 0 } = {}) {
   // (PoE, os únicos: "X% do Dano de Golpes Críticos é Drenado como Vida" — `roubo_vida_critico`, sobre a parte do dano que veio de crítico —
   // e "Não pode Drenar Vida com Golpes Críticos" — `sem_roubo_vida_critico`: essa parte não drena.)
   const critico = itensPoeLigado() ? Math.min(Math.max(0, Number(danoCritico) || 0), Math.max(0, danoTotal)) : 0;
   const semCritico = critico > 0 && ModsPoe.valor(ficha, 'sem_roubo_vida_critico') > 0;
   const vidaDoCritico = critico > 0 && !semCritico ? (critico * (ModsPoe.valor(ficha, 'roubo_vida_critico') + (ataque ? ModsPoe.valor(ficha, 'roubo_vida_critico_ataque') : 0))) / 100 : 0;
+  // (PoE: o dano em monstros com "Vida Não Pode ser Drenada" não drena vida — `semDrenoDeVida`, a parte do total que foi neles.)
+  const paraVida = Math.max(0, danoTotal - (Number(semDrenoDeVida) || 0));
   // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
   if (itensPoeLigado() && !ataque) {
     const pct = ModsPoe.valor(ficha, 'es_leech_magia') + ModsPoe.valor(ficha, 'es_leech');
@@ -965,7 +1012,7 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
     const maxVida = estado.maxHp ?? 0;
     const doCritico = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : vidaDoCritico;
     if ((pctVida > 0 || doCritico > 0) && maxVida > 0 && estado.hunt) {
-      const quanto = Math.min(((danoTotal - (semCritico ? critico : 0)) * pctVida) / 100 + doCritico, (maxVida * LEECH_POE.porInstanciaPct) / 100);
+      const quanto = Math.min((Math.max(0, paraVida - (semCritico ? critico : 0)) * pctVida) / 100 + doCritico, (maxVida * LEECH_POE.porInstanciaPct) / 100);
       if (quanto > 0) (estado.hunt.roubos ??= []).push({ recurso: 'vida', restante: quanto, porSegundo: (maxVida * LEECH_POE.taxaDaInstanciaPct) / 100 });
     }
     return;
@@ -973,7 +1020,7 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
   // (PoE, únicos: "Não Pode Drenar Vida/Mana".)
-  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor((danoTotal - (semCritico ? critico : 0)) * ((ficha.lifeLeech ?? 0) + doCharm.vida) + vidaDoCritico);
+  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(Math.max(0, paraVida - (semCritico ? critico : 0)) * ((ficha.lifeLeech ?? 0) + doCharm.vida) + vidaDoCritico);
   const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
   if (itensPoeLigado()) {
     // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).

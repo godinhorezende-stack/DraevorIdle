@@ -21,9 +21,22 @@ export function errou(ficha, hunt, alvo) {
   if (!alvo || alvo.dummy) return false;
   // Técnica Resoluta (keystone do PoE): os acertos não podem ser evadidos.
   if (ficha?.nuncaErra) return false;
+  // (ciclo 7, lote D) "Inimigos Provocados por você não podem Evadir Ataques".
+  if (itensPoeLigado() && Number(ficha?.afPoe?.provocados_nao_evadem) > 0 && alvo.estados?.provocado?.ate > (hunt?.clock ?? 0)) return false;
   const level = Atributos.levelDoBicho(hunt, alvo);
-  const chance = Atributos.chanceDeAcerto(ficha.accuracy ?? 0, level, AtributosDoMob.evasaoDe(alvo, level));
+  // (ciclo 7) "X% mais Precisão contra o Inimigo Marcado / contra Inimigos Únicos / em Curta Distância": a precisão contra ESTE alvo.
+  const contraOAlvo = itensPoeLigado() ? precisaoMaisContra(ficha, hunt, alvo) : 1;
+  const chance = Atributos.chanceDeAcerto((ficha.accuracy ?? 0) * contraOAlvo, level, AtributosDoMob.evasaoDe(alvo, level));
   return !sorteioDoAcerto(chance, alvo, 'errosDoJogador');
+}
+
+/** (ciclo 7) O fator da precisão contra o `alvo` (o "mais" com a tag do alvo: `accuracy_mais@alvoMarcado`, `@alvoUnico`, `@alvoPerto`). */
+export function precisaoMaisContra(ficha, hunt, alvo) {
+  const agora = hunt?.clock ?? 0;
+  const tags = ModsPoe.tagsDoAlvo(alvo, agora);
+  if (hunt?.pos && Math.max(Math.abs(alvo.x - hunt.pos.x), Math.abs(alvo.y - hunt.pos.y)) <= 2) tags.push('alvoPerto');
+  const mais = ModsPoe.somaPorTags(ficha, tags).accuracy_mais ?? 0;
+  return Math.max(0, 1 + mais / 100);
 }
 
 /**
@@ -38,10 +51,17 @@ function sorteioDoAcerto(chance, quem, campo) {
 }
 
 /** O jogador esquivou (Evasion) do golpe corpo a corpo de `bicho`? */
-export const esquivou = (ficha, hunt, bicho) => {
+export const esquivou = (ficha, hunt, bicho, { projetil = false } = {}) => {
+  // (ciclo 7, lote F: "Não Evade Ataques inimigos".)
+  if (itensPoeLigado() && Number(ficha?.afPoe?.sem_evasao) > 0) return false;
   const level = Atributos.levelDoBicho(hunt, bicho);
   // (PoE: o bicho Cego tem 20% menos precisão — `itens-poe/mods-poe.mjs`.)
-  return sorteioDoAcerto(Atributos.chanceDeEsquiva(ficha.evasion ?? 0, level, AtributosDoMob.precisaoDe(bicho, level) * ModsPoe.doBicho(bicho, hunt?.clock ?? 0).precisaoFator), bicho, 'errosDoBicho');
+  // (+ lote F: "X% mais chance de Evadir Ataques [Corpo a Corpo / se você foi Acertado por um Ataque Recentemente]" — o golpe do monstro aqui é o ataque dele.)
+  const mais = itensPoeLigado() ? Math.max(0, 1 + (Number(ficha?.afPoe?.chance_evadir_mais) || 0) / 100) : 1;
+  // (a Dança da Flecha: "Evasão é Dobrada contra Ataques de Projéteis"; "X% menos Evasão contra Ataques Corpo a Corpo".)
+  const af = itensPoeLigado() ? ficha?.afPoe ?? {} : {};
+  const daEvasao = projetil ? (Number(af.evasao_projetil_dobrada) > 0 ? 2 : 1) : Math.max(0, 1 - (Number(af.evasao_corpo_menos) || 0) / 100);
+  return sorteioDoAcerto(Math.min(0.95, Atributos.chanceDeEsquiva((ficha.evasion ?? 0) * daEvasao, level, AtributosDoMob.precisaoDe(bicho, level) * ModsPoe.doBicho(bicho, hunt?.clock ?? 0).precisaoFator) * mais), bicho, 'errosDoBicho');
 };
 
 /** "Chance to Avoid Damage": o dano inteiro não pega. */
@@ -69,11 +89,19 @@ export function absorver(estado, ficha, dano, eventos, evento) {
   // (Bateria Anciã: "Escudo de Energia protege a Mana ao invés da Vida" — o escudo não segura o dano da vida; ele paga os custos.)
   if (v('es_protege_mana') > 0) return dano;
   const tem = esAtual(estado, ficha);
-  if (!(tem > 0)) return dano;
-  const tira = Math.min(tem, dano);
-  estado.es = tem - tira;
-  if (eventos && evento) eventos.push({ t: 'dmg', ...evento, v: tira, color: '#b388ff', es: true });
-  return dano - tira;
+  const tira = tem > 0 ? Math.min(tem, dano) : 0;
+  if (tira > 0) {
+    estado.es = tem - tira;
+    if (eventos && evento) eventos.push({ t: 'dmg', ...evento, v: tira, color: '#b388ff', es: true });
+  }
+  // (ciclo 7, lote H) "X% de Dano é removido da Mana antes da Vida" (a Mente sobre a Matéria do PoE): do que passou do escudo.
+  const pct = itensPoeLigado() ? Math.min(100, v('dano_pela_mana_pct')) : 0;
+  const daMana = pct > 0 ? Math.min(estado.mana ?? 0, Math.round(((dano - tira) * pct) / 100)) : 0;
+  if (daMana > 0) {
+    estado.mana -= daMana;
+    if (eventos && evento) eventos.push({ t: 'dmg', ...evento, v: daMana, color: '#4fc3ff' });
+  }
+  return dano - tira - daMana;
 }
 
 /**

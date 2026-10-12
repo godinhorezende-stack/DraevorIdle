@@ -134,7 +134,7 @@ export const avisosDoSpawn = (s) => {
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
   const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0,
-    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, resist: {} };
+    esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {} };
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
     for (const k of Object.keys(t)) if (k !== 'resist' && Number.isFinite(s[k])) t[k] += s[k];
@@ -185,6 +185,8 @@ export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = 
   m.hp = m.maxHp;
   if (st.aProvaDeMaldicoes) m.aProvaDeMaldicoes = true;
   if (st.refleteFeiticos) m.refleteFeiticos = st.refleteFeiticos;
+  // (PoE: "Vida Não Pode ser Drenada" — o dreno de vida de quem acerta não pega nele.)
+  if (st.semDreno) m.semDreno = true;
   const forca = (m.forca ?? 1) * r.dano * (1 + st.danoPct / 100);
   if (forca !== 1) m.forca = forca;
   if (r.exp !== 1) {

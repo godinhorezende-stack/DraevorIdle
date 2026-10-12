@@ -31,6 +31,22 @@ export function ativosNoJogador(hunt, agora = hunt?.clock ?? 0) {
   return c ? ['congelado', 'atordoado', 'lento'].filter((n) => ativo(c[n], agora)) : [];
 }
 
+/**
+ * (PoE, 11/10) A RECUPERAÇÃO DE BLOQUEIO: bloquear o golpe de um Elite ou Chefe (os que atordoam no jogo — o bloqueio do PoE trava como um
+ * atordoamento curto) trava a próxima ação por 0,35 s ÷ (1 + "Recuperação de Bloqueio" + "Recuperação de Atordoamentos e Bloqueios"). A trava
+ * entra na fila de ações do PoE (o grupo `grupo:poe` de `acoes.mjs` — o golpe básico e as gemas esperam). Devolve os ms travados (0: nada).
+ */
+export const BLOQUEIO_TRAVA_MS = 350;
+export function travarNoBloqueio(hunt, bicho, ficha, agora = hunt?.clock ?? 0) {
+  if (!hunt || !classeDoMob(bicho, !!hunt.isBoss) || !ficha?.afPoe) return 0;
+  const rec = (Number(ficha.afPoe.block_recovery) || 0) + (Number(ficha.afPoe.stun_recovery) || 0);
+  const ms = Math.round(BLOQUEIO_TRAVA_MS / Math.max(0.1, 1 + rec / 100));
+  const cds = (hunt.cooldowns ??= {});
+  const atual = cds['grupo:poe'];
+  if (!(atual?.ate > agora + ms)) cds['grupo:poe'] = { ate: agora + ms, total: ms, bloqueio: true };
+  return ms;
+}
+
 /** A classe do mob para o controle: `'boss'`, `'elite'` ou null (mob comum não controla). */
 export function classeDoMob(bicho, salaDeBoss = false) {
   if (ehChefe(bicho, salaDeBoss)) return 'boss';
@@ -48,7 +64,7 @@ function sortearEfeito(pesos, rng) {
  * Um golpe do `bicho` acertou o jogador: sorteia se ele põe controle e qual. `ficha`: a do jogador (`resistenciaAControle`, em %).
  * Devolve o nome do efeito posto ou null (sem sorte, mob comum, jogador imune, já preso ou resistência de 100%).
  */
-export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.random, { semAfeccaoElemental = false, semAtordoamento = false } = {}) {
+export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.random, { semAfeccaoElemental = false, soFisico = false, estado = null, semAtordoamento = false } = {}) {
   const classe = classeDoMob(bicho, !!hunt?.isBoss);
   const cfg = classe ? CONFIG.mobs[classe] : null;
   if (!cfg) return null;
@@ -63,7 +79,9 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
   if ((efeito === 'congelado' || efeito === 'lento') && Number(ficha?.afPoe?.amaldicoados_sem_afeccao_elemental) > 0 && ModsPoe.amaldicoadoPorVoce(bicho, agora)) return null;
   // PoE (`itens-poe/mods-poe.mjs → controleNoJogador`): evitar e imunidade, a duração em você, a Recuperação de Atordoamentos, o efeito do
   // Resfriamento em você e o "Ponto de Atordoamento reduzido" (mais chance de ser atordoado). Sem o PoE, tudo 1.
-  const poe = ModsPoe.controleNoJogador(ficha, efeito, rng, hunt);
+  // (+ ciclo 7: "Não pode ser Atordoado por Acertos que causem apenas Dano Físico" — `soFisico`: o golpe só tem Físico; o Escudo de Energia
+  // no Ponto de Atordoamento — `estado`.)
+  const poe = ModsPoe.controleNoJogador(ficha, efeito, rng, hunt, { soFisico, estado });
   if (!(sorte < cfg.chance * poe.chanceFator) || poe.evitou) return null;
   const c = (hunt.controle ??= {});
   const preso = ativo(c.congelado, agora) || ativo(c.atordoado, agora) || agora < (c.imuneAte ?? 0);
@@ -72,13 +90,16 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
   const duracao = Math.round(CONFIG.jogador.duracaoMs[efeito] * (1 - resistencia / 100) * poe.duracaoFator);
   if (!(duracao > 0)) return null;
   if (efeito === 'lento') {
-    const pct = Math.min(CONFIG.jogador.lentidaoMaxima, (cfg.lentidaoPct ?? 30) * poe.pctFator);
+    // (+ ciclo 7, lote F: "Sua Velocidade de Ação é de ao menos X% do valor base" — a lentidão vai no máximo até 100 − X.)
+    const minima = Number(ficha?.afPoe?.velocidade_acao_minima) || 0;
+    const pct = Math.min(CONFIG.jogador.lentidaoMaxima, minima > 0 ? 100 - minima : 100, (cfg.lentidaoPct ?? 30) * poe.pctFator);
     if (!(pct > 0)) return null;
     const atual = c.lento;
     // Vale a MAIOR lentidão e nunca encurta o que já corre.
     c.lento = ativo(atual, agora) ? { ate: Math.max(atual.ate, agora + duracao), pct: Math.max(atual.pct, pct) } : { ate: agora + duracao, pct };
   } else {
-    c[efeito] = { ate: agora + duracao };
+    // (`desde`/`ms`: as reações do PoE ao ser Atordoado leem quando e quanto — `mods-poe.aoSerAcertado`)
+    c[efeito] = { ate: agora + duracao, desde: agora, ms: duracao };
     c.imuneAte = agora + duracao + CONFIG.jogador.imunidadeMs;
   }
   // (PoE: "Você não pode ser Congelado / Resfriado durante N segundos depois de ter sido" — `ModsPoe.imunidadeApos`.)

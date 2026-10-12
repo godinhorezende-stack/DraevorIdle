@@ -24,7 +24,12 @@ const frasco = (base) => {
   p.poe.qualidade = 0;
   return p;
 };
-const noSo = (chave) => P.arvore().nos.find((n) => !n.ascendencia && n.tipo !== 'mastery' && (n.efeitos ?? []).length && n.efeitos.every((x) => x.add === chave));
+// (Ciclo 7, dono 11/10 — "ajustar o seletor": sem nenhum nó SÓ com a chave, o nó com ela e as outras linhas que não mexem no número medido —
+// `junto`: "Medicina de Campo" ganhou "Frascos de Vida ganham uma Carga quando você acertar um Inimigo", e aqui ninguém acerta.)
+const noSo = (chave, junto = []) => {
+  const so = (n, aceita) => !n.ascendencia && n.tipo !== 'mastery' && (n.efeitos ?? []).length && n.efeitos.some((x) => x.add === chave) && n.efeitos.every((x) => x.add === chave || aceita(x.add));
+  return P.arvore().nos.find((n) => so(n, () => false)) ?? P.arvore().nos.find((n) => so(n, (k) => junto.some((re) => re.test(k))));
+};
 function antesDo(id, base) {
   const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 100 }), { sistema: 'poe', classePoe: 'Scion' });
   delete e.classe;
@@ -38,7 +43,7 @@ function antesDo(id, base) {
 }
 
 test('"Recuperação dos Frascos de Vida aumentada" (o nó real): usar o frasco do cinto recupera a vida na razão exata (o frasco de verdade, ao longo do efeito)', { skip: SEM }, () => {
-  const no = noSo('frasco_vida_rec');
+  const no = noSo('frasco_vida_rec', [/^periodico:\d+:frasco@acertouRecente$/]);
   assert.ok(no, 'há nó só com a recuperação dos frascos de vida');
   const { e, soma, alocar } = antesDo(no.id, 'Life_Flasks/Divine_Life_Flask');
   const base = Fr.parametros(e.frascos[0], {}).quantidade;

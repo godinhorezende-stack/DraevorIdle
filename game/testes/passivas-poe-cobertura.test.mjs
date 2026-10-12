@@ -16,13 +16,18 @@ const Ficha = await import('../systems/ficha.mjs');
 const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
 const Especializacoes = await import('../systems/personagem/especializacoes.mjs');
 const { MEDIDAS } = await import('./cobertura-arvore.mjs');
+const Atributos = await import('../systems/personagem/atributos.mjs');
 const { personagemDeTeste } = await import('./apoio.mjs');
 
 const chaveDo = (ef) => ef.add ?? (ef.stat ? `stat:${ef.stat}` : `tag:${ef.tag}`);
 const valorDo = (ef) => ef.valor ?? ef.pct ?? ef.dano;
-/** Um nó (ou opção de maestria) cujo ÚNICO efeito é `chave`: a principal primeiro, depois as maestrias, depois as ascendências. */
-function noCom(chave) {
-  const so = (efs) => efs?.length && efs.every((x) => chaveDo(x) === chave);
+/**
+ * Um nó (ou opção de maestria) cujo ÚNICO efeito é `chave`: a principal primeiro, depois as maestrias, depois as ascendências. (Ciclo 7, dono
+ * 11/10: sem nenhum assim, o nó com `chave` e as outras linhas que a medida aceita — `junto`.)
+ */
+function noCom(chave, junto = null) {
+  const aceita = (x) => chaveDo(x) === chave || (junto ?? []).some(([re]) => re.test(chaveDo(x)));
+  const so = (efs) => efs?.length && efs.some((x) => chaveDo(x) === chave) && efs.every((x) => (junto ? aceita(x) : chaveDo(x) === chave));
   const arv = P.arvore();
   const comum = arv.nos.find((n) => !n.ascendencia && n.tipo !== 'mastery' && n.tipo !== 'keystone' && so(n.efeitos));
   if (comum) return { no: comum, efeitos: comum.efeitos };
@@ -39,12 +44,12 @@ function contexto(e) {
   const af = Afixos.soma(e);
   const esp = Especializacoes.efeitos(e);
   const pct = (...chaves) => chaves.reduce((s, k) => s + (k.startsWith('stat:') ? esp.stats[k.slice(5)] ?? 0 : k.startsWith('atr:') ? f.efeitosDosAtributos?.[k.slice(4)] ?? 0 : Number(af[k]) || 0), 0);
-  return { e, f, af, pct, golpe: (tags) => ModsPoe.fichaDoGolpe(f, tags, { estado: e }) };
+  return { e, f, af, pct, golpe: (tags) => ModsPoe.fichaDoGolpe(f, tags, { estado: e }), forca: Atributos.principais(e, af).str ?? 0 };
 }
 
 for (const [chave, m] of Object.entries(MEDIDAS)) {
   test(`cobertura: "${chave}" — um nó real da árvore muda a ficha efetiva exatamente o que diz`, { skip: SEM }, () => {
-    const achado = noCom(chave);
+    const achado = noCom(chave) ?? (m.junto ? noCom(chave, m.junto) : null);
     assert.ok(achado, `há um nó só com "${chave}"`);
     const { no, opcao, efeitos } = achado;
     const classe = no.ascendencia ? P.arvore().ascendencias[no.ascendencia].classe : 'Scion';
@@ -64,7 +69,12 @@ for (const [chave, m] of Object.entries(MEDIDAS)) {
     const r = Comandos.comando(e, { action: 'alocar', id: no.id, ...(opcao ? { opcao } : {}) });
     assert.ok(r.ok, JSON.stringify(r));
     const depois = m.medir(contexto(e));
-    const valor = efeitos.reduce((s, x) => s + valorDo(x), 0);
+    // (+ ciclo 7: o que as outras linhas do nó somam no mesmo número — `junto`)
+    const valor = efeitos.reduce((s, x) => {
+      if (chaveDo(x) === chave) return s + valorDo(x);
+      for (const [re, quanto] of m.junto ?? []) { const mm = re.exec(chaveDo(x)); if (mm) return s + quanto(x, ctx, mm); }
+      return s;
+    }, 0);
     const esperado = m.esperado(antes, valor, ctx);
     assert.ok(Math.abs(depois - esperado) <= (m.tolerancia ?? 1e-9), `${no.id} ${no.nome}${opcao ? ` (opção ${opcao})` : ''}: ${antes} → ${depois}, esperado ${esperado} (+${valor})`);
   });

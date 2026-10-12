@@ -12,12 +12,15 @@
 import { CATALOGO } from '../dados.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
+import * as Controle from '../combate/controle.mjs';
 import { slugDoNome } from './condicoes-poe.mjs';
 
 const BESTIARY = CATALOGO.bestiary;
 /** As palavras de cada tipo de lacaio nos mods das peças (`max_lacaio:golem`, `lacaio_dano:espirito`…). */
 const PALAVRA_DO_TIPO = { zumbi: /zumbi|zombie/i, espectro: /espectro|spectre/i, golem: /golem/i, esqueleto: /esqueleto|skeleton/i, totem: /totem/i,
-  espirito: /espírito furioso|raging spirit/i, fantasma: /fantasma|phantasm/i, reliquia: /relíquia|relic/i, sagrado: /espírito sagrado|holy/i, arma: /arma animada|animate/i, aranha: /aranha|spider/i, qualquer: /./ };
+  espirito: /espírito furioso|raging spirit/i, fantasma: /fantasma|phantasm/i, reliquia: /relíquia|relic/i, sagrado: /espírito sagrado|holy/i, arma: /arma animada|animate/i, aranha: /aranha|spider/i,
+  // (ciclo 7) os clones da Flecha Ilusória / Flecha Espelhada ("Duração do Arqueiro Ilusório aumentada").
+  arqueiro: /arqueir|clone|mirror arrow|blink arrow|flecha (?:ilusória|espelhada)/i, balista: /balista|ballista/i, qualquer: /./ };
 
 // ---- a força de base por nível (a mediana dos monstros comuns da campanha) ----
 // PREGUIÇOSA (calculada no primeiro uso e guardada): calcular na carga do módulo lia `CAMPANHA` enquanto `monstros.mjs` ainda carregava,
@@ -154,7 +157,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // (+ a "Vida máxima dos Lacaios aumentada" / "Vida do Totem aumentada" e o "Lacaios causam Dano aumentado" das peças do PoE.)
   // (+ os do TIPO de lacaio: "Golens possuem X% menos Vida", "Espíritos Furiosos Convocados causam Dano aumentado", "Zumbis têm X% da Vida
   // máxima aumentada", "Zumbis causam X% mais Dano Físico", "+N de Vida máxima" dos Zumbis…)
-  const vida = Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life') + porTipo('lacaio_vida')) / 100)));
+  // (ciclo 7: + o "Lacaios tem X% mais Vida Máxima" da árvore — `lacaio_vida_mais:<tipo>`, multiplica.)
+  const vida = Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life') + porTipo('lacaio_vida')) / 100) * Math.max(0, 1 + porTipo('lacaio_vida_mais') / 100)));
   // ("Lacaios ganham X% do Dano Físico / Elemental como Dano de Caos/Fogo Extra" — dono, 11/10: os únicos: o extra entra no golpe do lacaio
   // do tipo certo — o físico no lacaio físico, o elemental no de Fogo/Gelo/Raio —, sem a resistência do outro elemento.)
   const fisico = (r.elemento ?? 'physical') === 'physical';
@@ -167,6 +171,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   velAtaquePct += m0('minion_atk_speed') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? m0('minion_cast_speed') : 0);
   if (duracao) duracao = Math.round(duracao * (1 + ((efeito?.duracaoPct ?? 0) + porTipo('lacaio_duracao') + m0('minion_duracao')) / 100));
   velAtaquePct += porTipo('lacaio_vel_ataque');
+  // (ciclo 7, lote F) "Magias Conjuradas por Totens têm X% de Velocidade de Conjuração aumentada" (o totem de uma gema de Magia).
+  if (totem && (r.gema?.tags ?? []).includes('Magia')) velAtaquePct += m0('totem_vel_magia');
   const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, r.elemento);
   // A CONVERSÃO do dano Físico do golpe (dono, 11/10: os únicos): "Lacaios convertem X% do Dano Físico para Dano de Gelo" (por Encaixe da cor,
   // com a escala), e o AVATAR DO FOGO de um tipo ("Zumbis Erguidos têm Avatar do Fogo": 50% do Físico vira Fogo e o resto não causa dano).
@@ -177,7 +183,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   const permitidos = Object.entries(af ?? {}).filter(([k, v]) => /^so_lacaio:\w+$/.test(k) && v > 0).map(([k]) => k.split(':')[1]);
   const proibido = !totem && permitidos.length && !permitidos.some((tp) => PALAVRA_DO_TIPO[tp]?.test(texto)) ? `Um item equipado não deixa ter este lacaio (só: ${permitidos.join(', ')}).` : null;
   return {
-    estilo, velAtaquePct, critChance: (semprecritico ? 100 : 5) * (1 + m0('minion_crit_inc') / 100), critMult: 1.5 + critMult / 100, somado, sangrar: Math.max(sangrar, m0('minion_chance_sangrar')),
+    estilo, velAtaquePct, critChance: (semprecritico ? 100 : 5) * (1 + m0('minion_crit_inc') / 100), critChanceBase: semprecritico ? 100 : 5, critMult: 1.5 + critMult / 100, somado, sangrar: Math.max(sangrar, m0('minion_chance_sangrar')),
     ...(Object.values(conversao).some((v) => v > 0) || soDano ? { conversao, soDano } : {}),
     ...(proibido ? { proibido } : {}),
     // Os mods do PoE dos lacaios (o tique deles lê): resistências, dano recebido, regeneração, roubo, movimento, multiplicador degenerativo,
@@ -192,6 +198,18 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // como vida para o DONO; a explosão do inimigo morto pelo acerto dele (% da vida do morto).
       vidaAoBloquear: m0('minion_vida_ao_bloquear'), vidaAoMatarEnvenenado: m0('minion_vida_ao_matar_envenenado'), renova: porTipo('lacaio_renova'),
       drenoDono: porTipo('lacaio_dreno_dono'), explodir: porTipo('lacaio_explodir'),
+      // (ciclo 7, a árvore) o crítico, a área, a recarga, o bloqueio mágico, a redução física, o escudo, o máximo das resistências, a
+      // recuperação, os buffs ao matar, o dano dobrado, ignorar a redução física, a penetração nos amaldiçoados, a vida na morte de outro
+      // lacaio, o dreno para o dono — `aplicarNoLacaio`, `golpeDoLacaio`, `danoNoLacaio`, `aoMatarDoLacaio`.
+      critInc: m0('minion_crit_inc'), critMult: m0('minion_crit_mult'), areaPct: m0('minion_area'), recargaPct: m0('minion_cdr'),
+      bloqueioMagico: m0('minion_spell_block'), reducaoFisica: m0('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: m0('minion_es_da_vida'), resMax: m0('minion_res_max'),
+      recuperacaoPct: m0('minion_recuperacao'), vidaNaMorteDeLacaioPct: m0('minion_vida_na_morte_lacaio'),
+      danoDobrado: m0('minion_dano_dobrado'), ignoraReducaoFisica: m0('minion_ignora_reducao_fisica'), penAmaldicoados: m0('minion_pen_amaldicoados'),
+      drenoParaODono: m0('minion_dreno_dono'), poderProfano: m0('minion_poder_profano'), explodeVidaBaixaPct: m0('minion_explode_vida_baixa'),
+      imuneElemental: porTipo('lacaio_imune_elemental') > 0,
+      // (11/10) "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base" (`controleNoLacaio`).
+      semLentidao: totem && m0('totem_sem_lentidao') > 0,
+      aoMatar: { poderProfano: [m0('minion_poder_profano_ao_matar'), m0('minion_poder_profano_s') || 4], agressividade: [m0('minion_agressividade_ao_matar'), m0('minion_agressividade_s') || 4] },
     } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
@@ -241,3 +259,126 @@ function bonusDaOferenda(linhas) {
 }
 
 export { ehLinhaDeLacaio } from './gemas-poe.mjs';
+
+// ---------------------------------------------------------------- (ciclo 7) os mods da árvore no combate do lacaio
+// Os números do PoE: Poder Profano = 100% do Dano Físico como Caos extra (`BUFFS.poderProfano`); Agressividade = 20% de Velocidade de Ataque.
+const AGRESSIVIDADE_PCT = 20;
+/** O lacaio recém-invocado com os mods do dono: o Escudo de Energia ("ganham X% da Vida Máxima como Escudo de Energia"). */
+export function aplicarNoLacaio(l) {
+  const p = l?.poe;
+  if (!p?.esDaVidaPct) return l;
+  l.maxEs = Math.round((l.maxHp * p.esDaVidaPct) / 100);
+  l.es = l.maxEs;
+  return l;
+}
+/** Um buff do lacaio (Poder Profano, Agressividade) ativo agora? */
+export const buffDoLacaio = (l, nome, agora) => (nome === 'poderProfano' && (l?.poe?.poderProfano ?? 0) > 0) || (l?.buffs?.[nome] ?? 0) > agora;
+/** A velocidade de ataque a mais do lacaio agora (%): a Agressividade. */
+export const velocidadeDoLacaio = (l, agora) => (buffDoLacaio(l, 'agressividade', agora) ? AGRESSIVIDADE_PCT : 0);
+/**
+ * (11/10) A LENTIDÃO nos lacaios e totens: o golpe de um Elite/Chefe pode deixá-los lentos, como faz com você (`combate/controle.json`: a chance
+ * e o peso da lentidão de cada classe, a lentidão e a duração do jogador). "A Velocidade de Ação dos Totens não pode ser modificada para abaixo
+ * do valor base": o totem não fica lento (`poe.semLentidao`). Devolve true se pôs.
+ */
+export function controleNoLacaio(l, bicho, hunt, agora, rng = Math.random) {
+  if (!l || l.poe?.semLentidao) return false;
+  const classe = Controle.classeDoMob(bicho, !!hunt?.isBoss);
+  const cfg = classe ? Controle.CONFIG.mobs[classe] : null;
+  const pesos = cfg?.efeitos ?? {};
+  const total = Object.values(pesos).reduce((n, p) => n + p, 0);
+  if (!(pesos.lento > 0) || !(rng() * 100 < (cfg.chance * pesos.lento) / total)) return false;
+  const ate = agora + Controle.CONFIG.jogador.duracaoMs.lento;
+  l.lento = { ate: Math.max(l.lento?.ate ?? 0, ate), pct: Math.min(Controle.CONFIG.jogador.lentidaoMaxima, cfg.lentidaoPct ?? 30) };
+  return true;
+}
+/** Quanto o lacaio LENTO demora a mais no golpe (1 = normal). */
+export const fatorDeLentidao = (l, agora) => (l?.lento?.ate > agora && !l.poe?.semLentidao ? 1 / (1 - l.lento.pct / 100) : 1);
+/** A chance de crítico (%) e o multiplicador do golpe do lacaio, com os da árvore ("Lacaios têm Chance de Acerto Crítico aumentada", "+X% de Multiplicador"). */
+export function criticoDoLacaio(l, oferenda = null) {
+  const p = l?.poe ?? {};
+  // (a "Chance de Crítico dos Lacaios aumentada" sobre a BASE — `critChanceBase`, a chance sem ela; `critChance` já a traz: `oQueInvoca`)
+  const chance = Math.min(100, (l?.critChanceBase ?? l?.critChance ?? 5) * (1 + ((oferenda?.critInc ?? 0) + (p.critInc ?? 0)) / 100));
+  const mult = (l?.critMult ?? 1.5) + ((oferenda?.critMult ?? 0) + (p.critMult ?? 0)) / 100;
+  return { chance, mult };
+}
+/**
+ * O golpe do lacaio no `alvo` com os mods do dono: o fator (dano dobrado), a ficha para a resistência (ignora a Redução de Dano Físico,
+ * penetra as resistências elementais do amaldiçoado) e o Caos extra do Poder Profano. `{ fator, ficha, caosExtra }`.
+ */
+export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.random) {
+  const p = l?.poe ?? {};
+  let ficha = fichaDoDono;
+  if (tipo === 'physical' && p.ignoraReducaoFisica > 0 && rng() * 100 < p.ignoraReducaoFisica) ficha = { ...ficha, ignoraReducaoFisica: true };
+  const amaldicoado = Object.values(alvo?.maldicoes ?? {}).some((m) => (m?.ate ?? 0) > agora) || (alvo?.estados?.amaldicoado?.ate ?? 0) > agora;
+  if (amaldicoado && p.penAmaldicoados > 0 && ['fire', 'ice', 'energy'].includes(tipo)) {
+    const pen = ficha?.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
+    ficha = { ...ficha, penetracao: { ...pen, elemental: Math.min(100, (pen.elemental ?? 0) + p.penAmaldicoados) } };
+  }
+  const fator = p.danoDobrado > 0 && rng() * 100 < p.danoDobrado ? 2 : 1;
+  const caosExtra = tipo === 'physical' && buffDoLacaio(l, 'poderProfano', agora) ? 1 : 0;
+  return { fator, ficha, caosExtra };
+}
+/** A área do golpe em área do lacaio, em casas de raio: 1 + a cada 25% de "Efeito em Área" (a fração como chance), como a das gemas. */
+export function raioDaAreaDoLacaio(l, rng = Math.random) {
+  const casas = 1 + (l?.poe?.areaPct ?? 0) / 25;
+  return Math.max(1, Math.trunc(casas) + (rng() < Math.abs(casas % 1) ? 1 : 0));
+}
+/** O intervalo de uma magia/habilidade do lacaio com a "Recuperação da Recarga" dele. */
+export const recargaDoLacaio = (l, ms) => Math.round(ms / Math.max(0.1, 1 + (l?.poe?.recargaPct ?? 0) / 100));
+/** A recuperação de vida do lacaio (regeneração, roubo): × (1 + recuperação%) — "Lacaios têm Recuperação de Vida reduzida em X%". */
+export const recuperacaoDoLacaio = (l, quanto) => quanto * Math.max(0, 1 + (l?.poe?.recuperacaoPct ?? 0) / 100);
+/** Cura o lacaio (com a recuperação dele). */
+export function curarLacaio(l, quanto) {
+  if (!(quanto > 0) || !(l?.hp > 0)) return;
+  l.hp = Math.min(l.maxHp, l.hp + recuperacaoDoLacaio(l, quanto));
+}
+/**
+ * O dano que um bicho causa no lacaio, com as defesas da árvore: o bloqueio mágico (a parte das magias do bicho), a Redução de Dano Físico
+ * (na parte física), o máximo das resistências elementais (`resMax`) e o escudo antes da vida. `fisico`: a parte física do golpe;
+ * `porElemento`: `[{ elemento, valor }]` as outras partes já sem resistência; `magia`: o golpe é de magia. Devolve `{ dano, bloqueou }`.
+ */
+export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = Math.random } = {}) {
+  const p = l?.poe ?? {};
+  if (magia && p.bloqueioMagico > 0 && rng() * 100 < p.bloqueioMagico) {
+    if (p.vidaAoBloquear > 0) curarLacaio(l, (l.maxHp * p.vidaAoBloquear) / 100);
+    return { dano: 0, bloqueou: true };
+  }
+  const red = Math.min(90, Math.max(0, p.reducaoFisica ?? 0));
+  let dano = fisico * (1 - red / 100) + outros;
+  if (l.es > 0) {
+    const absorvido = Math.min(l.es, dano);
+    l.es -= absorvido;
+    dano -= absorvido;
+  }
+  l.esEspera = 2000;
+  return { dano, bloqueou: false };
+}
+/** O teto da resistência elemental do lacaio (75 + "X% de máximo de todas as Resistências Elementais"). */
+export const tetoDaResDoLacaio = (l) => Math.min(90, 75 + (l?.poe?.resMax ?? 0));
+/** O escudo do lacaio recarrega (20%/s, depois de 2 s sem dano — a regra do escudo dos monstros do PoE). `ms`: o tique. */
+export function recarregarEscudoDoLacaio(l, ms) {
+  if (!(l?.maxEs > 0)) return;
+  if ((l.esEspera ?? 0) > 0) { l.esEspera -= ms; return; }
+  l.es = Math.min(l.maxEs, (l.es ?? 0) + (l.maxEs * 0.2 * ms) / 1000);
+}
+/**
+ * A INSTABILIDADE DO LACAIO (a keystone): o lacaio em Vida Baixa (metade ou menos) explode — X% da vida máxima dele como Dano de Fogo nos
+ * bichos a até 1 casa — e morre. Devolve os bichos atingidos `[{ m, dano }]` (o dano antes da resistência; quem chama resiste e mostra).
+ */
+export function explosaoDoLacaio(l, monstros = []) {
+  const pct = l?.poe?.explodeVidaBaixaPct ?? 0;
+  if (!(pct > 0) || !(l.hp > 0) || l.hp > l.maxHp * 0.5) return null;
+  const dano = (l.maxHp * pct) / 100;
+  l.hp = 0;
+  return monstros.filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - l.x), Math.abs(m.y - l.y)) <= 1).map((m) => ({ m, dano }));
+}
+/** O lacaio matou um bicho: os buffs ao matar ("X% de chance de ganhar Poder Profano / Agressividade por N segundos ao Matar"). */
+export function aoMatarDoLacaio(l, agora, rng = Math.random) {
+  const a = l?.poe?.aoMatar;
+  if (!a) return;
+  for (const [nome, [chance, seg]] of Object.entries(a)) if (chance > 0 && rng() * 100 < chance) (l.buffs ??= {})[nome] = Math.max(l.buffs[nome] ?? 0, agora + seg * 1000);
+}
+/** Um lacaio morreu: os outros recuperam X% da vida ("Lacaios Recuperam X% de Vida na Morte de Lacaios"). */
+export function naMorteDeUmLacaio(vivos) {
+  for (const l of vivos) if (l.poe?.vidaNaMorteDeLacaioPct > 0) curarLacaio(l, (l.maxHp * l.poe.vidaNaMorteDeLacaioPct) / 100);
+}

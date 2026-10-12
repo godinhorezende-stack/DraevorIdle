@@ -27908,6 +27908,9 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .poe-flavor { color: #af6025; font-style: italic; line-height: 1.4; }
 /* Árvore do PoE (sistema de itens do PoE): o texto explicativo do nó (as linhas entre parênteses do PoE). */
 .poe-nota-arvore { font-style: italic; opacity: .6; font-size: .92em; }
+/* (ciclo 7) o porquê da linha sem efeito igual (a nota da regra) e a marca do que não se aplica ao jogo */
+.poe-porque { font-style: italic; opacity: .55; font-size: .84em; margin: 1px 0 3px 18px; line-height: 1.25; }
+.poe-tr.naoSeAplica { color: #8a93a3; }
 .poe-rodape { color: #8a8a8a; font-size: 11px; line-height: 1.4; }
 .poe-rodape.estado-alocado div:last-of-type { color: #e3ae48; }
 .poe-rodape.estado-disponivel div:last-of-type { color: var(--accent); }

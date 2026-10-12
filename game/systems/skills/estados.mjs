@@ -209,7 +209,9 @@ export function tique(hunt, eventos, agora) {
     if (m.regen && m.hp > 0 && vidaAgora < vidaMax && R.jaPode(agora, m.proximaRegen)) {
       // (PoE: "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%".)
       const desacelerado = ativo(m.estados?.desacelerado, agora) ? Math.max(0, 1 - (m.estados.desacelerado.regenMenosPct ?? 0) / 100) : 1;
-      const fator = desacelerado * Math.max(0, 1 - (maldicoes?.regenMenos ?? 0) / 100);
+      // (+ ciclo 7, lote E: "Inimigos Próximos têm Regeneração de Vida reduzida em X%" — a aura do personagem, `mods-poe.aurasProximas`.)
+      const daAura = ativo(m.estados?.regenMenosAura, agora) ? Math.max(0, 1 - (m.estados.regenMenosAura.pct ?? 0) / 100) : 1;
+      const fator = desacelerado * daAura * Math.max(0, 1 - (maldicoes?.regenMenos ?? 0) / 100);
       const ganho = Math.max(fator > 0 ? 1 : 0, Math.round((vidaMax * m.regen * fator) / 100));
       // (com escudo, a regeneração é da VIDA: não passa da vida máxima, e o escudo fica como está)
       m.hp = es ? Math.min(vidaMax, vidaAgora + ganho) + es.atual : Math.min(m.maxHp, m.hp + ganho);

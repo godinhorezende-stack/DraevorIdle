@@ -27,7 +27,8 @@ const PROPRIAS = compilar({ ...TABELA, regras: REGRAS_DA_ARVORE.regras });
  * ESCALA ("por cada 10 de Força": `dmg_inc%atr:str:10`) e os dinâmicos (`efeito_buff_gema:ira`, `ev:matar:…`). Somadas com as das peças em
  * `Afixos.soma`, o mesmo `ModsPoe.resolver` dos itens decide quando valem (09/10: antes só a chave simples entrava e o resto ficava registrado).
  */
-const ADD_VALIDO = /^[a-z_][\w:%@+.-]*$/i;
+// (ciclo 7: + o `~` do teto da escala — `area_inc%matouRecente~50`)
+const ADD_VALIDO = /^[a-z_][\w:%@+.~-]*$/i;
 const COM_EFEITO = new Set(['equivalente', 'aproximado', 'novo']);
 
 /**
@@ -74,7 +75,8 @@ const valorDe = (expr, m, valores) => {
  * sem efeito (o id automático e o valor), para mostrar; `estado` = equivalente | aproximado | novo | registrado | nota.
  */
 export function traduzirLinha(texto) {
-  const t = String(texto ?? '').trim();
+  // (ciclo 7: algumas ascendências novas vêm com um "ㅤ" — o preenchimento coreano U+3164 — no começo da linha)
+  const t = String(texto ?? '').replace(/^[\u3164\s]+/, '').trim();
   if (!t) return { estado: 'nota', efeitos: [], registrados: [], nota: null };
   if (/^\(.*\)\.?$/.test(t)) return { estado: 'nota', efeitos: [], registrados: [], nota: t };
   const { modelo, valores } = paraModelo(t);
@@ -99,6 +101,14 @@ export function traduzirLinha(texto) {
 }
 
 const TIPO = { comum: 'small', notavel: 'notable', keystone: 'keystone' };
+/**
+ * (ciclo 7) O PORQUÊ de cada linha que não é "tem efeito igual": a nota da regra ("não se aplica ao jogo: …", "nenhum monstro do jogo faz
+ * isso…", a diferença do aproximado). `{ notas }` alinhado com os textos, ou nada se nenhuma linha tem nota — o balão da árvore mostra.
+ */
+const comNotas = (traduzidas) => {
+  const notas = traduzidas.map((t) => (t.nota && t.estado !== 'nota' && t.estado !== 'equivalente' ? t.nota : null));
+  return notas.some(Boolean) ? { notas } : {};
+};
 
 /**
  * A keystone do PoE no Draevor: a do mapa (`traducao-arvore.json` → keystones, pelo nome em inglês) com mecânica, ou só o texto. Devolve
@@ -155,6 +165,7 @@ export function converterAscendencias(lista, textos = null, escolhas = null) {
         efeitos: traduzidas.flatMap((t) => t.efeitos),
         textos: linhas,
         estados: traduzidas.map((t) => t.estado),
+        ...comNotas(traduzidas),
         conexoes: [...viz.get(n.id)].map(String),
         // O ícone do PoE (dono, 07/10): o nó da ascendência mostra a arte dele na árvore; o início mostra o emblema da ascendência.
         ...((inicio ? caminhoDoIconeDeAscendencia(a.icone) : caminhoDoIconeDeAscendencia(n.icone)) ? { icone: inicio ? caminhoDoIconeDeAscendencia(a.icone) : caminhoDoIconeDeAscendencia(n.icone) } : {}),
@@ -218,6 +229,7 @@ export function converterArvore(poe, completa = null, textos = null) {
       efeitos: traduzidas.flatMap((t) => t.efeitos),
       textos: linhas,
       estados: traduzidas.map((t) => t.estado),
+      ...comNotas(traduzidas),
       ...(tipo === 'keystone' ? keystoneDe(n, linhas, traduzidas) : {}),
       ...(n.placeholder ? { placeholder: true } : {}),
       // O grupo do notável (é ele que abre a maestria do mesmo grupo).
@@ -239,7 +251,7 @@ export function converterArvore(poe, completa = null, textos = null) {
       const linhas = linhasDoNo(textos?.get(`maestria:${o.id}`) ?? o.efeitos);
       const traduzidas = linhas.map(traduzirLinha);
       for (const t of traduzidas) estados[t.estado]++;
-      return { id: String(o.id), textos: linhas, estados: traduzidas.map((t) => t.estado), efeitos: traduzidas.flatMap((t) => t.efeitos) };
+      return { id: String(o.id), textos: linhas, estados: traduzidas.map((t) => t.estado), ...comNotas(traduzidas), efeitos: traduzidas.flatMap((t) => t.efeitos) };
     });
     nos.push({
       id: String(m.id),

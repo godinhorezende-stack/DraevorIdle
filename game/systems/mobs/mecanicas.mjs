@@ -184,18 +184,30 @@ export function tique(estado, hunt, personagem, eventos) {
   if (comDot && !hunt.degenAtivo) hunt.degenDesde = agora;
   hunt.degenAtivo = comDot;
   const noInicio = comDot && agora - (hunt.degenDesde ?? -Infinity) <= 1000 ? Number(afPoe?.degen_menos_no_inicio) || 0 : 0;
-  const menosDegen = Math.max(0, 1 - (Number(afPoe?.dano_degen_recebido_menos) || 0) / 100) * Math.max(0, 1 - noInicio / 100);
+  // (+ o Chefe Tribal: "Dano Degenerativo é -X% enquanto você estiver Parado" — `dano_degen_recebido_pct@parado`, negativo.)
+  const menosDegen = Math.max(0, 1 - (Number(afPoe?.dano_degen_recebido_menos) || 0) / 100) * Math.max(0, 1 - noInicio / 100) * Math.max(0, 1 + (Number(afPoe?.dano_degen_recebido_pct) || 0) / 100);
   // (PoE, "Inafetado por Sangramento" — "enquanto Drenando", o Carrasco: o sangramento corre em você, mas não fere.)
   const inafetado = (tipo) => tipo === 'sangramento' && Number(afPoe?.inafetado_sangramento) > 0;
   // (PoE: "Você sofre Dano de Caos ao invés de Dano Físico do Sangramento"; "Sofrer Dano de Caos Degenerativo te cura ao invés enquanto
   // Drenando Vida" — o pulso de Caos vira cura enquanto um dreno de vida corre.)
   const doTipo = (tipo, elemento) => (tipo === 'sangramento' && Number(afPoe?.sangramento_em_caos) > 0 ? 'chaos' : elemento);
   const cura = (elemento) => elemento === 'chaos' && Number(afPoe?.caos_degen_cura_drenando) > 0 && (hunt.roubos ?? []).some((x) => x.recurso === 'vida' && x.restante > 0);
+  // (PoE, 11/10 — dono: "como no PoE") O Sangramento EM VOCÊ triplica enquanto você anda (o lembrete: "O Dano é 200% maior enquanto em
+  // movimento" — você andou no último segundo, `poeRecente.moveu`); "Mover enquanto Sangrando faz com que você não sofra Dano extra" o tira.
+  // (o Ocultista: "Inimigos Próximos Desacelerados causam X% de Dano Degenerativo reduzido" — o dano contínuo do bicho lento, a até 3 casas.)
+  const lentoMenos = Number(afPoe?.proximos_lentos_degen_menos) || 0;
+  const doLento = (origem) => {
+    if (!(lentoMenos > 0) || origem?.uid == null || !hunt.pos) return 1;
+    const m = (hunt.monstros ?? []).find((x) => x.uid === origem.uid);
+    return m && m.estados?.lento?.ate > agora && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3 ? Math.max(0, 1 - lentoMenos / 100) : 1;
+  };
+  const andando = (tipo) => (afPoe && tipo === 'sangramento' && !(Number(afPoe.sangrar_andando_sem_extra) > 0) && agora - (hunt.poeRecente?.moveu ?? -Infinity) <= Dot.MOVIMENTO.janelaMs ? Dot.MOVIMENTO.fator : 1);
   Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome, tipo) => {
     if (inafetado(tipo)) return 0;
     const el = doTipo(tipo, elemento);
-    if (cura(el)) { if (!ModsPoe.vidaSoPeloDreno(afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + Math.round(valor * menosDegen)); return 0; }
-    return ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, Math.round(valor * menosDegen), el, eventos, nome);
+    const quanto = Math.round(valor * menosDegen * andando(tipo) * doLento(origem));
+    if (cura(el)) { if (!ModsPoe.vidaSoPeloDreno(afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + quanto); return 0; }
+    return ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, quanto, el, eventos, nome);
   }, () => estado.hp > 0);
 }
 
