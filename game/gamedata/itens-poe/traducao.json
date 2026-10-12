@@ -5848,7 +5848,79 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Evita .* do dano .*refletido$|^Não pode sofrer Dano .*Refletido$|^Dano não pode ser Refletido$|^Empalamentos removidos desta forma multiplicam seu Dano Refletido.*$",
+      "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano refletido$",
+      "efeitos": [
+        {
+          "stat": "reflexo_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale nos espinhos dos monstros raros do mapa e no reflexo dos modificadores"
+    },
+    {
+      "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano físico refletido$",
+      "efeitos": [
+        {
+          "stat": "reflexo_fisico_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale nos espinhos dos monstros raros do mapa e no reflexo dos modificadores"
+    },
+    {
+      "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano elemental refletido$",
+      "efeitos": [
+        {
+          "stat": "reflexo_elemental_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale nos espinhos dos monstros raros do mapa e no reflexo dos modificadores"
+    },
+    {
+      "padrao": "^Não pode sofrer Dano Físico Refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_fisico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale nos espinhos dos monstros raros do mapa e no reflexo dos modificadores"
+    },
+    {
+      "padrao": "^Não pode sofrer Dano Elemental Refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale nos espinhos dos monstros raros do mapa e no reflexo dos modificadores"
+    },
+    {
+      "padrao": "^Dano não pode ser Refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale nos espinhos dos monstros raros do mapa e no reflexo dos modificadores"
+    },
+    {
+      "padrao": "^Empalamentos removidos desta forma multiplicam seu Dano Refletido.*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -5856,22 +5928,88 @@
         }
       ],
       "estado": "inerte",
-      "nota": "nenhum monstro do jogo faz isso ainda (os modificadores de monstro e de mapa com reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar estão desligados — decisão do dono)",
+      "nota": "o Convocar o Aço (Call of Steel) ainda não existe no jogo: não há empalamentos removidos por ele",
       "_nova": true,
       "_ciclo7": true
     },
     {
-      "padrao": "^.*Evitar Cegueira$|^Não pode ser Cegado$|^Não pode ser afetado por Sangue Corrompido$|^remove Sangue Corrompido ao usar uma Habilidade de Guarda$|^Efeito de Exposições em você reduzido em .*$|^Monstros Inimigos não podem ganhar Cargas de Poder, Frenesi ou Tolerância$|^Chance de Inimigos Bloquearem Ataques com Espada reduzida em .*$",
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Cegueira$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "evitar_cegueira",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale contra os monstros que Cegam (o modificador Cegante, o Assassino e o mapa \"Monstros Cegam ao Acertar\")"
+    },
+    {
+      "padrao": "^Não pode ser Cegado$",
+      "efeitos": [
+        {
+          "stat": "imune_cegueira",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "nenhum monstro do jogo faz isso ainda (os modificadores de monstro e de mapa com reflexo, Cegueira, Sangue Corrompido, Mutilar e Empalar estão desligados — decisão do dono)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
+    },
+    {
+      "padrao": "^Não pode ser afetado por Sangue Corrompido$",
+      "efeitos": [
+        {
+          "stat": "imune_sangue_corrompido",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
+    },
+    {
+      "padrao": "^remove Sangue Corrompido ao usar uma Habilidade de Guarda$",
+      "efeitos": [
+        {
+          "stat": "ev:usarGuarda:removerAfeccao:sangueCorrompido",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
+    },
+    {
+      "padrao": "^Efeito de Exposições em você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_exposicao_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
+    },
+    {
+      "padrao": "^Monstros Inimigos não podem ganhar Cargas de Poder, Frenesi ou Tolerância$",
+      "efeitos": [
+        {
+          "stat": "inimigos_sem_cargas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
+    },
+    {
+      "padrao": "^Chance de Inimigos Bloquearem Ataques com Espada reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inimigos_bloqueio_red@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados",
+      "nota": "vale nos ataques enquanto você empunha uma Espada"
     },
     {
       "padrao": "^Portador da Praga .*$",
@@ -10477,6 +10615,10 @@
       "efeitos": [
         {
           "stat": "imune_sangramento",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_sangue_corrompido",
           "valor": "1"
         }
       ],
@@ -15740,7 +15882,29 @@
       "_unico": true
     },
     {
-      "padrao": "^Dano não pode ser Refletido|Inimigos Não Podem Drenar Vida De Você|Você não pode ser Mutilado|Não Pode ser Empurrado|Projéteis Inimigos Perfuram você|Você não pode ser Amaldiçoado com Silêncio$",
+      "padrao": "^Inimigos Não Podem Drenar Vida De Você$",
+      "efeitos": [
+        {
+          "stat": "inimigos_nao_drenam_vida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
+    },
+    {
+      "padrao": "^Você não pode ser Mutilado$",
+      "efeitos": [
+        {
+          "stat": "imune_mutilar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
+    },
+    {
+      "padrao": "^Não Pode ser Empurrado$|^Projéteis Inimigos Perfuram você$|^Você não pode ser Amaldiçoado com Silêncio$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -29615,40 +29779,34 @@
       "padrao": "^Não pode ser Empalado$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "imune_empalar",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "estado": "inerte",
-      "nota": "os monstros do jogo não empalam: não há o que evitar",
-      "_de": "09/10 — afecções em você"
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Empalado$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "evitar_empalar",
+          "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "inerte",
-      "nota": "os monstros do jogo não empalam: não há o que evitar",
-      "_de": "09/10 — afecções em você"
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
     },
     {
       "padrao": "^Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "critico_recebido_sem_afeccao",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "estado": "inerte",
-      "nota": "no jogo o crítico dos monstros não põe afecção por si (só os efeitos do golpe e o controle): não há o que impedir",
-      "_de": "09/10 — afecções em você"
+      "_lote2": "12/10 — modificadores de monstro e de mapa ligados"
     },
     {
       "padrao": "^Ganhe Adrenalina por \\{(\\d+)\\} segundos quando você atingir Vida Baixa$",

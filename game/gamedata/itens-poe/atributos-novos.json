@@ -5630,6 +5630,108 @@
       "unidade": "%",
       "combate": true,
       "efeito": "a repetição (`acoes`)"
+    },
+    "reflexo_evitado": {
+      "nome": "Evita X% do dano refletido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os espinhos dos Raros do mapa e o reflexo dos modificadores) — itens-poe/monstros-no-jogador.fatorDoReflexo (12/10)"
+    },
+    "reflexo_fisico_evitado": {
+      "nome": "Evita X% do dano físico refletido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.fatorDoReflexo (12/10)"
+    },
+    "reflexo_elemental_evitado": {
+      "nome": "Evita X% do dano elemental refletido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.fatorDoReflexo (12/10)"
+    },
+    "imune_reflexo": {
+      "nome": "Dano não pode ser Refletido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.fatorDoReflexo (12/10)"
+    },
+    "imune_reflexo_fisico": {
+      "nome": "Não pode sofrer Dano Físico Refletido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.fatorDoReflexo (12/10)"
+    },
+    "imune_reflexo_elemental": {
+      "nome": "Não pode sofrer Dano Elemental Refletido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.fatorDoReflexo (12/10)"
+    },
+    "evitar_cegueira": {
+      "nome": "Chance de Evitar Cegueira",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.cegar (12/10)"
+    },
+    "imune_cegueira": {
+      "nome": "Não pode ser Cegado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.cegar (12/10)"
+    },
+    "imune_sangue_corrompido": {
+      "nome": "Não pode ser afetado por Sangue Corrompido",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador (12/10)"
+    },
+    "efeito_exposicao_proprio": {
+      "nome": "Efeito de Exposições em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.expor (12/10)"
+    },
+    "inimigos_sem_cargas": {
+      "nome": "Monstros Inimigos não podem ganhar Cargas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas.ganharCarga (12/10)"
+    },
+    "inimigos_bloqueio_red": {
+      "nome": "Chance de Inimigos Bloquearem seus Ataques reduzida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate e acoes (o bloqueio do bicho nos seus ataques — mobs/atributos.bloqueou) (12/10)"
+    },
+    "inimigos_nao_drenam_vida": {
+      "nome": "Inimigos Não Podem Drenar Vida De Você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (o dreno de vida dos monstros) (12/10)"
+    },
+    "imune_mutilar": {
+      "nome": "Você não pode ser Mutilado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.mutilar (12/10)"
+    },
+    "imune_empalar": {
+      "nome": "Não pode ser Empalado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.empalar (12/10)"
+    },
+    "evitar_empalar": {
+      "nome": "Chance de Evitar ser Empalado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/monstros-no-jogador.empalar (12/10)"
+    },
+    "critico_recebido_sem_afeccao": {
+      "nome": "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas.aoAcertarJogador (12/10)"
     }
   }
 }

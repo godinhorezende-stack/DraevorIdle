@@ -6,6 +6,8 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { converterArvore, converterAscendencias } from '../systems/itens-poe/arvore.mjs';
 import { validar } from '../systems/passivas/arvore.mjs';
+// (o relatório do que falta e do que é parcial — `docs/arvore-poe-pendencias.md` — sai junto: o balão e o relatório andam juntos)
+import { gravarRelatorio } from './relatorio-arvore-poe.mjs';
 
 const ORIGEM = '/home/deploy/referencias-poe/original/poe-arvore/Arvore_Principal/arvore.json';
 const ASCENDENCIAS = '/home/deploy/referencias-poe/original/poe-arvore/Ascendencias';
@@ -53,3 +55,4 @@ const saida = {
 };
 writeFileSync(DESTINO, JSON.stringify(saida) + '\n');
 console.log(JSON.stringify(relatorio), '→', DESTINO.pathname);
+console.log('relatório:', JSON.stringify(gravarRelatorio()), '→ docs/arvore-poe-pendencias.md');

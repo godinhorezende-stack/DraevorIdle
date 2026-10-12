@@ -30,6 +30,7 @@ import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
+import { addsDosDebuffsNoJogador } from './itens-poe/monstros-no-jogador.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 // (a soma da árvore para quem não monta a ficha — as gemas do peitoral suportadas pela árvore: `skills/gemas.dasPecas`)
 ModsPoe.definirLeitorDaArvore((estado) => Passivas.efeitos(estado).adds);
@@ -201,6 +202,10 @@ export function soma(estado) {
   // imunidade e o efeito delas podem ser condicionais ("Imune a Maldições enquanto possuir ao menos N de Fúria").
   const malditas = ModsPoe.addsDasMaldicoesNoJogador(estado, resolvido);
   if (malditas) for (const [k, v] of Object.entries(malditas)) resolvido[k] = (resolvido[k] ?? 0) + v;
+  // + o que os MONSTROS do PoE puseram em você ao acertar (a Cegueira, a Mutilação, a Exposição, a Eletrização do crítico —
+  // `itens-poe/monstros-no-jogador.mjs`).
+  const dosMonstros = addsDosDebuffsNoJogador(estado);
+  if (dosMonstros) for (const [k, v] of Object.entries(dosMonstros)) resolvido[k] = (resolvido[k] ?? 0) + v;
   return resolvido;
 }
 

@@ -64,6 +64,7 @@ export const PALAVRAS = {
   recuperacao_inc: /Recuperação/, frasco_cargas_recebidas: /Cargas de Frasco/, cooldown_recovery: /Recarga/, accuracy_less: /Precisão/,
   fire_res_max: /máximos de Resistências/, ice_res_max: /máximos de Resistências/, energy_res_max: /máximos de Resistências/, chaos_res_max: /máximos de Resistências/,
   'frasco_regen_n:todos': /Cargas de Frasco/, 'frasco_regen_s:todos': /segundos/,
+  'noAcerto.empalar': /Empalar/, 'espinhos.physical': /espinhos físicos/, 'espinhos.elemental': /espinhos elementais/,
 };
 
 /**

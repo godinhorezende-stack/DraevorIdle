@@ -107,3 +107,23 @@ export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.
   if (nome) ModsPoe.imunidadeApos(hunt, ficha, nome, agora);
   return efeito;
 }
+
+/**
+ * (PoE, 12/10) O CONGELAMENTO de um acerto do monstro que não depende da classe dele — a afecção inerente do Golpe Crítico (`mobs/mecanicas.
+ * aoAcertarJogador`): `ms` já vem da conta do PoE (o dano de Gelo × a vida máxima — `monstros-no-jogador.msDoCongelamento`). Os mesmos
+ * evitar/imunidade/duração do PoE de `tentar`, a resistência a controle e a imunidade depois de congelado. Devolve se congelou.
+ */
+export function congelar(hunt, ficha, ms, agora = hunt?.clock ?? 0, rng = Math.random) {
+  if (!hunt || !(ms > 0)) return false;
+  const poe = ModsPoe.controleNoJogador(ficha, 'congelado', rng, hunt, {});
+  if (poe.evitou) return false;
+  const c = (hunt.controle ??= {});
+  if (ativo(c.congelado, agora) || ativo(c.atordoado, agora) || agora < (c.imuneAte ?? 0)) return false;
+  const resistencia = limitar(ficha?.resistenciaAControle ?? 0, CONFIG.jogador.resistenciaMaxima);
+  const duracao = Math.round(ms * (1 - resistencia / 100) * poe.duracaoFator);
+  if (!(duracao > 0)) return false;
+  c.congelado = { ate: agora + duracao, desde: agora, ms: duracao };
+  c.imuneAte = agora + duracao + CONFIG.jogador.imunidadeMs;
+  ModsPoe.imunidadeApos(hunt, ficha, 'congelamento', agora);
+  return true;
+}

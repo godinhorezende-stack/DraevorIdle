@@ -1834,6 +1834,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     let total = 0;
     // (PoE: o dano nos monstros com "Vida Não Pode ser Drenada" — fora do dreno de vida, `Ficha.aplicarLeech`.)
     let totalSemDreno = 0;
+    let totalSemDrenoEs = 0;
     const danos = [];
     /*
      * UM acerto num bicho, com `pct`% do golpe — o golpe principal (100%) e os
@@ -1891,7 +1892,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): sem dano nem estados.
       // ("Monstros não podem Bloquear seus Ataques" — as maestrias da árvore: só nos ataques.)
-      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0 && (entry.poeGema ? !!entry.poeGema.ataque : true)) && AtributosDoMob.bloqueou(bicho)) {
+      // ("Chance de Inimigos Bloquearem Ataques com Espada reduzida em X%" — `inimigos_bloqueio_red@comEspada`: só nos ataques.)
+      const ehAtaque = entry.poeGema ? !!entry.poeGema.ataque : true;
+      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0 && ehAtaque) && AtributosDoMob.bloqueou(bicho, Math.random, ehAtaque ? Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100) : 1)) {
         eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', bloqueado: true });
         return;
       }
@@ -1945,9 +1948,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }));
       total += dano;
       if (bicho.semDreno) totalSemDreno += dano;
+      if (Mecanicas.semDrenoDeEs(bicho)) totalSemDrenoEs += dano;
       danos.push({ bicho, dano });
-      // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado — `mobs/mecanicas.mjs`).
-      Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos);
+      // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado — `mobs/mecanicas.mjs`); os espinhos do Raro do mapa só no corpo a corpo.
+      Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos, { corpoACorpo: Tags.tagsDaAcao(entry).includes('melee') });
       // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
       // (A gema só de dano degenerativo — Flecha Cáustica, Contagiar… — não mostra um "0": o dano dela vem nos pulsos.)
       if (dano > 0 || !(entry.poeGema && GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1))) {
@@ -2087,7 +2091,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
     // (No PoE as magias não roubam: só os ataques — `Ficha.aplicarLeech`.)
-    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha, null, { ataque: !ehMagiaDaConta, danoCritico, danoVezesMaldicoes, semDrenoDeVida: Math.min(total, totalSemDreno) });
+    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha, null, { ataque: !ehMagiaDaConta, danoCritico, danoVezesMaldicoes, semDrenoDeVida: Math.min(total, totalSemDreno), semDrenoDeEs: Math.min(total, totalSemDrenoEs) });
     // Life Leech / Mana Leech (supports): % do dano desta skill volta em vida/mana.
     const vidaDoLeech = Math.round((total * (efeitoDaGema?.leechVidaPct ?? 0)) / 100);
     const manaDoLeech = Math.round((total * (efeitoDaGema?.leechManaPct ?? 0)) / 100);

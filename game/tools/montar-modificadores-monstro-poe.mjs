@@ -66,6 +66,31 @@ const MAPA = {
   'base bleed duration +%': { f: (t, v) => (dot(t, 'physical').duracao += v) },
   'all damage can ignite': { f: () => {}, aprox: true },
   'all damage can poison': { f: () => {}, aprox: true },
+  // (12/10 — dono: "ligar os modificadores" que a árvore combate) O que o monstro faz ao ACERTAR você — o golpe e a magia
+  // (`mobs/mecanicas.aoAcertarJogador`, gatilho `aoAtacar`): Cegar, a Exposição, o Sangue Corrompido, o dreno de vida e as cargas.
+  'global chance to blind on hit %': { f: (t, v) => (acerto(t).cegar.chance += v) },
+  'blind effect +%': { f: (t, v) => (acerto(t).cegar.efeitoPct += v) },
+  'base inflict fire exposure on hit % chance': { f: (t, v) => (acerto(t).exposicao.fire.chance += v) },
+  'base inflict cold exposure on hit % chance': { f: (t, v) => (acerto(t).exposicao.ice.chance += v) },
+  'base inflict lightning exposure on hit % chance': { f: (t, v) => (acerto(t).exposicao.energy.chance += v) },
+  // ("Inflige Exposição a Fogo ao Acertar, aplicando −25% de Resistência a Fogo": em todo acerto, com o valor do texto.)
+  'fire exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.fire, { chance: 100, pct: Math.abs(v) }) },
+  'cold exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.ice, { chance: 100, pct: Math.abs(v) }) },
+  'lightning exposure on hit magnitude': { f: (t, v) => Object.assign(acerto(t).exposicao.energy, { chance: 100, pct: Math.abs(v) }) },
+  // (O Sangue Corrompido: o PoE renova a duração de todos os acúmulos a cada acerto; no jogo cada acúmulo tem a sua — aproximado.)
+  'corrupted blood on hit duration': { f: (t, v) => (acerto(t).sangue.duracaoMs = v), aprox: true },
+  'corrupted blood on hit num stacks': { f: (t, v) => (acerto(t).sangue.pilhas = v), aprox: true },
+  'corrupted blood on hit % average damage to deal per minute per stack': { f: (t, v) => (acerto(t).sangue.pctPorMinuto = v), aprox: true },
+  'life leech from any damage permyriad': { f: (t, v) => (acerto(t).dreno.pct = v / 100) },
+  'life leech speed +%': { f: (t, v) => (acerto(t).dreno.velocidadePct += v) },
+  'life leech does not stop at full life': { f: (t) => (acerto(t).dreno.naoParaNaVidaCheia = true) },
+  // (o Vampírico — dono, 12/10: "igual no PoE") "Dano enquanto Drenando Vida aumentado em X%"; "Inimigos Não Podem Drenar Escudo de Energia
+  // De Você" (o seu dreno de Escudo de Energia não pega nele — `mobs/mecanicas.semDrenoDeEs`).
+  'damage +% while life leeching': { f: (t, v) => (acerto(t).dreno.danoPct += v) },
+  'cannot have energy shield leeched from': { f: (t) => (acerto(t).semDrenoDeEs = true) },
+  // (As cargas do monstro: o efeito por carga é o do personagem — o PoE não mostra o dos monstros; aproximado.)
+  'add frenzy charge on skill hit %': { f: (t, v) => (acerto(t).frenesi += v), aprox: true },
+  'gain endurance charge per second if have been hit recently': { f: (t, v) => (acerto(t).toleranciaPorSegundo += v), aprox: true },
 };
 
 /** O debuff de dano ao longo do tempo de um elemento (a base do PoE: queimadura 90% do golpe em 4 s; veneno 30% em 2 s; sangramento 70% em 5 s, em 25% dos golpes). */
@@ -78,7 +103,25 @@ function mecanicasDosDots(dots) {
 }
 
 const vazio = () => ({ vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, esPct: 0, esAtrasoMenosPct: 0, aProvaDeMaldicoes: 0, refleteFeiticos: 0, semDreno: 0, resist: {}, _dots: {} });
-const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots').filter(([k, v]) => (k === 'resist' ? Object.keys(v).length : v)).map(([k, v]) => [k, k === 'resist' ? v : Math.round(v * 100) / 100]));
+const limpar = (t) => Object.fromEntries(Object.entries(t).filter(([k]) => k !== '_dots' && k !== '_acerto').filter(([k, v]) => (k === 'resist' ? Object.keys(v).length : v)).map(([k, v]) => [k, k === 'resist' ? v : Math.round(v * 100) / 100]));
+
+/** O que o monstro faz ao acertar (12/10): os acumuladores dos stats do PoE, que viram as mecânicas `aoAtacar` (e a Tolerância por segundo, `aoReceberDano`). */
+const acerto = (t) => (t._acerto ??= {
+  cegar: { chance: 0, efeitoPct: 0 }, exposicao: { fire: { chance: 0, pct: 10 }, ice: { chance: 0, pct: 10 }, energy: { chance: 0, pct: 10 } },
+  sangue: { duracaoMs: 4000, pilhas: 1, pctPorMinuto: 0 }, dreno: { pct: 0, velocidadePct: 0, naoParaNaVidaCheia: false, danoPct: 0 }, frenesi: 0, toleranciaPorSegundo: 0, semDrenoDeEs: false,
+});
+function mecanicasDoAcerto(a) {
+  if (!a) return [];
+  const m = [];
+  if (a.cegar.chance > 0) m.push({ gatilho: 'aoAtacar', efeito: 'cegar', chance: Math.min(100, a.cegar.chance), ...(a.cegar.efeitoPct ? { efeitoPct: a.cegar.efeitoPct } : {}) });
+  for (const [elemento, x] of Object.entries(a.exposicao)) if (x.chance > 0) m.push({ gatilho: 'aoAtacar', efeito: 'exposicao', elemento, chance: Math.min(100, x.chance), pct: x.pct });
+  if (a.sangue.pctPorMinuto > 0) m.push({ gatilho: 'aoAtacar', efeito: 'sangueCorrompido', chance: 100, pctPorMinuto: a.sangue.pctPorMinuto, duracaoMs: a.sangue.duracaoMs, pilhas: a.sangue.pilhas });
+  if (a.dreno.pct > 0) m.push({ gatilho: 'aoAtacar', efeito: 'drenar', chance: 100, pct: a.dreno.pct, ...(a.dreno.velocidadePct ? { velocidadePct: a.dreno.velocidadePct } : {}), ...(a.dreno.naoParaNaVidaCheia ? { naoParaNaVidaCheia: true } : {}), ...(a.dreno.danoPct ? { danoDrenandoPct: a.dreno.danoPct } : {}) });
+  if (a.frenesi > 0) m.push({ gatilho: 'aoAtacar', efeito: 'carga', carga: 'frenesi', chance: Math.min(100, a.frenesi) });
+  if (a.toleranciaPorSegundo > 0) m.push({ gatilho: 'aoReceberDano', efeito: 'carga', carga: 'tolerancia', porSegundo: a.toleranciaPorSegundo });
+  if (a.semDrenoDeEs) m.push({ gatilho: 'aoReceberDano', efeito: 'semDrenoDeEs' });
+  return m;
+}
 
 /**
  * Os modificadores SEM stat no poedb cujo efeito é uma habilidade do monstro: o "Amaldiçoa" (Cursing — o monstro amaldiçoa quem ele acerta:
@@ -91,9 +134,10 @@ const HABILIDADES = {
 
 /**
  * (11/10) Os modificadores cuja IDENTIDADE ainda não existe no jogo: um stat menor que já vale não liga o modificador (ele apareceria com o
- * nome e quase sem efeito). O Vampírico é o monstro que DRENA vida — o "não pode ter Vida Drenada" dele sozinho não é o modificador.
+ * nome e quase sem efeito). (12/10 — dono: "igual no PoE": o Vampírico, o monstro que DRENA vida, saiu daqui — o dreno dos monstros, o dano
+ * a mais enquanto drena e o "não pode ter Escudo de Energia drenado" existem agora, `mobs/mecanicas`.)
  */
-const SEM_A_IDENTIDADE = new Set(['MonsterArchnemesisVampiric']);
+const SEM_A_IDENTIDADE = new Set();
 /** O poedb escreve "Seus Acertos empre Incendeiam/Eletrizam" (sem o s): a linha sai certa. */
 const corrigirTexto = (l) => String(l).replace(/\bempre\b/g, 'sempre');
 
@@ -112,7 +156,7 @@ export function traduzir(statsPoe) {
   const n = (statsPoe ?? []).length;
   // Só vira debuff a doença que o mod de fato causa (o "+% de dano de queimadura" sozinho não põe fogo em ninguém).
   const causa = new Set((statsPoe ?? []).map((s) => ({ 'always ignite': 'fire', 'global poison on hit': 'earth', 'global bleed on hit': 'physical' })[s.stat]).filter(Boolean));
-  const mecanicas = mecanicasDosDots(Object.fromEntries(Object.entries(t._dots).filter(([el]) => causa.has(el))));
+  const mecanicas = [...mecanicasDosDots(Object.fromEntries(Object.entries(t._dots).filter(([el]) => causa.has(el)))), ...mecanicasDoAcerto(t._acerto)];
   return { stats: limpar(t), ...(mecanicas.length ? { mecanicas } : {}), estado: !n || !valem ? 'registrado' : valem === n ? (aprox ? 'aproximado' : 'efeito') : 'parcial', valem, total: n };
 }
 

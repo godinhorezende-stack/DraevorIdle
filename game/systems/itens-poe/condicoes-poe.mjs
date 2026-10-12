@@ -14,6 +14,7 @@ import { maximo as maximoDeCargas } from './cargas.mjs';
 import { maldicoesNoJogador as maldicoesDoMapa } from './mapas.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
+import * as BuffsDeMob from '../mobs/buffs.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -330,7 +331,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (temDot('veneno', 'venenoPoe')) v.add('envenenadoProprio');
     // (+ as maldições do PoE que os monstros põem em você — `amaldicoarJogador`)
     if (temDot('maldicao') || Object.values(h.maldicoesNoJogador ?? {}).some((m) => m && m.ate > agora)) v.add('amaldicoadoProprio');
-    if (temDot('choque')) v.add('eletrizadoProprio');
+    // (+ a Eletrização do crítico de um monstro — `monstros-no-jogador.eletrizar`: Dano recebido aumentado, sem dano contínuo.)
+    if (temDot('choque') || (h.debuffsDoJogador?.eletrizado?.ate ?? 0) > agora) v.add('eletrizadoProprio');
     const c = h.controle ?? {};
     if (c.congelado?.ate > agora) v.add('congeladoProprio');
     if (c.lento?.ate > agora) v.add('resfriadoProprio');
@@ -1422,6 +1424,9 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
   if (ativo(e.lento, agora) && e.lento.reduzDano) danoFator *= Math.max(0, 1 - e.lento.pct / 200);
   // Coberto de Gelo (PoE): 50% menos chance de crítico (o +20% de dano de Gelo recebido está em `fatorRecebidoPeloBicho`).
   if (ativo(e.cobertoGelo, agora)) criticoFator *= 0.5;
+  // (12/10) As Cargas de Poder do monstro (`mobs/mecanicas.ganharCarga`): +50% de chance de crítico (aumentada) por carga.
+  const critDasCargas = BuffsDeMob.soma(bicho, agora, 'critAumentadoPct');
+  if (critDasCargas > 0) criticoFator *= 1 + critDasCargas / 100;
   return { danoFator, precisaoFator, criticoFator };
 }
 /** A resistência elemental a menos do bicho Causticado (pontos), e a chance de crítico a mais contra ele Fragilizado (pontos de %). */
@@ -1645,7 +1650,7 @@ const AFECCAO_DO_CONTROLE = { congelado: { nome: 'congelamento', elemental: true
 function jaTemNaoDanificadora(hunt) {
   const agora = hunt?.clock ?? 0;
   const c = hunt?.controle ?? {};
-  return (c.congelado?.ate ?? 0) > agora || (c.lento?.ate ?? 0) > agora || (hunt?.efeitosDoJogador?.dots ?? []).some((d) => d.falta > 0 && (d.tipo === 'choque' || d.tipo === 'gelo'));
+  return (c.congelado?.ate ?? 0) > agora || (c.lento?.ate ?? 0) > agora || (hunt?.debuffsDoJogador?.eletrizado?.ate ?? 0) > agora || (hunt?.efeitosDoJogador?.dots ?? []).some((d) => d.falta > 0 && (d.tipo === 'choque' || d.tipo === 'gelo'));
 }
 /**
  * A IMUNIDADE depois da afecção ("Você não pode ser Incendiado durante N segundos depois de ter sido Incendiado" — `imune_apos_<afecção>` =

@@ -910,6 +910,77 @@
       }
      },
      {
+      "familia": "MapMonsterPhysicalReflection",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Castigante",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros raros têm espinhos físicos que refletem 400 de dano físico",
+        "modelo": "Monstros raros têm espinhos físicos que refletem {0} de dano físico",
+        "faixas": [
+         [
+          400,
+          400
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "espinhos.physical",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonsterElementalReflection",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Espelhado",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros raros têm espinhos elementais que refletem 900 de dano elemental",
+        "modelo": "Monstros raros têm espinhos elementais que refletem {0} de dano elemental",
+        "faixas": [
+         [
+          900,
+          900
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "espinhos.elemental",
+        "de": 0,
+        "parcial": "o PoE não diz a divisão do dano elemental: no jogo, um terço de Fogo, de Gelo e de Raio"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
       "familia": "MapBossMod",
       "lado": "prefixo",
       "tags": [],
@@ -1045,6 +1116,41 @@
        "quantidade": 13,
        "raridade": 8,
        "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersImpaleOnHit",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Empalador",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Ataques dos Monstros têm 25% de chance de Empalar ao Acertar",
+        "modelo": "Ataques dos Monstros têm {0}% de chance de Empalar ao Acertar",
+        "faixas": [
+         [
+          25,
+          25
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.empalar",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
       }
      },
      {
@@ -1274,6 +1380,156 @@
        "quantidade": 13,
        "raridade": 8,
        "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersFrenzyChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Frenesi",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Frenesi ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Frenesi ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.frenesi",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersEnduranceChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Tolerância",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Tolerância ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Tolerância ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.tolerancia",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersPowerChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Poder",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Poder ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Poder ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.poder",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersBlindOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 650,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Cegueira",
+        "ilvl": 1,
+        "peso": 650,
+        "texto": "Monstros Cegam ao Acertar",
+        "modelo": "Monstros Cegam ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.cegar",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonstersMaimOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Carnificina",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros Mutilam com Ataques",
+        "modelo": "Monstros Mutilam com Ataques",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.mutilar",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
       }
      },
      {
@@ -1722,6 +1978,77 @@
       }
      },
      {
+      "familia": "MapMonsterPhysicalReflection",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Castigante",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros raros têm espinhos físicos que refletem 600 de dano físico",
+        "modelo": "Monstros raros têm espinhos físicos que refletem {0} de dano físico",
+        "faixas": [
+         [
+          600,
+          600
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "espinhos.physical",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonsterElementalReflection",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Espelhado",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros raros têm espinhos elementais que refletem 1200 de dano elemental",
+        "modelo": "Monstros raros têm espinhos elementais que refletem {0} de dano elemental",
+        "faixas": [
+         [
+          1200,
+          1200
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "espinhos.elemental",
+        "de": 0,
+        "parcial": "o PoE não diz a divisão do dano elemental: no jogo, um terço de Fogo, de Gelo e de Raio"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
       "familia": "MapDangerousBoss",
       "lado": "prefixo",
       "tags": [],
@@ -1857,6 +2184,41 @@
        "quantidade": 13,
        "raridade": 8,
        "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersImpaleOnHit",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Empalador",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Ataques dos Monstros têm 40% de chance de Empalar ao Acertar",
+        "modelo": "Ataques dos Monstros têm {0}% de chance de Empalar ao Acertar",
+        "faixas": [
+         [
+          40,
+          40
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.empalar",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
       }
      },
      {
@@ -2261,6 +2623,156 @@
        "quantidade": 13,
        "raridade": 8,
        "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersFrenzyChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Frenesi",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Frenesi ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Frenesi ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.frenesi",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersEnduranceChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Tolerância",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Tolerância ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Tolerância ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.tolerancia",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersPowerChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Poder",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Poder ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Poder ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.poder",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersBlindOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 650,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Cegueira",
+        "ilvl": 1,
+        "peso": 650,
+        "texto": "Monstros Cegam ao Acertar",
+        "modelo": "Monstros Cegam ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.cegar",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonstersMaimOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Carnificina",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros Mutilam com Ataques",
+        "modelo": "Monstros Mutilam com Ataques",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.mutilar",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
       }
      },
      {
@@ -2709,6 +3221,77 @@
       }
      },
      {
+      "familia": "MapMonsterPhysicalReflection",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Castigante",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros raros têm espinhos físicos que refletem 800 de dano físico",
+        "modelo": "Monstros raros têm espinhos físicos que refletem {0} de dano físico",
+        "faixas": [
+         [
+          800,
+          800
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "espinhos.physical",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonsterElementalReflection",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Espelhado",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros raros têm espinhos elementais que refletem 1500 de dano elemental",
+        "modelo": "Monstros raros têm espinhos elementais que refletem {0} de dano elemental",
+        "faixas": [
+         [
+          1500,
+          1500
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "espinhos.elemental",
+        "de": 0,
+        "parcial": "o PoE não diz a divisão do dano elemental: no jogo, um terço de Fogo, de Gelo e de Raio"
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
       "familia": "MapDangerousBoss",
       "lado": "prefixo",
       "tags": [],
@@ -2844,6 +3427,41 @@
        "quantidade": 13,
        "raridade": 8,
        "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersImpaleOnHit",
+      "lado": "prefixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "Empalador",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Ataques dos Monstros têm 60% de chance de Empalar ao Acertar",
+        "modelo": "Ataques dos Monstros têm {0}% de chance de Empalar ao Acertar",
+        "faixas": [
+         [
+          60,
+          60
+         ]
+        ]
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.empalar",
+        "de": 0
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
       }
      },
      {
@@ -3175,6 +3793,36 @@
       }
      },
      {
+      "familia": "MapMonsterLifeLeechImmunity",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Congelação",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Impossível Drenar dos Monstros",
+        "modelo": "Impossível Drenar dos Monstros",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "semDreno",
+        "fixo": 1
+       }
+      ],
+      "recompensa": {
+       "quantidade": 16,
+       "raridade": 9,
+       "grupo": 6
+      }
+     },
+     {
       "familia": "MapPlayersGainReducedFlaskCharges",
       "lado": "sufixo",
       "tags": [],
@@ -3248,6 +3896,156 @@
        "quantidade": 13,
        "raridade": 8,
        "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersFrenzyChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Frenesi",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Frenesi ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Frenesi ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.frenesi",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersEnduranceChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Tolerância",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Tolerância ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Tolerância ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.tolerancia",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersPowerChargeOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 800,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "do Poder",
+        "ilvl": 1,
+        "peso": 800,
+        "texto": "Monstros ganham uma Carga de Poder ao Acertar",
+        "modelo": "Monstros ganham uma Carga de Poder ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.poder",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 13,
+       "raridade": 8,
+       "grupo": 5
+      }
+     },
+     {
+      "familia": "MapMonstersBlindOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 650,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Cegueira",
+        "ilvl": 1,
+        "peso": 650,
+        "texto": "Monstros Cegam ao Acertar",
+        "modelo": "Monstros Cegam ao Acertar",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.cegar",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
+      }
+     },
+     {
+      "familia": "MapMonstersMaimOnHit",
+      "lado": "sufixo",
+      "tags": [],
+      "peso": 600,
+      "ilvlMax": 1,
+      "tiers": [
+       {
+        "tier": 1,
+        "nome": "da Carnificina",
+        "ilvl": 1,
+        "peso": 600,
+        "texto": "Monstros Mutilam com Ataques",
+        "modelo": "Monstros Mutilam com Ataques",
+        "faixas": []
+       }
+      ],
+      "efeitos": [
+       {
+        "alvo": "monstros",
+        "stat": "noAcerto.mutilar",
+        "fixo": 100
+       }
+      ],
+      "recompensa": {
+       "quantidade": 10,
+       "raridade": 6,
+       "grupo": 4
       }
      },
      {
@@ -6444,16 +7242,6 @@
    "motivo": "ainda não tem a mecânica no jogo"
   },
   {
-   "familia": "MapMonsterElementalReflection",
-   "texto": "Monstros raros têm espinhos elementais que refletem 1500 de dano elemental",
-   "motivo": "os espinhos de dano fixo dos monstros raros ainda não existem (o reflexo de hoje é em % do dano)"
-  },
-  {
-   "familia": "MapMonsterLifeLeechImmunity",
-   "texto": "Impossível Drenar dos Monstros",
-   "motivo": "ainda não tem a mecânica no jogo"
-  },
-  {
    "familia": "MapMonsterMultipleProjectiles",
    "texto": "Monstros atiram 2 Projéteis adicionais",
    "motivo": "os projéteis adicionais dos monstros ainda não existem"
@@ -6462,11 +7250,6 @@
    "familia": "MapMonsterPacks",
    "texto": "Ganho de Experiência aumentado em % / Área habitada pelos Vaal / Itens Encontrados têm 10% de chance de caírem Corrompidos na Área",
    "motivo": "trocar os grupos por uma família de monstros (Esqueletos…) ainda não existe no jogo"
-  },
-  {
-   "familia": "MapMonsterPhysicalReflection",
-   "texto": "Monstros raros têm espinhos físicos que refletem 800 de dano físico",
-   "motivo": "os espinhos de dano fixo dos monstros raros ainda não existem (o reflexo de hoje é em % do dano)"
   },
   {
    "familia": "MapMonstersAllDamageAlwaysIgnites",
@@ -6481,11 +7264,6 @@
   {
    "familia": "MapMonstersBaseSelfCriticalMultiplier",
    "texto": "Monstros têm (36—40)% de redução do Dano Extra de Golpes Críticos",
-   "motivo": "ainda não tem a mecânica no jogo"
-  },
-  {
-   "familia": "MapMonstersBlindOnHit",
-   "texto": "Monstros Cegam ao Acertar",
    "motivo": "ainda não tem a mecânica no jogo"
   },
   {
@@ -6504,33 +7282,8 @@
    "motivo": "ainda não tem a mecânica no jogo"
   },
   {
-   "familia": "MapMonstersEnduranceChargeOnHit",
-   "texto": "Monstros ganham uma Carga de Tolerância ao Acertar",
-   "motivo": "ainda não tem a mecânica no jogo"
-  },
-  {
-   "familia": "MapMonstersFrenzyChargeOnHit",
-   "texto": "Monstros ganham uma Carga de Frenesi ao Acertar",
-   "motivo": "ainda não tem a mecânica no jogo"
-  },
-  {
    "familia": "MapMonstersHinderOnHit",
    "texto": "Monstros Desaceleram ao Acertar com Magias",
-   "motivo": "ainda não tem a mecânica no jogo"
-  },
-  {
-   "familia": "MapMonstersImpaleOnHit",
-   "texto": "Ataques dos Monstros têm 60% de chance de Empalar ao Acertar",
-   "motivo": "ainda não tem a mecânica no jogo"
-  },
-  {
-   "familia": "MapMonstersMaimOnHit",
-   "texto": "Monstros Mutilam com Ataques",
-   "motivo": "ainda não tem a mecânica no jogo"
-  },
-  {
-   "familia": "MapMonstersPowerChargeOnHit",
-   "texto": "Monstros ganham uma Carga de Poder ao Acertar",
    "motivo": "ainda não tem a mecânica no jogo"
   },
   {

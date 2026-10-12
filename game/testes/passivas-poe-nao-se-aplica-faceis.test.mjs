@@ -71,7 +71,8 @@ const bicho = (extra = {}) => ({ uid: 9, key: 'rat', name: 'Rato', x: 1, y: 0, h
 test('VIDA NÃO PODE SER DRENADA: o modificador de monstro entra no sorteio e tira o dreno de vida; "X% mais Dano contra Inimigos que não podem ter Vida Drenada"', { skip: SEM }, () => {
   const mod = ModsMonstro.DADOS.mods.find((m) => m.id === 'MonsterModCannotLeech');
   assert.ok(ModsMonstro.elegivel(mod, 'raro', 80) > 0, 'sorteia (antes ficava fora: sem efeito)');
-  assert.ok(!ModsMonstro.elegivel(ModsMonstro.DADOS.mods.find((m) => m.id === 'MonsterArchnemesisVampiric'), 'raro', 80), 'o Vampírico (o monstro que drena) continua fora');
+  // (dono, 12/10: "igual no PoE" — o dreno dos monstros existe agora: o Vampírico, o monstro que drena, entra no sorteio como no PoE)
+  assert.ok(ModsMonstro.elegivel(ModsMonstro.DADOS.mods.find((m) => m.id === 'MonsterArchnemesisVampiric'), 'raro', 80) > 0, 'o Vampírico (o monstro que drena) sorteia, igual no PoE');
   const m = { key: 'rat', hp: 100, maxHp: 100 };
   Raridade.aplicar(m, { raridade: 'raro', modificadores: [`${ModsMonstro.PREFIXO}MonsterModCannotLeech`] });
   assert.equal(m.semDreno, true);

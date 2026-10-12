@@ -61,9 +61,9 @@ export const bloqueioDe = (m) => limitar(((especieDe(m)?.bloqueio ?? 0) + (m?.bl
 /** A redução de dano do bicho (0–1), separada da armadura e da resistência. */
 export const reducaoDeDano = (m) => limitar(((especieDe(m)?.reducaoDeDano ?? 0) + (m?.reducaoDeDano ?? 0)), L.reducaoDeDanoMaxima) / 100;
 
-/** O bicho bloqueou este golpe? (`rng` para o teste.) */
-export const bloqueou = (m, rng = Math.random) => {
-  const b = bloqueioDe(m);
+/** O bicho bloqueou este golpe? (`rng` para o teste; `fator`: o do atacante — PoE, "Chance de Inimigos Bloquearem … reduzida".) */
+export const bloqueou = (m, rng = Math.random, fator = 1) => {
+  const b = bloqueioDe(m) * fator;
   return b > 0 && rng() < b;
 };
 

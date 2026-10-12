@@ -84,7 +84,9 @@ test('caçando de verdade (bichos de um golpe): nunca fica parado sem brigar, e 
   for (let i = 0; i < 4 * 900; i++) {
     agora += R.PASSO_MS;
     e.hp = e.maxHp;
-    for (const m of e.hunt.monstros) if (m.hp > 1) m.hp = 1;
+    // (dono, 12/10: o bicho que DRENA vida — Vampírico, Drena Vida — se cura antes do golpe no mesmo tique; aqui os bichos são de um golpe,
+    // então o dreno sai junto com a vida.)
+    for (const m of e.hunt.monstros) { if (m.hp > 1) m.hp = 1; delete m.drenoPoe; }
     const eventos = Cacadas.tique(e, PERSONAGEM, agora) ?? [];
     for (const ev of eventos) if (ev.t === 'kill') kills++;
     const pos = `${e.hunt.pos.x},${e.hunt.pos.y}`;
