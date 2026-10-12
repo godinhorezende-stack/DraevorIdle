@@ -19,10 +19,18 @@ export const FAIXAS_DO_POE = Object.freeze([
 /** Dinheiro (vira ouro no bolso) e a mochila do personagem: passam sempre. */
 const SEMPRE = new Set([3031, 3035, 3043, 2854]);
 
+/**
+ * A peça gerada pelo gerador do DRAEVOR (`itens/gerar.mjs`: a raridade do Draevor — comum…mítico —, os afixos em lista `af`) e sem o `poe`:
+ * mesmo com o id de uma base do PoE ela NÃO é do PoE (dono, 12/10: o chefe soltava "Botas de Escamas de Bronze" Épicas, com estrelas e mods
+ * T1/T2 — o gerador do Draevor numa base do PoE). Os itens de missão do PoE são só `{ id, count }`.
+ */
+const doGeradorDoDraevor = (peca) => !!peca && !peca.poe && (Array.isArray(peca.af) || typeof peca.raridade === 'string');
+
 /** O item é do PoE? (`peca`: a peça, quando houver — a gerada pelo sistema do PoE leva `poe`) */
 export function ehDoPoe(id, peca = null) {
   if (peca?.poe) return true;
   const n = Number(id);
+  if (n >= FAIXAS_DO_POE[0][0] && doGeradorDoDraevor(peca)) return false;
   return FAIXAS_DO_POE.some(([de, ate]) => n >= de && n <= ate);
 }
 

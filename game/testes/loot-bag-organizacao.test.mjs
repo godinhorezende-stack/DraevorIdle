@@ -151,17 +151,19 @@ test('a SACOLA do chefe NÃO passa pelo filtro (dono, 10/10: "vai direto para o 
   e.itemRules.noLoot = [...MoedasPoe.MOEDAS.map((m) => m.itemId), ...Mapas.bases().map((b) => b.itemId)];
   e.settings = { ...e.settings, guardarRaridadePoe: 3 };
   const sala = () => ({ huntId: 'x', isBoss: true, bossId: null, campanha: { bossDoAto: 10, dificuldade: 'facil', ato: 10 }, monstros: [], clock: 0 });
-  // O sorteio com SEMENTE fixa: sem ela, umas rodadas não soltavam peça nenhuma em 15 vitórias e o teste dependia da sorte.
+  // O sorteio com SEMENTE fixa: sem ela, umas rodadas não soltavam peça nenhuma em 15 vitórias e o teste dependia da sorte. (dono, 12/10:
+  // 30 vitórias — sem as peças do Draevor no baú do chefe a sequência do sorteio mudou e esta semente não soltava peça em 15; com 30,
+  // 40 de 40 sementes medidas soltam.)
   const aleatorio = Math.random;
   let semente = 20261010;
   Math.random = () => ((semente = (semente * 1664525 + 1013904223) >>> 0) / 4294967296);
   try {
-    for (let k = 0; k < 15; k++) vitoriaNoBoss(e, sala(), { key: 'demon', name: 'Kitava', loot: [], uid: k + 1, hp: 0, maxHp: 1 }, PERSONAGEM);
+    for (let k = 0; k < 30; k++) vitoriaNoBoss(e, sala(), { key: 'demon', name: 'Kitava', loot: [], uid: k + 1, hp: 0, maxHp: 1 }, PERSONAGEM);
   } finally {
     Math.random = aleatorio;
   }
   const itens = e.rewards.flatMap((s) => s.itens);
-  assert.equal(itens.filter((p) => Mapas.ehMapa(p)).length, 15, 'o T1 garantido do Kitava vem sempre, mesmo no "Não coletar"');
+  assert.equal(itens.filter((p) => Mapas.ehMapa(p)).length, 30, 'o T1 garantido do Kitava vem sempre, mesmo no "Não coletar"');
   assert.ok(itens.some((p) => MoedasPoe.ehMoeda(p.id)), 'as moedas do boss vêm, mesmo no "Não coletar"');
   const equipamento = itens.filter((p) => p.poe && !Mapas.ehMapa(p));
   assert.ok(equipamento.some((p) => p.poe.raridade !== 'unico'), `peça abaixo do "Só Único" também vem: ${equipamento.map((p) => p.poe.raridade).join(', ')}`);

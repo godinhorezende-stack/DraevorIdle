@@ -380,11 +380,12 @@ test('o dano SORTUDO: "Dano de Raio com Golpes Não-Críticos é Sortudo" (o Arc
     e.actions[0] = { id: GP.doSlug('Arc').acao, enabled: true, minMana: 0, conditions: [] };
     Afixos.sincronizarMaximos(e);
     Ficha.invalidar(e);
-    assert.equal(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok, true);
-    const antes = Registro.nivelDoRegistro();
+    // (a semente ANTES de entrar: o monstro que nasce na área é o mesmo nas duas rodadas — dono, 12/10)
     const aleatorio = Math.random;
     let semente = 12345;
     Math.random = () => ((semente = (semente * 1103515245 + 12345) % 2147483648) / 2147483648);
+    assert.equal(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok, true);
+    const antes = Registro.nivelDoRegistro();
     Registro.definirNivel(1);
     Registro.limparRegistro();
     try {
