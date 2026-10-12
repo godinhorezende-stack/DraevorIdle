@@ -48,7 +48,8 @@ const QUE_FAZEM_BRANCO = new Set(['Tainted_Chromatic_Orb']);
 const PEDEM_SEM_GEMA = new Set(['Jewellers_Orb', 'Chromatic_Orb', 'Tainted_Jewellers_Orb', 'Tainted_Chromatic_Orb']);
 
 // ---------------------------------------------------------------- a peça e o material
-const quantas = (estado, id) => (estado.inventory ?? []).filter((x) => Number(x.id) === Number(id)).reduce((t, x) => t + (x.count ?? 1), 0);
+// (a mochila E o baú — o depósito do personagem; dono, 12/10: "forja pode pegar materiais do baú também")
+const quantas = (estado, id) => MoedasPoe.quantasTem(estado, id);
 /** A peça do alvo (`{ onde:'equipment', slot }` | `{ onde:'inventory', indice }`), só se for do PoE. */
 function pecaDo(estado, alvo) {
   const peca = alvo?.onde === 'equipment' ? estado.equipment?.[alvo.slot] : alvo?.onde === 'inventory' ? (estado.inventory ?? [])[Math.floor(Number(alvo.indice))] : null;
@@ -241,7 +242,10 @@ function motivoDaMoeda(estado, peca, slug, categoria) {
  * — com a mensagem do próprio motor quando não vale — e, nas moedas sem sorteio, o resultado exato. Nada do personagem muda.
  */
 function ensaio(estado, slug, alvo) {
-  const copia = { inventory: structuredClone(estado.inventory ?? []), equipment: structuredClone(estado.equipment ?? {}), passivas: structuredClone(estado.passivas ?? {}) };
+  const copia = {
+    inventory: structuredClone(estado.inventory ?? []), equipment: structuredClone(estado.equipment ?? {}), passivas: structuredClone(estado.passivas ?? {}),
+    deposito: structuredClone(estado.deposito ?? []), // (a moeda pode estar no baú)
+  };
   const r = MoedasPoe.usar(copia, { moeda: MoedasPoe.idDa(slug), ...(alvo ? { alvo } : {}) }, () => 0.5);
   return r.ok ? { ok: true, notice: r.notice ?? null } : { ok: false, erro: r.erro };
 }
@@ -292,7 +296,8 @@ export function opcoes(estado, m = {}) {
     .map((x) => ({ x, tem: quantas(estado, x.itemId) }))
     .filter(({ x, tem }) => tem > 0 || (PRINCIPAIS.has(x.slug) && categoria !== 'semEfeito'))
     .map(({ x, tem }) => ({
-      id: x.itemId, slug: x.slug, nome: ITEM_CATALOG[x.itemId]?.name ?? x.nome, tem, repete: REPETE.has(x.slug) && Regras.COM_DESEJO.has(categoria),
+      id: x.itemId, slug: x.slug, nome: ITEM_CATALOG[x.itemId]?.name ?? x.nome, tem, noBau: MoedasPoe.ondeTem(estado, x.itemId).bau,
+      repete: REPETE.has(x.slug) && Regras.COM_DESEJO.has(categoria),
       status: MoedasPoe.STATUS[x.slug]?.status ?? 'nao', ...situacao(estado, alvo, peca, x.slug, categoria),
     }));
   if (!peca) return { pedido, categoria, alvo: m.alvo ?? null, peca: null, materiais };

@@ -479,9 +479,9 @@ const dominio = ({ p, rng }) => {
 };
 /** Os fragmentos: 20 (5 no pergaminho) viram 1 orbe (a moeda inteira). */
 const juntarLascas = (alvoSlug, quantos = 20) => ({ estado, moeda }) => {
-  const tem = (estado.inventory ?? []).filter((x) => Number(x.id) === moeda.itemId).reduce((t, x) => t + (x.count ?? 1), 0);
+  const tem = quantasTem(estado, moeda.itemId); // (as da mochila e as do baú)
   if (tem < quantos) return erro(`Junte ${quantos} para formar ${POR_SLUG.get(alvoSlug)?.nome ?? 'a moeda'} (você tem ${tem}).`);
-  tirarDaMochila(estado, moeda.itemId, quantos - 1); // a última sai pelo gasto normal
+  gastar(estado, moeda.itemId, quantos - 1); // a última sai pelo gasto normal
   porNaMochila(estado, idDa(alvoSlug), 1);
   return { ok: true, notice: `${quantos} ${moeda.nome} viraram 1 ${POR_SLUG.get(alvoSlug)?.nome}.`, semAlvo: true };
 };
@@ -588,10 +588,9 @@ const vaalDjinn = (ctx) => (ehUnico(ctx.p) ? vaal(ctx) : erro('A Orbe Vaal Tocad
  * Os orbes de socket (já existentes, `Gemas.usarOrbeDoPoe`, que gasta o orbe ele mesmo): na peça vestida ou na da MOCHILA — no PoE a moeda
  * vale em qualquer peça, como as Corroídas daqui (dono, 12/10: a Forja reformulada mostra o inventário inteiro).
  */
-const orbeDeSocket = (tipo) => ({ estado, peca, alvo, rng }) => {
-  const r = Gemas.usarOrbeDoPoe(estado, alvo?.onde === 'equipment' ? { slot: alvo.slot, tipo } : { peca, tipo }, rng);
-  return r.ok ? { ...r, jaGastou: true } : r;
-};
+const orbeDeSocket = (tipo) => ({ estado, peca, alvo, rng }) =>
+  // (`gastoFora`: quem confere e gasta o orbe é o `usar` daqui — da mochila ou do baú)
+  Gemas.usarOrbeDoPoe(estado, alvo?.onde === 'equipment' ? { slot: alvo.slot, tipo, gastoFora: true } : { peca, tipo, gastoFora: true }, rng);
 
 /** O efeito e o status de cada moeda que faz algo. `alvo`: 'peca' (equipamento do PoE), 'gema', 'nenhum'. `corrompida`: aceita corrompida. */
 const FAZ = {
@@ -733,6 +732,40 @@ export function iniciar() {
   return n;
 }
 
+// ---------------------------------------------------------------- de ONDE sai a moeda: a mochila e o BAÚ
+/*
+ * Dono, 12/10: "forja pode pegar materiais do baú também". A moeda conta na mochila e nas caixas do DEPÓSITO do personagem (as numeradas
+ * e as Chegadas — o "Mover Orbs" da bolsa de loot leva os orbes para lá, `Deposito.destinoDosOrbs`), e sai primeiro da mochila, depois
+ * do baú, na ordem das caixas. O baú da CONTA (compartilhado entre os personagens, gravado à parte no banco) fica de fora.
+ */
+const caixasDoBau = (estado) => (estado.deposito ?? []).filter((c) => c && !c.compartilhada && Array.isArray(c.itens));
+const contar = (lista, id) => (lista ?? []).filter((x) => Number(x?.id) === Number(id)).reduce((t, x) => t + (x.count ?? 1), 0);
+/** Quantas desta moeda o personagem tem: `{ mochila, bau, total }`. */
+export function ondeTem(estado, id) {
+  const mochila = contar(estado.inventory, id);
+  const bau = caixasDoBau(estado).reduce((t, c) => t + contar(c.itens, id), 0);
+  return { mochila, bau, total: mochila + bau };
+}
+export const quantasTem = (estado, id) => ondeTem(estado, id).total;
+/** Gasta `n` da moeda: primeiro da mochila, depois do baú (caixa por caixa). Devolve quantas saíram. */
+export function gastar(estado, id, n) {
+  const daMochila = Math.min(n, contar(estado.inventory, id));
+  if (daMochila > 0) tirarDaMochila(estado, Number(id), daMochila);
+  let falta = n - daMochila;
+  for (const c of caixasDoBau(estado)) {
+    for (let i = c.itens.length - 1; i >= 0 && falta > 0; i--) {
+      if (Number(c.itens[i]?.id) !== Number(id)) continue;
+      const tira = Math.min(falta, c.itens[i].count ?? 1);
+      c.itens[i].count = (c.itens[i].count ?? 1) - tira;
+      falta -= tira;
+      if (c.itens[i].count <= 0) c.itens.splice(i, 1);
+    }
+    c.tipos = c.itens.length;
+    if (falta <= 0) break;
+  }
+  return n - falta;
+}
+
 function tirarDaMochila(estado, id, n) {
   const inv = (estado.inventory ??= []);
   let falta = n;
@@ -775,8 +808,8 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
   if (!Catalogo.ligado()) return erro('As moedas do PoE não estão ligadas.');
   const moeda = moedaDoItem(idDaMoeda);
   if (!moeda) return erro('Isso não é uma moeda do PoE.');
-  const tem = (estado.inventory ?? []).some((x) => Number(x.id) === moeda.itemId && (x.count ?? 1) > 0);
-  if (!tem) return erro(`Você não tem ${moeda.nome}.`);
+  // (a mochila ou o baú — `ondeTem`)
+  if (quantasTem(estado, moeda.itemId) < 1) return erro(`Você não tem ${moeda.nome}.`);
   const faz = FAZ[moeda.slug];
   if (!faz) return erro(`${moeda.nome} não tem efeito no jogo: ${STATUS[moeda.slug].motivo}.`);
   let peca = null;
@@ -795,7 +828,7 @@ export function usar(estado, { moeda: idDaMoeda, alvo } = {}, rng = Math.random)
     return r ?? erro('Nada aconteceu.');
   }
   if (peca && !r.destruiu) Jogo.recalcular(peca);
-  if (!r.jaGastou) tirarDaMochila(estado, moeda.itemId, 1);
+  if (!r.jaGastou) gastar(estado, moeda.itemId, 1);
   return { ok: true, notice: r.notice };
 }
 
