@@ -39,6 +39,7 @@ import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
+import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade, efeitos as efeitosDaArvore } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
@@ -1321,8 +1322,10 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const recarga = recargaBase > 0 && !clamorSemRecarga ? Math.round((recargaBase / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0) + daGemaNomeada) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
   // (O piso de 250 ms é só da INSTANTÂNEA, um tique; o resto vai até `R.INTERVALO_MINIMO_DA_ACAO_MS` — mais de uma ação cabe num tique.)
   const uso = bruto > 0 ? Math.max(R.INTERVALO_MINIMO_DA_ACAO_MS, Math.round(bruto)) : USO_DA_INSTANTANEA_MS;
-  // (+ "Habilidades de Clamor Encaixadas têm +N Usos de Recarga" — os usos a mais da peça, `efeitoDaGema.usosExtra`.)
-  const cargas = efeitoDaGema?.usosExtra ? Math.max(1, t.cargas ?? 1) + efeitoDaGema.usosExtra : t.cargas;
+  // (+ "Habilidades de Clamor Encaixadas têm +N Usos de Recarga" — os usos a mais da peça, `efeitoDaGema.usosExtra`; + 12/10, a árvore:
+  // "Habilidades que Arremessam Armadilhas têm +1 Uso de Recarga" — `usos_recarga@armadilha`.)
+  const usosExtra = (efeitoDaGema?.usosExtra ?? 0) + (porTag.usos_recarga ?? 0);
+  const cargas = usosExtra ? Math.max(1, t.cargas ?? 1) + usosExtra : t.cargas;
   return { uso, recarga, ataque, conjuracaoMs: ataque ? 0 : Math.round(bruto), conjuracaoBaseMs: t.conjuracaoMs, velAtaqueBase: t.velAtaqueBase, cargas };
 }
 
@@ -1373,9 +1376,15 @@ export function condicoesParaCliente(estado, hunt, alvo) {
   return r;
 }
 
-function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null, gatilho = null, manual = false } = {}) {
+function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null, gatilho = null, manual = false, plantada = null } = {}) {
   // Morto não lança nada (o clique manual chegava aqui entre o golpe e o fim da caçada).
   if ((estado.hp ?? 0) <= 0) return { ok: false, erro: 'Você está morto.', motivo: 'MORTO' };
+  // (PoE, 12/10) `plantada`: a ARMADILHA que um inimigo ativou / a MINA detonada (`itens-poe/armas-plantadas.mjs`) — a habilidade da gema sai
+  // DO LUGAR dela, sem custo, recarga, conjuração nem as condições do slot (tudo isso foi do arremesso, como no PoE). Sem inimigo, nada.
+  if (plantada) {
+    if (!alvo) return { ok: true, eventos: [] };
+    gatilho = { acao: { id: plantada.acao }, semCusto: true, plantada: true };
+  }
   // Conjurando outra skill: nada mais sai até ela terminar (ou cancelar) — ver `concluirConjuracao`.
   if (hunt.conjurando && !concluir && !gatilho) return { ok: false, erro: 'Conjurando.', motivo: 'CONJURANDO' };
   // `gatilho`: a magia ATIVADA por um suporte de gatilho do PoE (`ativarGatilhos`) — instantânea, fora da barra, sem o relógio de uso
@@ -1418,7 +1427,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (!concluir && globalLibera != null && !R.liberou(agora, globalLibera)) {
     return { ok: false, erro: 'Aguarde o cooldown global.', motivo: 'COOLDOWN_GLOBAL', faltaMs: globalLibera - agora };
   }
-  if (cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
+  if (!plantada && cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
   // (PoE, 11/10) A RETALIAÇÃO só se usa na janela: depois de bloquear um acerto (ou de um Acerto Selvagem) — `ModsPoe.abrirRetaliacao`.
   const gatilhoDaRetaliacao = !gatilho && entry.poeGema ? GemasPoe.gatilhoDeRetaliacao(entry.poeGema.slug) : null;
   if (gatilhoDaRetaliacao && !concluir && !ModsPoe.retaliacaoUsavel(hunt, gatilhoDaRetaliacao, entry.poeGema.slug, hunt.clock ?? 0)) {
@@ -1524,9 +1533,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   let atingidos = [];
   let casas = null;
   let virarPara = null;
+  // (PoE, 12/10) A gema que PLANTA (Armadilha, Mina): o uso joga a armadilha/mina no lugar mirado; a habilidade sai quando ela ativa.
+  const tipoPlantado = Plantadas.tipoDaGema(entry);
   if (ataque) {
     const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro;
-    if (!entry.forma) {
+    if (plantada) {
+      // A Armadilha ativada / a Mina detonada: a área em volta DELA (sem alcance — ela está lá); a de alvo único, em quem a ativou.
+      if (entry.forma) casas = casasDaForma(entry, plantada.x, plantada.y);
+      else atingidos = alvo.hp > 0 ? [alvo] : [];
+    } else if (!entry.forma) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...).
       if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || 1)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
@@ -1566,7 +1581,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    * Na magia de área conta quem a área PEGA; na de alvo único (e na cadeia), quem
    * está a até `RAIO_DA_FAIXA` sqm — o que a tela diz. Máximo 0 = sem teto.
    */
-  if (ataque) {
+  if (ataque && !plantada) {
     // (O próprio alvo sempre conta: a magia de 7 sqm no bicho a 6 não some da faixa.)
     const n = casas ? atingidos.length : new Set([...atingidos, ...vivos.filter((b) => distanciaChebyshev(hunt.pos, b) <= RAIO_DA_FAIXA)]).size;
     if (n < Math.max(1, Number(action.minTargets) || 1)) {
@@ -1791,6 +1806,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       estado.mana = Math.min(estado.maxMana ?? estado.mana, (estado.mana ?? 0) + cura);
       eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: cura, color: '#4fc3ff' });
     }
+  } else if (tipoPlantado && !plantada) {
+    // (PoE, 12/10) O ARREMESSO da Armadilha/Mina: planta no lugar mirado (o alvo) e já vê as plantadas — com o alvo em cima, a Armadilha
+    // ativa na hora; com inimigo perto e você parado, a Mina detona (a sequência). O resto fica plantado até ativar ou acabar a duração.
+    const lugar = mira && entry.miraNoChao ? mira : alvo ? { x: alvo.x, y: alvo.y } : { x, y };
+    eventos.push(...plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora));
   } else {
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x, y, color: '#f36500' });
     // (PoE: "Velocidade do Projétil aumentada" — o projétil voa mais rápido na tela.)
@@ -1817,7 +1837,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // e ganham o bônus de cada um — `doDestilador`.)
     const fichaDaGema = doDestilador(estado, Ficha.combate(estado), entry);
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
-    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho, custaVida: pagaComVida || parteEmVida > 0 });
+    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0 });
     // (PoE, a Impiedade: "Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso" — este uso é o terceiro?)
     const impiedosoCada = Math.round(efeitoDaGema?.impiedosoCada ?? 0);
     let impiedoso = false;
@@ -2119,8 +2139,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // + o Cooldown Recovery da gema (support).
   const tempoPoe = entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema, fichaDaRecarga) : null;
   const recarga = tempoPoe ? tempoPoe.recarga : Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
-  // Tudo a partir do instante LÓGICO (`inicio`), não do tique em que saiu.
-  cds[action.id] = { ate: inicio + recarga, total: recarga };
+  // Tudo a partir do instante LÓGICO (`inicio`), não do tique em que saiu. (A Armadilha/Mina plantada que ativa não mexe na recarga: ela
+  // foi do arremesso.)
+  if (!plantada) cds[action.id] = { ate: inicio + recarga, total: recarga };
   // PoE: os eventos "ao usar uma Habilidade" dos únicos (e os "recentemente": usou Movimento, Vaal, Clamor) — a ativada por gatilho não conta.
   if (!gatilho && entry.poeGema) {
     const tagsPoe = tagsPoeDaSkill(entry);
@@ -2161,20 +2182,33 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (/^Dash$|Avanço$/i.test(GemasPoe.doSlug(entry.poeGema.slug)?.gema?.en ?? '')) ModsPoe.marcar(hunt, 'usouAvanco');
     // ARMADILHA e MINA (o arquétipo da gema): "ao Jogar uma Armadilha" é o uso; "quando sua Armadilha for ativada por um Inimigo" e a mina
     // detonada são o acerto — no jogo a armadilha e a mina disparam na hora, no alvo (antes o evento `armadilha` nunca acontecia).
+    // (12/10: com as Armadilhas e Minas PLANTADAS, o "ativada por um Inimigo" e o "Detonar" saem quando ela ativa — `plantada`, abaixo.)
     const arquetipo = entry.poeGema.arquetipo;
     const primeiro = atingidos.find(Boolean) ?? null;
     if (arquetipo === 'armadilha') {
       ModsPoe.evento(estado, hunt, 'lancarArmadilha', fichaDoUso, ctxDoUso);
-      if (primeiro) ModsPoe.evento(estado, hunt, 'armadilha', fichaDoUso, { ...ctxDoUso, alvo: primeiro });
+      if (primeiro && !tipoPlantado) ModsPoe.evento(estado, hunt, 'armadilha', fichaDoUso, { ...ctxDoUso, alvo: primeiro });
     }
-    if (arquetipo === 'mina' && primeiro) {
+    if (arquetipo === 'mina' && primeiro && !tipoPlantado) {
       ModsPoe.marcar(hunt, 'detonouMina');
       ModsPoe.evento(estado, hunt, 'detonarMina', fichaDoUso, { ...ctxDoUso, alvo: primeiro });
     }
   }
+  // (PoE, 12/10) A Armadilha ATIVADA por um inimigo / a Mina DETONADA (`plantada`): "quando sua Armadilha for ativada por um Inimigo", "ao
+  // Detonar uma Mina" e o "Detonou uma Mina Recentemente" — com quem ela acertou.
+  if (plantada && entry.poeGema) {
+    const primeiro = atingidos.find(Boolean) ?? null;
+    const fichaDaPlantada = Ficha.combate(estado);
+    const ctx = { alvo: primeiro, eventos, personagem, tags: tagsPoeDaSkill(entry) };
+    if (plantada.tipo === 'armadilha' && primeiro) ModsPoe.evento(estado, hunt, 'armadilha', fichaDaPlantada, ctx);
+    if (plantada.tipo === 'mina' && primeiro) {
+      ModsPoe.marcar(hunt, 'detonouMina');
+      ModsPoe.evento(estado, hunt, 'detonarMina', fichaDaPlantada, ctx);
+    }
+  }
   // Recarga com CARGAS (PoE: "Recarga: 3,5 s (3 usos)" — o Avanço Flamejante): gasta uma por uso e elas voltam uma de cada vez; só trava
   // quando todas estão recarregando (até a primeira voltar).
-  if (tempoPoe?.cargas > 1 && recarga) {
+  if (!plantada && tempoPoe?.cargas > 1 && recarga) {
     const fila = ((hunt.cargasPoe ??= {})[action.id] ?? []).filter((t) => t > inicio);
     fila.push(Math.max(inicio, fila.at(-1) ?? inicio) + recarga);
     hunt.cargasPoe[action.id] = fila;
@@ -2196,8 +2230,56 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // Skill de ataque instantânea: o global conta deste instante. (A conjurada já marcou no início.)
   if (deAtaque && !concluir && !gatilho) hunt.ultimoAtaqueEm = inicio;
   if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;
-  marcarDaSkill(eventos, entry, hunt, alvo, { conjurada: concluir });
+  marcarDaSkill(eventos, entry, hunt, alvo, { conjurada: concluir || !!plantada, de: plantada });
   return { ok: true, eventos };
+}
+
+/**
+ * (PoE, 12/10) O ARREMESSO da Armadilha/Mina (`itens-poe/armas-plantadas.mjs`): planta no lugar mirado — + as armadilhas a mais do "X% de
+ * chance de arremessar até N Armadilhas adicionais", em volta —, com a duração da gema ("Armadilha/Mina dura N segundos") e o tempo de
+ * detonação da Mina, e já processa as plantadas (`tiqueDasPlantadas`). Devolve os eventos.
+ */
+function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora) {
+  const tipo = Plantadas.tipoDaGema(entry);
+  const ficha = Ficha.combate(estado);
+  const slug = entry.poeGema.slug;
+  const dur = Plantadas.duracaoMs(ficha, tipo, GemasPoe.compilada(slug, efeitoDaGema?.nivel ?? 1)?.stats?.duracaoObjeto ?? null);
+  const detonacaoMs = tipo === 'mina' ? Plantadas.detonacaoDaGema(GemasPoe.doSlug(slug)?.gema?.mods ?? []) : null;
+  const eventos = [];
+  // ("Minas Desaceleram Inimigos próximos delas por N segundos quando são Plantadas" — os a até 3 casas da Mina.)
+  const lentidao = tipo === 'mina' ? Plantadas.segundosDaLentidaoAoPlantar(ficha) : 0;
+  for (const c of Plantadas.casasDoArremesso(lugar.x, lugar.y, Plantadas.extrasDoArremesso(ficha, tipo))) {
+    const p = Plantadas.plantar(hunt, ficha, { tipo, acao: action.id, slot, x: c.x, y: c.y, z: hunt.z ?? 0, duracaoMs: dur, detonacaoMs, agora });
+    if (lentidao > 0) for (const b of Plantadas.inimigosPerto(hunt, p, Plantadas.PADRAO.mina.raioDosProximos)) {
+      ModsPoe.porNoAlvo(b, 'lento', agora + lentidao * 1000);
+      eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'lento' });
+    }
+  }
+  return tiqueDasPlantadas(estado, hunt, personagem, eventos, agora);
+}
+
+/**
+ * (PoE, 12/10) O tique das ARMADILHAS e MINAS plantadas (`itens-poe/armas-plantadas.mjs`): as Armadilhas com inimigo no raio de ativação
+ * ativam (e as próximas, com "Quando suas Armadilhas Ativarem, suas Armadilhas próximas também Ativam"); as Minas detonam na sequência.
+ * Cada uma sai do lugar dela (`dispararSemMarcar` com `plantada`). Devolve os eventos.
+ */
+export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+  if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
+  const ficha = Ficha.combate(estado);
+  for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora)]) {
+    if ((estado.hp ?? 0) <= 0) break;
+    Plantadas.tirar(hunt, p);
+    const r = dispararSemMarcar(estado, hunt, personagem, p.slot, alvo, { plantada: p });
+    if (r?.ok) eventos.push(...(r.eventos ?? []));
+    // ("X% de Chance das Armadilhas Ativarem uma vez adicional", "Minas têm uma chance de X% de serem Detonadas uma Vez Adicional": a
+    // habilidade sai mais uma vez do mesmo lugar, no inimigo mais perto que sobrou.)
+    if (r?.ok && Plantadas.ativaDeNovo(ficha, p.tipo) && (estado.hp ?? 0) > 0) {
+      const outro = alvo?.hp > 0 ? alvo : Plantadas.inimigoPerto(hunt, p, p.tipo === 'mina' ? Plantadas.PADRAO.mina.raioDeDetonacao : Plantadas.PADRAO.armadilha.raioDasProximas);
+      const de = dispararSemMarcar(estado, hunt, personagem, p.slot, outro, { plantada: p });
+      if (de?.ok) eventos.push(...(de.eventos ?? []));
+    }
+  }
+  return eventos;
 }
 
 /**
@@ -2207,11 +2289,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
  * conjurada já o teve no `cast`. Os eventos de outra skill no meio (a magia ativada por gatilho) ficam com o `sk` dela.
  */
 const EVENTOS_DE_DESENHO = new Set(['shot', 'fx', 'explosao', 'area', 'dmg']);
-function marcarDaSkill(eventos, entry, hunt, alvo, { conjurada = false } = {}) {
+function marcarDaSkill(eventos, entry, hunt, alvo, { conjurada = false, de = null } = {}) {
   if (!entry.poeGema && !Gemas.ehSkillDeGema(entry)) return;
   for (const ev of eventos) if (EVENTOS_DE_DESENHO.has(ev.t) && ev.sk === undefined && !(ev.t === 'dmg' && !ev.foe)) ev.sk = entry.id;
   // A conjurada já desenhou o lançamento no `cast`: o evento vai só com a posição (o impacto "ao chegar o projétil" conta dela).
-  eventos.unshift({ t: 'skill', sk: entry.id, uid: 'player', x: hunt.pos.x, y: hunt.pos.y, ...(alvo ? { tx: alvo.x, ty: alvo.y, alvo: alvo.uid } : {}), ...(conjurada ? { semLancamento: true } : {}) });
+  // (`de`: a Armadilha/Mina plantada — a habilidade sai do lugar dela.)
+  eventos.unshift({ t: 'skill', sk: entry.id, uid: 'player', x: de ? de.x : hunt.pos.x, y: de ? de.y : hunt.pos.y, ...(alvo ? { tx: alvo.x, ty: alvo.y, alvo: alvo.uid } : {}), ...(conjurada ? { semLancamento: true } : {}) });
 }
 
 /**

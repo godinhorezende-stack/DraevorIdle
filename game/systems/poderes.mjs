@@ -37,6 +37,7 @@ import * as Reforcos from './skills/reforcos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
 import * as Protecao from './protecao.mjs';
+import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -249,6 +250,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
   // A área na tela: um evento só, com as casas que acertam (antes: um `fx` por casa, cortado em 90).
   const casas = casasFixas ?? casasDa(a, bicho, alvo);
+  // (PoE, 12/10) A magia em área do bicho destrói as Armadilhas e Minas plantadas que pega ("… não podem ser Danificadas" impede).
+  if (a.min > 0 || a.max > 0) Plantadas.destruirNaArea(hunt, casas, ficha);
   if (casas.length > 1) eventos.push({ t: 'area', id: efeito, x: bicho.x, y: bicho.y, casas: Areas.paraTela(casas, bicho) });
   else for (const c of casas) eventos.push({ t: 'fx', id: efeito, x: c.x, y: c.y });
 

@@ -36,6 +36,11 @@ const IMPLEMENTADOS = [
     fora: /Convocar o Aço|Empalamentos removidos/,
     jogo: 'monstros que Cegam, Expõem, põem Sangue Corrompido, drenam vida e ganham cargas (modificadores de monstro); mapas com Cegar, Mutilar, Empalar, cargas por acerto, espinhos nos Raros e "Impossível Drenar"; o Golpe Crítico do monstro incendeia, congela e eletriza; o bloqueio do monstro contra Espada',
   },
+  {
+    bloco: 'Armadilhas e Minas plantadas (lote 3)',
+    re: /plantadas por vez|Armadilhas adicionais|não podem ser Danificadas|Detonar Minas é Ativado|Velocidade de Detonação|Duração da Mina|Armadilhas próximas também Ativam|Uso de Recarga|Ativarem uma vez adicional|Detonadas uma Vez Adicional|quando são Plantadas/,
+    jogo: 'a gema de Armadilha/Mina planta no alvo; a Armadilha ativa com inimigo a 1 casa (dura 4 s, até 15); a Mina detona sozinha com você parado e inimigo perto, em sequência (dura 5 s, até 15); a magia em área do monstro destrói as plantadas',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

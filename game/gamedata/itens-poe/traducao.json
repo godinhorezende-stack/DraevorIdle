@@ -3667,7 +3667,7 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "a Mina detona no alvo: soma no alvo de cada Mina, por 4 s",
+      "nota": "a Mina detona logo que um inimigo chega perto (no PoE é a aura da Mina plantada): soma no alvo de cada Mina, por 4 s",
       "_nova": true,
       "_ciclo7": true
     },
@@ -3765,40 +3765,38 @@
       "padrao": "^Minas Desaceleram Inimigos próximos delas por \\{(\\d+)\\} segundos quando são Plantadas$",
       "efeitos": [
         {
-          "stat": "ev:acertar:alvo:lento:{V1}@mina",
-          "valor": "100"
+          "stat": "minas_desaceleram_s",
+          "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a Mina detona no alvo: desacelera quem ela acerta",
+      "nota": "os inimigos a até 3 casas da Mina, ao plantar",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de Chance das Armadilhas Ativarem uma vez adicional$",
       "efeitos": [
         {
-          "stat": "chance_dano_dobrado@armadilha",
+          "stat": "armadilha_ativa_de_novo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a ativação a mais vira o dano dobrado do golpe da Armadilha",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
     },
     {
       "padrao": "^Minas têm uma chance de \\{(\\d+)\\}% de serem Detonadas uma Vez Adicional$",
       "efeitos": [
         {
-          "stat": "chance_dano_dobrado@mina",
+          "stat": "mina_detona_de_novo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a detonação a mais vira o dano dobrado do golpe da Mina",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga do Poder quando sua Armadilha for ativada por um Inimigo$",
@@ -3860,17 +3858,131 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Pode ter até .* (?:Armadilhas|Minas Remotas) adicionais plantadas por vez$|^(?:Minas|Armadilhas) não podem ser Danificadas$|^Detonar Minas é Ativado enquanto você se mover$|^Minas tem Velocidade de Detonação aumentada em .*$|^Duração da Mina aumentada em .*$|^Quando suas Armadilhas Ativarem, suas Armadilhas próximas também Ativam$|^Habilidades que Arremessam Armadilhas têm .* Uso de Recarga$",
+      "padrao": "^Pode ter até \\{(\\d+)\\} Armadilhas adicionais plantadas por vez$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "max_armadilhas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
+    },
+    {
+      "padrao": "^Pode ter até \\{(\\d+)\\} Armadilhas a menos plantadas por vez$",
+      "efeitos": [
+        {
+          "stat": "max_armadilhas",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
+    },
+    {
+      "padrao": "^Pode ter até \\{(\\d+)\\} Minas Remotas adicionais plantadas por vez$",
+      "efeitos": [
+        {
+          "stat": "max_minas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
+    },
+    {
+      "padrao": "^Pode ter até \\{(\\d+)\\} Minas Remotas a menos plantadas por vez$",
+      "efeitos": [
+        {
+          "stat": "max_minas",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
+    },
+    {
+      "padrao": "^Armadilhas não podem ser Danificadas$",
+      "efeitos": [
+        {
+          "stat": "armadilhas_indestrutiveis",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "no jogo a Armadilha e a Mina disparam na hora, no alvo (não ficam plantadas): não há limite, duração, dano nelas nem detonação",
       "_nova": true,
-      "_ciclo7": true
+      "_lote3": "12/10 — Armadilhas e Minas plantadas",
+      "nota": "a magia em área de um monstro destrói as Armadilhas plantadas que pega; com esta linha, não"
+    },
+    {
+      "padrao": "^Minas não podem ser Danificadas$",
+      "efeitos": [
+        {
+          "stat": "minas_indestrutiveis",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas",
+      "nota": "a magia em área de um monstro destrói as Minas plantadas que pega; com esta linha, não"
+    },
+    {
+      "padrao": "^Detonar Minas é Ativado enquanto você se mover$",
+      "efeitos": [
+        {
+          "stat": "detonar_minas_movendo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas",
+      "estado": "aproximado",
+      "nota": "no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando"
+    },
+    {
+      "padrao": "^Minas tem Velocidade de Detonação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "velocidade_detonacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
+    },
+    {
+      "padrao": "^Duração da Mina aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas"
+    },
+    {
+      "padrao": "^Quando suas Armadilhas Ativarem, suas Armadilhas próximas também Ativam$",
+      "efeitos": [
+        {
+          "stat": "armadilhas_ativam_proximas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas",
+      "nota": "as plantadas a até 3 casas da que ativou"
+    },
+    {
+      "padrao": "^Habilidades que Arremessam Armadilhas têm \\+?\\{(\\d+)\\} Usos? de Recarga$",
+      "efeitos": [
+        {
+          "stat": "usos_recarga@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas",
+      "nota": "vale nas Armadilhas com recarga"
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais Dano$",
@@ -6650,6 +6762,34 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^\\{(\\d+)\\}% de chance de arremessar até \\{(\\d+)\\} Armadilhas adicionais$",
+      "efeitos": [
+        {
+          "stat": "armadilhas_extras_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "armadilhas_extras_n",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas",
+      "nota": "as armadilhas a mais caem em volta do lugar mirado"
+    },
+    {
+      "padrao": "^Habilidades que Arremessam Armadilhas arremessam até \\{(\\d+)\\} Armadilhas adicionais$",
+      "efeitos": [
+        {
+          "stat": "armadilhas_extras",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote3": "12/10 — Armadilhas e Minas plantadas",
+      "nota": "as armadilhas a mais caem em volta do lugar mirado"
+    },
+    {
       "padrao": "^.*Arremessar até .* Armadilhas adicionais$|^.*arremessar até .* Armadilhas adicionais$",
       "efeitos": [
         {
@@ -6658,7 +6798,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "no jogo a Armadilha e a Mina disparam na hora, no alvo (não ficam plantadas): não há limite, duração, dano nelas nem detonação",
+      "nota": "variação do texto ainda sem regra (as Armadilhas a mais do arremesso valem nas duas formas de cima)",
       "_nova": true,
       "_ciclo7": true
     },
