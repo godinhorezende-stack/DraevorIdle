@@ -700,28 +700,6 @@ export function renderSheet(body, { state, send, closeModal }) {
   };
 
   /*
-   * A prey de experiência vale SÓ na criatura escolhida.
-   *
-   * O servidor confere `slot.key !== monsterKey` antes de somar qualquer coisa
-   * (`preyBonus`, em prey.mjs): 40% numa Spider é 40% em spiders e zero no
-   * resto da hunt. Esta linha mostrava "+40%" solto e entrava inteira no bônus
-   * total, o que fazia parecer um bônus geral de experiência — e não é.
-   *
-   * Agora ela diz em quem vale, e o total avisa que a parte da prey tem dono.
-   */
-  const slotsExp = (character.prey ?? []).filter((slot) => slot.bonus === 'exp' && slot.left > 0);
-  const nomeDaPresa = (slot) => state.catalog.bestiary?.[slot.key]?.name ?? slot.key;
-
-  /*
-   * Cada prey tem o SEU bônus, contra a SUA criatura.
-   *
-   * Antes as três eram somadas numa linha só: três preys de 40% viravam
-   * "+40+40+40 = +120%", e esse 120 ainda entrava no bônus total. O servidor
-   * nunca somou nada disso — `preyBonus` compara `slot.key` com a criatura que
-   * morreu e devolve o percentual de UM slot. Uma linha por prey, e nenhuma
-   * delas no total.
-   */
-  /*
    * ---- Os boosts de experiência SOMAM entre si ----
    *
    * Havia uma linha só, "XP Boost +50%", escrita à mão de quando a loja era a
@@ -848,13 +826,6 @@ export function renderSheet(body, { state, send, closeModal }) {
     );
   }
 
-  // A prey vem depois do total, e fora dele: são bônus com dono.
-  if (slotsExp.length) {
-    bonuses.append(el('div', 'sheet-sub', 'Prey — só contra a criatura escolhida'));
-    for (const slot of slotsExp) addRow(nomeDaPresa(slot), `+${slot.percent}%`, false, 'prey');
-  } else {
-    addRow('Prey de experiência', '—', true, 'prey');
-  }
   right.append(bonuses);
 
   // Com o PoE ligado não há perícias (dono, 06/10: "o personagem não vai ter mais skill de treino"): a coluna das Skills sai.

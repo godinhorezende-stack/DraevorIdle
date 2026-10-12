@@ -33,6 +33,15 @@ import { CATALOGO } from './dados.mjs';
 import * as R from './regras.mjs';
 import { resistido } from './hunt/resistencia.mjs';
 import * as Ficha from './ficha.mjs';
+import { ligado as poeLigado } from './itens-poe/catalogo.mjs';
+
+/*
+ * ---- No jogo oficial (PoE) os Charms não existem ----
+ * Dono, 12/10: "tire o sistema de prey e charms do front end" — e no servidor também, no modo PoE: nenhum charm dispara (todos passam
+ * por `noBicho`), não há pontos nem compra. O BESTIÁRIO continua contando as mortes (a Cyclopedia o mostra); só o aviso de "pontos de
+ * charm" sai. O que o personagem já tinha comprado fica guardado (nada é apagado). O clássico não muda.
+ */
+const desligado = () => poeLigado();
 
 const DADOS = JSON.parse(readFileSync(new URL('../gamedata/charms.json', import.meta.url), 'utf8'));
 export const CHARMS = DADOS.charms;
@@ -96,10 +105,12 @@ export function proximoPreco(estado) {
 }
 
 export function paraCliente(estado) {
+  if (desligado()) return { bestiary: estado.bestiary ?? {} };
   return { bestiary: estado.bestiary ?? {}, charmPoints: pontos(estado), charmNext: proximoPreco(estado) };
 }
 
 export function vista(estado) {
+  if (desligado()) return { points: 0, spent: 0, list: [] };
   return {
     points: pontos(estado),
     spent: estado.charms?.gastos ?? 0,
@@ -113,6 +124,7 @@ export function vista(estado) {
 export function comando(estado, m) {
   garantir(estado);
   if (!m.action) return { ok: true };
+  if (desligado()) return { ok: false, erro: 'Os Charms não existem no jogo oficial.' };
   const charm = POR_ID.get(Number(m.id));
   if (!charm) return { ok: false, erro: 'Charm desconhecido.' };
   const tier = tierDe(estado, charm.id);
@@ -146,14 +158,14 @@ export function contarMorte(estado, key, eventos) {
   if (!b) return;
   garantir(estado);
   const mortes = (estado.bestiary[key] = (estado.bestiary[key] ?? 0) + 1);
-  if (b.toKill > 0 && mortes === b.toKill && b.charmPoints) eventos?.push({ t: 'bestiaryDone', name: b.name, points: b.charmPoints });
+  if (!desligado() && b.toKill > 0 && mortes === b.toKill && b.charmPoints) eventos?.push({ t: 'bestiaryDone', name: b.name, points: b.charmPoints });
 }
 
 // ---------------------------------------------------------------------------
 // No combate.
 
 /** Tier > 0 e apontado para esta criatura. */
-const noBicho = (estado, id, key) => tierDe(estado, id) > 0 && estado.charms?.alvos?.[id] === key;
+const noBicho = (estado, id, key) => !desligado() && tierDe(estado, id) > 0 && estado.charms?.alvos?.[id] === key;
 const dispara = (estado, id) => Math.random() * 100 < chanceDoTier(POR_ID.get(id), tierDe(estado, id));
 
 function bater(estado, hunt, bicho, charm, valor, eventos) {

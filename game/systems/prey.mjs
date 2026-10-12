@@ -14,6 +14,15 @@
 //  - `total` é 2h (7.200.000ms) e `catalog.preyPrices` diz o preço em
 //    wildcards: 1 para trocar o bônus, 5 para escolher da lista completa.
 import { CATALOGO } from './dados.mjs';
+import { ligado as poeLigado } from './itens-poe/catalogo.mjs';
+
+/*
+ * ---- No jogo oficial (PoE) o Prey não existe ----
+ * Dono, 12/10: "tire o sistema de prey e charms do front end" — e no servidor também, no modo PoE: nenhum bônus (dano, defesa,
+ * experiência, loot), o relógio parado, os comandos recusados e nada no quadro do personagem. Os slots que o personagem já tinha ficam
+ * guardados (nada é apagado). O clássico não muda.
+ */
+const desligado = () => poeLigado();
 
 export const DURACAO_MS = 2 * 60 * 60 * 1000;
 export const INTERVALO_DO_REROLL_GRATIS_MS = 20 * 60 * 60 * 1000;
@@ -89,6 +98,7 @@ export function garantir(estado, agora = Date.now()) {
 }
 
 export function paraCliente(estado) {
+  if (desligado()) return {};
   return {
     prey: garantir(estado).map((slot) => ({ ...slot, options: [...slot.options] })),
     preyRerollCost: custoDaNovaLista(estado),
@@ -195,6 +205,7 @@ export function opcao(estado, { slot: indice, option, value }) {
 }
 
 export function comando(estado, m) {
+  if (desligado()) return { ok: false, erro: 'O Prey não existe no jogo oficial.' };
   if (m.action === 'choose') return escolher(estado, m);
   if (m.action === 'selectAll') return escolherQualquer(estado, m);
   if (m.action === 'rerollBonus') return trocarBonus(estado, m);
@@ -221,7 +232,7 @@ function renovar(estado, slot) {
 
 /** Desconta `ms` de caçada de toda presa ativa ("Pausado fora da hunt — só conta caçando"). */
 export function consumir(estado, ms, agora = Date.now()) {
-  if (!(ms > 0)) return;
+  if (desligado() || !(ms > 0)) return;
   for (const slot of garantir(estado, agora)) {
     if (!slot.key || slot.left <= 0) continue;
     slot.left = Math.max(0, slot.left - ms);
@@ -237,7 +248,7 @@ export function consumir(estado, ms, agora = Date.now()) {
  * em spiders e zero no resto da hunt" (comentário do dono, `sheet.mjs`).
  */
 function percentualContra(estado, bonus, key) {
-  if (!key || !Array.isArray(estado.prey)) return 0;
+  if (desligado() || !key || !Array.isArray(estado.prey)) return 0;
   const slot = estado.prey.find((s) => s.key === key && s.left > 0 && s.bonus === bonus);
   return slot ? slot.percent : 0;
 }

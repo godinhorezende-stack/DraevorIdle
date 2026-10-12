@@ -88,7 +88,9 @@ const PRATELEIRAS = ['services', 'boosts', 'pacotes', 'itens', 'buffpower', 'upg
 // `itemId` é só a figura do cartão — as vagas da Compartilhada — fica; montaria, outfit e XP Boost não entregam item.)
 const SERVICOS_COM_FIGURA = new Set(['cofre-vagas']);
 const entregaItem = (e) => e?.itemId != null && !SERVICOS_COM_FIGURA.has(e.id) && e.kind !== 'xpBoost' && e.mountId == null && e.look == null;
-const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '') || (itensPoeLigado() && /^buffpower-/.test(e?.id ?? '')) || (entregaItem(e) && !podeEntrar(e.itemId));
+// (no jogo oficial também o slot de Prey e os wildcards — dono, 12/10: "tire o sistema de prey e charms"; ninguém paga por um sistema que
+// não existe; quem já comprou fica com o que tinha)
+const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '') || (itensPoeLigado() && /^buffpower-/.test(e?.id ?? '')) || (itensPoeLigado() && /^(prey-slot|wildcards-)/.test(e?.id ?? '')) || (entregaItem(e) && !podeEntrar(e.itemId));
 const ENTRADA_POR_ID = new Map(PRATELEIRAS.flatMap((k) => (STORE_REAL[k] ?? []).filter((e) => !FORA_DA_LOJA(e)).map((e) => [e.id, { ...e, prateleira: k }])));
 // Os pacotes de quantidade de um produto ("5 Exp Potions", "10 Stamina Extension")
 // vêm em `opcoes`, cada um com o próprio id e preço.
