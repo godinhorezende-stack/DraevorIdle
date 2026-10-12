@@ -31,7 +31,7 @@ export const SISTEMAS = {
     nome: 'Itens, mochila e equipamento',
     apelidos: ['items', 'item', 'inventario', 'equipamento'],
     fontes: [
-      /^systems\/itens\//, /^systems\/itens-poe\/(gerar|jogo|mods-poe|traduzir|frascos|moedas|so-itens-do-poe|sockets)\.mjs$/,
+      /^systems\/itens\//, /^systems\/itens-poe\/(gerar|jogo|mods-poe|traduzir|frascos|moedas|so-itens-do-poe|sockets|forja|forja-chances)\.mjs$/, /^engine\/forja-poe\.mjs$/,
       /^systems\/(inventario|bolsa|bau|deposito|troca|forja|craft|desmanche|afixos|conjuntos|item-power|tiers|charms)\.mjs$/,
       /^gamedata\/(itens|itens-poe|armas)\//, /^gamedata\/(item-catalog|catalog-real|conjuntos|item-power|item-sprites|craft-receitas|desmanche|equipamento-por-vocacao)\.json$/,
       /^frontend\/client\/src\/(inventory|itens-poe-balao|tooltip|paperdoll|pilha|loot-do-bicho|sheet|folha)\.mjs$/,

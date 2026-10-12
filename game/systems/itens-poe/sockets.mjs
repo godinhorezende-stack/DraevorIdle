@@ -79,6 +79,8 @@ export function sorteioFixo(texto) {
  * o custo da bancada do PoE (`sockets.orbes` em `itens-poe/regras.json`: 6 sockets ~1 em 350 Joalheiros, 6 links ~1 em 1.500 Fusões).
  */
 export const orbes = () => S().orbes ?? {};
+/** A chance de cada par de sockets vizinhos sair ligado (`sockets.chanceDeLink`) — a conta da Forja (`forja-chances.mjs`) usa a mesma. */
+export const chanceDeLink = () => Number(S().chanceDeLink ?? 0.5);
 /** O novo número de sockets do Joalheiro: diferente de `atual`, até `max`; null se não há outro. */
 /*
  * A QUALIDADE da peça (poedb › Quality, dono 07/10): "cada 1% de qualidade melhora o resultado do Joalheiro e da Fusão em 1%" — os números

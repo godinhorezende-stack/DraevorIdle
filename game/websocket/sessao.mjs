@@ -31,6 +31,7 @@ import * as Stamina from '../systems/stamina.mjs';
 import * as SemTreino from '../systems/sem-treino.mjs';
 import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
 import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
+import * as ForjaPoe from '../systems/itens-poe/forja.mjs';
 import * as Premium from '../systems/premium.mjs';
 import * as BuffPower from '../systems/buffpower.mjs';
 import * as Tiers from '../systems/tiers.mjs';
@@ -1221,6 +1222,22 @@ export class Sessao {
       // Uma moeda do PoE na Forja do PoE (`itens-poe/moedas.mjs`): `m.moeda` (o item) e `m.alvo` (a peça).
       case 'moeda':
         return this.aplicarComSkills(MoedasPoe.usar(this.estado, m));
+      // A FORJA do PoE reformulada (`itens-poe/forja.mjs`, dono 12/10): as opções da tela (só leitura), a repetição em lotes (cada tentativa
+      // é a mesma moeda do `moeda` acima — o servidor valida, sorteia, gasta e grava) e o cancelar. Uma repetição por sessão: a nova toma
+      // o lugar da anterior, e a mensagem repetida (o mesmo id e passo) não faz nada duas vezes.
+      case 'forjaOpcoes':
+        return this.enviar({ t: 'forjaOpcoes', ...ForjaPoe.opcoes(this.estado, m) });
+      case 'forjaRepetir': {
+        const r = ForjaPoe.repetir(this.estado, this.forjaRepeticao ?? null, m);
+        this.forjaRepeticao = r.guardado;
+        if (r.mudou) this.aplicarComSkills({ ok: true });
+        return this.enviar({ t: 'forjaResultado', ...r.resposta });
+      }
+      case 'forjaCancelar': {
+        const r = ForjaPoe.cancelar(this.forjaRepeticao ?? null, m.id);
+        this.forjaRepeticao = r.guardado;
+        return this.enviar({ t: 'forjaResultado', ...r.resposta });
+      }
       case 'gema':
         return this.aplicarComSkills(
           m.action === 'encaixar' ? GemasDeSkill.encaixar(this.estado, m) :

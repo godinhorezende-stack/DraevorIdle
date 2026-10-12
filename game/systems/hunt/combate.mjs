@@ -339,13 +339,18 @@ function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
     if (VALOR_DA_MOEDA[drop.id]) itens.push({ id: drop.id, count: quantasMoedas(alvo, drop.id, estado) });
     else {
       const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true, origem: 'boss' });
+      // (e a peça PRONTA também: a do gerador do Draevor numa base do PoE não é do PoE — `podeEntrar`)
+      if (!podeEntrar(peca.id, peca)) continue;
       itens.push(peca);
       // Épico para cima na sacola do boss: o anúncio para o servidor inteiro.
       Anuncios.dropRaro({ quem, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
   }
   // O boss de fim de Ato (campanha) ACRESCENTA equipamento ao loot: antes só dava tokens, poções e gemas (`itens/equipamento-do-boss.mjs`).
-  if (atoDoChefe) {
+  // SÓ NO CLÁSSICO (dono, 12/10: "tem itens que não são do poe dropando boss"): as peças garantidas saem pelo gerador do Draevor (raridade
+  // Épica, estrelas, mods T1/T2) e, no jogo oficial, o catálogo dele tem as bases do PoE — saía uma peça do Draevor numa base do PoE. No
+  // oficial o chefe solta o drop do PoE (abaixo).
+  if (atoDoChefe && !itensPoeLigado()) {
     for (const peca of pecasGarantidas(contextoDoDrop(hunt), estado.vocation)) {
       if (!podeEntrar(peca.id, peca)) continue;
       itens.push(peca);
@@ -604,6 +609,8 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
     // A origem decide a raridade mínima: boss e boss único, o baú do encontro e os guardiões dele não soltam peça Comum.
     const origem = alvo.origemDoLoot ?? (alvo.raridade === 'boss' || alvo.raridade === 'unico' || alvo.isBoss ? 'boss' : alvo.guardiao ? 'guardiao' : null);
     const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), raridadeDoMob: alvo.raridade, ...(origem ? { origem } : {}) });
+    // (e a peça PRONTA também: a do gerador do Draevor numa base do PoE não é do PoE — `podeEntrar`)
+    if (!podeEntrar(peca.id, peca)) continue;
     const af = peca.af ?? null;
     // Quem leva: sozinho, quem matou; na party, SORTEIO uniforme entre os que PODEM levar (`escolherDono`).
     const { dono, ignorado } = escolherDono({ estado, personagem, juntos, id: drop.id, peca, origem: alvo.name });

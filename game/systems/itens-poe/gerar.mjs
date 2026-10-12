@@ -168,8 +168,8 @@ export function regrasDaBase(implicitos = []) {
   }
   return r;
 }
-/** O tier pode sair nesta base? (o "só dano de um tipo" e o "sem Conjuração"). */
-const permitidoNaBase = (c, regras) => {
+/** O tier pode sair nesta base? (o "só dano de um tipo" e o "sem Conjuração"). A Forja (`itens-poe/forja.mjs`) usa a mesma regra. */
+export const permitidoNaBase = (c, regras) => {
   const tags = c.tags ?? [];
   if (regras.semConjuracao && tags.includes('Conjurador')) return false;
   if (regras.soDano && tags.includes('Dano') && !tags.includes(regras.soDano)) return false;

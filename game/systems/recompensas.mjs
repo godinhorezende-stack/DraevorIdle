@@ -213,6 +213,8 @@ function abrirBau(estado, marco) {
   const escolhido = possiveis[Math.floor(Math.random() * possiveis.length)];
   if (!podeEntrar(escolhido.itemId)) return null;
   const peca = gerarItem({ itemId: escolhido.itemId, level: marco.level });
+  // (e a peça PRONTA também: a do gerador do Draevor numa base do PoE não é do PoE — `podeEntrar`)
+  if (!podeEntrar(peca.id, peca)) return null;
   (estado.inventory ??= []).push(peca);
   return peca;
 }

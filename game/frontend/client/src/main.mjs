@@ -1,4 +1,5 @@
 import { cuidarDasMissoes } from './missoes-poe.mjs';
+import { chegouForjaOpcoes, chegouForjaResultado } from './forja-poe.mjs';
 import './so-quando-muda.mjs';
 import { anunciarDrop, anunciarSistema } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
@@ -1168,6 +1169,13 @@ function handle(message) {
     case 'forjaAfixos':
       state.forjaAfixos = message;
       panelCtx.redraw?.();
+      break;
+    // A Forja do PoE reformulada (`forja-poe.mjs`): as opções da tela e o resultado de cada lote da forja.
+    case 'forjaOpcoes':
+      chegouForjaOpcoes(message);
+      break;
+    case 'forjaResultado':
+      chegouForjaResultado(message);
       break;
     /*
      * E a prévia da transferência, que chega à parte porque ela é uma PERGUNTA
