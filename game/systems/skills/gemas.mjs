@@ -1015,7 +1015,7 @@ export function ligarElo(estado, { slot, elo, ligar }) {
  * gasta o orbe. Joalheiro e Cromático pedem a peça SEM gema (nenhuma gema sai sozinha); a Fusão não mexe nas gemas. Recusa sem gastar
  * quando não haveria mudança (peça no máximo de sockets, peça toda ligada).
  */
-export function usarOrbeDoPoe(estado, { slot, tipo, peca: dada = null }, rng = Math.random) {
+export function usarOrbeDoPoe(estado, { slot, tipo, peca: dada = null, gastoFora = false }, rng = Math.random) {
   if (!SocketsPoe.poeLigado()) return erro('Este orbe é do modo PoE.');
   const o = ORBES_DO_POE[tipo];
   if (!o?.itemId) return erro('Orbe desconhecido.');
@@ -1023,8 +1023,9 @@ export function usarOrbeDoPoe(estado, { slot, tipo, peca: dada = null }, rng = M
   if (e) return erro(e);
   // (o único: "Encaixes não podem ser modificados" — como nas moedas Corroídas, `moedas.comSockets`)
   if (Number(peca.poe?.af?.encaixes_inalteraveis) > 0) return erro('Os sockets desta peça não podem ser modificados. O orbe não foi gasto.');
-  const k = achaOrbe(estado, o.itemId);
-  if (k < 0) return erro(`Você não tem ${o.nome}.`);
+  // (`gastoFora`: a Forja confere e gasta o orbe — da mochila ou do baú, `moedas.gastar`; o Gem Atelier gasta da mochila aqui)
+  const k = gastoFora ? -1 : achaOrbe(estado, o.itemId);
+  if (!gastoFora && k < 0) return erro(`Você não tem ${o.nome}.`);
   const req = ITEM_CATALOG[peca.id]?.poe?.requisitos ?? null;
   const comGema = s.gemas.some(Boolean);
   const cores = (c, n) => c.slice(0, n).map((x) => SocketsPoe.NOME_DA_COR[x]).join(', ') || 'nenhum';
@@ -1053,7 +1054,7 @@ export function usarOrbeDoPoe(estado, { slot, tipo, peca: dada = null }, rng = M
     gravarSoquetes(peca, { ...s, cores: novas });
     notice = `Cores: ${cores(s.cores ?? [], s.abertos)} → ${cores(novas, s.abertos)}.`;
   } else return erro('Orbe desconhecido.');
-  gastaOrbe(estado, k);
+  if (!gastoFora) gastaOrbe(estado, k);
   return { ok: true, notice };
 }
 

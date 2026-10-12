@@ -114,9 +114,21 @@ function idDoSlug(slug) {
   return porSlug.get(slug) ?? null;
 }
 /** As moedas do PoE na mochila: id → quantidade. */
-function moedasNaMochila() {
+/**
+ * As moedas do PoE do personagem: id → quantidade, a da MOCHILA e a do BAÚ (as caixas do depósito dele — dono, 12/10: "forja pode pegar
+ * materiais do baú também"; o baú da conta, compartilhado, fica de fora, como no servidor).
+ */
+function moedasDoPersonagem() {
   const tem = new Map();
-  for (const p of ctx.state.character?.inventory ?? []) if (itens()[p.id]?.moedaPoe) tem.set(p.id, (tem.get(p.id) ?? 0) + (p.count ?? 1));
+  const somar = (p, onde) => {
+    if (!itens()[p?.id]?.moedaPoe) return;
+    const x = tem.get(p.id) ?? { n: 0, mochila: 0, bau: 0 };
+    x.n += p.count ?? 1;
+    x[onde] += p.count ?? 1;
+    tem.set(p.id, x);
+  };
+  for (const p of ctx.state.character?.inventory ?? []) somar(p, 'mochila');
+  for (const c of ctx.state.character?.deposito ?? []) if (!c?.compartilhada) for (const p of c?.itens ?? []) somar(p, 'bau');
   return tem;
 }
 /** As peças que a Forja trabalha: as do PoE vestidas e na mochila, e as gemas da mochila (o Prisma e a Lente). */
@@ -315,7 +327,7 @@ function desenhar(body) {
 function trilho() {
   const nav = el('nav', 'fp-trilho');
   const porCategoria = {};
-  for (const [id, n] of moedasNaMochila()) {
+  for (const [id, { n }] of moedasDoPersonagem()) {
     const c = itens()[id]?.moedaPoe?.categoria;
     if (c) porCategoria[c] = (porCategoria[c] ?? 0) + n;
   }
@@ -719,7 +731,7 @@ function opRaridade(op, x) {
       f.reiniciar = cb.checked;
       mudouDesejo();
     };
-    const exp = moedasNaMochila().get(idDoSlug('Orb_of_Scouring')) ?? 0;
+    const exp = moedasDoPersonagem().get(idDoSlug('Orb_of_Scouring'))?.n ?? 0;
     lbl.append(cb, document.createTextNode(` Na repetição, voltar a peça a Normal com o Orbe do Expurgo entre as tentativas (você tem ${exp})`));
     op.append(lbl);
   }
@@ -827,7 +839,7 @@ function barraDeMateriais() {
   const escolhido = lista.find((m) => m.id === f.moeda[f.categoria]);
   if (escolhido) {
     const info = el('div', 'fp-mat-info');
-    info.append(el('b', null, escolhido.nome), el('span', null, escolhido.status === 'nao' ? `Você tem ${escolhido.tem} · sem efeito no jogo` : `Você tem ${escolhido.tem} · custo: 1 por tentativa${escolhido.repete ? ' · repete' : ' · uma tentativa por vez'}`));
+    info.append(el('b', null, escolhido.nome), el('span', null, escolhido.status === 'nao' ? `Você tem ${escolhido.tem}${escolhido.noBau ? ` (${escolhido.noBau} no baú)` : ''} · sem efeito no jogo` : `Você tem ${escolhido.tem}${escolhido.noBau ? ` (${escolhido.noBau} no baú)` : ''} · custo: 1 por tentativa${escolhido.repete ? ' · repete' : ' · uma tentativa por vez'}`));
     if (escolhido.motivo) info.append(el('em', 'fp-erro', escolhido.motivo));
     else if (escolhido.status === 'parcial') info.append(el('em', 'fp-legenda', `Funciona em parte: ${notaParcial(escolhido.id)}`));
     caixa.append(info);
@@ -999,24 +1011,24 @@ function inventario(x) {
     // As moedas da mochila separadas pela categoria da Forja (a ordem do trilho); clicar escolhe o material e a categoria dele.
     const caixa = el('div', 'fp-grade-grupos');
     const porCategoria = new Map();
-    for (const [id, n] of moedasNaMochila()) {
+    for (const [id, x] of moedasDoPersonagem()) {
       const cat = itens()[id]?.moedaPoe?.categoria ?? 'semEfeito';
       if (!porCategoria.has(cat)) porCategoria.set(cat, []);
-      porCategoria.get(cat).push([id, n]);
+      porCategoria.get(cat).push([id, x]);
     }
     for (const g of GRUPOS) for (const cat of g.categorias) {
       const lista = (porCategoria.get(cat.id) ?? []).sort(([a], [b]) => (itens()[a]?.name ?? '').localeCompare(itens()[b]?.name ?? ''));
       if (!lista.length) continue;
       caixa.append(el('h5', 'fp-grade-titulo', cat.nome));
       const grade = el('div', 'fp-grade');
-      for (const [id, n] of lista) {
+      for (const [id, { n, mochila, bau }] of lista) {
         const meta = itens()[id];
         const cell = el('button', `cell fp-celula${f.moeda[f.categoria] === id ? ' escolhida' : ''}${meta.moedaPoe.status === 'nao' ? ' sem-efeito' : ''}`);
         cell.type = 'button';
         vestirRaridade(cell, meta);
         cell.disabled = !!f.exec?.rodando;
         cell.append(itemCanvas(id, 32), el('b', null, n > 9999 ? '9k+' : String(n)));
-        tipFor(cell, id, `Categoria: ${cat.nome}`);
+        tipFor(cell, id, `Categoria: ${cat.nome} · ${mochila} na mochila, ${bau} no baú`);
         cell.onclick = () => {
           escolherMoeda(id);
           f.configAberta = false;
@@ -1027,7 +1039,7 @@ function inventario(x) {
       }
       caixa.append(grade);
     }
-    if (!porCategoria.size) caixa.append(el('p', 'fp-vazio', 'Nenhuma moeda do PoE na mochila.'));
+    if (!porCategoria.size) caixa.append(el('p', 'fp-vazio', 'Nenhuma moeda do PoE na mochila nem no baú.'));
     aside.append(caixa);
   }
   // A capacidade: as vagas da mochila (a do PoE não tem peso).
