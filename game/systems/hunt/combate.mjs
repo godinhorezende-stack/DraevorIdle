@@ -1,6 +1,7 @@
 // O combate da caçada: golpe do personagem (arma, wand, tiro, elemento), golpe dos bichos, mortes, loot e level.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
 import * as Mecanicas from '../mobs/mecanicas.mjs';
+import * as Vinculos from '../itens-poe/vinculos.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../dados.mjs';
 import * as Progressao from '../progressao.mjs';
@@ -1105,13 +1106,16 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
     // (PoE: o golpe corpo a corpo sem dano de outro tipo é "apenas Dano Físico" — `imune_atordoamento_so_fisico`.)
-    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado });
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0, Math.random, { soFisico: !AtributosDoMob.danoExtraDoGolpe(bicho).length, estado, semAfeccaoElemental: Vinculos.noFeixe(hunt, bicho) });
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: controle, de: bicho.name });
   }
   // Os EFEITOS do golpe (`efeitos` da espécie): dano contínuo no jogador pelo motor `combate/dot.mjs` — do dano antes da defesa e do crítico.
+  // (PoE, 12/10: "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais" — `Vinculos.noFeixe`.)
+  const noFeixe = Vinculos.noFeixe(hunt, bicho);
   for (const ef of AtributosDoMob.efeitosDoGolpe(bicho)) {
     // (+ "+X% de chance de ser Eletrizado / Envenenado" — a chance a mais do monstro que já põe a afecção.)
     if (Math.random() * 100 >= (ef.chance ?? 100) + ModsPoe.chanceExtraDeSer(ficha, ef.tipo) || !(brutoSemCritico > 0)) continue;
+    if (noFeixe && ['queimadura', 'choque', 'gelo'].includes(ef.tipo)) continue;
     const estadoPosto = ModsPoe.dotNoJogador(hunt, { tipo: ef.tipo, total: (brutoSemCritico * ef.pctDoGolpe) / 100, duracaoMs: ef.duracaoMs ?? null, origem: { fonte: 'mob', mob: bicho.name, uid: bicho.uid, key: bicho.key } }, hunt.clock ?? 0);
     if (estadoPosto) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: estadoPosto, de: bicho.name });
   }
@@ -1152,6 +1156,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const danoDoAcerto = final;
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
+  // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — "30% do Dano de Acertos contra o alvo é sofrido no seu Escudo de Energia antes do
+  // dele": essa parte sai do Escudo de quem vincula.)
+  final = Vinculos.desviarParaOEscudo(estado, final);
   // Energy Shield: absorve antes do magic shield e da vida.
   // ("Dano Físico sofrido ignora o Escudo de Energia": a parte física do golpe vai direto — a espera da recarga reinicia do mesmo jeito; o
   // resto passa pelo escudo.)

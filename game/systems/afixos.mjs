@@ -31,6 +31,7 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 import { addsDosDebuffsNoJogador } from './itens-poe/monstros-no-jogador.mjs';
+import { addsDosVinculos } from './itens-poe/vinculos.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 // (a soma da árvore para quem não monta a ficha — as gemas do peitoral suportadas pela árvore: `skills/gemas.dasPecas`)
 ModsPoe.definirLeitorDaArvore((estado) => Passivas.efeitos(estado).adds);
@@ -206,6 +207,10 @@ export function soma(estado) {
   // `itens-poe/monstros-no-jogador.mjs`).
   const dosMonstros = addsDosDebuffsNoJogador(estado);
   if (dosMonstros) for (const [k, v] of Object.entries(dosMonstros)) resolvido[k] = (resolvido[k] ?? 0) + v;
+  // + os VÍNCULOS (`itens-poe/vinculos.mjs`): o que o Vínculo de um companheiro dá em você e o que os seus dão a quem vincula. ("igual a sua"
+  // — o bloqueio e o crítico do dono — vale o maior, não soma.)
+  const dosVinculos = addsDosVinculos(estado);
+  if (dosVinculos) for (const [k, v] of Object.entries(dosVinculos)) resolvido[k] = /_igual_/.test(k) || k === 'velocidade_igual_vinculado' ? Math.max(resolvido[k] ?? 0, v) : (resolvido[k] ?? 0) + v;
   return resolvido;
 }
 

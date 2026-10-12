@@ -15,6 +15,7 @@ import { maldicoesNoJogador as maldicoesDoMapa } from './mapas.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
+import { quemRecebeAMaldicao } from './vinculos.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -744,7 +745,9 @@ export const MALDICOES_DOS_MONSTROS = {
 };
 export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
 /** Põe uma maldição em você (renova a mesma): `{ nome, af, ms }`. */
-export function amaldicoarJogador(hunt, id, { nome, af, ms = DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, agora = hunt?.clock ?? 0) {
+export function amaldicoarJogador(hunt0, id, { nome, af, ms = DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, agora = hunt0?.clock ?? 0) {
+  // (12/10: "Maldições são infligidas em Você ao invés dos alvos Vinculados" — a maldição vai para quem vincula este jogador.)
+  const hunt = quemRecebeAMaldicao(hunt0) ?? hunt0;
   if (!hunt || !af) return;
   // ("Duração das Maldições em você aumentada em X%".)
   ms = Math.round(ms * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.duracao_maldicao_propria) || 0) / 100));
@@ -2016,6 +2019,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (lote E) "Cada Mina aplica Dano sofrido aumentado em X% aos Inimigos próximos a ela, até Y%" (`mods-poe.aoAcertar` acumula no alvo da
   // Mina) e "Inimigos que você Provocar recebem Dano aumentado em X%".
   if (ativo(e.minaFragil, agora)) f *= 1 + (e.minaFragil.pct ?? 0) / 100;
+  // (12/10) "Inimigos sofrem Dano aumentado em X% para cada uma de suas Runas Vinculadas a eles" (`runas-vinculadas.marcarNosInimigos`).
+  if (alvo.runasVinculadas > 0) f *= 1 + (alvo.runasVinculadas * (Number(ficha?.afPoe?.dano_por_runa_vinculada) || 0)) / 100;
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)
   if (ativo(e.totemFragil, agora)) f *= 1 + (e.totemFragil.pct ?? 0) / 100;
   // (ciclo 7) a Geada Cortante: "Inimigos esfriados pelos seus ataques sofrem dano de frio aumentado pelo esfriamento" — o efeito do Resfriamento.

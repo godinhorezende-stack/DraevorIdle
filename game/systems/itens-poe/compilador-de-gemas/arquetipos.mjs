@@ -10,6 +10,8 @@ const TAG_TIPO = {
   Clamor: "Warcry", Golem: "Golem", Orbe: "Orb", Nova: "Nova", Ricochete: "Chains", Marca: "Brand",
   Runa: "Brand", Arauto: "Herald", Impacto: "Slam", Golpear: "MeleeSingleTarget", Viajar: "Travel",
   Guarda: "Guard", Postura: "Stance", Arco: "RangedAttack",
+  // (12/10) as gemas de Vínculo (Link skills) do PoE — `itens-poe/vinculos.mjs`
+  Vínculo: "Link",
 };
 
 export const ARQUETIPOS = {
@@ -33,6 +35,7 @@ export const ARQUETIPOS = {
   maldicao: "Maldição",
   clamor: "Clamor",
   guarda: "Guarda / buff",
+  vinculo: "Vínculo (buff num aliado)",
   generico: "Sem comportamento",
 };
 
@@ -61,6 +64,7 @@ export function classificar(t, stats, semObjeto = false) {
   if (t.has("Aura") && !t.has("RemoteMined")) return "aura";
   if (t.has("Warcry")) return "clamor";
   if (t.has("Brand")) return "marca";
+  if (t.has("Link")) return "vinculo";
   if (t.has("Channel")) return "canalizacao";
   if (t.has("Movement") || t.has("Travel") || t.has("Blink")) return "movimento";
   if (t.has("Orb")) return "orbe";

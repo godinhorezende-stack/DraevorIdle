@@ -5,9 +5,9 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5768** — equivalente 1345, novo 4165, aproximado (parcial) 258.
-- ✗ Sem efeito: **205** — na árvore principal 151, nas ascendências 54; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **134 estão nos blocos que o dono mandou implementar (12/10)**.
-- – Não se aplica ao jogo: 63. Lembretes do PoE (entre parênteses, sem marca): 765.
+- ✓ Com efeito: **5820** — equivalente 1345, novo 4220, aproximado (parcial) 255.
+- ✗ Sem efeito: **154** — na árvore principal 100, nas ascendências 54; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **83 estão nos blocos que o dono mandou implementar (12/10)**.
+- – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
 
@@ -15,13 +15,14 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 |---|---:|---:|---|
 | Modificadores de monstro e de mapa ligados (lote 2) | 71 | 0 | monstros que Cegam, Expõem, põem Sangue Corrompido, drenam vida e ganham cargas (modificadores de monstro); mapas com Cegar, Mutilar, Empalar, cargas por acerto, espinhos nos Raros e "Impossível Drenar"; o Golpe Crítico do monstro incendeia, congela e eletriza; o bloqueio do monstro contra Espada |
 | Armadilhas e Minas plantadas (lote 3) | 41 | 0 | a gema de Armadilha/Mina planta no alvo; a Armadilha ativa com inimigo a 1 casa (dura 4 s, até 15); a Mina detona sozinha com você parado e inimigo perto, em sequência (dura 5 s, até 15); a magia em área do monstro destrói as plantadas |
+| Runas presas ao inimigo (lote 4a) | 22 | 0 | a Runa (Brand) vincula ao inimigo e é Ativada a cada N segundos enquanto vinculada (5 s; solta, procura outro por 6 s); até 3 ativas, 1 por inimigo; o automático não reconjura com todas em campo |
+| Vínculos (lote 4b) | 33 | 0 | as 6 gemas de Vínculo criadas: focam um jogador da party na sala (lacaios, com o nó), custam mana por segundo, quebram fora do alcance em 4 s e, se o alvo morre vinculado, você morre; os efeitos de cada uma (Fogo, bloqueio, menos dano e o seu Escudo, crítico, o seu Dreno no alvo) |
 
 ## Sem efeito (✗), pelo motivo
 
 | Linhas | Motivo | Bloco a implementar (dono, 12/10) | Exemplos (nó — texto) |
 |---:|---|---|---|
 | 58 | as Tinturas não existem no jogo | criar a Tintura | Queima de Mana mais Lenta (nó) — Tinturas aplicadas em você têm Queima de Mana reduzida em 5%<br>Composto da Natureza (notável) — Frascos adjacentes às Tinturas ativas ganham 2 cargas quando você Acertar um Inimigo com uma Arma Corpo a Corpo, não mais que uma vez por segundo<br>Evasão, Efeito de Tinturas (asc. Warden) — Tinturas aplicadas em você têm Efeito aumentado em 10% |
-| 51 | as Runas e os Vínculos do jogo não ficam presos ao inimigo nem a aliados: a habilidade de Vínculo reforça só você | Runas e Vínculos presos ao alvo | Alcance de Runas e Recuperação da Recarga de Runas (nó) — Alcance do Vínculo de Runas aumentado em 10%<br>Forjador de Runas (notável) — Inimigos sofrem Dano aumentado em 5% para cada uma de suas Runas Vinculadas a eles<br>Runas Explosivas (notável) — Alcance do Vínculo de Runas aumentado em 30% |
 | 20 | o Convocar o Aço (Call of Steel), que as gemas de Aço concedem no PoE, não está no jogo | o Convocar o Aço (Call of Steel) | Maestria de Empalamento (maestria) — Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%<br>Maestria de Empalamento (maestria) — Convocar o Aço tem Velocidade de Uso aumentada em 40%<br>Maestria de Empalamento (maestria) — Chamado do Aço tem +4 ao máximo de Fragmentos de Aço |
 | 10 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | — | Ego Supremo (keystone) — Auras das suas Habilidades só podem afetar você Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem<br>Ego Supremo (keystone) — 40% mais Reserva de Mana de Habilidades Aura<br>Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
 | 10 | o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil | — | Tiro Partido (notável) — Projéteis têm 50% de chance de receber um Projétil adicional quando Difundindo<br>Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando<br>Chance de uma Difusão Extra de Projéteis (nó) — Projéteis têm 25% de chance de receber um Projétil adicional quando Difundindo |
@@ -75,7 +76,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 6 | o alvo da maldição é Cegado (o "não amaldiçoado" não é conferido) | Maestria de Maldições (maestria) — Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados por 4 segundos |
 | 6 | remove uma afecção por clamor | Maestria de Clamores (maestria) — Remove todas as Afecções Danificadoras quando você Clamar |
 | 6 | somado à precisão que a Destreza já dá | Maestria de Precisão (maestria) — Bônus de Precisão da Destreza concede +3 de Precisão por Destreza |
-| 5 | a Mina detona no alvo: soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido aumentado em 2% aos Inimigos próximos a ela, até 10% |
+| 5 | a Mina detona logo que um inimigo chega perto (no PoE é a aura da Mina plantada): soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido aumentado em 2% aos Inimigos próximos a ela, até 10% |
 | 5 | a velocidade de uso do clamor | Velocidade de Clamores (nó) — Velocidade dos Clamores aumentada em 15%<br>Admoestador (notável) — Velocidade dos Clamores aumentada em 50%<br>Dano Físico, Velocidade do Clamor (asc. Berserker) — Velocidade dos Clamores aumentada em 20% |
 | 5 | Causticar, Fragilizar e Exaurir elementais (os do PoE) ainda não existem: vale no Resfriamento e na Eletrização | Dano Elemental com Armas e Efeito de Afecções (nó) — Efeito de Afecções Não-Danificadoras aumentado em 10%<br>Foco Elemental (notável) — Efeito de Afecções Não-Danificadoras aumentado em 20%<br>Cinza, Gelo e Tempestade (notável) — Efeito de Afecções Não-Danificadoras aumentado em 30% |
 | 5 | Chance de Crítico aumentada pela distância até o alvo: nada colado, tudo a 6 casas | Maestria de Arcos (maestria) — Flechas ganham Chance de Golpe Crítico enquanto viajam adiante, máximo de até 100% de Chance de Golpe Crítico |
@@ -88,7 +89,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 4 | tira o dano contínuo mais antigo em você | Maestria de Estandartes (maestria) — Remove uma Afecção aleatória de você quando você consumir ao menos 10 de Valor para plantar um Estandarte |
 | 4 | vale nos golpes com a tag Caos (o golpe inteiro) | Maestria de Caos (maestria) — Causa 10% mais Dano de Caos aos inimigos que tiverem Escudo de Energia<br>Presença Pútrida (asc. Occultist) — 15% mais Dano de Caos |
 | 3 | "Recentemente" (4 s) | Espírito Primitivo (notável) — Ganha 4 de Mana por Inimigo Acertado pelos Ataques se você usou um Frasco de Mana nos últimos 10 segundos<br>Maestria de Evasão e Escudo de Energia (maestria) — Evasão aumentada em 100% se a Recarga do Escudo de Energia iniciou nos últimos 2 segundos |
-| 3 | as Runas do jogo não ficam presas ao inimigo: a área vale sempre | Maestria de Runas (maestria) — Runas têm Área de Efeito aumentada em 30% caso 50% da Duração do Vínculo tenha expirado |
 | 3 | nas gemas (o golpe básico, não) | Força Concussiva (notável) — Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano<br>Risco Calculado (asc. Saboteur) — Dano com Acertos é Azarado<br>Julgamento Inevitável (asc. Inquisitor) — Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo |
 | 3 | o "menos" entra como reduzido | Maestria de Duração (maestria) — 10% menos Duração do Efeito de Habilidades<br>Mestre Cirurgiã (asc. Pathfinder) — 50% menos Vida Recuperada de Frascos |
 | 3 | vale para as afecções que os monstros causam em você | Maestria de Duração (maestria) — Debuffs em você expiram 15% mais rápido |
