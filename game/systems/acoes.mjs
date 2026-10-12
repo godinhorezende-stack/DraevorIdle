@@ -41,6 +41,8 @@ import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
+import * as Vinculos from './itens-poe/vinculos.mjs';
+import * as CargasDoPoe from './itens-poe/cargas.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade, efeitos as efeitosDaArvore } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
@@ -1486,7 +1488,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (ciclo 7, lote E: a eficiência e o "não custam mana" por TAG da habilidade — "Eficiência de custo de mana de magias aumentada",
   // "…de habilidades de Retaliação", "Habilidades de marca não custam mana".)
   const doCustoPorTag = entry.poeGema ? ModsPoe.somaPorTags(fichaDoCusto, tagsPoeDaSkill(entry)) : {};
-  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || (doCustoPorTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0)) / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
+  // (o Vínculo não paga ao conjurar: custa por segundo, enquanto vincula — `tiqueDosVinculos`)
+  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0)) / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(Ficha.combate(estado), 'keystone_magia_sanguinea') > 0) && custoDeMana > 0;
@@ -1622,6 +1625,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // tiraria a mais velha, ainda Ativando); o clique conjura.
   if (Runas.ehRuna(entry) && !manual && !gatilho && !concluir && Runas.cheias(hunt, Ficha.combate(estado))) {
     return { ok: false, erro: `Já estão todas as Runas em campo (${Runas.ativas(hunt).length}/${Runas.maximo(Ficha.combate(estado))}).`, motivo: 'RUNAS_COMPLETAS' };
+  }
+  // (PoE, 12/10) o VÍNCULO (`itens-poe/vinculos.mjs`): com o da gema ainda ligado (e não acabando), não relança; sem aliado para focar, não sai.
+  if (Vinculos.ehVinculo(entry)) {
+    const ligado = Vinculos.vinculos(hunt).find((lk) => lk.acao === entry.id);
+    if (ligado && ligado.ate - agora > 1000) return { ok: false, erro: 'Ainda está ativo.', motivo: 'EFEITO_ATIVO' };
+    if (!Vinculos.candidatos(estado, hunt, Ficha.combate(estado).afPoe).length) return { ok: false, erro: 'Nenhum aliado para vincular (a party na sala, ou um lacaio com o nó da árvore).', motivo: 'SEM_ALIADO' };
   }
   // LACAIOS do PoE: com todos em campo (e sem duração para renovar), a gema não sai — o auto não fica relançando à toa.
   if (entry.poeGema?.lacaio) {
@@ -1792,6 +1801,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' });
   }
 
+  // (PoE, 12/10) o VÍNCULO: foca o aliado (e os a mais) e liga o buff nele (`criarVinculo`).
+  if (!ataque && Vinculos.ehVinculo(entry)) eventos.push(...criarVinculo(estado, hunt, entry, action, efeitoDaGema, agora));
   if (!ataque) {
     // Cura: poção usa `heal`/`mana` ([min,max]); magia/runa de cura usa `damage`.
     // A cura da magia/runa: a MESMA conta do balão (`contaDaCura`) — base pelo level, perícia,
@@ -2271,6 +2282,65 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
     }
   }
   return tiqueDasPlantadas(estado, hunt, personagem, eventos, agora);
+}
+
+/**
+ * (PoE, 12/10) A FOTO de quem vincula (`itens-poe/vinculos.mjs` é puro): a vida, o bloqueio e o crítico (o "igual a sua"), o Efeito do Buff
+ * dos Vínculos, as cargas (para "Alvos Vinculados compartilham Cargas…") e as linhas da árvore de quem vincula; e a velocidade dos jogadores
+ * vinculados ("Sua Velocidade de Movimento é igual a maior…").
+ */
+function fotoDoVinculo(estado, hunt, ficha, lk) {
+  const v = (k) => ModsPoe.valor(ficha, k);
+  lk.foto = {
+    vidaMax: estado.maxHp ?? 0, bloqueioPct: Math.round((ficha.blockChance ?? 0) * 1000) / 10, critPct: Math.round((ficha.critChance ?? 0) * 1000) / 10,
+    efeitoPct: v('efeito_buff_gema:vinculo'), porMetadePct: v('vinculo_efeito_por_metade'), mov2: v('vinculos2_move_speed'), defesas4: v('vinculos4_defesas'),
+    velocidadeIgual: v('velocidade_igual_vinculados') > 0, maldicoesEmVoce: v('maldicoes_em_voce_vinculo') > 0, feixe: v('feixe_sem_afeccao') > 0,
+    ...(v('vinculo_compartilha_cargas') > 0 && ficha.cargas ? { cargas: CargasDoPoe.adds(estado, ficha.cargas) ?? {} } : {}),
+  };
+  if (lk.foto.velocidadeIgual) lk.velocidadeDosAlvos = Math.max(0, ...lk.alvos.filter((a) => a.tipo === 'jogador').map((a) => { const quem = Vinculos.resolver(hunt, a); return quem ? Ficha.combate(quem).speed ?? 0 : 0; }));
+}
+
+/** (PoE, 12/10) O VÍNCULO conjurado: os alvos (o mais perto; os a mais sorteados), a duração, o custo por segundo e a foto. Devolve os eventos. */
+function criarVinculo(estado, hunt, entry, action, efeitoDaGema, agora) {
+  const ficha = Ficha.combate(estado);
+  const slug = entry.poeGema.slug;
+  const nivel = efeitoDaGema?.nivel ?? 1;
+  const props = Vinculos.daGema(GemasPoe.textosDaGema(slug, nivel).linhas);
+  const perto = (a) => { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); return p ? Math.max(Math.abs(p.x - hunt.pos.x), Math.abs(p.y - hunt.pos.y)) : Infinity; };
+  const cand = Vinculos.candidatos(estado, hunt, ficha.afPoe).sort((a, b) => perto(a) - perto(b));
+  if (!cand.length) return [];
+  const resto = cand.slice(1).sort(() => Math.random() - 0.5);
+  const alvos = [cand[0], ...resto.slice(0, Vinculos.quantosVincula(ficha.afPoe) - 1)];
+  const duracaoMs = Math.round(props.duracaoMs * Math.max(0.1, 1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100));
+  const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo: GemasPoe.custoNoNivel(slug, nivel), agora });
+  fotoDoVinculo(estado, hunt, ficha, lk);
+  return alvos.map((a) => { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); return p ? { t: 'fx', id: 13, x: p.x, y: p.y } : null; }).filter(Boolean);
+}
+
+/**
+ * (PoE, 12/10) O tique dos VÍNCULOS: a foto de quem vincula, o custo por segundo, a duração, a quebra fora do alcance e a MORTE do alvo ("Se o
+ * alvo morrer enquanto vinculado, você também morrerá"); "Inimigos próximos dos seus alvos Vinculados têm Exposição a Fogo, Gelo e Raio".
+ */
+export function tiqueDosVinculos(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+  if (!hunt?.vinculos?.length || !itensPoeLigado()) return eventos;
+  const ficha = Ficha.combate(estado);
+  for (const lk of hunt.vinculos) fotoDoVinculo(estado, hunt, ficha, lk);
+  const { morreu } = Vinculos.tique(estado, hunt, ficha.afPoe, agora);
+  if (morreu && (estado.hp ?? 0) > 0) {
+    estado.hp = 0;
+    eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: 'O alvo vinculado morreu.', x: hunt.pos?.x, y: hunt.pos?.y, color: '#ff5b4f' });
+  }
+  if (ModsPoe.valor(ficha, 'vinculo_exposicao_proximos') > 0) {
+    for (const lk of hunt.vinculos ?? []) for (const a of lk.alvos) {
+      const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a));
+      if (!p) continue;
+      for (const m of hunt.monstros ?? []) {
+        if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) > Vinculos.PADRAO.raioDosProximos) continue;
+        for (const e of ['exposicaoFogo', 'exposicaoGelo', 'exposicaoRaio']) ModsPoe.porNoAlvo(m, e, agora + Vinculos.PADRAO.exposicaoMs);
+      }
+    }
+  }
+  return eventos;
 }
 
 /**

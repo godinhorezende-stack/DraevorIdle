@@ -2482,17 +2482,132 @@
       "nota": "a Runa (Brand do PoE): 2 vinculadas no mesmo inimigo"
     },
     {
-      "padrao": "^Habilidades de Vínculo podem focar .*$|^Inimigos em seus Feixes de Vínculo .*$|^Inimigos próximos dos seus alvos Vinculados .*$|^Vínculos demoram .*$|^Habilidades de Vínculo têm .* alvo aleatório adicional$|^Alvos Vinculados compartilham .*$|^Sua Velocidade de Movimento é igual a maior .* Vinculados$|^Defesas aumentadas .* alvos Vinculados$|^Velocidade de Movimento aumentada .* alvov?s Vinculados$|^Efeito do Buff dos seus Vínculos aumentado .* Expirado$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
+      "padrao": "^Habilidades de Vínculo podem focar em Lacaios Danificáveis$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "vinculo_em_lacaios",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "as habilidades de Vínculo (Vínculo Flamejante, Protetor, D'Alma, Destrutivo, Vampírico, Intuitivo) ainda não existem no jogo: não há alvo Vinculado",
       "_nova": true,
-      "_ciclo7": true
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)",
+      "nota": "os seus lacaios vivos a até 10 casas viram alvos do Vínculo"
+    },
+    {
+      "padrao": "^Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "feixe_sem_afeccao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)",
+      "nota": "o feixe é a reta de casas entre você e o alvo vinculado"
+    },
+    {
+      "padrao": "^Inimigos próximos dos seus alvos Vinculados têm Exposição a Fogo, Gelo e Raio$",
+      "efeitos": [
+        {
+          "stat": "vinculo_exposicao_proximos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)",
+      "nota": "os inimigos a até 3 casas de cada alvo vinculado"
+    },
+    {
+      "padrao": "^Vínculos demoram duas vezes mais para quebrar$",
+      "efeitos": [
+        {
+          "stat": "vinculo_quebra_dobro",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)",
+      "nota": "fora do alcance, o Vínculo quebra em 8 s (em vez de 4 s)"
+    },
+    {
+      "padrao": "^Habilidades de Vínculo têm \\{(\\d+)\\} alvo aleatório adicional$",
+      "efeitos": [
+        {
+          "stat": "vinculo_alvos_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)"
+    },
+    {
+      "padrao": "^Alvos Vinculados compartilham Cargas de Tolerância, Frenesi e Poder com você$",
+      "efeitos": [
+        {
+          "stat": "vinculo_compartilha_cargas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)",
+      "nota": "o alvo vinculado ganha o efeito das suas cargas"
+    },
+    {
+      "padrao": "^Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados$",
+      "efeitos": [
+        {
+          "stat": "velocidade_igual_vinculados",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)"
+    },
+    {
+      "padrao": "^Defesas aumentadas em \\{(\\d+)\\}% enquanto você tiver ao menos quatro alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "vinculos4_defesas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)",
+      "nota": "Armadura, Evasão e Escudo de Energia"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto você tiver ao menos dois alvov?s Vinculados$",
+      "efeitos": [
+        {
+          "stat": "vinculos2_move_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)"
+    },
+    {
+      "padrao": "^Efeito do Buff dos seus Vínculos aumentado em \\{(\\d+)\\}% para cada \\{(\\d+)\\}% de Duração do Vínculo que tenha Expirado$",
+      "efeitos": [
+        {
+          "stat": "vinculo_efeito_por_metade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)",
+      "nota": "a cada metade da duração do Vínculo"
+    },
+    {
+      "padrao": "^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_em_voce_vinculo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Vínculos (as gemas de Vínculo criadas)"
     },
     {
       "padrao": "^\\+?\\{(\\d+)\\} ao máximo de Fortificações$",

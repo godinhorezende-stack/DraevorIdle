@@ -38,6 +38,7 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
+import * as Vinculos from './itens-poe/vinculos.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -311,7 +312,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (+ ciclo 7, lote F: "Chance de Suprimir Dano Mágico é Sortuda" — o melhor de dois sorteios.)
   const sorteioDaSupressao = ModsPoe.valor(ficha, 'supressao_sortuda') > 0 ? Math.min(Math.random(), Math.random()) : Math.random();
   const suprimiu = (ficha.supressaoDeMagia ?? 0) > 0 && sorteioDaSupressao < ficha.supressaoDeMagia;
-  const semElementais = suprimiu && (Number(ficha.afPoe?.suprimido_sem_afeccao_elemental) || 0) > 0;
+  // (+ 12/10: "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais" — `Vinculos.noFeixe`.)
+  const semElementais = (suprimiu && (Number(ficha.afPoe?.suprimido_sem_afeccao_elemental) || 0) > 0) || Vinculos.noFeixe(hunt, bicho);
   // Os EFEITOS da magia (`efeitos` do ataque): dano contínuo no jogador pelo motor `combate/dot.mjs`.
   for (const ef of AtributosDoMob.efeitosDoGolpe(null, a)) {
     if (Math.random() * 100 >= (ef.chance ?? 100) + ModsPoe.chanceExtraDeSer(ficha, ef.tipo)) continue;
@@ -350,6 +352,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
   // ("X% do dano mágico sofrido suprimido é recuperado como escudo de energia".)
   if (suprimiu && dano > 0 && ModsPoe.valor(ficha, 'suprimido_recupera_es') > 0) estado.es = Math.min(Math.round(ficha.energyShield ?? 0), (estado.es ?? 0) + Math.round((dano * ModsPoe.valor(ficha, 'suprimido_recupera_es')) / 100));
+  // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — a parte do acerto no Escudo de Energia de quem vincula.)
+  dano = Vinculos.desviarParaOEscudo(estado, dano);
   dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu });
   // PoE: o "acertado/dano recentemente", a recuperação do dano sofrido e o congelar quem acerta (a magia não é corpo a corpo: sem Reflexo).
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: false, tipo: a.elemento, eventos });

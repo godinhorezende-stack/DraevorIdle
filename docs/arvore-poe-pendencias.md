@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5787** — equivalente 1345, novo 4187, aproximado (parcial) 255.
-- ✗ Sem efeito: **187** — na árvore principal 133, nas ascendências 54; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **116 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5820** — equivalente 1345, novo 4220, aproximado (parcial) 255.
+- ✗ Sem efeito: **154** — na árvore principal 100, nas ascendências 54; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **83 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -16,13 +16,13 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | Modificadores de monstro e de mapa ligados (lote 2) | 71 | 0 | monstros que Cegam, Expõem, põem Sangue Corrompido, drenam vida e ganham cargas (modificadores de monstro); mapas com Cegar, Mutilar, Empalar, cargas por acerto, espinhos nos Raros e "Impossível Drenar"; o Golpe Crítico do monstro incendeia, congela e eletriza; o bloqueio do monstro contra Espada |
 | Armadilhas e Minas plantadas (lote 3) | 41 | 0 | a gema de Armadilha/Mina planta no alvo; a Armadilha ativa com inimigo a 1 casa (dura 4 s, até 15); a Mina detona sozinha com você parado e inimigo perto, em sequência (dura 5 s, até 15); a magia em área do monstro destrói as plantadas |
 | Runas presas ao inimigo (lote 4a) | 22 | 0 | a Runa (Brand) vincula ao inimigo e é Ativada a cada N segundos enquanto vinculada (5 s; solta, procura outro por 6 s); até 3 ativas, 1 por inimigo; o automático não reconjura com todas em campo |
+| Vínculos (lote 4b) | 33 | 0 | as 6 gemas de Vínculo criadas: focam um jogador da party na sala (lacaios, com o nó), custam mana por segundo, quebram fora do alcance em 4 s e, se o alvo morre vinculado, você morre; os efeitos de cada uma (Fogo, bloqueio, menos dano e o seu Escudo, crítico, o seu Dreno no alvo) |
 
 ## Sem efeito (✗), pelo motivo
 
 | Linhas | Motivo | Bloco a implementar (dono, 12/10) | Exemplos (nó — texto) |
 |---:|---|---|---|
 | 58 | as Tinturas não existem no jogo | criar a Tintura | Queima de Mana mais Lenta (nó) — Tinturas aplicadas em você têm Queima de Mana reduzida em 5%<br>Composto da Natureza (notável) — Frascos adjacentes às Tinturas ativas ganham 2 cargas quando você Acertar um Inimigo com uma Arma Corpo a Corpo, não mais que uma vez por segundo<br>Evasão, Efeito de Tinturas (asc. Warden) — Tinturas aplicadas em você têm Efeito aumentado em 10% |
-| 33 | as habilidades de Vínculo (Vínculo Flamejante, Protetor, D'Alma, Destrutivo, Vampírico, Intuitivo) ainda não existem no jogo: não há alvo Vinculado | Runas e Vínculos presos ao alvo | Conexões Potentes (notável) — Defesas aumentadas em 25% enquanto você tiver ao menos quatro alvos Vinculados<br>Conexões Potentes (notável) — Velocidade de Movimento aumentada em 10% enquanto você tiver ao menos dois alvovs Vinculados<br>Vínculo Poderoso (notável) — Efeito do Buff dos seus Vínculos aumentado em 20% para cada 50% de Duração do Vínculo que tenha Expirado |
 | 20 | o Convocar o Aço (Call of Steel), que as gemas de Aço concedem no PoE, não está no jogo | o Convocar o Aço (Call of Steel) | Maestria de Empalamento (maestria) — Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%<br>Maestria de Empalamento (maestria) — Convocar o Aço tem Velocidade de Uso aumentada em 40%<br>Maestria de Empalamento (maestria) — Chamado do Aço tem +4 ao máximo de Fragmentos de Aço |
 | 10 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | — | Ego Supremo (keystone) — Auras das suas Habilidades só podem afetar você Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem<br>Ego Supremo (keystone) — 40% mais Reserva de Mana de Habilidades Aura<br>Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
 | 10 | o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil | — | Tiro Partido (notável) — Projéteis têm 50% de chance de receber um Projétil adicional quando Difundindo<br>Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando<br>Chance de uma Difusão Extra de Projéteis (nó) — Projéteis têm 25% de chance de receber um Projétil adicional quando Difundindo |

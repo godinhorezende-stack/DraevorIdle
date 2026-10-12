@@ -225,13 +225,13 @@ test('"Alcance do Vínculo de Runas aumentado": as 3 casas × o aumento', { skip
   assert.equal(Runas.alcance({ afPoe: { alcance_vinculo_runas: 50 } }), 5);
 });
 
-test('a ÁRVORE: as linhas de Runa têm efeito no balão; as de Vínculo seguem sem efeito, com o motivo (as gemas de Vínculo ainda não existem)', { skip: SEM }, () => {
+// (12/10: este teste também dizia que as linhas de Vínculo seguiam sem efeito, "as gemas de Vínculo ainda não existem" — o dono decidiu criar
+// os Vínculos igual ao PoE no mesmo pedido; as linhas de Vínculo agora são do `vinculos-poe.test.mjs`.)
+test('a ÁRVORE: as linhas de Runa têm efeito no balão', { skip: SEM }, () => {
   const linhas = P.arvore().nos.flatMap((n) => [n, ...(n.opcoes ?? [])].flatMap((o) => (o.textos ?? []).map((t, i) => ({ t, estado: o.estados?.[i], nota: o.notas?.[i] }))));
   for (const re of [/^Alcance do Vínculo de Runas/, /Runas Adicionais$/, /^Runas se Vinculam a um novo Inimigo/, /quando uma Runa expira enquanto Vinculada$/, /Runas Vinculadas a eles$/, /^Você pode ter uma Marca adicional Vinculada/, /Frequência de Ativação se/, /caso \d+% da Duração do Vínculo tenha expirado$/]) {
     const achadas = linhas.filter((l) => re.test(l.t));
     assert.ok(achadas.length > 0, `há linha ${re}`);
     for (const l of achadas) assert.ok(['equivalente', 'novo', 'aproximado'].includes(l.estado), `${l.t}: ${l.estado}`);
   }
-  const vinculo = linhas.filter((l) => /^Habilidades de Vínculo podem focar/.test(l.t));
-  assert.ok(vinculo.length && vinculo.every((l) => l.estado === 'inerte' && /habilidades de Vínculo/.test(l.nota ?? '')));
 });

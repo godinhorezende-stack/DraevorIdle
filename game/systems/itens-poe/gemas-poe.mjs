@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
+import * as Vinculos from './vinculos.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
@@ -364,6 +365,13 @@ function avaliarNoJogo(h, formato) {
     for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeLacaio(l) && !ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l)) motivos.push(`efeito não simulado: ${l}`);
     return { status: 'parcial', motivos };
   }
+  // (12/10) O VÍNCULO (`itens-poe/vinculos.mjs`): foca um aliado; as linhas que o jogo ainda não faz vão nos motivos.
+  if (h.arquetipo === 'vinculo') {
+    const d = Vinculos.daGema(textosDaGema(h.slug, 1).linhas);
+    for (const l of d.naoFeitas) motivos.push(`efeito não simulado: ${l}`);
+    if ((h.tags ?? []).includes('Ativação')) motivos.push('os acertos do alvo vinculado ainda não ativam as suas magias suportadas');
+    return { status: motivos.length ? 'parcial' : 'funciona', motivos };
+  }
   if (BUFF.has(h.arquetipo)) {
     const b = buffNoNivel(h.slug, h.nivel);
     motivos.push(...b.motivos);
@@ -386,7 +394,9 @@ function avaliarNoJogo(h, formato) {
 /** A magia do catálogo de ações da gema (o molde + os números do PoE no nível 1). */
 function acaoDaGema(g, h, itemId, formato, elemento) {
   const visual = VISUAL[elemento] ?? 'physical';
-  const buff = BUFF.has(h.arquetipo);
+  // (o Vínculo é um buff num aliado: o molde, sem dano, de suporte — como os buffs; `itens-poe/vinculos.mjs`)
+  const vinculo = h.arquetipo === 'vinculo';
+  const buff = BUFF.has(h.arquetipo) || vinculo;
   const tagsArea = (g.tags ?? []).some((t) => /Área/i.test(t));
   let moldeId;
   if (buff) moldeId = 'spell-blood-rage';
@@ -429,7 +439,7 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
     group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
-    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff, molde: moldeId, ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}) },
+    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}) },
   };
   delete entry.blocked;
   return entry;
@@ -549,7 +559,7 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     ACTION_CATALOG.spells.push(entry);
     REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
-    registrarGema?.({ itemId, entry, gema: g, tabelaDeXp: gemaDaTabelaDeXp(g), categoria: entry.poeGema.buff ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
+    registrarGema?.({ itemId, entry, gema: g, tabelaDeXp: gemaDaTabelaDeXp(g), categoria: entry.poeGema.buff || entry.poeGema.vinculo ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
     if (entry.poeGema.buff) registrarReforco?.(entry.id, { dur: buffNoNivel(g.slug, 1).dur, tipo: `poe-${h.arquetipo}`, efeitos: [] });
   }
   INICIADO = { gemas: REGISTRO.size, porStatus };

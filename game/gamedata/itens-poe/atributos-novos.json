@@ -5882,6 +5882,96 @@
       "unidade": "%",
       "combate": true,
       "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "vinculo_em_lacaios": {
+      "nome": "Habilidades de Vínculo podem focar em Lacaios",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "feixe_sem_afeccao": {
+      "nome": "Inimigos nos seus Feixes de Vínculo não aplicam Afecções Elementais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "vinculo_exposicao_proximos": {
+      "nome": "Exposição nos inimigos perto dos alvos Vinculados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "vinculo_quebra_dobro": {
+      "nome": "Vínculos demoram o dobro para quebrar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "vinculo_alvos_extra": {
+      "nome": "Alvos a mais das Habilidades de Vínculo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "vinculo_compartilha_cargas": {
+      "nome": "Alvos Vinculados compartilham as suas Cargas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "velocidade_igual_vinculados": {
+      "nome": "Velocidade de Movimento igual à maior dos Jogadores Vinculados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "vinculos4_defesas": {
+      "nome": "Defesas com ao menos 4 alvos Vinculados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "vinculos2_move_speed": {
+      "nome": "Velocidade de Movimento com ao menos 2 alvos Vinculados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "vinculo_efeito_por_metade": {
+      "nome": "Efeito do Buff dos Vínculos por metade da duração expirada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "maldicoes_em_voce_vinculo": {
+      "nome": "Maldições vão para você em vez dos alvos Vinculados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "bloqueio_igual_pct": {
+      "nome": "Chance de Bloquear igual à de quem vincula (Vínculo Protetor)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "bloqueio_teto_igual_pct": {
+      "nome": "Chance Máxima de Bloquear igual à de quem vincula",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "crit_igual_pct": {
+      "nome": "Chance de Crítico igual à de quem vincula (Vínculo Destrutivo)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "velocidade_igual_vinculado": {
+      "nome": "Velocidade de Movimento igual à do jogador vinculado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
     }
   }
 }

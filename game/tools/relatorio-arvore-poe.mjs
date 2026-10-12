@@ -46,6 +46,11 @@ const IMPLEMENTADOS = [
     re: /Alcance do Vínculo de Runas|Runas Adicionais|Runas se Vinculam|quando uma Runa expira|Runas Vinculadas a eles|Marca adicional Vinculada|Frequência de Ativação se|caso \d+% da Duração do Vínculo/,
     jogo: 'a Runa (Brand) vincula ao inimigo e é Ativada a cada N segundos enquanto vinculada (5 s; solta, procura outro por 6 s); até 3 ativas, 1 por inimigo; o automático não reconjura com todas em campo',
   },
+  {
+    bloco: 'Vínculos (lote 4b)',
+    re: /focar em Lacaios Danificáveis|Feixes de Vínculo|alvos Vinculados têm Exposição|Vínculos demoram|alvo aleatório adicional|Alvos Vinculados compartilham|entre os Jogadores Vinculados|alvov?s Vinculados$|Duração do Vínculo que tenha Expirado|ao invés dos alvos Vinculados/,
+    jogo: 'as 6 gemas de Vínculo criadas: focam um jogador da party na sala (lacaios, com o nó), custam mana por segundo, quebram fora do alcance em 4 s e, se o alvo morre vinculado, você morre; os efeitos de cada uma (Fogo, bloqueio, menos dano e o seu Escudo, crítico, o seu Dreno no alvo)',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

@@ -33,6 +33,7 @@ import * as ModsPoe from '../itens-poe/mods-poe.mjs';
 import * as Protecao from '../protecao.mjs';
 import * as Controle from '../combate/controle.mjs';
 import * as NoJogador from '../itens-poe/monstros-no-jogador.mjs';
+import * as Vinculos from '../itens-poe/vinculos.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
 // A geometria das áreas é a compartilhada (`engine/areas.mjs`): a distância em casas e o quadrado do raio.
@@ -277,7 +278,8 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
     } else if (mec.efeito === 'drenar') drenar(m, ficha, dano, mec, agora);
     else if (mec.efeito === 'carga' && ganharCarga(m, mec.carga, agora, ficha)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: `carga:${mec.carga}` });
   }
-  if (critico && estado.hp > 0 && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0)) {
+  // (+ 12/10: "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais" — `Vinculos.noFeixe`.)
+  if (critico && estado.hp > 0 && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0) && !Vinculos.noFeixe(hunt, m)) {
     const N = NoJogador.NUMEROS;
     const vidaMax = Math.max(1, estado.maxHp ?? 0);
     if ((brutas.fire ?? 0) > 0) {

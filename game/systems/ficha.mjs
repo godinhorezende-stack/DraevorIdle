@@ -41,6 +41,7 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 import * as ModsPoeEfeitos from './itens-poe/mods-poe.mjs';
+import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import { classeDe as classePoeDe } from './itens-poe/classes.mjs';
 
@@ -324,7 +325,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
   // (ciclo 7, lote F: "Sua Chance de Crítico é Sortuda" — o melhor de dois sorteios: 1 − (1 − c)², já na chance da ficha — `critSortudo`, e o
   // sorteio do golpe não rola de novo; com o Azarado junto, os dois se anulam e fica o sorteio comum — `rolarCritico`.)
   const critSortudo = itensPoeLigado() && af.critico_sortudo > 0 && !(af.critico_azarado > 0);
-  const critChance = Math.min(tetoDoCritico, Math.max(0, critSortudo ? 1 - (1 - Math.min(1, critBruto)) ** 2 : critBruto));
+  // (PoE, 12/10: o Vínculo Destrutivo — "Chance de Golpe Crítico da Mão Primária do alvo Vinculado é igual a sua".)
+  const critIgual = itensPoeLigado() ? (Number(af.crit_igual_pct) || 0) / 100 : 0;
+  const critChance = critIgual > 0 ? Math.min(tetoDoCritico, critIgual) : Math.min(tetoDoCritico, Math.max(0, critSortudo ? 1 - (1 - Math.min(1, critBruto)) ** 2 : critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
   // PoE, DUAS ARMAS: o golpe da mão secundária usa o crítico da arma DELA (a base × o local dela) no lugar do da principal; o resto (os
   // "+% de chance" fixos, os aumentos globais, o "mais") é o mesmo. `fichaDaMao` troca na hora do golpe.
@@ -470,7 +473,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // Movement Speed %: sobre a velocidade base do level (+ o speed fixo das botas e do imbuement).
     // (× a "Velocidade de Ação" do PoE.)
     // ("Sua Velocidade de Movimento é de X% de seu valor base": o valor fixo, nada mais muda.)
-    speed: itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af)),
+    // (PoE, 12/10: "Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados" — `velocidade_igual_vinculado`.)
+    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af)),
     // O alcance a mais dos golpes corpo a corpo (PoE: "+N metros ao Alcance…"; 1 casa = 2 m).
     alcanceCorpoExtra: itensPoeLigado() ? Math.floor((af.alcance_corpo_m ?? 0) / 2) : 0,
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
@@ -912,7 +916,9 @@ function bloqueioDaFicha(estado, escudo, w, shielding, af = {}) {
   const teto = tetoDoBloqueio(af);
   // ("Você está na Chance Máxima de Bloquear o Dano de Ataques caso não tenha Bloqueado Recentemente" — `bloqueio_no_maximo`: o teto.)
   const bruto = (d) => R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0);
-  const com = (d) => (af.bloqueio_no_maximo > 0 ? teto : Math.min(teto, bruto(d)));
+  // (PoE, 12/10: o Vínculo Protetor — "Chance de Bloquear o Dano de Ataques do alvo Vinculado é igual a sua", e o teto também.)
+  const igual = itensPoeLigado() ? (Number(af.bloqueio_igual_pct) || 0) / 100 : 0;
+  const com = (d) => (igual > 0 ? Math.min(Math.max(teto, (Number(af.bloqueio_teto_igual_pct) || 0) / 100), igual) : af.bloqueio_no_maximo > 0 ? teto : Math.min(teto, bruto(d)));
   return {
     // (o que passa do teto — o "Excedente" do Combatente Versátil: "+2% de Chance de Bloqueio Mágico para cada 1% de Chance de Bloqueio do
     // Dano de Ataques Excedente")
@@ -1090,16 +1096,20 @@ export function recuperarRoubo(estado, ms) {
   // o CHEIO é a parte livre (a vida/mana não reservada pelas auras — `Reserva.livre`): "quando a Vida Não Reservada estiver Cheia"
   const livre = Reserva.livre(estado);
   const cheio = { vida: livre.vida, mana: livre.mana, es: esMax };
+  // (PoE, 12/10: o Vínculo Vampírico — "Efeitos do Dreno de Vida aplicam Recuperação ao Alvo Vinculado ao invés", e "não são removidos em Vida
+  // Cheia": a vida drenada vai para o alvo vinculado — o jogador ou o lacaio.)
+  const desvio = Vinculos.alvoDoDreno(estado);
   for (const [recurso, campo, max] of [['vida', 'hp', estado.maxHp ?? 0], ['mana', 'mana', estado.maxMana ?? 0], ['es', 'es', esMax]]) {
     const ativas = lista.filter((x) => x.recurso === recurso);
     if (!ativas.length) continue;
+    const paraOAlvo = recurso === 'vida' && desvio;
     // Como no PoE: o recurso CHEIO encerra os efeitos de dreno dele (o golpe seguinte cria outros) — menos o "Efeitos de Dreno de Escudo
     // de Energia não são removidos quando o Escudo de Energia se Encher" e o "Efeitos do Dreno de Vida não são removidos quando a Vida Não
     // Reservada estiver Cheia". A vida que encerrou o dreno fica marcada ("se o Dreno foi removido Preenchendo a Vida Não Reservada").
     const naoPara = { vida: 'roubo_vida_nao_para_no_cheio', es: 'roubo_es_nao_para_no_cheio' }[recurso];
     // (a Ambição Imortal: "Dreno de Vida afeta a Recuperação do Escudo de Energia ao invés enquanto em Vida Cheia" — e o dreno não para)
     const noEscudo = recurso === 'vida' && max > 0 && (estado.hp ?? 0) >= cheio.vida && ModsPoe.valor(fRoubo, 'dreno_vida_no_es_cheio') > 0;
-    if (max > 0 && (estado[campo] ?? 0) >= cheio[recurso] && !noEscudo && !(naoPara && ModsPoe.valor(fRoubo, naoPara) > 0)) {
+    if (!paraOAlvo && max > 0 && (estado[campo] ?? 0) >= cheio[recurso] && !noEscudo && !(naoPara && ModsPoe.valor(fRoubo, naoPara) > 0)) {
       for (const x of ativas) x.restante = 0;
       if (recurso === 'vida') {
         (estado.hunt.poeRecente ??= {}).drenoCheio = estado.hunt.clock ?? 0;
@@ -1121,7 +1131,8 @@ export function recuperarRoubo(estado, ms) {
     resto[recurso] += ganho;
     const inteiro = Math.floor(resto[recurso]);
     resto[recurso] -= inteiro;
-    if (noEscudo) { if (inteiro > 0) estado.es = Math.min(Math.max(0, Math.round(fRoubo.energyShield ?? 0)), (estado.es ?? 0) + inteiro); }
+    if (paraOAlvo) { if (inteiro > 0 && (desvio.quem.hp ?? 0) > 0) desvio.quem.hp = Math.min(desvio.quem.maxHp ?? desvio.quem.hp, desvio.quem.hp + inteiro); }
+    else if (noEscudo) { if (inteiro > 0) estado.es = Math.min(Math.max(0, Math.round(fRoubo.energyShield ?? 0)), (estado.es ?? 0) + inteiro); }
     else if (inteiro > 0 && (campo !== 'hp' || (estado.hp ?? 0) > 0)) estado[campo] = Math.min(max, (estado[campo] ?? 0) + inteiro);
   }
   estado.hunt.roubos = lista.filter((x) => x.restante > 0.001);
