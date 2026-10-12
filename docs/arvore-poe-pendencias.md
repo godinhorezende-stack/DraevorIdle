@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5734** — equivalente 1345, novo 4129, aproximado (parcial) 260.
-- ✗ Sem efeito: **239** — na árvore principal 184, nas ascendências 55; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **168 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5768** — equivalente 1345, novo 4165, aproximado (parcial) 258.
+- ✗ Sem efeito: **205** — na árvore principal 151, nas ascendências 54; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **134 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 63. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -14,6 +14,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | Bloco | Linhas com efeito agora | Sem efeito ainda | O que mudou no jogo |
 |---|---:|---:|---|
 | Modificadores de monstro e de mapa ligados (lote 2) | 71 | 0 | monstros que Cegam, Expõem, põem Sangue Corrompido, drenam vida e ganham cargas (modificadores de monstro); mapas com Cegar, Mutilar, Empalar, cargas por acerto, espinhos nos Raros e "Impossível Drenar"; o Golpe Crítico do monstro incendeia, congela e eletriza; o bloqueio do monstro contra Espada |
+| Armadilhas e Minas plantadas (lote 3) | 41 | 0 | a gema de Armadilha/Mina planta no alvo; a Armadilha ativa com inimigo a 1 casa (dura 4 s, até 15); a Mina detona sozinha com você parado e inimigo perto, em sequência (dura 5 s, até 15); a magia em área do monstro destrói as plantadas |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -21,7 +22,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 |---:|---|---|---|
 | 58 | as Tinturas não existem no jogo | criar a Tintura | Queima de Mana mais Lenta (nó) — Tinturas aplicadas em você têm Queima de Mana reduzida em 5%<br>Composto da Natureza (notável) — Frascos adjacentes às Tinturas ativas ganham 2 cargas quando você Acertar um Inimigo com uma Arma Corpo a Corpo, não mais que uma vez por segundo<br>Evasão, Efeito de Tinturas (asc. Warden) — Tinturas aplicadas em você têm Efeito aumentado em 10% |
 | 51 | as Runas e os Vínculos do jogo não ficam presos ao inimigo nem a aliados: a habilidade de Vínculo reforça só você | Runas e Vínculos presos ao alvo | Alcance de Runas e Recuperação da Recarga de Runas (nó) — Alcance do Vínculo de Runas aumentado em 10%<br>Forjador de Runas (notável) — Inimigos sofrem Dano aumentado em 5% para cada uma de suas Runas Vinculadas a eles<br>Runas Explosivas (notável) — Alcance do Vínculo de Runas aumentado em 30% |
-| 34 | no jogo a Armadilha e a Mina disparam na hora, no alvo (não ficam plantadas): não há limite, duração, dano nelas nem detonação | Armadilhas e Minas plantadas (limite, duração, detonação) | Velocidade de Detonação de Minas (nó) — Minas tem Velocidade de Detonação aumentada em 20%<br>Sabotador (notável) — Pode ter até 2 Armadilhas adicionais plantadas por vez<br>Duração das Minas (nó) — Duração da Mina aumentada em 30% |
 | 20 | o Convocar o Aço (Call of Steel), que as gemas de Aço concedem no PoE, não está no jogo | o Convocar o Aço (Call of Steel) | Maestria de Empalamento (maestria) — Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em 40%<br>Maestria de Empalamento (maestria) — Convocar o Aço tem Velocidade de Uso aumentada em 40%<br>Maestria de Empalamento (maestria) — Chamado do Aço tem +4 ao máximo de Fragmentos de Aço |
 | 10 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | — | Ego Supremo (keystone) — Auras das suas Habilidades só podem afetar você Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem<br>Ego Supremo (keystone) — 40% mais Reserva de Mana de Habilidades Aura<br>Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
 | 10 | o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil | — | Tiro Partido (notável) — Projéteis têm 50% de chance de receber um Projétil adicional quando Difundindo<br>Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando<br>Chance de uma Difusão Extra de Projéteis (nó) — Projéteis têm 25% de chance de receber um Projétil adicional quando Difundindo |
@@ -75,11 +75,11 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 6 | o alvo da maldição é Cegado (o "não amaldiçoado" não é conferido) | Maestria de Maldições (maestria) — Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados por 4 segundos |
 | 6 | remove uma afecção por clamor | Maestria de Clamores (maestria) — Remove todas as Afecções Danificadoras quando você Clamar |
 | 6 | somado à precisão que a Destreza já dá | Maestria de Precisão (maestria) — Bônus de Precisão da Destreza concede +3 de Precisão por Destreza |
-| 5 | a ativação a mais vira o dano dobrado do golpe da Armadilha | Construção Inteligente (notável) — 10% de Chance das Armadilhas Ativarem uma vez adicional<br>Maestria de Armadilhas (maestria) — 8% de Chance das Armadilhas Ativarem uma vez adicional |
 | 5 | a Mina detona no alvo: soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido aumentado em 2% aos Inimigos próximos a ela, até 10% |
 | 5 | a velocidade de uso do clamor | Velocidade de Clamores (nó) — Velocidade dos Clamores aumentada em 15%<br>Admoestador (notável) — Velocidade dos Clamores aumentada em 50%<br>Dano Físico, Velocidade do Clamor (asc. Berserker) — Velocidade dos Clamores aumentada em 20% |
 | 5 | Causticar, Fragilizar e Exaurir elementais (os do PoE) ainda não existem: vale no Resfriamento e na Eletrização | Dano Elemental com Armas e Efeito de Afecções (nó) — Efeito de Afecções Não-Danificadoras aumentado em 10%<br>Foco Elemental (notável) — Efeito de Afecções Não-Danificadoras aumentado em 20%<br>Cinza, Gelo e Tempestade (notável) — Efeito de Afecções Não-Danificadoras aumentado em 30% |
 | 5 | Chance de Crítico aumentada pela distância até o alvo: nada colado, tudo a 6 casas | Maestria de Arcos (maestria) — Flechas ganham Chance de Golpe Crítico enquanto viajam adiante, máximo de até 100% de Chance de Golpe Crítico |
+| 5 | no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando | Maestria de Minas (maestria) — Detonar Minas é Ativado enquanto você se mover |
 | 5 | no PoE é o dano que o inimigo causa (o poedb traduz "sofrido"); soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido reduzido em 2% aos Inimigos próximos a ela, até 10% |
 | 4 | acelera todas as afecções de dano, não só o veneno | Maestria de Envenenamentos (maestria) — Envenenamentos infligidos por você causam Dano 20% mais rápido |
 | 4 | conta a Garra da mão principal | Maestria de Garras (maestria) — Ganha 25 de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária |
@@ -104,11 +104,9 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 2 | Vento Favorável: +10% de velocidade de ataque, conjuração e movimento | Atiradora (asc. Ascendant) — Você e Aliados próximos têm Vento Favorável |
 | 1 | 1% de Escudo de Energia máximo aumentado por 1% de chance de Bloquear Magias | Bastião Vil (asc. Occultist) — Chance de bloquear magias aumenta o seu escudo de energia máximo |
 | 1 | a cura sai junto do golpe, da vida que faltava antes dele | Desafiando a Dor (asc. Berserker) — Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio |
-| 1 | a detonação a mais vira o dano dobrado do golpe da Mina | Explosivos Eficientes (notável) — Minas têm uma chance de 15% de serem Detonadas uma Vez Adicional |
 | 1 | a explosão do jogo não passa pela resistência física dos atingidos | Violência Gratuita (asc. Gladiator) — Inimigos com Sangramento Explodem quando você matá-los, causando 20% de suas Vidas Máximas com Dano Físico |
 | 1 | a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma. | Instrumentos da Virtude (asc. Inquisitor) — Mago de Batalha |
 | 1 | a lentidão dos monstros não pega | Incontrolável (asc. Juggernaut) — Velocidade de Movimento não pode ser modificada para abaixo do valor base |
-| 1 | a Mina detona no alvo: desacelera quem ela acerta | Especialista em Demolições (asc. Saboteur) — Minas Desaceleram Inimigos próximos delas por 2 segundos quando são Plantadas |
 | 1 | a regeneração vale em você; a dos totens ainda não | Ritual do Despertar (asc. Hierophant) — Você e seus Totens Regeneram 1% de Vida por segundo para cada Totem Convocado |
 | 1 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | Magia Sanguínea (keystone) — Habilidades Reservam Vida ao invés de mana |
 | 1 | aliado = um lacaio seu em campo (o jogo não mede a distância dele) | Glória do Comando (notável) — Precisão aumentada em 40%, se você tiver pelo menos 1 aliado por perto |

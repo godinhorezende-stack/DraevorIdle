@@ -5732,6 +5732,96 @@
       "unidade": "",
       "combate": true,
       "efeito": "mobs/mecanicas.aoAcertarJogador (12/10)"
+    },
+    "max_armadilhas": {
+      "nome": "Armadilhas plantadas a mais por vez",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "max_minas": {
+      "nome": "Minas Remotas plantadas a mais por vez",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "armadilhas_indestrutiveis": {
+      "nome": "Armadilhas não podem ser Danificadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "minas_indestrutiveis": {
+      "nome": "Minas não podem ser Danificadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "detonar_minas_movendo": {
+      "nome": "Detonar Minas é Ativado enquanto você se mover",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "velocidade_detonacao": {
+      "nome": "Velocidade de Detonação das Minas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "duracao_mina": {
+      "nome": "Duração da Mina",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "armadilhas_ativam_proximas": {
+      "nome": "Quando suas Armadilhas Ativarem, as próximas também Ativam",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "usos_recarga": {
+      "nome": "Usos de Recarga a mais (por tag da habilidade)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe (os usos da recarga) (12/10)"
+    },
+    "armadilhas_extras": {
+      "nome": "Armadilhas a mais em cada arremesso",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "armadilhas_extras_chance": {
+      "nome": "Chance de arremessar Armadilhas a mais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "armadilhas_extras_n": {
+      "nome": "Armadilhas a mais na chance",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "armadilha_ativa_de_novo": {
+      "nome": "Chance das Armadilhas Ativarem uma vez adicional",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas + acoes (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "mina_detona_de_novo": {
+      "nome": "Chance das Minas serem Detonadas uma vez adicional",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas + acoes (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "minas_desaceleram_s": {
+      "nome": "Minas Desaceleram os Inimigos próximos ao serem Plantadas (segundos)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas + acoes (as Armadilhas e Minas plantadas) (12/10)"
     }
   }
 }
