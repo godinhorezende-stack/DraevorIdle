@@ -42,6 +42,7 @@ import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
+import * as Aco from './itens-poe/convocar-o-aco.mjs';
 import * as CargasDoPoe from './itens-poe/cargas.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade, efeitos as efeitosDaArvore } from './passivas/arvore.mjs';
@@ -1034,8 +1035,44 @@ export function projeteisDoTotem(estado, entry, { origem, alvo, vivos }) {
   if (!tags.includes('projectile')) return null;
   const efeito = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
   if (!efeito) return null;
+  // (PoE, 12/10) A Balista de Cerco do Aço: "Ataque do Totem consome até 1 dos Fragmentos de Aço" — os SEUS (`itens-poe/convocar-o-aco.mjs`);
+  // "Se não tiver Fragmentos de Aço, só Dispara 1 Projétil".
+  const doAco = entry.poeGema && estado?.hunt && itensPoeLigado() ? doAcoDaGema(entry.poeGema.slug, efeito.nivel ?? 1) : null;
+  if (doAco?.doTotem) {
+    const ficha = Ficha.combate(estado);
+    const gastos = Aco.consumir(estado.hunt, ficha, doAco.consome + consumoExtraDoAco(ficha, entry), estado.hunt.clock ?? 0);
+    Object.assign(efeito, Aco.projeteisNoUso(doAco, gastos, { base: efeito.projeteisBase ?? 1, extras: efeito.alvosExtras ?? 0, divisao: efeito.divisao ?? 0 }));
+  }
   const area = !!entry.forma;
   return Secundarios.resolver({ efeito, tags, origem, alvo: area ? null : alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, area });
+}
+/** (PoE, 12/10) O que a gema de Aço diz (`Aco.daGema`) por slug e nível — as linhas do nível não mudam (cache). null: não gasta fragmentos. */
+const DO_ACO = new Map();
+function doAcoDaGema(slug, nivel = 1) {
+  const k = `${slug}@${nivel}`;
+  if (!DO_ACO.has(k)) DO_ACO.set(k, Aco.daGema(GemasPoe.textosDaGema(slug, nivel).linhas));
+  return DO_ACO.get(k);
+}
+/** ("Ataques que Disparam Projéteis Consomem até N Fragmentos de Aço adicionais" — o Verme de Aço.) */
+const consumoExtraDoAco = (ficha, entry) => (entry.poeGema?.ataque && tagsPoeDaSkill(entry).includes('projetil') ? Math.max(0, Math.floor(ModsPoe.valor(ficha, 'aco_consome_extra'))) : 0);
+/**
+ * (PoE, 12/10) Os FRAGMENTOS DE AÇO no uso da gema de Aço do personagem (`itens-poe/convocar-o-aco.mjs`): gasta até o "Consome até N" (+ o
+ * do Verme de Aço), muda os projéteis do uso (`efeitoDaGema`, a cópia deste uso) e dá a Proteção de Aço do Aço Estraçalhador da Munição.
+ * Devolve `{ d, gastos }` (o "mais Dano por Fragmento consumido" vale em cada acerto) ou null.
+ */
+function fragmentosNoUso(estado, hunt, entry, efeitoDaGema, agora) {
+  if (!entry.poeGema || !efeitoDaGema || !itensPoeLigado()) return null;
+  const d = doAcoDaGema(entry.poeGema.slug, efeitoDaGema.nivel ?? 1);
+  if (!d || d.doTotem) return null;
+  const ficha = Ficha.combate(estado);
+  const antes = Aco.aco(hunt).fragmentos;
+  const gastos = Aco.consumir(hunt, ficha, d.consome + consumoExtraDoAco(ficha, entry), agora);
+  Object.assign(efeitoDaGema, Aco.projeteisNoUso(d, gastos, { base: efeitoDaGema.projeteisBase ?? 1, extras: efeitoDaGema.alvosExtras ?? 0, divisao: efeitoDaGema.divisao ?? 0 }));
+  if (d.protecao) {
+    const duracaoMs = Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1)?.stats?.duracao ?? 0) * 1000 * Math.max(0.1, 1 + ((efeitoDaGema.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100));
+    if (Aco.ganharProtecao(hunt, d, antes, duracaoMs, agora)) Ficha.invalidar(estado);
+  }
+  return { d, gastos };
 }
 /**
  * Os PROJÉTEIS do golpe de longe de um LACAIO (o arqueiro, o mago, o espectro): os suportes de projétil ligados na gema que o invocou —
@@ -1068,6 +1105,11 @@ function comOsAlvosDaGema(entry, efeito, estado = null) {
   // fração vira chance, para a média bater) — `itens-poe/mods-poe.mjs`.
   const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, Ficha.combate(estado), entry, tagsPoeDaSkill(entry), Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide + (dasPecas?.projeteis ?? 0);
+  // (12/10) A divisão da gema (o Aço Violento: "Projéteis se Partem na direção de N alvos") — o "Se você não tiver Fragmentos de Aço,
+  // Projéteis contam como se já tivessem se Partido" a tira (`fragmentosNoUso`); e o "Habilidades Disparam N Projéteis adicionais por S
+  // segundos após você consumir um total de T Fragmentos de Aço" (o Verme de Aço — `itens-poe/convocar-o-aco.mjs`).
+  if (a.divide) e.divisao = a.divide;
+  if (estado?.hunt?.aco) e.alvosExtras += Aco.projeteisDoBonus(estado.hunt, Ficha.combate(estado));
   // (11/10) A quantidade BASE de projéteis da gema ("Dispara 15 projéteis") e "em sequência": a emissão em `Secundarios.resolver`.
   if ((a.base ?? 0) > 1) e.projeteisBase = a.base;
   if (a.sequencia) e.sequencia = true;
@@ -1754,6 +1796,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
 
   const eventos = [];
+  // (PoE, 12/10) A gema de Aço gasta os Fragmentos de Aço agora (pagou o custo e vai sair): os projéteis deste uso e a Proteção de Aço.
+  const doAco = plantada ? null : fragmentosNoUso(estado, hunt, entry, efeitoDaGema, agora);
   // Vira para ONDE a skill vai (dono, 06/10: "o boneco vira para onde lança a magia?"): a onda/feixe já escolheu o lado (`virarPara`);
   // o resto olha para a casa mirada ou para o alvo.
   if (virarPara != null) hunt.pos.dir = virarPara;
@@ -1875,6 +1919,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (o Libertar: o golpe que Ocorre Novamente por um Selo causa menos dano — `reocorrendo`; a Intensidade: mais dano em área)
     let reocorrendo = false;
     const maisDaIntensidade = intensidade > 0 && tagsPoeDaSkill(entry).includes('area') ? 1 + (intensidade * (efeitoDaGema.intensidadeMaisDanoPct ?? 0)) / 100 : 1;
+    // (PoE, 12/10, o Aço Estraçalhador da Munição) "Projéteis causam até X% mais Dano com Acertos por Fragmento de Aço consumido no início de
+    // seu movimento, reduzido este bônus na medida em que viajam adiante": pela distância de você ao bicho (`Aco.fatorDoDano`).
+    const fatorDoAco = (bicho) => (doAco?.d.maisDanoPct ? Aco.fatorDoDano(doAco.d, doAco.gastos, Math.max(Math.abs(bicho.x - x), Math.abs(bicho.y - y))) : 1);
     // (PoE, 11/10: "Cada quarta Habilidade de Retaliação que você usar sempre será um Golpe Crítico" — este uso é o quarto?)
     const retaliacaoCritica = !!gatilhoDaRetaliacao && ModsPoe.valor(ficha, 'retaliacao_quarta_critica') > 0 && ((hunt.retaliacaoUsos ?? 0) + 1) % 4 === 0;
     let total = 0;
@@ -1910,7 +1957,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const acertar = (bicho, pct = 100, fonte = null) => {
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
-      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * fatorDoAco(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
       const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora);
@@ -2338,6 +2385,67 @@ export function tiqueDosVinculos(estado, hunt, personagem, eventos = [], agora =
         if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) > Vinculos.PADRAO.raioDosProximos) continue;
         for (const e of ['exposicaoFogo', 'exposicaoGelo', 'exposicaoRaio']) ModsPoe.porNoAlvo(m, e, agora + Vinculos.PADRAO.exposicaoMs);
       }
+    }
+  }
+  return eventos;
+}
+
+/**
+ * (PoE, 12/10) O personagem tem o CONVOCAR O AÇO? "Toda habilidade de Aço concede o Convocar o Aço" (a gema encaixada com o tipo Steel) e o
+ * "Concede Chamado do Aço" (o Verme de Aço). `{ consumo }` — o maior "Consome até N Fragmentos de Aço" das gemas encaixadas (+ o do Verme de
+ * Aço), para o uso automático saber quando recarregar — ou null.
+ */
+function convocarOAcoDe(estado, ficha) {
+  let concede = ModsPoe.valor(ficha, 'concede_convocar_aco') > 0;
+  let consumo = 0;
+  for (const [id, s] of Gemas.skillsAtivas(estado)) {
+    const entry = POR_ID.get(id);
+    if (!entry?.poeGema) continue;
+    if ((GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tipos ?? []).includes('Steel')) concede = true;
+    const d = doAcoDaGema(entry.poeGema.slug, s.nivel ?? 1);
+    if (d) consumo = Math.max(consumo, d.consome + consumoExtraDoAco(ficha, entry));
+  }
+  return concede ? { consumo } : null;
+}
+
+/** (PoE, 12/10) O tique dos FRAGMENTOS DE AÇO (`itens-poe/convocar-o-aco.mjs`): a recarga e o fim das Proteções de Aço. */
+export function tiqueDoAco(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+  if (!hunt?.aco || !itensPoeLigado()) return eventos;
+  if (Aco.tique(hunt, Ficha.combate(estado), agora)) Ficha.invalidar(estado);
+  return eventos;
+}
+
+/**
+ * (PoE, 12/10) O CONVOCAR O AÇO, automático (o jogo é idle — `Aco.quer`): com o relógio de ação livre, em combate, chama os empalamentos dos
+ * inimigos vivos e dos cadáveres em volta, reflete o Dano Físico em volta de cada um (pela Redução de Dano Físico do bicho, como o
+ * empalamento solto — `mods-poe.aoAcertar`), ganha os fragmentos e liga a recarga. Ocupa o relógio de ação pelo tempo de uso (0,5 s ÷ a
+ * "Velocidade de Uso"). Devolve os eventos.
+ */
+export function convocarOAco(estado, hunt, personagem, agora = hunt?.clock ?? 0) {
+  if (!itensPoeLigado() || !hunt?.pos || (estado.hp ?? 0) <= 0 || hunt.conjurando || Protecao.imune(hunt)) return [];
+  // (o relógio de ação primeiro: ocupado quase sempre, e é a conta mais barata — a das gemas encaixadas vem depois)
+  const cds = (hunt.cooldowns ??= {});
+  if (cds[GRUPO_DO_POE] && !R.liberou(agora, cds[GRUPO_DO_POE].ate)) return [];
+  const ficha = Ficha.combate(estado);
+  const meu = convocarOAcoDe(estado, ficha);
+  if (!meu) return [];
+  const centro = { x: hunt.pos.x, y: hunt.pos.y };
+  const raio = Aco.raioDaChamada(ficha);
+  const perto = (a, b, r) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) <= r;
+  if (!hunt.monstros.some((m) => m.hp > 0 && perto(m, centro, raio))) return [];
+  if (!Aco.quer(hunt, ficha, { consumo: meu.consumo, centro, raio, agora })) return [];
+  const uso = Aco.usoMs(ficha);
+  cds[GRUPO_DO_POE] = { ate: agora + uso, total: uso };
+  const { reflexos } = Aco.chamar(hunt, ficha, centro, raio, agora);
+  const eventos = [{ t: 'fx', id: 13, uid: 'player', x: centro.x, y: centro.y }];
+  const raioDoReflexo = Aco.raioDoReflexo(ficha);
+  for (const r of reflexos) {
+    eventos.push({ t: 'explosao', id: 6, x: r.x, y: r.y, lado: 1 + 2 * raioDoReflexo });
+    for (const m of hunt.monstros) {
+      if (!(m.hp > 0) || !perto(m, r, raioDoReflexo)) continue;
+      const d = Math.max(1, Math.round(resistido(hunt, m, 'physical', r.dano, null, { armadura: false })));
+      m.hp -= d;
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, alvo: m.name, color: '#b0b0b0', refletido: true });
     }
   }
   return eventos;

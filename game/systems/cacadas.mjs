@@ -1331,6 +1331,9 @@ function autoDisparo(estado, hunt, personagem) {
     const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
     if (resultado.ok) eventos.push(...resultado.eventos);
   }
+  // (PoE, 12/10) O Convocar o Aço que as gemas de Aço concedem: chama os empalamentos e recarrega os Fragmentos de Aço, sozinho, antes do
+  // ataque — ocupa o relógio de ação pelo tempo de uso dele (`acoes.convocarOAco`).
+  if (estado.hp > 0) eventos.push(...Acoes.convocarOAco(estado, hunt, personagem));
   // Ataque: os 11 slots da fileira por PRIORIDADE (a 1ª disponível, a partir do slot 1 — ver combo.mjs).
   if (estado.hp > 0) eventos.push(...Combo.tiqueDoCombo(estado, hunt, personagem, alvo));
   processarMortes(estado, personagem, eventos);
@@ -2076,6 +2079,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   Acoes.tiqueDasRunas(estado, hunt, personagem, eventos);
   // (PoE, 12/10) Os Vínculos: o custo por segundo, a quebra e a morte do alvo (`acoes.tiqueDosVinculos`).
   Acoes.tiqueDosVinculos(estado, hunt, personagem, eventos);
+  // (PoE, 12/10) Os Fragmentos de Aço: a recarga do Convocar o Aço e o fim das Proteções de Aço (`acoes.tiqueDoAco`).
+  Acoes.tiqueDoAco(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
   // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).
