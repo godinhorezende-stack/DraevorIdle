@@ -191,7 +191,7 @@ function pedirCores(j, pedido) {
 const quantas = (e, slug) => e.inventory.filter((x) => x.id === M.idDa(slug)).reduce((t, x) => t + (x.count ?? 1), 0);
 const ultimaDe = (j, t) => j.enviadas.findLast((m) => m.t === t);
 
-test('abrir: a janela larga da Forja na peça vestida, as seis categorias, o inventário e o material escolhido sozinho', { skip: SEM }, () => {
+test('abrir: a janela larga da Forja na peça vestida, as categorias em grupos (só texto), o inventário e o material escolhido sozinho', { skip: SEM }, async () => {
   mock.timers.enable({ apis: ['setTimeout'] });
   try {
     const j = montar();
@@ -203,7 +203,11 @@ test('abrir: a janela larga da Forja na peça vestida, as seis categorias, o inv
     assert.deepEqual(op.alvo, { onde: 'equipment', slot: 'body' }, 'abre na peça vestida');
     assert.equal(op.categoria, 'sockets');
     assert.equal(op.moeda, M.idDa('Jewellers_Orb'), 'o material da categoria escolhido sozinho');
-    assert.equal(j.body.achar('fp-cat').length, 6);
+    // As categorias em grupos, só texto (dono, 12/10: "tire essas imgs, pode confundir").
+    const Regras = await import('../engine/forja-poe.mjs');
+    assert.equal(j.body.achar('fp-cat').length, Regras.CATEGORIAS.length);
+    assert.deepEqual(j.body.achar('fp-grupo-nome').map((n) => n.textContent), Regras.GRUPOS.map((g) => g.nome));
+    assert.ok(j.body.achar('fp-trilho')[0].todos().every((n) => n.tag !== 'canvas'), 'nenhum desenho de moeda no trilho');
     assert.ok(j.body.achar('fp-celula').length >= 1, 'o inventário mostra as peças');
     assert.ok(j.body.achar('fp-mat').some((b) => b.className.includes('escolhida')), 'a barra mostra o material escolhido');
     assert.ok(porTexto(j.body, 'fp-legenda', 'Agora: 2 de 6'), 'a peça: 2 sockets de 6');

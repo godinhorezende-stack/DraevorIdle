@@ -1012,13 +1012,6 @@ function painelExperiencia(character, catalog, party = null) {
     );
   }
 
-  // A prey tem dono: ela só vale contra a criatura dela, e por isso vem depois
-  // do total em vez de dentro dele.
-  const preys = (character.prey ?? []).filter((slot) => slot.bonus === 'exp' && slot.left > 0);
-  for (const slot of preys) {
-    const nome = catalog?.bestiary?.[slot.key]?.name ?? slot.key;
-    linhaDeBonus(`Prey — ${nome}`, `+${slot.percent}%`, 'só nessa criatura');
-  }
   caixa.append(bonusDaExp);
 
   return caixa;

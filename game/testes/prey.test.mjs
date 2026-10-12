@@ -11,6 +11,8 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import { personagemDeTeste, PERSONAGEM, comMarcaNova, HUNT_DE_TESTE } from './apoio.mjs';
 import { doClassico } from './apoio-migracao.mjs';
+/** (os testes do sistema ligado: no jogo oficial ele foi desligado — rodam pelo irmão `.classico`) */
+const DESLIGADO = 'Prey desligado no jogo oficial (dono, 12/10: "tire o sistema de prey e charms do front end tbm" — e no servidor do oficial); vale no clássico';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada');
 const capturado = (arquivo) => comMarcaNova(JSON.parse(readFileSync(join(API, arquivo), 'utf8')));
@@ -38,12 +40,12 @@ test('percentual por estrela bate com todos os slots reais capturados', () => {
   assert.equal(Prey.percentual('exp', 10), 40);
 });
 
-test('preço da lista nova é 200 x level (1.600 no 8, 80.000 no 400, como capturado)', () => {
+test('preço da lista nova é 200 x level (1.600 no 8, 80.000 no 400, como capturado)', { skip: doClassico(DESLIGADO) }, () => {
   assert.equal(Prey.paraCliente(personagemDeTeste({ level: 8 })).preyRerollCost, 1600);
   assert.equal(Prey.paraCliente(personagemDeTeste({ level: 400 })).preyRerollCost, 80000);
 });
 
-test('personagem novo nasce com o formato real: 2 slots abertos com 9 criaturas e o 3º travado', () => {
+test('personagem novo nasce com o formato real: 2 slots abertos com 9 criaturas e o 3º travado', { skip: doClassico(DESLIGADO) }, () => {
   const agora = 1_000_000;
   const { prey } = Prey.paraCliente(novo());
   const real = capturado('character-real-example.json').prey;
@@ -67,7 +69,7 @@ test('personagem novo nasce com o formato real: 2 slots abertos com 9 criaturas 
 
 // ---- Os comandos ----
 
-test('choose: escolhe da lista e ativa 2h; recusa fora da lista, slot ocupado e travado', () => {
+test('choose: escolhe da lista e ativa 2h; recusa fora da lista, slot ocupado e travado', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   const [s0, s1] = e.prey;
   assert.equal(Prey.comando(e, { action: 'choose', slot: 0, key: 'nao-existe' }).ok, false);
@@ -85,7 +87,7 @@ test('choose: escolhe da lista e ativa 2h; recusa fora da lista, slot ocupado e 
   assert.equal(e.wildcards, 5, 'escolher da lista é de graça');
 });
 
-test('selectAll: qualquer criatura do bestiário por 5 wildcards; recusa boss, repetida e sem saldo', () => {
+test('selectAll: qualquer criatura do bestiário por 5 wildcards; recusa boss, repetida e sem saldo', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   assert.equal(e.wildcards, 5);
   const boss = Object.keys(CATALOGO.bestiary).find((k) => CATALOGO.bestiary[k].boss);
@@ -101,7 +103,7 @@ test('selectAll: qualquer criatura do bestiário por 5 wildcards; recusa boss, r
   assert.equal(e.wildcards, 4, 'recusa não cobra');
 });
 
-test('rerollBonus: custa 1 wildcard, nunca piora as estrelas e reinicia o relógio da presa ativa', () => {
+test('rerollBonus: custa 1 wildcard, nunca piora as estrelas e reinicia o relógio da presa ativa', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   e.wildcards = 200;
   const s = e.prey[0];
@@ -145,7 +147,7 @@ test('rerollList: grátis quando o relógio passou (e volta 20h), senão cobra 2
   assert.equal(s.options.length, 9);
 });
 
-test('a lista nova nunca traz a criatura que já é presa ativa em outro slot', () => {
+test('a lista nova nunca traz a criatura que já é presa ativa em outro slot', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   e.gold = 1e12;
   Prey.comando(e, { action: 'selectAll', slot: 0, key: 'troll' });
@@ -155,7 +157,7 @@ test('a lista nova nunca traz a criatura que já é presa ativa em outro slot', 
   }
 });
 
-test('option: liga/desliga "Renovar sozinho" e "Travar bônus", que são excludentes', () => {
+test('option: liga/desliga "Renovar sozinho" e "Travar bônus", que são excludentes', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   const s = e.prey[0];
   assert.ok(Prey.comando(e, { action: 'option', slot: 0, option: 'autoReroll', value: true }).ok);
@@ -177,7 +179,7 @@ test('comando desconhecido e slot inexistente viram erro, não exceção', () =>
 
 // ---- O relógio e a renovação ----
 
-test('o tempo desce só quando consumido; ao zerar sem renovação, o slot volta à escolha com lista nova', () => {
+test('o tempo desce só quando consumido; ao zerar sem renovação, o slot volta à escolha com lista nova', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   const s = e.prey[0];
   Prey.comando(e, { action: 'choose', slot: 0, key: s.options[0] });
@@ -189,7 +191,7 @@ test('o tempo desce só quando consumido; ao zerar sem renovação, o slot volta
   assert.equal(s.options.length, 9);
 });
 
-test('"Travar bônus" renova a mesma presa com o mesmo bônus por 5 wildcards', () => {
+test('"Travar bônus" renova a mesma presa com o mesmo bônus por 5 wildcards', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   const s = e.prey[0];
   Prey.comando(e, { action: 'choose', slot: 0, key: s.options[0] });
@@ -203,7 +205,7 @@ test('"Travar bônus" renova a mesma presa com o mesmo bônus por 5 wildcards', 
   assert.equal(s.key, null);
 });
 
-test('"Renovar sozinho" mantém a presa e sorteia bônus novo por 1 wildcard', () => {
+test('"Renovar sozinho" mantém a presa e sorteia bônus novo por 1 wildcard', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   const s = e.prey[0];
   Prey.comando(e, { action: 'choose', slot: 0, key: s.options[0] });
@@ -216,7 +218,7 @@ test('"Renovar sozinho" mantém a presa e sorteia bônus novo por 1 wildcard', (
   assert.equal(e.wildcards, 4);
 });
 
-test('o terceiro slot abre ao comprar na Store', () => {
+test('o terceiro slot abre ao comprar na Store', { skip: doClassico(DESLIGADO) }, () => {
   const e = novo();
   e.coins = 1000;
   assert.ok(Loja.comprar(e, { id: 'prey-slot' }).ok);
@@ -233,7 +235,7 @@ function comPresa(bonus, rarity = 10, key = 'troll') {
   return e;
 }
 
-test('fatores: só contra a criatura escolhida e só com tempo sobrando', () => {
+test('fatores: só contra a criatura escolhida e só com tempo sobrando', { skip: doClassico(DESLIGADO) }, () => {
   const e = comPresa('exp');
   assert.equal(Prey.fatorDeExp(e, 'troll'), 1.4);
   assert.equal(Prey.fatorDeExp(e, 'amazon'), 1);
@@ -246,7 +248,7 @@ test('fatores: só contra a criatura escolhida e só com tempo sobrando', () => 
   assert.equal(Prey.fatorDeExp(personagemDeTeste(), 'troll'), 1, 'personagem sem prey');
 });
 
-test('prey de dano entra no golpe do jogador (rolarCritico)', () => {
+test('prey de dano entra no golpe do jogador (rolarCritico)', { skip: doClassico(DESLIGADO) }, () => {
   const e = comPresa('damage');
   const ficha = { ...Ficha.combate(e), critChance: 0, onslaughtExtra: 0 };
   const troll = { key: 'troll', uid: 1, x: 0, y: 0 };

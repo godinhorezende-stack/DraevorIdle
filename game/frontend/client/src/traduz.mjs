@@ -1,16 +1,12 @@
 /*
- * ---- Charms e imbuements em português ----
+ * ---- Imbuements em português ----
  *
- * O dono: "traduz as gemas do charms e os imbuementos ok".
- *
- * As duas telas eram as últimas do jogo inteiramente em inglês: "Triggers on a
- * creature with a certain chance and deals 5% of its initial hit points as
- * physical damage once" é a frase que decide se o jogador gasta 240 pontos de
- * charm, e ela estava em inglês num jogo em português.
+ * O dono: "traduz as gemas do charms e os imbuementos ok". (Os Charms saíram da tela — dono, 12/10: "tire o sistema de prey e charms do
+ * front end"; a tradução deles saiu junto.)
  *
  * ---- Por que aqui, e não no `gamedata` ----
  *
- * Os dois arquivos (`charms.json`, `imbuements.json`) são EXTRAÍDOS da base do
+ * O arquivo (`imbuements.json`) é EXTRAÍDO da base do
  * servidor. Reescrever o texto deles faria a próxima extração apagar a tradução
  * em silêncio — e ninguém iria notar, porque a tela continuaria desenhando,
  * só que em inglês de novo.
@@ -27,51 +23,6 @@
  * que resolve o problema de verdade. Então o nome fica e ganha um apelido em
  * português ao lado, quando ele ajuda.
  */
-
-/*
- * ---- Os charms, por `id` ----
- *
- * Por id e não por nome: o nome é o que a base pode mudar numa atualização, e
- * uma tradução presa a ele viraria uma linha morta sem ninguém perceber. O id
- * é o que o servidor usa para comprar e atribuir (ver `upgradeCharm`).
- */
-const CHARMS = {
-  1: { apelido: 'Ferida', texto: 'Dispara numa criatura com certa chance e causa 5% da vida inicial dela como dano físico, uma vez.' },
-  2: { apelido: 'Chamas', texto: 'Dispara numa criatura com certa chance e causa 5% da vida inicial dela como dano de fogo, uma vez.' },
-  3: { apelido: 'Veneno', texto: 'Dispara numa criatura com certa chance e causa 5% da vida inicial dela como dano de terra, uma vez.' },
-  4: { apelido: 'Congelar', texto: 'Dispara numa criatura com certa chance e causa 5% da vida inicial dela como dano de gelo, uma vez.' },
-  5: { apelido: 'Choque', texto: 'Dispara numa criatura com certa chance e causa 5% da vida inicial dela como dano de energia, uma vez.' },
-  6: { apelido: 'Maldição', texto: 'Dispara numa criatura com certa chance e causa 5% da vida inicial dela como dano de morte, uma vez.' },
-  7: { apelido: 'Aleijar', texto: 'Aleija a criatura com certa chance e a paralisa por 10 segundos.' },
-  8: { apelido: 'Aparar', texto: 'Todo dano recebido é refletido de volta em quem atacou, com certa chance.' },
-  9: { apelido: 'Esquiva', texto: 'Desvia de um ataque com certa chance, sem tomar dano nenhum.' },
-  10: { apelido: 'Explosão de Adrenalina', texto: 'Com certa chance, depois de você levar um golpe, a adrenalina acelera seus reflexos e você anda mais rápido por 10 segundos.' },
-  11: { apelido: 'Entorpecer', texto: 'Com certa chance, depois do ataque da criatura, entorpece e paralisa ela por 10 segundos.' },
-  12: { apelido: 'Purificar', texto: 'Com certa chance, depois de você levar um golpe, remove um efeito negativo ativo ao acaso e deixa você imune a ele por um tempo.' },
-  13: { apelido: 'Bênção', texto: 'Abençoa você: a perda de skill e de experiência cai 10% quando a criatura escolhida for quem te matar.' },
-  14: { apelido: 'Coletar', texto: 'Aumenta a chance de conseguir esfolar ou recolher pó de uma criatura que permita isso.' },
-  15: { apelido: 'Estripar', texto: 'Estripar a criatura rende 20% mais produtos dela.' },
-  16: { apelido: 'Golpe Baixo', texto: 'Soma 8% de chance de acerto crítico aos ataques com armas de crítico.' },
-  17: { apelido: 'Ira Divina', texto: 'Dispara numa criatura com certa chance e causa 5% da vida inicial dela como dano sagrado, uma vez.' },
-  18: { apelido: 'Abraço Vampírico', texto: 'Soma 4% de roubo de vida aos ataques, se você estiver usando equipamento que dê roubo de vida.' },
-  19: { apelido: 'Chamado do Vazio', texto: 'Soma 2% de roubo de mana aos ataques, se você estiver usando equipamento que dê roubo de mana.' },
-  20: { apelido: 'Golpe Selvagem', texto: 'Soma dano crítico extra aos ataques com armas de crítico.' },
-  21: { apelido: 'Agarrão Fatal', texto: 'Impede que criaturas fujam por estarem com pouca vida, por 30 segundos.' },
-  22: { apelido: 'Inversão do Vazio', texto: 'Chance de GANHAR mana em vez de perder ao tomar dano de dreno de mana.' },
-  23: { apelido: 'Carnificina', texto: 'Matar um monstro causa dano físico nos que estiverem em volta, num raio pequeno.' },
-  24: { apelido: 'Dominar', texto: 'Causa dano físico com base na sua vida máxima.' },
-  25: { apelido: 'Sobrecarga', texto: 'Causa dano físico com base na sua mana máxima.' },
-};
-
-/** O apelido em português de um charm, ou `null` quando não há. */
-export function apelidoDoCharm(id) {
-  return CHARMS[id]?.apelido ?? null;
-}
-
-/** A explicação do charm em português — ou a original, se faltar tradução. */
-export function textoDoCharm(id, original) {
-  return CHARMS[id]?.texto ?? original ?? '';
-}
 
 /*
  * ---- Os imbuements ----

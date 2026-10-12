@@ -58,8 +58,22 @@ function rodar(e, m, { rng = rngDe(m.id ?? 'x'), guardado = null, lotes = 400 } 
 }
 
 // ---------------------------------------------------------------- as categorias
-test('as categorias: cada moeda com efeito tem a sua; o catálogo leva a categoria e o "repete" para a tela', { skip: SEM }, () => {
-  const esperado = { Jewellers_Orb: 'sockets', Chromatic_Orb: 'cores', Orb_of_Fusing: 'links', Chaos_Orb: 'atributos', Orb_of_Alteration: 'atributos', Divine_Orb: 'atributos', Exalted_Orb: 'atributos', Orb_of_Alchemy: 'raridade', Orb_of_Chance: 'raridade', Orb_of_Scouring: 'raridade', Vaal_Orb: 'outras', Mirror_of_Kalandra: 'outras', Gemcutters_Prism: 'outras', Orb_of_Regret: 'outras' };
+test('as categorias: TODA moeda com efeito está numa lista (sem cair por sobra), a sem efeito em "Sem efeito no jogo"; o catálogo leva a categoria e o "repete"', { skip: SEM }, () => {
+  // (dono, 12/10: "quero que veja todas moeda para colocar em algum desses, podendo ser criado mais abas")
+  const listadas = Object.values(M.MOEDAS_DA_CATEGORIA).flat();
+  assert.equal(new Set(listadas).size, listadas.length, 'nenhuma moeda em duas categorias');
+  for (const m of M.MOEDAS) {
+    if (M.STATUS[m.slug].status === 'nao') assert.equal(M.categoriaDaMoeda(m.slug), 'semEfeito', m.slug);
+    else assert.ok(listadas.includes(m.slug), `${m.slug} com efeito e sem categoria`);
+  }
+  assert.deepEqual(Object.keys(M.MOEDAS_DA_CATEGORIA).sort(), Regras.CATEGORIAS.filter((c) => c !== 'semEfeito').sort(), 'as categorias da tela e as das moedas são as mesmas');
+  const esperado = {
+    Jewellers_Orb: 'sockets', Chromatic_Orb: 'cores', Orb_of_Fusing: 'links', Chaos_Orb: 'atributos', Orb_of_Alteration: 'atributos', Divine_Orb: 'atributos',
+    Exalted_Orb: 'atributos', Orb_of_Alchemy: 'raridade', Orb_of_Chance: 'raridade', Orb_of_Scouring: 'raridade', Blessed_Orb: 'implicitos', Sacred_Orb: 'implicitos',
+    Shapers_Exalted_Orb: 'influencia', Orb_of_Dominance: 'influencia', Lesser_Eldritch_Ember: 'ancestral', Orb_of_Conflict: 'ancestral',
+    Blacksmiths_Whetstone: 'qualidade', Glassblowers_Bauble: 'qualidade', Vaal_Orb: 'corrupcao', Tainted_Chaos_Orb: 'corrupcao',
+    Mirror_of_Kalandra: 'especiais', Orb_of_Regret: 'especiais', Gemcutters_Prism: 'gemas', Chaos_Shard: 'lascas', Portal_Scroll: 'semEfeito',
+  };
   for (const [slug, cat] of Object.entries(esperado)) {
     assert.equal(M.categoriaDaMoeda(slug), cat, slug);
     const meta = ITEM_CATALOG[M.idDa(slug)];
@@ -67,6 +81,8 @@ test('as categorias: cada moeda com efeito tem a sua; o catálogo leva a categor
     assert.equal(meta.moedaPoe.repete, M.REPETE.has(slug), `repete: ${slug}`);
   }
   for (const m of M.MOEDAS) assert.ok(Regras.CATEGORIAS.includes(M.categoriaDaMoeda(m.slug)), m.slug);
+  // Só as categorias com resultado desejado repetem.
+  for (const slug of M.REPETE) assert.ok(Regras.COM_DESEJO.has(M.categoriaDaMoeda(slug)), `${slug} repete fora de uma categoria com desejo`);
   // As que somam ou tiram não repetem; as que sorteiam de novo, sim.
   for (const slug of ['Exalted_Orb', 'Orb_of_Annulment', 'Orb_of_Augmentation', 'Orb_of_Transmutation']) assert.equal(M.REPETE.has(slug), false, slug);
   for (const slug of ['Jewellers_Orb', 'Chromatic_Orb', 'Orb_of_Fusing', 'Chaos_Orb', 'Orb_of_Alteration', 'Divine_Orb', 'Orb_of_Chance']) assert.equal(M.REPETE.has(slug), true, slug);

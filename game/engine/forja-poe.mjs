@@ -3,8 +3,39 @@
 // (`systems/itens-poe/forja.mjs`, que usa as moedas de `itens-poe/moedas.mjs`); a tela usa estas funções só para MOSTRAR.
 import { gruposLigados } from './sockets-de-gema.mjs';
 
-/** As categorias da Forja, na ordem da tela. "Outras": as moedas que não mexem em sockets, atributos nem raridade (Vaal, Espelho…). */
-export const CATEGORIAS = Object.freeze(['sockets', 'cores', 'links', 'atributos', 'raridade', 'outras']);
+/**
+ * As categorias da Forja, em GRUPOS, na ordem da tela (dono, 12/10: "melhore deixando tudo mais organizado e profissional"). Cada moeda
+ * com efeito está numa delas (`itens-poe/moedas.mjs` → `MOEDAS_DA_CATEGORIA`); a sem efeito no jogo, em "Sem efeito no jogo".
+ * `desejo`: a categoria tem resultado desejado (e repetição).
+ */
+export const GRUPOS = Object.freeze([
+  { nome: 'Encaixes', categorias: [
+    { id: 'sockets', nome: 'Sockets', resumo: 'Número de encaixes', desejo: true },
+    { id: 'cores', nome: 'Cores', resumo: 'Cores dos sockets', desejo: true },
+    { id: 'links', nome: 'Links', resumo: 'Ligação dos sockets', desejo: true },
+  ] },
+  { nome: 'Modificadores', categorias: [
+    { id: 'raridade', nome: 'Raridade', resumo: 'De Normal a Único', desejo: true },
+    { id: 'atributos', nome: 'Atributos', resumo: 'Modificadores', desejo: true },
+    { id: 'implicitos', nome: 'Implícitos e base', resumo: 'Implícitos e defesa' },
+    { id: 'influencia', nome: 'Influência', resumo: 'Mods de influência' },
+    { id: 'ancestral', nome: 'Ancestral', resumo: 'Brasas e Fluidos' },
+    { id: 'qualidade', nome: 'Qualidade', resumo: 'Qualidade da peça' },
+  ] },
+  { nome: 'Outros', categorias: [
+    { id: 'corrupcao', nome: 'Corrupção', resumo: 'Vaal e Corroídas' },
+    { id: 'especiais', nome: 'Especiais', resumo: 'Espelho e Remorso' },
+    { id: 'gemas', nome: 'Gemas', resumo: 'Prisma e Lente' },
+    { id: 'lascas', nome: 'Lascas', resumo: '20 lascas = 1 orbe' },
+    { id: 'semEfeito', nome: 'Sem efeito', resumo: 'Ligas fora do jogo' },
+  ] },
+]);
+/** Todas as categorias, na ordem. */
+export const CATEGORIAS = Object.freeze(GRUPOS.flatMap((g) => g.categorias.map((c) => c.id)));
+/** As categorias com resultado desejado (e repetição). */
+export const COM_DESEJO = Object.freeze(new Set(GRUPOS.flatMap((g) => g.categorias.filter((c) => c.desejo).map((c) => c.id))));
+/** O cadastro de uma categoria (`{ id, nome, resumo, desejo }`), ou null. */
+export const categoria = (id) => GRUPOS.flatMap((g) => g.categorias).find((c) => c.id === id) ?? null;
 /** As cores dos sockets (R Força, G Destreza, B Inteligência, W branco — aceita qualquer gema). */
 export const CORES = Object.freeze(['R', 'G', 'B', 'W']);
 

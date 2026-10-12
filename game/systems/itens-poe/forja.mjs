@@ -1,5 +1,6 @@
 // A FORJA do PoE (dono, 12/10: "reformulação completa da Forja" — modelo compacto do UNDECEMBER, estética do PoE 1): as CATEGORIAS
-// (sockets, cores, links, atributos, raridade e as outras moedas), o RESULTADO DESEJADO de cada uma e a REPETIÇÃO controlada pelo servidor.
+// (os encaixes, a raridade, os modificadores, a influência, a corrupção… — `engine/forja-poe.mjs` → `GRUPOS`), o RESULTADO DESEJADO das que têm
+// um (sockets, cores, links, atributos, raridade) e a REPETIÇÃO controlada pelo servidor.
 //
 // Não há motor novo: cada tentativa é UMA moeda pelo mesmo caminho do `{t:'moeda'}` (`MoedasPoe.usar` — valida a peça, sorteia, gasta a
 // moeda só se a peça mudou, remonta a peça). Aqui moram só o que a tela precisa para configurar (`opcoes`), a validação do desejo (nada
@@ -28,8 +29,13 @@ const erro = (e) => ({ ok: false, erro: e });
 export const categoriaDa = MoedasPoe.categoriaDaMoeda;
 export const REPETE = MoedasPoe.REPETE;
 /** As de Atributos que sorteiam os MODS de novo (o desejo de mods vale nelas) e a raridade que cada uma pede. */
-const PEDE_RARIDADE = { Orb_of_Alteration: 'magico', Chaos_Orb: 'raro', Veiled_Chaos_Orb: 'raro', Tainted_Chaos_Orb: 'raro' };
-const SORTEIAM_MODS = new Set([...Object.keys(PEDE_RARIDADE), 'Eldritch_Chaos_Orb', 'Divine_Orb']);
+const PEDE_RARIDADE = { Orb_of_Alteration: 'magico', Chaos_Orb: 'raro', Veiled_Chaos_Orb: 'raro' };
+const SORTEIAM_MODS = new Set([...Object.keys(PEDE_RARIDADE), 'Divine_Orb']);
+/** As moedas SEM sorteio: o ensaio numa cópia já é o resultado (a prévia exata). */
+const PREVIA_EXATA = new Set([
+  'Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble', 'Orb_of_Scouring', 'Orb_of_Regret', 'Gemcutters_Prism',
+  ...MoedasPoe.MOEDAS_DA_CATEGORIA.lascas,
+]);
 /**
  * A barra de materiais mostra o que o jogador TEM e, zeradas, só as moedas principais de cada categoria (para ele saber o que precisa):
  * sem isso a de Atributos listava umas quarenta moedas apagadas.
@@ -230,6 +236,27 @@ function motivoDaMoeda(estado, peca, slug, categoria) {
   return null;
 }
 
+/**
+ * O ENSAIO: a moeda aplicada numa CÓPIA da mochila e do equipamento (o mesmo `MoedasPoe.usar` da forja de verdade). Diz se ela vale aqui
+ * — com a mensagem do próprio motor quando não vale — e, nas moedas sem sorteio, o resultado exato. Nada do personagem muda.
+ */
+function ensaio(estado, slug, alvo) {
+  const copia = { inventory: structuredClone(estado.inventory ?? []), equipment: structuredClone(estado.equipment ?? {}), passivas: structuredClone(estado.passivas ?? {}) };
+  const r = MoedasPoe.usar(copia, { moeda: MoedasPoe.idDa(slug), ...(alvo ? { alvo } : {}) }, () => 0.5);
+  return r.ok ? { ok: true, notice: r.notice ?? null } : { ok: false, erro: r.erro };
+}
+/** Por que o material não vale agora (ou null) e, sem sorteio, o resultado exato. */
+function situacao(estado, alvo, peca, slug, categoria) {
+  const st = MoedasPoe.STATUS[slug];
+  if (st?.status === 'nao') return { motivo: `Sem efeito no jogo: ${st.motivo}.` };
+  if (quantas(estado, MoedasPoe.idDa(slug)) < 1) return { motivo: 'Você não tem esta moeda.' };
+  const antes = peca ? motivoDaMoeda(estado, peca, slug, categoria) : null;
+  if (antes) return { motivo: antes };
+  const e = ensaio(estado, slug, (st?.alvo ?? 'peca') === 'nenhum' ? null : alvo);
+  if (!e.ok) return { motivo: e.erro };
+  return { motivo: null, ...(PREVIA_EXATA.has(slug) && e.notice ? { previa: e.notice } : {}) };
+}
+
 // ---------------------------------------------------------------- a ESTIMATIVA
 function estimativa(estado, peca, slug, categoria, desejo, reiniciar = false) {
   if (!desejo) return null;
@@ -259,10 +286,15 @@ export function opcoes(estado, m = {}) {
   const pedido = Number(m.pedido) || 0;
   const categoria = Regras.CATEGORIAS.includes(m.categoria) ? m.categoria : 'sockets';
   const peca = pecaDo(estado, m.alvo);
-  const materiais = MoedasPoe.MOEDAS.filter((x) => categoriaDa(x.slug) === categoria).map((x) => ({
-    id: x.itemId, slug: x.slug, nome: ITEM_CATALOG[x.itemId]?.name ?? x.nome, tem: quantas(estado, x.itemId), repete: REPETE.has(x.slug),
-    status: MoedasPoe.STATUS[x.slug]?.status ?? 'nao', motivo: peca ? motivoDaMoeda(estado, peca, x.slug, categoria) : null,
-  })).filter((x) => x.tem > 0 || (PRINCIPAIS.has(x.slug) && x.status !== 'nao'));
+  const alvo = m.alvo ?? null;
+  // (a barra: o que o jogador tem e, zeradas, as principais; "Sem efeito no jogo" só mostra as que ele tem)
+  const materiais = MoedasPoe.MOEDAS.filter((x) => categoriaDa(x.slug) === categoria)
+    .map((x) => ({ x, tem: quantas(estado, x.itemId) }))
+    .filter(({ x, tem }) => tem > 0 || (PRINCIPAIS.has(x.slug) && categoria !== 'semEfeito'))
+    .map(({ x, tem }) => ({
+      id: x.itemId, slug: x.slug, nome: ITEM_CATALOG[x.itemId]?.name ?? x.nome, tem, repete: REPETE.has(x.slug) && Regras.COM_DESEJO.has(categoria),
+      status: MoedasPoe.STATUS[x.slug]?.status ?? 'nao', ...situacao(estado, alvo, peca, x.slug, categoria),
+    }));
   if (!peca) return { pedido, categoria, alvo: m.alvo ?? null, peca: null, materiais };
   const p = peca.poe;
   const slug = slugDo(m.moeda);
@@ -405,7 +437,7 @@ function comecar(estado, id, m) {
   const modo = ['uma', 'limite', 'ate'].includes(m.modo) ? m.modo : 'uma';
   let total = 1;
   if (modo !== 'uma') {
-    if (!REPETE.has(slug)) return erro('Este material é de uma tentativa por vez (ele soma ou tira, não sorteia de novo).');
+    if (!REPETE.has(slug) || !Regras.COM_DESEJO.has(categoria)) return erro('Este material é de uma tentativa por vez (ele soma ou tira, não sorteia de novo).');
     if (modo === 'limite') {
       total = Math.floor(Number(m.limite));
       if (!(total >= 1 && total <= LIMITE_MAXIMO)) return erro(`O limite vai de 1 a ${LIMITE_MAXIMO} tentativas.`);

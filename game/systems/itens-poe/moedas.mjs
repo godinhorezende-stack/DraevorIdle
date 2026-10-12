@@ -658,30 +658,52 @@ export const STATUS = Object.fromEntries(MOEDAS.map((m) => {
 }));
 
 // ---------------------------------------------------------------- as CATEGORIAS da Forja (dono, 12/10 — `itens-poe/forja.mjs`)
-const DA_CATEGORIA = {
+/*
+ * Cada moeda com efeito está numa lista (dono, 12/10: "quero que veja todas moeda para colocar em algum desses, podendo ser criado mais
+ * abas"): os encaixes (sockets, cores, links — as Corroídas de socket junto), a raridade, os modificadores, os implícitos e a base, a
+ * influência, o Ancestral (Eldritch), a qualidade, a corrupção (Vaal e as outras Corroídas), as especiais, as de gema e as lascas. A que
+ * não tem efeito no jogo fica em "Sem efeito no jogo" (com o motivo).
+ */
+const LASCAS = ['Transmutation_Shard', 'Alteration_Shard', 'Alchemy_Shard', 'Chaos_Shard', 'Regal_Shard', 'Exalted_Shard', 'Annulment_Shard', 'Fracturing_Shard', 'Mirror_Shard'];
+export const MOEDAS_DA_CATEGORIA = Object.freeze({
   sockets: ['Jewellers_Orb', 'Tainted_Jewellers_Orb'],
   cores: ['Chromatic_Orb', 'Tainted_Chromatic_Orb'],
   links: ['Orb_of_Fusing', 'Tainted_Orb_of_Fusing'],
   raridade: ['Orb_of_Transmutation', 'Orb_of_Alchemy', 'Regal_Orb', 'Foulborn_Regal_Orb', 'Orb_of_Scouring', 'Orb_of_Chance', 'Orb_of_Binding'],
-  // (corrompem, copiam, trocam o único ou podem destruir a peça)
-  outras: ['Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb', 'Mirror_of_Kalandra', 'Ancient_Orb', 'Tainted_Mythic_Orb'],
-};
-const CATEGORIA_FIXA = new Map(Object.entries(DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
-/**
- * A categoria da Forja de uma moeda: sockets, cores, links e raridade (as da lista); o resto que mexe na peça (mods, valores, implícitos,
- * qualidade) é Atributos; a de gema, a sem alvo (lascas, Remorso) e a sem efeito no jogo ficam em Outras.
- */
+  atributos: [
+    'Orb_of_Alteration', 'Orb_of_Augmentation', 'Foulborn_Orb_of_Augmentation', 'Chaos_Orb', 'Veiled_Chaos_Orb', 'Exalted_Orb', 'Foulborn_Exalted_Orb',
+    'Veiled_Exalted_Orb', 'Orb_of_Annulment', 'Divine_Orb', 'Fracturing_Orb',
+  ],
+  implicitos: ['Blessed_Orb', 'Sacred_Orb'],
+  influencia: [...Object.keys(INFLUENCIAS), 'Orb_of_Dominance'],
+  ancestral: [
+    'Lesser_Eldritch_Ember', 'Greater_Eldritch_Ember', 'Grand_Eldritch_Ember', 'Exceptional_Eldritch_Ember',
+    'Lesser_Eldritch_Ichor', 'Greater_Eldritch_Ichor', 'Grand_Eldritch_Ichor', 'Exceptional_Eldritch_Ichor',
+    'Eldritch_Chaos_Orb', 'Eldritch_Exalted_Orb', 'Eldritch_Orb_of_Annulment', 'Orb_of_Conflict',
+  ],
+  qualidade: ['Blacksmiths_Whetstone', 'Armourers_Scrap', 'Glassblowers_Bauble'],
+  corrupcao: [
+    'Vaal_Orb', 'Volatile_Vaal_Orb', 'Djinn-Touched_Vaal_Orb', 'Tainted_Chaos_Orb', 'Tainted_Exalted_Orb', 'Tainted_Divine_Teardrop',
+    'Tainted_Armourers_Scrap', 'Tainted_Blacksmiths_Whetstone', 'Tainted_Mythic_Orb',
+  ],
+  especiais: ['Mirror_of_Kalandra', 'Ancient_Orb', 'Orb_of_Regret'],
+  gemas: ['Gemcutters_Prism', 'Gemcutters_Lens'],
+  lascas: LASCAS,
+});
+const CATEGORIA_FIXA = new Map(Object.entries(MOEDAS_DA_CATEGORIA).flatMap(([cat, lista]) => lista.map((slug) => [slug, cat])));
+/** A categoria da Forja de uma moeda (a lista acima); a sem efeito no jogo, "semEfeito". */
 export function categoriaDaMoeda(slug) {
-  if (CATEGORIA_FIXA.has(slug)) return CATEGORIA_FIXA.get(slug);
-  return FAZ[slug] && (FAZ[slug].alvo ?? 'peca') === 'peca' ? 'atributos' : 'outras';
+  if (!FAZ[slug]) return 'semEfeito';
+  return CATEGORIA_FIXA.get(slug) ?? 'especiais';
 }
 /**
  * As moedas que REPETEM na Forja: as que sorteiam de novo a mesma coisa (a peça continua aceitando a moeda depois) e a Chance (com o
- * Expurgo para voltar a peça a Normal). As que somam ou tiram (Ampliador, Exaltado, Anulação…) vão uma tentativa por vez.
+ * Expurgo para voltar a peça a Normal), nas categorias que têm resultado desejado. As que somam ou tiram (Ampliador, Exaltado,
+ * Anulação…), as que corrompem e as Ancestrais vão uma tentativa por vez.
  */
 export const REPETE = new Set([
   'Jewellers_Orb', 'Tainted_Jewellers_Orb', 'Chromatic_Orb', 'Tainted_Chromatic_Orb', 'Orb_of_Fusing', 'Tainted_Orb_of_Fusing',
-  'Orb_of_Alteration', 'Chaos_Orb', 'Veiled_Chaos_Orb', 'Eldritch_Chaos_Orb', 'Tainted_Chaos_Orb', 'Divine_Orb', 'Orb_of_Chance',
+  'Orb_of_Alteration', 'Chaos_Orb', 'Veiled_Chaos_Orb', 'Divine_Orb', 'Orb_of_Chance',
 ].filter((slug) => FAZ[slug]));
 
 // ---------------------------------------------------------------- o catálogo e o uso

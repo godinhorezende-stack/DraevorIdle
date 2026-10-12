@@ -66,11 +66,10 @@ import {
   atualizarBarraDeOutro,
 } from './actionbar.mjs';
 import {
-  initPanels, openHunts, openPrey, openBlessings, openQuests, openOutfits,
+  initPanels, openHunts, openBlessings, openQuests, openOutfits,
   renderAppearance, openStore, openMarket, openBank, openLocker, openRanking,
-  openCharms, openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja,
+  openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja,
   openDiario, openLojaNpc, abrirObterCoins,
-  resumoDoPreyParaBalao, resumoDosCharmsParaBalao,
   resumoDasGemasParaBalao,
   resumoDaMorteLigado, ligarResumoDaMorte, aplicarEstiloDaRaridade,
   openArena,
@@ -1120,10 +1119,6 @@ function handle(message) {
       if (!abriuSozinho) mostrarPagamento(message);
       break;
     }
-    case 'charms':
-      state.charms = message.view;
-      panelCtx.redraw?.();
-      break;
     /*
      * O lobby da arena. Ele chega por pedido (ao abrir a janela) e também
      * depois de cada ação — desafiar, cancelar —, para a lista de quem está
@@ -1529,7 +1524,6 @@ function resetCharacterState() {
   // E a mobília das criaturas, que é do mapa do personagem anterior. As duas
   // memórias — esta e a do servidor — esvaziam juntas. Ver `juntarAsCriaturas`.
   mobiliaDasCriaturas.clear();
-  state.charms = null;
   // A forja é do personagem: a lista de peças do anterior não vale para este.
   state.forja = null;
   // E o craft mostra o que ESTE personagem tem na mochila. Ver `craftView`.
@@ -1740,9 +1734,6 @@ function contarOsPrazos(character) {
   if (character.bossCooldownsAte) {
     pronto.bossCooldowns = {};
     for (const [id, ate] of Object.entries(character.bossCooldownsAte)) pronto.bossCooldowns[id] = falta(ate);
-  }
-  if (character.prey) {
-    pronto.prey = character.prey.map((slot) => ({ ...slot, freeReroll: falta(slot.freeRerollAte) }));
   }
   /*
    * As duas portas já mandavam o `ate` junto do `restante`; agora mandam só
@@ -2168,7 +2159,6 @@ function applyState(message) {
       );
     }
     for (const event of message.events) {
-      if (event.t === 'bestiaryDone') notice(`Bestiary de ${event.name} completo: +${event.points} pontos de charm.`);
       /*
        * ---- A escada da arena subiu um degrau ----
        *
@@ -2628,10 +2618,8 @@ function buildWindows() {
       panelCtx.tabs.character = 'sheet';
       openCharacter();
     },
-    openCharms,
     // O botão da árvore no HUD abre a Árvore de Passivas única (a antiga, por vocação, saiu na etapa 7).
     openArvore: openPassivas,
-    openPrey,
     openPromotion,
     // A engrenagem da barra abre o modal de ajustes da tela.
     abrirAjustesDaBarra: openBarSettings,
@@ -2786,10 +2774,9 @@ function buildWindows() {
  * A barra de ferramentas, na ordem em que ela é lida.
  *
  * Uma lista só, e não duas com um separador no meio: o que define um grupo é o
- * assunto, não o tipo de janela que o botão abre. Prey, charms, proficiência e
- * imbuements andam juntos porque são os quatro sistemas do personagem — o
- * primeiro abre modal e o inventário abre janela flutuante, e isso não importa
- * para quem olha.
+ * assunto, não o tipo de janela que o botão abre. Forja, árvore e gemas andam
+ * juntas porque são os sistemas do personagem — uns abrem modal, o inventário
+ * abre janela flutuante, e isso não importa para quem olha.
  *
  * `null` é um respiro entre grupos.
  *
@@ -2830,34 +2817,21 @@ function buildWindows() {
 /*
  * ---- Sistemas ----
  *
- * Os sete painéis em que o jogador gasta alguma coisa para ficar mais forte —
- * ponto de árvore, fragmento de gema, ponto de charm, ouro na forja. É o grupo
- * que já andava junto na fileira antiga; ganhou uma porta.
+ * Os painéis em que o jogador gasta alguma coisa para ficar mais forte — ponto
+ * de árvore, gema, moeda na forja. É o grupo que já andava junto na fileira
+ * antiga; ganhou uma porta. (O Prey e os Charms saíram — dono, 12/10: "tire o
+ * sistema de prey e charms do front end"; no jogo oficial o servidor também
+ * não os aplica.)
  */
 const SISTEMAS = [
-  { id: 'prey', label: 'Prey', abre: () => openPrey(),
-    tip: 'Escolhe a presa de cada slot e o bônus que ela dá.',
-    /*
-     * O balão mostra as três presas ATIVAS, e não só o que o botão faz.
-     *
-     * "quando eu passar o mouse no ícone de prey, gemas, charms, proficiência,
-     *  imbuements, tem que mostrar o que tenho ativo — igual o da árvore."
-     *
-     * Ele tem razão e a Árvore prova: essa é a pergunta que se faz o tempo todo
-     * caçando, e ela estava a dois cliques.
-     */
-    corpo: () => resumoDoPreyParaBalao(),
-    alerta: () =>
-      (state.character?.prey ?? []).some((slot) => slot.state !== 'locked' && (!slot.key || slot.left <= 0)) },
   /*
-   * ---- A Forja, ao lado do Prey ----
+   * ---- A Forja, a primeira ----
    *
-   * Foi onde o dono pediu, e o lugar fecha: Prey, Forja, Árvore, Charms,
-   * Proficiência e Imbuements são os painéis em que o jogador MELHORA o
-   * personagem gastando alguma coisa. A forja gasta ouro; a vizinhança é essa.
+   * Forja, Árvore e Gemas são os painéis em que o jogador MELHORA o personagem
+   * gastando alguma coisa. A forja gasta moeda; a vizinhança é essa.
    */
   { id: 'forja', label: 'Forja', abre: () => openForja(),
-    tip: 'Sobe o tier de uma peça pagando só ouro, ou passa o tier de uma peça para outra.' },
+    tip: 'A bancada das moedas: sockets, cores, links, modificadores, raridade e qualidade das peças.' },
   /*
    * ---- A Recompensa Diária saiu daqui ----
    *
@@ -2872,9 +2846,8 @@ const SISTEMAS = [
    * O baú da faixa de baixo continua sendo o atalho curto.
    */
   /*
-   * A Árvore fica colada no Prey de propósito: são os dois painéis em que o
-   * jogador GASTA algo que o level deu, e ele vai procurar os dois no mesmo
-   * lugar. O alerta acende quando há ponto parado — ponto guardado não faz nada.
+   * A Árvore: o painel em que o jogador GASTA o que o level deu. O alerta acende
+   * quando há ponto parado — ponto guardado não faz nada.
    */
   { id: 'arvore', label: 'Árvore', abre: () => openPassivas(),
     tip: 'A Árvore de Passivas: gasta os pontos que o level dá. Uma árvore só para todas as classes — cada uma começa num lugar e pode andar para qualquer região.',
@@ -2894,20 +2867,6 @@ const SISTEMAS = [
   { id: 'gemas', label: 'Gem Atelier', curto: 'Gemas', abre: () => openGemas(),
     tip: 'Revela gemas, encaixa nos domínios da árvore e sobe o grau dos modificadores com fragmentos.',
     corpo: () => resumoDasGemasParaBalao() },
-  { id: 'charms', label: 'Charms', abre: () => openCharms(),
-    tip: 'Gasta os pontos que as mortes do bestiary liberam.',
-    corpo: () => resumoDosCharmsParaBalao(),
-    /*
-     * Acende quando dá para comprar algum charm, não quando há ponto no bolso.
-     *
-     * O mais barato custa 100 pontos, e o saldo passa meses entre 1 e 99: com a
-     * regra antiga o ícone ficava dourado a caçada inteira sem haver nada para
-     * fazer, e um aviso que está sempre aceso deixa de ser aviso. `charmNext`
-     * vem do servidor — é o menor preço entre os charms que ainda podem subir,
-     * e é `null` quando todos já estão no máximo.
-     */
-    alerta: () =>
-      state.character?.charmNext != null && (state.character?.charmPoints ?? 0) >= state.character.charmNext },
 
 ];
 
@@ -3233,7 +3192,7 @@ const BARRA = [
 
   {
     id: 'sistemas', label: 'Sistemas', icone: 'sistemastopicone', reserva: 'gemas',
-    tip: 'Prey, forja, árvore, gemas e charms.',
+    tip: 'Forja, árvore e gemas.',
     gaveta: SISTEMAS },
 
   // Para onde ir. Como VOLTAR mora no canto da direita — ver `CIDADE`.
@@ -3799,16 +3758,14 @@ function buildTopbar() {
   nav.append(ferramentaLigada(ARENA));
   if (mercado) nav.append(mercado);
   /*
-   * ---- Os dois catálogos que o BALÃO precisa ----
+   * ---- O catálogo que o BALÃO precisa ----
    *
-   * Prey, proficiência e imbuements viajam na atualização do personagem; charms
-   * e gemas não — eles são pedidos, e quem pedia era o painel ao abrir. O balão
-   * do ícone ficaria vazio até alguém abrir o painel uma vez, que é exatamente
-   * a viagem que ele existe para poupar.
+   * As gemas não viajam na atualização do personagem — são pedidas, e quem pedia
+   * era o painel ao abrir. O balão do ícone ficaria vazio até alguém abrir o
+   * painel uma vez, que é exatamente a viagem que ele existe para poupar.
    *
-   * Um pedido de cada, uma vez, ao montar a barra.
+   * Um pedido, uma vez, ao montar a barra.
    */
-  send({ t: 'charms' });
   send({ t: 'gemas' });
   // As gavetas moram no `body`: montar a barra de novo não pode deixar as
   // antigas penduradas lá.
@@ -7255,10 +7212,6 @@ window.__abrir = {
   },
   limparBolsa: () => openLimparBolsa(),
   bestiary: () => openBestiary(),
-  /*
-   * Charms: a tela que o dono mandou repaginar. Sem o gancho não há como fotografar o antes e o depois no mesmo lugar.
-   */
-  charms: () => openCharms(),
   bossToken: () => openLojaDeBossToken(),
   taskToken: () => openLojaDeTaskToken(),
   lobby: () => openLobby(),
@@ -8472,7 +8425,6 @@ function refreshOpenPanel(character) {
   const signature = [
     character.gold, character.bank, character.coins, character.wildcards,
     character.level, character.weight.toFixed(1),
-    character.charmPoints, character.charmNext,
     character.inventory.length, character.pouch.length, (character.mounts ?? []).length,
     /* A ORDEM da mochila, da bolsa e das caixas. Ver `marcaDaOrdem`. */
     marcaDaOrdem(character.inventory),
@@ -8584,33 +8536,6 @@ function refreshOpenPanel(character) {
      */
     (character.itemRules?.noSell ?? []).join('.'),
     (character.itemRules?.noLoot ?? []).join('.'),
-    /*
-     * Os slots de prey entram inteiros — e a lista de opções junto.
-     *
-     * Sem isso o painel aberto nunca se redesenhava quando a lista trocava, e
-     * os botões na tela continuavam sendo os de antes. Clicar num deles mandava
-     * uma criatura que o servidor já tinha descartado, e a resposta era
-     * "criatura não está na lista" — o erro aparecia justamente depois de um
-     * reroll, que é quando a lista muda.
-     *
-     * `left` fica de fora do jeito que vem: ele desce a cada quadro e faria a
-     * assinatura mudar quatro vezes por segundo, redesenhando o painel sem
-     * parar e levando o clique junto. Em minutos ele muda uma vez por minuto,
-     * que é o suficiente para a barra de tempo acompanhar.
-     */
-    (character.prey ?? [])
-      .map((slot) =>
-        [
-          slot.state,
-          slot.key ?? '-',
-          slot.bonus ?? '-',
-          slot.rarity ?? 0,
-          Math.ceil((slot.left ?? 0) / 60_000),
-          slot.freeReroll > 0 ? 1 : 0,
-          (slot.options ?? []).join(','),
-        ].join(':')
-      )
-      .join('|'),
   ].join('|');
   if (signature === panelSignature) return;
   panelSignature = signature;

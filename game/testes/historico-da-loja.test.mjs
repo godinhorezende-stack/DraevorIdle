@@ -69,9 +69,10 @@ test('B. uma compra: a linha tem o produto, o preço cobrado, o personagem e a h
 
 test('C/E/J. várias compras: todas, a mais recente primeiro — e a nova aparece na hora', async (t) => {
   const j = await jogador(t, { coins: 1000 });
-  for (const id of ['xp-boost', 'premium-7', 'wildcards-5']) await j.s.receber({ t: 'store', action: 'buy', id });
+  // (o exemplo de 10 coins era o 'wildcards-5', que saiu da loja do jogo oficial com o Prey — dono, 12/10; o 'bless-pack' custa o mesmo)
+  for (const id of ['xp-boost', 'premium-7', 'bless-pack']) await j.s.receber({ t: 'store', action: 'buy', id });
   let { linhas } = await j.historico();
-  assert.deepEqual(linhas.map((l) => l.produto), ['wildcards-5', 'premium-7', 'xp-boost']);
+  assert.deepEqual(linhas.map((l) => l.produto), ['bless-pack', 'premium-7', 'xp-boost']);
   for (let i = 1; i < linhas.length; i++) assert.ok(linhas[i - 1].em >= linhas[i].em);
   // Uma compra nova depois de abrir: o próximo pedido já a traz no topo.
   await j.s.receber({ t: 'store', action: 'buy', id: 'xp-boost' });
@@ -112,11 +113,11 @@ test('o histórico é da CONTA: compras de outro personagem dela aparecem, de ou
   await a.s.receber({ t: 'store', action: 'buy', id: 'xp-boost' });
   a.s.desconectar();
   const b = await jogador(t, { coins: 500, conta: a.conta });
-  await b.s.receber({ t: 'store', action: 'buy', id: 'wildcards-5' });
+  await b.s.receber({ t: 'store', action: 'buy', id: 'bless-pack' }); // (era o 'wildcards-5' — fora da loja do oficial com o Prey, dono 12/10)
   const estranho = await jogador(t, { coins: 500 });
   await estranho.s.receber({ t: 'store', action: 'buy', id: 'xp-boost' });
   const { linhas } = await b.historico();
-  assert.deepEqual(linhas.map((l) => [l.produto, l.personagem]), [['wildcards-5', b.nome], ['xp-boost', a.nome]]);
+  assert.deepEqual(linhas.map((l) => [l.produto, l.personagem]), [['bless-pack', b.nome], ['xp-boost', a.nome]]);
   assert.equal((await estranho.historico()).linhas.length, 1);
 });
 

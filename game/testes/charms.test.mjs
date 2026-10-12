@@ -10,6 +10,8 @@ import * as Prey from '../systems/prey.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 import { doClassico } from './apoio-migracao.mjs';
+/** (os testes do sistema ligado: no jogo oficial ele foi desligado — rodam pelo irmão `.classico`) */
+const DESLIGADO = 'Charms desligados no jogo oficial (dono, 12/10: "tire o sistema de prey e charms do front end tbm" — e no servidor do oficial); valem no clássico';
 
 const CAP = new URL('../../api-mapeada/captura-charms-0925/', import.meta.url);
 const ler = (n) => JSON.parse(readFileSync(new URL(n, CAP), 'utf8'));
@@ -34,11 +36,11 @@ function comSorte(v, f) {
   }
 }
 
-test('a view do Zoros é IGUAL à do original, campo a campo', () => {
+test('a view do Zoros é IGUAL à do original, campo a campo', { skip: doClassico(DESLIGADO) }, () => {
   assert.deepEqual(Charms.vista(zoros()), ler('charms-zoros.json').view);
 });
 
-test('charmPoints e charmNext iguais aos do welcome (495 ganhos − 240 gastos)', () => {
+test('charmPoints e charmNext iguais aos do welcome (495 ganhos − 240 gastos)', { skip: doClassico(DESLIGADO) }, () => {
   const e = zoros();
   assert.equal(Charms.pontosGanhos(e), 495);
   const c = Charms.paraCliente(e);
@@ -46,7 +48,7 @@ test('charmPoints e charmNext iguais aos do welcome (495 ganhos − 240 gastos)'
   assert.equal(c.charmNext, WELCOME.charmNext);
 });
 
-test('upgrade: cobra o preço do tier e sobe a chance pela tabela', () => {
+test('upgrade: cobra o preço do tier e sobe a chance pela tabela', { skip: doClassico(DESLIGADO) }, () => {
   const e = zoros();
   assert.match(Charms.comando(e, { t: 'charms', action: 'upgrade', id: 2 }).erro, /Faltam 145/); // Enflame 400, tem 255
   assert.ok(Charms.comando(e, { action: 'upgrade', id: 7 }).ok); // Cripple 100
@@ -59,7 +61,7 @@ test('upgrade: cobra o preço do tier e sobe a chance pela tabela', () => {
   assert.match(Charms.comando(e, { action: 'upgrade', id: 7 }).erro, /Faltam/);
 });
 
-test('no máximo: cost null e charmNext ignora ele', () => {
+test('no máximo: cost null e charmNext ignora ele', { skip: doClassico(DESLIGADO) }, () => {
   const e = personagemDeTeste({ level: 100 });
   e.charms = { tiers: Object.fromEntries(Charms.CHARMS.map((c) => [c.id, 3])), alvos: {}, gastos: 0 };
   assert.equal(Charms.proximoPreco(e), null);
@@ -67,7 +69,7 @@ test('no máximo: cost null e charmNext ignora ele', () => {
   assert.match(Charms.comando(e, { action: 'upgrade', id: 1 }).erro, /máximo/);
 });
 
-test('assign: charm liberado (ofensivo OU defensivo), só criatura já morta; null tira', () => {
+test('assign: charm liberado (ofensivo OU defensivo), só criatura já morta; null tira', { skip: doClassico(DESLIGADO) }, () => {
   const e = zoros();
   assert.match(Charms.comando(e, { action: 'assign', id: 2, monster: 'troll' }).erro, /Libere/);
   const nuncaMatou = Object.keys(CATALOGO.bestiary).find((k) => !e.bestiary[k]);
@@ -82,7 +84,7 @@ test('assign: charm liberado (ofensivo OU defensivo), só criatura já morta; nu
   assert.equal(Charms.vista(e).list.find((c) => c.id === 9).assigned, 'troll');
 });
 
-test('bestiary: conta a morte e paga os pontos UMA vez, quando fecha', () => {
+test('bestiary: conta a morte e paga os pontos UMA vez, quando fecha', { skip: doClassico(DESLIGADO) }, () => {
   const e = personagemDeTeste({ level: 50 });
   const troll = CATALOGO.bestiary.troll;
   e.bestiary = { troll: troll.toKill - 1 };
@@ -94,7 +96,7 @@ test('bestiary: conta a morte e paga os pontos UMA vez, quando fecha', () => {
   assert.equal(Charms.pontos(e), troll.charmPoints);
 });
 
-test('Wound no Rearguard: 260 cravado (5% de 5.200), no formato do original', () => {
+test('Wound no Rearguard: 260 cravado (5% de 5.200), no formato do original', { skip: doClassico(DESLIGADO) }, () => {
   const e = zoros();
   const bicho = { uid: 7, key: 'crazed-winter-rearguard', name: 'Crazed Winter Rearguard', x: 1, y: 1, hp: 5200, maxHp: 5200 };
   const eventos = [];
@@ -108,7 +110,7 @@ test('Wound no Rearguard: 260 cravado (5% de 5.200), no formato do original', ()
   assert.equal(eventos.filter((x) => x.charm).length, 1);
 });
 
-test('dano elemental tem teto de 2x o level (Canary)', () => {
+test('dano elemental tem teto de 2x o level (Canary)', { skip: doClassico(DESLIGADO) }, () => {
   const e = personagemDeTeste({ level: 10 });
   e.bestiary = { troll: 1 };
   e.charms = { tiers: { 1: 1 }, alvos: { 1: 'troll' }, gastos: 0 };
@@ -139,7 +141,7 @@ test('na caçada: as mortes enchem o bestiary e o Dodge (no Troll) apara o golpe
   assert.ok(dodges > 0, 'Dodge tier 3 (11%) apareceu');
 });
 
-test('defensivo só vale contra a criatura escolhida', () => {
+test('defensivo só vale contra a criatura escolhida', { skip: doClassico(DESLIGADO) }, () => {
   const e = personagemDeTeste({ level: 20 });
   e.charms = { tiers: { 9: 3 }, alvos: { 9: 'troll' }, gastos: 0 };
   const hunt = { pos: { x: 0, y: 0 }, monstros: [] };

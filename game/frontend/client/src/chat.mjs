@@ -1903,13 +1903,7 @@ export function feedEvents(events, items, eu = null) {
        */
       if (event.foe) {
         const emQuem = event.alvo ? ` em ${event.alvo}` : '';
-        const comOQue = event.spell
-          ? `${event.spell} causou`
-          : event.charm
-            ? `O charm ${event.charm} causou`
-            : event.veneno
-              ? 'O veneno causou'
-              : 'Você causou';
+        const comOQue = event.spell ? `${event.spell} causou` : event.veneno ? 'O veneno causou' : 'Você causou';
         const etiqueta = etiquetaDoGolpe(event);
         logGolpe(
           `saiu:${comOQue}:${event.alvo ?? ''}`,
@@ -2118,8 +2112,6 @@ export function feedEvents(events, items, eu = null) {
           : `Sem capacidade: ${left || 'parte do loot'} ficou no chão. Venda a bolsa.`,
         'nocap'
       );
-    } else if (event.t === 'bestiaryDone') {
-      logLoot(`Bestiary de ${event.name} completo: +${event.points} pontos de charm.`, 'charm');
     } else if (event.t === 'equip') {
       // Em grupo o upgrade pode ter sido do companheiro, e a frase diz de quem.
       const oque = event.name ?? items[event.id]?.name ?? 'um item';

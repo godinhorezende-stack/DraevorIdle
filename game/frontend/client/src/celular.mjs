@@ -212,8 +212,8 @@ function abrirMais() {
 /*
  * ---- O Herói: tudo o que faz o personagem crescer, num lugar ----
  *
- * Ficha e Aparência em cima, e embaixo os sistemas de evolução (Prey, Forja,
- * Árvore, Gemas, Charms, Proficiência, Imbuements) — a mesma gaveta
+ * Ficha e Aparência em cima, e embaixo os sistemas de evolução (Forja, Árvore,
+ * Gemas) — a mesma gaveta
  * "Sistemas" da barra de cima, com os mesmos botões e alertas.
  */
 function abrirHeroi() {
