@@ -5972,6 +5972,66 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/vinculos (as gemas de Vínculo) (12/10)"
+    },
+    "aco_area_inc": {
+      "nome": "Área de Efeito do Dano Refletido do Convocar o Aço aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "aco_uso_inc": {
+      "nome": "Velocidade de Uso do Convocar o Aço aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "fragmentos_aco_max": {
+      "nome": "Máximo de Fragmentos de Aço",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "aco_refletido_inc": {
+      "nome": "Dano Refletido do Convocar o Aço aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "concede_convocar_aco": {
+      "nome": "Concede o Convocar o Aço",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "aco_consome_extra": {
+      "nome": "Fragmentos de Aço a mais consumidos pelos Ataques de Projétil",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "aco_proj_extra": {
+      "nome": "Projéteis adicionais depois de consumir o total de Fragmentos de Aço",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "aco_proj_extra_s": {
+      "nome": "Segundos dos Projéteis adicionais depois de consumir Fragmentos de Aço",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "aco_proj_extra_total": {
+      "nome": "Total de Fragmentos de Aço consumidos para os Projéteis adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/convocar-o-aco (o Convocar o Aço e os Fragmentos de Aço) (12/10)"
+    },
+    "empalar_removidos_multiplicam": {
+      "nome": "Empalamentos removidos ao Acertar multiplicam o dano pelos Acertos que restavam",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (12/10)"
     }
   }
 }

@@ -40,12 +40,19 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   // ("X% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional": este acerto não gasta.)
   if (Array.isArray(e.empalado) && e.empalado.length && alvo.hp > 0) {
     let total = 0;
+    // (cada empalamento × os acertos que ele tinha, contando este — o "multiplicam … pela quantidade de Acertos que restavam", abaixo)
+    let multiplicado = 0;
     const segura = sorte(v('empalar_acerto_extra_chance'));
-    for (const x of e.empalado) if (x.ate > agora && x.acertos > 0) { total += x.valor; if (!segura) x.acertos--; }
+    for (const x of e.empalado) if (x.ate > agora && x.acertos > 0) { total += x.valor; multiplicado += x.valor * x.acertos; if (!segura) x.acertos--; }
     e.empalado = e.empalado.filter((x) => x.ate > agora && x.acertos > 0);
+    // ("X% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo"; 12/10, a mesma opção da maestria: "Empalamentos removidos desta
+    // forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam".)
+    // (a redução física não sorteia: tirar antes dela não muda a ordem dos sorteios)
+    if (sorte(v('empalar_remover_chance'))) {
+      e.empalado = [];
+      if (v('empalar_removidos_multiplicam') > 0) total = multiplicado;
+    }
     if (total > 0 && reducaoFisica && !(v('empalar_ignora_reducao') > 0)) total = reducaoFisica(hunt, alvo, total);
-    // ("X% de chance de, ao Acertar, remover todos os Empalamentos do Inimigo")
-    if (sorte(v('empalar_remover_chance'))) e.empalado = [];
     if (total > 0) {
       const d = Math.max(1, Math.round(total));
       alvo.hp -= d;

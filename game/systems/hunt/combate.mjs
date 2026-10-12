@@ -89,7 +89,10 @@ export function processarMortes(estado, personagem, eventos) {
     // por você são destruídos": a maldição do PoE com essa regra não deixa cadáver.)
     // (+ "Inimigos Mortos pelos seus Acertos são destruídos": nenhum morto deixa cadáver.)
     if (!m.boss && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
-      hunt.cadaveres = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y }].slice(-10);
+      // (PoE, 12/10: o cadáver guarda os Empalamentos do morto — o Convocar o Aço os chama "de inimigos, vivos ou mortos".)
+      const empalado = (m.estados?.empalado ?? []).filter((x) => x.ate > (hunt.clock ?? 0) && x.acertos > 0);
+      const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};
+      hunt.cadaveres = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, ...doAco }].slice(-10);
     }
     matarMonstro(estado, hunt, personagem, m, eventos);
   }

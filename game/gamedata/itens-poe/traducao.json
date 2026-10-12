@@ -2078,6 +2078,91 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^Convocar o Aço causa Dano Refletido com Área de Efeito aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aco_area_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
+    },
+    {
+      "padrao": "^Convocar o Aço tem Velocidade de Uso aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aco_uso_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
+    },
+    {
+      "padrao": "^(?:Chamado do|Convocar o) Aço tem \\+\\{(\\d+)\\} ao máximo de Fragmentos de Aço$",
+      "efeitos": [
+        {
+          "stat": "fragmentos_aco_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
+    },
+    {
+      "padrao": "^Convocar o Aço causa Dano Refletido aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aco_refletido_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
+    },
+    {
+      "padrao": "^Concede (?:Chamado do|Convocar o) Aço$",
+      "efeitos": [
+        {
+          "stat": "concede_convocar_aco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
+    },
+    {
+      "padrao": "^Ataques que Disparam Projéteis Consomem até \\{(\\d+)\\} Fragmentos de Aço adicionais$",
+      "efeitos": [
+        {
+          "stat": "aco_consome_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
+    },
+    {
+      "padrao": "^Habilidades Disparam \\{(\\d+)\\} Projéteis adicionais por \\{(\\d+)\\} segundos após você consumir um total de \\{(\\d+)\\} Fragmentos de Aço$",
+      "efeitos": [
+        {
+          "stat": "aco_proj_extra",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aco_proj_extra_s",
+          "valor": "{2}"
+        },
+        {
+          "stat": "aco_proj_extra_total",
+          "valor": "{3}"
+        }
+      ],
+      "_nova": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
+    },
+    {
       "padrao": "^Convocar o Aço .*$|^Chamado do Aço .*$",
       "efeitos": [
         {
@@ -2086,9 +2171,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "o Convocar o Aço (Call of Steel), que as gemas de Aço concedem no PoE, não está no jogo",
+      "nota": "esta variação do Convocar o Aço (Call of Steel) ainda não tem efeito no jogo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)"
     },
     {
       "padrao": "^Efeito das suas Marcas aumentado em \\{(\\d+)\\}%$",
@@ -6216,17 +6302,17 @@
       "nota": "vale nos espinhos dos monstros raros do mapa e no reflexo dos modificadores"
     },
     {
-      "padrao": "^Empalamentos removidos desta forma multiplicam seu Dano Refletido.*$",
+      "padrao": "^Empalamentos removidos desta forma multiplicam seu Dano Refletido para este Acerto pela quantidade de Acertos que restavam$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "empalar_removidos_multiplicam",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "o Convocar o Aço (Call of Steel) ainda não existe no jogo: não há empalamentos removidos por ele",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote5": "12/10 — o Convocar o Aço (lote 5)",
+      "nota": "a mesma opção da maestria: os Empalamentos tirados pelo \"X% de chance de, ao Acertar, remover todos os Empalamentos\" soltam, neste acerto, o dano × os acertos que restavam"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Evitar Cegueira$",

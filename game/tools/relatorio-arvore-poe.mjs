@@ -51,6 +51,11 @@ const IMPLEMENTADOS = [
     re: /focar em Lacaios Danificáveis|Feixes de Vínculo|alvos Vinculados têm Exposição|Vínculos demoram|alvo aleatório adicional|Alvos Vinculados compartilham|entre os Jogadores Vinculados|alvov?s Vinculados$|Duração do Vínculo que tenha Expirado|ao invés dos alvos Vinculados/,
     jogo: 'as 6 gemas de Vínculo criadas: focam um jogador da party na sala (lacaios, com o nó), custam mana por segundo, quebram fora do alcance em 4 s e, se o alvo morre vinculado, você morre; os efeitos de cada uma (Fogo, bloqueio, menos dano e o seu Escudo, crítico, o seu Dreno no alvo)',
   },
+  {
+    bloco: 'Convocar o Aço (lote 5)',
+    re: /Convocar o Aço|Chamado do Aço|Empalamentos removidos desta forma/,
+    jogo: 'as gemas de Aço concedem o Convocar o Aço, automático: chama os empalamentos dos vivos e dos cadáveres a até 6 casas, reflete em volta de cada um o dano × os acertos que restavam e dá 1 Fragmento de Aço por empalamento; recarrega 4 Fragmentos a cada 0,5 s até 12; o Aço Perfurador, o Aço Violento e o Estraçalhador da Munição e a Balista gastam os Fragmentos como no PoE (mais projéteis, a divisão, a Proteção de Aço); a linha dos "Empalamentos removidos desta forma" é da remoção ao Acertar (a mesma opção da maestria), não do Convocar o Aço',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */
