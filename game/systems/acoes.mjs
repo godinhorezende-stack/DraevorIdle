@@ -40,6 +40,7 @@ import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
+import * as Runas from './itens-poe/runas-vinculadas.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade, efeitos as efeitosDaArvore } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
@@ -1538,9 +1539,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (ataque) {
     const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro;
     if (plantada) {
-      // A Armadilha ativada / a Mina detonada: a área em volta DELA (sem alcance — ela está lá); a de alvo único, em quem a ativou.
+      // A Armadilha ativada / a Mina detonada / a Runa Ativada: a área em volta DELA (sem alcance — ela está lá); a de alvo único, em quem a
+      // ativou (com a cadeia da gema).
       if (entry.forma) casas = casasDaForma(entry, plantada.x, plantada.y);
-      else atingidos = alvo.hp > 0 ? [alvo] : [];
+      else if (!(alvo.hp > 0)) atingidos = [];
+      else atingidos = entry.cadeia ? saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos } : entry.cadeia) : [alvo];
     } else if (!entry.forma) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...).
@@ -1572,7 +1575,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // Area of Effect / Concentrated Effect (supports): a área cresce ou encolhe `areaExtra` casas.
     // (− a Intensidade: "X% menos Efeito em Área por Intensidade" — uma casa a cada ~25%)
     const areaDaIntensidade = intensidade > 0 ? -Math.round((intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0)) / 25) : 0;
-    if (casas && (efeitoDaGema?.areaExtra || areaDaIntensidade)) casas = Areas.mudar(casas, Math.round((efeitoDaGema?.areaExtra ?? 0) + areaDaIntensidade));
+    // (+ a Runa: "Runas têm Área de Efeito aumentada em X% caso Y% da Duração do Vínculo tenha expirado" — `plantada.areaExtra`, do tique.)
+    const areaDaRuna = plantada?.areaExtra ?? 0;
+    if (casas && (efeitoDaGema?.areaExtra || areaDaIntensidade || areaDaRuna)) casas = Areas.mudar(casas, Math.round((efeitoDaGema?.areaExtra ?? 0) + areaDaIntensidade + areaDaRuna));
     // Quem está nas casas da área: por índice de casa (sem varrer área × bichos).
     if (casas) atingidos = Areas.dentro(casas, vivos);
   }
@@ -1613,6 +1618,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // A skill que desliga um reforço (dados: `cancelamentos`) só sai com ele ligado.
   const cancela = Reforcos.CANCELA[entry.id];
   if (cancela && !temBuff(hunt, cancela)) return { ok: false, erro: 'Não há o que cancelar.', motivo: cancela === 'shield' ? 'SEM_ESCUDO' : 'SEM_REFORCO' };
+  // (PoE, 12/10) As RUNAS: com todas em campo (3 — `itens-poe/runas-vinculadas.mjs`) e nenhuma acabando, o automático não conjura outra (ela
+  // tiraria a mais velha, ainda Ativando); o clique conjura.
+  if (Runas.ehRuna(entry) && !manual && !gatilho && !concluir && Runas.cheias(hunt, Ficha.combate(estado))) {
+    return { ok: false, erro: `Já estão todas as Runas em campo (${Runas.ativas(hunt).length}/${Runas.maximo(Ficha.combate(estado))}).`, motivo: 'RUNAS_COMPLETAS' };
+  }
   // LACAIOS do PoE: com todos em campo (e sem duração para renovar), a gema não sai — o auto não fica relançando à toa.
   if (entry.poeGema?.lacaio) {
     // (com a soma do DONO — a mesma da invocação, `invocarLacaios`: "+1 ao número máximo de Zumbis" da árvore e das peças sobe o máximo; sem ela
@@ -1811,6 +1821,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // ativa na hora; com inimigo perto e você parado, a Mina detona (a sequência). O resto fica plantado até ativar ou acabar a duração.
     const lugar = mira && entry.miraNoChao ? mira : alvo ? { x: alvo.x, y: alvo.y } : { x, y };
     eventos.push(...plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora));
+  } else if (Runas.ehRuna(entry) && !plantada) {
+    // (PoE, 12/10) A RUNA: conjurada no lugar mirado, vincula ao alvo e é Ativada na hora — e depois a cada N segundos, enquanto vinculada
+    // (`tiqueDasRunas`).
+    const lugar = mira && entry.miraNoChao ? mira : alvo ? { x: alvo.x, y: alvo.y } : { x, y };
+    eventos.push(...conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora));
   } else {
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x, y, color: '#f36500' });
     // (PoE: "Velocidade do Projétil aumentada" — o projétil voa mais rápido na tela.)
@@ -2256,6 +2271,40 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
     }
   }
   return tiqueDasPlantadas(estado, hunt, personagem, eventos, agora);
+}
+
+/**
+ * (PoE, 12/10) A RUNA conjurada (`itens-poe/runas-vinculadas.mjs`): o que a gema diz (a ativação, as durações, a troca de alvo), o intervalo
+ * ÷ a Velocidade de Conjuração (a da ficha, a "com Habilidades de Runas" e a da gema — "Aumentos e Reduções à Velocidade de Conjuração também
+ * se aplicam à frequência de Ativação"), as durações × a Duração de Habilidades; vincula ao alvo e já processa as Runas. Devolve os eventos.
+ */
+function conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora) {
+  const ficha = Ficha.combate(estado);
+  const props = Runas.daGema(GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas);
+  const castSpeed = (ficha.castSpeed ?? 0) + (ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry)).cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
+  const fatorDaDuracao = Math.max(0.1, 1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100);
+  const r = Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100), fatorDaDuracao, agora });
+  Runas.vincular(hunt, ficha, r, agora, { preferido: alvo });
+  return tiqueDasRunas(estado, hunt, personagem, [], agora);
+}
+
+/**
+ * (PoE, 12/10) O tique das RUNAS (`itens-poe/runas-vinculadas.mjs`): as vinculadas são Ativadas a cada N segundos no lugar do inimigo
+ * (`dispararSemMarcar` com `plantada`); as que acabam vinculadas devolvem a mana do "Recupera X% de Mana quando uma Runa expira enquanto
+ * Vinculada". Devolve os eventos.
+ */
+export function tiqueDasRunas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+  if (!hunt?.runas?.length || !itensPoeLigado()) return eventos;
+  const ficha = Ficha.combate(estado);
+  const { ativar, expiradas } = Runas.tique(hunt, ficha, agora);
+  for (const { r, alvo, areaExtra } of ativar) {
+    if ((estado.hp ?? 0) <= 0) break;
+    const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaExtra } });
+    if (res?.ok) eventos.push(...(res.eventos ?? []));
+  }
+  const mana = ModsPoe.valor(ficha, 'mana_runa_expira_vinculada');
+  if (mana > 0) for (const x of expiradas) if (x.vinculada && !x.destruida) estado.mana = Math.min(estado.maxMana ?? 0, (estado.mana ?? 0) + Math.round(((estado.maxMana ?? 0) * mana) / 100));
+  return eventos;
 }
 
 /**

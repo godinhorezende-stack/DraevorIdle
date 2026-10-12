@@ -5822,6 +5822,66 @@
       "unidade": "s",
       "combate": true,
       "efeito": "itens-poe/armas-plantadas + acoes (as Armadilhas e Minas plantadas) (12/10)"
+    },
+    "alcance_vinculo_runas": {
+      "nome": "Alcance do Vínculo de Runas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "runas_extras": {
+      "nome": "Runas a mais ativas de uma vez",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "runas_trocam_alvo_s": {
+      "nome": "Runas se Vinculam a um novo Inimigo a cada Ativação (intervalo mínimo)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "mana_runa_expira_vinculada": {
+      "nome": "Mana recuperada quando uma Runa expira Vinculada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "dano_por_runa_vinculada": {
+      "nome": "Dano sofrido pelo inimigo por Runa Vinculada a ele",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (as Runas vinculadas ao inimigo) (12/10)"
+    },
+    "runas_por_inimigo_extra": {
+      "nome": "Runas a mais Vinculadas ao mesmo inimigo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "runa_frequencia_tardia_pct": {
+      "nome": "Frequência de Ativação a mais das Runas no fim do Vínculo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "runa_frequencia_tardia_apos": {
+      "nome": "Parte da Duração do Vínculo para a Frequência a mais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "runa_area_tardia_pct": {
+      "nome": "Área de Efeito a mais das Runas no fim do Vínculo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
+    },
+    "runa_area_tardia_apos": {
+      "nome": "Parte da Duração do Vínculo para a Área a mais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas (as Runas presas ao inimigo) (12/10)"
     }
   }
 }

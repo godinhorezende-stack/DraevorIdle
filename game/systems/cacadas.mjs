@@ -2071,6 +2071,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // (PoE, 12/10) As Armadilhas e Minas plantadas: as que ativam ou detonam agora (`acoes.tiqueDasPlantadas`).
   Acoes.tiqueDasPlantadas(estado, hunt, personagem, eventos);
+  // (PoE, 12/10) As Runas vinculadas aos inimigos: as que são Ativadas agora (`acoes.tiqueDasRunas`).
+  Acoes.tiqueDasRunas(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
   // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).

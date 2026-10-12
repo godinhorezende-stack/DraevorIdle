@@ -2359,14 +2359,16 @@
       "padrao": "^Runas têm Área de Efeito aumentada em \\{(\\d+)\\}% caso \\{(\\d+)\\}% da Duração do Vínculo tenha expirado$",
       "efeitos": [
         {
-          "stat": "area_inc@runa",
+          "stat": "runa_area_tardia_pct",
           "valor": "{1}"
+        },
+        {
+          "stat": "runa_area_tardia_apos",
+          "valor": "{2}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "as Runas do jogo não ficam presas ao inimigo: a área vale sempre",
       "_nova": true,
-      "_ciclo7": true
+      "_lote4": "12/10 — Runas presas ao inimigo"
     },
     {
       "padrao": "^Habilidades de Vínculo têm Velocidade de Conjuração aumentada em \\{(\\d+)\\}%$",
@@ -2413,7 +2415,74 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Alcance do Vínculo de Runas .*$|^Você pode Conjurar .* Runas Adicionais$|^Runas se Vinculam .*$|^Recupera .* quando uma Runa expira enquanto Vinculada$|^Inimigos sofrem Dano aumentado em .* Runas Vinculadas a eles$|^Você pode ter uma Marca adicional Vinculada .*$|^Habilidades de Vínculo podem focar .*$|^Inimigos em seus Feixes de Vínculo .*$|^Inimigos próximos dos seus alvos Vinculados .*$|^Vínculos demoram .*$|^Habilidades de Vínculo têm .* alvo aleatório adicional$|^Alvos Vinculados compartilham .*$|^Sua Velocidade de Movimento é igual a maior .* Vinculados$|^Defesas aumentadas .* alvos Vinculados$|^Velocidade de Movimento aumentada .* alvov?s Vinculados$|^Efeito do Buff dos seus Vínculos aumentado .* Expirado$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
+      "padrao": "^Alcance do Vínculo de Runas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "alcance_vinculo_runas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Runas presas ao inimigo"
+    },
+    {
+      "padrao": "^Você pode Conjurar \\{(\\d+)\\} Runas Adicionais$",
+      "efeitos": [
+        {
+          "stat": "runas_extras",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Runas presas ao inimigo"
+    },
+    {
+      "padrao": "^Runas se Vinculam a um novo Inimigo cada vez que se Ativam, não mais do que uma vez a cada \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "runas_trocam_alvo_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Runas presas ao inimigo"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Mana quando uma Runa expira enquanto Vinculada$",
+      "efeitos": [
+        {
+          "stat": "mana_runa_expira_vinculada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Runas presas ao inimigo"
+    },
+    {
+      "padrao": "^Inimigos sofrem Dano aumentado em \\{(\\d+)\\}% para cada uma de suas Runas Vinculadas a eles$",
+      "efeitos": [
+        {
+          "stat": "dano_por_runa_vinculada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Runas presas ao inimigo"
+    },
+    {
+      "padrao": "^Você pode ter uma Marca adicional Vinculada (?:à|a) um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "runas_por_inimigo_extra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Runas presas ao inimigo",
+      "nota": "a Runa (Brand do PoE): 2 vinculadas no mesmo inimigo"
+    },
+    {
+      "padrao": "^Habilidades de Vínculo podem focar .*$|^Inimigos em seus Feixes de Vínculo .*$|^Inimigos próximos dos seus alvos Vinculados .*$|^Vínculos demoram .*$|^Habilidades de Vínculo têm .* alvo aleatório adicional$|^Alvos Vinculados compartilham .*$|^Sua Velocidade de Movimento é igual a maior .* Vinculados$|^Defesas aumentadas .* alvos Vinculados$|^Velocidade de Movimento aumentada .* alvov?s Vinculados$|^Efeito do Buff dos seus Vínculos aumentado .* Expirado$|^Maldições são infligidas em Você ao invés dos alvos Vinculados$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -2421,7 +2490,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as Runas e os Vínculos do jogo não ficam presos ao inimigo nem a aliados: a habilidade de Vínculo reforça só você",
+      "nota": "as habilidades de Vínculo (Vínculo Flamejante, Protetor, D'Alma, Destrutivo, Vampírico, Intuitivo) ainda não existem no jogo: não há alvo Vinculado",
       "_nova": true,
       "_ciclo7": true
     },
@@ -6723,7 +6792,22 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Habilidades de conexão têm duração de fixação infinita$|^Runas têm .* se .* da Duração de Vínculo houver expirado$",
+      "padrao": "^Runas têm \\{(\\d+)\\}% mais Frequência de Ativação se \\{(\\d+)\\}% da Duração de Vínculo houver expirado$",
+      "efeitos": [
+        {
+          "stat": "runa_frequencia_tardia_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "runa_frequencia_tardia_apos",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote4": "12/10 — Runas presas ao inimigo"
+    },
+    {
+      "padrao": "^Habilidades de conexão têm duração de fixação infinita$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -6731,7 +6815,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "não se aplica ao jogo: as Runas e os Vínculos do jogo não ficam presos ao alvo",
+      "nota": "não se aplica ao jogo: os Vínculos com mercenários não existem no jogo",
       "_nova": true,
       "_ciclo7": true
     },

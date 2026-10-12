@@ -19,7 +19,7 @@ const FALTA_NO_JOGO = /^falta no jogo:/i;
 const DECISAO_DO_DONO = [
   // (os blocos com nome primeiro: a nota do Convocar o Aço fala em empalamentos, que o último pegaria)
   [/Tinturas/i, 'criar a Tintura'],
-  [/Runas e os Vínculos|Runas do jogo/i, 'Runas e Vínculos presos ao alvo'],
+  [/Runas e os Vínculos|Runas do jogo|habilidades de Vínculo/i, 'Runas e Vínculos presos ao alvo'],
   [/Armadilha e a Mina/i, 'Armadilhas e Minas plantadas (limite, duração, detonação)'],
   [/Convocar o Aço/i, 'o Convocar o Aço (Call of Steel)'],
   [/monstro|reflexo|Empal|Mutil|Drenar Vida De Você/i, 'ligar os modificadores de monstro/mapa (reflexo, Cegueira, Sangue Corrompido, Mutilar, Empalar em você…)'],
@@ -40,6 +40,11 @@ const IMPLEMENTADOS = [
     bloco: 'Armadilhas e Minas plantadas (lote 3)',
     re: /plantadas por vez|Armadilhas adicionais|não podem ser Danificadas|Detonar Minas é Ativado|Velocidade de Detonação|Duração da Mina|Armadilhas próximas também Ativam|Uso de Recarga|Ativarem uma vez adicional|Detonadas uma Vez Adicional|quando são Plantadas/,
     jogo: 'a gema de Armadilha/Mina planta no alvo; a Armadilha ativa com inimigo a 1 casa (dura 4 s, até 15); a Mina detona sozinha com você parado e inimigo perto, em sequência (dura 5 s, até 15); a magia em área do monstro destrói as plantadas',
+  },
+  {
+    bloco: 'Runas presas ao inimigo (lote 4a)',
+    re: /Alcance do Vínculo de Runas|Runas Adicionais|Runas se Vinculam|quando uma Runa expira|Runas Vinculadas a eles|Marca adicional Vinculada|Frequência de Ativação se|caso \d+% da Duração do Vínculo/,
+    jogo: 'a Runa (Brand) vincula ao inimigo e é Ativada a cada N segundos enquanto vinculada (5 s; solta, procura outro por 6 s); até 3 ativas, 1 por inimigo; o automático não reconjura com todas em campo',
   },
 ];
 
