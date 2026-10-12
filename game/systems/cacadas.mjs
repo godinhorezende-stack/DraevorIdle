@@ -2377,14 +2377,29 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   l.proximoGolpe = agora + Math.max(400, Math.round(uso * LacaiosPoe.fatorDeLentidao(l, agora)));
   l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
   const tipo = entry?.element ?? l.elemento ?? 'physical';
-  const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, conta.min + Math.random() * Math.max(0, conta.max - conta.min), ficha)));
-  alvo.hp -= dano;
   // (+ "X% do Dano causado pelos seus Totens é Drenado como Vida para você" — de todo dano, `totem_roubo_vida`.)
   const drenoDoTotem = (tipo === 'physical' && entry?.poeGema?.ataque ? ModsPoe.valor(ficha, 'totem_roubo_vida_fisico') : 0) + ModsPoe.valor(ficha, 'totem_roubo_vida');
-  if (drenoDoTotem > 0) Ficha.drenarPoe(estado, { vida: (dano * drenoDoTotem) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
+  // O golpe do totem em UM bicho com `pct`% (o principal 100%; os projéteis a mais e os saltos, o % deles).
+  const golpear = (b, pct) => {
+    const dano = Math.max(1, Math.round(resistido(hunt, b, tipo, ((conta.min + Math.random() * Math.max(0, conta.max - conta.min)) * pct) / 100, ficha)));
+    b.hp -= dano;
+    if (drenoDoTotem > 0) Ficha.drenarPoe(estado, { vida: (dano * drenoDoTotem) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
+    eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: b.uid, x: b.x, y: b.y, sk: l.acao });
+    eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
+  };
   if (entry?.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y, sk: l.acao });
-  eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });
-  eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
+  golpear(alvo, 100);
+  // (dono, 11/10: "faça os totens e lacaios também") Os PROJÉTEIS do totem — a base da gema, os suportes ligados nela e as peças — pelo
+  // mesmo motor do disparo do personagem: todos saem (os que erram também), e os a mais e os saltos acertam como lá.
+  const r = Acoes.projeteisDoTotem(estado, entry, { origem: { x: l.x, y: l.y }, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy) });
+  if (r) {
+    if (entry.projetil) for (const p of r.emitidos.slice(1)) eventos.push({ t: 'shot', id: entry.projetil, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y, sk: l.acao });
+    for (const g of r.golpes) {
+      if (g.bicho.hp <= 0) continue;
+      if (g.tipo !== 'explosao' && g.tipo !== 'projetil' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: g.de.x, y: g.de.y, tx: g.bicho.x, ty: g.bicho.y, sk: l.acao });
+      golpear(g.bicho, g.pct);
+    }
+  }
   return eventos;
 }
 
@@ -2474,7 +2489,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       continue;
     }
     // O ESPECTRO: as MAGIAS do monstro erguido, cada uma no intervalo e na chance dela, nos bichos (o melee dele vem embaixo).
-    if (l.espectro) eventos.push(...magiasDoEspectro(hunt, l, agora, ficha));
+    if (l.espectro) eventos.push(...magiasDoEspectro(hunt, l, agora, ficha, estado));
     // O LACAIO: a IA do familiar (de perto ou de longe — `alcanceDeAtaque` do jeito dele).
     const alvo = alvoDoFamiliar(hunt, l, agora);
     if (!alvo) {
@@ -2508,32 +2523,51 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     const PROJETIL = { fire: 4, ice: 37, energy: 36, chaos: 11, physical: 12 };
     const IMPACTO = { fire: 16, ice: 44, energy: 176, chaos: 17, physical: 10 };
     if (partes.every((x) => resistenciaEfetivaDe(hunt, alvo, x.tipo, ficha) >= 100)) continue;
-    // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito; ciclo 7: os da árvore).
-    const critico = LacaiosPoe.criticoDoLacaio(l, oferenda);
-    const crit = Math.random() * 100 < critico.chance;
-    // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
-    const doGolpe = LacaiosPoe.golpeDoLacaio(l, alvo, ficha, tipo, agora);
-    const bruto = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? critico.mult : 1) * doGolpe.fator;
-    const antes = l.poe ? { envenenado: (alvo.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(alvo.raridade ?? alvo.raridadePoe) || !!alvo.boss || !!alvo.chefe } : null;
-    const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, alvo, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, alvo, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0)));
-    alvo.hp -= dano;
-    // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")
-    ModsPoe.poupar(ficha, hunt, alvo, { lacaio: true });
-    // (ciclo 7) "X% do Dano Causado pelos seus Lacaios é Drenado como Vida para você".
-    if (l.poe?.drenoParaODono > 0) Ficha.drenarPoe(estado, { vida: (dano * l.poe.drenoParaODono) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
-    if (alvo.hp <= 0) LacaiosPoe.aoMatarDoLacaio(l, agora);
-    // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
-    if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, { ...antes, estado, ficha, personagem }));
+    // O golpe do lacaio em UM bicho, com `pct`% (o principal 100%; os projéteis a mais e os saltos, o % deles).
+    const golpear = (b, pct) => {
+      if (partes.every((x) => resistenciaEfetivaDe(hunt, b, x.tipo, ficha) >= 100)) return;
+      // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito; ciclo 7: os da árvore).
+      const critico = LacaiosPoe.criticoDoLacaio(l, oferenda);
+      const crit = Math.random() * 100 < critico.chance;
+      // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
+      const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora);
+      const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? critico.mult : 1) * doGolpe.fator * pct) / 100;
+      const antes = l.poe ? { envenenado: (b.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(b.raridade ?? b.raridadePoe) || !!b.boss || !!b.chefe } : null;
+      const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0)));
+      b.hp -= dano;
+      // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")
+      ModsPoe.poupar(ficha, hunt, b, { lacaio: true });
+      // (ciclo 7) "X% do Dano Causado pelos seus Lacaios é Drenado como Vida para você".
+      if (l.poe?.drenoParaODono > 0) Ficha.drenarPoe(estado, { vida: (dano * l.poe.drenoParaODono) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
+      if (b.hp <= 0) LacaiosPoe.aoMatarDoLacaio(l, agora);
+      // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
+      if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, b, dano, tipo, { ...antes, estado, ficha, personagem }));
+      eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: b.uid, x: b.x, y: b.y });
+      eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, crit, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+      if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
+      // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).
+      if (l.sangrar && Math.random() * 100 < l.sangrar) {
+        const posto = Dot.aplicar(b, { tipo: 'sangramento', total: dano * 0.7, origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);
+        if (posto) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: posto });
+      }
+      return bruto;
+    };
     const deLonge = l.alcanceDeAtaque > 1;
     // O golpe do LACAIO tem o desenho do tipo dele (o mago no elemento da vez): sem o `sk` da gema, que é o da invocação.
-    if (deLonge) eventos.push({ t: 'shot', id: est.projetil ?? PROJETIL[tipo] ?? 12, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
-    eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y });
-    eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, crit, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
-    if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
-    // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).
-    if (l.sangrar && Math.random() * 100 < l.sangrar) {
-      const posto = Dot.aplicar(alvo, { tipo: 'sangramento', total: dano * 0.7, origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);
-      if (posto) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: posto });
+    const tiro = est.projetil ?? PROJETIL[tipo] ?? 12;
+    if (deLonge) eventos.push({ t: 'shot', id: tiro, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
+    // (o bruto do golpe principal: o golpe em área a cada N acertos sai dele)
+    const bruto = golpear(alvo, 100) ?? 0;
+    // (dono, 11/10: "faça os totens e lacaios também") O lacaio de longe: os PROJÉTEIS a mais dos suportes ligados na gema que o invocou
+    // (Projéteis Múltiplos, Perfuração, Bifurcação, Corrente, Retorno), pelo mesmo motor do disparo do personagem — todos saem.
+    const r = deLonge ? Acoes.projeteisDoLacaio(estado, l.acao, { origem: { x: l.x, y: l.y }, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy), alcance: l.alcanceDeAtaque }) : null;
+    if (r) {
+      for (const p of r.emitidos.slice(1)) eventos.push({ t: 'shot', id: tiro, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y });
+      for (const g of r.golpes) {
+        if (g.bicho.hp <= 0) continue;
+        if (g.tipo !== 'explosao' && g.tipo !== 'projetil') eventos.push({ t: 'shot', id: tiro, x: g.de.x, y: g.de.y, tx: g.bicho.x, ty: g.bicho.y });
+        golpear(g.bicho, g.pct);
+      }
     }
     // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
     l.acertos = (l.acertos ?? 0) + 1;
@@ -2568,7 +2602,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
  * casas; o dano é o da magia × o fator do espectro, pela resistência de cada bicho ao elemento. O desenho é o da magia do monstro.
  */
 const ELEMENTO_DO_MONSTRO = { earth: 'chaos', death: 'chaos', lifedrain: 'chaos', holy: 'physical', drown: 'ice', manadrain: null };
-function magiasDoEspectro(hunt, l, agora, ficha) {
+function magiasDoEspectro(hunt, l, agora, ficha, estado = null) {
   const eventos = [];
   const p = Poderes.poderesDe(l.espectro.key);
   if (!p) return eventos;
@@ -2591,11 +2625,25 @@ function magiasDoEspectro(hunt, l, agora, ficha) {
     if (casas.length > 1) eventos.push({ t: 'area', id: efeito, x: l.x, y: l.y, casas: Areas.paraTela(casas, l) });
     else eventos.push({ t: 'fx', id: efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
     const atingidos = casas.length > 1 ? vivos.filter((m) => casas.some((c) => c.x === m.x && c.y === m.y)) : [alvo];
-    for (const m of atingidos) {
-      const bruto = (Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator;
+    const golpear = (m, pct) => {
+      const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct) / 100;
       const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, ficha)));
       m.hp -= d;
       eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[a.elemento] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    };
+    for (const m of atingidos) golpear(m, 100);
+    // (dono, 11/10) A magia de PROJÉTIL de alvo único do espectro: os projéteis a mais dos suportes ligados no Erguer Espectro (como no PoE),
+    // pelo mesmo motor do disparo do personagem — todos saem.
+    if (a.tiro != null && casas.length <= 1 && estado) {
+      const r = Acoes.projeteisDoLacaio(estado, l.acao, { origem: { x: l.x, y: l.y }, alvo, vivos, alcance: a.alcance ?? l.alcanceDeAtaque ?? 5 });
+      if (r) {
+        for (const p of r.emitidos.slice(1)) eventos.push({ t: 'shot', id: a.tiro, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y });
+        for (const g of r.golpes) {
+          if (g.bicho.hp <= 0) continue;
+          if (g.tipo !== 'explosao' && g.tipo !== 'projetil') eventos.push({ t: 'shot', id: a.tiro, x: g.de.x, y: g.de.y, tx: g.bicho.x, ty: g.bicho.y });
+          golpear(g.bicho, g.pct);
+        }
+      }
     }
   });
   return eventos;

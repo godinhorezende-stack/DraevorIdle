@@ -1018,6 +1018,34 @@ const sortear = (min, max) => min + Math.floor(Math.random() * Math.max(1, max -
  * magia da barra para baixo nenhuma chegava a sair ("teste os slots de magia
  * de ataque ... verificando se todas estão sendo utilizadas").
  */
+/**
+ * Os PROJÉTEIS do golpe de um TOTEM (dono, 11/10: "faça os totens e lacaios também"): o mesmo motor do disparo do personagem
+ * (`Secundarios.resolver`) — a emissão do total e quem leva cada projétil a mais (o principal o chamador já deu), com a perfuração, a
+ * bifurcação, o ricochete, o retorno e a explosão. O totem usa a skill da gema dele inteira: a base ("Dispara 6 projéteis"), os suportes
+ * ligados nela e as peças (`comOsAlvosDaGema`). A skill de área do totem fica como a do personagem (sem emissão). Sem projétil: null.
+ */
+export function projeteisDoTotem(estado, entry, { origem, alvo, vivos }) {
+  if (!entry) return null;
+  const tags = Tags.tagsDaAcao(entry);
+  if (!tags.includes('projectile')) return null;
+  const efeito = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
+  if (!efeito) return null;
+  const area = !!entry.forma;
+  return Secundarios.resolver({ efeito, tags, origem, alvo: area ? null : alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, area });
+}
+/**
+ * Os PROJÉTEIS do golpe de longe de um LACAIO (o arqueiro, o mago, o espectro): os suportes de projétil ligados na gema que o invocou —
+ * como no PoE, o Projéteis Múltiplos Maior no Erguer Espectro vale nos projéteis dos espectros. As peças do personagem não entram (são
+ * dele, não dos lacaios). Sem gema ou sem suporte de projétil: só o principal (o chamador já deu). Devolve o do `Secundarios.resolver`.
+ */
+export function projeteisDoLacaio(estado, acaoDaGema, { origem, alvo, vivos, alcance }) {
+  const entry = POR_ID.get(acaoDaGema);
+  if (!entry || !Gemas.ehSkillDeGema(entry)) return null;
+  const efeito = Gemas.efeitoNaSkill(estado, entry.id);
+  if (!efeito) return null;
+  return Secundarios.resolver({ efeito, tags: ['projectile', 'single', 'hit'], origem, alvo, atingidos: [alvo], vivos, alcance });
+}
+
 const FATOR_DA_RECARGA_DE_ATAQUE = 0.5;
 const recargaDe = (entry, ms) => (entry.papeis?.[0] === 'attack' ? Math.round(ms * FATOR_DA_RECARGA_DE_ATAQUE) : ms);
 

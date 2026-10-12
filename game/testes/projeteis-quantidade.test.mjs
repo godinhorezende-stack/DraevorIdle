@@ -141,3 +141,77 @@ test('no disparo de verdade: a gema de 15 projéteis com 1 e com 3 bichos desenh
   assert.deepEqual(lancar(1), { tiros: 15, acertados: 1 }, '1 bicho: os 15 saem, 1 acerta');
   assert.deepEqual(lancar(3), { tiros: 15, acertados: 3 }, '3 bichos: os 15 saem, 3 acertam');
 });
+
+// ---- Os TOTENS e os LACAIOS (dono, 11/10: "faça os totens e lacaios também"): o mesmo motor de projéteis do disparo do personagem.
+/** Uma bruxa do PoE com a gema (e os suportes LIGADOS a ela) numa varinha, numa caçada do Ato 1 sem bichos. */
+async function comGemas(slugs) {
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  const { iniciarJogoDoPoe } = await import('../systems/itens-poe/iniciar.mjs');
+  const Jogo = await import('../systems/itens-poe/jogo.mjs');
+  const GP = await import('../systems/itens-poe/gemas-poe.mjs');
+  const GS = await import('../systems/skills/gemas.mjs');
+  const Gerar = await import('../systems/itens-poe/gerar.mjs');
+  const Afixos = await import('../systems/afixos.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const Cacadas = await import('../systems/cacadas.mjs');
+  await iniciarJogoDoPoe();
+  Jogo.iniciar(ITEM_CATALOG);
+  const defs = slugs.map((s) => GP.doSlug(s) ?? [...GS.DEFS.values()].find((d) => d.tipo === 'support' && d.poe?.slug === s));
+  if (defs.some((d) => !d)) return null;
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 70 });
+  e.classePoe = 'Witch';
+  const arma = Jogo.pecaDoJogo(Gerar.gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Wands/Driftwood_Wand', raridade: 'normal', ilvl: 20, rng: () => 0.99 }));
+  arma.soquetes = { abertos: slugs.length, links: Array(slugs.length - 1).fill(true), gemas: Array(slugs.length).fill(null), cores: Array(slugs.length).fill('W') };
+  e.equipment = { ...(e.equipment ?? {}), weapon: arma };
+  e.inventory = defs.map((d) => GS.itemDaGema({ id: d.itemId, nivel: 20, xp: 0, raridade: 'comum' }));
+  for (let i = 0; i < slugs.length; i++) GS.encaixar(e, { de: 0, slot: 'weapon', indice: i });
+  Afixos.sincronizarMaximos(e);
+  Ficha.invalidar(e);
+  assert.equal(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok, true);
+  const molde = e.hunt.monstros.find((b) => b.hp > 0);
+  e.hunt.monstros = [];
+  e.hunt.respawns = [];
+  return { e, acao: defs[0].acao, molde, bichos: (n, de) => (e.hunt.monstros = Array.from({ length: n }, (_, i) => ({ ...molde, uid: `t${i}`, hp: 1e12, maxHp: 1e12, x: de.x + 1 + i, y: de.y }))) };
+}
+
+test('o TOTEM de projétil (a Balista de Estilhaços: "Dispara 3 Flechas") emite os 3 com 1 e com 3 bichos', { skip: SEM }, async () => {
+  const m = await comGemas(['Shrapnel_Ballista']);
+  if (!m) return; // (sem a coleção de gemas nesta máquina)
+  const { PERSONAGEM } = await import('./apoio.mjs');
+  const Cacadas = await import('../systems/cacadas.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const Acoes = await import('../systems/acoes.mjs');
+  const entry = Acoes.POR_ID_PUBLICO(m.acao);
+  const golpe = (n) => {
+    const h = m.e.hunt;
+    const totem = { uid: 'tot', tipo: 'totem', acao: m.acao, x: h.pos.x + 1, y: h.pos.y, hp: 100, maxHp: 100, intervaloMs: 1000, elemento: 'physical', dano: { min: 10, max: 20 }, alcanceDeAtaque: 7 };
+    const vivos = m.bichos(n, totem);
+    const ev = Cacadas.golpeDoTotem(m.e, h, totem, vivos[0], Ficha.combate(m.e), PERSONAGEM, h.clock ?? 0);
+    const tiros = ev.filter((x) => x.t === 'shot' && x.id === entry.projetil && x.x === totem.x && x.y === totem.y).length;
+    const acertados = new Set(ev.filter((x) => x.t === 'dmg' && x.foe).map((x) => x.uid)).size;
+    return { tiros, acertados };
+  };
+  assert.deepEqual(golpe(1), { tiros: 3, acertados: 1 }, '1 bicho: os 3 saem, 1 acerta');
+  assert.deepEqual(golpe(3), { tiros: 3, acertados: 3 }, '3 bichos: os 3 saem, 3 acertam');
+});
+
+test('o LACAIO de longe: os suportes de projétil ligados na gema que o invocou (Projéteis Múltiplos Maior no Arqueiro Esqueleto)', { skip: SEM }, async () => {
+  const Acoes = await import('../systems/acoes.mjs');
+  const com = await comGemas(['Summon_Skeletons_of_Archers', 'Greater_Multiple_Projectiles_Support']);
+  if (!com) return;
+  const origem = { x: com.e.hunt.pos.x, y: com.e.hunt.pos.y };
+  const projeteis = (m, n) => {
+    const vivos = m.bichos(n, origem);
+    return Acoes.projeteisDoLacaio(m.e, m.acao, { origem, alvo: vivos[0], vivos, alcance: 5 });
+  };
+  const um = projeteis(com, 1);
+  assert.ok(um.emitidos.length > 1, `com o suporte, mais de 1 projétil (${um.emitidos.length})`);
+  assert.equal(um.emitidos.filter((p) => p.bicho).length, 1, '1 bicho: 1 acerta, os outros saem e erram');
+  const cinco = projeteis(com, 5);
+  assert.equal(cinco.emitidos.length, um.emitidos.length, 'a emissão não depende dos bichos');
+  assert.equal(new Set(cinco.emitidos.filter((p) => p.bicho).map((p) => p.bicho.uid)).size, Math.min(5, um.emitidos.length));
+  // Sem o suporte: só o principal (nada muda para o lacaio de sempre).
+  const sem = await comGemas(['Summon_Skeletons_of_Archers']);
+  assert.equal(projeteis(sem, 3).emitidos.length, 1);
+});
