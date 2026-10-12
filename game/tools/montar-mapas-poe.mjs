@@ -58,6 +58,18 @@ const EFEITOS = {
   MapPlayerAccuracyRating: [{ alvo: 'jogador', stat: 'accuracy_less', de: 0 }],
   MapPlayerCooldownRecovery: [{ alvo: 'jogador', stat: 'cooldown_recovery', de: 0, escala: -1 }],
   MapPlayersGainReducedFlaskCharges: [{ alvo: 'jogador', stat: 'frasco_cargas_recebidas', de: 0, escala: -1 }],
+  // (12/10 — dono: "ligar os modificadores" que a árvore combate) O acerto dos monstros (`mobs/mecanicas.aoAcertarJogador`): Cegar e Mutilar
+  // sempre (Mutilar e Empalar só com Ataques), Empalar na chance do texto, uma Carga por acerto; os espinhos dos Raros
+  // (`mecanicas.aoReceberDano`: cada acerto corpo a corpo seu num Raro devolve o dano); "Impossível Drenar dos Monstros".
+  MapMonstersBlindOnHit: [{ alvo: 'monstros', stat: 'noAcerto.cegar', fixo: 100 }],
+  MapMonstersMaimOnHit: [{ alvo: 'monstros', stat: 'noAcerto.mutilar', fixo: 100 }],
+  MapMonstersImpaleOnHit: [{ alvo: 'monstros', stat: 'noAcerto.empalar', de: 0 }],
+  MapMonstersEnduranceChargeOnHit: [{ alvo: 'monstros', stat: 'noAcerto.tolerancia', fixo: 100 }],
+  MapMonstersFrenzyChargeOnHit: [{ alvo: 'monstros', stat: 'noAcerto.frenesi', fixo: 100 }],
+  MapMonstersPowerChargeOnHit: [{ alvo: 'monstros', stat: 'noAcerto.poder', fixo: 100 }],
+  MapMonsterPhysicalReflection: [{ alvo: 'monstros', stat: 'espinhos.physical', de: 0 }],
+  MapMonsterElementalReflection: [{ alvo: 'monstros', stat: 'espinhos.elemental', de: 0, parcial: 'o PoE não diz a divisão do dano elemental: no jogo, um terço de Fogo, de Gelo e de Raio' }],
+  MapMonsterLifeLeechImmunity: [{ alvo: 'monstros', stat: 'semDreno', fixo: 1 }],
 };
 /** A versão de uma família com OUTRO texto (o mesmo grupo no poedb, outro efeito): pelo texto, antes do efeito da família. */
 const EFEITOS_POR_TEXTO = [
@@ -90,8 +102,6 @@ const MOTIVO = {
   MapMonsterChain: 'as habilidades dos monstros ainda não ricocheteiam',
   MapMonsterMultipleProjectiles: 'os projéteis adicionais dos monstros ainda não existem',
   MapMonsterAreaOfEffect: 'o efeito em área dos monstros ainda não existe',
-  MapMonsterPhysicalReflection: 'os espinhos de dano fixo dos monstros raros ainda não existem (o reflexo de hoje é em % do dano)',
-  MapMonsterElementalReflection: 'os espinhos de dano fixo dos monstros raros ainda não existem (o reflexo de hoje é em % do dano)',
 };
 
 const limpar = (s) => String(s).replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/[ \t]+/g, ' ').trim();

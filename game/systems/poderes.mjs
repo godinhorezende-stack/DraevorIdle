@@ -83,6 +83,15 @@ export const distanciaAte = distancia;
 
 export const temPoderes = (bicho) => !!PODERES[bicho?.key];
 
+/*
+ * (PoE, 12/10) O que o ACERTO do bicho faz em você além do dano (Cegar, Exposição, Sangue Corrompido, o dreno e as cargas do monstro, a
+ * afecção inerente do Golpe Crítico): quem registra é `mobs/mecanicas.mjs` (que importa este módulo — evita o ciclo de importação). `var`
+ * sem valor inicial: o registro pode chegar ANTES do corpo deste módulo rodar (quando ele é o primeiro importado), e o `let` daria erro.
+ */
+// eslint-disable-next-line no-var
+var aoAcertarJogador;
+export function definirAoAcertarJogador(fn) { aoAcertarJogador = fn; }
+
 
 /**
  * Os ataques de um bicho para a FICHA (bestiário e prévia da hunt): os mesmos do arquivo que `lancar` e
@@ -273,21 +282,27 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (+ "Armadura também é aplicada no Dano de Raio sofrido de Acertos": a armadura sobre a parte daquele tipo — `ModsPoe.armaduraNoElemento`.)
   // (PoE, as ascendências: "Inimigos próximos causam X% menos Dano Elemental" — a aura põe `elemMenos` nos de perto, `mods-poe.aurasProximas`.)
   const elemFator = (el) => (['fire', 'ice', 'energy'].includes(el) && ModsPoe.ativo(bicho?.estados?.elemMenos, agora) ? Math.max(0, 1 - bicho.estados.elemMenos.pct / 100) : 1);
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => { const parte = rolar(x.elemento, x.min, x.max) * forcaDaMagia * elemFator(x.elemento); return n + parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte); }, 0);
+  // (12/10: o dano de cada tipo — antes e depois das suas resistências — para o que o acerto faz além do dano: `aoAcertarJogador`.)
+  const brutas = {};
+  const partes = {};
+  const somarParte = (el, antes, depois) => { brutas[el] = (brutas[el] ?? 0) + antes; partes[el] = (partes[el] ?? 0) + depois; return depois; };
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => { const parte = rolar(x.elemento, x.min, x.max) * forcaDaMagia * elemFator(x.elemento); return n + somarParte(x.elemento, parte, parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte)); }, 0);
   // (O MAPA do endgame: o dano extra por elemento em % do dano da magia — `bicho.danoExtraPct`.)
   // (ciclo 7, lote E: "Dano de Raio dos Inimigos Acertando você enquanto você estiver Eletrizado é Azarado"; "O Dano dos Inimigos Acertando
   // você é Azarado" — `dano_recebido_azarado`: o menor de dois sorteios.)
   const azarado = ModsPoe.valor(ficha, 'dano_recebido_azarado') > 0 || (a.elemento === 'energy' && ModsPoe.valor(ficha, 'raio_azarado_eletrizado') > 0 && (hunt.efeitosDoJogador?.dots ?? []).some((d) => d.tipo === 'choque' && d.falta > 0));
   // ("-N de Dano Físico sofrido por Ataques de Projéteis": o fixo a menos no projétil físico do bicho.)
   const daMagia = Math.max(0, (azarado ? Math.min(rolar(a.elemento, a.min, a.max), rolar(a.elemento, a.min, a.max)) : rolar(a.elemento, a.min, a.max)) * forcaDaMagia * elemFator(a.elemento) + (projetil && a.elemento === 'physical' ? ModsPoe.valor(ficha, 'fisico_sofrido_projetil') : 0));
-  const extraDoMapa = AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + daMagia * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento), 0);
+  const extraDoMapa = AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, daMagia * (x.pct / 100), daMagia * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
   // PoE 1 (dono, 10/10): a magia FÍSICA do bicho também é um acerto físico — passa pela armadura do personagem, somada à redução física
   // adicional, no teto de 90% (`ModsPoe.acertoFisicoRecebido`), como o golpe corpo a corpo.
   // ("Armadura contra Projéteis aumentada em X%": a armadura do personagem no projétil físico do bicho.)
   // (+ "Defende com X% da Armadura contra Ataques de Projéteis" — a armadura × X%.)
   const defendeCom = projetil ? ModsPoe.valor(ficha, 'armadura_projetil_defende_pct') : 0;
   const armaduraContra = (ficha.armor ?? 0) * (projetil ? 1 + ModsPoe.valor(ficha, 'armadura_projetil_inc') / 100 : 1) * (defendeCom > 0 ? defendeCom / 100 : 1);
-  const bruto = (a.elemento === 'physical' && ModsPoe.somaFisicaDoPoe() ? ModsPoe.acertoFisicoRecebido(ficha, daMagia, armaduraContra) : daMagia * fatorDaResistencia * ModsPoe.armaduraNoElemento(ficha, a.elemento, daMagia)) + doutrosTipos + extraDoMapa;
+  const daParteDaMagia = a.elemento === 'physical' && ModsPoe.somaFisicaDoPoe() ? ModsPoe.acertoFisicoRecebido(ficha, daMagia, armaduraContra) : daMagia * fatorDaResistencia * ModsPoe.armaduraNoElemento(ficha, a.elemento, daMagia);
+  somarParte(a.elemento, daMagia, daParteDaMagia);
+  const bruto = daParteDaMagia + doutrosTipos + extraDoMapa;
   // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance) — sorteada ANTES das
   // afecções: "Dano Mágico Suprimido não pode infligir Afecções Elementais em você" (a árvore) as tira da magia suprimida.
   // (+ ciclo 7, lote F: "Chance de Suprimir Dano Mágico é Sortuda" — o melhor de dois sorteios.)
@@ -313,6 +328,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // (PoE, o Sabotador: "X% de chance de sofrer Y% menos Dano em Área de Acertos" — a magia em área do bicho.)
   const menosEmArea = casas.length > 1 && Math.random() * 100 < ModsPoe.valor(ficha, 'area_recebida_menos_chance') ? Math.max(0, 1 - ModsPoe.valor(ficha, 'area_recebida_menos_pct') / 100) : 1;
   let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) + ModsPoe.fixoRecebido(ficha, a.elemento));
+  const danoDoAcerto = dano;
   const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
   // Void Inversion (charm): o dreno de mana vira ganho de mana.
   if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {
@@ -338,6 +354,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // ("Quando um Acerto Inimigo causar Dano Elemental em você, as Resistências deles para tais Elementos são zeradas por N segundos".)
   const zerar = ModsPoe.valor(ficha, 'zera_res_de_quem_acerta_s');
   if (zerar > 0 && dano > 0 && ['fire', 'ice', 'energy'].includes(a.elemento)) (bicho.estados ??= {}).resZerada = { ...(bicho.estados.resZerada?.ate > agora ? bicho.estados.resZerada : {}), [a.elemento]: true, ate: agora + zerar * 1000 };
+  // (PoE, 12/10) O que os modificadores de monstro e de mapa fazem no acerto além do dano (`mobs/mecanicas.aoAcertarJogador`); a magia física
+  // de projétil é um Ataque (Mutilar e Empalar são só dos Ataques).
+  if (aoAcertarJogador && bruto > 0) aoAcertarJogador(estado, hunt, personagem, bicho, { dano: danoDoAcerto, bruto: Object.values(brutas).reduce((t, x) => t + x, 0), partes, brutas, critico: critDoMob.critico, ataque: projetilDeAtaque, eventos });
   if (dano <= 0) return 0;
   if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
   return dano;

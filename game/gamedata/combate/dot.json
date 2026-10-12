@@ -126,6 +126,17 @@
       "estado": "envenenado",
       "_nota": "o dano degenerativo de uma HABILIDADE do PoE (Vórtice, Geada Rastejante, Flecha Cáustica…): um por gema (chave), o mais forte vale; reaplicar renova"
     },
+    "sangueCorrompido": {
+      "nome": "Sangue Corrompido",
+      "elemento": "physical",
+      "duracaoMs": 4000,
+      "pulsoMs": 1000,
+      "acumulacao": "empilha",
+      "maxPilhas": 10,
+      "cor": "#8a1020",
+      "estado": "sangrando",
+      "_nota": "o Sangue Corrompido do PoE (12/10, os modificadores de monstro Sangue Corrompido e Corruptor): dano Físico contínuo em você, até 10 acúmulos, 4 s cada; não é Sangramento (andar não aumenta, a imunidade a Sangramento não vale — só \"Não pode ser afetado por Sangue Corrompido\" e a \"Imunidade a Sangramento e Sangue Corrompido\")"
+    },
     "degenFisico": {
       "nome": "Dano degenerativo Físico",
       "elemento": "physical",

@@ -487,6 +487,8 @@ export function chanceExtraDeSer(ficha, tipo) {
 export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   const ficha = ligado() ? fichaDa(hunt) : null;
   const a = ficha?.afPoe ? AFECCAO_DO_DOT[ef.tipo] : null;
+  // (12/10) O Sangue Corrompido dos monstros não é afecção: só "Não pode ser afetado por Sangue Corrompido" o impede.
+  if (ef.tipo === 'sangueCorrompido' && Number(ficha?.afPoe?.imune_sangue_corrompido) > 0) return null;
   if (!a) return Dot.aplicarNoJogador(hunt, ef, agora);
   const v = (k) => Number(ficha.afPoe[k]) || 0;
   if (v(`imune_${a.nome}`) > 0 || (hunt.imunidadesPoe?.[a.nome] ?? 0) > agora) return null;
@@ -805,6 +807,9 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         if (hunt.controle) { delete hunt.controle.congelado; delete hunt.controle.lento; }
       } else if (ev.param === 'sangramento') {
         Dot.removerDoJogador(hunt, 'sangramento');
+      } else if (ev.param === 'sangueCorrompido') {
+        // (12/10) "remove Sangue Corrompido ao usar uma Habilidade de Guarda"
+        Dot.removerDoJogador(hunt, 'sangueCorrompido');
       } else if (ev.param === 'danificadoras') {
         // (lote G) as Afecções Danificadoras: Incêndio, Sangramento e Veneno
         for (const t of ['queimadura', 'sangramento', 'veneno', 'venenoPoe']) Dot.removerDoJogador(hunt, t);

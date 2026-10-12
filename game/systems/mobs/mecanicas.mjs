@@ -11,6 +11,9 @@
 //   aoReceberDano → buff (empilha), refletir (parte do dano volta)  — no acerto
 //   aoAtacar      → debuff (dano ao longo do tempo no jogador), maldicao (PoE: o "Amaldiçoa" — uma das maldições do monstro, sempre a
 //                   mesma para cada monstro, em você por 6 s: `condicoes-poe.MALDICOES_DOS_MONSTROS`)   — no golpe do mob
+//                 + (PoE, 12/10) cegar, exposicao, sangueCorrompido, drenar, carga — no golpe E na magia do mob que acerta você
+//                   (`aoAcertarJogador`, com o que o MAPA põe nos monstros — `m.noAcerto` — e a afecção inerente do Golpe Crítico)
+//   aoReceberDano → + (PoE) carga: "Ganha N Cargas de Tolerância por segundo se foi Acertado Recentemente" (o tique dá as cargas)
 //
 // O dano no jogador vai pelo MESMO caminho das magias dos bosses
 // (`Poderes.danoDeElementoNoJogador`: proteção, Energy Shield, magic shield,
@@ -28,6 +31,9 @@ import { daSala } from '../hunt/instancia.mjs';
 import * as Dot from '../combate/dot.mjs';
 import * as ModsPoe from '../itens-poe/mods-poe.mjs';
 import * as Protecao from '../protecao.mjs';
+import * as Controle from '../combate/controle.mjs';
+import * as NoJogador from '../itens-poe/monstros-no-jogador.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
 // A geometria das áreas é a compartilhada (`engine/areas.mjs`): a distância em casas e o quadrado do raio.
 const distancia = Areas.distancia;
@@ -116,19 +122,176 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
   }
 }
 
-/** O mob `m` levou `dano` do `tipo`: buffs que empilham e o reflexo. */
-export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos) {
-  if (!m?.mods?.length || !(dano > 0)) return;
+/** O monstro é Raro no PoE? (o Elite do Draevor conta como Raro — `modificadores-monstro.RARIDADE_DO_POE`) */
+const ehRaro = (m) => m?.raridade === 'raro' || m?.raridade === 'elite';
+
+/**
+ * (PoE, 12/10) Os ESPINHOS dos monstros raros do mapa ("Monstros raros têm espinhos físicos/elementais que refletem N de dano" — `m.espinhos`,
+ * `itens-poe/mapas-areas.aplicarEfeitos`): o acerto corpo a corpo num Raro devolve o dano em você, × o "Evita X% do dano refletido" e com o
+ * "Não pode sofrer Dano Refletido" (`monstros-no-jogador.fatorDoReflexo`). O elemental: um terço de Fogo, de Gelo e de Raio (o PoE não diz).
+ */
+function espinhos(estado, hunt, personagem, m, eventos) {
+  const ficha = Ficha.combate(estado);
+  const partes = [['physical', Number(m.espinhos.physical) || 0], ...['fire', 'ice', 'energy'].map((el) => [el, (Number(m.espinhos.elemental) || 0) / 3])];
+  for (const [tipo, valor] of partes) {
+    if (!(valor > 0) || estado.hp <= 0) continue;
+    const fator = NoJogador.fatorDoReflexo(ficha, tipo);
+    if (fator > 0) ferirJogador(estado, hunt, personagem, m, valor * fator, tipo, eventos, 'Espinhos');
+  }
+}
+
+/**
+ * O mob `m` levou `dano` do `tipo`: buffs que empilham e o reflexo. `corpoACorpo`: o acerto foi um ataque corpo a corpo seu (os espinhos).
+ * (PoE: o reflexo também passa pelo "Evita X% do dano refletido" — `monstros-no-jogador.fatorDoReflexo`; fora do PoE, 1.)
+ */
+export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, { corpoACorpo = false } = {}) {
+  if (!m || !(dano > 0)) return;
+  if (corpoACorpo && m.espinhos && ehRaro(m) && estado.hp > 0 && itensPoeLigado()) espinhos(estado, hunt, personagem, m, eventos);
+  if (!m.mods?.length) return;
   const agora = relogio(hunt);
   for (const mec of Raridade.mecanicasDe(m)) {
     if (mec.gatilho !== 'aoReceberDano') continue;
-    if (mec.efeito === 'buff') {
+    // (PoE: "Ganha N Cargas … por segundo se foi Acertado Recentemente" — o tique lê `acertadoEm`.)
+    if (mec.efeito === 'carga') m.acertadoEm = agora;
+    else if (mec.efeito === 'buff') {
       Buffs.por(m, { chave: `${mec.modificador}:dano`, ate: agora + (mec.duracaoMs ?? 5000), acumulaAte: mec.acumulaAte, danoPct: mec.danoPct ?? 0, resist: mec.resist }, agora);
     } else if (mec.efeito === 'refletir' && (mec.tipos ?? []).includes(tipo) && estado.hp > 0) {
-      ferirJogador(estado, hunt, personagem, m, (dano * (mec.pct ?? 10)) / 100, tipo, eventos, 'Reflexo');
+      const fator = NoJogador.fatorDoReflexo(Ficha.combate(estado), tipo);
+      if (fator > 0) ferirJogador(estado, hunt, personagem, m, ((dano * (mec.pct ?? 10)) / 100) * fator, tipo, eventos, 'Reflexo');
     }
   }
 }
+
+/**
+ * (PoE, 12/10) O monstro `m` ganha uma CARGA (`tolerancia`, `frenesi`, `poder`): um buff dele que acumula até 3 e renova a duração de todas
+ * (10 s), com o efeito por carga do PoE (`monstros-no-jogador.NUMEROS.cargas`). "Monstros Inimigos não podem ganhar Cargas de Poder, Frenesi
+ * ou Tolerância" (a sua árvore — `ficha`) impede. Devolve se ganhou.
+ */
+export function ganharCarga(m, tipo, agora, ficha = null) {
+  const C = NoJogador.NUMEROS.cargas;
+  const e = C[tipo];
+  if (!e || !m || !(m.hp > 0) || Number(ficha?.afPoe?.inimigos_sem_cargas) > 0) return false;
+  Buffs.por(m, {
+    chave: `carga:${tipo}`, ate: agora + C.duracaoMs, acumulaAte: C.maximo, carga: tipo,
+    ...(e.resist ? { resist: { physical: e.resist, fire: e.resist, ice: e.resist, energy: e.resist } } : {}),
+    ...(e.danoPct ? { danoPct: e.danoPct } : {}), ...(e.velocidadeDeAtaquePct ? { velocidadeDeAtaquePct: e.velocidadeDeAtaquePct } : {}), ...(e.critAumentadoPct ? { critAumentadoPct: e.critAumentadoPct } : {}),
+  }, agora);
+  return true;
+}
+/** As cargas ativas do monstro (`{ tolerancia, frenesi, poder }`). */
+export const cargasDe = (m, agora) => Object.fromEntries(['tolerancia', 'frenesi', 'poder'].map((t) => [t, (m?.buffsDeMob ?? []).find((b) => b.chave === `carga:${t}` && b.ate > agora)?.pilhas ?? 0]));
+
+/**
+ * (PoE, 12/10) O DRENO DE VIDA do monstro ("X% do Dano é Drenado como Vida"): do dano que o acerto causou em você, a vida volta ao longo do
+ * tempo (2% da vida máxima dele por segundo, × a "Recuperação total por segundo do Dreno de Vida aumentada" — o tique). "Inimigos Não Podem
+ * Drenar Vida De Você" (a sua árvore) impede.
+ */
+function drenar(m, ficha, dano, mec, agora) {
+  if (!(dano > 0) || !(m.hp > 0) || Number(ficha?.afPoe?.inimigos_nao_drenam_vida) > 0) return false;
+  const total = (dano * (mec.pct ?? 0)) / 100;
+  if (!(total > 0)) return false;
+  (m.drenoPoe ??= []).push({ restante: total, porSeg: ((m.maxHp ?? 0) * NoJogador.NUMEROS.dreno.taxaPct) / 100 * (1 + (mec.velocidadePct ?? 0) / 100), ...(mec.naoParaNaVidaCheia ? { naoPara: true } : {}) });
+  m.drenoPoeEm ??= agora;
+  // ("Dano enquanto Drenando Vida aumentado em X%" — o Vampírico: um buff dele enquanto o dreno corre; o tique tira quando acaba.)
+  if (mec.danoDrenandoPct > 0) Buffs.por(m, { chave: 'drenando', ate: Infinity, danoPct: mec.danoDrenandoPct }, agora);
+  return true;
+}
+function tiqueDoDreno(m, agora) {
+  const segundos = Math.max(0, agora - (m.drenoPoeEm ?? agora)) / 1000;
+  m.drenoPoeEm = agora;
+  for (const d of m.drenoPoe) {
+    // (PoE: o dreno para na vida cheia — menos o do "Efeitos do Dreno de Vida não são removidos quando a Vida … estiver Cheia".)
+    if (m.hp >= m.maxHp && !d.naoPara) { d.restante = 0; continue; }
+    const cura = Math.min(d.restante, d.porSeg * segundos);
+    m.hp = Math.min(m.maxHp, m.hp + cura);
+    d.restante -= cura;
+  }
+  m.drenoPoe = m.drenoPoe.filter((d) => d.restante > 0);
+  if (!m.drenoPoe.length) {
+    delete m.drenoPoe;
+    delete m.drenoPoeEm;
+    if (m.buffsDeMob) m.buffsDeMob = m.buffsDeMob.filter((b) => b.chave !== 'drenando');
+  }
+}
+/**
+ * (PoE) "Inimigos Não Podem Drenar Escudo de Energia De Você" (o Vampírico — a mecânica `aoReceberDano`/`semDrenoDeEs`): o seu dreno de
+ * Escudo de Energia não pega neste monstro (`Ficha.aplicarLeech`, `semDrenoDeEs`).
+ */
+export const semDrenoDeEs = (m) => !!m?.mods?.length && Raridade.mecanicasDe(m).some((x) => x.efeito === 'semDrenoDeEs');
+
+/** Os efeitos do PoE no acerto do monstro (gatilho `aoAtacar`; o `debuff` e a `maldicao` de sempre ficam com `aoAtacar`, só no golpe). */
+const DO_ACERTO = new Set(['cegar', 'mutilar', 'empalar', 'exposicao', 'sangueCorrompido', 'drenar', 'carga']);
+
+/** O que o MAPA pôs nos monstros para o acerto (`m.noAcerto` — `itens-poe/mapas-areas.aplicarEfeitos`), no formato das mecânicas. */
+function doMapa(m) {
+  const n = m?.noAcerto;
+  if (!n) return [];
+  const saida = [];
+  if (n.cegar > 0) saida.push({ efeito: 'cegar', chance: n.cegar });
+  // ("Monstros Mutilam com Ataques", "Ataques dos Monstros têm X% de chance de Empalar ao Acertar": só o golpe — o Ataque.)
+  if (n.mutilar > 0) saida.push({ efeito: 'mutilar', chance: n.mutilar, soAtaque: true });
+  if (n.empalar > 0) saida.push({ efeito: 'empalar', chance: n.empalar, soAtaque: true });
+  for (const carga of ['tolerancia', 'frenesi', 'poder']) if (n[carga] > 0) saida.push({ efeito: 'carga', carga, chance: n[carga] });
+  return saida;
+}
+
+/**
+ * (PoE, 12/10 — dono: "ligar os modificadores" de monstro e de mapa) O ACERTO do monstro `m` em você — o golpe (`ataque`) ou a magia —, o
+ * que ele faz além do dano: solta os Empalamentos já em você; Cega, Mutila, Empala, Expõe, põe Sangue Corrompido, drena vida e ganha cargas
+ * (os modificadores do monstro — gatilho `aoAtacar`, os efeitos de `DO_ACERTO` — e os do mapa); e a afecção INERENTE do Golpe Crítico (Fogo incendeia, Gelo congela,
+ * Raio eletriza — "Golpes Críticos contra você não infligem Afecções Elementais de forma Inerente" a tira). Só no modo PoE.
+ * `dano`: o que o acerto causou antes do Escudo de Energia (o dreno); `bruto`: o golpe antes das suas defesas (a "média de dano" do Sangue
+ * Corrompido); `partes`/`brutas`: o dano de cada tipo depois/antes das suas resistências (`{ physical, fire, ice, energy }`).
+ */
+export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto = 0, partes = {}, brutas = {}, critico = false, ataque = true, eventos = [], rng = Math.random } = {}) {
+  if (!itensPoeLigado() || !m || !hunt || !(estado.hp > 0)) return;
+  const agora = relogio(hunt);
+  const mecs = m.mods?.length ? Raridade.mecanicasDe(m).filter((x) => x.gatilho === 'aoAtacar' && DO_ACERTO.has(x.efeito)) : [];
+  const efeitos = [...mecs, ...doMapa(m)];
+  if (!efeitos.length && !critico && !hunt.debuffsDoJogador?.empalamentos?.length) return;
+  const ficha = Ficha.combate(estado);
+  const naTela = (nome, extra = {}) => eventos.push({ t: 'estado', uid: 'player', quem: personagem?.nome, x: hunt.pos?.x, y: hunt.pos?.y, estado: nome, de: m.name, ...extra });
+  const origem = { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key };
+  let mudou = false;
+  // Os EMPALAMENTOS já em você: cada um causa o guardado de novo (Físico, pela sua redução física) e gasta um dos 5 acertos.
+  const doEmpalamento = NoJogador.dispararEmpalamentos(hunt, agora);
+  if (doEmpalamento > 0) ferirJogador(estado, hunt, personagem, m, doEmpalamento, 'physical', eventos, 'Empalamento');
+  for (const mec of efeitos) {
+    if (estado.hp <= 0) return;
+    if (mec.soAtaque && !ataque) continue;
+    if (rng() * 100 >= (mec.chance ?? 100)) continue;
+    if (mec.efeito === 'cegar') {
+      if (NoJogador.cegar(hunt, ficha, { efeitoPct: mec.efeitoPct ?? 0, agora, rng })) { naTela('cego'); mudou = true; }
+    } else if (mec.efeito === 'mutilar') {
+      if (NoJogador.mutilar(hunt, ficha, { agora })) { naTela('mutilado'); mudou = true; }
+    } else if (mec.efeito === 'empalar') {
+      if (NoJogador.empalar(hunt, ficha, partes.physical ?? 0, { agora, rng })) naTela('empalado');
+    } else if (mec.efeito === 'exposicao') {
+      if (NoJogador.expor(hunt, ficha, mec.elemento, mec.pct ?? NoJogador.NUMEROS.exposicao.pct, { agora })) { naTela('exposto', { elemento: mec.elemento }); mudou = true; }
+    } else if (mec.efeito === 'sangueCorrompido') {
+      // ("% da média de dano por minuto, por acúmulo": a média é o golpe dele antes das suas defesas; cada acúmulo paga isso na duração.)
+      const total = ((bruto * (mec.pctPorMinuto ?? 0)) / 100 / 60) * ((mec.duracaoMs ?? 4000) / 1000);
+      let posto = null;
+      for (let i = 0; i < Math.max(1, mec.pilhas ?? 1); i++) posto = ModsPoe.dotNoJogador(hunt, { tipo: 'sangueCorrompido', total, duracaoMs: mec.duracaoMs ?? null, origem }, agora, rng) ?? posto;
+      if (posto) naTela('sangueCorrompido');
+    } else if (mec.efeito === 'drenar') drenar(m, ficha, dano, mec, agora);
+    else if (mec.efeito === 'carga' && ganharCarga(m, mec.carga, agora, ficha)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: `carga:${mec.carga}` });
+  }
+  if (critico && estado.hp > 0 && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0)) {
+    const N = NoJogador.NUMEROS;
+    const vidaMax = Math.max(1, estado.maxHp ?? 0);
+    if ((brutas.fire ?? 0) > 0) {
+      const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (brutas.fire * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
+      if (posto) naTela(posto);
+    }
+    const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, vidaMax);
+    if (msGelo > 0 && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
+    const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
+    if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+  }
+  if (mudou) Ficha.invalidar(estado);
+}
+Poderes.definirAoAcertarJogador(aoAcertarJogador);
 
 /** O golpe do mob `m` acertou o jogador: o debuff (dano ao longo do tempo). */
 export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
@@ -159,9 +322,21 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
 /** Um tique da caçada: enrage, aura e os pulsos do dano ao longo do tempo no jogador. */
 export function tique(estado, hunt, personagem, eventos) {
   const agora = relogio(hunt);
+  const fichaDoJogador = ModsPoe.fichaDa?.(hunt) ?? null;
   for (const m of hunt.monstros) {
+    // (PoE, 12/10) A vida que o monstro drenou de você volta ao longo do tempo.
+    if (m.drenoPoe && m.hp > 0) tiqueDoDreno(m, agora);
     if (m.hp <= 0 || !m.mods?.length) continue;
     for (const mec of Raridade.mecanicasDe(m)) {
+      // (PoE) "Ganha N Cargas de Tolerância por segundo se foi Acertado Recentemente" (4 s desde o seu último acerto nele).
+      if (mec.gatilho === 'aoReceberDano' && mec.efeito === 'carga') {
+        if (agora - (m.acertadoEm ?? -Infinity) > NoJogador.NUMEROS.cargas.recentementeMs) continue;
+        m.proximaCarga ??= {};
+        if (agora < (m.proximaCarga[mec.modificador] ?? 0)) continue;
+        m.proximaCarga[mec.modificador] = agora + 1000;
+        for (let i = 0; i < Math.max(1, mec.porSegundo ?? 1); i++) ganharCarga(m, mec.carga, agora, fichaDoJogador);
+        continue;
+      }
       if (mec.gatilho === 'vidaBaixa' && mec.efeito === 'enrage' && !m.enfurecido && (100 * m.hp) / m.maxHp <= (mec.limitePct ?? 30)) {
         m.enfurecido = true;
         Buffs.por(m, { chave: `${mec.modificador}:enrage`, ate: Infinity, danoPct: mec.danoPct ?? 0, velocidadeDeAtaquePct: mec.velocidadeDeAtaquePct ?? 0 }, agora);

@@ -217,7 +217,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // As cargas do PoE no acerto da varinha (Poder no crítico, no crítico com varinhas, no acerto não crítico...).
   if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit, varinha: true }).length) Ficha.invalidar(estado);
   if (!segundo) {
-    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key, { danoCritico: crit ? golpe : 0, semDrenoDeVida: alvo.semDreno ? golpe : 0 });
+    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key, { danoCritico: crit ? golpe : 0, semDrenoDeVida: alvo.semDreno ? golpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? golpe : 0 });
     Charms.aoAcertar(estado, hunt, alvo, eventos);
   }
   return true;
@@ -1137,13 +1137,19 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // ("Excomunga inimigos…": o excomungado não causa dano de Caos.)
   const excomungado = ModsPoe.semCaos(bicho, hunt.clock ?? 0);
   const rolarParte = (x) => { const r = () => x.min + Math.floor(Math.random() * (x.max - x.min + 1)); return excomungado && x.elemento === 'chaos' ? 0 : raioSortudo && x.elemento === 'energy' ? Math.max(r(), r()) : r(); };
-  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte)); }, 0) + Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire')) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento)), 0);
+  // (12/10: o dano de cada tipo — antes e depois das suas resistências — para o que o acerto faz além do dano: a afecção inerente do crítico,
+  // o Empalar — `Mecanicas.aoAcertarJogador`, no fim.)
+  const brutas = { physical: brutoFisico };
+  const partes = {};
+  const somarParte = (el, antes, depois) => { brutas[el] = (brutas[el] ?? 0) + antes; partes[el] = (partes[el] ?? 0) + depois; return depois; };
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => { const parte = rolarParte(x) * forcaDoGolpe * critDoMob.fator * elemFator(x.elemento); return n + somarParte(x.elemento, parte, Math.round(parte * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento) * ModsPoe.armaduraNoElemento(ficha, x.elemento, parte))); }, 0) + somarParte('fire', bruto * (emFogoPct / 100) * elemFator('fire'), Math.round(bruto * (emFogoPct / 100) * elemFator('fire') * ModsPoe.fatorDaResistenciaRecebida(ficha, 'fire'))) + Math.round(ModsPoe.extraDoFisicoRecebido(ficha, brutoFisico)) + AtributosDoMob.danoExtraPctDoBicho(bicho).reduce((n, x) => n + somarParte(x.elemento, bruto * (x.pct / 100), Math.round(bruto * (x.pct / 100) * ModsPoe.fatorDaResistenciaRecebida(ficha, x.elemento))), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
   // (PoE: "X% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente" — o golpe do monstro é o ataque dele.)
   const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
+  const danoDoAcerto = final;
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
   // Energy Shield: absorve antes do magic shield e da vida.
@@ -1198,6 +1204,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     // então o texto é outro (`absorvido`), e a chance de bloqueio da ficha não parece maior do que é.
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', absorvido: true });
   }
+  // (PoE, 12/10) O que os modificadores de monstro e de mapa fazem no acerto além do dano — Cegar, Mutilar, Empalar, Exposição, Sangue
+  // Corrompido, o dreno de vida e as cargas do monstro — e a afecção inerente do Golpe Crítico (`mobs/mecanicas.aoAcertarJogador`).
+  if (bruto > 0) Mecanicas.aoAcertarJogador(estado, hunt, personagem, bicho, { dano: danoDoAcerto, bruto: brutoSemCritico, partes: { ...partes, physical: protegido }, brutas, critico: critDoMob.critico, ataque: true, eventos });
 }
 
 /*
@@ -1422,7 +1431,8 @@ export function round(estado, personagem) {
           return false;
         }
         // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): o golpe não causa dano.
-      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo)) {
+      // ("Chance de Inimigos Bloquearem Ataques com Espada reduzida em X%" — `inimigos_bloqueio_red@comEspada`.)
+      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100))) {
         Treino.treinar(estado, pericia);
         eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
         return true;
@@ -1453,7 +1463,8 @@ export function round(estado, personagem) {
         const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
         const golpe = bruto - convertido;
         alvo.hp -= golpe;
-        Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, 'physical', eventos);
+        // (PoE: o golpe corpo a corpo num Raro com espinhos do mapa — `corpoACorpo`.)
+        Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, 'physical', eventos, { corpoACorpo: categoriaDaArma(arma) !== 'distancia' });
         const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
         const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
         // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
@@ -1466,7 +1477,7 @@ export function round(estado, personagem) {
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
         if (!segundo) {
           const doGolpe = golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra;
-          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoCritico: critico ? doGolpe : 0, semDrenoDeVida: alvo.semDreno ? doGolpe : 0 });
+          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoCritico: critico ? doGolpe : 0, semDrenoDeVida: alvo.semDreno ? doGolpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? doGolpe : 0 });
         }
         // Vida/mana por acerto (proficiência).
         // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").

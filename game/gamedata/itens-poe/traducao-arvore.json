@@ -2,6 +2,42 @@
   "_nota": "Regras de tradução PRÓPRIAS da árvore de passivas do PoE (incremento 4b), lidas ANTES das regras dos mods (traducao.json) — os textos da árvore dizem 'X aumentado em N%' onde os mods dizem de outro jeito. Mesmo formato das regras dos mods; um efeito pode ser `stat` (atributo somado, a mesma chave dos itens), `pct` (% de um stat da árvore do Draevor: life, mana, armour... — a vida/mana máximas somam este %) (o `tag` — a afinidade de dano por tag do Draevor — não se usa mais aqui: no modo PoE o golpe não a lê; o dano por tipo de golpe é o `stat` com a tag de golpe, ex.: `dmg_inc@projetil`). O que não casa aqui nem nos mods vira atributo registrado do próprio texto (sem efeito ainda). Linhas inteiras entre parênteses são texto explicativo do PoE: viram nota, não efeito.",
   "regras": [
     {
+      "padrao": "^Dano Físico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "na árvore o Dano Físico aumentado é global, como no PoE (o \"local na arma\" é só dos itens)",
+      "_arvore12": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura$",
+      "efeitos": [
+        {
+          "stat": "armor_flat",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "na árvore a Armadura plana é global, como no PoE: entra antes do aumento em % (o \"local na peça\" é só dos itens)",
+      "_arvore12": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão$",
+      "efeitos": [
+        {
+          "stat": "evasion",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "na árvore a Evasão plana é global, como no PoE: entra antes do aumento em % (o \"local na peça\" é só dos itens)",
+      "_arvore12": true
+    },
+    {
       "padrao": "^Vida máxima aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {

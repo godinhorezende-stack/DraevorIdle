@@ -179,8 +179,17 @@
      "ice": 50
     }
    },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "exposicao",
+     "elemento": "ice",
+     "chance": 100,
+     "pct": 10
+    }
+   ],
    "estado": "parcial",
-   "valem": 3,
+   "valem": 4,
    "total": 6,
    "statsPoe": [
     {
@@ -273,8 +282,8 @@
     "velocidadeDeAtaquePct": 60,
     "evasaoPct": 100
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "aproximado",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -407,8 +416,17 @@
      "fire": 50
     }
    },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "exposicao",
+     "elemento": "fire",
+     "chance": 100,
+     "pct": 10
+    }
+   ],
    "estado": "parcial",
-   "valem": 3,
+   "valem": 4,
    "total": 6,
    "statsPoe": [
     {
@@ -577,8 +595,17 @@
      "energy": 50
     }
    },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "exposicao",
+     "elemento": "energy",
+     "chance": 100,
+     "pct": 10
+    }
+   ],
    "estado": "parcial",
-   "valem": 3,
+   "valem": 4,
    "total": 6,
    "statsPoe": [
     {
@@ -996,8 +1023,16 @@
    "stats": {
     "danoPct": 20
    },
+   "mecanicas": [
+    {
+     "gatilho": "aoReceberDano",
+     "efeito": "carga",
+     "carga": "tolerancia",
+     "porSegundo": 2
+    }
+   ],
    "estado": "parcial",
-   "valem": 1,
+   "valem": 2,
    "total": 7,
    "statsPoe": [
     {
@@ -1054,9 +1089,26 @@
    "nivel": 10,
    "pesoMagico": 3000,
    "pesoRaro": 3000,
-   "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "stats": {
+    "semDreno": 1
+   },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "drenar",
+     "chance": 100,
+     "pct": 100,
+     "velocidadePct": 200,
+     "naoParaNaVidaCheia": true,
+     "danoDrenandoPct": 25
+    },
+    {
+     "gatilho": "aoReceberDano",
+     "efeito": "semDrenoDeEs"
+    }
+   ],
+   "estado": "efeito",
+   "valem": 6,
    "total": 6,
    "statsPoe": [
     {
@@ -1315,8 +1367,16 @@
    "stats": {
     "critChance": 100
    },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "cegar",
+     "chance": 100,
+     "efeitoPct": 100
+    }
+   ],
    "estado": "parcial",
-   "valem": 1,
+   "valem": 3,
    "total": 4,
    "statsPoe": [
     {
@@ -2247,8 +2307,18 @@
    "pesoMagico": 0,
    "pesoRaro": 200,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "sangueCorrompido",
+     "chance": 100,
+     "pctPorMinuto": 120,
+     "duracaoMs": 4000,
+     "pilhas": 1
+    }
+   ],
+   "estado": "parcial",
+   "valem": 3,
    "total": 5,
    "statsPoe": [
     {
@@ -3400,8 +3470,8 @@
     "velocidadeDeAtaquePct": 60,
     "evasaoPct": 100
    },
-   "estado": "parcial",
-   "valem": 4,
+   "estado": "aproximado",
+   "valem": 5,
    "total": 5,
    "statsPoe": [
     {
@@ -3958,8 +4028,18 @@
    "pesoMagico": 800,
    "pesoRaro": 0,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "sangueCorrompido",
+     "chance": 100,
+     "pctPorMinuto": 120,
+     "duracaoMs": 4000,
+     "pilhas": 1
+    }
+   ],
+   "estado": "parcial",
+   "valem": 3,
    "total": 5,
    "statsPoe": [
     {
@@ -4067,8 +4147,17 @@
    "stats": {
     "danoPct": 50
    },
-   "estado": "parcial",
-   "valem": 1,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "exposicao",
+     "elemento": "fire",
+     "chance": 100,
+     "pct": 25
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4099,8 +4188,17 @@
    "stats": {
     "danoPct": 50
    },
-   "estado": "parcial",
-   "valem": 1,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "exposicao",
+     "elemento": "ice",
+     "chance": 100,
+     "pct": 25
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4131,8 +4229,17 @@
    "stats": {
     "danoPct": 50
    },
-   "estado": "parcial",
-   "valem": 1,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "exposicao",
+     "elemento": "energy",
+     "chance": 100,
+     "pct": 25
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4870,8 +4977,17 @@
    "pesoMagico": 3000,
    "pesoRaro": 3000,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "drenar",
+     "chance": 100,
+     "pct": 100,
+     "velocidadePct": 500
+    }
+   ],
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -4943,8 +5059,16 @@
    "pesoMagico": 2000,
    "pesoRaro": 2000,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoReceberDano",
+     "efeito": "carga",
+     "carga": "tolerancia",
+     "porSegundo": 1
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -4967,8 +5091,16 @@
    "pesoMagico": 2000,
    "pesoRaro": 2000,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "carga",
+     "carga": "frenesi",
+     "chance": 100
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 1,
    "total": 1,
    "statsPoe": [
     {
@@ -5114,8 +5246,16 @@
    "pesoMagico": 1500,
    "pesoRaro": 1500,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "cegar",
+     "chance": 100,
+     "efeitoPct": 100
+    }
+   ],
+   "estado": "efeito",
+   "valem": 2,
    "total": 2,
    "statsPoe": [
     {
@@ -5299,8 +5439,18 @@
    "pesoMagico": 500,
    "pesoRaro": 500,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "sangueCorrompido",
+     "chance": 100,
+     "pctPorMinuto": 120,
+     "duracaoMs": 4000,
+     "pilhas": 1
+    }
+   ],
+   "estado": "parcial",
+   "valem": 3,
    "total": 4,
    "statsPoe": [
     {

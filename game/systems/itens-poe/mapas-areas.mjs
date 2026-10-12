@@ -142,5 +142,10 @@ export function aplicarEfeitos(m, ef) {
   if (n('experienciaPct')) m.exp = Math.round((Number(m.exp) || 0) * Math.max(0, 1 + n('experienciaPct') / 100));
   if (n('imuneChoque') > 0) m.imuneChoque = true;
   if (n('velocidadeDeConjuracaoPct')) m.velocidadeDeConjuracao = (m.velocidadeDeConjuracao ?? 1) * (1 + n('velocidadeDeConjuracaoPct') / 100);
+  // (12/10 — dono: "ligar os modificadores") O que o monstro faz ao ACERTAR você (`mobs/mecanicas.aoAcertarJogador`): a chance de Cegar,
+  // Mutilar e Empalar e de ganhar cada Carga; os ESPINHOS (só nos Raros — `mecanicas.aoReceberDano`); "Impossível Drenar dos Monstros".
+  for (const [k, v] of Object.entries(ef.noAcerto ?? {})) if (Number(v) > 0) m.noAcerto = { ...(m.noAcerto ?? {}), [k]: (m.noAcerto?.[k] ?? 0) + Number(v) };
+  for (const [k, v] of Object.entries(ef.espinhos ?? {})) if (Number(v) > 0) m.espinhos = { ...(m.espinhos ?? {}), [k]: (m.espinhos?.[k] ?? 0) + Number(v) };
+  if (n('semDreno') > 0) m.semDreno = true;
   return m;
 }
