@@ -1657,11 +1657,14 @@ const relogioDoBuff = (segundos) =>
   segundos >= 60 ? `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, '0')}` : `${segundos}`;
 const balaoDoBuff = (buff, segundos) =>
   `${buff.nome} — ${segundos >= 60 ? `${Math.floor(segundos / 60)}min ${segundos % 60}s` : `${segundos}s`} restantes`;
-// A aura do PoE que reserva não tem relógio: o cartão mostra quanto ela tranca (a % ou o valor).
-const textoDoBuff = (buff, segundos) => (buff.reserva ? (buff.reserva.pct ? `${buff.reserva.pct}%` : `${buff.reserva.valor}`) : relogioDoBuff(segundos));
+// A aura do PoE que reserva não tem relógio: o cartão mostra quanto ela tranca (a % ou o valor). A Tintura ativa (12/10) também não: o cartão
+// mostra a Queima de Mana dela (cada uma tira 1% da Mana máxima por segundo).
+const textoDoBuff = (buff, segundos) => (buff.reserva ? (buff.reserva.pct ? `${buff.reserva.pct}%` : `${buff.reserva.valor}`) : buff.tintura ? `${buff.tintura.queimas}×` : relogioDoBuff(segundos));
 const balaoDoCartao = (buff, segundos) => (buff.reserva
   ? `${buff.nome} — ligada, reserva ${buff.reserva.valor} de ${buff.reserva.recurso === 'vida' ? 'Vida' : 'Mana'}${buff.reserva.pct ? ` (${buff.reserva.pct}% da máxima)` : ''}. Fica ligada enquanto a gema estiver na barra.`
-  : balaoDoBuff(buff, segundos));
+  : buff.tintura
+    ? `${buff.nome} — ativa, com ${buff.tintura.queimas} Queima${buff.tintura.queimas === 1 ? '' : 's'} de Mana (cada uma tira 1% da Mana máxima por segundo). Desativar tira a Queima de Mana.`
+    : balaoDoBuff(buff, segundos));
 
 function renderBuffsDaMagia(hunt) {
   const caixa = $('hud-buffs');
@@ -1685,7 +1688,7 @@ function renderBuffsDaMagia(hunt) {
       const texto = card.querySelector('b');
       if (texto) texto.textContent = textoDoBuff(buff, segundos);
       // Os ultimos cinco segundos piscam: e' quando renovar ainda vale a pena.
-      card.classList.toggle('acabando', !buff.reserva && segundos <= 5);
+      card.classList.toggle('acabando', !buff.reserva && !buff.tintura && segundos <= 5);
       tipTexto(card, balaoDoCartao(buff, segundos));
     });
     return;
@@ -1722,7 +1725,7 @@ function renderBuffsDaMagia(hunt) {
     const segundos = Math.ceil(buff.resta / 1000);
     const texto = document.createElement('b');
     texto.textContent = textoDoBuff(buff, segundos);
-    if (!buff.reserva && segundos <= 5) card.classList.add('acabando');
+    if (!buff.reserva && !buff.tintura && segundos <= 5) card.classList.add('acabando');
     if (buff.reserva) card.classList.add('reserva', `reserva-${buff.reserva.recurso}`);
     card.append(texto);
     tipTexto(card, balaoDoCartao(buff, segundos));

@@ -294,7 +294,8 @@ const sucata = ({ p }) => {
   return t ? { ok: true, notice: t } : erro('A armadura já está com 20% de qualidade.');
 };
 const bolha = ({ p }) => {
-  if (!ehFrasco(p)) return erro('A Bolha do Vidreiro vale em frasco.');
+  // (a Tintura não tem qualidade no PoE)
+  if (!ehFrasco(p) || p.classe === 'Tinctures') return erro('A Bolha do Vidreiro vale em frasco.');
   const t = subirQualidade(p);
   return t ? { ok: true, notice: t } : erro('O frasco já está com 20% de qualidade.');
 };

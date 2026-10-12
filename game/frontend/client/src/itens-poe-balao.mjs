@@ -6,8 +6,10 @@ const ROTULO = {
   armadura: 'Armadura', evasao: 'Evasão', escudo_energia: 'Escudo de Energia', velocidade_movimento_pct: 'Velocidade de Movimento',
   chance_bloqueio_pct: 'Chance de Bloqueio', dano_fisico: 'Dano Físico', chance_critico_pct: 'Chance de Crítico', ataques_por_segundo: 'Ataques por Segundo',
   alcance_metros: 'Alcance', protecao: 'Proteção', recupera: 'Recupera', cargas_por_uso: 'Cargas por uso', cargas_maximas: 'Cargas máximas', duracao_segundos: 'Duração',
+  // (12/10, a Tintura: "Inflige Queima de Mana a cada X Segundos", "N Segundos de Recarga quando Desativado")
+  queima_mana_intervalo_s: 'Inflige Queima de Mana a cada', recarga_desativado_s: 'Recarga quando Desativada',
 };
-const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance_critico_pct: '%', alcance_metros: ' m', duracao_segundos: ' s' };
+const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance_critico_pct: '%', alcance_metros: ' m', duracao_segundos: ' s', queima_mana_intervalo_s: ' s', recarga_desativado_s: ' s' };
 // (dono, 09/10: "o que tiver funcionando coloque só o certo verde e o que não tiver um x vermelho"): com efeito no jogo ✓, sem efeito ✗; a
 // diferença (mesma conta, aproximado, atributo novo, não existe no jogo) fica no texto ao passar o mouse.
 const SIMBOLO = { equivalente: '✓', aproximado: '✓', novo: '✓', parcial: '◐', inerte: '✗', lembrete: '', registrado: '✗' };
@@ -49,6 +51,16 @@ const categoriaDe = (p) => CATEGORIA[p.classe ?? String(p.base ?? '').split('/')
 function resumoDoFrasco(f) {
   const n = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
   const linhas = [];
+  // (12/10) A TINTURA: com os mods já aplicados — a Queima de Mana, a recarga e o Efeito.
+  if (f.tipo === 'tintura') {
+    linhas.push(f.semPeriodica ? 'Não inflige Queima de Mana com o tempo' : `Inflige Queima de Mana a cada ${n(f.queimaCadaS)} s enquanto ativa`);
+    if (f.queimasAoAcertar) linhas.push(`Inflige ${f.queimasAoAcertar} Queima${f.queimasAoAcertar === 1 ? '' : 's'} de Mana ao Acertar com Arma Corpo a Corpo`);
+    linhas.push(`Recarga de ${n(f.recargaS)} s quando desativada`);
+    if (f.efeitoPct) linhas.push(`Efeito ${f.efeitoPct > 0 ? 'aumentado' : 'reduzido'} em ${n(Math.abs(f.efeitoPct))}%`);
+    linhas.push('Os efeitos valem nos ataques com Arma Corpo a Corpo');
+    linhas.push('No cinto: ativa sozinha em combate; desativa fora dele ou com a mana baixa');
+    return no('div', 'poe-props poe-frasco-resumo', linhas.map((l) => no('div', null, l)));
+  }
   if (f.recurso) linhas.push(f.instantaneo ? `Recupera ${n(f.quantidade)} de ${f.recurso === 'mana' ? 'Mana' : 'Vida'} na hora` : `Recupera ${n(f.quantidade)} de ${f.recurso === 'mana' ? 'Mana' : 'Vida'} em ${n(f.segundos)} s`);
   if (f.duracao) linhas.push(`Dura ${n(f.duracao)} s`);
   if (f.efeitoDaBase) linhas.push(f.efeitoDaBase);

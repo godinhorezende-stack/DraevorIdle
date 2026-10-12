@@ -6032,6 +6032,108 @@
       "unidade": "",
       "combate": true,
       "efeito": "mods-poe.aoAcertar (12/10)"
+    },
+    "tintura_queimas_gratis": {
+      "nome": "Primeiras Queimas de Mana em você sem efeito",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_queima_inc": {
+      "nome": "Queima de Mana das Tinturas aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_queima_menos": {
+      "nome": "Queima de Mana das Tinturas (menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_efeito_inc": {
+      "nome": "Efeito das Tinturas aplicadas em você aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_cargas_adjacentes": {
+      "nome": "Cargas nos frascos ao lado das Tinturas ativas ao Acertar com Arma Corpo a Corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_ferimentos": {
+      "nome": "Tinturas infligem Ferimentos Abertos (vida) em vez de Queima de Mana",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_sem_queima_chance": {
+      "nome": "Chance de as Tinturas não infligirem Queima de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_recarga_inc": {
+      "nome": "Recuperação da Recarga das Tinturas aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_mana_ativar_pct": {
+      "nome": "Mana recuperada ao ativar uma Tintura",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "frasco_cargas_por_queima": {
+      "nome": "Cargas de Frasco recebidas aumentadas por Queima de Mana em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_frasco_adjacente_efeito": {
+      "nome": "Efeito dos frascos ao lado das Tinturas ativas (tendo Acertado com Arma recentemente)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_desativa_queimas": {
+      "nome": "Tinturas desativam com esta Queima de Mana",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_ativas_extra": {
+      "nome": "Tinturas ativas a mais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_distancia": {
+      "nome": "Efeitos das Tinturas também nas Armas à Distância",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_perdura": {
+      "nome": "Efeitos das Tinturas perduram ao desativar (0,5 s por Queima de Mana, até 6 s)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_remover_queima_chance": {
+      "nome": "Chance de remover Queima de Mana ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "tintura_remover_queima_n": {
+      "nome": "Queimas de Mana removidas ao Matar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
     }
   }
 }

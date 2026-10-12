@@ -1,7 +1,7 @@
 // Inventário: slots de equipamento com os PNGs do client, arrastar e soltar
 // para equipar, menu de contexto por item e a loot pouch com venda rápida.
 import { abrirForjaPoe } from './forja-poe.mjs';
-import { configurarFrasco } from './actionbar.mjs';
+import { configurarFrasco, barraDoFrasco } from './actionbar.mjs';
 import { itemCanvas, itemSprite } from './sprites.mjs';
 import { abrirSoquetes, temSoquetes, usarOrbe } from './soquetes.mjs';
 import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
@@ -2171,10 +2171,12 @@ function cintoDeFrascos(vagas, send) {
     };
     const barra = el('div', 'poe-frasco-cargas');
     const cheio = el('div', null);
-    cheio.style.height = `${Math.round((100 * f.cargas) / Math.max(1, f.cargasMaximas))}%`;
+    // (a Tintura — 12/10: ativa com a Queima de Mana, na recarga ou pronta — `barraDoFrasco`)
+    const { pct, texto, dica } = barraDoFrasco(f);
+    cheio.style.height = `${pct}%`;
     barra.append(cheio);
-    barra.title = `${f.cargas}/${f.cargasMaximas} cargas (usa ${f.cargasPorUso})`;
-    caixa.append(cell, barra, el('div', 'poe-frasco-num', `${f.cargas}/${f.cargasMaximas}`));
+    barra.title = dica;
+    caixa.append(cell, barra, el('div', 'poe-frasco-num', texto));
     aceitarSoltar(caixa, v);
     fila.append(caixa);
   });
@@ -2198,7 +2200,7 @@ export function renderInventory() {
     character.equipment, character.ammoChoices ?? null, character.ammoPending ?? null, character.municao ?? 0,
     character.derived?.capacity, character.weight, character.desgaste ?? null, character.joias ?? null,
     character.itemRules ?? null, (character.premium ?? 0) > 0, character.blessings ?? null,
-    (character.frascosPoe ?? []).map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.ativoAte > 0]),
+    (character.frascosPoe ?? []).map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.ativoAte > 0, f.queimas ?? null, Math.ceil((f.recargaMs ?? 0) / 1000)]),
   ]);
   if (body.dataset.assinaturaDoInventario === assinatura && body.firstChild) return;
   body.dataset.assinaturaDoInventario = assinatura;

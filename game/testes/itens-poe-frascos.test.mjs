@@ -22,10 +22,11 @@ const comMod = (p, modelo, valores, lado = 'prefixos') => {
   return p;
 };
 
-test('os frascos de Vida, Mana e Utilidade entram no catálogo (sem slot, para o cinto) e caem; Royale e Tinturas não', { skip: SEM }, () => {
+test('os frascos de Vida, Mana e Utilidade entram no catálogo (sem slot, para o cinto) e caem; Royale não (as Tinturas entram desde 12/10)', { skip: SEM }, () => {
   const ids = [...Jogo.registro().porBase.keys()];
   assert.ok(ids.includes('Life_Flasks/Divine_Life_Flask') && ids.includes('Mana_Flasks/Small_Mana_Flask') && ids.includes('Utility_Flasks/Quicksilver_Flask'));
-  assert.ok(!ids.some((b) => /_Flasks\/Royale_/.test(b)) && !ids.some((b) => b.startsWith('Tinctures/')));
+  // (dono, 12/10: "criar a Tintura" — as Tinturas entram no cinto, `itens-poe/tinturas.mjs`; o Royale segue de fora)
+  assert.ok(!ids.some((b) => /_Flasks\/Royale_/.test(b)) && ids.some((b) => b.startsWith('Tinctures/')));
   const meta = ITEM_CATALOG[Jogo.idDaBase('Life_Flasks/Small_Life_Flask')];
   assert.deepEqual([meta.frasco, meta.slot, meta.type], [true, undefined, 'flasks']);
   // As peças de antes não mudam de id: os frascos vêm depois de todas as bases equipáveis.

@@ -57,8 +57,11 @@ export const CLASSES_DO_JOGO = {
 // (`mapas`: as bases dos MAPAS do endgame, à parte — `porBase` é a lista das bases equipáveis e dos frascos, que o drop comum e a prévia
 // da área percorrem; o mapa só cai pelas regras dele, `itens-poe/mapas.mjs`.)
 const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [], mapas: new Map() };
-/** As classes de frasco que entram no jogo (o cinto de frascos — `itens-poe/frascos.mjs`). As Tinturas ainda não. */
-export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks'];
+/**
+ * As classes de frasco que entram no jogo (o cinto de frascos — `itens-poe/frascos.mjs`). (12/10: + as Tinturas, POR ÚLTIMO — os ids das
+ * bases delas vêm depois dos frascos, sem mudar nenhum id que já existia; `itens-poe/tinturas.mjs`.)
+ */
+export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures'];
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
 export const idDaBase = (base) => REG.porBase.get(base) ?? REG.mapas.get(base) ?? null;
@@ -121,7 +124,7 @@ export function iniciar(itemCatalog) {
       if (b.slug?.startsWith('Royale_')) continue;
       const id = n++;
       itemCatalog[id] = {
-        id, name: b.nome, type: 'flasks', weight: 3, hasSprite: false, rarity: 'comum', stackable: false, frasco: true,
+        id, name: b.nome, type: 'flasks', weight: 3, hasSprite: false, rarity: 'comum', stackable: false, frasco: true, ...(classe === 'Tinctures' ? { tintura: true } : {}),
         ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
         poe: { base: b.id, classe: c.id, icone: b.icone ?? null },
       };
@@ -277,7 +280,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (8 — 09/10: "X% menos Velocidade de Ataque" (o Legado do Guerreiro) multiplica — `atk_speed_mais`, não mais somado como "reduzida".)
 // (9 — 09/10: a "Chance de Crítico aumentada" da arma passa a ser LOCAL, `crit_chance_local` — cada mão com o crítico da sua arma.)
 // (10 — 11/10: o único com implícito próprio perde o implícito da BASE, que entrava somado — `semImplicitoDaBaseNoUnico`.)
-export const VERSAO_DA_TRADUCAO = 10;
+// (11 — 12/10: os lotes da árvore mudaram linhas de itens — o "Concede Chamado do Aço" e os Fragmentos do Verme de Aço, as linhas de Tintura
+// da Lâmina Viva, as próprias Tinturas — `itens-poe/tinturas.mjs`.)
+export const VERSAO_DA_TRADUCAO = 11;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -375,7 +380,8 @@ export function qualidadeDoDrop(peca, rng = Math.random, regras = Catalogo.REGRA
   const q = regras.drop?.qualidade;
   const p = peca?.poe;
   if (!p || !q?.chance) return peca;
-  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia) || FRASCOS.includes(p.classe);
+  // (a Tintura não tem qualidade: nada nela escala com a qualidade)
+  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia) || (FRASCOS.includes(p.classe) && p.classe !== 'Tinctures');
   if (!temBase || rng() >= q.chance) return peca;
   p.qualidade = 1 + Math.floor(rng() * Math.max(1, q.maximo ?? 20));
   return recalcular(peca, regras);
