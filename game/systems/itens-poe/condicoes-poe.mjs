@@ -966,7 +966,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0);
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:)/.test(k));
+  // (13/10: + o "mais Dano Degenerativo" com condição — `dano_dot_mais@magia`, "Mais X% de dano degenerativo com habilidades mágicas")
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
@@ -1671,7 +1672,8 @@ export function alvosDasPecas(estado, ficha, entry, tags, slot, rng = Math.rando
   // colidir com um alvo" (`projeteis_param`: sem Perfurar, Difundir nem Ricochetear).
   const bifurcar = projetil ? base('bifurcar') : 0;
   const param = projetil && base('projeteis_param') > 0;
-  const areaPct = t.has('area') ? base('area_inc') + localPorTag('area_inc_local') : 0;
+  // (13/10) "X% mais Área de Efeito" (`area_mais`) multiplica o aumentado: o total como um "aumentado" equivalente.
+  const areaPct = t.has('area') ? ((1 + (base('area_inc') + localPorTag('area_inc_local')) / 100) * Math.max(0, 1 + base('area_mais') / 100) - 1) * 100 : 0;
   const casas = areaPct / 25;
   const area = Math.trunc(casas) + (rng() < Math.abs(casas % 1) ? Math.sign(casas) : 0);
   return { projeteis: Math.floor(projeteis), perfurar: Math.floor(perfurar), area, ricochetes: Math.floor(ricochetes), bifurcar: Math.floor(bifurcar), param };

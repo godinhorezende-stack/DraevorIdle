@@ -6236,6 +6236,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "os lacaios (afixos.soma, cacadas, acoes) (13/10)"
+    },
+    "area_mais": {
+      "nome": "Área de Efeito (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o mais e o menos exatos (multiplicam) (13/10)"
+    },
+    "frasco_vida_rec_mais": {
+      "nome": "Vida Recuperada dos Frascos (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o mais e o menos exatos (multiplicam) (13/10)"
+    },
+    "duracao_mais": {
+      "nome": "Duração do Efeito de Habilidades (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o mais e o menos exatos (multiplicam) (13/10)"
     }
   }
 }

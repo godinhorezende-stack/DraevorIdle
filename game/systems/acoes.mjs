@@ -153,7 +153,10 @@ export function abrirBausAoConjurar(estado, hunt, personagem, chance, rng = Math
  */
 export function raioDaAuraDe(estado, entry, base, mais = 1) {
   const f = Ficha.combate(estado);
-  return Math.max(1, Math.round(base * Math.sqrt(Math.max(0.1, 1 + (ModsPoe.valor(f, 'area_inc') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).area_inc ?? 0)) / 100) * Math.max(0.1, mais))));
+  const tags = ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry));
+  // (13/10: + o "X% mais Área de Efeito" — `area_mais`, multiplica)
+  const maisArea = Math.max(0, 1 + (ModsPoe.valor(f, 'area_mais') + (tags.area_mais ?? 0)) / 100);
+  return Math.max(1, Math.round(base * Math.sqrt(Math.max(0.1, 1 + (ModsPoe.valor(f, 'area_inc') + (tags.area_inc ?? 0)) / 100) * Math.max(0.1, mais) * maisArea)));
 }
 
 /**
@@ -259,6 +262,15 @@ export function ganharIntensidade(hunt, id, efeito, extra = 0, agora = hunt?.clo
 export function duracaoDasPecas(estado, entry) {
   const f = Ficha.combate(estado);
   return ModsPoe.valor(f, 'duracao_habilidades') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).duracao_habilidades ?? 0);
+}
+/**
+ * (13/10) O FATOR da duração de uma habilidade: (1 + o aumentado da gema e das peças) × (1 + "X% mais/menos Duração do Efeito de
+ * Habilidades" — `duracao_mais`, que multiplica, como no PoE; antes entrava somado ao aumentado).
+ */
+export function fatorDeDuracao(estado, entry, efeitoDaGema) {
+  const f = Ficha.combate(estado);
+  const mais = ModsPoe.valor(f, 'duracao_mais') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).duracao_mais ?? 0);
+  return Math.max(0.1, 1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100) * Math.max(0, 1 + mais / 100);
 }
 
 /** O `{min,max}` da entrada no level dado — reta entre as duas capturas reais. */
@@ -1069,7 +1081,7 @@ function fragmentosNoUso(estado, hunt, entry, efeitoDaGema, agora) {
   const gastos = Aco.consumir(hunt, ficha, d.consome + consumoExtraDoAco(ficha, entry), agora);
   Object.assign(efeitoDaGema, Aco.projeteisNoUso(d, gastos, { base: efeitoDaGema.projeteisBase ?? 1, extras: efeitoDaGema.alvosExtras ?? 0, divisao: efeitoDaGema.divisao ?? 0 }));
   if (d.protecao) {
-    const duracaoMs = Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1)?.stats?.duracao ?? 0) * 1000 * Math.max(0.1, 1 + ((efeitoDaGema.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100));
+    const duracaoMs = Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1)?.stats?.duracao ?? 0) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema));
     if (Aco.ganharProtecao(hunt, d, antes, duracaoMs, agora)) Ficha.invalidar(estado);
   }
   return { d, gastos };
@@ -1843,7 +1855,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const clamorSemBuff = !!fichaDoClamor && ModsPoe.valor(fichaDoClamor, 'clamor_sem_buff_em_voce') > 0;
     const duracaoDoClamor = doPoe ? Math.round(doPoe.dur * Math.max(0.1, 1 + (fichaDoClamor ? ModsPoe.valor(fichaDoClamor, 'clamor_duracao_mais') : 0) / 100)) : 0;
     if (!clamorSemBuff) (hunt.buffs ??= {})[entry.id] = doPoe
-      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * (1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
+      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
         ...(plantado ? { estandarte: { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, valor: plantado.valor, efeitoMais: plantado.efeitoMais } } : {}),
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
@@ -2397,7 +2409,7 @@ function criarVinculo(estado, hunt, entry, action, efeitoDaGema, agora) {
   if (!cand.length) return [];
   const resto = cand.slice(1).sort(() => Math.random() - 0.5);
   const alvos = [cand[0], ...resto.slice(0, Vinculos.quantosVincula(ficha.afPoe) - 1)];
-  const duracaoMs = Math.round(props.duracaoMs * Math.max(0.1, 1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100));
+  const duracaoMs = Math.round(props.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema));
   const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo: GemasPoe.custoNoNivel(slug, nivel), agora });
   fotoDoVinculo(estado, hunt, ficha, lk);
   return alvos.map((a) => { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); return p ? { t: 'fx', id: 13, x: p.x, y: p.y } : null; }).filter(Boolean);
@@ -2499,7 +2511,7 @@ function conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo
   const ficha = Ficha.combate(estado);
   const props = Runas.daGema(GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas);
   const castSpeed = (ficha.castSpeed ?? 0) + (ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry)).cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
-  const fatorDaDuracao = Math.max(0.1, 1 + ((efeitoDaGema?.duracaoPct ?? 0) + duracaoDasPecas(estado, entry)) / 100);
+  const fatorDaDuracao = fatorDeDuracao(estado, entry, efeitoDaGema);
   const r = Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100), fatorDaDuracao, agora });
   Runas.vincular(hunt, ficha, r, agora, { preferido: alvo });
   return tiqueDasRunas(estado, hunt, personagem, [], agora);
