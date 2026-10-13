@@ -4650,18 +4650,17 @@
       "padrao": "^\\{(\\d+)\\}% mais Área de Efeito enquanto empunhando uma Maça ou Cetro$",
       "efeitos": [
         {
-          "stat": "area_inc@comMaca",
+          "stat": "area_mais@comMaca",
           "valor": "{1}"
         },
         {
-          "stat": "area_inc@comCetro",
+          "stat": "area_mais@comCetro",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o \"mais\" entra como aumentado",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote11": "13/10 — o mais e o menos exatos (lote 11)"
     },
     {
       "padrao": "^Habilidades de Arauto têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
@@ -5568,14 +5567,13 @@
       "padrao": "^\\{(\\d+)\\}% menos Vida Recuperada de Frascos$",
       "efeitos": [
         {
-          "stat": "frasco_vida_rec",
+          "stat": "frasco_vida_rec_mais",
           "valor": "-{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o \"menos\" entra como reduzido",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote11": "13/10 — o mais e o menos exatos (lote 11)"
     },
     {
       "padrao": "^Frascos Utilitários Mágicos aplicados em você têm Efeito aumentado em \\{(\\d+)\\}%$",
@@ -5787,14 +5785,13 @@
       "padrao": "^Mais \\{(\\d+)\\}% de dano degenerativo com habilidades mágicas$",
       "efeitos": [
         {
-          "stat": "dot_dmg_inc@magia",
+          "stat": "dano_dot_mais@magia",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o \"mais\" entra como aumentado",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote11": "13/10 — o mais e o menos exatos (lote 11)"
     },
     {
       "padrao": "^Chance de bloquear magias aumenta o seu escudo de energia máximo$",
@@ -5995,27 +5992,25 @@
       "padrao": "^\\{(\\d+)\\}% mais Duração do Efeito de Habilidades$",
       "efeitos": [
         {
-          "stat": "duracao_habilidades",
+          "stat": "duracao_mais",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o \"mais\" entra como aumentado",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote11": "13/10 — o mais e o menos exatos (lote 11)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% menos Duração do Efeito de Habilidades$",
       "efeitos": [
         {
-          "stat": "duracao_habilidades",
+          "stat": "duracao_mais",
           "valor": "-{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o \"menos\" entra como reduzido",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote11": "13/10 — o mais e o menos exatos (lote 11)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do dreno de vida é instantâneo$",

@@ -166,10 +166,12 @@ export function parametros(peca, afDoPersonagem = null) {
   for (const [k, v] of Object.entries(durante)) af[k] = Math.round(((af[k] ?? 0) + v * fatorDoEfeito) * 100) / 100;
   const rec = a.recupera ?? null;
   const ms = rec ? Math.max(100, Math.round((Number(rec.segundos) * 1000) / Math.max(0.1, 1 + p.velocidadePct / 100))) : 0;
+  // (13/10) "X% menos Vida Recuperada de Frascos" (a Mestre Cirurgiã): multiplica — antes entrava somado ao aumentado.
+  const maisRecuperada = tipo === 'vida' ? Math.max(0, 1 + n('frasco_vida_rec_mais') / 100) : 1;
   return {
     tipo,
     recurso: rec?.recurso === 'mana' ? 'mana' : rec ? 'vida' : null,
-    quantidade: rec ? Math.round(Number(rec.quantidade) * Math.max(0, 1 + p.quantidadePct / 100)) : 0,
+    quantidade: rec ? Math.round(Number(rec.quantidade) * Math.max(0, 1 + p.quantidadePct / 100) * maisRecuperada) : 0,
     ms,
     instantaneo: p.instantaneo,
     maisNaVidaBaixaPct: p.maisNaVidaBaixaPct,

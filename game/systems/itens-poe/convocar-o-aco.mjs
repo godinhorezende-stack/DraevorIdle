@@ -66,10 +66,12 @@ function casasDaArea(pct, rng) {
   const c = pct / 25;
   return Math.trunc(c) + (rng() < Math.abs(c % 1) ? Math.sign(c) : 0);
 }
+/** A Área de Efeito como um "aumentado" equivalente: o aumentado (+ `extra`) × o "X% mais Área de Efeito" (`area_mais`). */
+const areaPct = (ficha, extra = 0) => ((1 + (n(ficha, 'area_inc') + extra) / 100) * Math.max(0, 1 + n(ficha, 'area_mais') / 100) - 1) * 100;
 /** O raio da chamada (a "área grande"), com a Área de Efeito do personagem. */
-export const raioDaChamada = (ficha, rng = Math.random) => Math.max(1, PADRAO.raioDaChamada + casasDaArea(n(ficha, 'area_inc'), rng));
+export const raioDaChamada = (ficha, rng = Math.random) => Math.max(1, PADRAO.raioDaChamada + casasDaArea(areaPct(ficha), rng));
 /** O raio do reflexo em volta de cada inimigo, com a Área de Efeito e "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada". */
-export const raioDoReflexo = (ficha, rng = Math.random) => Math.max(0, PADRAO.raioDoReflexo + casasDaArea(n(ficha, 'area_inc') + n(ficha, 'aco_area_inc'), rng));
+export const raioDoReflexo = (ficha, rng = Math.random) => Math.max(0, PADRAO.raioDoReflexo + casasDaArea(areaPct(ficha, n(ficha, 'aco_area_inc')), rng));
 
 /**
  * O tique: a RECARGA (4 fragmentos a cada intervalo, até o máximo — aí para) e o fim das Proteções de Aço. Devolve se algo mudou (as

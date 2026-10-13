@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5927** — equivalente 1345, novo 4334, aproximado (parcial) 248.
+- ✓ Com efeito: **5927** — equivalente 1345, novo 4343, aproximado (parcial) 239.
 - ✗ Sem efeito: **47** — na árvore principal 14, nas ascendências 33; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 27; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -23,6 +23,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | Mana reservada (lote 8) | 6 | 0 | Fé Radiante (Armadura e Escudo pela mana reservada, em você e nos aliados); Santuário do Pensamento (Área pela mana não reservada); Ego Supremo (as auras só em você, mais efeito pela reserva de cada uma, 40% mais reserva); o efeito do Frasco de Vida sai quando a vida não reservada enche (a regra do PoE), menos com a Mestre Cirurgiã — e o de mana passa a olhar a mana não reservada |
 | Projéteis por projétil (lote 9) | 10 | 0 | cada projétil conta os inimigos que atravessou e as vezes que ricocheteou (o dano aumentado por cada um, somado aos outros aumentos); a difusão com a chance de um projétil a mais; o Caos extra nos que ricochetearam (a Presa Sombria); o Tiro Longo pela distância — e o dano pela distância (Animosidade Adjacente, Tiro Distante, Queima-Roupa) passa a valer também nas habilidades, não só no golpe básico |
 | Lacaios (lote 10) | 2 | 0 | a Égide Necromântica passa os bônus do escudo aos lacaios (e tira a defesa da base de você); o golem morto volta sozinho em 4 s (o Suserano do Primordial); e a resistência a Fogo/Gelo/Raio dos lacaios, guardada e nunca lida, passa a valer no golpe |
+| "Mais" e "menos" exatos (lote 11) | 13 | 0 | o "X% mais/menos" multiplica em vez de somar ao aumentado: a Área de Efeito (as habilidades, as auras, o Convocar o Aço), a Duração do Efeito de Habilidades (os buffs, os Vínculos, as Runas, a Proteção de Aço), a Vida Recuperada dos Frascos e o dano degenerativo das magias (o "mais" de verdade, o da Crueldade) |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -69,7 +70,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 8 | vale na exposição posta pelos modificadores de acerto ("Inflige Exposição … ao Acertar"); a das gemas ainda não soma | Maestria de Fogo (maestria) — Exposição a Fogo infligida por você aplica -5% extra de Resistência a Fogo |
 | 7 | trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s | Armadura e Escudo de Energia, Recuperação do Bloqueio (asc. Guardian) — Recuperação de Bloqueio aumentada em 30%<br>Barreira de Lâmina (notável) — Recuperação de Bloqueio aumentada em 50%<br>Tartaruga (notável) — Recuperação de Bloqueio aumentada em 60% |
 | 6 | entra como redução de dano físico enquanto o escudo está cheio | Maestria de Escudo de Energia (maestria) — 10% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio |
-| 6 | o "mais" entra como aumentado | Dano de Magia Degenerativo (nó) — Mais 12% de dano degenerativo com habilidades mágicas<br>Dano de Magia Degenerativo (nó) — Mais 16% de dano degenerativo com habilidades mágicas<br>Morte Apressada (notável) — Mais 30% de dano degenerativo com habilidades mágicas |
 | 6 | o alvo da maldição é Cegado (o "não amaldiçoado" não é conferido) | Maestria de Maldições (maestria) — Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados por 4 segundos |
 | 6 | remove uma afecção por clamor | Maestria de Clamores (maestria) — Remove todas as Afecções Danificadoras quando você Clamar |
 | 6 | somado à precisão que a Destreza já dá | Maestria de Precisão (maestria) — Bônus de Precisão da Destreza concede +3 de Precisão por Destreza |
@@ -87,7 +87,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 4 | vale nos golpes com a tag Caos (o golpe inteiro) | Maestria de Caos (maestria) — Causa 10% mais Dano de Caos aos inimigos que tiverem Escudo de Energia<br>Presença Pútrida (asc. Occultist) — 15% mais Dano de Caos |
 | 3 | "Recentemente" (4 s) | Espírito Primitivo (notável) — Ganha 4 de Mana por Inimigo Acertado pelos Ataques se você usou um Frasco de Mana nos últimos 10 segundos<br>Maestria de Evasão e Escudo de Energia (maestria) — Evasão aumentada em 100% se a Recarga do Escudo de Energia iniciou nos últimos 2 segundos |
 | 3 | nas gemas (o golpe básico, não) | Força Concussiva (notável) — Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano<br>Risco Calculado (asc. Saboteur) — Dano com Acertos é Azarado<br>Julgamento Inevitável (asc. Inquisitor) — Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo |
-| 3 | o "menos" entra como reduzido | Maestria de Duração (maestria) — 10% menos Duração do Efeito de Habilidades<br>Mestre Cirurgiã (asc. Pathfinder) — 50% menos Vida Recuperada de Frascos |
 | 3 | vale para as afecções que os monstros causam em você | Maestria de Duração (maestria) — Debuffs em você expiram 15% mais rápido |
 | 2 | "Corpo a Corpo": com uma arma corpo a corpo empunhada | Maestria de Fortificação (maestria) — Ganha 20 Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único |
 | 2 | a cada 10 segundos (a linha de cima) | Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano de Acertos por 5 segundos<br>Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano Degenerativo por 5 segundos |
