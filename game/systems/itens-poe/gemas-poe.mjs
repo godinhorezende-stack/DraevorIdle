@@ -622,7 +622,11 @@ export function adds(estado) {
     // (ciclo 7, lote G) o ESTANDARTE: "Habilidades de Estandarte têm Efeito de Aura aumentado"; (11/10) e o "X% mais Efeito de Aura por Valor
     // consumido" do Estandarte plantado (`estandarte.efeitoMais` — `mods-poe.plantarEstandarte`), que multiplica.
     const estandarte = /_Banner/.test(String(id)) ? doEquipamento(dono, 'efeito_buff_gema:estandarte') : 0;
-    const mais = 1 + Math.max(0, Number(b?.estandarte?.efeitoMais) || 0) / 100;
+    // (13/10, o Ego Supremo: "Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem" — a reserva DESTA aura,
+    // na máxima de agora; multiplica.)
+    const porReserva = b?.reserva && b.reserva.recurso !== 'vida' && tipo === 'poe-aura' ? doEquipamento(dono, 'aura_efeito_por_reserva') : 0;
+    const reservaPct = porReserva > 0 && (dono?.maxMana ?? 0) > 0 ? (100 * Math.ceil((b.reserva.pct ? (dono.maxMana * b.reserva.pct) / 100 : b.reserva.fixo ?? 0) * (b.reserva.fator ?? 1))) / dono.maxMana : 0;
+    const mais = (1 + Math.max(0, Number(b?.estandarte?.efeitoMais) || 0) / 100) * (porReserva > 0 ? 1 + Math.floor(reservaPct / porReserva) / 100 : 1);
     return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte) / 100) * mais;
   };
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }

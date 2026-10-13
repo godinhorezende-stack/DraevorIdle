@@ -37,8 +37,10 @@ export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = nu
   // (11/10, os únicos: "Congelabilidade não tem Reserva se Conjurada como Aura", "Armadura Ártica não tem Reserva" — a gema pelo nome.)
   const nome = slug ? ModsPoe.slugDoNome(doSlug(slug)?.gema?.nome ?? '') : null;
   if (nome && ModsPoe.valor(ficha, `sem_reserva:${nome}`) > 0) return 0;
-  const mult = Math.max(0, 1 + (Number(efeitoDaGema?.custoPct) || 0) / 100);
   const deMana = recurso === 'mana';
+  // (13/10, o Ego Supremo: "X% mais Reserva de Mana de Habilidades Aura" — multiplica.)
+  const mais = deMana && arquetipo === 'aura' ? Math.max(0, 1 + ModsPoe.valor(ficha, 'reserva_aura_mais') / 100) : 1;
+  const mult = Math.max(0, 1 + (Number(efeitoDaGema?.custoPct) || 0) / 100) * mais;
   const eficacia = ModsPoe.valor(ficha, 'eficiencia_reserva')
     // ("Ódio tem Eficácia da Reserva de Mana aumentada em X%" — a de UMA gema; "Gemas Encaixadas têm Eficácia da Reserva aumentada" — a da
     // peça onde a gema está, `efeitoDaGema.eficienciaReservaLocal`.)

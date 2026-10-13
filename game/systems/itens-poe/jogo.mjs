@@ -283,7 +283,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (11 — 12/10: os lotes da árvore mudaram linhas de itens — o "Concede Chamado do Aço" e os Fragmentos do Verme de Aço, as linhas de Tintura
 // da Lâmina Viva, as próprias Tinturas — `itens-poe/tinturas.mjs`.)
 // (12 — 13/10: "Você e Aliados" vira a aura do nó/item — o Conjuro Estrábico; a Ichimonji — `itens-poe/aliados.mjs`.)
-export const VERSAO_DA_TRADUCAO = 12;
+// (13 — 13/10: a mana reservada — a nota da regra larga da reserva deixou de falar do Feiticeiro nas linhas que não são dele.)
+export const VERSAO_DA_TRADUCAO = 13;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

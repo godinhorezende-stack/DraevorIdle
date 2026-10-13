@@ -16544,6 +16544,111 @@
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 4)"
     },
     {
+      "padrao": "^Concede Armadura igual a \\{(\\d+)\\}% da sua Mana Reservada a Você e seus Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "aliados:armor_flat%manaReservada:1",
+          "valor": "pct({1})"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^Concede Escudo de Energia máximo igual a \\{(\\d+)\\}% da sua Mana Reservada para você e Aliados próximos$",
+      "efeitos": [
+        {
+          "stat": "aliados:energy_shield%manaReservada:1",
+          "valor": "pct({1})"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana Máxima Não Reservada, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc%manaNaoReservada:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^Auras das suas Habilidades só podem afetar você Habilidades Aura têm \\{(\\d+)\\}% mais Efeito de Aura por cada \\{(\\d+)\\}% de Mana máxima que Reservarem$",
+      "efeitos": [
+        {
+          "stat": "auras_so_em_voce",
+          "valor": "1"
+        },
+        {
+          "stat": "aura_efeito_por_reserva",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^Auras das suas Habilidades só podem afetar você$",
+      "efeitos": [
+        {
+          "stat": "auras_so_em_voce",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^Habilidades Aura têm \\{(\\d+)\\}% mais Efeito de Aura por cada \\{(\\d+)\\}% de Mana máxima que Reservarem$",
+      "efeitos": [
+        {
+          "stat": "aura_efeito_por_reserva",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Reserva de Mana de Habilidades Aura$",
+      "efeitos": [
+        {
+          "stat": "reserva_aura_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^Efeitos dos Frascos de Vida não são removidos quando a Vida Não Reservada é Preenchida$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_nao_para",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o suporte Feiticeiro (Spellslinger) não está no jogo",
+      "_nova": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
+    },
+    {
       "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
       "efeitos": [
         {
@@ -16552,9 +16657,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo",
+      "nota": "esta variação da reserva ainda não tem efeito no jogo",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote8": "13/10 — a mana reservada (lote 8)"
     },
     {
       "padrao": "^.*(?:Cadáver|Cadáveres).*$",

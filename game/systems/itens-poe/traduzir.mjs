@@ -44,6 +44,9 @@ function valorDo(expr, indices, valores) {
   const v = (n) => Number(valores[indices[Number(n) - 1]]);
   const media = /^media\(\{(\d+)\},\{(\d+)\}\)$/.exec(expr);
   if (media) return (v(media[1]) + v(media[2])) / 2;
+  // (13/10) `pct({n})` = o número como fração ("Armadura igual a 25% da sua Mana Reservada" → 0,25 por ponto reservado).
+  const pct = /^pct\(\{(\d+)\}\)$/.exec(expr);
+  if (pct) return v(pct[1]) / 100;
   const um = /^(-?)\{(\d+)\}$/.exec(expr);
   return um ? (um[1] ? -1 : 1) * v(um[2]) : Number(expr);
 }
