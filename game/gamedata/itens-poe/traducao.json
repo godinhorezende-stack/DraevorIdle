@@ -6414,17 +6414,61 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Projéteis causam Dano aumentado em .* para cada Inimigo Atravessado$|^Projéteis causam Dano aumentado em .* para cada vez que Ricochetearam$|^Projéteis têm .* chance de receber um Projétil adicional quando Difundindo$|^Projéteis que Ricochetearam ganham .*$|^Projéteis ganham Dano conforme viajam adiante, causando$",
+      "padrao": "^Projéteis causam Dano aumentado em \\{(\\d+)\\}% com Acertos e Afecções para cada Inimigo Atravessado$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "proj_inc_por_atravessado",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil",
       "_nova": true,
-      "_ciclo7": true
+      "_lote9": "13/10 — os projéteis por projétil (lote 9)"
+    },
+    {
+      "padrao": "^Projéteis causam Dano aumentado em \\{(\\d+)\\}% com Acertos e Afecções para cada vez que Ricochetearam$",
+      "efeitos": [
+        {
+          "stat": "proj_inc_por_ricochete",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote9": "13/10 — os projéteis por projétil (lote 9)"
+    },
+    {
+      "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de receber um Projétil adicional quando Difundindo$",
+      "efeitos": [
+        {
+          "stat": "proj_difusao_extra_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote9": "13/10 — os projéteis por projétil (lote 9)"
+    },
+    {
+      "padrao": "^Projéteis que Ricochetearam ganham \\{(\\d+)\\}% de Dano Não-Caótico como Dano de Caos extra$",
+      "efeitos": [
+        {
+          "stat": "proj_ricochete_caos_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote9": "13/10 — os projéteis por projétil (lote 9)"
+    },
+    {
+      "padrao": "^Projéteis ganham Dano conforme viajam adiante, causando$",
+      "efeitos": [
+        {
+          "stat": "projetil_longe_inc",
+          "valor": "60"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "pela distância até o alvo: nada colado, tudo a 6 casas (o \"até 60%\" é a linha de baixo, que o poedb partiu)",
+      "_nova": true,
+      "_lote9": "13/10 — os projéteis por projétil (lote 9)"
     },
     {
       "padrao": "^Efeito de Solos Sagrados Criados por você aumentado em \\{(\\d+)\\}%$",

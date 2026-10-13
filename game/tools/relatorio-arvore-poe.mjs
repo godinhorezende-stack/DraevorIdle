@@ -71,6 +71,11 @@ const IMPLEMENTADOS = [
     re: /Mana Reservada|Mana Máxima Não Reservada|que Reservarem|Reserva de Mana de Habilidades Aura|Frascos de Vida não são removidos/,
     jogo: 'Fé Radiante (Armadura e Escudo pela mana reservada, em você e nos aliados); Santuário do Pensamento (Área pela mana não reservada); Ego Supremo (as auras só em você, mais efeito pela reserva de cada uma, 40% mais reserva); o efeito do Frasco de Vida sai quando a vida não reservada enche (a regra do PoE), menos com a Mestre Cirurgiã — e o de mana passa a olhar a mana não reservada',
   },
+  {
+    bloco: 'Projéteis por projétil (lote 9)',
+    re: /Inimigo Atravessado|vez que Ricochetearam|quando Difundindo|Projéteis que Ricochetearam|conforme viajam adiante/,
+    jogo: 'cada projétil conta os inimigos que atravessou e as vezes que ricocheteou (o dano aumentado por cada um, somado aos outros aumentos); a difusão com a chance de um projétil a mais; o Caos extra nos que ricochetearam (a Presa Sombria); o Tiro Longo pela distância — e o dano pela distância (Animosidade Adjacente, Tiro Distante, Queima-Roupa) passa a valer também nas habilidades, não só no golpe básico',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */
