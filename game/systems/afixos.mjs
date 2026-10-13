@@ -144,6 +144,8 @@ export function soma(estado) {
   const total = somaDeItens(estado);
   const daArvore = Passivas.efeitos(estado).adds;
   for (const [k, v] of Object.entries(daArvore)) total[k] = (total[k] ?? 0) + v;
+  // (13/10) a Égide Necromântica: o escudo vai para os lacaios.
+  if (ehEgideComEscudo(estado, total)) passarOEscudoAosLacaios(estado, total);
   // (ciclo 7, lote F) "Bônus recebidos da Aljava Equipada aumentado em X%": a aljava (o espaço do escudo) soma X% a mais do que ela dá. (A
   // linha nas PEÇAS já multiplica a aljava no `somaDeItens`; aqui, só a da ÁRVORE.)
   const aljava = estado.equipment?.shield;
@@ -230,20 +232,45 @@ export function somaDeItens(estado) {
   const daAljava = 1 + Object.entries(estado.equipment ?? {}).reduce((n, [slot, p]) => n + (slot !== 'backpack' ? Number(p?.poe?.af?.bonus_aljava) || 0 : 0), 0) / 100;
   for (const [slot, peca] of Object.entries(estado.equipment ?? {})) {
     if (!peca || slot === 'backpack') continue;
-    const fatorDaPeca = daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1;
-    for (const a of peca.af ?? []) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
-    // A peça no modelo do PoE (sistema de itens do PoE, Fase 1 — só existe com ITENS_POE=1): os mods já traduzidos para os atributos do
-    // Draevor e os atributos NOVOS (`itens-poe/atributos-novos.json`), em `peca.poe.af`. Peça comum não tem `poe`: nada muda para ela.
-    for (const [k0, v0] of Object.entries(peca.poe?.af ?? {})) {
-      if (typeof v0 !== 'number' || !Number.isFinite(v0)) continue;
-      // "Espaço esquerdo/direito de anel: …": vale só no anel daquele lado (`ring` = esquerdo, `ring2` = direito). E a escala da própria
-      // peça ("por Encaixe Vermelho" do Punho da Tríade — `daPeca`).
-      const [k1, v] = ModsPoe.ehCondicional(k0) ? ModsPoe.daPeca(k0, v0, peca, estado) : [k0, v0];
-      const k = ModsPoe.ehCondicional(k1) ? ModsPoe.doAnel(k1, slot) : k1;
-      if (k) total[k] = (total[k] ?? 0) + v * fatorDaPeca;
-    }
+    somarPeca(total, estado, slot, peca, daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1);
   }
   return total;
+}
+/** Soma UMA peça vestida em `total` (a do Draevor e a do PoE — `poe.af`, com as condições da própria peça e do lado do anel). */
+function somarPeca(total, estado, slot, peca, fatorDaPeca = 1) {
+  for (const a of peca.af ?? []) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
+  // A peça no modelo do PoE (sistema de itens do PoE, Fase 1 — só existe com ITENS_POE=1): os mods já traduzidos para os atributos do
+  // Draevor e os atributos NOVOS (`itens-poe/atributos-novos.json`), em `peca.poe.af`. Peça comum não tem `poe`: nada muda para ela.
+  for (const [k0, v0] of Object.entries(peca.poe?.af ?? {})) {
+    if (typeof v0 !== 'number' || !Number.isFinite(v0)) continue;
+    // "Espaço esquerdo/direito de anel: …": vale só no anel daquele lado (`ring` = esquerdo, `ring2` = direito). E a escala da própria
+    // peça ("por Encaixe Vermelho" do Punho da Tríade — `daPeca`).
+    const [k1, v] = ModsPoe.ehCondicional(k0) ? ModsPoe.daPeca(k0, v0, peca, estado) : [k0, v0];
+    const k = ModsPoe.ehCondicional(k1) ? ModsPoe.doAnel(k1, slot) : k1;
+    if (k) total[k] = (total[k] ?? 0) + v * fatorDaPeca;
+  }
+  return total;
+}
+/**
+ * (13/10) A ÉGIDE NECROMÂNTICA (keystone do PoE): "Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você". O que o
+ * escudo dá vira o atributo do LACAIO (o que o lacaio do jogo tem: bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração,
+ * movimento, dreno — `LacaiosPoe.oQueInvoca` lê do dono); o resto sai de você sem ir a ninguém. A defesa da base do escudo também sai de você
+ * (`Ficha.defesasDaFicha`). Muda `total`.
+ */
+const DO_ESCUDO_PARA_O_LACAIO = {
+  block: 'minion_block', spell_block: 'minion_spell_block', fire_res: 'minion_fire_res', ice_res: 'minion_ice_res', energy_res: 'minion_energy_res',
+  chaos_res: 'minion_chaos_res', life_inc: 'minion_life', dmg_inc: 'minion_dmg', atk_speed: 'minion_atk_speed', cast_speed: 'minion_cast_speed',
+  crit_chance_inc: 'minion_crit_inc', crit_dmg: 'minion_crit_mult', move_speed: 'minion_move', life_regen: 'minion_regen', life_regen_max_pct: 'minion_regen_pct',
+  life_leech: 'minion_leech',
+};
+export const ehEgideComEscudo = (estado, total) => itensPoeLigado() && Number(total?.egide_necromantica) > 0 && estado?.equipment?.shield?.poe?.classe === 'Shields';
+function passarOEscudoAosLacaios(estado, total) {
+  const doEscudo = somarPeca({}, estado, 'shield', estado.equipment.shield);
+  for (const [k, v] of Object.entries(doEscudo)) {
+    total[k] = (total[k] ?? 0) - v;
+    const doLacaio = DO_ESCUDO_PARA_O_LACAIO[k];
+    if (doLacaio) total[doLacaio] = (total[doLacaio] ?? 0) + v;
+  }
 }
 
 /** O relógio da sala (o do anfitrião, se for convidado): é nele que contam os efeitos de altar. */

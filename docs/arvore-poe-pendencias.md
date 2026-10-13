@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5925** — equivalente 1345, novo 4333, aproximado (parcial) 247.
-- ✗ Sem efeito: **49** — na árvore principal 15, nas ascendências 34; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5927** — equivalente 1345, novo 4334, aproximado (parcial) 248.
+- ✗ Sem efeito: **47** — na árvore principal 14, nas ascendências 33; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 27; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -22,6 +22,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | Aliados de verdade (lote 7) | 24 | 2 | "Você e Aliados" vira a aura do nó (vale em você, nos companheiros da party na sala a até 3 casas e nos seus lacaios; a mesma aura de duas pessoas: a maior); "Auras das suas Habilidades concedem" entra por aura ligada; a Fortificação igual do Campeão; "aliado por perto" conta lacaios e a party; a Ichimonji nas auras |
 | Mana reservada (lote 8) | 6 | 0 | Fé Radiante (Armadura e Escudo pela mana reservada, em você e nos aliados); Santuário do Pensamento (Área pela mana não reservada); Ego Supremo (as auras só em você, mais efeito pela reserva de cada uma, 40% mais reserva); o efeito do Frasco de Vida sai quando a vida não reservada enche (a regra do PoE), menos com a Mestre Cirurgiã — e o de mana passa a olhar a mana não reservada |
 | Projéteis por projétil (lote 9) | 10 | 0 | cada projétil conta os inimigos que atravessou e as vezes que ricocheteou (o dano aumentado por cada um, somado aos outros aumentos); a difusão com a chance de um projétil a mais; o Caos extra nos que ricochetearam (a Presa Sombria); o Tiro Longo pela distância — e o dano pela distância (Animosidade Adjacente, Tiro Distante, Queima-Roupa) passa a valer também nas habilidades, não só no golpe básico |
+| Lacaios (lote 10) | 2 | 0 | a Égide Necromântica passa os bônus do escudo aos lacaios (e tira a defesa da base de você); o golem morto volta sozinho em 4 s (o Suserano do Primordial); e a resistência a Fogo/Gelo/Raio dos lacaios, guardada e nunca lida, passa a valer no golpe |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -52,8 +53,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 1 | falta no jogo: o Poder Fantasmal | — | O Bastão Negro (asc. Reliquarian) — Cada Fantasma Convocado concede a Você Poder Fantasmal |
 | 1 | falta no jogo: o Sentinela do Resplendor | — | Cruzada Radiante (asc. Guardian) — 20% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua |
 | 1 | falta no jogo: os Robôs Ativadores | — | Crime Perfeito (asc. Saboteur) — Ativa Convocar Robôs Ativadores Nível 20 quando Alocado |
-| 1 | falta no jogo: passar os bônus do escudo aos lacaios (a Égide Necromântica entra inteira) | — | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
-| 1 | falta no jogo: reconvocar o golem morto | — | Suserano do Primordial (asc. Elementalist) — Golens Convocados são Reconvocados 4 segundos após serem Mortos |
 | 1 | tipo de carga exclusivo de único que o jogo não tem (só Poder, Frenesi e Tolerância) | — | Rito Profano (asc. Occultist) — Ganha Infusão Espiritual a cada 0.5 segundos enquanto canaliza uma magia |
 
 ## Parcial (aproximado, ✓ com diferença do PoE), pelo motivo
@@ -123,6 +122,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 1 | o jogo não tem áreas frias no chão: vale o Resfriamento no inimigo | Geada Cortante (keystone) — Inimigos nas suas áreas frias sofrem dano de frio aumentado pelo esfriamento |
 | 1 | o Solo dura 4 s | Inquisidor (asc. Ascendant) — 10% de chance de criar Solo Sagrado ao Acertar um Inimigo Raro ou Único |
 | 1 | o teto vale na redução de dano físico (armadura + redução adicional) | Guarda Desequilibrada (keystone) — Redução de Dano Máxima para qualquer Tipo de Dano é 50% |
+| 1 | os bônus do escudo vão para os lacaios (bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração, movimento, dreno); o que o lacaio do jogo não tem — a armadura, a evasão e o escudo de energia da base, os condicionais — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
 | 1 | parado: sem andar há pouco | Cinzas Assentadas (notável) — Inimigos Próximos são Cobertos em Cinzas se você não se moveu nos últimos 2 segundos |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas | Tiro Distante (asc. Deadeye) — Projéteis ganham Dano ao viajar adiante, causando até 30% mais Dano com Acertos e Afecções |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas (o "até 60%" é a linha de baixo, que o poedb partiu) | Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando |
