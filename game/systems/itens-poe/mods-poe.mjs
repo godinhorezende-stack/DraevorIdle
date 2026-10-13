@@ -38,6 +38,21 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     if (hunt) hunt.poeCriticosParaFrascos = (hunt.poeCriticosParaFrascos ?? 0) + 1;
   }
   const e = (alvo.estados ??= {});
+  // (13/10, o Mestre do Metal: "Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo" — a aura dele
+  // em você, `itens-poe/aliados.mjs`: os empalamentos que o alvo tinha neste acerto, pela Redução de Dano Físico dele; no PoE o adicional
+  // também passaria pelos aumentos de dano — aqui não.)
+  const porEmpalamento = [v('empalar_fisico_add_min'), v('empalar_fisico_add_max')];
+  if (porEmpalamento[1] > 0 && alvo.hp > 0 && Array.isArray(e.empalado)) {
+    const quantos = e.empalado.filter((x) => x.ate > agora && x.acertos > 0).length;
+    let extra = quantos * (porEmpalamento[0] + rng() * Math.max(0, porEmpalamento[1] - porEmpalamento[0]));
+    if (extra > 0 && reducaoFisica) extra = reducaoFisica(hunt, alvo, extra);
+    if (extra > 0) {
+      const d = Math.max(1, Math.round(extra));
+      alvo.hp -= d;
+      saida.extra += d;
+      eventos?.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d, foe: true, alvo: alvo.name, color: '#b0b0b0' });
+    }
+  }
   // Os EMPALAMENTOS do alvo: cada acerto solta o guardado — passando pela Redução de Dano Físico do alvo (a resistência física e a redução
   // de dano do monstro — `reducaoFisica`, registrada pela caçada), salvo "Dano de Empalamento … ignoram a Redução de Dano Físico Inimiga".
   // ("X% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional": este acerto não gasta.)
@@ -59,7 +74,7 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     if (total > 0) {
       const d = Math.max(1, Math.round(total));
       alvo.hp -= d;
-      saida.extra = d;
+      saida.extra += d;
       eventos?.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d, foe: true, alvo: alvo.name, color: '#b0b0b0', empalamento: true });
     }
   }

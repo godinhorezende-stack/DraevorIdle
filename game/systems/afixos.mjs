@@ -33,6 +33,7 @@ import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 import { addsDosDebuffsNoJogador } from './itens-poe/monstros-no-jogador.mjs';
 import { addsDosVinculos } from './itens-poe/vinculos.mjs';
 import { addsDoAco } from './itens-poe/convocar-o-aco.mjs';
+import * as Aliados from './itens-poe/aliados.mjs';
 import * as Mapas from './itens-poe/mapas.mjs';
 // (a soma da árvore para quem não monta a ficha — as gemas do peitoral suportadas pela árvore: `skills/gemas.dasPecas`)
 ModsPoe.definirLeitorDaArvore((estado) => Passivas.efeitos(estado).adds);
@@ -176,6 +177,9 @@ export function soma(estado) {
   const doMapa = Mapas.addsNoJogador(estado);
   if (doMapa) for (const [k, v] of Object.entries(doMapa)) total[k] = (total[k] ?? 0) + v;
   const resolvido = ModsPoe.resolver(estado, total, Atributos.principais(estado, total));
+  // + as auras "Você e Aliados" (a sua e as dos companheiros perto — a maior de cada) e o "Auras das suas Habilidades concedem…"
+  // (`itens-poe/aliados.mjs`): logo depois das condições (a de quem dá já resolvida) e antes dos buffs nomeados (o Vento Favorável é um deles).
+  Aliados.aplicar(estado, resolvido);
   // + os BUFFS nomeados do PoE ativos (Agressividade, Adrenalina, Poder Profano… — ganhos por evento ou "sempre" pela peça). DEPOIS das
   // condições: o "sempre" com condição ("Você tem Agonia Perfeita se causou um Golpe Crítico Recentemente" — `sempre:agoniaPerfeita@criticoRecente`)
   // e o "Efeito do Elusivo aumentado por Carga de Poder" (`efeito_buff:elusivo%carga:poder`) só existem depois do `resolver` (antes, o

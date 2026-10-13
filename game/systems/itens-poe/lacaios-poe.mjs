@@ -189,6 +189,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     // Os mods do PoE dos lacaios (o tique deles lê): resistências, dano recebido, regeneração, roubo, movimento, multiplicador degenerativo,
     // chances de Cegar/Provocar/Desacelerar/Envenenar/Incendiar.
     poe: af ? {
+      // (13/10) a soma dos "Dano aumentado" do lacaio na invocação: o das auras "Você e Aliados" do dono soma a ela no golpe (`cacadas`).
+      danoIncPct: (efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano'),
       res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: m0('minion_chaos_res'), danoRecebidoPct: m0('lacaios_dano_recebido'), regenPct: m0('minion_regen_pct'), regen: m0('minion_regen'),
       roubo: m0('minion_leech'), movimentoPct: m0('minion_move') + porTipo('lacaio_mov'), dotMulti: m0('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
       bloqueio: m0('minion_block'), resFogo: m0('minion_fire_res'), resGelo: m0('minion_ice_res'),
@@ -337,9 +339,11 @@ export function curarLacaio(l, quanto) {
  * (na parte física), o máximo das resistências elementais (`resMax`) e o escudo antes da vida. `fisico`: a parte física do golpe;
  * `porElemento`: `[{ elemento, valor }]` as outras partes já sem resistência; `magia`: o golpe é de magia. Devolve `{ dano, bloqueou }`.
  */
-export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = Math.random } = {}) {
+export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = Math.random, bloqueioMagicoExtra = 0 } = {}) {
   const p = l?.poe ?? {};
-  if (magia && p.bloqueioMagico > 0 && rng() * 100 < p.bloqueioMagico) {
+  // (13/10: + o bloqueio mágico das auras "Você e Aliados" do dono — `bloqueioMagicoExtra`)
+  const bloqueioMagico = (p.bloqueioMagico ?? 0) + bloqueioMagicoExtra;
+  if (magia && bloqueioMagico > 0 && rng() * 100 < bloqueioMagico) {
     if (p.vidaAoBloquear > 0) curarLacaio(l, (l.maxHp * p.vidaAoBloquear) / 100);
     return { dano: 0, bloqueou: true };
   }

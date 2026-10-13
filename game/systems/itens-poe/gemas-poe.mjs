@@ -628,8 +628,11 @@ export function adds(estado) {
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
   // (11/10) As AURAS dos COMPANHEIROS de grupo na mesma sala, a até o raio da aura deles (`raio` em casas, com o "Efeito em Área de Habilidades
   // de Aura aumentado" de quem lançou): valem em você como no PoE ("você e Aliados"). Cada aura uma vez: a sua, se você também tem a mesma.
-  for (const outro of hunt.partilha?.naSala ?? []) {
+  // (13/10, a Ichimonji: "Buffs de Auras Aliadas não afetam você" — o seu; "Os Buffs das Suas Auras não afetam aliados" — o do companheiro.)
+  const semAurasAliadas = doEquipamento(estado, 'auras_aliadas_nao_afetam') > 0;
+  for (const outro of semAurasAliadas ? [] : hunt.partilha?.naSala ?? []) {
     if (!outro || outro === estado || !outro.hunt?.pos || !hunt.pos || (outro.hunt.z ?? 0) !== (hunt.z ?? 0)) continue;
+    if (doEquipamento(outro, 'auras_so_em_voce') > 0) continue;
     for (const [id, b] of Object.entries(outro.hunt.buffs ?? {})) {
       // (o Estandarte plantado vale em volta DELE, não de quem o plantou)
       const centro = b.estandarte ?? outro.hunt.pos;

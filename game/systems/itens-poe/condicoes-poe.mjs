@@ -16,6 +16,7 @@ import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { quemRecebeAMaldicao } from './vinculos.mjs';
+import * as Aliados from './aliados.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -88,7 +89,9 @@ export function fortificacao(estado, total = null) {
   const max = total ? maxFortificacao(total) : h?.fortificacaoTeto?.max ?? FORTIFICACAO.maximo;
   if (total ? Number(total.fortificacao_sempre_max) > 0 : h?.fortificacaoTeto?.sempre) return max;
   const f = h?.fortificacao;
-  return f && f.ate > (h.clock ?? 0) ? Math.min(f.n, max) : 0;
+  const propria = f && f.ate > (h.clock ?? 0) ? Math.min(f.n, max) : 0;
+  // (13/10) "Aliados Próximos contam como tendo Fortificação igual a sua" (o Campeão de um companheiro perto — `aliados.mjs`)
+  return Math.max(propria, Aliados.fortificacaoDosAliados(estado));
 }
 /** Ganha `n` Fortificações (até o máximo) e renova a duração ("Duração da Fortificação aumentada"). */
 export function ganharFortificacao(hunt, n, total, agora = hunt?.clock ?? 0) {
@@ -185,7 +188,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin):/;
+const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -420,6 +423,11 @@ export function vale(conds, c) {
     case 'cargasMax': return cargas(resto[0]) >= maxCargas(resto[0]) || (resto[0] === 'poder' && Number(total?.conta_max_poder) > 0);
     case 'furiaMin': return (h?.furia?.n ?? 0) >= Number(resto[0]);
     case 'lacaio': return (h?.lacaios ?? []).some((l) => l.hp > 0 && (resto[0] === 'qualquer' || new RegExp(resto[0], 'i').test(l.nome ?? '')));
+    // (13/10) "se você tiver pelo menos N aliados por perto": os seus lacaios vivos e os companheiros da party na sala a até 3 casas.
+    case 'aliadosPerto': {
+      const party = h?.pos ? (h.partilha?.naSala ?? []).filter((o) => o && o !== estado && o.hunt?.pos && (o.hunt.z ?? 0) === (h.z ?? 0) && Math.max(Math.abs(o.hunt.pos.x - h.pos.x), Math.abs(o.hunt.pos.y - h.pos.y)) <= Aliados.PADRAO.raio).length : 0;
+      return (h?.lacaios ?? []).filter((l) => l.hp > 0).length + party >= Math.max(1, Number(resto[0]) || 1);
+    }
     case 'escudoMin': return (estado?.maxEsPoe ?? 0) >= Number(resto[0]);
     // (ciclo 7) "se você usou uma Habilidade de <tag> Recentemente" (`marcarUsoPorTag`).
     case 'usouTag': return recente(h?.poeRecente?.[`usou:${resto[0]}`], agora);
@@ -1272,7 +1280,14 @@ const PARAMETRICOS = [
   /^estandarte_vida_por_valor:\d+$/, /^estandarte_cargas_cheio:(frenesi|tolerancia|poder)$/,
 ];
 /** O atributo dinâmico tem efeito (sabe-se o que fazer com ele)? */
+// (13/10) Quem confere um atributo "de verdade" (o do Draevor ou o novo com efeito): a tradução registra (`traduzir.mjs` — este módulo não a
+// importa: o ciclo de imports).
+// eslint-disable-next-line no-var
+var validadorDeAtributo;
+export function definirValidadorDeAtributo(fn) { validadorDeAtributo = fn; }
 export function dinamicoValido(stat) {
+  // (13/10) A aura "Você e Aliados" do nó/item (`aliados:<stat>` — `itens-poe/aliados.mjs`): vale pelo atributo que ela dá.
+  if (String(stat).startsWith('aliados:')) return validadorDeAtributo ? validadorDeAtributo(String(stat).slice('aliados:'.length)) : false;
   if (String(stat).startsWith('ev:')) {
     const [, evento, acao] = stat.split(':');
     return EVENTOS.has(evento) && ACOES.has(acao);

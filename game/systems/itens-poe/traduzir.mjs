@@ -11,7 +11,7 @@
 // Atributo CONDICIONAL (`dmg_inc@corpo`, `atk_speed@comEscudo` — `mods-poe.mjs`): vale o estado do atributo-base, se as condições existem.
 import { readFileSync } from 'node:fs';
 import { FICHAS } from '../afixos.mjs';
-import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, SO_NO_CRITICO, SO_AO_ATORDOAR, dinamicoValido, escalaValida, slugDoNome, gemaConhecida } from './condicoes-poe.mjs';
+import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, SO_NO_CRITICO, SO_AO_ATORDOAR, dinamicoValido, escalaValida, slugDoNome, gemaConhecida, definirValidadorDeAtributo } from './condicoes-poe.mjs';
 
 export const TABELA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao.json', import.meta.url), 'utf8'));
 export const NOVOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/atributos-novos.json', import.meta.url), 'utf8')).atributos;
@@ -211,6 +211,8 @@ function temEfeito(e) {
 
 /** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */
 export const atributoTemEfeito = (stat) => temEfeito({ stat });
+// (13/10) a aura "Você e Aliados" (`aliados:<stat>` — `condicoes-poe.dinamicoValido`) vale pelo atributo que ela dá: quem confere é esta conta.
+definirValidadorDeAtributo((s) => !!(FICHAS[s] || NOVOS[s]?.combate || dinamicoValido(s)));
 
 const PIOR = ['lembrete', 'equivalente', 'aproximado', 'novo', 'inerte', 'registrado'];
 /** Traduz um mod inteiro (`{ modelo, valores }`): híbridos "A / B" viram as partes; o estado do mod é o PIOR das partes. */

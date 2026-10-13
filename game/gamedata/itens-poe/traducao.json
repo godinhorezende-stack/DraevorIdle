@@ -2386,14 +2386,13 @@
       "padrao": "^Precisão aumentada em \\{(\\d+)\\}%, se você tiver pelo menos \\{(\\d+)\\} aliados? por perto$",
       "efeitos": [
         {
-          "stat": "accuracy_inc@lacaio:qualquer",
+          "stat": "accuracy_inc@aliadosPerto:{V2}",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "aliado = um lacaio seu em campo (o jogo não mede a distância dele)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Precisão da Mão Secundária é igual a da Mão Primária enquanto portando uma Espada$",
@@ -3458,27 +3457,25 @@
       "padrao": "^Caso tenha sido Atacado Recentemente, você e Aliados possuem \\+?\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques$",
       "efeitos": [
         {
-          "stat": "block@acertadoAtaqueRecente",
+          "stat": "aliados:block@acertadoAtaqueRecente",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você; os aliados não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Caso tenha Conjurado uma Magia Recentemente, você e Aliados próximos possuem \\+?\\{(\\d+)\\}% de Chance de Bloquear o Dano Mágico$",
       "efeitos": [
         {
-          "stat": "spell_block@usouTag:magia",
+          "stat": "aliados:spell_block@usouTag:magia",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você; os aliados não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\}% de Chance de Bloquear Dano Mágico$",
@@ -3598,40 +3595,37 @@
       "padrao": "^Com ao menos um cadáver próximo, você e Aliados próximos causam \\{(\\d+)\\}% mais Dano$",
       "efeitos": [
         {
-          "stat": "mais_dano@cadaverPerto",
+          "stat": "aliados:mais_dano@cadaverPerto",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você; os aliados não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Para cada cadáver próximo, você e Aliados próximos Regeneram \\{(\\d+)\\}% do Escudo de Energia por segundo, até \\{(\\d+)\\}% por segundo$",
       "efeitos": [
         {
-          "stat": "es_regen_pct%cadaveresPerto::10",
+          "stat": "aliados:es_regen_pct%cadaveresPerto::10",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você; os aliados não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Você e Aliados próximos Regeneram \\{(\\d+)\\} de Mana por segundo para cada cadáver próximo, até \\{(\\d+)\\} por segundo$",
       "efeitos": [
         {
-          "stat": "mana_regen%cadaveresPerto::10",
+          "stat": "aliados:mana_regen%cadaveresPerto::10",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você; os aliados não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Velocidades de Ataque e Conjuração aumentadas em \\{(\\d+)\\}% por cada cadáver Consumido Recentemente, máximo de \\{(\\d+)\\}%$",
@@ -4818,22 +4812,21 @@
       "padrao": "^Você e Aliados próximos têm \\+?\\{(\\d+)\\}% de Todas as Resistências Elementais$",
       "efeitos": [
         {
-          "stat": "fire_res",
+          "stat": "aliados:fire_res",
           "valor": "{1}"
         },
         {
-          "stat": "ice_res",
+          "stat": "aliados:ice_res",
           "valor": "{1}"
         },
         {
-          "stat": "energy_res",
+          "stat": "aliados:energy_res",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você; os aliados não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Modificadores à Resistência a Fogo Máxima também se aplicam ao Máximo das Resistências a Gelo e Raio$",
@@ -5096,14 +5089,15 @@
       "padrao": "^Você e Aliados próximos têm Vento Favorável$",
       "efeitos": [
         {
-          "stat": "sempre:ventoFavoravel",
+          "stat": "aliados:sempre:ventoFavoravel",
           "valor": "1"
         }
       ],
+      "_nova": true,
+      "_ciclo7": true,
       "estado": "aproximado",
       "nota": "Vento Favorável: +10% de velocidade de ataque, conjuração e movimento",
-      "_nova": true,
-      "_ciclo7": true
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Efeito dos Buffs de Arauto em você aumentado em \\{(\\d+)\\}%$",
@@ -6758,14 +6752,13 @@
       "padrao": "^Aliados Próximos contam como tendo Fortificação igual a sua$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "aliados_fortificacao",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "a Fortificação vale só em você (os lacaios ainda não a contam)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Cadáveres Criados por você tem Vida Máxima aumentada em .*$",
@@ -6937,14 +6930,13 @@
       "padrao": "^Área de efeito de ataques aumentada em \\{(\\d+)\\}%, se você tiver pelo menos \\{(\\d+)\\} aliados? por perto$",
       "efeitos": [
         {
-          "stat": "area_inc@ataque+lacaio:qualquer",
+          "stat": "area_inc@ataque+aliadosPerto:{V2}",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "aliado: um lacaio vivo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^-?\\{(\\d+)\\}% de custo de habilidades de conexão$",
@@ -15653,27 +15645,25 @@
       "padrao": "^Buffs de Auras Aliadas não afetam você$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "auras_aliadas_nao_afetam",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "estado": "lembrete",
-      "nota": "no jogo as auras dos aliados já não afetam você.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)",
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Os Buffs das Suas Auras não afetam aliados$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "auras_so_em_voce",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "estado": "lembrete",
-      "nota": "no jogo as suas auras já são só suas.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)",
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^Dano elemental aumentado em \\{(\\d+)\\}% por \\{(\\d+)\\}% de resistência a dano de fogo, frio ou elétrico acima de \\{(\\d+)\\}%$",
@@ -16580,6 +16570,56 @@
       "_unico": true
     },
     {
+      "padrao": "^Caso tenha Empalado um Inimigo Recentemente, você e Aliados próximos recebem \\+\\{(\\d+)\\} de Armadura$",
+      "efeitos": [
+        {
+          "stat": "aliados:armor_flat@empalouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+    },
+    {
+      "padrao": "^Você e Aliados próximos causam de \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico adicional para cada Empalar no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "aliados:empalar_fisico_add_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aliados:empalar_fisico_add_max",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o adicional por Empalamento entra no acerto pela Redução de Dano Físico do alvo, sem os aumentos de dano",
+      "_nova": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+    },
+    {
+      "padrao": "^Auras das suas Habilidades concedem \\{(\\d+)\\}% de aumento das Velocidades de Ataque e Conjuração para você e Aliados$",
+      "efeitos": [
+        {
+          "stat": "aura_concede_vel",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+    },
+    {
+      "padrao": "^Você e Aliados próximos causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aliados:dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+    },
+    {
       "padrao": "^.*(?:Aliados|Membros do (?:seu )?Grupo|membros próximos do Grupo|Vinculad|Habilidades de Vínculo).*$",
       "efeitos": [
         {
@@ -16588,9 +16628,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "sem aliados nem Vínculos no jogo: o efeito em aliados não tem em quem agir",
+      "nota": "esta variação de efeito em aliados ainda não tem efeito no jogo",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^.*(?:Fenda|Grilhões Temporais).*$",
@@ -32638,14 +32679,13 @@
       "padrao": "^Você e aliados próximos ganham um aumento de \\{(\\d+)\\}% de Dano$",
       "efeitos": [
         {
-          "stat": "dmg_inc",
+          "stat": "aliados:dmg_inc",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "em você (os aliados da party não recebem a aura).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
       "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio por Carga de Poder$",
