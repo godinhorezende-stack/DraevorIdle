@@ -6188,6 +6188,36 @@
       "unidade": "",
       "combate": true,
       "efeito": "a mana reservada (itens-poe/reserva.mjs, gemas-poe, frascos) (13/10)"
+    },
+    "proj_inc_por_atravessado": {
+      "nome": "Dano dos Projéteis aumentado por Inimigo Atravessado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os projéteis por projétil (skills/golpes-secundarios, acoes) (13/10)"
+    },
+    "proj_inc_por_ricochete": {
+      "nome": "Dano dos Projéteis aumentado por Ricochete",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os projéteis por projétil (skills/golpes-secundarios, acoes) (13/10)"
+    },
+    "proj_difusao_extra_chance": {
+      "nome": "Chance de um Projétil a mais ao Difundir",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os projéteis por projétil (skills/golpes-secundarios, acoes) (13/10)"
+    },
+    "proj_ricochete_caos_extra": {
+      "nome": "Dano Não-Caótico como Caos extra nos Projéteis que Ricochetearam",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os projéteis por projétil (skills/golpes-secundarios, acoes) (13/10)"
+    },
+    "projetil_longe_inc": {
+      "nome": "Dano dos Projéteis aumentado pela distância (até)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os projéteis por projétil (skills/golpes-secundarios, acoes) (13/10)"
     }
   }
 }

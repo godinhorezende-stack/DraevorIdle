@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5915** — equivalente 1345, novo 4324, aproximado (parcial) 246.
-- ✗ Sem efeito: **59** — na árvore principal 24, nas ascendências 35; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5925** — equivalente 1345, novo 4333, aproximado (parcial) 247.
+- ✗ Sem efeito: **49** — na árvore principal 15, nas ascendências 34; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -21,12 +21,12 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | Tinturas (lote 6) | 58 | 0 | as Tinturas criadas: caem (Normal, Mágica, Única), vão no cinto de frascos e ativam sozinhas em combate; ativas, põem Queima de Mana em você (1% da Mana máxima por segundo cada) e dão os mods delas nos ataques com Arma Corpo a Corpo; desativam com a mana acabando (ou abaixo do limite da regra), tiram a Queima de Mana e entram na recarga da base |
 | Aliados de verdade (lote 7) | 24 | 2 | "Você e Aliados" vira a aura do nó (vale em você, nos companheiros da party na sala a até 3 casas e nos seus lacaios; a mesma aura de duas pessoas: a maior); "Auras das suas Habilidades concedem" entra por aura ligada; a Fortificação igual do Campeão; "aliado por perto" conta lacaios e a party; a Ichimonji nas auras |
 | Mana reservada (lote 8) | 6 | 0 | Fé Radiante (Armadura e Escudo pela mana reservada, em você e nos aliados); Santuário do Pensamento (Área pela mana não reservada); Ego Supremo (as auras só em você, mais efeito pela reserva de cada uma, 40% mais reserva); o efeito do Frasco de Vida sai quando a vida não reservada enche (a regra do PoE), menos com a Mestre Cirurgiã — e o de mana passa a olhar a mana não reservada |
+| Projéteis por projétil (lote 9) | 10 | 0 | cada projétil conta os inimigos que atravessou e as vezes que ricocheteou (o dano aumentado por cada um, somado aos outros aumentos); a difusão com a chance de um projétil a mais; o Caos extra nos que ricochetearam (a Presa Sombria); o Tiro Longo pela distância — e o dano pela distância (Animosidade Adjacente, Tiro Distante, Queima-Roupa) passa a valer também nas habilidades, não só no golpe básico |
 
 ## Sem efeito (✗), pelo motivo
 
 | Linhas | Motivo | Bloco a implementar (dono, 12/10) | Exemplos (nó — texto) |
 |---:|---|---|---|
-| 10 | o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil | — | Tiro Partido (notável) — Projéteis têm 50% de chance de receber um Projétil adicional quando Difundindo<br>Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando<br>Chance de uma Difusão Extra de Projéteis (nó) — Projéteis têm 25% de chance de receber um Projétil adicional quando Difundindo |
 | 4 | a gema Portador da Praga não está no jogo | — | Maestria de Envenenamentos (maestria) — Portador da Praga têm Valor Máximo da Praga aumentado em 20% |
 | 4 | falta no jogo: a Chama Santificada (só beneficia os ataques dos aliados) | — | Marechal da Divindade (asc. Guardian) — Inflige Chama Santificada ao atingir corpo a corpo<br>Marechal da Divindade (asc. Guardian) — Você pode infligir +1 Chama Santificada nos inimigos<br>Marechal da Divindade (asc. Guardian) — Ganha 10% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram removidas recentemente por um ataque aliado, até 80% |
 | 4 | falta no jogo: a habilidade Avatar Liberto (o Liberto e a Fúria Liberta) | — | Avatar da Selva (asc. Warden) — Ganhe 1 de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada 0.2 segundos por cada tipo de Afecção<br>Avatar da Selva (asc. Warden) — Não pode ganhar Fúria Liberta enquanto Liberto<br>Avatar da Selva (asc. Warden) — Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto |
@@ -125,6 +125,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 1 | o teto vale na redução de dano físico (armadura + redução adicional) | Guarda Desequilibrada (keystone) — Redução de Dano Máxima para qualquer Tipo de Dano é 50% |
 | 1 | parado: sem andar há pouco | Cinzas Assentadas (notável) — Inimigos Próximos são Cobertos em Cinzas se você não se moveu nos últimos 2 segundos |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas | Tiro Distante (asc. Deadeye) — Projéteis ganham Dano ao viajar adiante, causando até 30% mais Dano com Acertos e Afecções |
+| 1 | pela distância até o alvo: nada colado, tudo a 6 casas (o "até 60%" é a linha de baixo, que o poedb partiu) | Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando |
 | 1 | qualquer frasco, "Recentemente" (4 s) | Coração de Carvalho (notável) — Regenera 2% de Vida por Segundo se você usou um Frasco de Vida nos últimos 10 segundos |
 | 1 | quando Acertado (o PoE: "when Hit") | Guarda do Vento (asc. Deadeye) — Perde toda a sua Força dos Ventos ao Acertar |
 | 1 | soma no alcance em metros: cada 2 m é uma casa a mais; "Próximos" = a até 2 casas | Golpe Certeiro (notável) — +0.4 metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos 5 Inimigos Próximos |

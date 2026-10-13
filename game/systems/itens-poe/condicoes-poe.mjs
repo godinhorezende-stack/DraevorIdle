@@ -902,6 +902,27 @@ function pelaDistancia(ficha, tags, alvo, estado) {
   return (longe ? interpolar(DISTANCIA_DO_PROJETIL.tiroDistante, d) : 1) * (perto ? interpolar(DISTANCIA_DO_PROJETIL.queimaRoupa, d) : 1);
 }
 
+/**
+ * (13/10) O que a DISTÂNCIA até `alvo` dá ao acerto de PROJÉTIL de uma habilidade (a ficha da habilidade é montada sem alvo — `acoes.contaDoDano`;
+ * o golpe básico já passa o alvo a `fichaDoGolpe`): `{ incPct, mais }` — o "aumentado" ("aumentado em 40% aos alvos no início de seu
+ * movimento, reduzido para 0%", o Tiro Longo) e o "mais" ("até 30% mais Dano aos alvos no início", "ganham Dano ao viajar adiante, até 30%
+ * mais", e as keystones Tiro Distante / Queima-Roupa). Do colado (tudo do "perto") a 6 casas (tudo do "longe").
+ */
+export function projetilNoAlvo(ficha, tags, alvo, estado) {
+  const t = new Set(tags ?? []);
+  const pos = estado?.hunt?.pos;
+  if (!ligado() || !ficha?.afPoe || !t.has('projetil') || !alvo || !pos) return { incPct: 0, mais: 1 };
+  const s = somaPorTags(ficha, [...t]);
+  const dist = Math.max(Math.abs(alvo.x - pos.x), Math.abs(alvo.y - pos.y));
+  const perto = Math.max(0, Math.min(1, 1 - (dist - 1) / 5));
+  const longe = 1 - perto;
+  const de = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
+  return {
+    incPct: de('projetil_perto_dmg_inc') * perto + de('projetil_longe_inc') * longe,
+    mais: Math.max(0, 1 + (de('projetil_perto_mais') * perto + de('projetil_longe_mais') * longe) / 100) * pelaDistancia(ficha, t, alvo, estado),
+  };
+}
+
 export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng = Math.random } = {}) {
   if (!ligado() || !ficha?.afPoe) return ficha;
   const agora = estado?.hunt?.clock ?? 0;
@@ -939,7 +960,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (+ lote F: "Efeito da Fúria aumentado em X%")
   const furia = (furiaNaMagia ? t.has('magia') : t.has('ataque')) ? furiaAtual(estado) * Math.max(0, 1 + (Number(ficha.afPoe.efeito_furia) || 0) / 100) : 0;
   // (O "Dano aumentado" sem condição já está em `danoDoElemento` da ficha; aqui só o condicional e a Fúria.)
-  const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto;
+  // (13/10: + o Tiro Longo — "Projéteis ganham Dano conforme viajam adiante, causando Dano aumentado em até X% com Acertos em alvos":
+  // `projetil_longe_inc`, do colado a 6 casas)
+  const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe;
   const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0);
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;

@@ -70,7 +70,7 @@ function maisPerto(vivos, ponto, distancia, n, fora) {
  * leque). Na gema que "Dispara Projéteis em sequência" (`sequencia`, a Barragem) os que sobram vão no alvo, como no PoE. Sem alvo nenhum
  * (0 bichos), os projéteis saem todos e erram. A emissão não diminui com quem erra nem com quem morre no meio.
  */
-export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null }) {
+export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random }) {
   const golpes = [];
   const explosoes = [];
   const emitidos = [];
@@ -106,15 +106,19 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       }
     }
   };
-  /** Um impacto: o golpe (o direto já foi dado pelo `disparar`) e a explosão. `false` = bateu no teto. */
-  const impacto = (bicho, pct, de, tipo, direto) => {
+  /**
+   * Um impacto: o golpe (o direto já foi dado pelo `disparar`) e a explosão. `false` = bateu no teto. (13/10) `meta`: o que o PROJÉTIL já fez
+   * antes deste acerto — `atravessados` (os inimigos que ele Perfurou) e `ricochetes` (as vezes que Ricocheteou): "Projéteis causam Dano
+   * aumentado para cada Inimigo Atravessado / para cada vez que Ricochetearam" (`acoes`).
+   */
+  const impacto = (bicho, pct, de, tipo, direto, meta = null) => {
     if (!direto) {
       if (impactos >= maxImpactos) {
         r.cortado = true;
         return false;
       }
       impactos++;
-      golpes.push({ bicho, pct, de, tipo });
+      golpes.push({ bicho, pct, de, tipo, ...(meta ?? {}) });
     }
     explodir(bicho, pct);
     return true;
@@ -143,7 +147,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   const pctDe = (k) => efeito[k] || 100;
   /** Um projétil: sai de `de` com `pct`% e acerta `primeiro`; daí segue as supports. */
   const voar = (projetil, primeiro, tipo, direto = false) => {
-    const p = { acertados: new Set(), ida: [], ...projetil };
+    const p = { acertados: new Set(), ida: [], perfurados: 0, ricocheteou: 0, ...projetil };
     let atual = primeiro;
     let pct = p.pct;
     let de = p.de;
@@ -151,7 +155,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     let tipoAtual = tipo;
     let eDireto = direto;
     while (atual) {
-      if (!impacto(atual, pct, de, tipoAtual, eDireto)) return;
+      if (!impacto(atual, pct, de, tipoAtual, eDireto, { atravessados: p.perfurados, ricochetes: p.ricocheteou })) return;
       p.acertados.add(atual);
       p.ida.push(atual);
       eDireto = false;
@@ -163,6 +167,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
         const proximo = adiante.map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && !p.acertados.has(b));
         if (proximo) {
           p.perfurar--;
+          p.perfurados++;
           atual = proximo;
           pct = (p.pct * pctDe('danoDaPerfuracaoPct')) / 100;
           tipoAtual = 'perfuracao';
@@ -172,8 +177,11 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       // Fork: se divide em N (uma vez por projétil); os filhos seguem sozinhos e este acaba.
       if (p.bifurcar > 0) {
         const pctDoFilho = (p.pct * pctDe('danoDaBifurcacaoPct')) / 100;
-        for (const b of maisPerto(vivosNoInicio, atual, cfg.distanciaDaBifurcacao ?? 4, p.bifurcar, p.acertados)) {
-          voar({ de: atual, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: 0, encadear: p.encadear, volta: false, acertados: new Set(p.acertados) }, b, 'bifurcacao');
+        // (13/10) "Projéteis têm X% de chance de receber um Projétil adicional quando Difundindo": um filho a mais. Os filhos levam o que o
+        // projétil já atravessou e ricocheteou.
+        const filhos = p.bifurcar + (efeito.bifurcarExtraChance > 0 && rng() * 100 < efeito.bifurcarExtraChance ? 1 : 0);
+        for (const b of maisPerto(vivosNoInicio, atual, cfg.distanciaDaBifurcacao ?? 4, filhos, p.acertados)) {
+          voar({ de: atual, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: 0, encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou }, b, 'bifurcacao');
         }
         break;
       }
@@ -182,6 +190,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
         const [proximo] = maisPerto(vivosNoInicio, atual, cfg.distanciaDoEncadeamento ?? 4, 1, p.acertados);
         if (proximo) {
           p.encadear--;
+          p.ricocheteou++;
           reta = casasDaReta(atual, proximo, alcance + 2);
           atual = proximo;
           pct = (p.pct * pctDe('danoDoEncadeamentoPct')) / 100;
@@ -194,7 +203,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     // Returning: na volta, acerta de novo cada um que pegou na ida — uma vez cada, do último ao primeiro.
     if (p.volta) {
       const pctDaVolta = (p.pct * pctDe('danoDoRetornoPct')) / 100;
-      for (const b of [...p.ida].reverse()) if (!impacto(b, pctDaVolta, b, 'retorno', false)) return;
+      for (const b of [...p.ida].reverse()) if (!impacto(b, pctDaVolta, b, 'retorno', false, { atravessados: p.perfurados, ricochetes: p.ricocheteou })) return;
     }
   };
 

@@ -284,7 +284,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // da Lâmina Viva, as próprias Tinturas — `itens-poe/tinturas.mjs`.)
 // (12 — 13/10: "Você e Aliados" vira a aura do nó/item — o Conjuro Estrábico; a Ichimonji — `itens-poe/aliados.mjs`.)
 // (13 — 13/10: a mana reservada — a nota da regra larga da reserva deixou de falar do Feiticeiro nas linhas que não são dele.)
-export const VERSAO_DA_TRADUCAO = 13;
+// (14 — 13/10: os projéteis por projétil — "Projéteis que Ricochetearam ganham X% de Dano Não-Caótico como Caos extra" da Presa das Trevas.)
+export const VERSAO_DA_TRADUCAO = 14;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
