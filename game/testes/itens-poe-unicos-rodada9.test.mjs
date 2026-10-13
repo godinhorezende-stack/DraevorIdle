@@ -54,7 +54,8 @@ test('as frases da rodada 9 viram os atributos', { skip: SEM }, () => {
     assert.deepEqual(t.efeitos.map((x) => x.stat), stats, texto);
     assert.notEqual(t.estado, 'registrado', `${texto}: com efeito`);
   }
-  assert.equal(traduz('Os Buffs das Suas Auras não afetam aliados').estado, 'lembrete', 'no jogo as auras já são só suas');
+  // (dono, 13/10: "Ajustar a linha" — desde 11/10 as auras valem nos companheiros da party: a linha da Ichimonji tem efeito, `aliados.mjs`)
+  assert.deepEqual(traduz('Os Buffs das Suas Auras não afetam aliados').efeitos.map((x) => x.stat), ['auras_so_em_voce'], 'a aura de quem usa a espada não vale nos aliados');
   assert.equal(traduz('Dano elemental aumentado em {0}% por {1}% de resistência a dano de fogo, frio ou elétrico acima de {2}%').efeitos.length, 9);
 });
 

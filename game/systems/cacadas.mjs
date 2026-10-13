@@ -16,6 +16,7 @@ import * as R from './regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario, removerItem } from './inventario.mjs';
 import * as Acoes from './acoes.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
+import * as Aliados from './itens-poe/aliados.mjs';
 import * as Combo from './combo.mjs';
 import * as Treino from './treino.mjs';
 import * as Bolsa from './bolsa.mjs';
@@ -2081,6 +2082,9 @@ export function tique(estado, personagem, agora = Date.now()) {
   Acoes.tiqueDosVinculos(estado, hunt, personagem, eventos);
   // (PoE, 12/10) Os Fragmentos de Aço: a recarga do Convocar o Aço e o fim das Proteções de Aço (`acoes.tiqueDoAco`).
   Acoes.tiqueDoAco(estado, hunt, personagem, eventos);
+  // (PoE, 13/10) A FOTO do que você dá aos aliados ("Você e Aliados…", "Auras das suas Habilidades concedem…", a Fortificação igual — os
+  // companheiros da party a leem na ficha deles: `itens-poe/aliados.mjs`).
+  if (itensPoeLigado()) { const afPoe = Ficha.combate(estado).afPoe; Aliados.fotografar(estado, afPoe, { fortificacao: ModsPoe.fortificacao(estado, afPoe) }); }
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
   // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).
@@ -2363,9 +2367,10 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
  * O lacaio BLOQUEIA o golpe de um bicho? (a Oferenda de Osso e o "+X% de Chance de Bloquear" dos lacaios das peças; e "Lacaios Recuperam X%
  * de suas Vidas quando Bloqueiam"). Põe o evento do bloqueio.
  */
-export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo = null) {
+export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo = null, doAliado = 0) {
   // (PoE, 12/10: o Vínculo Protetor no lacaio — a Chance de Bloquear do lacaio é igual à sua, e "Recupera N de Vida ao Bloquear")
-  const chance = Math.max((oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0), vinculo?.bloqueioPct ?? 0);
+  // (13/10: + o bloqueio das suas auras "Você e Aliados" — `doAliado`)
+  const chance = Math.max((oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0) + doAliado, vinculo?.bloqueioPct ?? 0);
   if (!(chance > 0) || rng() * 100 >= chance) return false;
   eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true });
   // (ciclo 7: passa pela "Recuperação de Vida" do lacaio)
@@ -2420,6 +2425,9 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
 function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   const eventos = [];
   const ficha = Ficha.combate(estado);
+  // (PoE, 13/10) as SUAS auras "Você e Aliados" nos seus lacaios (no PoE, "Aliados" inclui os lacaios): o dano, o bloqueio, as resistências,
+  // a velocidade das auras e a sua Fortificação — `itens-poe/aliados.mjs`.
+  const aliado = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;
   const vivos = [];
   let lacaioMorreu = false;
   for (const l of hunt.lacaios) {
@@ -2446,18 +2454,20 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (ciclo 7) o golpe de um monstro CONJURADOR (que tem magias) conta como magia no lacaio: o bloqueio mágico dele.
       const magia = (Poderes.poderesDe(b.key)?.ataques ?? []).some((a) => a.tipo === 'magia');
       // A Oferenda de Osso: o lacaio bloqueia o golpe (o de ataque; + "Lacaios Recuperam X% de suas Vidas quando Bloqueiam" — `lacaioBloqueia`).
-      if (!magia && lacaioBloqueia(l, oferenda, eventos, Math.random, vinculo)) continue;
+      if (!magia && lacaioBloqueia(l, oferenda, eventos, Math.random, vinculo, aliado?.bloqueio ?? 0)) continue;
       // (PoE: o golpe do bicho com o dano de outros tipos dele passando pelas resistências do lacaio — no teto delas —, e o "Lacaios sofrem
       // Dano aumentado/reduzido"; ciclo 7: a Redução de Dano Física, o bloqueio mágico e o escudo do lacaio — `LacaiosPoe.danoNoLacaio`.)
       const teto = LacaiosPoe.tetoDaResDoLacaio(l);
       // ("Golens Convocados são Imunes ao Dano Elemental": a parte elemental não passa)
-      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(teto, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? l.poe.res : 0) / 100)), 0) : 0;
+      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(teto, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? l.poe.res + (aliado?.res ?? 0) : 0) / 100)), 0) : 0;
       const fatorDoGolpe = Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator;
-      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: R.ataqueDoMonstro(b) * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia }) : { dano: (R.ataqueDoMonstro(b) * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: R.ataqueDoMonstro(b) * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: aliado?.bloqueioMagico ?? 0 }) : { dano: (R.ataqueDoMonstro(b) * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
       let sofrido = noLacaio;
       if (vinculo?.menosDano > 0) sofrido *= Math.max(0, 1 - vinculo.menosDano / 100);
+      // ("Aliados Próximos contam como tendo Fortificação igual a sua": 1% menos dano de acertos por Fortificação)
+      if (aliado?.fortificacao > 0) sofrido *= Math.max(0, 1 - aliado.fortificacao / 100);
       if (vinculo?.escudoPct > 0 && (estado.es ?? 0) > 0) { const parte = Math.min(estado.es, (sofrido * vinculo.escudoPct) / 100); estado.es -= parte; sofrido -= parte; }
       if (!(sofrido > 0)) continue;
       const d = Math.max(1, Math.round(sofrido));
@@ -2528,7 +2538,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     }
     if (!R.jaPode(agora, l.proximoGolpe)) continue;
     // A velocidade: a do monstro do nível × o jeito (o espírito é rápido) ÷ os bônus (a gema, a Oferenda de Carne, a Agressividade).
-    const vel = 1 + ((l.velAtaquePct ?? 0) + (oferenda?.velAtaquePct ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora)) / 100;
+    const vel = 1 + ((l.velAtaquePct ?? 0) + (oferenda?.velAtaquePct ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora) + (aliado?.velPct ?? 0)) / 100;
     // ("Tempo de ataque base dos lacaios não espectrais é equivalente ao tempo de ataque da arma da sua mão principal": a base é a da arma.)
     const fichaDoDono = Ficha.combate(estado);
     const daArma = ModsPoe.valor(fichaDoDono, 'lacaio_tempo_da_arma') > 0 && !/espectro|spectre/i.test(l.nome ?? '') ? Ficha.intervaloBaseDoGolpe(fichaDoDono.arma) : null;
@@ -2553,7 +2563,9 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const crit = Math.random() * 100 < critico.chance;
       // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
       const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora);
-      const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? critico.mult : 1) * doGolpe.fator * pct) / 100;
+      // (o dano "aumentado" das suas auras de aliado soma ao do lacaio — `danoIncPct`, o da invocação —; o "mais" multiplica)
+      const doAliado = aliado ? ((1 + ((l.poe?.danoIncPct ?? 0) + aliado.danoIncPct) / 100) / (1 + (l.poe?.danoIncPct ?? 0) / 100)) * Math.max(0, 1 + aliado.maisDanoPct / 100) : 1;
+      const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100;
       const antes = l.poe ? { envenenado: (b.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(b.raridade ?? b.raridadePoe) || !!b.boss || !!b.chefe } : null;
       // (o Vínculo Flamejante no lacaio: o Fogo adicional, com o crítico e a parte do golpe)
       const fogoDoVinculo = vinculo?.fogo?.[1] > 0 ? ((vinculo.fogo[0] + Math.random() * Math.max(0, vinculo.fogo[1] - vinculo.fogo[0])) * (crit ? critico.mult : 1) * pct) / 100 : 0;

@@ -1,12 +1,12 @@
 # Árvore de passivas do PoE — o que falta e o que é parcial
 
-Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
+Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
 
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5903** — equivalente 1345, novo 4303, aproximado (parcial) 255.
-- ✗ Sem efeito: **71** — na árvore principal 26, nas ascendências 45; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5909** — equivalente 1345, novo 4318, aproximado (parcial) 246.
+- ✗ Sem efeito: **65** — na árvore principal 26, nas ascendências 39; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -19,6 +19,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | Vínculos (lote 4b) | 33 | 0 | as 6 gemas de Vínculo criadas: focam um jogador da party na sala (lacaios, com o nó), custam mana por segundo, quebram fora do alcance em 4 s e, se o alvo morre vinculado, você morre; os efeitos de cada uma (Fogo, bloqueio, menos dano e o seu Escudo, crítico, o seu Dreno no alvo) |
 | Convocar o Aço (lote 5) | 26 | 0 | as gemas de Aço concedem o Convocar o Aço, automático: chama os empalamentos dos vivos e dos cadáveres a até 6 casas, reflete em volta de cada um o dano × os acertos que restavam e dá 1 Fragmento de Aço por empalamento; recarrega 4 Fragmentos a cada 0,5 s até 12; o Aço Perfurador, o Aço Violento e o Estraçalhador da Munição e a Balista gastam os Fragmentos como no PoE (mais projéteis, a divisão, a Proteção de Aço); a linha dos "Empalamentos removidos desta forma" é da remoção ao Acertar (a mesma opção da maestria), não do Convocar o Aço |
 | Tinturas (lote 6) | 58 | 0 | as Tinturas criadas: caem (Normal, Mágica, Única), vão no cinto de frascos e ativam sozinhas em combate; ativas, põem Queima de Mana em você (1% da Mana máxima por segundo cada) e dão os mods delas nos ataques com Arma Corpo a Corpo; desativam com a mana acabando (ou abaixo do limite da regra), tiram a Queima de Mana e entram na recarga da base |
+| Aliados de verdade (lote 7) | 22 | 4 | "Você e Aliados" vira a aura do nó (vale em você, nos companheiros da party na sala a até 3 casas e nos seus lacaios; a mesma aura de duas pessoas: a maior); "Auras das suas Habilidades concedem" entra por aura ligada; a Fortificação igual do Campeão; "aliado por perto" conta lacaios e a party; a Ichimonji nas auras |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -26,7 +27,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 |---:|---|---|---|
 | 10 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | — | Ego Supremo (keystone) — Auras das suas Habilidades só podem afetar você Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem<br>Ego Supremo (keystone) — 40% mais Reserva de Mana de Habilidades Aura<br>Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
 | 10 | o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil | — | Tiro Partido (notável) — Projéteis têm 50% de chance de receber um Projétil adicional quando Difundindo<br>Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando<br>Chance de uma Difusão Extra de Projéteis (nó) — Projéteis têm 25% de chance de receber um Projétil adicional quando Difundindo |
-| 5 | sem aliados nem Vínculos no jogo: o efeito em aliados não tem em quem agir | — | Mestre do Metal (asc. Champion) — Caso tenha Empalado um Inimigo Recentemente, você e Aliados próximos recebem +1000 de Armadura<br>Mestre do Metal (asc. Champion) — Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo<br>Necromante (asc. Ascendant) — Auras das suas Habilidades concedem 2% de aumento das Velocidades de Ataque e Conjuração para você e Aliados |
 | 4 | a gema Portador da Praga não está no jogo | — | Maestria de Envenenamentos (maestria) — Portador da Praga têm Valor Máximo da Praga aumentado em 20% |
 | 4 | falta no jogo: a Chama Santificada (só beneficia os ataques dos aliados) | — | Marechal da Divindade (asc. Guardian) — Inflige Chama Santificada ao atingir corpo a corpo<br>Marechal da Divindade (asc. Guardian) — Você pode infligir +1 Chama Santificada nos inimigos<br>Marechal da Divindade (asc. Guardian) — Ganha 10% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram removidas recentemente por um ataque aliado, até 80% |
 | 4 | falta no jogo: a habilidade Avatar Liberto (o Liberto e a Fúria Liberta) | — | Avatar da Selva (asc. Warden) — Ganhe 1 de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada 0.2 segundos por cada tipo de Afecção<br>Avatar da Selva (asc. Warden) — Não pode ganhar Fúria Liberta enquanto Liberto<br>Avatar da Selva (asc. Warden) — Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto |
@@ -35,7 +35,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 3 | falta no jogo: a Casca do Warden (quantas, como se ganha) | — | Lição das Estações (asc. Warden) — -25 de dano sofrido de cada tipo de dano por ataques de magia por casca<br>Lição das Estações (asc. Warden) — Impede +3% do Dano Mágico Suprimido por Casca abaixo do máximo<br>Lição das Estações (asc. Warden) — Perde 1 Casca quando Acertado por Dano Mágico Inimigo |
 | 2 | falta no jogo: a chance de crítico de magia que se bifurca (a Infusão Mística entra inteira) | — | Infusão Mística (asc. Assassin) — A chance de causar golpe mágico crítico se bifurca<br>Infusão Mística (asc. Assassin) — ㅤ-30% de chance de causar golpe mágico crítico |
 | 2 | falta no jogo: os bônus de altar do PoE (os Santuários) | — | Gritos dos Dessecados (asc. Reliquarian) — Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos<br>Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
-| 1 | a Fortificação vale só em você (os lacaios ainda não a contam) | — | Fortitude (asc. Champion) — Aliados Próximos contam como tendo Fortificação igual a sua |
 | 1 | a habilidade "Arauto Trovejante" não está na coleção de gemas do jogo | — | Espigão de Fidelitas (asc. Reliquarian) — Arauto Trovejante tem Eficácia da Reserva de Mana aumentada em 100% |
 | 1 | a habilidade "Avatar Liberto" não está na coleção de gemas do jogo | — | Avatar da Selva (asc. Warden) — Concede a Habilidade Avatar Liberto Nível 20 |
 | 1 | a habilidade "Convocar Sentinela do Resplendor" não está na coleção de gemas do jogo | — | Cruzada Radiante (asc. Guardian) — Concede a Habilidade Convocar Sentinela do Resplendor Nível 20 |
@@ -67,7 +66,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 8 | o PoE drena só do dano físico de ataque; o Draevor, de todo o dano. | Dano Corpo a Corpo e Drenagem com Duas Mãos (nó) — 0.8% do Dano de Ataques Físicos é Drenado como Vida<br>Espírito da Guerra (notável) — 0.5% do Dano de Ataques Físicos é Drenado como Mana<br>Dano Corpo a Corpo com Duas Mãos e Dreno (nó) — 0.4% do Dano de Ataques Físicos é Drenado como Vida |
 | 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
 | 8 | qualquer frasco de vida remove a afecção mais antiga | Maestria de Frascos (maestria) — Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida |
-| 8 | vale em você; os aliados não | Guardião (asc. Ascendant) — Caso tenha sido Atacado Recentemente, você e Aliados possuem +10% de Chance de Bloquear o Dano de Ataques<br>Guardião (asc. Ascendant) — Caso tenha Conjurado uma Magia Recentemente, você e Aliados próximos possuem +10% de Chance de Bloquear o Dano Mágico<br>Baluarte da Esperança (asc. Guardian) — Caso tenha sido Atacado Recentemente, você e Aliados possuem +25% de Chance de Bloquear o Dano de Ataques |
 | 8 | vale na exposição posta pelos modificadores de acerto ("Inflige Exposição … ao Acertar"); a das gemas ainda não soma | Maestria de Fogo (maestria) — Exposição a Fogo infligida por você aplica -5% extra de Resistência a Fogo |
 | 7 | trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s | Armadura e Escudo de Energia, Recuperação do Bloqueio (asc. Guardian) — Recuperação de Bloqueio aumentada em 30%<br>Barreira de Lâmina (notável) — Recuperação de Bloqueio aumentada em 50%<br>Tartaruga (notável) — Recuperação de Bloqueio aumentada em 60% |
 | 6 | entra como redução de dano físico enquanto o escudo está cheio | Maestria de Escudo de Energia (maestria) — 10% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio |
@@ -108,8 +106,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 1 | a lentidão dos monstros não pega | Incontrolável (asc. Juggernaut) — Velocidade de Movimento não pode ser modificada para abaixo do valor base |
 | 1 | a regeneração vale em você; a dos totens ainda não | Ritual do Despertar (asc. Hierophant) — Você e seus Totens Regeneram 1% de Vida por segundo para cada Totem Convocado |
 | 1 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | Magia Sanguínea (keystone) — Habilidades Reservam Vida ao invés de mana |
-| 1 | aliado = um lacaio seu em campo (o jogo não mede a distância dele) | Glória do Comando (notável) — Precisão aumentada em 40%, se você tiver pelo menos 1 aliado por perto |
-| 1 | aliado: um lacaio vivo | Glória do Comando (notável) — Área de efeito de ataques aumentada em 15%, se você tiver pelo menos 1 aliado por perto |
 | 1 | as cargas vão para todos os frascos do cinto | Entrincheirar (notável) — Frascos de Vida ganham 3 quando você Suprimir Dano Mágico |
 | 1 | conta os segundos desde o último Clamor | Escalonamento (notável) — Dano Corpo a Corpo aumentado em 10% para cada segundo que você for afetado por um Buff de Clamor, máximo de 60% |
 | 1 | Convergência: 30% mais dano nas habilidades Elementais, por 4 s | Coração da Destruição (asc. Elementalist) — Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada 8 segundos |
@@ -119,6 +115,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-12, a partir de `gam
 | 1 | no PoE soma pontos à chance base da habilidade; aqui, à chance de crítico do personagem. | Assassino (asc. Ascendant) — +0.75% de Chance de Golpe Crítico |
 | 1 | o acerto e o dano degenerativo das suas gemas não ferem (os totens e lacaios, sim); o golpe básico não sai | Vínculo Ancestral (keystone) — Você não pode causar Dano com Habilidades por si só |
 | 1 | o acerto no amaldiçoado renova os 2 s de base | Forças Profanadas (notável) — Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você |
+| 1 | o adicional por Empalamento entra no acerto pela Redução de Dano Físico do alvo, sem os aumentos de dano | Mestre do Metal (asc. Champion) — Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo |
 | 1 | o Elusivo do jogo dura 4 s (no PoE ele vai se desfazendo) | Assassino (asc. Ascendant) — 10% de chance de ganhar Elusivo no Golpe Crítico |
 | 1 | o golpe corpo a corpo do jogo é sempre de perto: o máximo | Impacto (asc. Slayer) — Causa até 15% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade |
 | 1 | o golpe inteiro nos vivos a 1 casa de cada atingido | Fúria Tribal (notável) — Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor |

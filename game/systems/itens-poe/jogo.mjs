@@ -282,7 +282,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (10 — 11/10: o único com implícito próprio perde o implícito da BASE, que entrava somado — `semImplicitoDaBaseNoUnico`.)
 // (11 — 12/10: os lotes da árvore mudaram linhas de itens — o "Concede Chamado do Aço" e os Fragmentos do Verme de Aço, as linhas de Tintura
 // da Lâmina Viva, as próprias Tinturas — `itens-poe/tinturas.mjs`.)
-export const VERSAO_DA_TRADUCAO = 11;
+// (12 — 13/10: "Você e Aliados" vira a aura do nó/item — o Conjuro Estrábico; a Ichimonji — `itens-poe/aliados.mjs`.)
+export const VERSAO_DA_TRADUCAO = 12;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

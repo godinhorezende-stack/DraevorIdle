@@ -6134,6 +6134,42 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/tinturas (as Tinturas no cinto de frascos) (12/10)"
+    },
+    "empalar_fisico_add_min": {
+      "nome": "Dano Físico adicional por Empalamento no inimigo (mínimo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/aliados (\"Você e Aliados\" — as auras do nó e os companheiros da party) (13/10)"
+    },
+    "empalar_fisico_add_max": {
+      "nome": "Dano Físico adicional por Empalamento no inimigo (máximo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/aliados (\"Você e Aliados\" — as auras do nó e os companheiros da party) (13/10)"
+    },
+    "aura_concede_vel": {
+      "nome": "Velocidade de Ataque e Conjuração que cada aura sua concede a você e aos aliados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/aliados (\"Você e Aliados\" — as auras do nó e os companheiros da party) (13/10)"
+    },
+    "aliados_fortificacao": {
+      "nome": "Aliados próximos contam como tendo a sua Fortificação",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/aliados (\"Você e Aliados\" — as auras do nó e os companheiros da party) (13/10)"
+    },
+    "auras_aliadas_nao_afetam": {
+      "nome": "As auras dos aliados não afetam você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/aliados (\"Você e Aliados\" — as auras do nó e os companheiros da party) (13/10)"
+    },
+    "auras_so_em_voce": {
+      "nome": "As suas auras não afetam os aliados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/aliados (\"Você e Aliados\" — as auras do nó e os companheiros da party) (13/10)"
     }
   }
 }
