@@ -66,6 +66,11 @@ const IMPLEMENTADOS = [
     re: /[Aa]liad/,
     jogo: '"Você e Aliados" vira a aura do nó (vale em você, nos companheiros da party na sala a até 3 casas e nos seus lacaios; a mesma aura de duas pessoas: a maior); "Auras das suas Habilidades concedem" entra por aura ligada; a Fortificação igual do Campeão; "aliado por perto" conta lacaios e a party; a Ichimonji nas auras',
   },
+  {
+    bloco: 'Mana reservada (lote 8)',
+    re: /Mana Reservada|Mana Máxima Não Reservada|que Reservarem|Reserva de Mana de Habilidades Aura|Frascos de Vida não são removidos/,
+    jogo: 'Fé Radiante (Armadura e Escudo pela mana reservada, em você e nos aliados); Santuário do Pensamento (Área pela mana não reservada); Ego Supremo (as auras só em você, mais efeito pela reserva de cada uma, 40% mais reserva); o efeito do Frasco de Vida sai quando a vida não reservada enche (a regra do PoE), menos com a Mestre Cirurgiã — e o de mana passa a olhar a mana não reservada',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

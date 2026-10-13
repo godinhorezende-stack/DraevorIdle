@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5909** — equivalente 1345, novo 4318, aproximado (parcial) 246.
-- ✗ Sem efeito: **65** — na árvore principal 26, nas ascendências 39; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5915** — equivalente 1345, novo 4324, aproximado (parcial) 246.
+- ✗ Sem efeito: **59** — na árvore principal 24, nas ascendências 35; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 29; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 62. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -19,18 +19,19 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | Vínculos (lote 4b) | 33 | 0 | as 6 gemas de Vínculo criadas: focam um jogador da party na sala (lacaios, com o nó), custam mana por segundo, quebram fora do alcance em 4 s e, se o alvo morre vinculado, você morre; os efeitos de cada uma (Fogo, bloqueio, menos dano e o seu Escudo, crítico, o seu Dreno no alvo) |
 | Convocar o Aço (lote 5) | 26 | 0 | as gemas de Aço concedem o Convocar o Aço, automático: chama os empalamentos dos vivos e dos cadáveres a até 6 casas, reflete em volta de cada um o dano × os acertos que restavam e dá 1 Fragmento de Aço por empalamento; recarrega 4 Fragmentos a cada 0,5 s até 12; o Aço Perfurador, o Aço Violento e o Estraçalhador da Munição e a Balista gastam os Fragmentos como no PoE (mais projéteis, a divisão, a Proteção de Aço); a linha dos "Empalamentos removidos desta forma" é da remoção ao Acertar (a mesma opção da maestria), não do Convocar o Aço |
 | Tinturas (lote 6) | 58 | 0 | as Tinturas criadas: caem (Normal, Mágica, Única), vão no cinto de frascos e ativam sozinhas em combate; ativas, põem Queima de Mana em você (1% da Mana máxima por segundo cada) e dão os mods delas nos ataques com Arma Corpo a Corpo; desativam com a mana acabando (ou abaixo do limite da regra), tiram a Queima de Mana e entram na recarga da base |
-| Aliados de verdade (lote 7) | 22 | 4 | "Você e Aliados" vira a aura do nó (vale em você, nos companheiros da party na sala a até 3 casas e nos seus lacaios; a mesma aura de duas pessoas: a maior); "Auras das suas Habilidades concedem" entra por aura ligada; a Fortificação igual do Campeão; "aliado por perto" conta lacaios e a party; a Ichimonji nas auras |
+| Aliados de verdade (lote 7) | 24 | 2 | "Você e Aliados" vira a aura do nó (vale em você, nos companheiros da party na sala a até 3 casas e nos seus lacaios; a mesma aura de duas pessoas: a maior); "Auras das suas Habilidades concedem" entra por aura ligada; a Fortificação igual do Campeão; "aliado por perto" conta lacaios e a party; a Ichimonji nas auras |
+| Mana reservada (lote 8) | 6 | 0 | Fé Radiante (Armadura e Escudo pela mana reservada, em você e nos aliados); Santuário do Pensamento (Área pela mana não reservada); Ego Supremo (as auras só em você, mais efeito pela reserva de cada uma, 40% mais reserva); o efeito do Frasco de Vida sai quando a vida não reservada enche (a regra do PoE), menos com a Mestre Cirurgiã — e o de mana passa a olhar a mana não reservada |
 
 ## Sem efeito (✗), pelo motivo
 
 | Linhas | Motivo | Bloco a implementar (dono, 12/10) | Exemplos (nó — texto) |
 |---:|---|---|---|
-| 10 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | — | Ego Supremo (keystone) — Auras das suas Habilidades só podem afetar você Habilidades Aura têm 1% mais Efeito de Aura por cada 2% de Mana máxima que Reservarem<br>Ego Supremo (keystone) — 40% mais Reserva de Mana de Habilidades Aura<br>Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
 | 10 | o Perfurar, o Ricochete e a Difusão do jogo ainda não contam por projétil | — | Tiro Partido (notável) — Projéteis têm 50% de chance de receber um Projétil adicional quando Difundindo<br>Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando<br>Chance de uma Difusão Extra de Projéteis (nó) — Projéteis têm 25% de chance de receber um Projétil adicional quando Difundindo |
 | 4 | a gema Portador da Praga não está no jogo | — | Maestria de Envenenamentos (maestria) — Portador da Praga têm Valor Máximo da Praga aumentado em 20% |
 | 4 | falta no jogo: a Chama Santificada (só beneficia os ataques dos aliados) | — | Marechal da Divindade (asc. Guardian) — Inflige Chama Santificada ao atingir corpo a corpo<br>Marechal da Divindade (asc. Guardian) — Você pode infligir +1 Chama Santificada nos inimigos<br>Marechal da Divindade (asc. Guardian) — Ganha 10% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram removidas recentemente por um ataque aliado, até 80% |
 | 4 | falta no jogo: a habilidade Avatar Liberto (o Liberto e a Fúria Liberta) | — | Avatar da Selva (asc. Warden) — Ganhe 1 de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada 0.2 segundos por cada tipo de Afecção<br>Avatar da Selva (asc. Warden) — Não pode ganhar Fúria Liberta enquanto Liberto<br>Avatar da Selva (asc. Warden) — Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto |
 | 4 | falta no jogo: o Poder Arcano | — | Maestria de Varinhas (maestria) — Ataques têm 100% de Poder Arcano ao usar uma varinha |
+| 4 | o suporte Feiticeiro (Spellslinger) não está no jogo | — | Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
 | 3 | as Égides (habilidades de único) não existem no jogo | — | Bastião dos Elementos (asc. Elementalist) — Ativa Égide Primitiva Nível 20 quando Alocado<br>Bastião dos Elementos (asc. Elementalist) — Égide Primitiva pode sofrer 75 de Dano Elemental por Nódulo de Habilidade Passiva Alocada<br>Bastião dos Elementos (asc. Elementalist) — Outras Habilidades de Égides são Desabilitadas |
 | 3 | falta no jogo: a Casca do Warden (quantas, como se ganha) | — | Lição das Estações (asc. Warden) — -25 de dano sofrido de cada tipo de dano por ataques de magia por casca<br>Lição das Estações (asc. Warden) — Impede +3% do Dano Mágico Suprimido por Casca abaixo do máximo<br>Lição das Estações (asc. Warden) — Perde 1 Casca quando Acertado por Dano Mágico Inimigo |
 | 2 | falta no jogo: a chance de crítico de magia que se bifurca (a Infusão Mística entra inteira) | — | Infusão Mística (asc. Assassin) — A chance de causar golpe mágico crítico se bifurca<br>Infusão Mística (asc. Assassin) — ㅤ-30% de chance de causar golpe mágico crítico |
@@ -105,11 +106,11 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 1 | a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma. | Instrumentos da Virtude (asc. Inquisitor) — Mago de Batalha |
 | 1 | a lentidão dos monstros não pega | Incontrolável (asc. Juggernaut) — Velocidade de Movimento não pode ser modificada para abaixo do valor base |
 | 1 | a regeneração vale em você; a dos totens ainda não | Ritual do Despertar (asc. Hierophant) — Você e seus Totens Regeneram 1% de Vida por segundo para cada Totem Convocado |
-| 1 | a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo | Magia Sanguínea (keystone) — Habilidades Reservam Vida ao invés de mana |
 | 1 | as cargas vão para todos os frascos do cinto | Entrincheirar (notável) — Frascos de Vida ganham 3 quando você Suprimir Dano Mágico |
 | 1 | conta os segundos desde o último Clamor | Escalonamento (notável) — Dano Corpo a Corpo aumentado em 10% para cada segundo que você for afetado por um Buff de Clamor, máximo de 60% |
 | 1 | Convergência: 30% mais dano nas habilidades Elementais, por 4 s | Coração da Destruição (asc. Elementalist) — Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada 8 segundos |
 | 1 | durante qualquer frasco | Extração de Essência (notável) — Recuperação de Mana aumentada em 15% durante o Efeito de qualquer Frasco de Mana |
+| 1 | esta variação da reserva ainda não tem efeito no jogo | Magia Sanguínea (keystone) — Habilidades Reservam Vida ao invés de mana |
 | 1 | na redução do dano de Acertos | Guarda do Vento (asc. Deadeye) — 4% menos Dano sofrido por Força dos Ventos |
 | 1 | no golpe físico dos monstros | Dançarino do Vento (keystone) — 20 menos dano de Ataque sofrido se você não foi Acertado por um Ataque Recentemente |
 | 1 | no PoE soma pontos à chance base da habilidade; aqui, à chance de crítico do personagem. | Assassino (asc. Ascendant) — +0.75% de Chance de Golpe Crítico |

@@ -6170,6 +6170,24 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/aliados (\"Você e Aliados\" — as auras do nó e os companheiros da party) (13/10)"
+    },
+    "aura_efeito_por_reserva": {
+      "nome": "1% mais Efeito de Aura a cada N% de Mana máxima que a aura reserva",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a mana reservada (itens-poe/reserva.mjs, gemas-poe, frascos) (13/10)"
+    },
+    "reserva_aura_mais": {
+      "nome": "Reserva de Mana das Habilidades Aura (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a mana reservada (itens-poe/reserva.mjs, gemas-poe, frascos) (13/10)"
+    },
+    "frasco_vida_nao_para": {
+      "nome": "Efeito do Frasco de Vida não sai com a Vida Não Reservada cheia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a mana reservada (itens-poe/reserva.mjs, gemas-poe, frascos) (13/10)"
     }
   }
 }

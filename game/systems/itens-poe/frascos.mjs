@@ -19,7 +19,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { vidaSoPeloDreno, marcar } from './condicoes-poe.mjs';
+import { vidaSoPeloDreno, marcar, reservadoAgora } from './condicoes-poe.mjs';
 import * as Tinturas from './tinturas.mjs';
 
 // (12/10: + as TINTURAS — `itens-poe/tinturas.mjs`: vão no mesmo cinto, sem cargas; ativam e desativam.)
@@ -408,8 +408,11 @@ export function tique(estado, eventos = null, quem = null) {
         if (a.recurso === 'mana' && Number(doDono.mana_frasco_tambem_vida) > 0 && !vidaSoPeloDreno(doDono)) recuperar(estado, 'vida', a.porMs * (ate - a.ultimo), eventos, quem);
       }
       a.ultimo = ate;
-      // PoE: o frasco de MANA para quando a mana enche (o "Efeito não é removido quando a Mana Não Reservada Encher" segue).
-      if (a.recurso === 'mana' && !a.naoParaNoCheio && !(Number(doDono.frasco_mana_nao_para) > 0) && (estado.mana ?? 0) >= (estado.maxMana ?? 0)) a.ate = Math.min(a.ate, agora);
+      // PoE: o frasco de MANA para quando a Mana NÃO RESERVADA enche (o "Efeito não é removido quando a Mana Não Reservada Encher" segue) —
+      // (13/10) antes comparava com a máxima, e com uma aura reservando a mana nunca chegava lá; e o de VIDA, quando a Vida Não Reservada
+      // enche ("Efeitos dos Frascos de Vida não são removidos quando a Vida Não Reservada é Preenchida" — a Mestre Cirurgiã — segue).
+      if (a.recurso === 'mana' && !a.naoParaNoCheio && !(Number(doDono.frasco_mana_nao_para) > 0) && (estado.mana ?? 0) >= (estado.maxMana ?? 0) - reservadoAgora(estado, 'mana')) a.ate = Math.min(a.ate, agora);
+      if (a.recurso === 'vida' && !(Number(doDono.frasco_vida_nao_para) > 0) && (estado.hp ?? 0) >= (estado.maxHp ?? 0) - reservadoAgora(estado, 'vida')) a.ate = Math.min(a.ate, agora);
     }
     if (a.ate <= agora) {
       if (a.noFim > 0) recuperar(estado, a.recurso, a.noFim, eventos, quem, a.extras);
