@@ -384,17 +384,16 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Golens Convocados são Reconvocados .* após serem Mortos$",
+      "padrao": "^Golens Convocados são Reconvocados \\{(\\d+)\\} segundos após serem Mortos$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "golem_reconvoca_s",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: reconvocar o golem morto",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote10": "13/10 — os lacaios (lote 10)"
     },
     {
       "padrao": "^A chance de causar golpe mágico crítico se bifurca$|^.*chance de causar golpe mágico crítico$",
@@ -413,14 +412,15 @@
       "padrao": "^Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "egide_necromantica",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: passar os bônus do escudo aos lacaios (a Égide Necromântica entra inteira)",
+      "estado": "aproximado",
+      "nota": "os bônus do escudo vão para os lacaios (bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração, movimento, dreno); o que o lacaio do jogo não tem — a armadura, a evasão e o escudo de energia da base, os condicionais — sai de você sem ir a ninguém",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote10": "13/10 — os lacaios (lote 10)"
     },
     {
       "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em .* nos Inimigos$",

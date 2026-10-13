@@ -76,6 +76,11 @@ const IMPLEMENTADOS = [
     re: /Inimigo Atravessado|vez que Ricochetearam|quando Difundindo|Projéteis que Ricochetearam|conforme viajam adiante/,
     jogo: 'cada projétil conta os inimigos que atravessou e as vezes que ricocheteou (o dano aumentado por cada um, somado aos outros aumentos); a difusão com a chance de um projétil a mais; o Caos extra nos que ricochetearam (a Presa Sombria); o Tiro Longo pela distância — e o dano pela distância (Animosidade Adjacente, Tiro Distante, Queima-Roupa) passa a valer também nas habilidades, não só no golpe básico',
   },
+  {
+    bloco: 'Lacaios (lote 10)',
+    re: /bônus do Escudo equipado se aplicam aos seus Lacaios|Reconvocados/,
+    jogo: 'a Égide Necromântica passa os bônus do escudo aos lacaios (e tira a defesa da base de você); o golem morto volta sozinho em 4 s (o Suserano do Primordial); e a resistência a Fogo/Gelo/Raio dos lacaios, guardada e nunca lida, passa a valer no golpe',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

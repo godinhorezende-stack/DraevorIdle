@@ -6218,6 +6218,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "os projéteis por projétil (skills/golpes-secundarios, acoes) (13/10)"
+    },
+    "egide_necromantica": {
+      "nome": "Os bônus do escudo vão para os lacaios (Égide Necromântica)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "os lacaios (afixos.soma, cacadas, acoes) (13/10)"
+    },
+    "golem_reconvoca_s": {
+      "nome": "Segundos para o golem morto voltar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "os lacaios (afixos.soma, cacadas, acoes) (13/10)"
+    },
+    "minion_energy_res": {
+      "nome": "Lacaios: Resistência a Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os lacaios (afixos.soma, cacadas, acoes) (13/10)"
     }
   }
 }

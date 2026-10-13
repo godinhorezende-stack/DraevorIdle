@@ -1154,6 +1154,23 @@ export const POR_ID_PUBLICO = (id) => POR_ID.get(id) ?? null;
  * máximo da gema, o mais velho sai. O totem fica parado e usa a skill da gema. Devolve os eventos (o efeito de invocação em cada um).
  */
 let seqDeLacaio = 0;
+/**
+ * (13/10, o Suserano do Primordial) "Golens Convocados são Reconvocados 4 segundos após serem Mortos": os da fila (`hunt.golensAReconvocar` —
+ * `cacadas.tiqueDosLacaios` põe na morte) que já deram o tempo voltam, se a gema ainda está encaixada — a invocação de sempre (o máximo vale),
+ * sem custo nem recarga. Devolve os eventos.
+ */
+export function reconvocarGolens(estado, hunt, agora) {
+  const eventos = [];
+  const fila = hunt.golensAReconvocar ?? [];
+  hunt.golensAReconvocar = fila.filter((x) => x.ate > agora);
+  for (const x of fila) {
+    if (x.ate > agora) continue;
+    const entry = POR_ID.get(x.acao);
+    if (!entry?.poeGema?.lacaio || !Gemas.skillsAtivas(estado).has(entry.id)) continue;
+    eventos.push(...invocarLacaios(hunt, entry, Gemas.efeitoNaSkill(estado, entry.id), null, estado));
+  }
+  return eventos;
+}
 function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
   const slug = entry.poeGema.slug;
   // (PoE: "usou uma Habilidade de Lacaio Recentemente".)

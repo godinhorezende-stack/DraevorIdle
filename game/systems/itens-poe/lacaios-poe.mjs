@@ -193,7 +193,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       danoIncPct: (efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano'),
       res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: m0('minion_chaos_res'), danoRecebidoPct: m0('lacaios_dano_recebido'), regenPct: m0('minion_regen_pct'), regen: m0('minion_regen'),
       roubo: m0('minion_leech'), movimentoPct: m0('minion_move') + porTipo('lacaio_mov'), dotMulti: m0('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
-      bloqueio: m0('minion_block'), resFogo: m0('minion_fire_res'), resGelo: m0('minion_ice_res'),
+      bloqueio: m0('minion_block'), resFogo: m0('minion_fire_res'), resGelo: m0('minion_ice_res'), resRaio: m0('minion_energy_res'),
       chances: { cegar: m0('minion_chance_cegar'), provocar: m0('minion_chance_provocar'), desacelerar: m0('minion_chance_desacelerar'), envenenar: m0('minion_chance_envenenar'), incendiar: m0('minion_chance_incendiar') + porTipo('lacaio_incendiar'),
         definhar: m0('minion_chance_definhar'), cinzas: porTipo('lacaio_cinzas') },
       // (11/10, os únicos:) a vida recuperada ao bloquear e ao matar um envenenado; a duração renovada no acerto em Raro/Único; o dano drenado

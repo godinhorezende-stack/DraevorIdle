@@ -2367,6 +2367,12 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
  * O lacaio BLOQUEIA o golpe de um bicho? (a Oferenda de Osso e o "+X% de Chance de Bloquear" dos lacaios das peças; e "Lacaios Recuperam X%
  * de suas Vidas quando Bloqueiam"). Põe o evento do bloqueio.
  */
+/**
+ * (13/10) A resistência ELEMENTAL do lacaio ao golpe de `elemento`: a de todas (`res`) + a daquele elemento ("Lacaios têm +X% de Resistência a
+ * Fogo" — antes guardada e nunca lida no golpe) + a das suas auras de aliado (`aliado.res`). (O teto vem de quem chama.)
+ */
+const RES_DO_ELEMENTO = { fire: 'resFogo', ice: 'resGelo', energy: 'resRaio' };
+export const resDoLacaio = (l, elemento, aliado = null) => (l?.poe?.res ?? 0) + (Number(l?.poe?.[RES_DO_ELEMENTO[elemento]]) || 0) + (aliado?.res ?? 0);
 export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo = null, doAliado = 0) {
   // (PoE, 12/10: o Vínculo Protetor no lacaio — a Chance de Bloquear do lacaio é igual à sua, e "Recupera N de Vida ao Bloquear")
   // (13/10: + o bloqueio das suas auras "Você e Aliados" — `doAliado`)
@@ -2428,6 +2434,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   // (PoE, 13/10) as SUAS auras "Você e Aliados" nos seus lacaios (no PoE, "Aliados" inclui os lacaios): o dano, o bloqueio, as resistências,
   // a velocidade das auras e a sua Fortificação — `itens-poe/aliados.mjs`.
   const aliado = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;
+  // (13/10) os golens mortos que voltam agora ("Reconvocados 4 segundos após serem Mortos")
+  if (hunt.golensAReconvocar?.length) eventos.push(...Acoes.reconvocarGolens(estado, hunt, agora));
   const vivos = [];
   let lacaioMorreu = false;
   for (const l of hunt.lacaios) {
@@ -2435,6 +2443,9 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
+      // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
+      const reconvoca = l.hp <= 0 && l.golem ? ModsPoe.valor(ficha, 'golem_reconvoca_s') : 0;
+      if (reconvoca > 0) (hunt.golensAReconvocar ??= []).push({ acao: l.acao, ate: agora + reconvoca * 1000 });
       continue;
     }
     vivos.push(l);
@@ -2459,7 +2470,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // Dano aumentado/reduzido"; ciclo 7: a Redução de Dano Física, o bloqueio mágico e o escudo do lacaio — `LacaiosPoe.danoNoLacaio`.)
       const teto = LacaiosPoe.tetoDaResDoLacaio(l);
       // ("Golens Convocados são Imunes ao Dano Elemental": a parte elemental não passa)
-      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(teto, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? l.poe.res + (aliado?.res ?? 0) : 0) / 100)), 0) : 0;
+      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(teto, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? resDoLacaio(l, x.elemento, aliado) : 0) / 100)), 0) : 0;
       const fatorDoGolpe = Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator;
       const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: R.ataqueDoMonstro(b) * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: aliado?.bloqueioMagico ?? 0 }) : { dano: (R.ataqueDoMonstro(b) * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }
