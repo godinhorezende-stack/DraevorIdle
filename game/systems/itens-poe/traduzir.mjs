@@ -32,8 +32,11 @@ export function compilar(tabela = TABELA) {
     .map((r) => ({ ...r, reduzida: true, re: new RegExp(r.padrao.replace('{E}', grupoE).replace(/aumentad([oa]s?)/g, 'reduzid$1')) }));
   return [...base, ...reduzidas];
 }
-/** O texto de LEMBRETE do PoE (entre parênteses: explica a mecânica, não é um mod) — vira nota, sem efeito nem marca. */
-const LEMBRETE = /^\(|\)$|^\(.*\)$/;
+/**
+ * O texto de LEMBRETE do PoE (entre parênteses: explica a mecânica, não é um mod) — vira nota, sem efeito nem marca. (13/10: menos o mod
+ * oculto que termina em "(Hidden)" — O Apóstata: "Has no Attribute Requirements or Energy Shield (Hidden)" é mod, não lembrete.)
+ */
+const LEMBRETE = /^\(|(?<!\(Hidden)\)$|^\(.*\)$/;
 const PADRAO = compilar();
 
 /**

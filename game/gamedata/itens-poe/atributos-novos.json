@@ -6254,6 +6254,30 @@
       "unidade": "%",
       "combate": true,
       "efeito": "o mais e o menos exatos (multiplicam) (13/10)"
+    },
+    "es_das_armaduras_em_vida": {
+      "nome": "Vida no lugar do Escudo de Energia das Armaduras",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Escudo de Energia das peças de armadura vira Vida (afixos.sincronizarMaximos, ficha.defesasDaFicha) (13/10)"
+    },
+    "sem_es_da_base": {
+      "nome": "Sem Escudo de Energia na base",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a peça não tem o Escudo de Energia da base (itens-poe/jogo — O Apóstata) (13/10)"
+    },
+    "ignora_penalidade_armadura": {
+      "nome": "Ignora as Penalidades de Movimento das Armaduras",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afixos.soma não soma move_speed_armadura (13/10)"
+    },
+    "move_speed_armadura": {
+      "nome": "Penalidade de Movimento da Armadura",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a da base de peitorais e escudos (itens-poe/jogo.afDaBase), somada ao movimento em afixos.soma (13/10)"
     }
   }
 }

@@ -123,6 +123,10 @@ function keystoneDe(n, linhas, traduzidas) {
     keystone: { ...regra, texto, ...(nota ? { nota } : {}) },
     efeitos: efeitos.map((e) => (e.pct ? { stat: e.pct, pct: e.valor } : { add: e.stat, valor: e.valor })),
     estados: traduzidas.map((t) => (t.estado === 'nota' ? 'nota' : estado)),
+    // (13/10) A keystone com mecânica decide TODAS as linhas: a nota de uma regra que pegou a linha sozinha não vale (a larga da reserva dizia
+    // "esta variação da reserva ainda não tem efeito" na "Habilidades Reservam Vida ao invés de mana" da Magia Sanguínea, que reserva vida
+    // sim). A diferença para o PoE, quando há, é a `nota` da keystone (o balão mostra — `notaDoDraevor`).
+    notas: undefined,
   };
 }
 

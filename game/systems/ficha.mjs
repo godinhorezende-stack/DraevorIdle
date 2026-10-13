@@ -813,8 +813,12 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   // (13/10, a Égide Necromântica: "Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você" — a defesa da base do escudo
   // também sai de você; os lacaios do jogo não têm armadura/evasão/escudo próprios: ela não vai a ninguém.)
   const semEscudo0 = Afixos.ehEgideComEscudo(estado, af) ? estado.equipment.shield : null;
+  // (13/10, A Apóstata: "Ganhe Vida Máxima ao invés de Escudo de Energia Máximo dos Itens de Proteção Equipados") o escudo das peças de
+  // armadura não entra aqui: vira Vida (`Afixos.vidaDasArmaduras`).
+  const esEmVida = Afixos.esDasArmadurasEmVida(af);
+  const fora = (p, campo) => !p || p === semEscudo0 || (esEmVida && campo === 'es' && Afixos.ehPecaDeArmadura(p));
   const somaDoCampo = (campo) => Object.values(estado.equipment ?? {}).reduce((n, p) => {
-    if (!p || p === semEscudo0) return n;
+    if (fora(p, campo)) return n;
     const [a, b] = faixaDoCampo(p, campo);
     return n + (a + b) / 2;
   }, 0);
@@ -827,7 +831,7 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const daPeca = (campo, chaves, total) => (total > 0 ? Object.entries(chaves).reduce((n, [slot, ks]) => {
     const p = estado.equipment?.[slot];
     const pct = ks.reduce((s, k) => s + (Number(af[k]) || 0), 0);
-    if (!p || !pct || p === semEscudo0) return n;
+    if (!pct || fora(p, campo)) return n;
     const [a, b] = faixaDoCampo(p, campo);
     return n + ((a + b) / 2) * pct / 100;
   }, 0) : 0);

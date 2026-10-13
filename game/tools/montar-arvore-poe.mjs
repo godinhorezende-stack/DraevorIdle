@@ -8,6 +8,12 @@ import { converterArvore, converterAscendencias } from '../systems/itens-poe/arv
 import { validar } from '../systems/passivas/arvore.mjs';
 // (o relatório do que falta e do que é parcial — `docs/arvore-poe-pendencias.md` — sai junto: o balão e o relatório andam juntos)
 import { gravarRelatorio } from './relatorio-arvore-poe.mjs';
+import { iniciarJogoDoPoe } from '../systems/itens-poe/iniciar.mjs';
+
+// (13/10) As GEMAS do PoE carregadas antes de traduzir, como no servidor: a linha que nomeia uma gema ("Arauto Trovejante tem Eficácia da
+// Reserva de Mana aumentada", "Concede a Habilidade X") confere se ela existe — sem as gemas, toda gema saía "não está na coleção de gemas do
+// jogo", até as que o jogo tem.
+await iniciarJogoDoPoe();
 
 const ORIGEM = '/home/deploy/referencias-poe/original/poe-arvore/Arvore_Principal/arvore.json';
 const ASCENDENCIAS = '/home/deploy/referencias-poe/original/poe-arvore/Ascendencias';

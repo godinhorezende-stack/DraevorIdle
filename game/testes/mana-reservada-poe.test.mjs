@@ -170,5 +170,6 @@ test('a ÁRVORE: as 6 linhas da mana reservada têm efeito no balão; a do Feiti
   }
   const feiticeiro = linhas.find((l) => /Suportadas por Feiticeiro/.test(l.t));
   assert.equal(feiticeiro.estado, 'inerte');
-  assert.match(feiticeiro.nota, /Feiticeiro \(Spellslinger\) não está no jogo/);
+  // (dono, 13/10, "Ajustar a linha": a gema está no catálogo, sem comportamento de combate — a nota do lote 12)
+  assert.match(feiticeiro.nota, /Feiticeiro \(Spellslinger\) está no catálogo, mas ainda não tem comportamento de combate/);
 });

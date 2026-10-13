@@ -376,11 +376,10 @@
     "Blood Magic": {
       "regra": "poe",
       "id": "magiaSanguinea",
-      "estado": "aproximado",
-      "nota": "o '10% mais Vida' vira +10% de Vida (aumentada)",
+      "estado": "equivalente",
       "efeitos": [
         {
-          "pct": "life",
+          "stat": "life_more",
           "valor": 10
         },
         {

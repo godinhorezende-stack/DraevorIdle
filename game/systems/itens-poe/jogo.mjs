@@ -166,8 +166,21 @@ function afDaBase(atributos, dosMods = {}) {
   const af = {};
   // (O "Chance de Bloquear aumentada em X%" do escudo é LOCAL no PoE: aumenta o bloqueio da própria base.)
   if (atributos?.chance_bloqueio_pct) af.block = Number(atributos.chance_bloqueio_pct) * (1 + (Number(dosMods.block_inc) || 0) / 100);
-  if (atributos?.velocidade_movimento_pct) af.move_speed = Number(atributos.velocidade_movimento_pct);
+  // (13/10) A penalidade de movimento da base (peitorais e escudos: -3% ou -5%) à parte, `move_speed_armadura`: `Afixos.soma` põe no
+  // movimento, menos com a Arte do Gladiador ("Penalidades de Movimento das Armaduras são Ignoradas").
+  if (atributos?.velocidade_movimento_pct) af.move_speed_armadura = Number(atributos.velocidade_movimento_pct);
   return af;
+}
+
+/** A defesa da BASE da peça (`peca.base`), cada uma × `fq` (a qualidade). O Apóstata ("…or Energy Shield (Hidden)"): sem o escudo da base. */
+function baseDaPeca(a, af, fq = 1) {
+  const mult = ([x, y]) => [Math.round(x * fq), Math.round(y * fq)];
+  return {
+    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: af.arma_sem_fisico > 0 ? [0, 0] : mult([a.dano_fisico.min, a.dano_fisico.max]) } : {}),
+    ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
+    ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
+    ...(a.escudo_energia && !(Number(af.sem_es_da_base) > 0) ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
+  };
 }
 
 /*
@@ -219,12 +232,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const t = traduzirPeca(gerada);
   const af = { ...t.af };
   // ("Sem Dano Físico": a arma única não tem o dano físico da base.)
-  const base = {
-    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: af.arma_sem_fisico > 0 ? [0, 0] : [a.dano_fisico.min, a.dano_fisico.max] } : {}),
-    ...(a.armadura ? { armor: [a.armadura, a.armadura] } : {}),
-    ...(a.evasao ? { evasion: [a.evasao, a.evasao] } : {}),
-    ...(a.escudo_energia ? { es: [a.escudo_energia, a.escudo_energia] } : {}),
-  };
+  const base = baseDaPeca(a, af);
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
   separarLocaisDaArma(gerada.classe, t, af);
   const R = regras.raridades[gerada.raridade] ?? {};
@@ -285,7 +293,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (12 — 13/10: "Você e Aliados" vira a aura do nó/item — o Conjuro Estrábico; a Ichimonji — `itens-poe/aliados.mjs`.)
 // (13 — 13/10: a mana reservada — a nota da regra larga da reserva deixou de falar do Feiticeiro nas linhas que não são dele.)
 // (14 — 13/10: os projéteis por projétil — "Projéteis que Ricochetearam ganham X% de Dano Não-Caótico como Caos extra" da Presa das Trevas.)
-export const VERSAO_DA_TRADUCAO = 14;
+// (15 — 13/10: as correções das notas da árvore — o "Arauto Trovejante tem o Efeito do Buff aumentado" só nele (o Cravo de Fidelitas), O
+// Apóstata (a Vida no lugar do Escudo das armaduras, sem o Escudo da base), a penalidade de movimento da base à parte (`move_speed_armadura`)
+// e o "Sem Dano Físico" do único, que refazer a peça devolvia.)
+export const VERSAO_DA_TRADUCAO = 15;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -354,17 +365,13 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
     p.tv = VERSAO_DA_TRADUCAO;
     return peca;
   }
-  const mult = ([x, y]) => [Math.round(x * fq), Math.round(y * fq)];
-  const base = {
-    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: mult([a.dano_fisico.min, a.dano_fisico.max]) } : {}),
-    ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
-    ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
-    ...(a.escudo_energia ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
-  };
-  if (Object.keys(base).length) peca.base = base;
-  else delete peca.base;
   const t = traduzirPeca(p);
   const af = { ...t.af };
+  // (13/10: o "Sem Dano Físico" do único também aqui — antes, refazer a peça devolvia o dano físico da base — e o "sem Escudo de Energia"
+  // d'O Apóstata: `baseDaPeca`, a mesma da peça nova.)
+  const base = baseDaPeca(a, af, fq);
+  if (Object.keys(base).length) peca.base = base;
+  else delete peca.base;
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
   separarLocaisDaArma(p.classe, t, af);
   p.af = af;

@@ -86,6 +86,11 @@ const IMPLEMENTADOS = [
     re: /mais Área de Efeito enquanto empunhando|menos Vida Recuperada de Frascos|de dano degenerativo com habilidades mágicas|(mais|menos) Duração do Efeito de Habilidades/,
     jogo: 'o "X% mais/menos" multiplica em vez de somar ao aumentado: a Área de Efeito (as habilidades, as auras, o Convocar o Aço), a Duração do Efeito de Habilidades (os buffs, os Vínculos, as Runas, a Proteção de Aço), a Vida Recuperada dos Frascos e o dano degenerativo das magias (o "mais" de verdade, o da Crueldade)',
   },
+  {
+    bloco: 'Correções das notas (lote 12)',
+    re: /^Arauto Trovejante tem|Itens de Proteção Equipados|Penalidades de Movimento das Armaduras|^Remove toda a mana$|^10% mais Vida Máxima$|^Habilidades (Custam|Reservam) Vida ao invés de [mM]ana$/,
+    jogo: 'o Efeito do Buff do Arauto Trovejante só nele (valia em todos os Arautos — e no único Cravo de Fidelitas); a Eficácia da Reserva dele (a gema está no jogo: o montador da árvore passou a carregar as gemas); A Apóstata (o nó e o único: o Escudo de Energia das armaduras vira Vida; o peitoral sem o Escudo da base); a Arte do Gladiador (a penalidade de movimento de peitorais e escudos ignorada); a Magia Sanguínea igual ao PoE (o "10% mais Vida" multiplica; a reserva de vida já existia, a nota estava errada); e o "Sem Dano Físico" dos únicos, que refazer a peça devolvia',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */
@@ -93,7 +98,9 @@ export function linhasDaArvore(arvore) {
   const saida = [];
   for (const n of Object.values(arvore.nos ?? {})) {
     const pegar = (o, maestria) => (o.textos ?? []).forEach((texto, i) => saida.push({
-      id: n.id, no: n.nome, tipo: n.tipo, asc: n.ascendencia ?? null, maestria, texto, estado: o.estados?.[i] ?? null, nota: o.notas?.[i] ?? null,
+      // (a linha da keystone aproximada: a nota é a da keystone — `keystone.nota`, que o balão mostra.)
+      id: n.id, no: n.nome, tipo: n.tipo, asc: n.ascendencia ?? null, maestria, texto, estado: o.estados?.[i] ?? null,
+      nota: o.notas?.[i] ?? (o.estados?.[i] === 'aproximado' ? n.keystone?.nota : null) ?? null,
     }));
     pegar(n, false);
     for (const op of n.opcoes ?? []) pegar(op, true);

@@ -5966,14 +5966,13 @@
       "padrao": "^Penalidades de Movimento das Armaduras são Ignoradas$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "ignora_penalidade_armadura",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as armaduras do jogo não tiram velocidade de movimento",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^A cada \\{(\\d+)\\} segundos:$|^Recentemente, até \\{(\\d+)\\}%$",
@@ -6391,9 +6390,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "a gema Portador da Praga não está no jogo",
+      "nota": "a gema Infestador (o Portador da Praga do texto) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^Furtividade aumentada em .*$",
@@ -7060,9 +7060,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as gemas Profanar e Desenterrar não estão no jogo",
+      "nota": "as gemas Profanar e Desenterrar estão no jogo, mas ainda não criam cadáveres",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^As primeiras \\{(\\d+)\\} Queimas de Mana aplicadas em você não tem efeito$",
@@ -16243,6 +16244,28 @@
       "_unico": true
     },
     {
+      "padrao": "^Ganhe Vida Máxima ao invés de Escudo de Energia Máximo dos Itens de Proteção Equipados$",
+      "efeitos": [
+        {
+          "stat": "es_das_armaduras_em_vida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+    },
+    {
+      "padrao": "^Has no Attribute Requirements or Energy Shield \\(Hidden\\)$",
+      "efeitos": [
+        {
+          "stat": "sem_es_da_base",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+    },
+    {
       "padrao": "^.*Proteção.*$",
       "efeitos": [
         {
@@ -16683,9 +16706,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "o suporte Feiticeiro (Spellslinger) não está no jogo",
+      "nota": "a gema Feiticeiro (Spellslinger) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_lote8": "13/10 — a mana reservada (lote 8)"
+      "_lote8": "13/10 — a mana reservada (lote 8)",
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
@@ -24855,12 +24879,13 @@
       "padrao": "^Arauto Trovejante tem o Efeito do Buff aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "efeito_buff_gema:arauto",
+          "stat": "efeito_buff_gema:arauto-trovejante",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^Efeito de Buffs em você aumentado em \\{(\\d+)\\}%$",
