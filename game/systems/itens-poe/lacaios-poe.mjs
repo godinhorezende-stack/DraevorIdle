@@ -327,6 +327,16 @@ export function raioDaAreaDoLacaio(l, rng = Math.random) {
 }
 /** O intervalo de uma magia/habilidade do lacaio com a "Recuperação da Recarga" dele. */
 export const recargaDoLacaio = (l, ms) => Math.round(ms / Math.max(0.1, 1 + (l?.poe?.recargaPct ?? 0) / 100));
+/**
+ * (13/10, o Ritual do Despertar: "Você e seus Totens Regeneram X% de Vida por segundo para cada Totem Convocado") A % da vida máxima por segundo
+ * que cada TOTEM vivo regenera agora: `totem_regen_pct_por_totem` × os totens vivos (o tique dos lacaios — `cacadas`). Os totens são os lacaios
+ * com "Totem" no nome (a mesma conta da escala `lacaio:totem`).
+ */
+export const ehTotem = (l) => /totem/i.test(l?.nome ?? '');
+export function regenPctDosTotens(afPoe, lacaios) {
+  return (Number(afPoe?.totem_regen_pct_por_totem) || 0) * (lacaios ?? []).filter((l) => l.hp > 0 && ehTotem(l)).length;
+}
+
 /** A recuperação de vida do lacaio (regeneração, roubo): × (1 + recuperação%) — "Lacaios têm Recuperação de Vida reduzida em X%". */
 export const recuperacaoDoLacaio = (l, quanto) => quanto * Math.max(0, 1 + (l?.poe?.recuperacaoPct ?? 0) / 100);
 /** Cura o lacaio (com a recuperação dele). */

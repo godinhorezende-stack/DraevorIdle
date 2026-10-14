@@ -155,6 +155,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'detonouMinaRecente', 'naoDetonouMinaRecente', 'usouFogoRecente', 'acertouUnicoRecente',
   // (12/10, as Tinturas:) com uma Tintura ativa; usou um Frasco de Vida recentemente.
   'tinturaAtiva', 'usouFrascoVidaRecente',
+  // (13/10, os parciais exatos:) a Garra na mão secundária (a Maestria de Garras); o efeito de um Frasco de Mana correndo (Extração de Essência).
+  'garraNaSecundaria', 'duranteFrascoMana',
   // (11/10) nenhum inimigo com a sua Marca ("quando você Acertar um Inimigo Raro ou Único e não tiver Marca").
   'semMarca',
   // (09/10, os implícitos eldritch:) a PRESENÇA — um inimigo Único (ou chefe) perto, o Chefe Final do Atlas (um pináculo) perto, e um Raro
@@ -188,7 +190,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto):/;
+const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -261,6 +263,7 @@ export function condicoesDe(estado, total = null, principais = null) {
   if (arma) v.add(DUAS_MAOS.has(arma) ? 'duasMaos' : 'umaMao');
   if (arma && !A_DISTANCIA.has(arma)) v.add('armaCorpo');
   if (outra === 'Shields') v.add('comEscudo');
+  if (outra === 'Claws') v.add('garraNaSecundaria');
   if (outra && COND_DA_CLASSE[outra]) v.add('duasArmas');
   // ("enquanto portando dois Tipos de Armas diferentes": duas armas de classes diferentes — espada e machado, adaga e garra…)
   if (arma && outra && COND_DA_CLASSE[arma] && COND_DA_CLASSE[outra] && COND_DA_CLASSE[arma] !== COND_DA_CLASSE[outra]) v.add('armasDiferentes');
@@ -345,6 +348,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (!v.has('ardendo') && !v.has('congeladoProprio') && !v.has('eletrizadoProprio') && !v.has('resfriadoProprio')) v.add('semAfeccaoElemental');
     const frascos = Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora);
     v.add(frascos ? 'duranteFrasco' : 'semFrasco');
+    if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && a.recurso === 'mana')) v.add('duranteFrascoMana');
     if (Object.values(h.frascosPoe?.tinturas ?? {}).some((t) => t?.ativa)) v.add('tinturaAtiva');
     if ((h.roubos ?? []).some((x) => x.restante > 0)) v.add('drenando');
     if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'es')) v.add('drenandoEs');
@@ -434,6 +438,9 @@ export function vale(conds, c) {
     // (lote D) "enquanto você tiver ao menos N Fortificações"; o evento aconteceu (ou não) recentemente — `evRecente:suprimir`.
     case 'fortMin': return fortificacao(estado, total) >= Number(resto[0]);
     case 'evRecente': return recente(h?.poeRecente?.[`ev:${resto[0]}`], agora);
+    // (13/10) "nos últimos N segundos" — o prazo exato, não o "recentemente" (4 s): `nosUltimos:<N>:<o que `marcar` gravou>` (`usouFrascoVida`,
+    // `recargaEs`, `ev:usarFrascoMana` — o evento).
+    case 'nosUltimos': { const q = h?.poeRecente?.[resto.slice(1).join(':')]; return q != null && agora - q <= (Number(resto[0]) || 0) * 1000; }
     case 'naoEvRecente': return !recente(h?.poeRecente?.[`ev:${resto[0]}`], agora);
     // (lote E) "se a arma da sua mão principal tiver um encaixe verde e vermelho": `armaComEncaixes:GR` (as letras das cores dos encaixes abertos).
     // (11/10) "enquanto com ao menos N Inimigos Próximos": os vivos a até 2 casas (a mesma conta da escala `inimigosPerto`).
@@ -470,6 +477,23 @@ export function distintasRecentes(hunt, tag, segundos, agora = hunt?.clock ?? 0)
 export function marcar(hunt, oque, agora = hunt?.clock ?? 0) {
   if (!hunt || !ligado()) return;
   (hunt.poeRecente ??= {})[oque] = agora;
+}
+
+/**
+ * (13/10) A SOBRECARGA ELEMENTAL (keystone do PoE): "Habilidades que causaram um Golpe Crítico nos últimos 8 segundos causam 40% mais Dano
+ * Elemental com Acertos e Afecções" — por HABILIDADE (o id da ação; o golpe básico é `golpe`): `marcarCriticoDaHabilidade` no acerto crítico
+ * (`mods-poe.aoAcertar`, o da varinha), e `fatorDaSobrecarga` multiplica a parte de Fogo, Gelo e Raio do golpe dela. A ficha com a keystone
+ * leva `sobrecargaElemental` (`passivas/keystones`), que também tira o dano extra do crítico e o "de crítico" das afecções.
+ */
+export const SOBRECARGA = Object.freeze({ janelaMs: 8000, maisPct: 40 });
+export function marcarCriticoDaHabilidade(hunt, habilidade = 'golpe', agora = hunt?.clock ?? 0) {
+  if (!hunt || !ligado()) return;
+  (hunt.poeCriticoPorHabilidade ??= {})[habilidade] = agora;
+}
+export function fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora = hunt?.clock ?? 0) {
+  if (!ficha?.sobrecargaElemental || !['fire', 'ice', 'energy'].includes(elemento)) return 1;
+  const q = hunt?.poeCriticoPorHabilidade?.[habilidade ?? 'golpe'];
+  return q != null && agora - q <= SOBRECARGA.janelaMs ? 1 + SOBRECARGA.maisPct / 100 : 1;
 }
 
 // ---------------------------------------------------------------- a soma
@@ -646,7 +670,8 @@ export const BUFFS = {
   agilidadeDoGato: { nome: 'Agilidade do Gato', af: { avoid_damage: 10, move_speed: 10 } },
   vooDaAve: { nome: 'Vôo da Ave', af: { move_speed: 20 } },
   poderDaAve: { nome: 'Poder da Ave', af: { atk_speed: 10, cast_speed: 10 } },
-  avatarDoFogo: { nome: 'Avatar do Fogo', af: { phys_conv_fire: 50 } },
+  // (13/10: igual à keystone — "50% de Dano Físico, Gelo e Raio Convertidos para Dano de Fogo", "Não causa Dano que não seja de Fogo")
+  avatarDoFogo: { nome: 'Avatar do Fogo', af: { phys_conv_fire: 50, conv_ice_fire: 50, conv_energy_fire: 50, 'so_dano:fire': 1 } },
   sobrecargaElemental: { nome: 'Sobrecarga Elemental', af: { fire_dmg: 40, ice_dmg: 40, energy_dmg: 40 } },
   // (a keystone: os acertos não erram e nunca são críticos)
   tecnicaResoluta: { nome: 'Técnica Resoluta', af: { nunca_erra: 1, nunca_critico: 1 } },
@@ -1237,7 +1262,7 @@ export const slugDoNome = (nome) => String(nome ?? '').normalize('NFD').replace(
 // ---------------------------------------------------------------- os atributos DINÂMICOS (validação da tradução)
 
 /** Os eventos que `mods-poe.evento` dispara e as ações que ele sabe fazer. */
-export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
+export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoarSemMaldicao', 'amaldicoarSemMaldicaoNaoAura', 'usarFrascoVida', 'usarGuarda', 'matar', 'critico', 'bloquear', 'bloquearAtaque', 'bloquearMagia', 'serAcertado', 'serAcertadoCritico', 'atordoar', 'incendiar', 'congelar', 'eletrizar', 'envenenar',
   'acertar', 'usarHabilidade', 'usarMagia', 'usarAtaque', 'usarMovimento', 'usarVaal', 'usarClamor', 'usarFrasco', 'usarFrascoMana', 'suprimir', 'perderTolerancia',
   'maxPoder', 'maxFrenesi', 'maxTolerancia', 'tempo', 'provocar', 'golpeDeMisericordia', 'vidaBaixa', 'equipado', 'perderPoder', 'conjurarMaldicao', 'gastarMana', 'armadilha', 'morrer', 'lancarArmadilha', 'detonarMina', 'drenoCheio', 'rampage', 'empurrar',
   // (ciclo 7, lote D) quando Atordoado; quando sofrer Dano Físico de um Acerto (`mods-poe.aoSerAcertado`).
@@ -1314,6 +1339,8 @@ export function definirValidadorDeAtributo(fn) { validadorDeAtributo = fn; }
 export function dinamicoValido(stat) {
   // (13/10) A aura "Você e Aliados" do nó/item (`aliados:<stat>` — `itens-poe/aliados.mjs`): vale pelo atributo que ela dá.
   if (String(stat).startsWith('aliados:')) return validadorDeAtributo ? validadorDeAtributo(String(stat).slice('aliados:'.length)) : false;
+  // (13/10, o Inspirador: "Você e Aliados próximos dos seus Estandartes" — `aliados_estandarte:<stat>`, os aliados na área do Estandarte plantado.)
+  if (String(stat).startsWith('aliados_estandarte:')) return validadorDeAtributo ? validadorDeAtributo(String(stat).slice('aliados_estandarte:'.length)) : false;
   if (String(stat).startsWith('ev:')) {
     const [, evento, acao] = stat.split(':');
     return EVENTOS.has(evento) && ACOES.has(acao);

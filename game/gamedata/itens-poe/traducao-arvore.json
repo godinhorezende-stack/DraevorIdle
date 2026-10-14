@@ -326,8 +326,7 @@
     "Unwavering Stance": {
       "regra": "poe",
       "id": "posturaInabalavel",
-      "estado": "aproximado",
-      "nota": "no Draevor, imune a controle (o teto da resistência a controle), não só a atordoamento"
+      "estado": "equivalente"
     },
     "Resolute Technique": {
       "regra": "poe",
@@ -345,18 +344,31 @@
       "estado": "equivalente"
     },
     "Avatar of Fire": {
-      "regra": "conversao",
-      "de": "physical",
-      "para": "fire",
-      "pct": 50,
-      "estado": "aproximado",
-      "nota": "50% do físico do golpe vira fogo; o 'não causa dano que não seja de fogo' fica de fora"
+      "regra": "texto",
+      "estado": "equivalente",
+      "efeitos": [
+        {
+          "stat": "phys_conv_fire",
+          "valor": 50
+        },
+        {
+          "stat": "conv_ice_fire",
+          "valor": 50
+        },
+        {
+          "stat": "conv_energy_fire",
+          "valor": 50
+        },
+        {
+          "stat": "so_dano:fire",
+          "valor": 1
+        }
+      ]
     },
     "Elemental Overload": {
       "regra": "poe",
       "id": "sobrecargaElemental",
-      "estado": "aproximado",
-      "nota": "o +40% de dano elemental fica sempre ligado (no PoE, depois de um crítico nos últimos 8 s)"
+      "estado": "equivalente"
     },
     "Pain Attunement": {
       "regra": "poe",

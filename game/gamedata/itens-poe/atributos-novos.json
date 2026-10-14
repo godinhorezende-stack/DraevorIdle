@@ -6278,6 +6278,18 @@
       "unidade": "%",
       "combate": true,
       "efeito": "a da base de peitorais e escudos (itens-poe/jogo.afDaBase), somada ao movimento em afixos.soma (13/10)"
+    },
+    "frasco_efeito_magico": {
+      "nome": "Efeito dos Frascos Utilitários Mágicos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "frascos.parametros: só os de Utilidade de raridade Mágica (13/10)"
+    },
+    "totem_regen_pct_por_totem": {
+      "nome": "Regeneração de Vida dos Totens por Totem",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os totens regeneram X% da vida por segundo por totem convocado (cacadas, o tique dos lacaios) (13/10)"
     }
   }
 }

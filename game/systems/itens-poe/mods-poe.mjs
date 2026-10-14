@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar } from './condicoes-poe.mjs';
+import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -14,7 +14,7 @@ export * from './condicoes-poe.mjs';
  * Empalar (e solta os empalamentos do alvo), a Fúria e o Escudo de Energia por acerto. `ficha`: a do golpe (`fichaDoGolpe`, com as tags).
  * `dano`: o total do acerto; `fisico`: a parte Física. Devolve `{ atordoou, extra }` — `extra`: o dano dos empalamentos soltos (já tirado).
  */
-export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, crit = false, eventos = null, agora = hunt?.clock ?? 0, rng = Math.random, mover = null, elementos = [], personagem = null } = {}) {
+export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, crit = false, eventos = null, agora = hunt?.clock ?? 0, rng = Math.random, mover = null, elementos = [], personagem = null, habilidade = 'golpe' } = {}) {
   const saida = { atordoou: false, extra: 0 };
   if (!ligado() || !alvo || alvo.dummy || !ficha?.afPoe) return saida;
   // (ciclo 7, lote D) O que o golpe FEZ entra nas tags dele: o Crítico (`X@critico`) e, depois do sorteio do atordoamento, o Atordoou
@@ -34,6 +34,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   if (excedente > 0 && v('roubo_excedente') > 0) drenoDaFicha?.(estado, { vida: (excedente * v('roubo_excedente')) / 100 }, ficha, eventos, personagem?.nome ?? null, hunt?.pos ?? null);
   if (crit) {
     marcar(hunt, 'critico', agora);
+    // (a Sobrecarga Elemental: o crítico DESTA habilidade — `habilidade`, o id da ação; o golpe básico é `golpe`)
+    marcarCriticoDaHabilidade(hunt, habilidade, agora);
     // (Os frascos com "chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico" — `frascos.tique`.)
     if (hunt) hunt.poeCriticosParaFrascos = (hunt.poeCriticosParaFrascos ?? 0) + 1;
   }
@@ -666,12 +668,29 @@ export function eventosDoFrasco(estado, classe, ficha, ctx = {}) {
   if (!hunt) return;
   evento(estado, hunt, 'usarFrasco', ficha, ctx);
   if (classe === 'Mana_Flasks') evento(estado, hunt, 'usarFrascoMana', ficha, ctx);
+  // (13/10) o de Vida ("Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida" — a Maestria de Frascos)
+  if (classe === 'Life_Flasks') evento(estado, hunt, 'usarFrascoVida', ficha, ctx);
 }
 
 /** Os GATILHOS das peças ("Ativa uma Magia Encaixada quando você Atacar com esta Arma"): quem registra é `acoes.mjs` (o disparo das gemas). */
 // eslint-disable-next-line no-var
 var gatilhosDeItem;
 export function definirGatilhosDeItem(fn) { gatilhosDeItem = fn; }
+/**
+ * (13/10) As AFECÇÕES que podem estar em você (as do PoE — o Atordoamento e os danos contínuos que não são afecção, não): `tem` e `tirar` de
+ * cada uma. O Veneno do Draevor e o do PoE são o mesmo Envenenamento.
+ */
+const dotAtivo = (hunt, tipos) => (hunt?.efeitosDoJogador?.dots ?? []).some((d) => tipos.includes(d.tipo) && d.falta > 0);
+// (tira as pilhas dos tipos — a lista fica, vazia, como quando se tirava a mais antiga)
+const tirarDot = (hunt, tipos) => { const ef = hunt?.efeitosDoJogador; if (ef?.dots) ef.dots = ef.dots.filter((d) => !tipos.includes(d.tipo)); };
+export const AFECCOES_NO_JOGADOR = [
+  { nome: 'incendio', elemental: true, tem: (h) => dotAtivo(h, ['queimadura']), tirar: (h) => tirarDot(h, ['queimadura']) },
+  { nome: 'sangramento', elemental: false, tem: (h) => dotAtivo(h, ['sangramento']), tirar: (h) => tirarDot(h, ['sangramento']) },
+  { nome: 'veneno', elemental: false, tem: (h) => dotAtivo(h, ['veneno', 'venenoPoe']), tirar: (h) => tirarDot(h, ['veneno', 'venenoPoe']) },
+  { nome: 'congelamento', elemental: true, tem: (h, agora) => (h?.controle?.congelado?.ate ?? 0) > agora, tirar: (h) => { delete h.controle.congelado; } },
+  { nome: 'resfriamento', elemental: true, tem: (h, agora) => (h?.controle?.lento?.ate ?? 0) > agora, tirar: (h) => { delete h.controle.lento; } },
+  { nome: 'eletrizacao', elemental: true, tem: (h, agora) => (h?.debuffsDoJogador?.eletrizado?.ate ?? 0) > agora || dotAtivo(h, ['choque']), tirar: (h) => { if (h.debuffsDoJogador) delete h.debuffsDoJogador.eletrizado; tirarDot(h, ['choque']); } },
+];
 export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (!ligado() || !hunt) return;
   const lista = ficha?.eventosPoe ?? [];
@@ -820,7 +839,18 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     // `buffChance:<buff>:<segundos>` = a CHANCE (%) de ganhar o buff por N segundos ("X% de chance de ganhar Agressividade por 4 segundos ao Matar").
     case 'buffChance': { const [buff, seg] = String(ev.param).split(':'); if (sorte(v)) ganhar(buff, Number(seg) || SEGUNDOS_PADRAO); return; }
     case 'furia': return ganharFuria(hunt, v, agora);
-    case 'frasco': { for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + v; return; }
+    // (13/10) `frasco:vida` = só os Frascos de Vida ("Frascos de Vida ganham N quando você Suprimir"); `frasco:vida:<s>` = no máximo uma vez a cada
+    // s segundos ("Frascos de Vida ganham uma Carga quando você acertar um Inimigo, não mais que uma vez por segundo" — a Medicina de Campo).
+    case 'frasco': {
+      const [so, cadaS] = String(ev.param ?? '').split(':');
+      if (Number(cadaS) > 0) {
+        const intervalos = (hunt.poeIntervalos ??= {});
+        if (agora - (intervalos[`frasco:${ev.param}`] ?? -Infinity) < Number(cadaS) * 1000) return;
+        intervalos[`frasco:${ev.param}`] = agora;
+      }
+      for (const p of estado.frascos ?? []) if (p?.poe && (so !== 'vida' || p.poe.classe === 'Life_Flasks')) p.poe.cargas = (p.poe.cargas ?? 0) + v;
+      return;
+    }
     // "X% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico": a CHANCE de cada frasco do cinto ganhar uma carga.
     case 'frascoChance': { if (sorte(v)) for (const p of estado.frascos ?? []) if (p?.poe) p.poe.cargas = (p.poe.cargas ?? 0) + 1; return; }
     case 'recargaEs': if (sorte(v)) estado.esEspera = 0; return;
@@ -840,6 +870,12 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
         for (const t of ['queimadura', 'sangramento', 'veneno', 'venenoPoe']) Dot.removerDoJogador(hunt, t);
       } else if (ev.param === 'lento') {
         if (hunt.controle) delete hunt.controle.lento;
+      } else if (ev.param === 'naoElemental' || ev.param === 'aleatoria') {
+        // (13/10) UMA afecção aleatória (a de todas as pilhas do tipo, como no PoE): `naoElemental` — o Sangramento ou o Veneno (a Maestria de
+        // Frascos); `aleatoria` — qualquer uma, as elementais também: o Incêndio, o Congelamento, o Resfriamento e a Eletrização (a Maestria de
+        // Estandartes).
+        const tem = AFECCOES_NO_JOGADOR.filter((a) => (ev.param === 'aleatoria' || !a.elemental) && a.tem(hunt, agora));
+        if (tem.length) tem[Math.floor(rng() * tem.length)].tirar(hunt);
       } else if (ev.param === 'todas') {
         // (lote F) "Remove maldições e afecções de você a cada 4 segundos": os danos contínuos, o controle elemental e as maldições dos monstros.
         if (hunt.efeitosDoJogador?.dots) hunt.efeitosDoJogador.dots = [];
@@ -1040,7 +1076,8 @@ export function plantarEstandarte(estado, hunt, ficha, porValor = {}, agora = hu
       if (cargas && cheio) for (let i = 0; i < x; i++) acao('carga', 100, cargas[1]);
     }
     const min = valor(ficha, 'estandarte_remove_afeccao_min');
-    if (min > 0 && v >= min) acao('removerAfeccao', 100);
+    // (13/10: uma afecção aleatória, qualquer uma — antes, o dano contínuo mais antigo)
+    if (min > 0 && v >= min) acao('removerAfeccao', 100, 'aleatoria');
   }
   return { valor: v, efeitoMais: (Number(porValor?.efeito) || 0) * v, areaMais: (Number(porValor?.area) || 0) * v };
 }

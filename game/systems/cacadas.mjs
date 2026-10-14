@@ -2438,6 +2438,9 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   if (hunt.golensAReconvocar?.length) eventos.push(...Acoes.reconvocarGolens(estado, hunt, agora));
   const vivos = [];
   let lacaioMorreu = false;
+  // (13/10, o Ritual do Despertar: "Você e seus Totens Regeneram X% de Vida por segundo para cada Totem Convocado" — os totens; você, pela
+  // escala `lacaio:totem` da sua ficha)
+  const regenDosTotens = itensPoeLigado() ? LacaiosPoe.regenPctDosTotens(ficha.afPoe, hunt.lacaios) : 0;
   for (const l of hunt.lacaios) {
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
@@ -2457,6 +2460,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (oferenda?.regenPct) LacaiosPoe.curarLacaio(l, (l.maxHp * oferenda.regenPct) / 100 / 4);
     // PoE: "Lacaios Regeneram X% / N de Vida por segundo" (o tique é de 1/4 s).
     if (l.poe && (l.poe.regenPct || l.poe.regen)) LacaiosPoe.curarLacaio(l, ((l.maxHp * l.poe.regenPct) / 100 + l.poe.regen) / 4);
+    if (regenDosTotens > 0 && LacaiosPoe.ehTotem(l)) LacaiosPoe.curarLacaio(l, (l.maxHp * regenDosTotens) / 100 / 4);
     LacaiosPoe.recarregarEscudoDoLacaio(l, 250);
     // ("Espíritos Furiosos Convocados sofrem X% de sua Vida Máxima como Dano de Caos por segundo".)
     if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;

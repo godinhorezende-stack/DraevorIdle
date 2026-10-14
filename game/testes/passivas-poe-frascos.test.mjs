@@ -43,7 +43,8 @@ function antesDo(id, base) {
 }
 
 test('"Recuperação dos Frascos de Vida aumentada" (o nó real): usar o frasco do cinto recupera a vida na razão exata (o frasco de verdade, ao longo do efeito)', { skip: SEM }, () => {
-  const no = noSo('frasco_vida_rec', [/^periodico:\d+:frasco@acertouRecente$/]);
+  // (dono, 13/10, "Ajustar a regex": a Medicina de Campo no mesmo nó — uma carga nos Frascos de Vida, no máximo uma vez por segundo ao acertar)
+  const no = noSo('frasco_vida_rec', [/^ev:acertar:frasco:vida:\d+$/]);
   assert.ok(no, 'há nó só com a recuperação dos frascos de vida');
   const { e, soma, alocar } = antesDo(no.id, 'Life_Flasks/Divine_Life_Flask');
   const base = Fr.parametros(e.frascos[0], {}).quantidade;

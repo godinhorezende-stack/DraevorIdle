@@ -296,7 +296,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (15 — 13/10: as correções das notas da árvore — o "Arauto Trovejante tem o Efeito do Buff aumentado" só nele (o Cravo de Fidelitas), O
 // Apóstata (a Vida no lugar do Escudo das armaduras, sem o Escudo da base), a penalidade de movimento da base à parte (`move_speed_armadura`)
 // e o "Sem Dano Físico" do único, que refazer a peça devolvia.)
-export const VERSAO_DA_TRADUCAO = 15;
+// (16 — 13/10: os parciais exatos — "Você e seus Totens Regeneram…" (o Pináculo de Madeira-Troll), "Frascos Utilitários Mágicos…" só nos Mágicos.)
+export const VERSAO_DA_TRADUCAO = 16;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

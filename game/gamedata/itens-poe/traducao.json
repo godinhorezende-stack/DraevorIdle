@@ -1076,10 +1076,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "tira o dano contínuo mais antigo em você",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Recupera \\{(\\d+)\\}% da Vida por cada \\{(\\d+)\\} de Valor consumido para plantar um Estandarte$",
@@ -1153,12 +1152,15 @@
         {
           "stat": "life_regen_max_pct%valorDoEstandarte@estandarteAtivo",
           "valor": "{1}"
+        },
+        {
+          "stat": "aliados_estandarte:life_regen_max_pct%valorDoEstandarte",
+          "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você (na área do Estandarte plantado); nos aliados ainda não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Mover enquanto Sangrando faz com que você não sofra Dano extra$",
@@ -2022,12 +2024,15 @@
         {
           "stat": "life_regen_max_pct%lacaio:totem",
           "valor": "{1}"
+        },
+        {
+          "stat": "totem_regen_pct_por_totem",
+          "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a regeneração vale em você; a dos totens ainda não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional por Lacaio, até \\{(\\d+)\\}%$",
@@ -4985,14 +4990,13 @@
       "padrao": "^Frascos de Vida ganham \\{(\\d+)\\} quando você Suprimir Dano Mágico$",
       "efeitos": [
         {
-          "stat": "ev:suprimir:frasco",
+          "stat": "ev:suprimir:frasco:vida",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "as cargas vão para todos os frascos do cinto",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Efeito da Fúria aumentado em \\{(\\d+)\\}%$",
@@ -5245,14 +5249,13 @@
       "padrao": "^Evasão aumentada em \\{(\\d+)\\}% se a Recarga do Escudo de Energia iniciou nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "evasion_pct@recargaEsIniciouRecente",
+          "stat": "evasion_pct@nosUltimos:{V2}:recargaEs",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"Recentemente\" (4 s)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Perca \\{(\\d+)\\}% de Vida e Escudo de Energia ao usar uma Habilidade de Caos$",
@@ -5328,14 +5331,13 @@
       "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária$",
       "efeitos": [
         {
-          "stat": "mana_on_hit@comGarra+ataque+maoSecundaria",
+          "stat": "mana_on_hit@garraNaSecundaria+ataque+maoSecundaria",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta a Garra da mão principal",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana Máxima, até \\{(\\d+)\\}%$",
@@ -5473,14 +5475,13 @@
       "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Acertado pelos Ataques se você usou um Frasco de Mana nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "mana_on_hit@ataque+evRecente:usarFrascoMana",
+          "stat": "mana_on_hit@ataque+nosUltimos:{V2}:ev:usarFrascoMana",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"Recentemente\" (4 s)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Remove Mutilação e Desaceleração ao usar um Frasco$",
@@ -5497,27 +5498,25 @@
       "padrao": "^Recuperação de Mana aumentada em \\{(\\d+)\\}% durante o Efeito de qualquer Frasco de Mana$",
       "efeitos": [
         {
-          "stat": "recuperacao_mana_inc@duranteFrasco",
+          "stat": "recuperacao_mana_inc@duranteFrascoMana",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "durante qualquer frasco",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Regenera \\{(\\d+)\\}% de Vida por Segundo se você usou um Frasco de Vida nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "life_regen_max_pct@evRecente:usarFrasco",
+          "stat": "life_regen_max_pct@nosUltimos:{V2}:usouFrascoVida",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "qualquer frasco, \"Recentemente\" (4 s)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Remove Afecções Elementais quando você usa um Frasco$",
@@ -5579,14 +5578,13 @@
       "padrao": "^Frascos Utilitários Mágicos aplicados em você têm Efeito aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "frasco_efeito",
+          "stat": "frasco_efeito_magico",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em todos os frascos de Utilidade",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Ganha \\{(\\d+)\\} Carga de Tolerância por segundo se foi Acertado Recentemente$",
@@ -6096,14 +6094,13 @@
       "padrao": "^Frascos de Vida ganham uma Carga quando você acertar um Inimigo, não mais que uma vez por segundo$",
       "efeitos": [
         {
-          "stat": "periodico:1:frasco@acertouRecente",
+          "stat": "ev:acertar:frasco:vida:1",
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "uma carga por segundo para os frascos do cinto, se você acertou há pouco",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Inimigo Marcado concede Cargas de Frasco aumentadas em \\{(\\d+)\\}% a Você$",
@@ -28400,14 +28397,13 @@
       "padrao": "^Remove todas as Afecções Danificadoras quando você Clamar$",
       "efeitos": [
         {
-          "stat": "ev:usarClamor:removerAfeccao",
+          "stat": "ev:usarClamor:removerAfeccao:danificadoras",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "remove uma afecção por clamor",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Remove uma Afecção Elemental aleatória ao usar um Frasco de Mana$",
@@ -28424,14 +28420,13 @@
       "padrao": "^Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida$",
       "efeitos": [
         {
-          "stat": "ev:usarFrasco:removerAfeccao",
+          "stat": "ev:usarFrascoVida:removerAfeccao:naoElemental",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "qualquer frasco de vida remove a afecção mais antiga",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Crítico se você não causou um Golpe Crítico Recentemente$",
@@ -28920,14 +28915,13 @@
       "padrao": "^Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados por \\{(\\d+)\\} segundos?$",
       "efeitos": [
         {
-          "stat": "ev:conjurarMaldicao:alvo:cego:{V1}",
+          "stat": "ev:amaldicoarSemMaldicaoNaoAura:alvo:cego:{V1}",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o alvo da maldição é Cegado (o \"não amaldiçoado\" não é conferido)",
-      "_de": "09/10 — árvore × poedb (4º lote)"
+      "_de": "09/10 — árvore × poedb (4º lote)",
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Defesas do Escudo equipado aumentadas em \\{(\\d+)\\}%$",

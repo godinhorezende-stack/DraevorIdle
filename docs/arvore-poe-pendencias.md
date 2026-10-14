@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5930** — equivalente 1349, novo 4346, aproximado (parcial) 235.
+- ✓ Com efeito: **5930** — equivalente 1356, novo 4384, aproximado (parcial) 190.
 - ✗ Sem efeito: **45** — na árvore principal 14, nas ascendências 31; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 27; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 61. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -25,6 +25,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | Lacaios (lote 10) | 2 | 0 | a Égide Necromântica passa os bônus do escudo aos lacaios (e tira a defesa da base de você); o golem morto volta sozinho em 4 s (o Suserano do Primordial); e a resistência a Fogo/Gelo/Raio dos lacaios, guardada e nunca lida, passa a valer no golpe |
 | "Mais" e "menos" exatos (lote 11) | 13 | 0 | o "X% mais/menos" multiplica em vez de somar ao aumentado: a Área de Efeito (as habilidades, as auras, o Convocar o Aço), a Duração do Efeito de Habilidades (os buffs, os Vínculos, as Runas, a Proteção de Aço), a Vida Recuperada dos Frascos e o dano degenerativo das magias (o "mais" de verdade, o da Crueldade) |
 | Correções das notas (lote 12) | 8 | 0 | o Efeito do Buff do Arauto Trovejante só nele (valia em todos os Arautos — e no único Cravo de Fidelitas); a Eficácia da Reserva dele (a gema está no jogo: o montador da árvore passou a carregar as gemas); A Apóstata (o nó e o único: o Escudo de Energia das armaduras vira Vida; o peitoral sem o Escudo da base); a Arte do Gladiador (a penalidade de movimento de peitorais e escudos ignorada); a Magia Sanguínea igual ao PoE (o "10% mais Vida" multiplica; a reserva de vida já existia, a nota estava errada); e o "Sem Dano Físico" dos únicos, que refazer a peça devolvia |
+| Parciais exatos (lote 13) | 58 | 0 | os Clamores tiram todas as afecções de dano; o Frasco de Vida tira uma afecção não elemental (Sangramento ou Veneno) ao acaso; o Estandarte, qualquer uma ao acaso; a maldição que não é aura Cega só quem não estava amaldiçoado; o Mana por acerto só com a Garra na mão secundária; os prazos exatos ("nos últimos 10/2 segundos") e os frascos certos (de Vida, de Mana, os Utilitários Mágicos); a regeneração do Inspirador nos aliados na área do Estandarte e a do Ritual do Despertar nos totens; a Sobrecarga Elemental (40% mais dano elemental só na habilidade que causou um crítico nos últimos 8 s; as afecções nunca de crítico); o Avatar do Fogo (Gelo e Raio também viram Fogo, e só o Fogo causa dano); a Postura Inabalável (imune só a Atordoamento) |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -64,12 +65,9 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 8 | a última repetição pega a área maior (uma casa a cada ~25%) | Domínio de Conjuração (maestria) — Repetição Final das Magias têm Efeito em Área aumentado em 40% |
 | 8 | o PoE drena só do dano físico de ataque; o Draevor, de todo o dano. | Dano Corpo a Corpo e Drenagem com Duas Mãos (nó) — 0.8% do Dano de Ataques Físicos é Drenado como Vida<br>Espírito da Guerra (notável) — 0.5% do Dano de Ataques Físicos é Drenado como Mana<br>Dano Corpo a Corpo com Duas Mãos e Dreno (nó) — 0.4% do Dano de Ataques Físicos é Drenado como Vida |
 | 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
-| 8 | qualquer frasco de vida remove a afecção mais antiga | Maestria de Frascos (maestria) — Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida |
 | 8 | vale na exposição posta pelos modificadores de acerto ("Inflige Exposição … ao Acertar"); a das gemas ainda não soma | Maestria de Fogo (maestria) — Exposição a Fogo infligida por você aplica -5% extra de Resistência a Fogo |
 | 7 | trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s | Armadura e Escudo de Energia, Recuperação do Bloqueio (asc. Guardian) — Recuperação de Bloqueio aumentada em 30%<br>Barreira de Lâmina (notável) — Recuperação de Bloqueio aumentada em 50%<br>Tartaruga (notável) — Recuperação de Bloqueio aumentada em 60% |
 | 6 | entra como redução de dano físico enquanto o escudo está cheio | Maestria de Escudo de Energia (maestria) — 10% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio |
-| 6 | o alvo da maldição é Cegado (o "não amaldiçoado" não é conferido) | Maestria de Maldições (maestria) — Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados por 4 segundos |
-| 6 | remove uma afecção por clamor | Maestria de Clamores (maestria) — Remove todas as Afecções Danificadoras quando você Clamar |
 | 6 | somado à precisão que a Destreza já dá | Maestria de Precisão (maestria) — Bônus de Precisão da Destreza concede +3 de Precisão por Destreza |
 | 5 | a Mina detona logo que um inimigo chega perto (no PoE é a aura da Mina plantada): soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido aumentado em 2% aos Inimigos próximos a ela, até 10% |
 | 5 | a velocidade de uso do clamor | Velocidade de Clamores (nó) — Velocidade dos Clamores aumentada em 15%<br>Admoestador (notável) — Velocidade dos Clamores aumentada em 50%<br>Dano Físico, Velocidade do Clamor (asc. Berserker) — Velocidade dos Clamores aumentada em 20% |
@@ -78,23 +76,17 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 5 | no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando | Maestria de Minas (maestria) — Detonar Minas é Ativado enquanto você se mover |
 | 5 | no PoE é o dano que o inimigo causa (o poedb traduz "sofrido"); soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido reduzido em 2% aos Inimigos próximos a ela, até 10% |
 | 4 | acelera todas as afecções de dano, não só o veneno | Maestria de Envenenamentos (maestria) — Envenenamentos infligidos por você causam Dano 20% mais rápido |
-| 4 | conta a Garra da mão principal | Maestria de Garras (maestria) — Ganha 25 de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária |
 | 4 | encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo | Maestria de Garras (maestria) — Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente |
 | 4 | o Elusivo dura 4 s | Maestria de Empunhadura Dupla (maestria) — 20% de chance de ganhar Elusivo ao Bloquear enquanto em Empunhadura Dupla |
-| 4 | tira o dano contínuo mais antigo em você | Maestria de Estandartes (maestria) — Remove uma Afecção aleatória de você quando você consumir ao menos 10 de Valor para plantar um Estandarte |
 | 4 | vale nos golpes com a tag Caos (o golpe inteiro) | Maestria de Caos (maestria) — Causa 10% mais Dano de Caos aos inimigos que tiverem Escudo de Energia<br>Presença Pútrida (asc. Occultist) — 15% mais Dano de Caos |
-| 3 | "Recentemente" (4 s) | Espírito Primitivo (notável) — Ganha 4 de Mana por Inimigo Acertado pelos Ataques se você usou um Frasco de Mana nos últimos 10 segundos<br>Maestria de Evasão e Escudo de Energia (maestria) — Evasão aumentada em 100% se a Recarga do Escudo de Energia iniciou nos últimos 2 segundos |
 | 3 | nas gemas (o golpe básico, não) | Força Concussiva (notável) — Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano<br>Risco Calculado (asc. Saboteur) — Dano com Acertos é Azarado<br>Julgamento Inevitável (asc. Inquisitor) — Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo |
-| 3 | o +40% de dano elemental fica sempre ligado (no PoE, depois de um crítico nos últimos 8 s) | Sobrecarga Elemental (keystone) — Habilidades que causaram um Golpe Crítico nos últimos 8 segundos causam 40% mais Dano Elemental com Acertos e Afecções<br>Sobrecarga Elemental (keystone) — Seus Golpes Críticos não causam Dano extra<br>Sobrecarga Elemental (keystone) — Afecções nunca contam como sendo de um Golpe Crítico |
 | 3 | vale para as afecções que os monstros causam em você | Maestria de Duração (maestria) — Debuffs em você expiram 15% mais rápido |
 | 2 | "Corpo a Corpo": com uma arma corpo a corpo empunhada | Maestria de Fortificação (maestria) — Ganha 20 Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único |
-| 2 | 50% do físico do golpe vira fogo; o 'não causa dano que não seja de fogo' fica de fora | Avatar do Fogo (keystone) — 50% de Dano Físico, Gelo e Raio Convertidos para Dano de Fogo<br>Avatar do Fogo (keystone) — Não causa Dano que não seja de Fogo |
 | 2 | a cada 10 segundos (a linha de cima) | Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano de Acertos por 5 segundos<br>Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano Degenerativo por 5 segundos |
 | 2 | a velocidade de ataque, o crítico, o bloqueio e a regeneração da Oferenda | Dama do Sacrifício (asc. Necromancer) — Suas Habilidades de Oferenda também afetam você |
 | 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
 | 2 | conta as Minas detonadas nos últimos 4 s | Detonações Sucessivas (notável) — Chance de Golpe Crítico aumentada em 10% por cada Mina Detonada<br>Detonações Sucessivas (notável) — +4% de Multiplicador de Golpes Críticos para cada Mina Detonada |
 | 2 | conta os aumentos de Armadura em % (o valor/100 vira a fração) | Maestria de Armadura e Escudo de Energia (maestria) — Aumentos e Reduções à Armadura também se aplicam à Recarga do Escudo de Energia em 20% de seu valor |
-| 2 | no Draevor, imune a controle (o teto da resistência a controle), não só a atordoamento | Postura Inabalável (keystone) — Não Evade Ataques inimigos<br>Postura Inabalável (keystone) — Não pode ser Atordoado |
 | 2 | o bloqueio-base do escudo vira N (o aumentado local dele não entra) | Gladiador (asc. Ascendant) — Ganhe 50% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo |
 | 2 | os monstros só batem nos lacaios de perto: o golpe de um monstro que conjura magias conta como magia | Proteção da Podridão (notável) — Lacaios tem +18% de Chance de Bloquear o Dano Mágico<br>Bloqueio Mágico de Lacaios (nó) — Lacaios tem +12% de Chance de Bloquear o Dano Mágico |
 | 2 | pela distância até o alvo: tudo colado, nada a 6 casas | Animosidade Adjacente (notável) — Projéteis causam Dano com Acertos aumentado em 40% aos alvos no início de seu movimento, reduzido para 0% na medida em que viajam adiante<br>Queima-Roupa (keystone) — Acertos dos Ataques de Projéteis causam até 30% mais Dano aos alvos no inicio de seu movimento, causando menos Dano aos alvos na medida em que o projétil viaja adiante |
@@ -104,11 +96,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 1 | a explosão do jogo não passa pela resistência física dos atingidos | Violência Gratuita (asc. Gladiator) — Inimigos com Sangramento Explodem quando você matá-los, causando 20% de suas Vidas Máximas com Dano Físico |
 | 1 | a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma. | Instrumentos da Virtude (asc. Inquisitor) — Mago de Batalha |
 | 1 | a lentidão dos monstros não pega | Incontrolável (asc. Juggernaut) — Velocidade de Movimento não pode ser modificada para abaixo do valor base |
-| 1 | a regeneração vale em você; a dos totens ainda não | Ritual do Despertar (asc. Hierophant) — Você e seus Totens Regeneram 1% de Vida por segundo para cada Totem Convocado |
-| 1 | as cargas vão para todos os frascos do cinto | Entrincheirar (notável) — Frascos de Vida ganham 3 quando você Suprimir Dano Mágico |
 | 1 | conta os segundos desde o último Clamor | Escalonamento (notável) — Dano Corpo a Corpo aumentado em 10% para cada segundo que você for afetado por um Buff de Clamor, máximo de 60% |
 | 1 | Convergência: 30% mais dano nas habilidades Elementais, por 4 s | Coração da Destruição (asc. Elementalist) — Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada 8 segundos |
-| 1 | durante qualquer frasco | Extração de Essência (notável) — Recuperação de Mana aumentada em 15% durante o Efeito de qualquer Frasco de Mana |
 | 1 | na redução do dano de Acertos | Guarda do Vento (asc. Deadeye) — 4% menos Dano sofrido por Força dos Ventos |
 | 1 | no golpe físico dos monstros | Dançarino do Vento (keystone) — 20 menos dano de Ataque sofrido se você não foi Acertado por um Ataque Recentemente |
 | 1 | no PoE soma pontos à chance base da habilidade; aqui, à chance de crítico do personagem. | Assassino (asc. Ascendant) — +0.75% de Chance de Golpe Crítico |
@@ -125,14 +114,10 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 1 | parado: sem andar há pouco | Cinzas Assentadas (notável) — Inimigos Próximos são Cobertos em Cinzas se você não se moveu nos últimos 2 segundos |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas | Tiro Distante (asc. Deadeye) — Projéteis ganham Dano ao viajar adiante, causando até 30% mais Dano com Acertos e Afecções |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas (o "até 60%" é a linha de baixo, que o poedb partiu) | Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando |
-| 1 | qualquer frasco, "Recentemente" (4 s) | Coração de Carvalho (notável) — Regenera 2% de Vida por Segundo se você usou um Frasco de Vida nos últimos 10 segundos |
 | 1 | quando Acertado (o PoE: "when Hit") | Guarda do Vento (asc. Deadeye) — Perde toda a sua Força dos Ventos ao Acertar |
 | 1 | soma no alcance em metros: cada 2 m é uma casa a mais; "Próximos" = a até 2 casas | Golpe Certeiro (notável) — +0.4 metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos 5 Inimigos Próximos |
-| 1 | uma carga por segundo para os frascos do cinto, se você acertou há pouco | Medicina de Campo (notável) — Frascos de Vida ganham uma Carga quando você acertar um Inimigo, não mais que uma vez por segundo |
 | 1 | vale com qualquer Fúria | Ritual da Ruína (asc. Berserker) — Perca 0.1% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria |
 | 1 | vale em qualquer inimigo Provocado por você | Autoridade Natural (notável) — Inimigos Provocados por seus Clamores sofrem Dano aumentado em 8% |
-| 1 | vale em todos os frascos de Utilidade | Dádiva da Natureza (asc. Pathfinder) — Frascos Utilitários Mágicos aplicados em você têm Efeito aumentado em 30% |
-| 1 | vale em você (na área do Estandarte plantado); nos aliados ainda não | Inspirador (asc. Champion) — Você e Aliados próximos dos seus Estandartes Regeneram 0.1% de Vida por segundo por cada Valor consumido por tal Estandarte |
 | 1 | vale no acerto corpo a corpo que tem Fogo, sobre o dano inteiro dele | Força Concussiva (notável) — Acertos Atordoam como se causassem 50% mais Dano de Fogo Corpo a Corpo |
 | 1 | vale nos golpes com a tag Gelo (o golpe inteiro) | Despertar Frígido (asc. Occultist) — 15% mais Dano de Gelo |
 | 1 | vale para o inimigo provocado que você matar (no PoE, o provocado pelo clamor, morto por qualquer um). | Lâmina de Cinturão Verde (asc. Reliquarian) — Inimigos Provocados por seus Clamores Explodem ao morrer, causando 8% de sua Vida máxima como Dano de Caos |

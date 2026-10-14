@@ -209,9 +209,12 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
   // (+1%/ponto) e o dano mágico do INT; + "% da perícia como dano" (proficiência); e a resistência do
   // bicho àquele elemento (`resistido`).
-  const bruto = (min + Math.floor(Math.random() * (max - min + 1))) * (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
+  const bruto = (min + Math.floor(Math.random() * (max - min + 1))) * (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100)
+    // (13/10, a Sobrecarga Elemental: o golpe básico que critou há pouco — `ModsPoe.fatorDaSobrecarga`)
+    * ModsPoe.fatorDaSobrecarga(ficha, hunt, 'golpe', element);
   const base = resistido(hunt, alvo, element, bruto, ficha);
   const { dano: golpe, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
+  if (crit) ModsPoe.marcarCriticoDaHabilidade(hunt, 'golpe');
   alvo.hp -= golpe;
   ModsPoe.poupar(ficha, hunt, alvo);
   registrarGolpe(() => ({ origem: segundo ? 'wand-2o-golpe' : 'wand', alvo: alvo.name, tipo: element, danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: resistenciaDe(hunt, alvo, element), penetracao: ficha.penetracao, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, element, ficha), danoAposResistencia: base, chanceCritica: chance, critico: crit, danoFinal: golpe, vidaRestante: Math.max(0, alvo.hp) }));
@@ -1305,7 +1308,7 @@ export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) 
   const el = arma?.element ?? (ficha.element?.value ? ficha.element : null);
   if (!el?.value) return null;
   const tipo = ELEMENTO_DO_CATALOGO[el.type] ?? el.type;
-  const bruto = R.golpeDoJogador({ attack: el.value }, ficha.skillValue, estado.level) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
+  const bruto = R.golpeDoJogador({ attack: el.value }, ficha.skillValue, estado.level) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDaSobrecarga(ficha, hunt, 'golpe', tipo);
   const base = resistido(hunt, alvo, tipo, bruto, ficha);
   const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
   alvo.hp -= dano;
@@ -1318,7 +1321,7 @@ export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) 
  * resistência do bicho (teto do boss).
  */
 export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
-  const v = Math.round(resistido(hunt, alvo, tipo, parte * (1 + (ficha?.danoDoElemento?.[tipo] ?? 0) / 100), ficha));
+  const v = Math.round(resistido(hunt, alvo, tipo, parte * (1 + (ficha?.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDaSobrecarga(ficha, hunt, 'golpe', tipo), ficha));
   alvo.hp -= v;
   return { v, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
 }
@@ -1343,7 +1346,7 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
     // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros Inimigos" — no crítico, a resistência positiva não vale.
     const ignoraRes = !!rolagem?.crit && ModsPoe.valor(ficha, 'critico_ignora_res') > 0 && tipo !== 'physical' && tipo !== 'chaos';
     if (!(max > 0) || (!ignoraRes && resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100)) continue;
-    const bruto = (min + Math.random() * (max - min)) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
+    const bruto = (min + Math.random() * (max - min)) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDaSobrecarga(ficha, hunt, 'golpe', tipo);
     const base = Math.max(1, Math.round(ignoraRes ? Math.max(resistido(hunt, alvo, tipo, bruto, ficha), bruto) : resistido(hunt, alvo, tipo, bruto, ficha)));
     const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
     alvo.hp -= dano;
@@ -1525,7 +1528,7 @@ export function round(estado, personagem) {
           // o físico já é o de antes da rolagem, e as partes elementais (roladas junto com o crítico) voltam ao valor sem ele.
           const semCritico = (v) => (critico ? v / Math.max(1, ficha.critMultiplier ?? 1) : v);
           const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: semCritico(d.v) }))];
-          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss });
+          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico && !ficha.sobrecargaElemental, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss });
           for (const st of postos) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
           ModsPoe.aoPorAfeccoes(estado, hunt, alvo, ficha, postos, { eventos, personagem });
         }

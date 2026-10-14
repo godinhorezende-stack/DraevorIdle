@@ -250,7 +250,8 @@ test('keystones do PoE com mecânica: ficha (evasão→armadura, sem crítico, n
   assert.equal(r.reflexos.armor, r.reflexos.ev0, 'a evasão toda vira armadura');
   assert.deepEqual(r.resoluta, { crit: 0, nuncaErra: true });
   assert.equal(r.sobrecarga.mult, 1, 'crítico sem dano extra');
-  assert.equal(r.sobrecarga.fogo, 40);
+  // (dono, 13/10, "Ajustar a linha": no PoE é 40% MAIS dano elemental só na habilidade que critou nos últimos 8 s — parciais-exatos-poe)
+  assert.equal(r.sobrecarga.fogo, 0, 'sem o +40% aumentado: o mais é por habilidade');
   assert.ok(r.vontade > 0, 'a STR dá dano de magia');
   assert.deepEqual(r.mente, { sobra: 600, mana: 400 }, '40% do dano sai da mana');
   assert.equal(r.sangue.mana, 0, 'Magia Sanguínea: sem mana');

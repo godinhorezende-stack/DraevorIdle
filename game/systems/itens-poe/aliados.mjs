@@ -13,6 +13,8 @@
 // (sem ficha cruzada), como os Vínculos.
 
 export const PREFIXO = 'aliados:';
+/** (13/10, o Inspirador) "Você e Aliados próximos dos seus Estandartes": `aliados_estandarte:<stat>` — os aliados na área do Estandarte plantado. */
+export const PREFIXO_DO_ESTANDARTE = 'aliados_estandarte:';
 export const PADRAO = Object.freeze({
   /** "Aliados próximos": a até 3 casas de quem dá (a mesma distância dos "próximos" do jogo — Vínculos, Minas). */
   raio: 3,
@@ -48,8 +50,19 @@ export function fotografar(estado, afPoe, { fortificacao = 0 } = {}) {
     // (a Fortificação de quem empresta, com a ficha dele — "Você atingiu sua fortificação máxima" conta: `condicoes-poe.fortificacao`)
     fortificacao: n(afPoe, 'aliados_fortificacao') > 0 ? Math.max(0, fortificacao) : 0,
     aurasSoSuas: n(afPoe, 'auras_so_em_voce') > 0,
+    estandarte: doEstandarte(hunt, afPoe),
   };
   return hunt.aliados;
+}
+
+/** O Estandarte plantado de quem dá (posição, andar, raio) e o que ele dá aos aliados na área (`aliados_estandarte:<stat>`), ou null. */
+function doEstandarte(hunt, afPoe) {
+  const af = {};
+  for (const [k, v] of Object.entries(afPoe ?? {})) if (k.startsWith(PREFIXO_DO_ESTANDARTE) && typeof v === 'number' && v) af[k.slice(PREFIXO_DO_ESTANDARTE.length)] = v;
+  if (!Object.keys(af).length) return null;
+  const agora = hunt.clock ?? 0;
+  const b = Object.values(hunt.buffs ?? {}).find((x) => x?.estandarte && x.ate > agora);
+  return b ? { x: b.estandarte.x, y: b.estandarte.y, z: b.estandarte.z ?? 0, raio: b.raio ?? 1, af } : null;
 }
 
 /**
@@ -71,6 +84,9 @@ export function aplicar(estado, resolvido) {
       const foto = o.hunt.aliados;
       if (!foto || foto.aurasSoSuas) continue;
       if (longe <= (foto.raio ?? PADRAO.raio)) for (const [k, v] of Object.entries(foto.af ?? {})) if (Math.abs(v) > Math.abs(maior[k] ?? 0)) maior[k] = v;
+      // (13/10, o Inspirador: você na área do Estandarte plantado do companheiro)
+      const e = foto.estandarte;
+      if (e && hunt?.pos && (hunt.z ?? 0) === e.z && distancia(hunt.pos, e) <= e.raio) for (const [k, v] of Object.entries(e.af)) if (Math.abs(v) > Math.abs(maior[k] ?? 0)) maior[k] = v;
       // (cada aura uma vez: a sua, se você também tem a mesma — como em `gemas-poe.adds`)
       if (foto.porAura > 0) for (const [id, b] of aurasLigadas(o.hunt, o.hunt.clock ?? agora)) if (!minhas.has(id) && b.raio > 0 && longe <= b.raio) velocidade += foto.porAura;
     }
