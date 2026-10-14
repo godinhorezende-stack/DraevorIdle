@@ -512,6 +512,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     ...(itensPoeLigado() ? { fatorDasCargas: CargasPoe.fatorDeDano(estado, af), cargas: CargasPoe.regrasDaSoma(af) } : {}),
     // (+ o Mago de Batalha: "Ganhe Dano Mágico Adicional igual ao Dano da sua Arma da Mão Principal".)
     danoSomadoMagia: comDanoDaArma(somado('spell_added_'), af, armaFinal, pecaDaArma),
+    // (14/10, o Feiticeiro) O dano das VARINHAS equipadas, por elemento (`danoDasVarinhas`).
+    danoDasVarinhas: itensPoeLigado() ? danoDasVarinhas(estado, armaFinal, armaSecundariaFinal) : null,
     vidaPorAbate: af.life_on_kill ?? 0,
     manaPorAbate: af.mana_on_kill ?? 0,
     vidaPorAcerto: af.life_on_hit ?? 0,
@@ -656,6 +658,24 @@ function comDanoDaArma(somado, af, armaFinal, peca) {
   soma('physical', armaFinal.danoMin ?? 0, armaFinal.danoMax ?? 0);
   for (const el of ELEMENTOS_DO_POE) soma(el, Number(peca?.poe?.af?.[`added_${el}_dmg_min`]) || 0, Number(peca?.poe?.af?.[`added_${el}_dmg_max`]) || 0);
   return novo;
+}
+/**
+ * (14/10, o Feiticeiro do PoE: "Habilidades Suportadas têm Dano Mágico Adicional igual a X% do Dano da Varinha Equipada — Se duas Varinhas
+ * forem Equipadas, cada uma contribui com metade do Dano Adicional") O dano de cada VARINHA vestida — a faixa física dela (a base com os
+ * locais e a qualidade, `ArmaMod.statsDaArma`) e o elemental somado da própria peça —, metade de cada com duas. `{ elemento: [min, max] }`,
+ * ou null sem varinha.
+ */
+function danoDasVarinhas(estado, armaFinal, armaSecundariaFinal) {
+  const varinhas = [[estado.equipment?.weapon, armaFinal], [estado.equipment?.shield, armaSecundariaFinal]].filter(([p, f]) => p?.poe?.classe === 'Wands' && f);
+  if (!varinhas.length) return null;
+  const parte = 1 / varinhas.length;
+  const saida = {};
+  const soma = (el, a, b) => { if (a > 0 || b > 0) saida[el] = [(saida[el]?.[0] ?? 0) + a * parte, (saida[el]?.[1] ?? 0) + b * parte]; };
+  for (const [p, f] of varinhas) {
+    soma('physical', f.danoMin ?? 0, f.danoMax ?? 0);
+    for (const el of ELEMENTOS_DO_POE) soma(el, Number(p.poe.af?.[`added_${el}_dmg_min`]) || 0, Number(p.poe.af?.[`added_${el}_dmg_max`]) || 0);
+  }
+  return saida;
 }
 /** Uma velocidade em % com a Velocidade de Ação por cima (sem ela, o mesmo número — sem erro de arredondamento). */
 const comAcao = (pct, af) => (fatorDeAcao(af) === 1 ? pct : ((1 + pct / 100) * fatorDeAcao(af) - 1) * 100);

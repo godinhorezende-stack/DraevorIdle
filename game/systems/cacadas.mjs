@@ -2138,6 +2138,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
   // (14/10, o Guardian) o Sentinela do Resplendor e as Relíquias Elementais (lacaios da ascendência, não de gema — `Acoes.tiqueDoGuardian`)
   if (itensPoeLigado()) Acoes.tiqueDoGuardian(estado, hunt, agora);
+  // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
+  if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
   if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 

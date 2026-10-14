@@ -121,6 +121,11 @@ const IMPLEMENTADOS = [
     re: /Chamas? Santificadas?|Sentinela do Resplendor|Relíquia Elemental/,
     jogo: 'a Chama Santificada (o acerto corpo a corpo a põe — 6 s, +1 Chama; o ATAQUE de um aliado — o companheiro da party ou o lacaio, até o seu — ganha 25% do Físico como Fogo extra e a tira; quem pôs ganha 10% do Físico como Raio extra por Chama removida recentemente, até 80%; a intensidade aumentada); o Sentinela do Resplendor (sai sozinho, segue você, ataca corpo a corpo, queima a até 2 casas — 20% da vida dele por segundo, como Fogo —, volta 0,75 s depois de morrer; 20% do dano dos acertos sofrido na vida dele antes da sua); a Relíquia Elemental (25% de chance quando você ou um aliado perto mata ou acerta um Raro/Único; 5 s com a aura Cólera, Ódio ou Ira nível 20 em você e nos aliados perto; a do mesmo elemento só renova; explode ao acabar); o Ódio passa a dar o "Físico como Gelo extra" dele',
   },
+  {
+    bloco: 'A árvore principal (lote 19)',
+    re: /Poder Arcano|Portador da Praga|Profanar e Desenterrar|Suportadas por Feiticeiro/,
+    jogo: 'o Poder Arcano (o "Dano Mágico aumentado" também nos ataques, no % dele — a Maestria de Varinhas com varinha e os únicos); Profanar e Desenterrar criam cadáveres (5 dos monstros da área / 1 Arqueiro de Ossos onde o projétil cai, até 10 de cada gema, +2 com o Coveiro); o Infestador (sai sozinho na barra: Incubando, 40% do dano esperado de cada Veneno no Valor da Praga — até o máximo do nível, × o "Valor Máximo aumentado" — e 20% menos Veneno fora do máximo; no máximo com um inimigo perto, Infesta: 12% do Valor do começo por segundo como Caos a até 2 casas, até acabar); o Feiticeiro (liga na barra reservando 20% da mana por magia ligada — com a eficácia da maestria —; o ataque de varinha ativa as magias ligadas, com o dano da varinha e o "menos dano" do nível, recarga 0,6 s ÷ a recuperação)',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

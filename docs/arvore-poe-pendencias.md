@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5950** — equivalente 1356, novo 4433, aproximado (parcial) 161.
-- ✗ Sem efeito: **25** — na árvore principal 13, nas ascendências 12; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 10; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5963** — equivalente 1356, novo 4446, aproximado (parcial) 161.
+- ✗ Sem efeito: **12** — na árvore principal 0, nas ascendências 12; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 6; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 61. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -30,19 +30,16 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | O Congelamento do PoE e a Geada (lote 15) | 1 | 0 | o Congelamento que você põe segue o dano de Gelo do acerto, como no PoE (60 ms por 1% da vida do monstro, até 3 s, × a Duração aumentada; abaixo de 0,3 s não congela — antes, 1,5 s fixos); a Geada do Juramento do Inverno (o acerto que falha em Congelar por duração curta: 10 s, acumula, +20% de Duração do Congelamento por Geada, sai ao Congelar); "Congela … como se causasse X% mais Dano" no dano da conta |
 | Os altares do PoE (lote 16) | 2 | 0 | os 13 altares do sorteio do PoE (Aceleração, Brutal, Diamante, Ecoante, Sombrio, Impenetrável, Massivo, Reabastecimento, Resistência, Carregado e os Maiores Congelante, Eletrizante e Esquelético — as Novas e os Esqueletos pelas gemas do jogo); a Harmonia do Propósito (um altar ao acaso a cada 10 s, por 20 s) e o Gritos dos Dessecados (o Altar Impenetrável sem frascos ativos); o efeito e a duração dos buffs de altar das peças |
 | O Warden (lote 17) | 9 | 0 | a Pele de Árvore (a Casca: +1 por segundo sem ser Acertado por um Ataque Recentemente, -1 por Ataque que acerta, até 10; -60 de Dano Físico dos Acertos de Ataque por Casca, 4% mais chance de Evadir por Casca abaixo do máximo); a Lição das Estações (-25 de cada tipo de dano dos Acertos de Magia por Casca, +3% do Dano Mágico Suprimido Impedido por Casca abaixo do máximo, -1 Casca por Dano Mágico); o Avatar Liberto (Fúria Liberta pelas Afecções Elementais; com 100, Liberto por 10 s: sempre Congela, Eletriza e Incendeia, 100% mais Dano Elemental) — as habilidades saem sozinhas; e o HUD mostra os buffs do PoE por nome, a Casca e a Fúria Liberta |
+| O Guardian (lote 18) | 7 | 0 | a Chama Santificada (o acerto corpo a corpo a põe — 6 s, +1 Chama; o ATAQUE de um aliado — o companheiro da party ou o lacaio, até o seu — ganha 25% do Físico como Fogo extra e a tira; quem pôs ganha 10% do Físico como Raio extra por Chama removida recentemente, até 80%; a intensidade aumentada); o Sentinela do Resplendor (sai sozinho, segue você, ataca corpo a corpo, queima a até 2 casas — 20% da vida dele por segundo, como Fogo —, volta 0,75 s depois de morrer; 20% do dano dos acertos sofrido na vida dele antes da sua); a Relíquia Elemental (25% de chance quando você ou um aliado perto mata ou acerta um Raro/Único; 5 s com a aura Cólera, Ódio ou Ira nível 20 em você e nos aliados perto; a do mesmo elemento só renova; explode ao acabar); o Ódio passa a dar o "Físico como Gelo extra" dele |
 
 ## Sem efeito (✗), pelo motivo
 
 | Linhas | Motivo | Bloco a implementar (dono, 12/10) | Exemplos (nó — texto) |
 |---:|---|---|---|
-| 4 | a gema Feiticeiro (Spellslinger) está no catálogo, mas ainda não tem comportamento de combate no jogo | — | Maestria de Varinhas (maestria) — Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em 25% |
-| 4 | a gema Infestador (o Portador da Praga do texto) está no catálogo, mas ainda não tem comportamento de combate no jogo | — | Maestria de Envenenamentos (maestria) — Portador da Praga têm Valor Máximo da Praga aumentado em 20% |
-| 4 | falta no jogo: o Poder Arcano | — | Maestria de Varinhas (maestria) — Ataques têm 100% de Poder Arcano ao usar uma varinha |
 | 3 | as Égides (habilidades de único) não existem no jogo | — | Bastião dos Elementos (asc. Elementalist) — Ativa Égide Primitiva Nível 20 quando Alocado<br>Bastião dos Elementos (asc. Elementalist) — Égide Primitiva pode sofrer 75 de Dano Elemental por Nódulo de Habilidade Passiva Alocada<br>Bastião dos Elementos (asc. Elementalist) — Outras Habilidades de Égides são Desabilitadas |
 | 2 | falta no jogo: a chance de crítico de magia que se bifurca (a Infusão Mística entra inteira) | — | Infusão Mística (asc. Assassin) — A chance de causar golpe mágico crítico se bifurca<br>Infusão Mística (asc. Assassin) — ㅤ-30% de chance de causar golpe mágico crítico |
 | 1 | a habilidade "Erguer Aranhas" não está na coleção de gemas do jogo | — | Presa de Arakaali (asc. Reliquarian) — Ativa Erguer Aranhas Nível 20 ao Matar |
 | 1 | a habilidade "Suspender no Tempo" não está na coleção de gemas do jogo | — | As Areias do Tempo (asc. Reliquarian) — Ativa Suspender no Tempo nível 1 ao conjurar uma magia |
-| 1 | as gemas Profanar e Desenterrar estão no jogo, mas ainda não criam cadáveres | — | Coveiro (notável) — Profanar e Desenterrar tem +2 de número Máximo de cadáveres permitidos |
 | 1 | falta no jogo: a habilidade Rajada Vulcânica | — | Chamas de Ngamahu (asc. Reliquarian) — Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo |
 | 1 | falta no jogo: o Grande Emissário das Direções | — | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
 | 1 | falta no jogo: o Poder Fantasmal | — | O Bastão Negro (asc. Reliquarian) — Cada Fantasma Convocado concede a Você Poder Fantasmal |

@@ -533,6 +533,16 @@ function unicas(supports) {
  * `Map(idDaAcao → { acao, itemId, nivel, xp, def, supports: [{ def, nivel }], onde: {slot, indice} })`.
  * A mesma skill em dois sockets: vale a de nível mais alto.
  */
+/**
+ * (14/10) O FEITICEIRO do PoE (Spellslinger — a gema ativa que concede o suporte): as magias ligadas a ele saem quando você dispara projéteis de
+ * um ataque de varinha (`acoes.ativarGatilhos`, `ataqueDeVarinha`), com o dano da varinha (`efeito.feiticeiro`) e a reserva dele. "Supports spell
+ * skills that have no reservation. Cannot support skills used by totems, traps or mines" (RePoE): sem Ataque, Aura, Arauto, Armadilha, Mina,
+ * Totem, Canalização, Ativação nem Vínculo.
+ */
+const ehFeiticeiro = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Spellslinger';
+const FORA_DO_FEITICEIRO = ['poe:Ataque', 'poe:Aura', 'poe:Arauto', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Canalização', 'poe:Ativação', 'poe:Vínculo'];
+const magiaDoFeiticeiro = (def) => def?.tipo === 'ativa' && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !FORA_DO_FEITICEIRO.some((t) => def.tags.includes(t));
+
 export function skillsAtivas(estado) {
   const saida = new Map();
   for (const slot of SLOTS_COM_SOCKET) {
@@ -543,6 +553,7 @@ export function skillsAtivas(estado) {
     for (const grupo of gruposLigados(s)) {
       const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
       const supports = noGrupo.filter((x) => x.def.tipo === 'support');
+      const feiticeiro = noGrupo.find((y) => ehFeiticeiro(y.def));
       for (const x of noGrupo.filter((y) => y.def.tipo === 'ativa')) {
         const anterior = saida.get(x.def.acao);
         const doPoe = extrasDaGemaPoe(estado, peca, x.def, x.i);
@@ -564,6 +575,9 @@ export function skillsAtivas(estado) {
               .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def, sp.i); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
           ),
           onde: { slot, indice: x.i },
+          // (o Feiticeiro: a magia ligada a ele — o nível dele —, e ele com quantas magias suporta)
+          ...(feiticeiro && magiaDoFeiticeiro(x.def) ? { feiticeiro: { nivel: feiticeiro.g.nivel + bonus } } : {}),
+          ...(ehFeiticeiro(x.def) ? { magiasDoFeiticeiro: noGrupo.filter((y) => magiaDoFeiticeiro(y.def)).length } : {}),
           ...(doPoe.eficienciaReserva || doPoe.custoEmVida || doPoe.maisDano || doPoe.custo || doPoe.usos || doPoe.recarga ? { local: { eficienciaReserva: doPoe.eficienciaReserva ?? 0, custoEmVida: !!doPoe.custoEmVida, maisDano: doPoe.maisDano ?? 0, custo: doPoe.custo ?? 0, usos: doPoe.usos ?? 0, recarga: doPoe.recarga ?? 0 } } : {}),
         });
       }
@@ -653,6 +667,9 @@ export function gruposComGatilho(estado) {
     const bonus = bonusDeNivelDaPeca(peca);
     for (const grupo of gruposLigados(s)) {
       const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
+      // (14/10) o Feiticeiro: as magias ligadas saem no ataque de varinha — qualquer um, não só o do grupo —, com ele ligado (a reserva)
+      const fei = noGrupo.find((y) => ehFeiticeiro(y.def));
+      if (fei) saida.push({ chave: `${slot}:${fei.i}`, nome: fei.def.nome, nivel: fei.g.nivel + bonus, gatilho: { quando: 'ataqueDeVarinha' }, ataques: [], magias: noGrupo.filter((y) => magiaDoFeiticeiro(y.def)).map((y) => y.def.acao), feiticeiro: fei.def.acao });
       for (const x of noGrupo.filter((y) => y.def.tipo === 'support' && y.def.suporte?.gatilho)) {
         const gat = typeof x.def.suporte.gatilho === 'function' ? x.def.suporte.gatilho(x.g.nivel + bonus) : x.def.suporte.gatilho;
         const ativas = noGrupo.filter((y) => y.def.tipo === 'ativa');
@@ -748,6 +765,8 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   // (11/10) O que a PEÇA onde a gema está dá a ela: a Eficácia da Reserva local e o custo/reserva em Vida (`extrasDaGemaPoe`).
   if (a.local?.eficienciaReserva) e.eficienciaReservaLocal = a.local.eficienciaReserva;
   if (a.local?.custoEmVida) e.custoEmVida = 1;
+  if (a.feiticeiro) e.feiticeiro = a.feiticeiro;
+  if (a.magiasDoFeiticeiro != null) e.magiasDoFeiticeiro = a.magiasDoFeiticeiro;
   if (a.local?.maisDano) e.fatorDeDano *= Math.max(0, 1 + a.local.maisDano / 100);
   if (a.local?.usos) e.usosExtra = a.local.usos;
   if (a.local?.recarga) e.recargaExtraMs = a.local.recarga * 1000;

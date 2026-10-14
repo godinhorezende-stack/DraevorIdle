@@ -92,7 +92,11 @@ export function processarMortes(estado, personagem, eventos) {
       // (PoE, 12/10: o cadáver guarda os Empalamentos do morto — o Convocar o Aço os chama "de inimigos, vivos ou mortos".)
       const empalado = (m.estados?.empalado ?? []).filter((x) => x.ate > (hunt.clock ?? 0) && x.acertos > 0);
       const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};
-      hunt.cadaveres = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, ...doAco }].slice(-10);
+      // (14/10: os 10 mortos mais recentes; os cadáveres CRIADOS — Profanar, Desenterrar — têm o teto deles, `Acoes.criarCadaveres`)
+      const lista = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, ...doAco }];
+      const mortos = lista.filter((c) => !c.criadoPor);
+      const sai = new Set(mortos.slice(0, Math.max(0, mortos.length - 10)));
+      hunt.cadaveres = lista.filter((c) => !sai.has(c));
     }
     matarMonstro(estado, hunt, personagem, m, eventos);
   }
@@ -1410,6 +1414,8 @@ export function round(estado, personagem) {
     if (itensPoeLigado()) ModsPoe.marcar(hunt, 'usou:ataque');
     // O golpe básico também vira o personagem para o alvo.
     Acoes.virarParaOAlvo(hunt, alvo);
+    // (14/10, o Feiticeiro: o golpe básico de VARINHA dispara projéteis — as magias ligadas ao Feiticeiro ligado saem — `Acoes.ativarGatilhos`)
+    if (itensPoeLigado() && Acoes.ehAtaqueDeVarinha(estado)) Acoes.ativarGatilhos(estado, hunt, personagem, 'ataqueDeVarinha', { alvo }, eventos);
     if (categoriaDaArma(arma) === 'magica') {
       const acertou = golpeDaWand(estado, hunt, alvo, arma, eventos, personagem);
       // Ataque duplo: no máximo UM golpe extra (que não gasta mana e não rola o duplo de novo).
@@ -1535,7 +1541,7 @@ export function round(estado, personagem) {
           // o físico já é o de antes da rolagem, e as partes elementais (roladas junto com o crítico) voltam ao valor sem ele.
           const semCritico = (v) => (critico ? v / Math.max(1, ficha.critMultiplier ?? 1) : v);
           const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: semCritico(d.v) }))];
-          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico && !ficha.sobrecargaElemental, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss });
+          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, praga: Acoes.pragaDoAcerto(hunt), crit: critico && !ficha.sobrecargaElemental, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss });
           // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
           ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, hunt.clock ?? 0);
           for (const st of postos) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });

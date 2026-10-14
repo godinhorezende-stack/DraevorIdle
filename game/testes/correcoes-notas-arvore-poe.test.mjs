@@ -166,11 +166,13 @@ test('a MAGIA SANGUÍNEA igual ao PoE: o "10% mais Vida Máxima" multiplica (`li
   assert.equal(e.maxMana, 0, 'Remove toda a mana');
 });
 
-test('as NOTAS que não batiam: as gemas que estão no catálogo (sem combate) e as que não criam cadáveres; o mod oculto não é lembrete', { skip: SEM }, () => {
-  const nota = (re) => linhas(re)[0]?.nota ?? '';
-  assert.match(nota(/^Portador da Praga/), /Infestador .* está no catálogo, mas ainda não tem comportamento de combate/);
-  assert.match(nota(/Suportadas por Feiticeiro/), /Feiticeiro .* está no catálogo, mas ainda não tem comportamento de combate/);
-  assert.match(nota(/^Profanar e Desenterrar/), /estão no jogo, mas ainda não criam cadáveres/);
+test('as NOTAS que não batiam: as linhas do Infestador, do Feiticeiro e do Coveiro (com efeito desde o lote 19); o mod oculto não é lembrete', { skip: SEM }, () => {
+  // (dono, 14/10, "Ajustar as linhas": o lote 19 deu comportamento ao Infestador e ao Feiticeiro e cadáveres a Profanar e Desenterrar — as
+  // linhas passam a ter efeito, sem a nota de antes; `arvore-principal-poe`)
+  for (const re of [/^Portador da Praga/, /Suportadas por Feiticeiro/, /^Profanar e Desenterrar/]) {
+    assert.ok(linhas(re).length > 0, `há linha ${re}`);
+    for (const l of linhas(re)) assert.equal(l.estado, 'novo', l.t);
+  }
   const oculto = traduzirParte('Has no Attribute Requirements or Energy Shield (Hidden)', []);
   assert.deepEqual(oculto.efeitos.map((x) => x.stat), ['sem_es_da_base']);
   assert.equal(traduzirParte('(Recentemente se refere aos últimos 4 segundos)', []).estado, 'lembrete', 'o lembrete continua lembrete');

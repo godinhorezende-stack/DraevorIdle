@@ -6440,6 +6440,30 @@
       "unidade": "%",
       "combate": true,
       "efeito": "acoes.tiqueDoGuardian (14/10)"
+    },
+    "poder_arcano": {
+      "nome": "Poder Arcano (o Dano Mágico aumentado também no Ataque)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fichaDoGolpe (14/10)"
+    },
+    "praga_max": {
+      "nome": "Valor Máximo da Praga (Infestador)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDaPraga (14/10)"
+    },
+    "cadaveres_max_criados": {
+      "nome": "Máximo de cadáveres criados (Profanar e Desenterrar)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.criarCadaveres (14/10)"
+    },
+    "eficiencia_reserva_feiticeiro": {
+      "nome": "Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "reserva.fator (14/10)"
     }
   }
 }

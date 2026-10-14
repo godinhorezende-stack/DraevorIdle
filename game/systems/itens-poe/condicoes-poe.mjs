@@ -613,6 +613,8 @@ export function buffsDoCliente(estado) {
   const saida = [];
   for (const [nome, ate] of Object.entries(h.poeBuffs ?? {})) if (ate > agora && BUFFS[nome]) saida.push({ icone: null, nome: BUFFS[nome].nome, resta: ate - agora, tipo: 'buffPoe', buff: nome });
   if (h.casca) saida.push({ icone: null, nome: 'Casca', resta: 0, tipo: 'casca', contador: h.casca.n, dica: `Casca: ${h.casca.n} de ${CASCA.maximo} (a Pele de Árvore — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente)` });
+  // (14/10) o Infestador: Incubando ou Infestando, com o Valor da Praga
+  if (h.praga) saida.push({ icone: null, nome: h.praga.modo === 'infestando' ? 'Infestando' : 'Incubando', resta: 0, tipo: 'praga', contador: Math.round(h.praga.valor), dica: `Valor da Praga: ${Math.round(h.praga.valor)} de ${Math.round(h.praga.max ?? 0)} (o Infestador — ${h.praga.modo === 'infestando' ? 'Infestando: Caos nos inimigos a até 2 casas até o Valor acabar' : 'Incubando: 40% do dano de cada Veneno seu; no máximo, Infesta sozinho'})` });
   if (h.furiaLiberta?.n > 0) saida.push({ icone: null, nome: 'Fúria Liberta', resta: 0, tipo: 'furiaLiberta', contador: h.furiaLiberta.n, dica: `Fúria Liberta: ${h.furiaLiberta.n} de ${FURIA_LIBERTA.maximo} (com ${FURIA_LIBERTA.maximo}, o Avatar Liberto deixa Liberto por ${FURIA_LIBERTA.libertoS} s)` });
   return saida;
 }
@@ -1173,7 +1175,12 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (O "Dano aumentado" sem condição já está em `danoDoElemento` da ficha; aqui só o condicional e a Fúria.)
   // (13/10: + o Tiro Longo — "Projéteis ganham Dano conforme viajam adiante, causando Dano aumentado em até X% com Acertos em alvos":
   // `projetil_longe_inc`, do colado a 6 casas)
-  const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe;
+  // (14/10, a Maestria de Varinhas: "Ataques têm 100% de Poder Arcano ao usar uma varinha" — o lembrete do PoE: "Poder Arcano faz com que
+  // aumentos e reduções de dano mágico também se apliquem ao dano de ataque na mesma porcentagem do seu valor": o "Dano Mágico aumentado"
+  // × o %, no "aumentado" do ataque)
+  const arcano = t.has('ataque') ? (Number(ficha.afPoe.poder_arcano) || 0) + (s.poder_arcano ?? 0) : 0;
+  const doArcano = arcano > 0 ? (((ficha.danoDeMagiaDoPoe ?? 0) + (s.spell_dmg ?? 0)) * arcano) / 100 : 0;
+  const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe + doArcano;
   const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0);
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;

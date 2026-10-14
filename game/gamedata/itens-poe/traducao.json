@@ -570,17 +570,26 @@
       "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
-      "padrao": "^Ataques têm .* de Poder Arcano ao usar uma varinha$",
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de Poder Arcano ao usar uma varinha$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "poder_arcano@ataque+comVarinha",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Poder Arcano",
       "_nova": true,
-      "_ciclo7": true
+      "_lote19": "14/10 — a árvore principal (lote 19)"
+    },
+    {
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de Poder Arcano$",
+      "efeitos": [
+        {
+          "stat": "poder_arcano@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^Efeito da Crueldade aumentado em \\{(\\d+)\\}%$",
@@ -6513,18 +6522,15 @@
       "nota": "vale nos ataques enquanto você empunha uma Espada"
     },
     {
-      "padrao": "^Portador da Praga .*$",
+      "padrao": "^Portador da Praga têm Valor Máximo da Praga aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "praga_max",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "a gema Infestador (o Portador da Praga do texto) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_ciclo7": true,
-      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^Furtividade aumentada em .*$",
@@ -7183,18 +7189,15 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Profanar e Desenterrar tem .* cadáveres permitidos$",
+      "padrao": "^Profanar e Desenterrar tem \\+\\{(\\d+)\\} de número Máximo de cadáveres permitidos$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "cadaveres_max_criados",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "as gemas Profanar e Desenterrar estão no jogo, mas ainda não criam cadáveres",
       "_nova": true,
-      "_ciclo7": true,
-      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^As primeiras \\{(\\d+)\\} Queimas de Mana aplicadas em você não tem efeito$",
@@ -16828,15 +16831,12 @@
       "padrao": "^Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "eficiencia_reserva_feiticeiro",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "a gema Feiticeiro (Spellslinger) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_lote8": "13/10 — a mana reservada (lote 8)",
-      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
