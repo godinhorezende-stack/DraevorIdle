@@ -329,7 +329,13 @@ export function buffNoNivel(slug, nivel) {
   if (b.menosDanoRecebido) af.dmg_reduction = (af.dmg_reduction ?? 0) + b.menosDanoRecebido;
   if (b.absorve) motivos.push('a absorção de dano da guarda ainda não existe no jogo');
   if (b.imuneAfeccoes) motivos.push('a imunidade a afecções ainda não existe no jogo');
-  for (const t of b.extra ?? []) motivos.push(`efeito não aplicado no jogo: ${t}`);
+  // (14/10) "Você e aliados próximos recebem X% de Dano Físico como Dano Extra de Gelo" (o Ódio): o Físico como Extra do elemento — antes não
+  // entrava ("efeito não aplicado").
+  for (const t of b.extra ?? []) {
+    const e = AF_DO_ELEMENTO[t?.para];
+    if (e && e !== 'phys' && t.pct > 0) af[`phys_as_extra_${e}`] = (af[`phys_as_extra_${e}`] ?? 0) + t.pct;
+    else motivos.push(`efeito não aplicado no jogo: ${t?.para ?? t}`);
+  }
   // A MALDIÇÃO: quem você atinge sofre mais dano (resistência reduzida, dano recebido) ou causa menos.
   const durMarca = Math.round((st.duracao ?? 6) * 1000);
   for (const [el, v] of Object.entries(m.resist ?? {})) if (v < 0 && ELEMENTO[el]) efeitos.push({ efeito: 'marcaVulneravel', pct: -v, tipos: [ELEMENTO[el]], durMarca });

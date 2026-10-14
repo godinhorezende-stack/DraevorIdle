@@ -116,6 +116,11 @@ const IMPLEMENTADOS = [
     re: /Pele de Árvore|Avatar Liberto|Fúria Liberta|enquanto Liberto$|[Cc]asca/,
     jogo: 'a Pele de Árvore (a Casca: +1 por segundo sem ser Acertado por um Ataque Recentemente, -1 por Ataque que acerta, até 10; -60 de Dano Físico dos Acertos de Ataque por Casca, 4% mais chance de Evadir por Casca abaixo do máximo); a Lição das Estações (-25 de cada tipo de dano dos Acertos de Magia por Casca, +3% do Dano Mágico Suprimido Impedido por Casca abaixo do máximo, -1 Casca por Dano Mágico); o Avatar Liberto (Fúria Liberta pelas Afecções Elementais; com 100, Liberto por 10 s: sempre Congela, Eletriza e Incendeia, 100% mais Dano Elemental) — as habilidades saem sozinhas; e o HUD mostra os buffs do PoE por nome, a Casca e a Fúria Liberta',
   },
+  {
+    bloco: 'O Guardian (lote 18)',
+    re: /Chamas? Santificadas?|Sentinela do Resplendor|Relíquia Elemental/,
+    jogo: 'a Chama Santificada (o acerto corpo a corpo a põe — 6 s, +1 Chama; o ATAQUE de um aliado — o companheiro da party ou o lacaio, até o seu — ganha 25% do Físico como Fogo extra e a tira; quem pôs ganha 10% do Físico como Raio extra por Chama removida recentemente, até 80%; a intensidade aumentada); o Sentinela do Resplendor (sai sozinho, segue você, ataca corpo a corpo, queima a até 2 casas — 20% da vida dele por segundo, como Fogo —, volta 0,75 s depois de morrer; 20% do dano dos acertos sofrido na vida dele antes da sua); a Relíquia Elemental (25% de chance quando você ou um aliado perto mata ou acerta um Raro/Único; 5 s com a aura Cólera, Ódio ou Ira nível 20 em você e nos aliados perto; a do mesmo elemento só renova; explode ao acabar); o Ódio passa a dar o "Físico como Gelo extra" dele',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

@@ -338,43 +338,76 @@
       "_lote15": "14/10 — o Congelamento do PoE e a Geada (lote 15)"
     },
     {
-      "padrao": "^Inflige Chama Santificada ao atingir corpo a corpo$|^Você pode infligir \\+?\\{(\\d+)\\} Chama Santificada nos inimigos$|^Ganha .* Chamas Santificadas que foram removidas .*$|^Intensidade de Chama Santificada infligida por você aumentada em .*$",
+      "padrao": "^Inflige Chama Santificada ao atingir corpo a corpo$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "chama_santificada_corpo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Chama Santificada (só beneficia os ataques dos aliados)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
-      "padrao": "^.* é sofrido na vida do seu Sentinela do Resplendor antes da sua$",
+      "padrao": "^Você pode infligir \\+\\{(\\d+)\\} Chamas? Santificadas? nos inimigos$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "chama_santificada_extra",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Sentinela do Resplendor",
       "_nova": true,
-      "_ciclo7": true
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
-      "padrao": "^.*Ativar Convocar Relíquia Elemental .*$",
+      "padrao": "^Ganha \\{(\\d+)\\}% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram removidas recentemente por um ataque aliado, até \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "chama_santificada_raio",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chama_santificada_raio_max",
+          "valor": "{2}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Relíquia Elemental",
       "_nova": true,
-      "_ciclo7": true
+      "_lote18": "14/10 — o Guardian (lote 18)"
+    },
+    {
+      "padrao": "^Intensidade de Chama Santificada infligida por você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "chama_santificada_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote18": "14/10 — o Guardian (lote 18)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua$",
+      "efeitos": [
+        {
+          "stat": "sentinela_absorve",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote18": "14/10 — o Guardian (lote 18)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Relíquia Elemental Nível \\{(\\d+)\\} quando você ou um Aliado próximo Matar um Inimigo, ou Acertar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "reliquia_elemental",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Relíquia (5 s) tem a aura de um elemento ao acaso — Cólera, Ódio ou Ira nível 20 — em você e nos aliados perto e explode ao acabar, nos inimigos a até 2 casas (100% da vida dela, como dano do elemento); a vida dela é a de um monstro comum do seu nível, com a sua \"Vida dos Lacaios\" — o PoE não publica a vida nem a explosão",
+      "_nova": true,
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
       "padrao": "^Ganha um buff de altar aleatório a cada \\{(\\d+)\\} segundos$",
@@ -17110,6 +17143,19 @@
       "_nova": true,
       "_lote17": "14/10 — o Warden (lote 17)",
       "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): com 100 de Fúria Liberta, Liberto por 10 segundos"
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Sentinela do Resplendor Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "sentinela_do_resplendor",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Sentinela segue você, ataca corpo a corpo e queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo); volta 0,75 s depois de morrer; a vida e o golpe são os de um monstro comum do seu nível, com a sua \"Vida/Dano dos Lacaios\" — o PoE não publica a tabela dos lacaios",
+      "_nova": true,
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
       "padrao": "^Concede (?:a |à )?[Hh]abilidade (.+?) [Nn]ível \\{(\\d+)\\}$",

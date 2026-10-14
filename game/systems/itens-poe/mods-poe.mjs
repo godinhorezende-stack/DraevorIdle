@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca } from './condicoes-poe.mjs';
+import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -22,6 +22,10 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
   const v = (k) => valor(fichaR, k);
   const tags = new Set(ficha.tagsDoGolpe ?? []);
+  // (14/10, o Guardian: a Chama Santificada no acerto corpo a corpo — o Marechal da Divindade; o Raro ou Único acertado é ocasião da Relíquia
+  // Elemental — a Cruzada Implacável)
+  if (tags.has('corpo')) porChamaSantificada(hunt, alvo, ficha.afPoe, agora);
+  if (['raro', 'unico'].includes(alvo.raridade ?? alvo.raridadePoe) || alvo.boss) notarParaReliquia(estado, hunt, agora);
   // (12/10, as Tinturas: os acertos de ATAQUE desde o último tique — "quando você Acertar um Inimigo com uma Arma Corpo a Corpo";
   // `frascos.tique` → `tinturas.tique`, que confere a arma)
   if (hunt && tags.has('ataque')) hunt.tinturaAcertos = (hunt.tinturaAcertos ?? 0) + 1;
@@ -706,6 +710,8 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   ultimos.push(agora);
   while (ultimos.length && (ultimos[0] < agora - 20000 || ultimos.length > 60)) ultimos.shift();
   if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) marcar(hunt, 'estilhacou', agora);
+  // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto)
+  if (nome === 'matar') notarParaReliquia(estado, hunt, agora);
   const rng = ctx.rng ?? Math.random;
   const alvo = ctx.alvo ?? null;
   const tagsAlvo = new Set([...tagsDoAlvo(alvo, agora), ...(ctx.tags ?? [])]);

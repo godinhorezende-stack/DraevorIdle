@@ -457,6 +457,86 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
 }
 
 /**
+ * (14/10) O GUARDIAN — os lacaios das ascendências que não são gemas: o SENTINELA DO RESPLENDOR (a Cruzada Radiante: "Concede a Habilidade
+ * Convocar Sentinela do Resplendor Nível 20" — sai sozinho, como o jogo usa as habilidades sozinho; volta 0,75 s depois de morrer — o tempo de
+ * conjuração; segue você, ataca corpo a corpo e queima os inimigos a até 2 casas — 20% da vida dele por segundo, como Fogo —; "20% do Dano dos
+ * Acertos é sofrido na vida do seu Sentinela antes da sua" — `arvore.danoRecebido`) e a RELÍQUIA ELEMENTAL (a Cruzada Implacável: a chance a
+ * cada ocasião pendente — `ModsPoe.notarParaReliquia` —, recarga de 0,3 s; um elemento ao acaso, a aura dele — a Cólera, o Ódio ou a Ira nível
+ * 20 — por 5 s; a do mesmo elemento só renova; explode ao morrer — `cacadas`). A vida e o golpe: os de um monstro comum do nível do dono (até
+ * 85), com a "Vida/Dano dos Lacaios" dele.
+ */
+const GUARDIAN = Object.freeze({ sentinelaNome: 'Sentinela do Resplendor', sentinelaVoltaMs: 750, queimaPctPorS: 20, auraDaReliquia: { fire: 'Anger', ice: 'Hatred', energy: 'Wrath' }, nomeDaReliquia: { fire: 'Relíquia de Fogo', ice: 'Relíquia de Gelo', energy: 'Relíquia de Raio' } });
+function lacaioDoGuardian(estado, hunt, agora, af, nome, elemento, extra) {
+  const nivel = Math.min(85, Math.max(1, estado.level ?? 1));
+  const f = LacaiosPoe.forcaDoNivel(nivel);
+  const vida = Math.max(10, Math.round(f.vida * (1 + (Number(af?.minion_life) || 0) / 100)));
+  const golpe = f.dano * (1 + (Number(af?.minion_dmg) || 0) / 100);
+  const desenho = LacaiosPoe.desenhoDe(nome, elemento, false);
+  return {
+    uid: `lacaio:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, gema: null, acao: null, tipo: 'lacaio', nome, nivel,
+    x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir ?? 2, look: desenho.look, lookItem: desenho.lookItem ?? 0, colors: desenho.colors,
+    hp: vida, maxHp: vida, dano: { min: Math.max(1, Math.round(golpe * 0.8)), max: Math.max(1, Math.round(golpe * 1.2)) }, elemento, intervaloMs: Math.round(f.tempo * 1000),
+    ate: null, duracaoMs: null, perto: 2, alcance: 0, alcanceDeAtaque: 1, proximoGolpe: agora + 400, proximoPassoEm: 0,
+    estilo: null, velAtaquePct: 0, critChance: 5, critMult: 1.5, somado: [0, 0], afDono: null, porLacaioFisico: null, golem: false, acertos: 0, poe: null,
+    ...extra,
+  };
+}
+/** (`agora`: o relógio dos lacaios — `hunt.ultimoTique`, o do tique da caçada.) */
+export function tiqueDoGuardian(estado, hunt, agora = hunt?.ultimoTique ?? Date.now(), rng = Math.random) {
+  if (!itensPoeLigado() || !hunt?.pos) return;
+  const af = Ficha.combate(estado).afPoe ?? {};
+  hunt.lacaios ??= [];
+  // O Sentinela: com o nó, sempre um; sem o nó, sai.
+  const sentinela = hunt.lacaios.find((l) => l.sentinela && l.hp > 0);
+  if (Number(af.sentinela_do_resplendor) > 0) {
+    if (!sentinela) {
+      hunt.poeSentinelaVoltaEm ??= agora + GUARDIAN.sentinelaVoltaMs;
+      if (agora >= hunt.poeSentinelaVoltaEm) {
+        hunt.lacaios.push(lacaioDoGuardian(estado, hunt, agora, af, GUARDIAN.sentinelaNome, 'physical', { sentinela: true }));
+        delete hunt.poeSentinelaVoltaEm;
+      }
+    }
+  } else if (sentinela) sentinela.hp = 0;
+  // A Relíquia: a chance a cada ocasião pendente (na recarga, a ocasião se perde).
+  const pendentes = hunt.poeReliquiaPendente ?? 0;
+  delete hunt.poeReliquiaPendente;
+  const chance = Number(af.reliquia_elemental) || 0;
+  for (let i = 0; i < pendentes && chance > 0; i++) {
+    if (agora < (hunt.poeReliquiaRecargaAte ?? 0) || !(rng() * 100 < chance)) continue;
+    hunt.poeReliquiaRecargaAte = agora + ModsPoe.RELIQUIA.recargaMs;
+    const elemento = ['fire', 'ice', 'energy'][Math.floor(rng() * 3)];
+    const mesma = hunt.lacaios.find((l) => l.reliquia === elemento && l.hp > 0 && l.ate > agora);
+    if (mesma) { mesma.ate = agora + ModsPoe.RELIQUIA.duracaoMs; continue; }
+    const auraAf = { ...(GemasPoe.buffNoNivel(GUARDIAN.auraDaReliquia[elemento], 20)?.af ?? {}) };
+    hunt.lacaios.push(lacaioDoGuardian(estado, hunt, agora, af, GUARDIAN.nomeDaReliquia[elemento], elemento, { reliquia: elemento, auraAf, semAtaque: true, ate: agora + ModsPoe.RELIQUIA.duracaoMs, duracaoMs: ModsPoe.RELIQUIA.duracaoMs }));
+    Ficha.invalidar(estado);
+  }
+}
+/** A queima do Sentinela (20% da vida dele por segundo, como Fogo, nos inimigos a até 2 casas) num tique de `ms`. */
+export function queimaDoSentinela(hunt, l, ficha, ms, eventos = []) {
+  const dano = (l.maxHp * GUARDIAN.queimaPctPorS) / 100 * (ms / 1000);
+  for (const b of hunt.monstros ?? []) {
+    if (!(b.hp > 0) || b.dummy || Math.max(Math.abs(b.x - l.x), Math.abs(b.y - l.y)) > 2) continue;
+    const v = Math.round(resistido(hunt, b, 'fire', dano, ficha));
+    if (!(v > 0)) continue;
+    b.hp -= v;
+    eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v, foe: true, lacaio: true, alvo: b.name, color: COR_DO_ELEMENTO.fire ?? '#ff9900' });
+  }
+  return eventos;
+}
+/** A explosão da Relíquia ao morrer (ou acabar): 100% da vida dela como dano do elemento, nos inimigos a até 2 casas. */
+export function explosaoDaReliquia(hunt, l, ficha, eventos = []) {
+  for (const b of hunt.monstros ?? []) {
+    if (!(b.hp > 0) || b.dummy || Math.max(Math.abs(b.x - l.x), Math.abs(b.y - l.y)) > 2) continue;
+    const v = Math.round(resistido(hunt, b, l.reliquia, l.maxHp, ficha));
+    if (!(v > 0)) continue;
+    b.hp -= v;
+    eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v, foe: true, lacaio: true, alvo: b.name, color: COR_DO_ELEMENTO[l.reliquia] ?? '#ff0000' });
+  }
+  return eventos;
+}
+
+/**
  * A maldição pega no acerto (`Reforcos.marcar`) e os eventos do PoE: "quando você Amaldiçoar um Inimigo sem Maldições" e (13/10) o mesmo com uma
  * maldição que não é aura (a Maestria de Maldições: "Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados").
  */
@@ -2059,7 +2139,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (13/10, a Presa Sombria: "Projéteis que Ricochetearam ganham X% de Dano Não-Caótico como Dano de Caos extra" — pela resistência a Caos)
       const caosDoRicochete = deProjetil && golpe?.ricochetes > 0 ? ModsPoe.valor(ficha, 'proj_ricochete_caos_extra') : 0;
       const naoCaotico = caosDoRicochete > 0 ? (pedacos ? pedacos.filter((p) => p.elemento !== 'chaos').reduce((t, p) => t + p.dano, 0) : tipo !== 'chaos' ? bruto : 0) : 0;
-      const base = (pedacos ? Math.round(pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, ficha), 0)) : resistido(hunt, bicho, tipo, bruto, ficha)) + (naoCaotico > 0 ? resistido(hunt, bicho, 'chaos', (naoCaotico * caosDoRicochete) / 100, ficha) : 0);
+      // (14/10, a Chama Santificada: o ATAQUE de um aliado no bicho com Chamas que não são dele ganha X% do Físico como Fogo extra — pela
+      // resistência a Fogo — e as tira; quem pôs conta a remoção — `ModsPoe.consumirChamas`)
+      const chamaPct = ehAtaque && itensPoeLigado() ? ModsPoe.consumirChamas(estado, bicho, ModsPoe.idDaChama(hunt), agora) : 0;
+      const fisicoDaChama = chamaPct > 0 ? (pedacos ? pedacos.filter((p) => p.elemento === 'physical').reduce((t, p) => t + p.dano, 0) : tipo === 'physical' ? bruto : 0) : 0;
+      const fogoDaChama = fisicoDaChama > 0 ? resistido(hunt, bicho, 'fire', (fisicoDaChama * chamaPct) / 100, ficha) : 0;
+      const base = (pedacos ? Math.round(pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, ficha), 0)) : resistido(hunt, bicho, tipo, bruto, ficha)) + (naoCaotico > 0 ? resistido(hunt, bicho, 'chaos', (naoCaotico * caosDoRicochete) / 100, ficha) : 0) + fogoDaChama;
       // (a maldição amaldiçoa no acerto; "Recupera X% de Vida quando você Amaldiçoar um Inimigo sem Maldições")
       amaldicoouAgora(estado, hunt, bicho, ficha, agora, eventos, personagem);
       const sempreNaFinal = ehMagiaDaConta && naRepeticaoFinal && ModsPoe.valor(ficha, 'critico_repeticao_final') > 0;

@@ -6392,6 +6392,54 @@
       "unidade": "",
       "combate": true,
       "efeito": "mods-poe.aoSerAcertado (14/10)"
+    },
+    "chama_santificada_corpo": {
+      "nome": "Inflige Chama Santificada ao atingir corpo a corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.porChamaSantificada (14/10)"
+    },
+    "chama_santificada_extra": {
+      "nome": "Chamas Santificadas a mais nos inimigos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.porChamaSantificada (14/10)"
+    },
+    "chama_santificada_efeito": {
+      "nome": "Intensidade de Chama Santificada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.porChamaSantificada (14/10)"
+    },
+    "chama_santificada_raio": {
+      "nome": "Físico como Raio extra por Chama Santificada removida por aliado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.adds: phys_as_extra_energy (14/10)"
+    },
+    "chama_santificada_raio_max": {
+      "nome": "Máximo do Raio extra das Chamas Santificadas removidas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.adds (14/10)"
+    },
+    "sentinela_do_resplendor": {
+      "nome": "Sentinela do Resplendor",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDoGuardian (14/10)"
+    },
+    "sentinela_absorve": {
+      "nome": "Dano dos Acertos sofrido na vida do Sentinela do Resplendor",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido (14/10)"
+    },
+    "reliquia_elemental": {
+      "nome": "Chance de Ativar Convocar Relíquia Elemental",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoGuardian (14/10)"
     }
   }
 }

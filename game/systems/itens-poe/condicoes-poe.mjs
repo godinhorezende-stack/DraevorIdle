@@ -548,6 +548,61 @@ export function ganharFuriaLiberta(estado, hunt, afPoe, postos, agora = hunt?.cl
   }
 }
 /**
+ * (14/10) O GUARDIAN. A CHAMA SANTIFICADA (o Marechal da Divindade: "Inflige Chama Santificada ao atingir corpo a corpo" — o lembrete do PoE:
+ * "Ataques contra inimigos afetados por Chama Santificada ganham 25% do dano físico como dano de fogo adicional. Chama Santificada é removida após
+ * um ataque que se beneficia desse dano adicional. Dura seis segundos e não beneficia quem a infligiu"): no bicho, `estados.chamas` — uma por
+ * quem pôs (`hunt.idChama`), até 1 + "+N Chamas". O ATAQUE de um ALIADO (o companheiro da party; o lacaio, até o seu) leva o Fogo extra de
+ * todas as que não são dele e as tira; cada uma conta para quem a pôs ("removidas por um ataque aliado recentemente": Raio extra).
+ */
+export const CHAMA_SANTIFICADA = Object.freeze({ duracaoMs: 6000, fogoPct: 25, recenteMs: 4000 });
+/** O id de quem põe a Chama (o da caçada: dura o tempo da Chama). */
+export const idDaChama = (hunt) => (hunt ? (hunt.idChama ??= `c${Math.random().toString(36).slice(2, 10)}`) : null);
+export function porChamaSantificada(hunt, alvo, afPoe, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt || !alvo || !(Number(afPoe?.chama_santificada_corpo) > 0)) return false;
+  const dono = idDaChama(hunt);
+  const e = (alvo.estados ??= {});
+  const vivas = (e.chamas ?? []).filter((c) => c.ate > agora);
+  const minhas = vivas.filter((c) => c.dono === dono);
+  const ate = agora + CHAMA_SANTIFICADA.duracaoMs;
+  if (minhas.length >= 1 + (Number(afPoe.chama_santificada_extra) || 0)) minhas.sort((a, b) => a.ate - b.ate)[0].ate = ate;
+  else vivas.push({ dono, ate, pct: CHAMA_SANTIFICADA.fogoPct * Math.max(0, 1 + (Number(afPoe.chama_santificada_efeito) || 0) / 100) });
+  e.chamas = vivas;
+  return true;
+}
+/**
+ * O ATAQUE de `quem` (o id da caçada de quem ataca; o lacaio: `lacaio:<id do dono>`) no bicho: o % do Físico como Fogo extra das Chamas que não
+ * são dele — que saem; cada uma é "removida por um ataque aliado" para quem a pôs (os da sala: `estado` e a party — `hunt.poeChamasRemovidas`).
+ */
+export function consumirChamas(estado, alvo, quem, agora = estado?.hunt?.clock ?? 0) {
+  const e = alvo?.estados;
+  if (!ligado() || !e?.chamas?.length) return 0;
+  let pct = 0;
+  const ficam = [];
+  for (const c of e.chamas) {
+    if (!(c.ate > agora)) continue;
+    if (c.dono === quem) { ficam.push(c); continue; }
+    pct += c.pct;
+    const dono = [estado, ...(estado?.hunt?.partilha?.naSala ?? [])].find((o) => o?.hunt?.idChama === c.dono);
+    if (dono) { (dono.hunt.poeChamasRemovidas ??= []).push(agora); dono.hunt.poeFichaMudou = true; }
+  }
+  e.chamas = ficam;
+  return pct;
+}
+/**
+ * A RELÍQUIA ELEMENTAL (a Cruzada Implacável: "25% de chance de Ativar Convocar Relíquia Elemental Nível 20 quando você ou um Aliado próximo
+ * Matar um Inimigo, ou Acertar um Inimigo Raro ou Único"): a ocasião fica pendente na caçada de cada um perto (`notarParaReliquia`) e quem tem o
+ * nó sorteia no tique dele (`acoes.tiqueDoGuardian`).
+ */
+export const RELIQUIA = Object.freeze({ duracaoMs: 5000, recargaMs: 300, raioAliado: 3 });
+export function notarParaReliquia(estado, hunt, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt) return;
+  hunt.poeReliquiaPendente = (hunt.poeReliquiaPendente ?? 0) + 1;
+  for (const o of hunt.partilha?.naSala ?? []) {
+    if (!o || o === estado || !o.hunt?.pos || !hunt.pos || (o.hunt.z ?? 0) !== (hunt.z ?? 0)) continue;
+    if (Math.max(Math.abs(o.hunt.pos.x - hunt.pos.x), Math.abs(o.hunt.pos.y - hunt.pos.y)) <= RELIQUIA.raioAliado) o.hunt.poeReliquiaPendente = (o.hunt.poeReliquiaPendente ?? 0) + 1;
+  }
+}
+/**
  * (14/10) Os cartões do HUD do que o PoE dá por nome: os buffs com tempo (os altares, a Adrenalina, o Liberto…), a Casca e a Fúria Liberta.
  * `contador`: o número no cartão no lugar do relógio.
  */
@@ -868,6 +923,19 @@ export function adds(estado, total = null) {
     if (porMagia) for (const el of ELS) saida[`${el}_sofrido_magia`] = (saida[`${el}_sofrido_magia`] ?? 0) + porMagia * casca.n;
     const supressao = Number(total?.casca_supressao) || 0;
     if (supressao) saida.supressao_prevenida = (saida.supressao_prevenida ?? 0) + supressao * abaixo;
+  }
+  // (14/10, o Marechal da Divindade) "Ganha 10% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram
+  // removidas recentemente por um ataque aliado, até 80%".
+  const porRemovida = Number(total?.chama_santificada_raio) || 0;
+  if (porRemovida > 0) {
+    const removidas = (estado?.hunt?.poeChamasRemovidas ?? []).filter((t) => agoraT - t <= CHAMA_SANTIFICADA.recenteMs).length;
+    if (removidas) saida.phys_as_extra_energy = (saida.phys_as_extra_energy ?? 0) + Math.min(Number(total?.chama_santificada_raio_max) || Infinity, porRemovida * removidas);
+  }
+  // (14/10, a Cruzada Implacável) A AURA de cada Relíquia Elemental viva (Cólera, Ódio ou Ira, nível 20 — `l.auraAf`): em você e, pela foto dos
+  // "Você e Aliados" (`aliados:`), nos companheiros perto. (O fim dela é o do lacaio — o tique dos lacaios tira a que acabou e refaz a ficha.)
+  for (const l of estado?.hunt?.lacaios ?? []) {
+    if (!l?.reliquia || !(l.hp > 0)) continue;
+    for (const [k, v] of Object.entries(l.auraAf ?? {})) { saida[k] = (saida[k] ?? 0) + v; saida[`aliados:${k}`] = (saida[`aliados:${k}`] ?? 0) + v; }
   }
   // (lote F) "Fúria Arcana também concede +X% de dano mágico a você".
   if (buffAtivo(estado, 'furiaArcana', total) && Number(total?.furia_arcana_dano_magico) > 0) saida.spell_dmg = (saida.spell_dmg ?? 0) + Number(total.furia_arcana_dano_magico);
@@ -1654,6 +1722,12 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   tiqueDasCargasFanaticas(hunt, ficha, agora);
   // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto
   tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
+  // (14/10, o Guardian) as Chamas Santificadas removidas deixam de ser "recentes": a ficha é refeita (o Raio extra cai)
+  if (hunt.poeChamasRemovidas?.length) {
+    const antes = hunt.poeChamasRemovidas.length;
+    hunt.poeChamasRemovidas = hunt.poeChamasRemovidas.filter((t) => agora - t <= CHAMA_SANTIFICADA.recenteMs);
+    if (hunt.poeChamasRemovidas.length !== antes) hunt.poeFichaMudou = true;
+  }
   // (ciclo 7) "Inimigos próximos do seu Inimigo Marcado são Cegados" (a até 2 casas dele).
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || !regraDaMarca(m, agora, 'cegaProximos')) continue;

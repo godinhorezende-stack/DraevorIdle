@@ -1468,6 +1468,13 @@ export function round(estado, personagem) {
         // PoE: "Ganha X% do Dano Físico como Dano de Caos/Fogo extra" e "X% do Dano Físico … Convertido para um Elemento Aleatório" — do Físico
         // BASE do golpe (antes dos "aumentado"); o convertido sai do Físico. As partes extras entram como o dano somado (`danoSomadoDoPoe`).
         const { extras: extrasDoFisico, convertidoPct } = poe ? ModsPoe.extrasDoFisico(ficha, fisicoCheio / Math.max(0.01, fisico)) : { extras: {}, convertidoPct: 0 };
+        // (14/10, a Chama Santificada: o golpe básico é Ataque — X% do Físico como Fogo extra das Chamas que os aliados puseram no bicho, que saem)
+        const chamaPct = poe ? ModsPoe.consumirChamas(estado, alvo, ModsPoe.idDaChama(hunt), hunt.clock ?? 0) : 0;
+        if (chamaPct > 0) {
+          const doFisico = (fisicoCheio / Math.max(0.01, fisico)) * (chamaPct / 100);
+          const x = extrasDoFisico.fire ?? [0, 0];
+          extrasDoFisico.fire = [x[0] + doFisico, x[1] + doFisico];
+        }
         const semResistencia = ModsPoe.semFisico(ficha) ? 0 : fisicoCheio * (1 - convertidoPct / 100);
         const { dano: bruto, crit: critico, onslaught, chance: chanceCritica } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
         registrarGolpe(() => ({ origem: segundo ? 'golpe-basico-2o-golpe' : 'golpe-basico', alvo: alvo.name, tipo: 'physical', danoAntesDaResistencia: Math.round(semResistencia), resistenciaDoAlvo: resistenciaDe(hunt, alvo, 'physical'), penetracao: ficha.penetracao?.fisica ?? 0, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, 'physical', ficha), chanceCritica, critico: critico, danoFinal: bruto, vidaRestante: Math.max(0, alvo.hp - bruto) }));

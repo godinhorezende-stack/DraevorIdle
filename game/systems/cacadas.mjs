@@ -2136,6 +2136,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
   }
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
+  // (14/10, o Guardian) o Sentinela do Resplendor e as Relíquias Elementais (lacaios da ascendência, não de gema — `Acoes.tiqueDoGuardian`)
+  if (itensPoeLigado()) Acoes.tiqueDoGuardian(estado, hunt, agora);
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
   if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 
@@ -2455,6 +2457,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   for (const l of hunt.lacaios) {
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
+      // (14/10, a Relíquia Elemental explode ao morrer ou acabar — `Acoes.explosaoDaReliquia`)
+      if (l.reliquia) { Acoes.explosaoDaReliquia(hunt, l, ficha, eventos); Ficha.invalidar(estado); }
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
@@ -2475,6 +2479,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     LacaiosPoe.recarregarEscudoDoLacaio(l, 250);
     // ("Espíritos Furiosos Convocados sofrem X% de sua Vida Máxima como Dano de Caos por segundo".)
     if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;
+    // (14/10) o Sentinela do Resplendor queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo — `Acoes.queimaDoSentinela`)
+    if (l.sentinela && !Protecao.imune(hunt)) Acoes.queimaDoSentinela(hunt, l, ficha, 250, eventos);
     for (const b of hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
       // (ciclo 7) o golpe de um monstro CONJURADOR (que tem magias) conta como magia no lacaio: o bloqueio mágico dele.
@@ -2524,6 +2530,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push(...golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora));
       continue;
     }
+    // (14/10) a Relíquia Elemental não ataca: a aura dela vale enquanto estiver viva (`ModsPoe.adds`), e ela segue você.
+    if (l.semAtaque) { andarFamiliar(hunt, grade, l, agora); continue; }
     // A AURA (os robôs rastejantes): a cada segundo, um pouco do golpe em quem está em volta (resfria/eletriza na cor).
     const est = l.estilo ?? {};
     // Com o dono numa Safe Zone, os lacaios só o acompanham: dali não se ataca (`protecao.mjs`).
@@ -2595,7 +2603,11 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const antes = l.poe ? { envenenado: (b.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(b.raridade ?? b.raridadePoe) || !!b.boss || !!b.chefe } : null;
       // (o Vínculo Flamejante no lacaio: o Fogo adicional, com o crítico e a parte do golpe)
       const fogoDoVinculo = vinculo?.fogo?.[1] > 0 ? ((vinculo.fogo[0] + Math.random() * Math.max(0, vinculo.fogo[1] - vinculo.fogo[0])) * (crit ? critico.mult : 1) * pct) / 100 : 0;
-      const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, ficha) : 0)));
+      // (14/10, a Chama Santificada: o ATAQUE do lacaio — um aliado, até o seu — leva X% do Físico como Fogo extra e tira as Chamas; as Chamas
+      // contam no relógio da caçada, como as afecções do bicho)
+      const chamaPct = !est.magia && itensPoeLigado() ? ModsPoe.consumirChamas(estado, b, `lacaio:${ModsPoe.idDaChama(hunt)}`, hunt.clock ?? 0) : 0;
+      const fisicoDaChama = chamaPct > 0 ? partes.filter((x) => x.tipo === 'physical').reduce((n, x) => n + bruto * x.f, 0) : 0;
+      const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, ficha) : 0) + (fisicoDaChama > 0 ? resistido(hunt, b, 'fire', (fisicoDaChama * chamaPct) / 100, ficha) : 0)));
       b.hp -= dano;
       // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")
       ModsPoe.poupar(ficha, hunt, b, { lacaio: true });
