@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade } from './condicoes-poe.mjs';
+import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -1134,6 +1134,15 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
     p[k] ??= agora;
     if (agora - p[k] < Number(cada) * 1000) continue;
     p[k] = agora;
+    // (14/10) `periodico:<N>:gatilho:<gema>` — a gema disparada a cada N segundos (as Novas e os Esqueletos dos altares Maiores): no bicho vivo
+    // mais perto (a até 6 casas); os eventos dela saem no tique (`hunt.poeEventosDoTempo` — `cacadas.tique`).
+    if (acao === 'gatilho') {
+      const perto = hunt.pos ? (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 6) : [];
+      if (!perto.length) continue;
+      const alvo = perto.sort((a, b) => Math.max(Math.abs(a.x - hunt.pos.x), Math.abs(a.y - hunt.pos.y)) - Math.max(Math.abs(b.x - hunt.pos.x), Math.abs(b.y - hunt.pos.y)))[0];
+      aplicarAcao(estado, hunt, { evento: 'tempo', acao, param: param.join(':'), conds: [], valor: x }, ficha, { alvo, agora, rng: Math.random, eventos: (hunt.poeEventosDoTempo ??= []) });
+      continue;
+    }
     aplicarAcao(estado, hunt, { evento: 'tempo', acao, param: param.join(':'), conds: [], valor: x }, ficha, { alvo: null, agora, rng: Math.random, eventos: null });
   }
   // (11/10, as ascendências) As AURAS nos inimigos próximos (a até 3 casas), que o golpe e a magia deles leem: "Inimigos Próximos tem -X% de
@@ -1207,6 +1216,17 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
       const n = totens.filter((t) => Math.max(Math.abs(m.x - t.x), Math.abs(m.y - t.y)) <= 3).length;
       if (n) (m.estados ??= {}).totemFragil = { ate: agora + 1000, pct: n * porTotem };
     }
+  }
+  // (14/10) O ALTAR ALEATÓRIO a cada N segundos (a Harmonia do Propósito: "Ganha um buff de altar aleatório a cada 10 segundos" — o valor é a
+  // duração base, 20 s, × "Duração dos Efeitos de Altares em você aumentada"): um dos 13 do sorteio do PoE (`ALTARES_DO_SORTEIO`).
+  for (const [k, dur] of Object.entries(ficha.afPoe)) {
+    const p = /^altar_aleatorio:(\d+)$/.exec(k);
+    if (!p || !(dur > 0)) continue;
+    const prox = (hunt.poePeriodicos ??= {});
+    prox[k] ??= agora + Number(p[1]) * 1000;
+    if (agora < prox[k]) continue;
+    ganharBuff(hunt, ALTARES_DO_SORTEIO[Math.floor(Math.random() * ALTARES_DO_SORTEIO.length)], dur * Math.max(0, 1 + valor(ficha, 'duracao_altar') / 100), agora);
+    prox[k] = agora + Number(p[1]) * 1000;
   }
   // O buff a cada N segundos ("Você ganha Sobrecarga Elemental por 8 segundos a cada 16 segundos").
   for (const [k, dur] of Object.entries(ficha.afPoe)) {

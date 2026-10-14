@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5932** — equivalente 1356, novo 4418, aproximado (parcial) 158.
-- ✗ Sem efeito: **43** — na árvore principal 13, nas ascendências 30; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 25; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5934** — equivalente 1356, novo 4419, aproximado (parcial) 159.
+- ✗ Sem efeito: **41** — na árvore principal 13, nas ascendências 28; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 23; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 61. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -28,6 +28,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | Parciais exatos (lote 13) | 58 | 0 | os Clamores tiram todas as afecções de dano; o Frasco de Vida tira uma afecção não elemental (Sangramento ou Veneno) ao acaso; o Estandarte, qualquer uma ao acaso; a maldição que não é aura Cega só quem não estava amaldiçoado; o Mana por acerto só com a Garra na mão secundária; os prazos exatos ("nos últimos 10/2 segundos") e os frascos certos (de Vida, de Mana, os Utilitários Mágicos); a regeneração do Inspirador nos aliados na área do Estandarte e a do Ritual do Despertar nos totens; a Sobrecarga Elemental (40% mais dano elemental só na habilidade que causou um crítico nos últimos 8 s; as afecções nunca de crítico); o Avatar do Fogo (Gelo e Raio também viram Fogo, e só o Fogo causa dano); a Postura Inabalável (imune só a Atordoamento) |
 | Parciais médios (lote 14) | 33 | 0 | a mana da Maestria de Mana volta ao longo do tempo (no clamor de Guarda); o dreno do "Dano de Ataques Físicos" só da parte física dos ataques (antes, de todo o dano — os anéis e amuletos com essa linha também); o "-X% extra" das Maestrias de Fogo/Gelo/Raio também na Exposição das gemas, das auras e dos Vínculos; o veneno "X% mais rápido" só no Veneno (antes, todas as afecções de dano); a Pândega (a marca do Orgulho nos inimigos, maior pelo efeito) |
 | O Congelamento do PoE e a Geada (lote 15) | 1 | 0 | o Congelamento que você põe segue o dano de Gelo do acerto, como no PoE (60 ms por 1% da vida do monstro, até 3 s, × a Duração aumentada; abaixo de 0,3 s não congela — antes, 1,5 s fixos); a Geada do Juramento do Inverno (o acerto que falha em Congelar por duração curta: 10 s, acumula, +20% de Duração do Congelamento por Geada, sai ao Congelar); "Congela … como se causasse X% mais Dano" no dano da conta |
+| Os altares do PoE (lote 16) | 2 | 0 | os 13 altares do sorteio do PoE (Aceleração, Brutal, Diamante, Ecoante, Sombrio, Impenetrável, Massivo, Reabastecimento, Resistência, Carregado e os Maiores Congelante, Eletrizante e Esquelético — as Novas e os Esqueletos pelas gemas do jogo); a Harmonia do Propósito (um altar ao acaso a cada 10 s, por 20 s) e o Gritos dos Dessecados (o Altar Impenetrável sem frascos ativos); o efeito e a duração dos buffs de altar das peças |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -41,7 +42,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 3 | as Égides (habilidades de único) não existem no jogo | — | Bastião dos Elementos (asc. Elementalist) — Ativa Égide Primitiva Nível 20 quando Alocado<br>Bastião dos Elementos (asc. Elementalist) — Égide Primitiva pode sofrer 75 de Dano Elemental por Nódulo de Habilidade Passiva Alocada<br>Bastião dos Elementos (asc. Elementalist) — Outras Habilidades de Égides são Desabilitadas |
 | 3 | falta no jogo: a Casca do Warden (quantas, como se ganha) | — | Lição das Estações (asc. Warden) — -25 de dano sofrido de cada tipo de dano por ataques de magia por casca<br>Lição das Estações (asc. Warden) — Impede +3% do Dano Mágico Suprimido por Casca abaixo do máximo<br>Lição das Estações (asc. Warden) — Perde 1 Casca quando Acertado por Dano Mágico Inimigo |
 | 2 | falta no jogo: a chance de crítico de magia que se bifurca (a Infusão Mística entra inteira) | — | Infusão Mística (asc. Assassin) — A chance de causar golpe mágico crítico se bifurca<br>Infusão Mística (asc. Assassin) — ㅤ-30% de chance de causar golpe mágico crítico |
-| 2 | falta no jogo: os bônus de altar do PoE (os Santuários) | — | Gritos dos Dessecados (asc. Reliquarian) — Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos<br>Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
 | 1 | a habilidade "Avatar Liberto" não está na coleção de gemas do jogo | — | Avatar da Selva (asc. Warden) — Concede a Habilidade Avatar Liberto Nível 20 |
 | 1 | a habilidade "Convocar Sentinela do Resplendor" não está na coleção de gemas do jogo | — | Cruzada Radiante (asc. Guardian) — Concede a Habilidade Convocar Sentinela do Resplendor Nível 20 |
 | 1 | a habilidade "Erguer Aranhas" não está na coleção de gemas do jogo | — | Presa de Arakaali (asc. Reliquarian) — Ativa Erguer Aranhas Nível 20 ao Matar |
@@ -92,6 +92,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 1 | a explosão do jogo não passa pela resistência física dos atingidos | Violência Gratuita (asc. Gladiator) — Inimigos com Sangramento Explodem quando você matá-los, causando 20% de suas Vidas Máximas com Dano Físico |
 | 1 | a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma. | Instrumentos da Virtude (asc. Inquisitor) — Mago de Batalha |
 | 1 | a lentidão dos monstros não pega | Incontrolável (asc. Juggernaut) — Velocidade de Movimento não pode ser modificada para abaixo do valor base |
+| 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
 | 1 | conta os segundos desde o último Clamor | Escalonamento (notável) — Dano Corpo a Corpo aumentado em 10% para cada segundo que você for afetado por um Buff de Clamor, máximo de 60% |
 | 1 | Convergência: 30% mais dano nas habilidades Elementais, por 4 s | Coração da Destruição (asc. Elementalist) — Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada 8 segundos |
 | 1 | na redução do dano de Acertos | Guarda do Vento (asc. Deadeye) — 4% menos Dano sofrido por Força dos Ventos |

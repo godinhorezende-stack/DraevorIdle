@@ -318,17 +318,61 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Ganha um buff de altar aleatório a cada .* segundos$|^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
+      "padrao": "^Ganha um buff de altar aleatório a cada \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "altar_aleatorio:{V1}",
+          "valor": "20"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE",
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarImpenetravel@semFrasco",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: os bônus de altar do PoE (os Santuários)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Você tem o Buff Altar da Brutalidade Menor$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarBrutalMenor",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Você tem o Buff Altar Massivo Menor$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarMassivoMenor",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Duração dos Efeitos de Altares em você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_altar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
     },
     {
       "padrao": "^Ativa Rajada Vulcânica .*$",

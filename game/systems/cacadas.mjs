@@ -2099,6 +2099,12 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (FrascosPoe.tique(estado, eventos, personagem?.nome)) Ficha.invalidar(estado);
   // Um buff de gema do PoE (com atributos) venceu: a ficha é refeita.
   if (GemasPoe.tique(estado)) Ficha.invalidar(estado);
+  // (14/10) Os ALTARES do PoE mudaram (ganhou um, outro venceu): a ficha e a vida máxima são refeitas (o Massivo dá Vida); e as gemas que os
+  // altares Maiores dispararam no tempo (as Novas, os Esqueletos — `ModsPoe.aurasProximas`) mostram os eventos delas.
+  if (itensPoeLigado()) {
+    if (ModsPoe.altaresMudaram(estado, Ficha.combate(estado).afPoe)) { Ficha.invalidar(estado); Afixos.sincronizarMaximos(estado); }
+    if (hunt.poeEventosDoTempo?.length) eventos.push(...hunt.poeEventosDoTempo.splice(0));
+  }
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
   // (09/10) No RELÓGIO DA CAÇADA, o mesmo com que os danos contínuos são postos (`acoes`, `afeccoes`: `hunt.clock`). Com o relógio de
   // parede (`agora`, que começa em ~1,8e12 enquanto o da caçada começa em 0), todo pulso "já podia" e o efeito inteiro (incêndio,

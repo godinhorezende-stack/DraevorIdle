@@ -690,6 +690,26 @@ export const BUFFS = {
   danCaCarmesim: { nome: 'Dança Carmesim', af: {} },
   confluxo: { nome: 'Confluxo Elemental', af: { chance_ignite: 100, chance_freeze: 100, chance_shock: 100 } },
   altarMenor: { nome: 'Altar Menor', af: { dmg_inc: 10 } },
+  // (14/10) Os ALTARES do PoE — os buffs dos Santuários (poedb, PoE 3.29; `altar: true`): os 13 do sorteio do PoE (a Harmonia do Propósito e o
+  // Gritos dos Dessecados — `ALTARES_DO_SORTEIO`; o Ressonante do PoE antigo é o Carregado de hoje) e os Menores dos únicos (o Erro Crasso).
+  // "Efeito dos Buffs de Altares em você aumentado" multiplica os números (`efeito_altar` — não o nível das gemas disparadas). As Novas e os
+  // Esqueletos dos Maiores: o poedb não publica o dano nem a frequência — as gemas do jogo (Nova Glacial, Nova Elétrica, Convocar Esqueleto)
+  // nível 20, a cada 2 s (4 s os Esqueletos). O Altar de Aceleração: a Velocidade de Projéteis não se aplica (o projétil do jogo vai direto ao alvo).
+  altarAceleracao: { nome: 'Altar de Aceleração', altar: true, af: { action_speed: 50 } },
+  altarBrutal: { nome: 'Altar Brutal', altar: true, af: { chance_empurrar: 100, stun_duration: 30, dmg_inc: 50 } },
+  altarDiamante: { nome: 'Altar Diamante', altar: true, af: { critico_sempre: 1 } },
+  altarEcoante: { nome: 'Altar Ecoante', altar: true, af: { repeticoes_extra: 1 } },
+  altarSombrio: { nome: 'Altar Sombrio', altar: true, af: { naocaos_as_extra_chaos: 10, 'ev:matar:explodirChance:25': 40 } },
+  altarImpenetravel: { nome: 'Altar Impenetrável', altar: true, af: { evasion_pct: 100, es_pct: 100, armour_pct: 100 } },
+  altarMassivo: { nome: 'Altar Massivo', altar: true, af: { life_inc: 40, area_inc: 40 } },
+  altarReabastecimento: { nome: 'Altar de Reabastecimento', altar: true, af: { mana_regen_pct: 200, life_regen_max_pct: 6.67 } },
+  altarResistencia: { nome: 'Altar de Resistência', altar: true, af: { fire_res_max: 10, ice_res_max: 10, energy_res_max: 10, chaos_res_max: 10, fire_res: 50, ice_res: 50, energy_res: 50 } },
+  altarCarregado: { nome: 'Altar Carregado', altar: true, af: { max_tolerancia: 1, max_frenesi: 1, max_poder: 1, carga_qualquer_ao_matar: 60, 'ev:acertar:cargaAleatoria': 20 } },
+  altarCongelanteMaior: { nome: 'Altar Congelante Maior', altar: true, af: { phys_as_extra_ice: 30, 'periodico:2:gatilho:nova-glacial': 20 } },
+  altarEletrizanteMaior: { nome: 'Altar Eletrizante Maior', altar: true, af: { phys_as_extra_energy: 30, 'periodico:2:gatilho:nova-eletrica': 20 } },
+  altarEsqueleticoMaior: { nome: 'Altar Esquelético Maior', altar: true, af: { phys_as_extra_chaos: 30, 'periodico:4:gatilho:convocar-esqueleto': 20 } },
+  altarBrutalMenor: { nome: 'Altar Brutal Menor', altar: true, af: { chance_empurrar: 100, stun_duration: 20, dmg_inc: 20 } },
+  altarMassivoMenor: { nome: 'Altar Massivo Menor', altar: true, af: { life_inc: 20, area_inc: 20 } },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   ventoFavoravel: { nome: 'Vento Favorável', af: { atk_speed: 10, cast_speed: 10, move_speed: 10 } },
   // (o Inquisidor: "Fanatismo concede às magias conjuradas por você +75% de velocidade de conjuração, -75% de custo e área de efeito
@@ -701,11 +721,25 @@ export const BUFFS = {
   // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
   rapidez: { nome: 'Rapidez', af: (estado) => ({ move_speed: estado?.hunt?.rapidez?.movimentoPct ?? 0 }) },
 };
+/** (14/10) Os 13 altares do sorteio do PoE ("Ganha um buff de altar aleatório" — a lista do Gritos dos Dessecados no poedb). */
+export const ALTARES_DO_SORTEIO = Object.freeze(['altarAceleracao', 'altarBrutal', 'altarCongelanteMaior', 'altarDiamante', 'altarEcoante', 'altarSombrio', 'altarImpenetravel', 'altarMassivo', 'altarReabastecimento', 'altarResistencia', 'altarCarregado', 'altarEletrizanteMaior', 'altarEsqueleticoMaior']);
 /** O buff está ativo? (ganho por evento, ou "sempre" pela soma). */
 export function buffAtivo(estado, nome, total = null) {
   const h = estado?.hunt;
   if (h?.poeBuffs?.[nome] > (h?.clock ?? 0)) return true;
   return Number(total?.[`sempre:${nome}`]) > 0;
+}
+/**
+ * (14/10) Os ALTARES ativos mudaram desde a última olhada? O Massivo mexe na vida máxima: a caçada refaz a ficha e a vida quando muda
+ * (`cacadas.tique`). `total`: a soma da ficha (o "sempre" condicional — o Gritos dos Dessecados).
+ */
+export function altaresMudaram(estado, total = null) {
+  const h = estado?.hunt;
+  if (!h) return false;
+  const vivos = Object.keys(BUFFS).filter((n) => BUFFS[n].altar && buffAtivo(estado, n, total)).join(',');
+  if (vivos === (h.poeAltaresVistos ?? '')) return false;
+  h.poeAltaresVistos = vivos;
+  return true;
 }
 /** Ganha um buff por `segundos` (renova para o maior). */
 export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0) {
@@ -733,8 +767,9 @@ export function adds(estado, total = null) {
   for (const [nome, b] of Object.entries(BUFFS)) {
     if (!buffAtivo(estado, nome, total)) continue;
     // (+ o efeito que veio junto com o buff — o do suporte que o concedeu: `hunt.poeEfeitoDeBuff`, a Crueldade, o Elusivo da Lâmina Noturna)
-    const efeito = 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0)) / 100;
-    for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * efeito;
+    // (+ 14/10: o "Efeito dos Buffs de Altares em você aumentado" nos altares — não no nível das gemas que eles disparam, `periodico:`)
+    const efeito = 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0) + (b.altar ? Number(total?.efeito_altar) || 0 : 0)) / 100;
+    for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * (k.startsWith('periodico:') ? 1 : efeito);
   }
   // (lote G) Sobre o Solo Sagrado: 6% da Vida por segundo (× "Efeito de Solos Sagrados Criados por você aumentado"), "Seu chão consagrado
   // concede precisão aumentada em X%" e "faz com que a Regeneração de Vida também Recupere Escudo de Energia".
@@ -1310,6 +1345,8 @@ const PARAMETRICOS = [
   // (11/10) o buff a cada N segundos ("Você ganha Sobrecarga Elemental por 8 segundos a cada 16 segundos" = `buff_periodico:sobrecargaElemental:16`,
   // o valor é a duração) e as auras com valor nos inimigos próximos (a lentidão, as resistências, a de Raio igual à sua) — `mods-poe.aurasProximas`.
   /^buff_periodico:(sobrecargaElemental|adrenalina|agressividade|elusivo|fortificado|furiaArcana|poderProfano|avatarDoFogo|trespassar):\d+$/,
+  // (14/10) o altar aleatório a cada N segundos (a Harmonia do Propósito — `mods-poe.aurasProximas`; o valor é a duração base, em segundos)
+  /^altar_aleatorio:\d+$/,
   /^aura_proximos_res:(fire|ice|energy|chaos|todas)$/, /^aura_proximos_res_igual:(fire|ice|energy|chaos)$/,
   /^gatilho_local:(usarAtaque|usarMagia|bloquear|critico|acertar|congelar|perderTolerancia|matar|gastarMana):(magia|elemental|fogo|gelo|raio|maldicao|arco|clamor|lacaio)$/,
   new RegExp(`^(lacaio_somado_min|lacaio_somado_max|lacaio_conv_fogo|lacaio_so_fogo|lacaio_cinzas|lacaio_incendiar|lacaio_renova|lacaio_dreno_dono|lacaio_explodir|so_lacaio):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca

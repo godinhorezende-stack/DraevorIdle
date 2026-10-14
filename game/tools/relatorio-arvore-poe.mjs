@@ -106,6 +106,11 @@ const IMPLEMENTADOS = [
     re: /^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$/,
     jogo: 'o Congelamento que você põe segue o dano de Gelo do acerto, como no PoE (60 ms por 1% da vida do monstro, até 3 s, × a Duração aumentada; abaixo de 0,3 s não congela — antes, 1,5 s fixos); a Geada do Juramento do Inverno (o acerto que falha em Congelar por duração curta: 10 s, acumula, +20% de Duração do Congelamento por Geada, sai ao Congelar); "Congela … como se causasse X% mais Dano" no dano da conta',
   },
+  {
+    bloco: 'Os altares do PoE (lote 16)',
+    re: /^Ganha um buff de altar aleatório a cada|^Você tem o bônus do Altar Impenetrável/,
+    jogo: 'os 13 altares do sorteio do PoE (Aceleração, Brutal, Diamante, Ecoante, Sombrio, Impenetrável, Massivo, Reabastecimento, Resistência, Carregado e os Maiores Congelante, Eletrizante e Esquelético — as Novas e os Esqueletos pelas gemas do jogo); a Harmonia do Propósito (um altar ao acaso a cada 10 s, por 20 s) e o Gritos dos Dessecados (o Altar Impenetrável sem frascos ativos); o efeito e a duração dos buffs de altar das peças',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

@@ -623,6 +623,19 @@ function dasPecas(estado, saida) {
       for (const [d, nivel] of doPeitoral) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
     }
   }
+  // (14/10) As gemas que os ALTARES Maiores disparam no tempo (`periodico:<N>:gatilho:<gema>` no buff — `condicoes-poe.BUFFS`): enquanto o
+  // altar dura, a gema existe para o disparo, como as "Ativa X Nível N" das peças (sem ir para a barra).
+  const agora = estado?.hunt?.clock ?? 0;
+  for (const [nomeDoBuff, ate] of Object.entries(estado?.hunt?.poeBuffs ?? {})) {
+    const af = ate > agora ? ModsPoe.BUFFS[nomeDoBuff]?.af : null;
+    if (!af || typeof af === 'function') continue;
+    for (const [k, v] of Object.entries(af)) {
+      const nome = /^periodico:[\d.]+:gatilho:([^:@]+)/.exec(k)?.[1];
+      const def = nome ? ativaPeloNome(nome) : null;
+      if (!def || (saida.get(def.acao)?.nivel ?? 0) >= v) continue;
+      saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot: 'altar', indice: -1 }, daPeca: true, ativadaPorItem: true });
+    }
+  }
   return saida;
 }
 

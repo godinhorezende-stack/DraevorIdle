@@ -300,7 +300,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (17 — 13/10: os parciais médios — "X% do Dano de Ataques Físicos é Drenado como Vida/Mana" só do físico dos ataques, "Envenenamentos …
 // mais rápido" só no Veneno, "Efeito de Auras Não-Maldição … nos Inimigos" com efeito.)
 // (18 — 14/10: o Congelamento do PoE — "Congelam/Congela Inimigos … como se causasse X% mais Dano" no dano da conta, não na duração.)
-export const VERSAO_DA_TRADUCAO = 18;
+// (19 — 14/10: os altares do PoE — "Você tem o Buff Altar … Menor" (o Erro Crasso), "Duração dos Efeitos de Altares em você" (a Gaivota).)
+export const VERSAO_DA_TRADUCAO = 19;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

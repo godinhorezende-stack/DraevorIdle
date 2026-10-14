@@ -6326,6 +6326,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "afeccoes.msDoCongelamento: o Gelo da conta × (1 + X%) (14/10)"
+    },
+    "critico_sempre": {
+      "nome": "Todos os acertos são Críticos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.rolarCritico (o Altar Diamante) (14/10)"
+    },
+    "repeticoes_extra": {
+      "nome": "Habilidades se Repetem mais vezes",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes: as repetições (o Altar Ecoante) (14/10)"
+    },
+    "duracao_altar": {
+      "nome": "Duração dos Efeitos de Altares em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe: o altar aleatório (14/10)"
     }
   }
 }

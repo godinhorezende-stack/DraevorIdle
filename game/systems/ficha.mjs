@@ -881,7 +881,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const chanceDeCritico = Math.min(ficha.critTeto ?? Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
   // ("Sua Chance de Golpe Crítico é Sortuda": rola duas vezes e fica com a melhor — `ModsPoe.sorteado`.)
   // (o "Crítico Sortudo" rola duas vezes — salvo se a chance já veio Sortuda da ficha: `critSortudo`)
-  const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ficha.critSortudo ? 0 : ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
+  // (14/10, o Altar Diamante: "Todos os acertos são Críticos" — `critico_sempre`; o "nunca crítico" vence)
+  const sempreCritico = itensPoeLigado() && ModsPoe.valor(ficha, 'critico_sempre') > 0 && !(ModsPoe.valor(ficha, 'nunca_critico') > 0);
+  const crit = mesmaRolagem ? mesmaRolagem.crit : sempreCritico ? true : ModsPoe.sorteado(chanceDeCritico, ficha.critSortudo ? 0 : ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
