@@ -17057,6 +17057,76 @@
       "_unico": true
     },
     {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo às Habilidades de Retaliação$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@retaliacao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@retaliacao",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de Retaliação causam Dano aumentado em \\{(\\d+)\\} ?%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis por um tempo \\{(\\d+)\\} ?% maior$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_janela_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de Retaliação têm Recuperação da Recarga aumentada em \\{(\\d+)\\} ?%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de [Rr]etaliação se tornam usáveis a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de [Rr]etaliação têm \\{(\\d+)\\} ?% de Poder Arcano$",
+      "efeitos": [
+        {
+          "stat": "poder_arcano@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
       "padrao": "^.*(?:Retaliação|de retaliação).*$",
       "efeitos": [
         {
@@ -17065,7 +17135,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as habilidades de Retaliação não existem no jogo",
+      "nota": "linha de Retaliação sem regra própria no jogo (as habilidades de Retaliação existem desde 11/10: a janela depois do bloqueio ou do Acerto Selvagem)",
       "_nova": true,
       "_unico": true
     },

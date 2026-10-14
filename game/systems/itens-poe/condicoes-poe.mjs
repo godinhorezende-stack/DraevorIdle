@@ -1823,6 +1823,13 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
   // (14/10, o Occultist) a Infusão Espiritual
   tiqueDaInfusao(hunt, ficha?.afPoe, agora);
+  // (14/10, os únicos: "Habilidades de retaliação se tornam usáveis a cada N segundos" — as duas janelas, a do bloqueio e a do Acerto
+  // Selvagem, abrem sozinhas a cada N s)
+  const retaliacaoCada = Number(ficha?.afPoe?.retaliacao_cada_s) || 0;
+  if (retaliacaoCada > 0 && agora >= (hunt.poeRetaliacaoCadaEm ?? 0)) {
+    for (const g of ['bloquear', 'selvagem']) abrirRetaliacao(hunt, g, ficha.afPoe, agora);
+    hunt.poeRetaliacaoCadaEm = agora + retaliacaoCada * 1000;
+  }
   // (14/10, o Guardian) as Chamas Santificadas removidas deixam de ser "recentes": a ficha é refeita (o Raio extra cai)
   if (hunt.poeChamasRemovidas?.length) {
     const antes = hunt.poeChamasRemovidas.length;

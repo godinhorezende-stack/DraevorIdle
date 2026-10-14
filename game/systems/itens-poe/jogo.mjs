@@ -307,7 +307,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (22 — 14/10: o Reliquarian — "N% de chance de Ativar Erguer Aranhas Nível N ao Matar" (a Presa de Arakaali), "Ativa Suspender no Tempo" (as
 // Areias do Tempo), "Concede a Habilidade Convocar Grande Emissário das Direções" (a Divindade Despedaçada), "Cada Fantasma Convocado concede
 // a Você Poder Fantasmal" (o Bastão Negro).)
-export const VERSAO_DA_TRADUCAO = 22;
+// (23 — 14/10: a Retaliação dos únicos — "Adiciona X a Y de Dano de Gelo às Habilidades de Retaliação", "… Recuperação da Recarga", "… usáveis a
+// cada N segundos", "… têm 200% de Poder Arcano"; antes caíam na regra velha "a Retaliação não existe".)
+export const VERSAO_DA_TRADUCAO = 23;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

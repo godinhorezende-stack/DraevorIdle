@@ -6572,6 +6572,12 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes.suspenderNoTempo (14/10)"
+    },
+    "retaliacao_cada_s": {
+      "nome": "Habilidades de Retaliação se tornam usáveis a cada N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.tique (14/10)"
     }
   }
 }

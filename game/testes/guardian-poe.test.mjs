@@ -156,13 +156,20 @@ test('o SENTINELA na caçada: aparece, ataca o bicho com as Chamas do dono (um a
   const h = e.hunt;
   const b = bichoPerto(e, 1);
   let t = Date.now();
-  Cacadas.tique(e, PERSONAGEM, t);
-  for (let i = 0; i < 4; i++) Cacadas.tique(e, PERSONAGEM, (t += 250));
-  const s = h.lacaios.find((l) => l.sentinela && l.hp > 0);
-  assert.ok(s, 'o Sentinela saiu sozinho');
-  ModsPoe.porChamaSantificada(h, b, ficha(e).afPoe, h.clock);
-  assert.equal(b.estados.chamas.length, 1);
-  for (let i = 0; i < 40 && b.estados.chamas?.length; i++) Cacadas.tique(e, PERSONAGEM, (t += 250));
+  // (dono, 14/10, "Fixar o sorteio no teste": o bicho do teste tem 1 bilhão de vida, e o golpe dele nos lacaios é metade da vida — a fórmula
+  // do Draevor, `R.ataqueDoMonstro`: quando acertava o Sentinela, o matava, e o teste falhava ~27% das vezes. Com o sorteio fixo em 0,99, o
+  // bicho não acerta o Sentinela nestes tiques; o que se confere é o Sentinela saindo e tirando a Chama.)
+  const original = Math.random;
+  Math.random = () => 0.99;
+  try {
+    Cacadas.tique(e, PERSONAGEM, t);
+    for (let i = 0; i < 4; i++) Cacadas.tique(e, PERSONAGEM, (t += 250));
+    const s = h.lacaios.find((l) => l.sentinela && l.hp > 0);
+    assert.ok(s, 'o Sentinela saiu sozinho');
+    ModsPoe.porChamaSantificada(h, b, ficha(e).afPoe, h.clock);
+    assert.equal(b.estados.chamas.length, 1);
+    for (let i = 0; i < 40 && b.estados.chamas?.length; i++) Cacadas.tique(e, PERSONAGEM, (t += 250));
+  } finally { Math.random = original; }
   assert.equal(b.estados.chamas?.length ?? 0, 0, 'o golpe do Sentinela tirou a Chama');
   assert.ok(h.poeChamasRemovidas?.length >= 1, 'e ela conta para o dono');
 });
