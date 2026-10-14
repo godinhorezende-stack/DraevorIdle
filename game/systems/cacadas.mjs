@@ -2502,7 +2502,12 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // ("Golens Convocados são Imunes ao Dano Elemental": a parte elemental não passa)
       const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(teto, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? resDoLacaio(l, x.elemento, aliado) : 0) / 100)), 0) : 0;
       const fatorDoGolpe = Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator;
-      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: R.ataqueDoMonstro(b) * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: aliado?.bloqueioMagico ?? 0 }) : { dano: (R.ataqueDoMonstro(b) * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      // (14/10, dono: "Depois, num lote próprio") O golpe do bicho no lacaio é o MESMO golpe corpo a corpo que ele dá em você — a faixa do
+      // arquivo do monstro, com a chance dele (`Poderes.golpeCorpoACorpo`; 0 = errou); a metade da vida atual dele (`R.ataqueDoMonstro`) fica só
+      // para o monstro sem golpe no arquivo. Antes era sempre ela: um chefe com muita vida matava qualquer lacaio de um golpe.
+      const golpeDoBicho = Poderes.golpeCorpoACorpo(b) ?? R.ataqueDoMonstro(b);
+      if (!(golpeDoBicho > 0)) continue;
+      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: aliado?.bloqueioMagico ?? 0 }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
       let sofrido = noLacaio;
