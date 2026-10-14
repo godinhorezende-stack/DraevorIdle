@@ -6326,6 +6326,258 @@
       "unidade": "%",
       "combate": true,
       "efeito": "afeccoes.msDoCongelamento: o Gelo da conta × (1 + X%) (14/10)"
+    },
+    "critico_sempre": {
+      "nome": "Todos os acertos são Críticos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.rolarCritico (o Altar Diamante) (14/10)"
+    },
+    "repeticoes_extra": {
+      "nome": "Habilidades se Repetem mais vezes",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes: as repetições (o Altar Ecoante) (14/10)"
+    },
+    "duracao_altar": {
+      "nome": "Duração dos Efeitos de Altares em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe: o altar aleatório (14/10)"
+    },
+    "pele_de_arvore": {
+      "nome": "Pele de Árvore (Casca)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tiqueDoWarden: a Casca (14/10)"
+    },
+    "avatar_liberto": {
+      "nome": "Avatar Liberto",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tiqueDoWarden: Liberto com 100 de Fúria Liberta (14/10)"
+    },
+    "furia_liberta_por_afeccao": {
+      "nome": "Fúria Liberta por Afecção Elemental",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.ganharFuriaLiberta (14/10)"
+    },
+    "furia_liberta_nao_liberto": {
+      "nome": "Não ganha Fúria Liberta enquanto Liberto",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.ganharFuriaLiberta (14/10)"
+    },
+    "mais_dano_elemental": {
+      "nome": "Mais Dano Elemental",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorDoDanoElemental: a parte de Fogo, Gelo e Raio (14/10)"
+    },
+    "casca_magia_fixo": {
+      "nome": "Dano de Magia sofrido por Casca",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.adds: <tipo>_sofrido_magia por Casca (14/10)"
+    },
+    "casca_supressao": {
+      "nome": "Dano Mágico Suprimido Impedido por Casca abaixo do máximo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.adds: supressao_prevenida (14/10)"
+    },
+    "casca_perde_magia": {
+      "nome": "Cascas perdidas por Dano Mágico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (14/10)"
+    },
+    "chama_santificada_corpo": {
+      "nome": "Inflige Chama Santificada ao atingir corpo a corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.porChamaSantificada (14/10)"
+    },
+    "chama_santificada_extra": {
+      "nome": "Chamas Santificadas a mais nos inimigos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.porChamaSantificada (14/10)"
+    },
+    "chama_santificada_efeito": {
+      "nome": "Intensidade de Chama Santificada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.porChamaSantificada (14/10)"
+    },
+    "chama_santificada_raio": {
+      "nome": "Físico como Raio extra por Chama Santificada removida por aliado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.adds: phys_as_extra_energy (14/10)"
+    },
+    "chama_santificada_raio_max": {
+      "nome": "Máximo do Raio extra das Chamas Santificadas removidas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.adds (14/10)"
+    },
+    "sentinela_do_resplendor": {
+      "nome": "Sentinela do Resplendor",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDoGuardian (14/10)"
+    },
+    "sentinela_absorve": {
+      "nome": "Dano dos Acertos sofrido na vida do Sentinela do Resplendor",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido (14/10)"
+    },
+    "reliquia_elemental": {
+      "nome": "Chance de Ativar Convocar Relíquia Elemental",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoGuardian (14/10)"
+    },
+    "poder_arcano": {
+      "nome": "Poder Arcano (o Dano Mágico aumentado também no Ataque)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fichaDoGolpe (14/10)"
+    },
+    "praga_max": {
+      "nome": "Valor Máximo da Praga (Infestador)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDaPraga (14/10)"
+    },
+    "cadaveres_max_criados": {
+      "nome": "Máximo de cadáveres criados (Profanar e Desenterrar)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.criarCadaveres (14/10)"
+    },
+    "eficiencia_reserva_feiticeiro": {
+      "nome": "Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "reserva.fator (14/10)"
+    },
+    "robos_ativadores": {
+      "nome": "Robôs Ativadores",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDosRobos (14/10)"
+    },
+    "critico_magia_bifurca": {
+      "nome": "A chance de crítico mágico se bifurca",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.rolarCritico (14/10)"
+    },
+    "crit_magia_mais": {
+      "nome": "Mais/menos chance de crítico mágico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.critMagiaPoe (14/10)"
+    },
+    "infusao_espiritual": {
+      "nome": "Ganha Infusão Espiritual ao canalizar uma magia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tiqueDaInfusao (14/10)"
+    },
+    "egide_primitiva": {
+      "nome": "Égide Primitiva",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "egide_primitiva_por_notavel": {
+      "nome": "Dano Elemental que a Égide Primitiva toma por Notável alocado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "egides_desabilitadas": {
+      "nome": "Outras Habilidades de Égides são Desabilitadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "egide_fogo": {
+      "nome": "Égide de Fogo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "egide_gelo": {
+      "nome": "Égide de Gelo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "egide_raio": {
+      "nome": "Égide Relampejante",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "egide_elemental": {
+      "nome": "Égide Elemental",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "egide_fisica": {
+      "nome": "Égide Física",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "rajada_vulcanica": {
+      "nome": "Rajada Vulcânica (nível)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.rajadaVulcanica (14/10)"
+    },
+    "emissario_direcoes": {
+      "nome": "Grande Emissário das Direções",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDoEmissario (14/10)"
+    },
+    "poder_fantasmal": {
+      "nome": "Cada Fantasma Convocado concede Poder Fantasmal",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.adds (14/10)"
+    },
+    "erguer_aranhas": {
+      "nome": "Erguer Aranhas (nível)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasAranhas (14/10)"
+    },
+    "erguer_aranhas_chance": {
+      "nome": "Chance de Ativar Erguer Aranhas ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDasAranhas (14/10)"
+    },
+    "suspender_no_tempo": {
+      "nome": "Suspender no Tempo (nível)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.suspenderNoTempo (14/10)"
+    },
+    "retaliacao_cada_s": {
+      "nome": "Habilidades de Retaliação se tornam usáveis a cada N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.tique (14/10)"
     }
   }
 }

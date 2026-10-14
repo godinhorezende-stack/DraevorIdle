@@ -241,30 +241,89 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria Liberta .*$|^Não pode ganhar Fúria Liberta enquanto Liberto$|^Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto$|^\\d+% mais Dano Elemental enquanto Liberto$|^.*mais Dano Elemental enquanto Liberto$",
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada \\{(\\d+)\\} segundos por cada tipo de Afecção$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "furia_liberta_por_afeccao",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a habilidade Avatar Liberto (o Liberto e a Fúria Liberta)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote17": "14/10 — o Warden (lote 17)"
     },
     {
-      "padrao": "^.*por casca$|^.*por Casca abaixo do máximo$|^Perde \\{(\\d+)\\} Casca quando Acertado por Dano Mágico Inimigo$",
+      "padrao": "^Não pode ganhar Fúria Liberta enquanto Liberto$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "furia_liberta_nao_liberto",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Casca do Warden (quantas, como se ganha)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@buff:liberto",
+          "valor": "100"
+        },
+        {
+          "stat": "chance_shock@buff:liberto",
+          "valor": "100"
+        },
+        {
+          "stat": "chance_ignite@buff:liberto",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano Elemental enquanto Liberto$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_elemental@buff:liberto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de dano sofrido de cada tipo de dano por ataques de magia por casca$",
+      "efeitos": [
+        {
+          "stat": "casca_magia_fixo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^Impede \\+\\{(\\d+)\\}% do Dano Mágico Suprimido por Casca abaixo do máximo$",
+      "efeitos": [
+        {
+          "stat": "casca_supressao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^Perde \\{(\\d+)\\} Casca quando Acertado por Dano Mágico Inimigo$",
+      "efeitos": [
+        {
+          "stat": "casca_perde_magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
     },
     {
       "padrao": "^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$",
@@ -279,108 +338,185 @@
       "_lote15": "14/10 — o Congelamento do PoE e a Geada (lote 15)"
     },
     {
-      "padrao": "^Inflige Chama Santificada ao atingir corpo a corpo$|^Você pode infligir \\+?\\{(\\d+)\\} Chama Santificada nos inimigos$|^Ganha .* Chamas Santificadas que foram removidas .*$|^Intensidade de Chama Santificada infligida por você aumentada em .*$",
+      "padrao": "^Inflige Chama Santificada ao atingir corpo a corpo$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "chama_santificada_corpo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Chama Santificada (só beneficia os ataques dos aliados)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
-      "padrao": "^.* é sofrido na vida do seu Sentinela do Resplendor antes da sua$",
+      "padrao": "^Você pode infligir \\+\\{(\\d+)\\} Chamas? Santificadas? nos inimigos$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "chama_santificada_extra",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Sentinela do Resplendor",
       "_nova": true,
-      "_ciclo7": true
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
-      "padrao": "^.*Ativar Convocar Relíquia Elemental .*$",
+      "padrao": "^Ganha \\{(\\d+)\\}% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram removidas recentemente por um ataque aliado, até \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "chama_santificada_raio",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chama_santificada_raio_max",
+          "valor": "{2}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Relíquia Elemental",
       "_nova": true,
-      "_ciclo7": true
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
-      "padrao": "^Ganha um buff de altar aleatório a cada .* segundos$|^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
+      "padrao": "^Intensidade de Chama Santificada infligida por você aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "chama_santificada_efeito",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: os bônus de altar do PoE (os Santuários)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
-      "padrao": "^Ativa Rajada Vulcânica .*$",
+      "padrao": "^\\{(\\d+)\\}% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "sentinela_absorve",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote18": "14/10 — o Guardian (lote 18)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Convocar Relíquia Elemental Nível \\{(\\d+)\\} quando você ou um Aliado próximo Matar um Inimigo, ou Acertar um Inimigo Raro ou Único$",
+      "efeitos": [
+        {
+          "stat": "reliquia_elemental",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Relíquia (5 s) tem a aura de um elemento ao acaso — Cólera, Ódio ou Ira nível 20 — em você e nos aliados perto e explode ao acabar, nos inimigos a até 2 casas (100% da vida dela, como dano do elemento); a vida dela é a de um monstro comum do seu nível, com a sua \"Vida dos Lacaios\" — o PoE não publica a vida nem a explosão",
+      "_nova": true,
+      "_lote18": "14/10 — o Guardian (lote 18)"
+    },
+    {
+      "padrao": "^Ganha um buff de altar aleatório a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "altar_aleatorio:{V1}",
+          "valor": "20"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE",
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarImpenetravel@semFrasco",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a habilidade Rajada Vulcânica",
       "_nova": true,
-      "_ciclo7": true
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Você tem o Buff Altar da Brutalidade Menor$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarBrutalMenor",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Você tem o Buff Altar Massivo Menor$",
+      "efeitos": [
+        {
+          "stat": "sempre:altarMassivoMenor",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Duração dos Efeitos de Altares em você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_altar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote16": "14/10 — os altares do PoE (lote 16)"
+    },
+    {
+      "padrao": "^Ativa Rajada Vulcânica [Nn]ível \\{(\\d+)\\} ao atingir corpo a corpo$",
+      "efeitos": [
+        {
+          "stat": "rajada_vulcanica",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque)",
+      "_nova": true,
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
       "padrao": "^Concede a Habilidade Convocar Grande Emissário das Direções$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_direcoes",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Grande Emissário das Direções",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff",
       "_nova": true,
-      "_ciclo7": true
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
       "padrao": "^Cada Fantasma Convocado concede a Você Poder Fantasmal$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "poder_fantasmal",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Poder Fantasmal",
+      "estado": "aproximado",
+      "nota": "cada Fantasma vivo (do suporte Convocar Fantasma) dá Dano Físico Mágico Adicional igual ao golpe dele (o de um monstro comum do seu nível) — o PoE não publica a tabela pelo nível do Fantasma; pela regra do jogo, o dano adicionado a magias entra nas magias com dano Físico",
       "_nova": true,
-      "_ciclo7": true
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
-      "padrao": "^Ativa Convocar Robôs Ativadores .*$",
+      "padrao": "^Ativa Convocar Robôs Ativadores Nível \\{(\\d+)\\} quando Alocado$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "robos_ativadores",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: os Robôs Ativadores",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): os dois robôs seguem você e não tomam dano; as suas Magias Ativadas saem duas vezes (a segunda ignora a recarga) do seu lugar — no PoE, uma do lugar de cada robô",
       "_nova": true,
-      "_ciclo7": true
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
     },
     {
       "padrao": "^Golens Convocados são Reconvocados \\{(\\d+)\\} segundos após serem Mortos$",
@@ -395,17 +531,27 @@
       "_lote10": "13/10 — os lacaios (lote 10)"
     },
     {
-      "padrao": "^A chance de causar golpe mágico crítico se bifurca$|^.*chance de causar golpe mágico crítico$",
+      "padrao": "^A chance de causar golpe mágico crítico se bifurca$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "critico_magia_bifurca",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a chance de crítico de magia que se bifurca (a Infusão Mística entra inteira)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar golpe mágico crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_magia_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)",
+      "nota": "\"30% menos Chance de Golpe Crítico Mágico\" (o texto do PoE em inglês: \"30% less Spell Critical Strike Chance\")"
     },
     {
       "padrao": "^Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você$",
@@ -434,17 +580,26 @@
       "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
-      "padrao": "^Ataques têm .* de Poder Arcano ao usar uma varinha$",
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de Poder Arcano ao usar uma varinha$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "poder_arcano@ataque+comVarinha",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Poder Arcano",
       "_nova": true,
-      "_ciclo7": true
+      "_lote19": "14/10 — a árvore principal (lote 19)"
+    },
+    {
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de Poder Arcano$",
+      "efeitos": [
+        {
+          "stat": "poder_arcano@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^Efeito da Crueldade aumentado em \\{(\\d+)\\}%$",
@@ -6377,18 +6532,15 @@
       "nota": "vale nos ataques enquanto você empunha uma Espada"
     },
     {
-      "padrao": "^Portador da Praga .*$",
+      "padrao": "^Portador da Praga têm Valor Máximo da Praga aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "praga_max",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "a gema Infestador (o Portador da Praga do texto) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_ciclo7": true,
-      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^Furtividade aumentada em .*$",
@@ -7047,18 +7199,15 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Profanar e Desenterrar tem .* cadáveres permitidos$",
+      "padrao": "^Profanar e Desenterrar tem \\+\\{(\\d+)\\} de número Máximo de cadáveres permitidos$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "cadaveres_max_criados",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "as gemas Profanar e Desenterrar estão no jogo, mas ainda não criam cadáveres",
       "_nova": true,
-      "_ciclo7": true,
-      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^As primeiras \\{(\\d+)\\} Queimas de Mana aplicadas em você não tem efeito$",
@@ -16692,15 +16841,12 @@
       "padrao": "^Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "eficiencia_reserva_feiticeiro",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "a gema Feiticeiro (Spellslinger) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_lote8": "13/10 — a mana reservada (lote 8)",
-      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+      "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
       "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
@@ -16820,6 +16966,19 @@
       "_unico": true
     },
     {
+      "padrao": "^Ganha Infusão Espiritual a cada \\{?\\d+(?:\\.\\d+)?\\}? segundos enquanto canaliza uma magia$",
+      "efeitos": [
+        {
+          "stat": "infusao_espiritual",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s",
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
       "padrao": "^(?!.*Oferenda Espiritual).*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
       "efeitos": [
         {
@@ -16898,6 +17057,76 @@
       "_unico": true
     },
     {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo às Habilidades de Retaliação$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@retaliacao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@retaliacao",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de Retaliação causam Dano aumentado em \\{(\\d+)\\} ?%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de Retaliação se tornam Utilizáveis por um tempo \\{(\\d+)\\} ?% maior$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_janela_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de Retaliação têm Recuperação da Recarga aumentada em \\{(\\d+)\\} ?%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de [Rr]etaliação se tornam usáveis a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "retaliacao_cada_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
+      "padrao": "^Habilidades de [Rr]etaliação têm \\{(\\d+)\\} ?% de Poder Arcano$",
+      "efeitos": [
+        {
+          "stat": "poder_arcano@retaliacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote22": "14/10 — a Retaliação dos únicos (lote 22)"
+    },
+    {
       "padrao": "^.*(?:Retaliação|de retaliação).*$",
       "efeitos": [
         {
@@ -16906,9 +17135,137 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as habilidades de Retaliação não existem no jogo",
+      "nota": "linha de Retaliação sem regra própria no jogo (as habilidades de Retaliação existem desde 11/10: a janela depois do bloqueio ou do Acerto Selvagem)",
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^Ativa Égide Primitiva Nível \\{(\\d+)\\} quando Alocado$",
+      "efeitos": [
+        {
+          "stat": "egide_primitiva",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Égide toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano elemental de acertos (o tempo das Égides do PoE — o da Primitiva não é publicado)",
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Égide Primitiva pode sofrer \\{(\\d+)\\} de Dano Elemental por Nódulo de Habilidade Passiva Alocada$",
+      "efeitos": [
+        {
+          "stat": "egide_primitiva_por_notavel",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "por Notável alocado (da árvore e da ascendência) — o texto do PoE em inglês: \"per Allocated Notable Passive Skill\"",
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Outras Habilidades de Égides são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "egides_desabilitadas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide de Fogo [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide de Gelo [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide Relampejante [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide Elemental [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide Física [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_fisica",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico enquanto a Égide Física estiver esgotada aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@egideFisicaEsgotada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto a Égide Física estiver esgotada$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@egideFisicaEsgotada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@egideFisicaEsgotada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Inimigos Próximos são Cegados enquanto Égide Física não estiver esgotada$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:cego@egideFisicaAtiva",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
     },
     {
       "padrao": "^.*Égide.*$",
@@ -16983,6 +17340,43 @@
       "nota": "nenhum monstro do jogo faz isso no personagem",
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Pele de Árvore Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "pele_de_arvore",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Casca — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente, perde 1 por Ataque que acerta, até 10; -60 de Dano Físico dos Acertos de Ataque por Casca e 4% mais chance de Evadir Ataques por Casca abaixo do máximo (o nível 20 do PoE)"
+    },
+    {
+      "padrao": "^Concede a Habilidade Avatar Liberto Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "avatar_liberto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): com 100 de Fúria Liberta, Liberto por 10 segundos"
+    },
+    {
+      "padrao": "^Concede a Habilidade Convocar Sentinela do Resplendor Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "sentinela_do_resplendor",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Sentinela segue você, ataca corpo a corpo e queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo); volta 0,75 s depois de morrer; a vida e o golpe são os de um monstro comum do seu nível, com a sua \"Vida/Dano dos Lacaios\" — o PoE não publica a tabela dos lacaios",
+      "_nova": true,
+      "_lote18": "14/10 — o Guardian (lote 18)"
     },
     {
       "padrao": "^Concede (?:a |à )?[Hh]abilidade (.+?) [Nn]ível \\{(\\d+)\\}$",
@@ -17062,6 +17456,40 @@
       "_unico": true
     },
     {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Erguer Aranhas Nível \\{(\\d+)\\} ao Matar$",
+      "efeitos": [
+        {
+          "stat": "erguer_aranhas_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "erguer_aranhas",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo e envenenam (60% do golpe em 2 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
+      "_nova": true,
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
+    },
+    {
+      "padrao": "^Ativa Erguer Aranhas Nível \\{(\\d+)\\} ao Matar$",
+      "efeitos": [
+        {
+          "stat": "erguer_aranhas_chance",
+          "valor": "100"
+        },
+        {
+          "stat": "erguer_aranhas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo e envenenam (60% do golpe em 2 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
+      "_nova": true,
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
+    },
+    {
       "padrao": "^Ativa (?:o |a )?(.+?) [Nn]ível \\{(\\d+)\\} ao [Mm]atar(?: um Inimigo)?$",
       "efeitos": [
         {
@@ -17137,6 +17565,18 @@
       ],
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^Ativa Suspender no Tempo [Nn]ível \\{(\\d+)\\} ao conjurar uma magia$",
+      "efeitos": [
+        {
+          "stat": "suspender_no_tempo",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "cada magia não instantânea (não canalizada, não de lacaio, não Vaal) cria uma Miragem Suspensa (5 s); na terceira, todas soltam a magia que as criou, com 50% menos dano no nível 1 (20% no 20)",
+      "_nova": true,
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
       "padrao": "^Ativa (?:o |a )?(.+?) [Nn]ível \\{(\\d+)\\} ao conjurar uma [Mm]agia$",

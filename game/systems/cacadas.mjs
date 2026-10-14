@@ -2099,6 +2099,12 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (FrascosPoe.tique(estado, eventos, personagem?.nome)) Ficha.invalidar(estado);
   // Um buff de gema do PoE (com atributos) venceu: a ficha é refeita.
   if (GemasPoe.tique(estado)) Ficha.invalidar(estado);
+  // (14/10) Os ALTARES do PoE mudaram (ganhou um, outro venceu): a ficha e a vida máxima são refeitas (o Massivo dá Vida); e as gemas que os
+  // altares Maiores dispararam no tempo (as Novas, os Esqueletos — `ModsPoe.aurasProximas`) mostram os eventos delas.
+  if (itensPoeLigado()) {
+    if (ModsPoe.altaresMudaram(estado, Ficha.combate(estado).afPoe)) { Ficha.invalidar(estado); Afixos.sincronizarMaximos(estado); }
+    if (hunt.poeEventosDoTempo?.length) eventos.push(...hunt.poeEventosDoTempo.splice(0));
+  }
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
   // (09/10) No RELÓGIO DA CAÇADA, o mesmo com que os danos contínuos são postos (`acoes`, `afeccoes`: `hunt.clock`). Com o relógio de
   // parede (`agora`, que começa em ~1,8e12 enquanto o da caçada começa em 0), todo pulso "já podia" e o efeito inteiro (incêndio,
@@ -2130,6 +2136,14 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
   }
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
+  // (14/10, o Guardian) o Sentinela do Resplendor e as Relíquias Elementais (lacaios da ascendência, não de gema — `Acoes.tiqueDoGuardian`)
+  if (itensPoeLigado()) Acoes.tiqueDoGuardian(estado, hunt, agora);
+  // (14/10) as Égides (o máximo e a volta ao valor cheio) e os Robôs Ativadores do Saboteur
+  if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
+  // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções
+  if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); }
+  // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
+  if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
   if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 
@@ -2449,6 +2463,10 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   for (const l of hunt.lacaios) {
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
+      // (14/10, a Relíquia Elemental explode ao morrer ou acabar — `Acoes.explosaoDaReliquia`)
+      if (l.reliquia) { Acoes.explosaoDaReliquia(hunt, l, ficha, eventos); Ficha.invalidar(estado); }
+      // (14/10, as Aranhas Espectrais e os Fantasmas dão bônus enquanto vivos — `ModsPoe.adds`: a ficha é refeita)
+      if (l.aranha || l.fantasma) Ficha.invalidar(estado);
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
@@ -2469,7 +2487,10 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     LacaiosPoe.recarregarEscudoDoLacaio(l, 250);
     // ("Espíritos Furiosos Convocados sofrem X% de sua Vida Máxima como Dano de Caos por segundo".)
     if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;
-    for (const b of hunt.monstros) {
+    // (14/10) o Sentinela do Resplendor queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo — `Acoes.queimaDoSentinela`)
+    if (l.sentinela && !Protecao.imune(hunt)) Acoes.queimaDoSentinela(hunt, l, ficha, 250, eventos);
+    // (14/10: os Robôs Ativadores não tomam dano — `intocavel`)
+    for (const b of l.intocavel ? [] : hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
       // (ciclo 7) o golpe de um monstro CONJURADOR (que tem magias) conta como magia no lacaio: o bloqueio mágico dele.
       const magia = (Poderes.poderesDe(b.key)?.ataques ?? []).some((a) => a.tipo === 'magia');
@@ -2481,7 +2502,12 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // ("Golens Convocados são Imunes ao Dano Elemental": a parte elemental não passa)
       const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => (l.poe.imuneElemental && ['fire', 'ice', 'energy'].includes(x.elemento) ? n : n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(teto, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? resDoLacaio(l, x.elemento, aliado) : 0) / 100)), 0) : 0;
       const fatorDoGolpe = Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator;
-      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: R.ataqueDoMonstro(b) * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: aliado?.bloqueioMagico ?? 0 }) : { dano: (R.ataqueDoMonstro(b) * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      // (14/10, dono: "Depois, num lote próprio") O golpe do bicho no lacaio é o MESMO golpe corpo a corpo que ele dá em você — a faixa do
+      // arquivo do monstro, com a chance dele (`Poderes.golpeCorpoACorpo`; 0 = errou); a metade da vida atual dele (`R.ataqueDoMonstro`) fica só
+      // para o monstro sem golpe no arquivo. Antes era sempre ela: um chefe com muita vida matava qualquer lacaio de um golpe.
+      const golpeDoBicho = Poderes.golpeCorpoACorpo(b) ?? R.ataqueDoMonstro(b);
+      if (!(golpeDoBicho > 0)) continue;
+      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: aliado?.bloqueioMagico ?? 0 }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
       let sofrido = noLacaio;
@@ -2518,6 +2544,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push(...golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora));
       continue;
     }
+    // (14/10) a Relíquia Elemental não ataca: a aura dela vale enquanto estiver viva (`ModsPoe.adds`), e ela segue você.
+    if (l.semAtaque) { andarFamiliar(hunt, grade, l, agora); continue; }
     // A AURA (os robôs rastejantes): a cada segundo, um pouco do golpe em quem está em volta (resfria/eletriza na cor).
     const est = l.estilo ?? {};
     // Com o dono numa Safe Zone, os lacaios só o acompanham: dali não se ataca (`protecao.mjs`).
@@ -2589,7 +2617,11 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const antes = l.poe ? { envenenado: (b.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0), raroOuUnico: ['raro', 'unico'].includes(b.raridade ?? b.raridadePoe) || !!b.boss || !!b.chefe } : null;
       // (o Vínculo Flamejante no lacaio: o Fogo adicional, com o crítico e a parte do golpe)
       const fogoDoVinculo = vinculo?.fogo?.[1] > 0 ? ((vinculo.fogo[0] + Math.random() * Math.max(0, vinculo.fogo[1] - vinculo.fogo[0])) * (crit ? critico.mult : 1) * pct) / 100 : 0;
-      const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, ficha) : 0)));
+      // (14/10, a Chama Santificada: o ATAQUE do lacaio — um aliado, até o seu — leva X% do Físico como Fogo extra e tira as Chamas; as Chamas
+      // contam no relógio da caçada, como as afecções do bicho)
+      const chamaPct = !est.magia && itensPoeLigado() ? ModsPoe.consumirChamas(estado, b, `lacaio:${ModsPoe.idDaChama(hunt)}`, hunt.clock ?? 0) : 0;
+      const fisicoDaChama = chamaPct > 0 ? partes.filter((x) => x.tipo === 'physical').reduce((n, x) => n + bruto * x.f, 0) : 0;
+      const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, ficha) : 0) + (fisicoDaChama > 0 ? resistido(hunt, b, 'fire', (fisicoDaChama * chamaPct) / 100, ficha) : 0)));
       b.hp -= dano;
       // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")
       ModsPoe.poupar(ficha, hunt, b, { lacaio: true });
@@ -2601,6 +2633,11 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: b.uid, x: b.x, y: b.y });
       eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, crit, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
+      // (14/10) o VENENO das Aranhas Espectrais (o Golpe da Víbora): 60% do golpe em 2 s, como o veneno do PoE (sem os seus modificadores)
+      if (l.envenenar && Math.random() * 100 < l.envenenar) {
+        const posto = Dot.aplicar(b, { tipo: 'venenoPoe', total: dano * 0.6, duracaoMs: 2000, origem: { fonte: 'lacaio', habilidade: l.nome } }, hunt.clock ?? 0);
+        if (posto) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: posto });
+      }
       // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).
       if (l.sangrar && Math.random() * 100 < l.sangrar) {
         const posto = Dot.aplicar(b, { tipo: 'sangramento', total: dano * 0.7, origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);
@@ -2939,7 +2976,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     session: sessaoParaCliente(hunt.sessao),
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
     // + as cargas do PoE ativas (Tolerância, Frenesi, Poder), como cartões de buff.
-    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado)],
+    // (+ 14/10: os buffs do PoE por nome — os altares, a Adrenalina, o Liberto —, a Casca e a Fúria Liberta: `ModsPoe.buffsDoCliente`)
+    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado), ...ModsPoe.buffsDoCliente(estado)],
     // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
     parados: Acoes.paradosParaCliente(hunt),
     condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),

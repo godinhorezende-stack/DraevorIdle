@@ -12,8 +12,10 @@
 //   VIDA: com o suporte que reserva Vida (Arrogância: "Reservam Vida ao invés de Mana") ou o Magia Sanguínea, a reserva sai da VIDA.
 //   BLASFÊMIA: a maldição ligada à Blasfêmia vira AURA — liga reservando a "Sobreposição de Reserva" do suporte (35%) em vez de custar, e
 //              fica ligada; as marcas dela têm o "menos Efeito" do suporte. A Eficácia da Reserva de "Aura de Maldição" vale para ela; a de
-//              "Postura", para as gemas com a tag Postura. (A dos "suportados por Feiticeiro" não tem efeito: esse suporte não está no jogo.)
-import { compilada, doSlug } from './gemas-poe.mjs';
+//              "Postura", para as gemas com a tag Postura.
+//   FEITICEIRO (14/10): a reserva dele é a soma das das magias que ele suporta — 20% da mana cada (RePoE) —, com a eficácia delas (a geral, a
+//              de mana e "Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro" — `eficiencia_reserva_feiticeiro`).
+import { compilada, doSlug, FEITICEIRO } from './gemas-poe.mjs';
 /** A maldição vira aura (a Blasfêmia ligada a ela). */
 export const ehMaldicaoEmAura = (entry, efeitoDaGema) => !!efeitoDaGema?.maldicaoEmAura && entry?.poeGema?.arquetipo === 'maldicao';
 import * as ModsPoe from './condicoes-poe.mjs';
@@ -50,7 +52,8 @@ export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = nu
     + (deMana && arquetipo === 'arauto' ? ModsPoe.valor(ficha, 'eficiencia_reserva_arauto') : 0)
     // A maldição em aura (Blasfêmia) e a postura (a tag "Stance" da gema).
     + (deMana && arquetipo === 'maldicao' ? ModsPoe.valor(ficha, 'eficiencia_reserva_maldicao') : 0)
-    + (deMana && tipos?.has?.('Stance') ? ModsPoe.valor(ficha, 'eficiencia_reserva_postura') : 0);
+    + (deMana && tipos?.has?.('Stance') ? ModsPoe.valor(ficha, 'eficiencia_reserva_postura') : 0)
+    + (deMana && arquetipo === 'feiticeiro' ? ModsPoe.valor(ficha, 'eficiencia_reserva_feiticeiro') : 0);
   return mult / Math.max(0.1, 1 + eficacia / 100);
 }
 
@@ -99,6 +102,8 @@ export function pedida(estado, entry, efeitoDaGema, ficha, emVida = false) {
   const nivel = efeitoDaGema?.nivel ?? 1;
   // A maldição com a Blasfêmia reserva a "Sobreposição de Reserva" do suporte; o resto, a reserva da própria gema.
   let base = ehMaldicaoEmAura(entry, efeitoDaGema) ? { pct: Number(efeitoDaGema.reservaSobreposta) || 35 } : daGema(entry.poeGema.slug, nivel);
+  // (o Feiticeiro: 20% por magia suportada — `efeitoDaGema.magiasDoFeiticeiro`, as magias ligadas a ele)
+  if (entry.poeGema.arquetipo === 'feiticeiro') base = efeitoDaGema?.magiasDoFeiticeiro > 0 ? { pct: FEITICEIRO.reservaPct * efeitoDaGema.magiasDoFeiticeiro } : null;
   if (!base) return null;
   // ("Reserva de Mana de Habilidades de Arauto é sempre X%": a reserva fixa da peça no lugar da da gema.)
   const arautoFixo = entry.poeGema.arquetipo === 'arauto' ? ModsPoe.valor(ficha, 'reserva_arauto_fixa') : 0;

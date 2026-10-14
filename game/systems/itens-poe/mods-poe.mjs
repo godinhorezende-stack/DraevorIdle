@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade } from './condicoes-poe.mjs';
+import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -22,6 +22,10 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
   const v = (k) => valor(fichaR, k);
   const tags = new Set(ficha.tagsDoGolpe ?? []);
+  // (14/10, o Guardian: a Chama Santificada no acerto corpo a corpo — o Marechal da Divindade; o Raro ou Único acertado é ocasião da Relíquia
+  // Elemental — a Cruzada Implacável)
+  if (tags.has('corpo')) porChamaSantificada(hunt, alvo, ficha.afPoe, agora);
+  if (['raro', 'unico'].includes(alvo.raridade ?? alvo.raridadePoe) || alvo.boss) notarParaReliquia(estado, hunt, agora);
   // (12/10, as Tinturas: os acertos de ATAQUE desde o último tique — "quando você Acertar um Inimigo com uma Arma Corpo a Corpo";
   // `frascos.tique` → `tinturas.tique`, que confere a arma)
   if (hunt && tags.has('ataque')) hunt.tinturaAcertos = (hunt.tinturaAcertos ?? 0) + 1;
@@ -338,13 +342,16 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
 
 /** O "X% do Dano de <elemento> sofrido é Recuperado como Vida" de cada elemento de golpe. */
 const RECOUP_DO_ELEMENTO = { physical: 'recoup_life_phys', fire: 'recoup_life_fire', ice: 'recoup_life_ice', energy: 'recoup_life_energy', chaos: 'recoup_life_chaos' };
-export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
+export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, ataque = false, magia = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
   if (!ligado() || !hunt || !ficha?.afPoe) return eventos;
   const v = (k) => valor(ficha, k);
   marcar(hunt, 'acertado', agora);
   if (dano > 0) marcar(hunt, 'dano', agora);
-  // (lote D) "Acertado por um Ataque Recentemente" (o golpe dos monstros que não é magia).
-  if (corpoACorpo) marcar(hunt, 'acertadoAtaque', agora);
+  // (lote D) "Acertado por um Ataque Recentemente" (o golpe dos monstros que não é magia — 14/10: o projétil de ataque também, `ataque`).
+  if (corpoACorpo || ataque) marcar(hunt, 'acertadoAtaque', agora);
+  // (14/10, o Warden: a Pele de Árvore perde 1 Casca no Ataque inimigo que acerta; a Lição das Estações, N no Dano Mágico)
+  if (corpoACorpo || ataque) perderCasca(hunt, 1, agora);
+  if (magia) perderCasca(hunt, v('casca_perde_magia'), agora);
   // O ATORDOAMENTO que este golpe pôs (`combate/controle.tentar` grava `desde`): as reações "quando Atordoado".
   const at = hunt.controle?.atordoado;
   if (at && at.desde === agora && !at.reagiu) {
@@ -703,6 +710,10 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   ultimos.push(agora);
   while (ultimos.length && (ultimos[0] < agora - 20000 || ultimos.length > 60)) ultimos.shift();
   if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) marcar(hunt, 'estilhacou', agora);
+  // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto)
+  if (nome === 'matar') notarParaReliquia(estado, hunt, agora);
+  // (14/10, Erguer Aranhas: o abate pendente — `acoes.tiqueDasAranhas`)
+  if (nome === 'matar' && hunt) hunt.poeAbatesParaAranhas = (hunt.poeAbatesParaAranhas ?? 0) + 1;
   const rng = ctx.rng ?? Math.random;
   const alvo = ctx.alvo ?? null;
   const tagsAlvo = new Set([...tagsDoAlvo(alvo, agora), ...(ctx.tags ?? [])]);
@@ -1134,6 +1145,15 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
     p[k] ??= agora;
     if (agora - p[k] < Number(cada) * 1000) continue;
     p[k] = agora;
+    // (14/10) `periodico:<N>:gatilho:<gema>` — a gema disparada a cada N segundos (as Novas e os Esqueletos dos altares Maiores): no bicho vivo
+    // mais perto (a até 6 casas); os eventos dela saem no tique (`hunt.poeEventosDoTempo` — `cacadas.tique`).
+    if (acao === 'gatilho') {
+      const perto = hunt.pos ? (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 6) : [];
+      if (!perto.length) continue;
+      const alvo = perto.sort((a, b) => Math.max(Math.abs(a.x - hunt.pos.x), Math.abs(a.y - hunt.pos.y)) - Math.max(Math.abs(b.x - hunt.pos.x), Math.abs(b.y - hunt.pos.y)))[0];
+      aplicarAcao(estado, hunt, { evento: 'tempo', acao, param: param.join(':'), conds: [], valor: x }, ficha, { alvo, agora, rng: Math.random, eventos: (hunt.poeEventosDoTempo ??= []) });
+      continue;
+    }
     aplicarAcao(estado, hunt, { evento: 'tempo', acao, param: param.join(':'), conds: [], valor: x }, ficha, { alvo: null, agora, rng: Math.random, eventos: null });
   }
   // (11/10, as ascendências) As AURAS nos inimigos próximos (a até 3 casas), que o golpe e a magia deles leem: "Inimigos Próximos tem -X% de
@@ -1207,6 +1227,17 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
       const n = totens.filter((t) => Math.max(Math.abs(m.x - t.x), Math.abs(m.y - t.y)) <= 3).length;
       if (n) (m.estados ??= {}).totemFragil = { ate: agora + 1000, pct: n * porTotem };
     }
+  }
+  // (14/10) O ALTAR ALEATÓRIO a cada N segundos (a Harmonia do Propósito: "Ganha um buff de altar aleatório a cada 10 segundos" — o valor é a
+  // duração base, 20 s, × "Duração dos Efeitos de Altares em você aumentada"): um dos 13 do sorteio do PoE (`ALTARES_DO_SORTEIO`).
+  for (const [k, dur] of Object.entries(ficha.afPoe)) {
+    const p = /^altar_aleatorio:(\d+)$/.exec(k);
+    if (!p || !(dur > 0)) continue;
+    const prox = (hunt.poePeriodicos ??= {});
+    prox[k] ??= agora + Number(p[1]) * 1000;
+    if (agora < prox[k]) continue;
+    ganharBuff(hunt, ALTARES_DO_SORTEIO[Math.floor(Math.random() * ALTARES_DO_SORTEIO.length)], dur * Math.max(0, 1 + valor(ficha, 'duracao_altar') / 100), agora);
+    prox[k] = agora + Number(p[1]) * 1000;
   }
   // O buff a cada N segundos ("Você ganha Sobrecarga Elemental por 8 segundos a cada 16 segundos").
   for (const [k, dur] of Object.entries(ficha.afPoe)) {

@@ -381,6 +381,8 @@ export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, 
   };
   desviar(Number(af.dano_no_totem_pct) || 0, (x) => x.tipo === 'totem');
   desviar(Number(af.dano_nos_espectros_pct) || 0, (x) => !!x.espectro);
+  // (14/10, a Cruzada Radiante: "X% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua")
+  desviar(Number(af.sentinela_absorve) || 0, (x) => !!x.sentinela);
   // Fonte viva: o escudo que a cura deixou segura primeiro.
   const escudo = hunt?.arvoreEscudo;
   if (escudo && escudo.ate > agora && escudo.v > 0 && v > 0) {

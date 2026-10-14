@@ -176,6 +176,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'estilhacouRecente', 'exposicaoRecente', 'empalouRecente',
   // (lote E) canalizando agora (usou uma habilidade de Canalização há pouco).
   'canalizando',
+  // (14/10) a Égide Física esgotada (ou não) — `hunt.egides`
+  'egideFisicaEsgotada', 'egideFisicaAtiva',
   // (lote E) com ao menos um cadáver perto (a até 4 casas — `hunt.cadaveres`).
   'cadaverPerto',
   // (lote F) no máximo um Raro ou Único por perto; ao menos dois Raros ou Únicos por perto (a Presença).
@@ -367,6 +369,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (r['usou:magia'] != null && agora - r['usou:magia'] <= CONJURANDO_MS) v.add('conjurando');
     if (fortificacao(estado, total) > 0) v.add('fortificado');
     if (r['usou:canalizar'] != null && agora - r['usou:canalizar'] <= 1000) v.add('canalizando');
+    if (h.egides?.fisica) v.add(h.egides.fisica.valor > 0 ? 'egideFisicaAtiva' : 'egideFisicaEsgotada');
     if (cadaveresPerto(h) > 0) v.add('cadaverPerto');
     // (lote G) Elusivo (o buff — antes a condição nunca valia), o Solo Sagrado, a Postura e o Estandarte.
     if (buffAtivo(estado, 'elusivo', total)) v.add('elusivo');
@@ -494,6 +497,190 @@ export function fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora = hun
   if (!ficha?.sobrecargaElemental || !['fire', 'ice', 'energy'].includes(elemento)) return 1;
   const q = hunt?.poeCriticoPorHabilidade?.[habilidade ?? 'golpe'];
   return q != null && agora - q <= SOBRECARGA.janelaMs ? 1 + SOBRECARGA.maisPct / 100 : 1;
+}
+/**
+ * O "MAIS" do dano ELEMENTAL de um golpe na parte de Fogo, Gelo e Raio: a Sobrecarga Elemental (`fatorDaSobrecarga`) × (14/10) o "X% mais Dano
+ * Elemental" (`mais_dano_elemental` — o Avatar da Selva: "100% mais Dano Elemental enquanto Liberto"). 1 no Físico e no Caos.
+ */
+export function fatorDoDanoElemental(ficha, hunt, habilidade, elemento, agora = hunt?.clock ?? 0) {
+  if (!['fire', 'ice', 'energy'].includes(elemento)) return 1;
+  return fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora) * Math.max(0, 1 + valor(ficha, 'mais_dano_elemental') / 100);
+}
+
+/**
+ * (14/10) O WARDEN. A CASCA da Pele de Árvore ("Concede a Habilidade Pele de Árvore Nível 20" — a habilidade sai sozinha: o jogo usa as
+ * habilidades sozinho; os números são os do nível 20, poedb): ganha 1 Casca por segundo se você não foi Acertado por um Ataque Recentemente,
+ * perde 1 quando um Ataque inimigo acerta (e, com a Lição das Estações, quando Dano Mágico acerta — `perderCasca`), até 10. O AVATAR LIBERTO
+ * ("Concede a Habilidade Avatar Liberto Nível 20"): 1 de Fúria Liberta por Afecção Elemental infligida com um Acerto (no máximo uma vez a
+ * cada 0,2 s por tipo — `ganharFuriaLiberta`); com 100, a habilidade consome tudo e deixa Liberto por 10 s (`liberto`).
+ */
+export const CASCA = Object.freeze({ maximo: 10, ganhoMs: 1000, fisicoAtaquePorCasca: 60, evadirMaisPorCascaAbaixo: 4 });
+export const FURIA_LIBERTA = Object.freeze({ maximo: 100, intervaloMs: 200, libertoS: 10 });
+export function tiqueDoWarden(estado, hunt, afPoe, agora = hunt?.clock ?? 0) {
+  if (!hunt || !ligado()) return;
+  if (Number(afPoe?.pele_de_arvore) > 0) {
+    const c = (hunt.casca ??= { n: 0, ultimo: agora });
+    if (recente(hunt.poeRecente?.acertadoAtaque, agora) || c.n >= CASCA.maximo) c.ultimo = agora;
+    else while (agora - c.ultimo >= CASCA.ganhoMs && c.n < CASCA.maximo) { c.n++; c.ultimo += CASCA.ganhoMs; }
+  } else if (hunt.casca) delete hunt.casca;
+  const f = hunt.furiaLiberta;
+  if (Number(afPoe?.avatar_liberto) > 0 && (f?.n ?? 0) >= FURIA_LIBERTA.maximo && !buffAtivo(estado, 'liberto')) {
+    f.n = 0;
+    ganharBuff(hunt, 'liberto', FURIA_LIBERTA.libertoS, agora);
+  }
+}
+/** Perde `n` Cascas (o Ataque inimigo que acertou: 1; o Dano Mágico, com a Lição das Estações). */
+export function perderCasca(hunt, n = 1, agora = hunt?.clock ?? 0) {
+  const c = hunt?.casca;
+  if (!c || !(n > 0)) return;
+  c.n = Math.max(0, c.n - n);
+  c.ultimo = agora;
+}
+/** As Afecções Elementais pelo estado que o acerto pôs (`afeccoes.aoAcertar`). */
+const AFECCAO_ELEMENTAL_DO_ESTADO = { queimando: 'incendio', congelado: 'congelamento', lento: 'resfriamento', eletrizado: 'eletrizacao', causticado: 'causticacao' };
+/** A Fúria Liberta pelos estados que um acerto pôs (`postos`): 1 por tipo de Afecção Elemental, no máximo uma vez a cada 0,2 s por tipo. */
+export function ganharFuriaLiberta(estado, hunt, afPoe, postos, agora = hunt?.clock ?? 0) {
+  const por = Number(afPoe?.furia_liberta_por_afeccao) || 0;
+  if (!(por > 0) || !hunt || !ligado() || !postos?.length) return;
+  if (Number(afPoe.furia_liberta_nao_liberto) > 0 && buffAtivo(estado, 'liberto')) return;
+  const f = (hunt.furiaLiberta ??= { n: 0, ultimo: {} });
+  for (const tipo of new Set(postos.map((p) => AFECCAO_ELEMENTAL_DO_ESTADO[p]).filter(Boolean))) {
+    if (agora - (f.ultimo[tipo] ?? -Infinity) < FURIA_LIBERTA.intervaloMs) continue;
+    f.ultimo[tipo] = agora;
+    f.n = Math.min(FURIA_LIBERTA.maximo, f.n + por);
+  }
+}
+/**
+ * (14/10) O GUARDIAN. A CHAMA SANTIFICADA (o Marechal da Divindade: "Inflige Chama Santificada ao atingir corpo a corpo" — o lembrete do PoE:
+ * "Ataques contra inimigos afetados por Chama Santificada ganham 25% do dano físico como dano de fogo adicional. Chama Santificada é removida após
+ * um ataque que se beneficia desse dano adicional. Dura seis segundos e não beneficia quem a infligiu"): no bicho, `estados.chamas` — uma por
+ * quem pôs (`hunt.idChama`), até 1 + "+N Chamas". O ATAQUE de um ALIADO (o companheiro da party; o lacaio, até o seu) leva o Fogo extra de
+ * todas as que não são dele e as tira; cada uma conta para quem a pôs ("removidas por um ataque aliado recentemente": Raio extra).
+ */
+export const CHAMA_SANTIFICADA = Object.freeze({ duracaoMs: 6000, fogoPct: 25, recenteMs: 4000 });
+/** O id de quem põe a Chama (o da caçada: dura o tempo da Chama). */
+export const idDaChama = (hunt) => (hunt ? (hunt.idChama ??= `c${Math.random().toString(36).slice(2, 10)}`) : null);
+export function porChamaSantificada(hunt, alvo, afPoe, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt || !alvo || !(Number(afPoe?.chama_santificada_corpo) > 0)) return false;
+  const dono = idDaChama(hunt);
+  const e = (alvo.estados ??= {});
+  const vivas = (e.chamas ?? []).filter((c) => c.ate > agora);
+  const minhas = vivas.filter((c) => c.dono === dono);
+  const ate = agora + CHAMA_SANTIFICADA.duracaoMs;
+  if (minhas.length >= 1 + (Number(afPoe.chama_santificada_extra) || 0)) minhas.sort((a, b) => a.ate - b.ate)[0].ate = ate;
+  else vivas.push({ dono, ate, pct: CHAMA_SANTIFICADA.fogoPct * Math.max(0, 1 + (Number(afPoe.chama_santificada_efeito) || 0) / 100) });
+  e.chamas = vivas;
+  return true;
+}
+/**
+ * O ATAQUE de `quem` (o id da caçada de quem ataca; o lacaio: `lacaio:<id do dono>`) no bicho: o % do Físico como Fogo extra das Chamas que não
+ * são dele — que saem; cada uma é "removida por um ataque aliado" para quem a pôs (os da sala: `estado` e a party — `hunt.poeChamasRemovidas`).
+ */
+export function consumirChamas(estado, alvo, quem, agora = estado?.hunt?.clock ?? 0) {
+  const e = alvo?.estados;
+  if (!ligado() || !e?.chamas?.length) return 0;
+  let pct = 0;
+  const ficam = [];
+  for (const c of e.chamas) {
+    if (!(c.ate > agora)) continue;
+    if (c.dono === quem) { ficam.push(c); continue; }
+    pct += c.pct;
+    const dono = [estado, ...(estado?.hunt?.partilha?.naSala ?? [])].find((o) => o?.hunt?.idChama === c.dono);
+    if (dono) { (dono.hunt.poeChamasRemovidas ??= []).push(agora); dono.hunt.poeFichaMudou = true; }
+  }
+  e.chamas = ficam;
+  return pct;
+}
+/**
+ * A RELÍQUIA ELEMENTAL (a Cruzada Implacável: "25% de chance de Ativar Convocar Relíquia Elemental Nível 20 quando você ou um Aliado próximo
+ * Matar um Inimigo, ou Acertar um Inimigo Raro ou Único"): a ocasião fica pendente na caçada de cada um perto (`notarParaReliquia`) e quem tem o
+ * nó sorteia no tique dele (`acoes.tiqueDoGuardian`).
+ */
+export const RELIQUIA = Object.freeze({ duracaoMs: 5000, recargaMs: 300, raioAliado: 3 });
+export function notarParaReliquia(estado, hunt, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt) return;
+  hunt.poeReliquiaPendente = (hunt.poeReliquiaPendente ?? 0) + 1;
+  for (const o of hunt.partilha?.naSala ?? []) {
+    if (!o || o === estado || !o.hunt?.pos || !hunt.pos || (o.hunt.z ?? 0) !== (hunt.z ?? 0)) continue;
+    if (Math.max(Math.abs(o.hunt.pos.x - hunt.pos.x), Math.abs(o.hunt.pos.y - hunt.pos.y)) <= RELIQUIA.raioAliado) o.hunt.poeReliquiaPendente = (o.hunt.poeReliquiaPendente ?? 0) + 1;
+  }
+}
+/**
+ * (14/10) As ÉGIDES do PoE (o lembrete: "Égide toma o dano elemental dos acertos por você até se esgotar; volta ao valor cheio depois de um
+ * tempo sem dano elemental de acertos, ou se esgotar"): `hunt.egides[nome] = { tipos, valor, max, ultimoDano }` — o máximo e a volta ao valor
+ * cheio no tique (`acoes.tiqueDasEgides`, que sabe as peças e a árvore). Aqui, a parte de cada tipo do acerto sai da Égide dele ANTES do Escudo
+ * e da Vida (o golpe do monstro e a magia dele). Devolve o total absorvido; `porTipo` sai com o que sobrou.
+ */
+export const EGIDE = Object.freeze({ recargaMs: 10000, ordem: ['fisica', 'fogo', 'gelo', 'raio', 'elemental', 'primitiva'] });
+export function absorverNaEgide(hunt, porTipo, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt?.egides) return 0;
+  let total = 0;
+  for (const nome of EGIDE.ordem) {
+    const e = hunt.egides[nome];
+    if (!e) continue;
+    for (const el of e.tipos) {
+      const v = porTipo[el] ?? 0;
+      if (!(v > 0)) continue;
+      // (o dano do tipo dela reinicia a espera, esgotada ou não)
+      e.ultimoDano = agora;
+      const tirado = Math.min(v, e.valor);
+      if (!(tirado > 0)) continue;
+      e.valor -= tirado;
+      porTipo[el] = v - tirado;
+      total += tirado;
+      if (!(e.valor > 0)) hunt.poeFichaMudou = true;
+    }
+  }
+  return total;
+}
+
+/**
+ * (14/10) A INFUSÃO ESPIRITUAL do PoE (o Rito Profano do Occultist: "Ganha Infusão Espiritual a cada 0,5 segundos enquanto canaliza uma
+ * magia" — o poedb: cada acúmulo dá 15% de início mais rápido da Recarga do Escudo de Energia, Magias Canalizadas 5% mais Dano e 10% mais
+ * Custo; máximo 10; perde um a cada 0,5 s se não ganhou nos últimos 4 s). O jogo não tem canalização contínua: usar uma Magia de Canalização
+ * conta como canalizar por 1 s (`canalizouMagia`, como o "canalizando" das condições).
+ */
+export const INFUSAO = Object.freeze({ maximo: 10, ganhoMs: 500, perdaMs: 500, semGanhoMs: 4000, canalizandoMs: 1000, esInicioPct: 15, maisDanoPct: 5, maisCustoPct: 10 });
+export function tiqueDaInfusao(hunt, afPoe, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt) return;
+  const i = hunt.infusaoEspiritual;
+  const canalizando = agora - (hunt.poeRecente?.canalizouMagia ?? -Infinity) <= INFUSAO.canalizandoMs;
+  if (Number(afPoe?.infusao_espiritual) > 0 && canalizando) {
+    const x = (hunt.infusaoEspiritual ??= { n: 0, ultimoGanho: -Infinity });
+    if (agora - x.ultimoGanho >= INFUSAO.ganhoMs) {
+      x.ultimoGanho = agora;
+      if (x.n < INFUSAO.maximo) { x.n++; hunt.poeFichaMudou = true; }
+    }
+    return;
+  }
+  if (!i?.n) return;
+  if (agora - i.ultimoGanho > INFUSAO.semGanhoMs && agora - (i.ultimaPerda ?? -Infinity) >= INFUSAO.perdaMs) {
+    i.n--;
+    i.ultimaPerda = agora;
+    hunt.poeFichaMudou = true;
+    if (!i.n) delete hunt.infusaoEspiritual;
+  }
+}
+
+/**
+ * (14/10) Os cartões do HUD do que o PoE dá por nome: os buffs com tempo (os altares, a Adrenalina, o Liberto…), a Casca e a Fúria Liberta.
+ * `contador`: o número no cartão no lugar do relógio.
+ */
+export function buffsDoCliente(estado) {
+  const h = estado?.hunt;
+  if (!h || !ligado()) return [];
+  const agora = h.clock ?? 0;
+  const saida = [];
+  for (const [nome, ate] of Object.entries(h.poeBuffs ?? {})) if (ate > agora && BUFFS[nome]) saida.push({ icone: null, nome: BUFFS[nome].nome, resta: ate - agora, tipo: 'buffPoe', buff: nome });
+  if (h.casca) saida.push({ icone: null, nome: 'Casca', resta: 0, tipo: 'casca', contador: h.casca.n, dica: `Casca: ${h.casca.n} de ${CASCA.maximo} (a Pele de Árvore — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente)` });
+  // (14/10) as Égides (o valor que ainda toma) e a Infusão Espiritual
+  const NOME_DA_EGIDE = { primitiva: 'Égide Primitiva', fogo: 'Égide de Fogo', gelo: 'Égide de Gelo', raio: 'Égide Relampejante', elemental: 'Égide Elemental', fisica: 'Égide Física' };
+  for (const [nome, e] of Object.entries(h.egides ?? {})) saida.push({ icone: null, nome: NOME_DA_EGIDE[nome] ?? nome, resta: 0, tipo: 'egide', contador: Math.round(e.valor), dica: `${NOME_DA_EGIDE[nome] ?? nome}: ${Math.round(e.valor)} de ${Math.round(e.max)} (toma o dano ${({ fisica: 'Físico', fogo: 'de Fogo', gelo: 'de Gelo', raio: 'de Raio' })[nome] ?? 'de Fogo, Gelo e Raio'} dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano)` });
+  if (h.infusaoEspiritual?.n > 0) saida.push({ icone: null, nome: 'Infusão Espiritual', resta: 0, tipo: 'infusaoEspiritual', contador: h.infusaoEspiritual.n, dica: `Infusão Espiritual: ${h.infusaoEspiritual.n} de ${INFUSAO.maximo} (por acúmulo: 15% de início mais rápido da Recarga do Escudo, Magias Canalizadas 5% mais Dano e 10% mais Custo)` });
+  // (14/10) o Infestador: Incubando ou Infestando, com o Valor da Praga
+  if (h.praga) saida.push({ icone: null, nome: h.praga.modo === 'infestando' ? 'Infestando' : 'Incubando', resta: 0, tipo: 'praga', contador: Math.round(h.praga.valor), dica: `Valor da Praga: ${Math.round(h.praga.valor)} de ${Math.round(h.praga.max ?? 0)} (o Infestador — ${h.praga.modo === 'infestando' ? 'Infestando: Caos nos inimigos a até 2 casas até o Valor acabar' : 'Incubando: 40% do dano de cada Veneno seu; no máximo, Infesta sozinho'})` });
+  if (h.furiaLiberta?.n > 0) saida.push({ icone: null, nome: 'Fúria Liberta', resta: 0, tipo: 'furiaLiberta', contador: h.furiaLiberta.n, dica: `Fúria Liberta: ${h.furiaLiberta.n} de ${FURIA_LIBERTA.maximo} (com ${FURIA_LIBERTA.maximo}, o Avatar Liberto deixa Liberto por ${FURIA_LIBERTA.libertoS} s)` });
+  return saida;
 }
 
 // ---------------------------------------------------------------- a soma
@@ -690,6 +877,34 @@ export const BUFFS = {
   danCaCarmesim: { nome: 'Dança Carmesim', af: {} },
   confluxo: { nome: 'Confluxo Elemental', af: { chance_ignite: 100, chance_freeze: 100, chance_shock: 100 } },
   altarMenor: { nome: 'Altar Menor', af: { dmg_inc: 10 } },
+  // (14/10) Os ALTARES do PoE — os buffs dos Santuários (poedb, PoE 3.29; `altar: true`): os 13 do sorteio do PoE (a Harmonia do Propósito e o
+  // Gritos dos Dessecados — `ALTARES_DO_SORTEIO`; o Ressonante do PoE antigo é o Carregado de hoje) e os Menores dos únicos (o Erro Crasso).
+  // "Efeito dos Buffs de Altares em você aumentado" multiplica os números (`efeito_altar` — não o nível das gemas disparadas). As Novas e os
+  // Esqueletos dos Maiores: o poedb não publica o dano nem a frequência — as gemas do jogo (Nova Glacial, Nova Elétrica, Convocar Esqueleto)
+  // nível 20, a cada 2 s (4 s os Esqueletos). O Altar de Aceleração: a Velocidade de Projéteis não se aplica (o projétil do jogo vai direto ao alvo).
+  altarAceleracao: { nome: 'Altar de Aceleração', altar: true, af: { action_speed: 50 } },
+  altarBrutal: { nome: 'Altar Brutal', altar: true, af: { chance_empurrar: 100, stun_duration: 30, dmg_inc: 50 } },
+  altarDiamante: { nome: 'Altar Diamante', altar: true, af: { critico_sempre: 1 } },
+  altarEcoante: { nome: 'Altar Ecoante', altar: true, af: { repeticoes_extra: 1 } },
+  altarSombrio: { nome: 'Altar Sombrio', altar: true, af: { naocaos_as_extra_chaos: 10, 'ev:matar:explodirChance:25': 40 } },
+  altarImpenetravel: { nome: 'Altar Impenetrável', altar: true, af: { evasion_pct: 100, es_pct: 100, armour_pct: 100 } },
+  altarMassivo: { nome: 'Altar Massivo', altar: true, af: { life_inc: 40, area_inc: 40 } },
+  altarReabastecimento: { nome: 'Altar de Reabastecimento', altar: true, af: { mana_regen_pct: 200, life_regen_max_pct: 6.67 } },
+  altarResistencia: { nome: 'Altar de Resistência', altar: true, af: { fire_res_max: 10, ice_res_max: 10, energy_res_max: 10, chaos_res_max: 10, fire_res: 50, ice_res: 50, energy_res: 50 } },
+  altarCarregado: { nome: 'Altar Carregado', altar: true, af: { max_tolerancia: 1, max_frenesi: 1, max_poder: 1, carga_qualquer_ao_matar: 60, 'ev:acertar:cargaAleatoria': 20 } },
+  altarCongelanteMaior: { nome: 'Altar Congelante Maior', altar: true, af: { phys_as_extra_ice: 30, 'periodico:2:gatilho:nova-glacial': 20 } },
+  altarEletrizanteMaior: { nome: 'Altar Eletrizante Maior', altar: true, af: { phys_as_extra_energy: 30, 'periodico:2:gatilho:nova-eletrica': 20 } },
+  altarEsqueleticoMaior: { nome: 'Altar Esquelético Maior', altar: true, af: { phys_as_extra_chaos: 30, 'periodico:4:gatilho:convocar-esqueleto': 20 } },
+  altarBrutalMenor: { nome: 'Altar Brutal Menor', altar: true, af: { chance_empurrar: 100, stun_duration: 20, dmg_inc: 20 } },
+  altarMassivoMenor: { nome: 'Altar Massivo Menor', altar: true, af: { life_inc: 20, area_inc: 20 } },
+  // (14/10, o Warden: o Avatar Liberto deixa Liberto por 10 s — os efeitos são as linhas "… enquanto Liberto" do Avatar da Selva, `@buff:liberto`)
+  liberto: { nome: 'Liberto', af: {} },
+  // (14/10, o Grande Emissário das Direções — `acoes.tiqueDoEmissario`: um ao acaso, ou todos)
+  emissarioProjeteis: { nome: 'Direções: Projéteis', af: { extra_projectiles: 2 } },
+  emissarioRicochetes: { nome: 'Direções: Ricochetes', af: { ricochetes: 2 } },
+  emissarioPerfuracao: { nome: 'Direções: Perfuração', af: { perfurar: 2 } },
+  emissarioDifusao: { nome: 'Direções: Difusão', af: { bifurcar: 2, bifurcar_de_novo: 1 } },
+  emissarioTodos: { nome: 'Direções: Todos', af: { extra_projectiles: 2, ricochetes: 2, perfurar: 2, bifurcar: 2, bifurcar_de_novo: 1 } },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   ventoFavoravel: { nome: 'Vento Favorável', af: { atk_speed: 10, cast_speed: 10, move_speed: 10 } },
   // (o Inquisidor: "Fanatismo concede às magias conjuradas por você +75% de velocidade de conjuração, -75% de custo e área de efeito
@@ -701,16 +916,32 @@ export const BUFFS = {
   // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
   rapidez: { nome: 'Rapidez', af: (estado) => ({ move_speed: estado?.hunt?.rapidez?.movimentoPct ?? 0 }) },
 };
+/** (14/10) Os 13 altares do sorteio do PoE ("Ganha um buff de altar aleatório" — a lista do Gritos dos Dessecados no poedb). */
+export const ALTARES_DO_SORTEIO = Object.freeze(['altarAceleracao', 'altarBrutal', 'altarCongelanteMaior', 'altarDiamante', 'altarEcoante', 'altarSombrio', 'altarImpenetravel', 'altarMassivo', 'altarReabastecimento', 'altarResistencia', 'altarCarregado', 'altarEletrizanteMaior', 'altarEsqueleticoMaior']);
 /** O buff está ativo? (ganho por evento, ou "sempre" pela soma). */
 export function buffAtivo(estado, nome, total = null) {
   const h = estado?.hunt;
   if (h?.poeBuffs?.[nome] > (h?.clock ?? 0)) return true;
   return Number(total?.[`sempre:${nome}`]) > 0;
 }
+/**
+ * (14/10) Os ALTARES ativos mudaram desde a última olhada? O Massivo mexe na vida máxima: a caçada refaz a ficha e a vida quando muda
+ * (`cacadas.tique`). `total`: a soma da ficha (o "sempre" condicional — o Gritos dos Dessecados).
+ */
+export function altaresMudaram(estado, total = null) {
+  const h = estado?.hunt;
+  if (!h) return false;
+  const vivos = Object.keys(BUFFS).filter((n) => BUFFS[n].altar && buffAtivo(estado, n, total)).join(',');
+  if (vivos === (h.poeAltaresVistos ?? '')) return false;
+  h.poeAltaresVistos = vivos;
+  return true;
+}
 /** Ganha um buff por `segundos` (renova para o maior). */
 export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0) {
   if (!hunt || !BUFFS[nome] || !(segundos > 0)) return;
   const b = (hunt.poeBuffs ??= {});
+  // (14/10: a ficha é refeita no tique — o buff ganho vale já, como o vencido sai: `tique`)
+  if (!(b[nome] > agora)) hunt.poeFichaMudou = true;
   b[nome] = Math.max(b[nome] ?? 0, agora + segundos * 1000);
   // "Remove todas as Afecções e Incêndios quando ao ganhar Adrenalina" (o Campeão/Gladiador): os danos contínuos de afecção em você
   // (Incêndio, Sangramento, Veneno, Eletrização, Resfriamento) e o Congelamento/Resfriamento do controle.
@@ -733,8 +964,9 @@ export function adds(estado, total = null) {
   for (const [nome, b] of Object.entries(BUFFS)) {
     if (!buffAtivo(estado, nome, total)) continue;
     // (+ o efeito que veio junto com o buff — o do suporte que o concedeu: `hunt.poeEfeitoDeBuff`, a Crueldade, o Elusivo da Lâmina Noturna)
-    const efeito = 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0)) / 100;
-    for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * efeito;
+    // (+ 14/10: o "Efeito dos Buffs de Altares em você aumentado" nos altares — não no nível das gemas que eles disparam, `periodico:`)
+    const efeito = 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0) + (b.altar ? Number(total?.efeito_altar) || 0 : 0)) / 100;
+    for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * (k.startsWith('periodico:') ? 1 : efeito);
   }
   // (lote G) Sobre o Solo Sagrado: 6% da Vida por segundo (× "Efeito de Solos Sagrados Criados por você aumentado"), "Seu chão consagrado
   // concede precisão aumentada em X%" e "faz com que a Regeneração de Vida também Recupere Escudo de Energia".
@@ -750,6 +982,54 @@ export function adds(estado, total = null) {
   if (of && of.ate > agoraT && Number(total?.oferenda_em_voce) > 0) {
     const f = Math.max(0, 1 - (Number(total?.oferenda_efeito_reduzido) || 0) / 100);
     for (const [k, v] of [['atk_speed', of.velAtaquePct], ['crit_chance_inc', of.critInc], ['crit_dmg', of.critMult], ['block', of.bloqueioPct], ['life_regen_max_pct', of.regenPct]]) if (v) saida[k] = (saida[k] ?? 0) + v * f;
+  }
+  // (14/10, o Warden) A CASCA da Pele de Árvore (`hunt.casca` — `tiqueDoWarden`): -60 de Dano Físico dos Acertos de Ataque por Casca e 4% mais
+  // chance de Evadir Ataques por Casca abaixo do máximo; a Lição das Estações: -25 de cada tipo de dano dos Acertos de Magia por Casca
+  // (`casca_magia_fixo`) e +3% do Dano Mágico Suprimido Impedido por Casca abaixo do máximo (`casca_supressao`).
+  const casca = estado?.hunt?.casca;
+  if (casca) {
+    const abaixo = CASCA.maximo - casca.n;
+    saida.physical_sofrido_ataque = (saida.physical_sofrido_ataque ?? 0) - CASCA.fisicoAtaquePorCasca * casca.n;
+    saida.chance_evadir_mais = (saida.chance_evadir_mais ?? 0) + CASCA.evadirMaisPorCascaAbaixo * abaixo;
+    const porMagia = Number(total?.casca_magia_fixo) || 0;
+    if (porMagia) for (const el of ELS) saida[`${el}_sofrido_magia`] = (saida[`${el}_sofrido_magia`] ?? 0) + porMagia * casca.n;
+    const supressao = Number(total?.casca_supressao) || 0;
+    if (supressao) saida.supressao_prevenida = (saida.supressao_prevenida ?? 0) + supressao * abaixo;
+  }
+  // (14/10, o Marechal da Divindade) "Ganha 10% do dano físico como dano elétrico adicional para cada uma das suas Chamas Santificadas que foram
+  // removidas recentemente por um ataque aliado, até 80%".
+  const porRemovida = Number(total?.chama_santificada_raio) || 0;
+  if (porRemovida > 0) {
+    const removidas = (estado?.hunt?.poeChamasRemovidas ?? []).filter((t) => agoraT - t <= CHAMA_SANTIFICADA.recenteMs).length;
+    if (removidas) saida.phys_as_extra_energy = (saida.phys_as_extra_energy ?? 0) + Math.min(Number(total?.chama_santificada_raio_max) || Infinity, porRemovida * removidas);
+  }
+  // (14/10, o Reliquarian) As ARANHAS ESPECTRAIS vivas: 2% de Velocidade de Ataque e 15% de Dano com Veneno cada (`acoes.tiqueDasAranhas`); o
+  // PODER FANTASMAL ("Cada Fantasma Convocado concede a Você Poder Fantasmal": Dano Físico Mágico Adicional — o golpe de cada Fantasma vivo;
+  // o PoE não publica a tabela pelo nível dele: aproximado)
+  const vivosDo = (k) => (estado?.hunt?.lacaios ?? []).filter((l) => l?.[k] && l.hp > 0);
+  const aranhas = vivosDo('aranha').length;
+  if (aranhas) {
+    saida.atk_speed = (saida.atk_speed ?? 0) + 2 * aranhas;
+    saida.poison_dmg_inc = (saida.poison_dmg_inc ?? 0) + 15 * aranhas;
+  }
+  if (Number(total?.poder_fantasmal) > 0) {
+    for (const l of vivosDo('fantasma')) {
+      saida.spell_added_physical_dmg_min = (saida.spell_added_physical_dmg_min ?? 0) + (l.dano?.min ?? 0);
+      saida.spell_added_physical_dmg_max = (saida.spell_added_physical_dmg_max ?? 0) + (l.dano?.max ?? 0);
+    }
+  }
+  // (14/10, o Rito Profano) A INFUSÃO ESPIRITUAL, por acúmulo (`INFUSAO`)
+  const infusao = estado?.hunt?.infusaoEspiritual?.n ?? 0;
+  if (infusao > 0) {
+    saida.es_recharge_start = (saida.es_recharge_start ?? 0) + INFUSAO.esInicioPct * infusao;
+    saida['mais_dano@canalizar+magia'] = (saida['mais_dano@canalizar+magia'] ?? 0) + INFUSAO.maisDanoPct * infusao;
+    saida['custo_mana_mais@canalizar+magia'] = (saida['custo_mana_mais@canalizar+magia'] ?? 0) + INFUSAO.maisCustoPct * infusao;
+  }
+  // (14/10, a Cruzada Implacável) A AURA de cada Relíquia Elemental viva (Cólera, Ódio ou Ira, nível 20 — `l.auraAf`): em você e, pela foto dos
+  // "Você e Aliados" (`aliados:`), nos companheiros perto. (O fim dela é o do lacaio — o tique dos lacaios tira a que acabou e refaz a ficha.)
+  for (const l of estado?.hunt?.lacaios ?? []) {
+    if (!l?.reliquia || !(l.hp > 0)) continue;
+    for (const [k, v] of Object.entries(l.auraAf ?? {})) { saida[k] = (saida[k] ?? 0) + v; saida[`aliados:${k}`] = (saida[`aliados:${k}`] ?? 0) + v; }
   }
   // (lote F) "Fúria Arcana também concede +X% de dano mágico a você".
   if (buffAtivo(estado, 'furiaArcana', total) && Number(total?.furia_arcana_dano_magico) > 0) saida.spell_dmg = (saida.spell_dmg ?? 0) + Number(total.furia_arcana_dano_magico);
@@ -987,7 +1267,12 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (O "Dano aumentado" sem condição já está em `danoDoElemento` da ficha; aqui só o condicional e a Fúria.)
   // (13/10: + o Tiro Longo — "Projéteis ganham Dano conforme viajam adiante, causando Dano aumentado em até X% com Acertos em alvos":
   // `projetil_longe_inc`, do colado a 6 casas)
-  const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe;
+  // (14/10, a Maestria de Varinhas: "Ataques têm 100% de Poder Arcano ao usar uma varinha" — o lembrete do PoE: "Poder Arcano faz com que
+  // aumentos e reduções de dano mágico também se apliquem ao dano de ataque na mesma porcentagem do seu valor": o "Dano Mágico aumentado"
+  // × o %, no "aumentado" do ataque)
+  const arcano = t.has('ataque') ? (Number(ficha.afPoe.poder_arcano) || 0) + (s.poder_arcano ?? 0) : 0;
+  const doArcano = arcano > 0 ? (((ficha.danoDeMagiaDoPoe ?? 0) + (s.spell_dmg ?? 0)) * arcano) / 100 : 0;
+  const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe + doArcano;
   const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0);
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;
@@ -1310,6 +1595,8 @@ const PARAMETRICOS = [
   // (11/10) o buff a cada N segundos ("Você ganha Sobrecarga Elemental por 8 segundos a cada 16 segundos" = `buff_periodico:sobrecargaElemental:16`,
   // o valor é a duração) e as auras com valor nos inimigos próximos (a lentidão, as resistências, a de Raio igual à sua) — `mods-poe.aurasProximas`.
   /^buff_periodico:(sobrecargaElemental|adrenalina|agressividade|elusivo|fortificado|furiaArcana|poderProfano|avatarDoFogo|trespassar):\d+$/,
+  // (14/10) o altar aleatório a cada N segundos (a Harmonia do Propósito — `mods-poe.aurasProximas`; o valor é a duração base, em segundos)
+  /^altar_aleatorio:\d+$/,
   /^aura_proximos_res:(fire|ice|energy|chaos|todas)$/, /^aura_proximos_res_igual:(fire|ice|energy|chaos)$/,
   /^gatilho_local:(usarAtaque|usarMagia|bloquear|critico|acertar|congelar|perderTolerancia|matar|gastarMana):(magia|elemental|fogo|gelo|raio|maldicao|arco|clamor|lacaio)$/,
   new RegExp(`^(lacaio_somado_min|lacaio_somado_max|lacaio_conv_fogo|lacaio_so_fogo|lacaio_cinzas|lacaio_incendiar|lacaio_renova|lacaio_dreno_dono|lacaio_explodir|so_lacaio):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
@@ -1532,6 +1819,23 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate)) hunt.poeFichaMudou = true;
   tiqueDaFuria(hunt, agora);
   tiqueDasCargasFanaticas(hunt, ficha, agora);
+  // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto
+  tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
+  // (14/10, o Occultist) a Infusão Espiritual
+  tiqueDaInfusao(hunt, ficha?.afPoe, agora);
+  // (14/10, os únicos: "Habilidades de retaliação se tornam usáveis a cada N segundos" — as duas janelas, a do bloqueio e a do Acerto
+  // Selvagem, abrem sozinhas a cada N s)
+  const retaliacaoCada = Number(ficha?.afPoe?.retaliacao_cada_s) || 0;
+  if (retaliacaoCada > 0 && agora >= (hunt.poeRetaliacaoCadaEm ?? 0)) {
+    for (const g of ['bloquear', 'selvagem']) abrirRetaliacao(hunt, g, ficha.afPoe, agora);
+    hunt.poeRetaliacaoCadaEm = agora + retaliacaoCada * 1000;
+  }
+  // (14/10, o Guardian) as Chamas Santificadas removidas deixam de ser "recentes": a ficha é refeita (o Raio extra cai)
+  if (hunt.poeChamasRemovidas?.length) {
+    const antes = hunt.poeChamasRemovidas.length;
+    hunt.poeChamasRemovidas = hunt.poeChamasRemovidas.filter((t) => agora - t <= CHAMA_SANTIFICADA.recenteMs);
+    if (hunt.poeChamasRemovidas.length !== antes) hunt.poeFichaMudou = true;
+  }
   // (ciclo 7) "Inimigos próximos do seu Inimigo Marcado são Cegados" (a até 2 casas dele).
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || !regraDaMarca(m, agora, 'cegaProximos')) continue;
@@ -2004,10 +2308,11 @@ export function armaduraNoElemento(ficha, elemento, golpe) {
   return Math.max(0, 1 - Formulas.reducaoDeArmaduraPoe(((ficha.armor ?? 0) * pct) / 100, golpe));
 }
 /** O dano FIXO a menos (ou a mais) por golpe: "-25 de Dano Físico sofrido dos Acertos de Ataques", "+N de Dano de Fogo sofrido quando acertado". */
-export function fixoRecebido(ficha, elemento, { ataque = false } = {}) {
+export function fixoRecebido(ficha, elemento, { ataque = false, magia = false } = {}) {
   if (!ligado() || !ficha?.afPoe) return 0;
   const v = (k) => Number(ficha.afPoe[k]) || 0;
-  return v(`${elemento}_sofrido_acerto`) + (ataque ? v(`${elemento}_sofrido_ataque`) : 0);
+  // (14/10: + o dos Acertos de MAGIA — a Lição das Estações: "-25 de dano sofrido de cada tipo de dano por ataques de magia por casca")
+  return v(`${elemento}_sofrido_acerto`) + (ataque ? v(`${elemento}_sofrido_ataque`) : 0) + (magia ? v(`${elemento}_sofrido_magia`) : 0);
 }
 /** O Caos atravessa o Escudo de Energia (regra do PoE), a menos que um único diga que não. */
 export const caosAtravessaOEscudo = (ficha) => ligado() && !((Number(ficha?.afPoe?.caos_nao_atravessa_escudo) || 0) > 0);

@@ -157,7 +157,7 @@ export function fatorDeEletrizacao(alvo, agora) {
  * crítico; `ataque`: é ataque (golpe da arma, habilidade de ataque) — as chances "com Ataques" só valem nele. `afeccoes`: o de `daSoma`
  * (a ficha guarda). Devolve os nomes dos estados postos (o evento na tela). Sem o sistema do PoE, não faz nada.
  */
-export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false } = {}) {
+export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null } = {}) {
   if (!ligado() || !bicho || bicho.hp <= 0 || bicho.dummy) return [];
   const a = afeccoes ?? daSoma();
   // "Golpes não Críticos não infligem Afecções" (a Agonia Perfeita).
@@ -185,9 +185,10 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const multiplicadorBase = (a.agoniaPerfeita ? Math.max(0, (a.multiplicadorDoCritico ?? 1.5) * 100 - 100) : a.multiplicador ?? 0) + (crit ? a.multiplicadorCritico ?? 0 : 0);
   // `aumentado`: o "Dano Degenerativo aumentado" daquela afecção. "X% mais rápido": a mesma soma em menos tempo. `mais`: o "X% mais/menos
   // dano" daquela afecção (multiplica). `chave`: a pilha do sangramento (a Dança Carmesim).
+  let ultimoTotal = 0;
   const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0, { mais = 0, chave = null, agravado = false, semMovimento = false } = {}) => {
     if (!(base > 0)) return null;
-    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
+    const total = ultimoTotal = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0) + (tipo === 'venenoPoe' ? a.venenoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
@@ -253,7 +254,11 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const teto = a.venenoMaxNoAlvo > 0 ? a.venenoMaxNoAlvo : Infinity;
     // ("X% de chance dos Envenenamentos inflingidos por esta Arma causarem Y% mais Dano": sorteado em cada veneno.)
     const maisDoVeneno = () => (crit ? a.venenoCriticoMais ?? 0 : 0) + (a.venenoMaisChance > 0 && rng() * 100 < a.venenoMaisChance ? a.venenoMaisPct ?? 0 : 0);
-    for (let k = 0; k <= Math.max(0, Math.floor(a.venenosExtras ?? 0)) && jaTem + k < teto; k++) dot('venenoPoe', BASE.veneno.porSegundo, duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno), baseDoVeneno, multVeneno, aumVeneno, { mais: maisDoVeneno() });
+    // (14/10, o Infestador Incubando: "20% menos Dano com Veneno enquanto Incubando e não estiver no Máximo do Valor da Praga" e "Ao infligir
+    // Veneno enquanto Incubando, adiciona 40% do Dano Esperado de Veneno ao Valor da Praga" — `acoes.pragaDoAcerto`)
+    for (let k = 0; k <= Math.max(0, Math.floor(a.venenosExtras ?? 0)) && jaTem + k < teto; k++) {
+      if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno), baseDoVeneno, multVeneno, aumVeneno, { mais: ((1 + maisDoVeneno() / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100 })) praga?.somar(ultimoTotal);
+    }
     // ("Inimigos Envenenados por você têm −X% de Resistência a Caos" — `hunt/resistencia.resistenciaDe`)
     if (a.resMenosCaosEnvenenado > 0) (bicho.estados ??= {}).resMenosCaos = Math.max(bicho.estados.resMenosCaos ?? 0, a.resMenosCaosEnvenenado);
   }

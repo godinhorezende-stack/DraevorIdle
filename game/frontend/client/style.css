@@ -17205,6 +17205,12 @@ body.com-novidades #recados { top: calc(var(--altura-da-topbar) + var(--altura-d
 .hud-carga.carga-tolerancia { background: radial-gradient(circle at 35% 35%, #f07a62, #8c2a1c); }
 .hud-carga.carga-frenesi { background: radial-gradient(circle at 35% 35%, #6fe08f, #1d6b37); }
 .hud-carga.carga-poder { background: radial-gradient(circle at 35% 35%, #7fb0ff, #1f4a9c); }
+/* (14/10) O buff do PoE sem ícone (a Casca, as Direções, a Égide…): a sigla do nome no alto do card, o número embaixo. */
+.hud-sigla {
+  position: absolute; left: 0; right: 0; top: 3px;
+  text-align: center; font-size: 7px; line-height: 7px; white-space: nowrap; overflow: hidden;
+  color: #d8c48e; text-shadow: 0 1px 0 #000, 0 -1px 0 #000, 1px 0 0 #000, -1px 0 0 #000;
+}
 
 
 /* ---------- a ficha do familiar, na caixa de configurar ação ---------- */

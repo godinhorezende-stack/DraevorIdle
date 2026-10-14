@@ -337,7 +337,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
   // Nas magias o PoE ainda soma o "Chance de Golpe Crítico com Magias aumentada" (`spell_crit_chance_inc`).
   const critChanceMagia = Math.min(tetoDoCritico, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
   // A magia do PoE: a chance-base é a da GEMA (somada a estes "+% de chance" fixos) × (1 + o "aumentada" geral e o de magias).
-  const critMagiaPoe = itensPoeLigado() ? { fixa: (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0), aumentada: (af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0), mais: af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100) } : null;
+  const critMagiaPoe = itensPoeLigado() ? { fixa: (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0), aumentada: (af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0), mais: af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100) * Math.max(0, 1 + (af.crit_magia_mais ?? 0) / 100) } : null;
   // O dano elemental SOMADO das peças do PoE (`added_<el>_dmg_min/max`): faixa por elemento, nos ataques e nas magias.
   // (O Físico só existe somado a MAGIAS: "Adiciona X a Y de Dano Físico a Magias" — o dos ataques é o `phys_add`.)
   const somado = (prefixo) => Object.fromEntries([...ELEMENTOS_DO_POE, ...(prefixo === 'spell_added_' ? ['physical'] : [])].map((el) => [el, [af[`${prefixo}${el}_dmg_min`] ?? 0, af[`${prefixo}${el}_dmg_max`] ?? 0]]).filter(([, [a, b]]) => a > 0 || b > 0));
@@ -512,6 +512,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     ...(itensPoeLigado() ? { fatorDasCargas: CargasPoe.fatorDeDano(estado, af), cargas: CargasPoe.regrasDaSoma(af) } : {}),
     // (+ o Mago de Batalha: "Ganhe Dano Mágico Adicional igual ao Dano da sua Arma da Mão Principal".)
     danoSomadoMagia: comDanoDaArma(somado('spell_added_'), af, armaFinal, pecaDaArma),
+    // (14/10, o Feiticeiro) O dano das VARINHAS equipadas, por elemento (`danoDasVarinhas`).
+    danoDasVarinhas: itensPoeLigado() ? danoDasVarinhas(estado, armaFinal, armaSecundariaFinal) : null,
     vidaPorAbate: af.life_on_kill ?? 0,
     manaPorAbate: af.mana_on_kill ?? 0,
     vidaPorAcerto: af.life_on_hit ?? 0,
@@ -656,6 +658,24 @@ function comDanoDaArma(somado, af, armaFinal, peca) {
   soma('physical', armaFinal.danoMin ?? 0, armaFinal.danoMax ?? 0);
   for (const el of ELEMENTOS_DO_POE) soma(el, Number(peca?.poe?.af?.[`added_${el}_dmg_min`]) || 0, Number(peca?.poe?.af?.[`added_${el}_dmg_max`]) || 0);
   return novo;
+}
+/**
+ * (14/10, o Feiticeiro do PoE: "Habilidades Suportadas têm Dano Mágico Adicional igual a X% do Dano da Varinha Equipada — Se duas Varinhas
+ * forem Equipadas, cada uma contribui com metade do Dano Adicional") O dano de cada VARINHA vestida — a faixa física dela (a base com os
+ * locais e a qualidade, `ArmaMod.statsDaArma`) e o elemental somado da própria peça —, metade de cada com duas. `{ elemento: [min, max] }`,
+ * ou null sem varinha.
+ */
+function danoDasVarinhas(estado, armaFinal, armaSecundariaFinal) {
+  const varinhas = [[estado.equipment?.weapon, armaFinal], [estado.equipment?.shield, armaSecundariaFinal]].filter(([p, f]) => p?.poe?.classe === 'Wands' && f);
+  if (!varinhas.length) return null;
+  const parte = 1 / varinhas.length;
+  const saida = {};
+  const soma = (el, a, b) => { if (a > 0 || b > 0) saida[el] = [(saida[el]?.[0] ?? 0) + a * parte, (saida[el]?.[1] ?? 0) + b * parte]; };
+  for (const [p, f] of varinhas) {
+    soma('physical', f.danoMin ?? 0, f.danoMax ?? 0);
+    for (const el of ELEMENTOS_DO_POE) soma(el, Number(p.poe.af?.[`added_${el}_dmg_min`]) || 0, Number(p.poe.af?.[`added_${el}_dmg_max`]) || 0);
+  }
+  return saida;
 }
 /** Uma velocidade em % com a Velocidade de Ação por cima (sem ela, o mesmo número — sem erro de arredondamento). */
 const comAcao = (pct, af) => (fatorDeAcao(af) === 1 ? pct : ((1 + pct / 100) * fatorDeAcao(af) - 1) * 100);
@@ -881,7 +901,17 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const chanceDeCritico = Math.min(ficha.critTeto ?? Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
   // ("Sua Chance de Golpe Crítico é Sortuda": rola duas vezes e fica com a melhor — `ModsPoe.sorteado`.)
   // (o "Crítico Sortudo" rola duas vezes — salvo se a chance já veio Sortuda da ficha: `critSortudo`)
-  const crit = mesmaRolagem ? mesmaRolagem.crit : ModsPoe.sorteado(chanceDeCritico, ficha.critSortudo ? 0 : ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
+  // (14/10, o Altar Diamante: "Todos os acertos são Críticos" — `critico_sempre`; o "nunca crítico" vence)
+  const sempreCritico = itensPoeLigado() && ModsPoe.valor(ficha, 'critico_sempre') > 0 && !(ModsPoe.valor(ficha, 'nunca_critico') > 0);
+  const rolar = () => ModsPoe.sorteado(chanceDeCritico, ficha.critSortudo ? 0 : ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), Math.random, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0);
+  // (14/10, a Infusão Mística do Assassin: "A chance de causar golpe mágico crítico se bifurca" — o poedb: a chance rola duas vezes; uma passa,
+  // crítico normal; as duas, o dano extra do crítico dobra (o multiplicador acima de 100% × 2). A Sorte vale em cada rolagem; o "sempre
+  // crítico" não rola — não bifurca.)
+  const bifurca = itensPoeLigado() && !mesmaRolagem && !sempreCritico && (ficha.tagsDoGolpe ?? []).includes('magia') && ModsPoe.valor(ficha, 'critico_magia_bifurca') > 0;
+  const primeira = mesmaRolagem ? mesmaRolagem.crit : sempreCritico ? true : rolar();
+  const segunda = bifurca ? rolar() : false;
+  const crit = primeira || segunda;
+  const bifurcado = mesmaRolagem ? !!mesmaRolagem.bifurcado : bifurca && primeira && segunda;
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
@@ -890,9 +920,10 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
   // ("Golpes Críticos não causam Dano", "Golpes não-críticos causam N% menos Dano": `mais_dano_critico` / `mais_dano_nao_critico`, o golpe inteiro.)
   const doTipoDeGolpe = Math.max(0, 1 + ModsPoe.valor(ficha, crit ? 'mais_dano_critico' : 'mais_dano_nao_critico') / 100);
-  const dano = Math.round(base * doTipoDeGolpe * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
+  const multiplicador = ficha.critMultiplier + doCharm.dano / 100;
+  const dano = Math.round(base * doTipoDeGolpe * (crit ? (bifurcado ? 1 + 2 * (multiplicador - 1) : multiplicador) : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
-  return { dano, crit, onslaught, chance: chanceDeCritico };
+  return { dano, crit, onslaught, chance: chanceDeCritico, ...(bifurcado ? { bifurcado } : {}) };
 }
 
 /**

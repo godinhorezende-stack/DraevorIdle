@@ -1659,12 +1659,17 @@ const balaoDoBuff = (buff, segundos) =>
   `${buff.nome} — ${segundos >= 60 ? `${Math.floor(segundos / 60)}min ${segundos % 60}s` : `${segundos}s`} restantes`;
 // A aura do PoE que reserva não tem relógio: o cartão mostra quanto ela tranca (a % ou o valor). A Tintura ativa (12/10) também não: o cartão
 // mostra a Queima de Mana dela (cada uma tira 1% da Mana máxima por segundo).
-const textoDoBuff = (buff, segundos) => (buff.reserva ? (buff.reserva.pct ? `${buff.reserva.pct}%` : `${buff.reserva.valor}`) : buff.tintura ? `${buff.tintura.queimas}×` : relogioDoBuff(segundos));
+// (14/10) O CONTADOR do PoE (a Casca do Warden, a Fúria Liberta): o número no lugar do relógio, e o balão explica (`dica`).
+const semRelogio = (buff) => !!buff.reserva || !!buff.tintura || buff.contador != null;
+// (14/10) A SIGLA do buff sem ícone (os do PoE por nome: a Casca, as Direções, a Égide, a Infusão, a Praga, os altares…): a primeira palavra do
+// nome, até 5 letras ("Casca", "Égide", "Dire."), para se saber qual é sem passar o mouse — o balão segue com o nome e a explicação.
+export const siglaDoBuff = (nome) => { const palavra = String(nome ?? '').split(/[:—(]/)[0].trim().split(/\s+/)[0] ?? ''; return palavra.length <= 5 ? palavra : `${palavra.slice(0, 4)}.`; };
+const textoDoBuff = (buff, segundos) => (buff.reserva ? (buff.reserva.pct ? `${buff.reserva.pct}%` : `${buff.reserva.valor}`) : buff.tintura ? `${buff.tintura.queimas}×` : buff.contador != null ? `${buff.contador}` : relogioDoBuff(segundos));
 const balaoDoCartao = (buff, segundos) => (buff.reserva
   ? `${buff.nome} — ligada, reserva ${buff.reserva.valor} de ${buff.reserva.recurso === 'vida' ? 'Vida' : 'Mana'}${buff.reserva.pct ? ` (${buff.reserva.pct}% da máxima)` : ''}. Fica ligada enquanto a gema estiver na barra.`
   : buff.tintura
     ? `${buff.nome} — ativa, com ${buff.tintura.queimas} Queima${buff.tintura.queimas === 1 ? '' : 's'} de Mana (cada uma tira 1% da Mana máxima por segundo). Desativar tira a Queima de Mana.`
-    : balaoDoBuff(buff, segundos));
+    : buff.contador != null ? buff.dica ?? `${buff.nome}: ${buff.contador}` : balaoDoBuff(buff, segundos));
 
 function renderBuffsDaMagia(hunt) {
   const caixa = $('hud-buffs');
@@ -1688,7 +1693,7 @@ function renderBuffsDaMagia(hunt) {
       const texto = card.querySelector('b');
       if (texto) texto.textContent = textoDoBuff(buff, segundos);
       // Os ultimos cinco segundos piscam: e' quando renovar ainda vale a pena.
-      card.classList.toggle('acabando', !buff.reserva && !buff.tintura && segundos <= 5);
+      card.classList.toggle('acabando', !semRelogio(buff) && segundos <= 5);
       tipTexto(card, balaoDoCartao(buff, segundos));
     });
     return;
@@ -1721,11 +1726,16 @@ function renderBuffsDaMagia(hunt) {
       bola.className = `hud-carga carga-${buff.carga}`;
       bola.textContent = String(buff.n ?? '');
       card.append(bola);
+    } else {
+      const sigla = document.createElement('span');
+      sigla.className = 'hud-sigla';
+      sigla.textContent = buff.sigla ?? siglaDoBuff(buff.nome);
+      card.append(sigla);
     }
     const segundos = Math.ceil(buff.resta / 1000);
     const texto = document.createElement('b');
     texto.textContent = textoDoBuff(buff, segundos);
-    if (!buff.reserva && !buff.tintura && segundos <= 5) card.classList.add('acabando');
+    if (!semRelogio(buff) && segundos <= 5) card.classList.add('acabando');
     if (buff.reserva) card.classList.add('reserva', `reserva-${buff.reserva.recurso}`);
     card.append(texto);
     tipTexto(card, balaoDoCartao(buff, segundos));

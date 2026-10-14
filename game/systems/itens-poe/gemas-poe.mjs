@@ -57,6 +57,35 @@ const MOLDES = {
 const FORMATO = { projetil: 'projetil', area: 'chao', chuva: 'chao', orbe: 'chao', marca: 'chao', armadilha: 'chao', mina: 'chao', nova: 'nova', impacto: 'onda', canalizacao: 'feixe', ricochete: 'cadeia' };
 const BUFF = new Set(['aura', 'arauto', 'guarda', 'clamor', 'maldicao']);
 const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconhecido' };
+/**
+ * (14/10, a árvore principal) As gemas com comportamento próprio, que o classificador da arena não conhece: o INFESTADOR (Plague Bearer —
+ * `acoes.tiqueDaPraga`) e o FEITICEIRO (Spellslinger — a reserva em `reserva.pedida`, o gatilho em `acoes.ativarGatilhos`).
+ */
+const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro' };
+/**
+ * O INFESTADOR do PoE (RePoE, `corrosive_shroud_*`): o Valor Máximo da Praga por nível (`MAX_DA_PRAGA[n]`, do 1 ao 40), 40% do Dano Esperado
+ * de cada Veneno infligido enquanto Incubando, 20% menos Dano com Veneno enquanto Incubando (fora do máximo), Infestando 12% do Valor do início
+ * por segundo (+0,2% por qualidade); recarga 0,5 s. O raio da Infestação, que o PoE não publica: 2 casas.
+ */
+export const PRAGA = Object.freeze({ ganhoPct: 40, menosVenenoPct: 20, porSegundoPct: 12, qualidadePorPonto: 0.2, recargaMs: 500, raio: 2 });
+const MAX_DA_PRAGA = [0, 4000, 5903, 8655, 12616, 18299, 26429, 38027, 54530, 77962, 98791, 125046, 158112, 199725, 252058, 317825, 400423, 504097, 634145, 797189, 1000000,
+  1100000, 1180000, 1245000, 1300000, 1350000, 1400000, 1450000, 1500000, 1550000, 1600000, 1650000, 1700000, 1750000, 1800000, 1850000, 1900000, 1950000, 2000000, 2050000, 2100000];
+export const maxDaPraga = (nivel) => MAX_DA_PRAGA[Math.max(1, Math.min(40, Math.floor(Number(nivel) || 1)))];
+/**
+ * O FEITICEIRO do PoE no nível (as linhas da gema): `pct` — "Habilidades Suportadas têm Dano Mágico Adicional igual a X% do Dano da Varinha
+ * Equipada"; `menos` — "causam X% menos Dano com Acertos e Afecções"; `recuperacao` — "Velocidade de Recuperação da Recarga aumentada em X%"
+ * (a recarga do gatilho, 0,6 s); `reservaPct` — cada magia suportada reserva 20% da mana (RePoE: `mana_percent`).
+ */
+export const FEITICEIRO = Object.freeze({ recargaMs: 600, reservaPct: 20 });
+export function feiticeiroNoNivel(nivel = 1) {
+  const linhas = textosDaGema('Spellslinger', nivel).linhas;
+  const achar = (re) => { for (const l of linhas) { const m = re.exec(l); if (m) return Number(m[1]); } return 0; };
+  const recuperacao = achar(/Recuperação da Recarga aumentada em (\d+(?:\.\d+)?) ?%/);
+  return {
+    pct: achar(/Dano Mágico Adicional igual a (\d+(?:\.\d+)?) ?% do Dano da Varinha/), menos: achar(/causam (\d+(?:\.\d+)?) ?% menos Dano/), recuperacao,
+    recargaMs: Math.round(FEITICEIRO.recargaMs / (1 + recuperacao / 100)),
+  };
+}
 /** Lacaios e totens (`itens-poe/lacaios-poe.mjs`): as linhas que o jogo faz. (Aqui, e não lá: o módulo dos lacaios importa este.) */
 const LINHA_DE_LACAIO = /^Máximo de |^\+\d+ ao número máximo de Totens|^Convoca \d+ |^Duração base é de|^Totem dura|Lacaios? têm .*mais Vida|Lacaios? causam? .*(mais|menos) Dano|são de Nível|Invoca um Totem que usa|^Golens (aumentam|concedem)|mais Velocidade de Ataque|sempre Golpes Críticos|Multiplicador de Acerto Crítico|Dano Físico adicional|infligir Sangramento|Velocidade de Ataque dos Lacaios|Chance de Golpe Crítico aumentada|Multiplicador de Golpe Crítico|Chance de Bloquear o Dano de Ataques|Vida Regenerada por Segundo|Regenera .*da Vida por segundo|Aura dos Robôs/i;
 export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l);
@@ -76,7 +105,10 @@ export function compilada(slug, nivel = 1) {
   if (!g || !COMPILADOR) return null;
   const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
   const k = `${slug}@${n}`;
-  if (!CACHE.has(k)) CACHE.set(k, COMPILADOR.compilarHabilidade(g, n));
+  if (!CACHE.has(k)) {
+    const h = COMPILADOR.compilarHabilidade(g, n);
+    CACHE.set(k, h && ARQUETIPO_PROPRIO[slug] ? { ...h, arquetipo: ARQUETIPO_PROPRIO[slug] } : h);
+  }
   return CACHE.get(k);
 }
 
@@ -141,6 +173,25 @@ export function impelidosDaGema(slug, nivel = 1) {
     if (m) return Number(m[1]) || 0;
   }
   return 0;
+}
+
+/**
+ * (14/10, o Coveiro) Os CADÁVERES que a gema cria — Profanar: "Cria 5 cadáveres" dos monstros da área, "Nível dos Corpos Criados é igual ao
+ * nível da área, máximo de Nível X"; Desenterrar: um cadáver de Arqueiro de Ossos onde o projétil cai, "Corpos Criados são Nível X"; as duas:
+ * "Máximo de 10 Cadáveres permitidos" (os criados por ela; o mais velho sai). `{ n, maximo, nivel, nivelMax, arqueiro }`, ou null.
+ */
+const LINHA_DE_CADAVER = /^Cria \d+ cadáveres?$|^Nível dos Corpos Criados é igual ao nível da área|^Corpos Criados são Nível \d+$|^Máximo de \d+ Cadáveres permitidos$/;
+export const ehLinhaDeCadaver = (l) => LINHA_DE_CADAVER.test(l);
+export function cadaveresDaGema(slug, nivel = 1) {
+  const g = POR_SLUG.get(slug);
+  if (!(g?.tipos ?? []).includes('CreatesCorpse')) return null;
+  const linhas = textosDaGema(slug, nivel).linhas;
+  const achar = (re) => { for (const l of linhas) { const m = re.exec(l); if (m) return Number(m[1]); } return null; };
+  const cria = achar(/^Cria (\d+) cadáveres?$/);
+  return {
+    n: cria ?? 1, maximo: achar(/^Máximo de (\d+) Cadáveres permitidos$/) ?? 10, arqueiro: cria == null,
+    nivel: achar(/^Corpos Criados são Nível (\d+)$/), nivelMax: achar(/^Nível dos Corpos Criados é igual ao nível da área, máximo de Nível (\d+)$/),
+  };
 }
 
 /** As linhas da gema que o jogo agora faz (saem de "não simulado"). */
@@ -329,7 +380,13 @@ export function buffNoNivel(slug, nivel) {
   if (b.menosDanoRecebido) af.dmg_reduction = (af.dmg_reduction ?? 0) + b.menosDanoRecebido;
   if (b.absorve) motivos.push('a absorção de dano da guarda ainda não existe no jogo');
   if (b.imuneAfeccoes) motivos.push('a imunidade a afecções ainda não existe no jogo');
-  for (const t of b.extra ?? []) motivos.push(`efeito não aplicado no jogo: ${t}`);
+  // (14/10) "Você e aliados próximos recebem X% de Dano Físico como Dano Extra de Gelo" (o Ódio): o Físico como Extra do elemento — antes não
+  // entrava ("efeito não aplicado").
+  for (const t of b.extra ?? []) {
+    const e = AF_DO_ELEMENTO[t?.para];
+    if (e && e !== 'phys' && t.pct > 0) af[`phys_as_extra_${e}`] = (af[`phys_as_extra_${e}`] ?? 0) + t.pct;
+    else motivos.push(`efeito não aplicado no jogo: ${t?.para ?? t}`);
+  }
   // A MALDIÇÃO: quem você atinge sofre mais dano (resistência reduzida, dano recebido) ou causa menos.
   const durMarca = Math.round((st.duracao ?? 6) * 1000);
   for (const [el, v] of Object.entries(m.resist ?? {})) if (v < 0 && ELEMENTO[el]) efeitos.push({ efeito: 'marcaVulneravel', pct: -v, tipos: [ELEMENTO[el]], durMarca });
@@ -360,6 +417,9 @@ function avaliarNoJogo(h, formato) {
   const st = h.stats;
   const motivos = [];
   if (SEM_NO_JOGO[h.arquetipo]) return { status: 'nao', motivos: [SEM_NO_JOGO[h.arquetipo]] };
+  // (14/10) O Infestador sai sozinho (o jogo usa as habilidades sozinho); o Feiticeiro liga reservando e ativa as magias ligadas.
+  if (h.arquetipo === 'praga') return { status: 'parcial', motivos: ['sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)'] };
+  if (h.arquetipo === 'feiticeiro') return { status: 'funciona', motivos: [] };
   // LACAIOS e TOTENS (`lacaios-poe.mjs`): invocam de verdade, com o máximo, a duração e os bônus da gema; o que ainda é simplificado vai nos motivos.
   if (h.arquetipo === 'lacaio' || h.arquetipo === 'totem') {
     const motivos = h.arquetipo === 'totem'
@@ -391,7 +451,7 @@ function avaliarNoJogo(h, formato) {
     if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -400,10 +460,12 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
   const visual = VISUAL[elemento] ?? 'physical';
   // (o Vínculo é um buff num aliado: o molde, sem dano, de suporte — como os buffs; `itens-poe/vinculos.mjs`)
   const vinculo = h.arquetipo === 'vinculo';
-  const buff = BUFF.has(h.arquetipo) || vinculo;
+  // (14/10: o Feiticeiro liga como as auras — reserva e fica ligado; o Infestador, sem alvo)
+  const buff = BUFF.has(h.arquetipo) || vinculo || h.arquetipo === 'feiticeiro';
   const tagsArea = (g.tags ?? []).some((t) => /Área/i.test(t));
   let moldeId;
   if (buff) moldeId = 'spell-blood-rage';
+  else if (h.arquetipo === 'praga') moldeId = 'spell-haste';
   // O lacaio só invoca (o visual é o do estilo da gema): o molde sem alvo. O totem usa o molde da skill que ele vai usar (o projétil, a área).
   else if (h.arquetipo === 'lacaio') moldeId = 'spell-haste';
   else if (h.arquetipo === 'corpo_a_corpo') moldeId = tagsArea ? 'spell-front-sweep' : 'spell-brutal-strike';

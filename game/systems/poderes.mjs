@@ -332,7 +332,11 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const prevenido = suprimiu ? Math.min(100, 50 + ModsPoe.valor(ficha, 'supressao_prevenida')) / 100 : 0;
   // (PoE, o Sabotador: "X% de chance de sofrer Y% menos Dano em Área de Acertos" — a magia em área do bicho.)
   const menosEmArea = casas.length > 1 && Math.random() * 100 < ModsPoe.valor(ficha, 'area_recebida_menos_chance') ? Math.max(0, 1 - ModsPoe.valor(ficha, 'area_recebida_menos_pct') / 100) : 1;
-  let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) + ModsPoe.fixoRecebido(ficha, a.elemento));
+  // (o fixo por golpe — "-N de Dano X sofrido dos Acertos": de cada tipo que o golpe tem, sem passar do dano daquele tipo; 14/10: o "de Ataque"
+  // no projétil — o ataque de projétil do bicho — e o "de Magia" no resto: a Casca do Warden)
+  const deAtaque = { ataque: projetil, magia: !projetil };
+  const fixosDoGolpe = Object.entries(partes).reduce((n, [el, v]) => n + Math.max(-Math.max(0, v), ModsPoe.fixoRecebido(ficha, el, deAtaque)), 0);
+  let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) + fixosDoGolpe);
   const danoDoAcerto = dano;
   const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
   // Void Inversion (charm): o dreno de mana vira ganho de mana.
@@ -352,11 +356,19 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
   // ("X% do dano mágico sofrido suprimido é recuperado como escudo de energia".)
   if (suprimiu && dano > 0 && ModsPoe.valor(ficha, 'suprimido_recupera_es') > 0) estado.es = Math.min(Math.round(ficha.energyShield ?? 0), (estado.es ?? 0) + Math.round((dano * ModsPoe.valor(ficha, 'suprimido_recupera_es')) / 100));
+  // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto, na proporção das partes, sai da Égide dele
+  // antes do Escudo e da Vida — `ModsPoe.absorverNaEgide`)
+  const somaDasPartes = Object.values(partes).reduce((t, v) => t + Math.max(0, v), 0);
+  if (dano > 0 && hunt.egides && somaDasPartes > 0) {
+    const porTipo = Object.fromEntries(Object.entries(partes).map(([el, v]) => [el, (Math.max(0, v) * dano) / somaDasPartes]));
+    const tomou = Math.min(dano, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
+    if (tomou > 0) { dano -= tomou; eventos.push({ t: 'dmg', ...base, v: tomou, color: '#c8a2ff' }); }
+  }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — a parte do acerto no Escudo de Energia de quem vincula.)
   dano = Vinculos.desviarParaOEscudo(estado, dano);
   dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu });
   // PoE: o "acertado/dano recentemente", a recuperação do dano sofrido e o congelar quem acerta (a magia não é corpo a corpo: sem Reflexo).
-  ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: false, tipo: a.elemento, eventos });
+  ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: false, ataque: projetil, magia: !projetil, tipo: a.elemento, eventos });
   if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
   // ("Quando um Acerto Inimigo causar Dano Elemental em você, as Resistências deles para tais Elementos são zeradas por N segundos".)
   const zerar = ModsPoe.valor(ficha, 'zera_res_de_quem_acerta_s');

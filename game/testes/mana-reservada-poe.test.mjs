@@ -161,7 +161,7 @@ test('o FRASCO DE MANA olha a mana NÃO reservada: com uma aura reservando metad
   assert.equal(e.hunt.frascosPoe.ativos[0], undefined, 'e o efeito saiu (antes, com a reserva, ele nunca saía)');
 });
 
-test('a ÁRVORE: as 6 linhas da mana reservada têm efeito no balão; a do Feiticeiro diz por que não tem', { skip: SEM }, () => {
+test('a ÁRVORE: as 6 linhas da mana reservada têm efeito no balão; a do Feiticeiro também (o lote 19)', { skip: SEM }, () => {
   const linhas = P.arvore().nos.flatMap((n) => [n, ...(n.opcoes ?? [])].flatMap((o) => (o.textos ?? []).map((t, i) => ({ t, estado: o.estados?.[i], nota: o.notas?.[i] }))));
   for (const re of [/^Concede Armadura igual a/, /^Concede Escudo de Energia máximo igual a/, /Mana Máxima Não Reservada/, /que Reservarem$/, /mais Reserva de Mana de Habilidades Aura$/, /Frascos de Vida não são removidos/]) {
     const achadas = linhas.filter((l) => re.test(l.t));
@@ -169,7 +169,6 @@ test('a ÁRVORE: as 6 linhas da mana reservada têm efeito no balão; a do Feiti
     for (const l of achadas) assert.ok(['equivalente', 'novo', 'aproximado'].includes(l.estado), `${l.t}: ${l.estado}`);
   }
   const feiticeiro = linhas.find((l) => /Suportadas por Feiticeiro/.test(l.t));
-  assert.equal(feiticeiro.estado, 'inerte');
-  // (dono, 13/10, "Ajustar a linha": a gema está no catálogo, sem comportamento de combate — a nota do lote 12)
-  assert.match(feiticeiro.nota, /Feiticeiro \(Spellslinger\) está no catálogo, mas ainda não tem comportamento de combate/);
+  // (dono, 14/10, "Ajustar as linhas": o lote 19 deu comportamento ao Feiticeiro — a reserva dele tem a eficácia da linha; `arvore-principal-poe`)
+  assert.equal(feiticeiro.estado, 'novo');
 });
