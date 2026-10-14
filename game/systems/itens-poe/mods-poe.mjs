@@ -712,6 +712,8 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) marcar(hunt, 'estilhacou', agora);
   // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto)
   if (nome === 'matar') notarParaReliquia(estado, hunt, agora);
+  // (14/10, Erguer Aranhas: o abate pendente — `acoes.tiqueDasAranhas`)
+  if (nome === 'matar' && hunt) hunt.poeAbatesParaAranhas = (hunt.poeAbatesParaAranhas ?? 0) + 1;
   const rng = ctx.rng ?? Math.random;
   const alvo = ctx.alvo ?? null;
   const tagsAlvo = new Set([...tagsDoAlvo(alvo, agora), ...(ctx.tags ?? [])]);

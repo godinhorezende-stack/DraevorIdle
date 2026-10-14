@@ -108,6 +108,13 @@ const REGRAS = [
   [new RegExp(`^Crueldade tem Duração Base de ${N} segundos`, 'i'), (m) => ({ crueldadeMs: Math.round(num(m[1]) * 1000) })],
   [/^Acertos de Habilidades Suportadas concedem Crueldade/i, () => ({ crueldade: 1 })],
   [new RegExp(`^Efeito da Crueldade concedido por Habilidades Suportadas aumentado em ${N}%`, 'i'), (m) => ({ crueldadeEfeitoPct: num(m[1]) })],
+  // (14/10) O CONVOCAR FANTASMA (`acoes.convocarFantasmas`): a chance no golpe fatal e no acerto no Raro/Único, o máximo e a duração. (A linha
+  // do Raro/Único vem repetida no poedb com um "\n" literal: a cópia não soma.)
+  [/Lacaios Não Fantasm\S*\\n ?de Habilidades Suportadas, Acertarem um Inimigo Raro ou Único/i, () => ({})],
+  [new RegExp(`^${N}% de chance de Convocar um Fantasma quando Habilidades Suportadas, ou Lacaios Não Fantasm\\S* de Habilidades Suportadas, causam um Golpe Fatal`, 'i'), (m) => ({ fantasmaAoMatarPct: num(m[1]) })],
+  [new RegExp(`^${N}% de chance de Convocar um Fantasma quando Habilidades Suportadas, ou Lacaios Não Fantasm\\S* de Habilidades Suportadas, Acertarem um Inimigo Raro ou Único`, 'i'), (m) => ({ fantasmaRaroPct: num(m[1]) })],
+  [new RegExp(`^Máximo de ${N} Fantasmas Convocados`, 'i'), (m) => ({ fantasmaMax: num(m[1]) })],
+  [new RegExp(`^Fantasmas duram ${N} segundos`, 'i'), (m) => ({ fantasmaDuracaoMs: Math.round(num(m[1]) * 1000) })],
   // A IMPIEDADE: cada terceiro ataque corpo a corpo é um Golpe Impiedoso (mais dano, mais dano com afecções, o atordoamento).
   [/Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso/i, () => ({ impiedosoCada: 3 })],
   [new RegExp(`Golpes Impiedosos com Habilidades Suportadas causam ${N}% mais Dano Corpo a Corpo`, 'i'), (m) => ({ impiedosoMaisDanoPct: num(m[1]) })],

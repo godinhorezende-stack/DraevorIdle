@@ -131,6 +131,11 @@ const IMPLEMENTADOS = [
     re: /Égide Primitiva|Outras Habilidades de Égides|golpe mágico crítico|Robôs Ativadores|Infusão Espiritual/,
     jogo: 'a Égide Primitiva do Elementalist (toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida, 75 por Notável alocado; volta cheia 10 s depois do último dano elemental) — e as 5 Égides dos únicos pelo mesmo caminho, desligadas pela Primitiva; a Infusão Mística do Assassin (o crítico mágico Bifurca: duas rolagens, as duas dobram o dano extra do crítico; 30% menos chance de crítico mágico); os Robôs Ativadores do Saboteur (dois robôs que não tomam dano; as Magias Ativadas saem duas vezes, a segunda sem recarga); a Infusão Espiritual do Occultist (ao canalizar uma magia, um acúmulo a cada 0,5 s, até 10: 15% de início mais rápido da Recarga do Escudo, 5% mais Dano e 10% mais Custo nas Magias Canalizadas por acúmulo)',
   },
+  {
+    bloco: 'O Reliquarian (lote 21)',
+    re: /Rajada Vulcânica|Emissário das Direções|Poder Fantasmal|Erguer Aranhas|Suspender no Tempo/,
+    jogo: 'a Rajada Vulcânica (no acerto corpo a corpo, 4 projéteis de magma em área, 200% do golpe, 60% em Fogo); o Grande Emissário das Direções (sai sozinho; a cada 6 s, +2 Projéteis, +2 Ricochetes, +2 Perfurações, Difundir duas vezes, ou todos); o Poder Fantasmal (o dano de cada Fantasma vivo nas suas magias físicas) com o suporte Convocar Fantasma, que passa a convocar (no golpe fatal e no Raro/Único, até o máximo, 15 s); Erguer Aranhas (ao matar, 2 aranhas por cadáver perto, até 20, 30 s, +2% de Velocidade de Ataque e +15% de Dano com Veneno cada); Suspender no Tempo (a terceira Miragem solta as magias que as criaram, com menos dano) — e os únicos que dão essas habilidades',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

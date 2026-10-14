@@ -467,43 +467,43 @@
       "_lote16": "14/10 — os altares do PoE (lote 16)"
     },
     {
-      "padrao": "^Ativa Rajada Vulcânica .*$",
+      "padrao": "^Ativa Rajada Vulcânica [Nn]ível \\{(\\d+)\\} ao atingir corpo a corpo$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "rajada_vulcanica",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a habilidade Rajada Vulcânica",
+      "estado": "aproximado",
+      "nota": "no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
       "padrao": "^Concede a Habilidade Convocar Grande Emissário das Direções$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "emissario_direcoes",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Grande Emissário das Direções",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff",
       "_nova": true,
-      "_ciclo7": true
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
       "padrao": "^Cada Fantasma Convocado concede a Você Poder Fantasmal$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "poder_fantasmal",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o Poder Fantasmal",
+      "estado": "aproximado",
+      "nota": "cada Fantasma vivo (do suporte Convocar Fantasma) dá Dano Físico Mágico Adicional igual ao golpe dele (o de um monstro comum do seu nível) — o PoE não publica a tabela pelo nível do Fantasma; pela regra do jogo, o dano adicionado a magias entra nas magias com dano Físico",
       "_nova": true,
-      "_ciclo7": true
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
       "padrao": "^Ativa Convocar Robôs Ativadores Nível \\{(\\d+)\\} quando Alocado$",
@@ -17386,6 +17386,40 @@
       "_unico": true
     },
     {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ativar Erguer Aranhas Nível \\{(\\d+)\\} ao Matar$",
+      "efeitos": [
+        {
+          "stat": "erguer_aranhas_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "erguer_aranhas",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo e envenenam (60% do golpe em 2 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
+      "_nova": true,
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
+    },
+    {
+      "padrao": "^Ativa Erguer Aranhas Nível \\{(\\d+)\\} ao Matar$",
+      "efeitos": [
+        {
+          "stat": "erguer_aranhas_chance",
+          "valor": "100"
+        },
+        {
+          "stat": "erguer_aranhas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo e envenenam (60% do golpe em 2 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
+      "_nova": true,
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
+    },
+    {
       "padrao": "^Ativa (?:o |a )?(.+?) [Nn]ível \\{(\\d+)\\} ao [Mm]atar(?: um Inimigo)?$",
       "efeitos": [
         {
@@ -17461,6 +17495,18 @@
       ],
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^Ativa Suspender no Tempo [Nn]ível \\{(\\d+)\\} ao conjurar uma magia$",
+      "efeitos": [
+        {
+          "stat": "suspender_no_tempo",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "cada magia não instantânea (não canalizada, não de lacaio, não Vaal) cria uma Miragem Suspensa (5 s); na terceira, todas soltam a magia que as criou, com 50% menos dano no nível 1 (20% no 20)",
+      "_nova": true,
+      "_lote21": "14/10 — o Reliquarian (lote 21)"
     },
     {
       "padrao": "^Ativa (?:o |a )?(.+?) [Nn]ível \\{(\\d+)\\} ao conjurar uma [Mm]agia$",

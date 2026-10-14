@@ -2140,6 +2140,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado()) Acoes.tiqueDoGuardian(estado, hunt, agora);
   // (14/10) as Égides (o máximo e a volta ao valor cheio) e os Robôs Ativadores do Saboteur
   if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
+  // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções
+  if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); }
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
@@ -2463,6 +2465,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
       // (14/10, a Relíquia Elemental explode ao morrer ou acabar — `Acoes.explosaoDaReliquia`)
       if (l.reliquia) { Acoes.explosaoDaReliquia(hunt, l, ficha, eventos); Ficha.invalidar(estado); }
+      // (14/10, as Aranhas Espectrais e os Fantasmas dão bônus enquanto vivos — `ModsPoe.adds`: a ficha é refeita)
+      if (l.aranha || l.fantasma) Ficha.invalidar(estado);
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
@@ -2624,6 +2628,11 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: b.uid, x: b.x, y: b.y });
       eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, crit, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
+      // (14/10) o VENENO das Aranhas Espectrais (o Golpe da Víbora): 60% do golpe em 2 s, como o veneno do PoE (sem os seus modificadores)
+      if (l.envenenar && Math.random() * 100 < l.envenenar) {
+        const posto = Dot.aplicar(b, { tipo: 'venenoPoe', total: dano * 0.6, duracaoMs: 2000, origem: { fonte: 'lacaio', habilidade: l.nome } }, hunt.clock ?? 0);
+        if (posto) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: posto });
+      }
       // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).
       if (l.sangrar && Math.random() * 100 < l.sangrar) {
         const posto = Dot.aplicar(b, { tipo: 'sangramento', total: dano * 0.7, origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);

@@ -304,7 +304,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (20 — 14/10: o Poder Arcano — "Ataques têm X% de Poder Arcano" dos únicos passa a valer.)
 // (21 — 14/10: as Égides dos únicos — "Ativa Égide de Fogo/Gelo/Relampejante/Elemental/Física nível 20 quando equipado" e as linhas "enquanto a
 // Égide Física estiver esgotada".)
-export const VERSAO_DA_TRADUCAO = 21;
+// (22 — 14/10: o Reliquarian — "N% de chance de Ativar Erguer Aranhas Nível N ao Matar" (a Presa de Arakaali), "Ativa Suspender no Tempo" (as
+// Areias do Tempo), "Concede a Habilidade Convocar Grande Emissário das Direções" (a Divindade Despedaçada), "Cada Fantasma Convocado concede
+// a Você Poder Fantasmal" (o Bastão Negro).)
+export const VERSAO_DA_TRADUCAO = 22;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

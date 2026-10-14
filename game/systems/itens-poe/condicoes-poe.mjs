@@ -899,6 +899,12 @@ export const BUFFS = {
   altarMassivoMenor: { nome: 'Altar Massivo Menor', altar: true, af: { life_inc: 20, area_inc: 20 } },
   // (14/10, o Warden: o Avatar Liberto deixa Liberto por 10 s — os efeitos são as linhas "… enquanto Liberto" do Avatar da Selva, `@buff:liberto`)
   liberto: { nome: 'Liberto', af: {} },
+  // (14/10, o Grande Emissário das Direções — `acoes.tiqueDoEmissario`: um ao acaso, ou todos)
+  emissarioProjeteis: { nome: 'Direções: Projéteis', af: { extra_projectiles: 2 } },
+  emissarioRicochetes: { nome: 'Direções: Ricochetes', af: { ricochetes: 2 } },
+  emissarioPerfuracao: { nome: 'Direções: Perfuração', af: { perfurar: 2 } },
+  emissarioDifusao: { nome: 'Direções: Difusão', af: { bifurcar: 2, bifurcar_de_novo: 1 } },
+  emissarioTodos: { nome: 'Direções: Todos', af: { extra_projectiles: 2, ricochetes: 2, perfurar: 2, bifurcar: 2, bifurcar_de_novo: 1 } },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   ventoFavoravel: { nome: 'Vento Favorável', af: { atk_speed: 10, cast_speed: 10, move_speed: 10 } },
   // (o Inquisidor: "Fanatismo concede às magias conjuradas por você +75% de velocidade de conjuração, -75% de custo e área de efeito
@@ -996,6 +1002,21 @@ export function adds(estado, total = null) {
   if (porRemovida > 0) {
     const removidas = (estado?.hunt?.poeChamasRemovidas ?? []).filter((t) => agoraT - t <= CHAMA_SANTIFICADA.recenteMs).length;
     if (removidas) saida.phys_as_extra_energy = (saida.phys_as_extra_energy ?? 0) + Math.min(Number(total?.chama_santificada_raio_max) || Infinity, porRemovida * removidas);
+  }
+  // (14/10, o Reliquarian) As ARANHAS ESPECTRAIS vivas: 2% de Velocidade de Ataque e 15% de Dano com Veneno cada (`acoes.tiqueDasAranhas`); o
+  // PODER FANTASMAL ("Cada Fantasma Convocado concede a Você Poder Fantasmal": Dano Físico Mágico Adicional — o golpe de cada Fantasma vivo;
+  // o PoE não publica a tabela pelo nível dele: aproximado)
+  const vivosDo = (k) => (estado?.hunt?.lacaios ?? []).filter((l) => l?.[k] && l.hp > 0);
+  const aranhas = vivosDo('aranha').length;
+  if (aranhas) {
+    saida.atk_speed = (saida.atk_speed ?? 0) + 2 * aranhas;
+    saida.poison_dmg_inc = (saida.poison_dmg_inc ?? 0) + 15 * aranhas;
+  }
+  if (Number(total?.poder_fantasmal) > 0) {
+    for (const l of vivosDo('fantasma')) {
+      saida.spell_added_physical_dmg_min = (saida.spell_added_physical_dmg_min ?? 0) + (l.dano?.min ?? 0);
+      saida.spell_added_physical_dmg_max = (saida.spell_added_physical_dmg_max ?? 0) + (l.dano?.max ?? 0);
+    }
   }
   // (14/10, o Rito Profano) A INFUSÃO ESPIRITUAL, por acúmulo (`INFUSAO`)
   const infusao = estado?.hunt?.infusaoEspiritual?.n ?? 0;

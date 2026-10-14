@@ -51,14 +51,14 @@ const soma = (e) => { Ficha.invalidar(e); return Afixos.soma(e); };
 /** Aloca (na lista) os `n` primeiros Notáveis da árvore — para a conta da Égide Primitiva. */
 const comNotaveis = (e, n) => { e.passivas.alocados = P.arvore().nos.filter((x) => x.tipo === 'notable' && !x.ascendencia).slice(0, n).map((x) => x.id); Ficha.invalidar(e); };
 
-test('a ÁRVORE: as 7 linhas do bloco com efeito; sobram só as 5 do Reliquarian', { skip: SEM }, () => {
+test('a ÁRVORE: as 7 linhas do bloco com efeito; nenhuma linha sem efeito na árvore (o Reliquarian, desde o lote 21)', { skip: SEM }, () => {
   const linhas = P.arvore().nos.flatMap((n) => [n, ...(n.opcoes ?? [])].flatMap((o) => (o.textos ?? []).map((t, i) => ({ t, estado: o.estados?.[i], nota: o.notas?.[i] ?? '', asc: n.ascendencia }))));
   const do20 = linhas.filter((l) => l.estado !== 'nota' && /Égide Primitiva|Outras Habilidades de Égides|golpe mágico crítico|Robôs Ativadores Nível|Infusão Espiritual a cada/.test(l.t));
   assert.equal(do20.length, 7);
   for (const l of do20) assert.ok(['novo', 'aproximado'].includes(l.estado), `${l.estado}: ${l.t}`);
   const semEfeito = linhas.filter((l) => ['inerte', 'registrado'].includes(l.estado) && !/^não se aplica ao jogo/.test(l.nota));
-  assert.deepEqual([...new Set(semEfeito.map((l) => l.asc))], ['Reliquarian']);
-  assert.equal(semEfeito.length, 5);
+  // (dono, 14/10, "Ajustar a linha": o lote 21 deu efeito às 5 do Reliquarian — não sobra nenhuma)
+  assert.deepEqual(semEfeito.map((l) => l.t), []);
 });
 
 test('a ÉGIDE PRIMITIVA: 75 por Notável alocado; toma o Fogo, o Gelo e o Raio dos acertos (não o Físico); esgotada, volta cheia 10 s depois do último dano elemental', { skip: SEM }, () => {

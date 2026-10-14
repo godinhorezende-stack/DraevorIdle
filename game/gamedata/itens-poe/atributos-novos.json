@@ -6536,6 +6536,42 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes.tiqueDasEgides (14/10)"
+    },
+    "rajada_vulcanica": {
+      "nome": "Rajada Vulcânica (nível)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.rajadaVulcanica (14/10)"
+    },
+    "emissario_direcoes": {
+      "nome": "Grande Emissário das Direções",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDoEmissario (14/10)"
+    },
+    "poder_fantasmal": {
+      "nome": "Cada Fantasma Convocado concede Poder Fantasmal",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.adds (14/10)"
+    },
+    "erguer_aranhas": {
+      "nome": "Erguer Aranhas (nível)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDasAranhas (14/10)"
+    },
+    "erguer_aranhas_chance": {
+      "nome": "Chance de Ativar Erguer Aranhas ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDasAranhas (14/10)"
+    },
+    "suspender_no_tempo": {
+      "nome": "Suspender no Tempo (nível)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.suspenderNoTempo (14/10)"
     }
   }
 }

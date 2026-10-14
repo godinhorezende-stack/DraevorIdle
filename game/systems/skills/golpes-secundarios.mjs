@@ -181,7 +181,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
         // projétil já atravessou e ricocheteou.
         const filhos = p.bifurcar + (efeito.bifurcarExtraChance > 0 && rng() * 100 < efeito.bifurcarExtraChance ? 1 : 0);
         for (const b of maisPerto(vivosNoInicio, atual, cfg.distanciaDaBifurcacao ?? 4, filhos, p.acertados)) {
-          voar({ de: atual, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: 0, encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou }, b, 'bifurcacao');
+          voar({ de: atual, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: (p.deNovo ?? 0) > 0 ? 2 : 0, deNovo: Math.max(0, (p.deNovo ?? 0) - 1), encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou }, b, 'bifurcacao');
         }
         break;
       }
@@ -207,7 +207,8 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     }
   };
 
-  const base = { perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, encadear: efeito.encadear || 0, volta: efeito.retornar > 0 };
+  // (14/10: `deNovo` — "Difundem e Difundem de novo": os filhos difundem outra vez, em 2)
+  const base = { perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, deNovo: efeito.bifurcar > 0 ? efeito.bifurcarDeNovo || 0 : 0, encadear: efeito.encadear || 0, volta: efeito.retornar > 0 };
   // O principal: o golpe direto no alvo (já dado) e o que vem dele.
   emitir(alvo, 'direto', 0);
   voar({ ...base, de: origem, pct: 100 }, alvo, 'direto', true);

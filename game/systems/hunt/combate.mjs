@@ -1506,6 +1506,8 @@ export function round(estado, personagem) {
         // (No PoE o "Dano de <elemento> aumentado" só AUMENTA o dano daquele elemento: o golpe físico não ganha partes elementais por ele.)
         const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(ficha.danoSomado, extrasDoFisico)) } : ficha;
         const dosAtributos = [...(poe ? [] : elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught })), ...danoSomadoDoPoe(estado, hunt, alvo, fichaDasPartes, { crit: critico, onslaught })];
+        // (14/10, a Rajada Vulcânica: o golpe básico corpo a corpo que acerta — `Acoes.rajadaVulcanica`)
+        if (poe && !segundo && categoriaDaArma(arma) !== 'distancia') Acoes.rajadaVulcanica(estado, hunt, alvo, eventos);
         // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
         // O 2º golpe do ataque duplo não repete o que vem DEPOIS do golpe (árvore, roubo de vida e mana, vida/mana por acerto, charms).
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
