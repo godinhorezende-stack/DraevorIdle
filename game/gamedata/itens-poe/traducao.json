@@ -270,14 +270,13 @@
       "padrao": "^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "geada_ao_falhar_congelar",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Geada (o Congelamento curto demais que vira Geada)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote15": "14/10 — o Congelamento do PoE e a Geada (lote 15)"
     },
     {
       "padrao": "^Inflige Chama Santificada ao atingir corpo a corpo$|^Você pode infligir \\+?\\{(\\d+)\\} Chama Santificada nos inimigos$|^Ganha .* Chamas Santificadas que foram removidas .*$|^Intensidade de Chama Santificada infligida por você aumentada em .*$",
@@ -15481,27 +15480,25 @@
       "padrao": "^Acertos com esta Arma Congelam Inimigos como se causassem \\{(\\d+)\\}% mais Dano$",
       "efeitos": [
         {
-          "stat": "duracao_congelamento",
+          "stat": "congelamento_como_mais@ataque",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no jogo o Congelamento sai pela chance: o \"mais dano\" vira a duração dele (no PoE, a duração segue o dano).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote15": "14/10 — o Congelamento do PoE (lote 15)"
     },
     {
       "padrao": "^Congela Inimigos Resfriados como se causasse \\{(\\d+)\\}% mais Dano$",
       "efeitos": [
         {
-          "stat": "duracao_congelamento@alvoResfriado",
+          "stat": "congelamento_como_mais@alvoResfriado",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no jogo o Congelamento sai pela chance: o \"mais dano\" vira a duração dele (no PoE, a duração segue o dano).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote15": "14/10 — o Congelamento do PoE (lote 15)"
     },
     {
       "padrao": "^Sacrifício Eterno(?: durante o Efeito)?$",

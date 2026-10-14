@@ -2119,7 +2119,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: pedacos ? COR_DO_ELEMENTO[tipo] ?? cor : cor, ...(fonte ? { fonte } : {}) });
       }
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
-      const postosDaGema = Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto);
+      // (PoE, 14/10: a chance de Congelar dos suportes — "têm X% de chance de Congelar" — vai para a conta do PoE, nas afecções abaixo: a
+      // duração pelo dano de Gelo; o resto dos estados do suporte segue aqui.)
+      const congelarDoSuporte = ficha.afeccoes && efeitoDaGema?.congelarChance > 0 ? efeitoDaGema.congelarChance : 0;
+      const postosDaGema = Estados.aplicar(bicho, congelarDoSuporte ? { ...efeitoDaGema, congelarChance: 0 } : efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto);
       for (const st of postosDaGema) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       // Os efeitos de acerto do PoE (atordoamento, Mutilar, Cegar, Desacelerar, Empalar, Empurrar, Provocar, Fúria — `itens-poe/mods-poe.mjs`).
       const fisicoDoAcerto = pedacos ? pedacos.filter((p) => p.elemento === 'physical').reduce((t, p) => t + p.dano, 0) : tipo === 'physical' ? bruto : 0;
@@ -2164,7 +2167,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // suporte, pelo Golpe Impiedoso ou pelo atordoamento do PoE)
         const atordoouAgora = postosDaGema.includes('atordoado') || !!doAcerto?.atordoou || !!doSuporte?.atordoou;
         const incendioAtordoante = atordoouAgora && tagsPoeDaSkill(entry).includes('corpo') ? ModsPoe.valor(ficha, 'incendio_atordoante_mais') : 0;
-        const afeccoesDoAcerto = incendioAtordoante ? { ...afeccoes, incendioMais: (afeccoes.incendioMais ?? 0) + incendioAtordoante } : afeccoes;
+        const comIncendio = incendioAtordoante ? { ...afeccoes, incendioMais: (afeccoes.incendioMais ?? 0) + incendioAtordoante } : afeccoes;
+        const afeccoesDoAcerto = congelarDoSuporte ? { ...comIncendio, chance: { ...(comIncendio.chance ?? {}), congelamento: (comIncendio.chance?.congelamento ?? 0) + congelarDoSuporte } } : comIncendio;
         // (a Sobrecarga Elemental: "Afecções nunca contam como sendo de um Golpe Crítico")
         const postos = AfeccoesPoe.aoAcertar(bicho, partesDaAfeccao, { afeccoes: afeccoesDoAcerto, crit: crit && !ficha.sobrecargaElemental, ataque, agora, salaDeBoss: !!hunt.isBoss });
         for (const st of postos) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });

@@ -28,6 +28,23 @@ export const BASE = {
   // "… from Critical Strikes" é 1,5× o do acerto). O "+X% ao Multiplicador de Crítico" não entra: o dano do golpe chega aqui sem o crítico.
   criticoMaisPct: 50,
 };
+/**
+ * (14/10, dono: "Adotar a conta do PoE") O CONGELAMENTO que você põe: 60 ms por 1% do limiar (a vida máxima do monstro) em dano de Gelo do
+ * acerto, até 3 s; × a "Duração do Congelamento aumentada" (e +20% por Geada no alvo); com menos de 0,3 s ele não é infligido. A mesma conta
+ * do Congelamento dos monstros em você (`monstros-no-jogador.msDoCongelamento`). Antes, 1,5 s fixos.
+ * A GEADA (o Juramento do Inverno: "Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada"): dura
+ * 10 s, acumula (cada uma renova a duração), +20% de Duração do Congelamento por Geada, e sai toda quando o alvo é Congelado.
+ */
+export const CONGELAMENTO = Object.freeze({ msPorPct: 60, minimoMs: 300, maximoMs: 3000 });
+export const GEADA = Object.freeze({ duracaoMs: 10_000, duracaoCongelamentoPct: 20 });
+/** As Geadas no monstro agora (0 sem nenhuma). */
+export const geadasNo = (bicho, agora) => ((bicho?.estados?.geada?.ate ?? 0) > agora ? bicho.estados.geada.n | 0 : 0);
+/** A duração do Congelamento de um acerto com `gelo` de dano de Gelo (ms; 0 = não congela — abaixo de 0,3 s). `aumentadoPct`: a Duração aumentada. */
+export function msDoCongelamento(gelo, limiar, aumentadoPct = 0) {
+  if (!(gelo > 0) || !(limiar > 0)) return 0;
+  const ms = Math.min(CONGELAMENTO.maximoMs, (CONGELAMENTO.msPorPct * 100 * gelo) / limiar) * Math.max(0, 1 + aumentadoPct / 100);
+  return ms >= CONGELAMENTO.minimoMs ? Math.round(ms) : 0;
+}
 
 /** O que as peças/árvore dão de afecção (da soma de atributos `af`), no formato que `aoAcertar` usa. */
 export function daSoma(af = {}) {
@@ -88,7 +105,7 @@ export function daSoma(af = {}) {
     naoPode: Object.fromEntries(['incendio', 'congelamento', 'resfriamento', 'eletrizacao', 'veneno', 'sangramento'].map((t) => [t, n(`nao_pode:${t}`) > 0])),
     naoPodeEl: Object.fromEntries(['incendio', 'congelamento', 'resfriamento', 'eletrizacao'].map((t) => [t, ['physical', 'fire', 'ice', 'energy', 'chaos'].filter((el) => n(`nao_pode:${t}:${el}`) > 0)])),
     chanceCritico: { incendio: n('chance_ignite_critico'), sangramento: n('chance_bleed_critico'), veneno: n('chance_poison_critico'), congelamento: n('chance_freeze_critico'), eletrizacao: n('chance_shock_critico') },
-    eletrizaComoMais: n('eletrizacao_como_mais'), resfriaComoMais: n('resfriamento_como_mais'), duracaoResfriamento: n('duracao_resfriamento') + n('duracao_afeccoes_elementais'),
+    eletrizaComoMais: n('eletrizacao_como_mais'), resfriaComoMais: n('resfriamento_como_mais'), congelaComoMais: n('congelamento_como_mais'), duracaoResfriamento: n('duracao_resfriamento') + n('duracao_afeccoes_elementais'),
     venenosExtras: n('venenos_extras'), venenoMaxNoAlvo: n('veneno_max_no_alvo'), semInerente: n('critico_sem_afeccao_inerente') > 0,
     // (09/10, as afecções do personagem nos monstros) a Eletrização: o máximo (+X, ou fixo — "Efeito Máximo da Eletrização é igual a X%"), o
     // mínimo ("sempre aumentam o Dano recebido em ao menos X%"), quantas por inimigo ("até N Eletrizações") e a parte da Mana máxima aumentada.
@@ -106,6 +123,8 @@ export function daSoma(af = {}) {
     sangramentoAgravado: n('sangramento_agravado') > 0, sangramentoSemMovimento: n('sangramento_sem_movimento') > 0,
     // o Congelamento: o mínimo, o Resfriamento ao descongelar e o dano "permanente" por segundo Congelado/Resfriado
     congelamentoMinimoMs: n('congelamento_minimo_s') * 1000, resfriarAoDescongelar: n('resfriar_ao_descongelar'),
+    // (14/10, o Juramento do Inverno: o acerto que falhar em Congelar por duração insuficiente inflige Geada)
+    geada: n('geada_ao_falhar_congelar') > 0,
     permanente: { congelado: n('dano_perm_congelado'), congeladoMax: n('dano_perm_congelado_max'), resfriado: n('dano_perm_resfriado'), resfriadoMax: n('dano_perm_resfriado_max') },
     // as resistências a menos dos Incendiados/Resfriados e dos Envenenados por você (`hunt/resistencia.resistenciaDe`)
     // (o texto traz o "−": o valor chega negativo — vale o tamanho)
@@ -243,13 +262,22 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const efeitoDoCritico = crit ? a.efeitoNaoDanoCritico ?? 0 : 0;
   if (gelo > 0 || resfria > 0) {
     // Congelamento (chance ou crítico) e Resfriamento (sempre), pelas regras de controle do Draevor.
-    const congela = gelo > 0 && (crit || sorte(chance('congelamento')));
+    // (14/10: a duração pela conta do PoE — `msDoCongelamento`; curta demais, não congela e, com o Juramento do Inverno, vira Geada)
+    const tentou = gelo > 0 && (crit || sorte(chance('congelamento')));
+    // ("Congela Inimigos como se causasse X% mais Dano": o Gelo da conta × (1 + X%))
+    const congelarMs = tentou ? msDoCongelamento(gelo * (1 + (a.congelaComoMais ?? 0) / 100), limiar, (a.duracaoCongelamento ?? 0) + geadasNo(bicho, agora) * GEADA.duracaoCongelamentoPct) : 0;
+    const congela = congelarMs > 0;
+    if (tentou && !congela && a.geada) {
+      const e = (bicho.estados ??= {});
+      e.geada = { n: geadasNo(bicho, agora) + 1, ate: agora + GEADA.duracaoMs };
+      postos.push('geada');
+    }
     // ("Seus Resfriamentos podem reduzir a Velocidade de Ação em até um máximo de X%"; "sempre reduzem … em ao menos X%")
     const maxResfria = a.resfriamentoMaximo > 0 ? a.resfriamentoMaximo : BASE.resfriamento.maximo;
     let lento = resfria > 0 ? comEfeito(forca(resfria * (1 + (a.resfriaComoMais ?? 0) / 100), limiar, { ...BASE.resfriamento, maximo: maxResfria }), (a.efeitoResfriamento ?? 0) + efeitoDoCritico, maxResfria) : 0;
     if (resfria > 0 && a.resfriamentoMinimo > 0) lento = Math.min(maxResfria, Math.max(lento, a.resfriamentoMinimo));
     postos.push(...Estados.aplicar(bicho, {
-      ...(congela ? { congelarChance: 100, congelarDuracaoPct: a.duracaoCongelamento ?? 0, ...(a.congelamentoMinimoMs > 0 ? { congelarMinimoMs: a.congelamentoMinimoMs } : {}), ...(a.resfriarAoDescongelar > 0 ? { resfriarAoDescongelar: a.resfriarAoDescongelar } : {}) } : {}),
+      ...(congela ? { congelarChance: 100, congelarMs, ...(a.congelamentoMinimoMs > 0 ? { congelarMinimoMs: a.congelamentoMinimoMs } : {}), ...(a.resfriarAoDescongelar > 0 ? { resfriarAoDescongelar: a.resfriarAoDescongelar } : {}) } : {}),
       ...(lento ? { lentidaoPct: lento, lentidaoDuracaoPct: a.duracaoResfriamento ?? 0 } : {}),
     }, Math.max(gelo, resfria), agora, rng, salaDeBoss));
     const e = (bicho.estados ??= {});

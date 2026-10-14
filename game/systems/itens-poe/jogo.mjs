@@ -299,7 +299,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (16 — 13/10: os parciais exatos — "Você e seus Totens Regeneram…" (o Pináculo de Madeira-Troll), "Frascos Utilitários Mágicos…" só nos Mágicos.)
 // (17 — 13/10: os parciais médios — "X% do Dano de Ataques Físicos é Drenado como Vida/Mana" só do físico dos ataques, "Envenenamentos …
 // mais rápido" só no Veneno, "Efeito de Auras Não-Maldição … nos Inimigos" com efeito.)
-export const VERSAO_DA_TRADUCAO = 17;
+// (18 — 14/10: o Congelamento do PoE — "Congelam/Congela Inimigos … como se causasse X% mais Dano" no dano da conta, não na duração.)
+export const VERSAO_DA_TRADUCAO = 18;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

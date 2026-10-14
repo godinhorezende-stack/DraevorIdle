@@ -101,6 +101,11 @@ const IMPLEMENTADOS = [
     re: /da Mana por \d+ segundos? quando você usar uma Habilidade de Guarda$|do Dano de Ataques Físicos é Drenado como (Vida|Mana)$|^Exposição a (Fogo|Gelo|Raio) infligida por você aplica|^Envenenamentos infligidos por você causam Dano|^Efeito de Auras Não-Maldição de suas Habilidades aumentado em/,
     jogo: 'a mana da Maestria de Mana volta ao longo do tempo (no clamor de Guarda); o dreno do "Dano de Ataques Físicos" só da parte física dos ataques (antes, de todo o dano — os anéis e amuletos com essa linha também); o "-X% extra" das Maestrias de Fogo/Gelo/Raio também na Exposição das gemas, das auras e dos Vínculos; o veneno "X% mais rápido" só no Veneno (antes, todas as afecções de dano); a Pândega (a marca do Orgulho nos inimigos, maior pelo efeito)',
   },
+  {
+    bloco: 'O Congelamento do PoE e a Geada (lote 15)',
+    re: /^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$/,
+    jogo: 'o Congelamento que você põe segue o dano de Gelo do acerto, como no PoE (60 ms por 1% da vida do monstro, até 3 s, × a Duração aumentada; abaixo de 0,3 s não congela — antes, 1,5 s fixos); a Geada do Juramento do Inverno (o acerto que falha em Congelar por duração curta: 10 s, acumula, +20% de Duração do Congelamento por Geada, sai ao Congelar); "Congela … como se causasse X% mais Dano" no dano da conta',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

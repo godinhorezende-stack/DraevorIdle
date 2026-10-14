@@ -6314,6 +6314,18 @@
       "unidade": "%",
       "combate": true,
       "efeito": "reforcos.marcar: a marca das auras (o Orgulho) nos inimigos (13/10)"
+    },
+    "geada_ao_falhar_congelar": {
+      "nome": "Geada ao falhar em Congelar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afeccoes: o acerto que falhar em Congelar por duração insuficiente inflige Geada (14/10)"
+    },
+    "congelamento_como_mais": {
+      "nome": "Congela como se causasse mais Dano",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes.msDoCongelamento: o Gelo da conta × (1 + X%) (14/10)"
     }
   }
 }

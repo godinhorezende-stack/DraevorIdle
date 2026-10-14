@@ -5,8 +5,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5931** — equivalente 1356, novo 4417, aproximado (parcial) 158.
-- ✗ Sem efeito: **44** — na árvore principal 13, nas ascendências 31; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 26; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5932** — equivalente 1356, novo 4418, aproximado (parcial) 158.
+- ✗ Sem efeito: **43** — na árvore principal 13, nas ascendências 30; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 25; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 61. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -27,6 +27,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | Correções das notas (lote 12) | 8 | 0 | o Efeito do Buff do Arauto Trovejante só nele (valia em todos os Arautos — e no único Cravo de Fidelitas); a Eficácia da Reserva dele (a gema está no jogo: o montador da árvore passou a carregar as gemas); A Apóstata (o nó e o único: o Escudo de Energia das armaduras vira Vida; o peitoral sem o Escudo da base); a Arte do Gladiador (a penalidade de movimento de peitorais e escudos ignorada); a Magia Sanguínea igual ao PoE (o "10% mais Vida" multiplica; a reserva de vida já existia, a nota estava errada); e o "Sem Dano Físico" dos únicos, que refazer a peça devolvia |
 | Parciais exatos (lote 13) | 58 | 0 | os Clamores tiram todas as afecções de dano; o Frasco de Vida tira uma afecção não elemental (Sangramento ou Veneno) ao acaso; o Estandarte, qualquer uma ao acaso; a maldição que não é aura Cega só quem não estava amaldiçoado; o Mana por acerto só com a Garra na mão secundária; os prazos exatos ("nos últimos 10/2 segundos") e os frascos certos (de Vida, de Mana, os Utilitários Mágicos); a regeneração do Inspirador nos aliados na área do Estandarte e a do Ritual do Despertar nos totens; a Sobrecarga Elemental (40% mais dano elemental só na habilidade que causou um crítico nos últimos 8 s; as afecções nunca de crítico); o Avatar do Fogo (Gelo e Raio também viram Fogo, e só o Fogo causa dano); a Postura Inabalável (imune só a Atordoamento) |
 | Parciais médios (lote 14) | 33 | 0 | a mana da Maestria de Mana volta ao longo do tempo (no clamor de Guarda); o dreno do "Dano de Ataques Físicos" só da parte física dos ataques (antes, de todo o dano — os anéis e amuletos com essa linha também); o "-X% extra" das Maestrias de Fogo/Gelo/Raio também na Exposição das gemas, das auras e dos Vínculos; o veneno "X% mais rápido" só no Veneno (antes, todas as afecções de dano); a Pândega (a marca do Orgulho nos inimigos, maior pelo efeito) |
+| O Congelamento do PoE e a Geada (lote 15) | 1 | 0 | o Congelamento que você põe segue o dano de Gelo do acerto, como no PoE (60 ms por 1% da vida do monstro, até 3 s, × a Duração aumentada; abaixo de 0,3 s não congela — antes, 1,5 s fixos); a Geada do Juramento do Inverno (o acerto que falha em Congelar por duração curta: 10 s, acumula, +20% de Duração do Congelamento por Geada, sai ao Congelar); "Congela … como se causasse X% mais Dano" no dano da conta |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -47,7 +48,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 1 | a habilidade "Pele de Árvore" não está na coleção de gemas do jogo | — | Ensinamentos da Mãe (asc. Warden) — Concede a Habilidade Pele de Árvore Nível 20 |
 | 1 | a habilidade "Suspender no Tempo" não está na coleção de gemas do jogo | — | As Areias do Tempo (asc. Reliquarian) — Ativa Suspender no Tempo nível 1 ao conjurar uma magia |
 | 1 | as gemas Profanar e Desenterrar estão no jogo, mas ainda não criam cadáveres | — | Coveiro (notável) — Profanar e Desenterrar tem +2 de número Máximo de cadáveres permitidos |
-| 1 | falta no jogo: a Geada (o Congelamento curto demais que vira Geada) | — | Juramento do Inverno (asc. Warden) — Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada |
 | 1 | falta no jogo: a habilidade Rajada Vulcânica | — | Chamas de Ngamahu (asc. Reliquarian) — Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo |
 | 1 | falta no jogo: a Relíquia Elemental | — | Cruzada Implacável (asc. Guardian) — 25% de chance de Ativar Convocar Relíquia Elemental Nível 20 quando você ou um Aliado próximo Matar um Inimigo, ou Acertar um Inimigo Raro ou Único |
 | 1 | falta no jogo: o Grande Emissário das Direções | — | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
