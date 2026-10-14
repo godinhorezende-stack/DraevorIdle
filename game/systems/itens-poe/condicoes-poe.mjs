@@ -495,6 +495,72 @@ export function fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora = hun
   const q = hunt?.poeCriticoPorHabilidade?.[habilidade ?? 'golpe'];
   return q != null && agora - q <= SOBRECARGA.janelaMs ? 1 + SOBRECARGA.maisPct / 100 : 1;
 }
+/**
+ * O "MAIS" do dano ELEMENTAL de um golpe na parte de Fogo, Gelo e Raio: a Sobrecarga Elemental (`fatorDaSobrecarga`) × (14/10) o "X% mais Dano
+ * Elemental" (`mais_dano_elemental` — o Avatar da Selva: "100% mais Dano Elemental enquanto Liberto"). 1 no Físico e no Caos.
+ */
+export function fatorDoDanoElemental(ficha, hunt, habilidade, elemento, agora = hunt?.clock ?? 0) {
+  if (!['fire', 'ice', 'energy'].includes(elemento)) return 1;
+  return fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora) * Math.max(0, 1 + valor(ficha, 'mais_dano_elemental') / 100);
+}
+
+/**
+ * (14/10) O WARDEN. A CASCA da Pele de Árvore ("Concede a Habilidade Pele de Árvore Nível 20" — a habilidade sai sozinha: o jogo usa as
+ * habilidades sozinho; os números são os do nível 20, poedb): ganha 1 Casca por segundo se você não foi Acertado por um Ataque Recentemente,
+ * perde 1 quando um Ataque inimigo acerta (e, com a Lição das Estações, quando Dano Mágico acerta — `perderCasca`), até 10. O AVATAR LIBERTO
+ * ("Concede a Habilidade Avatar Liberto Nível 20"): 1 de Fúria Liberta por Afecção Elemental infligida com um Acerto (no máximo uma vez a
+ * cada 0,2 s por tipo — `ganharFuriaLiberta`); com 100, a habilidade consome tudo e deixa Liberto por 10 s (`liberto`).
+ */
+export const CASCA = Object.freeze({ maximo: 10, ganhoMs: 1000, fisicoAtaquePorCasca: 60, evadirMaisPorCascaAbaixo: 4 });
+export const FURIA_LIBERTA = Object.freeze({ maximo: 100, intervaloMs: 200, libertoS: 10 });
+export function tiqueDoWarden(estado, hunt, afPoe, agora = hunt?.clock ?? 0) {
+  if (!hunt || !ligado()) return;
+  if (Number(afPoe?.pele_de_arvore) > 0) {
+    const c = (hunt.casca ??= { n: 0, ultimo: agora });
+    if (recente(hunt.poeRecente?.acertadoAtaque, agora) || c.n >= CASCA.maximo) c.ultimo = agora;
+    else while (agora - c.ultimo >= CASCA.ganhoMs && c.n < CASCA.maximo) { c.n++; c.ultimo += CASCA.ganhoMs; }
+  } else if (hunt.casca) delete hunt.casca;
+  const f = hunt.furiaLiberta;
+  if (Number(afPoe?.avatar_liberto) > 0 && (f?.n ?? 0) >= FURIA_LIBERTA.maximo && !buffAtivo(estado, 'liberto')) {
+    f.n = 0;
+    ganharBuff(hunt, 'liberto', FURIA_LIBERTA.libertoS, agora);
+  }
+}
+/** Perde `n` Cascas (o Ataque inimigo que acertou: 1; o Dano Mágico, com a Lição das Estações). */
+export function perderCasca(hunt, n = 1, agora = hunt?.clock ?? 0) {
+  const c = hunt?.casca;
+  if (!c || !(n > 0)) return;
+  c.n = Math.max(0, c.n - n);
+  c.ultimo = agora;
+}
+/** As Afecções Elementais pelo estado que o acerto pôs (`afeccoes.aoAcertar`). */
+const AFECCAO_ELEMENTAL_DO_ESTADO = { queimando: 'incendio', congelado: 'congelamento', lento: 'resfriamento', eletrizado: 'eletrizacao', causticado: 'causticacao' };
+/** A Fúria Liberta pelos estados que um acerto pôs (`postos`): 1 por tipo de Afecção Elemental, no máximo uma vez a cada 0,2 s por tipo. */
+export function ganharFuriaLiberta(estado, hunt, afPoe, postos, agora = hunt?.clock ?? 0) {
+  const por = Number(afPoe?.furia_liberta_por_afeccao) || 0;
+  if (!(por > 0) || !hunt || !ligado() || !postos?.length) return;
+  if (Number(afPoe.furia_liberta_nao_liberto) > 0 && buffAtivo(estado, 'liberto')) return;
+  const f = (hunt.furiaLiberta ??= { n: 0, ultimo: {} });
+  for (const tipo of new Set(postos.map((p) => AFECCAO_ELEMENTAL_DO_ESTADO[p]).filter(Boolean))) {
+    if (agora - (f.ultimo[tipo] ?? -Infinity) < FURIA_LIBERTA.intervaloMs) continue;
+    f.ultimo[tipo] = agora;
+    f.n = Math.min(FURIA_LIBERTA.maximo, f.n + por);
+  }
+}
+/**
+ * (14/10) Os cartões do HUD do que o PoE dá por nome: os buffs com tempo (os altares, a Adrenalina, o Liberto…), a Casca e a Fúria Liberta.
+ * `contador`: o número no cartão no lugar do relógio.
+ */
+export function buffsDoCliente(estado) {
+  const h = estado?.hunt;
+  if (!h || !ligado()) return [];
+  const agora = h.clock ?? 0;
+  const saida = [];
+  for (const [nome, ate] of Object.entries(h.poeBuffs ?? {})) if (ate > agora && BUFFS[nome]) saida.push({ icone: null, nome: BUFFS[nome].nome, resta: ate - agora, tipo: 'buffPoe', buff: nome });
+  if (h.casca) saida.push({ icone: null, nome: 'Casca', resta: 0, tipo: 'casca', contador: h.casca.n, dica: `Casca: ${h.casca.n} de ${CASCA.maximo} (a Pele de Árvore — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente)` });
+  if (h.furiaLiberta?.n > 0) saida.push({ icone: null, nome: 'Fúria Liberta', resta: 0, tipo: 'furiaLiberta', contador: h.furiaLiberta.n, dica: `Fúria Liberta: ${h.furiaLiberta.n} de ${FURIA_LIBERTA.maximo} (com ${FURIA_LIBERTA.maximo}, o Avatar Liberto deixa Liberto por ${FURIA_LIBERTA.libertoS} s)` });
+  return saida;
+}
 
 // ---------------------------------------------------------------- a soma
 
@@ -710,6 +776,8 @@ export const BUFFS = {
   altarEsqueleticoMaior: { nome: 'Altar Esquelético Maior', altar: true, af: { phys_as_extra_chaos: 30, 'periodico:4:gatilho:convocar-esqueleto': 20 } },
   altarBrutalMenor: { nome: 'Altar Brutal Menor', altar: true, af: { chance_empurrar: 100, stun_duration: 20, dmg_inc: 20 } },
   altarMassivoMenor: { nome: 'Altar Massivo Menor', altar: true, af: { life_inc: 20, area_inc: 20 } },
+  // (14/10, o Warden: o Avatar Liberto deixa Liberto por 10 s — os efeitos são as linhas "… enquanto Liberto" do Avatar da Selva, `@buff:liberto`)
+  liberto: { nome: 'Liberto', af: {} },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
   ventoFavoravel: { nome: 'Vento Favorável', af: { atk_speed: 10, cast_speed: 10, move_speed: 10 } },
   // (o Inquisidor: "Fanatismo concede às magias conjuradas por você +75% de velocidade de conjuração, -75% de custo e área de efeito
@@ -745,6 +813,8 @@ export function altaresMudaram(estado, total = null) {
 export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0) {
   if (!hunt || !BUFFS[nome] || !(segundos > 0)) return;
   const b = (hunt.poeBuffs ??= {});
+  // (14/10: a ficha é refeita no tique — o buff ganho vale já, como o vencido sai: `tique`)
+  if (!(b[nome] > agora)) hunt.poeFichaMudou = true;
   b[nome] = Math.max(b[nome] ?? 0, agora + segundos * 1000);
   // "Remove todas as Afecções e Incêndios quando ao ganhar Adrenalina" (o Campeão/Gladiador): os danos contínuos de afecção em você
   // (Incêndio, Sangramento, Veneno, Eletrização, Resfriamento) e o Congelamento/Resfriamento do controle.
@@ -785,6 +855,19 @@ export function adds(estado, total = null) {
   if (of && of.ate > agoraT && Number(total?.oferenda_em_voce) > 0) {
     const f = Math.max(0, 1 - (Number(total?.oferenda_efeito_reduzido) || 0) / 100);
     for (const [k, v] of [['atk_speed', of.velAtaquePct], ['crit_chance_inc', of.critInc], ['crit_dmg', of.critMult], ['block', of.bloqueioPct], ['life_regen_max_pct', of.regenPct]]) if (v) saida[k] = (saida[k] ?? 0) + v * f;
+  }
+  // (14/10, o Warden) A CASCA da Pele de Árvore (`hunt.casca` — `tiqueDoWarden`): -60 de Dano Físico dos Acertos de Ataque por Casca e 4% mais
+  // chance de Evadir Ataques por Casca abaixo do máximo; a Lição das Estações: -25 de cada tipo de dano dos Acertos de Magia por Casca
+  // (`casca_magia_fixo`) e +3% do Dano Mágico Suprimido Impedido por Casca abaixo do máximo (`casca_supressao`).
+  const casca = estado?.hunt?.casca;
+  if (casca) {
+    const abaixo = CASCA.maximo - casca.n;
+    saida.physical_sofrido_ataque = (saida.physical_sofrido_ataque ?? 0) - CASCA.fisicoAtaquePorCasca * casca.n;
+    saida.chance_evadir_mais = (saida.chance_evadir_mais ?? 0) + CASCA.evadirMaisPorCascaAbaixo * abaixo;
+    const porMagia = Number(total?.casca_magia_fixo) || 0;
+    if (porMagia) for (const el of ELS) saida[`${el}_sofrido_magia`] = (saida[`${el}_sofrido_magia`] ?? 0) + porMagia * casca.n;
+    const supressao = Number(total?.casca_supressao) || 0;
+    if (supressao) saida.supressao_prevenida = (saida.supressao_prevenida ?? 0) + supressao * abaixo;
   }
   // (lote F) "Fúria Arcana também concede +X% de dano mágico a você".
   if (buffAtivo(estado, 'furiaArcana', total) && Number(total?.furia_arcana_dano_magico) > 0) saida.spell_dmg = (saida.spell_dmg ?? 0) + Number(total.furia_arcana_dano_magico);
@@ -1569,6 +1652,8 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate)) hunt.poeFichaMudou = true;
   tiqueDaFuria(hunt, agora);
   tiqueDasCargasFanaticas(hunt, ficha, agora);
+  // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto
+  tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
   // (ciclo 7) "Inimigos próximos do seu Inimigo Marcado são Cegados" (a até 2 casas dele).
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || !regraDaMarca(m, agora, 'cegaProximos')) continue;
@@ -2041,10 +2126,11 @@ export function armaduraNoElemento(ficha, elemento, golpe) {
   return Math.max(0, 1 - Formulas.reducaoDeArmaduraPoe(((ficha.armor ?? 0) * pct) / 100, golpe));
 }
 /** O dano FIXO a menos (ou a mais) por golpe: "-25 de Dano Físico sofrido dos Acertos de Ataques", "+N de Dano de Fogo sofrido quando acertado". */
-export function fixoRecebido(ficha, elemento, { ataque = false } = {}) {
+export function fixoRecebido(ficha, elemento, { ataque = false, magia = false } = {}) {
   if (!ligado() || !ficha?.afPoe) return 0;
   const v = (k) => Number(ficha.afPoe[k]) || 0;
-  return v(`${elemento}_sofrido_acerto`) + (ataque ? v(`${elemento}_sofrido_ataque`) : 0);
+  // (14/10: + o dos Acertos de MAGIA — a Lição das Estações: "-25 de dano sofrido de cada tipo de dano por ataques de magia por casca")
+  return v(`${elemento}_sofrido_acerto`) + (ataque ? v(`${elemento}_sofrido_ataque`) : 0) + (magia ? v(`${elemento}_sofrido_magia`) : 0);
 }
 /** O Caos atravessa o Escudo de Energia (regra do PoE), a menos que um único diga que não. */
 export const caosAtravessaOEscudo = (ficha) => ligado() && !((Number(ficha?.afPoe?.caos_nao_atravessa_escudo) || 0) > 0);

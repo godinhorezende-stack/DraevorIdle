@@ -6344,6 +6344,54 @@
       "unidade": "%",
       "combate": true,
       "efeito": "mods-poe: o altar aleatório (14/10)"
+    },
+    "pele_de_arvore": {
+      "nome": "Pele de Árvore (Casca)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tiqueDoWarden: a Casca (14/10)"
+    },
+    "avatar_liberto": {
+      "nome": "Avatar Liberto",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.tiqueDoWarden: Liberto com 100 de Fúria Liberta (14/10)"
+    },
+    "furia_liberta_por_afeccao": {
+      "nome": "Fúria Liberta por Afecção Elemental",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.ganharFuriaLiberta (14/10)"
+    },
+    "furia_liberta_nao_liberto": {
+      "nome": "Não ganha Fúria Liberta enquanto Liberto",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.ganharFuriaLiberta (14/10)"
+    },
+    "mais_dano_elemental": {
+      "nome": "Mais Dano Elemental",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorDoDanoElemental: a parte de Fogo, Gelo e Raio (14/10)"
+    },
+    "casca_magia_fixo": {
+      "nome": "Dano de Magia sofrido por Casca",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.adds: <tipo>_sofrido_magia por Casca (14/10)"
+    },
+    "casca_supressao": {
+      "nome": "Dano Mágico Suprimido Impedido por Casca abaixo do máximo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.adds: supressao_prevenida (14/10)"
+    },
+    "casca_perde_magia": {
+      "nome": "Cascas perdidas por Dano Mágico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado (14/10)"
     }
   }
 }

@@ -2945,7 +2945,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     session: sessaoParaCliente(hunt.sessao),
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
     // + as cargas do PoE ativas (Tolerância, Frenesi, Poder), como cartões de buff.
-    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado)],
+    // (+ 14/10: os buffs do PoE por nome — os altares, a Adrenalina, o Liberto —, a Casca e a Fúria Liberta: `ModsPoe.buffsDoCliente`)
+    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado), ...ModsPoe.buffsDoCliente(estado)],
     // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
     parados: Acoes.paradosParaCliente(hunt),
     condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),

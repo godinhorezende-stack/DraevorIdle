@@ -111,6 +111,11 @@ const IMPLEMENTADOS = [
     re: /^Ganha um buff de altar aleatório a cada|^Você tem o bônus do Altar Impenetrável/,
     jogo: 'os 13 altares do sorteio do PoE (Aceleração, Brutal, Diamante, Ecoante, Sombrio, Impenetrável, Massivo, Reabastecimento, Resistência, Carregado e os Maiores Congelante, Eletrizante e Esquelético — as Novas e os Esqueletos pelas gemas do jogo); a Harmonia do Propósito (um altar ao acaso a cada 10 s, por 20 s) e o Gritos dos Dessecados (o Altar Impenetrável sem frascos ativos); o efeito e a duração dos buffs de altar das peças',
   },
+  {
+    bloco: 'O Warden (lote 17)',
+    re: /Pele de Árvore|Avatar Liberto|Fúria Liberta|enquanto Liberto$|[Cc]asca/,
+    jogo: 'a Pele de Árvore (a Casca: +1 por segundo sem ser Acertado por um Ataque Recentemente, -1 por Ataque que acerta, até 10; -60 de Dano Físico dos Acertos de Ataque por Casca, 4% mais chance de Evadir por Casca abaixo do máximo); a Lição das Estações (-25 de cada tipo de dano dos Acertos de Magia por Casca, +3% do Dano Mágico Suprimido Impedido por Casca abaixo do máximo, -1 Casca por Dano Mágico); o Avatar Liberto (Fúria Liberta pelas Afecções Elementais; com 100, Liberto por 10 s: sempre Congela, Eletriza e Incendeia, 100% mais Dano Elemental) — as habilidades saem sozinhas; e o HUD mostra os buffs do PoE por nome, a Casca e a Fúria Liberta',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

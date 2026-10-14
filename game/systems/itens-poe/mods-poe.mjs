@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO } from './condicoes-poe.mjs';
+import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -338,13 +338,16 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
 
 /** O "X% do Dano de <elemento> sofrido é Recuperado como Vida" de cada elemento de golpe. */
 const RECOUP_DO_ELEMENTO = { physical: 'recoup_life_phys', fire: 'recoup_life_fire', ice: 'recoup_life_ice', energy: 'recoup_life_energy', chaos: 'recoup_life_chaos' };
-export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
+export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, ataque = false, magia = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
   if (!ligado() || !hunt || !ficha?.afPoe) return eventos;
   const v = (k) => valor(ficha, k);
   marcar(hunt, 'acertado', agora);
   if (dano > 0) marcar(hunt, 'dano', agora);
-  // (lote D) "Acertado por um Ataque Recentemente" (o golpe dos monstros que não é magia).
-  if (corpoACorpo) marcar(hunt, 'acertadoAtaque', agora);
+  // (lote D) "Acertado por um Ataque Recentemente" (o golpe dos monstros que não é magia — 14/10: o projétil de ataque também, `ataque`).
+  if (corpoACorpo || ataque) marcar(hunt, 'acertadoAtaque', agora);
+  // (14/10, o Warden: a Pele de Árvore perde 1 Casca no Ataque inimigo que acerta; a Lição das Estações, N no Dano Mágico)
+  if (corpoACorpo || ataque) perderCasca(hunt, 1, agora);
+  if (magia) perderCasca(hunt, v('casca_perde_magia'), agora);
   // O ATORDOAMENTO que este golpe pôs (`combate/controle.tentar` grava `desde`): as reações "quando Atordoado".
   const at = hunt.controle?.atordoado;
   if (at && at.desde === agora && !at.reagiu) {

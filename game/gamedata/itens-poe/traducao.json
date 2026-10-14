@@ -241,30 +241,89 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria Liberta .*$|^Não pode ganhar Fúria Liberta enquanto Liberto$|^Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto$|^\\d+% mais Dano Elemental enquanto Liberto$|^.*mais Dano Elemental enquanto Liberto$",
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada \\{(\\d+)\\} segundos por cada tipo de Afecção$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "furia_liberta_por_afeccao",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a habilidade Avatar Liberto (o Liberto e a Fúria Liberta)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote17": "14/10 — o Warden (lote 17)"
     },
     {
-      "padrao": "^.*por casca$|^.*por Casca abaixo do máximo$|^Perde \\{(\\d+)\\} Casca quando Acertado por Dano Mágico Inimigo$",
+      "padrao": "^Não pode ganhar Fúria Liberta enquanto Liberto$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "furia_liberta_nao_liberto",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Casca do Warden (quantas, como se ganha)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^Seus Acertos sempre infligem Congelamento, Eletrização e Incêndio enquanto Liberto$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@buff:liberto",
+          "valor": "100"
+        },
+        {
+          "stat": "chance_shock@buff:liberto",
+          "valor": "100"
+        },
+        {
+          "stat": "chance_ignite@buff:liberto",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano Elemental enquanto Liberto$",
+      "efeitos": [
+        {
+          "stat": "mais_dano_elemental@buff:liberto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de dano sofrido de cada tipo de dano por ataques de magia por casca$",
+      "efeitos": [
+        {
+          "stat": "casca_magia_fixo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^Impede \\+\\{(\\d+)\\}% do Dano Mágico Suprimido por Casca abaixo do máximo$",
+      "efeitos": [
+        {
+          "stat": "casca_supressao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
+    },
+    {
+      "padrao": "^Perde \\{(\\d+)\\} Casca quando Acertado por Dano Mágico Inimigo$",
+      "efeitos": [
+        {
+          "stat": "casca_perde_magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)"
     },
     {
       "padrao": "^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$",
@@ -17027,6 +17086,30 @@
       "nota": "nenhum monstro do jogo faz isso no personagem",
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^Concede a Habilidade Pele de Árvore Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "pele_de_arvore",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Casca — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente, perde 1 por Ataque que acerta, até 10; -60 de Dano Físico dos Acertos de Ataque por Casca e 4% mais chance de Evadir Ataques por Casca abaixo do máximo (o nível 20 do PoE)"
+    },
+    {
+      "padrao": "^Concede a Habilidade Avatar Liberto Nível \\{(\\d+)\\}$",
+      "efeitos": [
+        {
+          "stat": "avatar_liberto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote17": "14/10 — o Warden (lote 17)",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): com 100 de Fúria Liberta, Liberto por 10 segundos"
     },
     {
       "padrao": "^Concede (?:a |à )?[Hh]abilidade (.+?) [Nn]ível \\{(\\d+)\\}$",
