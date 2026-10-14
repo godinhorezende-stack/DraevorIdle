@@ -813,8 +813,12 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   // (13/10, a Égide Necromântica: "Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você" — a defesa da base do escudo
   // também sai de você; os lacaios do jogo não têm armadura/evasão/escudo próprios: ela não vai a ninguém.)
   const semEscudo0 = Afixos.ehEgideComEscudo(estado, af) ? estado.equipment.shield : null;
+  // (13/10, A Apóstata: "Ganhe Vida Máxima ao invés de Escudo de Energia Máximo dos Itens de Proteção Equipados") o escudo das peças de
+  // armadura não entra aqui: vira Vida (`Afixos.vidaDasArmaduras`).
+  const esEmVida = Afixos.esDasArmadurasEmVida(af);
+  const fora = (p, campo) => !p || p === semEscudo0 || (esEmVida && campo === 'es' && Afixos.ehPecaDeArmadura(p));
   const somaDoCampo = (campo) => Object.values(estado.equipment ?? {}).reduce((n, p) => {
-    if (!p || p === semEscudo0) return n;
+    if (fora(p, campo)) return n;
     const [a, b] = faixaDoCampo(p, campo);
     return n + (a + b) / 2;
   }, 0);
@@ -827,7 +831,7 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const daPeca = (campo, chaves, total) => (total > 0 ? Object.entries(chaves).reduce((n, [slot, ks]) => {
     const p = estado.equipment?.[slot];
     const pct = ks.reduce((s, k) => s + (Number(af[k]) || 0), 0);
-    if (!p || !pct || p === semEscudo0) return n;
+    if (!pct || fora(p, campo)) return n;
     const [a, b] = faixaDoCampo(p, campo);
     return n + ((a + b) / 2) * pct / 100;
   }, 0) : 0);
@@ -998,7 +1002,7 @@ export function tetoDoRouboPct(ficha, recurso) {
 }
 const CAMPO_DO_ROUBO = { vida: 'hp', mana: 'mana', es: 'es' };
 const COR_DO_ROUBO = { vida: '#00ff66', mana: '#4fc3ff', es: '#8fd3ff' };
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0, semDrenoDeVida = 0, semDrenoDeEs = 0 } = {}) {
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true, danoCritico = 0, danoVezesMaldicoes = 0, semDrenoDeVida = 0, semDrenoDeEs = 0, danoFisico = 0 } = {}) {
   // (PoE, os únicos: "X% do Dano de Golpes Críticos é Drenado como Vida" — `roubo_vida_critico`, sobre a parte do dano que veio de crítico —
   // e "Não pode Drenar Vida com Golpes Críticos" — `sem_roubo_vida_critico`: essa parte não drena.)
   const critico = itensPoeLigado() ? Math.min(Math.max(0, Number(danoCritico) || 0), Math.max(0, danoTotal)) : 0;
@@ -1031,8 +1035,13 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
   // (PoE, únicos: "Não Pode Drenar Vida/Mana".)
-  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(Math.max(0, paraVida - (semCritico ? critico : 0)) * ((ficha.lifeLeech ?? 0) + doCharm.vida) + vidaDoCritico);
-  const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
+  // (13/10, PoE: "X% do Dano de Ataques Físicos é Drenado como Vida/Mana" — só a parte FÍSICA do ataque, `danoFisico`; a do monstro que não
+  // pode ser drenado já saiu de `paraVida`, na proporção.)
+  const fisico = itensPoeLigado() && ataque ? Math.min(Math.max(0, Number(danoFisico) || 0), Math.max(0, danoTotal)) * (danoTotal > 0 ? paraVida / danoTotal : 0) : 0;
+  const vidaDoFisico = (fisico * ModsPoe.valor(ficha, 'life_leech_fisico_ataque')) / 100;
+  const manaDoFisico = itensPoeLigado() && ataque ? (Math.min(Math.max(0, Number(danoFisico) || 0), Math.max(0, danoTotal)) * ModsPoe.valor(ficha, 'mana_leech_fisico_ataque')) / 100 : 0;
+  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(Math.max(0, paraVida - (semCritico ? critico : 0)) * ((ficha.lifeLeech ?? 0) + doCharm.vida) + vidaDoCritico + vidaDoFisico);
+  const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana) + manaDoFisico);
   if (itensPoeLigado()) {
     // "X% do Dano é Drenado como Escudo de Energia" (de todo dano — o ataque também; o "Dano Mágico", `es_leech_magia`, só nas magias, acima).
     drenarPoe(estado, { vida, mana, es: (paraEs * ModsPoe.valor(ficha, 'es_leech')) / 100 }, ficha, eventos, quem, pos);

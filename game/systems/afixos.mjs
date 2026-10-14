@@ -23,7 +23,7 @@ import * as Gemas from './gemas.mjs';
 // de cada atributo passa a ser a dele — ver `systems/itens/config.mjs`.
 import * as ItensConfig from './itens/config.mjs';
 import * as Gerar from './itens/gerar.mjs';
-import { raridadeDaPeca } from './itens/item.mjs';
+import { raridadeDaPeca, faixaDoCampo } from './itens/item.mjs';
 import { gruposLigados } from '../engine/sockets-de-gema.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
@@ -146,6 +146,12 @@ export function soma(estado) {
   for (const [k, v] of Object.entries(daArvore)) total[k] = (total[k] ?? 0) + v;
   // (13/10) a Égide Necromântica: o escudo vai para os lacaios.
   if (ehEgideComEscudo(estado, total)) passarOEscudoAosLacaios(estado, total);
+  // (13/10) a penalidade de movimento da BASE das armaduras (peitorais e escudos: `move_speed_armadura` — `itens-poe/jogo.afDaBase`) entra
+  // no movimento, menos com a Arte do Gladiador ("Penalidades de Movimento das Armaduras são Ignoradas").
+  if (total.move_speed_armadura) {
+    if (!(Number(total.ignora_penalidade_armadura) > 0)) total.move_speed = (total.move_speed ?? 0) + total.move_speed_armadura;
+    delete total.move_speed_armadura;
+  }
   // (ciclo 7, lote F) "Bônus recebidos da Aljava Equipada aumentado em X%": a aljava (o espaço do escudo) soma X% a mais do que ela dá. (A
   // linha nas PEÇAS já multiplica a aljava no `somaDeItens`; aqui, só a da ÁRVORE.)
   const aljava = estado.equipment?.shield;
@@ -261,9 +267,28 @@ const DO_ESCUDO_PARA_O_LACAIO = {
   block: 'minion_block', spell_block: 'minion_spell_block', fire_res: 'minion_fire_res', ice_res: 'minion_ice_res', energy_res: 'minion_energy_res',
   chaos_res: 'minion_chaos_res', life_inc: 'minion_life', dmg_inc: 'minion_dmg', atk_speed: 'minion_atk_speed', cast_speed: 'minion_cast_speed',
   crit_chance_inc: 'minion_crit_inc', crit_dmg: 'minion_crit_mult', move_speed: 'minion_move', life_regen: 'minion_regen', life_regen_max_pct: 'minion_regen_pct',
-  life_leech: 'minion_leech',
+  life_leech: 'minion_leech', move_speed_armadura: 'minion_move',
 };
 export const ehEgideComEscudo = (estado, total) => itensPoeLigado() && Number(total?.egide_necromantica) > 0 && estado?.equipment?.shield?.poe?.classe === 'Shields';
+
+/**
+ * (13/10) As PEÇAS DE ARMADURA do PoE (os "Itens de Proteção": peitoral, elmo, luvas, botas e escudo — a aljava não) e A APÓSTATA (o nó da
+ * Caçadora de Relíquias e o único O Apóstata: "Ganhe Vida Máxima ao invés de Escudo de Energia Máximo dos Itens de Proteção Equipados"): o
+ * Escudo de Energia da base de cada uma (com os locais e a qualidade — `faixaDoCampo`, a média da faixa) vira VIDA fixa, que os aumentos de
+ * Vida aumentam (`sincronizarMaximos`), e sai do Escudo (`Ficha.defesasDaFicha`). O escudo da Égide Necromântica não conta (vai aos lacaios).
+ * `vidaDasArmaduras`: a Vida que isso dá agora (0 sem a linha). (As classes: as da aba "Armaduras" do filtro — `CLASSES_DE_ARMADURA`.)
+ */
+export const ehPecaDeArmadura = (p) => CLASSES_DE_ARMADURA.has(p?.poe?.classe);
+export const esDasArmadurasEmVida = (af) => itensPoeLigado() && Number(af?.es_das_armaduras_em_vida) > 0;
+export function vidaDasArmaduras(estado, total) {
+  if (!esDasArmadurasEmVida(total)) return 0;
+  const semEscudo = ehEgideComEscudo(estado, total) ? estado.equipment.shield : null;
+  return Math.round(Object.entries(estado?.equipment ?? {}).reduce((n, [slot, p]) => {
+    if (slot === 'backpack' || !ehPecaDeArmadura(p) || p === semEscudo) return n;
+    const [a, b] = faixaDoCampo(p, 'es');
+    return n + (a + b) / 2;
+  }, 0));
+}
 function passarOEscudoAosLacaios(estado, total) {
   const doEscudo = somarPeca({}, estado, 'shield', estado.equipment.shield);
   for (const [k, v] of Object.entries(doEscudo)) {
@@ -721,11 +746,13 @@ export function sincronizarMaximos(estado) {
   // + a "Vida máxima aumentada em X%" das peças do PoE (`life_inc`).
   const lifePct = (Especializacoes.efeitos(estado).stats.life ?? 0) + (t.life_inc ?? 0);
   const base = R.statsBase(estado.vocation, estado.level ?? 1);
-  const vidaSemPct = base.maxHp + (t.life ?? 0) + doAtributo.vida;
+  // (13/10, A Apóstata) + o Escudo de Energia das armaduras, como Vida fixa (antes dos aumentos — `vidaDasArmaduras`).
+  const daApostata = vidaDasArmaduras(estado, t);
+  const vidaSemPct = base.maxHp + (t.life ?? 0) + daApostata + doAtributo.vida;
   // + a Mana % (a árvore do PoE: "Mana máxima aumentada em X%"), do mesmo jeito da Life %. Nada do Draevor dá Mana %: sem ela, nada muda.
   const manaPct = (Especializacoes.efeitos(estado).stats.mana ?? 0) + (t.mana_inc ?? 0);
   const manaSemPct = base.maxMana + (t.mana ?? 0) + doAtributo.mana;
-  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
+  const quer = { hp: Math.round((t.life ?? 0) + daApostata + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
   // (09/10) "X% MAIS Vida Máxima" (a maestria de vida da árvore: `life_more`): multiplica a vida inteira.
   const maisVida = itensPoeLigado() ? Number(t.life_more) || 0 : 0;
   if (maisVida) quer.hp = Math.round((base.maxHp + quer.hp) * (1 + maisVida / 100) - base.maxHp);

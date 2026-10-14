@@ -115,6 +115,8 @@ export function parametros(peca, afDoPersonagem = null) {
   const n = (k) => Number(pp[k]) || 0;
   p.quantidadePct += tipo === 'vida' ? n('frasco_vida_rec') : tipo === 'mana' ? n('frasco_mana_rec') : 0;
   if (tipo === 'utilidade') { p.duracaoPct += n('frasco_duracao'); p.efeitoPct += n('frasco_efeito'); }
+  // (13/10, a Dádiva da Natureza: "Frascos Utilitários Mágicos aplicados em você têm Efeito aumentado em X%" — só os Mágicos)
+  if (tipo === 'utilidade' && poe.raridade === 'magico') p.efeitoPct += n('frasco_efeito_magico');
   p.custoPct -= n('frasco_cargas_usadas_red');
   // (ciclo 7, lote F) "Velocidade de Recuperação dos Frascos aumentada em X%".
   p.velocidadePct += n('frasco_velocidade');

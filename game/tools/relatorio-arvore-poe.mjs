@@ -86,6 +86,26 @@ const IMPLEMENTADOS = [
     re: /mais Área de Efeito enquanto empunhando|menos Vida Recuperada de Frascos|de dano degenerativo com habilidades mágicas|(mais|menos) Duração do Efeito de Habilidades/,
     jogo: 'o "X% mais/menos" multiplica em vez de somar ao aumentado: a Área de Efeito (as habilidades, as auras, o Convocar o Aço), a Duração do Efeito de Habilidades (os buffs, os Vínculos, as Runas, a Proteção de Aço), a Vida Recuperada dos Frascos e o dano degenerativo das magias (o "mais" de verdade, o da Crueldade)',
   },
+  {
+    bloco: 'Correções das notas (lote 12)',
+    re: /^Arauto Trovejante tem|Itens de Proteção Equipados|Penalidades de Movimento das Armaduras|^Remove toda a mana$|^10% mais Vida Máxima$|^Habilidades (Custam|Reservam) Vida ao invés de [mM]ana$/,
+    jogo: 'o Efeito do Buff do Arauto Trovejante só nele (valia em todos os Arautos — e no único Cravo de Fidelitas); a Eficácia da Reserva dele (a gema está no jogo: o montador da árvore passou a carregar as gemas); A Apóstata (o nó e o único: o Escudo de Energia das armaduras vira Vida; o peitoral sem o Escudo da base); a Arte do Gladiador (a penalidade de movimento de peitorais e escudos ignorada); a Magia Sanguínea igual ao PoE (o "10% mais Vida" multiplica; a reserva de vida já existia, a nota estava errada); e o "Sem Dano Físico" dos únicos, que refazer a peça devolvia',
+  },
+  {
+    bloco: 'Parciais exatos (lote 13)',
+    re: /^Remove todas as Afecções Danificadoras quando você Clamar$|^Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida$|^Remove uma Afecção aleatória de você quando você consumir|^Inimigos Não Amaldiçoados que você inflija|Garras na Mão Secundária$|se você usou um Frasco de Mana nos últimos|se a Recarga do Escudo de Energia iniciou nos últimos|se você usou um Frasco de Vida nos últimos|durante o Efeito de qualquer Frasco de Mana$|^Frascos de Vida ganham|^Frascos Utilitários Mágicos aplicados em você|Aliados próximos dos seus Estandartes Regeneram|^Você e seus Totens Regeneram|^Habilidades que causaram um Golpe Crítico nos últimos 8 segundos|^Seus Golpes Críticos não causam Dano extra$|^Afecções nunca contam como sendo de um Golpe Crítico$|de Dano Físico, Gelo e Raio Convertidos para Dano de Fogo$|^Não causa Dano que não seja de Fogo$|^Não Evade Ataques inimigos$|^Não pode ser Atordoado$/,
+    jogo: 'os Clamores tiram todas as afecções de dano; o Frasco de Vida tira uma afecção não elemental (Sangramento ou Veneno) ao acaso; o Estandarte, qualquer uma ao acaso; a maldição que não é aura Cega só quem não estava amaldiçoado; o Mana por acerto só com a Garra na mão secundária; os prazos exatos ("nos últimos 10/2 segundos") e os frascos certos (de Vida, de Mana, os Utilitários Mágicos); a regeneração do Inspirador nos aliados na área do Estandarte e a do Ritual do Despertar nos totens; a Sobrecarga Elemental (40% mais dano elemental só na habilidade que causou um crítico nos últimos 8 s; as afecções nunca de crítico); o Avatar do Fogo (Gelo e Raio também viram Fogo, e só o Fogo causa dano); a Postura Inabalável (imune só a Atordoamento)',
+  },
+  {
+    bloco: 'Parciais médios (lote 14)',
+    re: /da Mana por \d+ segundos? quando você usar uma Habilidade de Guarda$|do Dano de Ataques Físicos é Drenado como (Vida|Mana)$|^Exposição a (Fogo|Gelo|Raio) infligida por você aplica|^Envenenamentos infligidos por você causam Dano|^Efeito de Auras Não-Maldição de suas Habilidades aumentado em/,
+    jogo: 'a mana da Maestria de Mana volta ao longo do tempo (no clamor de Guarda); o dreno do "Dano de Ataques Físicos" só da parte física dos ataques (antes, de todo o dano — os anéis e amuletos com essa linha também); o "-X% extra" das Maestrias de Fogo/Gelo/Raio também na Exposição das gemas, das auras e dos Vínculos; o veneno "X% mais rápido" só no Veneno (antes, todas as afecções de dano); a Pândega (a marca do Orgulho nos inimigos, maior pelo efeito)',
+  },
+  {
+    bloco: 'O Congelamento do PoE e a Geada (lote 15)',
+    re: /^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$/,
+    jogo: 'o Congelamento que você põe segue o dano de Gelo do acerto, como no PoE (60 ms por 1% da vida do monstro, até 3 s, × a Duração aumentada; abaixo de 0,3 s não congela — antes, 1,5 s fixos); a Geada do Juramento do Inverno (o acerto que falha em Congelar por duração curta: 10 s, acumula, +20% de Duração do Congelamento por Geada, sai ao Congelar); "Congela … como se causasse X% mais Dano" no dano da conta',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */
@@ -93,7 +113,9 @@ export function linhasDaArvore(arvore) {
   const saida = [];
   for (const n of Object.values(arvore.nos ?? {})) {
     const pegar = (o, maestria) => (o.textos ?? []).forEach((texto, i) => saida.push({
-      id: n.id, no: n.nome, tipo: n.tipo, asc: n.ascendencia ?? null, maestria, texto, estado: o.estados?.[i] ?? null, nota: o.notas?.[i] ?? null,
+      // (a linha da keystone aproximada: a nota é a da keystone — `keystone.nota`, que o balão mostra.)
+      id: n.id, no: n.nome, tipo: n.tipo, asc: n.ascendencia ?? null, maestria, texto, estado: o.estados?.[i] ?? null,
+      nota: o.notas?.[i] ?? (o.estados?.[i] === 'aproximado' ? n.keystone?.nota : null) ?? null,
     }));
     pegar(n, false);
     for (const op of n.opcoes ?? []) pegar(op, true);

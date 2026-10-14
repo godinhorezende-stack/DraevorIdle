@@ -89,9 +89,10 @@ function aplicarDoPoe(ficha, id, principais, estado) {
       break;
     }
     case 'posturaInabalavel':
-      // Não evade; não pode ser atordoado (no Draevor: o teto da resistência a controle).
+      // Não evade; não pode ser Atordoado — só o Atordoamento, como no PoE (13/10: antes, o teto da resistência a todo controle, o Congelamento
+      // e o Resfriamento também): a imunidade do controle do PoE (`ModsPoe.controleNoJogador`, `imune_atordoamento`).
       ficha.evasion = 0;
-      ficha.resistenciaAControle = Math.max(ficha.resistenciaAControle ?? 0, ficha.limites?.resistenciaAControle ?? 75);
+      ficha.afPoe = { ...(ficha.afPoe ?? {}), imune_atordoamento: Math.max(1, Number(ficha.afPoe?.imune_atordoamento) || 0) };
       break;
     case 'tecnicaResoluta':
       // Os acertos não podem ser evadidos; nunca crítico.
@@ -112,14 +113,12 @@ function aplicarDoPoe(ficha, id, principais, estado) {
       }
       break;
     }
-    case 'sobrecargaElemental': {
-      // Golpes críticos sem dano extra; 40% mais dano elemental (aqui sempre ligado).
+    case 'sobrecargaElemental':
+      // Golpes críticos sem dano extra; as afecções nunca "de crítico"; e 40% MAIS dano elemental na habilidade que causou um crítico nos
+      // últimos 8 s (13/10 — antes, +40% aumentado sempre ligado): `ModsPoe.fatorDaSobrecarga` lê esta marca.
       ficha.critMultiplier = 1;
-      const d = { ...(ficha.danoDoElemento ?? {}) };
-      for (const el of ['fire', 'ice', 'energy']) d[el] = (d[el] ?? 0) + 40;
-      ficha.danoDoElemento = d;
+      ficha.sobrecargaElemental = true;
       break;
-    }
     case 'golpesReveladores':
       // Chance de bloquear dobrada (até 75%); o golpe bloqueado ainda causa 65% (no combate).
       for (const k of ['blockChance', 'blockChanceMin', 'blockChanceMax']) if (NUMERO(ficha[k])) ficha[k] = Math.min(BLOQUEIO_MAXIMO, ficha[k] * 2);

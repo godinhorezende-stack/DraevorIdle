@@ -6254,6 +6254,78 @@
       "unidade": "%",
       "combate": true,
       "efeito": "o mais e o menos exatos (multiplicam) (13/10)"
+    },
+    "es_das_armaduras_em_vida": {
+      "nome": "Vida no lugar do Escudo de Energia das Armaduras",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Escudo de Energia das peças de armadura vira Vida (afixos.sincronizarMaximos, ficha.defesasDaFicha) (13/10)"
+    },
+    "sem_es_da_base": {
+      "nome": "Sem Escudo de Energia na base",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a peça não tem o Escudo de Energia da base (itens-poe/jogo — O Apóstata) (13/10)"
+    },
+    "ignora_penalidade_armadura": {
+      "nome": "Ignora as Penalidades de Movimento das Armaduras",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afixos.soma não soma move_speed_armadura (13/10)"
+    },
+    "move_speed_armadura": {
+      "nome": "Penalidade de Movimento da Armadura",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a da base de peitorais e escudos (itens-poe/jogo.afDaBase), somada ao movimento em afixos.soma (13/10)"
+    },
+    "frasco_efeito_magico": {
+      "nome": "Efeito dos Frascos Utilitários Mágicos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "frascos.parametros: só os de Utilidade de raridade Mágica (13/10)"
+    },
+    "totem_regen_pct_por_totem": {
+      "nome": "Regeneração de Vida dos Totens por Totem",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os totens regeneram X% da vida por segundo por totem convocado (cacadas, o tique dos lacaios) (13/10)"
+    },
+    "veneno_mais_rapido": {
+      "nome": "Envenenamentos causam Dano mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes: só o Veneno (13/10)"
+    },
+    "life_leech_fisico_ataque": {
+      "nome": "Dano de Ataques Físicos Drenado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech: só a parte física dos ataques (13/10)"
+    },
+    "mana_leech_fisico_ataque": {
+      "nome": "Dano de Ataques Físicos Drenado como Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech: só a parte física dos ataques (13/10)"
+    },
+    "aura_efeito_nos_inimigos": {
+      "nome": "Efeito de Auras Não-Maldição nos Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "reforcos.marcar: a marca das auras (o Orgulho) nos inimigos (13/10)"
+    },
+    "geada_ao_falhar_congelar": {
+      "nome": "Geada ao falhar em Congelar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afeccoes: o acerto que falhar em Congelar por duração insuficiente inflige Geada (14/10)"
+    },
+    "congelamento_como_mais": {
+      "nome": "Congela como se causasse mais Dano",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes.msDoCongelamento: o Gelo da conta × (1 + X%) (14/10)"
     }
   }
 }

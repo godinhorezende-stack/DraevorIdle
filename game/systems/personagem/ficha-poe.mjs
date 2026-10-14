@@ -62,12 +62,15 @@ export function montar(estado, ficha, extras = {}) {
     fonte: /^Árvore: /.test(f.especializacao) ? `${f.especializacao} (+${num(f.pct, 1)}%)` : `Especialização do ${nomeDaVocacao} — ${f.especializacao} (+${num(f.pct, 1)}%)`,
     valor: r2((semPct * f.pct) / 100),
   }));
-  const vidaSemPct = base.maxHp + (total.life ?? 0) + doAtributo.vida;
+  // (13/10, A Apóstata: o Escudo de Energia das armaduras vira Vida fixa — `Afixos.vidaDasArmaduras`.)
+  const daApostata = Afixos.vidaDasArmaduras(estado, total);
+  const vidaSemPct = base.maxHp + (total.life ?? 0) + daApostata + doAtributo.vida;
   const manaSemPct = base.maxMana + (total.mana ?? 0) + doAtributo.mana;
   const vida = partes(estado.maxHp ?? 0, [
     ...fonte(`Nível ${estado.level ?? 1} (base)`, base.maxHp),
     ...fonte(`Força (${p.str})`, doAtributo.vida),
     ...fonte('Equipamento', itens.life),
+    ...fonte('Escudo de Energia das armaduras (A Apóstata)', daApostata),
     ...fonte('Árvore de passivas', arv.adds.life),
     ...emPontos('life', vidaSemPct),
     ...fonte('Gem Atelier (gemas do Draevor)', estado.gemasMax?.hp ?? 0),
@@ -88,7 +91,8 @@ export function montar(estado, ficha, extras = {}) {
   const manaPct = (esp.stats.mana ?? 0);
 
   // ---- Escudo de Energia: a base das peças, o "+N" e o "aumentado em %" (equipamento, árvore e a Inteligência)
-  const esDasPecas = Object.values(estado.equipment ?? {}).reduce((n, pc) => n + (pc?.base?.es ? (pc.base.es[0] + pc.base.es[1]) / 2 : 0), 0);
+  const esEmVida = Afixos.esDasArmadurasEmVida(total);
+  const esDasPecas = Object.values(estado.equipment ?? {}).reduce((n, pc) => n + (pc?.base?.es && !(esEmVida && Afixos.ehPecaDeArmadura(pc)) ? (pc.base.es[0] + pc.base.es[1]) / 2 : 0), 0);
   const esPct = (total.es_pct ?? 0) + (doAtributo.energyShieldPct ?? 0);
   const es = [
     ...fonte('Base das peças vestidas', esDasPecas),

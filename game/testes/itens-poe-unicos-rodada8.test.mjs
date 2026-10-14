@@ -265,7 +265,8 @@ test('lote C: as frases viram os atributos', { skip: SEM }, () => {
     'Incêndios infligidos com esta Arma causam {0}% mais Dano': ['incendio_mais'],
     'ㅤ{0}% de duração dos seus incêndios': ['duracao_incendio'],
     'Incêndios infligidos por você com esta arma se alastram para outros inimigos em até {0} metros': ['ev:incendiar:espalhar:incendioRaio'],
-    'Congela Inimigos Resfriados como se causasse {0}% mais Dano': ['duracao_congelamento@alvoResfriado'],
+    // (dono, 14/10, "Ajustar a linha": com o Congelamento do PoE, o "mais Dano" entra no Gelo da conta — congelamento-geada-poe)
+    'Congela Inimigos Resfriados como se causasse {0}% mais Dano': ['congelamento_como_mais@alvoResfriado'],
     'Sacrifício Eterno': ['sacrificio_eterno'],
     'Você sofre Dano de Caos ao invés de Dano Físico do Sangramento': ['sangramento_em_caos'],
     'Sofrer Dano de Caos Degenerativo te cura ao invés enquanto Drenando Vida': ['caos_degen_cura_drenando'],

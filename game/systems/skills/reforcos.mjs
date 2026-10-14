@@ -38,7 +38,8 @@ export function ativos(hunt, agora = hunt?.clock ?? Date.now()) {
   for (const [id, b] of Object.entries(hunt?.buffs ?? {})) {
     if (!(b.ate > agora)) continue;
     const def = REFORCOS[id];
-    if (def) lista.push({ id, def: b.efeitosPoe ? { ...def, efeitos: b.efeitosPoe } : def, fator: b.fator ?? 1, lancado: b.desde ?? 0 });
+    // (`emAura`: a maldição lançada como aura — a Blasfêmia, que reserva; a gema de maldição comum não reserva.)
+    if (def) lista.push({ id, def: b.efeitosPoe ? { ...def, efeitos: b.efeitosPoe } : def, fator: b.fator ?? 1, lancado: b.desde ?? 0, emAura: !!b.reserva });
   }
   return lista;
 }
@@ -161,7 +162,8 @@ export function treinoDeOutraPericia(estado, hunt, tags) {
 export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
   const tinha = amaldicoado(bicho, agora);
   let amaldicoou = false;
-  for (const { id, def, fator, lancado } of ativos(hunt, agora)) {
+  let naoAura = false;
+  for (const { id, def, fator, lancado, emAura } of ativos(hunt, agora)) {
     if (ehMaldicao(def)) {
       const efeitos = [];
       let dur = 0;
@@ -197,6 +199,7 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
         // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
         ...(regras.daMarca ? { daMarca: regras.daMarca } : {}) };
       amaldicoou = true;
+      if (!emAura) naoAura = true;
       // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
       if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
         const af = afDaMaldicaoNoJogador(efeitos);
@@ -204,12 +207,16 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       }
       continue;
     }
+    // (13/10, a Pândega: a marca de uma AURA — o Orgulho — nos inimigos × (1 + "Efeito de Auras Não-Maldição nos Inimigos"), a foto do tique.)
+    const nosInimigos = def.tipo === 'poe-aura' ? 1 + (Number(hunt?.poeAuraNosInimigosPct) || 0) / 100 : 1;
     for (const e of def.efeitos ?? []) {
-      if (e.efeito === 'marcaVulneravel') (bicho.marcas ??= {}).vulneravel = { ate: agora + e.durMarca, pct: e.pct * fator, tipos: e.tipos };
-      if (e.efeito === 'marcaEnfraquece') (bicho.marcas ??= {}).enfraquecido = { ate: agora + e.durMarca, pct: e.pct * fator };
+      if (e.efeito === 'marcaVulneravel') (bicho.marcas ??= {}).vulneravel = { ate: agora + e.durMarca, pct: e.pct * fator * nosInimigos, tipos: e.tipos };
+      if (e.efeito === 'marcaEnfraquece') (bicho.marcas ??= {}).enfraquecido = { ate: agora + e.durMarca, pct: e.pct * fator * nosInimigos };
     }
   }
-  return { amaldicoouSemMaldicao: amaldicoou && !tinha };
+  // (13/10) `semMaldicaoNaoAura`: amaldiçoou um inimigo sem maldição com uma que não é aura ("Inimigos Não Amaldiçoados que você inflija
+  // Maldições não Auras são Cegados" — a Maestria de Maldições).
+  return { amaldicoouSemMaldicao: amaldicoou && !tinha, semMaldicaoNaoAura: naoAura && !tinha };
 }
 
 /** Quanto a marca de vulnerável (e as maldições) aumentam o dano do `tipo` neste bicho (1 = nada). */

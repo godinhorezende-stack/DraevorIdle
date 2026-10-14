@@ -60,11 +60,14 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
   const prender = (nome, base, minimoMs = 0, extra = null) => {
     const dur = Math.max(duracaoNo(bicho, base), minimoMs);
     estados[nome] = { ate: agora + dur, ...(extra ?? {}) };
+    if (nome === 'congelado') delete estados.geada;
     estados.controleImuneAte = agora + dur + (cfg.controle?.imunidade ?? 0);
     postos.push(nome);
   };
   // (`congelarDuracaoPct`: a "Duração do Congelamento em Inimigos aumentada" do PoE.)
-  if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', (cfg.congelado?.duracao ?? 1500) * (1 + (efeito.congelarDuracaoPct ?? 0) / 100), efeito.congelarMinimoMs ?? 0, efeito.resfriarAoDescongelar > 0 ? { resfriarAoSair: efeito.resfriarAoDescongelar } : null);
+  // (PoE, 14/10: `congelarMs` — a duração já pela conta do PoE, o dano de Gelo do acerto e a Duração aumentada — `itens-poe/afeccoes`; congelar
+  // tira as Geadas do alvo.)
+  if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', efeito.congelarMs > 0 ? efeito.congelarMs : (cfg.congelado?.duracao ?? 1500) * (1 + (efeito.congelarDuracaoPct ?? 0) / 100), efeito.congelarMinimoMs ?? 0, efeito.resfriarAoDescongelar > 0 ? { resfriarAoSair: efeito.resfriarAoDescongelar } : null);
   // (`imuneAtordoamento`: o mapa do endgame com "Monstros não podem ser Atordoados".)
   else if (podeControlar && !bicho.imuneAtordoamento && efeito.atordoarChance > 0 && rng() * 100 < efeito.atordoarChance) prender('atordoado', cfg.atordoado?.duracao ?? 1500);
 

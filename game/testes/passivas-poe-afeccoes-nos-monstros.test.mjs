@@ -117,7 +117,8 @@ test('RESFRIAMENTO: o mínimo (a maestria real), o máximo de 40% e o "reduz o D
 test('CONGELAMENTO: "continuam Congelados por ao menos 2 segundos" (o Warden), "Resfriados ao Descongelarem" e o dano PERMANENTE por segundo Congelado/Resfriado (nós reais)', { skip: SEM }, () => {
   const w = naAscendencia(/^congelamento_minimo_s$/);
   const b = bicho();
-  acertar(w, b, [{ elemento: 'ice', dano: 1 }], { crit: true });
+  // (dono, 14/10, "Ajustar o dano": pelo Congelamento do PoE, 1% da vida em Gelo não congela — 5% dá 0,3 s, e o mínimo de 2 s vale)
+  acertar(w, b, [{ elemento: 'ice', dano: 5 }], { crit: true });
   assert.ok(b.estados.congelado.ate - 1000 >= 2000, `${b.estados.congelado.ate - 1000} ms`);
   // ao descongelar, o Resfriamento
   const d = com(/^resfriar_ao_descongelar$/);

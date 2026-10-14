@@ -270,14 +270,13 @@
       "padrao": "^Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "geada_ao_falhar_congelar",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a Geada (o Congelamento curto demais que vira Geada)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote15": "14/10 — o Congelamento do PoE e a Geada (lote 15)"
     },
     {
       "padrao": "^Inflige Chama Santificada ao atingir corpo a corpo$|^Você pode infligir \\+?\\{(\\d+)\\} Chama Santificada nos inimigos$|^Ganha .* Chamas Santificadas que foram removidas .*$|^Intensidade de Chama Santificada infligida por você aumentada em .*$",
@@ -423,17 +422,16 @@
       "_lote10": "13/10 — os lacaios (lote 10)"
     },
     {
-      "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em .* nos Inimigos$",
+      "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em \\{(\\d+)\\}% nos Inimigos$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "aura_efeito_nos_inimigos",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o efeito das auras das gemas nos inimigos",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Ataques têm .* de Poder Arcano ao usar uma varinha$",
@@ -1076,10 +1074,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "tira o dano contínuo mais antigo em você",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Recupera \\{(\\d+)\\}% da Vida por cada \\{(\\d+)\\} de Valor consumido para plantar um Estandarte$",
@@ -1153,12 +1150,15 @@
         {
           "stat": "life_regen_max_pct%valorDoEstandarte@estandarteAtivo",
           "valor": "{1}"
+        },
+        {
+          "stat": "aliados_estandarte:life_regen_max_pct%valorDoEstandarte",
+          "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em você (na área do Estandarte plantado); nos aliados ainda não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Mover enquanto Sangrando faz com que você não sofra Dano extra$",
@@ -2022,12 +2022,15 @@
         {
           "stat": "life_regen_max_pct%lacaio:totem",
           "valor": "{1}"
+        },
+        {
+          "stat": "totem_regen_pct_por_totem",
+          "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a regeneração vale em você; a dos totens ainda não",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional por Lacaio, até \\{(\\d+)\\}%$",
@@ -4985,14 +4988,13 @@
       "padrao": "^Frascos de Vida ganham \\{(\\d+)\\} quando você Suprimir Dano Mágico$",
       "efeitos": [
         {
-          "stat": "ev:suprimir:frasco",
+          "stat": "ev:suprimir:frasco:vida",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "as cargas vão para todos os frascos do cinto",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Efeito da Fúria aumentado em \\{(\\d+)\\}%$",
@@ -5245,14 +5247,13 @@
       "padrao": "^Evasão aumentada em \\{(\\d+)\\}% se a Recarga do Escudo de Energia iniciou nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "evasion_pct@recargaEsIniciouRecente",
+          "stat": "evasion_pct@nosUltimos:{V2}:recargaEs",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"Recentemente\" (4 s)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Perca \\{(\\d+)\\}% de Vida e Escudo de Energia ao usar uma Habilidade de Caos$",
@@ -5328,14 +5329,13 @@
       "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Acertado com Ataques de Garras na Mão Secundária$",
       "efeitos": [
         {
-          "stat": "mana_on_hit@comGarra+ataque+maoSecundaria",
+          "stat": "mana_on_hit@garraNaSecundaria+ataque+maoSecundaria",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta a Garra da mão principal",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana Máxima, até \\{(\\d+)\\}%$",
@@ -5473,14 +5473,13 @@
       "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Acertado pelos Ataques se você usou um Frasco de Mana nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "mana_on_hit@ataque+evRecente:usarFrascoMana",
+          "stat": "mana_on_hit@ataque+nosUltimos:{V2}:ev:usarFrascoMana",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"Recentemente\" (4 s)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Remove Mutilação e Desaceleração ao usar um Frasco$",
@@ -5497,27 +5496,25 @@
       "padrao": "^Recuperação de Mana aumentada em \\{(\\d+)\\}% durante o Efeito de qualquer Frasco de Mana$",
       "efeitos": [
         {
-          "stat": "recuperacao_mana_inc@duranteFrasco",
+          "stat": "recuperacao_mana_inc@duranteFrascoMana",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "durante qualquer frasco",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Regenera \\{(\\d+)\\}% de Vida por Segundo se você usou um Frasco de Vida nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "life_regen_max_pct@evRecente:usarFrasco",
+          "stat": "life_regen_max_pct@nosUltimos:{V2}:usouFrascoVida",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "qualquer frasco, \"Recentemente\" (4 s)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Remove Afecções Elementais quando você usa um Frasco$",
@@ -5579,14 +5576,13 @@
       "padrao": "^Frascos Utilitários Mágicos aplicados em você têm Efeito aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "frasco_efeito",
+          "stat": "frasco_efeito_magico",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em todos os frascos de Utilidade",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Ganha \\{(\\d+)\\} Carga de Tolerância por segundo se foi Acertado Recentemente$",
@@ -5966,14 +5962,13 @@
       "padrao": "^Penalidades de Movimento das Armaduras são Ignoradas$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "ignora_penalidade_armadura",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: as armaduras do jogo não tiram velocidade de movimento",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^A cada \\{(\\d+)\\} segundos:$|^Recentemente, até \\{(\\d+)\\}%$",
@@ -6097,14 +6092,13 @@
       "padrao": "^Frascos de Vida ganham uma Carga quando você acertar um Inimigo, não mais que uma vez por segundo$",
       "efeitos": [
         {
-          "stat": "periodico:1:frasco@acertouRecente",
+          "stat": "ev:acertar:frasco:vida:1",
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "uma carga por segundo para os frascos do cinto, se você acertou há pouco",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Inimigo Marcado concede Cargas de Frasco aumentadas em \\{(\\d+)\\}% a Você$",
@@ -6391,9 +6385,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "a gema Portador da Praga não está no jogo",
+      "nota": "a gema Infestador (o Portador da Praga do texto) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^Furtividade aumentada em .*$",
@@ -7060,9 +7055,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as gemas Profanar e Desenterrar não estão no jogo",
+      "nota": "as gemas Profanar e Desenterrar estão no jogo, mas ainda não criam cadáveres",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^As primeiras \\{(\\d+)\\} Queimas de Mana aplicadas em você não tem efeito$",
@@ -13897,23 +13893,21 @@
       "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Vida$",
       "efeitos": [
         {
-          "stat": "life_leech",
+          "stat": "life_leech_fisico_ataque",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Mana$",
       "efeitos": [
         {
-          "stat": "mana_leech",
+          "stat": "mana_leech_fisico_ataque",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear$",
@@ -15486,27 +15480,25 @@
       "padrao": "^Acertos com esta Arma Congelam Inimigos como se causassem \\{(\\d+)\\}% mais Dano$",
       "efeitos": [
         {
-          "stat": "duracao_congelamento",
+          "stat": "congelamento_como_mais@ataque",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no jogo o Congelamento sai pela chance: o \"mais dano\" vira a duração dele (no PoE, a duração segue o dano).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote15": "14/10 — o Congelamento do PoE (lote 15)"
     },
     {
       "padrao": "^Congela Inimigos Resfriados como se causasse \\{(\\d+)\\}% mais Dano$",
       "efeitos": [
         {
-          "stat": "duracao_congelamento@alvoResfriado",
+          "stat": "congelamento_como_mais@alvoResfriado",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no jogo o Congelamento sai pela chance: o \"mais dano\" vira a duração dele (no PoE, a duração segue o dano).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote15": "14/10 — o Congelamento do PoE (lote 15)"
     },
     {
       "padrao": "^Sacrifício Eterno(?: durante o Efeito)?$",
@@ -16243,6 +16235,28 @@
       "_unico": true
     },
     {
+      "padrao": "^Ganhe Vida Máxima ao invés de Escudo de Energia Máximo dos Itens de Proteção Equipados$",
+      "efeitos": [
+        {
+          "stat": "es_das_armaduras_em_vida",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+    },
+    {
+      "padrao": "^Has no Attribute Requirements or Energy Shield \\(Hidden\\)$",
+      "efeitos": [
+        {
+          "stat": "sem_es_da_base",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
+    },
+    {
       "padrao": "^.*Proteção.*$",
       "efeitos": [
         {
@@ -16683,9 +16697,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "o suporte Feiticeiro (Spellslinger) não está no jogo",
+      "nota": "a gema Feiticeiro (Spellslinger) está no catálogo, mas ainda não tem comportamento de combate no jogo",
       "_nova": true,
-      "_lote8": "13/10 — a mana reservada (lote 8)"
+      "_lote8": "13/10 — a mana reservada (lote 8)",
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
@@ -22893,14 +22908,13 @@
       "padrao": "^Envenenamentos infligidos por você causam Dano \\{(\\d+)\\}% mais rápido$",
       "efeitos": [
         {
-          "stat": "dot_mais_rapido",
+          "stat": "veneno_mais_rapido",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "acelera todas as afecções de dano, não só o veneno",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de aumento do Dano com Incêndio causado em Inimigos Resfriados$",
@@ -24855,12 +24869,13 @@
       "padrao": "^Arauto Trovejante tem o Efeito do Buff aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "efeito_buff_gema:arauto",
+          "stat": "efeito_buff_gema:arauto-trovejante",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote12": "13/10 — as correções das notas da árvore (lote 12)"
     },
     {
       "padrao": "^Efeito de Buffs em você aumentado em \\{(\\d+)\\}%$",
@@ -28375,14 +28390,13 @@
       "padrao": "^Remove todas as Afecções Danificadoras quando você Clamar$",
       "efeitos": [
         {
-          "stat": "ev:usarClamor:removerAfeccao",
+          "stat": "ev:usarClamor:removerAfeccao:danificadoras",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "remove uma afecção por clamor",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Remove uma Afecção Elemental aleatória ao usar um Frasco de Mana$",
@@ -28399,14 +28413,13 @@
       "padrao": "^Remove uma Afecção não Elemental aleatória quando você usar um Frasco de Vida$",
       "efeitos": [
         {
-          "stat": "ev:usarFrasco:removerAfeccao",
+          "stat": "ev:usarFrascoVida:removerAfeccao:naoElemental",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "qualquer frasco de vida remove a afecção mais antiga",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Crítico se você não causou um Golpe Crítico Recentemente$",
@@ -28620,8 +28633,7 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
-      "estado": "aproximado",
-      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Exposição a Gelo infligida por você aplica \\{(\\d+)\\}% extra de Resistência a Gelo$",
@@ -28633,8 +28645,7 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
-      "estado": "aproximado",
-      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Exposição a Raio infligida por você aplica \\{(\\d+)\\}% extra de Resistência a Raio$",
@@ -28646,8 +28657,7 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
-      "estado": "aproximado",
-      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Inimigos Queimando mortos por você têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de Fogo$",
@@ -28710,14 +28720,13 @@
       "padrao": "^Recupera \\{(\\d+)\\}% da Mana por \\{(\\d+)\\} segundos? quando você usar uma Habilidade de Guarda$",
       "efeitos": [
         {
-          "stat": "ev:usarGuarda:manaPct",
+          "stat": "ev:usarGuarda:regenPct:mana:{V2}",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a mana volta na hora (no PoE, ao longo do tempo)",
-      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas de Habilidade Críticas Suportadas$",
@@ -28895,14 +28904,13 @@
       "padrao": "^Inimigos Não Amaldiçoados que você inflija Maldições não Auras são Cegados por \\{(\\d+)\\} segundos?$",
       "efeitos": [
         {
-          "stat": "ev:conjurarMaldicao:alvo:cego:{V1}",
+          "stat": "ev:amaldicoarSemMaldicaoNaoAura:alvo:cego:{V1}",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o alvo da maldição é Cegado (o \"não amaldiçoado\" não é conferido)",
-      "_de": "09/10 — árvore × poedb (4º lote)"
+      "_de": "09/10 — árvore × poedb (4º lote)",
+      "_lote13": "13/10 — os parciais exatos (lote 13)"
     },
     {
       "padrao": "^Defesas do Escudo equipado aumentadas em \\{(\\d+)\\}%$",
