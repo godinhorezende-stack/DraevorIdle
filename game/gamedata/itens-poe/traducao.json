@@ -423,17 +423,16 @@
       "_lote10": "13/10 — os lacaios (lote 10)"
     },
     {
-      "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em .* nos Inimigos$",
+      "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em \\{(\\d+)\\}% nos Inimigos$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "aura_efeito_nos_inimigos",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: o efeito das auras das gemas nos inimigos",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Ataques têm .* de Poder Arcano ao usar uma varinha$",
@@ -13895,23 +13894,21 @@
       "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Vida$",
       "efeitos": [
         {
-          "stat": "life_leech",
+          "stat": "life_leech_fisico_ataque",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Mana$",
       "efeitos": [
         {
-          "stat": "mana_leech",
+          "stat": "mana_leech_fisico_ataque",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear$",
@@ -22914,14 +22911,13 @@
       "padrao": "^Envenenamentos infligidos por você causam Dano \\{(\\d+)\\}% mais rápido$",
       "efeitos": [
         {
-          "stat": "dot_mais_rapido",
+          "stat": "veneno_mais_rapido",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "acelera todas as afecções de dano, não só o veneno",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de aumento do Dano com Incêndio causado em Inimigos Resfriados$",
@@ -28640,8 +28636,7 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
-      "estado": "aproximado",
-      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Exposição a Gelo infligida por você aplica \\{(\\d+)\\}% extra de Resistência a Gelo$",
@@ -28653,8 +28648,7 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
-      "estado": "aproximado",
-      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Exposição a Raio infligida por você aplica \\{(\\d+)\\}% extra de Resistência a Raio$",
@@ -28666,8 +28660,7 @@
       ],
       "_nova": true,
       "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
-      "estado": "aproximado",
-      "nota": "vale na exposição posta pelos modificadores de acerto (\"Inflige Exposição … ao Acertar\"); a das gemas ainda não soma"
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^Inimigos Queimando mortos por você têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de Fogo$",
@@ -28730,14 +28723,13 @@
       "padrao": "^Recupera \\{(\\d+)\\}% da Mana por \\{(\\d+)\\} segundos? quando você usar uma Habilidade de Guarda$",
       "efeitos": [
         {
-          "stat": "ev:usarGuarda:manaPct",
+          "stat": "ev:usarGuarda:regenPct:mana:{V2}",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a mana volta na hora (no PoE, ao longo do tempo)",
-      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "_lote14": "13/10 — os parciais médios (lote 14)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas de Habilidade Críticas Suportadas$",

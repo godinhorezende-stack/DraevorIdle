@@ -1,12 +1,12 @@
 # Árvore de passivas do PoE — o que falta e o que é parcial
 
-Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
+Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
 
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5930** — equivalente 1356, novo 4384, aproximado (parcial) 190.
-- ✗ Sem efeito: **45** — na árvore principal 14, nas ascendências 31; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 27; **0 estão nos blocos que o dono mandou implementar (12/10)**.
+- ✓ Com efeito: **5931** — equivalente 1356, novo 4417, aproximado (parcial) 158.
+- ✗ Sem efeito: **44** — na árvore principal 13, nas ascendências 31; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 26; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 61. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
@@ -26,6 +26,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | "Mais" e "menos" exatos (lote 11) | 13 | 0 | o "X% mais/menos" multiplica em vez de somar ao aumentado: a Área de Efeito (as habilidades, as auras, o Convocar o Aço), a Duração do Efeito de Habilidades (os buffs, os Vínculos, as Runas, a Proteção de Aço), a Vida Recuperada dos Frascos e o dano degenerativo das magias (o "mais" de verdade, o da Crueldade) |
 | Correções das notas (lote 12) | 8 | 0 | o Efeito do Buff do Arauto Trovejante só nele (valia em todos os Arautos — e no único Cravo de Fidelitas); a Eficácia da Reserva dele (a gema está no jogo: o montador da árvore passou a carregar as gemas); A Apóstata (o nó e o único: o Escudo de Energia das armaduras vira Vida; o peitoral sem o Escudo da base); a Arte do Gladiador (a penalidade de movimento de peitorais e escudos ignorada); a Magia Sanguínea igual ao PoE (o "10% mais Vida" multiplica; a reserva de vida já existia, a nota estava errada); e o "Sem Dano Físico" dos únicos, que refazer a peça devolvia |
 | Parciais exatos (lote 13) | 58 | 0 | os Clamores tiram todas as afecções de dano; o Frasco de Vida tira uma afecção não elemental (Sangramento ou Veneno) ao acaso; o Estandarte, qualquer uma ao acaso; a maldição que não é aura Cega só quem não estava amaldiçoado; o Mana por acerto só com a Garra na mão secundária; os prazos exatos ("nos últimos 10/2 segundos") e os frascos certos (de Vida, de Mana, os Utilitários Mágicos); a regeneração do Inspirador nos aliados na área do Estandarte e a do Ritual do Despertar nos totens; a Sobrecarga Elemental (40% mais dano elemental só na habilidade que causou um crítico nos últimos 8 s; as afecções nunca de crítico); o Avatar do Fogo (Gelo e Raio também viram Fogo, e só o Fogo causa dano); a Postura Inabalável (imune só a Atordoamento) |
+| Parciais médios (lote 14) | 33 | 0 | a mana da Maestria de Mana volta ao longo do tempo (no clamor de Guarda); o dreno do "Dano de Ataques Físicos" só da parte física dos ataques (antes, de todo o dano — os anéis e amuletos com essa linha também); o "-X% extra" das Maestrias de Fogo/Gelo/Raio também na Exposição das gemas, das auras e dos Vínculos; o veneno "X% mais rápido" só no Veneno (antes, todas as afecções de dano); a Pândega (a marca do Orgulho nos inimigos, maior pelo efeito) |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -49,7 +50,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 1 | falta no jogo: a Geada (o Congelamento curto demais que vira Geada) | — | Juramento do Inverno (asc. Warden) — Acertos que falharem em Congelar devido a Duração insuficiente do Congelamento infligem Geada |
 | 1 | falta no jogo: a habilidade Rajada Vulcânica | — | Chamas de Ngamahu (asc. Reliquarian) — Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo |
 | 1 | falta no jogo: a Relíquia Elemental | — | Cruzada Implacável (asc. Guardian) — 25% de chance de Ativar Convocar Relíquia Elemental Nível 20 quando você ou um Aliado próximo Matar um Inimigo, ou Acertar um Inimigo Raro ou Único |
-| 1 | falta no jogo: o efeito das auras das gemas nos inimigos | — | Pândega (notável) — Efeito de Auras Não-Maldição de suas Habilidades aumentado em 10% nos Inimigos |
 | 1 | falta no jogo: o Grande Emissário das Direções | — | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
 | 1 | falta no jogo: o Poder Fantasmal | — | O Bastão Negro (asc. Reliquarian) — Cada Fantasma Convocado concede a Você Poder Fantasmal |
 | 1 | falta no jogo: o Sentinela do Resplendor | — | Cruzada Radiante (asc. Guardian) — 20% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua |
@@ -61,11 +61,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | Linhas | A diferença | Exemplos (nó — texto) |
 |---:|---|---|
 | 25 | soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`) | Dano Corpo a Corpo e Alcance de Golpes (nó) — +0.1 metros ao Alcance de Golpes Corpo a Corpo<br>Dano Físico, Alcance de Golpe Corpo a Corpo (asc. Berserker) — +0.2 metros ao Alcance de Golpes Corpo a Corpo<br>Dano com Espadas e Alcance Corpo a Corpo (nó) — +0.1 metros ao Alcance de Golpes Corpo a Corpo com Espadas |
-| 12 | a mana volta na hora (no PoE, ao longo do tempo) | Maestria de Mana (maestria) — Recupera 10% da Mana por 1 segundo quando você usar uma Habilidade de Guarda |
 | 8 | a última repetição pega a área maior (uma casa a cada ~25%) | Domínio de Conjuração (maestria) — Repetição Final das Magias têm Efeito em Área aumentado em 40% |
-| 8 | o PoE drena só do dano físico de ataque; o Draevor, de todo o dano. | Dano Corpo a Corpo e Drenagem com Duas Mãos (nó) — 0.8% do Dano de Ataques Físicos é Drenado como Vida<br>Espírito da Guerra (notável) — 0.5% do Dano de Ataques Físicos é Drenado como Mana<br>Dano Corpo a Corpo com Duas Mãos e Dreno (nó) — 0.4% do Dano de Ataques Físicos é Drenado como Vida |
 | 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
-| 8 | vale na exposição posta pelos modificadores de acerto ("Inflige Exposição … ao Acertar"); a das gemas ainda não soma | Maestria de Fogo (maestria) — Exposição a Fogo infligida por você aplica -5% extra de Resistência a Fogo |
 | 7 | trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s | Armadura e Escudo de Energia, Recuperação do Bloqueio (asc. Guardian) — Recuperação de Bloqueio aumentada em 30%<br>Barreira de Lâmina (notável) — Recuperação de Bloqueio aumentada em 50%<br>Tartaruga (notável) — Recuperação de Bloqueio aumentada em 60% |
 | 6 | entra como redução de dano físico enquanto o escudo está cheio | Maestria de Escudo de Energia (maestria) — 10% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio |
 | 6 | somado à precisão que a Destreza já dá | Maestria de Precisão (maestria) — Bônus de Precisão da Destreza concede +3 de Precisão por Destreza |
@@ -75,7 +72,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-13, a partir de `gam
 | 5 | Chance de Crítico aumentada pela distância até o alvo: nada colado, tudo a 6 casas | Maestria de Arcos (maestria) — Flechas ganham Chance de Golpe Crítico enquanto viajam adiante, máximo de até 100% de Chance de Golpe Crítico |
 | 5 | no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando | Maestria de Minas (maestria) — Detonar Minas é Ativado enquanto você se mover |
 | 5 | no PoE é o dano que o inimigo causa (o poedb traduz "sofrido"); soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido reduzido em 2% aos Inimigos próximos a ela, até 10% |
-| 4 | acelera todas as afecções de dano, não só o veneno | Maestria de Envenenamentos (maestria) — Envenenamentos infligidos por você causam Dano 20% mais rápido |
 | 4 | encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo | Maestria de Garras (maestria) — Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente |
 | 4 | o Elusivo dura 4 s | Maestria de Empunhadura Dupla (maestria) — 20% de chance de ganhar Elusivo ao Bloquear enquanto em Empunhadura Dupla |
 | 4 | vale nos golpes com a tag Caos (o golpe inteiro) | Maestria de Caos (maestria) — Causa 10% mais Dano de Caos aos inimigos que tiverem Escudo de Energia<br>Presença Pútrida (asc. Occultist) — 15% mais Dano de Caos |

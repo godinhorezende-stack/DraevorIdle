@@ -77,6 +77,8 @@ export function daSoma(af = {}) {
     incendioMaisRapido: n('incendio_mais_rapido'),
     // (09/10) "Sangramentos infligidos por você causam Dano X% mais rápido": o mesmo total em menos tempo.
     sangramentoMaisRapido: n('sangramento_mais_rapido'),
+    // (13/10, a Maestria de Envenenamentos: "Envenenamentos infligidos por você causam Dano X% mais rápido" — só o Veneno)
+    venenoMaisRapido: n('veneno_mais_rapido'),
     // (09/10) "Golpes Críticos não Incendeiam de forma inerente" (a maestria de fogo).
     criticoNaoIncendeia: n('critico_nao_incendeia') > 0,
     // Os únicos: que dano pode pôr cada afecção ("Seu Dano de Raio pode Incendiar", "Seu Dano de Fogo pode Eletrizar, mas não Incendiar",
@@ -167,7 +169,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0, { mais = 0, chave = null, agravado = false, semMovimento = false } = {}) => {
     if (!(base > 0)) return null;
     const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
-    const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0)) / 100)));
+    const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0) + (tipo === 'venenoPoe' ? a.venenoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
     return estado;

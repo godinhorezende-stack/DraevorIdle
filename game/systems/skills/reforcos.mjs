@@ -207,9 +207,11 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       }
       continue;
     }
+    // (13/10, a Pândega: a marca de uma AURA — o Orgulho — nos inimigos × (1 + "Efeito de Auras Não-Maldição nos Inimigos"), a foto do tique.)
+    const nosInimigos = def.tipo === 'poe-aura' ? 1 + (Number(hunt?.poeAuraNosInimigosPct) || 0) / 100 : 1;
     for (const e of def.efeitos ?? []) {
-      if (e.efeito === 'marcaVulneravel') (bicho.marcas ??= {}).vulneravel = { ate: agora + e.durMarca, pct: e.pct * fator, tipos: e.tipos };
-      if (e.efeito === 'marcaEnfraquece') (bicho.marcas ??= {}).enfraquecido = { ate: agora + e.durMarca, pct: e.pct * fator };
+      if (e.efeito === 'marcaVulneravel') (bicho.marcas ??= {}).vulneravel = { ate: agora + e.durMarca, pct: e.pct * fator * nosInimigos, tipos: e.tipos };
+      if (e.efeito === 'marcaEnfraquece') (bicho.marcas ??= {}).enfraquecido = { ate: agora + e.durMarca, pct: e.pct * fator * nosInimigos };
     }
   }
   // (13/10) `semMaldicaoNaoAura`: amaldiçoou um inimigo sem maldição com uma que não é aura ("Inimigos Não Amaldiçoados que você inflija

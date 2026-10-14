@@ -297,7 +297,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Apóstata (a Vida no lugar do Escudo das armaduras, sem o Escudo da base), a penalidade de movimento da base à parte (`move_speed_armadura`)
 // e o "Sem Dano Físico" do único, que refazer a peça devolvia.)
 // (16 — 13/10: os parciais exatos — "Você e seus Totens Regeneram…" (o Pináculo de Madeira-Troll), "Frascos Utilitários Mágicos…" só nos Mágicos.)
-export const VERSAO_DA_TRADUCAO = 16;
+// (17 — 13/10: os parciais médios — "X% do Dano de Ataques Físicos é Drenado como Vida/Mana" só do físico dos ataques, "Envenenamentos …
+// mais rápido" só no Veneno, "Efeito de Auras Não-Maldição … nos Inimigos" com efeito.)
+export const VERSAO_DA_TRADUCAO = 17;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

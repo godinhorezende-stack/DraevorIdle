@@ -6290,6 +6290,30 @@
       "unidade": "%",
       "combate": true,
       "efeito": "os totens regeneram X% da vida por segundo por totem convocado (cacadas, o tique dos lacaios) (13/10)"
+    },
+    "veneno_mais_rapido": {
+      "nome": "Envenenamentos causam Dano mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afeccoes: só o Veneno (13/10)"
+    },
+    "life_leech_fisico_ataque": {
+      "nome": "Dano de Ataques Físicos Drenado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech: só a parte física dos ataques (13/10)"
+    },
+    "mana_leech_fisico_ataque": {
+      "nome": "Dano de Ataques Físicos Drenado como Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech: só a parte física dos ataques (13/10)"
+    },
+    "aura_efeito_nos_inimigos": {
+      "nome": "Efeito de Auras Não-Maldição nos Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "reforcos.marcar: a marca das auras (o Orgulho) nos inimigos (13/10)"
     }
   }
 }

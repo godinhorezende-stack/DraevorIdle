@@ -1490,7 +1490,7 @@ export function round(estado, personagem) {
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
         if (!segundo) {
           const doGolpe = golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra;
-          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoCritico: critico ? doGolpe : 0, semDrenoDeVida: alvo.semDreno ? doGolpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? doGolpe : 0 });
+          Ficha.aplicarLeech(estado, doGolpe, eventos, personagem.nome, hunt.pos, ficha, alvo.key, { danoFisico: golpe, danoCritico: critico ? doGolpe : 0, semDrenoDeVida: alvo.semDreno ? doGolpe : 0, semDrenoDeEs: Mecanicas.semDrenoDeEs(alvo) ? doGolpe : 0 });
         }
         // Vida/mana por acerto (proficiência).
         // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").

@@ -2159,8 +2159,12 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
  * A Exposição a `tipo` no alvo (o quanto tira da resistência). (lote E) Com a ficha de quem infligiu (`af` — o personagem da caçada):
  * "Exposições infligidas por você aplicam X% extra" (`exposicao_extra`) e "aplicam ao menos X%" (`exposicao_minima`).
  */
+const EXTRA_DA_EXPOSICAO = { fire: 'exposicao_extra_fogo', ice: 'exposicao_extra_gelo', energy: 'exposicao_extra_raio' };
 export function exposicao(alvo, agora, tipo, af = null) {
   if (!((alvo?.estados?.exposicao?.[tipo] ?? 0) > agora)) return 0;
-  const base = (alvo.estados.exposicaoPct?.[tipo] ?? 10) + Math.abs(Number(af?.exposicao_extra) || 0);
+  // (13/10, as Maestrias de Fogo/Gelo/Raio: "Exposição a Fogo infligida por você aplica X% extra" — a Exposição das gemas, das auras e dos
+  // Vínculos (os 10% do PoE) também; a do acerto já guarda o extra em `exposicaoPct` — `mods-poe.aoAcertar`.)
+  const pct = alvo.estados.exposicaoPct?.[tipo];
+  const base = (pct ?? (10 + Math.abs(Number(af?.[EXTRA_DA_EXPOSICAO[tipo]]) || 0))) + Math.abs(Number(af?.exposicao_extra) || 0);
   return Math.max(base, Math.abs(Number(af?.exposicao_minima) || 0));
 }

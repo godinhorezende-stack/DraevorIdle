@@ -2084,7 +2084,12 @@ export function tique(estado, personagem, agora = Date.now()) {
   Acoes.tiqueDoAco(estado, hunt, personagem, eventos);
   // (PoE, 13/10) A FOTO do que você dá aos aliados ("Você e Aliados…", "Auras das suas Habilidades concedem…", a Fortificação igual — os
   // companheiros da party a leem na ficha deles: `itens-poe/aliados.mjs`).
-  if (itensPoeLigado()) { const afPoe = Ficha.combate(estado).afPoe; Aliados.fotografar(estado, afPoe, { fortificacao: ModsPoe.fortificacao(estado, afPoe) }); }
+  if (itensPoeLigado()) {
+    const afPoe = Ficha.combate(estado).afPoe;
+    Aliados.fotografar(estado, afPoe, { fortificacao: ModsPoe.fortificacao(estado, afPoe) });
+    // (13/10, a Pândega: "Efeito de Auras Não-Maldição de suas Habilidades aumentado em X% nos Inimigos" — a foto que o `Reforcos.marcar` lê)
+    estado.hunt.poeAuraNosInimigosPct = Number(afPoe?.aura_efeito_nos_inimigos) || 0;
+  }
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
   // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).
