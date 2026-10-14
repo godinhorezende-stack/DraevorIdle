@@ -302,7 +302,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (18 — 14/10: o Congelamento do PoE — "Congelam/Congela Inimigos … como se causasse X% mais Dano" no dano da conta, não na duração.)
 // (19 — 14/10: os altares do PoE — "Você tem o Buff Altar … Menor" (o Erro Crasso), "Duração dos Efeitos de Altares em você" (a Gaivota).)
 // (20 — 14/10: o Poder Arcano — "Ataques têm X% de Poder Arcano" dos únicos passa a valer.)
-export const VERSAO_DA_TRADUCAO = 20;
+// (21 — 14/10: as Égides dos únicos — "Ativa Égide de Fogo/Gelo/Relampejante/Elemental/Física nível 20 quando equipado" e as linhas "enquanto a
+// Égide Física estiver esgotada".)
+export const VERSAO_DA_TRADUCAO = 21;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

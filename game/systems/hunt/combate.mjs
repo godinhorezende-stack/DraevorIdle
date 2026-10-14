@@ -1166,6 +1166,14 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const danoDoAcerto = final;
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
+  // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto sai da Égide dele antes do Escudo e da
+  // Vida — `ModsPoe.absorverNaEgide`)
+  if (final > 0 && hunt.egides) {
+    const porTipo = { physical: fisicoProtegido * fatorFinal };
+    for (const [el, v] of Object.entries(partes)) porTipo[el] = (porTipo[el] ?? 0) + v * fatorFinal;
+    const tomou = Math.min(final, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
+    if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#c8a2ff' }); }
+  }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — "30% do Dano de Acertos contra o alvo é sofrido no seu Escudo de Energia antes do
   // dele": essa parte sai do Escudo de quem vincula.)
   final = Vinculos.desviarParaOEscudo(estado, final);

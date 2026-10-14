@@ -506,17 +506,17 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Ativa Convocar Robôs Ativadores .*$",
+      "padrao": "^Ativa Convocar Robôs Ativadores Nível \\{(\\d+)\\} quando Alocado$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "robos_ativadores",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: os Robôs Ativadores",
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): os dois robôs seguem você e não tomam dano; as suas Magias Ativadas saem duas vezes (a segunda ignora a recarga) do seu lugar — no PoE, uma do lugar de cada robô",
       "_nova": true,
-      "_ciclo7": true
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
     },
     {
       "padrao": "^Golens Convocados são Reconvocados \\{(\\d+)\\} segundos após serem Mortos$",
@@ -531,17 +531,27 @@
       "_lote10": "13/10 — os lacaios (lote 10)"
     },
     {
-      "padrao": "^A chance de causar golpe mágico crítico se bifurca$|^.*chance de causar golpe mágico crítico$",
+      "padrao": "^A chance de causar golpe mágico crítico se bifurca$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "critico_magia_bifurca",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "falta no jogo: a chance de crítico de magia que se bifurca (a Infusão Mística entra inteira)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar golpe mágico crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_magia_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)",
+      "nota": "\"30% menos Chance de Golpe Crítico Mágico\" (o texto do PoE em inglês: \"30% less Spell Critical Strike Chance\")"
     },
     {
       "padrao": "^Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você$",
@@ -16956,6 +16966,19 @@
       "_unico": true
     },
     {
+      "padrao": "^Ganha Infusão Espiritual a cada \\{?\\d+(?:\\.\\d+)?\\}? segundos enquanto canaliza uma magia$",
+      "efeitos": [
+        {
+          "stat": "infusao_espiritual",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s",
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
       "padrao": "^(?!.*Oferenda Espiritual).*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
       "efeitos": [
         {
@@ -17045,6 +17068,134 @@
       "nota": "as habilidades de Retaliação não existem no jogo",
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^Ativa Égide Primitiva Nível \\{(\\d+)\\} quando Alocado$",
+      "efeitos": [
+        {
+          "stat": "egide_primitiva",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Égide toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano elemental de acertos (o tempo das Égides do PoE — o da Primitiva não é publicado)",
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Égide Primitiva pode sofrer \\{(\\d+)\\} de Dano Elemental por Nódulo de Habilidade Passiva Alocada$",
+      "efeitos": [
+        {
+          "stat": "egide_primitiva_por_notavel",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "por Notável alocado (da árvore e da ascendência) — o texto do PoE em inglês: \"per Allocated Notable Passive Skill\"",
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Outras Habilidades de Égides são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "egides_desabilitadas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide de Fogo [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide de Gelo [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide Relampejante [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide Elemental [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Ativa Égide Física [Nn]ível \\{(\\d+)\\} quando [Ee]quipado$",
+      "efeitos": [
+        {
+          "stat": "egide_fisica",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico enquanto a Égide Física estiver esgotada aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@egideFisicaEsgotada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto a Égide Física estiver esgotada$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@egideFisicaEsgotada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@egideFisicaEsgotada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+    },
+    {
+      "padrao": "^Inimigos Próximos são Cegados enquanto Égide Física não estiver esgotada$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:cego@egideFisicaAtiva",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
     },
     {
       "padrao": "^.*Égide.*$",

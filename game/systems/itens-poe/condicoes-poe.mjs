@@ -176,6 +176,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'estilhacouRecente', 'exposicaoRecente', 'empalouRecente',
   // (lote E) canalizando agora (usou uma habilidade de Canalização há pouco).
   'canalizando',
+  // (14/10) a Égide Física esgotada (ou não) — `hunt.egides`
+  'egideFisicaEsgotada', 'egideFisicaAtiva',
   // (lote E) com ao menos um cadáver perto (a até 4 casas — `hunt.cadaveres`).
   'cadaverPerto',
   // (lote F) no máximo um Raro ou Único por perto; ao menos dois Raros ou Únicos por perto (a Presença).
@@ -367,6 +369,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (r['usou:magia'] != null && agora - r['usou:magia'] <= CONJURANDO_MS) v.add('conjurando');
     if (fortificacao(estado, total) > 0) v.add('fortificado');
     if (r['usou:canalizar'] != null && agora - r['usou:canalizar'] <= 1000) v.add('canalizando');
+    if (h.egides?.fisica) v.add(h.egides.fisica.valor > 0 ? 'egideFisicaAtiva' : 'egideFisicaEsgotada');
     if (cadaveresPerto(h) > 0) v.add('cadaverPerto');
     // (lote G) Elusivo (o buff — antes a condição nunca valia), o Solo Sagrado, a Postura e o Estandarte.
     if (buffAtivo(estado, 'elusivo', total)) v.add('elusivo');
@@ -603,6 +606,63 @@ export function notarParaReliquia(estado, hunt, agora = hunt?.clock ?? 0) {
   }
 }
 /**
+ * (14/10) As ÉGIDES do PoE (o lembrete: "Égide toma o dano elemental dos acertos por você até se esgotar; volta ao valor cheio depois de um
+ * tempo sem dano elemental de acertos, ou se esgotar"): `hunt.egides[nome] = { tipos, valor, max, ultimoDano }` — o máximo e a volta ao valor
+ * cheio no tique (`acoes.tiqueDasEgides`, que sabe as peças e a árvore). Aqui, a parte de cada tipo do acerto sai da Égide dele ANTES do Escudo
+ * e da Vida (o golpe do monstro e a magia dele). Devolve o total absorvido; `porTipo` sai com o que sobrou.
+ */
+export const EGIDE = Object.freeze({ recargaMs: 10000, ordem: ['fisica', 'fogo', 'gelo', 'raio', 'elemental', 'primitiva'] });
+export function absorverNaEgide(hunt, porTipo, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt?.egides) return 0;
+  let total = 0;
+  for (const nome of EGIDE.ordem) {
+    const e = hunt.egides[nome];
+    if (!e) continue;
+    for (const el of e.tipos) {
+      const v = porTipo[el] ?? 0;
+      if (!(v > 0)) continue;
+      // (o dano do tipo dela reinicia a espera, esgotada ou não)
+      e.ultimoDano = agora;
+      const tirado = Math.min(v, e.valor);
+      if (!(tirado > 0)) continue;
+      e.valor -= tirado;
+      porTipo[el] = v - tirado;
+      total += tirado;
+      if (!(e.valor > 0)) hunt.poeFichaMudou = true;
+    }
+  }
+  return total;
+}
+
+/**
+ * (14/10) A INFUSÃO ESPIRITUAL do PoE (o Rito Profano do Occultist: "Ganha Infusão Espiritual a cada 0,5 segundos enquanto canaliza uma
+ * magia" — o poedb: cada acúmulo dá 15% de início mais rápido da Recarga do Escudo de Energia, Magias Canalizadas 5% mais Dano e 10% mais
+ * Custo; máximo 10; perde um a cada 0,5 s se não ganhou nos últimos 4 s). O jogo não tem canalização contínua: usar uma Magia de Canalização
+ * conta como canalizar por 1 s (`canalizouMagia`, como o "canalizando" das condições).
+ */
+export const INFUSAO = Object.freeze({ maximo: 10, ganhoMs: 500, perdaMs: 500, semGanhoMs: 4000, canalizandoMs: 1000, esInicioPct: 15, maisDanoPct: 5, maisCustoPct: 10 });
+export function tiqueDaInfusao(hunt, afPoe, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt) return;
+  const i = hunt.infusaoEspiritual;
+  const canalizando = agora - (hunt.poeRecente?.canalizouMagia ?? -Infinity) <= INFUSAO.canalizandoMs;
+  if (Number(afPoe?.infusao_espiritual) > 0 && canalizando) {
+    const x = (hunt.infusaoEspiritual ??= { n: 0, ultimoGanho: -Infinity });
+    if (agora - x.ultimoGanho >= INFUSAO.ganhoMs) {
+      x.ultimoGanho = agora;
+      if (x.n < INFUSAO.maximo) { x.n++; hunt.poeFichaMudou = true; }
+    }
+    return;
+  }
+  if (!i?.n) return;
+  if (agora - i.ultimoGanho > INFUSAO.semGanhoMs && agora - (i.ultimaPerda ?? -Infinity) >= INFUSAO.perdaMs) {
+    i.n--;
+    i.ultimaPerda = agora;
+    hunt.poeFichaMudou = true;
+    if (!i.n) delete hunt.infusaoEspiritual;
+  }
+}
+
+/**
  * (14/10) Os cartões do HUD do que o PoE dá por nome: os buffs com tempo (os altares, a Adrenalina, o Liberto…), a Casca e a Fúria Liberta.
  * `contador`: o número no cartão no lugar do relógio.
  */
@@ -613,6 +673,10 @@ export function buffsDoCliente(estado) {
   const saida = [];
   for (const [nome, ate] of Object.entries(h.poeBuffs ?? {})) if (ate > agora && BUFFS[nome]) saida.push({ icone: null, nome: BUFFS[nome].nome, resta: ate - agora, tipo: 'buffPoe', buff: nome });
   if (h.casca) saida.push({ icone: null, nome: 'Casca', resta: 0, tipo: 'casca', contador: h.casca.n, dica: `Casca: ${h.casca.n} de ${CASCA.maximo} (a Pele de Árvore — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente)` });
+  // (14/10) as Égides (o valor que ainda toma) e a Infusão Espiritual
+  const NOME_DA_EGIDE = { primitiva: 'Égide Primitiva', fogo: 'Égide de Fogo', gelo: 'Égide de Gelo', raio: 'Égide Relampejante', elemental: 'Égide Elemental', fisica: 'Égide Física' };
+  for (const [nome, e] of Object.entries(h.egides ?? {})) saida.push({ icone: null, nome: NOME_DA_EGIDE[nome] ?? nome, resta: 0, tipo: 'egide', contador: Math.round(e.valor), dica: `${NOME_DA_EGIDE[nome] ?? nome}: ${Math.round(e.valor)} de ${Math.round(e.max)} (toma o dano ${nome === 'fisica' ? 'físico' : 'elemental'} dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano)` });
+  if (h.infusaoEspiritual?.n > 0) saida.push({ icone: null, nome: 'Infusão Espiritual', resta: 0, tipo: 'infusaoEspiritual', contador: h.infusaoEspiritual.n, dica: `Infusão Espiritual: ${h.infusaoEspiritual.n} de ${INFUSAO.maximo} (por acúmulo: 15% de início mais rápido da Recarga do Escudo, Magias Canalizadas 5% mais Dano e 10% mais Custo)` });
   // (14/10) o Infestador: Incubando ou Infestando, com o Valor da Praga
   if (h.praga) saida.push({ icone: null, nome: h.praga.modo === 'infestando' ? 'Infestando' : 'Incubando', resta: 0, tipo: 'praga', contador: Math.round(h.praga.valor), dica: `Valor da Praga: ${Math.round(h.praga.valor)} de ${Math.round(h.praga.max ?? 0)} (o Infestador — ${h.praga.modo === 'infestando' ? 'Infestando: Caos nos inimigos a até 2 casas até o Valor acabar' : 'Incubando: 40% do dano de cada Veneno seu; no máximo, Infesta sozinho'})` });
   if (h.furiaLiberta?.n > 0) saida.push({ icone: null, nome: 'Fúria Liberta', resta: 0, tipo: 'furiaLiberta', contador: h.furiaLiberta.n, dica: `Fúria Liberta: ${h.furiaLiberta.n} de ${FURIA_LIBERTA.maximo} (com ${FURIA_LIBERTA.maximo}, o Avatar Liberto deixa Liberto por ${FURIA_LIBERTA.libertoS} s)` });
@@ -932,6 +996,13 @@ export function adds(estado, total = null) {
   if (porRemovida > 0) {
     const removidas = (estado?.hunt?.poeChamasRemovidas ?? []).filter((t) => agoraT - t <= CHAMA_SANTIFICADA.recenteMs).length;
     if (removidas) saida.phys_as_extra_energy = (saida.phys_as_extra_energy ?? 0) + Math.min(Number(total?.chama_santificada_raio_max) || Infinity, porRemovida * removidas);
+  }
+  // (14/10, o Rito Profano) A INFUSÃO ESPIRITUAL, por acúmulo (`INFUSAO`)
+  const infusao = estado?.hunt?.infusaoEspiritual?.n ?? 0;
+  if (infusao > 0) {
+    saida.es_recharge_start = (saida.es_recharge_start ?? 0) + INFUSAO.esInicioPct * infusao;
+    saida['mais_dano@canalizar+magia'] = (saida['mais_dano@canalizar+magia'] ?? 0) + INFUSAO.maisDanoPct * infusao;
+    saida['custo_mana_mais@canalizar+magia'] = (saida['custo_mana_mais@canalizar+magia'] ?? 0) + INFUSAO.maisCustoPct * infusao;
   }
   // (14/10, a Cruzada Implacável) A AURA de cada Relíquia Elemental viva (Cólera, Ódio ou Ira, nível 20 — `l.auraAf`): em você e, pela foto dos
   // "Você e Aliados" (`aliados:`), nos companheiros perto. (O fim dela é o do lacaio — o tique dos lacaios tira a que acabou e refaz a ficha.)
@@ -1729,6 +1800,8 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   tiqueDasCargasFanaticas(hunt, ficha, agora);
   // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto
   tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
+  // (14/10, o Occultist) a Infusão Espiritual
+  tiqueDaInfusao(hunt, ficha?.afPoe, agora);
   // (14/10, o Guardian) as Chamas Santificadas removidas deixam de ser "recentes": a ficha é refeita (o Raio extra cai)
   if (hunt.poeChamasRemovidas?.length) {
     const antes = hunt.poeChamasRemovidas.length;

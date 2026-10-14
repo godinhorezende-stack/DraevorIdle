@@ -126,6 +126,11 @@ const IMPLEMENTADOS = [
     re: /Poder Arcano|Portador da Praga|Profanar e Desenterrar|Suportadas por Feiticeiro/,
     jogo: 'o Poder Arcano (o "Dano Mágico aumentado" também nos ataques, no % dele — a Maestria de Varinhas com varinha e os únicos); Profanar e Desenterrar criam cadáveres (5 dos monstros da área / 1 Arqueiro de Ossos onde o projétil cai, até 10 de cada gema, +2 com o Coveiro); o Infestador (sai sozinho na barra: Incubando, 40% do dano esperado de cada Veneno no Valor da Praga — até o máximo do nível, × o "Valor Máximo aumentado" — e 20% menos Veneno fora do máximo; no máximo com um inimigo perto, Infesta: 12% do Valor do começo por segundo como Caos a até 2 casas, até acabar); o Feiticeiro (liga na barra reservando 20% da mana por magia ligada — com a eficácia da maestria —; o ataque de varinha ativa as magias ligadas, com o dano da varinha e o "menos dano" do nível, recarga 0,6 s ÷ a recuperação)',
   },
+  {
+    bloco: 'Égide e as pequenas (lote 20)',
+    re: /Égide Primitiva|Outras Habilidades de Égides|golpe mágico crítico|Robôs Ativadores|Infusão Espiritual/,
+    jogo: 'a Égide Primitiva do Elementalist (toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida, 75 por Notável alocado; volta cheia 10 s depois do último dano elemental) — e as 5 Égides dos únicos pelo mesmo caminho, desligadas pela Primitiva; a Infusão Mística do Assassin (o crítico mágico Bifurca: duas rolagens, as duas dobram o dano extra do crítico; 30% menos chance de crítico mágico); os Robôs Ativadores do Saboteur (dois robôs que não tomam dano; as Magias Ativadas saem duas vezes, a segunda sem recarga); a Infusão Espiritual do Occultist (ao canalizar uma magia, um acúmulo a cada 0,5 s, até 10: 15% de início mais rápido da Recarga do Escudo, 5% mais Dano e 10% mais Custo nas Magias Canalizadas por acúmulo)',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

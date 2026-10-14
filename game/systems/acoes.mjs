@@ -45,7 +45,7 @@ import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Aco from './itens-poe/convocar-o-aco.mjs';
 import * as CargasDoPoe from './itens-poe/cargas.mjs';
 import * as Ficha from './ficha.mjs';
-import { temHabilidade, efeitos as efeitosDaArvore } from './passivas/arvore.mjs';
+import { temHabilidade, efeitos as efeitosDaArvore, arvore as arvoreDasPassivas } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
 import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
@@ -543,6 +543,61 @@ export function explosaoDaReliquia(hunt, l, ficha, eventos = []) {
   }
   return eventos;
 }
+
+/**
+ * (14/10) As ÉGIDES (`ModsPoe.absorverNaEgide`): quais valem e o máximo de cada, e a volta ao valor cheio (10 s sem dano do tipo dela — o
+ * `aegis_recharge_delay_ms` das Égides do PoE; o da Primitiva não é publicado). A PRIMITIVA (o Bastião dos Elementos do Elementalist: "Ativa
+ * Égide Primitiva Nível 20 quando Alocado", "pode sofrer 75 de Dano Elemental por Notável alocado" — o texto em inglês do PoE: "per Allocated
+ * Notable Passive Skill", os Notáveis da árvore e da ascendência) toma Fogo, Gelo e Raio; "Outras Habilidades de Égides são Desabilitadas"
+ * desliga as dos únicos ("Ativa Égide de Fogo/Gelo/Relampejante/Elemental/Física nível 20 quando equipado": 1000 do tipo dela — a Elemental,
+ * 50 no nível 1 a 1000 no 20 — RePoE).
+ */
+const EGIDES_DE_UNICO = {
+  fogo: { stat: 'egide_fogo', tipos: ['fire'] }, gelo: { stat: 'egide_gelo', tipos: ['ice'] }, raio: { stat: 'egide_raio', tipos: ['energy'] },
+  elemental: { stat: 'egide_elemental', tipos: ['fire', 'ice', 'energy'] }, fisica: { stat: 'egide_fisica', tipos: ['physical'] },
+};
+const valorDaEgideDeUnico = (nome, nivel) => (nome === 'elemental' ? Math.round(50 + ((Math.max(1, Math.min(20, nivel)) - 1) * (1000 - 50)) / 19) : 1000);
+export function notaveisAlocados(estado) {
+  const porId = arvoreDasPassivas()?.porId;
+  return porId ? (estado?.passivas?.alocados ?? []).filter((id) => porId.get(id)?.tipo === 'notable').length : 0;
+}
+export function tiqueDasEgides(estado, hunt, agora = hunt?.clock ?? 0) {
+  if (!itensPoeLigado() || !hunt) return;
+  const af = Ficha.combate(estado).afPoe ?? {};
+  const valem = {};
+  if (Number(af.egide_primitiva) > 0) valem.primitiva = { tipos: ['fire', 'ice', 'energy'], max: (Number(af.egide_primitiva_por_notavel) || 0) * notaveisAlocados(estado) };
+  if (!(Number(af.egides_desabilitadas) > 0)) for (const [nome, { stat, tipos }] of Object.entries(EGIDES_DE_UNICO)) if (Number(af[stat]) > 0) valem[nome] = { tipos, max: valorDaEgideDeUnico(nome, Number(af[stat])) };
+  const atuais = hunt.egides ?? {};
+  for (const nome of Object.keys(atuais)) if (!valem[nome]) { delete atuais[nome]; hunt.poeFichaMudou = true; }
+  for (const [nome, v] of Object.entries(valem)) {
+    const e = (atuais[nome] ??= { tipos: v.tipos, valor: v.max, max: v.max, ultimoDano: -Infinity });
+    e.tipos = v.tipos;
+    e.max = v.max;
+    if (e.valor > e.max) e.valor = e.max;
+    if (e.valor < e.max && agora - e.ultimoDano >= ModsPoe.EGIDE.recargaMs) {
+      if (!(e.valor > 0)) hunt.poeFichaMudou = true;
+      e.valor = e.max;
+    }
+  }
+  if (Object.keys(atuais).length) hunt.egides = atuais;
+  else delete hunt.egides;
+}
+
+/**
+ * (14/10) Os ROBÔS ATIVADORES (o Crime Perfeito do Saboteur: "Ativa Convocar Robôs Ativadores Nível 20 quando Alocado" — o PoE: dois robôs
+ * que seguem você e não tomam dano; "Suas Magias Ativadas são Ativadas duas vezes, uma de cada robô; a ativação a mais ignora as Recargas"):
+ * os dois lacaios (sem ataque, intocáveis) e a ativação dobrada (`ativarGatilhos`, o "Ativa X" das peças). As magias saem do seu lugar.
+ */
+export const ROBOS = Object.freeze({ nome: 'Robô Ativador', quantos: 2 });
+export function tiqueDosRobos(estado, hunt, agora = hunt?.ultimoTique ?? Date.now()) {
+  if (!itensPoeLigado() || !hunt?.pos) return;
+  const af = Ficha.combate(estado).afPoe ?? {};
+  hunt.lacaios ??= [];
+  const vivos = hunt.lacaios.filter((l) => l.robo && l.hp > 0);
+  if (!(Number(af.robos_ativadores) > 0)) { for (const l of vivos) l.hp = 0; return; }
+  for (let i = vivos.length; i < ROBOS.quantos; i++) hunt.lacaios.push(lacaioDoGuardian(estado, hunt, agora, af, ROBOS.nome, 'energy', { robo: true, semAtaque: true, intocavel: true }));
+}
+const comRobos = (estado) => itensPoeLigado() && Number(Ficha.combate(estado).afPoe?.robos_ativadores) > 0;
 
 /**
  * (14/10, a árvore principal) O INFESTADOR do PoE (Plague Bearer — `GemasPoe.PRAGA`): com a gema encaixada e na barra (ligada), ele sai
@@ -1686,7 +1741,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (!concluir && globalLibera != null && !R.liberou(agora, globalLibera)) {
     return { ok: false, erro: 'Aguarde o cooldown global.', motivo: 'COOLDOWN_GLOBAL', faltaMs: globalLibera - agora };
   }
-  if (!plantada && cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
+  // (a ativação a mais dos Robôs Ativadores ignora a recarga — `gatilho.ignorarRecarga`)
+  if (!plantada && !gatilho?.ignorarRecarga && cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
   // (PoE, 11/10) A RETALIAÇÃO só se usa na janela: depois de bloquear um acerto (ou de um Acerto Selvagem) — `ModsPoe.abrirRetaliacao`.
   const gatilhoDaRetaliacao = !gatilho && entry.poeGema ? GemasPoe.gatilhoDeRetaliacao(entry.poeGema.slug) : null;
   if (gatilhoDaRetaliacao && !concluir && !ModsPoe.retaliacaoUsavel(hunt, gatilhoDaRetaliacao, entry.poeGema.slug, hunt.clock ?? 0)) {
@@ -1745,7 +1801,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // "…de habilidades de Retaliação", "Habilidades de marca não custam mana".)
   const doCustoPorTag = entry.poeGema ? ModsPoe.somaPorTags(fichaDoCusto, tagsPoeDaSkill(entry)) : {};
   // (o Vínculo não paga ao conjurar: custa por segundo, enquanto vincula — `tiqueDosVinculos`)
-  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0)) / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
+  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0)) / 100) * Math.max(0, 1 + (doCustoPorTag.custo_mana_mais ?? 0) / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(Ficha.combate(estado), 'keystone_magia_sanguinea') > 0) && custoDeMana > 0;
@@ -2501,6 +2557,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
     // ("se você usou uma Habilidade de Fogo Recentemente"; "por cada Magia Não Instantânea que você tenha Conjurado Recentemente".)
     if (tagsPoe.includes('fogo')) ModsPoe.marcar(hunt, 'usouFogo');
+    // (14/10, a Infusão Espiritual: "enquanto canaliza uma magia" — `ModsPoe.tiqueDaInfusao`)
+    if (tagsPoe.includes('canalizar') && tagsPoe.includes('magia')) ModsPoe.marcar(hunt, 'canalizouMagia');
     if (tagsPoe.includes('magia') && (tempoPoe?.conjuracaoMs ?? 0) > 0) hunt.poeMagiasRecentes = [...(hunt.poeMagiasRecentes ?? []).filter((t) => (hunt.clock ?? 0) - t <= ModsPoe.RECENTE_MS), hunt.clock ?? 0].slice(-20);
     // (o `armadilha` — a armadilha ativada no alvo — sai abaixo, com o arquétipo; o `mina` do ciclo 7 é o uso da gema de Mina.)
     for (const [tag, rec, ev] of [['movimento', 'usouMovimento', 'usarMovimento'], ['vaal', 'usouVaal', 'usarVaal'], ['clamor', 'clamou', 'usarClamor'], ['maldicao', null, 'conjurarMaldicao'], ['guarda', null, 'usarGuarda'], ['mina', null, 'mina']]) {
@@ -2809,6 +2867,12 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
       saiu = true;
       n++;
       eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: g.nome, skill: POR_ID.get(magia)?.name ?? magia }, ...(r.eventos ?? []));
+      // (os Robôs Ativadores: a mesma magia de novo, ignorando a recarga)
+      if (comRobos(estado)) {
+        const alvo2 = alvoDaMagia && alvoDaMagia.hp > 0 ? alvoDaMagia : hunt.monstros.filter((b) => b.hp > 0).sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))[0] ?? null;
+        const r2 = dispararSemMarcar(estado, hunt, personagem, null, alvo2, { gatilho: { acao: { id: magia, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, ignorarRecarga: true, ...(g.feiticeiro ? { semCusto: true } : {}) } });
+        if (r2.ok) { n++; eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: ROBOS.nome, skill: POR_ID.get(magia)?.name ?? magia }, ...(r2.eventos ?? [])); }
+      }
     }
     // (o Feiticeiro: 0,6 s ÷ a "Recuperação da Recarga" do nível dele)
     const recargaMs = g.feiticeiro ? GemasPoe.feiticeiroNoNivel(g.nivel).recargaMs : g.gatilho.recargaMs;
@@ -2841,6 +2905,11 @@ ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = [
   if (!r.ok) return;
   cds[chave] = { ate: agora + 250, total: 250 };
   eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: 'Item único', skill: def.nome }, ...(r.eventos ?? []));
+  // (14/10, os Robôs Ativadores: de novo, ignorando a recarga)
+  if (comRobos(estado)) {
+    const r2 = dispararSemMarcar(estado, hunt, personagem, null, alvoDaMagia?.hp > 0 ? alvoDaMagia : null, { gatilho: { acao: { id: def.acao, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, semCusto: true, ignorarRecarga: true } });
+    if (r2.ok) eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: ROBOS.nome, skill: def.nome }, ...(r2.eventos ?? []));
+  }
 });
 
 /**

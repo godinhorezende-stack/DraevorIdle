@@ -2138,6 +2138,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
   // (14/10, o Guardian) o Sentinela do Resplendor e as Relíquias Elementais (lacaios da ascendência, não de gema — `Acoes.tiqueDoGuardian`)
   if (itensPoeLigado()) Acoes.tiqueDoGuardian(estado, hunt, agora);
+  // (14/10) as Égides (o máximo e a volta ao valor cheio) e os Robôs Ativadores do Saboteur
+  if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
@@ -2483,7 +2485,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;
     // (14/10) o Sentinela do Resplendor queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo — `Acoes.queimaDoSentinela`)
     if (l.sentinela && !Protecao.imune(hunt)) Acoes.queimaDoSentinela(hunt, l, ficha, 250, eventos);
-    for (const b of hunt.monstros) {
+    // (14/10: os Robôs Ativadores não tomam dano — `intocavel`)
+    for (const b of l.intocavel ? [] : hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
       // (ciclo 7) o golpe de um monstro CONJURADOR (que tem magias) conta como magia no lacaio: o bloqueio mágico dele.
       const magia = (Poderes.poderesDe(b.key)?.ataques ?? []).some((a) => a.tipo === 'magia');

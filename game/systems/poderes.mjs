@@ -356,6 +356,14 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
   // ("X% do dano mágico sofrido suprimido é recuperado como escudo de energia".)
   if (suprimiu && dano > 0 && ModsPoe.valor(ficha, 'suprimido_recupera_es') > 0) estado.es = Math.min(Math.round(ficha.energyShield ?? 0), (estado.es ?? 0) + Math.round((dano * ModsPoe.valor(ficha, 'suprimido_recupera_es')) / 100));
+  // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto, na proporção das partes, sai da Égide dele
+  // antes do Escudo e da Vida — `ModsPoe.absorverNaEgide`)
+  const somaDasPartes = Object.values(partes).reduce((t, v) => t + Math.max(0, v), 0);
+  if (dano > 0 && hunt.egides && somaDasPartes > 0) {
+    const porTipo = Object.fromEntries(Object.entries(partes).map(([el, v]) => [el, (Math.max(0, v) * dano) / somaDasPartes]));
+    const tomou = Math.min(dano, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
+    if (tomou > 0) { dano -= tomou; eventos.push({ t: 'dmg', ...base, v: tomou, color: '#c8a2ff' }); }
+  }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — a parte do acerto no Escudo de Energia de quem vincula.)
   dano = Vinculos.desviarParaOEscudo(estado, dano);
   dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu });
