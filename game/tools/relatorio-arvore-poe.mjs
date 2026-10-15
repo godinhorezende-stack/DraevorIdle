@@ -151,6 +151,11 @@ const IMPLEMENTADOS = [
     re: /^Joias Não Únicas/,
     jogo: 'os 21 encaixes da árvore (15 Básicos e os 6 Grandes da borda) recebem as Joias Carmesim, Viridiana e Cobalto (e a Prismática, só Única), que passam a cair; com o encaixe alocado, os mods da joia valem como os de uma peça; o Chieftain (Ngamahu): com joia não única, os aumentos de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados no Raio Grande (1800, como no PoE/PoB — lote 29) viram de Fogo e cada nó pequeno ou notável dá +4 de Força',
   },
+  {
+    bloco: 'Zerar a árvore — lote 30 (as contas e regras erradas)',
+    re: /Bônus de Precisão da Destreza|% mais Dano de Caos|^15% mais Dano de Gelo|Debuffs em você expiram|menos Dano Físico Sofrido enquanto em Escudo|menos Dano sofrido por Força dos Ventos|Você e Aliados próximos têm Vento Favorável|menos Dano de Acertos por|menos Dano Degenerativo por 5|^\+0\.75% de Chance de Golpe Crítico/,
+    jogo: 'a Precisão da Destreza passa a 3 por ponto (somava +3 em cima dos 2); "X% mais Dano de Caos/Gelo" só na parte daquele tipo; "Debuffs em você expiram X% mais rápido" = a duração ÷ (1 + X%) em todo debuff (afecções, maldições, os dos monstros); "menos Dano Físico Sofrido" multiplicativo; o Vento Favorável dá 8% de Velocidade de Ação; a Parada Cardíaca alterna (consecutivamente) os 5 s de menos dano de Acertos e os 5 s de menos dano Degenerativo; a Guarda do Vento e o "+0,75% de Chance de Crítico" já eram a conta do PoE (a nota estava errada)',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

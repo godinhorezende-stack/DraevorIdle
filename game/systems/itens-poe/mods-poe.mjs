@@ -4,7 +4,7 @@
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia } from './condicoes-poe.mjs';
+import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -540,7 +540,8 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
   // (+ "Dano Degenerativo de Caos sofrido reduzido em X%": o veneno em você.)
   const caos = a.nome === 'veneno' ? Math.max(0, 1 - v('dot_caos_sofrido_red') / 100) : 1;
   // (+ "X% mais Duração de Afecções em você" — multiplica.)
-  const dur = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100);
+  // (lote 30: + "Debuffs em você expiram X% mais rápido" — `fatorDosDebuffs`)
+  const dur = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100) * fatorDosDebuffs(ficha?.afPoe);
   const efeito = Math.max(0, 1 + v(`efeito_${a.nome}_proprio`) / 100);
   const base = Dot.CONFIG.tipos[ef.tipo]?.duracaoMs ?? 4000;
   const posto = Dot.aplicarNoJogador(hunt, { ...ef, total: ef.total * dur * efeito * caos, duracaoMs: Math.round((ef.duracaoMs ?? base) * dur) }, agora);
@@ -1145,10 +1146,12 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   // valor da ação, rodada a cada N segundos (a primeira, N segundos depois de entrar).
   for (const [k, x] of Object.entries(ficha.afPoe)) {
     if (!k.startsWith('periodico:') || !(x > 0)) continue;
-    const [, cada, acao, ...param] = k.split(':');
+    const [, cadaDe, acao, ...param] = k.split(':');
+    // (lote 30, P029: `periodico:<N>d<atraso>:…` — o "consecutivamente" da Parada Cardíaca: a segunda parte começa <atraso> s depois da primeira)
+    const [cada, atraso] = cadaDe.split('d').map(Number);
     const p = (hunt.poePeriodicos ??= {});
-    p[k] ??= agora;
-    if (agora - p[k] < Number(cada) * 1000) continue;
+    p[k] ??= agora + (atraso || 0) * 1000;
+    if (agora - p[k] < cada * 1000) continue;
     p[k] = agora;
     // (14/10) `periodico:<N>:gatilho:<gema>` — a gema disparada a cada N segundos (as Novas e os Esqueletos dos altares Maiores): no bicho vivo
     // mais perto (a até 6 casas); os eventos dela saem no tique (`hunt.poeEventosDoTempo` — `cacadas.tique`).

@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1356, novo 4463, aproximado (parcial) 184.
+- ✓ Com efeito: **6003** — equivalente 1357, novo 4488, aproximado (parcial) 158.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -37,6 +37,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | As que "não se aplicavam" — o lote rápido (lote 25) | 8 | 0 | o Pacto Cadavérico (os cadáveres de Profanar e Desenterrar dos últimos 4 s Resfriam e Eletrizam os inimigos a até 3 casas); o Alcance do Ricochete (a distância do salto); os projéteis que Retornam, Ricocheteiam no terreno (um ricochete a mais), vão em direções aleatórias (inimigos sorteados) e a barragem que não se propaga (toda no alvo); o Golpe que também mira o local anterior (mais um inimigo perto) |
 | O mercenário do Luminary (lote 26) | 18 | 0 | o mercenário permanente (sai sozinho: a sua vida máxima, o golpe da sua arma; volta em 10 s); a vida e o dano dele, o "8% mais Dano por único" (os seus únicos nos tipos de peça liberados), o guarda-costas (20% do dano dos acertos nele com a vida dele maior; 40% do dano dele recuperado com ela menor), o provocar, as suas auras nele (+50%), o Vínculo nele (o Juramento: a morte dele não leva você) e os Vínculos com duração infinita |
 | Os encaixes de joia (lote 27) | 2 | 0 | os 21 encaixes da árvore (15 Básicos e os 6 Grandes da borda) recebem as Joias Carmesim, Viridiana e Cobalto (e a Prismática, só Única), que passam a cair; com o encaixe alocado, os mods da joia valem como os de uma peça; o Chieftain (Ngamahu): com joia não única, os aumentos de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados no Raio Grande (1800, como no PoE/PoB — lote 29) viram de Fogo e cada nó pequeno ou notável dá +4 de Força |
+| Zerar a árvore — lote 30 (as contas e regras erradas) | 26 | 0 | a Precisão da Destreza passa a 3 por ponto (somava +3 em cima dos 2); "X% mais Dano de Caos/Gelo" só na parte daquele tipo; "Debuffs em você expiram X% mais rápido" = a duração ÷ (1 + X%) em todo debuff (afecções, maldições, os dos monstros); "menos Dano Físico Sofrido" multiplicativo; o Vento Favorável dá 8% de Velocidade de Ação; a Parada Cardíaca alterna (consecutivamente) os 5 s de menos dano de Acertos e os 5 s de menos dano Degenerativo; a Guarda do Vento e o "+0,75% de Chance de Crítico" já eram a conta do PoE (a nota estava errada) |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -52,8 +53,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
 | 7 | sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o "+8% mais Dano por único") | Cintos Lendários (asc. Luminary) — Seu mercenário pode equipar cintos únicos<br>Botas Lendárias (asc. Luminary) — Seu mercenário pode equipar botas únicas<br>Armas Lendárias (asc. Luminary) — Seu mercenário pode equipar aljavas, armas e escudos únicos |
 | 7 | trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s | Armadura e Escudo de Energia, Recuperação do Bloqueio (asc. Guardian) — Recuperação de Bloqueio aumentada em 30%<br>Barreira de Lâmina (notável) — Recuperação de Bloqueio aumentada em 50%<br>Tartaruga (notável) — Recuperação de Bloqueio aumentada em 60% |
-| 6 | entra como redução de dano físico enquanto o escudo está cheio | Maestria de Escudo de Energia (maestria) — 10% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio |
-| 6 | somado à precisão que a Destreza já dá | Maestria de Precisão (maestria) — Bônus de Precisão da Destreza concede +3 de Precisão por Destreza |
 | 5 | a Mina detona logo que um inimigo chega perto (no PoE é a aura da Mina plantada): soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido aumentado em 2% aos Inimigos próximos a ela, até 10% |
 | 5 | a velocidade de uso do clamor | Velocidade de Clamores (nó) — Velocidade dos Clamores aumentada em 15%<br>Admoestador (notável) — Velocidade dos Clamores aumentada em 50%<br>Dano Físico, Velocidade do Clamor (asc. Berserker) — Velocidade dos Clamores aumentada em 20% |
 | 5 | Causticar, Fragilizar e Exaurir elementais (os do PoE) ainda não existem: vale no Resfriamento e na Eletrização | Dano Elemental com Armas e Efeito de Afecções (nó) — Efeito de Afecções Não-Danificadoras aumentado em 10%<br>Foco Elemental (notável) — Efeito de Afecções Não-Danificadoras aumentado em 20%<br>Cinza, Gelo e Tempestade (notável) — Efeito de Afecções Não-Danificadoras aumentado em 30% |
@@ -62,11 +61,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 5 | no PoE é o dano que o inimigo causa (o poedb traduz "sofrido"); soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido reduzido em 2% aos Inimigos próximos a ela, até 10% |
 | 4 | encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo | Maestria de Garras (maestria) — Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente |
 | 4 | o Elusivo dura 4 s | Maestria de Empunhadura Dupla (maestria) — 20% de chance de ganhar Elusivo ao Bloquear enquanto em Empunhadura Dupla |
-| 4 | vale nos golpes com a tag Caos (o golpe inteiro) | Maestria de Caos (maestria) — Causa 10% mais Dano de Caos aos inimigos que tiverem Escudo de Energia<br>Presença Pútrida (asc. Occultist) — 15% mais Dano de Caos |
 | 3 | nas gemas (o golpe básico, não) | Força Concussiva (notável) — Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano<br>Risco Calculado (asc. Saboteur) — Dano com Acertos é Azarado<br>Julgamento Inevitável (asc. Inquisitor) — Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo |
-| 3 | vale para as afecções que os monstros causam em você | Maestria de Duração (maestria) — Debuffs em você expiram 15% mais rápido |
 | 2 | "Corpo a Corpo": com uma arma corpo a corpo empunhada | Maestria de Fortificação (maestria) — Ganha 20 Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único |
-| 2 | a cada 10 segundos (a linha de cima) | Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano de Acertos por 5 segundos<br>Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano Degenerativo por 5 segundos |
 | 2 | a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais | Distância do Ricochete (nó) — Alcance do Ricochete aumentado em 15%<br>Tiro Ardil (notável) — Alcance do Ricochete aumentado em 30% |
 | 2 | a velocidade de ataque, o crítico, o bloqueio e a regeneração da Oferenda | Dama do Sacrifício (asc. Necromancer) — Suas Habilidades de Oferenda também afetam você |
 | 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
@@ -75,7 +71,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 2 | o bloqueio-base do escudo vira N (o aumentado local dele não entra) | Gladiador (asc. Ascendant) — Ganhe 50% de Chance de Bloquear com o Escudo Equipado ao invés do valor do Escudo |
 | 2 | os monstros só batem nos lacaios de perto: o golpe de um monstro que conjura magias conta como magia | Proteção da Podridão (notável) — Lacaios tem +18% de Chance de Bloquear o Dano Mágico<br>Bloqueio Mágico de Lacaios (nó) — Lacaios tem +12% de Chance de Bloquear o Dano Mágico |
 | 2 | pela distância até o alvo: tudo colado, nada a 6 casas | Animosidade Adjacente (notável) — Projéteis causam Dano com Acertos aumentado em 40% aos alvos no início de seu movimento, reduzido para 0% na medida em que viajam adiante<br>Queima-Roupa (keystone) — Acertos dos Ataques de Projéteis causam até 30% mais Dano aos alvos no inicio de seu movimento, causando menos Dano aos alvos na medida em que o projétil viaja adiante |
-| 2 | Vento Favorável: +10% de velocidade de ataque, conjuração e movimento | Atiradora (asc. Ascendant) — Você e Aliados próximos têm Vento Favorável |
 | 1 | 1% de Escudo de Energia máximo aumentado por 1% de chance de Bloquear Magias | Bastião Vil (asc. Occultist) — Chance de bloquear magias aumenta o seu escudo de energia máximo |
 | 1 | 8% MAIS dano por único (o texto do PoE em inglês: "more"); os únicos dele são os seus nos tipos de peça que os nós "pode equipar" liberam | Armas Lendárias (asc. Luminary) — Seu mercenário e os lacaios dele causam +8% de dano para cada item único equipado por ele |
 | 1 | a cura sai junto do golpe, da vida que faltava antes dele | Desafiando a Dor (asc. Berserker) — Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio |
@@ -92,10 +87,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 1 | cada Fantasma vivo (do suporte Convocar Fantasma) dá Dano Físico Mágico Adicional igual ao golpe dele (o de um monstro comum do seu nível) — o PoE não publica a tabela pelo nível do Fantasma; pela regra do jogo, o dano adicionado a magias entra nas magias com dano Físico | O Bastão Negro (asc. Reliquarian) — Cada Fantasma Convocado concede a Você Poder Fantasmal |
 | 1 | conta os segundos desde o último Clamor | Escalonamento (notável) — Dano Corpo a Corpo aumentado em 10% para cada segundo que você for afetado por um Buff de Clamor, máximo de 60% |
 | 1 | Convergência: 30% mais dano nas habilidades Elementais, por 4 s | Coração da Destruição (asc. Elementalist) — Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada 8 segundos |
-| 1 | na redução do dano de Acertos | Guarda do Vento (asc. Deadeye) — 4% menos Dano sofrido por Força dos Ventos |
 | 1 | no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque) | Chamas de Ngamahu (asc. Reliquarian) — Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo |
 | 1 | no golpe físico dos monstros | Dançarino do Vento (keystone) — 20 menos dano de Ataque sofrido se você não foi Acertado por um Ataque Recentemente |
-| 1 | no PoE soma pontos à chance base da habilidade; aqui, à chance de crítico do personagem. | Assassino (asc. Ascendant) — +0.75% de Chance de Golpe Crítico |
 | 1 | o acerto e o dano degenerativo das suas gemas não ferem (os totens e lacaios, sim); o golpe básico não sai | Vínculo Ancestral (keystone) — Você não pode causar Dano com Habilidades por si só |
 | 1 | o acerto no amaldiçoado renova os 2 s de base | Forças Profanadas (notável) — Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você |
 | 1 | o adicional por Empalamento entra no acerto pela Redução de Dano Físico do alvo, sem os aumentos de dano | Mestre do Metal (asc. Champion) — Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo |
@@ -121,7 +114,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 1 | vale com qualquer Fúria | Ritual da Ruína (asc. Berserker) — Perca 0.1% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria |
 | 1 | vale em qualquer inimigo Provocado por você | Autoridade Natural (notável) — Inimigos Provocados por seus Clamores sofrem Dano aumentado em 8% |
 | 1 | vale no acerto corpo a corpo que tem Fogo, sobre o dano inteiro dele | Força Concussiva (notável) — Acertos Atordoam como se causassem 50% mais Dano de Fogo Corpo a Corpo |
-| 1 | vale nos golpes com a tag Gelo (o golpe inteiro) | Despertar Frígido (asc. Occultist) — 15% mais Dano de Gelo |
 | 1 | vale para o inimigo provocado que você matar (no PoE, o provocado pelo clamor, morto por qualquer um). | Lâmina de Cinturão Verde (asc. Reliquarian) — Inimigos Provocados por seus Clamores Explodem ao morrer, causando 8% de sua Vida máxima como Dano de Caos |
 
 ## As joias dos encaixes da árvore (lotes 27 a 29)

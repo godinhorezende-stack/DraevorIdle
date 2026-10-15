@@ -342,7 +342,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (26 — 15/10: os RAIOS das joias únicas — as linhas "em Alcance / no Raio" que mudam os nós da árvore (a Inércia, as Temperadas, a Força dos
 // Humildes, o Salto Intuitivo…), "Receba X% do Dano de Gelo/Raio como Dano de Caos Extra" (os Sonhos) e "−X% a todas as resistências
 // elementais" (o Fio da Esperança).)
-export const VERSAO_DA_TRADUCAO = 26;
+// (27 — 15/10, lote 30 "zerar a árvore": "+X% de Chance de Crítico" exato (soma nos pontos base), "X% mais Dano de Caos/Gelo" só na parte
+// daquele tipo, "Debuffs em você expiram X% mais rápido", "X% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio".)
+export const VERSAO_DA_TRADUCAO = 27;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

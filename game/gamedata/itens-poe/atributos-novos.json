@@ -7082,6 +7082,54 @@
       "unidade": "",
       "combate": true,
       "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "precisao_por_dex": {
+      "nome": "O bônus de Precisão da Destreza por ponto (no lugar dos 2)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/atributos.efeitos (lote 30)"
+    },
+    "mais_dano_fisico": {
+      "nome": "Mais Dano Físico (só a parte Físico do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_fogo": {
+      "nome": "Mais Dano de Fogo (só a parte de Fogo do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_gelo": {
+      "nome": "Mais Dano de Gelo (só a parte de Gelo do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_raio": {
+      "nome": "Mais Dano de Raio (só a parte de Raio do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_caos": {
+      "nome": "Mais Dano de Caos (só a parte de Caos do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "debuffs_expiram_rapido": {
+      "nome": "Debuffs em você expiram mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorDosDebuffs (lote 30)"
+    },
+    "menos_dano_acertos": {
+      "nome": "Menos Dano de Acertos sofrido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate e poderes (lote 30)"
     }
   }
 }

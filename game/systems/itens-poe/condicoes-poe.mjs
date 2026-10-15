@@ -930,7 +930,8 @@ export const BUFFS = {
   emissarioDifusao: { nome: 'Direções: Difusão', af: { bifurcar: 2, bifurcar_de_novo: 1 } },
   emissarioTodos: { nome: 'Direções: Todos', af: { extra_projectiles: 2, ricochetes: 2, perfurar: 2, bifurcar: 2, bifurcar_de_novo: 1 } },
   // (lote F) Vento Favorável (o lembrete do PoE: Velocidade de Ação aumentada — aqui, as velocidades de ataque, conjuração e movimento).
-  ventoFavoravel: { nome: 'Vento Favorável', af: { atk_speed: 10, cast_speed: 10, move_speed: 10 } },
+  // (lote 30, P027: "Vento Favorável aumenta a Velocidade de Ação em 8%" — o lembrete do próprio nó; era +10% de ataque, conjuração e movimento)
+  ventoFavoravel: { nome: 'Vento Favorável', af: { action_speed: 8 } },
   // (o Inquisidor: "Fanatismo concede às magias conjuradas por você +75% de velocidade de conjuração, -75% de custo e área de efeito
   // aumentada em 75%"; o Elementalista: "Convergência concede 30% mais Dano Elemental e dura 4 segundos" — aproximado: nas habilidades Elementais.)
   fanatismo: { nome: 'Fanatismo', af: { cast_speed: 75, 'custo_mana_inc@magia': -75, 'area_inc@magia': 75 } },
@@ -1086,13 +1087,20 @@ export const MALDICOES_DOS_MONSTROS = {
   desespero: { nome: 'Desespero', af: { chaos_res: -15 } },
 };
 export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
+/**
+ * (lote 30, P017) "Debuffs em você expiram X% mais rápido": o tempo deles corre (1 + X%) vezes mais depressa — a duração ÷ (1 + X%), em TODO
+ * debuff em você (as afecções, as maldições, os debuffs dos monstros).
+ */
+export const fatorDosDebuffs = (af) => 1 / Math.max(0.01, 1 + (Number(af?.debuffs_expiram_rapido) || 0) / 100);
+/** (lote 30, P016/P076) As chaves do "X% mais Dano de <tipo>" — só a parte daquele tipo do golpe (`fatorRecebidoPeloBicho`). */
+export const MAIS_DANO_DO_TIPO = Object.freeze({ physical: 'mais_dano_fisico', fire: 'mais_dano_fogo', ice: 'mais_dano_gelo', energy: 'mais_dano_raio', chaos: 'mais_dano_caos' });
 /** Põe uma maldição em você (renova a mesma): `{ nome, af, ms }`. */
 export function amaldicoarJogador(hunt0, id, { nome, af, ms = DURACAO_DA_MALDICAO_DO_MONSTRO_MS }, agora = hunt0?.clock ?? 0) {
   // (12/10: "Maldições são infligidas em Você ao invés dos alvos Vinculados" — a maldição vai para quem vincula este jogador.)
   const hunt = quemRecebeAMaldicao(hunt0) ?? hunt0;
   if (!hunt || !af) return;
   // ("Duração das Maldições em você aumentada em X%".)
-  ms = Math.round(ms * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.duracao_maldicao_propria) || 0) / 100));
+  ms = Math.round(ms * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.duracao_maldicao_propria) || 0) / 100) * fatorDosDebuffs(fichaDa(hunt)?.afPoe));
   (hunt.maldicoesNoJogador ??= {})[id] = { ate: agora + ms, nome, af };
 }
 /**
@@ -1318,6 +1326,10 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if (t.has('area')) for (const [k, x] of Object.entries(ficha.afPoe)) if (k.startsWith('chance_mais_dano_area:') && x > 0 && rng() * 100 < x) maisArea *= 1 + (Number(k.slice('chance_mais_dano_area:'.length)) || 0) / 100;
   const fator = (triplo ? 3 : dobro ? 2 : 1) * Math.max(0, 1 + mais / 100) * maisArea * maisDoCaminho * pelaDistancia(ficha, t, alvo, estado);
   if (fator !== 1) f.fatorDasCargas = (ficha.fatorDasCargas ?? 1) * fator;
+  // (lote 30, P016/P076) o "X% mais Dano de <tipo>" com as condições deste golpe (o sem condição está na ficha) — `fatorRecebidoPeloBicho` o
+  // aplica só na parte daquele tipo.
+  const maisDoElemento = Object.fromEntries(Object.entries(MAIS_DANO_DO_TIPO).map(([el, k]) => [el, (s[k] ?? 0) + (Number(ficha.afPoe[k]) || 0)]).filter(([, x]) => x));
+  if (Object.keys(maisDoElemento).length) f.maisDoElemento = maisDoElemento;
   if (ignora) f.ignoraReducaoFisica = true;
   if (invertida) f.resInvertida = true;
   // O "aumentado" de UM elemento com condição ("Dano de Gelo aumentado com Habilidades de Ataque"), a penetração de um elemento, o dano
@@ -1662,7 +1674,7 @@ const PARAMETRICOS = [
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes
   // (ciclo 7, lote D) mods-poe.aoSerAtordoado ("por 1 segundo por cada 100ms de Duração do Atordoamento") e os periódicos (mods-poe.aurasProximas).
   /^adrenalina_por_atordoamento:\d+$/, /^defender_armadura:\d+$/, /^phys_extra_aleatorio_chance:\d+$/,
-  /^periodico:\d+(?:\.\d+)?:(regenPct:(hp|mana|es):\d+(?:\.\d+)?|vidaPct|manaPct|esPct|fortificacao|atordoarProximos|furia|removerAfeccao(:elementais)?|proximos:[a-zA-Z]+(:\d+)?|buff:[a-zA-Z]+|consumirCadaver:(hp|mana|es)|vidaDaRegen:\d+(?:\.\d+)?|carga:(poder|frenesi|tolerancia)|removerAfeccao:todas|stat:[a-z_]+:\d+(?:\.\d+)?|frasco|congelarProximos:\d+(?:\.\d+)?|regenDaDefesa:(hp|es):(evasao|armadura|armaduraEvasao):\d+(?:\.\d+)?|soloSagrado:\d+(?:\.\d+)?|mortalha:\d+)$/,
+  /^periodico:\d+(?:\.\d+)?(?:d\d+(?:\.\d+)?)?:(regenPct:(hp|mana|es):\d+(?:\.\d+)?|vidaPct|manaPct|esPct|fortificacao|atordoarProximos|furia|removerAfeccao(:elementais)?|proximos:[a-zA-Z]+(:\d+)?|buff:[a-zA-Z]+|consumirCadaver:(hp|mana|es)|vidaDaRegen:\d+(?:\.\d+)?|carga:(poder|frenesi|tolerancia)|removerAfeccao:todas|stat:[a-z_]+:\d+(?:\.\d+)?|frasco|congelarProximos:\d+(?:\.\d+)?|regenDaDefesa:(hp|es):(evasao|armadura|armaduraEvasao):\d+(?:\.\d+)?|soloSagrado:\d+(?:\.\d+)?|mortalha:\d+)$/,
   /^clamor_impele_chance:\d+$/, // acoes (o Clamor Impele N a mais, com chance)
   /^mais_dano_presenca:\d+$/, // condicoes-poe.fichaDoGolpe (o tempo na Presença)
   /^mina_(fragiliza|enfraquece):\d+$/, // mods-poe.aoAcertar (o alvo da Mina)
@@ -1867,6 +1879,7 @@ export const resMenosDaAura = (bicho, agora, tipo) => (ativo(bicho?.estados?.aur
 export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;
   hunt.poeEntrou ??= agora; // (lote F: "por segundo que você tenha ficado parado" conta desde a entrada, se ainda não andou)
+  hunt.poeFatorDosDebuffs = fatorDosDebuffs(ficha?.afPoe); // (lote 30: para quem põe debuff sem a ficha — a maldição refletida)
   // (11/10) Um buff com tempo acabou neste tique (os nomeados — Crueldade, Elusivo, Fanatismo… — e a Oferenda em você): a ficha é refeita, e o
   // bônus sai na hora (não no próximo acerto que a refizesse).
   const venceu = (ate) => typeof ate === 'number' && ate <= agora && ate > agora - Math.max(1, ms);
@@ -2111,7 +2124,8 @@ export function controleNoJogador(ficha, efeito, rng = Math.random, hunt = null,
   const evitar = v(`evitar_${a.nome}`) + (a.elemental ? v('avoid_elem_ailments') : 0);
   if (evitar > 0 && rng() * 100 < evitar) return { evitou: true, duracaoFator: 0, pctFator: 0, chanceFator: 1 };
   // (+ "X% mais Duração de Afecções em você" — multiplica; o Atordoamento não é afecção.)
-  let duracaoFator = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * (a.elemental ? Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100) : 1);
+  // (lote 30: + "Debuffs em você expiram X% mais rápido" — o Atordoamento não é debuff)
+  let duracaoFator = Math.max(0.1, 1 + (v(`duracao_${a.nome}_propria`) + v('duracao_afeccoes_propria') + (a.elemental ? v('duracao_afeccoes_elementais_propria') : 0)) / 100) * (a.elemental ? Math.max(0, 1 + v('duracao_afeccoes_propria_mais') / 100) : 1) * (efeito === 'atordoado' ? 1 : fatorDosDebuffs(ficha?.afPoe));
   if (efeito === 'atordoado') duracaoFator /= Math.max(0.1, 1 + v('stun_recovery') / 100);
   const pctFator = efeito === 'lento' ? Math.max(0, 1 + v('efeito_resfriamento_proprio') / 100) : 1;
   // "Ponto de Atordoamento reduzido": mais fácil de ser atordoado.
@@ -2345,8 +2359,9 @@ export function fatorDoDanoRecebido(ficha, elemento, { magia = false } = {}) {
   // ("Ganha Redução de Dano Elemental adicional igual a metade da sua Resistência a Caos": no dano elemental, o "menos" da metade dela.)
   const pelaResCaos = elemental && v('reducao_elemental_meia_res_caos') > 0 ? Math.max(0, 1 - Math.max(0, ficha.protection?.chaos ?? 0) / 200) : 1;
   // (O Físico do golpe corpo a corpo passa por aqui também: o "Dano Físico recebido aumentado".)
-  // (+ o "mais/menos" de UM tipo — "X% menos Dano Físico e de Caos sofrido enquanto São": `dano_<elemento>_recebido_mais`.)
-  const doTipo = { physical: 'dano_physical_recebido_mais', chaos: 'dano_chaos_recebido_mais' }[elemento];
+  // (+ o "mais/menos" de UM tipo — "X% menos Dano Físico e de Caos sofrido enquanto São", "10% menos Dano Físico Sofrido enquanto em Escudo
+  // de Energia Cheio": `dano_<elemento>_recebido_mais`; lote 30: os cinco tipos.)
+  const doTipo = { physical: 'dano_physical_recebido_mais', fire: 'dano_fire_recebido_mais', ice: 'dano_ice_recebido_mais', energy: 'dano_energy_recebido_mais', chaos: 'dano_chaos_recebido_mais' }[elemento];
   return Math.max(0, (1 + inc / 100) * (1 + v('dano_recebido_mais') / 100) * (1 + (doTipo ? v(doTipo) : 0) / 100) * pelaResCaos);
 }
 /**
@@ -2432,6 +2447,10 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // (ciclo 7: o monstro sem estados ainda também passa — a Marca dele mora em `maldicoes`)
   const e = alvo.estados ?? {};
   let f = 1;
+  // (lote 30, P016/P076) "X% mais Dano de Caos/Gelo/…" — o "mais" de UM tipo, só na parte daquele tipo do golpe (a do golpe, com as condições
+  // dele — `fichaDoGolpe` → `maisDoElemento`; sem ela, o sem condição da ficha).
+  const maisDoTipo = ficha?.maisDoElemento?.[tipo] ?? (Number(ficha?.afPoe?.[MAIS_DANO_DO_TIPO[tipo]]) || 0);
+  if (maisDoTipo) f *= Math.max(0, 1 + maisDoTipo / 100);
   if (tipo === 'fire' && ativo(e.cinzas, agora)) f *= 1.2;
   if (ativo(e.intimidado, agora) && (ficha?.tagsDoGolpe ?? []).includes('ataque')) f *= 1.1;
   // Inervado (PoE: "Unnerve"): o alvo sofre 10% mais dano de magias.

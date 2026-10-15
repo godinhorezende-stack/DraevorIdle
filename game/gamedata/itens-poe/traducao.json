@@ -758,10 +758,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "na redução do dano de Acertos",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Perde toda a sua Força dos Ventos ao Acertar$",
@@ -4431,27 +4430,25 @@
       "padrao": "^\\{(\\d+)\\}% mais Dano de Caos$",
       "efeitos": [
         {
-          "stat": "mais_dano@caos",
+          "stat": "mais_dano_caos",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale nos golpes com a tag Caos (o golpe inteiro)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais Dano de Gelo$",
       "efeitos": [
         {
-          "stat": "mais_dano@gelo",
+          "stat": "mais_dano_gelo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale nos golpes com a tag Gelo (o golpe inteiro)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% menos Dano com Magias Ativadas$",
@@ -4501,14 +4498,13 @@
       "padrao": "^Causa \\{(\\d+)\\}% mais Dano de Caos aos inimigos que tiverem Escudo de Energia$",
       "efeitos": [
         {
-          "stat": "mais_dano@caos+alvoComEscudo",
+          "stat": "mais_dano_caos@alvoComEscudo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale nos golpes com a tag Caos (o golpe inteiro)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Dano penetra \\{(\\d+)\\}% das Resistências Elementais do Inimigo$",
@@ -5250,9 +5246,8 @@
       ],
       "_nova": true,
       "_ciclo7": true,
-      "estado": "aproximado",
-      "nota": "Vento Favorável: +10% de velocidade de ataque, conjuração e movimento",
-      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+      "_lote7": "13/10 — os aliados de verdade (lote 7)",
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Efeito dos Buffs de Arauto em você aumentado em \\{(\\d+)\\}%$",
@@ -6464,27 +6459,25 @@
       "padrao": "^Sofre \\{(\\d+)\\}% menos Dano de Acertos por \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "periodico:10:stat:dmg_reduction:{V2}",
+          "stat": "periodico:10:stat:menos_dano_acertos:{V2}",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a cada 10 segundos (a linha de cima)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Sofre \\{(\\d+)\\}% menos Dano Degenerativo por \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "periodico:10:stat:dano_degen_recebido_menos:{V2}",
+          "stat": "periodico:10d{V2}:stat:dano_degen_recebido_menos:{V2}",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a cada 10 segundos (a linha de cima)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30): consecutivamente, depois da de Acertos"
     },
     {
       "padrao": "^A cada \\{(\\d+)\\} segundos, ganhe \\{(\\d+)\\}% do Dano Físico como Dano Extra de Fogo por \\{(\\d+)\\} segundos$",
@@ -26741,14 +26734,13 @@
       "padrao": "^Debuffs em você expiram \\{(\\d+)\\}% mais rápido$",
       "efeitos": [
         {
-          "stat": "duracao_afeccoes_propria",
-          "valor": "-{1}"
+          "stat": "debuffs_expiram_rapido",
+          "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale para as afecções que os monstros causam em você",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\}%$",
@@ -29916,14 +29908,13 @@
       "padrao": "^Bônus de Precisão da Destreza concede \\+\\{(\\d+)\\} de Precisão por Destreza$",
       "efeitos": [
         {
-          "stat": "accuracy%atr:dex:1",
+          "stat": "precisao_por_dex",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "somado à precisão que a Destreza já dá",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao usar um Frasco$",
@@ -30323,14 +30314,13 @@
       "padrao": "^\\{(\\d+)\\}% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio$",
       "efeitos": [
         {
-          "stat": "phys_res@escudoCheio",
-          "valor": "{1}"
+          "stat": "dano_physical_recebido_mais@escudoCheio",
+          "valor": "-{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "entra como redução de dano físico enquanto o escudo está cheio",
-      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Recupera \\{(\\d+)\\}% da Mana por \\{(\\d+)\\} segundos? quando você usar uma Habilidade de Guarda$",
@@ -33298,9 +33288,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no PoE soma pontos à chance base da habilidade; aqui, à chance de crítico do personagem.",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote30": "15/10 — zerar a árvore (lote 30): o crit_chance soma nos pontos base (ataque e magia), antes do aumentado — a conta do PoE"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de chance de golpe crítico por carga de poder$",

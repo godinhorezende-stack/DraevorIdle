@@ -1161,7 +1161,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
   // (PoE: "X% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente" — o golpe do monstro é o ataque dele.)
-  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100);
+  // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — `menos_dano_acertos`, só nos acertos)
+  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   const danoDoAcerto = final;
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.

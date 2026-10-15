@@ -68,7 +68,9 @@ export function efeitos(p, af = null) {
     // (PoE, A Fortaleza de Ferro: "O Bônus de Dano da Força concede X% de aumento do Dano Físico Corpo a Corpo por cada Y de Força" — no lugar
     // do bônus de sempre.)
     danoFisicoPct: Number(af?.forca_dano_cada) > 0 ? Math.floor(p.str / Number(af.forca_dano_cada)) * (Number(af?.forca_dano_pct) || 0) : cada(p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT),
-    precisao: cada(p.dex * E.DEX_ACCURACY_PER_POINT),
+    // (lote 30, P007 — a Maestria de Precisão: "Bônus de Precisão da Destreza concede +3 de Precisão por Destreza" — o bônus por ponto PASSA A
+    // SER 3, no lugar dos 2; duas fontes não somam.)
+    precisao: cada(p.dex * Math.max(E.DEX_ACCURACY_PER_POINT, Number(af?.precisao_por_dex) || 0)),
     evasao: cada(p.dex * E.DEX_EVASION_PER_POINT),
     velocidadeDeAtaquePct: cada(p.dex * E.DEX_ATTACK_SPEED_PER_POINT),
     mana: cada(p.int * E.INT_MANA_PER_POINT),

@@ -203,7 +203,8 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
       if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
         const af = afDaMaldicaoNoJogador(efeitos);
-        if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + dur, nome: regras.nome ?? 'Maldição refletida', af };
+        // (lote 30: "Debuffs em você expiram X% mais rápido" — o fator do personagem, carimbado no tique: `condicoes-poe.tique`)
+        if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + Math.round(dur * (hunt.poeFatorDosDebuffs ?? 1)), nome: regras.nome ?? 'Maldição refletida', af };
       }
       continue;
     }
