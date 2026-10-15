@@ -339,7 +339,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // disparados em direções aleatórias" passam a valer nas peças.)
 // (25 — 15/10: as JOIAS ABISSAIS — "Tem N Encaixes Abissal", o efeito das encaixadas, "por Joia Abissal afetando você", "por joia Olho X
 // encaixada", "enquanto afetado por uma Joia Abissal Rara/Mágica/Única", "Com uma joia Olho X encaixada", os 4 Olhos únicos.)
-export const VERSAO_DA_TRADUCAO = 25;
+// (26 — 15/10: os RAIOS das joias únicas — as linhas "em Alcance / no Raio" que mudam os nós da árvore (a Inércia, as Temperadas, a Força dos
+// Humildes, o Salto Intuitivo…), "Receba X% do Dano de Gelo/Raio como Dano de Caos Extra" (os Sonhos) e "−X% a todas as resistências
+// elementais" (o Fio da Esperança).)
+export const VERSAO_DA_TRADUCAO = 26;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

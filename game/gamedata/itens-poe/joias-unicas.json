@@ -1,0 +1,239 @@
+{
+  "_nota": "O RAIO (pelo nome — o tamanho em unidades da árvore está em passivas/arvore.RAIOS_DE_JOIA) e o \"Limitado a: N\" de cada joia única, do poedb (tools/importar-joias-unicas.mjs).",
+  "joias": {
+    "Ancestral_Vision": {
+      "limite": 1
+    },
+    "Apex_Mode": {
+      "limite": 1
+    },
+    "Atziris_Reign": {
+      "limite": 1
+    },
+    "Bloodnotch": {
+      "limite": 1
+    },
+    "Bound_By_Destiny": {
+      "limite": 1
+    },
+    "Brutal_Restraint": {
+      "raio": "grande"
+    },
+    "Brute_Force_Solution": {
+      "raio": "grande"
+    },
+    "Careful_Planning": {
+      "raio": "grande"
+    },
+    "Chill_of_Corruption": {
+      "limite": 1
+    },
+    "Combat_Focus": {
+      "raio": "medio",
+      "limite": 2
+    },
+    "Dead_Reckoning": {
+      "limite": 1
+    },
+    "Dissolution_of_the_Flesh": {
+      "limite": 1
+    },
+    "Efficient_Training": {
+      "raio": "grande"
+    },
+    "Elegant_Hubris": {
+      "raio": "grande"
+    },
+    "Emperors_Cunning": {
+      "limite": 1
+    },
+    "Emperors_Mastery": {
+      "limite": 1
+    },
+    "Emperors_Might": {
+      "limite": 1
+    },
+    "Emperors_Wit": {
+      "limite": 1
+    },
+    "Endless_Misery": {
+      "raio": "medio",
+      "limite": 1
+    },
+    "Energised_Armour": {
+      "raio": "grande"
+    },
+    "Energy_From_Within": {
+      "raio": "grande"
+    },
+    "Fertile_Mind": {
+      "raio": "grande"
+    },
+    "Fevered_Mind": {
+      "raio": "pequeno",
+      "limite": 1
+    },
+    "Fluid_Motion": {
+      "raio": "grande"
+    },
+    "Forbidden_Flame": {
+      "limite": 1
+    },
+    "Forbidden_Flesh": {
+      "limite": 1
+    },
+    "Fortress_Covenant": {
+      "raio": "medio",
+      "limite": 1
+    },
+    "Glorious_Vanity": {
+      "raio": "grande"
+    },
+    "Grand_Spectrum": {
+      "limite": 3
+    },
+    "Healthy_Mind": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "Heroic_Tragedy": {
+      "raio": "grande"
+    },
+    "Hidden_Potential": {
+      "limite": 1
+    },
+    "Immutable_Force": {
+      "limite": 1
+    },
+    "Impossible_Escape": {
+      "raio": "pequeno",
+      "limite": 1
+    },
+    "Inertia": {
+      "raio": "grande"
+    },
+    "Inspired_Learning": {
+      "raio": "pequeno"
+    },
+    "Intuitive_Leap": {
+      "raio": "pequeno"
+    },
+    "Lethal_Pride": {
+      "raio": "grande"
+    },
+    "Lioneyes_Fall": {
+      "raio": "medio"
+    },
+    "Melding_of_the_Flesh": {
+      "limite": 1
+    },
+    "Might_of_the_Meek": {
+      "raio": "grande"
+    },
+    "Militant_Faith": {
+      "raio": "grande"
+    },
+    "Nadir_Mode": {
+      "limite": 1
+    },
+    "Pure_Talent": {
+      "limite": 1
+    },
+    "Quickening_Covenant": {
+      "raio": "medio",
+      "limite": 1
+    },
+    "Rain_of_Splinters": {
+      "limite": 1
+    },
+    "Seething_Fury": {
+      "limite": 1
+    },
+    "Self-Flagellation": {
+      "limite": 1
+    },
+    "Spirit_Guards": {
+      "raio": "medio",
+      "limite": 1
+    },
+    "Split_Personality": {
+      "limite": 2
+    },
+    "Sublime_Vision": {
+      "limite": 1
+    },
+    "Tempered_Flesh": {
+      "raio": "medio"
+    },
+    "Tempered_Mind": {
+      "raio": "medio"
+    },
+    "Tempered_Spirit": {
+      "raio": "medio"
+    },
+    "The_Adorned": {
+      "limite": 1
+    },
+    "The_Anima_Stone": {
+      "limite": 1
+    },
+    "The_Balance_of_Terror": {
+      "limite": 1
+    },
+    "The_Blue_Dream": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "The_Blue_Nightmare": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "The_Golden_Rule": {
+      "limite": 1
+    },
+    "The_Green_Dream": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "The_Green_Nightmare": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "The_Light_of_Meaning": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "The_Red_Dream": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "The_Red_Nightmare": {
+      "raio": "grande",
+      "limite": 1
+    },
+    "Transcendent_Flesh": {
+      "raio": "medio"
+    },
+    "Transcendent_Mind": {
+      "raio": "medio"
+    },
+    "Transcendent_Spirit": {
+      "raio": "medio"
+    },
+    "Unending_Hunger": {
+      "raio": "medio",
+      "limite": 2
+    },
+    "Unnatural_Instinct": {
+      "raio": "pequeno",
+      "limite": 1
+    },
+    "Warriors_Tale": {
+      "raio": "medio",
+      "limite": 1
+    },
+    "Watchers_Eye": {
+      "limite": 1
+    }
+  }
+}

@@ -7434,6 +7434,592 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^Força das Passivas em Alcance são Transformadas em Destreza$",
+      "efeitos": [
+        {
+          "stat": "raio_str_para_dex",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Força das Passivas em Alcance são Transformadas em Inteligência$",
+      "efeitos": [
+        {
+          "stat": "raio_str_para_int",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Destreza das Passivas em Alcance são Transformadas em Força$",
+      "efeitos": [
+        {
+          "stat": "raio_dex_para_str",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Destreza das Passivas em Alcance são Transformadas em Inteligência$",
+      "efeitos": [
+        {
+          "stat": "raio_dex_para_int",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Inteligência das Passivas em Alcance são Transformadas em Força$",
+      "efeitos": [
+        {
+          "stat": "raio_int_para_str",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Inteligência das Passivas em Alcance são Transformadas em Destreza$",
+      "efeitos": [
+        {
+          "stat": "raio_int_para_dex",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções de Escudo de Energia em Alcance são Transformados para serem aplicados a Armadura em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_es_para_armadura",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções de Vida em Alcance são Transformados para serem aplicados ao Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_para_es",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções de Vida em Alcance são Transformados para serem aplicados a Mana em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_para_mana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Modificadores do tipo Corpo a Corpo e Arma Corpo a Corpo em Alcance são Transformados em Modificadores de Arcos$",
+      "efeitos": [
+        {
+          "stat": "raio_corpo_para_arco",
+          "valor": "1"
+        }
+      ],
+      "nota": "as condições de corpo a corpo e de arma corpo a corpo (espada, machado, maça…) dos nós do raio passam a ser \"com Arco\"",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Força por cada \\{(\\d+)\\} de Força nas Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_menos_str_por_str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_menos_str_por_str_cada",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Destreza por cada \\{(\\d+)\\} de Destreza nas Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_menos_dex_por_dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_menos_dex_por_dex_cada",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Inteligência por cada \\{(\\d+)\\} de Inteligência nas Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_menos_int_por_int",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_menos_int_por_int_cada",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Vida aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Força em Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_rec_por_str_alocada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_vida_rec_por_str_alocada_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Vida reduzida em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Força em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_rec_por_str_livre",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "raio_vida_rec_por_str_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Multiplicador de Acerto Crítico por cada \\{(\\d+)\\} de Força nas Passivas não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_crit_multi_por_str_livre",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_crit_multi_por_str_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento na velocidade de Movimento por cada \\{(\\d+)\\} de Destreza das Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mov_por_dex_alocada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_mov_por_dex_alocada_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} à Precisão por cada \\{(\\d+)\\} de Destreza em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_precisao_por_dex_livre",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_precisao_por_dex_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento reduzida em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Destreza em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mov_por_dex_livre",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "raio_mov_por_dex_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Mana aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência em Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mana_rec_por_int_alocada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_mana_rec_por_int_alocada_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por cada \\{(\\d+)\\} de Inteligência em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_dot_multi_por_int_livre",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_dot_multi_por_int_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Mana reduzida em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mana_rec_por_int_livre",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "raio_mana_rec_por_int_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito de Habilidades Passivas não-Angulares no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_efeito_nao_notaveis",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis em Alcance concedem nada$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_nada",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Pequenas Habilidades Passivas Alocadas no Raio não concedem nada$",
+      "efeitos": [
+        {
+          "stat": "raio_pequenos_alocados_nada",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Concede todos os bônus das Pequenas Habilidades Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_pequenos_livres_concedem",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas no Raio também concedem \\+\\{(\\d+)\\} de Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "raio_passivas_vida",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas fornecendo Resistência a Fogo ou todas Resistências Elementais em Alcance (?:/ )?também concedem uma chance igual de ganhar uma Carga de Tolerância ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_res_fogo_tolerancia",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas fornecendo Resistência a Gelo em Alcance também concedem uma chance igual de ganhar uma Carga de Frenesi ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_res_gelo_frenesi",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas fornecendo Resistência a Raio em Alcance também concedem uma chance igual de ganhar uma Carga de Poder ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_res_raio_poder",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas que concedem Resistência à Fogo ou todas as Resistências Elementais no Raio (?:/ )?também concedem Chance de Bloquear Dano de Ataques em \\{(\\d+)\\}% do seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_res_fogo_bloqueio",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas que concedem Resistência a Gelo ou Todas as Resistências no Raio (?:/ )?também concedem Chance de Suprimir o Dano Mágico em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_res_gelo_supressao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas que concedem Resistência à Raio ou todas as Resistências Elementais no raio (?:/ )?também concedem Chance de Bloquear Dano Mágico em \\{(\\d+)\\}% do seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_res_raio_bloqueio_magico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis no Raio são Transformadas para (?:/ )?conceder: Lacaios tem Velocidade de Movimento reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_lacaio_mov",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis no Raio são Transformadas para (?:/ )?conceder: Lacaios tem Dano aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_lacaio_dano_recebido",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o PoE em inglês: \"Minions take X% increased Damage\" — os lacaios SOFREM mais dano",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis no Raio são Transformadas para (?:/ )?concederem: Custo de Mana das Habilidades aumentado em \\{(\\d+)\\}% e Dano Mágico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_custo_mana",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_notaveis_dano_magico",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Pequeno$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "1"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 960 e 1320 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Médio$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "2"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 1320 e 1680 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Grande$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "3"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 1680 e 2040 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Muito Grande$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "4"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 2040 e 2400 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Massivo$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "5"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 2400 e 2880 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades passivas ao alcance podem ser atribuídas sem estarem conectadas à sua árvore$",
+      "efeitos": [
+        {
+          "stat": "raio_aloca_sem_conexao",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passagem$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o nome do efeito no PoE (Passage)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de .+ no Raio, Habilidades Prismáticas .+$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção do jogo",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Efeito das Tatuagens no Raio aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o jogo não tem Tatuagens",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
       "padrao": "^Joias Não Únicas fazem com que Aumentos e Reduções aos Tipos de Dano em um Grande Raio sejam Transformados para serem aplicados ao Dano de Fogo$",
       "efeitos": [
         {
@@ -7441,7 +8027,7 @@
           "valor": "1"
         }
       ],
-      "nota": "cada joia não única num encaixe alocado: os aumentos e reduções de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados a até 1500 dela (o Raio Grande) passam a ser de Fogo — o Dano Elemental não é um tipo de dano e fica",
+      "nota": "cada joia não única num encaixe alocado: os aumentos e reduções de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados a até 1800 dela (o Raio Grande do PoE na árvore de hoje) passam a ser de Fogo — o Dano Elemental não é um tipo de dano e fica",
       "_nova": true,
       "_lote27": "15/10 — os encaixes de joia (lote 27)"
     },
@@ -7453,7 +8039,7 @@
           "valor": "{1}"
         }
       ],
-      "nota": "por joia não única num encaixe alocado: cada nó pequeno ou notável alocado a até 1500 dela (o Raio Grande) dá a Força",
+      "nota": "por joia não única num encaixe alocado: cada nó pequeno ou notável alocado a até 1800 dela (o Raio Grande do PoE na árvore de hoje) dá a Força",
       "_nova": true,
       "_lote27": "15/10 — os encaixes de joia (lote 27)"
     },
@@ -16417,6 +17003,48 @@
       ],
       "_nova": true,
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano de Gelo como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "ice_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano de Raio como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "energy_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% a todas as resistências elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
     },
     {
       "padrao": "^Eficiência de custo de mana aumentada em \\{(\\d+)\\}% por carga de tolerância$",

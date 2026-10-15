@@ -158,16 +158,23 @@ function iniciosExtras(ids) {
   return extras;
 }
 
+/** (lote 29) Os nós que as joias deixam alocar sem ligação ("podem ser atribuídas sem estarem conectadas à sua árvore") → o encaixe de cada um. */
+const liberados = () => vista()?.liberados ?? {};
+
 /** O menor caminho de nós não alocados até `id` — o mesmo que o servidor aceita. */
 function caminhoAte(id) {
   const a = arvore();
   const mine = meus();
   if (!a?.porId.has(id)) return null;
   if (mine.has(id)) return [];
+  // (lote 29) o nó liberado por uma joia entra sozinho; o caminho pode começar num liberado (ele entra no caminho)
+  const livres = Object.keys(liberados()).filter((x) => !mine.has(x));
+  if (livres.includes(id)) return [id];
   const veioDe = new Map();
   const fila = [...mine, ...[...iniciosExtras(mine)].filter((x) => !mine.has(x))];
   for (const x of fila) veioDe.set(x, null);
   const origens = new Set(fila);
+  for (const x of livres) if (!veioDe.has(x)) { veioDe.set(x, null); fila.push(x); }
   for (let i = 0; i < fila.length; i++) {
     for (const c of a.porId.get(fila[i])?.conexoes ?? []) {
       if (veioDe.has(c) || a.porId.get(c)?.tipo === 'start') continue;
@@ -192,7 +199,8 @@ function ficamSem(id) {
   const v = vista();
   const resto = new Set((v?.alocados ?? []).filter((x) => x !== id));
   // (+ os inícios extras dos nós que FICAM: tirar o "Caminho" ilha o que só se ligava por ele)
-  const inicios = [v?.inicio, v?.inicioAscendencia, ...iniciosExtras(resto)].filter(Boolean);
+  // (lote 29: + os nós liberados por uma joia cujo encaixe fica)
+  const inicios = [v?.inicio, v?.inicioAscendencia, ...iniciosExtras(resto), ...Object.entries(liberados()).filter(([n, s]) => s !== id && resto.has(n)).map(([n]) => n)].filter(Boolean);
   const ligados = new Set(inicios);
   const fila = [...inicios];
   while (fila.length) {
@@ -228,7 +236,7 @@ function estadoDoNo(n) {
   // A opção de escolha de uma ascendência: uma por pai (a irmã escolhida bloqueia as outras).
   if (n.opcaoDe != null && [...mine].some((x) => x !== n.id && arvore()?.porId.get(x)?.opcaoDe === n.opcaoDe)) return 'bloqueado';
   const extras = iniciosExtras(mine);
-  return n.conexoes.some((c) => mine.has(c) || extras.has(c)) ? 'disponivel' : 'bloqueado';
+  return n.conexoes.some((c) => mine.has(c) || extras.has(c)) || liberados()[n.id] ? 'disponivel' : 'bloqueado';
 }
 
 // ------------------------------------------------------------------- abrir
@@ -934,12 +942,15 @@ function montar(body) {
     }
 
     // (lote 27) O RAIO GRANDE do encaixe de joia escolhido (o do Chieftain: 1500 unidades da árvore).
-    if (selecionado?.encaixeDeJoia && a.raiosDeJoia?.grande) {
+    // (lote 29: o raio da joia encaixada — `vista.raios`, o anel do Fio de Esperança com o de dentro —; sem ele, o Raio Grande)
+    const raioDoEncaixe = selecionado?.encaixeDeJoia ? vista()?.raios?.[selecionado.id] ?? (a.raiosDeJoia?.grande ? { min: 0, max: a.raiosDeJoia.grande } : null) : null;
+    if (raioDoEncaixe) {
       const p = paraTela(selecionado);
       g.beginPath();
-      g.arc(p.x, p.y, a.raiosDeJoia.grande * cam.zoom, 0, Math.PI * 2);
+      g.arc(p.x, p.y, raioDoEncaixe.max * cam.zoom, 0, Math.PI * 2);
+      if (raioDoEncaixe.min > 0) g.arc(p.x, p.y, raioDoEncaixe.min * cam.zoom, 0, Math.PI * 2, true);
       g.fillStyle = 'rgba(111, 200, 180, 0.07)';
-      g.fill();
+      g.fill('evenodd');
       g.strokeStyle = 'rgba(111, 200, 180, 0.55)';
       g.lineWidth = 1.5;
       g.stroke();

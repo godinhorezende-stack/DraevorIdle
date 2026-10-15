@@ -2,7 +2,7 @@
 // Médios e Pequenos são das Joias Ramificadoras, fora) recebem as Joias Carmesim, Viridiana e Cobalto (a Prismática só Única), que entram no
 // catálogo com ids fixos e caem; com o encaixe ALOCADO, os mods da joia valem como os de uma peça; o encaixe que sai da árvore devolve a joia
 // à mochila (nunca some); e o Chieftain (Ngamahu, Avanço da Chama): com joia NÃO ÚNICA, os aumentos dos outros tipos de dano dos nós
-// alocados no Raio Grande (1500) viram de Fogo e cada nó pequeno ou notável dá +4 de Força.
+// alocados no Raio Grande (1800 nas unidades da árvore, como no PoE/PoB — lote 29) viram de Fogo e cada nó pequeno ou notável dá +4 de Força.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -53,7 +53,8 @@ test('a ÁRVORE: as duas linhas do Ngamahu com efeito; os 21 encaixes que aceita
   assert.equal(encaixes.length, 21);
   assert.deepEqual([...new Set(encaixes.map((n) => n.nomeEn))].sort(), ['Basic Jewel Socket', 'Large Jewel Socket']);
   assert.ok(!cliente.nos.some((n) => n.encaixeDeJoia && /Medium|Small/.test(n.nomeEn)));
-  assert.equal(cliente.raiosDeJoia.grande, 1500);
+  // (dono, 15/10: "Como no PoE/PoB" — o Raio Grande na árvore de hoje é 1800, não o 1500 do item)
+  assert.equal(cliente.raiosDeJoia.grande, 1800);
 });
 
 test('o CATÁLOGO: as joias entram com ids fixos, sem slot, e caem; a Prismática só Única; o baú de nível 1 não dá joia', { skip: SEM }, () => {
@@ -123,9 +124,10 @@ test('o encaixe que sai da árvore (respec, troca de classe) DEVOLVE a joia à m
 
 test('o CHIEFTAIN: com joia NÃO ÚNICA, o dano dos outros tipos dos nós no Raio Grande vira de Fogo e cada pequeno/notável dá +4 de Força', { skip: SEM }, () => {
   const s = P.arvore().porId.get(ENCAIXE);
-  const longe = (n) => P.arvore().nos.filter((x) => P.ehEncaixeDeJoia(x)).every((t) => Math.hypot(n.x - t.x, n.y - t.y) > 1500);
+  // (dono, 15/10: o Raio Grande do PoE/PoB, 1800 — era 1500)
+  const longe = (n) => P.arvore().nos.filter((x) => P.ehEncaixeDeJoia(x)).every((t) => Math.hypot(n.x - t.x, n.y - t.y) > P.RAIOS_DE_JOIA.grande);
   const fisico = (n) => !n.ascendencia && n.tipo === 'small' && n.efeitos?.length === 1 && n.efeitos[0].add === 'phys_dmg';
-  const perto = P.arvore().nos.find((n) => fisico(n) && Math.hypot(n.x - s.x, n.y - s.y) <= 1500);
+  const perto = P.arvore().nos.find((n) => fisico(n) && Math.hypot(n.x - s.x, n.y - s.y) <= P.RAIOS_DE_JOIA.grande);
   const fora = P.arvore().nos.find((n) => fisico(n) && longe(n));
   assert.ok(perto && fora);
   const base = (e) => P.efeitos(e).adds;

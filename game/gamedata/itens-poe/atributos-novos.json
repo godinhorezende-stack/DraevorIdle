@@ -6776,6 +6776,312 @@
       "unidade": "%",
       "combate": true,
       "efeito": "mods-poe.porComMods → condicoes-poe.resMenosDasAfeccoes (15/10)"
+    },
+    "raio_str_para_dex": {
+      "nome": "Joia (raio): Força das passivas vira Destreza",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_str_para_int": {
+      "nome": "Joia (raio): Força das passivas vira Inteligência",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dex_para_str": {
+      "nome": "Joia (raio): Destreza das passivas vira Força",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dex_para_int": {
+      "nome": "Joia (raio): Destreza das passivas vira Inteligência",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_int_para_str": {
+      "nome": "Joia (raio): Inteligência das passivas vira Força",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_int_para_dex": {
+      "nome": "Joia (raio): Inteligência das passivas vira Destreza",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_es_para_armadura": {
+      "nome": "Joia (raio): aumentos de Escudo de Energia viram de Armadura",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_para_es": {
+      "nome": "Joia (raio): aumentos de Vida viram de Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_para_mana": {
+      "nome": "Joia (raio): aumentos de Vida viram de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_corpo_para_arco": {
+      "nome": "Joia (raio): os modificadores de corpo a corpo viram de Arco",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_str_por_str": {
+      "nome": "Joia (raio): raio menos str por str",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_str_por_str_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_menos_str_por_str)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_alocada": {
+      "nome": "Joia (raio): raio vida rec por str alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_alocada_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_vida_rec_por_str_alocada)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_crit_multi_por_str_livre": {
+      "nome": "Joia (raio): raio crit multi por str livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_crit_multi_por_str_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_crit_multi_por_str_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_livre": {
+      "nome": "Joia (raio): raio vida rec por str livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_vida_rec_por_str_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_dex_por_dex": {
+      "nome": "Joia (raio): raio menos dex por dex",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_dex_por_dex_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_menos_dex_por_dex)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_alocada": {
+      "nome": "Joia (raio): raio mov por dex alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_alocada_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mov_por_dex_alocada)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_precisao_por_dex_livre": {
+      "nome": "Joia (raio): raio precisao por dex livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_precisao_por_dex_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_precisao_por_dex_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_livre": {
+      "nome": "Joia (raio): raio mov por dex livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mov_por_dex_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_int_por_int": {
+      "nome": "Joia (raio): raio menos int por int",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_int_por_int_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_menos_int_por_int)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_alocada": {
+      "nome": "Joia (raio): raio mana rec por int alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_alocada_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mana_rec_por_int_alocada)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dot_multi_por_int_livre": {
+      "nome": "Joia (raio): raio dot multi por int livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dot_multi_por_int_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_dot_multi_por_int_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_livre": {
+      "nome": "Joia (raio): raio mana rec por int livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mana_rec_por_int_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_efeito_nao_notaveis": {
+      "nome": "Joia (raio): efeito das passivas não notáveis",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_nada": {
+      "nome": "Joia (raio): os notáveis não concedem nada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_pequenos_alocados_nada": {
+      "nome": "Joia (raio): as pequenas alocadas não concedem nada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_pequenos_livres_concedem": {
+      "nome": "Joia (raio): concede as pequenas não alocadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_passivas_vida": {
+      "nome": "Joia (raio): Vida por passiva alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_fogo_tolerancia": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_fogo_tolerancia)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_gelo_frenesi": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_gelo_frenesi)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_raio_poder": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_raio_poder)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_fogo_bloqueio": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_fogo_bloqueio)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_gelo_supressao": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_gelo_supressao)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_raio_bloqueio_magico": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_raio_bloqueio_magico)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_lacaio_mov": {
+      "nome": "Joia (raio): os notáveis concedem Velocidade de Movimento dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_lacaio_dano_recebido": {
+      "nome": "Joia (raio): os notáveis concedem Dano sofrido pelos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_custo_mana": {
+      "nome": "Joia (raio): os notáveis concedem Custo de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_dano_magico": {
+      "nome": "Joia (raio): os notáveis concedem Dano Mágico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_anel": {
+      "nome": "Joia (raio): o anel do Fio da Esperança (1 a 5)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_aloca_sem_conexao": {
+      "nome": "Joia (raio): as passivas do raio se alocam sem ligação",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
     }
   }
 }

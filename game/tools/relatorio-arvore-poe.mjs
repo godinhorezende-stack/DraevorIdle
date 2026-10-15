@@ -149,7 +149,7 @@ const IMPLEMENTADOS = [
   {
     bloco: 'Os encaixes de joia (lote 27)',
     re: /^Joias Não Únicas/,
-    jogo: 'os 21 encaixes da árvore (15 Básicos e os 6 Grandes da borda) recebem as Joias Carmesim, Viridiana e Cobalto (e a Prismática, só Única), que passam a cair; com o encaixe alocado, os mods da joia valem como os de uma peça; o Chieftain (Ngamahu): com joia não única, os aumentos de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados no Raio Grande (1500) viram de Fogo e cada nó pequeno ou notável dá +4 de Força',
+    jogo: 'os 21 encaixes da árvore (15 Básicos e os 6 Grandes da borda) recebem as Joias Carmesim, Viridiana e Cobalto (e a Prismática, só Única), que passam a cair; com o encaixe alocado, os mods da joia valem como os de uma peça; o Chieftain (Ngamahu): com joia não única, os aumentos de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados no Raio Grande (1800, como no PoE/PoB — lote 29) viram de Fogo e cada nó pequeno ou notável dá +4 de Força',
   },
 ];
 
@@ -229,14 +229,83 @@ export function relatorio(arvore, hoje = new Date()) {
   return { md: md.join('\n'), numeros };
 }
 
-/** Lê a árvore montada, escreve o relatório e devolve os números. */
-export function gravarRelatorio(hoje = new Date()) {
+/*
+ * ---- (15/10) AS JOIAS dos encaixes da árvore (lotes 27 a 29) ----
+ * O dono mandou fazer as joias e "as pendências e os efeitos que não funcionam" (15/10): a seção mostra o que já vale (os encaixes, as
+ * joias que caem, os mods delas e as linhas de cada única) e o que falta, com o lote previsto. Os estados são os do balão da peça (a
+ * tradução de `traducao.json`, linha a linha).
+ */
+const LOTE_PREVISTO = [
+  [/^(Split_Personality|The_Balance_of_Terror|Rational_Doctrine|Watchers_Eye|Sublime_Vision|Bound_By_Destiny|Forbidden_Flame|Forbidden_Flesh|Impossible_Escape)$/, 'lote 31 — os mods sorteados da única (raspar os pools no poedb)'],
+];
+const GRUPOS_DE_JOIA = [
+  ['Carmesim, Viridiana, Cobalto e Prismática', (u) => ['Joia Carmesim', 'Joia Viridiana', 'Joia Cobalto', 'Joia Prismática'].includes(u.base)],
+  ['Abissais (os 4 Olhos)', (u, classe) => classe === 'Abyss_Jewels' && !!u.base],
+  ['Atemporais', (u) => u.base === 'Joia Atemporal'],
+  ['Ramificadoras', (u) => /Ramificadora/.test(u.base ?? '')],
+];
+const loteDa = (slug, grupo) => (grupo === 'Atemporais' ? 'Atemporais (as tabelas do PoB, com a autorização do download)' : grupo === 'Ramificadoras' ? 'Ramificadoras (raspar os encantamentos e notáveis no poedb)' : LOTE_PREVISTO.find(([re]) => re.test(slug))?.[1] ?? 'lote 30 — as outras linhas dos únicos de joia');
+
+async function secaoDasJoias() {
+  process.env.ITENS_POE ??= '1';
+  const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+  const T = await import('../systems/itens-poe/traduzir.mjs');
+  const cat = Catalogo.catalogo();
+  if (!cat?.classes?.Jewels) return [];
+  const md = ['## As joias dos encaixes da árvore (lotes 27 a 29)', ''];
+  md.push('- **Encaixes**: os 21 da árvore (15 Básicos e os 6 Grandes da borda); os Médios e Pequenos são das Ramificadoras. Raio na árvore como no PoE/PoB: Pequeno 960, Médio 1440, Grande 1800 (o Fio de Esperança em anéis).');
+  md.push('- **Joias que caem**: Carmesim, Viridiana e Cobalto (Normal, Mágica, Rara e Única), a Prismática (só Única) e os 4 Olhos Abissais (nos encaixes da árvore e nos Encaixes Abissais das peças).');
+  for (const [nome, classe, fora] of [['Jewels', 'Jewels', /^(Timeless_Jewel)$/], ['Abissais', 'Abyss_Jewels', null]]) {
+    const c = cat.classes[classe];
+    const r = T.cobertura({ classes: { [classe]: { ...c, paginas: Object.fromEntries(Object.entries(c.paginas).filter(([p]) => !fora?.test(p))) } } });
+    md.push(`- **Mods das joias ${nome === 'Jewels' ? 'Carmesim/Viridiana/Cobalto/Prismática' : 'Abissais'}** (prefixos e sufixos, pelo peso de sorteio): ${r.comEfeitoNoCombate}% com efeito.`);
+  }
+  md.push('', '| Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
+  const faltam = [];
+  for (const [grupo, f] of GRUPOS_DE_JOIA) {
+    const conta = { total: 0, efeito: 0, lembrete: 0, sem: 0 };
+    let unicas = 0;
+    for (const classe of ['Jewels', 'Abyss_Jewels']) {
+      for (const u of cat.classes[classe]?.unicos ?? []) {
+        if (!f(u, classe) || !u.modificadores?.length) continue;
+        unicas++;
+        for (const m of u.modificadores) {
+          const t = T.traduzirMod({ modelo: m.modelo, valores: (m.faixas ?? []).map((x) => x[0]) });
+          const nota = t.partes.find((p) => p.nota)?.nota ?? '';
+          conta.total++;
+          if (['equivalente', 'novo', 'aproximado'].includes(t.estado)) conta.efeito++;
+          else if (t.estado === 'lembrete' || (t.estado === 'inerte' && /^não se aplica/i.test(nota))) conta.lembrete++;
+          else {
+            conta.sem++;
+            faltam.push({ grupo, unica: u.nome, slug: u.slug, texto: m.texto, nota });
+          }
+        }
+      }
+    }
+    md.push(`| ${escapar(grupo)} (${unicas}) | ${conta.total} | ${conta.efeito} | ${conta.lembrete} | ${conta.sem} |`);
+  }
+  md.push('', '### O que ainda não funciona nas joias únicas, pelo lote previsto', '');
+  md.push('| Lote | Única — linha |', '|---|---|');
+  const porLote = new Map();
+  for (const x of faltam) {
+    const lote = loteDa(x.slug, x.grupo);
+    if (!porLote.has(lote)) porLote.set(lote, []);
+    porLote.get(lote).push(x);
+  }
+  for (const [lote, xs] of porLote) md.push(`| ${escapar(lote)} (${xs.length}) | ${xs.map((x) => `${escapar(x.unica)} — ${escapar(x.texto)}${x.nota ? ` _(${escapar(x.nota)})_` : ''}`).join('<br>')} |`);
+  md.push('');
+  return md;
+}
+
+/** Lê a árvore montada, escreve o relatório (com a seção das joias) e devolve os números. */
+export async function gravarRelatorio(hoje = new Date()) {
   const r = relatorio(JSON.parse(readFileSync(ARVORE, 'utf8')), hoje);
-  writeFileSync(DESTINO, r.md);
+  const joias = await secaoDasJoias();
+  writeFileSync(DESTINO, joias.length ? `${r.md}\n${joias.join('\n')}` : r.md);
   return r.numeros;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const numeros = gravarRelatorio();
+  const numeros = await gravarRelatorio();
   console.log(JSON.stringify(numeros), '→', DESTINO.pathname);
 }
