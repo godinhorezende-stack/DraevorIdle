@@ -7434,17 +7434,28 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Joias Não Únicas .*$",
+      "padrao": "^Joias Não Únicas fazem com que Aumentos e Reduções aos Tipos de Dano em um Grande Raio sejam Transformados para serem aplicados ao Dano de Fogo$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "joia_transforma_fogo",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem joias na árvore",
+      "nota": "cada joia não única num encaixe alocado: os aumentos e reduções de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados a até 1500 dela (o Raio Grande) passam a ser de Fogo — o Dano Elemental não é um tipo de dano e fica",
       "_nova": true,
-      "_ciclo7": true
+      "_lote27": "15/10 — os encaixes de joia (lote 27)"
+    },
+    {
+      "padrao": "^Joias Não Únicas fazem com que Habilidades Passivas Pequenas e Notáveis em um Raio Grande também concedam \\+\\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "joia_forca_no_raio",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "por joia não única num encaixe alocado: cada nó pequeno ou notável alocado a até 1500 dela (o Raio Grande) dá a Força",
+      "_nova": true,
+      "_lote27": "15/10 — os encaixes de joia (lote 27)"
     },
     {
       "padrao": "^Runas têm \\{(\\d+)\\}% mais Frequência de Ativação se \\{(\\d+)\\}% da Duração de Vínculo houver expirado$",

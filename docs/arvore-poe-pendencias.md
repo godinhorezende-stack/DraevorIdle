@@ -5,9 +5,9 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6001** — equivalente 1356, novo 4461, aproximado (parcial) 184.
+- ✓ Com efeito: **6003** — equivalente 1356, novo 4463, aproximado (parcial) 184.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
-- – Não se aplica ao jogo: 35. Lembretes do PoE (entre parênteses, sem marca): 765.
+- – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
 
@@ -36,6 +36,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | O Reliquarian (lote 21) | 5 | 0 | a Rajada Vulcânica (no acerto corpo a corpo, 4 projéteis de magma em área, 200% do golpe, 60% em Fogo); o Grande Emissário das Direções (sai sozinho; a cada 6 s, +2 Projéteis, +2 Ricochetes, +2 Perfurações, Difundir duas vezes, ou todos); o Poder Fantasmal (o dano de cada Fantasma vivo nas suas magias físicas) com o suporte Convocar Fantasma, que passa a convocar (no golpe fatal e no Raro/Único, até o máximo, 15 s); Erguer Aranhas (ao matar, 2 aranhas por cadáver perto, até 20, 30 s, +2% de Velocidade de Ataque e +15% de Dano com Veneno cada); Suspender no Tempo (a terceira Miragem solta as magias que as criaram, com menos dano) — e os únicos que dão essas habilidades |
 | As que "não se aplicavam" — o lote rápido (lote 25) | 8 | 0 | o Pacto Cadavérico (os cadáveres de Profanar e Desenterrar dos últimos 4 s Resfriam e Eletrizam os inimigos a até 3 casas); o Alcance do Ricochete (a distância do salto); os projéteis que Retornam, Ricocheteiam no terreno (um ricochete a mais), vão em direções aleatórias (inimigos sorteados) e a barragem que não se propaga (toda no alvo); o Golpe que também mira o local anterior (mais um inimigo perto) |
 | O mercenário do Luminary (lote 26) | 18 | 0 | o mercenário permanente (sai sozinho: a sua vida máxima, o golpe da sua arma; volta em 10 s); a vida e o dano dele, o "8% mais Dano por único" (os seus únicos nos tipos de peça liberados), o guarda-costas (20% do dano dos acertos nele com a vida dele maior; 40% do dano dele recuperado com ela menor), o provocar, as suas auras nele (+50%), o Vínculo nele (o Juramento: a morte dele não leva você) e os Vínculos com duração infinita |
+| Os encaixes de joia (lote 27) | 2 | 0 | os 21 encaixes da árvore (15 Básicos e os 6 Grandes da borda) recebem as Joias Carmesim, Viridiana e Cobalto (e a Prismática, só Única), que passam a cair; com o encaixe alocado, os mods da joia valem como os de uma peça; o Chieftain (Ngamahu): com joia não única, os aumentos de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados no Raio Grande (1500) viram de Fogo e cada nó pequeno ou notável dá +4 de Força |
 
 ## Sem efeito (✗), pelo motivo
 

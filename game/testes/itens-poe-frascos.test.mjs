@@ -30,7 +30,8 @@ test('os frascos de Vida, Mana e Utilidade entram no catálogo (sem slot, para o
   const meta = ITEM_CATALOG[Jogo.idDaBase('Life_Flasks/Small_Life_Flask')];
   assert.deepEqual([meta.frasco, meta.slot, meta.type], [true, undefined, 'flasks']);
   // As peças de antes não mudam de id: os frascos vêm depois de todas as bases equipáveis.
-  const maiorEquipavel = Math.max(...ids.filter((b) => !Jogo.FRASCOS.includes(b.split('/')[0])).map(Jogo.idDaBase));
+  // (dono, 15/10: "Ajustar os 2 testes" — as JOIAS do lote 27 têm ids fixos à parte, 7.800.001+, e não contam aqui)
+  const maiorEquipavel = Math.max(...ids.filter((b) => !Jogo.FRASCOS.includes(b.split('/')[0]) && !Jogo.JOIAS[b]).map(Jogo.idDaBase));
   assert.ok(ids.filter((b) => Jogo.FRASCOS.includes(b.split('/')[0])).every((b) => Jogo.idDaBase(b) > maiorEquipavel));
   // No drop: aparecem, e nunca Raros (o PoE não tem frasco raro).
   const rng = semente(9);

@@ -240,6 +240,8 @@ export function somaDeItens(estado) {
     if (!peca || slot === 'backpack') continue;
     somarPeca(total, estado, slot, peca, daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1);
   }
+  // (15/10, lote 27) as JOIAS nos encaixes alocados da árvore do PoE: os mods delas somam como os de uma peça.
+  for (const { peca } of Passivas.joiasAtivas(estado)) somarPeca(total, estado, 'joia', peca);
   return total;
 }
 /** Soma UMA peça vestida em `total` (a do Draevor e a do PoE — `poe.af`, com as condições da própria peça e do lado do anel). */

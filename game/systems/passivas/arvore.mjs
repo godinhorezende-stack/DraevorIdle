@@ -236,6 +236,8 @@ export function garantir(estado) {
   if (limpos.length !== p.alocados.length || limpos.some((id, i) => id !== p.alocados[i])) p.alocados.splice(0, p.alocados.length, ...limpos);
   // A opção de maestria só fica enquanto a maestria está alocada (respec, troca de árvore).
   if (p.maestrias) for (const id of Object.keys(p.maestrias)) if (!p.alocados.includes(id)) delete p.maestrias[id];
+  // (lote 27) A joia de um encaixe que não está mais alocado volta para a mochila.
+  if (p.joias) devolverJoiasSoltas(estado, p);
   return { passivas: p, migrou, arvoreMudou };
 }
 
@@ -471,13 +473,90 @@ export function respec(estado, pedido, emCacada = false) {
   return { ok: true, mudou: true, tirados: plano.tirar.length, preco: plano.preco };
 }
 
+// ------------------------------------------------------ os encaixes de joia
+
+/*
+ * ---- (15/10, lote 27) Os ENCAIXES DE JOIA da árvore do PoE ----
+ * Dono, 14/10: "Criar os encaixes de joia". Os 21 encaixes da árvore principal — os 15 "Básicos" e os 6 "Grandes" da borda; os "Médios" e
+ * os "Pequenos" são os das Joias Ramificadoras (fora) — recebem uma Joia (`itens-poe/jogo.JOIAS`; quem põe e tira é `passivas/joias.mjs`).
+ * A joia vale com o encaixe ALOCADO: os mods dela somam como os de uma peça (`Afixos.somaDeItens`). O encaixe que deixa de estar alocado
+ * (respec, troca de classe, a árvore mudou) devolve a joia à mochila em `garantir` — a peça nunca some.
+ */
+const ENCAIXES_DE_JOIA = new Set(['Basic Jewel Socket', 'Large Jewel Socket']);
+export const ehEncaixeDeJoia = (no) => !!no && !no.ascendencia && ENCAIXES_DE_JOIA.has(no.nomeEn);
+/** Os raios das joias do PoE (desde a 3.16), nas unidades da árvore (as mesmas de `x`/`y`). */
+export const RAIOS_DE_JOIA = Object.freeze({ pequeno: 800, medio: 1200, grande: 1500, muitoGrande: 1800, massivo: 2400 });
+
+/** As joias que valem: `[{ no, peca }]` — encaixe da árvore do PoE, alocado e com joia. */
+export function joiasAtivas(estado) {
+  const joias = ARVORE.id === 'poe' ? estado?.passivas?.joias : null;
+  if (!joias) return [];
+  const meus = new Set(estado.passivas.alocados ?? []);
+  const lista = [];
+  for (const [id, peca] of Object.entries(joias)) {
+    const no = ARVORE.porId.get(id);
+    if (peca && meus.has(id) && ehEncaixeDeJoia(no)) lista.push({ no, peca });
+  }
+  return lista;
+}
+
+/** A joia de um encaixe que não está alocado (ou que não existe mais) volta inteira para a mochila. */
+function devolverJoiasSoltas(estado, p) {
+  if (ARVORE.id !== 'poe') return;
+  const meus = new Set(p.alocados);
+  for (const [id, peca] of Object.entries(p.joias)) {
+    if (meus.has(id) && ehEncaixeDeJoia(ARVORE.porId.get(id))) continue;
+    if (peca) (estado.inventory ??= []).push({ ...peca, count: 1 });
+    delete p.joias[id];
+    p.joiasVersao = (p.joiasVersao ?? 0) + 1;
+  }
+}
+
+/*
+ * O CHIEFTAIN (Ngamahu, Avanço da Chama): "Joias Não Únicas fazem com que Aumentos e Reduções aos Tipos de Dano em um Grande Raio sejam
+ * Transformados para serem aplicados ao Dano de Fogo" (`joia_transforma_fogo`) e "… Habilidades Passivas Pequenas e Notáveis em um Raio
+ * Grande também concedam +4 de Força" (`joia_forca_no_raio`). Cada joia NÃO ÚNICA num encaixe alocado alcança os nós alocados da árvore
+ * principal a até 1500 dela (o Raio Grande): os aumentos e reduções de Dano Físico, de Gelo, de Raio e de Caos deles passam a ser de Fogo (o
+ * Dano Elemental não é um tipo de dano: fica) e cada nó pequeno ou notável dá +4 de Força por joia que o alcança (pequeno: nem notável, nem
+ * maestria, nem keystone, nem encaixe — o lembrete do PoE).
+ */
+const TIPOS_DE_DANO_PARA_FOGO = new Set(['phys_dmg', 'ice_dmg', 'energy_dmg', 'chaos_dmg']);
+function raioDasJoias(estado, alocados) {
+  const joias = ARVORE.id === 'poe' ? estado.passivas?.joias : null;
+  if (!joias) return null;
+  let transforma = 0;
+  let forca = 0;
+  for (const id of alocados) {
+    for (const ef of efeitosDoNo(ARVORE.porId.get(id) ?? {}, estado.passivas)) {
+      if (ef.add === 'joia_transforma_fogo') transforma += ef.valor;
+      else if (ef.add === 'joia_forca_no_raio') forca += ef.valor;
+    }
+  }
+  if (!(transforma > 0) && !(forca > 0)) return null;
+  const naoUnicas = joiasAtivas(estado).filter((j) => j.peca.poe?.raridade !== 'unico').map((j) => j.no);
+  if (!naoUnicas.length) return null;
+  const vezes = new Map();
+  for (const id of alocados) {
+    const no = ARVORE.porId.get(id);
+    if (!no || no.ascendencia || ehEncaixeDeJoia(no)) continue;
+    const n = naoUnicas.filter((s) => Math.hypot(no.x - s.x, no.y - s.y) <= RAIOS_DE_JOIA.grande).length;
+    if (n) vezes.set(id, n);
+  }
+  return { transforma: transforma > 0, forca, vezes };
+}
+/** O aumento de um tipo de dano passado para Fogo, com a condição que tinha (`phys_dmg@ataque+comMaca` → `fire_dmg@ataque+comMaca`). */
+function paraFogo(ef) {
+  const m = /^([a-z_]+)(.*)$/.exec(ef.add ?? '');
+  return m && TIPOS_DE_DANO_PARA_FOGO.has(m[1]) ? { ...ef, add: `fire_dmg${m[2]}` } : ef;
+}
+
 // --------------------------------------------------------------- os efeitos
 
 /*
  * ---- Cache por personagem, pela ASSINATURA dos nós alocados ----
  * A ficha é pedida várias vezes por tique; a árvore só muda quando um nó entra
  * ou sai. A soma é refeita só quando a lista muda (o prompt: "não recalcular
- * a árvore a cada frame").
+ * a árvore a cada frame"). (lote 27: ou quando uma joia entra ou sai de um encaixe — `joiasVersao`.)
  */
 let CACHE = new WeakMap();
 const VAZIO = Object.freeze({ adds: {}, dano: {}, stats: {}, legado: {}, keystones: [], habilidades: new Set(), fontes: {}, dominios: {} });
@@ -486,21 +565,27 @@ const VAZIO = Object.freeze({ adds: {}, dano: {}, stats: {}, legado: {}, keyston
 export function efeitos(estado) {
   if (!estado) return VAZIO;
   const alocados = estado.passivas?.alocados ?? [];
+  const joias = estado.passivas?.joiasVersao ?? 0;
   const guardado = CACHE.get(estado);
   // Caminho rápido: o mesmo array, do mesmo tamanho e com a mesma ponta (alocar põe no fim; respec muda o tamanho).
-  if (guardado && guardado.ref === alocados && guardado.n === alocados.length && guardado.ultimo === alocados[alocados.length - 1] && guardado.primeiro === alocados[0]) return guardado.valor;
-  const assinatura = alocados.join(',');
+  if (guardado && guardado.ref === alocados && guardado.n === alocados.length && guardado.ultimo === alocados[alocados.length - 1] && guardado.primeiro === alocados[0] && guardado.joias === joias) return guardado.valor;
+  const assinatura = `${alocados.join(',')}|${joias}`;
   if (guardado?.assinatura === assinatura) {
     Object.assign(guardado, { ref: alocados, n: alocados.length, ultimo: alocados[alocados.length - 1], primeiro: alocados[0] });
     return guardado.valor;
   }
   const r = { adds: {}, dano: {}, stats: {}, legado: {}, keystones: [], habilidades: new Set(), fontes: {}, dominios: {} };
   const fonte = (chave, nome, v) => (r.fontes[chave] ??= []).push({ especializacao: `Árvore: ${nome}`, pct: v });
+  const raio = raioDasJoias(estado, alocados);
   for (const id of alocados) {
     const no = ARVORE.porId.get(id);
     if (!no) continue;
     if (no.dominio) r.dominios[no.dominio] = (r.dominios[no.dominio] ?? 0) + 1;
-    for (const ef of efeitosDoNo(no, estado.passivas)) {
+    // (lote 27) o nó no Raio Grande de uma joia não única, com o Chieftain: o dano dos outros tipos vira de Fogo e +4 de Força.
+    const noRaio = raio?.vezes.get(id) ?? 0;
+    if (noRaio && raio.forca > 0 && (no.tipo === 'small' || no.tipo === 'notable')) r.adds.str = (r.adds.str ?? 0) + raio.forca * noRaio;
+    for (const ef0 of efeitosDoNo(no, estado.passivas)) {
+      const ef = noRaio && raio.transforma ? paraFogo(ef0) : ef0;
       if (ef.tag) {
         r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano;
         fonte(ef.tag, no.nome, ef.dano);
@@ -516,7 +601,7 @@ export function efeitos(estado) {
       if (no.keystone.regra === 'habilidade' || no.keystone.regra === 'poe') r.habilidades.add(no.keystone.id);
     }
   }
-  CACHE.set(estado, { assinatura, valor: r, ref: alocados, n: alocados.length, ultimo: alocados[alocados.length - 1], primeiro: alocados[0] });
+  CACHE.set(estado, { assinatura, valor: r, ref: alocados, n: alocados.length, ultimo: alocados[alocados.length - 1], primeiro: alocados[0], joias });
   return r;
 }
 
@@ -554,6 +639,8 @@ export function vista(estado, emCacada = false) {
     // o respec de graça (jogo oficial): a tela diz "grátis" em vez do preço
     ...(regrasDoRespec().gratis ? { respecGratis: true } : {}),
     podeTirar: !(regrasDoRespec().soForaDaCacada && emCacada),
+    // (lote 27) as joias nos encaixes (a peça inteira: a tela mostra o ícone e o balão dela).
+    ...(passivas.joias && Object.keys(passivas.joias).length ? { joias: structuredClone(passivas.joias) } : {}),
   };
 }
 
@@ -561,7 +648,8 @@ export function vista(estado, emCacada = false) {
 export function arvoreParaCliente() {
   return {
     versao: ARVORE.versao,
-    ...(ARVORE.id === 'poe' ? { poe: true, ascendencias: ARVORE.ascendencias ?? {} } : {}),
+    // (lote 27) o raio das joias (a tela desenha o Raio Grande em volta do encaixe escolhido).
+    ...(ARVORE.id === 'poe' ? { poe: true, ascendencias: ARVORE.ascendencias ?? {}, raiosDeJoia: RAIOS_DE_JOIA } : {}),
     inicios: ARVORE.inicios,
     clusters: ARVORE.clusters,
     custo: CONFIG.custo,
@@ -579,6 +667,8 @@ export function arvoreParaCliente() {
       // (ciclo 7) o porquê de cada linha sem efeito igual ("não se aplica ao jogo: …", a diferença do aproximado) — o balão mostra.
       ...(n.notas ? { notas: n.notas } : {}),
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
+      // (lote 27) o encaixe de joia que aceita joia (os das Ramificadoras, não).
+      ...(ehEncaixeDeJoia(n) ? { encaixeDeJoia: true } : {}),
       ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
       // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
       ...(n.icone ? { icone: n.icone } : {}),

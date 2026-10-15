@@ -4,9 +4,11 @@
 //
 // O cliente só PEDE: `alocar` um nó (ou um caminho, nó por nó, cada um
 // validado), `respec` (uns nós, com ou sem os que ficariam ilhados, ou tudo),
-// `planoRespec` (o que sairia e quanto custa, sem tirar nada). Quem decide é
+// `planoRespec` (o que sairia e quanto custa, sem tirar nada), `encaixarJoia` /
+// `retirarJoia` (as joias nos encaixes da árvore do PoE). Quem decide é
 // `passivas/arvore.mjs`.
 import * as Passivas from './arvore.mjs';
+import * as Joias from './joias.mjs';
 import * as Afixos from '../afixos.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Ficha from '../ficha.mjs';
@@ -50,6 +52,12 @@ export function comando(estado, m, emCacada = false) {
     if (feitos) depoisDeMudar(estado);
     if (falha && !feitos) return falha;
     return { ok: true, mudou: feitos > 0, feitos, ...(falha ? { aviso: `${feitos} nó(s) alocado(s); o próximo não: ${falha.erro}` } : {}) };
+  }
+  if (acao === 'encaixarJoia' || acao === 'retirarJoia') {
+    // (lote 27) as joias nos encaixes da árvore do PoE (`passivas/joias.mjs`).
+    const r = acao === 'encaixarJoia' ? Joias.encaixar(estado, m) : Joias.retirar(estado, m);
+    if (r.ok) depoisDeMudar(estado);
+    return r;
   }
   if (acao === 'planoRespec') {
     const plano = Passivas.planoDeRespec(estado, pedidoDeRespec(m), emCacada);

@@ -6722,6 +6722,18 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes.criarVinculo (14/10)"
+    },
+    "joia_transforma_fogo": {
+      "nome": "Joias não únicas: os aumentos dos outros tipos de dano no Raio Grande viram de Fogo (Chieftain)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.efeitos — raioDasJoias (15/10)"
+    },
+    "joia_forca_no_raio": {
+      "nome": "Joias não únicas: Força por nó pequeno ou notável alocado no Raio Grande (Chieftain)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.efeitos — raioDasJoias (15/10)"
     }
   }
 }

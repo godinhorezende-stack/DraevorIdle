@@ -27620,6 +27620,15 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .pas-preco { color: #e3ae48; }
 .pas-vazio { color: var(--muted); }
 .pas-dica { margin: 0; font-size: 11px; color: var(--muted); }
+/* (lote 27) O ENCAIXE DE JOIA escolhido: a joia nele e as da mochila, cada uma com o ícone (o balão da peça no ícone) e o botão. */
+.pas-joia { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+.pas-joia > b { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: #7fb8d8; }
+.pas-joia-linha { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.pas-joia-icone { display: inline-flex; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 4px; background: #0d1015; }
+.pas-joia-nome { font-size: 12px; overflow-wrap: anywhere; }
+.pas-joia-nome.raridade-magico { color: #8888ff; }
+.pas-joia-nome.raridade-raro { color: #ffff77; }
+.pas-joia-nome.raridade-unico { color: #af6025; }
 /* O TOTAL DA ÁRVORE: a soma dos nós alocados, por grupo, e "agora → depois" com um nó escolhido. */
 .pas-total { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
 .pas-info > .pas-total:first-child { margin-top: 0; padding-top: 0; border-top: 0; }

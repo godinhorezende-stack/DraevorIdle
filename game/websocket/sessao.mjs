@@ -571,6 +571,15 @@ export class Sessao {
     const emCacada = !!this.estado.hunt;
     const r = ComandosDasPassivas.comando(this.estado, m, emCacada);
     if (!r.ok) return this.erro(r.erro);
+    // (lote 27) O estado (a mochila) ANTES da vista: a tela da árvore se redesenha com a vista, já com a mochila nova (a joia que entrou
+    // num encaixe ou voltou dele). O personagem vai INTEIRO (a mochila não é campo de todo quadro) e o peso segue a regra de `aplicar`: o
+    // excesso vai para o depósito.
+    if (r.mudou) {
+      const excesso = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado));
+      if (excesso) this.avisoPendente = excesso;
+      this.characterSujo = true;
+      this.mandarEstado();
+    }
     this.enviar({
       t: 'passivas',
       view: Passivas.vista(this.estado, emCacada),
@@ -578,7 +587,6 @@ export class Sessao {
       ...(m.action === 'arvore' ? { arvore: Passivas.arvoreParaCliente() } : {}),
       ...(r.aviso ? { aviso: r.aviso } : {}),
     });
-    if (r.mudou) this.mandarEstado();
   }
 
   /**

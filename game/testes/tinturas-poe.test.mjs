@@ -97,7 +97,8 @@ function alocar(e, re) {
 test('o ITEM: as 10 bases entram no jogo DEPOIS dos frascos (nenhum id existente muda), no cinto, sem Raro nem qualidade; o balão com a Queima de Mana e a recarga', { skip: SEM }, () => {
   const ids = Catalogo.catalogo().classes.Tinctures.bases.map((b) => J.idDaBase(b.id));
   assert.equal(ids.filter(Boolean).length, 10);
-  const outros = [...J.registro().porBase.entries()].filter(([b]) => !b.startsWith('Tinctures/')).map(([, id]) => id);
+  // (dono, 15/10: "Ajustar os 2 testes" — as JOIAS do lote 27 têm ids fixos à parte, 7.800.001+, e não contam aqui)
+  const outros = [...J.registro().porBase.entries()].filter(([b]) => !b.startsWith('Tinctures/') && !J.JOIAS[b]).map(([, id]) => id);
   assert.ok(Math.min(...ids) > Math.max(...outros), 'os ids das Tinturas vêm depois de todas as bases que já existiam');
   assert.equal(ITEM_CATALOG[ids[0]].frasco, true);
   assert.equal(ITEM_CATALOG[ids[0]].tintura, true);

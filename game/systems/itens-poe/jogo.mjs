@@ -6,7 +6,8 @@
 //      de energia, que a ficha já lê por peça) e o resto em `peca.poe` (raridade, mods, nome, ícone e o `af` traduzido, que
 //      `Afixos.somaDeItens` soma). Os valores entram como estão (decisão do dono, 04/10).
 //   3. `entregar(nome, peca)`: dá a peça a um personagem ONLINE (a engine local usa para testar jogando).
-// Classes sem slot no Draevor (frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`.
+// Classes sem slot no Draevor (frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`. (Os frascos entram
+// pelo cinto de frascos — `FRASCOS` —, os mapas pelo Dispositivo e as joias pelos encaixes da árvore — `JOIAS`, lote 27.)
 import * as Catalogo from './catalogo.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
 import { traduzirPeca } from './traduzir.mjs';
@@ -62,6 +63,13 @@ const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [], mapas: ne
  * bases delas vêm depois dos frascos, sem mudar nenhum id que já existia; `itens-poe/tinturas.mjs`.)
  */
 export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures'];
+/**
+ * (15/10, lote 27) As JOIAS dos encaixes da árvore de passivas (dono, 14/10: "Criar os encaixes de joia" — `passivas/joias.mjs`), com o id
+ * FIXO de cada base (7.800.000 + n, fora da sequência das bases: nenhum id que já existia muda). A Atemporal (da Legião) e as Ramificadoras
+ * (os encaixes das Joias Ramificadoras) ficam de fora. A Prismática só existe como Única no PoE (`SO_UNICAS`).
+ */
+export const JOIAS = Object.freeze({ 'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004 });
+export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel']);
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
 export const idDaBase = (base) => REG.porBase.get(base) ?? REG.mapas.get(base) ?? null;
@@ -155,6 +163,19 @@ export function iniciar(itemCatalog) {
         poe: { base: b.id, classe: Mapas.CLASSE, unico: u.slug, icone: Mapas.iconeDoUnico(u, tier), iconeLado: u.iconeLado ?? 64, tier, nivel: b.atributos?.nivel_area },
       };
     }
+  }
+  // As JOIAS (lote 27): sem slot de equipamento — vão para os encaixes de joia da árvore —, com o id fixo de `JOIAS`. Entram em `porBase`:
+  // caem como as outras peças (a classe segue em `naoEquipaveis`, como a dos mapas: não veste).
+  for (const [baseId, id] of Object.entries(JOIAS)) {
+    const b = cat.classes[baseId.split('/')[0]]?.bases.find((x) => x.id === baseId);
+    if (!b) continue;
+    itemCatalog[id] = {
+      id, name: b.nome, type: 'jewels', weight: 1, hasSprite: false, rarity: 'comum', stackable: false, joia: true,
+      ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
+      poe: { base: b.id, classe: b.id.split('/')[0], icone: b.icone ?? null },
+    };
+    REG.porBase.set(b.id, id);
+    REG.porId.set(id, b.id);
   }
   // Os itens de missão (Acts do PoE: o item que o monstro alvo solta) entram junto.
   DropsPorMonstro.registrarItens(itemCatalog);
@@ -497,7 +518,8 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
   const candidatas = [];
   for (const baseId of REG.porBase.keys()) {
     const [classe] = baseId.split('/');
-    if (FRASCOS.includes(classe) || classe === Mapas.CLASSE) continue;
+    // (A joia não é peça equipável — vai para os encaixes da árvore: lote 27.)
+    if (FRASCOS.includes(classe) || classe === Mapas.CLASSE || JOIAS[baseId]) continue;
     const b = cat.classes[classe]?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > 1 || b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
     if (!podeCairComo(cat.classes[classe], b, 'normal')) continue;
@@ -517,7 +539,8 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
  * A base SEM pool de mods não cai Normal, Mágica nem Rara — só como Único, se tiver um (regra do PoE): as Golden (no PoE só existem como
  * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
  */
-export const podeCairComo = (classe, base, raridade) => !!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome));
+// (lote 27) A Joia Prismática só cai Única (o PoE não tem Prismática Normal, Mágica nem Rara; a coleção traz o pool genérico das joias nela).
+export const podeCairComo = (classe, base, raridade) => (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
 
 export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null) {
   const cat = Catalogo.catalogo();

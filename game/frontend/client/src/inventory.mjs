@@ -849,6 +849,8 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }
       : null,
     meta?.frasco && from === 'bag' ? { label: 'Pôr no cinto de frascos', action: () => send({ t: 'frasco', action: 'por', pilha }) } : null,
+    // (lote 27) a joia vai para um encaixe da árvore de passivas: a árvore abre (escolher o encaixe alocado e "Encaixar").
+    meta?.joia && from === 'bag' ? { label: 'Encaixar na árvore de passivas…', action: () => ctx.openArvore?.() } : null,
     from === 'equipment' ? { label: 'Desequipar', action: () => send({ t: 'unequip', slot: slotNoCorpo ?? meta.slot }) } : null,
     // Os sockets da peça vestida: encaixar/tirar gemas de skill (ver soquetes.mjs).
     from === 'equipment' && temSoquetes(peca)
