@@ -257,6 +257,13 @@ function somarPeca(total, estado, slot, peca, fatorDaPeca = 1) {
     const k = ModsPoe.ehCondicional(k1) ? ModsPoe.doAnel(k1, slot) : k1;
     if (k) total[k] = (total[k] ?? 0) + v * fatorDaPeca;
   }
+  // (15/10, lote 28) as JOIAS ABISSAIS encaixadas nos encaixes abissais da peça: somam como peças, × o "Efeito das Joias Abissais
+  // Encaixadas" da própria peça (o Torno Estígio único).
+  const abissais = peca.poe?.abissais;
+  if (abissais?.length) {
+    const efeito = 1 + (Number(peca.poe.af?.efeito_joias_abissais) || 0) / 100;
+    for (const joia of abissais) if (joia) somarPeca(total, estado, slot, joia, efeito);
+  }
   return total;
 }
 /**

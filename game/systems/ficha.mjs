@@ -150,7 +150,13 @@ export const BONUS_DE_DUAS_ARMAS = { bloqueio: 0.15, velocidadeMais: 1.1 };
 const dobroDasDuasArmas = (af, oque) => (itensPoeLigado() && (Number(af?.bonus_duas_armas_dobrado) > 0 || (oque === 'velocidade' && Number(af?.velocidade_duas_armas_dobrada) > 0)) ? 2 : 1);
 
 /** Os modificadores LOCAIS da arma (`engine/arma.mjs`): os da peça do Draevor (`peca.locais`) ou, na do PoE, a Velocidade de Ataque e o crítico locais dela. */
-const locaisDaArma = (peca) => (peca?.poe ? { pctVelocidade: Number(peca.poe.af?.atk_speed_local) || 0, pctCritico: Number(peca.poe.af?.crit_chance_local) || 0 } : peca?.locais);
+// (lote 28: + os locais "por joia Olho X encaixada" do Rasgacarne único — `ModsPoe.locaisAbissais`; o % físico local entra como `pctDano`: a
+// base dele não tem outro % físico local, que já vem na faixa da arma.)
+const locaisDaArma = (peca) => {
+  if (!peca?.poe) return peca?.locais;
+  const ab = peca.poe.abissais?.length ? ModsPoe.locaisAbissais(peca) : {};
+  return { pctVelocidade: (Number(peca.poe.af?.atk_speed_local) || 0) + (ab.atk_speed_local ?? 0), pctCritico: (Number(peca.poe.af?.crit_chance_local) || 0) + (ab.crit_chance_local ?? 0), ...(ab.phys_dmg_local ? { pctDano: ab.phys_dmg_local } : {}) };
+};
 /** DESARMADO no PoE: 1,2 ataques por segundo (833 ms), como no PoE. No clássico, sem arma, os 2 s de sempre. */
 export const APS_DESARMADO_POE = 1.2;
 /**

@@ -195,7 +195,12 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       roubo: m0('minion_leech'), movimentoPct: m0('minion_move') + porTipo('lacaio_mov'), dotMulti: m0('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
       bloqueio: m0('minion_block'), resFogo: m0('minion_fire_res'), resGelo: m0('minion_ice_res'), resRaio: m0('minion_energy_res'),
       chances: { cegar: m0('minion_chance_cegar'), provocar: m0('minion_chance_provocar'), desacelerar: m0('minion_chance_desacelerar'), envenenar: m0('minion_chance_envenenar'), incendiar: m0('minion_chance_incendiar') + porTipo('lacaio_incendiar'),
-        definhar: m0('minion_chance_definhar'), cinzas: porTipo('lacaio_cinzas') },
+        definhar: m0('minion_chance_definhar'), cinzas: porTipo('lacaio_cinzas'),
+        // (lote 28) o Rasgacarne único: "Lacaios têm X% de chance de empalar ao atingir com ataques por joia Olho Medonho encaixada".
+        empalar: m0('minion_chance_empalar') },
+      // (lote 28) as Luvas Rebitadas únicas: "Com uma joia Olho Medonho encaixada, os lacaios têm X% de chance de ganhar Poder Profano ao
+      // atingir com magias" (4 s, como o "ao Matar").
+      poderProfanoAoAcertarMagia: m0('minion_poder_profano_ao_acertar_magia'),
       // (11/10, os únicos:) a vida recuperada ao bloquear e ao matar um envenenado; a duração renovada no acerto em Raro/Único; o dano drenado
       // como vida para o DONO; a explosão do inimigo morto pelo acerto dele (% da vida do morto).
       vidaAoBloquear: m0('minion_vida_ao_bloquear'), vidaAoMatarEnvenenado: m0('minion_vida_ao_matar_envenenado'), renova: porTipo('lacaio_renova'),

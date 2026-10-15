@@ -6734,6 +6734,48 @@
       "unidade": "",
       "combate": true,
       "efeito": "passivas/arvore.efeitos — raioDasJoias (15/10)"
+    },
+    "encaixes_abissais": {
+      "nome": "Encaixes Abissais da peça",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/abissais.encaixesAbissais (15/10)"
+    },
+    "efeito_joias_abissais": {
+      "nome": "Efeito das Joias Abissais encaixadas na peça aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.somarPeca (15/10)"
+    },
+    "minion_poder_profano_ao_acertar_magia": {
+      "nome": "Lacaios: chance de Poder Profano ao acertar com magias",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.oQueInvoca → cacadas.tiqueDosLacaios (15/10)"
+    },
+    "minion_chance_empalar": {
+      "nome": "Lacaios: chance de Empalar ao acertar com ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.oQueInvoca → cacadas.efeitosDoLacaioNoAcerto (15/10)"
+    },
+    "phys_dmg_local": {
+      "nome": "Dano Físico LOCAL da arma aumentado (por joia abissal encaixada)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.locaisAbissais → ficha.locaisDaArma (15/10)"
+    },
+    "consome_abissais_raras": {
+      "nome": "As Joias Abissais Raras encaixadas são consumidas (um mod fica na peça)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/abissais.encaixar (15/10)"
+    },
+    "res_definhados": {
+      "nome": "Inimigos Definhados por você: todas as Resistências",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.porComMods → condicoes-poe.resMenosDasAfeccoes (15/10)"
     }
   }
 }

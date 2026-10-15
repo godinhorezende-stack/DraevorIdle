@@ -27620,6 +27620,26 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .pas-preco { color: #e3ae48; }
 .pas-vazio { color: var(--muted); }
 .pas-dica { margin: 0; font-size: 11px; color: var(--muted); }
+/* (lote 28) No balão da peça: as Joias Abissais encaixadas, na cor da raridade. */
+.poe-abissal { font-size: 12px; text-align: center; }
+.poe-abissal.vazio { color: #8a8a8a; }
+.poe-abissal.r-magico { color: #8888ff; }
+.poe-abissal.r-raro { color: #ffff77; }
+.poe-abissal.r-unico { color: #af6025; }
+/* (lote 28) A janela dos ENCAIXES ABISSAIS: cada peça vestida com os encaixes dela e as Joias Abissais da mochila. */
+.abis-peca { border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin-bottom: 8px; display: grid; gap: 6px; }
+.abis-peca.escolhida { border-color: var(--accent); }
+.abis-peca h4 { margin: 0; font-size: 13px; }
+.abis-fila { display: grid; gap: 4px; }
+.abis-casa, .abis-linha { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px; border-radius: 4px; cursor: pointer; }
+.abis-casa.escolhida { background: #6fc8b41a; outline: 1px solid var(--accent); }
+.abis-icone { display: inline-flex; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 4px; background: #0d1015; }
+.abis-vazio { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+.abis-nome { font-size: 12px; overflow-wrap: anywhere; }
+.abis-nome.raridade-magico { color: #8888ff; }
+.abis-nome.raridade-raro { color: #ffff77; }
+.abis-nome.raridade-unico { color: #af6025; }
+.abis-titulo { display: block; margin: 6px 0 2px; font-size: 12px; color: #7fb8d8; }
 /* (lote 27) O ENCAIXE DE JOIA escolhido: a joia nele e as da mochila, cada uma com o ícone (o balão da peça no ícone) e o botão. */
 .pas-joia { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
 .pas-joia > b { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: #7fb8d8; }

@@ -192,7 +192,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos):/;
+const COND_COM_PARAMETRO = /^(afetadoPorAbissal|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -247,6 +247,24 @@ let leitorDaArvore = null;
 export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
 export const somaDaArvore = (estado) => leitorDaArvore?.(estado) ?? {};
 export function definirLeitorDeBase(fn) { leitorDeBase = fn; }
+/** (lote 27/28) As joias que valem nos encaixes da ÁRVORE (quem registra: `passivas/arvore.mjs`): `(estado) → [peça]`. */
+let leitorDeJoias = null;
+export function definirLeitorDeJoias(fn) { leitorDeJoias = fn; }
+export const joiasDaArvore = (estado) => leitorDeJoias?.(estado) ?? [];
+/** A peça é uma Joia Abissal (um dos 4 Olhos)? */
+export const ehJoiaAbissal = (p) => p?.poe?.classe === 'Abyss_Jewels';
+/**
+ * (15/10, lote 28) As JOIAS ABISSAIS "afetando você" (PoE: "Abyss Jewel affecting you"): as encaixadas nos encaixes abissais das peças
+ * vestidas e as dos encaixes alocados da árvore.
+ */
+export function joiasAbissaisAfetando(estado) {
+  const lista = [];
+  for (const [slot, p] of Object.entries(estado?.equipment ?? {})) if (p && slot !== 'backpack') for (const j of p.poe?.abissais ?? []) if (j) lista.push(j);
+  for (const j of joiasDaArvore(estado)) if (ehJoiaAbissal(j)) lista.push(j);
+  return lista;
+}
+/** A joia é da base `slug` (`Murderous_Eye_Jewel` — o Olho Assassino)? Sem `slug`, qualquer uma. */
+const daBaseAbissal = (j, slug) => !slug || String(j?.poe?.base ?? '').endsWith(`/${slug}`);
 export const defesasDaPeca = (poe) => leitorDeBase?.(poe) ?? null;
 /** A defesa da PEÇA vestida (`{ armadura, evasao, escudo }`): a faixa sorteada dela (`peca.base`); sem faixa, a da base do catálogo. */
 export function defesaDaPecaVestida(p) {
@@ -415,6 +433,10 @@ export function vale(conds, c) {
   const maxCargas = (t) => maximoDeCargas(total, t);
   switch (tipo) {
     case 'atrMin': return (principais?.[resto[0]] ?? 0) >= Number(resto[1]);
+    // (lote 28) "enquanto afetado por uma Joia Abissal Rara/Mágica/Única": `afetadoPorAbissal:raro`.
+    case 'afetadoPorAbissal': return joiasAbissaisAfetando(estado).some((j) => j.poe?.raridade === resto[0]);
+    // ("Com uma joia Olho X encaixada": a condição é da PEÇA — `daPeca` resolve; solta, não vale.)
+    case 'comAbissalLocal': return false;
     // "se você tiver ao menos N Maestrias de Vida alocadas": `maestriasDe:Vida:N` (a árvore registra quem conta — `definirLeitorDeMaestrias`).
     case 'maestriasDe': return (leitorDeMaestrias?.(estado, resto[0]) ?? 0) >= Number(resto[1]);
     case 'atrMaior': return (principais?.[resto[0]] ?? 0) > (principais?.[resto[1]] ?? 0);
@@ -741,6 +763,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     case 'itemCorrompido': return eq.filter(([, p]) => p.poe?.corrompido).length;
     case 'itemNaoCorrompido': return eq.filter(([, p]) => !p.poe?.corrompido).length;
     case 'itemUnico': return eq.filter(([, p]) => p.poe?.raridade === 'unico').length;
+    // (lote 28) "por Joia Abissal afetando você" / "por Joia do Olho Assassino afetando você": `joiasAbissais`, `joiasAbissais:Murderous_Eye_Jewel`.
+    case 'joiasAbissais': return joiasAbissaisAfetando(estado).filter((j) => daBaseAbissal(j, a)).length;
     // (+ ciclo 7: o teto — `lacaio::10`, "por Lacaio, até 10%")
     case 'lacaio': { const n = (h?.lacaios ?? []).filter((l) => l.hp > 0 && (!a || new RegExp(a, 'i').test(l.nome ?? ''))).length; return b ? Math.min(Number(b) || n, n) : n; }
     case 'venenoEmVoce': return Math.min(Number(b) || Infinity, (h?.efeitosDoJogador?.dots ?? []).filter((d) => /veneno/i.test(d.tipo) && d.falta > 0).length);
@@ -1532,6 +1556,21 @@ export function daPeca(chave, valor, peca, estado = null) {
     const base = escala ? `${stat}%${escala}${teto != null ? `~${teto}` : ''}` : stat;
     return daPeca(resto.length ? `${base}@${resto.join('+')}` : base, valor, peca, estado);
   }
+  // (lote 28) "Com uma joia Olho X encaixada": `comAbissalLocal:<base>` — vale com uma joia dessa base nos encaixes abissais DESTA peça.
+  const local = conds.find((c) => c.startsWith('comAbissalLocal:'));
+  if (local) {
+    const slug = local.slice('comAbissalLocal:'.length);
+    if (!(peca?.poe?.abissais ?? []).some((j) => j && daBaseAbissal(j, slug))) return [chave, 0];
+    const resto = conds.filter((c) => c !== local);
+    const base = escala ? `${stat}%${escala}${teto != null ? `~${teto}` : ''}` : stat;
+    return daPeca(resto.length ? `${base}@${resto.join('+')}` : base, valor, peca, estado);
+  }
+  // (lote 28) "por joia Olho X encaixada": `abissalLocal:<base>` — as joias dessa base nos encaixes abissais desta peça.
+  const abissal = /^abissalLocal(?::(\w+))?$/.exec(escala ?? '');
+  if (abissal) {
+    const n = (peca?.poe?.abissais ?? []).filter((j) => j && daBaseAbissal(j, abissal[1])).length;
+    return [conds.length ? `${stat}@${conds.join('+')}` : stat, comTeto(valor, n, teto)];
+  }
   // (+ `gemaLocal:R` — "por gema vermelha encaixada": os encaixes daquela cor COM gema — e `encaixeVazioLocal` — "por encaixe vazio".)
   const m = /^(encaixeLocal|gemaLocal):([RGBW])$|^(encaixeVazioLocal)$/.exec(escala ?? '');
   if (!m) return [chave, valor];
@@ -1539,6 +1578,21 @@ export function daPeca(chave, valor, peca, estado = null) {
   const abertos = (s?.cores ?? []).slice(0, s?.abertos ?? 0);
   const n = m[3] ? abertos.filter((c, i) => !s?.gemas?.[i]).length : abertos.filter((c, i) => c === m[2] && (m[1] === 'encaixeLocal' || !!s?.gemas?.[i])).length;
   return [conds.length ? `${stat}@${conds.join('+')}` : stat, comTeto(valor, n, teto)];
+}
+
+/**
+ * (lote 28) Os LOCAIS da arma que dependem das Joias Abissais encaixadas nela (o Rasgacarne único: "Dano físico / Velocidade de ataque /
+ * Chance de golpe crítico aumentada em X% por joia Olho Y encaixada" — no PoE, locais da arma): `{ phys_dmg_local, atk_speed_local,
+ * crit_chance_local }`, já com as joias da peça.
+ */
+export function locaisAbissais(peca) {
+  const r = {};
+  for (const [k, v] of Object.entries(peca?.poe?.af ?? {})) {
+    if (typeof v !== 'number' || !/%abissalLocal/.test(k)) continue;
+    const [k1, v1] = daPeca(k, v, peca);
+    if (/^(phys_dmg_local|atk_speed_local|crit_chance_local)$/.test(k1)) r[k1] = (r[k1] ?? 0) + v1;
+  }
+  return r;
 }
 
 /** O nome de uma gema como chave (`Toque de Doryani` → `toque-de-doryani`): o que "Concede a Habilidade X" grava. */
@@ -1640,7 +1694,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|desdeUsou|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|desdeUsou|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -2454,9 +2508,11 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
   const e = alvo?.estados;
   if (!ligado() || !e) return 0;
   const dot = (...t) => (alvo.dots ?? []).some((d) => t.includes(d.tipo) && d.falta > 0);
-  if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental;
-  if (tipo === 'chaos' && e.resMenosCaos > 0 && dot('veneno', 'venenoPoe')) return e.resMenosCaos;
-  return 0;
+  // (lote 28: + o Definhado — "têm −X% de todas as Resistências", nos quatro tipos, somado às das afecções)
+  const definhado = ['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0;
+  if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental + definhado;
+  if (tipo === 'chaos' && e.resMenosCaos > 0 && dot('veneno', 'venenoPoe')) return e.resMenosCaos + definhado;
+  return definhado;
 }
 /** A resistência a menos do bicho Exposto (−10% no elemento), além do Causticar. */
 // (09/10) A exposição posta pelo "Inflige Exposição a Fogo ao Acertar, aplicando −X%" guarda o X (`exposicaoPct`); a das auras, 10.

@@ -57,7 +57,8 @@ test('a ÁRVORE: as duas linhas do Ngamahu com efeito; os 21 encaixes que aceita
 });
 
 test('o CATÁLOGO: as joias entram com ids fixos, sem slot, e caem; a Prismática só Única; o baú de nível 1 não dá joia', { skip: SEM }, () => {
-  assert.deepEqual(Object.values(J.JOIAS), [7_800_001, 7_800_002, 7_800_003, 7_800_004]);
+  // (dono, 15/10: "Ajustar a linha" — a lista ganhou as Joias Abissais do lote 28, 7.800.011+; as da árvore seguem com os ids delas)
+  for (const [base, id] of Object.entries({ 'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004 })) assert.equal(J.JOIAS[base], id, base);
   for (const [base, id] of Object.entries(J.JOIAS)) {
     assert.equal(J.idDaBase(base), id, base);
     assert.equal(ITEM_CATALOG[id].joia, true);

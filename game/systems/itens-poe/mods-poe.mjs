@@ -650,6 +650,9 @@ function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
   const lento = Math.min(90, Math.max(0, valor(ficha, 'definhamento_expira_lento')));
   fazer(e, agora + Math.round((ate - agora) / (1 - lento / 100)));
   if (e.definhado && rng() * 100 < valor(ficha, 'definhamento_maximo_chance')) e.definhado.n = 15;
+  // (lote 28) "Inimigos Definhados por você têm −X% de todas as Resistências" (as Joias Abissais): o X fica no bicho enquanto Definhado.
+  const menos = Math.abs(Math.min(0, valor(ficha, 'res_definhados')));
+  if (menos > 0) e.resMenosDefinhado = Math.max(e.resMenosDefinhado ?? 0, menos);
 }
 /** O morto EXPLODE: `pct`% da vida máxima dele em quem está em volta (1 casa) — o "Explodem ao morrer" (o do personagem e o dos lacaios). */
 export function explodirMorto(hunt, alvo, pct, eventos) {

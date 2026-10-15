@@ -2365,6 +2365,15 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
   const ev = (st) => eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
   // ("Lacaios têm X% de chance de infligir Definhamento ao Acertar" — 2 s, até 15; "Zumbis Erguidos Cobrem Inimigos em Cinzas ao Acertar".)
   if (sorte(p.chances.definhar)) { ModsPoe.porNoAlvo(alvo, 'definhado', agora + 2000); ev('definhado'); }
+  // (lote 28) "Lacaios têm X% de chance de empalar ao atingir com ATAQUES" (o Rasgacarne único): o empalamento do PoE (10% do Físico do golpe,
+  // pelos próximos acertos, 8 s), sem os modificadores de empalar do dono; os acertos no alvo o soltam, como os seus.
+  if (tipo === 'physical' && !ctx.magia && sorte(p.chances.empalar) && (e.empalarBloqueadoAte ?? 0) <= agora) {
+    const E = ModsPoe.NO_ACERTO.empalar;
+    const lista = (e.empalado ??= []);
+    lista.push({ valor: (dano * E.pctDoFisico) / 100, acertos: E.acertos, ate: agora + E.duracaoMs });
+    if (lista.length > E.maximo) lista.splice(0, lista.length - E.maximo);
+    ev('empalado');
+  }
   if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000); ev('cinzas'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
   if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs }; ev('provocado'); }
@@ -2639,8 +2648,10 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (ciclo 7) "X% do Dano Causado pelos seus Lacaios é Drenado como Vida para você".
       if (l.poe?.drenoParaODono > 0) Ficha.drenarPoe(estado, { vida: (dano * l.poe.drenoParaODono) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
       if (b.hp <= 0) LacaiosPoe.aoMatarDoLacaio(l, agora);
+      // (lote 28) "os lacaios têm X% de chance de ganhar Poder Profano ao atingir com magias" (4 s).
+      if (est.magia && l.poe?.poderProfanoAoAcertarMagia > 0 && Math.random() * 100 < l.poe.poderProfanoAoAcertarMagia) (l.buffs ??= {}).poderProfano = Math.max(l.buffs.poderProfano ?? 0, agora + 4000);
       // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
-      if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, b, dano, tipo, { ...antes, estado, ficha, personagem }));
+      if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, b, dano, tipo, { ...antes, estado, ficha, personagem, magia: !!est.magia }));
       eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: b.uid, x: b.x, y: b.y });
       eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, crit, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;

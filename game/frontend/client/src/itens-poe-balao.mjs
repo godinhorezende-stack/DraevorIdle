@@ -131,7 +131,9 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp', '')] : null,
     p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
     p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,
-    p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', null, m.texto)))] : null,
+    p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', null, m.texto), m.consumido ? Object.assign(no('i', null, 'consumido'), { title: `da ${m.consumido}` }) : null))] : null,
+    // (lote 28) as Joias Abissais encaixadas nos Encaixes Abissais da peça (o nome, na cor da raridade).
+    p.abissais?.some(Boolean) ? [sep(), titulo('Encaixes Abissais'), p.abissais.map((j, i) => no('div', `poe-abissal${j ? ` r-${j.poe?.raridade ?? 'normal'}` : ' vazio'}`, j ? `${i + 1}. ${j.poe?.nome ?? 'Joia Abissal'}` : `${i + 1}. vazio`))] : null,
     // A faixa "No Draevor: STR +20 ..." saiu do balão (dono, 07/10): o que a peça dá já está nas linhas do PoE.
     p.aviso ? no('div', 'poe-aviso', p.aviso) : null,
     p.erro ? no('div', 'poe-aviso', p.erro) : null);

@@ -13685,13 +13685,36 @@
       "padrao": "^Tem \\{(\\d+)\\} Encaixes Abissal$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "encaixes_abissais",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "as Joias Abissais não existem no jogo",
-      "_nova": true
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ganhar Poder Profano por \\{(\\d+)\\} segundos ao Matar Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:poderProfano:{V2}@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Inimigos Definhados por você têm \\{(\\d+)\\}% de todas as Resistências$",
+      "efeitos": [
+        {
+          "stat": "res_definhados",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "enquanto Definhado por você (a resistência a Fogo, Gelo, Raio e Caos do inimigo)",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
     },
     {
       "padrao": "^Pode ser ungido$",
@@ -16579,17 +16602,256 @@
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
     },
     {
-      "padrao": "^.*Joias? Abissa(?:l|is).*|.*Encaixes? Abissa(?:l|is).*|.*Olho (?:Medonho|Hipnótico|Pavoroso|Assassino|Perscrutador).*$",
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito das Joias Abissais Encaixadas$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "efeito_joias_abissais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Vida Máxima por Joia Abissal afetando você$",
+      "efeitos": [
+        {
+          "stat": "life_inc%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Mana Máxima por Joia Abissal afetando você$",
+      "efeitos": [
+        {
+          "stat": "mana_inc%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Penetra \\{(\\d+)\\}% das Resistências Elementais por Joia Abissal te afetando$",
+      "efeitos": [
+        {
+          "stat": "elem_pen%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Duração das Afecções Elementais em Você reduzida em \\{(\\d+)\\}% enquanto afetado por uma Joia Abissal Rara$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais_propria@afetadoPorAbissal:raro",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto afetado por uma Joia Abissal Mágica$",
+      "efeitos": [
+        {
+          "stat": "move_speed@afetadoPorAbissal:magico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Habilidades aumentada em \\{(\\d+)\\}% enquanto afetado por uma Joia Abissal Única$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva@afetadoPorAbissal:unico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Com uma joia Olho Medonho encaixada, os lacaios têm \\{(\\d+)\\}% de chance de (?:/ )?ganhar Poder Profano ao atingir com magias$",
+      "efeitos": [
+        {
+          "stat": "minion_poder_profano_ao_acertar_magia@comAbissalLocal:Ghastly_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "Poder Profano por 4 s, nos lacaios que atacam com magias (os magos e os golens de fogo e de relâmpago)",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Com um Olho Hipnótico Encaixado, recebe Fúria Arcana ao Acertar com Magias$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:furiaArcana@magia+comAbissalLocal:Hypnotic_Eye_Jewel",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao número Máximo de Espectros por Joia do Olho Pavoroso Encaixada$",
+      "efeitos": [
+        {
+          "stat": "max_espectros%abissalLocal:Ghastly_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Dano físico aumentado em \\{(\\d+)\\}% por joia Olho Assassino encaixada$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg_local%abissalLocal:Murderous_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Velocidade de ataque aumentada em \\{(\\d+)\\}% por joia Olho Perscrutador encaixada$",
+      "efeitos": [
+        {
+          "stat": "atk_speed_local%abissalLocal:Searching_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Chance de golpe crítico aumentada em \\{(\\d+)\\}% por joia Olho Hipnótico encaixada$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_local%abissalLocal:Hypnotic_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de empalar ao atingir com ataques por joia Olho Medonho encaixada$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_empalar%abissalLocal:Ghastly_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o empalamento do lacaio (10% do Físico do golpe, 5 acertos, 8 s) entra na lista do alvo, sem os modificadores de empalar do dono; os acertos no alvo o soltam",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico da Mão Principal aumentada em \\{(\\d+)\\}% por\\\\?\\s*Joia Olho Assassino afetando você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%joiasAbissais:Murderous_Eye_Jewel~{V2}@maoPrincipal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Golpe Crítico da Mão Secundária por (?:/ )?Joia do Olho Assassino afetando você, máximo de \\+\\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg%joiasAbissais:Murderous_Eye_Jewel~{V2}@maoSecundaria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de conseguirem Ricochetear ao colidirem com o terreno por (?:/ )?Joia do Olho Examinador afetando você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "proj_ricochete_terreno_chance%joiasAbissais:Searching_Eye_Jewel~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Efeito da Fúria Arcana em você aumentado em \\{(\\d+)\\}% (?:/ )?por Joia do Olho Hipnótico afetando você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:furiaArcana%joiasAbissais:Hypnotic_Eye_Jewel~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por (?:/ )?Joia do Olho Pavoroso afetando você, máximo de \\+\\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_dot_multi%joiasAbissais:Ghastly_Eye_Jewel~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Joias Abissais raras encaixadas serão consumidas$",
+      "efeitos": [
+        {
+          "stat": "consome_abissais_raras",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "as Joias Abissais não existem no jogo",
+      "nota": "a Rara encaixada some e um mod dela, sorteado, passa a ser do elmo (× a Magnitude dos Modificadores Explícitos dele)",
       "_nova": true,
-      "_unico": true
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Um modificador das joias consumidas será mantido$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "parte da linha de cima (a Rara consumida deixa um mod na peça)",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Não pode ter encaixes não abissais$",
+      "efeitos": [
+        {
+          "stat": "sem_encaixes",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
     },
     {
       "padrao": "^Pegadas .*|Sanguinolência Extra$",

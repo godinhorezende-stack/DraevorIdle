@@ -24,7 +24,7 @@ import { readFileSync } from 'node:fs';
 import * as Keystones from './keystones.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
-import { definirLeitorDeMaestrias } from '../itens-poe/condicoes-poe.mjs';
+import { definirLeitorDeMaestrias, definirLeitorDeJoias } from '../itens-poe/condicoes-poe.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -499,6 +499,9 @@ export function joiasAtivas(estado) {
   }
   return lista;
 }
+
+// (lote 28) as joias da árvore para as condições do PoE ("por Joia Abissal afetando você").
+definirLeitorDeJoias((estado) => joiasAtivas(estado).map((j) => j.peca));
 
 /** A joia de um encaixe que não está alocado (ou que não existe mais) volta inteira para a mochila. */
 function devolverJoiasSoltas(estado, p) {

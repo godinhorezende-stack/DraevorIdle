@@ -68,7 +68,12 @@ export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctur
  * FIXO de cada base (7.800.000 + n, fora da sequência das bases: nenhum id que já existia muda). A Atemporal (da Legião) e as Ramificadoras
  * (os encaixes das Joias Ramificadoras) ficam de fora. A Prismática só existe como Única no PoE (`SO_UNICAS`).
  */
-export const JOIAS = Object.freeze({ 'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004 });
+// (lote 28) + as JOIAS ABISSAIS (os 4 Olhos: 7.800.011 em diante) — nos encaixes da árvore e nos encaixes abissais das peças
+// (`itens-poe/abissais.mjs`). O jogo não tem o Abismo: elas caem como as outras joias.
+export const JOIAS = Object.freeze({
+  'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004,
+  'Abyss_Jewels/Murderous_Eye_Jewel': 7_800_011, 'Abyss_Jewels/Searching_Eye_Jewel': 7_800_012, 'Abyss_Jewels/Hypnotic_Eye_Jewel': 7_800_013, 'Abyss_Jewels/Ghastly_Eye_Jewel': 7_800_014,
+});
 export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel']);
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
@@ -170,7 +175,7 @@ export function iniciar(itemCatalog) {
     const b = cat.classes[baseId.split('/')[0]]?.bases.find((x) => x.id === baseId);
     if (!b) continue;
     itemCatalog[id] = {
-      id, name: b.nome, type: 'jewels', weight: 1, hasSprite: false, rarity: 'comum', stackable: false, joia: true,
+      id, name: b.nome, type: 'jewels', weight: 1, hasSprite: false, rarity: 'comum', stackable: false, joia: true, ...(baseId.startsWith('Abyss_Jewels/') ? { abissal: true } : {}),
       ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
       poe: { base: b.id, classe: b.id.split('/')[0], icone: b.icone ?? null },
     };
@@ -332,7 +337,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // cada N segundos", "… têm 200% de Poder Arcano"; antes caíam na regra velha "a Retaliação não existe".)
 // (24 — 14/10: as linhas que "não se aplicavam" — "Habilidades de Golpe também miram no local anterior que foram Usadas", "Projéteis são
 // disparados em direções aleatórias" passam a valer nas peças.)
-export const VERSAO_DA_TRADUCAO = 24;
+// (25 — 15/10: as JOIAS ABISSAIS — "Tem N Encaixes Abissal", o efeito das encaixadas, "por Joia Abissal afetando você", "por joia Olho X
+// encaixada", "enquanto afetado por uma Joia Abissal Rara/Mágica/Única", "Com uma joia Olho X encaixada", os 4 Olhos únicos.)
+export const VERSAO_DA_TRADUCAO = 25;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -351,7 +358,7 @@ export function refazerPecasAntigas(estado) {
       recalcular(x);
       x.poe.tv = VERSAO_DA_TRADUCAO;
       n++;
-      return;
+      // (lote 28: segue andando — as joias abissais encaixadas na peça também são peças, com a versão delas)
     }
     for (const v of Array.isArray(x) ? x : Object.values(x)) if (v && typeof v === 'object') andar(v, fundo + 1);
   };
