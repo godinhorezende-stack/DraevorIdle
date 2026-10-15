@@ -6009,6 +6009,207 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^Você pode contratar um mercenário de forma permanente$",
+      "efeitos": [
+        {
+          "stat": "mercenario",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sai sozinho com o nó: um mercenário permanente segue você e ataca — a vida máxima é a sua e o golpe é o da sua arma; morto, volta em 10 s (no PoE se contrata um nos mapas, com o equipamento e as habilidades dele)",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário e os lacaios dele têm a vida máxima aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mercenario_vida_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário e os lacaios dele causam dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mercenario_dano_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário e os lacaios dele causam \\+\\{(\\d+)\\}% de dano para cada item único equipado por ele$",
+      "efeitos": [
+        {
+          "stat": "mercenario_dano_por_unico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "8% MAIS dano por único (o texto do PoE em inglês: \"more\"); os únicos dele são os seus nos tipos de peça que os nós \"pode equipar\" liberam",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar amuletos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_amuleto",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar cintos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_cinto",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar botas únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_botas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar luvas únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_luvas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar elmos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_elmo",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar anéis únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_anel",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar aljavas, armas e escudos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_armas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Se a vida do seu mercenário for maior que a sua, \\{(\\d+)\\}% do dano recebido de ataques será subtraído da vida do seu mercenário antes de atingir você$",
+      "efeitos": [
+        {
+          "stat": "mercenario_guarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano dos Acertos (o texto do PoE em inglês: \"Damage from Hits\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Se a vida do seu mercenário for menor que a sua, \\{(\\d+)\\}% do dano sofrido por ele é recuperado como vida$",
+      "efeitos": [
+        {
+          "stat": "mercenario_recupera_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o mercenário recupera (o PoE em inglês: \"Recouped as Life\") — na hora, no lugar dos 4 s do PoE",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Se o seu mercenário conectado morrer, o dono da conexão não morrerá$",
+      "efeitos": [
+        {
+          "stat": "mercenario_sem_morte_junto",
+          "valor": "1"
+        }
+      ],
+      "nota": "o mercenário vinculado que morre não leva você junto (a regra dos Vínculos: \"Se o alvo morrer enquanto vinculado, você também morrerá\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário provoca ao atingir$",
+      "efeitos": [
+        {
+          "stat": "mercenario_provoca",
+          "valor": "1"
+        }
+      ],
+      "nota": "Provocado por 3 s",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mercenario_auras_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o mercenário do jogo não usa habilidades próprias: as suas auras de aliado nele valem 50% mais",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
       "padrao": "^.*[Mm]ercenário.*$",
       "efeitos": [
         {
@@ -6017,7 +6218,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem mercenários",
+      "nota": "não se aplica ao jogo: o jogo não tem raio de luz nem campo de visão (o mercenário do Luminary existe — esta linha depende do Raio de Iluminação)",
       "_nova": true,
       "_ciclo7": true
     },
@@ -7264,14 +7465,13 @@
       "padrao": "^Habilidades de conexão têm duração de fixação infinita$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "vinculo_duracao_infinita",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os Vínculos com mercenários não existem no jogo",
+      "nota": "o Vínculo não acaba pelo tempo (segue custando mana por segundo e quebrando fora do alcance)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
     },
     {
       "padrao": "^Profanar e Desenterrar tem \\+\\{(\\d+)\\} de número Máximo de cadáveres permitidos$",

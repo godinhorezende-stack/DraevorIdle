@@ -1,13 +1,13 @@
 # Árvore de passivas do PoE — o que falta e o que é parcial
 
-Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
+Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
 
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5983** — equivalente 1356, novo 4454, aproximado (parcial) 173.
+- ✓ Com efeito: **6001** — equivalente 1356, novo 4461, aproximado (parcial) 184.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
-- – Não se aplica ao jogo: 53. Lembretes do PoE (entre parênteses, sem marca): 765.
+- – Não se aplica ao jogo: 35. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
 
@@ -34,6 +34,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | A árvore principal (lote 19) | 13 | 0 | o Poder Arcano (o "Dano Mágico aumentado" também nos ataques, no % dele — a Maestria de Varinhas com varinha e os únicos); Profanar e Desenterrar criam cadáveres (5 dos monstros da área / 1 Arqueiro de Ossos onde o projétil cai, até 10 de cada gema, +2 com o Coveiro); o Infestador (sai sozinho na barra: Incubando, 40% do dano esperado de cada Veneno no Valor da Praga — até o máximo do nível, × o "Valor Máximo aumentado" — e 20% menos Veneno fora do máximo; no máximo com um inimigo perto, Infesta: 12% do Valor do começo por segundo como Caos a até 2 casas, até acabar); o Feiticeiro (liga na barra reservando 20% da mana por magia ligada — com a eficácia da maestria —; o ataque de varinha ativa as magias ligadas, com o dano da varinha e o "menos dano" do nível, recarga 0,6 s ÷ a recuperação) |
 | Égide e as pequenas (lote 20) | 7 | 0 | a Égide Primitiva do Elementalist (toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida, 75 por Notável alocado; volta cheia 10 s depois do último dano elemental) — e as 5 Égides dos únicos pelo mesmo caminho, desligadas pela Primitiva; a Infusão Mística do Assassin (o crítico mágico Bifurca: duas rolagens, as duas dobram o dano extra do crítico; 30% menos chance de crítico mágico); os Robôs Ativadores do Saboteur (dois robôs que não tomam dano; as Magias Ativadas saem duas vezes, a segunda sem recarga); a Infusão Espiritual do Occultist (ao canalizar uma magia, um acúmulo a cada 0,5 s, até 10: 15% de início mais rápido da Recarga do Escudo, 5% mais Dano e 10% mais Custo nas Magias Canalizadas por acúmulo) |
 | O Reliquarian (lote 21) | 5 | 0 | a Rajada Vulcânica (no acerto corpo a corpo, 4 projéteis de magma em área, 200% do golpe, 60% em Fogo); o Grande Emissário das Direções (sai sozinho; a cada 6 s, +2 Projéteis, +2 Ricochetes, +2 Perfurações, Difundir duas vezes, ou todos); o Poder Fantasmal (o dano de cada Fantasma vivo nas suas magias físicas) com o suporte Convocar Fantasma, que passa a convocar (no golpe fatal e no Raro/Único, até o máximo, 15 s); Erguer Aranhas (ao matar, 2 aranhas por cadáver perto, até 20, 30 s, +2% de Velocidade de Ataque e +15% de Dano com Veneno cada); Suspender no Tempo (a terceira Miragem solta as magias que as criaram, com menos dano) — e os únicos que dão essas habilidades |
+| As que "não se aplicavam" — o lote rápido (lote 25) | 8 | 0 | o Pacto Cadavérico (os cadáveres de Profanar e Desenterrar dos últimos 4 s Resfriam e Eletrizam os inimigos a até 3 casas); o Alcance do Ricochete (a distância do salto); os projéteis que Retornam, Ricocheteiam no terreno (um ricochete a mais), vão em direções aleatórias (inimigos sorteados) e a barragem que não se propaga (toda no alvo); o Golpe que também mira o local anterior (mais um inimigo perto) |
+| O mercenário do Luminary (lote 26) | 18 | 0 | o mercenário permanente (sai sozinho: a sua vida máxima, o golpe da sua arma; volta em 10 s); a vida e o dano dele, o "8% mais Dano por único" (os seus únicos nos tipos de peça liberados), o guarda-costas (20% do dano dos acertos nele com a vida dele maior; 40% do dano dele recuperado com ela menor), o provocar, as suas auras nele (+50%), o Vínculo nele (o Juramento: a morte dele não leva você) e os Vínculos com duração infinita |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -47,6 +49,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 25 | soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`) | Dano Corpo a Corpo e Alcance de Golpes (nó) — +0.1 metros ao Alcance de Golpes Corpo a Corpo<br>Dano Físico, Alcance de Golpe Corpo a Corpo (asc. Berserker) — +0.2 metros ao Alcance de Golpes Corpo a Corpo<br>Dano com Espadas e Alcance Corpo a Corpo (nó) — +0.1 metros ao Alcance de Golpes Corpo a Corpo com Espadas |
 | 8 | a última repetição pega a área maior (uma casa a cada ~25%) | Domínio de Conjuração (maestria) — Repetição Final das Magias têm Efeito em Área aumentado em 40% |
 | 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
+| 7 | sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o "+8% mais Dano por único") | Cintos Lendários (asc. Luminary) — Seu mercenário pode equipar cintos únicos<br>Botas Lendárias (asc. Luminary) — Seu mercenário pode equipar botas únicas<br>Armas Lendárias (asc. Luminary) — Seu mercenário pode equipar aljavas, armas e escudos únicos |
 | 7 | trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s | Armadura e Escudo de Energia, Recuperação do Bloqueio (asc. Guardian) — Recuperação de Bloqueio aumentada em 30%<br>Barreira de Lâmina (notável) — Recuperação de Bloqueio aumentada em 50%<br>Tartaruga (notável) — Recuperação de Bloqueio aumentada em 60% |
 | 6 | entra como redução de dano físico enquanto o escudo está cheio | Maestria de Escudo de Energia (maestria) — 10% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio |
 | 6 | somado à precisão que a Destreza já dá | Maestria de Precisão (maestria) — Bônus de Precisão da Destreza concede +3 de Precisão por Destreza |
@@ -73,6 +76,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 2 | pela distância até o alvo: tudo colado, nada a 6 casas | Animosidade Adjacente (notável) — Projéteis causam Dano com Acertos aumentado em 40% aos alvos no início de seu movimento, reduzido para 0% na medida em que viajam adiante<br>Queima-Roupa (keystone) — Acertos dos Ataques de Projéteis causam até 30% mais Dano aos alvos no inicio de seu movimento, causando menos Dano aos alvos na medida em que o projétil viaja adiante |
 | 2 | Vento Favorável: +10% de velocidade de ataque, conjuração e movimento | Atiradora (asc. Ascendant) — Você e Aliados próximos têm Vento Favorável |
 | 1 | 1% de Escudo de Energia máximo aumentado por 1% de chance de Bloquear Magias | Bastião Vil (asc. Occultist) — Chance de bloquear magias aumenta o seu escudo de energia máximo |
+| 1 | 8% MAIS dano por único (o texto do PoE em inglês: "more"); os únicos dele são os seus nos tipos de peça que os nós "pode equipar" liberam | Armas Lendárias (asc. Luminary) — Seu mercenário e os lacaios dele causam +8% de dano para cada item único equipado por ele |
 | 1 | a cura sai junto do golpe, da vida que faltava antes dele | Desafiando a Dor (asc. Berserker) — Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio |
 | 1 | a explosão do jogo não passa pela resistência física dos atingidos | Violência Gratuita (asc. Gladiator) — Inimigos com Sangramento Explodem quando você matá-los, causando 20% de suas Vidas Máximas com Dano Físico |
 | 1 | a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma. | Instrumentos da Virtude (asc. Inquisitor) — Mago de Batalha |
@@ -100,6 +104,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 1 | o jogo não tem áreas frias no chão: vale o Resfriamento no inimigo | Geada Cortante (keystone) — Inimigos nas suas áreas frias sofrem dano de frio aumentado pelo esfriamento |
 | 1 | o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s | Rito Profano (asc. Occultist) — Ganha Infusão Espiritual a cada 0.5 segundos enquanto canaliza uma magia |
 | 1 | o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto | Fúria Ancestral (asc. Berserker) — Habilidades de Golpe também miram no local anterior que foram Usadas |
+| 1 | o mercenário do jogo não usa habilidades próprias: as suas auras de aliado nele valem 50% mais | Sagração à Cavalaria (asc. Luminary) — Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em 50% |
+| 1 | o mercenário recupera (o PoE em inglês: "Recouped as Life") — na hora, no lugar dos 4 s do PoE | Guarda-costas Leal (asc. Luminary) — Se a vida do seu mercenário for menor que a sua, 40% do dano sofrido por ele é recuperado como vida |
 | 1 | o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil | Ricochete (asc. Deadeye) — Projéteis têm 30% de chance de conseguirem Ricochetear ao colidirem com o terreno |
 | 1 | o Solo dura 4 s | Inquisidor (asc. Ascendant) — 10% de chance de criar Solo Sagrado ao Acertar um Inimigo Raro ou Único |
 | 1 | o teto vale na redução de dano físico (armadura + redução adicional) | Guarda Desequilibrada (keystone) — Redução de Dano Máxima para qualquer Tipo de Dano é 50% |
@@ -109,6 +115,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas | Tiro Distante (asc. Deadeye) — Projéteis ganham Dano ao viajar adiante, causando até 30% mais Dano com Acertos e Afecções |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas (o "até 60%" é a linha de baixo, que o poedb partiu) | Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando |
 | 1 | quando Acertado (o PoE: "when Hit") | Guarda do Vento (asc. Deadeye) — Perde toda a sua Força dos Ventos ao Acertar |
+| 1 | sai sozinho com o nó: um mercenário permanente segue você e ataca — a vida máxima é a sua e o golpe é o da sua arma; morto, volta em 10 s (no PoE se contrata um nos mapas, com o equipamento e as habilidades dele) | Sangue Nobre (asc. Luminary) — Você pode contratar um mercenário de forma permanente |
 | 1 | soma no alcance em metros: cada 2 m é uma casa a mais; "Próximos" = a até 2 casas | Golpe Certeiro (notável) — +0.4 metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos 5 Inimigos Próximos |
 | 1 | vale com qualquer Fúria | Ritual da Ruína (asc. Berserker) — Perca 0.1% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria |
 | 1 | vale em qualquer inimigo Provocado por você | Autoridade Natural (notável) — Inimigos Provocados por seus Clamores sofrem Dano aumentado em 8% |

@@ -6620,6 +6620,108 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes.comOsAlvosDaGema (14/10)"
+    },
+    "mercenario": {
+      "nome": "Mercenário permanente (Luminary)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_vida_inc": {
+      "nome": "Vida máxima do Mercenário aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_dano_inc": {
+      "nome": "Dano do Mercenário aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_dano_por_unico": {
+      "nome": "Mais dano do Mercenário por item único equipado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_equipa_amuleto": {
+      "nome": "Mercenário pode equipar amuletos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_cinto": {
+      "nome": "Mercenário pode equipar cintos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_botas": {
+      "nome": "Mercenário pode equipar botas únicas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_luvas": {
+      "nome": "Mercenário pode equipar luvas únicas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_elmo": {
+      "nome": "Mercenário pode equipar elmos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_anel": {
+      "nome": "Mercenário pode equipar anéis únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_armas": {
+      "nome": "Mercenário pode equipar aljavas, armas e escudos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_guarda_pct": {
+      "nome": "Dano dos Acertos sofrido na vida do Mercenário (se a vida dele for maior)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido (14/10)"
+    },
+    "mercenario_recupera_pct": {
+      "nome": "Dano sofrido pelo Mercenário recuperado como vida (se a vida dele for menor)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios (14/10)"
+    },
+    "mercenario_sem_morte_junto": {
+      "nome": "O dono do Vínculo não morre com o Mercenário",
+      "unidade": "",
+      "combate": true,
+      "efeito": "vinculos.tique (14/10)"
+    },
+    "mercenario_provoca": {
+      "nome": "O Mercenário provoca ao acertar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios (14/10)"
+    },
+    "mercenario_auras_inc": {
+      "nome": "Efeito das auras no Mercenário aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios (14/10)"
+    },
+    "vinculo_duracao_infinita": {
+      "nome": "Habilidades de Vínculo com duração infinita",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.criarVinculo (14/10)"
     }
   }
 }

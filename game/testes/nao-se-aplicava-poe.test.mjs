@@ -45,13 +45,15 @@ const ficha = (e) => { Ficha.invalidar(e); return Ficha.combate(e); };
 const b = (x, y, uid) => ({ uid, x, y, hp: 10 });
 const resolver = (efeito, vivos, alvo = vivos[0], rng = () => 0.5) => Secundarios.resolver({ efeito, tags: ['projectile', 'single'], origem: { x: 0, y: 0 }, alvo, atingidos: [alvo], vivos, alcance: 8, rng });
 
-test('a ÁRVORE: as 8 linhas com efeito (sobram 53 que não se aplicam: mercenários, joias na árvore, luz e visão, velocidade e ângulo do projétil…)', { skip: SEM }, () => {
+// (o total das que "não se aplicam" não fica amarrado: os lotes seguintes — o mercenário, as joias na árvore — o baixam; dono, 15/10: "Ajustar a linha")
+test('a ÁRVORE: as 8 linhas com efeito (sobram no máximo 53 que não se aplicam: luz e visão, velocidade e ângulo do projétil…)', { skip: SEM }, () => {
   const linhas = P.arvore().nos.flatMap((n) => [n, ...(n.opcoes ?? [])].flatMap((o) => (o.textos ?? []).map((t, i) => ({ t, estado: o.estados?.[i], nota: o.notas?.[i] ?? '' }))));
   const re = /cadáveres Criados por você Recentemente|Alcance do Ricochete|Barragens de Projéteis|Ricochetear ao colidirem|Retornarem a você|direções aleatórias|local anterior que foram/;
   const estas = linhas.filter((l) => l.estado !== 'nota' && re.test(l.t));
   assert.ok(estas.length >= 8, String(estas.length));
   for (const l of estas) assert.ok(['novo', 'aproximado', 'equivalente'].includes(l.estado) && !/^não se aplica/.test(l.nota), `${l.estado}: ${l.t}`);
-  assert.equal(linhas.filter((l) => /^não se aplica ao jogo/.test(l.nota)).length, 53);
+  const naoSeAplica = linhas.filter((l) => /^não se aplica ao jogo/.test(l.nota)).length;
+  assert.ok(naoSeAplica <= 53, `${naoSeAplica} não se aplicam (eram 61 antes do lote; 53 depois)`);
 });
 
 test('o PACTO CADAVÉRICO: os inimigos a até 3 casas de um cadáver que você criou nos últimos 4 s ficam Resfriados (10%) e Eletrizados (15%)', { skip: SEM }, () => {

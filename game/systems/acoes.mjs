@@ -703,6 +703,55 @@ export function convocarFantasmas(estado, hunt, efeitoDaGema, atingidos, rng = M
 }
 
 /**
+ * (14/10, dono: "Mercenário simples") O MERCENÁRIO do Luminary — "Você pode contratar um mercenário de forma permanente" (Sangue Nobre): com o
+ * nó, um mercenário permanente segue você e ataca; "do seu nível": a vida máxima é a sua e o golpe é o da sua arma (a faixa e o tempo da
+ * ficha), × "Seu mercenário e os lacaios dele têm a vida máxima aumentada / causam dano aumentado" e × "+8% mais Dano para cada item único
+ * equipado por ele" — sem a tela de equipamento: cada único SEU num tipo de peça que os nós "Seu mercenário pode equipar … únicos" liberam
+ * conta como equipado nele. Morto, volta em 10 s. (O guarda-costas, o "recupera como vida", o provocar e as auras: `arvore.danoRecebido`,
+ * `cacadas.tiqueDosLacaios`.)
+ */
+export const MERCENARIO = Object.freeze({ nome: 'Mercenário', voltaMs: 10000, maisPorUnico: 8 });
+const SLOTS_DO_MERCENARIO = {
+  'mercenario_equipa_amuleto': ['neck'], 'mercenario_equipa_cinto': ['legs'], 'mercenario_equipa_botas': ['feet'], 'mercenario_equipa_luvas': ['gloves'],
+  'mercenario_equipa_elmo': ['head'], 'mercenario_equipa_anel': ['ring', 'ring2'], 'mercenario_equipa_armas': ['weapon', 'shield'],
+};
+/** Quantos únicos "o mercenário tem equipados": os seus nos tipos de peça que os nós liberam. */
+export function unicosDoMercenario(estado, af = Ficha.combate(estado).afPoe ?? {}) {
+  let n = 0;
+  for (const [stat, slots] of Object.entries(SLOTS_DO_MERCENARIO)) {
+    if (!(Number(af[stat]) > 0)) continue;
+    for (const slot of slots) if (estado?.equipment?.[slot]?.poe?.raridade === 'unico') n++;
+  }
+  return n;
+}
+export function tiqueDoMercenario(estado, hunt, agora = hunt?.ultimoTique ?? Date.now()) {
+  if (!itensPoeLigado() || !hunt?.pos) return;
+  const ficha = Ficha.combate(estado);
+  const af = ficha.afPoe ?? {};
+  hunt.lacaios ??= [];
+  const vivo = hunt.lacaios.find((l) => l.mercenario && l.hp > 0);
+  if (!(Number(af.mercenario) > 0)) { if (vivo) vivo.hp = 0; delete hunt.poeMercenarioVoltaEm; return; }
+  const vida = Math.max(10, Math.round((estado.maxHp ?? 100) * Math.max(0, 1 + (Number(af.mercenario_vida_inc) || 0) / 100)));
+  const fator = Math.max(0, 1 + (Number(af.mercenario_dano_inc) || 0) / 100) * (1 + ((Number(af.mercenario_dano_por_unico) || 0) * unicosDoMercenario(estado, af)) / 100);
+  const dano = { min: Math.max(1, Math.round((ficha.ataqueMin ?? 1) * fator)), max: Math.max(1, Math.round((ficha.ataqueMax ?? 1) * fator)) };
+  if (vivo) {
+    // (a vida máxima e o golpe seguem os seus — subiu de nível, trocou de arma)
+    if (vivo.maxHp !== vida) { vivo.hp = Math.max(1, Math.round((vivo.hp * vida) / vivo.maxHp)); vivo.maxHp = vida; }
+    vivo.dano = dano;
+    return;
+  }
+  hunt.poeMercenarioVoltaEm ??= agora;
+  if (agora < hunt.poeMercenarioVoltaEm) return;
+  delete hunt.poeMercenarioVoltaEm;
+  const l = lacaioDoGuardian(estado, hunt, agora, af, MERCENARIO.nome, 'physical', { mercenario: true, hp: vida, maxHp: vida, dano, intervaloMs: Math.max(300, Math.round(ficha.intervaloDoGolpeMs ?? 1000)) });
+  hunt.lacaios.push(l);
+}
+/** O mercenário morreu: volta em 10 s (`tiqueDoMercenario`). */
+export function mercenarioMorreu(hunt, agora = hunt?.ultimoTique ?? Date.now()) {
+  if (hunt) hunt.poeMercenarioVoltaEm = agora + MERCENARIO.voltaMs;
+}
+
+/**
  * (14/10) As ÉGIDES (`ModsPoe.absorverNaEgide`): quais valem e o máximo de cada, e a volta ao valor cheio (10 s sem dano do tipo dela — o
  * `aegis_recharge_delay_ms` das Égides do PoE; o da Primitiva não é publicado). A PRIMITIVA (o Bastião dos Elementos do Elementalist: "Ativa
  * Égide Primitiva Nível 20 quando Alocado", "pode sofrer 75 de Dano Elemental por Notável alocado" — o texto em inglês do PoE: "per Allocated
@@ -2862,7 +2911,8 @@ function criarVinculo(estado, hunt, entry, action, efeitoDaGema, agora) {
   if (!cand.length) return [];
   const resto = cand.slice(1).sort(() => Math.random() - 0.5);
   const alvos = [cand[0], ...resto.slice(0, Vinculos.quantosVincula(ficha.afPoe) - 1)];
-  const duracaoMs = Math.round(props.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema));
+  // (14/10, o Juramento de Fidelidade do Luminary: "Habilidades de conexão têm duração de fixação infinita" — o Vínculo não acaba pelo tempo)
+  const duracaoMs = ModsPoe.valor(ficha, 'vinculo_duracao_infinita') > 0 ? DURACAO_INFINITA_MS : Math.round(props.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema));
   const lk = Vinculos.criar(hunt, { acao: entry.id, slug, nome: entry.name, props, alvos, duracaoMs, custoPorSegundo: GemasPoe.custoNoNivel(slug, nivel), agora });
   fotoDoVinculo(estado, hunt, ficha, lk);
   return alvos.map((a) => { const p = Vinculos.posicao(a, Vinculos.resolver(hunt, a)); return p ? { t: 'fx', id: 13, x: p.x, y: p.y } : null; }).filter(Boolean);

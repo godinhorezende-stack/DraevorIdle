@@ -2140,8 +2140,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado()) Acoes.tiqueDoGuardian(estado, hunt, agora);
   // (14/10) as Égides (o máximo e a volta ao valor cheio) e os Robôs Ativadores do Saboteur
   if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
-  // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções
-  if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); }
+  // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções; (o Luminary) o mercenário
+  if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDoMercenario(estado, hunt, agora); }
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
@@ -2452,7 +2452,11 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   const ficha = Ficha.combate(estado);
   // (PoE, 13/10) as SUAS auras "Você e Aliados" nos seus lacaios (no PoE, "Aliados" inclui os lacaios): o dano, o bloqueio, as resistências,
   // a velocidade das auras e a sua Fortificação — `itens-poe/aliados.mjs`.
-  const aliado = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;
+  const aliadoBase = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;
+  // (14/10, a Sagração à Cavalaria do Luminary: "Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em 50%" — o
+  // mercenário do jogo não usa habilidades próprias: as suas auras de aliado nele, × 1,5)
+  const auraNoMercenario = Math.max(0, 1 + (Number(ficha.afPoe?.mercenario_auras_inc) || 0) / 100);
+  const aliadoDoMercenario = aliadoBase && auraNoMercenario !== 1 ? Object.fromEntries(Object.entries(aliadoBase).map(([k, x]) => [k, typeof x === 'number' ? x * auraNoMercenario : x])) : aliadoBase;
   // (13/10) os golens mortos que voltam agora ("Reconvocados 4 segundos após serem Mortos")
   if (hunt.golensAReconvocar?.length) eventos.push(...Acoes.reconvocarGolens(estado, hunt, agora));
   const vivos = [];
@@ -2461,12 +2465,15 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   // escala `lacaio:totem` da sua ficha)
   const regenDosTotens = itensPoeLigado() ? LacaiosPoe.regenPctDosTotens(ficha.afPoe, hunt.lacaios) : 0;
   for (const l of hunt.lacaios) {
+    const aliado = l.mercenario ? aliadoDoMercenario : aliadoBase;
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
       // (14/10, a Relíquia Elemental explode ao morrer ou acabar — `Acoes.explosaoDaReliquia`)
       if (l.reliquia) { Acoes.explosaoDaReliquia(hunt, l, ficha, eventos); Ficha.invalidar(estado); }
       // (14/10, as Aranhas Espectrais e os Fantasmas dão bônus enquanto vivos — `ModsPoe.adds`: a ficha é refeita)
       if (l.aranha || l.fantasma) Ficha.invalidar(estado);
+      // (14/10, o mercenário do Luminary volta em 10 s — `Acoes.tiqueDoMercenario`)
+      if (l.mercenario) Acoes.mercenarioMorreu(hunt, agora);
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
@@ -2519,6 +2526,10 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const d = Math.max(1, Math.round(sofrido));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
+      // (14/10, o Guarda-costas Leal do Luminary: "Se a vida do seu mercenário for menor que a sua, 40% do dano sofrido por ele é recuperado como
+      // vida" — dele; na hora, no lugar dos 4 s do PoE)
+      const recupera = l.mercenario && l.hp > 0 && l.hp < (estado.hp ?? 0) ? Number(ficha.afPoe?.mercenario_recupera_pct) || 0 : 0;
+      if (recupera > 0) l.hp = Math.min(l.maxHp, l.hp + (d * recupera) / 100);
       // (PoE: o golpe de um Elite/Chefe pode deixar o lacaio/totem LENTO, como faz com você — `LacaiosPoe.controleNoLacaio`.)
       if (itensPoeLigado() && LacaiosPoe.controleNoLacaio(l, b, hunt, agora)) eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: 'lento' });
     }
@@ -2633,6 +2644,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: b.uid, x: b.x, y: b.y });
       eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, crit, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
+      // (14/10, a Sagração à Cavalaria do Luminary: "Seu mercenário provoca ao atingir")
+      if (l.mercenario && Number(ficha.afPoe?.mercenario_provoca) > 0 && b.hp > 0) (b.estados ??= {}).provocado = { ate: (hunt.clock ?? 0) + 3000, por: l.nome };
       // (14/10) o VENENO das Aranhas Espectrais (o Golpe da Víbora): 60% do golpe em 2 s, como o veneno do PoE (sem os seus modificadores)
       if (l.envenenar && Math.random() * 100 < l.envenenar) {
         const posto = Dot.aplicar(b, { tipo: 'venenoPoe', total: dano * 0.6, duracaoMs: 2000, origem: { fonte: 'lacaio', habilidade: l.nome } }, hunt.clock ?? 0);
