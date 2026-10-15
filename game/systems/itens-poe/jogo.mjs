@@ -344,7 +344,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // elementais" (o Fio da Esperança).)
 // (27 — 15/10, lote 30 "zerar a árvore": "+X% de Chance de Crítico" exato (soma nos pontos base), "X% mais Dano de Caos/Gelo" só na parte
 // daquele tipo, "Debuffs em você expiram X% mais rápido", "X% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio".)
-export const VERSAO_DA_TRADUCAO = 27;
+// (28 — 15/10, lote 31: o abate é de quem deu o golpe fatal — "ao Matar Corpo a Corpo" pelo golpe fatal, "por você ou seus Lacaios/Totens",
+// "Inimigos Mortos próximos ao seu Estandarte"; as explosões com o tipo de dano da linha e a defesa dos atingidos; "Provocados por seus
+// Clamores"; "Dano com Acertos é Azarado", os "Sortudo" e "Acertos Não Críticos penetram" também no golpe básico.)
+export const VERSAO_DA_TRADUCAO = 28;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

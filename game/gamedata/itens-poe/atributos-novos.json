@@ -7130,6 +7130,12 @@
       "unidade": "%",
       "combate": true,
       "efeito": "hunt/combate e poderes (lote 30)"
+    },
+    "provocados_clamor_dano_sofrido": {
+      "nome": "Dano sofrido pelos Provocados pelos seus Clamores",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano no monstro Provocado pelo Clamor (`condicoes-poe.fatorRecebidoPeloBicho`, lote 31)"
     }
   }
 }

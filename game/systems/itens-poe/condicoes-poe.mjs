@@ -49,6 +49,31 @@ export const posturaDe = (h, agora = h?.clock ?? 0) => (Object.entries(h?.buffs 
  */
 export const estandartePlantado = (h, agora = h?.clock ?? 0) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /_Banner/.test(id))?.[1] ?? null;
 export const estandarteAtivo = (h, agora = h?.clock ?? 0) => !!estandartePlantado(h, agora);
+/** (lote 31) O inimigo está na área do seu Estandarte plantado (o raio do buff — o mesmo da aura, `mods-poe.aurasProximas`)? */
+export function pertoDoEstandarte(h, alvo, agora = h?.clock ?? 0) {
+  const p = estandartePlantado(h, agora);
+  if (!p?.estandarte || !alvo) return false;
+  return Math.max(Math.abs(alvo.x - p.estandarte.x), Math.abs(alvo.y - p.estandarte.y)) <= (p.raio ?? 1);
+}
+/**
+ * (15/10, lote 31 — P043) O Mestre do Metal: "Você e Aliados próximos causam de X a Y de Dano Físico adicional para cada Empalar no Inimigo" —
+ * `[min, max]` × os Empalamentos ativos NESTE alvo agora (os do acerto que ainda vai empalar não contam), ou null. O golpe soma como dano
+ * adicionado Físico: a eficácia, o "aumentado" do Físico, os "mais", o crítico e a defesa do alvo (`hunt/combate.round`, `acoes.mjs`).
+ */
+export function fisicoPorEmpalamento(ficha, alvo, agora) {
+  const max = Number(ficha?.afPoe?.empalar_fisico_add_max) || 0;
+  if (!ligado() || !(max > 0) || !Array.isArray(alvo?.estados?.empalado)) return null;
+  const n = alvo.estados.empalado.filter((x) => x.ate > agora && x.acertos > 0).length;
+  if (!n) return null;
+  const min = Math.min(Number(ficha.afPoe.empalar_fisico_add_min) || 0, max);
+  return [n * min, n * max];
+}
+/**
+ * (15/10, lote 31 — P037) A PROVOCAÇÃO: a do Clamor (`Reforcos.provocar` grava `provocadoAte`) e a do acerto, do frasco, do totem, do lacaio e do
+ * mercenário (`estados.provocado`; a do totem, do lacaio e do mercenário com `deLacaio` — não é "por você").
+ */
+export const provocadoPeloClamor = (alvo, agora) => (alvo?.provocadoAte ?? 0) > agora;
+export const provocadoPorVoce = (alvo, agora) => provocadoPeloClamor(alvo, agora) || (ativo(alvo?.estados?.provocado, agora) && !alvo.estados.provocado.deLacaio);
 /**
  * (lote G) O VALOR dos Estandartes (o lembrete: "você ganha 1 de Valor ao matar corpo a corpo ou ao acertar ataques corpo a corpo contra inimigos
  * raros ou únicos, não mais do que uma vez a cada 0.5 segundos, até um máximo de 50"). (11/10, o PoE atual: "O Valor é ganho enquanto você tem uma
@@ -218,6 +243,9 @@ export const TAGS_DE_GOLPE = new Set([
   'ataqueLento', 'alvoComEscudo', 'alvoSemDreno',
   // (lote G) a gema de Postura; o ataque Impelido por um Clamor (`hunt.impelidos`).
   'postura', 'impelido',
+  // (15/10, lote 31) o abate por um ACERTO (o golpe fatal não foi dano contínuo — `quem-feriu.tagsDoAbate`); o inimigo Provocado pelo seu
+  // CLAMOR (`Reforcos.provocar` — `provocadoAte`); o morto na área do seu Estandarte plantado (`pertoDoEstandarte`).
+  'acerto', 'alvoProvocadoClamor', 'alvoPertoDoEstandarte',
 ]);
 /**
  * As condições que dependem do ESPAÇO em que a peça está (resolvidas peça a peça em `Afixos.somaDeItens`): o anel (esquerdo/direito) e a
@@ -910,7 +938,7 @@ export const BUFFS = {
   altarBrutal: { nome: 'Altar Brutal', altar: true, af: { chance_empurrar: 100, stun_duration: 30, dmg_inc: 50 } },
   altarDiamante: { nome: 'Altar Diamante', altar: true, af: { critico_sempre: 1 } },
   altarEcoante: { nome: 'Altar Ecoante', altar: true, af: { repeticoes_extra: 1 } },
-  altarSombrio: { nome: 'Altar Sombrio', altar: true, af: { naocaos_as_extra_chaos: 10, 'ev:matar:explodirChance:25': 40 } },
+  altarSombrio: { nome: 'Altar Sombrio', altar: true, af: { naocaos_as_extra_chaos: 10, 'ev:matar:explodirChance:25:chaos': 40 } },
   altarImpenetravel: { nome: 'Altar Impenetrável', altar: true, af: { evasion_pct: 100, es_pct: 100, armour_pct: 100 } },
   altarMassivo: { nome: 'Altar Massivo', altar: true, af: { life_inc: 40, area_inc: 40 } },
   altarReabastecimento: { nome: 'Altar de Reabastecimento', altar: true, af: { mana_regen_pct: 200, life_regen_max_pct: 6.67 } },
@@ -1427,7 +1455,9 @@ export function tagsDoAlvo(alvo, agora) {
   if (at(e.chocado)) t.push('alvoEletrizado');
   if (at(e.cego)) t.push('alvoCego');
   if (at(e.mutilado)) t.push('alvoMutilado');
-  if (at(e.provocado)) t.push('alvoProvocado');
+  // (lote 31: o Provocado pelo Clamor também é Provocado)
+  if (at(e.provocado) || provocadoPeloClamor(alvo, agora)) t.push('alvoProvocado');
+  if (provocadoPeloClamor(alvo, agora)) t.push('alvoProvocadoClamor');
   if (at(e.atordoado)) t.push('alvoAtordoado');
   if (at(e.excomungado)) t.push('alvoExcomungado');
   // (o inimigo sem Armadura / sem Evasão — "ao Acertar um Inimigo sem Armadura": as defesas do bicho, pelo gancho da caçada)
@@ -1621,7 +1651,11 @@ export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoar
   // (lote G) ao mudar de Postura (`mods-poe.aurasProximas`).
   'mudarPostura',
   // (lote E) a Mina detonou (no jogo, ao usar a gema de Mina — `acoes`); consumiu um cadáver (`mods-poe` → `consumirCadaver`).
-  'mina', 'consumirCadaver']);
+  'mina', 'consumirCadaver',
+  // (15/10, lote 31 — S001) o abate do seu LACAIO e do seu TOTEM ("por você ou seus Lacaios", "você ou seus Totens Matarem") e a morte de
+  // qualquer inimigo, por quem for ("Inimigos Mortos próximos ao seu Estandarte", "Provocados por seus Clamores Explodem ao morrer") —
+  // `hunt/combate.matarMonstro`, pelo carimbo de `hunt/quem-feriu`.
+  'matarLacaio', 'matarTotem', 'inimigoMorrer']);
 export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
@@ -2480,8 +2514,10 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   if (ativo(e.auraFragil, agora)) f *= 1 + (e.auraFragil.pct ?? 0) / 100;
   // (lote F) "Inimigos próximos Sofrem X% de Dano Elemental aumentado" (a aura); "Efeito do Definhamento aumentado" (o atacante).
   if (['fire', 'ice', 'energy'].includes(tipo) && ativo(e.auraElemFragil, agora)) f *= 1 + (e.auraElemFragil.pct ?? 0) / 100;
-  // (+ lote H: o provocado pelo Clamor — `Reforcos.provocar` grava `provocadoAte`.)
-  if (ativo(e.provocado, agora) || (alvo.provocadoAte ?? 0) > agora) f *= 1 + (Number(ficha?.afPoe?.provocados_dano_sofrido) || 0) / 100;
+  // (+ lote H: o provocado pelo Clamor — `Reforcos.provocar` grava `provocadoAte`.) (lote 31, P037: "Inimigos que você Provocar" = o Provocado
+  // por você, não pelo totem nem pelo lacaio; "Inimigos Provocados por seus Clamores" = só o do Clamor.)
+  if (provocadoPorVoce(alvo, agora)) f *= 1 + (Number(ficha?.afPoe?.provocados_dano_sofrido) || 0) / 100;
+  if (provocadoPeloClamor(alvo, agora)) f *= 1 + (Number(ficha?.afPoe?.provocados_clamor_dano_sofrido) || 0) / 100;
   // "Inimigos Resfriados pelos seus Acertos têm Dano sofrido aumentado pelo Efeito do Resfriamento"; "Inimigos sofrem Dano Elemental dos seus
   // Acertos aumentado em X% por cada Definhamento".
   if (Number(ficha?.afPoe?.resfriados_sofrem_mais) > 0 && ativo(e.lento, agora)) f *= 1 + (e.lento.pct ?? 0) / 100;

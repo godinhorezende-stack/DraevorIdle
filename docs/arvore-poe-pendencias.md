@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1357, novo 4488, aproximado (parcial) 158.
+- ✓ Com efeito: **6003** — equivalente 1357, novo 4498, aproximado (parcial) 148.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -38,6 +38,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | O mercenário do Luminary (lote 26) | 18 | 0 | o mercenário permanente (sai sozinho: a sua vida máxima, o golpe da sua arma; volta em 10 s); a vida e o dano dele, o "8% mais Dano por único" (os seus únicos nos tipos de peça liberados), o guarda-costas (20% do dano dos acertos nele com a vida dele maior; 40% do dano dele recuperado com ela menor), o provocar, as suas auras nele (+50%), o Vínculo nele (o Juramento: a morte dele não leva você) e os Vínculos com duração infinita |
 | Os encaixes de joia (lote 27) | 2 | 0 | os 21 encaixes da árvore (15 Básicos e os 6 Grandes da borda) recebem as Joias Carmesim, Viridiana e Cobalto (e a Prismática, só Única), que passam a cair; com o encaixe alocado, os mods da joia valem como os de uma peça; o Chieftain (Ngamahu): com joia não única, os aumentos de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados no Raio Grande (1800, como no PoE/PoB — lote 29) viram de Fogo e cada nó pequeno ou notável dá +4 de Força |
 | Zerar a árvore — lote 30 (as contas e regras erradas) | 26 | 0 | a Precisão da Destreza passa a 3 por ponto (somava +3 em cima dos 2); "X% mais Dano de Caos/Gelo" só na parte daquele tipo; "Debuffs em você expiram X% mais rápido" = a duração ÷ (1 + X%) em todo debuff (afecções, maldições, os dos monstros); "menos Dano Físico Sofrido" multiplicativo; o Vento Favorável dá 8% de Velocidade de Ação; a Parada Cardíaca alterna (consecutivamente) os 5 s de menos dano de Acertos e os 5 s de menos dano Degenerativo; a Guarda do Vento e o "+0,75% de Chance de Crítico" já eram a conta do PoE (a nota estava errada) |
+| Zerar a árvore — lote 31 (o abate de quem, as explosões, o Clamor, o golpe básico) | 10 | 0 | o abate é de quem deu o golpe fatal (o do lacaio e o do totem não dão o "ao Matar" nem o "Matou Recentemente" seus — dão os eventos deles e a Relíquia Elemental); o "ao Matar Corpo a Corpo" é o golpe fatal corpo a corpo; "Provocados por seus Clamores" só o do Clamor (a explosão, morto por qualquer um); as explosões com o tipo de dano da linha, pela defesa dos atingidos; o atordoamento "como se causasse mais Dano de Fogo" só na parte de Fogo; a Força Concussiva, o Azarado e a penetração no não crítico também no golpe básico; o adicional por Empalamento do Mestre do Metal entra no golpe como Físico adicional, com os aumentos |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -61,8 +62,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 5 | no PoE é o dano que o inimigo causa (o poedb traduz "sofrido"); soma no alvo de cada Mina, por 4 s | Maestria de Minas (maestria) — Cada Mina aplica Dano sofrido reduzido em 2% aos Inimigos próximos a ela, até 10% |
 | 4 | encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo | Maestria de Garras (maestria) — Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente |
 | 4 | o Elusivo dura 4 s | Maestria de Empunhadura Dupla (maestria) — 20% de chance de ganhar Elusivo ao Bloquear enquanto em Empunhadura Dupla |
-| 3 | nas gemas (o golpe básico, não) | Força Concussiva (notável) — Incêndios de Acertos Corpo a Corpo Atordoantes causam 20% mais Dano<br>Risco Calculado (asc. Saboteur) — Dano com Acertos é Azarado<br>Julgamento Inevitável (asc. Inquisitor) — Acertos Não Críticos penetram 10% das Resistências Elementais do Inimigo |
-| 2 | "Corpo a Corpo": com uma arma corpo a corpo empunhada | Maestria de Fortificação (maestria) — Ganha 20 Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único |
 | 2 | a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais | Distância do Ricochete (nó) — Alcance do Ricochete aumentado em 15%<br>Tiro Ardil (notável) — Alcance do Ricochete aumentado em 30% |
 | 2 | a velocidade de ataque, o crítico, o bloqueio e a regeneração da Oferenda | Dama do Sacrifício (asc. Necromancer) — Suas Habilidades de Oferenda também afetam você |
 | 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
@@ -74,7 +73,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 1 | 1% de Escudo de Energia máximo aumentado por 1% de chance de Bloquear Magias | Bastião Vil (asc. Occultist) — Chance de bloquear magias aumenta o seu escudo de energia máximo |
 | 1 | 8% MAIS dano por único (o texto do PoE em inglês: "more"); os únicos dele são os seus nos tipos de peça que os nós "pode equipar" liberam | Armas Lendárias (asc. Luminary) — Seu mercenário e os lacaios dele causam +8% de dano para cada item único equipado por ele |
 | 1 | a cura sai junto do golpe, da vida que faltava antes dele | Desafiando a Dor (asc. Berserker) — Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio |
-| 1 | a explosão do jogo não passa pela resistência física dos atingidos | Violência Gratuita (asc. Gladiator) — Inimigos com Sangramento Explodem quando você matá-los, causando 20% de suas Vidas Máximas com Dano Físico |
 | 1 | a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma. | Instrumentos da Virtude (asc. Inquisitor) — Mago de Batalha |
 | 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Égide toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano elemental de acertos (o tempo das Égides do PoE — o da Primitiva não é publicado) | Bastião dos Elementos (asc. Elementalist) — Ativa Égide Primitiva Nível 20 quando Alocado |
 | 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
@@ -91,7 +89,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 1 | no golpe físico dos monstros | Dançarino do Vento (keystone) — 20 menos dano de Ataque sofrido se você não foi Acertado por um Ataque Recentemente |
 | 1 | o acerto e o dano degenerativo das suas gemas não ferem (os totens e lacaios, sim); o golpe básico não sai | Vínculo Ancestral (keystone) — Você não pode causar Dano com Habilidades por si só |
 | 1 | o acerto no amaldiçoado renova os 2 s de base | Forças Profanadas (notável) — Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você |
-| 1 | o adicional por Empalamento entra no acerto pela Redução de Dano Físico do alvo, sem os aumentos de dano | Mestre do Metal (asc. Champion) — Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo |
 | 1 | o Elusivo do jogo dura 4 s (no PoE ele vai se desfazendo) | Assassino (asc. Ascendant) — 10% de chance de ganhar Elusivo no Golpe Crítico |
 | 1 | o golpe corpo a corpo do jogo é sempre de perto: o máximo | Impacto (asc. Slayer) — Causa até 15% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade |
 | 1 | o golpe inteiro nos vivos a 1 casa de cada atingido | Fúria Tribal (notável) — Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor |
@@ -112,9 +109,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-15, a partir de `gam
 | 1 | sai sozinho com o nó: um mercenário permanente segue você e ataca — a vida máxima é a sua e o golpe é o da sua arma; morto, volta em 10 s (no PoE se contrata um nos mapas, com o equipamento e as habilidades dele) | Sangue Nobre (asc. Luminary) — Você pode contratar um mercenário de forma permanente |
 | 1 | soma no alcance em metros: cada 2 m é uma casa a mais; "Próximos" = a até 2 casas | Golpe Certeiro (notável) — +0.4 metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos 5 Inimigos Próximos |
 | 1 | vale com qualquer Fúria | Ritual da Ruína (asc. Berserker) — Perca 0.1% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria |
-| 1 | vale em qualquer inimigo Provocado por você | Autoridade Natural (notável) — Inimigos Provocados por seus Clamores sofrem Dano aumentado em 8% |
-| 1 | vale no acerto corpo a corpo que tem Fogo, sobre o dano inteiro dele | Força Concussiva (notável) — Acertos Atordoam como se causassem 50% mais Dano de Fogo Corpo a Corpo |
-| 1 | vale para o inimigo provocado que você matar (no PoE, o provocado pelo clamor, morto por qualquer um). | Lâmina de Cinturão Verde (asc. Reliquarian) — Inimigos Provocados por seus Clamores Explodem ao morrer, causando 8% de sua Vida máxima como Dano de Caos |
 
 ## As joias dos encaixes da árvore (lotes 27 a 29)
 

@@ -28,7 +28,8 @@ test('a frase juntada casa a regra que já existia (o Sangramento que explode)',
   const r = T.traduzirMod({ modelo: 'Inimigos com Sangramento Explodem quando você matá-los, / causando {0}% de suas Vidas Máximas com Dano Físico', valores: [10] });
   assert.equal(r.partes.length, 1);
   assert.ok(COM_EFEITO.includes(r.estado), r.estado);
-  assert.match(r.efeitos[0].stat, /^ev:matar:explodirChance:10@alvoSangrando$/);
+  // (15/10, lote 31 — P044, ajuste aprovado pelo dono: a chave leva o tipo de dano da linha, a explosão passa pela defesa dos vizinhos)
+  assert.match(r.efeitos[0].stat, /^ev:matar:explodirChance:10:physical@alvoSangrando$/);
 });
 
 test('"quando na Mão Principal / na Mão Secundária": vale só com a peça naquela mão (como o anel esquerdo/direito)', { skip: SEM }, () => {

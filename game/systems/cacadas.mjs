@@ -8,6 +8,7 @@
 // original a maioria é gerada de novo a cada sessão, e esse gerador não
 // existe em nenhum arquivo extraído — oferecê-las seria inventar chão. Ver
 // `api-mapeada/checklist-modulos.md`.
+import * as QuemFeriu from './hunt/quem-feriu.mjs';
 import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Raridade from './mobs/raridade.mjs';
 import * as Atributos from './personagem/atributos.mjs';
@@ -2302,6 +2303,7 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
     if (resistenciaEfetivaDe(hunt, bicho, f.elemento ?? 'physical', ficha) >= 100) continue; // imune: nada passa
     const dano = Math.max(1, Math.round(resistido(hunt, bicho, f.elemento ?? 'physical', doDono * Summon.fracao(estado) * (0.85 + Math.random() * 0.3), ficha)));
     bicho.hp -= dano;
+    QuemFeriu.carimbar(bicho, QuemFeriu.LACAIO); // (lote 31, S001: o familiar)
     eventos.push({ t: 'fx', id: f.fx, uid: bicho.uid, x: bicho.x, y: bicho.y });
     eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, familiar: true, alvo: bicho.name, color: cor });
     if (sessao) {
@@ -2358,7 +2360,7 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
     // O inimigo MORTO pelo acerto: "Lacaios Recuperam X% de Vida ao Matar um Inimigo Envenenado"; "Inimigos Mortos pelos Acertos de Zumbis
     // Explodem, causando X% de suas Vidas como Dano de Fogo".
     if (p.vidaAoMatarEnvenenado > 0 && ctx.envenenado) l.hp = Math.min(l.maxHp, l.hp + (l.maxHp * p.vidaAoMatarEnvenenado) / 100);
-    if (p.explodir > 0) ModsPoe.explodirMorto(hunt, alvo, p.explodir, eventos);
+    if (p.explodir > 0) ModsPoe.explodirMorto(hunt, alvo, p.explodir, eventos, { tipo: 'fire', quem: QuemFeriu.LACAIO });
     return eventos;
   }
   const e = (alvo.estados ??= {});
@@ -2376,7 +2378,7 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
   }
   if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000); ev('cinzas'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
-  if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs }; ev('provocado'); }
+  if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs, deLacaio: true }; ev('provocado'); }
   if (sorte(p.chances.desacelerar)) {
     const ate = agora + ModsPoe.NO_ACERTO.desacelerar.duracaoMs;
     e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, ate), pct: Math.max(e.lento.pct, 30) } : { ate, pct: 30 };
@@ -2420,6 +2422,9 @@ export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo 
  */
 // O empalamento solto passa pela Redução de Dano Físico do monstro (`mods-poe.aoAcertar`): a resistência física e a redução de dano dele.
 ModsPoe.definirReducaoFisica((hunt, alvo, valor) => resistido(hunt, alvo, 'physical', valor, null, { armadura: false }));
+// (lote 31, P044) A EXPLOSÃO do morto nos vizinhos: a defesa de cada um (a armadura no físico, a resistência do tipo, os estados dele) — sem os
+// modificadores de dano do personagem (a ficha vazia: nem penetração, nem "mais"/"aumentado").
+ModsPoe.definirDanoDaExplosao((hunt, alvo, tipo, valor) => resistido(hunt, alvo, tipo, valor, {}));
 export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   const eventos = [];
   const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
@@ -2436,6 +2441,7 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   const golpear = (b, pct) => {
     const dano = Math.max(1, Math.round(resistido(hunt, b, tipo, ((conta.min + Math.random() * Math.max(0, conta.max - conta.min)) * pct) / 100, ficha)));
     b.hp -= dano;
+    QuemFeriu.carimbar(b, QuemFeriu.TOTEM); // (lote 31, S001: o totem)
     if (drenoDoTotem > 0) Ficha.drenarPoe(estado, { vida: (dano * drenoDoTotem) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
     eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: b.uid, x: b.x, y: b.y, sk: l.acao });
     eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
@@ -2549,6 +2555,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       for (const { m, dano } of explosao) {
         const dd = Math.max(1, Math.round(resistido(hunt, m, 'fire', dano, ficha)));
         m.hp -= dd;
+        QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
         eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: dd, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO.fire ?? '#ff9000' });
       }
       lacaioMorreu = true;
@@ -2580,6 +2587,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
         if (m.hp <= 0 || m.dummy || distancia(m, l) > est.aura.raio) continue;
         const d = Math.max(1, Math.round(resistido(hunt, m, l.elemento ?? 'ice', ((l.dano.min + l.dano.max) / 2) * est.aura.pct, ficha)));
         m.hp -= d;
+        QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
         eventos.push({ t: 'fx', id: est.aura.efeito, uid: m.uid, x: m.x, y: m.y });
         eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[l.elemento] ?? '#7fd8ff' });
       }
@@ -2643,6 +2651,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const fisicoDaChama = chamaPct > 0 ? partes.filter((x) => x.tipo === 'physical').reduce((n, x) => n + bruto * x.f, 0) : 0;
       const dano = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, b, x.tipo, bruto * x.f, doGolpe.ficha), 0) + (doGolpe.caosExtra ? resistido(hunt, b, 'chaos', bruto * doGolpe.caosExtra, ficha) : 0) + (fogoDoVinculo > 0 ? resistido(hunt, b, 'fire', fogoDoVinculo, ficha) : 0) + (fisicoDaChama > 0 ? resistido(hunt, b, 'fire', (fisicoDaChama * chamaPct) / 100, ficha) : 0)));
       b.hp -= dano;
+      QuemFeriu.carimbar(b, QuemFeriu.LACAIO); // (lote 31, S001: o golpe do lacaio)
       // ("Acertos de Lacaios só podem Matar Inimigos Incendiados")
       ModsPoe.poupar(ficha, hunt, b, { lacaio: true });
       // (ciclo 7) "X% do Dano Causado pelos seus Lacaios é Drenado como Vida para você".
@@ -2656,7 +2665,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, crit, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
       // (14/10, a Sagração à Cavalaria do Luminary: "Seu mercenário provoca ao atingir")
-      if (l.mercenario && Number(ficha.afPoe?.mercenario_provoca) > 0 && b.hp > 0) (b.estados ??= {}).provocado = { ate: (hunt.clock ?? 0) + 3000, por: l.nome };
+      if (l.mercenario && Number(ficha.afPoe?.mercenario_provoca) > 0 && b.hp > 0) (b.estados ??= {}).provocado = { ate: (hunt.clock ?? 0) + 3000, por: l.nome, deLacaio: true };
       // (14/10) o VENENO das Aranhas Espectrais (o Golpe da Víbora): 60% do golpe em 2 s, como o veneno do PoE (sem os seus modificadores)
       if (l.envenenar && Math.random() * 100 < l.envenenar) {
         const posto = Dot.aplicar(b, { tipo: 'venenoPoe', total: dano * 0.6, duracaoMs: 2000, origem: { fonte: 'lacaio', habilidade: l.nome } }, hunt.clock ?? 0);
@@ -2696,6 +2705,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
         if (m === alvo || m.hp <= 0 || m.dummy || distancia(m, alvo) > raioDaArea) continue;
         const d = Math.max(1, Math.round(partes.reduce((n, x) => n + resistido(hunt, m, x.tipo, bruto * 0.6 * x.f, ficha), 0)));
         m.hp -= d;
+        QuemFeriu.carimbar(m, QuemFeriu.LACAIO);
         eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
       }
     }
@@ -2746,6 +2756,7 @@ function magiasDoEspectro(hunt, l, agora, ficha, estado = null) {
       const bruto = ((Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator * pct) / 100;
       const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, ficha)));
       m.hp -= d;
+      QuemFeriu.carimbar(m, QuemFeriu.LACAIO); // (o espectro)
       eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[a.elemento] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
     };
     for (const m of atingidos) golpear(m, 100);

@@ -156,6 +156,11 @@ const IMPLEMENTADOS = [
     re: /Bônus de Precisão da Destreza|% mais Dano de Caos|^15% mais Dano de Gelo|Debuffs em você expiram|menos Dano Físico Sofrido enquanto em Escudo|menos Dano sofrido por Força dos Ventos|Você e Aliados próximos têm Vento Favorável|menos Dano de Acertos por|menos Dano Degenerativo por 5|^\+0\.75% de Chance de Golpe Crítico/,
     jogo: 'a Precisão da Destreza passa a 3 por ponto (somava +3 em cima dos 2); "X% mais Dano de Caos/Gelo" só na parte daquele tipo; "Debuffs em você expiram X% mais rápido" = a duração ÷ (1 + X%) em todo debuff (afecções, maldições, os dos monstros); "menos Dano Físico Sofrido" multiplicativo; o Vento Favorável dá 8% de Velocidade de Ação; a Parada Cardíaca alterna (consecutivamente) os 5 s de menos dano de Acertos e os 5 s de menos dano Degenerativo; a Guarda do Vento e o "+0,75% de Chance de Crítico" já eram a conta do PoE (a nota estava errada)',
   },
+  {
+    bloco: 'Zerar a árvore — lote 31 (o abate de quem, as explosões, o Clamor, o golpe básico)',
+    re: /ao Matar Corpo a Corpo|Provocados por seus Clamores|Sangramento Explodem quando você|para cada Empalar no Inimigo|Atordoam como se causassem|Incêndios de Acertos Corpo a Corpo Atordoantes|^Dano com Acertos é Azarado|Acertos Não Críticos penetram/,
+    jogo: 'o abate é de quem deu o golpe fatal (o do lacaio e o do totem não dão o "ao Matar" nem o "Matou Recentemente" seus — dão os eventos deles e a Relíquia Elemental); o "ao Matar Corpo a Corpo" é o golpe fatal corpo a corpo; "Provocados por seus Clamores" só o do Clamor (a explosão, morto por qualquer um); as explosões com o tipo de dano da linha, pela defesa dos atingidos; o atordoamento "como se causasse mais Dano de Fogo" só na parte de Fogo; a Força Concussiva, o Azarado e a penetração no não crítico também no golpe básico; o adicional por Empalamento do Mestre do Metal entra no golpe como Físico adicional, com os aumentos',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

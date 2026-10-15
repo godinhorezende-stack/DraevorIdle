@@ -1,6 +1,7 @@
 // Os efeitos do PoE que mexem nos ESTADOS dos bichos e no dano contínuo (o atordoamento, Mutilar, Cegar, Empalar…; o que o personagem
 // recebe). O resto (condições, soma, ficha do golpe, leitura dos mods) mora em `condicoes-poe.mjs` — sem dependências pesadas, para os
 // módulos de base (afixos, gemas, tradução, resistência) poderem usar sem ciclo de importação. Este módulo reexporta tudo de lá.
+import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
@@ -14,7 +15,7 @@ export * from './condicoes-poe.mjs';
  * Empalar (e solta os empalamentos do alvo), a Fúria e o Escudo de Energia por acerto. `ficha`: a do golpe (`fichaDoGolpe`, com as tags).
  * `dano`: o total do acerto; `fisico`: a parte Física. Devolve `{ atordoou, extra }` — `extra`: o dano dos empalamentos soltos (já tirado).
  */
-export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, crit = false, eventos = null, agora = hunt?.clock ?? 0, rng = Math.random, mover = null, elementos = [], personagem = null, habilidade = 'golpe' } = {}) {
+export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fogo = 0, crit = false, eventos = null, agora = hunt?.clock ?? 0, rng = Math.random, mover = null, elementos = [], personagem = null, habilidade = 'golpe' } = {}) {
   const saida = { atordoou: false, extra: 0 };
   if (!ligado() || !alvo || alvo.dummy || !ficha?.afPoe) return saida;
   // (ciclo 7, lote D) O que o golpe FEZ entra nas tags dele: o Crítico (`X@critico`) e, depois do sorteio do atordoamento, o Atordoou
@@ -44,21 +45,9 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
     if (hunt) hunt.poeCriticosParaFrascos = (hunt.poeCriticosParaFrascos ?? 0) + 1;
   }
   const e = (alvo.estados ??= {});
-  // (13/10, o Mestre do Metal: "Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo" — a aura dele
-  // em você, `itens-poe/aliados.mjs`: os empalamentos que o alvo tinha neste acerto, pela Redução de Dano Físico dele; no PoE o adicional
-  // também passaria pelos aumentos de dano — aqui não.)
-  const porEmpalamento = [v('empalar_fisico_add_min'), v('empalar_fisico_add_max')];
-  if (porEmpalamento[1] > 0 && alvo.hp > 0 && Array.isArray(e.empalado)) {
-    const quantos = e.empalado.filter((x) => x.ate > agora && x.acertos > 0).length;
-    let extra = quantos * (porEmpalamento[0] + rng() * Math.max(0, porEmpalamento[1] - porEmpalamento[0]));
-    if (extra > 0 && reducaoFisica) extra = reducaoFisica(hunt, alvo, extra);
-    if (extra > 0) {
-      const d = Math.max(1, Math.round(extra));
-      alvo.hp -= d;
-      saida.extra += d;
-      eventos?.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d, foe: true, alvo: alvo.name, color: '#b0b0b0' });
-    }
-  }
+  // (13/10, o Mestre do Metal: "Você e Aliados próximos causam de 6 a 12 de Dano Físico adicional para cada Empalar no Inimigo" — lote 31,
+  // P043: entra no GOLPE como dano Físico adicional, antes dos aumentos e do crítico — `condicoes-poe.fisicoPorEmpalamento`, no golpe básico
+  // e na gema; não mais aqui, depois do acerto.)
   // Os EMPALAMENTOS do alvo: cada acerto solta o guardado — passando pela Redução de Dano Físico do alvo (a resistência física e a redução
   // de dano do monstro — `reducaoFisica`, registrada pela caçada), salvo "Dano de Empalamento … ignoram a Redução de Dano Físico Inimiga".
   // ("X% de chance de, ao Acertar um Inimigo, todos os Empalamentos no Inimigo durarem por um Acerto adicional": este acerto não gasta.)
@@ -102,10 +91,11 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, cri
   if (tags.has('corpo') && (alvo.hp <= 0 || /raro|unico/.test(alvo.raridade ?? '') || alvo.boss)) ganharValor(hunt, 1, ficha.afPoe, agora);
   if (alvo.hp <= 0) return saida;
   // ATORDOAMENTO (o do PoE: pelo tamanho do acerto em relação à vida do alvo).
-  // (+ "Acertos Atordoam como se causassem X% mais Dano de Fogo Corpo a Corpo": o acerto corpo a corpo com Fogo conta X% a mais.)
+  // (+ "Acertos Atordoam como se causassem X% mais Dano de Fogo Corpo a Corpo": a parte de FOGO do acerto corpo a corpo — `fogo`, depois da
+  // resistência, como o `dano` — conta X% a mais. Lote 31, P034: antes, o golpe inteiro com Fogo.)
   const limiar = Math.max(1, (alvo.maxHp ?? alvo.hp) * Math.max(0.05, 1 - v('enemy_stun_threshold_red') / 100));
-  const comoFogo = tags.has('corpo') && elementos.includes('fire') ? v('atordoar_como_fogo_mais') : 0;
-  const chanceAtordoar = (NO_ACERTO.atordoamento.fator * dano * (1 + comoFogo / 100)) / limiar;
+  const comoFogo = tags.has('corpo') && fogo > 0 ? (Math.min(fogo, dano) * v('atordoar_como_fogo_mais')) / 100 : 0;
+  const chanceAtordoar = (NO_ACERTO.atordoamento.fator * (dano + comoFogo)) / limiar;
   if (chanceAtordoar >= NO_ACERTO.atordoamento.minimoPct && rng() * 100 < Math.min(100, chanceAtordoar)) {
     // (+ "X% mais Duração de Atordoamentos com Armas de Duas Mãos": multiplica.)
     let dur = NO_ACERTO.atordoamento.duracaoMs * (1 + v('stun_duration') / 100) * Math.max(0, 1 + v('stun_duration_mais') / 100);
@@ -655,13 +645,25 @@ function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
   const menos = Math.abs(Math.min(0, valor(ficha, 'res_definhados')));
   if (menos > 0) e.resMenosDefinhado = Math.max(e.resMenosDefinhado ?? 0, menos);
 }
-/** O morto EXPLODE: `pct`% da vida máxima dele em quem está em volta (1 casa) — o "Explodem ao morrer" (o do personagem e o dos lacaios). */
-export function explodirMorto(hunt, alvo, pct, eventos) {
-  const dano = Math.max(1, Math.round(((alvo.maxHp ?? 0) * pct) / 100));
+// (lote 31, P044) O dano da EXPLOSÃO em cada vizinho, pela defesa dele (`hunt/resistencia.resistido`): quem registra é a caçada (o ciclo de imports).
+// eslint-disable-next-line no-var
+var danoDaExplosao;
+export function definirDanoDaExplosao(fn) { danoDaExplosao = fn; }
+/** Os tipos de dano das explosões ("como Dano de Fogo/Físico/de Caos/de Raio") e a cor do número. */
+const COR_DA_EXPLOSAO = { fire: '#ff9000', physical: '#d9d9d9', chaos: '#b45cff', energy: '#7fd4ff', ice: '#9fe8ff' };
+/**
+ * O morto EXPLODE: `pct`% da vida máxima dele em quem está em volta (1 casa) — o "Explodem ao morrer" (o do personagem e o dos lacaios). (15/10,
+ * lote 31 — P044: o dano é do `tipo` da linha e passa pela defesa de cada atingido; é de `quem` explodiu — o abate de um vizinho pela explosão
+ * do seu morto é seu, o da explosão do Zumbi é do lacaio — `hunt/quem-feriu`; não é acerto de ataque nem de magia.)
+ */
+export function explodirMorto(hunt, alvo, pct, eventos, { tipo = 'fire', quem = QuemFeriu.VOCE } = {}) {
+  const bruto = Math.max(1, Math.round(((alvo.maxHp ?? 0) * pct) / 100));
   for (const m of hunt.monstros ?? []) {
     if (m === alvo || m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) > 1) continue;
+    const dano = danoDaExplosao ? danoDaExplosao(hunt, m, tipo, bruto) : bruto;
     m.hp -= dano;
-    eventos?.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: dano, foe: true, alvo: m.name, color: '#ff9000' });
+    QuemFeriu.carimbar(m, quem);
+    eventos?.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: dano, foe: true, alvo: m.name, color: COR_DA_EXPLOSAO[tipo] ?? '#ff9000' });
   }
   eventos?.push({ t: 'explosao', id: 6, x: alvo.x, y: alvo.y, lado: 3 });
 }
@@ -716,8 +718,9 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   ultimos.push(agora);
   while (ultimos.length && (ultimos[0] < agora - 20000 || ultimos.length > 60)) ultimos.shift();
   if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) marcar(hunt, 'estilhacou', agora);
-  // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto)
-  if (nome === 'matar') notarParaReliquia(estado, hunt, agora);
+  // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto; lote 31: o
+  // do lacaio e o do totem são os eventos deles — "quando você ou um Aliado próximo Matar")
+  if (nome === 'matar' || nome === 'matarLacaio' || nome === 'matarTotem') notarParaReliquia(estado, hunt, agora);
   // (14/10, Erguer Aranhas: o abate pendente — `acoes.tiqueDasAranhas`)
   if (nome === 'matar' && hunt) hunt.poeAbatesParaAranhas = (hunt.poeAbatesParaAranhas ?? 0) + 1;
   const rng = ctx.rng ?? Math.random;
@@ -1016,11 +1019,16 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       return;
     }
     case 'danoPctVida': return perder('hp', 0, ((estado.maxHp ?? 0) * v) / 100);
-    // `explodirChance:<pct da vida>` = a CHANCE (%) de o morto explodir ("Inimigos Queimando mortos por você têm X% de chance de Explodirem").
-    case 'explodirChance': if (!sorte(v)) return; return aplicarAcao(estado, hunt, { ...ev, acao: 'explodir', valor: Number(ev.param) || 10 }, ficha, ctx);
+    // `explodirChance:<pct da vida>[:<tipo>]` = a CHANCE (%) de o morto explodir ("Inimigos Queimando mortos por você têm X% de chance de
+    // Explodirem, causando um décimo de sua Vida máxima como Dano de Fogo"); o tipo do dano (lote 31 — sem ele, Fogo).
+    case 'explodirChance': {
+      if (!sorte(v)) return;
+      const [pct, tipo] = String(ev.param ?? '').split(':');
+      return aplicarAcao(estado, hunt, { ...ev, acao: 'explodir', valor: Number(pct) || 10, param: tipo ?? '' }, ficha, ctx);
+    }
     case 'explodir': {
       if (!alvo || !hunt.pos) return;
-      explodirMorto(hunt, alvo, v, eventos);
+      explodirMorto(hunt, alvo, v, eventos, { tipo: ev.param || 'fire' });
       return;
     }
     case 'espalhar': {

@@ -183,10 +183,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "nas gemas (o golpe básico, não)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018/P034): o golpe básico também; só a parte de Fogo"
     },
     {
       "padrao": "^Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você$",
@@ -827,10 +826,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "nas gemas (o golpe básico, não)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^Inimigos próximos causam \\{(\\d+)\\}% menos Dano Elemental$",
@@ -919,10 +917,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "nas gemas (o golpe básico, não)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de sofrer \\{(\\d+)\\}% menos Dano em Área de Acertos$",
@@ -2347,7 +2344,7 @@
       "padrao": "^Sua Marca se transfere para outro Inimigo quando o Inimigo Marcado morrer$",
       "efeitos": [
         {
-          "stat": "ev:matar:transferirMarca",
+          "stat": "ev:inimigoMorrer:transferirMarca",
           "valor": "1"
         },
         {
@@ -2356,7 +2353,8 @@
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Marcados não podem Regenerar Vida$",
@@ -2898,18 +2896,17 @@
       "padrao": "^Ganha \\{(\\d+)\\} Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único$",
       "efeitos": [
         {
-          "stat": "ev:matar:fortificacao@armaCorpo+alvoRaro",
+          "stat": "ev:matar:fortificacao@corpo+alvoRaro",
           "valor": "{1}"
         },
         {
-          "stat": "ev:matar:fortificacao@armaCorpo+alvoUnico",
+          "stat": "ev:matar:fortificacao@corpo+alvoUnico",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"Corpo a Corpo\": com uma arma corpo a corpo empunhada",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — o abate Corpo a Corpo é o do golpe fatal corpo a corpo (lote 31, P025)"
     },
     {
       "padrao": "^Acertos Corpo a Corpo Fortificam$",
@@ -3114,10 +3111,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale no acerto corpo a corpo que tem Fogo, sobre o dano inteiro dele",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018/P034): o golpe básico também; só a parte de Fogo"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Ignorar Atordoamentos enquanto Conjurando$",
@@ -5523,12 +5519,17 @@
       "padrao": "^Inimigos que você ou seus Totens Matarem têm \\{(\\d+)\\}% de chance de Explodir, causando \\{(\\d+)\\}% de sua Vida Máxima como Dano de Fogo$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V2}",
+          "stat": "ev:matar:explodirChance:{V2}:fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matarTotem:explodirChance:{V2}:fire",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Mata Inimigos que possuem \\{(\\d+)\\}% ou menos de Vida quando Acertado por suas Habilidades$",
@@ -6494,12 +6495,17 @@
       "padrao": "^Inimigos Amaldiçoados Mortos por você ou seus Lacaios possuem \\{(\\d+)\\}% de chance de Explodir, causando um quarto de sua Vida máxima como Dano de Caos$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:25@alvoAmaldicoado",
+          "stat": "ev:matar:explodirChance:25:chaos@alvoAmaldicoado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matarLacaio:explodirChance:25:chaos@alvoAmaldicoado",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de ganhar \\{(\\d+)\\} de Vida ao Acertar com Ataques$",
@@ -7152,12 +7158,13 @@
       "padrao": "^Inimigos Mortos próximos ao seu Estandarte têm \\{(\\d+)\\}% de chance de Explodir, causando um décimo de sua Vida como Dano Físico$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:10@estandarteAtivo",
+          "stat": "ev:inimigoMorrer:explodirChance:10:physical@alvoPertoDoEstandarte",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Ataques Impelidos causam Dano aumentado em \\{(\\d+)\\}%$",
@@ -7313,14 +7320,13 @@
       "padrao": "^Inimigos Provocados por seus Clamores sofrem Dano aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "provocados_dano_sofrido",
+          "stat": "provocados_clamor_dano_sofrido",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em qualquer inimigo Provocado por você",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos que você Provocar recebem Dano aumentado \\{(\\d+)\\}%$",
@@ -14276,7 +14282,7 @@
       "padrao": "^\\{(\\d+)\\}% de chance de Ganhar Poder Profano por \\{(\\d+)\\} segundos ao Matar Corpo a Corpo$",
       "efeitos": [
         {
-          "stat": "ev:matar:buffChance:poderProfano:{V2}@armaCorpo",
+          "stat": "ev:matar:buffChance:poderProfano:{V2}@corpo",
           "valor": "{1}"
         }
       ],
@@ -16579,9 +16585,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no golpe das habilidades (o golpe básico da arma, não).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado$",
@@ -16592,9 +16597,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no golpe das habilidades (o golpe básico da arma, não).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^Ataques executados por você se repetem mais \\{(\\d+)\\} vez(?:es)?$",
@@ -18067,10 +18071,9 @@
           "valor": "{2}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o adicional por Empalamento entra no acerto pela Redução de Dano Físico do alvo, sem os aumentos de dano",
       "_nova": true,
-      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+      "_lote7": "13/10 — os aliados de verdade (lote 7)",
+      "_lote31": "15/10 — lote 31 (P043): o adicional entra no golpe, com os aumentos"
     },
     {
       "padrao": "^Auras das suas Habilidades concedem \\{(\\d+)\\}% de aumento das Velocidades de Ataque e Conjuração para você e Aliados$",
@@ -30270,12 +30273,13 @@
       "padrao": "^Inimigos Queimando mortos por você têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de Fogo$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:10@alvoIncendiado",
+          "stat": "ev:matar:explodirChance:10:fire@alvoIncendiado",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Golpes Críticos não Incendeiam de forma inerente$",
@@ -32981,14 +32985,13 @@
       "padrao": "^Inimigos com Sangramento Explodem quando você matá-los, causando \\{(\\d+)\\}% de suas Vidas Máximas com Dano Físico$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}@alvoSangrando",
+          "stat": "ev:matar:explodirChance:{V1}:physical@alvoSangrando",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a explosão do jogo não passa pela resistência física dos atingidos",
-      "_de": "09/10 — afecções do personagem nos monstros"
+      "_de": "09/10 — afecções do personagem nos monstros",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos que você Congelar continuam Congelados por ao menos \\{(\\d+)\\} segundos?$",
@@ -34119,47 +34122,49 @@
       "padrao": "^Inimigos Mortos com Acertos Mágicos ou de Ataques Explodem, causando \\{(\\d+)\\}% de suas Vidas como Dano de Fogo$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}",
+          "stat": "ev:matar:explodirChance:{V1}:fire@acerto",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Mortos por você têm \\{(\\d+)\\}% de chance de Explodirem, causando um quarto de suas Vidas máximas como Dano de Caos$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:25",
+          "stat": "ev:matar:explodirChance:25:chaos",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Eletrizados que você Matar Explodem, causando \\{(\\d+)\\}% de suas Vidas Máximas como Dano de Raio que não pode Eletrizar$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}@alvoEletrizado",
+          "stat": "ev:matar:explodirChance:{V1}:energy@alvoEletrizado",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Provocados por seus Clamores Explodem ao morrer, causando \\{(\\d+)\\}% de sua Vida máxima como Dano de Caos$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}@alvoProvocado",
+          "stat": "ev:inimigoMorrer:explodirChance:{V1}:chaos@alvoProvocadoClamor",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale para o inimigo provocado que você matar (no PoE, o provocado pelo clamor, morto por qualquer um).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Perde \\{(\\d+)\\}% de Escudo de Energia ao causar um Golpe Crítico$",
@@ -37491,23 +37496,25 @@
       "padrao": "^Feitiços se Transferem para todos os Inimigos dentro de \\{(\\d+)\\} metros quando o Inimigo Enfeitiçado morrer$",
       "efeitos": [
         {
-          "stat": "ev:matar:transferirMaldicoes:{V1}",
+          "stat": "ev:inimigoMorrer:transferirMaldicoes:{V1}",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Sua Marca se transfere para outro Inimigo quando o Inimigo Marcado morrer$",
       "efeitos": [
         {
-          "stat": "ev:matar:transferirMarca",
+          "stat": "ev:inimigoMorrer:transferirMarca",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Próximos possuem um aumento de \\{(\\d+)\\}% do Efeito de Maldições neles$",

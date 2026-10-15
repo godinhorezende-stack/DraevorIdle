@@ -20,6 +20,7 @@
 // knights), então magia de mago em mago sai subestimada. Magias de suporte/
 // velocidade gastam mana, cooldown e mostram o efeito, mas ainda não aplicam
 // buff nenhum, e `overTime` (dano contínuo) não é aplicado.
+import * as QuemFeriu from './hunt/quem-feriu.mjs';
 import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Gemas from './skills/gemas.mjs';
 import * as Tags from './skills/tags.mjs';
@@ -462,7 +463,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const sobrecarga = ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, entry.element);
   // "X% mais Dano por cada tipo de Afecção Elemental no Inimigo" (Acerto Elemental do Espectro).
   const porAfeccao = daGemaPoe ? GemasPoe.extrasDoAtaque(daGemaPoe.slug, nivelPoe, efeitoDaGema?.qualidade ?? 0).porAfeccao : 0;
-  return { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia, sintonia };
+  // (lote 31, P043: o multiplicador da parte Física e a eficácia do dano adicionado — o Físico adicional por Empalamento, alvo a alvo)
+  const multFisico = (mult + ((doElementoDe('physical') - doElemento) / 100) * sintonia) * ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, 'physical');
+  return { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia, sintonia, multFisico, eficacia };
 }
 
 /**
@@ -529,6 +532,7 @@ export function queimaDoSentinela(hunt, l, ficha, ms, eventos = []) {
     const v = Math.round(resistido(hunt, b, 'fire', dano, ficha));
     if (!(v > 0)) continue;
     b.hp -= v;
+    QuemFeriu.carimbar(b, QuemFeriu.LACAIO); // (lote 31, S001: o Sentinela é lacaio)
     eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v, foe: true, lacaio: true, alvo: b.name, color: COR_DO_ELEMENTO.fire ?? '#ff9900' });
   }
   return eventos;
@@ -540,6 +544,7 @@ export function explosaoDaReliquia(hunt, l, ficha, eventos = []) {
     const v = Math.round(resistido(hunt, b, l.reliquia, l.maxHp, ficha));
     if (!(v > 0)) continue;
     b.hp -= v;
+    QuemFeriu.carimbar(b, QuemFeriu.LACAIO); // (a Relíquia é lacaio)
     eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v, foe: true, lacaio: true, alvo: b.name, color: COR_DO_ELEMENTO[l.reliquia] ?? '#ff0000' });
   }
   return eventos;
@@ -582,6 +587,7 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
       const v = Math.round(resistido(hunt, m, 'physical', fisico * aum('physical'), ficha) + resistido(hunt, m, 'fire', fogo * aum('fire'), ficha));
       if (!(v > 0)) continue;
       m.hp -= v;
+      QuemFeriu.carimbar(m, QuemFeriu.VOCE, ['ataque', 'projetil', 'area', 'fogo', 'fisico']); // (lote 31, S001/P025)
       total += v;
       eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO.fire ?? '#ff9000' });
     }
@@ -841,6 +847,7 @@ export function tiqueDaPraga(estado, hunt, ms = 250, agora = hunt?.clock ?? 0) {
     const v = Math.round(resistido(hunt, m, 'chaos', dano, ficha));
     if (!(v > 0)) continue;
     m.hp -= v;
+    QuemFeriu.carimbar(m, QuemFeriu.VOCE); // (lote 31: a Infestação não é acerto)
     eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO.chaos ?? '#9900cc' });
   }
   p.valor -= dano;
@@ -1717,7 +1724,7 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
     const provoca = q.tipo === 'totem' && estado ? ModsPoe.valor(Ficha.combate(estado), 'totem_provoca_s') : 0;
     if (provoca > 0) for (const m of hunt.monstros ?? []) {
       if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - l.x), Math.abs(m.y - l.y)) > 3) continue;
-      (m.estados ??= {}).provocado = { ate: agora + provoca * 1000, por: l.nome };
+      (m.estados ??= {}).provocado = { ate: agora + provoca * 1000, por: l.nome, deLacaio: true };
       eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
     }
   }
@@ -2410,7 +2417,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // e ganham o bônus de cada um — `doDestilador`.)
     const fichaDaGema = doDestilador(estado, Ficha.combate(estado), entry);
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
-    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: gatilho?.maisDano ?? 0 });
+    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: gatilho?.maisDano ?? 0 });
     // (PoE, a Impiedade: "Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso" — este uso é o terceiro?)
     const impiedosoCada = Math.round(efeitoDaGema?.impiedosoCada ?? 0);
     let impiedoso = false;
@@ -2485,12 +2492,25 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora);
       // (o Sabotador: "Dano com Acertos é Azarado" — rola duas vezes e fica o menor; com o Sortudo junto, os dois se anulam)
       const azarado = ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0;
+      // (lote 31: a Sorte e o Azar juntos se anulam — UM sorteio, como no PoE; antes, com os dois, ficava o Sortudo. Os mesmos sorteios de antes.)
       const pedacos = partes ? partes.map((p) => {
-        const dano = azarado && !sorteDoGolpe.sempre.has(p.elemento) ? Math.min(rolarParte(p), rolarParte(p)) : rolarParte(p);
-        if (!sorteDoGolpe.sempre.has(p.elemento) && !sorteDoGolpe.naoCritico.has(p.elemento)) return { elemento: p.elemento, dano };
-        const sortudo = Math.max(dano, rolarParte(p));
-        return { elemento: p.elemento, dano: sorteDoGolpe.sempre.has(p.elemento) ? sortudo : dano, naoCritico: sortudo };
+        const sempre = sorteDoGolpe.sempre.has(p.elemento);
+        const soNaoCritico = !sempre && sorteDoGolpe.naoCritico.has(p.elemento);
+        const r1 = rolarParte(p);
+        const r2 = azarado || sempre || soNaoCritico ? rolarParte(p) : r1;
+        const dano = sempre ? (azarado ? r1 : Math.max(r1, r2)) : azarado ? Math.min(r1, r2) : r1;
+        if (!sempre && !soNaoCritico) return { elemento: p.elemento, dano };
+        return { elemento: p.elemento, dano, naoCritico: sempre ? dano : azarado ? r1 : Math.max(r1, r2) };
       }) : null;
+      // (lote 31, P043 — o Mestre do Metal: o Físico adicional pelos Empalamentos DESTE alvo entra na parte Física do golpe: a eficácia do dano
+      // adicionado, o "aumentado" do Físico e os "mais" do golpe; o crítico e a defesa do alvo vêm depois, com o resto)
+      const doEmpalar = pedacos ? ModsPoe.fisicoPorEmpalamento(ficha, bicho, agora) : null;
+      if (doEmpalar) {
+        const v = (doEmpalar[0] + Math.random() * (doEmpalar[1] - doEmpalar[0])) * (eficaciaDoAdicionado ?? 1) * fator * (multFisico ?? mult) * Reforcos.vulnerabilidade(bicho, 'physical', agora);
+        const fisico = pedacos.find((p) => p.elemento === 'physical');
+        if (fisico) fisico.dano += v;
+        else pedacos.push({ elemento: 'physical', dano: v });
+      }
       const tipo = pedacos ? pedacos.reduce((a, b) => (b.dano > a.dano ? b : a)).elemento : entry.element ?? 'physical';
       const rolagem = sorteDoGolpe.sempre.has(tipo) || sorteDoGolpe.naoCritico.has(tipo) ? [sortear(min, max), sortear(min, max)] : azarado ? [Math.min(sortear(min, max), sortear(min, max))] : [sortear(min, max)];
       const bruto = pedacos ? pedacos.reduce((t, p) => t + p.dano, 0) : ((sorteDoGolpe.sempre.has(tipo) ? Math.max(...rolagem) : rolagem[0]) + daPericia) * fator * mult * sobrecarga * Reforcos.vulnerabilidade(bicho, tipo, agora);
@@ -2559,6 +2579,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (o Assassino — Mortífero: o crítico de ataque num Raro/Único sem Marca nenhuma ativa a Marca do Assassino)
       if (crit && entry.poeGema?.ataque) marcaDoAssassino(estado, hunt, bicho, ficha, agora);
       bicho.hp -= dano;
+      // (lote 31, S001/P025: o acerto é seu — as tags do golpe, para o "ao Matar Corpo a Corpo")
+      QuemFeriu.carimbar(bicho, QuemFeriu.VOCE, ficha.tagsDoGolpe ?? tagsPoeDaSkill(entry));
       ModsPoe.poupar(ficha, hunt, bicho, { agora });
       // ("X% do Dano Mágico é Drenado como Escudo de Energia para cada Maldição no Inimigo": o dano × as maldições do alvo.)
       if (dano > 0 && ehMagiaDaConta) danoVezesMaldicoes += dano * ModsPoe.maldicoesNoAlvo(bicho, agora);
@@ -2591,7 +2613,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (fisicoDoAcerto > 0 && base > 0) danoFisico += dano * Math.min(1, resistido(hunt, bicho, 'physical', fisicoDoAcerto, ficha) / base);
       // (a gema do PoE soma as chances dela que não são afecção — o empalamento — `GemasPoe.fichaComAsChancesDaGema`)
       const fichaDoAcerto = entry.poeGema ? GemasPoe.fichaComAsChancesDaGema(ficha, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha;
-      const doAcerto = ModsPoe.aoAcertar(estado, hunt, bicho, fichaDoAcerto, { dano, fisico: fisicoDoAcerto, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: pedacos ? pedacos.map((p) => p.elemento) : [tipo], habilidade: entry.id });
+      // (lote 31, P034: a parte de Fogo do acerto, na proporção do dano final — como o físico acima; + o Fogo da Chama Santificada)
+      const fogoBruto = pedacos ? pedacos.filter((p) => p.elemento === 'fire').reduce((t, p) => t + p.dano, 0) : tipo === 'fire' ? bruto : 0;
+      const fogoDoAcerto = base > 0 && (fogoBruto > 0 || fogoDaChama > 0) ? dano * Math.min(1, ((fogoBruto > 0 ? resistido(hunt, bicho, 'fire', fogoBruto, ficha) : 0) + fogoDaChama) / base) : 0;
+      const doAcerto = ModsPoe.aoAcertar(estado, hunt, bicho, fichaDoAcerto, { dano, fisico: fisicoDoAcerto, fogo: fogoDoAcerto, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: pedacos ? pedacos.map((p) => p.elemento) : [tipo], habilidade: entry.id });
       // O suporte Fúria: "Ganhe 3 de Fúria no Acerto com Ataques" (cada acerto do ataque suportado, como o "Fúria com Acertos" das peças).
       if (efeitoDaGema?.furiaNoAcerto > 0 && entry.poeGema?.ataque) ModsPoe.ganharFuria(hunt, efeitoDaGema.furiaNoAcerto, agora);
       // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
@@ -2999,6 +3024,7 @@ export function convocarOAco(estado, hunt, personagem, agora = hunt?.clock ?? 0)
       if (!(m.hp > 0) || !perto(m, r, raioDoReflexo)) continue;
       const d = Math.max(1, Math.round(resistido(hunt, m, 'physical', r.dano, null, { armadura: false })));
       m.hp -= d;
+      QuemFeriu.carimbar(m, QuemFeriu.VOCE, ['ataque', 'fisico']); // (lote 31)
       eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, alvo: m.name, color: '#b0b0b0', refletido: true });
     }
   }
