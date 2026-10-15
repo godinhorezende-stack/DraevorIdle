@@ -827,7 +827,7 @@ export function criarCadaveres(estado, hunt, slug, nivelDaGema = 1, onde = hunt?
     const desenho = base ? { look: base.look, lookItem: base.lookItem ?? 0, colors: base.colors ?? null } : LacaiosPoe.desenhoDe('Arqueiro de Ossos', 'physical', false);
     const x = onde.x + (i ? Math.floor(rng() * 3) - 1 : 0);
     const y = onde.y + (i ? Math.floor(rng() * 3) - 1 : 0);
-    lista.push({ key: base?.key ?? 'skeleton', nome: base?.name ?? 'Arqueiro de Ossos', look: desenho.look, lookItem: desenho.lookItem ?? 0, colors: desenho.colors ?? null, x, y, nivel, criadoPor: slug });
+    lista.push({ key: base?.key ?? 'skeleton', nome: base?.name ?? 'Arqueiro de Ossos', look: desenho.look, lookItem: desenho.lookItem ?? 0, colors: desenho.colors ?? null, x, y, nivel, criadoPor: slug, criadoEm: hunt.clock ?? 0 });
   }
   const dela = lista.filter((c) => c.criadoPor === slug);
   const sai = new Set(dela.slice(0, Math.max(0, dela.length - maximo)));
@@ -884,6 +884,16 @@ export function curaMostrada(estado, entry, efeitoDaGema = Gemas.ehSkillDeGema(e
  * vivo ainda não atingido mais perto do ÚLTIMO atingido, a até `distance` sqm, até
  * `targets` alvos (o alvo conta). Sem ninguém ao alcance do salto, a cadeia para.
  */
+/**
+ * (14/10) "Alcance do Ricochete aumentado em X%": a distância do salto × (1 + X%), a fração como chance de uma casa a mais (como a área), para a
+ * média bater.
+ */
+export function alcanceDoRicochete(base = 1, efeito = null, rng = Math.random) {
+  const pct = Number(efeito?.alcanceRicochetePct) || 0;
+  if (!pct) return base;
+  const bruto = base * Math.max(0, 1 + pct / 100);
+  return Math.floor(bruto) + (rng() < bruto % 1 ? 1 : 0);
+}
 function saltosDaCadeia(alvo, vivos, { targets = 1, distance = 1 } = {}) {
   const atingidos = [alvo];
   const livres = vivos.filter((b) => b !== alvo);
@@ -1502,7 +1512,7 @@ const recargaDe = (entry, ms) => (entry.papeis?.[0] === 'attack' ? Math.round(ms
  * (`cadeiaPoe`: os da gema + os do suporte de corrente, com o "% mais dano por ricochete restante"), que não passam também pelos
  * golpes secundários (senão saltaria duas vezes).
  */
-function comOsAlvosDaGema(entry, efeito, estado = null) {
+export function comOsAlvosDaGema(entry, efeito, estado = null) {
   if (!entry.poeGema || entry.poeGema.buff || !efeito) return efeito;
   const a = GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito.nivel ?? 1);
   const e = { ...efeito };
@@ -1522,6 +1532,19 @@ function comOsAlvosDaGema(entry, efeito, estado = null) {
   // (09/10, a maestria da árvore) "Habilidades de Golpe Não Vaal focam em N Inimigo próximo adicional": a gema de Golpear (não Vaal).
   const gemaDoGolpe = GemasPoe.doSlug(entry.poeGema.slug)?.gema;
   if (estado && gemaDoGolpe?.tags?.includes('Golpear') && !gemaDoGolpe.tags.includes('Vaal')) e.alvosExtras += Math.max(0, Math.round(ModsPoe.valor(Ficha.combate(estado), 'golpe_alvos_extra')));
+  // (14/10, a Fúria Ancestral do Berserker: "Habilidades de Golpe também miram no local anterior que foram Usadas" — no jogo, sem posições:
+  // mais um inimigo perto)
+  if (estado && gemaDoGolpe?.tags?.includes('Golpear') && ModsPoe.valor(Ficha.combate(estado), 'golpe_local_anterior') > 0) e.alvosExtras += 1;
+  // (14/10, as linhas que "não se aplicavam" — os projéteis: o Alcance do Ricochete, "N% de chance de Retornarem a você", "de Ricochetear ao
+  // colidirem com o terreno", "disparados em direções aleatórias" e "Barragens de Projéteis não se propagam" — `Secundarios.resolver`)
+  if (estado) {
+    const fichaDoAlvo = Ficha.combate(estado);
+    e.alcanceRicochetePct = ModsPoe.valor(fichaDoAlvo, 'alcance_ricochete_inc');
+    e.retornarChance = ModsPoe.valor(fichaDoAlvo, 'proj_retornar_chance');
+    e.ricocheteTerrenoChance = ModsPoe.valor(fichaDoAlvo, 'proj_ricochete_terreno_chance');
+    if (ModsPoe.valor(fichaDoAlvo, 'proj_direcoes_aleatorias') > 0) e.direcoesAleatorias = true;
+    if (ModsPoe.valor(fichaDoAlvo, 'barragem_nao_propaga') > 0) e.semPropagar = true;
+  }
   e.perfurar = Math.max(e.perfurar ?? 0, a.perfurar) + (dasPecas?.perfurar ?? 0);
   if (dasPecas?.area) e.areaExtra = (e.areaExtra ?? 0) + dasPecas.area;
   // "Habilidades Ricocheteiam +N vezes": os ricochetes do projétil (os saltos da cadeia, na magia de cadeia).
@@ -2019,7 +2042,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // ativou (com a cadeia da gema).
       if (entry.forma) casas = casasDaForma(entry, plantada.x, plantada.y);
       else if (!(alvo.hp > 0)) atingidos = [];
-      else atingidos = entry.cadeia ? saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos } : entry.cadeia) : [alvo];
+      else atingidos = entry.cadeia ? saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(entry.cadeia.distance, efeitoDaGema) } : entry.cadeia) : [alvo];
     } else if (!entry.forma) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...).
@@ -2028,7 +2051,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // CADEIA (tag `chain`: Forked Thorns, Forked Glacier, Chained Penance...): do alvo, salta para o
       // bicho vivo mais perto a até `cadeia.distance` sqm do último atingido, até `cadeia.targets` alvos.
       // A cadeia da gema do PoE: 1 + os ricochetes DO NÍVEL dela (+ os do suporte de corrente); a distância do salto é a da magia-molde.
-      if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos } : entry.cadeia);
+      if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(entry.cadeia.distance, efeitoDaGema) } : entry.cadeia);
     } else if (centradoNoAlvo && entry.miraNoChao && mira) {
       // A casa que o jogador escolheu na mira (`huntAction` com x, y): a área cai lá, com ou sem alvo.
       if (distanciaChebyshev(hunt.pos, mira) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Fora de alcance.', motivo: 'FORA_DE_ALCANCE' };

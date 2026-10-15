@@ -6578,6 +6578,48 @@
       "unidade": "s",
       "combate": true,
       "efeito": "condicoes-poe.tique (14/10)"
+    },
+    "pacto_cadaverico": {
+      "nome": "Inimigos próximos a cadáveres criados recentemente são Resfriados e Eletrizados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aurasProximas (14/10)"
+    },
+    "alcance_ricochete_inc": {
+      "nome": "Alcance do Ricochete aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.alcanceDoRicochete (14/10)"
+    },
+    "barragem_nao_propaga": {
+      "nome": "Barragens de Projéteis não se propagam",
+      "unidade": "",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "proj_ricochete_terreno_chance": {
+      "nome": "Chance de Ricochetear ao colidir com o terreno",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "proj_retornar_chance": {
+      "nome": "Chance de os Projéteis Retornarem",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "proj_direcoes_aleatorias": {
+      "nome": "Projéteis disparados em direções aleatórias",
+      "unidade": "",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "golpe_local_anterior": {
+      "nome": "Habilidades de Golpe também miram no local anterior",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.comOsAlvosDaGema (14/10)"
     }
   }
 }

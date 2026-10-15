@@ -623,6 +623,8 @@ const ESTADOS_NO_ALVO = {
   cinzas: (e, ate) => { e.cinzas = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 20) }; }, causticado: (e, ate) => (e.causticado = { ate, pct: 10 }),
   fragilizado: (e, ate) => (e.fragilizado = { ate, pct: 6 }), exaurido: (e, ate) => (e.exaurido = { ate, pct: 10 }), lento: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 30) }),
   provocado: (e, ate) => (e.provocado = { ate }), resfriado: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 10) }),
+  // (14/10) Eletrizado sem acerto (o Pacto Cadavérico): 15% mais dano recebido — não troca uma Eletrização mais forte
+  eletrizado: (e, ate) => (e.chocado = { ate: Math.max(e.chocado?.ate ?? 0, ate), pct: Math.max(e.chocado?.ate > ate - 1000 ? e.chocado.pct ?? 0 : 0, 15) }),
   // (ciclo 7) O Debilitado tira 10% do dano no `doBicho` — antes também o punha Exaurido (mais 10%): 19% em vez dos 10% do PoE.
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido e 50% menos chance de crítico (`condicoes-poe`).
   cobertoGelo: (e, ate) => (e.cobertoGelo = { ate }),
@@ -1247,6 +1249,19 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
     if (agora < (prox[k] ?? 0)) continue;
     ganharBuff(hunt, p[1], dur, agora);
     prox[k] = agora + Number(p[2]) * 1000;
+  }
+  // (14/10, o Pacto Cadavérico do Necromancer: "Inimigos próximos a cadáveres Criados por você Recentemente são Resfriados e Eletrizados" — os
+  // cadáveres de Profanar e Desenterrar dos últimos 4 s; os inimigos a até 3 casas de um deles, por 1 s, renovados)
+  if (Number(ficha.afPoe.pacto_cadaverico) > 0) {
+    const recentes = (hunt.cadaveres ?? []).filter((c) => c.criadoPor && agora - (c.criadoEm ?? -Infinity) <= 4000);
+    if (recentes.length) {
+      for (const m of hunt.monstros ?? []) {
+        if (!(m.hp > 0) || m.dummy || !recentes.some((c) => Math.max(Math.abs(m.x - c.x), Math.abs(m.y - c.y)) <= 3)) continue;
+        const e = (m.estados ??= {});
+        ESTADOS_NO_ALVO.resfriado(e, agora + 1000);
+        ESTADOS_NO_ALVO.eletrizado(e, agora + 1000);
+      }
+    }
   }
   const auras = Object.entries(ficha.afPoe).filter(([k, x]) => k.startsWith('aura_proximos:') && x > 0).map(([k]) => k.slice('aura_proximos:'.length));
   // (as auras com VALOR: a lentidão de X%, as resistências dos de perto, a de um elemento igual à sua)

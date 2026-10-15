@@ -5,9 +5,9 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **5975** — equivalente 1356, novo 4451, aproximado (parcial) 168.
+- ✓ Com efeito: **5983** — equivalente 1356, novo 4454, aproximado (parcial) 173.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
-- – Não se aplica ao jogo: 61. Lembretes do PoE (entre parênteses, sem marca): 765.
+- – Não se aplica ao jogo: 53. Lembretes do PoE (entre parênteses, sem marca): 765.
 
 ## Implementado a pedido do dono (12/10)
 
@@ -63,6 +63,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 3 | vale para as afecções que os monstros causam em você | Maestria de Duração (maestria) — Debuffs em você expiram 15% mais rápido |
 | 2 | "Corpo a Corpo": com uma arma corpo a corpo empunhada | Maestria de Fortificação (maestria) — Ganha 20 Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único |
 | 2 | a cada 10 segundos (a linha de cima) | Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano de Acertos por 5 segundos<br>Parada Cardíaca (asc. Trickster) — Sofre 50% menos Dano Degenerativo por 5 segundos |
+| 2 | a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais | Distância do Ricochete (nó) — Alcance do Ricochete aumentado em 15%<br>Tiro Ardil (notável) — Alcance do Ricochete aumentado em 30% |
 | 2 | a velocidade de ataque, o crítico, o bloqueio e a regeneração da Oferenda | Dama do Sacrifício (asc. Necromancer) — Suas Habilidades de Oferenda também afetam você |
 | 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
 | 2 | conta as Minas detonadas nos últimos 4 s | Detonações Sucessivas (notável) — Chance de Golpe Crítico aumentada em 10% por cada Mina Detonada<br>Detonações Sucessivas (notável) — +4% de Multiplicador de Golpes Críticos para cada Mina Detonada |
@@ -98,9 +99,12 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-14, a partir de `gam
 | 1 | o golpe inteiro nos vivos a 1 casa de cada atingido | Fúria Tribal (notável) — Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor |
 | 1 | o jogo não tem áreas frias no chão: vale o Resfriamento no inimigo | Geada Cortante (keystone) — Inimigos nas suas áreas frias sofrem dano de frio aumentado pelo esfriamento |
 | 1 | o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s | Rito Profano (asc. Occultist) — Ganha Infusão Espiritual a cada 0.5 segundos enquanto canaliza uma magia |
+| 1 | o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto | Fúria Ancestral (asc. Berserker) — Habilidades de Golpe também miram no local anterior que foram Usadas |
+| 1 | o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil | Ricochete (asc. Deadeye) — Projéteis têm 30% de chance de conseguirem Ricochetear ao colidirem com o terreno |
 | 1 | o Solo dura 4 s | Inquisidor (asc. Ascendant) — 10% de chance de criar Solo Sagrado ao Acertar um Inimigo Raro ou Único |
 | 1 | o teto vale na redução de dano físico (armadura + redução adicional) | Guarda Desequilibrada (keystone) — Redução de Dano Máxima para qualquer Tipo de Dano é 50% |
 | 1 | os bônus do escudo vão para os lacaios (bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração, movimento, dreno); o que o lacaio do jogo não tem — a armadura, a evasão e o escudo de energia da base, os condicionais — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
+| 1 | os projéteis a mais vão em inimigos sorteados no alcance (não nos mais perto); o principal segue no alvo | Especialista de Estilhaços (asc. Saboteur) — Projéteis são disparados em direções aleatórias |
 | 1 | parado: sem andar há pouco | Cinzas Assentadas (notável) — Inimigos Próximos são Cobertos em Cinzas se você não se moveu nos últimos 2 segundos |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas | Tiro Distante (asc. Deadeye) — Projéteis ganham Dano ao viajar adiante, causando até 30% mais Dano com Acertos e Afecções |
 | 1 | pela distância até o alvo: nada colado, tudo a 6 casas (o "até 60%" é a linha de baixo, que o poedb partiu) | Tiro Longo (notável) — Projéteis ganham Dano conforme viajam adiante, causando |

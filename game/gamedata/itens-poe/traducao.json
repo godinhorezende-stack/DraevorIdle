@@ -231,14 +231,13 @@
       "padrao": "^Inimigos próximos a cadáveres Criados por você Recentemente são Resfriados e Eletrizados$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "pacto_cadaverico",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não cria cadáveres (os da caçada vêm dos mortos — \"Matar um Inimigo não é Criar um cadáver\")",
+      "nota": "os cadáveres criados por Profanar e Desenterrar nos últimos 4 s: os inimigos a até 3 casas deles ficam Resfriados (10%) e Eletrizados (15%)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
     },
     {
       "padrao": "^Ganhe \\{(\\d+)\\} de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada \\{(\\d+)\\} segundos por cada tipo de Afecção$",
@@ -6036,7 +6035,70 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$|^Alcance do Ricochete aumentado.*$|^Barragens de Projéteis não se propagam$|^Projéteis têm .* chance de conseguirem Ricochetear ao colidirem com o terreno$|^Projéteis são disparados em direções aleatórias$|^Projéteis têm .* chance de Retornarem a você$",
+      "padrao": "^Alcance do Ricochete aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "alcance_ricochete_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Barragens de Projéteis não se propagam$",
+      "efeitos": [
+        {
+          "stat": "barragem_nao_propaga",
+          "valor": "1"
+        }
+      ],
+      "nota": "os projéteis em sequência vão todos no alvo",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de conseguirem Ricochetear ao colidirem com o terreno$",
+      "efeitos": [
+        {
+          "stat": "proj_ricochete_terreno_chance",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de Retornarem a você$",
+      "efeitos": [
+        {
+          "stat": "proj_retornar_chance",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "por projétil: na volta, acerta de novo os que pegou na ida",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Projéteis são disparados em direções aleatórias$",
+      "efeitos": [
+        {
+          "stat": "proj_direcoes_aleatorias",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os projéteis a mais vão em inimigos sorteados no alcance (não nos mais perto); o principal segue no alvo",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -6088,7 +6150,20 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Habilidades de Golpe também miram no local anterior que foram Usadas$|^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
+      "padrao": "^Habilidades de Golpe também miram no local anterior que foram Usadas$",
+      "efeitos": [
+        {
+          "stat": "golpe_local_anterior",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
       "efeitos": [
         {
           "stat": "inerte",

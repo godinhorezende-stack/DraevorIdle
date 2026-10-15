@@ -309,7 +309,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // a Você Poder Fantasmal" (o Bastão Negro).)
 // (23 — 14/10: a Retaliação dos únicos — "Adiciona X a Y de Dano de Gelo às Habilidades de Retaliação", "… Recuperação da Recarga", "… usáveis a
 // cada N segundos", "… têm 200% de Poder Arcano"; antes caíam na regra velha "a Retaliação não existe".)
-export const VERSAO_DA_TRADUCAO = 23;
+// (24 — 14/10: as linhas que "não se aplicavam" — "Habilidades de Golpe também miram no local anterior que foram Usadas", "Projéteis são
+// disparados em direções aleatórias" passam a valer nas peças.)
+export const VERSAO_DA_TRADUCAO = 24;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
