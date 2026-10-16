@@ -83,6 +83,9 @@ export function daSoma(af = {}) {
     duracaoCongelamento: n('duracao_congelamento') + n('duracao_afeccoes_elementais'),
     duracaoEletrizacao: n('duracao_eletrizacao') + n('duracao_afeccoes_elementais'),
     efeitoResfriamento: n('efeito_resfriamento'),
+    // (lote 33, P009) "Efeito de Afecções Não-Danificadoras aumentado" — o da Causticação, do Fragilizar e do Exaurir (no Resfriamento e na
+    // Eletrização a regra já soma em `efeito_resfriamento`/`efeito_eletrizacao`)
+    efeitoNaoDano: n('efeito_nao_dano'),
     efeitoEletrizacao: n('efeito_eletrizacao'),
     maisRapido: n('dot_mais_rapido'),
     // (a Crueldade: "mais Dano Degenerativo" — multiplica todas as afecções e o degenerativo das gemas)
@@ -221,7 +224,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio'))) && a.incendioViraCausticacao) {
     // (o Warden: a CAUSTICAÇÃO no lugar do Incêndio — "Inimigos Causticados têm suas Resistências reduzidas em até 30%, baseado no Dano de Fogo
     // do Acerto, por 4 segundos"; com a adicional, as duas mais fortes valem juntas — `condicoes-poe.causticado`.)
-    const pct = forca(fogo, bicho.maxHp ?? bicho.hp, CAUSTICACAO);
+    // (lote 33, P009: × o "Efeito de Afecções Não-Danificadoras" — e o do crítico —, no teto de 30%)
+    const pct = comEfeito(forca(fogo, bicho.maxHp ?? bicho.hp, CAUSTICACAO), (a.efeitoNaoDano ?? 0) + (crit ? a.efeitoNaoDanoCritico ?? 0 : 0), CAUSTICACAO.maximo);
     const e = (bicho.estados ??= {});
     const ate = agora + duracaoDe(CAUSTICACAO.duracaoMs);
     if (pct > 0) {
@@ -305,7 +309,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     if (pct > 0 && a.eletrizacoesMax > 1) {
       // "Você pode aplicar até N Eletrizações em cada Inimigo": a pilha (as N mais fortes ativas) — o dano a mais é a soma.
       const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
-      pilha.push({ ate, pct });
+      pilha.push({ ate, pct, dur: ate - agora });
       e.chocadosPilha = pilha.sort((x, y) => y.pct - x.pct).slice(0, Math.floor(a.eletrizacoesMax));
       e.chocado = { ate: Math.max(...e.chocadosPilha.map((x) => x.ate)), pct: e.chocadosPilha.reduce((t, x) => t + x.pct, 0) };
       postos.push('eletrizado');
@@ -313,7 +317,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
       const atual = e.chocado;
       // Vale a mais forte; não encurta a que já corre.
       if (pct > 0 && !(atual && atual.ate > agora && atual.pct >= pct)) {
-        e.chocado = { ate, pct };
+        e.chocado = { ate, pct, dur: ate - agora };
         postos.push('eletrizado');
       }
     }

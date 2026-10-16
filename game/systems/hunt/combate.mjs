@@ -1,5 +1,6 @@
 // O combate da caçada: golpe do personagem (arma, wand, tiro, elemento), golpe dos bichos, mortes, loot e level.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
+import * as QuemFeriu from './quem-feriu.mjs';
 import * as Mecanicas from '../mobs/mecanicas.mjs';
 import * as Vinculos from '../itens-poe/vinculos.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
@@ -220,6 +221,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   const { dano: golpe, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   if (crit) ModsPoe.marcarCriticoDaHabilidade(hunt, 'golpe');
   alvo.hp -= golpe;
+  QuemFeriu.carimbar(alvo, QuemFeriu.VOCE, ficha.tagsDoGolpe ?? ['ataque', 'projetil', 'comVarinha']); // (lote 31, S001/P025)
   ModsPoe.poupar(ficha, hunt, alvo);
   registrarGolpe(() => ({ origem: segundo ? 'wand-2o-golpe' : 'wand', alvo: alvo.name, tipo: element, danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: resistenciaDe(hunt, alvo, element), penetracao: ficha.penetracao, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, element, ficha), danoAposResistencia: base, chanceCritica: chance, critico: crit, danoFinal: golpe, vidaRestante: Math.max(0, alvo.hp) }));
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
@@ -821,7 +823,18 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Os efeitos de item que reagem a uma morte (Sede de Sangue, Colheita de Almas).
   EfeitosDeItem.aoMatar(estado, hunt, alvo, eventos, personagem?.nome);
   // Vida/mana por abate das peças do PoE ("Ganha X de Vida por Inimigo Morto"); 0 sem elas.
-  {
+  // (15/10, lote 31 — S001/P025: no PoE o abate é SEU só quando o golpe fatal é seu — `hunt/quem-feriu.mjs`. O do lacaio e o do totem não dão
+  // o "ao Matar", o "Matou Recentemente", a vida/mana por abate, as cargas por abate nem o Rampage: são os eventos deles ("por você ou seus
+  // Lacaios", "você ou seus Totens Matarem", a Relíquia Elemental — "quando você ou um Aliado próximo Matar"); as cargas dos frascos valem
+  // para eles. E a morte de qualquer inimigo, por quem for: "Inimigos Mortos próximos ao seu Estandarte", "Provocados por seus Clamores
+  // Explodem ao morrer", "Sua Marca se transfere quando o Inimigo Marcado morrer".)
+  if (itensPoeLigado()) {
+    const f = Ficha.combate(estado);
+    const tags = QuemFeriu.tagsDoAbate(alvo);
+    ModsPoe.evento(estado, hunt, 'inimigoMorrer', f, { alvo, eventos, personagem, tags: ModsPoe.pertoDoEstandarte(hunt, alvo) ? [...tags, 'alvoPertoDoEstandarte'] : tags });
+    if (!QuemFeriu.abateSeu(alvo)) ModsPoe.evento(estado, hunt, QuemFeriu.eventoDoAbate(alvo), f, { alvo, eventos, personagem, tags });
+  }
+  if (!itensPoeLigado() || QuemFeriu.abateSeu(alvo)) {
     const f = Ficha.combate(estado);
     // (+ o "Recupera X% da Vida/Mana ao Matar" do PoE.)
     const vidaPct = ModsPoe.valor(f, 'vida_ao_matar_pct');
@@ -837,7 +850,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (ModsPoe.ativo(alvo.estados?.chocado, hunt.clock ?? 0)) { hunt.poeEletrizadosMortos = [...(hunt.poeEletrizadosMortos ?? []), hunt.clock ?? 0].slice(-20); Ficha.invalidar(estado); }
     // ("Inimigos mortos por você são Eletrizados": antes dos eventos "ao Matar" — "Inimigos Eletrizados que você Matar Explodem" vale.)
     if (ModsPoe.valor(f, 'mortos_eletrizados') > 0) (alvo.estados ??= {}).chocado = { ate: (hunt.clock ?? 0) + 2000, pct: Math.max(alvo.estados?.chocado?.pct ?? 0, 15) };
-    ModsPoe.evento(estado, hunt, 'matar', f, { alvo, eventos, personagem });
+    // (o "ao Matar Corpo a Corpo", o "ao Matar com Ataque": as tags do golpe fatal)
+    ModsPoe.evento(estado, hunt, 'matar', f, { alvo, eventos, personagem, tags: QuemFeriu.tagsDoAbate(alvo) });
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
     // (a keystone Fúria — o Rampage: o abate soma no contador; "Recebe uma Carga de Frenesi a cada N Mortes com Fúria")
@@ -1161,9 +1175,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
   // (PoE: "X% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente" — o golpe do monstro é o ataque dele.)
-  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100);
+  // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — `menos_dano_acertos`, só nos acertos)
+  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   const danoDoAcerto = final;
+  // (lote 32, P046 — o Berserker: "Ganha X% da vida não reservada faltante ANTES de ser atingido … para cada Desafio")
+  if (final > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto sai da Égide dele antes do Escudo e da
@@ -1324,6 +1341,7 @@ export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) 
   const base = resistido(hunt, alvo, tipo, bruto, ficha);
   const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
   alvo.hp -= dano;
+  QuemFeriu.carimbar(alvo, QuemFeriu.VOCE, ficha.tagsDoGolpe ?? (alvo.poeUltimoDano?.quem === QuemFeriu.VOCE ? alvo.poeUltimoDano.tags : null)); // (lote 31: a parte do mesmo golpe)
   return { v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
 }
 
@@ -1335,6 +1353,7 @@ export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) 
 export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
   const v = Math.round(resistido(hunt, alvo, tipo, parte * (1 + (ficha?.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(ficha, hunt, 'golpe', tipo), ficha));
   alvo.hp -= v;
+  QuemFeriu.carimbar(alvo, QuemFeriu.VOCE, ficha?.tagsDoGolpe ?? (alvo.poeUltimoDano?.quem === QuemFeriu.VOCE ? alvo.poeUltimoDano.tags : null)); // (lote 31)
   return { v, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
 }
 
@@ -1354,14 +1373,28 @@ export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
  */
 export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
   const saida = [];
+  // (lote 31, P018 — como no golpe das gemas, `acoes.mjs`: "Dano com Acertos é Azarado" (o Sabotador), "Dano Elemental com Acertos é Sortudo
+  // enquanto você estiver Eletrizado", "Dano de Raio com Golpes Não-Críticos é Sortudo" — a Sorte e o Azar juntos se anulam — e "Acertos Não
+  // Críticos penetram X% das Resistências Elementais do Inimigo" (o Inquisidor); o crítico é o do golpe, já rolado no Físico.)
+  const azarado = ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0;
+  const elementalSortudo = ModsPoe.valor(ficha, 'elemental_sortudo') > 0;
+  const raioSortudo = !rolagem?.crit && ModsPoe.valor(ficha, 'raio_nao_critico_sortudo') > 0;
+  const penNaoCritico = rolagem?.crit ? 0 : ModsPoe.valor(ficha, 'pen_nao_critico');
+  const fichaComPen = penNaoCritico > 0 ? { ...ficha, penetracao: { ...(ficha.penetracao ?? {}), elemental: (Number(ficha.penetracao?.elemental) || 0) + penNaoCritico } } : ficha;
   for (const [tipo, [min, max]] of Object.entries(ficha.danoSomado ?? {})) {
+    const elemental = tipo === 'fire' || tipo === 'ice' || tipo === 'energy';
+    const f = elemental ? fichaComPen : ficha;
     // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros Inimigos" — no crítico, a resistência positiva não vale.
     const ignoraRes = !!rolagem?.crit && ModsPoe.valor(ficha, 'critico_ignora_res') > 0 && tipo !== 'physical' && tipo !== 'chaos';
-    if (!(max > 0) || (!ignoraRes && resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100)) continue;
-    const bruto = (min + Math.random() * (max - min)) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(ficha, hunt, 'golpe', tipo);
-    const base = Math.max(1, Math.round(ignoraRes ? Math.max(resistido(hunt, alvo, tipo, bruto, ficha), bruto) : resistido(hunt, alvo, tipo, bruto, ficha)));
+    if (!(max > 0) || (!ignoraRes && resistenciaEfetivaDe(hunt, alvo, tipo, f) >= 100)) continue;
+    const sortudo = (elemental && elementalSortudo) || (tipo === 'energy' && raioSortudo);
+    const rolar = () => min + Math.random() * (max - min);
+    const sorteio = sortudo === azarado ? rolar() : sortudo ? Math.max(rolar(), rolar()) : Math.min(rolar(), rolar());
+    const bruto = sorteio * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(ficha, hunt, 'golpe', tipo);
+    const base = Math.max(1, Math.round(ignoraRes ? Math.max(resistido(hunt, alvo, tipo, bruto, f), bruto) : resistido(hunt, alvo, tipo, bruto, f)));
     const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
     alvo.hp -= dano;
+    QuemFeriu.carimbar(alvo, QuemFeriu.VOCE, ficha.tagsDoGolpe ?? (alvo.poeUltimoDano?.quem === QuemFeriu.VOCE ? alvo.poeUltimoDano.tags : null)); // (lote 31)
     saida.push({ tipo, v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
   }
   return saida;
@@ -1389,6 +1422,7 @@ export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem
     const { dano: rolado } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
     const dano = Math.max(1, rolado);
     alvo.hp -= dano;
+    QuemFeriu.carimbar(alvo, QuemFeriu.VOCE, ficha.tagsDoGolpe ?? (alvo.poeUltimoDano?.quem === QuemFeriu.VOCE ? alvo.poeUltimoDano.tags : null)); // (lote 31)
     saida.push({ tipo, v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
   }
   return saida;
@@ -1478,7 +1512,9 @@ export function round(estado, personagem) {
         const [faixaMin, faixaMax0] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
         // (PoE: "X% mais Dano Físico Máximo de Ataques" — o máximo da arma.)
         const faixaMax = poe ? faixaMax0 * Math.max(0, 1 + ModsPoe.valor(ficha, 'fisico_max_mais') / 100) : faixaMax0;
-        const fisicoCheio = (R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level)) * fisico * fatorDoGolpe;
+        // (lote 31, P018 — o Sabotador: "Dano com Acertos é Azarado" também no golpe básico — o sorteio da arma duas vezes, fica o menor)
+        const rolarArma = () => R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level);
+        const fisicoCheio = (poe && ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0 ? Math.min(rolarArma(), rolarArma()) : rolarArma()) * fisico * fatorDoGolpe;
         // PoE: "Ganha X% do Dano Físico como Dano de Caos/Fogo extra" e "X% do Dano Físico … Convertido para um Elemento Aleatório" — do Físico
         // BASE do golpe (antes dos "aumentado"); o convertido sai do Físico. As partes extras entram como o dano somado (`danoSomadoDoPoe`).
         const { extras: extrasDoFisico, convertidoPct } = poe ? ModsPoe.extrasDoFisico(ficha, fisicoCheio / Math.max(0.01, fisico)) : { extras: {}, convertidoPct: 0 };
@@ -1497,6 +1533,8 @@ export function round(estado, personagem) {
         const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
         const golpe = bruto - convertido;
         alvo.hp -= golpe;
+        // (lote 31, S001/P025: o golpe básico é seu — corpo a corpo ou de longe, pela arma)
+        QuemFeriu.carimbar(alvo, QuemFeriu.VOCE, ficha.tagsDoGolpe ?? ['ataque', categoriaDaArma(arma) === 'distancia' ? 'projetil' : 'corpo']);
         // (PoE: o golpe corpo a corpo num Raro com espinhos do mapa — `corpoACorpo`.)
         Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, 'physical', eventos, { corpoACorpo: categoriaDaArma(arma) !== 'distancia' });
         const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
@@ -1504,7 +1542,9 @@ export function round(estado, personagem) {
         // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
         // físico, X% dele em cada elemento (decisão do dono), na mesma rolagem.
         // (No PoE o "Dano de <elemento> aumentado" só AUMENTA o dano daquele elemento: o golpe físico não ganha partes elementais por ele.)
-        const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(ficha.danoSomado, extrasDoFisico)) } : ficha;
+        // (lote 31, P043: + o Físico adicional pelos Empalamentos no alvo — o Mestre do Metal)
+        const doEmpalar = poe ? ModsPoe.fisicoPorEmpalamento(ficha, alvo, hunt.clock ?? 0) : null;
+        const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(somarFaixas(ficha.danoSomado, extrasDoFisico), doEmpalar ? { physical: doEmpalar } : {})) } : ficha;
         const dosAtributos = [...(poe ? [] : elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught })), ...danoSomadoDoPoe(estado, hunt, alvo, fichaDasPartes, { crit: critico, onslaught })];
         // (14/10, a Rajada Vulcânica: o golpe básico corpo a corpo que acerta — `Acoes.rajadaVulcanica`)
         if (poe && !segundo && categoriaDaArma(arma) !== 'distancia') Acoes.rajadaVulcanica(estado, hunt, alvo, eventos);
@@ -1541,7 +1581,9 @@ export function round(estado, personagem) {
         // As afecções do PoE (incêndio, sangramento, veneno, congelar, eletrizar, resfriar — `itens-poe/afeccoes.mjs`, só com ITENS_POE=1):
         // o golpe da arma é ATAQUE; cada parte (o físico e os elementos) entra com o tipo dela.
         // Os efeitos de acerto do PoE (atordoamento, Mutilar, Cegar, Empalar, Empurrar, Provocar, Fúria, Escudo por acerto — `itens-poe/mods-poe.mjs`).
-        const doAcerto = poe ? ModsPoe.aoAcertar(estado, hunt, alvo, ficha, { dano: golpe + (elemental?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0), fisico: golpe, crit: critico, eventos, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: ['physical', ...dosAtributos.map((d) => d.tipo), ...(elemental ? [elemental.tipo ?? arma?.element?.type] : [])] }) : null;
+        // (lote 31, P034: a parte de Fogo do golpe — as partes somadas e a elemental da arma — para o "Atordoam como se causassem mais Dano de Fogo")
+        const fogoDoGolpe = dosAtributos.filter((d) => d.tipo === 'fire').reduce((n, d) => n + d.v, 0) + (elemental && (elemental.tipo ?? arma?.element?.type) === 'fire' ? elemental.v : 0);
+        const doAcerto = poe ? ModsPoe.aoAcertar(estado, hunt, alvo, ficha, { dano: golpe + (elemental?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0), fisico: golpe, fogo: fogoDoGolpe, crit: critico, eventos, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: ['physical', ...dosAtributos.map((d) => d.tipo), ...(elemental ? [elemental.tipo ?? arma?.element?.type] : [])] }) : null;
         // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
         if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit: critico, corpoACorpo: categoriaDaArma(arma) !== 'distancia', atordoou: !!doAcerto?.atordoou }).length) Ficha.invalidar(estado);
         // ("Acertos Corpo a Corpo contam como Mortes com Fúria" — o Rampage.)
@@ -1551,7 +1593,11 @@ export function round(estado, personagem) {
           // o físico já é o de antes da rolagem, e as partes elementais (roladas junto com o crítico) voltam ao valor sem ele.
           const semCritico = (v) => (critico ? v / Math.max(1, ficha.critMultiplier ?? 1) : v);
           const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: semCritico(d.v) }))];
-          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, praga: Acoes.pragaDoAcerto(hunt), crit: critico && !ficha.sobrecargaElemental, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss });
+          // (lote 31, P018 — a Força Concussiva: "Incêndios de Acertos Corpo a Corpo Atordoantes causam X% mais Dano" também no golpe básico
+          // corpo a corpo que atordoou, como nas gemas — `acoes.mjs`)
+          const incendioAtordoante = doAcerto?.atordoou && categoriaDaArma(arma) !== 'distancia' ? ModsPoe.valor(ficha, 'incendio_atordoante_mais') : 0;
+          const afeccoesDoGolpe = incendioAtordoante ? { ...ficha.afeccoes, incendioMais: (ficha.afeccoes.incendioMais ?? 0) + incendioAtordoante } : ficha.afeccoes;
+          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: afeccoesDoGolpe, praga: Acoes.pragaDoAcerto(hunt), crit: critico && !ficha.sobrecargaElemental, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss });
           // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
           ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, hunt.clock ?? 0);
           for (const st of postos) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });

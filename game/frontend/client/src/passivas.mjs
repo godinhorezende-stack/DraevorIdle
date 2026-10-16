@@ -14,6 +14,8 @@
  * Os nós (a árvore em si, ~120 KB) vêm uma vez por sessão
  * (`{t:'passivas', action:'arvore'}`); depois, só a vista do personagem.
  */
+import { tipFor } from './tooltip.mjs';
+import { itemCanvas } from './sprites.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -156,16 +158,23 @@ function iniciosExtras(ids) {
   return extras;
 }
 
+/** (lote 29) Os nós que as joias deixam alocar sem ligação ("podem ser atribuídas sem estarem conectadas à sua árvore") → o encaixe de cada um. */
+const liberados = () => vista()?.liberados ?? {};
+
 /** O menor caminho de nós não alocados até `id` — o mesmo que o servidor aceita. */
 function caminhoAte(id) {
   const a = arvore();
   const mine = meus();
   if (!a?.porId.has(id)) return null;
   if (mine.has(id)) return [];
+  // (lote 29) o nó liberado por uma joia entra sozinho; o caminho pode começar num liberado (ele entra no caminho)
+  const livres = Object.keys(liberados()).filter((x) => !mine.has(x));
+  if (livres.includes(id)) return [id];
   const veioDe = new Map();
   const fila = [...mine, ...[...iniciosExtras(mine)].filter((x) => !mine.has(x))];
   for (const x of fila) veioDe.set(x, null);
   const origens = new Set(fila);
+  for (const x of livres) if (!veioDe.has(x)) { veioDe.set(x, null); fila.push(x); }
   for (let i = 0; i < fila.length; i++) {
     for (const c of a.porId.get(fila[i])?.conexoes ?? []) {
       if (veioDe.has(c) || a.porId.get(c)?.tipo === 'start') continue;
@@ -190,7 +199,8 @@ function ficamSem(id) {
   const v = vista();
   const resto = new Set((v?.alocados ?? []).filter((x) => x !== id));
   // (+ os inícios extras dos nós que FICAM: tirar o "Caminho" ilha o que só se ligava por ele)
-  const inicios = [v?.inicio, v?.inicioAscendencia, ...iniciosExtras(resto)].filter(Boolean);
+  // (lote 29: + os nós liberados por uma joia cujo encaixe fica)
+  const inicios = [v?.inicio, v?.inicioAscendencia, ...iniciosExtras(resto), ...Object.entries(liberados()).filter(([n, s]) => s !== id && resto.has(n)).map(([n]) => n)].filter(Boolean);
   const ligados = new Set(inicios);
   const fila = [...inicios];
   while (fila.length) {
@@ -226,7 +236,7 @@ function estadoDoNo(n) {
   // A opção de escolha de uma ascendência: uma por pai (a irmã escolhida bloqueia as outras).
   if (n.opcaoDe != null && [...mine].some((x) => x !== n.id && arvore()?.porId.get(x)?.opcaoDe === n.opcaoDe)) return 'bloqueado';
   const extras = iniciosExtras(mine);
-  return n.conexoes.some((c) => mine.has(c) || extras.has(c)) ? 'disponivel' : 'bloqueado';
+  return n.conexoes.some((c) => mine.has(c) || extras.has(c)) || liberados()[n.id] ? 'disponivel' : 'bloqueado';
 }
 
 // ------------------------------------------------------------------- abrir
@@ -447,6 +457,20 @@ function montar(body) {
       imagens.set(caminho, img);
     }
     return img.complete && img.naturalWidth ? img : null;
+  }
+  /** (lote 27) O ícone da JOIA no encaixe (o da peça do PoE, em /api/jogo/poe/icone/item/); quando a imagem chega, redesenha. */
+  function desenharJoia(peca, p, r) {
+    const caminho = ctx.state.items?.[peca.id]?.poe?.icone ?? peca.poe?.icone;
+    if (!caminho) return;
+    const chave = `item:${caminho}`;
+    let img = imagens.get(chave);
+    if (!img) {
+      img = new Image();
+      img.onload = pedir;
+      img.src = `/api/jogo/poe/icone/item/${caminho.split('/').map(encodeURIComponent).join('/')}`;
+      imagens.set(chave, img);
+    }
+    if (img.complete && img.naturalWidth) imagemNoDisco(img, p, r * 0.8);
   }
   /** Desenha a imagem inteira dentro do círculo de raio `rr` (mantendo a proporção), recortada por ele. */
   function imagemNoDisco(img, p, rr, alpha = 1) {
@@ -917,6 +941,21 @@ function montar(body) {
       g.restore();
     }
 
+    // (lote 27) O RAIO GRANDE do encaixe de joia escolhido (o do Chieftain: 1500 unidades da árvore).
+    // (lote 29: o raio da joia encaixada — `vista.raios`, o anel do Fio de Esperança com o de dentro —; sem ele, o Raio Grande)
+    const raioDoEncaixe = selecionado?.encaixeDeJoia ? vista()?.raios?.[selecionado.id] ?? (a.raiosDeJoia?.grande ? { min: 0, max: a.raiosDeJoia.grande } : null) : null;
+    if (raioDoEncaixe) {
+      const p = paraTela(selecionado);
+      g.beginPath();
+      g.arc(p.x, p.y, raioDoEncaixe.max * cam.zoom, 0, Math.PI * 2);
+      if (raioDoEncaixe.min > 0) g.arc(p.x, p.y, raioDoEncaixe.min * cam.zoom, 0, Math.PI * 2, true);
+      g.fillStyle = 'rgba(111, 200, 180, 0.07)';
+      g.fill('evenodd');
+      g.strokeStyle = 'rgba(111, 200, 180, 0.55)';
+      g.lineWidth = 1.5;
+      g.stroke();
+    }
+
     // Os nós.
     const achadosSet = new Set(achadosLista.map((n) => n.id));
     for (const n of a.nos) {
@@ -926,6 +965,9 @@ function montar(body) {
       const r = raio(n);
       const estado = estadoDoNo(n);
       desenharNo(n, p, r, estado, caminho.has(n.id));
+      // (lote 27) a joia no encaixe: o ícone dela por cima da moldura.
+      const joia = n.encaixeDeJoia ? vista()?.joias?.[n.id] : null;
+      if (joia) desenharJoia(joia, p, r);
       if (achadosSet.has(n.id)) aro(p, r + 6, CORES.busca, 2);
       if (selecionado?.id === n.id || sobre?.id === n.id) aro(p, r + 4, CORES.selecionado, selecionado?.id === n.id ? 2.4 : 1.2);
       // O nome dos notáveis, keystones e inícios de perto.
@@ -1372,6 +1414,7 @@ function montar(body) {
         linha.prepend(botao);
       }
       info.append(linha);
+      if (n.encaixeDeJoia) info.append(quadroDaJoia(n, estado));
       if (estado === 'alocado' && n.tipo !== 'start') {
         const ficam = ficamSem(n.id);
         const junto = v.alocados.length - 1 - ficam.length;
@@ -1384,6 +1427,46 @@ function montar(body) {
     }
     // Nada selecionado: o total do que a árvore está dando.
     info.append(quadroDoTotal());
+  }
+
+  /*
+   * (15/10, lote 27) O ENCAIXE DE JOIA escolhido: a joia que está nele (o ícone, com o balão da peça) e as joias da mochila para pôr — só
+   * no encaixe alocado (o servidor confere; a que sai volta para a mochila).
+   */
+  function quadroDaJoia(n, estado) {
+    const caixa = el('div', 'pas-joia');
+    const peca = (p, i = null) => {
+      const linha = el('div', 'pas-joia-linha');
+      const icone = el('span', 'pas-joia-icone');
+      icone.append(itemCanvas(p.id, 34));
+      tipFor(icone, p.id, null, null, p);
+      linha.append(icone, el('span', `pas-joia-nome raridade-${p.poe?.raridade ?? 'normal'}`, p.poe?.nome || ctx.state.items?.[p.id]?.name || 'Joia'));
+      if (i != null) linha.dataset.pilha = i;
+      return linha;
+    };
+    const atual = vista()?.joias?.[n.id];
+    caixa.append(el('b', null, atual ? 'Joia no encaixe' : 'Encaixe vazio'));
+    if (atual) {
+      const linha = peca(atual);
+      const tirar = el('button', 'ghost', 'Retirar');
+      tirar.onclick = () => ctx.send({ t: 'passivas', action: 'retirarJoia', no: n.id });
+      linha.append(tirar);
+      caixa.append(linha);
+    }
+    if (estado !== 'alocado') {
+      caixa.append(el('p', 'pas-aviso', 'Aloque o encaixe para pôr uma joia.'));
+      return caixa;
+    }
+    const mochila = (ctx.state.character?.inventory ?? []).map((p, i) => [p, i]).filter(([p]) => ctx.state.items?.[p?.id]?.joia);
+    caixa.append(el('p', 'pas-dica', mochila.length ? (atual ? 'Trocar pela joia da mochila (a de agora volta para ela):' : 'Pôr uma joia da mochila:') : 'Nenhuma joia na mochila. As Joias Carmesim, Viridiana e Cobalto caem dos monstros.'));
+    for (const [p, i] of mochila) {
+      const linha = peca(p, i);
+      const por = el('button', 'primary', atual ? 'Trocar' : 'Encaixar');
+      por.onclick = () => ctx.send({ t: 'passivas', action: 'encaixarJoia', no: n.id, pilha: i, id: p.id });
+      linha.append(por);
+      caixa.append(linha);
+    }
+    return caixa;
   }
 
   // A árvore já veio antes (outra abertura nesta sessão): desenha já.

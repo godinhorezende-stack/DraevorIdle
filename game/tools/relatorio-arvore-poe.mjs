@@ -136,6 +136,46 @@ const IMPLEMENTADOS = [
     re: /Rajada Vulcânica|Emissário das Direções|Poder Fantasmal|Erguer Aranhas|Suspender no Tempo/,
     jogo: 'a Rajada Vulcânica (no acerto corpo a corpo, 4 projéteis de magma em área, 200% do golpe, 60% em Fogo); o Grande Emissário das Direções (sai sozinho; a cada 6 s, +2 Projéteis, +2 Ricochetes, +2 Perfurações, Difundir duas vezes, ou todos); o Poder Fantasmal (o dano de cada Fantasma vivo nas suas magias físicas) com o suporte Convocar Fantasma, que passa a convocar (no golpe fatal e no Raro/Único, até o máximo, 15 s); Erguer Aranhas (ao matar, 2 aranhas por cadáver perto, até 20, 30 s, +2% de Velocidade de Ataque e +15% de Dano com Veneno cada); Suspender no Tempo (a terceira Miragem solta as magias que as criaram, com menos dano) — e os únicos que dão essas habilidades',
   },
+  {
+    bloco: 'As que "não se aplicavam" — o lote rápido (lote 25)',
+    re: /cadáveres Criados por você Recentemente|Alcance do Ricochete|Barragens de Projéteis|Ricochetear ao colidirem|Retornarem a você|direções aleatórias|local anterior que foram/,
+    jogo: 'o Pacto Cadavérico (os cadáveres de Profanar e Desenterrar dos últimos 4 s Resfriam e Eletrizam os inimigos a até 3 casas); o Alcance do Ricochete (a distância do salto); os projéteis que Retornam, Ricocheteiam no terreno (um ricochete a mais), vão em direções aleatórias (inimigos sorteados) e a barragem que não se propaga (toda no alvo); o Golpe que também mira o local anterior (mais um inimigo perto)',
+  },
+  {
+    bloco: 'O mercenário do Luminary (lote 26)',
+    re: /mercenário|conexão têm duração/i,
+    jogo: 'o mercenário permanente (sai sozinho: a sua vida máxima, o golpe da sua arma; volta em 10 s); a vida e o dano dele, o "8% mais Dano por único" (os seus únicos nos tipos de peça liberados), o guarda-costas (20% do dano dos acertos nele com a vida dele maior; 40% do dano dele recuperado com ela menor), o provocar, as suas auras nele (+50%), o Vínculo nele (o Juramento: a morte dele não leva você) e os Vínculos com duração infinita',
+  },
+  {
+    bloco: 'Os encaixes de joia (lote 27)',
+    re: /^Joias Não Únicas/,
+    jogo: 'os 21 encaixes da árvore (15 Básicos e os 6 Grandes da borda) recebem as Joias Carmesim, Viridiana e Cobalto (e a Prismática, só Única), que passam a cair; com o encaixe alocado, os mods da joia valem como os de uma peça; o Chieftain (Ngamahu): com joia não única, os aumentos de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados no Raio Grande (1800, como no PoE/PoB — lote 29) viram de Fogo e cada nó pequeno ou notável dá +4 de Força',
+  },
+  {
+    bloco: 'Zerar a árvore — lote 30 (as contas e regras erradas)',
+    re: /Bônus de Precisão da Destreza|% mais Dano de Caos|^15% mais Dano de Gelo|Debuffs em você expiram|menos Dano Físico Sofrido enquanto em Escudo|menos Dano sofrido por Força dos Ventos|Você e Aliados próximos têm Vento Favorável|menos Dano de Acertos por|menos Dano Degenerativo por 5|^\+0\.75% de Chance de Golpe Crítico/,
+    jogo: 'a Precisão da Destreza passa a 3 por ponto (somava +3 em cima dos 2); "X% mais Dano de Caos/Gelo" só na parte daquele tipo; "Debuffs em você expiram X% mais rápido" = a duração ÷ (1 + X%) em todo debuff (afecções, maldições, os dos monstros); "menos Dano Físico Sofrido" multiplicativo; o Vento Favorável dá 8% de Velocidade de Ação; a Parada Cardíaca alterna (consecutivamente) os 5 s de menos dano de Acertos e os 5 s de menos dano Degenerativo; a Guarda do Vento e o "+0,75% de Chance de Crítico" já eram a conta do PoE (a nota estava errada)',
+  },
+  {
+    bloco: 'Zerar a árvore — lote 31 (o abate de quem, as explosões, o Clamor, o golpe básico)',
+    re: /ao Matar Corpo a Corpo|Provocados por seus Clamores|Sangramento Explodem quando você|para cada Empalar no Inimigo|Atordoam como se causassem|Incêndios de Acertos Corpo a Corpo Atordoantes|^Dano com Acertos é Azarado|Acertos Não Críticos penetram/,
+    jogo: 'o abate é de quem deu o golpe fatal (o do lacaio e o do totem não dão o "ao Matar" nem o "Matou Recentemente" seus — dão os eventos deles e a Relíquia Elemental); o "ao Matar Corpo a Corpo" é o golpe fatal corpo a corpo; "Provocados por seus Clamores" só o do Clamor (a explosão, morto por qualquer um); as explosões com o tipo de dano da linha, pela defesa dos atingidos; o atordoamento "como se causasse mais Dano de Fogo" só na parte de Fogo; a Força Concussiva, o Azarado e a penetração no não crítico também no golpe básico; o adicional por Empalamento do Mestre do Metal entra no golpe como Físico adicional, com os aumentos',
+  },
+  {
+    bloco: 'Zerar a árvore — lote 32 (o resto da lista A)',
+    re: /Armadura também se aplicam à Recarga|Habilidades de Oferenda também afetam|menos dano de Ataque sofrido se você não foi|Redução de Dano Máxima para qualquer|Redefine a duração de esfriamentos|não pode causar Dano com Habilidades por si|não se moveu nos últimos|afetado por um Buff de Clamor|vida não reservada faltante antes|por Fúria enquanto não estiver perdendo|Velocidade de Movimento não pode ser modificada|criar Solo Sagrado ao Acertar um Inimigo Raro|^Mago de Batalha|Ganha Convergência ao Acertar|Chance de Bloquear com o Escudo Equipado ao invés|Chance de bloquear magias aumenta|Perde toda a sua Força dos Ventos/,
+    jogo: 'todo o "aumentado" de Armadura resolvido (o condicional também) na Recarga do Escudo; as Oferendas em você por inteiro (Conjuração, Movimento, bloqueio de Magia; a regeneração da Óssea só se bloqueou há pouco); o Dançarino do Vento 20% MENOS dano de Ataque (também no projétil do monstro); o teto de 50% em toda redução; as Forças Profanadas ao amaldiçoar, com a duração cheia; o Vínculo Ancestral também na Praga e no Aço; "não se moveu nos últimos N s"; os segundos seguidos sob um Buff de Clamor; o Desafio antes do acerto, da Vida não reservada; o Ritual da Ruína por Fúria, só enquanto ela não cai; o piso do movimento em toda redução; o Solo Sagrado do Inquisidor de 8 s; o adicionado às magias de todo tipo (Mago de Batalha); a Convergência só no Elemental; o Gladiador, o Bastião Vil e a Guarda do Vento já eram a conta do PoE/PoB',
+  },
+  {
+    bloco: 'Zerar a árvore — lote 33 (os primeiros sistemas B)',
+    re: /Efeito de Afecções Não-Danificadoras aumentado|Flechas ganham Chance de Golpe Crítico enquanto viajam|aos alvos no início de seu movimento|ao viajar adiante, causando até|conforme viajam adiante, causando|baseado na proximidade|chance de ganhar Elusivo/,
+    jogo: 'o "Efeito de Afecções Não-Danificadoras" também no Causticar, no Fragilizar e no Exaurir (o bloqueio, a chance no acerto, a aura, o Segredos do Sofrimento, a Causticação do Warden); as rampas de distância do Path of Building (35 → 70 unidades; 1 casa = 2 m = 20) no crítico das flechas, no Tiro Longo, no Tiro Distante do Deadeye e na Animosidade Adjacente; a Queima-Roupa pela tabela do poedb; o Impacto pela proximidade do PoB (o máximo até 15 unidades, 0 em 40 — o vizinho colado, a 20, dá 80%); o Elusivo perde 20% de efeito por segundo (começa no efeito cheio, com o aumentado) e não se ganha outro enquanto há um',
+  },
+  {
+    bloco: 'Zerar a árvore — lote 34 (as Minas plantadas e a Velocidade dos Clamores)',
+    re: /Velocidade dos Clamores aumentada|Cada Mina aplica|por cada Mina Detonada|Minas Detonadas Recentemente/,
+    jogo: 'a Velocidade dos Clamores encurta o tempo de uso do Clamor (e a de Conjuração não vale nele — o Clamor não é ataque nem magia); a aura da Mina plantada nos inimigos a até 35 unidades (3,5 m, 1 casa), cada Mina somando até o teto ("Efeito de Auras das Minas" na de cada uma, não no teto; o "reduzido" é o dano que o inimigo causa); "por cada Mina Detonada Recentemente, até 100%/40%" pela detonação de verdade, nos últimos 4 s',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */
@@ -214,14 +254,83 @@ export function relatorio(arvore, hoje = new Date()) {
   return { md: md.join('\n'), numeros };
 }
 
-/** Lê a árvore montada, escreve o relatório e devolve os números. */
-export function gravarRelatorio(hoje = new Date()) {
+/*
+ * ---- (15/10) AS JOIAS dos encaixes da árvore (lotes 27 a 29) ----
+ * O dono mandou fazer as joias e "as pendências e os efeitos que não funcionam" (15/10): a seção mostra o que já vale (os encaixes, as
+ * joias que caem, os mods delas e as linhas de cada única) e o que falta, com o lote previsto. Os estados são os do balão da peça (a
+ * tradução de `traducao.json`, linha a linha).
+ */
+const LOTE_PREVISTO = [
+  [/^(Split_Personality|The_Balance_of_Terror|Rational_Doctrine|Watchers_Eye|Sublime_Vision|Bound_By_Destiny|Forbidden_Flame|Forbidden_Flesh|Impossible_Escape)$/, 'lote 31 — os mods sorteados da única (raspar os pools no poedb)'],
+];
+const GRUPOS_DE_JOIA = [
+  ['Carmesim, Viridiana, Cobalto e Prismática', (u) => ['Joia Carmesim', 'Joia Viridiana', 'Joia Cobalto', 'Joia Prismática'].includes(u.base)],
+  ['Abissais (os 4 Olhos)', (u, classe) => classe === 'Abyss_Jewels' && !!u.base],
+  ['Atemporais', (u) => u.base === 'Joia Atemporal'],
+  ['Ramificadoras', (u) => /Ramificadora/.test(u.base ?? '')],
+];
+const loteDa = (slug, grupo) => (grupo === 'Atemporais' ? 'Atemporais (as tabelas do PoB, com a autorização do download)' : grupo === 'Ramificadoras' ? 'Ramificadoras (raspar os encantamentos e notáveis no poedb)' : LOTE_PREVISTO.find(([re]) => re.test(slug))?.[1] ?? 'lote 30 — as outras linhas dos únicos de joia');
+
+async function secaoDasJoias() {
+  process.env.ITENS_POE ??= '1';
+  const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+  const T = await import('../systems/itens-poe/traduzir.mjs');
+  const cat = Catalogo.catalogo();
+  if (!cat?.classes?.Jewels) return [];
+  const md = ['## As joias dos encaixes da árvore (lotes 27 a 29)', ''];
+  md.push('- **Encaixes**: os 21 da árvore (15 Básicos e os 6 Grandes da borda); os Médios e Pequenos são das Ramificadoras. Raio na árvore como no PoE/PoB: Pequeno 960, Médio 1440, Grande 1800 (o Fio de Esperança em anéis).');
+  md.push('- **Joias que caem**: Carmesim, Viridiana e Cobalto (Normal, Mágica, Rara e Única), a Prismática (só Única) e os 4 Olhos Abissais (nos encaixes da árvore e nos Encaixes Abissais das peças).');
+  for (const [nome, classe, fora] of [['Jewels', 'Jewels', /^(Timeless_Jewel)$/], ['Abissais', 'Abyss_Jewels', null]]) {
+    const c = cat.classes[classe];
+    const r = T.cobertura({ classes: { [classe]: { ...c, paginas: Object.fromEntries(Object.entries(c.paginas).filter(([p]) => !fora?.test(p))) } } });
+    md.push(`- **Mods das joias ${nome === 'Jewels' ? 'Carmesim/Viridiana/Cobalto/Prismática' : 'Abissais'}** (prefixos e sufixos, pelo peso de sorteio): ${r.comEfeitoNoCombate}% com efeito.`);
+  }
+  md.push('', '| Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
+  const faltam = [];
+  for (const [grupo, f] of GRUPOS_DE_JOIA) {
+    const conta = { total: 0, efeito: 0, lembrete: 0, sem: 0 };
+    let unicas = 0;
+    for (const classe of ['Jewels', 'Abyss_Jewels']) {
+      for (const u of cat.classes[classe]?.unicos ?? []) {
+        if (!f(u, classe) || !u.modificadores?.length) continue;
+        unicas++;
+        for (const m of u.modificadores) {
+          const t = T.traduzirMod({ modelo: m.modelo, valores: (m.faixas ?? []).map((x) => x[0]) });
+          const nota = t.partes.find((p) => p.nota)?.nota ?? '';
+          conta.total++;
+          if (['equivalente', 'novo', 'aproximado'].includes(t.estado)) conta.efeito++;
+          else if (t.estado === 'lembrete' || (t.estado === 'inerte' && /^não se aplica/i.test(nota))) conta.lembrete++;
+          else {
+            conta.sem++;
+            faltam.push({ grupo, unica: u.nome, slug: u.slug, texto: m.texto, nota });
+          }
+        }
+      }
+    }
+    md.push(`| ${escapar(grupo)} (${unicas}) | ${conta.total} | ${conta.efeito} | ${conta.lembrete} | ${conta.sem} |`);
+  }
+  md.push('', '### O que ainda não funciona nas joias únicas, pelo lote previsto', '');
+  md.push('| Lote | Única — linha |', '|---|---|');
+  const porLote = new Map();
+  for (const x of faltam) {
+    const lote = loteDa(x.slug, x.grupo);
+    if (!porLote.has(lote)) porLote.set(lote, []);
+    porLote.get(lote).push(x);
+  }
+  for (const [lote, xs] of porLote) md.push(`| ${escapar(lote)} (${xs.length}) | ${xs.map((x) => `${escapar(x.unica)} — ${escapar(x.texto)}${x.nota ? ` _(${escapar(x.nota)})_` : ''}`).join('<br>')} |`);
+  md.push('');
+  return md;
+}
+
+/** Lê a árvore montada, escreve o relatório (com a seção das joias) e devolve os números. */
+export async function gravarRelatorio(hoje = new Date()) {
   const r = relatorio(JSON.parse(readFileSync(ARVORE, 'utf8')), hoje);
-  writeFileSync(DESTINO, r.md);
+  const joias = await secaoDasJoias();
+  writeFileSync(DESTINO, joias.length ? `${r.md}\n${joias.join('\n')}` : r.md);
   return r.numeros;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const numeros = gravarRelatorio();
+  const numeros = await gravarRelatorio();
   console.log(JSON.stringify(numeros), '→', DESTINO.pathname);
 }

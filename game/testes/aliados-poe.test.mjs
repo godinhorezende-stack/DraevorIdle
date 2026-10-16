@@ -19,7 +19,6 @@ const J = await import('../systems/itens-poe/jogo.mjs');
 const Aliados = await import('../systems/itens-poe/aliados.mjs');
 const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
 const LacaiosPoe = await import('../systems/itens-poe/lacaios-poe.mjs');
-const { resistido } = await import('../systems/hunt/resistencia.mjs');
 const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
 
 /** Um personagem com um Machado Vaal numa caçada do PoE (`af`: atributos no machado). */
@@ -175,8 +174,11 @@ test('o Mestre do Metal: "+1000 de Armadura caso tenha Empalado Recentemente" e 
   assert.deepEqual([af(amiga).empalar_fisico_add_min, af(amiga).empalar_fisico_add_max], [6, 12]);
   const [b] = amiga.hunt.monstros;
   Object.assign(b, { hp: 1e9, maxHp: 1e9, estados: { empalado: [0, 1, 2].map(() => ({ valor: 0, acertos: 1, ate: amiga.hunt.clock + 5000 })) } });
+  // (15/10, lote 31 — P043, ajuste aprovado pelo dono: no PoE é dano Físico ADICIONADO ao golpe, com os aumentos — `fisicoPorEmpalamento`,
+  // no golpe básico e na gema, `zerar-arvore-lote31`; antes entrava depois do acerto, só pela redução física: 3 × 6 pela resistência)
+  assert.deepEqual(ModsPoe.fisicoPorEmpalamento(Ficha.combate(amiga), b, amiga.hunt.clock), [3 * 6, 3 * 12], '3 Empalamentos × 6 a 12');
   const r = ModsPoe.aoAcertar(amiga, amiga.hunt, b, Ficha.combate(amiga), { dano: 1, fisico: 0, rng: () => 0 });
-  assert.equal(r.extra, Math.max(1, Math.round(resistido(amiga.hunt, b, 'physical', 3 * 6, null, { armadura: false }))), '3 Empalamentos × 6');
+  assert.equal(r.extra, 0, 'depois do acerto, nada a mais');
 });
 
 test('os cadáveres de quem dá (Gula por Essências, Portador da Infestação) e o Vento Favorável (Ventania) — na amiga perto', { skip: SEM }, () => {

@@ -19,6 +19,7 @@ const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
 const Estados = await import('../systems/skills/estados.mjs');
 const Resistencia = await import('../systems/hunt/resistencia.mjs');
 const Afixos = await import('../systems/afixos.mjs');
+const Plantadas = await import('../systems/itens-poe/armas-plantadas.mjs');
 const { personagemDeTeste } = await import('./apoio.mjs');
 if (!SEM) {
   await iniciarJogoDoPoe();
@@ -156,13 +157,16 @@ test('ENCAIXES e MINAS: "se a arma … tiver um encaixe verde e vermelho"; "Cada
   assert.equal(armadura() - sem, valor);
   const m = com(/^mina_fragiliza:\d+$/);
   const teto = Number(m.chave.split(':')[1]);
+  // (16/10, lote 34 — P010, ajuste aprovado pelo dono: "Each Mine applies … to Enemies near it" — a aura da Mina PLANTADA, a até 35 unidades
+  // (1 casa), no tique — `ModsPoe.auraDasMinas`; antes, a soma no alvo de cada acerto de Mina)
   const alvo = bicho();
-  for (let i = 0; i < 10; i++) ModsPoe.aoAcertar(m.e, m.e.hunt, alvo, golpe(m.e, ['magia', 'mina', 'area']), { dano: 1, rng: () => 0.999 });
+  const outro = bicho({ uid: 10, x: 3, y: 0 });
+  m.e.hunt.monstros = [alvo, outro];
+  for (let i = 0; i < 10; i++) Plantadas.plantar(m.e.hunt, ficha(m.e), { tipo: 'mina', acao: 'x', slot: 0, x: 0, y: 0, duracaoMs: 5000, agora: m.e.hunt.clock });
+  ModsPoe.auraDasMinas(m.e.hunt, ficha(m.e));
   assert.equal(alvo.estados.minaFragil.pct, teto);
   assert.ok(Math.abs(ModsPoe.fatorRecebidoPeloBicho(alvo, 'fire', ficha(m.e), m.e.hunt.clock) - (1 + teto / 100)) < 1e-9);
-  const outro = bicho();
-  ModsPoe.aoAcertar(m.e, m.e.hunt, outro, golpe(m.e, ['magia', 'area']), { dano: 1, rng: () => 0.999 });
-  assert.equal(outro.estados?.minaFragil, undefined, 'só o golpe de Mina');
+  assert.equal(outro.estados?.minaFragil, undefined, 'só perto de uma Mina plantada');
 });
 
 test('MAGIAS RECENTES: "Velocidade de Conjuração aumentada em X% por cada Magia … Conjurado Recentemente"', { skip: SEM }, () => {

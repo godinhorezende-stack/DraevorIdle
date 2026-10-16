@@ -204,6 +204,10 @@ export function soma(estado) {
   // por aqui, e não pela tradução, para duas peças com a keystone não dobrarem os bônus)
   const vinteAbates = Number(resolvido.rampage) > 0 ? ModsPoe.fatorDaEscala(estado, resolvido, null, 'rampage:20') : 0;
   if (vinteAbates) { resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + 2 * vinteAbates; resolvido.move_speed = (resolvido.move_speed ?? 0) + vinteAbates; }
+  // (lote 32, P024 — a Maestria de Armadura e Escudo de Energia: "Aumentos e Reduções à Armadura também se aplicam à Recarga do Escudo de
+  // Energia em X% de seu valor" — todo o "aumentado/reduzido" de Armadura que vale agora (das peças, da árvore, as Defesas Globais, os
+  // condicionais e os "por X": depois do `resolver`), na fração; antes a escala lia a soma de antes das condições.)
+  if (Number(resolvido.armadura_na_recarga_es) > 0 && resolvido.armour_pct) resolvido.es_recharge = (resolvido.es_recharge ?? 0) + (resolvido.armour_pct * resolvido.armadura_na_recarga_es) / 100;
   // ("Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico" — O Olho Aberto: o "aumentado" da evasão entra no Dano Mágico.)
   if (Number(resolvido.evasao_no_dano_magico) > 0 && resolvido.evasion_pct) resolvido.spell_dmg = (resolvido.spell_dmg ?? 0) + (resolvido.evasion_pct * resolvido.evasao_no_dano_magico) / 100;
   // (as Transfigurações — keystones dos únicos: "Aumentos e Reduções ao Escudo de Energia Máximo também são aplicados ao Dano Mágico em 30%
@@ -240,6 +244,8 @@ export function somaDeItens(estado) {
     if (!peca || slot === 'backpack') continue;
     somarPeca(total, estado, slot, peca, daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1);
   }
+  // (15/10, lote 27) as JOIAS nos encaixes alocados da árvore do PoE: os mods delas somam como os de uma peça.
+  for (const { peca } of Passivas.joiasAtivas(estado)) somarPeca(total, estado, 'joia', peca);
   return total;
 }
 /** Soma UMA peça vestida em `total` (a do Draevor e a do PoE — `poe.af`, com as condições da própria peça e do lado do anel). */
@@ -254,6 +260,13 @@ function somarPeca(total, estado, slot, peca, fatorDaPeca = 1) {
     const [k1, v] = ModsPoe.ehCondicional(k0) ? ModsPoe.daPeca(k0, v0, peca, estado) : [k0, v0];
     const k = ModsPoe.ehCondicional(k1) ? ModsPoe.doAnel(k1, slot) : k1;
     if (k) total[k] = (total[k] ?? 0) + v * fatorDaPeca;
+  }
+  // (15/10, lote 28) as JOIAS ABISSAIS encaixadas nos encaixes abissais da peça: somam como peças, × o "Efeito das Joias Abissais
+  // Encaixadas" da própria peça (o Torno Estígio único).
+  const abissais = peca.poe?.abissais;
+  if (abissais?.length) {
+    const efeito = 1 + (Number(peca.poe.af?.efeito_joias_abissais) || 0) / 100;
+    for (const joia of abissais) if (joia) somarPeca(total, estado, slot, joia, efeito);
   }
   return total;
 }

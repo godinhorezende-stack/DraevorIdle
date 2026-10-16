@@ -150,7 +150,13 @@ export const BONUS_DE_DUAS_ARMAS = { bloqueio: 0.15, velocidadeMais: 1.1 };
 const dobroDasDuasArmas = (af, oque) => (itensPoeLigado() && (Number(af?.bonus_duas_armas_dobrado) > 0 || (oque === 'velocidade' && Number(af?.velocidade_duas_armas_dobrada) > 0)) ? 2 : 1);
 
 /** Os modificadores LOCAIS da arma (`engine/arma.mjs`): os da peça do Draevor (`peca.locais`) ou, na do PoE, a Velocidade de Ataque e o crítico locais dela. */
-const locaisDaArma = (peca) => (peca?.poe ? { pctVelocidade: Number(peca.poe.af?.atk_speed_local) || 0, pctCritico: Number(peca.poe.af?.crit_chance_local) || 0 } : peca?.locais);
+// (lote 28: + os locais "por joia Olho X encaixada" do Rasgacarne único — `ModsPoe.locaisAbissais`; o % físico local entra como `pctDano`: a
+// base dele não tem outro % físico local, que já vem na faixa da arma.)
+const locaisDaArma = (peca) => {
+  if (!peca?.poe) return peca?.locais;
+  const ab = peca.poe.abissais?.length ? ModsPoe.locaisAbissais(peca) : {};
+  return { pctVelocidade: (Number(peca.poe.af?.atk_speed_local) || 0) + (ab.atk_speed_local ?? 0), pctCritico: (Number(peca.poe.af?.crit_chance_local) || 0) + (ab.crit_chance_local ?? 0), ...(ab.phys_dmg_local ? { pctDano: ab.phys_dmg_local } : {}) };
+};
 /** DESARMADO no PoE: 1,2 ataques por segundo (833 ms), como no PoE. No clássico, sem arma, os 2 s de sempre. */
 export const APS_DESARMADO_POE = 1.2;
 /**
@@ -474,7 +480,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // (× a "Velocidade de Ação" do PoE.)
     // ("Sua Velocidade de Movimento é de X% de seu valor base": o valor fixo, nada mais muda.)
     // (PoE, 12/10: "Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados" — `velocidade_igual_vinculado`.)
-    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af)),
+    // (lote 32, P049: "Velocidade de Movimento não pode ser modificada para abaixo do valor base" — a ficha não fica abaixo da base; a lentidão em
+    // você, no passo — `cacadas.razaoDeVelocidade`)
+    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.max(itensPoeLigado() && af.movimento_minimo_base > 0 ? R.baseSpeed(estado.level ?? 1) : 0, Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af))),
     // O alcance a mais dos golpes corpo a corpo (PoE: "+N metros ao Alcance…"; 1 casa = 2 m).
     alcanceCorpoExtra: itensPoeLigado() ? Math.floor((af.alcance_corpo_m ?? 0) / 2) : 0,
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por

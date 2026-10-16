@@ -231,7 +231,8 @@ test('MARCA: transfere ao matar o Marcado e cega os vizinhos dele; "Efeito das s
   const vizinho = bicho({ uid: 11, x: 3, y: 0 });
   t.e.hunt.monstros = [morto, vizinho];
   morto.hp = 0;
-  ModsPoe.evento(t.e, t.e.hunt, 'matar', ficha(t.e), { alvo: morto });
+  // (15/10, lote 31 — S001, ajuste aprovado pelo dono: "quando o Inimigo Marcado morrer" = a morte por qualquer um — o evento `inimigoMorrer`)
+  ModsPoe.evento(t.e, t.e.hunt, 'inimigoMorrer', ficha(t.e), { alvo: morto });
   assert.ok(ModsPoe.marcaNoBicho(vizinho, t.e.hunt.clock), 'a Marca passou ao vizinho');
   assert.ok(!ModsPoe.marcaNoBicho(morto, t.e.hunt.clock));
   const cg = com(/^marcado_cega_proximos$/);

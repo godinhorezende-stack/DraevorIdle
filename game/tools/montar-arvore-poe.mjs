@@ -61,4 +61,4 @@ const saida = {
 };
 writeFileSync(DESTINO, JSON.stringify(saida) + '\n');
 console.log(JSON.stringify(relatorio), '→', DESTINO.pathname);
-console.log('relatório:', JSON.stringify(gravarRelatorio()), '→ docs/arvore-poe-pendencias.md');
+console.log('relatório:', JSON.stringify(await gravarRelatorio()), '→ docs/arvore-poe-pendencias.md');

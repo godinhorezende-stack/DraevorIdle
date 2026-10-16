@@ -16,7 +16,7 @@
 // O estado mora na caçada (`hunt.debuffsDoJogador`), no relógio dela; o que muda a ficha entra por `addsDosDebuffsNoJogador` (`Afixos.soma`).
 // Quem aplica (o golpe e a magia do monstro, os espinhos, o dreno, as cargas) é `mobs/mecanicas.mjs`.
 import { ligado } from './catalogo.mjs';
-import { NO_ACERTO, imunidadeApos } from './condicoes-poe.mjs';
+import { NO_ACERTO, imunidadeApos, fatorDosDebuffs } from './condicoes-poe.mjs';
 
 export const NUMEROS = {
   cegueira: { duracaoMs: 4000, menosPct: 20 },
@@ -43,7 +43,8 @@ function evitou(hunt, ficha, nome, { elemental = false, rng = Math.random, agora
   return chance > 0 && rng() * 100 < chance;
 }
 /** A duração de uma afecção elemental em você ("Duração do … em você", "das Afecções Elementais em você", "X% mais Duração…"). */
-const fatorDaDuracao = (ficha, nome) => Math.max(0.1, 1 + (v(ficha, `duracao_${nome}_propria`) + v(ficha, 'duracao_afeccoes_propria') + v(ficha, 'duracao_afeccoes_elementais_propria')) / 100) * Math.max(0, 1 + v(ficha, 'duracao_afeccoes_propria_mais') / 100);
+// (lote 30: + "Debuffs em você expiram X% mais rápido" — `fatorDosDebuffs`)
+const fatorDaDuracao = (ficha, nome) => Math.max(0.1, 1 + (v(ficha, `duracao_${nome}_propria`) + v(ficha, 'duracao_afeccoes_propria') + v(ficha, 'duracao_afeccoes_elementais_propria')) / 100) * Math.max(0, 1 + v(ficha, 'duracao_afeccoes_propria_mais') / 100) * fatorDosDebuffs(ficha?.afPoe);
 
 /** O monstro CEGA você (`efeitoPct`: o "Efeito do Cegamento aumentado" dele). Devolve se pegou. */
 export function cegar(hunt, ficha, { efeitoPct = 0, agora = hunt?.clock ?? 0, rng = Math.random } = {}) {

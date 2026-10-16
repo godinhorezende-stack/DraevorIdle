@@ -336,8 +336,13 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // no projétil — o ataque de projétil do bicho — e o "de Magia" no resto: a Casca do Warden)
   const deAtaque = { ataque: projetil, magia: !projetil };
   const fixosDoGolpe = Object.entries(partes).reduce((n, [el, v]) => n + Math.max(-Math.max(0, v), ModsPoe.fixoRecebido(ficha, el, deAtaque)), 0);
-  let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) + fixosDoGolpe);
+  // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — a magia do monstro é um acerto)
+  // (lote 32, P031: o projétil do bicho é um ATAQUE — "X% menos/mais Dano de Ataque sofrido" (o Dançarino do Vento), como no golpe corpo a corpo)
+  const doAtaque = projetil ? Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) : 1;
+  let dano = Math.round(bruto * (1 - prevenido) * menosEmArea * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) * Math.max(0, 1 - (Number(ficha.afPoe?.menos_dano_acertos) || 0) / 100) * doAtaque + fixosDoGolpe);
   const danoDoAcerto = dano;
+  // (lote 32, P046: a vida do Desafio antes do acerto)
+  if (dano > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
   const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
   // Void Inversion (charm): o dreno de mana vira ganho de mana.
   if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {

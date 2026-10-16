@@ -6578,6 +6578,600 @@
       "unidade": "s",
       "combate": true,
       "efeito": "condicoes-poe.tique (14/10)"
+    },
+    "pacto_cadaverico": {
+      "nome": "Inimigos próximos a cadáveres criados recentemente são Resfriados e Eletrizados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aurasProximas (14/10)"
+    },
+    "alcance_ricochete_inc": {
+      "nome": "Alcance do Ricochete aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.alcanceDoRicochete (14/10)"
+    },
+    "barragem_nao_propaga": {
+      "nome": "Barragens de Projéteis não se propagam",
+      "unidade": "",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "proj_ricochete_terreno_chance": {
+      "nome": "Chance de Ricochetear ao colidir com o terreno",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "proj_retornar_chance": {
+      "nome": "Chance de os Projéteis Retornarem",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "proj_direcoes_aleatorias": {
+      "nome": "Projéteis disparados em direções aleatórias",
+      "unidade": "",
+      "combate": true,
+      "efeito": "golpes-secundarios.resolver (14/10)"
+    },
+    "golpe_local_anterior": {
+      "nome": "Habilidades de Golpe também miram no local anterior",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.comOsAlvosDaGema (14/10)"
+    },
+    "mercenario": {
+      "nome": "Mercenário permanente (Luminary)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_vida_inc": {
+      "nome": "Vida máxima do Mercenário aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_dano_inc": {
+      "nome": "Dano do Mercenário aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_dano_por_unico": {
+      "nome": "Mais dano do Mercenário por item único equipado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDoMercenario (14/10)"
+    },
+    "mercenario_equipa_amuleto": {
+      "nome": "Mercenário pode equipar amuletos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_cinto": {
+      "nome": "Mercenário pode equipar cintos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_botas": {
+      "nome": "Mercenário pode equipar botas únicas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_luvas": {
+      "nome": "Mercenário pode equipar luvas únicas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_elmo": {
+      "nome": "Mercenário pode equipar elmos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_anel": {
+      "nome": "Mercenário pode equipar anéis únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_equipa_armas": {
+      "nome": "Mercenário pode equipar aljavas, armas e escudos únicos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.unicosDoMercenario (14/10)"
+    },
+    "mercenario_guarda_pct": {
+      "nome": "Dano dos Acertos sofrido na vida do Mercenário (se a vida dele for maior)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "arvore.danoRecebido (14/10)"
+    },
+    "mercenario_recupera_pct": {
+      "nome": "Dano sofrido pelo Mercenário recuperado como vida (se a vida dele for menor)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios (14/10)"
+    },
+    "mercenario_sem_morte_junto": {
+      "nome": "O dono do Vínculo não morre com o Mercenário",
+      "unidade": "",
+      "combate": true,
+      "efeito": "vinculos.tique (14/10)"
+    },
+    "mercenario_provoca": {
+      "nome": "O Mercenário provoca ao acertar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios (14/10)"
+    },
+    "mercenario_auras_inc": {
+      "nome": "Efeito das auras no Mercenário aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cacadas.tiqueDosLacaios (14/10)"
+    },
+    "vinculo_duracao_infinita": {
+      "nome": "Habilidades de Vínculo com duração infinita",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.criarVinculo (14/10)"
+    },
+    "joia_transforma_fogo": {
+      "nome": "Joias não únicas: os aumentos dos outros tipos de dano no Raio Grande viram de Fogo (Chieftain)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.efeitos — raioDasJoias (15/10)"
+    },
+    "joia_forca_no_raio": {
+      "nome": "Joias não únicas: Força por nó pequeno ou notável alocado no Raio Grande (Chieftain)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.efeitos — raioDasJoias (15/10)"
+    },
+    "encaixes_abissais": {
+      "nome": "Encaixes Abissais da peça",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/abissais.encaixesAbissais (15/10)"
+    },
+    "efeito_joias_abissais": {
+      "nome": "Efeito das Joias Abissais encaixadas na peça aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.somarPeca (15/10)"
+    },
+    "minion_poder_profano_ao_acertar_magia": {
+      "nome": "Lacaios: chance de Poder Profano ao acertar com magias",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.oQueInvoca → cacadas.tiqueDosLacaios (15/10)"
+    },
+    "minion_chance_empalar": {
+      "nome": "Lacaios: chance de Empalar ao acertar com ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "lacaios-poe.oQueInvoca → cacadas.efeitosDoLacaioNoAcerto (15/10)"
+    },
+    "phys_dmg_local": {
+      "nome": "Dano Físico LOCAL da arma aumentado (por joia abissal encaixada)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.locaisAbissais → ficha.locaisDaArma (15/10)"
+    },
+    "consome_abissais_raras": {
+      "nome": "As Joias Abissais Raras encaixadas são consumidas (um mod fica na peça)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/abissais.encaixar (15/10)"
+    },
+    "res_definhados": {
+      "nome": "Inimigos Definhados por você: todas as Resistências",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.porComMods → condicoes-poe.resMenosDasAfeccoes (15/10)"
+    },
+    "raio_str_para_dex": {
+      "nome": "Joia (raio): Força das passivas vira Destreza",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_str_para_int": {
+      "nome": "Joia (raio): Força das passivas vira Inteligência",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dex_para_str": {
+      "nome": "Joia (raio): Destreza das passivas vira Força",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dex_para_int": {
+      "nome": "Joia (raio): Destreza das passivas vira Inteligência",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_int_para_str": {
+      "nome": "Joia (raio): Inteligência das passivas vira Força",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_int_para_dex": {
+      "nome": "Joia (raio): Inteligência das passivas vira Destreza",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_es_para_armadura": {
+      "nome": "Joia (raio): aumentos de Escudo de Energia viram de Armadura",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_para_es": {
+      "nome": "Joia (raio): aumentos de Vida viram de Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_para_mana": {
+      "nome": "Joia (raio): aumentos de Vida viram de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_corpo_para_arco": {
+      "nome": "Joia (raio): os modificadores de corpo a corpo viram de Arco",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_str_por_str": {
+      "nome": "Joia (raio): raio menos str por str",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_str_por_str_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_menos_str_por_str)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_alocada": {
+      "nome": "Joia (raio): raio vida rec por str alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_alocada_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_vida_rec_por_str_alocada)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_crit_multi_por_str_livre": {
+      "nome": "Joia (raio): raio crit multi por str livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_crit_multi_por_str_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_crit_multi_por_str_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_livre": {
+      "nome": "Joia (raio): raio vida rec por str livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_vida_rec_por_str_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_vida_rec_por_str_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_dex_por_dex": {
+      "nome": "Joia (raio): raio menos dex por dex",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_dex_por_dex_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_menos_dex_por_dex)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_alocada": {
+      "nome": "Joia (raio): raio mov por dex alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_alocada_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mov_por_dex_alocada)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_precisao_por_dex_livre": {
+      "nome": "Joia (raio): raio precisao por dex livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_precisao_por_dex_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_precisao_por_dex_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_livre": {
+      "nome": "Joia (raio): raio mov por dex livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mov_por_dex_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mov_por_dex_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_int_por_int": {
+      "nome": "Joia (raio): raio menos int por int",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_menos_int_por_int_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_menos_int_por_int)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_alocada": {
+      "nome": "Joia (raio): raio mana rec por int alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_alocada_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mana_rec_por_int_alocada)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dot_multi_por_int_livre": {
+      "nome": "Joia (raio): raio dot multi por int livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_dot_multi_por_int_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_dot_multi_por_int_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_livre": {
+      "nome": "Joia (raio): raio mana rec por int livre",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_mana_rec_por_int_livre_cada": {
+      "nome": "Joia (raio): a cada N de atributo (raio_mana_rec_por_int_livre)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_efeito_nao_notaveis": {
+      "nome": "Joia (raio): efeito das passivas não notáveis",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_nada": {
+      "nome": "Joia (raio): os notáveis não concedem nada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_pequenos_alocados_nada": {
+      "nome": "Joia (raio): as pequenas alocadas não concedem nada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_pequenos_livres_concedem": {
+      "nome": "Joia (raio): concede as pequenas não alocadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_passivas_vida": {
+      "nome": "Joia (raio): Vida por passiva alocada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_fogo_tolerancia": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_fogo_tolerancia)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_gelo_frenesi": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_gelo_frenesi)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_raio_poder": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_raio_poder)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_fogo_bloqueio": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_fogo_bloqueio)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_gelo_supressao": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_gelo_supressao)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_res_raio_bloqueio_magico": {
+      "nome": "Joia (raio): a resistência das passivas também concede (raio_res_raio_bloqueio_magico)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_lacaio_mov": {
+      "nome": "Joia (raio): os notáveis concedem Velocidade de Movimento dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_lacaio_dano_recebido": {
+      "nome": "Joia (raio): os notáveis concedem Dano sofrido pelos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_custo_mana": {
+      "nome": "Joia (raio): os notáveis concedem Custo de Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_notaveis_dano_magico": {
+      "nome": "Joia (raio): os notáveis concedem Dano Mágico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_anel": {
+      "nome": "Joia (raio): o anel do Fio da Esperança (1 a 5)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "raio_aloca_sem_conexao": {
+      "nome": "Joia (raio): as passivas do raio se alocam sem ligação",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias (15/10, lote 29)"
+    },
+    "precisao_por_dex": {
+      "nome": "O bônus de Precisão da Destreza por ponto (no lugar dos 2)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/atributos.efeitos (lote 30)"
+    },
+    "mais_dano_fisico": {
+      "nome": "Mais Dano Físico (só a parte Físico do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_fogo": {
+      "nome": "Mais Dano de Fogo (só a parte de Fogo do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_gelo": {
+      "nome": "Mais Dano de Gelo (só a parte de Gelo do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_raio": {
+      "nome": "Mais Dano de Raio (só a parte de Raio do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "mais_dano_caos": {
+      "nome": "Mais Dano de Caos (só a parte de Caos do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 30)"
+    },
+    "debuffs_expiram_rapido": {
+      "nome": "Debuffs em você expiram mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorDosDebuffs (lote 30)"
+    },
+    "menos_dano_acertos": {
+      "nome": "Menos Dano de Acertos sofrido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate e poderes (lote 30)"
+    },
+    "provocados_clamor_dano_sofrido": {
+      "nome": "Dano sofrido pelos Provocados pelos seus Clamores",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano no monstro Provocado pelo Clamor (`condicoes-poe.fatorRecebidoPeloBicho`, lote 31)"
+    },
+    "armadura_na_recarga_es": {
+      "nome": "Aumentos de Armadura na Recarga do Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o \"aumentado\" de Armadura resolvido na Recarga do Escudo (`afixos.soma`, lote 32)"
+    },
+    "perde_vida_pct_s_por_furia": {
+      "nome": "Vida perdida por segundo por Fúria (sem perder Fúria)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o tique (`condicoes-poe.furiaSemPerder`, lote 32)"
+    },
+    "movimento_minimo_base": {
+      "nome": "Velocidade de Movimento não fica abaixo da base",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o passo (`cacadas.razaoDeVelocidade`, lote 32)"
+    },
+    "efeito_nao_dano": {
+      "nome": "Efeito de Afecções Não-Danificadoras (Causticar, Fragilizar, Exaurir)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "Causticar/Fragilizar/Exaurir que você inflige (`condicoes-poe.fatorNaoDano`, lote 33)"
+    },
+    "mais_dano_proximidade": {
+      "nome": "Mais Dano Corpo a Corpo pela proximidade",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o golpe corpo a corpo (`condicoes-poe.maisPelaProximidade`, lote 33)"
+    },
+    "velocidade_clamor": {
+      "nome": "Velocidade dos Clamores",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o tempo de uso do Clamor (`acoes.temposDaGemaPoe`, lote 34)"
     }
   }
 }

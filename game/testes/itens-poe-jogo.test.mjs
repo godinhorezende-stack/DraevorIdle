@@ -56,7 +56,9 @@ test('a peça do jogo: base (defesa sorteada / faixa de dano) + poe (raridade, m
   assert.equal(pe.poe.af.block, escudo.atributos.chance_bloqueio_pct, 'o bloqueio da base do escudo vira o block do Draevor');
   const arma = Catalogo.catalogo().classes.One_Hand_Swords.bases[3];
   assert.deepEqual(Jogo.pecaDoJogo(gerar(arma.id, 'normal')).base.attack, [arma.atributos.dano_fisico.min, arma.atributos.dano_fisico.max]);
-  assert.equal(Jogo.pecaDoJogo(gerar(Catalogo.catalogo().classes.Jewels.bases[0].id)), null, 'joia: sem slot');
+  // (dono, 15/10: "Trocar a linha" — desde o lote 27 a joia é peça do jogo, para os encaixes da árvore, e segue sem slot de equipamento)
+  const joia = Jogo.pecaDoJogo(gerar(Catalogo.catalogo().classes.Jewels.bases[0].id));
+  assert.deepEqual([joia.id, joia.poe.classe, ITEM_CATALOG[joia.id].slot, ITEM_CATALOG[joia.id].joia], [7_800_001, 'Jewels', undefined, true], 'joia: peça, sem slot');
 });
 
 test('a peça não perde o poe na mochila, na bolsa de loot nem ao copiar campos', { skip: SEM }, () => {

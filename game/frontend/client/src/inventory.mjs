@@ -4,6 +4,7 @@ import { abrirForjaPoe } from './forja-poe.mjs';
 import { configurarFrasco, barraDoFrasco } from './actionbar.mjs';
 import { itemCanvas, itemSprite } from './sprites.mjs';
 import { abrirSoquetes, temSoquetes, usarOrbe } from './soquetes.mjs';
+import { abrirAbissais, encaixesAbissais } from './abissais.mjs';
 import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
 // O desenho da bolsa numa definição só, com a reserva. Ver o módulo.
 import { ITEM_DA_BOSS_POUCH, ITEM_DA_BOSS_POUCH_RESERVA, ITEM_DA_STORE_INBOX } from '/packages/shared/src/boss-pouch.mjs';
@@ -849,11 +850,18 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }
       : null,
     meta?.frasco && from === 'bag' ? { label: 'Pôr no cinto de frascos', action: () => send({ t: 'frasco', action: 'por', pilha }) } : null,
+    // (lote 27) a joia vai para um encaixe da árvore de passivas: a árvore abre (escolher o encaixe alocado e "Encaixar").
+    meta?.joia && from === 'bag' ? { label: 'Encaixar na árvore de passivas…', action: () => ctx.openArvore?.() } : null,
     from === 'equipment' ? { label: 'Desequipar', action: () => send({ t: 'unequip', slot: slotNoCorpo ?? meta.slot }) } : null,
     // Os sockets da peça vestida: encaixar/tirar gemas de skill (ver soquetes.mjs).
     from === 'equipment' && temSoquetes(peca)
       ? { label: `Sockets (${peca.soquetes.gemas.filter(Boolean).length}/${peca.soquetes.gemas.length} gemas)`, action: () => abrirSoquetes(ctx, slotNoCorpo ?? meta.slot) }
       : null,
+    // (lote 28) os Encaixes Abissais da peça vestida; e a Joia Abissal da mochila vai para eles.
+    from === 'equipment' && encaixesAbissais(peca) > 0
+      ? { label: `Encaixes Abissais (${(peca.poe?.abissais ?? []).filter(Boolean).length}/${encaixesAbissais(peca)})`, action: () => abrirAbissais(ctx, slotNoCorpo ?? meta.slot) }
+      : null,
+    meta?.abissal && from === 'bag' ? { label: 'Encaixar numa peça vestida (Encaixe Abissal)…', action: () => abrirAbissais(ctx) } : null,
     /*
      * ---- Subir o tier ----
      *

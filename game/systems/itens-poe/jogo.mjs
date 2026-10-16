@@ -6,7 +6,8 @@
 //      de energia, que a ficha já lê por peça) e o resto em `peca.poe` (raridade, mods, nome, ícone e o `af` traduzido, que
 //      `Afixos.somaDeItens` soma). Os valores entram como estão (decisão do dono, 04/10).
 //   3. `entregar(nome, peca)`: dá a peça a um personagem ONLINE (a engine local usa para testar jogando).
-// Classes sem slot no Draevor (frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`.
+// Classes sem slot no Draevor (frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`. (Os frascos entram
+// pelo cinto de frascos — `FRASCOS` —, os mapas pelo Dispositivo e as joias pelos encaixes da árvore — `JOIAS`, lote 27.)
 import * as Catalogo from './catalogo.mjs';
 import { definirLeitorDeBase } from './condicoes-poe.mjs';
 import { traduzirPeca } from './traduzir.mjs';
@@ -62,6 +63,18 @@ const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [], mapas: ne
  * bases delas vêm depois dos frascos, sem mudar nenhum id que já existia; `itens-poe/tinturas.mjs`.)
  */
 export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures'];
+/**
+ * (15/10, lote 27) As JOIAS dos encaixes da árvore de passivas (dono, 14/10: "Criar os encaixes de joia" — `passivas/joias.mjs`), com o id
+ * FIXO de cada base (7.800.000 + n, fora da sequência das bases: nenhum id que já existia muda). A Atemporal (da Legião) e as Ramificadoras
+ * (os encaixes das Joias Ramificadoras) ficam de fora. A Prismática só existe como Única no PoE (`SO_UNICAS`).
+ */
+// (lote 28) + as JOIAS ABISSAIS (os 4 Olhos: 7.800.011 em diante) — nos encaixes da árvore e nos encaixes abissais das peças
+// (`itens-poe/abissais.mjs`). O jogo não tem o Abismo: elas caem como as outras joias.
+export const JOIAS = Object.freeze({
+  'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004,
+  'Abyss_Jewels/Murderous_Eye_Jewel': 7_800_011, 'Abyss_Jewels/Searching_Eye_Jewel': 7_800_012, 'Abyss_Jewels/Hypnotic_Eye_Jewel': 7_800_013, 'Abyss_Jewels/Ghastly_Eye_Jewel': 7_800_014,
+});
+export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel']);
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
 export const idDaBase = (base) => REG.porBase.get(base) ?? REG.mapas.get(base) ?? null;
@@ -155,6 +168,19 @@ export function iniciar(itemCatalog) {
         poe: { base: b.id, classe: Mapas.CLASSE, unico: u.slug, icone: Mapas.iconeDoUnico(u, tier), iconeLado: u.iconeLado ?? 64, tier, nivel: b.atributos?.nivel_area },
       };
     }
+  }
+  // As JOIAS (lote 27): sem slot de equipamento — vão para os encaixes de joia da árvore —, com o id fixo de `JOIAS`. Entram em `porBase`:
+  // caem como as outras peças (a classe segue em `naoEquipaveis`, como a dos mapas: não veste).
+  for (const [baseId, id] of Object.entries(JOIAS)) {
+    const b = cat.classes[baseId.split('/')[0]]?.bases.find((x) => x.id === baseId);
+    if (!b) continue;
+    itemCatalog[id] = {
+      id, name: b.nome, type: 'jewels', weight: 1, hasSprite: false, rarity: 'comum', stackable: false, joia: true, ...(baseId.startsWith('Abyss_Jewels/') ? { abissal: true } : {}),
+      ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
+      poe: { base: b.id, classe: b.id.split('/')[0], icone: b.icone ?? null },
+    };
+    REG.porBase.set(b.id, id);
+    REG.porId.set(id, b.id);
   }
   // Os itens de missão (Acts do PoE: o item que o monstro alvo solta) entram junto.
   DropsPorMonstro.registrarItens(itemCatalog);
@@ -309,7 +335,24 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // a Você Poder Fantasmal" (o Bastão Negro).)
 // (23 — 14/10: a Retaliação dos únicos — "Adiciona X a Y de Dano de Gelo às Habilidades de Retaliação", "… Recuperação da Recarga", "… usáveis a
 // cada N segundos", "… têm 200% de Poder Arcano"; antes caíam na regra velha "a Retaliação não existe".)
-export const VERSAO_DA_TRADUCAO = 23;
+// (24 — 14/10: as linhas que "não se aplicavam" — "Habilidades de Golpe também miram no local anterior que foram Usadas", "Projéteis são
+// disparados em direções aleatórias" passam a valer nas peças.)
+// (25 — 15/10: as JOIAS ABISSAIS — "Tem N Encaixes Abissal", o efeito das encaixadas, "por Joia Abissal afetando você", "por joia Olho X
+// encaixada", "enquanto afetado por uma Joia Abissal Rara/Mágica/Única", "Com uma joia Olho X encaixada", os 4 Olhos únicos.)
+// (26 — 15/10: os RAIOS das joias únicas — as linhas "em Alcance / no Raio" que mudam os nós da árvore (a Inércia, as Temperadas, a Força dos
+// Humildes, o Salto Intuitivo…), "Receba X% do Dano de Gelo/Raio como Dano de Caos Extra" (os Sonhos) e "−X% a todas as resistências
+// elementais" (o Fio da Esperança).)
+// (27 — 15/10, lote 30 "zerar a árvore": "+X% de Chance de Crítico" exato (soma nos pontos base), "X% mais Dano de Caos/Gelo" só na parte
+// daquele tipo, "Debuffs em você expiram X% mais rápido", "X% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio".)
+// (28 — 15/10, lote 31: o abate é de quem deu o golpe fatal — "ao Matar Corpo a Corpo" pelo golpe fatal, "por você ou seus Lacaios/Totens",
+// "Inimigos Mortos próximos ao seu Estandarte"; as explosões com o tipo de dano da linha e a defesa dos atingidos; "Provocados por seus
+// Clamores"; "Dano com Acertos é Azarado", os "Sortudo" e "Acertos Não Críticos penetram" também no golpe básico.)
+// (29 — 15/10, lote 32: o Mago de Batalha (também "durante o Efeito" do frasco) com o adicionado de todo tipo; "Velocidade de Movimento não pode
+// ser modificada para abaixo do valor base"; "Perca X% de Vida por segundo por Fúria…"; a Armadura na Recarga do Escudo resolvida.)
+// (30 — 16/10, lote 33: "Efeito de Afecções Não-Danificadoras" também no Causticar/Fragilizar/Exaurir; o Tiro Distante e a Queima-Roupa das peças
+// pelas tabelas do poedb em unidades; "X% de chance de ganhar Elusivo…" com o Elusivo que decai.)
+// (31 — 16/10, lote 34: "Velocidade dos Clamores"; a aura das Minas; "por cada Mina Detonada (Recentemente)" com o teto e pela detonação.)
+export const VERSAO_DA_TRADUCAO = 31;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -328,7 +371,7 @@ export function refazerPecasAntigas(estado) {
       recalcular(x);
       x.poe.tv = VERSAO_DA_TRADUCAO;
       n++;
-      return;
+      // (lote 28: segue andando — as joias abissais encaixadas na peça também são peças, com a versão delas)
     }
     for (const v of Array.isArray(x) ? x : Object.values(x)) if (v && typeof v === 'object') andar(v, fundo + 1);
   };
@@ -495,7 +538,8 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
   const candidatas = [];
   for (const baseId of REG.porBase.keys()) {
     const [classe] = baseId.split('/');
-    if (FRASCOS.includes(classe) || classe === Mapas.CLASSE) continue;
+    // (A joia não é peça equipável — vai para os encaixes da árvore: lote 27.)
+    if (FRASCOS.includes(classe) || classe === Mapas.CLASSE || JOIAS[baseId]) continue;
     const b = cat.classes[classe]?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > 1 || b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
     if (!podeCairComo(cat.classes[classe], b, 'normal')) continue;
@@ -515,7 +559,8 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
  * A base SEM pool de mods não cai Normal, Mágica nem Rara — só como Único, se tiver um (regra do PoE): as Golden (no PoE só existem como
  * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
  */
-export const podeCairComo = (classe, base, raridade) => !!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome));
+// (lote 27) A Joia Prismática só cai Única (o PoE não tem Prismática Normal, Mágica nem Rara; a coleção traz o pool genérico das joias nela).
+export const podeCairComo = (classe, base, raridade) => (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
 
 export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null) {
   const cat = Catalogo.catalogo();

@@ -21,10 +21,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a velocidade de ataque, o crítico, o bloqueio e a regeneração da Oferenda",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P028)"
     },
     {
       "padrao": "^Suas Oferendas possuem \\{(\\d+)\\}% de redução do Efeito em você$",
@@ -183,10 +182,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "nas gemas (o golpe básico, não)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018/P034): o golpe básico também; só a parte de Fogo"
     },
     {
       "padrao": "^Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você$",
@@ -196,10 +194,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o acerto no amaldiçoado renova os 2 s de base",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P038: ao amaldiçoar, com a duração cheia)"
     },
     {
       "padrao": "^Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor$",
@@ -209,10 +206,11 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o golpe inteiro nos vivos a 1 casa de cada atingido",
+      "nota": "exceção do dono (16/10): o raio do Dano Propagado do PoE (14 unidades, 1,4 m) é menor que 1 casa — o inimigo colado, que no PoE costuma estar dentro dele, leva o golpe",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "estado": "equivalente",
+      "_lote34": "16/10 — lote 34 (P036: a decisão do dono, \"o vizinho colado\")"
     },
     {
       "padrao": "^Repetição Final das Magias têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
@@ -231,14 +229,13 @@
       "padrao": "^Inimigos próximos a cadáveres Criados por você Recentemente são Resfriados e Eletrizados$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "pacto_cadaverico",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não cria cadáveres (os da caçada vêm dos mortos — \"Matar um Inimigo não é Criar um cadáver\")",
+      "nota": "os cadáveres criados por Profanar e Desenterrar nos últimos 4 s: os inimigos a até 3 casas deles ficam Resfriados (10%) e Eletrizados (15%)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
     },
     {
       "padrao": "^Ganhe \\{(\\d+)\\} de Fúria Liberta quando você infligir uma Afecção Elemental com um Acerto em um Inimigo, não mais que uma vez a cada \\{(\\d+)\\} segundos por cada tipo de Afecção$",
@@ -724,10 +721,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a cura sai junto do golpe, da vida que faltava antes dele",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P046: antes do acerto, da Vida não reservada)"
     },
     {
       "padrao": "^Ganha \\{(\\d+)\\} de Força dos Ventos ao usar uma Habilidade$",
@@ -759,10 +755,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "na redução do dano de Acertos",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Perde toda a sua Força dos Ventos ao Acertar$",
@@ -772,10 +767,11 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "quando Acertado (o PoE: \"when Hit\")",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "estado": "equivalente",
+      "nota": "o PoE: \"Lose all Gale Force when Hit\" — quando VOCÊ é Acertado (o texto do poedb em português diz \"ao Acertar\")",
+      "_lote32": "15/10 — lote 32 (P051)"
     },
     {
       "padrao": "^Ganha Fanatismo por \\{(\\d+)\\} segundos ao atingir o Máximo de Cargas Fanáticas$",
@@ -829,10 +825,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "nas gemas (o golpe básico, não)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^Inimigos próximos causam \\{(\\d+)\\}% menos Dano Elemental$",
@@ -853,10 +848,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "Convergência: 30% mais dano nas habilidades Elementais, por 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P073)"
     },
     {
       "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}% enquanto você não possuir Convergência$",
@@ -921,10 +915,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "nas gemas (o golpe básico, não)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de sofrer \\{(\\d+)\\}% menos Dano em Área de Acertos$",
@@ -996,10 +989,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o bloqueio-base do escudo vira N (o aumentado local dele não entra)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P026: como o PoB — ReplaceShieldBlock)"
     },
     {
       "padrao": "^Definhamentos infligidos por você expiram \\{(\\d+)\\}% mais lentamente$",
@@ -1192,10 +1184,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o acerto e o dano degenerativo das suas gemas não ferem (os totens e lacaios, sim); o golpe básico não sai",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P039)"
     },
     {
       "padrao": "^Habilidades de Estandarte têm Duração aumentada em \\{(\\d+)\\}%$",
@@ -2349,7 +2340,7 @@
       "padrao": "^Sua Marca se transfere para outro Inimigo quando o Inimigo Marcado morrer$",
       "efeitos": [
         {
-          "stat": "ev:matar:transferirMarca",
+          "stat": "ev:inimigoMorrer:transferirMarca",
           "valor": "1"
         },
         {
@@ -2358,7 +2349,8 @@
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Marcados não podem Regenerar Vida$",
@@ -2900,18 +2892,17 @@
       "padrao": "^Ganha \\{(\\d+)\\} Fortificação ao Matar Corpo a Corpo contra um Inimigo Raro ou Único$",
       "efeitos": [
         {
-          "stat": "ev:matar:fortificacao@armaCorpo+alvoRaro",
+          "stat": "ev:matar:fortificacao@corpo+alvoRaro",
           "valor": "{1}"
         },
         {
-          "stat": "ev:matar:fortificacao@armaCorpo+alvoUnico",
+          "stat": "ev:matar:fortificacao@corpo+alvoUnico",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "\"Corpo a Corpo\": com uma arma corpo a corpo empunhada",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — o abate Corpo a Corpo é o do golpe fatal corpo a corpo (lote 31, P025)"
     },
     {
       "padrao": "^Acertos Corpo a Corpo Fortificam$",
@@ -3116,10 +3107,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale no acerto corpo a corpo que tem Fogo, sobre o dano inteiro dele",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (P018/P034): o golpe básico também; só a parte de Fogo"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Ignorar Atordoamentos enquanto Conjurando$",
@@ -3584,10 +3574,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o Elusivo dura 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P015: o Elusivo decai 20%/s)"
     },
     {
       "padrao": "^Chance de Bloquear o Dano Mágico ou de Ataques é Sortuda se você Bloqueou Recentemente$",
@@ -4088,10 +4077,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a Mina detona logo que um inimigo chega perto (no PoE é a aura da Mina plantada): soma no alvo de cada Mina, por 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (P010: a aura da Mina plantada, 35 unidades)"
     },
     {
       "padrao": "^Cada Mina aplica Dano sofrido reduzido em \\{(\\d+)\\}% aos Inimigos próximos a ela, até \\{(\\d+)\\}%$",
@@ -4101,10 +4089,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no PoE é o dano que o inimigo causa (o poedb traduz \"sofrido\"); soma no alvo de cada Mina, por 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "nota": "o PoE: \"reduced Damage dealt\" — o dano que o inimigo CAUSA (o poedb traduz \"sofrido\")",
+      "_lote34": "16/10 — lote 34 (P011: a aura da Mina plantada)"
     },
     {
       "padrao": "^Efeito de Auras das Minas aumentado em \\{(\\d+)\\}%$",
@@ -4132,12 +4120,13 @@
       "padrao": "^\\{(\\d+)\\}% de Vida Regenerada por Segundo para cada uma das suas Minas Detonadas Recentemente, até \\{(\\d+)\\}% por segundo$",
       "efeitos": [
         {
-          "stat": "life_regen_max_pct%usos:mina:4:5",
+          "stat": "life_regen_max_pct%usos:minaDetonada:4:5",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (as Minas DETONADAS)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% da Vida Regenerada por Segundo para cada uma de suas Armadilhas Ativadas Recentemente, até \\{(\\d+)\\}% por segundo$",
@@ -4246,27 +4235,25 @@
       "padrao": "^Chance de Golpe Crítico aumentada em \\{(\\d+)\\}% por cada Mina Detonada$",
       "efeitos": [
         {
-          "stat": "crit_chance_inc%usos:mina@mina",
+          "stat": "crit_chance_inc%usos:minaDetonada:4:10",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta as Minas detonadas nos últimos 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (P023: \"for each Mine Detonated Recently, up to 100%\")"
     },
     {
       "padrao": "^\\+?\\{(\\d+)\\}% de Multiplicador de Golpes Críticos para cada Mina Detonada$",
       "efeitos": [
         {
-          "stat": "crit_dmg%usos:mina@mina",
+          "stat": "crit_dmg%usos:minaDetonada:4:10",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta as Minas detonadas nos últimos 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (P023: \"up to 40%\")"
     },
     {
       "padrao": "^Velocidade de Recuperação da Recarga para lançar Armadilhas aumentada em \\{(\\d+)\\}%$",
@@ -4432,27 +4419,25 @@
       "padrao": "^\\{(\\d+)\\}% mais Dano de Caos$",
       "efeitos": [
         {
-          "stat": "mais_dano@caos",
+          "stat": "mais_dano_caos",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale nos golpes com a tag Caos (o golpe inteiro)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais Dano de Gelo$",
       "efeitos": [
         {
-          "stat": "mais_dano@gelo",
+          "stat": "mais_dano_gelo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale nos golpes com a tag Gelo (o golpe inteiro)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% menos Dano com Magias Ativadas$",
@@ -4502,14 +4487,13 @@
       "padrao": "^Causa \\{(\\d+)\\}% mais Dano de Caos aos inimigos que tiverem Escudo de Energia$",
       "efeitos": [
         {
-          "stat": "mais_dano@caos+alvoComEscudo",
+          "stat": "mais_dano_caos@alvoComEscudo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale nos golpes com a tag Caos (o golpe inteiro)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Dano penetra \\{(\\d+)\\}% das Resistências Elementais do Inimigo$",
@@ -4585,23 +4569,21 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: tudo colado, nada a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P021: PoB 35,1 / 70,0)"
     },
     {
       "padrao": "^Acertos dos Ataques de Projéteis causam até \\{(\\d+)\\}% mais Dano aos alvos no inicio de seu movimento, causando menos Dano aos alvos na medida em que o projétil viaja.*$",
       "efeitos": [
         {
-          "stat": "projetil_perto_mais@ataque",
-          "valor": "{1}"
+          "stat": "queima_roupa",
+          "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: tudo colado, nada a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P021: a keystone Queima-Roupa (o PoB: a flag PointBlank))"
     },
     {
       "padrao": "^Projéteis ganham Dano ao viajar adiante, causando até \\{(\\d+)\\}% mais Dano com Acertos e Afecções$",
@@ -4611,10 +4593,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: nada colado, tudo a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P052: PoB 35,0 / 70,1)"
     },
     {
       "padrao": "^Flechas ganham Chance de Golpe Crítico enquanto viajam adiante, máximo de até \\{(\\d+)\\}% de Chance de Golpe Crítico$",
@@ -4624,10 +4605,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "Chance de Crítico aumentada pela distância até o alvo: nada colado, tudo a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P013: PoB 35,0 / 70,1)"
     },
     {
       "padrao": "^Habilidades atiram \\{(\\d+)\\} Projéteis adicionais$",
@@ -4751,14 +4731,13 @@
       "padrao": "^Velocidade de Movimento não pode ser modificada para abaixo do valor base$",
       "efeitos": [
         {
-          "stat": "imune_lento",
+          "stat": "movimento_minimo_base",
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a lentidão dos monstros não pega",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P049)"
     },
     {
       "padrao": "^Magias Conjuradas por Totens têm \\{(\\d+)\\}% de Velocidade de Conjuração aumentada$",
@@ -4868,14 +4847,13 @@
       "padrao": "^\\{(\\d+)\\} menos dano de Ataque sofrido se você não foi Acertado por um Ataque Recentemente$",
       "efeitos": [
         {
-          "stat": "physical_sofrido_ataque@naoAcertadoAtaqueRecente",
+          "stat": "dano_ataque_recebido_mais@naoAcertadoAtaqueRecente",
           "valor": "-{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no golpe físico dos monstros",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P031: \"20% less Attack Damage taken\" no inglês)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais chance de Evadir Ataques se você foi Acertado por um Ataque Recentemente$",
@@ -5188,14 +5166,13 @@
       "padrao": "^Perca \\{(\\d+)\\}% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria$",
       "efeitos": [
         {
-          "stat": "perde_vida_pct_s%furia",
+          "stat": "perde_vida_pct_s_por_furia",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale com qualquer Fúria",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P048)"
     },
     {
       "padrao": "^Efeito da Fúria Arcana aumentado em \\{(\\d+)\\}% em você$",
@@ -5251,9 +5228,8 @@
       ],
       "_nova": true,
       "_ciclo7": true,
-      "estado": "aproximado",
-      "nota": "Vento Favorável: +10% de velocidade de ataque, conjuração e movimento",
-      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+      "_lote7": "13/10 — os aliados de verdade (lote 7)",
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Efeito dos Buffs de Arauto em você aumentado em \\{(\\d+)\\}%$",
@@ -5529,12 +5505,17 @@
       "padrao": "^Inimigos que você ou seus Totens Matarem têm \\{(\\d+)\\}% de chance de Explodir, causando \\{(\\d+)\\}% de sua Vida Máxima como Dano de Fogo$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V2}",
+          "stat": "ev:matar:explodirChance:{V2}:fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matarTotem:explodirChance:{V2}:fire",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Mata Inimigos que possuem \\{(\\d+)\\}% ou menos de Vida quando Acertado por suas Habilidades$",
@@ -5820,14 +5801,13 @@
       "padrao": "^Inimigos Próximos são Cobertos em Cinzas se você não se moveu nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "aura_proximos:cinzas@parado",
+          "stat": "aura_proximos:cinzas@paradoHa:{V1}",
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "parado: sem andar há pouco",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P041)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Cobrir Inimigos Raros ou Únicos em Cinzas por \\{(\\d+)\\} Segundos quando você Acertá-los$",
@@ -5952,10 +5932,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "1% de Escudo de Energia máximo aumentado por 1% de chance de Bloquear Magias",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P075: a conta do PoB, na segunda passada)"
     },
     {
       "padrao": "^Campo de Visão é baseado no Escudo de Energia em vez de na Vida$",
@@ -6010,6 +5989,207 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^Você pode contratar um mercenário de forma permanente$",
+      "efeitos": [
+        {
+          "stat": "mercenario",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sai sozinho com o nó: um mercenário permanente segue você e ataca — a vida máxima é a sua e o golpe é o da sua arma; morto, volta em 10 s (no PoE se contrata um nos mapas, com o equipamento e as habilidades dele)",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário e os lacaios dele têm a vida máxima aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mercenario_vida_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário e os lacaios dele causam dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mercenario_dano_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário e os lacaios dele causam \\+\\{(\\d+)\\}% de dano para cada item único equipado por ele$",
+      "efeitos": [
+        {
+          "stat": "mercenario_dano_por_unico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "8% MAIS dano por único (o texto do PoE em inglês: \"more\"); os únicos dele são os seus nos tipos de peça que os nós \"pode equipar\" liberam",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar amuletos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_amuleto",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar cintos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_cinto",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar botas únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_botas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar luvas únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_luvas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar elmos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_elmo",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar anéis únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_anel",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário pode equipar aljavas, armas e escudos únic[oa]s$",
+      "efeitos": [
+        {
+          "stat": "mercenario_equipa_armas",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Se a vida do seu mercenário for maior que a sua, \\{(\\d+)\\}% do dano recebido de ataques será subtraído da vida do seu mercenário antes de atingir você$",
+      "efeitos": [
+        {
+          "stat": "mercenario_guarda_pct",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano dos Acertos (o texto do PoE em inglês: \"Damage from Hits\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Se a vida do seu mercenário for menor que a sua, \\{(\\d+)\\}% do dano sofrido por ele é recuperado como vida$",
+      "efeitos": [
+        {
+          "stat": "mercenario_recupera_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o mercenário recupera (o PoE em inglês: \"Recouped as Life\") — na hora, no lugar dos 4 s do PoE",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Se o seu mercenário conectado morrer, o dono da conexão não morrerá$",
+      "efeitos": [
+        {
+          "stat": "mercenario_sem_morte_junto",
+          "valor": "1"
+        }
+      ],
+      "nota": "o mercenário vinculado que morre não leva você junto (a regra dos Vínculos: \"Se o alvo morrer enquanto vinculado, você também morrerá\")",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário provoca ao atingir$",
+      "efeitos": [
+        {
+          "stat": "mercenario_provoca",
+          "valor": "1"
+        }
+      ],
+      "nota": "Provocado por 3 s",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
+      "padrao": "^Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mercenario_auras_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o mercenário do jogo não usa habilidades próprias: as suas auras de aliado nele valem 50% mais",
+      "_nova": true,
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+    },
+    {
       "padrao": "^.*[Mm]ercenário.*$",
       "efeitos": [
         {
@@ -6018,7 +6198,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem mercenários",
+      "nota": "não se aplica ao jogo: o jogo não tem raio de luz nem campo de visão (o mercenário do Luminary existe — esta linha depende do Raio de Iluminação)",
       "_nova": true,
       "_ciclo7": true
     },
@@ -6036,7 +6216,70 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$|^Alcance do Ricochete aumentado.*$|^Barragens de Projéteis não se propagam$|^Projéteis têm .* chance de conseguirem Ricochetear ao colidirem com o terreno$|^Projéteis são disparados em direções aleatórias$|^Projéteis têm .* chance de Retornarem a você$",
+      "padrao": "^Alcance do Ricochete aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "alcance_ricochete_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Barragens de Projéteis não se propagam$",
+      "efeitos": [
+        {
+          "stat": "barragem_nao_propaga",
+          "valor": "1"
+        }
+      ],
+      "nota": "os projéteis em sequência vão todos no alvo",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de conseguirem Ricochetear ao colidirem com o terreno$",
+      "efeitos": [
+        {
+          "stat": "proj_ricochete_terreno_chance",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de Retornarem a você$",
+      "efeitos": [
+        {
+          "stat": "proj_retornar_chance",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "por projétil: na volta, acerta de novo os que pegou na ida",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Projéteis são disparados em direções aleatórias$",
+      "efeitos": [
+        {
+          "stat": "proj_direcoes_aleatorias",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "os projéteis a mais vão em inimigos sorteados no alcance (não nos mais perto); o principal segue no alvo",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -6088,7 +6331,20 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Habilidades de Golpe também miram no local anterior que foram Usadas$|^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
+      "padrao": "^Habilidades de Golpe também miram no local anterior que foram Usadas$",
+      "efeitos": [
+        {
+          "stat": "golpe_local_anterior",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto",
+      "_nova": true,
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+    },
+    {
+      "padrao": "^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -6188,27 +6444,25 @@
       "padrao": "^Sofre \\{(\\d+)\\}% menos Dano de Acertos por \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "periodico:10:stat:dmg_reduction:{V2}",
+          "stat": "periodico:10:stat:menos_dano_acertos:{V2}",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a cada 10 segundos (a linha de cima)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Sofre \\{(\\d+)\\}% menos Dano Degenerativo por \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "periodico:10:stat:dano_degen_recebido_menos:{V2}",
+          "stat": "periodico:10d{V2}:stat:dano_degen_recebido_menos:{V2}",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a cada 10 segundos (a linha de cima)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30): consecutivamente, depois da de Acertos"
     },
     {
       "padrao": "^A cada \\{(\\d+)\\} segundos, ganhe \\{(\\d+)\\}% do Dano Físico como Dano Extra de Fogo por \\{(\\d+)\\} segundos$",
@@ -6225,12 +6479,17 @@
       "padrao": "^Inimigos Amaldiçoados Mortos por você ou seus Lacaios possuem \\{(\\d+)\\}% de chance de Explodir, causando um quarto de sua Vida máxima como Dano de Caos$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:25@alvoAmaldicoado",
+          "stat": "ev:matar:explodirChance:25:chaos@alvoAmaldicoado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ev:matarLacaio:explodirChance:25:chaos@alvoAmaldicoado",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de ganhar \\{(\\d+)\\} de Vida ao Acertar com Ataques$",
@@ -6358,14 +6617,13 @@
       "padrao": "^Dano Corpo a Corpo aumentado em \\{(\\d+)\\}% para cada segundo que você for afetado por um Buff de Clamor, máximo de \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc%desdeUsou:clamor~{V2}@corpo",
+          "stat": "dmg_inc%afetadoPorClamor~{V2}@corpo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta os segundos desde o último Clamor",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P042)"
     },
     {
       "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano refletido$",
@@ -6607,10 +6865,9 @@
           "valor": "60"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: nada colado, tudo a 6 casas (o \"até 60%\" é a linha de baixo, que o poedb partiu)",
       "_nova": true,
-      "_lote9": "13/10 — os projéteis por projétil (lote 9)"
+      "_lote9": "13/10 — os projéteis por projétil (lote 9)",
+      "_lote33": "16/10 — lote 33 (P030: PoB 35,0 / 70,1)"
     },
     {
       "padrao": "^Efeito de Solos Sagrados Criados por você aumentado em \\{(\\d+)\\}%$",
@@ -6649,18 +6906,17 @@
       "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Sagrado ao Acertar um Inimigo Raro ou Único$",
       "efeitos": [
         {
-          "stat": "ev:acertar:soloSagrado:4@alvoRaro",
+          "stat": "ev:acertar:soloSagrado:8@alvoRaro",
           "valor": "{1}"
         },
         {
-          "stat": "ev:acertar:soloSagrado:4@alvoUnico",
+          "stat": "ev:acertar:soloSagrado:8@alvoUnico",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o Solo dura 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P056: \"lasting 8 seconds\" no inglês)"
     },
     {
       "padrao": "^Enquanto parado, a área ao seu redor será Solo Sagrado$",
@@ -6883,12 +7139,13 @@
       "padrao": "^Inimigos Mortos próximos ao seu Estandarte têm \\{(\\d+)\\}% de chance de Explodir, causando um décimo de sua Vida como Dano Físico$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:10@estandarteAtivo",
+          "stat": "ev:inimigoMorrer:explodirChance:10:physical@alvoPertoDoEstandarte",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Ataques Impelidos causam Dano aumentado em \\{(\\d+)\\}%$",
@@ -7044,14 +7301,13 @@
       "padrao": "^Inimigos Provocados por seus Clamores sofrem Dano aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "provocados_dano_sofrido",
+          "stat": "provocados_clamor_dano_sofrido",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale em qualquer inimigo Provocado por você",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos que você Provocar recebem Dano aumentado \\{(\\d+)\\}%$",
@@ -7079,14 +7335,13 @@
       "padrao": "^Aumentos e Reduções à Armadura também se aplicam à Recarga do Escudo de Energia em \\{(\\d+)\\}% de seu valor$",
       "efeitos": [
         {
-          "stat": "es_recharge%stat:armour_pct",
+          "stat": "armadura_na_recarga_es",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta os aumentos de Armadura em % (o valor/100 vira a fração)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P024)"
     },
     {
       "padrao": "^\\+?\\{(\\d+)\\} ao multiplicador de dano de gelo degenerativo por \\{(\\d+)\\}% de resistência a dano de gelo excedente$",
@@ -7103,14 +7358,13 @@
       "padrao": "^Causa até \\{(\\d+)\\}% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade$",
       "efeitos": [
         {
-          "stat": "mais_dano@corpo+alvoPerto",
+          "stat": "mais_dano_proximidade",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o golpe corpo a corpo do jogo é sempre de perto: o máximo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P045: PoB MeleeProximity)"
     },
     {
       "padrao": "^Área de efeito de ataques aumentada em \\{(\\d+)\\}%, se você tiver pelo menos \\{(\\d+)\\} aliados? por perto$",
@@ -7158,7 +7412,567 @@
       "_ciclo7": true
     },
     {
-      "padrao": "^Joias Não Únicas .*$",
+      "padrao": "^Força das Passivas em Alcance são Transformadas em Destreza$",
+      "efeitos": [
+        {
+          "stat": "raio_str_para_dex",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Força das Passivas em Alcance são Transformadas em Inteligência$",
+      "efeitos": [
+        {
+          "stat": "raio_str_para_int",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Destreza das Passivas em Alcance são Transformadas em Força$",
+      "efeitos": [
+        {
+          "stat": "raio_dex_para_str",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Destreza das Passivas em Alcance são Transformadas em Inteligência$",
+      "efeitos": [
+        {
+          "stat": "raio_dex_para_int",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Inteligência das Passivas em Alcance são Transformadas em Força$",
+      "efeitos": [
+        {
+          "stat": "raio_int_para_str",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Inteligência das Passivas em Alcance são Transformadas em Destreza$",
+      "efeitos": [
+        {
+          "stat": "raio_int_para_dex",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções de Escudo de Energia em Alcance são Transformados para serem aplicados a Armadura em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_es_para_armadura",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções de Vida em Alcance são Transformados para serem aplicados ao Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_para_es",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Aumentos e Reduções de Vida em Alcance são Transformados para serem aplicados a Mana em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_para_mana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Modificadores do tipo Corpo a Corpo e Arma Corpo a Corpo em Alcance são Transformados em Modificadores de Arcos$",
+      "efeitos": [
+        {
+          "stat": "raio_corpo_para_arco",
+          "valor": "1"
+        }
+      ],
+      "nota": "as condições de corpo a corpo e de arma corpo a corpo (espada, machado, maça…) dos nós do raio passam a ser \"com Arco\"",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Força por cada \\{(\\d+)\\} de Força nas Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_menos_str_por_str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_menos_str_por_str_cada",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Destreza por cada \\{(\\d+)\\} de Destreza nas Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_menos_dex_por_dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_menos_dex_por_dex_cada",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Inteligência por cada \\{(\\d+)\\} de Inteligência nas Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_menos_int_por_int",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_menos_int_por_int_cada",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Vida aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Força em Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_rec_por_str_alocada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_vida_rec_por_str_alocada_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Vida reduzida em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Força em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_vida_rec_por_str_livre",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "raio_vida_rec_por_str_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Multiplicador de Acerto Crítico por cada \\{(\\d+)\\} de Força nas Passivas não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_crit_multi_por_str_livre",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_crit_multi_por_str_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento na velocidade de Movimento por cada \\{(\\d+)\\} de Destreza das Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mov_por_dex_alocada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_mov_por_dex_alocada_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} à Precisão por cada \\{(\\d+)\\} de Destreza em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_precisao_por_dex_livre",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_precisao_por_dex_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento reduzida em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Destreza em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mov_por_dex_livre",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "raio_mov_por_dex_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Mana aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência em Passivas Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mana_rec_por_int_alocada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_mana_rec_por_int_alocada_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por cada \\{(\\d+)\\} de Inteligência em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_dot_multi_por_int_livre",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_dot_multi_por_int_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Recuperação de Mana reduzida em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência em Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_mana_rec_por_int_livre",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "raio_mana_rec_por_int_livre_cada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito de Habilidades Passivas não-Angulares no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_efeito_nao_notaveis",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis em Alcance concedem nada$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_nada",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Pequenas Habilidades Passivas Alocadas no Raio não concedem nada$",
+      "efeitos": [
+        {
+          "stat": "raio_pequenos_alocados_nada",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Concede todos os bônus das Pequenas Habilidades Passivas Não Alocadas no Raio$",
+      "efeitos": [
+        {
+          "stat": "raio_pequenos_livres_concedem",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas no Raio também concedem \\+\\{(\\d+)\\} de Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "raio_passivas_vida",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas fornecendo Resistência a Fogo ou todas Resistências Elementais em Alcance (?:/ )?também concedem uma chance igual de ganhar uma Carga de Tolerância ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_res_fogo_tolerancia",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas fornecendo Resistência a Gelo em Alcance também concedem uma chance igual de ganhar uma Carga de Frenesi ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_res_gelo_frenesi",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas fornecendo Resistência a Raio em Alcance também concedem uma chance igual de ganhar uma Carga de Poder ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_res_raio_poder",
+          "valor": "100"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas que concedem Resistência à Fogo ou todas as Resistências Elementais no Raio (?:/ )?também concedem Chance de Bloquear Dano de Ataques em \\{(\\d+)\\}% do seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_res_fogo_bloqueio",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas que concedem Resistência a Gelo ou Todas as Resistências no Raio (?:/ )?também concedem Chance de Suprimir o Dano Mágico em \\{(\\d+)\\}% de seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_res_gelo_supressao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passivas que concedem Resistência à Raio ou todas as Resistências Elementais no raio (?:/ )?também concedem Chance de Bloquear Dano Mágico em \\{(\\d+)\\}% do seu valor$",
+      "efeitos": [
+        {
+          "stat": "raio_res_raio_bloqueio_magico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis no Raio são Transformadas para (?:/ )?conceder: Lacaios tem Velocidade de Movimento reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_lacaio_mov",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis no Raio são Transformadas para (?:/ )?conceder: Lacaios tem Dano aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_lacaio_dano_recebido",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o PoE em inglês: \"Minions take X% increased Damage\" — os lacaios SOFREM mais dano",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades Passivas Notáveis no Raio são Transformadas para (?:/ )?concederem: Custo de Mana das Habilidades aumentado em \\{(\\d+)\\}% e Dano Mágico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "raio_notaveis_custo_mana",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_notaveis_dano_magico",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Pequeno$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "1"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 960 e 1320 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Médio$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "2"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 1320 e 1680 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Grande$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "3"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 1680 e 2040 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Muito Grande$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "4"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 2040 e 2400 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Só afeta Passivas em um Raio Massivo$",
+      "efeitos": [
+        {
+          "stat": "raio_anel",
+          "valor": "5"
+        }
+      ],
+      "nota": "o anel do Path of Building: os nós entre 2400 e 2880 unidades do encaixe",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Habilidades passivas ao alcance podem ser atribuídas sem estarem conectadas à sua árvore$",
+      "efeitos": [
+        {
+          "stat": "raio_aloca_sem_conexao",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Passagem$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o nome do efeito no PoE (Passage)",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Com um total de \\{(\\d+)\\} de .+ no Raio, Habilidades Prismáticas .+$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -7166,9 +7980,46 @@
         }
       ],
       "estado": "inerte",
-      "nota": "não se aplica ao jogo: o jogo não tem joias na árvore",
+      "nota": "as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção do jogo",
       "_nova": true,
-      "_ciclo7": true
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Efeito das Tatuagens no Raio aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o jogo não tem Tatuagens",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Joias Não Únicas fazem com que Aumentos e Reduções aos Tipos de Dano em um Grande Raio sejam Transformados para serem aplicados ao Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "joia_transforma_fogo",
+          "valor": "1"
+        }
+      ],
+      "nota": "cada joia não única num encaixe alocado: os aumentos e reduções de Dano Físico, de Gelo, de Raio e de Caos dos nós alocados a até 1800 dela (o Raio Grande do PoE na árvore de hoje) passam a ser de Fogo — o Dano Elemental não é um tipo de dano e fica",
+      "_nova": true,
+      "_lote27": "15/10 — os encaixes de joia (lote 27)"
+    },
+    {
+      "padrao": "^Joias Não Únicas fazem com que Habilidades Passivas Pequenas e Notáveis em um Raio Grande também concedam \\+\\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "joia_forca_no_raio",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "por joia não única num encaixe alocado: cada nó pequeno ou notável alocado a até 1800 dela (o Raio Grande do PoE na árvore de hoje) dá a Força",
+      "_nova": true,
+      "_lote27": "15/10 — os encaixes de joia (lote 27)"
     },
     {
       "padrao": "^Runas têm \\{(\\d+)\\}% mais Frequência de Ativação se \\{(\\d+)\\}% da Duração de Vínculo houver expirado$",
@@ -7189,14 +8040,13 @@
       "padrao": "^Habilidades de conexão têm duração de fixação infinita$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "vinculo_duracao_infinita",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: os Vínculos com mercenários não existem no jogo",
+      "nota": "o Vínculo não acaba pelo tempo (segue custando mana por segundo e quebrando fora do alcance)",
       "_nova": true,
-      "_ciclo7": true
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
     },
     {
       "padrao": "^Profanar e Desenterrar tem \\+\\{(\\d+)\\} de número Máximo de cadáveres permitidos$",
@@ -7773,10 +8623,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o teto vale na redução de dano físico (armadura + redução adicional)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P035)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano Físico negado de Acertos Recentes é Regenerado como Escudo de Energia por segundo$",
@@ -13399,13 +14248,36 @@
       "padrao": "^Tem \\{(\\d+)\\} Encaixes Abissal$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "encaixes_abissais",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "as Joias Abissais não existem no jogo",
-      "_nova": true
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Ganhar Poder Profano por \\{(\\d+)\\} segundos ao Matar Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buffChance:poderProfano:{V2}@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Inimigos Definhados por você têm \\{(\\d+)\\}% de todas as Resistências$",
+      "efeitos": [
+        {
+          "stat": "res_definhados",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "enquanto Definhado por você (a resistência a Fogo, Gelo, Raio e Caos do inimigo)",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
     },
     {
       "padrao": "^Pode ser ungido$",
@@ -15098,9 +15970,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote32": "15/10 — lote 32 (P071: o adicionado às magias de todo tipo, × a eficácia)"
     },
     {
       "padrao": "^Fúria(?: durante o Efeito)?$",
@@ -15516,9 +16387,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "pela distância em casas até o alvo (1 casa = 20 unidades do PoE).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote33": "16/10 — lote 33 (a tabela do poedb (3.13), em unidades: 1 casa = 2 m (dono))"
     },
     {
       "padrao": "^Queima[ -]Roupa(?: durante o Efeito)?$",
@@ -15529,9 +16399,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "pela distância em casas até o alvo (1 casa = 20 unidades do PoE).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote33": "16/10 — lote 33 (a tabela do poedb, em unidades: 1 casa = 2 m (dono))"
     },
     {
       "padrao": "^O Dano de Raio dos Inimigos Acertando você é Sortudo$",
@@ -15691,9 +16560,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no golpe das habilidades (o golpe básico da arma, não).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado$",
@@ -15704,9 +16572,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no golpe das habilidades (o golpe básico da arma, não).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote31": "15/10 — lote 31 (P018): o golpe básico também"
     },
     {
       "padrao": "^Ataques executados por você se repetem mais \\{(\\d+)\\} vez(?:es)?$",
@@ -16110,6 +16977,48 @@
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
     },
     {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano de Gelo como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "ice_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano de Raio como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "energy_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% a todas as resistências elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+    },
+    {
       "padrao": "^Eficiência de custo de mana aumentada em \\{(\\d+)\\}% por carga de tolerância$",
       "efeitos": [
         {
@@ -16293,17 +17202,256 @@
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9, os textos da auditoria)"
     },
     {
-      "padrao": "^.*Joias? Abissa(?:l|is).*|.*Encaixes? Abissa(?:l|is).*|.*Olho (?:Medonho|Hipnótico|Pavoroso|Assassino|Perscrutador).*$",
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito das Joias Abissais Encaixadas$",
       "efeitos": [
         {
-          "stat": "inerte",
+          "stat": "efeito_joias_abissais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Vida Máxima por Joia Abissal afetando você$",
+      "efeitos": [
+        {
+          "stat": "life_inc%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Mana Máxima por Joia Abissal afetando você$",
+      "efeitos": [
+        {
+          "stat": "mana_inc%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Penetra \\{(\\d+)\\}% das Resistências Elementais por Joia Abissal te afetando$",
+      "efeitos": [
+        {
+          "stat": "elem_pen%joiasAbissais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Duração das Afecções Elementais em Você reduzida em \\{(\\d+)\\}% enquanto afetado por uma Joia Abissal Rara$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais_propria@afetadoPorAbissal:raro",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto afetado por uma Joia Abissal Mágica$",
+      "efeitos": [
+        {
+          "stat": "move_speed@afetadoPorAbissal:magico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Habilidades aumentada em \\{(\\d+)\\}% enquanto afetado por uma Joia Abissal Única$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva@afetadoPorAbissal:unico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Com uma joia Olho Medonho encaixada, os lacaios têm \\{(\\d+)\\}% de chance de (?:/ )?ganhar Poder Profano ao atingir com magias$",
+      "efeitos": [
+        {
+          "stat": "minion_poder_profano_ao_acertar_magia@comAbissalLocal:Ghastly_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "Poder Profano por 4 s, nos lacaios que atacam com magias (os magos e os golens de fogo e de relâmpago)",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Com um Olho Hipnótico Encaixado, recebe Fúria Arcana ao Acertar com Magias$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buff:furiaArcana@magia+comAbissalLocal:Hypnotic_Eye_Jewel",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao número Máximo de Espectros por Joia do Olho Pavoroso Encaixada$",
+      "efeitos": [
+        {
+          "stat": "max_espectros%abissalLocal:Ghastly_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Dano físico aumentado em \\{(\\d+)\\}% por joia Olho Assassino encaixada$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg_local%abissalLocal:Murderous_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Velocidade de ataque aumentada em \\{(\\d+)\\}% por joia Olho Perscrutador encaixada$",
+      "efeitos": [
+        {
+          "stat": "atk_speed_local%abissalLocal:Searching_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Chance de golpe crítico aumentada em \\{(\\d+)\\}% por joia Olho Hipnótico encaixada$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_local%abissalLocal:Hypnotic_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de empalar ao atingir com ataques por joia Olho Medonho encaixada$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_empalar%abissalLocal:Ghastly_Eye_Jewel",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o empalamento do lacaio (10% do Físico do golpe, 5 acertos, 8 s) entra na lista do alvo, sem os modificadores de empalar do dono; os acertos no alvo o soltam",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico da Mão Principal aumentada em \\{(\\d+)\\}% por\\\\?\\s*Joia Olho Assassino afetando você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%joiasAbissais:Murderous_Eye_Jewel~{V2}@maoPrincipal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Golpe Crítico da Mão Secundária por (?:/ )?Joia do Olho Assassino afetando você, máximo de \\+\\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg%joiasAbissais:Murderous_Eye_Jewel~{V2}@maoSecundaria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de conseguirem Ricochetear ao colidirem com o terreno por (?:/ )?Joia do Olho Examinador afetando você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "proj_ricochete_terreno_chance%joiasAbissais:Searching_Eye_Jewel~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Efeito da Fúria Arcana em você aumentado em \\{(\\d+)\\}% (?:/ )?por Joia do Olho Hipnótico afetando você, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff:furiaArcana%joiasAbissais:Hypnotic_Eye_Jewel~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por (?:/ )?Joia do Olho Pavoroso afetando você, máximo de \\+\\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_dot_multi%joiasAbissais:Ghastly_Eye_Jewel~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Joias Abissais raras encaixadas serão consumidas$",
+      "efeitos": [
+        {
+          "stat": "consome_abissais_raras",
           "valor": "1"
         }
       ],
-      "estado": "inerte",
-      "nota": "as Joias Abissais não existem no jogo",
+      "nota": "a Rara encaixada some e um mod dela, sorteado, passa a ser do elmo (× a Magnitude dos Modificadores Explícitos dele)",
       "_nova": true,
-      "_unico": true
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Um modificador das joias consumidas será mantido$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "parte da linha de cima (a Rara consumida deixa um mod na peça)",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+    },
+    {
+      "padrao": "^Não pode ter encaixes não abissais$",
+      "efeitos": [
+        {
+          "stat": "sem_encaixes",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote28": "15/10 — as Joias Abissais (lote 28)"
     },
     {
       "padrao": "^Pegadas .*|Sanguinolência Extra$",
@@ -16898,10 +18046,9 @@
           "valor": "{2}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o adicional por Empalamento entra no acerto pela Redução de Dano Físico do alvo, sem os aumentos de dano",
       "_nova": true,
-      "_lote7": "13/10 — os aliados de verdade (lote 7)"
+      "_lote7": "13/10 — os aliados de verdade (lote 7)",
+      "_lote31": "15/10 — lote 31 (P043): o adicional entra no golpe, com os aumentos"
     },
     {
       "padrao": "^Auras das suas Habilidades concedem \\{(\\d+)\\}% de aumento das Velocidades de Ataque e Conjuração para você e Aliados$",
@@ -25565,14 +26712,13 @@
       "padrao": "^Debuffs em você expiram \\{(\\d+)\\}% mais rápido$",
       "efeitos": [
         {
-          "stat": "duracao_afeccoes_propria",
-          "valor": "-{1}"
+          "stat": "debuffs_expiram_rapido",
+          "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale para as afecções que os monstros causam em você",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\}%$",
@@ -25975,12 +27121,15 @@
         {
           "stat": "efeito_eletrizacao",
           "valor": "{1}"
+        },
+        {
+          "stat": "efeito_nao_dano",
+          "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "Causticar, Fragilizar e Exaurir elementais (os do PoE) ainda não existem: vale no Resfriamento e na Eletrização",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_lote33": "16/10 — lote 33 (P009)"
     },
     {
       "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Ataques$",
@@ -26133,9 +27282,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o Elusivo do jogo dura 4 s (no PoE ele vai se desfazendo)",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_lote33": "16/10 — lote 33 (P055: o Elusivo decai 20%/s)"
     },
     {
       "padrao": "^Ganha uma Carga de Frenesi a cada \\{(\\d+)\\} segundos$",
@@ -28740,14 +29888,13 @@
       "padrao": "^Bônus de Precisão da Destreza concede \\+\\{(\\d+)\\} de Precisão por Destreza$",
       "efeitos": [
         {
-          "stat": "accuracy%atr:dex:1",
+          "stat": "precisao_por_dex",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "somado à precisão que a Destreza já dá",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao usar um Frasco$",
@@ -28950,14 +30097,13 @@
       "padrao": "^Velocidade dos Clamores aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "cast_speed@clamor",
+          "stat": "velocidade_clamor",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a velocidade de uso do clamor",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote34": "16/10 — lote 34 (P008: o tempo de uso do Clamor, sem a conjuração)"
     },
     {
       "padrao": "^Habilidades Maldições tem Velociade de Conjuração aumentada em \\{(\\d+)\\}%$",
@@ -29103,12 +30249,13 @@
       "padrao": "^Inimigos Queimando mortos por você têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano de Fogo$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:10@alvoIncendiado",
+          "stat": "ev:matar:explodirChance:10:fire@alvoIncendiado",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Golpes Críticos não Incendeiam de forma inerente$",
@@ -29147,14 +30294,13 @@
       "padrao": "^\\{(\\d+)\\}% menos Dano Físico Sofrido enquanto em Escudo de Energia Cheio$",
       "efeitos": [
         {
-          "stat": "phys_res@escudoCheio",
-          "valor": "{1}"
+          "stat": "dano_physical_recebido_mais@escudoCheio",
+          "valor": "-{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "entra como redução de dano físico enquanto o escudo está cheio",
-      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)"
+      "_de": "09/10 — árvore × poedb (3º lote: peças, maestrias, gemas)",
+      "_lote30": "15/10 — zerar a árvore (lote 30)"
     },
     {
       "padrao": "^Recupera \\{(\\d+)\\}% da Mana por \\{(\\d+)\\} segundos? quando você usar uma Habilidade de Guarda$",
@@ -31815,14 +32961,13 @@
       "padrao": "^Inimigos com Sangramento Explodem quando você matá-los, causando \\{(\\d+)\\}% de suas Vidas Máximas com Dano Físico$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}@alvoSangrando",
+          "stat": "ev:matar:explodirChance:{V1}:physical@alvoSangrando",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a explosão do jogo não passa pela resistência física dos atingidos",
-      "_de": "09/10 — afecções do personagem nos monstros"
+      "_de": "09/10 — afecções do personagem nos monstros",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos que você Congelar continuam Congelados por ao menos \\{(\\d+)\\} segundos?$",
@@ -32122,9 +33267,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "no PoE soma pontos à chance base da habilidade; aqui, à chance de crítico do personagem.",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote30": "15/10 — zerar a árvore (lote 30): o crit_chance soma nos pontos base (ataque e magia), antes do aumentado — a conta do PoE"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de chance de golpe crítico por carga de poder$",
@@ -32954,47 +34098,49 @@
       "padrao": "^Inimigos Mortos com Acertos Mágicos ou de Ataques Explodem, causando \\{(\\d+)\\}% de suas Vidas como Dano de Fogo$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}",
+          "stat": "ev:matar:explodirChance:{V1}:fire@acerto",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Mortos por você têm \\{(\\d+)\\}% de chance de Explodirem, causando um quarto de suas Vidas máximas como Dano de Caos$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:25",
+          "stat": "ev:matar:explodirChance:25:chaos",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Eletrizados que você Matar Explodem, causando \\{(\\d+)\\}% de suas Vidas Máximas como Dano de Raio que não pode Eletrizar$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}@alvoEletrizado",
+          "stat": "ev:matar:explodirChance:{V1}:energy@alvoEletrizado",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Provocados por seus Clamores Explodem ao morrer, causando \\{(\\d+)\\}% de sua Vida máxima como Dano de Caos$",
       "efeitos": [
         {
-          "stat": "ev:matar:explodirChance:{V1}@alvoProvocado",
+          "stat": "ev:inimigoMorrer:explodirChance:{V1}:chaos@alvoProvocadoClamor",
           "valor": "100"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vale para o inimigo provocado que você matar (no PoE, o provocado pelo clamor, morto por qualquer um).",
-      "_de": "10/10 — únicos: armas e armaduras (rodada 1)"
+      "_de": "10/10 — únicos: armas e armaduras (rodada 1)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Perde \\{(\\d+)\\}% de Escudo de Energia ao causar um Golpe Crítico$",
@@ -36326,23 +37472,25 @@
       "padrao": "^Feitiços se Transferem para todos os Inimigos dentro de \\{(\\d+)\\} metros quando o Inimigo Enfeitiçado morrer$",
       "efeitos": [
         {
-          "stat": "ev:matar:transferirMaldicoes:{V1}",
+          "stat": "ev:inimigoMorrer:transferirMaldicoes:{V1}",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Sua Marca se transfere para outro Inimigo quando o Inimigo Marcado morrer$",
       "efeitos": [
         {
-          "stat": "ev:matar:transferirMarca",
+          "stat": "ev:inimigoMorrer:transferirMarca",
           "valor": "1"
         }
       ],
       "_nova": true,
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 6)",
+      "_lote31": "15/10 — lote 31 (S001/P037/P044/P063): o abate de quem, o tipo da explosão"
     },
     {
       "padrao": "^Inimigos Próximos possuem um aumento de \\{(\\d+)\\}% do Efeito de Maldições neles$",

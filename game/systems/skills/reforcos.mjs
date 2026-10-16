@@ -101,7 +101,7 @@ export function afDaMaldicaoNoJogador(efeitos) {
  * A de mesmo id ativa não renova; o LIMITE vale (a nova tira a mais antiga do grupo dos Feitiços), menos com `ignorarLimite` ("ignorando o
  * Limite de Maldições"). Devolve se amaldiçoou.
  */
-export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 6000, ignorarLimite = false, limite = 1 } = {}) {
+export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 6000, ignorarLimite = false, limite = 1, hunt = null } = {}) {
   if (!bicho || bicho.hp <= 0 || bicho.dummy) return false;
   const efeitos = [];
   for (const e of efeitosPoe ?? []) {
@@ -117,8 +117,16 @@ export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 60
     while (feiticos().length >= Math.max(1, limite)) delete maldicoes[feiticos()[0][0]];
   }
   maldicoes[id] = { ate: agora + dur, desde: agora, lancada: agora, dur, efeitos, doItem: true };
+  aoAmaldicoar?.(hunt, bicho, agora);
   return true;
 }
+/**
+ * (lote 32, P038) Quem reage a uma maldição SUA que pegou no inimigo (as Forças Profanadas — `ModsPoe.aoAmaldicoar`, com a ficha da caçada):
+ * `acoes.mjs` registra (este módulo não importa os mods do PoE). Vale no `marcar` (as gemas, as auras de maldição) e no `amaldicoar` (as peças).
+ */
+// eslint-disable-next-line no-var
+var aoAmaldicoar;
+export function definirAoAmaldicoar(fn) { aoAmaldicoar = fn; }
 
 /** O passo do monstro amaldiçoado e Desacelerado (×; 1 = normal): a maior lentidão entre as maldições ativas. */
 export function fatorDeDesaceleracao(bicho, agora) {
@@ -203,7 +211,8 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
       if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
         const af = afDaMaldicaoNoJogador(efeitos);
-        if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + dur, nome: regras.nome ?? 'Maldição refletida', af };
+        // (lote 30: "Debuffs em você expiram X% mais rápido" — o fator do personagem, carimbado no tique: `condicoes-poe.tique`)
+        if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + Math.round(dur * (hunt.poeFatorDosDebuffs ?? 1)), nome: regras.nome ?? 'Maldição refletida', af };
       }
       continue;
     }
@@ -216,6 +225,8 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
   }
   // (13/10) `semMaldicaoNaoAura`: amaldiçoou um inimigo sem maldição com uma que não é aura ("Inimigos Não Amaldiçoados que você inflija
   // Maldições não Auras são Cegados" — a Maestria de Maldições).
+  // (lote 32: uma maldição pegou agora — "em inimigos que você Amaldiçoar", as Forças Profanadas: o gancho `aoAmaldicoar`)
+  if (amaldicoou) aoAmaldicoar?.(hunt, bicho, agora);
   return { amaldicoouSemMaldicao: amaldicoou && !tinha, semMaldicaoNaoAura: naoAura && !tinha };
 }
 

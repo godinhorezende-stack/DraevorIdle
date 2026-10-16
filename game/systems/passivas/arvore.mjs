@@ -24,7 +24,7 @@ import { readFileSync } from 'node:fs';
 import * as Keystones from './keystones.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
-import { definirLeitorDeMaestrias } from '../itens-poe/condicoes-poe.mjs';
+import { definirLeitorDeMaestrias, definirLeitorDeJoias } from '../itens-poe/condicoes-poe.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -124,6 +124,7 @@ export function usarArvore(nova) {
   const antes = ARVORE;
   ARVORE = nova.porId ? nova : preparar(nova);
   CACHE = new WeakMap();
+  NO_RAIO.clear();
   return antes;
 }
 
@@ -223,7 +224,8 @@ export function garantir(estado) {
   let arvoreMudou = false;
   if ((p.versaoDaArvore ?? 1) !== ARVORE.versao) {
     const antes = new Set(p.alocados);
-    const ligados = alcancaveis(ARVORE.porId, new Set([...limpos, ...iniciosExtras(estado, limpos)]), [inicio, ...(inicioAsc ? [inicioAsc] : []), ...iniciosExtras(estado, limpos)]);
+    const liberados = p.joias ? [...liberadosPorJoias(estado).keys()] : [];
+    const ligados = alcancaveis(ARVORE.porId, new Set([...limpos, ...iniciosExtras(estado, limpos)]), [inicio, ...(inicioAsc ? [inicioAsc] : []), ...iniciosExtras(estado, limpos), ...liberados.filter((x) => limpos.includes(x))]);
     const grupos = gruposComNotavel([...ligados]);
     limpos = limpos.filter((id) => ligados.has(id) || (ARVORE.porId.get(id)?.tipo === 'mastery' && grupos.has(ARVORE.porId.get(id).grupo)));
     const sairam = [...antes].filter((id) => id !== inicio && !limpos.includes(id) && ARVORE.porId.get(id)?.tipo !== 'start').length;
@@ -236,6 +238,8 @@ export function garantir(estado) {
   if (limpos.length !== p.alocados.length || limpos.some((id, i) => id !== p.alocados[i])) p.alocados.splice(0, p.alocados.length, ...limpos);
   // A opção de maestria só fica enquanto a maestria está alocada (respec, troca de árvore).
   if (p.maestrias) for (const id of Object.keys(p.maestrias)) if (!p.alocados.includes(id)) delete p.maestrias[id];
+  // (lote 27) A joia de um encaixe que não está mais alocado volta para a mochila.
+  if (p.joias) devolverJoiasSoltas(estado, p);
   return { passivas: p, migrou, arvoreMudou };
 }
 
@@ -312,7 +316,8 @@ export function podeAlocar(estado, id, opcao = null) {
   if (no.tipo === 'start') return erro('INICIO', 'O início de outra classe não se aloca.');
   if (no.tipo === 'mastery') return podeAlocarMaestria(estado, no, opcao, meus);
   const extras = new Set(iniciosExtras(estado));
-  if (!(no.conexoes ?? []).some((c) => meus.has(c) || extras.has(c))) return erro('SEM_CAMINHO', 'Esse nó não está ligado a nenhum nó seu.');
+  // (lote 29) o nó no raio de uma joia "pode ser atribuída sem estar conectada à sua árvore" (o Salto Intuitivo, o Fio de Esperança)
+  if (!(no.conexoes ?? []).some((c) => meus.has(c) || extras.has(c)) && !liberadosPorJoias(estado).has(id)) return erro('SEM_CAMINHO', 'Esse nó não está ligado a nenhum nó seu.');
   if ((estado.level ?? 1) < (no.levelMinimo ?? 0)) return erro('LEVEL', `Precisa do level ${no.levelMinimo}.`);
   if (no.ascendencia) {
     if (passivas.ascendencia !== no.ascendencia) return erro('OUTRA_ASCENDENCIA', 'Esse nó é de outra ascendência.');
@@ -339,10 +344,14 @@ export function caminhoAte(estado, id) {
   const { passivas } = garantir(estado);
   const meus = new Set(passivas.alocados);
   if (meus.has(id)) return [];
+  // (lote 29) os nós liberados pelas joias ("sem estar conectada à sua árvore"): o caminho pode começar neles (eles entram no caminho).
+  const liberados = [...liberadosPorJoias(estado).keys()].filter((x) => !meus.has(x));
+  if (liberados.includes(id)) return [id];
   const veioDe = new Map();
   const fila = [...meus, ...iniciosExtras(estado).filter((x) => !meus.has(x))];
   for (const x of fila) veioDe.set(x, null);
   const origens = new Set(fila);
+  for (const x of liberados) if (!veioDe.has(x)) { veioDe.set(x, null); fila.push(x); }
   for (let i = 0; i < fila.length; i++) {
     const atual = fila[i];
     for (const c of ARVORE.porId.get(atual)?.conexoes ?? []) {
@@ -393,11 +402,13 @@ const efeitosDoNo = (no, passivas) => (no.tipo === 'mastery' ? no.opcoes?.find((
  * Tirar estes nós deixaria algum outro ilhado (sem caminho até o início)?
  * Devolve os ilhados (vazio = pode).
  */
-export function ilhadosSemEles(estado, ids) {
+export function ilhadosSemEles(estado, ids, semJoiaEm = []) {
   const { passivas } = garantir(estado);
   const tirar = new Set(ids);
   const fica = new Set(passivas.alocados.filter((x) => !tirar.has(x)));
-  const raizes = raizesDe(estado, [...fica]);
+  // (lote 29) os nós liberados pelas joias que ficam (o encaixe alocado e a joia nele — `semJoiaEm`: as joias que saem) são raízes.
+  const liberados = [...liberadosPorJoias(estado, new Set([...tirar, ...semJoiaEm])).keys()].filter((x) => fica.has(x));
+  const raizes = [...raizesDe(estado, [...fica]), ...liberados];
   const ligados = alcancaveis(ARVORE.porId, new Set([...fica, ...raizes]), raizes);
   // A maestria fica enquanto houver um notável LIGADO no grupo dela.
   const grupos = gruposComNotavel([...ligados]);
@@ -471,13 +482,249 @@ export function respec(estado, pedido, emCacada = false) {
   return { ok: true, mudou: true, tirados: plano.tirar.length, preco: plano.preco };
 }
 
+// ------------------------------------------------------ os encaixes de joia
+
+/*
+ * ---- (15/10, lote 27) Os ENCAIXES DE JOIA da árvore do PoE ----
+ * Dono, 14/10: "Criar os encaixes de joia". Os 21 encaixes da árvore principal — os 15 "Básicos" e os 6 "Grandes" da borda; os "Médios" e
+ * os "Pequenos" são os das Joias Ramificadoras (fora) — recebem uma Joia (`itens-poe/jogo.JOIAS`; quem põe e tira é `passivas/joias.mjs`).
+ * A joia vale com o encaixe ALOCADO: os mods dela somam como os de uma peça (`Afixos.somaDeItens`). O encaixe que deixa de estar alocado
+ * (respec, troca de classe, a árvore mudou) devolve a joia à mochila em `garantir` — a peça nunca some.
+ */
+const ENCAIXES_DE_JOIA = new Set(['Basic Jewel Socket', 'Large Jewel Socket']);
+export const ehEncaixeDeJoia = (no) => !!no && !no.ascendencia && ENCAIXES_DE_JOIA.has(no.nomeEn);
+/**
+ * Os raios das joias do PoE nas unidades da árvore (as mesmas de `x`/`y`): desde a 3.16, com a árvore espaçada, 20% maiores que o número do
+ * item ("Raio: Grande (1500)" → 1800) — como no Path of Building (dono, 15/10: "Como no PoE/PoB"). `aneis`: os anéis do Fio de Esperança
+ * ("Só afeta Passivas em um Raio Pequeno … Massivo" — os nós ENTRE o de dentro e o de fora), os do Path of Building.
+ */
+export const RAIOS_DE_JOIA = Object.freeze({ pequeno: 960, medio: 1440, grande: 1800, aneis: [[960, 1320], [1320, 1680], [1680, 2040], [2040, 2400], [2400, 2880]] });
+/** O raio e o "Limitado a: N" de cada joia única (`tools/importar-joias-unicas.mjs`). */
+const JOIAS_UNICAS = (() => {
+  try {
+    return JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/joias-unicas.json', import.meta.url), 'utf8')).joias ?? {};
+  } catch {
+    return {};
+  }
+})();
+export const dadosDaJoiaUnica = (peca) => (peca?.poe?.raridade === 'unico' ? JOIAS_UNICAS[peca.poe.unico] ?? null : null);
+
+/** As joias que valem: `[{ no, peca }]` — encaixe da árvore do PoE, alocado e com joia. */
+export function joiasAtivas(estado) {
+  const joias = ARVORE.id === 'poe' ? estado?.passivas?.joias : null;
+  if (!joias) return [];
+  const meus = new Set(estado.passivas.alocados ?? []);
+  const lista = [];
+  for (const [id, peca] of Object.entries(joias)) {
+    const no = ARVORE.porId.get(id);
+    if (peca && meus.has(id) && ehEncaixeDeJoia(no)) lista.push({ no, peca });
+  }
+  return lista;
+}
+
+// (lote 28) as joias da árvore para as condições do PoE ("por Joia Abissal afetando você").
+definirLeitorDeJoias((estado) => joiasAtivas(estado).map((j) => j.peca));
+
+/** A joia de um encaixe que não está alocado (ou que não existe mais) volta inteira para a mochila. */
+function devolverJoiasSoltas(estado, p) {
+  if (ARVORE.id !== 'poe') return;
+  const meus = new Set(p.alocados);
+  for (const [id, peca] of Object.entries(p.joias)) {
+    if (meus.has(id) && ehEncaixeDeJoia(ARVORE.porId.get(id))) continue;
+    if (peca) (estado.inventory ??= []).push({ ...peca, count: 1 });
+    delete p.joias[id];
+    p.joiasVersao = (p.joiasVersao ?? 0) + 1;
+  }
+}
+
+/*
+ * ---- (lote 29) O RAIO das joias ----
+ * Os nós "no Raio" de uma joia num encaixe alocado: as passivas da árvore principal (pequenas, notáveis e keystones — não as maestrias, os
+ * encaixes nem os nós de posição das Ramificadoras) a até o raio dela (ou, no anel, entre o de dentro e o de fora). O que cada joia faz com
+ * eles vem das linhas dela (`poe.af` da joia, chaves `raio_*` — as regras de tradução do lote 29):
+ *   - os ATRIBUTOS transformados (a Inércia: "Destreza das Passivas em Alcance são Transformadas em Força" — `raio_dex_para_str` …);
+ *   - os AUMENTOS convertidos ("Aumentos e Reduções de Escudo de Energia em Alcance são Transformados para … Armadura em 200%" — `raio_es_para_armadura`;
+ *     de Vida para o Escudo de Energia — `raio_vida_para_es`; de Vida para Mana em 200% — `raio_vida_para_mana`; a Queda de Lioneye: "Corpo a Corpo e Arma Corpo
+ *     a Corpo … em Modificadores de Arcos" — `raio_corpo_para_arco`);
+ *   - os nós MUDADOS (o Poder do Pacífico: "50% de aumento do Efeito de Habilidades Passivas não-Angulares" e "Notáveis … concedem nada";
+ *     o Instindo Sobrenatural: "Pequenas … Alocadas … não concedem nada" e "Concede todos os bônus das Pequenas … Não Alocadas"; os Pactos e a
+ *     Mente Febril: "Notáveis no Raio são Transformadas para conceder: …");
+ *   - o que os nós do raio DÃO A MAIS (a Luz do Significado: "+5 de Vida Máxima" por passiva alocada; os Sonhos: a resistência a Fogo/Gelo/Raio
+ *     dá a mesma chance de Carga ao Matar; os Pesadelos: o Bloqueio de Ataque / a Supressão / o Bloqueio Mágico em 50%/70% dela);
+ *   - "por cada N de Força nas Passivas Alocadas / Não Alocadas no Raio" (as Temperadas e as Transcendentais — `POR_ATRIBUTO_NO_RAIO`);
+ *   - "podem ser atribuídas sem estarem conectadas à sua árvore" (o Salto Intuitivo e o Fio de Esperança — `liberadosPorJoias`).
+ * E o CHIEFTAIN (Ngamahu, Avanço da Chama — lote 27): "Joias Não Únicas fazem com que Aumentos e Reduções aos Tipos de Dano em um Grande Raio
+ * sejam Transformados para … Fogo" (`joia_transforma_fogo`) e "… Pequenas e Notáveis em um Raio Grande também concedam +4 de Força"
+ * (`joia_forca_no_raio`), no Raio Grande de cada joia não única.
+ */
+const ehPassivaDoRaio = (no) => !!no && !no.ascendencia && ['small', 'notable', 'keystone'].includes(no.tipo) && !/Jewel Socket|Proxy/i.test(`${no.nomeEn ?? ''} ${no.nome ?? ''}`);
+const ehPequena = (no) => no.tipo === 'small';
+/** O raio de uma joia (`{ min, max }`, nas unidades da árvore): o anel do Fio de Esperança ou o da única; sem raio, null. */
+export function raioDaJoia(peca) {
+  const anel = Math.round(Number(peca?.poe?.af?.raio_anel) || 0);
+  if (anel > 0) {
+    const [min, max] = RAIOS_DE_JOIA.aneis[Math.min(anel, RAIOS_DE_JOIA.aneis.length) - 1];
+    return { min, max };
+  }
+  const nome = dadosDaJoiaUnica(peca)?.raio;
+  return nome && RAIOS_DE_JOIA[nome] ? { min: 0, max: RAIOS_DE_JOIA[nome] } : null;
+}
+const dentro = (no, s, r) => { const d = Math.hypot(no.x - s.x, no.y - s.y); return d <= r.max && (r.min <= 0 || d > r.min); };
+/** As passivas no raio `r` do encaixe `s` (todas, alocadas ou não). Memorizado por encaixe e raio. */
+const NO_RAIO = new Map();
+function passivasNoRaio(s, r) {
+  const chave = `${s.id}|${r.min}|${r.max}`;
+  if (!NO_RAIO.has(chave)) NO_RAIO.set(chave, ARVORE.nos.filter((n) => ehPassivaDoRaio(n) && dentro(n, s, r)));
+  return NO_RAIO.get(chave);
+}
+const v0 = (af, k) => Number(af?.[k]) || 0;
+
+const TIPOS_DE_DANO_PARA_FOGO = new Set(['phys_dmg', 'ice_dmg', 'energy_dmg', 'chaos_dmg']);
+/** O aumento de um tipo de dano passado para Fogo, com a condição que tinha (`phys_dmg@ataque+comMaca` → `fire_dmg@ataque+comMaca`). */
+function paraFogo(ef) {
+  const m = /^([a-z_]+)(.*)$/.exec(ef.add ?? '');
+  return m && TIPOS_DE_DANO_PARA_FOGO.has(m[1]) ? { ...ef, add: `fire_dmg${m[2]}` } : ef;
+}
+/** Os atributos transformados (`raio_dex_para_str` …): a chave do atributo que a joia troca. */
+const TRANSFORMA_ATRIBUTO = { 'raio_dex_para_str': ['dex', 'str'], 'raio_int_para_str': ['int', 'str'], 'raio_str_para_dex': ['str', 'dex'], 'raio_int_para_dex': ['int', 'dex'], 'raio_dex_para_int': ['dex', 'int'], 'raio_str_para_int': ['str', 'int'] };
+/**
+ * Os aumentos convertidos: `[de, para]` (o fator é o % da linha). Na árvore, a Vida% e a Mana% são `{ stat: 'life'|'mana', pct }` (o formato das
+ * especializações) e o Escudo de Energia%/Armadura% são `{ add: 'es_pct'|'armour_pct', valor }`.
+ */
+const CONVERTE = { 'raio_es_para_armadura': [{ add: 'es_pct' }, { add: 'armour_pct' }], 'raio_vida_para_es': [{ stat: 'life' }, { add: 'es_pct' }], 'raio_vida_para_mana': [{ stat: 'life' }, { stat: 'mana' }] };
+const valorDoEf = (ef) => (ef.add ? ef.valor : ef.stat ? ef.pct : ef.tag ? ef.dano : ef.valor) ?? 0;
+const comValor = (ef, v) => (ef.add ? { ...ef, valor: v } : ef.stat ? { ...ef, pct: v } : ef.tag ? { ...ef, dano: v } : { ...ef, valor: v });
+const ehDo = (ef, x) => (x.add ? ef.add === x.add : ef.stat === x.stat);
+/** As condições de corpo a corpo que a Queda de Lioneye passa para Arcos. */
+const CORPO_A_CORPO = /^(corpo|armaCorpo|comEspada|comMachado|comMaca|comCetro|comAdaga|comGarra|comCajado|umaMao|duasMaos|desarmado)$/;
+function paraArco(ef) {
+  const i = (ef.add ?? '').indexOf('@');
+  if (i < 0) return ef;
+  const conds = ef.add.slice(i + 1).split('+');
+  if (!conds.some((c) => CORPO_A_CORPO.test(c))) return ef;
+  const novas = [...new Set(conds.map((c) => (CORPO_A_CORPO.test(c) ? 'comArco' : c)))];
+  return { ...ef, add: `${ef.add.slice(0, i)}@${novas.join('+')}` };
+}
+/** "por cada N de <atributo> nas Passivas Alocadas / Não Alocadas no Raio": `[atributo, alocadas?, a chave que ganha, a chave do N]`. */
+const POR_ATRIBUTO_NO_RAIO = {
+  'raio_menos_str_por_str': ['str', true, 'str', 'raio_menos_str_por_str_cada'], 'raio_vida_rec_por_str_alocada': ['str', true, 'recuperacao_vida_inc', 'raio_vida_rec_por_str_alocada_cada'],
+  'raio_crit_multi_por_str_livre': ['str', false, 'crit_dmg', 'raio_crit_multi_por_str_livre_cada'], 'raio_vida_rec_por_str_livre': ['str', false, 'recuperacao_vida_inc', 'raio_vida_rec_por_str_livre_cada'],
+  'raio_menos_dex_por_dex': ['dex', true, 'dex', 'raio_menos_dex_por_dex_cada'], 'raio_mov_por_dex_alocada': ['dex', true, 'move_speed', 'raio_mov_por_dex_alocada_cada'],
+  'raio_precisao_por_dex_livre': ['dex', false, 'accuracy', 'raio_precisao_por_dex_livre_cada'], 'raio_mov_por_dex_livre': ['dex', false, 'move_speed', 'raio_mov_por_dex_livre_cada'],
+  'raio_menos_int_por_int': ['int', true, 'int', 'raio_menos_int_por_int_cada'], 'raio_mana_rec_por_int_alocada': ['int', true, 'recuperacao_mana_inc', 'raio_mana_rec_por_int_alocada_cada'],
+  'raio_dot_multi_por_int_livre': ['int', false, 'dot_multi', 'raio_dot_multi_por_int_livre_cada'], 'raio_mana_rec_por_int_livre': ['int', false, 'recuperacao_mana_inc', 'raio_mana_rec_por_int_livre_cada'],
+};
+/** "Notáveis no Raio são Transformadas para conceder: …" — a chave da joia → o que o notável passa a dar. */
+const NOTAVEL_VIRA = { 'raio_notaveis_lacaio_mov': 'minion_move', 'raio_notaveis_lacaio_dano_recebido': 'lacaios_dano_recebido', 'raio_notaveis_custo_mana': 'custo_mana_inc', 'raio_notaveis_dano_magico': 'spell_dmg' };
+/** Os Sonhos e os Pesadelos: `[resistência do nó, a chave que ganha, % do valor]` (o % vem da linha da joia). */
+const DA_RESISTENCIA = { 'raio_res_fogo_tolerancia': ['fire_res', 'carga_tolerancia_ao_matar'], 'raio_res_gelo_frenesi': ['ice_res', 'carga_frenesi_ao_matar'], 'raio_res_raio_poder': ['energy_res', 'carga_poder_ao_matar'], 'raio_res_fogo_bloqueio': ['fire_res', 'block'], 'raio_res_gelo_supressao': ['ice_res', 'spell_suppression'], 'raio_res_raio_bloqueio_magico': ['energy_res', 'spell_block'] };
+/** O atributo que o nó dá (a soma dos `str`/`dex`/`int` dele). */
+const atributoDoNo = (no, passivas, atr) => efeitosDoNo(no, passivas).reduce((n, ef) => n + (ef.add === atr ? ef.valor : 0), 0);
+
+/**
+ * O que as joias fazem nos nós do raio delas: `{ porNo: Map(id → [joia]), extras: {add: valor}, chieftain }` — `porNo` (os alocados) e os
+ * `extras` (o que vem por joia, não por nó: as Temperadas, as pequenas não alocadas do Instindo Sobrenatural). Null sem joia com raio.
+ */
+function raiosDasJoias(estado, alocados) {
+  const ativas = joiasAtivas(estado);
+  if (!ativas.length) return null;
+  // (o Chieftain: as joias NÃO ÚNICAS ganham o Raio Grande)
+  let transforma = 0;
+  let forca = 0;
+  for (const id of alocados) {
+    for (const ef of efeitosDoNo(ARVORE.porId.get(id) ?? {}, estado.passivas)) {
+      if (ef.add === 'joia_transforma_fogo') transforma += ef.valor;
+      else if (ef.add === 'joia_forca_no_raio') forca += ef.valor;
+    }
+  }
+  const meus = new Set(alocados);
+  const porNo = new Map();
+  const extras = {};
+  const daJoia = []; // (os efeitos de especialização — Vida%, Mana% — das pequenas não alocadas do Instindo Sobrenatural)
+  const somar = (k, v) => { if (v) extras[k] = (extras[k] ?? 0) + v; };
+  for (const { no: s, peca } of ativas) {
+    const af = peca.poe?.af ?? {};
+    const raios = [];
+    const r = raioDaJoia(peca);
+    if (r) raios.push({ r, af, chieftain: null });
+    if ((transforma > 0 || forca > 0) && peca.poe?.raridade !== 'unico') raios.push({ r: { min: 0, max: RAIOS_DE_JOIA.grande }, af: {}, chieftain: { transforma: transforma > 0, forca } });
+    for (const x of raios) {
+      const nos = passivasNoRaio(s, x.r);
+      for (const no of nos) if (meus.has(no.id)) (porNo.get(no.id) ?? porNo.set(no.id, []).get(no.id)).push(x);
+      // "por cada N de <atributo> nas Passivas Alocadas / Não Alocadas no Raio"
+      for (const [k, [atr, alocadas, destino, kCada]] of Object.entries(POR_ATRIBUTO_NO_RAIO)) {
+        if (!v0(x.af, k)) continue;
+        const soma = nos.filter((n) => meus.has(n.id) === alocadas).reduce((t, n) => t + atributoDoNo(n, estado.passivas, atr), 0);
+        const cada = Math.max(1, v0(x.af, kCada) || 1);
+        somar(destino, v0(x.af, k) * Math.floor(soma / cada));
+      }
+      // o Instindo Sobrenatural: "Concede todos os bônus das Pequenas Habilidades Passivas Não Alocadas no Raio"
+      if (v0(x.af, 'raio_pequenos_livres_concedem') > 0) for (const n of nos) if (!meus.has(n.id) && ehPequena(n)) for (const ef of efeitosDoNo(n, estado.passivas)) if (ef.add) somar(ef.add, ef.valor); else if (ef.stat || ef.tag) daJoia.push(ef);
+    }
+  }
+  return { porNo, extras, daJoia };
+}
+
+/** Os efeitos de um nó alocado com as joias que o alcançam (`raiosDasJoias().porNo`): a lista nova (sem as joias, a de sempre). */
+function efeitosNoRaio(no, efs, joias) {
+  let lista = efs;
+  let mais = [];
+  for (const { af, chieftain } of joias) {
+    if (chieftain) {
+      if (chieftain.transforma) lista = lista.map(paraFogo);
+      if (chieftain.forca > 0 && (no.tipo === 'small' || no.tipo === 'notable')) mais.push({ add: 'str', valor: chieftain.forca });
+      continue;
+    }
+    if (ehPequena(no) && v0(af, 'raio_pequenos_alocados_nada') > 0) return [];
+    if (no.tipo === 'notable' && v0(af, 'raio_notaveis_nada') > 0) return [];
+    const vira = Object.entries(NOTAVEL_VIRA).filter(([k]) => v0(af, k));
+    if (no.tipo === 'notable' && vira.length) {
+      lista = vira.map(([k, add]) => ({ add, valor: v0(af, k) }));
+      continue;
+    }
+    if (no.tipo !== 'notable' && no.tipo !== 'keystone' && v0(af, 'raio_efeito_nao_notaveis')) {
+      const f = 1 + v0(af, 'raio_efeito_nao_notaveis') / 100;
+      lista = lista.map((ef) => comValor(ef, valorDoEf(ef) * f));
+    }
+    for (const [k, [de, para]] of Object.entries(TRANSFORMA_ATRIBUTO)) if (v0(af, k) > 0) lista = lista.map((ef) => (ef.add === de ? { ...ef, add: para } : ef));
+    for (const [k, [de, para]] of Object.entries(CONVERTE)) {
+      const pct = v0(af, k);
+      if (pct) lista = lista.map((ef) => (ehDo(ef, de) ? (para.add ? { add: para.add, valor: (valorDoEf(ef) * pct) / 100 } : { stat: para.stat, pct: (valorDoEf(ef) * pct) / 100 }) : ef));
+    }
+    if (v0(af, 'raio_corpo_para_arco') > 0) lista = lista.map(paraArco);
+    if (v0(af, 'raio_passivas_vida')) mais.push({ add: 'life', valor: v0(af, 'raio_passivas_vida') });
+    for (const [k, [res, add]] of Object.entries(DA_RESISTENCIA)) {
+      const pct = v0(af, k);
+      if (!pct) continue;
+      const valor = lista.reduce((t, ef) => t + (ef.add === res ? ef.valor : 0), 0);
+      if (valor) mais.push({ add, valor: (valor * pct) / 100 });
+    }
+  }
+  return mais.length ? [...lista, ...mais] : lista;
+}
+
+/**
+ * (lote 29) As passivas que se pode ALOCAR SEM LIGAÇÃO ("Habilidades passivas ao alcance podem ser atribuídas sem estarem conectadas à sua
+ * árvore": o Salto Intuitivo, o Fio de Esperança): `Map(id do nó → id do encaixe)`, as do raio das joias com a linha nos encaixes alocados
+ * (`semEncaixes`: os encaixes que não contam — o respec que os tira).
+ */
+export function liberadosPorJoias(estado, semEncaixes = null) {
+  const lista = new Map();
+  for (const { no: s, peca } of joiasAtivas(estado)) {
+    if (semEncaixes?.has(s.id) || !(v0(peca.poe?.af, 'raio_aloca_sem_conexao') > 0)) continue;
+    const r = raioDaJoia(peca);
+    if (r) for (const n of passivasNoRaio(s, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+  }
+  return lista;
+}
+
 // --------------------------------------------------------------- os efeitos
 
 /*
  * ---- Cache por personagem, pela ASSINATURA dos nós alocados ----
  * A ficha é pedida várias vezes por tique; a árvore só muda quando um nó entra
  * ou sai. A soma é refeita só quando a lista muda (o prompt: "não recalcular
- * a árvore a cada frame").
+ * a árvore a cada frame"). (lote 27: ou quando uma joia entra ou sai de um encaixe — `joiasVersao`.)
  */
 let CACHE = new WeakMap();
 const VAZIO = Object.freeze({ adds: {}, dano: {}, stats: {}, legado: {}, keystones: [], habilidades: new Set(), fontes: {}, dominios: {} });
@@ -486,21 +733,30 @@ const VAZIO = Object.freeze({ adds: {}, dano: {}, stats: {}, legado: {}, keyston
 export function efeitos(estado) {
   if (!estado) return VAZIO;
   const alocados = estado.passivas?.alocados ?? [];
+  const joias = estado.passivas?.joiasVersao ?? 0;
   const guardado = CACHE.get(estado);
   // Caminho rápido: o mesmo array, do mesmo tamanho e com a mesma ponta (alocar põe no fim; respec muda o tamanho).
-  if (guardado && guardado.ref === alocados && guardado.n === alocados.length && guardado.ultimo === alocados[alocados.length - 1] && guardado.primeiro === alocados[0]) return guardado.valor;
-  const assinatura = alocados.join(',');
+  if (guardado && guardado.ref === alocados && guardado.n === alocados.length && guardado.ultimo === alocados[alocados.length - 1] && guardado.primeiro === alocados[0] && guardado.joias === joias) return guardado.valor;
+  const assinatura = `${alocados.join(',')}|${joias}`;
   if (guardado?.assinatura === assinatura) {
     Object.assign(guardado, { ref: alocados, n: alocados.length, ultimo: alocados[alocados.length - 1], primeiro: alocados[0] });
     return guardado.valor;
   }
   const r = { adds: {}, dano: {}, stats: {}, legado: {}, keystones: [], habilidades: new Set(), fontes: {}, dominios: {} };
   const fonte = (chave, nome, v) => (r.fontes[chave] ??= []).push({ especializacao: `Árvore: ${nome}`, pct: v });
+  // (lotes 27 e 29) o que as joias fazem nos nós do raio delas, e o que dão por joia.
+  const raios = raiosDasJoias(estado, alocados);
+  for (const [k, v] of Object.entries(raios?.extras ?? {})) r.adds[k] = (r.adds[k] ?? 0) + v;
+  for (const ef of raios?.daJoia ?? []) {
+    if (ef.tag) { r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano; fonte(ef.tag, 'Joia (raio)', ef.dano); }
+    else if (ef.stat) { r.stats[ef.stat] = (r.stats[ef.stat] ?? 0) + ef.pct; fonte(ef.stat, 'Joia (raio)', ef.pct); }
+  }
   for (const id of alocados) {
     const no = ARVORE.porId.get(id);
     if (!no) continue;
     if (no.dominio) r.dominios[no.dominio] = (r.dominios[no.dominio] ?? 0) + 1;
-    for (const ef of efeitosDoNo(no, estado.passivas)) {
+    const doRaio = raios?.porNo.get(id);
+    for (const ef of doRaio ? efeitosNoRaio(no, efeitosDoNo(no, estado.passivas), doRaio) : efeitosDoNo(no, estado.passivas)) {
       if (ef.tag) {
         r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano;
         fonte(ef.tag, no.nome, ef.dano);
@@ -516,7 +772,7 @@ export function efeitos(estado) {
       if (no.keystone.regra === 'habilidade' || no.keystone.regra === 'poe') r.habilidades.add(no.keystone.id);
     }
   }
-  CACHE.set(estado, { assinatura, valor: r, ref: alocados, n: alocados.length, ultimo: alocados[alocados.length - 1], primeiro: alocados[0] });
+  CACHE.set(estado, { assinatura, valor: r, ref: alocados, n: alocados.length, ultimo: alocados[alocados.length - 1], primeiro: alocados[0], joias });
   return r;
 }
 
@@ -554,6 +810,12 @@ export function vista(estado, emCacada = false) {
     // o respec de graça (jogo oficial): a tela diz "grátis" em vez do preço
     ...(regrasDoRespec().gratis ? { respecGratis: true } : {}),
     podeTirar: !(regrasDoRespec().soForaDaCacada && emCacada),
+    // (lote 27) as joias nos encaixes (a peça inteira: a tela mostra o ícone e o balão dela).
+    ...(passivas.joias && Object.keys(passivas.joias).length ? { joias: structuredClone(passivas.joias) } : {}),
+    // (lote 29) os nós que as joias deixam alocar sem ligação → o encaixe de cada um (a tela: o caminho e o "sem este nó").
+    ...(passivas.joias ? (() => { const l = liberadosPorJoias(estado); return l.size ? { liberados: Object.fromEntries(l) } : {}; })() : {}),
+    // (lote 29) o raio de cada joia encaixada (`{ min, max }`: o anel do Fio de Esperança tem o de dentro) — a tela desenha.
+    ...(passivas.joias ? (() => { const r = Object.fromEntries(joiasAtivas(estado).map((j) => [j.no.id, raioDaJoia(j.peca)]).filter(([, x]) => x)); return Object.keys(r).length ? { raios: r } : {}; })() : {}),
   };
 }
 
@@ -561,7 +823,8 @@ export function vista(estado, emCacada = false) {
 export function arvoreParaCliente() {
   return {
     versao: ARVORE.versao,
-    ...(ARVORE.id === 'poe' ? { poe: true, ascendencias: ARVORE.ascendencias ?? {} } : {}),
+    // (lote 27) o raio das joias (a tela desenha o Raio Grande em volta do encaixe escolhido).
+    ...(ARVORE.id === 'poe' ? { poe: true, ascendencias: ARVORE.ascendencias ?? {}, raiosDeJoia: RAIOS_DE_JOIA } : {}),
     inicios: ARVORE.inicios,
     clusters: ARVORE.clusters,
     custo: CONFIG.custo,
@@ -579,6 +842,8 @@ export function arvoreParaCliente() {
       // (ciclo 7) o porquê de cada linha sem efeito igual ("não se aplica ao jogo: …", a diferença do aproximado) — o balão mostra.
       ...(n.notas ? { notas: n.notas } : {}),
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
+      // (lote 27) o encaixe de joia que aceita joia (os das Ramificadoras, não).
+      ...(ehEncaixeDeJoia(n) ? { encaixeDeJoia: true } : {}),
       ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
       // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
       ...(n.icone ? { icone: n.icone } : {}),

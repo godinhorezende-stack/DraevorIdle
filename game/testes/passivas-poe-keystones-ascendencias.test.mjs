@@ -194,9 +194,12 @@ test('DESAFIO (Berserker): ganha ao perder vida (a cada 0,3 s), cura 3% da vida 
   assert.equal(e.hunt.desafio.n, 1);
   assert.equal(e.hp, 5000, 'sem Desafio antes, nada a curar');
   e.hunt.clock += 100;
+  // (15/10, lote 32 — P046, ajuste aprovado pelo dono: "Gain 3% of Missing Unreserved Life BEFORE being Hit" — a vida é ganha antes do acerto
+  // (`antesDeSerAcertado`, que o golpe e a magia do monstro chamam), da Vida não reservada que falta: 5000 aqui; antes, 10000 − 5100 depois)
+  ModsPoe.antesDeSerAcertado(e, e.hunt, f);
   ModsPoe.aoSerAcertado(e, e.hunt, bicho(), f, { dano: 100 });
   assert.equal(e.hunt.desafio.n, 1, 'a cada 0,3 s');
-  assert.equal(e.hp, 5000 + Math.round((10000 - 5100) * valor / 100), 'curou pelo Desafio que tinha');
+  assert.equal(e.hp, 5000 + Math.round((10000 - 5000) * valor / 100), 'curou pelo Desafio que tinha');
   for (let i = 0; i < 9; i++) { e.hunt.clock += 300; ModsPoe.aoSerAcertado(e, e.hunt, bicho(), f, { dano: 1 }); }
   assert.equal(e.hunt.desafio.n, 0, 'perde tudo ao chegar a 10');
 });
@@ -247,7 +250,10 @@ test('CONVERGÊNCIA (Elementalista): ao acertar um Único (a cada 8 s); a Área 
   ModsPoe.aoAcertar(e, e.hunt, bicho({ raridade: 'unico' }), golpe(e, ['ataque']), { dano: 1, rng: () => 0.99 });
   assert.ok(ModsPoe.buffAtivo(e, 'convergencia'));
   assert.ok(area() < semConv, 'com Convergência, a área a mais sai');
-  assert.ok(ModsPoe.somaPorTags(ficha(e), ['elemental']).mais_dano > 0, '30% mais nas Elementais');
+  // (15/10, lote 32 — P073, ajuste aprovado pelo dono: "Convergence grants 30% more Elemental Damage" — as partes de Fogo, Gelo e Raio do
+  // golpe, não o golpe inteiro com a tag elemental)
+  assert.ok(Math.abs(ModsPoe.fatorDoDanoElemental(ficha(e), e.hunt, 'golpe', 'fire') - 1.3) < 1e-9, '30% mais no Fogo');
+  assert.equal(ModsPoe.fatorDoDanoElemental(ficha(e), e.hunt, 'golpe', 'physical'), 1, 'o Físico, não');
 });
 
 test('AURAS DAS ASCENDÊNCIAS: o Multiplicador de crítico (Slayer), o Elemental a menos (Inquisidor), o Físico em Fogo (Reliquarian/Elementalista), a Recarga (Sabotador)', { skip: SEM }, () => {

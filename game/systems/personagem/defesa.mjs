@@ -22,7 +22,8 @@ export function errou(ficha, hunt, alvo) {
   // Técnica Resoluta (keystone do PoE): os acertos não podem ser evadidos.
   if (ficha?.nuncaErra) return false;
   // (ciclo 7, lote D) "Inimigos Provocados por você não podem Evadir Ataques".
-  if (itensPoeLigado() && Number(ficha?.afPoe?.provocados_nao_evadem) > 0 && alvo.estados?.provocado?.ate > (hunt?.clock ?? 0)) return false;
+  // (lote 31: "Provocados por você" — também pelo Clamor; não o do totem nem o do lacaio)
+  if (itensPoeLigado() && Number(ficha?.afPoe?.provocados_nao_evadem) > 0 && ModsPoe.provocadoPorVoce(alvo, hunt?.clock ?? 0)) return false;
   const level = Atributos.levelDoBicho(hunt, alvo);
   // (ciclo 7) "X% mais Precisão contra o Inimigo Marcado / contra Inimigos Únicos / em Curta Distância": a precisão contra ESTE alvo.
   const contraOAlvo = itensPoeLigado() ? precisaoMaisContra(ficha, hunt, alvo) : 1;

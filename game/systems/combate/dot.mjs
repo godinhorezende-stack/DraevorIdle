@@ -4,6 +4,7 @@
 // identificador único, tipo, elemento, o que falta pagar (`falta`), o dano por pulso, o instante em que acaba (relógio da caçada), o
 // próximo pulso e a origem. Regras (por tipo): ver `acumulacao` em `dot.json`. O pulso passa pela resistência do bicho ao elemento; não
 // rola crítico, não testa acerto nem bloqueio, e a penetração do atacante não vale (ela é dos golpes).
+import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { readFileSync } from 'node:fs';
 import { resistido } from '../hunt/resistencia.mjs';
 import * as R from '../regras.mjs';
@@ -125,6 +126,8 @@ export function tique(hunt, eventos, agora) {
         // (o Sangramento no bicho em movimento ou Agravado: × 3 no pulso — `fatorDoMovimento`)
         const v = resistido(hunt, m, d.elemento, parte * fatorDoMovimento(d, m, agora));
         m.hp -= v;
+        // (lote 31, S001: o dano contínuo é de quem o pôs — o do lacaio é dele; não é acerto)
+        QuemFeriu.carimbar(m, d.origem?.fonte === 'lacaio' ? QuemFeriu.LACAIO : QuemFeriu.VOCE);
         d.falta -= parte;
         d.proximo += t.pulsoMs;
         total += v;

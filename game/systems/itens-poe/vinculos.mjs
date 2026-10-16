@@ -89,11 +89,11 @@ export function candidatos(estado, hunt, af) {
     const a = { tipo: 'jogador', nome: m.nome };
     if (!ja.has(chave(a)) && perto(posicao(a, m.estado))) lista.push(a);
   }
-  if (v(af, 'vinculo_em_lacaios') > 0) {
-    for (const l of hunt.lacaios ?? []) {
-      const a = { tipo: 'lacaio', uid: l.uid };
-      if (l.hp > 0 && !ja.has(chave(a)) && perto({ x: l.x, y: l.y })) lista.push(a);
-    }
+  // (14/10: o mercenário do Luminary é um aliado — os Vínculos o pegam sem o nó dos lacaios)
+  for (const l of hunt.lacaios ?? []) {
+    if (!(v(af, 'vinculo_em_lacaios') > 0) && !l.mercenario) continue;
+    const a = { tipo: 'lacaio', uid: l.uid, ...(l.mercenario ? { mercenario: true } : {}) };
+    if (l.hp > 0 && !ja.has(chave(a)) && perto({ x: l.x, y: l.y })) lista.push(a);
   }
   return lista;
 }
@@ -303,7 +303,8 @@ export function tique(estado, hunt, af, agora = hunt?.clock ?? 0) {
       // já o tenha tirado da caçada; o lacaio: ainda na lista sem vida, ou sumiu depois de ter estado vivo).
       const membro = a.tipo === 'jogador' ? hunt.partilha?.membros?.find((m) => m.nome === a.nome) : null;
       const morto = a.tipo === 'jogador' ? !!membro && !(membro.estado?.hp > 0) : !quem && (hunt.lacaios ?? []).some((l) => l.uid === a.uid);
-      if (morto || (a.tipo === 'lacaio' && !quem && a.vivo)) { morreu = true; lk.alvos = lk.alvos.filter((x) => x !== a); continue; }
+      // (14/10, o Juramento de Fidelidade do Luminary: "Se o seu mercenário conectado morrer, o dono da conexão não morrerá")
+      if (morto || (a.tipo === 'lacaio' && !quem && a.vivo)) { if (!(a.mercenario && v(af, 'mercenario_sem_morte_junto') > 0)) morreu = true; lk.alvos = lk.alvos.filter((x) => x !== a); continue; }
       const p = posicao(a, quem);
       const fora = !p || !hunt.pos || distancia(p, hunt.pos) > PADRAO.alcance || (p.z != null && p.z !== (hunt.z ?? 0));
       a.foraMs = fora ? (a.foraMs ?? 0) + dt : 0;

@@ -46,6 +46,7 @@ import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
 import * as FichaPoe from '../systems/personagem/ficha-poe.mjs';
 import * as FrascosPoe from '../systems/itens-poe/frascos.mjs';
+import * as AbissaisPoe from '../systems/itens-poe/abissais.mjs';
 import * as ModsPoe from '../systems/itens-poe/mods-poe.mjs';
 import * as PreviaPoe from '../systems/itens-poe/previa-da-area.mjs';
 import * as ModsDeMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
@@ -571,6 +572,15 @@ export class Sessao {
     const emCacada = !!this.estado.hunt;
     const r = ComandosDasPassivas.comando(this.estado, m, emCacada);
     if (!r.ok) return this.erro(r.erro);
+    // (lote 27) O estado (a mochila) ANTES da vista: a tela da árvore se redesenha com a vista, já com a mochila nova (a joia que entrou
+    // num encaixe ou voltou dele). O personagem vai INTEIRO (a mochila não é campo de todo quadro) e o peso segue a regra de `aplicar`: o
+    // excesso vai para o depósito.
+    if (r.mudou) {
+      const excesso = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado));
+      if (excesso) this.avisoPendente = excesso;
+      this.characterSujo = true;
+      this.mandarEstado();
+    }
     this.enviar({
       t: 'passivas',
       view: Passivas.vista(this.estado, emCacada),
@@ -578,7 +588,6 @@ export class Sessao {
       ...(m.action === 'arvore' ? { arvore: Passivas.arvoreParaCliente() } : {}),
       ...(r.aviso ? { aviso: r.aviso } : {}),
     });
-    if (r.mudou) this.mandarEstado();
   }
 
   /**
@@ -1238,6 +1247,9 @@ export class Sessao {
         this.forjaRepeticao = r.guardado;
         return this.enviar({ t: 'forjaResultado', ...r.resposta });
       }
+      // (lote 28) As Joias Abissais nos Encaixes Abissais das peças vestidas (`itens-poe/abissais.mjs`).
+      case 'abissal':
+        return this.aplicarComSkills(m.action === 'retirar' ? AbissaisPoe.retirar(this.estado, m) : AbissaisPoe.encaixar(this.estado, m));
       case 'gema':
         return this.aplicarComSkills(
           m.action === 'encaixar' ? GemasDeSkill.encaixar(this.estado, m) :

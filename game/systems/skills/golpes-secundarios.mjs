@@ -187,7 +187,9 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       }
       // Chain: salta para o mais perto (a nova reta é a do salto).
       if (p.encadear > 0) {
-        const [proximo] = maisPerto(vivosNoInicio, atual, cfg.distanciaDoEncadeamento ?? 4, 1, p.acertados);
+        // (14/10: × o "Alcance do Ricochete aumentado", a fração como chance)
+        const salto = (cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
+        const [proximo] = maisPerto(vivosNoInicio, atual, Math.floor(salto) + (rng() < salto % 1 ? 1 : 0), 1, p.acertados);
         if (proximo) {
           p.encadear--;
           p.ricocheteou++;
@@ -208,10 +210,16 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   };
 
   // (14/10: `deNovo` — "Difundem e Difundem de novo": os filhos difundem outra vez, em 2)
-  const base = { perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, deNovo: efeito.bifurcar > 0 ? efeito.bifurcarDeNovo || 0 : 0, encadear: efeito.encadear || 0, volta: efeito.retornar > 0 };
+  // (14/10, por projétil: "N% de chance de Retornarem a você" — a volta; "N% de chance de Ricochetear ao colidirem com o terreno" — o jogo não
+  // tem terreno no voo: um ricochete a mais)
+  const base = () => ({
+    perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, deNovo: efeito.bifurcar > 0 ? efeito.bifurcarDeNovo || 0 : 0,
+    encadear: (efeito.encadear || 0) + (efeito.ricocheteTerrenoChance > 0 && rng() * 100 < efeito.ricocheteTerrenoChance ? 1 : 0),
+    volta: efeito.retornar > 0 || (efeito.retornarChance > 0 && rng() * 100 < efeito.retornarChance),
+  });
   // O principal: o golpe direto no alvo (já dado) e o que vem dele.
   emitir(alvo, 'direto', 0);
-  voar({ ...base, de: origem, pct: 100 }, alvo, 'direto', true);
+  voar({ ...base(), de: origem, pct: 100 }, alvo, 'direto', true);
   // Outros golpes principais da skill (a cadeia da própria magia): impactos.
   for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);
   // Os extras (o total menos o principal): os bichos mais perto de quem lança (fora o alvo), cada um um projétil inteiro; os que sobram
@@ -219,12 +227,17 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   const extras = total - 1;
   if (extras > 0) {
     const fora = new Set([alvo, ...atingidos]);
-    const comBicho = maisPerto(vivosNoInicio, origem, alcance, extras, fora);
-    comBicho.forEach((b, i) => { emitir(b, 'projetil', i + 1); voar({ ...base, de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); });
+    // (14/10) "Barragens de Projéteis não se propagam": a barragem (em sequência) vai toda no alvo; "Projéteis são disparados em direções
+    // aleatórias": os extras vão em bichos sorteados no alcance (não nos mais perto)
+    const todosNoAlvo = efeito.sequencia && efeito.semPropagar;
+    const noAlcance = (vivosNoInicio ?? []).filter((b) => b.hp > 0 && !fora.has(b) && cheb(origem, b) <= alcance);
+    const sorteados = () => { const l = [...noAlcance]; const saida = []; while (l.length && saida.length < extras) saida.push(l.splice(Math.floor(rng() * l.length), 1)[0]); return saida; };
+    const comBicho = todosNoAlvo ? [] : efeito.direcoesAleatorias ? sorteados() : maisPerto(vivosNoInicio, origem, alcance, extras, fora);
+    comBicho.forEach((b, i) => { emitir(b, 'projetil', i + 1); voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); });
     for (let k = comBicho.length + 1; k <= extras; k++) {
       if (efeito.sequencia && alvo.hp > 0) {
         emitir(alvo, 'projetil', k);
-        voar({ ...base, de: origem, pct: pctDe('danoDosExtrasPct') }, alvo, 'projetil');
+        voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, alvo, 'projetil');
       } else emitir(null, 'projetil', k);
     }
   }
