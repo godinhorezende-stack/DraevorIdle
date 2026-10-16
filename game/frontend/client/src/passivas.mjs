@@ -1155,7 +1155,9 @@ function montar(body) {
     const tipoVisual = n.atributo ? 'atributo' : n.tipo;
     const caixa = el('div', `poe-tip tipo-${tipoVisual}`);
     const cab = el('div', 'poe-cab');
-    cab.append(el('span', 'poe-nome', n.nome));
+    // (lote 48) a passiva CONQUISTADA por uma Joia Atemporal encaixada (`vista.conquistas`): o nome e as linhas da conquista
+    const conquista = vista()?.conquistas?.[n.id] ?? null;
+    cab.append(el('span', 'poe-nome', conquista?.substitui && conquista.nome ? conquista.nome : n.nome));
     caixa.append(cab);
     const corpo = el('div', 'poe-corpo');
     corpo.append(el('div', 'poe-tipo', n.atributo ? 'Atributo' : (TIPOS[n.tipo] ?? n.tipo)));
@@ -1171,11 +1173,16 @@ function montar(body) {
         o.textos.forEach((t, i) => stats.append(linhaDaArvore(t, o.estados?.[i], o.notas?.[i])));
       }
       corpo.append(stats);
-    } else if (n.textos?.length) {
+    } else if (n.textos?.length || conquista) {
       // Nó da árvore do PoE: os textos como no PoE, cada linha com a marca da tradução; o texto explicativo (nota) em itálico.
       corpo.append(sep());
       const stats = el('div', 'poe-stats');
-      n.textos.forEach((t, i) => stats.append(linhaDaArvore(t, n.estados?.[i], n.notas?.[i])));
+      if (!conquista?.substitui) (n.textos ?? []).forEach((t, i) => stats.append(linhaDaArvore(t, n.estados?.[i], n.notas?.[i])));
+      if (conquista) {
+        stats.append(el('div', 'poe-nota-arvore', `Conquistada ${conquista.por}${conquista.substitui ? '' : ' (somado):'}`));
+        conquista.linhas.forEach((t, i) => stats.append(linhaDaArvore(t, conquista.estados?.[i])));
+        if (!conquista.linhas.length) stats.append(el('div', 'poe-nota-arvore', 'Esta passiva não concede nada.'));
+      }
       corpo.append(stats);
     } else if (n.efeitos.length) {
       corpo.append(sep());

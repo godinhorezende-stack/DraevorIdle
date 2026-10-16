@@ -41,6 +41,9 @@ export function encaixar(estado, { no, pilha, id } = {}) {
   const limite = Passivas.dadosDaJoiaUnica(peca)?.limite;
   const iguais = Object.entries(p.joias ?? {}).filter(([id, j]) => id !== encaixe.id && j?.poe?.raridade === 'unico' && j.poe.unico === peca.poe?.unico).length;
   if (limite && iguais >= limite) return erro('LIMITE', `"Limitado a: ${limite}": já há ${iguais} ${peca.poe?.nome ?? 'desta joia'} nos encaixes.`);
+  // (lote 48) "Limitado a: 1 Histórico" (as Atemporais): uma joia Histórica só, de qualquer tipo (a que sai deste encaixe não conta)
+  const historica = (j) => Number(j?.poe?.af?.historico) > 0;
+  if (historica(peca) && Object.entries(p.joias ?? {}).some(([id, j]) => id !== encaixe.id && historica(j))) return erro('LIMITE', '"Limitado a: 1 Histórico": já há uma joia Histórica nos encaixes.');
   if (p.joias?.[encaixe.id]) {
     const preso = seguraNos(estado, encaixe.id);
     if (preso) return preso;

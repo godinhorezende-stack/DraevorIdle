@@ -16,6 +16,8 @@ import * as GemasPoe from './gemas-poe.mjs';
 import * as SuportesPoe from './suportes-poe.mjs';
 import * as MoedasPoe from './moedas.mjs';
 import * as MapasAreas from './mapas-areas.mjs';
+// (lote 48) as Joias Atemporais: o módulo se registra na árvore (`passivas/arvore.definirConquista`)
+import './atemporais.mjs';
 
 /** Os ganchos do jogo de verdade (a magia de cada gema, a gema ativa, o reforço, o suporte) e o catálogo de itens. */
 async function ganchosDoJogo() {

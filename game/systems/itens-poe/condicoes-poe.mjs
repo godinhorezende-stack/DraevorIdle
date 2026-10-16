@@ -251,7 +251,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(afetadoPorAbissal|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa):/;
+const COND_COM_PARAMETRO = /^(afetadoPorAbissal|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -523,6 +523,8 @@ export function vale(conds, c) {
       return (h?.lacaios ?? []).filter((l) => l.hp > 0).length + party >= Math.max(1, Number(resto[0]) || 1);
     }
     case 'escudoMin': return (estado?.maxEsPoe ?? 0) >= Number(resto[0]);
+    // (lote 48, a Fé Militante) "enquanto você tiver pelo menos N de Devoção": a soma da Devoção (os nós conquistados pelos Templários)
+    case 'devocaoMin': return (Number(total?.devocao) || 0) >= Number(resto[0]);
     // (ciclo 7) "se você usou uma Habilidade de <tag> Recentemente" (`marcarUsoPorTag`).
     case 'usouTag': return recente(h?.poeRecente?.[`usou:${resto[0]}`], agora);
     // (lote D) "enquanto você tiver ao menos N Fortificações"; o evento aconteceu (ou não) recentemente — `evRecente:suprimir`.

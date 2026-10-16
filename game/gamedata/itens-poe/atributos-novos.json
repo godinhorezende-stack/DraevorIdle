@@ -7256,6 +7256,156 @@
       "unidade": "%",
       "combate": true,
       "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "devocao": {
+      "nome": "Devoção",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a Devoção dos nós conquistados pelos Templários (a Fé Militante — lote 48): as linhas \"enquanto você tiver pelo menos N de Devoção\" (`condicoes-poe` — `devocaoMin`)"
+    },
+    "atemporal_vaal_2_v2": {
+      "nome": "Vaidade Gloriosa: Ahuana (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Vaal do líder Ahuana (a Keystone vaal_keystone_2_v2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_vaal_3": {
+      "nome": "Vaidade Gloriosa: Doryani (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Vaal do líder Doryani (a Keystone vaal_keystone_3), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_vaal_1": {
+      "nome": "Vaidade Gloriosa: Xibaqua (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Vaal do líder Xibaqua (a Keystone vaal_keystone_1), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_vaal_2": {
+      "nome": "Vaidade Gloriosa: Zerphi (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Vaal do líder Zerphi (a Keystone vaal_keystone_2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_templar_3": {
+      "nome": "Fé Militante: Avarius (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Templários do líder Avarius (a Keystone templar_keystone_3), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_templar_2": {
+      "nome": "Fé Militante: Dominus (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Templários do líder Dominus (a Keystone templar_keystone_2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_templar_1_v2": {
+      "nome": "Fé Militante: Maxarius (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Templários do líder Maxarius (a Keystone templar_keystone_1_v2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_templar_1": {
+      "nome": "Fé Militante: Venarius (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Templários do líder Venarius (a Keystone templar_keystone_1), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_maraketh_2": {
+      "nome": "Restrição Brutal: Asenath (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Maraketh do líder Asenath (a Keystone maraketh_keystone_2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_maraketh_1_v2": {
+      "nome": "Restrição Brutal: Balbala (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Maraketh do líder Balbala (a Keystone maraketh_keystone_1_v2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_maraketh_1": {
+      "nome": "Restrição Brutal: Deshret (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Maraketh do líder Deshret (a Keystone maraketh_keystone_1), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_maraketh_3": {
+      "nome": "Restrição Brutal: Nasima (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Maraketh do líder Nasima (a Keystone maraketh_keystone_3), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_eternal_1": {
+      "nome": "Arrogância Elegante: Cadiro (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Império Eterno do líder Cadiro (a Keystone eternal_keystone_1), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_eternal_3_v2": {
+      "nome": "Arrogância Elegante: Caspiro (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Império Eterno do líder Caspiro (a Keystone eternal_keystone_3_v2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_eternal_3": {
+      "nome": "Arrogância Elegante: Chitus (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Império Eterno do líder Chitus (a Keystone eternal_keystone_3), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_eternal_2": {
+      "nome": "Arrogância Elegante: Victario (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Império Eterno do líder Victario (a Keystone eternal_keystone_2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_karui_3_v2": {
+      "nome": "Orgulho Letal: Akoya (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Karui do líder Akoya (a Keystone karui_keystone_3_v2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_karui_1": {
+      "nome": "Orgulho Letal: Kaom (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Karui do líder Kaom (a Keystone karui_keystone_1), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_karui_3": {
+      "nome": "Orgulho Letal: Kiloava (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Karui do líder Kiloava (a Keystone karui_keystone_3), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_karui_2": {
+      "nome": "Orgulho Letal: Rakiata (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Karui do líder Rakiata (a Keystone karui_keystone_2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_kalguur_3": {
+      "nome": "Tragédia Heroica: Medved (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Kalguuranos do líder Medved (a Keystone kalguur_keystone_3), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_kalguur_2": {
+      "nome": "Tragédia Heroica: Uhtred (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Kalguuranos do líder Uhtred (a Keystone kalguur_keystone_2), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "atemporal_kalguur_1": {
+      "nome": "Tragédia Heroica: Vorana (a semente)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "as passivas no raio da joia Conquistadas pelos Kalguuranos do líder Vorana (a Keystone kalguur_keystone_1), pela semente — `itens-poe/atemporais.mjs` (lote 48)"
+    },
+    "historico": {
+      "nome": "Histórico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "\"Limitado a: 1 Histórico\": só uma joia Histórica (as Atemporais) nos encaixes da árvore — `passivas/joias.encaixar` (lote 48)"
     }
   }
 }

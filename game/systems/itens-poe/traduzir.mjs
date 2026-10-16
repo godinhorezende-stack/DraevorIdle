@@ -190,6 +190,8 @@ const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? (?:quando|enquanto) você não (?:tiver|tem|possuir) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `semCargas:${CARGA[m[2]]}`],
   [/^(.+?),? contra Inimigos (Resfriados|Congelados|Eletrizados|Cegos|Amaldiçoados|Sangrando|Envenenados|Incendiados|Mutilados|Lentos|Provocados)$/, (m) => ALVO[m[2]]],
   [/^(.+?),? caso você tenha ao menos \{(\d+)\} de Escudo de Energia Máximo$/, (m, valores) => `escudoMin:${Number(valores[Number(m[2])]) || 0}`],
+  // (lote 48, as Atemporais: a Fé Militante) "enquanto/se você tiver pelo menos N de Devoção" — a soma da Devoção (`devocao`)
+  [/^(.+?),? (?:enquanto|se) você tiver pelo menos \{(\d+)\} de Devoção$/, (m, valores) => `devocaoMin:${Number(valores[Number(m[2])]) || 0}`],
 ];
 /** Os atributos que o GOLPE resolve com as tags do alvo (`fichaDoGolpe`): dano aumentado, crítico, penetração, dano por elemento, "mais dano". */
 const DO_GOLPE = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|elem_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|life_leech|mana_leech)$/;

@@ -36,6 +36,28 @@ const rolarTexto = (t, rng) => {
   return { modelo: t.modelo, valores, texto: escrever(t.modelo, valores) };
 };
 
+/**
+ * (lote 48) Os LÍDERES das Joias Atemporais (o `conquerorList` do PoB, os de hoje — o poedb mostra a faixa "Kaom(Akoya-Rakiata)"): a peça
+ * nova sorteia um, e a linha dele fica com o nome (a conquista é pelo líder e pela semente — `itens-poe/atemporais.mjs`). A semente da
+ * Arrogância Elegante é múltipla de 20 (a tabela do PoB anda de 20 em 20).
+ */
+const LIDERES_DAS_ATEMPORAIS = {
+  Glorious_Vanity: ['Ahuana', 'Doryani', 'Xibaqua'], Lethal_Pride: ['Akoya', 'Kaom', 'Kiloava', 'Rakiata'], Brutal_Restraint: ['Asenath', 'Balbala', 'Deshret', 'Nasima'],
+  Militant_Faith: ['Avarius', 'Dominus', 'Maxarius'], Elegant_Hubris: ['Cadiro', 'Caspiro', 'Chitus', 'Victario'], Heroic_Tragedy: ['Medved', 'Uhtred', 'Vorana'],
+};
+function comLiderDaAtemporal(slug, modificadores, rng) {
+  const nomes = LIDERES_DAS_ATEMPORAIS[slug];
+  if (!nomes) return modificadores;
+  const qual = new RegExp(`(?:${nomes.join('|')})(?: ?\\([^)]*\\))?`);
+  return modificadores.map((m) => {
+    if (!qual.test(m.modelo ?? '')) return m;
+    const lider = nomes[Math.floor(rng() * nomes.length)];
+    const modelo = m.modelo.replace(qual, lider);
+    const valores = slug === 'Elegant_Hubris' ? m.valores.map((v) => Math.max(2000, Math.min(160000, Math.round(v / 20) * 20))) : m.valores;
+    return { ...m, modelo, valores, texto: escrever(modelo, valores) };
+  });
+}
+
 /** A base pelo id (`Classe/Slug`) e a classe dona dela. */
 export function acharBase(catalogo, id) {
   const [classe] = String(id).split('/');
@@ -246,7 +268,7 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     // Síntese): a linha dele sai e entram os sorteados. E a magnitude do único nos implícitos (Olhos ×2, Corda ×3, Nebulis +60–120%).
     const proprios = u.modificadores.some((m) => m.tipo === 'implicit');
     const s = u.implicitosSorteados;
-    const modificadores = modificadoresDoUnico(u, rng);
+    const modificadores = comLiderDaAtemporal(u.slug, modificadoresDoUnico(u, rng), rng);
     const implicitos = s ? implicitosDoUnico(s, nivel, rng) : proprios ? [] : peca.implicitos;
     return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), nome: u.nome, unico: u.slug };
   }
