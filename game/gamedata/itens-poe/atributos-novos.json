@@ -7478,6 +7478,84 @@
       "unidade": "s",
       "combate": true,
       "efeito": "passivas/arvore.raiosDasJoias → `mods-poe.aprenderDoRaro` (lote 51)"
+    },
+    "incendio_duracao_todas": {
+      "nome": "Modificadores de Duração de Incêndio em você valem para Todas as Afecções Elementais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a `duracao_incendio_propria` soma no Congelamento, Resfriamento e Eletrização em você (`afixos.soma`; a Canção das Chamas — lote 52)"
+    },
+    "evitar_eletrizacao_todas": {
+      "nome": "Modificadores de Chance de Evitar ser Eletrizado valem para Todas as Afecções Elementais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o `evitar_eletrizacao` soma no Evitar Incêndio, Congelamento e Resfriamento (`afixos.soma`; a Mortalha da Tormenta — lote 52)"
+    },
+    "supressao_no_evitar_afeccoes": {
+      "nome": "A Supressão de Dano Mágico também vale na Chance de Evitar Afecções Elementais (em %)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "X% da `spell_suppression` no `avoid_elem_ailments` (`afixos.soma`; a Visão Ancestral — lote 52)"
+    },
+    "imune_maldicao_ao_matar_amaldicoado": {
+      "nome": "Imune a Maldições pelo resto do Feitiço não-aura do inimigo Amaldiçoado que você matar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "`hunt.imunidadesPoe.maldicao` (`mods-poe.desgracaDasBruxas`; a Desgraça das Bruxas — lote 52)"
+    },
+    "golem_dano_por_tipo": {
+      "nome": "Dano do Golem aumentado por Tipo de Golem convocado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os tipos de Golem vivos × X% no golpe do Golem (`LacaiosPoe.golpeDoLacaio`; a Harmonia Primordial — lote 52)"
+    },
+    "talento_puro_marauder": {
+      "nome": "Talento Puro: Marauder — Habilidades Corpo a Corpo com Área aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início do Marauder (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_duelist": {
+      "nome": "Talento Puro: Duelista — Dano de Ataque Drenado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Duelista (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_ranger": {
+      "nome": "Talento Puro: Caçadora — Velocidade de Movimento aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Caçadora (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_shadow": {
+      "nome": "Talento Puro: Sombra — Chance de Acerto Crítico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Sombra (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_witch": {
+      "nome": "Talento Puro: Bruxa — Mana Máxima regenerada por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Bruxa (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_templar": {
+      "nome": "Talento Puro: Templário — Penetração de Resistências Elementais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início do Templário (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_scion": {
+      "nome": "Talento Puro: Herdeira — Todos os Atributos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Herdeira (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "efeito_joias_magicas_corrompidas": {
+      "nome": "Efeito das Joias Mágicas Corrompidas nos encaixes da árvore aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "as mágicas corrompidas da árvore × (1 + X%) (`afixos.somaDeItens`; O Adornado — lote 52)"
     }
   }
 }

@@ -634,6 +634,19 @@ const DA_RESISTENCIA = { 'raio_res_fogo_tolerancia': ['fire_res', 'carga_toleran
 /** O atributo que o nó dá (a soma dos `str`/`dex`/`int` dele). */
 const atributoDoNo = (no, passivas, atr) => efeitosDoNo(no, passivas).reduce((n, ef) => n + (ef.add === atr ? ef.valor : 0), 0);
 
+/** (lote 52) O Talento Puro: a linha de cada classe → a classe e os atributos que ela dá (os mesmos das linhas comuns do PoE). */
+const TALENTO_PURO = {
+  'talento_puro_marauder': ['Marauder', ['area_inc@corpo']], 'talento_puro_duelist': ['Duelist', ['life_leech']], 'talento_puro_ranger': ['Ranger', ['move_speed']],
+  'talento_puro_shadow': ['Shadow', ['crit_chance']], 'talento_puro_witch': ['Witch', ['mana_regen_max_pct']], 'talento_puro_templar': ['Templar', ['elem_pen']],
+  'talento_puro_scion': ['Scion', ['str', 'dex', 'int']],
+};
+/** A árvore alocada (`meus`) se conecta ao início de `classe`? O da sua classe, sempre; o de outra, com uma passiva sua encostada nele. */
+function conectaAoInicio(estado, meus, classe) {
+  if (classeDe(estado) === classe) return true;
+  const id = ARVORE.inicios[classe];
+  const no = id ? ARVORE.porId.get(id) : null;
+  return !!no && (meus.has(id) || (no.conexoes ?? []).some((c) => meus.has(c)));
+}
 /**
  * O que as joias fazem nos nós do raio delas: `{ porNo: Map(id → [joia]), extras: {add: valor}, chieftain }` — `porNo` (os alocados) e os
  * `extras` (o que vem por joia, não por nó: as Temperadas, as pequenas não alocadas do Instindo Sobrenatural). Null sem joia com raio.
@@ -683,6 +696,9 @@ function raiosDasJoias(estado, alocados) {
         extras.aprendizado_inspirado_s = Math.max(extras.aprendizado_inspirado_s ?? 0, v0(x.af, 'raio_aprendizado_s'));
       }
     }
+    // (lote 52) o TALENTO PURO: "Enquanto sua Árvore Passiva se conectar com a de outra classe, receba: …" — o bônus de cada classe cujo início a
+    // árvore alcança (o da sua classe sempre; o de outra, com uma passiva sua encostada nele). Sem raio: vale de qualquer encaixe.
+    for (const [k, [classe, destinos]] of Object.entries(TALENTO_PURO)) if (v0(af, k) && conectaAoInicio(estado, meus, classe)) for (const d of destinos) somar(d, v0(af, k));
   }
   return { porNo, extras, daJoia };
 }

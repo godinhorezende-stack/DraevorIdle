@@ -735,6 +735,20 @@ export function aprenderDoRaro(estado, hunt, ficha, alvo, agora = hunt?.clock ??
   return ganhos;
 }
 /**
+ * (lote 52) A DESGRAÇA DAS BRUXAS: "Quando você Matar um Inimigo Amaldiçoado com um Feitiço Não-Aura, fique imune a Maldições pelo resto da
+ * Duração do Feitiço" — a imunidade por tempo (`hunt.imunidadesPoe.maldicao`, que `amaldicoarJogador` e a soma das maldições em você leem) até o
+ * fim do Feitiço mais longo no morto (não a Marca, não o da aura).
+ */
+export function desgracaDasBruxas(hunt, ficha, alvo, agora = hunt?.clock ?? 0) {
+  if (!hunt || !(valor(ficha, 'imune_maldicao_ao_matar_amaldicoado') > 0)) return 0;
+  const ate = Math.max(0, ...Object.values(alvo?.maldicoes ?? {}).filter((m) => m && m.ate > agora && !m.marca && !m.aura).map((m) => m.ate));
+  if (!(ate > agora)) return 0;
+  const im = (hunt.imunidadesPoe ??= {});
+  im.maldicao = Math.max(im.maldicao ?? 0, ate);
+  hunt.poeFichaMudou = true;
+  return im.maldicao;
+}
+/**
  * (13/10) As AFECÇÕES que podem estar em você (as do PoE — o Atordoamento e os danos contínuos que não são afecção, não): `tem` e `tirar` de
  * cada uma. O Veneno do Draevor e o do PoE são o mesmo Envenenamento.
  */
@@ -771,7 +785,10 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (nome === 'matar' && hunt) hunt.poeAbatesParaAranhas = (hunt.poeAbatesParaAranhas ?? 0) + 1;
   const rng = ctx.rng ?? Math.random;
   const alvo = ctx.alvo ?? null;
-  if (nome === 'matar' && alvo) aprenderDoRaro(estado, hunt, ficha, alvo, agora, rng);
+  if (nome === 'matar' && alvo) {
+    aprenderDoRaro(estado, hunt, ficha, alvo, agora, rng);
+    desgracaDasBruxas(hunt, ficha, alvo, agora);
+  }
   const tagsAlvo = new Set([...tagsDoAlvo(alvo, agora), ...(ctx.tags ?? [])]);
   let conds = null;
   for (const ev of lista) {

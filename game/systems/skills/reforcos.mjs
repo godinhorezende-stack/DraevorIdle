@@ -209,7 +209,8 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       }
       if (!cabe) continue;
       dur ||= 6000;
-      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
+      // (lote 52: `aura` — a posta pela aura, a Blasfêmia; a Desgraça das Bruxas só conta o Feitiço não-aura)
+      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
         ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
         // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
         ...(regras.daMarca ? { daMarca: regras.daMarca } : {}) };

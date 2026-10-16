@@ -38537,6 +38537,175 @@
       "nota": "exceção do dono (16/10: \"Implementar\"): o sorteio é só entre os modificadores do Raro que têm um equivalente em você (velocidade, dano, resistências…) — os sem equivalente não entram",
       "_nova": true,
       "_lote51": "16/10 — lote 51 (as decisões do dono do J30)"
+    },
+    {
+      "padrao": "^Modificadores de Duração de Inc(?:%e|ê)ndio em você se aplicam a Todas as Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "incendio_duracao_todas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Modificadores de Chance de Evitar ser Eletrizado se aplicam a Todas as Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "evitar_eletrizacao_todas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Modificadores de Chance de Suprimir Dano Mágico também se aplicam à Chance de Evitar Afecções Elementais em \\{(\\d+)\\}% de seus Valores$",
+      "efeitos": [
+        {
+          "stat": "supressao_no_evitar_afeccoes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Dano do Golem aumentado em \\{(\\d+)\\}% por cada Tipo de Golem Convocado por você$",
+      "efeitos": [
+        {
+          "stat": "golem_dano_por_tipo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Efeito de Habilidades Passivas em Encaixes de Joias contendo Joias Mágicas Corrompidas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_joias_magicas_corrompidas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Quando você Matar um Inimigo Amaldiçoado com um Feitiço Não-Aura, fique imune a$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao_ao_matar_amaldicoado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Maldições pelo resto da Duração do Feitiço$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a continuação da linha de cima (a Desgraça das Bruxas: o poedb quebrou a frase em duas)",
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Enquanto sua Árvore Passiva se conectar com a de outra classe, receba:$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o PoE em inglês: \"While your Passive Skill Tree connects to a class' Starting location\" — o início da sua classe conta (a árvore sempre sai dele) e o de outra classe, quando uma passiva sua encosta nele (as linhas de baixo)",
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Marauder: Habilidades Corpo a Corpo possuem \\{(\\d+)\\}% de aumento do Efeito em Área$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_marauder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Duelista: \\{(\\d+)\\}% do Dano de Ataque Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_duelist",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Caçadora: Velocidade de Movimento aumentada \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_ranger",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Sombra: \\+\\{(\\d+)\\}% à Chance de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_shadow",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Bruxa: \\{(\\d+)\\}% da Mana Máxima regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_witch",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Templário: Dano Penetra \\{(\\d+)\\}% das Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_templar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Heredeira: \\+\\{(\\d+)\\} de Todos os Atributos$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_scion",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
     }
   ]
 }

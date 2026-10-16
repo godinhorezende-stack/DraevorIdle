@@ -2747,7 +2747,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
       const crit = Math.random() * 100 < critico.chance;
       // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
-      const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora);
+      const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora, Math.random, hunt.lacaios);
       // (o dano "aumentado" das suas auras de aliado soma ao do lacaio — `danoIncPct`, o da invocação —; o "mais" multiplica)
       const doAliado = aliado ? ((1 + ((l.poe?.danoIncPct ?? 0) + aliado.danoIncPct) / 100) / (1 + (l.poe?.danoIncPct ?? 0) / 100)) * Math.max(0, 1 + aliado.maisDanoPct / 100) : 1;
       const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100;

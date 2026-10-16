@@ -216,6 +216,13 @@ export function soma(estado) {
   if (transf('transf_es_magia', 'es_pct')) resolvido.spell_dmg = (resolvido.spell_dmg ?? 0) + transf('transf_es_magia', 'es_pct');
   if (transf('transf_vida_ataque', 'life_inc')) resolvido['dmg_inc@ataque'] = (resolvido['dmg_inc@ataque'] ?? 0) + transf('transf_vida_ataque', 'life_inc');
   if (transf('transf_mana_dano', 'mana_inc')) resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + transf('transf_mana_dano', 'mana_inc');
+  // (lote 52) as únicas que estendem um modificador a TODAS as Afecções Elementais em você: a Canção das Chamas ("Modificadores de Duração de
+  // Incêndio em você se aplicam a Todas as Afecções Elementais"), a Mortalha da Tormenta ("Modificadores de Chance de Evitar ser Eletrizado …")
+  // e a Visão Ancestral ("Modificadores de Chance de Suprimir Dano Mágico também se aplicam à Chance de Evitar Afecções Elementais em 50%").
+  const outrasElementais = (de) => ['incendio', 'congelamento', 'resfriamento', 'eletrizacao'].filter((n) => n !== de);
+  if (Number(resolvido.incendio_duracao_todas) > 0 && resolvido.duracao_incendio_propria) for (const n of outrasElementais('incendio')) resolvido[`duracao_${n}_propria`] = (resolvido[`duracao_${n}_propria`] ?? 0) + resolvido.duracao_incendio_propria;
+  if (Number(resolvido.evitar_eletrizacao_todas) > 0 && resolvido.evitar_eletrizacao) for (const n of outrasElementais('eletrizacao')) resolvido[`evitar_${n}`] = (resolvido[`evitar_${n}`] ?? 0) + resolvido.evitar_eletrizacao;
+  if (Number(resolvido.supressao_no_evitar_afeccoes) > 0 && resolvido.spell_suppression) resolvido.avoid_elem_ailments = (resolvido.avoid_elem_ailments ?? 0) + (resolvido.spell_suppression * resolvido.supressao_no_evitar_afeccoes) / 100;
   // + as MALDIÇÕES dos monstros em você (Fraqueza Elemental, Vulnerabilidade, Enfraquecer; as refletidas): depois das condições, porque a
   // imunidade e o efeito delas podem ser condicionais ("Imune a Maldições enquanto possuir ao menos N de Fúria").
   const malditas = ModsPoe.addsDasMaldicoesNoJogador(estado, resolvido);
@@ -245,7 +252,11 @@ export function somaDeItens(estado) {
     somarPeca(total, estado, slot, peca, daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1);
   }
   // (15/10, lote 27) as JOIAS nos encaixes alocados da árvore do PoE: os mods delas somam como os de uma peça.
-  for (const { peca } of Passivas.joiasAtivas(estado)) somarPeca(total, estado, 'joia', peca);
+  // (lote 52, O Adornado: "Efeito de Habilidades Passivas em Encaixes de Joias contendo Joias Mágicas Corrompidas aumentado em X%" — as mágicas
+  // corrompidas × (1 + X%))
+  const joias = Passivas.joiasAtivas(estado);
+  const adornado = 1 + joias.reduce((n, { peca }) => n + (Number(peca?.poe?.af?.efeito_joias_magicas_corrompidas) || 0), 0) / 100;
+  for (const { peca } of joias) somarPeca(total, estado, 'joia', peca, adornado !== 1 && peca.poe?.raridade === 'magico' && peca.poe?.corrompido ? adornado : 1);
   return total;
 }
 /** Soma UMA peça vestida em `total` (a do Draevor e a do PoE — `poe.af`, com as condições da própria peça e do lado do anel). */

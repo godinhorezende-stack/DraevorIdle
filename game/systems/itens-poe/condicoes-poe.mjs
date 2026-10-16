@@ -1231,6 +1231,8 @@ export function amaldicoarJogador(hunt0, id, { nome, af, ms = DURACAO_DA_MALDICA
   // (12/10: "Maldições são infligidas em Você ao invés dos alvos Vinculados" — a maldição vai para quem vincula este jogador.)
   const hunt = quemRecebeAMaldicao(hunt0) ?? hunt0;
   if (!hunt || !af) return;
+  // (lote 52, a Desgraça das Bruxas: imune a Maldições por tempo — `ModsPoe.desgracaDasBruxas`)
+  if ((hunt.imunidadesPoe?.maldicao ?? 0) > agora) return;
   // ("Duração das Maldições em você aumentada em X%".)
   ms = Math.round(ms * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.duracao_maldicao_propria) || 0) / 100) * fatorDosDebuffs(fichaDa(hunt)?.afPoe));
   const lista = (hunt.maldicoesNoJogador ??= {});
@@ -1253,7 +1255,8 @@ export function addsDasMaldicoesNoJogador(estado, total) {
   const agora = h?.clock ?? 0;
   // (+ as do MAPA do endgame em que você está — "Jogadores são Amaldiçoados com Vulnerabilidade": valem o mapa inteiro.)
   const ativas = [...Object.values(h?.maldicoesNoJogador ?? {}).filter((m) => m && m.ate > agora), ...maldicoesDoMapa(estado).map((id) => MALDICOES_DOS_MONSTROS[id]).filter(Boolean)];
-  if (!ativas.length || Number(total?.imune_maldicao) > 0) return null;
+  // (+ lote 52: a imunidade por tempo da Desgraça das Bruxas)
+  if (!ativas.length || Number(total?.imune_maldicao) > 0 || (h?.imunidadesPoe?.maldicao ?? 0) > agora) return null;
   const efeito = Math.max(0, 1 + (Number(total?.efeito_maldicao_proprio) || 0) / 100);
   const semResElemental = Number(total?.res_elem_nao_reduzida_maldicao) > 0;
   const saida = {};
@@ -2104,8 +2107,9 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   // (11/10) Um buff com tempo acabou neste tique (os nomeados — Crueldade, Elusivo, Fanatismo… — e a Oferenda em você): a ficha é refeita, e o
   // bônus sai na hora (não no próximo acerto que a refizesse).
   const venceu = (ate) => typeof ate === 'number' && ate <= agora && ate > agora - Math.max(1, ms);
-  // (lote 51: + os bônus temporários — `poeTemporarios`, o modificador do Raro do Aprendizado Inspirado)
-  if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate) || Object.values(hunt.poeTemporarios ?? {}).some((x) => venceu(x?.ate))) hunt.poeFichaMudou = true;
+  // (lote 51: + os bônus temporários — `poeTemporarios`, o modificador do Raro do Aprendizado Inspirado; lote 52: + a imunidade a Maldições
+  // da Desgraça das Bruxas)
+  if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate) || Object.values(hunt.poeTemporarios ?? {}).some((x) => venceu(x?.ate)) || venceu(hunt.imunidadesPoe?.maldicao)) hunt.poeFichaMudou = true;
   tiqueDaFuria(hunt, agora);
   tiqueDasCargasFanaticas(hunt, ficha, agora);
   tiqueDaDissolucao(estado, hunt, ficha, agora);

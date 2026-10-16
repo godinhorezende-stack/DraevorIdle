@@ -296,6 +296,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       danoRecentePct: porTipo('lacaio_dano_recente'), danoRecenteMs: porTipo('lacaio_dano_recente_s') * 1000,
       // (lote 51) "Lacaios Convocados são Agressivos" — a busca de alvo mais longe (`cacadas.CASAS_DO_AGRESSIVO`)
       agressivo: m0('lacaios_agressivos') > 0,
+      // (lote 52, a Harmonia Primordial: "Dano do Golem aumentado em X% por cada Tipo de Golem Convocado por você" — `golpeDoLacaio`, nos Golens)
+      danoPorTipoDeGolemPct: m0('golem_dano_por_tipo'),
       bloqueioInc: m0('minion_block_inc'), evitarAfeccoes: m0('minion_evitar_afeccoes'), reflexoFisico: m0('minion_reflexo_fisico'), esRecargaInicio: m0('minion_es_recarga_inicio'),
       recuperacaoPct: m0('minion_recuperacao'), vidaNaMorteDeLacaioPct: m0('minion_vida_na_morte_lacaio'),
       danoDobrado: m0('minion_dano_dobrado'), ignoraReducaoFisica: m0('minion_ignora_reducao_fisica'), penAmaldicoados: m0('minion_pen_amaldicoados'),
@@ -409,7 +411,7 @@ export function criticoDoLacaio(l, oferenda = null) {
  * O golpe do lacaio no `alvo` com os mods do dono: o fator (dano dobrado), a ficha para a resistência (ignora a Redução de Dano Físico,
  * penetra as resistências elementais do amaldiçoado) e o Caos extra do Poder Profano. `{ fator, ficha, caosExtra }`.
  */
-export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.random) {
+export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.random, lacaios = null) {
   const p = l?.poe ?? {};
   let ficha = fichaDoDono;
   if (tipo === 'physical' && p.ignoraReducaoFisica > 0 && rng() * 100 < p.ignoraReducaoFisica) ficha = { ...ficha, ignoraReducaoFisica: true };
@@ -418,9 +420,13 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
     const pen = ficha?.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
     ficha = { ...ficha, penetracao: { ...pen, elemental: Math.min(100, (pen.elemental ?? 0) + p.penAmaldicoados) } };
   }
-  // (lote 50) o "aumentado" do lacaio convocado há pouco (soma aos outros aumentos dele — `danoIncPct`, o da invocação)
-  const recente = p.danoRecentePct > 0 && agora - (l.desde ?? -Infinity) <= (p.danoRecenteMs || 0) ? (1 + ((p.danoIncPct ?? 0) + p.danoRecentePct) / 100) / (1 + (p.danoIncPct ?? 0) / 100) : 1;
-  const fator = (p.danoDobrado > 0 && rng() * 100 < p.danoDobrado ? 2 : 1) * recente;
+  // Os "aumentados" de agora, somados aos outros aumentos do lacaio (`danoIncPct`, o da invocação): (lote 50) o do convocado há pouco; (lote 52,
+  // a Harmonia Primordial) o do Golem × os TIPOS de Golem vivos (as gemas diferentes — ele mesmo conta).
+  const recentePct = p.danoRecentePct > 0 && agora - (l.desde ?? -Infinity) <= (p.danoRecenteMs || 0) ? p.danoRecentePct : 0;
+  const tiposDeGolem = l?.golem && p.danoPorTipoDeGolemPct > 0 ? new Set([l, ...(lacaios ?? [])].filter((x) => x?.golem && x.hp > 0).map((x) => x.gema ?? x.nome)).size : 0;
+  const agoraPct = recentePct + (p.danoPorTipoDeGolemPct ?? 0) * tiposDeGolem;
+  const aumentado = agoraPct ? (1 + ((p.danoIncPct ?? 0) + agoraPct) / 100) / (1 + (p.danoIncPct ?? 0) / 100) : 1;
+  const fator = (p.danoDobrado > 0 && rng() * 100 < p.danoDobrado ? 2 : 1) * aumentado;
   const caosExtra = tipo === 'physical' && buffDoLacaio(l, 'poderProfano', agora) ? 1 : 0;
   return { fator, ficha, caosExtra };
 }
