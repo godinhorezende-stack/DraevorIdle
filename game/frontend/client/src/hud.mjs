@@ -1660,16 +1660,19 @@ const balaoDoBuff = (buff, segundos) =>
 // A aura do PoE que reserva não tem relógio: o cartão mostra quanto ela tranca (a % ou o valor). A Tintura ativa (12/10) também não: o cartão
 // mostra a Queima de Mana dela (cada uma tira 1% da Mana máxima por segundo).
 // (14/10) O CONTADOR do PoE (a Casca do Warden, a Fúria Liberta): o número no lugar do relógio, e o balão explica (`dica`).
-const semRelogio = (buff) => !!buff.reserva || !!buff.tintura || buff.contador != null;
+// (16/10) O ELUSIVO: o efeito de agora em % (cai 20 pontos por segundo) no lugar do relógio — o tempo fica no balão (`dica`). Não pisca no
+// fim: com 100% ele dura 5 s, e não se renova enquanto ativo.
+const semRelogio = (buff) => !!buff.reserva || !!buff.tintura || buff.contador != null || buff.efeito != null;
 // (14/10) A SIGLA do buff sem ícone (os do PoE por nome: a Casca, as Direções, a Égide, a Infusão, a Praga, os altares…): a primeira palavra do
 // nome, até 5 letras ("Casca", "Égide", "Dire."), para se saber qual é sem passar o mouse — o balão segue com o nome e a explicação.
 export const siglaDoBuff = (nome) => { const palavra = String(nome ?? '').split(/[:—(]/)[0].trim().split(/\s+/)[0] ?? ''; return palavra.length <= 5 ? palavra : `${palavra.slice(0, 4)}.`; };
-const textoDoBuff = (buff, segundos) => (buff.reserva ? (buff.reserva.pct ? `${buff.reserva.pct}%` : `${buff.reserva.valor}`) : buff.tintura ? `${buff.tintura.queimas}×` : buff.contador != null ? `${buff.contador}` : relogioDoBuff(segundos));
+const textoDoBuff = (buff, segundos) => (buff.reserva ? (buff.reserva.pct ? `${buff.reserva.pct}%` : `${buff.reserva.valor}`) : buff.tintura ? `${buff.tintura.queimas}×` : buff.efeito != null ? `${buff.efeito}%` : buff.contador != null ? `${buff.contador}` : relogioDoBuff(segundos));
 const balaoDoCartao = (buff, segundos) => (buff.reserva
   ? `${buff.nome} — ligada, reserva ${buff.reserva.valor} de ${buff.reserva.recurso === 'vida' ? 'Vida' : 'Mana'}${buff.reserva.pct ? ` (${buff.reserva.pct}% da máxima)` : ''}. Fica ligada enquanto a gema estiver na barra.`
   : buff.tintura
     ? `${buff.nome} — ativa, com ${buff.tintura.queimas} Queima${buff.tintura.queimas === 1 ? '' : 's'} de Mana (cada uma tira 1% da Mana máxima por segundo). Desativar tira a Queima de Mana.`
-    : buff.contador != null ? buff.dica ?? `${buff.nome}: ${buff.contador}` : balaoDoBuff(buff, segundos));
+    : buff.efeito != null ? buff.dica ?? `${buff.nome} — ${buff.efeito}% de efeito, ${segundos}s restantes`
+      : buff.contador != null ? buff.dica ?? `${buff.nome}: ${buff.contador}` : balaoDoBuff(buff, segundos));
 
 function renderBuffsDaMagia(hunt) {
   const caixa = $('hud-buffs');

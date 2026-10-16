@@ -44,3 +44,28 @@ test('o BALÃO de cada Égide diz o tipo dela (Fogo, Gelo, Raio, Físico; a Prim
   assert.match(balao['Égide Primitiva'], /de Fogo, Gelo e Raio/);
   for (const d of Object.values(balao)) assert.doesNotMatch(d, /dano elemental/);
 });
+
+// (16/10) O ELUSIVO (o do lote 33, que perde 20 pontos de efeito por segundo): o cartão mostra o efeito de agora em %, no lugar do relógio;
+// o tempo fica no balão. Os outros buffs por nome seguem com o relógio.
+test('o cartão do ELUSIVO mostra o efeito de agora em % (cai 20 pontos por segundo); o balão diz o tempo', { skip: SEM }, () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 80 });
+  e.sistema = 'poe';
+  e.hunt = { clock: 10000, monstros: [], lacaios: [], pos: { x: 0, y: 0 } };
+  const h = e.hunt;
+  const t0 = h.clock;
+  ModsPoe.ganharBuff(h, 'elusivo', 4, t0, { efeitoExtra: 50 });
+  const cartao = (buff) => ModsPoe.buffsDoCliente(e).find((c) => c.buff === buff);
+  assert.equal(cartao('elusivo').efeito, 150, '100% + 50% do efeito aumentado');
+  h.clock = t0 + 2500;
+  assert.equal(cartao('elusivo').efeito, 100, '2,5 s depois: 50 pontos a menos');
+  assert.match(cartao('elusivo').dica, /^Elusivo: 100% de efeito, 5s restantes \(perde 20 pontos por segundo/);
+  ModsPoe.ganharBuff(h, 'adrenalina', 3, h.clock);
+  assert.equal(cartao('adrenalina').efeito, undefined);
+  h.clock = t0 + 7500;
+  assert.equal(cartao('elusivo'), undefined, 'em 0% ele sai');
+  // (o hud.mjs: o % no lugar do relógio, sem piscar no fim, e o balão é a `dica`)
+  const fonte = readFileSync(new URL('../frontend/client/src/hud.mjs', import.meta.url), 'utf8');
+  assert.match(fonte, /buff\.efeito != null \? `\$\{buff\.efeito\}%`/);
+  assert.match(fonte, /const semRelogio = .*buff\.efeito != null/);
+  assert.match(fonte, /buff\.efeito != null \? buff\.dica \?\?/);
+});
