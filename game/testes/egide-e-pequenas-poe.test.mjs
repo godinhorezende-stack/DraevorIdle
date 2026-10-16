@@ -207,18 +207,24 @@ test('a INFUSÃO ESPIRITUAL: ao canalizar uma magia, um acúmulo a cada 0,5 s, a
   h.clock += 10_000;
   const r = Acoes.disparar(e, h, PERSONAGEM, 0, b, {});
   if (r.conjurando) { h.clock += 3000; Acoes.concluirConjuracao(e, h, PERSONAGEM); }
-  assert.ok(h.poeRecente?.canalizouMagia != null, JSON.stringify(r).slice(0, 200));
-  const t0 = h.poeRecente.canalizouMagia;
+  // (o dono, 16/10 — lote 42, "Fazer todos": a CANALIZAÇÃO CONTÍNUA — o canalizar vai do começo ao fim do uso do Flagelo, e o Flagelo usado de
+  // novo em seguida o continua; o 1º acúmulo vem 0,5 s depois de começar. Antes: um acúmulo na hora e 1 s fixo depois de cada uso.)
+  assert.ok(h.canalizacao?.magia && ModsPoe.canalizandoAgora(h, h.canalizacao.desde, { magia: true }), JSON.stringify(r).slice(0, 200));
+  const t0 = h.canalizacao.desde;
+  h.canalizacao.ate = t0 + 1000; // (o Flagelo de novo em seguida: um canalizar de 1 s)
   ModsPoe.tiqueDaInfusao(h, af, t0);
-  assert.equal(h.infusaoEspiritual.n, 1);
-  ModsPoe.tiqueDaInfusao(h, af, t0 + 250);
-  assert.equal(h.infusaoEspiritual.n, 1, 'a cada 0,5 s');
+  assert.equal(h.infusaoEspiritual?.n ?? 0, 0, 'na hora, ainda não');
   ModsPoe.tiqueDaInfusao(h, af, t0 + 500);
+  assert.equal(h.infusaoEspiritual.n, 1, 'a cada 0,5 s');
+  ModsPoe.tiqueDaInfusao(h, af, t0 + 750);
+  assert.equal(h.infusaoEspiritual.n, 1);
+  ModsPoe.tiqueDaInfusao(h, af, t0 + 1000);
   assert.equal(h.infusaoEspiritual.n, 2);
   ModsPoe.tiqueDaInfusao(h, af, t0 + 1500);
-  assert.equal(h.infusaoEspiritual.n, 2, 'passou 1 s: não canaliza mais');
-  // (até 10)
-  for (let i = 0; i < 30; i++) { ModsPoe.marcar(h, 'canalizouMagia', t0 + 2000 + i * 500); ModsPoe.tiqueDaInfusao(h, af, t0 + 2000 + i * 500); }
+  assert.equal(h.infusaoEspiritual.n, 2, 'acabou o canalizar: não ganha mais');
+  // (até 10: um canalizar contínuo longo)
+  h.canalizacao = { ...h.canalizacao, desde: t0 + 2000, ate: t0 + 2000 + 29 * 500 };
+  for (let i = 0; i < 30; i++) ModsPoe.tiqueDaInfusao(h, af, t0 + 2000 + i * 500);
   assert.equal(h.infusaoEspiritual.n, 10);
   // (os efeitos de 10 acúmulos)
   h.clock = t0 + 2000 + 29 * 500;

@@ -6237,10 +6237,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil",
       "_nova": true,
-      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)",
+      "_lote42": "16/10 — lote 42 (dono: \"Fazer todos\" — a canalização contínua, as direções aleatórias, o terreno)"
     },
     {
       "padrao": "^Projéteis têm \\{(\\d+)\\}% de chance de Retornarem a você$",
@@ -6262,10 +6261,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "os projéteis a mais vão em inimigos sorteados no alcance (não nos mais perto); o principal segue no alvo",
       "_nova": true,
-      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)",
+      "_lote42": "16/10 — lote 42 (dono: \"Fazer todos\" — a canalização contínua, as direções aleatórias, o terreno)"
     },
     {
       "padrao": "^.*Velocidade de Projéteis$|^Ângulo da Difusão de Projéteis .*$",
@@ -17379,7 +17377,8 @@
         }
       ],
       "_nova": true,
-      "_lote28": "15/10 — as Joias Abissais (lote 28)"
+      "_lote28": "15/10 — as Joias Abissais (lote 28)",
+      "_lote42": "16/10 — lote 42 (dono: \"Fazer todos\" — a canalização contínua, as direções aleatórias, o terreno)"
     },
     {
       "padrao": "^Efeito da Fúria Arcana em você aumentado em \\{(\\d+)\\}% (?:/ )?por Joia do Olho Hipnótico afetando você, máximo de \\{(\\d+)\\}%$",
@@ -18107,10 +18106,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s",
       "_nova": true,
-      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)",
+      "_lote42": "16/10 — lote 42 (dono: \"Fazer todos\" — a canalização contínua, as direções aleatórias, o terreno)"
     },
     {
       "padrao": "^(?!.*Oferenda Espiritual).*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",

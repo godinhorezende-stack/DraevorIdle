@@ -93,16 +93,20 @@ test('"RETORNAREM a você" e "RICOCHETEAR ao colidirem com o terreno": por proj�
   const campo = [b(2, 0, 'a'), b(3, 1, 'b')];
   assert.ok(resolver({ retornarChance: 100 }, campo).golpes.some((g) => g.tipo === 'retorno'));
   assert.ok(!resolver({ retornarChance: 0 }, campo).golpes.some((g) => g.tipo === 'retorno'));
-  assert.equal(resolver({ ricocheteTerrenoChance: 100 }, campo).golpes.filter((g) => g.tipo === 'encadeamento').length, 1, 'um ricochete a mais');
+  // (o dono, 16/10 — lote 42, "Fazer todos": o ricochete só batendo numa parede de verdade — `zerar-arvore-lote42`; antes, um ricochete a mais
+  // em todo projétil, que este teste conferia)
+  assert.equal(resolver({ ricocheteTerrenoChance: 100 }, campo).golpes.filter((g) => g.tipo === 'encadeamento').length, 0, 'sem terreno no voo, nenhum');
   assert.equal(resolver({}, campo).golpes.filter((g) => g.tipo === 'encadeamento').length, 0);
 });
 
-test('"DIREÇÕES ALEATÓRIAS" (os extras em bichos sorteados) e "BARRAGENS NÃO SE PROPAGAM" (a sequência toda no alvo)', () => {
+// (o dono, 16/10 — lote 42, "Fazer todos": TODOS os projéteis saem em direções sorteadas e acertam o primeiro do caminho; antes, os extras iam
+// em bichos sorteados no alcance, que este teste conferia)
+test('"DIREÇÕES ALEATÓRIAS" (todos os projéteis na direção sorteada) e "BARRAGENS NÃO SE PROPAGAM" (a sequência toda no alvo)', () => {
   const campo = [b(1, 0, 'alvo'), b(2, 0, 'perto'), b(7, 0, 'longe')];
   const normal = resolver({ alvosExtras: 1 }, campo);
   assert.deepEqual(normal.golpes.filter((g) => g.tipo === 'projetil').map((g) => g.bicho.uid), ['perto'], 'o mais perto');
   const aleatorio = resolver({ alvosExtras: 1, direcoesAleatorias: true }, campo, campo[0], () => 0.99);
-  assert.deepEqual(aleatorio.golpes.filter((g) => g.tipo === 'projetil').map((g) => g.bicho.uid), ['longe'], 'o sorteado');
+  assert.deepEqual(aleatorio.golpes.filter((g) => g.tipo === 'projetil').map((g) => g.bicho.uid), ['alvo', 'alvo'], 'o sorteio 0,99 (quase leste): os dois acertam o primeiro do caminho');
   const barragem = resolver({ alvosExtras: 3, sequencia: true }, campo);
   assert.ok(barragem.golpes.some((g) => g.tipo === 'projetil' && g.bicho.uid !== 'alvo'), 'sem a linha, a barragem vai nos outros');
   const semPropagar = resolver({ alvosExtras: 3, sequencia: true, semPropagar: true }, campo);
