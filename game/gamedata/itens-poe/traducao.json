@@ -470,10 +470,11 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque)",
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Registrar\" — os raios que o PoE não publica): os 4 projéteis caem nos inimigos a até 3 casas (6 m) do ponto do impacto e cada queda pega a casa e as vizinhas (1 casa = 2 m, × √ da \"Área de Efeito aumentada\"); no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s), o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados, o crítico do ataque em cada acerto e a resistência de cada inimigo",
       "_nova": true,
-      "_lote21": "14/10 — o Reliquarian (lote 21)"
+      "_lote21": "14/10 — o Reliquarian (lote 21)",
+      "_lote45": "16/10 — lote 45 (a Rajada Vulcânica com o crítico e a área; o Detonar Minas com a recarga de 0,2 s; as exceções registradas pelo dono)"
     },
     {
       "padrao": "^Concede a Habilidade Convocar Grande Emissário das Direções$",
@@ -4344,8 +4345,9 @@
       ],
       "_nova": true,
       "_lote3": "12/10 — Armadilhas e Minas plantadas",
-      "estado": "aproximado",
-      "nota": "no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando"
+      "estado": "equivalente",
+      "nota": "exceção do dono (\"Exceção: o jogo é idle\"; 16/10: \"Registrar a exceção\"): o atalho de Detonar Minas é automático — detona com um inimigo a até 2 casas da Mina, com você parado e, com esta linha, também andando; a recarga de 0,2 s e a sequência de detonação (10% mais rápida por Mina anterior) são as do PoE",
+      "_lote45": "16/10 — lote 45 (a Rajada Vulcânica com o crítico e a área; o Detonar Minas com a recarga de 0,2 s; as exceções registradas pelo dono)"
     },
     {
       "padrao": "^Minas tem Velocidade de Detonação aumentada em \\{(\\d+)\\}%$",
@@ -18112,7 +18114,7 @@
       "_lote42": "16/10 — lote 42 (dono: \"Fazer todos\" — a canalização contínua, as direções aleatórias, o terreno)"
     },
     {
-      "padrao": "^(?!.*Oferenda Espiritual).*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
+      "padrao": "^(?!.*Oferenda Espiritual)(?!Lembrança de \\{\\d+\\} feitos dignos).*(?:Espiritu|Cargas? Divina|Cargas? de Sifão|Cargas? do Vazio|Cargas? do Vácuo|Cargas? Brutais|Cargas? de Aflição|Cargas? de Absorção|Lembrança|Almas Vaal|Almas? Devoradas?).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -18122,7 +18124,8 @@
       "estado": "inerte",
       "nota": "tipo de carga exclusivo de único que o jogo não tem (só Poder, Frenesi e Tolerância)",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote48": "16/10 — lote 48: fora a linha da Tragédia Heroica (\"Lembrança de N feitos dignos…\" — a Atemporal dos Kalguuranos)"
     },
     {
       "padrao": "^.*(?:Mortes com Fúria|Mortes de Fúria|Enfurecid|na Fúria).*$",
@@ -37761,6 +37764,294 @@
       ],
       "_nova": true,
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 7)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Devoção$",
+      "efeitos": [
+        {
+          "stat": "devocao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais: a Devoção da Fé Militante)"
+    },
+    {
+      "padrao": "^Banhado no sangue de \\{(\\d+)\\} sacrificados em nome de Ahuana(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_vaal_2_v2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Banhado no sangue de \\{(\\d+)\\} sacrificados em nome de Doryani(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_vaal_3",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Banhado no sangue de \\{(\\d+)\\} sacrificados em nome de Xibaqua(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_vaal_1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Banhado no sangue de \\{(\\d+)\\} sacrificados em nome de Zerphi(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_vaal_2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Talhado para glorificar \\{(\\d+)\\} novos fiéis convertidos pelo Alto Templário Avarius(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_templar_3",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Talhado para glorificar \\{(\\d+)\\} novos fiéis convertidos pelo Alto Templário Dominus(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_templar_2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Talhado para glorificar \\{(\\d+)\\} novos fiéis convertidos pelo Alto Templário Maxarius(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_templar_1_v2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Talhado para glorificar \\{(\\d+)\\} novos fiéis convertidos pelo Alto Templário Venarius(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_templar_1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Denota o serviço de \\{(\\d+)\\} dekhara na akhara de Asenath(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_maraketh_2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Denota o serviço de \\{(\\d+)\\} dekhara na akhara de Balbala(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_maraketh_1_v2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Denota o serviço de \\{(\\d+)\\} dekhara na akhara de Deshret(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_maraketh_1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Denota o serviço de \\{(\\d+)\\} dekhara na akhara de Nasima(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_maraketh_3",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Comissionadas \\{(\\d+)\\} moedas para comemorar a Cadiro(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_eternal_1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Comissionadas \\{(\\d+)\\} moedas para comemorar a Caspiro(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_eternal_3_v2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Comissionadas \\{(\\d+)\\} moedas para comemorar a Chitus(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_eternal_3",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Comissionadas \\{(\\d+)\\} moedas para comemorar a Victario(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_eternal_2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Liderança comandada de \\{(\\d+)\\} guerreiros de Akoya(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_karui_3_v2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Liderança comandada de \\{(\\d+)\\} guerreiros de Kaom(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_karui_1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Liderança comandada de \\{(\\d+)\\} guerreiros de Kiloava(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_karui_3",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Liderança comandada de \\{(\\d+)\\} guerreiros de Rakiata(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_karui_2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Lembrança de \\{(\\d+)\\} feitos dignos de canções da linhagem de Medved(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_kalguur_3",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Lembrança de \\{(\\d+)\\} feitos dignos de canções da linhagem de Uhtred(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_kalguur_2",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Lembrança de \\{(\\d+)\\} feitos dignos de canções da linhagem de Vorana(?: ?\\([^)]*\\))?$",
+      "efeitos": [
+        {
+          "stat": "atemporal_kalguur_1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Passivas no raio(?: de alcance)? são [Cc]onquistadas pel(?:os|o) (?:Vaal|Karui|Maraketh|Templários|Império Eterno|kalguuranos|Kalguuranos)$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "lembrete",
+      "nota": "a conquista vem da linha do líder e da semente (`itens-poe/atemporais.mjs`)",
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^Histórico$",
+      "efeitos": [
+        {
+          "stat": "historico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
     }
   ]
 }

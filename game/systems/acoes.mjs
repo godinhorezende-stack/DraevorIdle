@@ -150,6 +150,17 @@ export function abrirBausAoConjurar(estado, hunt, personagem, chance, rng = Math
 }
 
 /**
+ * (lote 46) O RAIO do Clamor em casas: `base` (os metros da gema ÷ 2) × √ da "Área de Efeito aumentada" e de cada "mais" — a geral e a das tags
+ * da gema ("Habilidades de Clamor têm Efeito em Área aumentado em X%" — `area_inc@clamor`); a fração, a chance de uma casa a mais.
+ */
+export function raioDoClamor(estado, entry, base, rng = Math.random) {
+  const f = Ficha.combate(estado);
+  const tags = ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry));
+  const fator = ModsPoe.fatorDaArea(ModsPoe.valor(f, 'area_inc') + (tags.area_inc ?? 0), ModsPoe.valor(f, 'area_mais') + (tags.area_mais ?? 0));
+  return base + ModsPoe.casasPelaArea(base, fator, rng);
+}
+
+/**
  * (PoE, 11/10) O RAIO da aura em casas: o da gema (`GemasPoe.buffNoNivel`) × √(1 + a "Área de Efeito aumentada" — a geral e a das tags dela,
  * "Efeito em Área de Habilidades de Aura aumentado"). É até onde ela vale nos companheiros de grupo (`GemasPoe.adds`).
  */
@@ -372,7 +383,8 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     ? Object.values(fichaBase.danoSomado ?? {}).reduce(([a, b], [x, y]) => [a + x, b + y], [0, 0])
     : ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
   // O dano ADICIONADO dos suportes do PoE ("têm 10 a 15 de Dano de Gelo adicional") × a eficácia do dano adicionado da gema.
-  const eficacia = daGemaPoe ? (daGemaPoe.ataque ? 1 : GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe)) : 1;
+  // (S002, lote 47: a eficácia da MAGIA é a do PoB por nível — `GemasPoe.eficaciaDoAdicionado`; antes, 1 em todas)
+  const eficacia = daGemaPoe ? (daGemaPoe.ataque ? 1 : GemasPoe.eficaciaDoAdicionado(daGemaPoe.slug, nivelPoe)) : 1;
   const doSuporteMin = (efeitoDaGema?.somadoMin ?? 0) * eficacia;
   const doSuporteMax = (efeitoDaGema?.somadoMax ?? 0) * eficacia;
   /*
@@ -570,10 +582,11 @@ export function explosaoDaReliquia(hunt, l, ficha, eventos = []) {
  * A RAJADA VULCÂNICA (Molten Burst — o Ngamahu's Flame, nível 16 com 20% de chance; as Chamas de Ngamahu do Reliquarian, nível 20): no
  * acerto corpo a corpo, a chance do nível (20% no 16 … 100% no 20), recarga de 0,15 s; lança 4 projéteis (1 + 3 adicionais) do ponto do
  * impacto, que caem nos inimigos em volta (a até 3 casas) e causam dano de ataque em área (a casa e as vizinhas): o golpe da arma × o Dano de
- * Ataque do nível (170% … 200%), 60% do Físico convertido em Fogo, com os seus "aumentados" e a resistência de cada um — sem crítico
- * (aproximado: o PoE rola o crítico do ataque).
+ * Ataque do nível (170% … 200%), 60% do Físico convertido em Fogo, com os seus "aumentados" e a resistência de cada um. (Lote 45: cada acerto
+ * rola o CRÍTICO do ataque — a chance e o multiplicador da ficha do golpe, com a Sorte/o Azar e o "sempre"/"nunca" crítico das linhas do PoE —;
+ * a área da queda (a casa e as vizinhas) cresce com a "Área de Efeito aumentada/mais", como toda área — `ModsPoe.casasPelaArea`.)
  */
-export const RAJADA = Object.freeze({ recargaMs: 150, projeteis: 4, raio: 3, conversaoFogoPct: 60 });
+export const RAJADA = Object.freeze({ recargaMs: 150, projeteis: 4, raio: 3, raioDaQueda: 1, conversaoFogoPct: 60 });
 const doNivelDaRajada = (nivel) => { const n = Math.max(16, Math.min(20, Number(nivel) || 20)); return { chance: 20 + (n - 16) * 20, danoPct: 170 + (n - 16) * 7.5 }; };
 export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.random) {
   if (!itensPoeLigado() || !hunt || !alvo) return 0;
@@ -592,18 +605,28 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
   const fisico = bruto - fogo;
   const aum = (el) => Math.max(0, 1 + (ficha.danoDoElemento?.[el] ?? 0) / 100) * (ficha.fatorDasCargas ?? 1);
   const perto = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) <= RAJADA.raio);
+  // (lote 45) a área da queda: 1 casa em volta × √ da "Área de Efeito aumentada" e de cada "mais" (a geral e a das tags do golpe)
+  const tags = ModsPoe.somaPorTags(fichaBase, ['ataque', 'projetil', 'area', 'fogo', 'fisico']);
+  const fatorDaArea = ModsPoe.fatorDaArea(ModsPoe.valor(fichaBase, 'area_inc') + (tags.area_inc ?? 0), ModsPoe.valor(fichaBase, 'area_mais') + (tags.area_mais ?? 0));
+  // (lote 45) o CRÍTICO do ataque em cada acerto (no PoE, cada inimigo acertado rola o seu)
+  const nunca = ModsPoe.valor(ficha, 'nunca_critico') > 0;
+  const sempre = !nunca && ModsPoe.valor(ficha, 'critico_sempre') > 0;
+  const chanceDeCritico = Math.min(ficha.critTeto ?? 1, Math.max(0, ficha.critChance ?? 0));
+  const critou = () => !nunca && (sempre || ModsPoe.sorteado(chanceDeCritico, ficha.critSortudo ? 0 : ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), rng, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0));
   let total = 0;
   for (let i = 0; i < RAJADA.projeteis; i++) {
     const onde = perto.length ? perto[Math.floor(rng() * perto.length)] : alvo;
+    const raio = RAJADA.raioDaQueda + ModsPoe.casasPelaArea(RAJADA.raioDaQueda, fatorDaArea, rng);
     eventos.push({ t: 'shot', id: 4, x: alvo.x, y: alvo.y, tx: onde.x, ty: onde.y });
     for (const m of hunt.monstros ?? []) {
-      if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - onde.x), Math.abs(m.y - onde.y)) > 1) continue;
-      const v = Math.round(resistido(hunt, m, 'physical', fisico * aum('physical'), ficha) + resistido(hunt, m, 'fire', fogo * aum('fire'), ficha));
+      if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - onde.x), Math.abs(m.y - onde.y)) > raio) continue;
+      const crit = critou();
+      const v = Math.round((resistido(hunt, m, 'physical', fisico * aum('physical'), ficha) + resistido(hunt, m, 'fire', fogo * aum('fire'), ficha)) * (crit ? ficha.critMultiplier ?? 1.5 : 1));
       if (!(v > 0)) continue;
       m.hp -= v;
       QuemFeriu.carimbar(m, QuemFeriu.VOCE, ['ataque', 'projetil', 'area', 'fogo', 'fisico']); // (lote 31, S001/P025)
       total += v;
-      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO.fire ?? '#ff9000' });
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, crit, alvo: m.name, color: COR_DO_ELEMENTO.fire ?? '#ff9000' });
     }
   }
   return total;
@@ -2157,6 +2180,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (PoE, o Intensificar: a INTENSIDADE desta magia agora — "perdem 1 de Intensidade a cada N segundos enquanto se movendo"; ela vale nesta
   // conjuração — mais dano em área, menos área — e a conjuração ganha 1, até o máximo — `ganharIntensidade`, depois do uso.)
   const intensidade = efeitoDaGema?.intensidadeMax > 0 ? intensidadeAgora(hunt, entry.id, efeitoDaGema, hunt.clock ?? 0) : 0;
+  // (lote 46, o Punho de Guerra: "Ataques com a Habilidade Suportada são Maximizados Ancestralmente, não mais que uma vez a cada N segundos") este
+  // ataque é o MAXIMIZADO? — só nele o "X% mais Dano com Acertos e Afecções" e a "Área de Efeito aumentada" dos Impactos; as repetições, não.
+  const maximizado = efeitoDaGema?.maximizadoMs > 0 && !!entry.poeGema?.ataque && (hunt.clock ?? 0) >= (hunt.poeMaximizadoAte?.[entry.id] ?? -Infinity);
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
   // (PoE: ÷ a "Eficiência de custo de mana" das peças.)
   // (A habilidade ativada por um ÚNICO não tem custo, como no PoE.)
@@ -2289,7 +2315,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (casas && formaNoUso) {
       const base = casas;
       const raio = Areas.raioDaForma(entry.forma);
-      const inc = (efeitoDaGema?.areaIncPct ?? 0) + (plantada?.areaPct ?? 0);
+      const inc = (efeitoDaGema?.areaIncPct ?? 0) + (plantada?.areaPct ?? 0) + (maximizado ? efeitoDaGema.maximizadoAreaIncPct ?? 0 : 0);
       const mais = [efeitoDaGema?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0) : 0];
       const legado = Math.round(efeitoDaGema?.areaExtra ?? 0);
       areaNoUso = (incExtra = 0) => {
@@ -2511,7 +2537,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (reserva) Reserva.cortarNoLivre(estado);
     // A provocação: os bichos por perto vêm atacar você (o grito do PoE traz o `provocar` nos efeitos do nível).
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
-    if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos, dur: duracaoDoClamor }, distanciaChebyshev);
+    // (lote 46) o raio do Clamor: o da gema em casas × √ da "Área de Efeito aumentada/mais" (a geral e a dos Clamores — `area_inc@clamor`)
+    if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos.map((e) => (e.efeito === 'provocar' ? { ...e, raio: raioDoClamor(estado, entry, e.raio) } : e)), dur: duracaoDoClamor }, distanciaChebyshev);
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' });
   }
   if (cancela) {
@@ -2597,6 +2624,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (o Libertar: o golpe que Ocorre Novamente por um Selo causa menos dano — `reocorrendo`; a Intensidade: mais dano em área)
     let reocorrendo = false;
     const maisDaIntensidade = intensidade > 0 && tagsPoeDaSkill(entry).includes('area') ? 1 + (intensidade * (efeitoDaGema.intensidadeMaisDanoPct ?? 0)) / 100 : 1;
+    // (lote 46, o Punho de Guerra: o "mais Dano" da Pancada Maximizada — só no primeiro ataque do uso, não nas repetições)
+    let noMaximizado = maximizado;
+    const maisDoMaximizado = () => (noMaximizado ? Math.max(0, 1 + (efeitoDaGema.maximizadoMaisDanoPct ?? 0) / 100) : 1);
     // (PoE, 12/10, o Aço Estraçalhador da Munição) "Projéteis causam até X% mais Dano com Acertos por Fragmento de Aço consumido no início de
     // seu movimento, reduzido este bônus na medida em que viajam adiante": pela distância de você ao bicho (`Aco.fatorDoDano`).
     const fatorDoAco = (bicho) => (doAco?.d.maisDanoPct ? Aco.fatorDoDano(doAco.d, doAco.gastos, Math.max(Math.abs(bicho.x - x), Math.abs(bicho.y - y))) : 1);
@@ -2658,7 +2688,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const acertar = (bicho, pct = 100, fonte = null, golpe = null) => {
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
-      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
       const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora);
@@ -2846,6 +2876,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
      * árvore (depois da magia) contam só do primeiro.
      */
     const propagaGolpe = ModsPoe.valor(ficha, 'golpe_corpo_propaga') > 0 && tagsPoeDaSkill(entry).includes('golpe') && tagsPoeDaSkill(entry).includes('corpo');
+    // (lote 46, o Propagar Dano — Melee Splash: "Habilidades Suportadas Propagam Dano aos alvos próximos", com "X% menos Dano Propagado" e "X% mais
+    // Efeito em Área da Propagação de Dano") a Habilidade de Golpe corpo a corpo propaga em volta de cada atingido: 1 casa (o raio do Dano
+    // Propagado — a decisão do dono do lote 34) × √ da área da Propagação e da habilidade (a fração, a chance de uma casa a mais).
+    const propagaDoSuporte = (efeitoDaGema?.propagar ?? 0) > 0 && tagsPoeDaSkill(entry).includes('golpe') && tagsPoeDaSkill(entry).includes('corpo');
     // (lote 41, P047 — a Fúria Ancestral: "Habilidades de Golpe também miram no local anterior que foram Usadas") a Habilidade de Golpe acerta
     // também quem está no local do uso anterior dela (a casa do alvo de antes, `hunt.golpeAnterior` — o mais perto de lá, a até 1 casa).
     const ehGolpe = !!entry.poeGema && tagsPoeDaSkill(entry).includes('golpe');
@@ -2855,9 +2889,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const cp = efeitoDaGema?.cadeiaPoe;
       if (!projeteisAleatorios()) atingidos.forEach((bicho, i) => { if (!segundo || bicho.hp > 0) acertar(bicho, cp?.pct ? 100 * (1 + (cp.pct * Math.max(0, cp.saltos - i)) / 100) : 100); });
       // (PoE, a Fúria Tribal: "Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor" — os vivos a 1 casa de cada atingido.)
-      if (propagaGolpe) {
+      if (propagaGolpe || propagaDoSuporte) {
         const ja = new Set(atingidos);
-        for (const b of atingidos) for (const m of vivos) if (m.hp > 0 && !ja.has(m) && Math.max(Math.abs(m.x - b.x), Math.abs(m.y - b.y)) <= 1) { ja.add(m); acertar(m, 100, 'propagado'); }
+        const pct = propagaDoSuporte ? Math.max(0, 100 + (efeitoDaGema.propagaMaisPct ?? 0)) : 100;
+        const raio = propagaDoSuporte ? 1 + ModsPoe.casasPelaArea(1, ModsPoe.fatorDaArea(efeitoDaGema.areaIncPct ?? 0, efeitoDaGema.areaMaisPct ?? 0, efeitoDaGema.propagaAreaMaisPct ?? 0)) : 1;
+        for (const b of atingidos) for (const m of vivos) if (m.hp > 0 && !ja.has(m) && Math.max(Math.abs(m.x - b.x), Math.abs(m.y - b.y)) <= raio) { ja.add(m); acertar(m, pct, 'propagado'); }
       }
       if (localAnterior && !segundo) {
         const ja = new Set(atingidos);
@@ -2901,6 +2937,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const repeticoes = Math.min(3, (efeitoDaGema?.repeticoes ?? 0) + (entry.poeGema?.ataque && !gatilho ? ModsPoe.valor(ficha, 'repeticoes_ataque_proprio') : 0) + (!gatilho ? ModsPoe.valor(ficha, 'repeticoes_extra') : 0));
     naRepeticaoFinal = repeticoes === 0;
     atacar(false);
+    // (lote 46, o Punho de Guerra: a Maximização vale só neste primeiro ataque — a próxima, daqui a N s)
+    if (maximizado) { noMaximizado = false; (hunt.poeMaximizadoAte ??= {})[entry.id] = (hunt.clock ?? 0) + efeitoDaGema.maximizadoMs; }
     // REPETIÇÕES dos suportes do PoE (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora, nos vivos (sem gastar de novo).
     for (let r = 0; r < repeticoes; r++) {
       if (!atingidos.some((b) => b.hp > 0)) break;
@@ -2908,7 +2946,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — lote 36, P002: o X soma no "aumentado" da área da última
       // repetição, e o raio da forma cresce × √ como o resto da área.)
       const areaFinal = naRepeticaoFinal && areaNoUso && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
-      if (areaFinal > 0) atingidos = Areas.dentro(areaNoUso(areaFinal), vivos.filter((b) => b.hp > 0));
+      // (lote 46: a repetição não é Maximizada — sem a área dos Impactos Maximizados)
+      const semMaximizado = maximizado && areaNoUso ? efeitoDaGema.maximizadoAreaIncPct ?? 0 : 0;
+      if (areaFinal > 0 || semMaximizado > 0) atingidos = Areas.dentro(areaNoUso(areaFinal - semMaximizado), vivos.filter((b) => b.hp > 0));
       atacar(true);
     }
     // (PoE, o Libertar: "Magias Suportadas são Liberadas quando conjuradas, e seus efeitos Ocorrem Novamente para cada Selo perdido" — os Selos

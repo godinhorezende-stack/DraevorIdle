@@ -63,7 +63,8 @@ test('a ÁRVORE: as 5 linhas do Reliquarian com efeito — nenhuma linha sem efe
   const linhas = P.arvore().nos.flatMap((n) => [n, ...(n.opcoes ?? [])].flatMap((o) => (o.textos ?? []).map((t, i) => ({ t, estado: o.estados?.[i], nota: o.notas?.[i] ?? '', asc: n.ascendencia }))));
   const do21 = linhas.filter((l) => l.asc === 'Reliquarian' && l.estado !== 'nota' && /Rajada Vulcânica|Emissário das Direções|Poder Fantasmal|Erguer Aranhas|Suspender no Tempo/.test(l.t));
   assert.equal(do21.length, 5);
-  for (const l of do21) assert.ok(['novo', 'aproximado'].includes(l.estado), `${l.estado}: ${l.t}`);
+  // (lote 45: a Rajada Vulcânica equivalente — os raios que o PoE não publica, registrados pelo dono)
+  for (const l of do21) assert.ok(['novo', 'aproximado', 'equivalente'].includes(l.estado), `${l.estado}: ${l.t}`);
   const semEfeito = linhas.filter((l) => ['inerte', 'registrado'].includes(l.estado) && !/^não se aplica ao jogo/.test(l.nota));
   assert.deepEqual(semEfeito.map((l) => l.t), []);
 });

@@ -65,16 +65,18 @@ const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [], mapas: ne
 export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks', 'Tinctures'];
 /**
  * (15/10, lote 27) As JOIAS dos encaixes da árvore de passivas (dono, 14/10: "Criar os encaixes de joia" — `passivas/joias.mjs`), com o id
- * FIXO de cada base (7.800.000 + n, fora da sequência das bases: nenhum id que já existia muda). A Atemporal (da Legião) e as Ramificadoras
- * (os encaixes das Joias Ramificadoras) ficam de fora. A Prismática só existe como Única no PoE (`SO_UNICAS`).
+ * FIXO de cada base (7.800.000 + n, fora da sequência das bases: nenhum id que já existia muda). As Ramificadoras (os encaixes das Joias
+ * Ramificadoras) ficam de fora. A Prismática só existe como Única no PoE (`SO_UNICAS`). (Lote 48: + a ATEMPORAL — só Única, as 6 da Legião —
+ * `itens-poe/atemporais.mjs`.)
  */
 // (lote 28) + as JOIAS ABISSAIS (os 4 Olhos: 7.800.011 em diante) — nos encaixes da árvore e nos encaixes abissais das peças
 // (`itens-poe/abissais.mjs`). O jogo não tem o Abismo: elas caem como as outras joias.
 export const JOIAS = Object.freeze({
   'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004,
+  'Jewels/Timeless_Jewel': 7_800_005,
   'Abyss_Jewels/Murderous_Eye_Jewel': 7_800_011, 'Abyss_Jewels/Searching_Eye_Jewel': 7_800_012, 'Abyss_Jewels/Hypnotic_Eye_Jewel': 7_800_013, 'Abyss_Jewels/Ghastly_Eye_Jewel': 7_800_014,
 });
-export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel']);
+export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel', 'Jewels/Timeless_Jewel']);
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
 export const idDaBase = (base) => REG.porBase.get(base) ?? REG.mapas.get(base) ?? null;
@@ -361,7 +363,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (38 — 16/10, lote 42: a Infusão Espiritual pela canalização contínua, as direções aleatórias e o ricochete no terreno.)
 // (39 — 16/10, lote 43: a Égide Necromântica com as defesas do escudo nos lacaios.)
 // (40 — 16/10, lote 44: os lacaios pelo PoB, a Égide Primitiva em 5 s, os Robôs.)
-export const VERSAO_DA_TRADUCAO = 40;
+// (41 — 16/10, lote 45: a Rajada Vulcânica com o crítico; o Detonar Minas; as exceções registradas.)
+// (42 — 16/10, lote 48: as Joias Atemporais — o líder, a semente, o Histórico e a Devoção.)
+export const VERSAO_DA_TRADUCAO = 42;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

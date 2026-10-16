@@ -559,6 +559,19 @@ function devolverJoiasSoltas(estado, p) {
  */
 const ehPassivaDoRaio = (no) => !!no && !no.ascendencia && ['small', 'notable', 'keystone'].includes(no.tipo) && !/Jewel Socket|Proxy/i.test(`${no.nomeEn ?? ''} ${no.nome ?? ''}`);
 const ehPequena = (no) => no.tipo === 'small';
+/**
+ * (lote 48) As JOIAS ATEMPORAIS (`itens-poe/atemporais.mjs`, que se registra aqui — sem import de volta): `daPeca(peca)` → a conquista da
+ * joia (`{ tipo, id, semente }`) ou null; `doNo(no, c)` → `{ substitui, nome, linhas, keystone }` ou null; `efeitos(linhas)` → os efeitos.
+ */
+let CONQUISTA = null;
+export function definirConquista(f) { CONQUISTA = f; NO_RAIO.clear?.(); }
+/** A conquista do nó `id` alocado, pelas joias que o alcançam (`raiosDasJoias().porNo`): `{ c, conquista }` ou null. */
+function conquistaDoNo(no, joias) {
+  const x = CONQUISTA && joias?.find((j) => j.conquista);
+  if (!x) return null;
+  const c = CONQUISTA.doNo(no, x.conquista);
+  return c ? { c, conquista: x.conquista } : null;
+}
 /** O raio de uma joia (`{ min, max }`, nas unidades da árvore): o anel do Fio de Esperança ou o da única; sem raio, null. */
 export function raioDaJoia(peca) {
   const anel = Math.round(Number(peca?.poe?.af?.raio_anel) || 0);
@@ -646,7 +659,9 @@ function raiosDasJoias(estado, alocados) {
     const af = peca.poe?.af ?? {};
     const raios = [];
     const r = raioDaJoia(peca);
-    if (r) raios.push({ r, af, chieftain: null });
+    // (lote 48) a Atemporal: as passivas do raio são Conquistadas (`conquista` — `itens-poe/atemporais.mjs`)
+    const conquista = CONQUISTA?.daPeca(peca) ?? null;
+    if (r) raios.push({ r, af, chieftain: null, ...(conquista ? { conquista } : {}) });
     if ((transforma > 0 || forca > 0) && peca.poe?.raridade !== 'unico') raios.push({ r: { min: 0, max: RAIOS_DE_JOIA.grande }, af: {}, chieftain: { transforma: transforma > 0, forca } });
     for (const x of raios) {
       const nos = passivasNoRaio(s, x.r);
@@ -667,6 +682,13 @@ function raiosDasJoias(estado, alocados) {
 
 /** Os efeitos de um nó alocado com as joias que o alcançam (`raiosDasJoias().porNo`): a lista nova (sem as joias, a de sempre). */
 function efeitosNoRaio(no, efs, joias) {
+  // (lote 48) o nó CONQUISTADO por uma Atemporal: as linhas da conquista no lugar das dele (ou somadas a elas); "Habilidades Passivas
+  // Conquistadas não podem ser modificadas por outras joias" — as outras joias do raio não mexem nele.
+  const cq = conquistaDoNo(no, joias);
+  if (cq) {
+    const novos = CONQUISTA.efeitos(cq.c.linhas);
+    return cq.c.substitui ? novos : [...efs, ...novos];
+  }
   let lista = efs;
   let mais = [];
   for (const { af, chieftain } of joias) {
@@ -766,7 +788,10 @@ export function efeitos(estado) {
       } else if (ef.add) r.adds[ef.add] = (r.adds[ef.add] ?? 0) + ef.valor;
       else if (ef.legado) r.legado[ef.legado] = (r.legado[ef.legado] ?? 0) + ef.valor;
     }
-    if (no.tipo === 'keystone' && no.keystone) {
+    // (lote 48) a keystone CONQUISTADA: a do líder da Atemporal no lugar (as linhas dela valem pelos efeitos acima; a mecânica da de antes sai)
+    const cqk = no.tipo === 'keystone' && doRaio ? conquistaDoNo(no, doRaio) : null;
+    if (cqk) r.keystones.push({ regra: 'texto', texto: cqk.c.linhas.join(' '), no: no.id, nome: cqk.c.nome ?? no.nome, conquistada: true });
+    else if (no.tipo === 'keystone' && no.keystone) {
       r.keystones.push({ ...no.keystone, no: no.id, nome: no.nome });
       // A habilidade da árvore antiga e a keystone do PoE com mecânica: o combate pergunta por elas (`temHabilidade`).
       if (no.keystone.regra === 'habilidade' || no.keystone.regra === 'poe') r.habilidades.add(no.keystone.id);
@@ -816,7 +841,26 @@ export function vista(estado, emCacada = false) {
     ...(passivas.joias ? (() => { const l = liberadosPorJoias(estado); return l.size ? { liberados: Object.fromEntries(l) } : {}; })() : {}),
     // (lote 29) o raio de cada joia encaixada (`{ min, max }`: o anel do Fio de Esperança tem o de dentro) — a tela desenha.
     ...(passivas.joias ? (() => { const r = Object.fromEntries(joiasAtivas(estado).map((j) => [j.no.id, raioDaJoia(j.peca)]).filter(([, x]) => x)); return Object.keys(r).length ? { raios: r } : {}; })() : {}),
+    // (lote 48) as passivas CONQUISTADAS pelas Atemporais encaixadas (as do raio, alocadas ou não): o balão mostra as linhas da conquista
+    ...(passivas.joias && CONQUISTA ? (() => { const c = conquistasParaATela(estado); return Object.keys(c).length ? { conquistas: c } : {}; })() : {}),
   };
+}
+const CONQUISTADORES = { vaal: 'pelos Vaal', karui: 'pelos Karui', maraketh: 'pelos Maraketh', templar: 'pelos Templários', eternal: 'pelo Império Eterno', kalguur: 'pelos Kalguuranos' };
+/** (lote 48) `{ nó: { nome, linhas, estados, substitui, por } }` dos nós no raio das Atemporais encaixadas (a primeira que alcança vale). */
+function conquistasParaATela(estado) {
+  const saida = {};
+  for (const { no: s, peca } of joiasAtivas(estado)) {
+    const c = CONQUISTA.daPeca(peca);
+    const r = c ? raioDaJoia(peca) : null;
+    if (!r) continue;
+    for (const n of passivasNoRaio(s, r)) {
+      if (saida[n.id]) continue;
+      const x = CONQUISTA.doNo(n, c);
+      if (!x) continue;
+      saida[n.id] = { ...(x.nome ? { nome: x.nome } : {}), linhas: x.linhas, estados: x.linhas.map((l) => (CONQUISTA.efeitos([l]).length ? 'novo' : 'registrado')), substitui: !!x.substitui, por: CONQUISTADORES[c.tipo] ?? c.tipo };
+    }
+  }
+  return saida;
 }
 
 /** A árvore para a tela: nós (sem o que é só do servidor) e clusters. */

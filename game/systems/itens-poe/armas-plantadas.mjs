@@ -15,7 +15,8 @@ import { ligado } from './catalogo.mjs';
 
 export const PADRAO = {
   armadilha: { maximo: 15, duracaoMs: 4000, raioDeAtivacao: 1, raioDasProximas: 3 },
-  mina: { maximo: 15, duracaoMs: 5000, detonacaoMs: 300, maisPorAnteriorPct: 10, raioDeDetonacao: 2, raioDosProximos: 3 },
+  // (lote 45, P012: `recargaMs` — a recarga do Detonar Minas, 0,2 s no poedb: o jogo usa o atalho no máximo uma vez a cada 0,2 s)
+  mina: { maximo: 15, duracaoMs: 5000, detonacaoMs: 300, maisPorAnteriorPct: 10, raioDeDetonacao: 2, raioDosProximos: 3, recargaMs: 200 },
 };
 /** "Se mover": andou há até 0,6 s (o mesmo de `condicoes-poe` — `movendo`). */
 const MOVENDO_MS = 600;
@@ -147,8 +148,8 @@ export const movendo = (hunt, agora = hunt?.clock ?? 0) => agora - (hunt?.poeRec
 /**
  * A SEQUÊNCIA DE DETONAÇÃO das Minas: se o jogo pode detonar agora (parado, ou "Detonar Minas é Ativado enquanto você se mover") e alguma
  * Mina plantada tem inimigo perto, as que ainda não estão na sequência entram nela (a mais velha primeiro): a primeira detona na hora, cada
- * seguinte depois do tempo de detonação dela ÷ (1 + "Velocidade de Detonação aumentada") ÷ (1 + 10% × as anteriores). Devolve as Minas que
- * detonam agora: `[{ p, alvo }]`.
+ * seguinte depois do tempo de detonação dela ÷ (1 + "Velocidade de Detonação aumentada") ÷ (1 + 10% × as anteriores). (Lote 45: cada uso do
+ * atalho respeita a recarga de 0,2 s do Detonar Minas — `hunt.poeDetonarEm`.) Devolve as Minas que detonam agora: `[{ p, alvo }]`.
  */
 export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0) {
   const M = PADRAO.mina;
@@ -156,7 +157,8 @@ export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0) {
   if (!minas.length) return [];
   const pode = !movendo(hunt, agora) || v(ficha, 'detonar_minas_movendo') > 0;
   const fora = minas.filter((p) => p.detonaEm == null);
-  if (pode && fora.length && minas.some((p) => inimigoPerto(hunt, p, M.raioDeDetonacao))) {
+  if (pode && fora.length && agora >= (hunt.poeDetonarEm ?? -Infinity) + M.recargaMs && minas.some((p) => inimigoPerto(hunt, p, M.raioDeDetonacao))) {
+    hunt.poeDetonarEm = agora;
     const naSequencia = minas.filter((p) => p.detonaEm != null).length;
     const velocidade = Math.max(0.1, 1 + v(ficha, 'velocidade_detonacao') / 100);
     let t = Math.max(agora, ...minas.filter((p) => p.detonaEm != null).map((p) => p.detonaEm));
