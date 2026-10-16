@@ -448,7 +448,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     // (lote D) "enquanto Conjurando": usou uma Magia há pouco (o tempo de uma conjuração); Fortificado: com alguma Fortificação.
     if (r['usou:magia'] != null && agora - r['usou:magia'] <= CONJURANDO_MS) v.add('conjurando');
     if (fortificacao(estado, total) > 0) v.add('fortificado');
-    if (r['usou:canalizar'] != null && agora - r['usou:canalizar'] <= 1000) v.add('canalizando');
+    // (lote 42, P074: o canalizar contínuo — `canalizandoAgora`; antes, 1 s depois de usar uma habilidade de Canalização)
+    if (canalizandoAgora(h, agora)) v.add('canalizando');
     if (h.egides?.fisica) v.add(h.egides.fisica.valor > 0 ? 'egideFisicaAtiva' : 'egideFisicaEsgotada');
     if (cadaveresPerto(h) > 0) v.add('cadaverPerto');
     // (lote G) Elusivo (o buff — antes a condição nunca valia), o Solo Sagrado, a Postura e o Estandarte.
@@ -732,19 +733,24 @@ export function absorverNaEgide(hunt, porTipo, agora = hunt?.clock ?? 0) {
 }
 
 /**
+ * (lote 42, P074 — dono, 16/10: "Fazer todos") A CANALIZAÇÃO CONTÍNUA: a habilidade de Canalização usada de novo em seguida — a mesma, sem outra
+ * no meio — continua o MESMO canalizar (`hunt.canalizacao = { acao, desde, ate, magia }`, do `disparar`: o `ate` é o fim do uso de agora);
+ * outra habilidade interrompe, como no PoE. É o "enquanto canaliza" das linhas e da Infusão Espiritual.
+ */
+export const canalizandoAgora = (h, agora = h?.clock ?? 0, { magia = false } = {}) => !!h?.canalizacao && agora <= h.canalizacao.ate && (!magia || !!h.canalizacao.magia);
+/**
  * (14/10) A INFUSÃO ESPIRITUAL do PoE (o Rito Profano do Occultist: "Ganha Infusão Espiritual a cada 0,5 segundos enquanto canaliza uma
  * magia" — o poedb: cada acúmulo dá 15% de início mais rápido da Recarga do Escudo de Energia, Magias Canalizadas 5% mais Dano e 10% mais
- * Custo; máximo 10; perde um a cada 0,5 s se não ganhou nos últimos 4 s). O jogo não tem canalização contínua: usar uma Magia de Canalização
- * conta como canalizar por 1 s (`canalizouMagia`, como o "canalizando" das condições).
+ * Custo; máximo 10; perde um a cada 0,5 s se não ganhou nos últimos 4 s). (lote 42: pelo canalizar contínuo — um acúmulo a cada 0,5 s
+ * canalizando a magia, desde o começo do canalizar; antes, usar uma Magia de Canalização contava como canalizar por 1 s.)
  */
 export const INFUSAO = Object.freeze({ maximo: 10, ganhoMs: 500, perdaMs: 500, semGanhoMs: 4000, canalizandoMs: 1000, esInicioPct: 15, maisDanoPct: 5, maisCustoPct: 10 });
 export function tiqueDaInfusao(hunt, afPoe, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;
   const i = hunt.infusaoEspiritual;
-  const canalizando = agora - (hunt.poeRecente?.canalizouMagia ?? -Infinity) <= INFUSAO.canalizandoMs;
-  if (Number(afPoe?.infusao_espiritual) > 0 && canalizando) {
+  if (Number(afPoe?.infusao_espiritual) > 0 && canalizandoAgora(hunt, agora, { magia: true })) {
     const x = (hunt.infusaoEspiritual ??= { n: 0, ultimoGanho: -Infinity });
-    if (agora - x.ultimoGanho >= INFUSAO.ganhoMs) {
+    if (agora - Math.max(hunt.canalizacao.desde, x.ultimoGanho) >= INFUSAO.ganhoMs) {
       x.ultimoGanho = agora;
       if (x.n < INFUSAO.maximo) { x.n++; hunt.poeFichaMudou = true; }
     }
@@ -2109,7 +2115,8 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   // (só as listas que alguma linha da ficha usa — `usosDaFicha`; as outras mudam a cada acerto e refariam a ficha à toa)
   const usados = usosDaFicha(ficha);
   const usos = usados.size ? Object.entries(hunt.poeUsosRecentes ?? {}).filter(([k]) => usados.has(k)).map(([k, l]) => `${k}:${[4000, 8000, 10000].map((j) => l.filter((t) => agora - t <= j).length).join('/')}`).join(',') : '';
-  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}|${Math.floor(efeitoDoElusivo(hunt, agora) / 10)}|${usos}`;
+  // (+ lote 42: canalizando agora — o "enquanto canaliza" começa e acaba sem acontecimento)
+  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}|${Math.floor(efeitoDoElusivo(hunt, agora) / 10)}|${usos}|${canalizandoAgora(hunt, agora) ? 'c' : ''}`;
   if (hunt.poeRelogioDaFicha !== undefined && hunt.poeRelogioDaFicha !== relogio) hunt.poeFichaMudou = true;
   hunt.poeRelogioDaFicha = relogio;
   if (hunt.recuperacoes?.length && (estado.hp ?? 0) > 0) {
@@ -2214,6 +2221,8 @@ export function alvosDosProjeteisExtras(hunt, alvo, n, alcance) {
 /** A grade do andar de cada caçada (fora do estado salvo: a caçada registra a cada tique — `cacadas.tique`). */
 const GRADES = new WeakMap();
 export const definirGradeDoCombate = (hunt, fn) => { if (hunt) GRADES.set(hunt, fn); };
+/** (lote 42) A grade do andar da caçada (`{ andavel }` — as casas que se andam), ou null: o terreno do voo do projétil (`Secundarios.resolver`). */
+export const gradeDoCombate = (hunt) => (hunt ? GRADES.get(hunt)?.() ?? null : null);
 
 /**
  * O EMPURRÃO do PoE ("chance de Empurrar Inimigos ao acertar"): o bicho vai UMA casa para longe do personagem, se ela é andável e livre.

@@ -70,7 +70,7 @@ function maisPerto(vivos, ponto, distancia, n, fora) {
  * leque). Na gema que "Dispara Projéteis em sequência" (`sequencia`, a Barragem) os que sobram vão no alvo, como no PoE. Sem alvo nenhum
  * (0 bichos), os projéteis saem todos e erram. A emissão não diminui com quem erra nem com quem morre no meio.
  */
-export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random }) {
+export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null }) {
   const golpes = [];
   const explosoes = [];
   const emitidos = [];
@@ -128,7 +128,9 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   const deProjetil = t.has('projectile') && !area;
   const total = deProjetil ? Math.max(1, Math.round(Number(efeito.projeteisBase) || 1)) + Math.max(0, Math.round(Number(efeito.alvosExtras) || 0)) : 0;
   const mira = alvo ?? rumo ?? { x: origem.x, y: origem.y + 1 };
-  const anguloDoRumo = Math.atan2(mira.y - origem.y, mira.x - origem.x) || Math.PI / 2;
+  // (lote 42: o rumo exato para leste é o ângulo 0 — antes o `|| π/2` o trocava pelo sul, e o leque dos que erram saía para o lado errado;
+  // o sul só quando a mira é a própria casa de quem lança)
+  const anguloDoRumo = mira.x === origem.x && mira.y === origem.y ? Math.PI / 2 : Math.atan2(mira.y - origem.y, mira.x - origem.x);
   const passo = total > 1 ? Math.min(Math.PI / 8, (2 * Math.PI) / total) : 0;
   const pontoDoProjetil = (k) => {
     const a = anguloDoRumo + (k - (total - 1) / 2) * passo;
@@ -136,13 +138,6 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   };
   const emitir = (bicho, tipo, k) => emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : pontoDoProjetil(k), bicho: bicho ?? null, tipo });
 
-  if (!(t.has('projectile') && alvo)) {
-    // Sem projétil (alvo único, cadeia da magia, corpo a corpo com Impact): cada golpe principal é um impacto.
-    for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
-    // (a skill de projétil SEM alvo: os projéteis saem todos, e erram)
-    for (let k = 0; k < total; k++) emitir(null, 'projetil', k);
-    return r;
-  }
 
   const pctDe = (k) => efeito[k] || 100;
   /** Um projétil: sai de `de` com `pct`% e acerta `primeiro`; daí segue as supports. */
@@ -211,13 +206,55 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   };
 
   // (14/10: `deNovo` — "Difundem e Difundem de novo": os filhos difundem outra vez, em 2)
-  // (14/10, por projétil: "N% de chance de Retornarem a você" — a volta; "N% de chance de Ricochetear ao colidirem com o terreno" — o jogo não
-  // tem terreno no voo: um ricochete a mais)
+  // (14/10, por projétil: "N% de chance de Retornarem a você" — a volta. O "Ricochetear ao colidirem com o terreno" é a batida de verdade desde o
+  // lote 42 — `naParede`.)
   const base = () => ({
     perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, deNovo: efeito.bifurcar > 0 ? efeito.bifurcarDeNovo || 0 : 0,
-    encadear: (efeito.encadear || 0) + (efeito.ricocheteTerrenoChance > 0 && rng() * 100 < efeito.ricocheteTerrenoChance ? 1 : 0),
+    encadear: efeito.encadear || 0,
     volta: efeito.retornar > 0 || (efeito.retornarChance > 0 && rng() * 100 < efeito.retornarChance),
   });
+  /**
+   * (lote 42, P053 — dono: "Fazer todos") "Projéteis têm X% de chance de conseguirem Ricochetear ao colidirem com o terreno": o projétil que não
+   * acerta ninguém voa até o alcance; se no caminho há TERRENO (uma casa que não se anda — a grade do andar, `andavel`), ele bate ali e, na
+   * chance, ricocheteia — salta para o inimigo vivo mais perto do ponto da batida, até a distância do ricochete (o dano do encadeamento).
+   */
+  const naParede = (para, pct) => {
+    if (!andavel || !(efeito.ricocheteTerrenoChance > 0)) return;
+    const reta = casasDaReta(origem, para, alcance);
+    const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
+    if (i < 0 || !(rng() * 100 < efeito.ricocheteTerrenoChance)) return;
+    const ponto = i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: origem.x, y: origem.y };
+    const salto = (efeito.ricochetePoe ? cfg.ricochetePoe?.projetil ?? 3 : cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
+    const [b] = maisPerto(vivosNoInicio, ponto, Math.floor(salto) + (rng() < salto % 1 ? 1 : 0), 1, new Set());
+    if (b) voar({ ...base(), de: ponto, pct: (pct * pctDe('danoDoEncadeamentoPct')) / 100, ricocheteou: 1 }, b, 'encadeamento');
+  };
+  /**
+   * (lote 42, P067 — dono: "Fazer todos") "Projéteis são disparados em direções aleatórias": TODOS os projéteis — o principal também (o
+   * `disparar` não dá o golpe direto) — saem em direções sorteadas; cada um voa em linha reta até o alcance e acerta o primeiro inimigo do
+   * caminho (daí segue as supports); o que não acha ninguém pode bater no terreno (`naParede`).
+   */
+  if (efeito.direcoesAleatorias && deProjetil) {
+    for (let k = 0; k < total; k++) {
+      const angulo = rng() * 2 * Math.PI;
+      const fim = { x: Math.round(origem.x + Math.cos(angulo) * alcance), y: Math.round(origem.y + Math.sin(angulo) * alcance) };
+      const bicho = casasDaReta(origem, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0) ?? null;
+      const pct = k ? pctDe('danoDosExtrasPct') : 100;
+      emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
+      if (bicho) voar({ ...base(), de: origem, pct }, bicho, 'projetil');
+      else naParede(fim, pct);
+    }
+    return r;
+  }
+  if (!(t.has('projectile') && alvo)) {
+    // Sem projétil (alvo único, cadeia da magia, corpo a corpo com Impact): cada golpe principal é um impacto.
+    for (const b of atingidos) impacto(b, 100, origem, 'direto', true);
+    // (a skill de projétil SEM alvo: os projéteis saem todos, e erram — e podem bater no terreno, `naParede`)
+    for (let k = 0; k < total; k++) {
+      emitir(null, 'projetil', k);
+      naParede(pontoDoProjetil(k), 100);
+    }
+    return r;
+  }
   // O principal: o golpe direto no alvo (já dado) e o que vem dele.
   emitir(alvo, 'direto', 0);
   voar({ ...base(), de: origem, pct: 100 }, alvo, 'direto', true);
@@ -239,7 +276,10 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       if (efeito.sequencia && alvo.hp > 0) {
         emitir(alvo, 'projetil', k);
         voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, alvo, 'projetil');
-      } else emitir(null, 'projetil', k);
+      } else {
+        emitir(null, 'projetil', k);
+        naParede(pontoDoProjetil(k), pctDe('danoDosExtrasPct'));
+      }
     }
   }
   return r;

@@ -206,6 +206,11 @@ const IMPLEMENTADOS = [
     re: /suas áreas frias|local anterior que foram Usadas|Lacaios tem \+?\d+% de Chance de Bloquear o Dano Mágico/,
     jogo: 'as ÁREAS FRIAS das suas gemas de frio (o Solo Gelado: dentro, Resfriado 10% — a Geada Cortante lê); a Fúria Ancestral acerta quem está no local do uso anterior do Golpe; as MAGIAS dos monstros vão no lacaio mais perto deles que você, e o bloqueio mágico do lacaio vale (o golpe corpo a corpo do conjurador é ataque)',
   },
+  {
+    bloco: 'Zerar a árvore — lote 42 (os limites do motor: a canalização contínua, as direções aleatórias, o terreno)',
+    re: /Infusão Espiritual a cada|disparados em direções aleatórias|Ricochetear ao colidirem com o terreno/,
+    jogo: 'a CANALIZAÇÃO CONTÍNUA (a mesma habilidade de Canalização usada em seguida continua o canalizar; outra interrompe — a Infusão Espiritual a cada 0,5 s canalizando); as DIREÇÕES ALEATÓRIAS (todos os projéteis saem em direções sorteadas e acertam o primeiro do caminho); o TERRENO (o projétil que erra e bate numa casa que não se anda ricocheteia, na chance, para o inimigo mais perto da batida)',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

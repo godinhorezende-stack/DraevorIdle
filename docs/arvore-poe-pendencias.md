@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1372, novo 4611, aproximado (parcial) 20.
+- ✓ Com efeito: **6003** — equivalente 1372, novo 4614, aproximado (parcial) 17.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -48,6 +48,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | Zerar a árvore — lote 39 (a aura do mercenário e as gemas dele em área, pela decisão do dono) | 1 | 0 | a aura do arquétipo do mercenário (a decisão do dono "Uma aura por arquétipo": espadachim Precisão, bárbaro Determinação, arqueiro Graça, piromante Cólera, criomante Ódio, eletromante Ira) no nível dele, × o efeito da linha — vale nele e em você enquanto ele vive (a ficha e os efeitos; com a mesma aura sua, vale a sua); e as gemas dele acertam como a gema: a área, os saltos e os projéteis |
 | Zerar a árvore — lote 40 (as decisões do dono: os raios registrados e o ricochete do PoE 2) | 15 | 0 | os raios que o PoE não publica viram exceções registradas ("Manter e registrar": os baús a até 4 casas, os "Próximos" a até 2 casas, a Furtividade ÷ (1 + X%)); o salto do ricochete das gemas do PoE pelo PoE 2 ("Ricochete pelo PoE 2": 6 m no projétil, 4 m nas outras cadeias, × o aumento em metros) |
 | Zerar a árvore — lote 41 (os limites do motor: as áreas frias, o local anterior do Golpe, as magias nos lacaios) | 4 | 0 | as ÁREAS FRIAS das suas gemas de frio (o Solo Gelado: dentro, Resfriado 10% — a Geada Cortante lê); a Fúria Ancestral acerta quem está no local do uso anterior do Golpe; as MAGIAS dos monstros vão no lacaio mais perto deles que você, e o bloqueio mágico do lacaio vale (o golpe corpo a corpo do conjurador é ataque) |
+| Zerar a árvore — lote 42 (os limites do motor: a canalização contínua, as direções aleatórias, o terreno) | 3 | 0 | a CANALIZAÇÃO CONTÍNUA (a mesma habilidade de Canalização usada em seguida continua o canalizar; outra interrompe — a Infusão Espiritual a cada 0,5 s canalizando); as DIREÇÕES ALEATÓRIAS (todos os projéteis saem em direções sorteadas e acertam o primeiro do caminho); o TERRENO (o projétil que erra e bate numa casa que não se anda ricocheteia, na chance, para o inimigo mais perto da batida) |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -69,10 +70,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
 | 1 | cada Fantasma vivo (do suporte Convocar Fantasma) dá Dano Físico Mágico Adicional igual ao golpe dele (o de um monstro comum do seu nível) — o PoE não publica a tabela pelo nível do Fantasma; pela regra do jogo, o dano adicionado a magias entra nas magias com dano Físico | O Bastão Negro (asc. Reliquarian) — Cada Fantasma Convocado concede a Você Poder Fantasmal |
 | 1 | no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque) | Chamas de Ngamahu (asc. Reliquarian) — Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo |
-| 1 | o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s | Rito Profano (asc. Occultist) — Ganha Infusão Espiritual a cada 0.5 segundos enquanto canaliza uma magia |
-| 1 | o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil | Ricochete (asc. Deadeye) — Projéteis têm 30% de chance de conseguirem Ricochetear ao colidirem com o terreno |
 | 1 | os bônus do escudo vão para os lacaios (bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração, movimento, dreno); o que o lacaio do jogo não tem — a armadura, a evasão e o escudo de energia da base, os condicionais — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
-| 1 | os projéteis a mais vão em inimigos sorteados no alcance (não nos mais perto); o principal segue no alvo | Especialista de Estilhaços (asc. Saboteur) — Projéteis são disparados em direções aleatórias |
 
 ## As joias dos encaixes da árvore (lotes 27 a 29)
 
