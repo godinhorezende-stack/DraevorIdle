@@ -739,14 +739,23 @@ export function tiqueDaInfusao(hunt, afPoe, agora = hunt?.clock ?? 0) {
 
 /**
  * (14/10) Os cartões do HUD do que o PoE dá por nome: os buffs com tempo (os altares, a Adrenalina, o Liberto…), a Casca e a Fúria Liberta.
- * `contador`: o número no cartão no lugar do relógio.
+ * `contador`: o número no cartão no lugar do relógio. (16/10) `efeito`: o efeito do Elusivo agora, em %, no lugar do relógio.
  */
 export function buffsDoCliente(estado) {
   const h = estado?.hunt;
   if (!h || !ligado()) return [];
   const agora = h.clock ?? 0;
   const saida = [];
-  for (const [nome, ate] of Object.entries(h.poeBuffs ?? {})) if (ate > agora && BUFFS[nome]) saida.push({ icone: null, nome: BUFFS[nome].nome, resta: ate - agora, tipo: 'buffPoe', buff: nome });
+  for (const [nome, ate] of Object.entries(h.poeBuffs ?? {})) {
+    if (!(ate > agora) || !BUFFS[nome]) continue;
+    const cartao = { icone: null, nome: BUFFS[nome].nome, resta: ate - agora, tipo: 'buffPoe', buff: nome };
+    // (16/10) O Elusivo perde 20 pontos de efeito por segundo (`efeitoDoElusivo`, lote 33): o cartão mostra o efeito de agora, e o balão explica.
+    if (nome === 'elusivo' && h.poeElusivo) {
+      cartao.efeito = Math.round(efeitoDoElusivo(h, agora));
+      cartao.dica = `Elusivo: ${cartao.efeito}% de efeito, ${Math.ceil(cartao.resta / 1000)}s restantes (perde ${ELUSIVO.perdaPorSegundo} pontos por segundo e sai em 0%; com ele ativo, não se ganha outro)`;
+    }
+    saida.push(cartao);
+  }
   if (h.casca) saida.push({ icone: null, nome: 'Casca', resta: 0, tipo: 'casca', contador: h.casca.n, dica: `Casca: ${h.casca.n} de ${CASCA.maximo} (a Pele de Árvore — ganha 1 por segundo sem ser Acertado por um Ataque Recentemente)` });
   // (14/10) as Égides (o valor que ainda toma) e a Infusão Espiritual
   const NOME_DA_EGIDE = { primitiva: 'Égide Primitiva', fogo: 'Égide de Fogo', gelo: 'Égide de Gelo', raio: 'Égide Relampejante', elemental: 'Égide Elemental', fisica: 'Égide Física' };
