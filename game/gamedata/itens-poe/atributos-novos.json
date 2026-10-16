@@ -7406,6 +7406,12 @@
       "unidade": "",
       "combate": true,
       "efeito": "\"Limitado a: 1 Histórico\": só uma joia Histórica (as Atemporais) nos encaixes da árvore — `passivas/joias.encaixar` (lote 48)"
+    },
+    "primordial": {
+      "nome": "Primordial",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o item Primordial: conta para \"caso você tenha N Itens Primordiais Encaixados ou Equipados\" (a Pedra Anima — `condicoes-poe`, `primordiaisMin`; lote 49)"
     }
   }
 }

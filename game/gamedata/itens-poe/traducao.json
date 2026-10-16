@@ -7969,9 +7969,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção do jogo",
+      "nota": "não se aplica ao jogo: as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção de gemas do jogo",
       "_nova": true,
-      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
     },
     {
       "padrao": "^Efeito das Tatuagens no Raio aumentado em \\{(\\d+)\\}%$",
@@ -17617,9 +17618,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "efeito só visual (luz, visão, tamanho)",
+      "nota": "não se aplica ao jogo: efeito só visual (luz, visão, tamanho) — o jogo mostra a tela inteira e o tamanho não muda nada",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote49": "16/10 — lote 49 (como na árvore: luz, visão e tamanho não se aplicam ao jogo)"
     },
     {
       "padrao": "^.*(?:Fortificaç(?:ão|ões)|Fortificad[oa]s?|Fortifica[mr]?)\\b.*$",
@@ -38052,6 +38054,303 @@
       ],
       "_nova": true,
       "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "fire_res%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Tolerância por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "min_tolerancia%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Frenesi por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "min_frenesi%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Poder por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "min_poder%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Vida Máxima aumentada em \\{(\\d+)\\}% por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "life_inc%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Dano Element(?:al|ao) aumentado em \\{(\\d+)\\}% por (?:Espectro Grandioso|Grande Espectro)$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Afecções Elementais por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "avoid_elem_ailments%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de Multiplicador de Golpe Crítico por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "minion_crit_mult%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque dos Esqueletos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_ataque:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Conjuração dos Esqueletos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_conj:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento dos Esqueletos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_mov:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração dos Golens aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_ataque:golem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_vel_conj:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Golens têm \\+\\{(\\d+)\\} de Armadura$",
+      "efeitos": [
+        {
+          "stat": "lacaio_armadura:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Recarga das habilidades dos Golens aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cdr:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Golens Convocados têm Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cdr:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Golens Convocados Regeneram \\{(\\d+)\\}% de sua Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_regen_pct:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de chance de Suprimirem o Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "minion_supressao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Duração do efeito das habilidades vaal aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "life_more",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% para cada Item Mágico equipado$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%itemMagico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Caos por Veneno em você$",
+      "efeitos": [
+        {
+          "stat": "chaos_res%venenoEmVoce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Primordial$",
+      "efeitos": [
+        {
+          "stat": "primordial",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao número máximo de Golens Convocados caso você tenha \\{(\\d+)\\} Itens Primordiais Encaixados ou Equipados$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio:golem@primordiaisMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^number of stackable unique jewels \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "linha interna do PoE (o Espectro Grandioso acumula: cada um conta todos os encaixados — `joiaUnica:Grand_Spectrum`)",
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
     }
   ]
 }
