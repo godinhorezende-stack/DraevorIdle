@@ -44,6 +44,7 @@ import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Aco from './itens-poe/convocar-o-aco.mjs';
+import * as Mercenarios from './itens-poe/mercenarios.mjs';
 import * as CargasDoPoe from './itens-poe/cargas.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade, efeitos as efeitosDaArvore, arvore as arvoreDasPassivas } from './passivas/arvore.mjs';
@@ -712,52 +713,87 @@ export function convocarFantasmas(estado, hunt, efeitoDaGema, atingidos, rng = M
 }
 
 /**
- * (14/10, dono: "Mercenário simples") O MERCENÁRIO do Luminary — "Você pode contratar um mercenário de forma permanente" (Sangue Nobre): com o
- * nó, um mercenário permanente segue você e ataca; "do seu nível": a vida máxima é a sua e o golpe é o da sua arma (a faixa e o tempo da
- * ficha), × "Seu mercenário e os lacaios dele têm a vida máxima aumentada / causam dano aumentado" e × "+8% mais Dano para cada item único
- * equipado por ele" — sem a tela de equipamento: cada único SEU num tipo de peça que os nós "Seu mercenário pode equipar … únicos" liberam
- * conta como equipado nele. Morto, volta em 10 s. (O guarda-costas, o "recupera como vida", o provocar e as auras: `arvore.danoRecebido`,
- * `cacadas.tiqueDosLacaios`.)
+ * (16/10, lote 37 — a decisão do dono "Mercenário completo", P005/P057–P060) O MERCENÁRIO do Luminary: contratado por ouro na tela dele
+ * (`itens-poe/mercenarios.mjs` — até 3, um ao seu lado; o nível preso no da contratação; o equipamento dele), segue você e usa as GEMAS do
+ * arquétipo, alternando-as: o dano de cada uma é a conta do jogo para a gema (`danoMostrado`) com a FICHA dele (o nível, a classe e as peças —
+ * e o "aumentado" dos seus nós somado ao das peças dele) e os suportes fixos, × "+8% mais Dano para cada item único equipado por ele"; o
+ * tempo é o de uso da gema; o alcance, o dela. Morto, só volta revivido por ouro (o PoE). (O guarda-costas, o "recupera como vida", o provocar e
+ * as auras: `arvore.danoRecebido`, `cacadas.tiqueDosLacaios`.)
  */
-export const MERCENARIO = Object.freeze({ nome: 'Mercenário', voltaMs: 10000, maisPorUnico: 8 });
-const SLOTS_DO_MERCENARIO = {
-  'mercenario_equipa_amuleto': ['neck'], 'mercenario_equipa_cinto': ['legs'], 'mercenario_equipa_botas': ['feet'], 'mercenario_equipa_luvas': ['gloves'],
-  'mercenario_equipa_elmo': ['head'], 'mercenario_equipa_anel': ['ring', 'ring2'], 'mercenario_equipa_armas': ['weapon', 'shield'],
-};
-/** Quantos únicos "o mercenário tem equipados": os seus nos tipos de peça que os nós liberam. */
-export function unicosDoMercenario(estado, af = Ficha.combate(estado).afPoe ?? {}) {
-  let n = 0;
-  for (const [stat, slots] of Object.entries(SLOTS_DO_MERCENARIO)) {
-    if (!(Number(af[stat]) > 0)) continue;
-    for (const slot of slots) if (estado?.equipment?.[slot]?.poe?.raridade === 'unico') n++;
+export const MERCENARIO = Object.freeze({ desenho: 'Mercenário', maisPorUnico: 8 });
+/** Quantos únicos o mercenário ATIVO tem equipados (só entram nos tipos de peça que os nós liberam — `Mercenarios.faltaParaVestir`). */
+export const unicosDoMercenario = (estado) => Mercenarios.unicosEquipados(Mercenarios.ativo(estado));
+/**
+ * A FICHA de combate do mercenário `merc`: a vida máxima (a ficha dele) e cada habilidade — o dano (a conta da gema com a ficha e os suportes
+ * dele, × o "mais" por único), o tempo de uso, o alcance, o elemento, se é magia e o projétil do desenho.
+ */
+export function fichaDoMercenario(estado, merc, af = Ficha.combate(estado).afPoe ?? {}) {
+  const m = Mercenarios.estadoDoMercenario(merc, af);
+  const f = Ficha.combate(m);
+  const ativas = Mercenarios.ativasDoMercenario(merc);
+  const mais = 1 + ((Number(af.mercenario_dano_por_unico) || 0) * Mercenarios.unicosEquipados(merc)) / 100;
+  const habilidades = [];
+  for (const h of Mercenarios.habilidades(merc)) {
+    const entry = POR_ID.get(h.acao);
+    if (!entry || !ativas.has(entry.id)) continue;
+    const efeito = comOsAlvosDaGema(entry, Gemas.efeitoNaSkill(m, entry.id, ativas), null);
+    const d = danoMostrado(m, entry, efeito);
+    const t = temposDaGemaPoe(m, entry, { nivel: h.nivel }, f, { doJogador: false });
+    habilidades.push({
+      acao: entry.id, gema: h.gema, nome: entry.name, nivel: h.nivel, suportes: efeito?.supports ?? [],
+      dano: { min: Math.max(1, Math.round(d.min * mais)), max: Math.max(1, Math.round(d.max * mais)) },
+      usoMs: Math.max(250, Math.round(t.uso ?? t.conjuracaoMs ?? 1000)), alcance: Math.max(1, entry.range || 1), elemento: entry.element ?? 'physical',
+      magia: !entry.poeGema?.ataque, projetil: entry.projetil || 0,
+    });
   }
-  return n;
+  return { vida: m.maxHp, habilidades };
+}
+/** O mercenário passa a usar a habilidade `i` (a vez dela): o golpe, o tempo, o alcance e o desenho do lacaio. */
+function usarHabilidadeDoMercenario(l, i) {
+  const n = l.habilidades?.length ?? 0;
+  if (!n) return;
+  l.habilidade = ((i % n) + n) % n;
+  const h = l.habilidades[l.habilidade];
+  l.dano = h.dano;
+  l.intervaloMs = h.usoMs;
+  l.alcanceDeAtaque = h.alcance;
+  l.elemento = h.elemento;
+  l.estilo = h.magia ? { magia: true, elementos: [h.elemento], ...(h.projetil ? { projetil: h.projetil } : {}) } : { elemento: h.elemento, ...(h.projetil ? { projetil: h.projetil } : {}) };
+}
+/** Depois de cada golpe do mercenário: a próxima gema do arquétipo (ele alterna as habilidades). */
+export function depoisDoGolpeDoMercenario(l) {
+  if (l?.mercenario && (l.habilidades?.length ?? 0) > 1) usarHabilidadeDoMercenario(l, (l.habilidade ?? 0) + 1);
 }
 export function tiqueDoMercenario(estado, hunt, agora = hunt?.ultimoTique ?? Date.now()) {
   if (!itensPoeLigado() || !hunt?.pos) return;
-  const ficha = Ficha.combate(estado);
-  const af = ficha.afPoe ?? {};
+  const af = Ficha.combate(estado).afPoe ?? {};
   hunt.lacaios ??= [];
+  const merc = Mercenarios.liberado(af) ? Mercenarios.ativo(estado) : null;
+  const quer = merc && !merc.morto ? merc : null;
+  // (o que não é mais o ativo — deixado, despedido, o nó tirado — sai da caçada sem contar como morte)
+  hunt.lacaios = hunt.lacaios.filter((l) => !(l.mercenario && l.hp > 0 && (!quer || l.mercId !== quer.id)));
+  if (!quer) return;
+  const chave = `${quer.id}:${quer.v ?? 0}:${Number(af.mercenario_dano_inc) || 0}:${Number(af.mercenario_vida_inc) || 0}:${Number(af.mercenario_dano_por_unico) || 0}`;
   const vivo = hunt.lacaios.find((l) => l.mercenario && l.hp > 0);
-  if (!(Number(af.mercenario) > 0)) { if (vivo) vivo.hp = 0; delete hunt.poeMercenarioVoltaEm; return; }
-  const vida = Math.max(10, Math.round((estado.maxHp ?? 100) * Math.max(0, 1 + (Number(af.mercenario_vida_inc) || 0) / 100)));
-  const fator = Math.max(0, 1 + (Number(af.mercenario_dano_inc) || 0) / 100) * (1 + ((Number(af.mercenario_dano_por_unico) || 0) * unicosDoMercenario(estado, af)) / 100);
-  const dano = { min: Math.max(1, Math.round((ficha.ataqueMin ?? 1) * fator)), max: Math.max(1, Math.round((ficha.ataqueMax ?? 1) * fator)) };
+  if (vivo?.chaveDaFicha === chave) return;
+  const ficha = fichaDoMercenario(estado, quer, af);
+  if (!ficha.habilidades.length) return;
   if (vivo) {
-    // (a vida máxima e o golpe seguem os seus — subiu de nível, trocou de arma)
-    if (vivo.maxHp !== vida) { vivo.hp = Math.max(1, Math.round((vivo.hp * vida) / vivo.maxHp)); vivo.maxHp = vida; }
-    vivo.dano = dano;
+    // (trocou de peça, os seus nós mudaram: a vida máxima e as habilidades novas, na mesma proporção de vida)
+    if (vivo.maxHp !== ficha.vida) { vivo.hp = Math.max(1, Math.round((vivo.hp * ficha.vida) / vivo.maxHp)); vivo.maxHp = ficha.vida; }
+    vivo.habilidades = ficha.habilidades;
+    vivo.chaveDaFicha = chave;
+    usarHabilidadeDoMercenario(vivo, vivo.habilidade ?? 0);
     return;
   }
-  hunt.poeMercenarioVoltaEm ??= agora;
-  if (agora < hunt.poeMercenarioVoltaEm) return;
-  delete hunt.poeMercenarioVoltaEm;
-  const l = lacaioDoGuardian(estado, hunt, agora, af, MERCENARIO.nome, 'physical', { mercenario: true, hp: vida, maxHp: vida, dano, intervaloMs: Math.max(300, Math.round(ficha.intervaloDoGolpeMs ?? 1000)) });
+  const l = lacaioDoGuardian(estado, hunt, agora, af, MERCENARIO.desenho, ficha.habilidades[0].elemento, { mercenario: true, mercId: quer.id, nivel: quer.nivel, hp: ficha.vida, maxHp: ficha.vida, habilidades: ficha.habilidades, habilidade: 0, chaveDaFicha: chave });
+  l.nome = quer.nome;
+  usarHabilidadeDoMercenario(l, 0);
   hunt.lacaios.push(l);
 }
-/** O mercenário morreu: volta em 10 s (`tiqueDoMercenario`). */
-export function mercenarioMorreu(hunt, agora = hunt?.ultimoTique ?? Date.now()) {
-  if (hunt) hunt.poeMercenarioVoltaEm = agora + MERCENARIO.voltaMs;
+/** O mercenário morreu na caçada: só volta revivido por ouro (`Mercenarios.morreu`; a tela dele). */
+export function mercenarioMorreu(estado, l) {
+  Mercenarios.morreu(estado, l?.mercId);
 }
 
 /**

@@ -186,6 +186,11 @@ const IMPLEMENTADOS = [
     re: /Repetição Final das Magias têm Efeito em Área aumentado/,
     jogo: 'a Área de Efeito como no PoE (a decisão "Toda área em metros"): o raio da forma × √(1 + o aumentado) × √ de cada "mais/menos", a fração como chance de uma casa, e a forma esticada até o raio novo; a Repetição Final soma o X no aumentado da última repetição',
   },
+  {
+    bloco: 'Zerar a árvore — lote 37 (o Mercenário completo, pelas decisões do dono)',
+    re: /mercenário/i,
+    jogo: 'o Mercenário completo (as decisões do dono): candidatos sorteados contratados por ouro (até 3, um ao seu lado), o nível preso no da contratação, o equipamento dele com as regras do PoE (70% do nível da peça, os atributos e as armas do arquétipo, únicos só nos tipos que os nós liberam), a ficha dele com o "aumentado" dos seus nós, as gemas fixas do arquétipo na caçada, morto só volta revivido por ouro; o "recuperado como vida" em 4 s',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

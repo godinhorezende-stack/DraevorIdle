@@ -2466,6 +2466,20 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   return eventos;
 }
 
+/**
+ * (lote 37, P057) O "recuperado como vida" do mercenário AO LONGO de 4 s (o Recoup do PoE — `ModsPoe.RECUPERACAO_MS`): cada dano recuperável
+ * cura um pouco a cada tique, até o fim dos 4 s dele.
+ */
+export function recuperarDoMercenario(l, agora) {
+  const desde = l.recoupEm ?? agora;
+  l.recoupEm = agora;
+  let cura = 0;
+  for (const r of l.recoup) cura += r.porMs * Math.max(0, Math.min(agora, r.ate) - Math.min(desde, r.ate));
+  l.recoup = l.recoup.filter((r) => r.ate > agora);
+  if (!l.recoup.length) delete l.recoupEm;
+  if (cura > 0) l.hp = Math.min(l.maxHp, l.hp + cura);
+}
+
 function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   const eventos = [];
   const ficha = Ficha.combate(estado);
@@ -2491,8 +2505,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (l.reliquia) { Acoes.explosaoDaReliquia(hunt, l, ficha, eventos); Ficha.invalidar(estado); }
       // (14/10, as Aranhas Espectrais e os Fantasmas dão bônus enquanto vivos — `ModsPoe.adds`: a ficha é refeita)
       if (l.aranha || l.fantasma) Ficha.invalidar(estado);
-      // (14/10, o mercenário do Luminary volta em 10 s — `Acoes.tiqueDoMercenario`)
-      if (l.mercenario) Acoes.mercenarioMorreu(hunt, agora);
+      // (16/10, lote 37: o mercenário morto só volta revivido por ouro — `Acoes.mercenarioMorreu`, a tela dele)
+      if (l.mercenario) Acoes.mercenarioMorreu(estado, l);
       // (PoE: "se um Lacaio foi Morto Recentemente".)
       if (l.hp <= 0) { ModsPoe.marcar(hunt, 'lacaioMorreu'); lacaioMorreu = true; }
       // (13/10, o Suserano do Primordial: "Golens Convocados são Reconvocados 4 segundos após serem Mortos" — `Acoes.reconvocarGolens`)
@@ -2549,9 +2563,9 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
       // (14/10, o Guarda-costas Leal do Luminary: "Se a vida do seu mercenário for menor que a sua, 40% do dano sofrido por ele é recuperado como
-      // vida" — dele; na hora, no lugar dos 4 s do PoE)
+      // vida" — dele; lote 37, P057: ao longo de 4 s, como o Recoup do PoE — `recuperarDoMercenario`)
       const recupera = l.mercenario && l.hp > 0 && l.hp < (estado.hp ?? 0) ? Number(ficha.afPoe?.mercenario_recupera_pct) || 0 : 0;
-      if (recupera > 0) l.hp = Math.min(l.maxHp, l.hp + (d * recupera) / 100);
+      if (recupera > 0) (l.recoup ??= []).push({ porMs: (d * recupera) / 100 / ModsPoe.RECUPERACAO_MS, ate: agora + ModsPoe.RECUPERACAO_MS });
       // (PoE: o golpe de um Elite/Chefe pode deixar o lacaio/totem LENTO, como faz com você — `LacaiosPoe.controleNoLacaio`.)
       if (itensPoeLigado() && LacaiosPoe.controleNoLacaio(l, b, hunt, agora)) eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: 'lento' });
     }
@@ -2569,6 +2583,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       ModsPoe.marcar(hunt, 'lacaioMorreu');
     }
     if (l.hp <= 0) continue;
+    if (l.recoup?.length) recuperarDoMercenario(l, agora);
     if (l.tipo === 'totem') {
       if (l.x === hunt.pos.x && l.y === hunt.pos.y) passoDoFamiliar(hunt, grade, l, agora, hunt.pos, { pararEm: (d) => d >= 1 });
       if (!R.jaPode(agora, l.proximoGolpe) || Protecao.imune(hunt)) continue;
@@ -2703,6 +2718,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
         golpear(g.bicho, g.pct);
       }
     }
+    // (16/10, lote 37) o mercenário alterna as gemas do arquétipo, uma a cada golpe.
+    if (l.mercenario) Acoes.depoisDoGolpeDoMercenario(l);
     // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
     l.acertos = (l.acertos ?? 0) + 1;
     if (est.area && l.acertos % est.area.cada === 0) {

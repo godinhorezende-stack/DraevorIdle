@@ -32,6 +32,7 @@ import * as SemTreino from '../systems/sem-treino.mjs';
 import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
 import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
 import * as ForjaPoe from '../systems/itens-poe/forja.mjs';
+import * as Mercenarios from '../systems/itens-poe/mercenarios.mjs';
 import * as Premium from '../systems/premium.mjs';
 import * as BuffPower from '../systems/buffpower.mjs';
 import * as Tiers from '../systems/tiers.mjs';
@@ -1247,6 +1248,12 @@ export class Sessao {
         this.forjaRepeticao = r.guardado;
         return this.enviar({ t: 'forjaResultado', ...r.resposta });
       }
+      // (16/10, lote 37) O MERCENÁRIO completo do PoE (`itens-poe/mercenarios.mjs`): a tela (`action: 'ver'`) e os comandos — contratar,
+      // levar, deixar, despedir, equipar, tirar, reviver. A resposta é sempre a tela inteira de novo.
+      case 'mercenario': {
+        if (m.action && m.action !== 'ver') this.aplicar(Mercenarios.comando(this.estado, m));
+        return this.enviar(Mercenarios.paraCliente(this.estado, Ficha.combate(this.estado).afPoe ?? {}, (merc) => Acoes.fichaDoMercenario(this.estado, merc)));
+      }
       // (lote 28) As Joias Abissais nos Encaixes Abissais das peças vestidas (`itens-poe/abissais.mjs`).
       case 'abissal':
         return this.aplicarComSkills(m.action === 'retirar' ? AbissaisPoe.retirar(this.estado, m) : AbissaisPoe.encaixar(this.estado, m));
@@ -1995,6 +2002,9 @@ export class Sessao {
     SemTreino.limpar(estado);
     // A barra do PoE tem 8 slots de habilidade (antes eram 22 com as poções): quem vem da barra antiga fica com as ações compactadas e as teclas de fábrica.
     Acoes.ajustarBarra(estado);
+    // (16/10, lote 37) O Mercenário completo: quem já tinha o nó do mercenário (o Sangue Nobre) na primeira entrada depois da mudança contrata o
+    // primeiro de graça (dono: "1ª contratação grátis" — `Mercenarios.migrar`).
+    if (ItensPoeCatalogo.ligado()) Mercenarios.migrar(estado, Ficha.combate(estado).afPoe ?? {});
     // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
     if (!estado.hunt && personagem.visto_em) Stamina.recuperar(estado, Date.now() - personagem.visto_em);
     // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.

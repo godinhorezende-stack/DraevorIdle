@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1359, novo 4594, aproximado (parcial) 50.
+- ✓ Com efeito: **6003** — equivalente 1359, novo 4604, aproximado (parcial) 40.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -44,6 +44,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | Zerar a árvore — lote 34 (as Minas plantadas e a Velocidade dos Clamores) | 17 | 0 | a Velocidade dos Clamores encurta o tempo de uso do Clamor (e a de Conjuração não vale nele — o Clamor não é ataque nem magia); a aura da Mina plantada nos inimigos a até 35 unidades (3,5 m, 1 casa), cada Mina somando até o teto ("Efeito de Auras das Minas" na de cada uma, não no teto; o "reduzido" é o dano que o inimigo causa); "por cada Mina Detonada Recentemente, até 100%/40%" pela detonação de verdade, nos últimos 4 s |
 | Zerar a árvore — lote 35 (o alcance em metros e o bloqueio, pelas decisões do dono) | 33 | 0 | o alcance corpo a corpo em metros (a decisão "Medir em metros", 1 casa = 2 m): o da arma (a base do PoE, 1 a 1,4 m) + os "+X metros", o vizinho colado sempre ao alcance e cada casa a mais pedindo 2 m — no golpe básico e no golpe da gema corpo a corpo; a Recuperação de Bloqueio trava em todo bloqueio (a decisão "Como no PoE: todo bloqueio") |
 | Zerar a árvore — lote 36 (a Área de Efeito em metros, pela decisão do dono) | 8 | 0 | a Área de Efeito como no PoE (a decisão "Toda área em metros"): o raio da forma × √(1 + o aumentado) × √ de cada "mais/menos", a fração como chance de uma casa, e a forma esticada até o raio novo; a Repetição Final soma o X no aumentado da última repetição |
+| Zerar a árvore — lote 37 (o Mercenário completo, pelas decisões do dono) | 17 | 0 | o Mercenário completo (as decisões do dono): candidatos sorteados contratados por ouro (até 3, um ao seu lado), o nível preso no da contratação, o equipamento dele com as regras do PoE (70% do nível da peça, os atributos e as armas do arquétipo, únicos só nos tipos que os nós liberam), a ficha dele com o "aumentado" dos seus nós, as gemas fixas do arquétipo na caçada, morto só volta revivido por ouro; o "recuperado como vida" em 4 s |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -55,13 +56,11 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | Linhas | A diferença | Exemplos (nó — texto) |
 |---:|---|---|
 | 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
-| 7 | sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o "+8% mais Dano por único") | Cintos Lendários (asc. Luminary) — Seu mercenário pode equipar cintos únicos<br>Botas Lendárias (asc. Luminary) — Seu mercenário pode equipar botas únicas<br>Armas Lendárias (asc. Luminary) — Seu mercenário pode equipar aljavas, armas e escudos únicos |
 | 5 | no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando | Maestria de Minas (maestria) — Detonar Minas é Ativado enquanto você se mover |
 | 4 | encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo | Maestria de Garras (maestria) — Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente |
 | 2 | a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais | Distância do Ricochete (nó) — Alcance do Ricochete aumentado em 15%<br>Tiro Ardil (notável) — Alcance do Ricochete aumentado em 30% |
 | 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
 | 2 | os monstros só batem nos lacaios de perto: o golpe de um monstro que conjura magias conta como magia | Proteção da Podridão (notável) — Lacaios tem +18% de Chance de Bloquear o Dano Mágico<br>Bloqueio Mágico de Lacaios (nó) — Lacaios tem +12% de Chance de Bloquear o Dano Mágico |
-| 1 | 8% MAIS dano por único (o texto do PoE em inglês: "more"); os únicos dele são os seus nos tipos de peça que os nós "pode equipar" liberam | Armas Lendárias (asc. Luminary) — Seu mercenário e os lacaios dele causam +8% de dano para cada item único equipado por ele |
 | 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Égide toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano elemental de acertos (o tempo das Égides do PoE — o da Primitiva não é publicado) | Bastião dos Elementos (asc. Elementalist) — Ativa Égide Primitiva Nível 20 quando Alocado |
 | 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
 | 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Sentinela segue você, ataca corpo a corpo e queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo); volta 0,75 s depois de morrer; a vida e o golpe são os de um monstro comum do seu nível, com a sua "Vida/Dano dos Lacaios" — o PoE não publica a tabela dos lacaios | Cruzada Radiante (asc. Guardian) — Concede a Habilidade Convocar Sentinela do Resplendor Nível 20 |
@@ -75,12 +74,10 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | 1 | o jogo não tem áreas frias no chão: vale o Resfriamento no inimigo | Geada Cortante (keystone) — Inimigos nas suas áreas frias sofrem dano de frio aumentado pelo esfriamento |
 | 1 | o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s | Rito Profano (asc. Occultist) — Ganha Infusão Espiritual a cada 0.5 segundos enquanto canaliza uma magia |
 | 1 | o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto | Fúria Ancestral (asc. Berserker) — Habilidades de Golpe também miram no local anterior que foram Usadas |
-| 1 | o mercenário do jogo não usa habilidades próprias: as suas auras de aliado nele valem 50% mais | Sagração à Cavalaria (asc. Luminary) — Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em 50% |
-| 1 | o mercenário recupera (o PoE em inglês: "Recouped as Life") — na hora, no lugar dos 4 s do PoE | Guarda-costas Leal (asc. Luminary) — Se a vida do seu mercenário for menor que a sua, 40% do dano sofrido por ele é recuperado como vida |
 | 1 | o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil | Ricochete (asc. Deadeye) — Projéteis têm 30% de chance de conseguirem Ricochetear ao colidirem com o terreno |
+| 1 | os arquétipos dos mercenários do jogo não têm gema de aura: as suas auras de aliado nele valem 50% mais | Sagração à Cavalaria (asc. Luminary) — Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em 50% |
 | 1 | os bônus do escudo vão para os lacaios (bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração, movimento, dreno); o que o lacaio do jogo não tem — a armadura, a evasão e o escudo de energia da base, os condicionais — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
 | 1 | os projéteis a mais vão em inimigos sorteados no alcance (não nos mais perto); o principal segue no alvo | Especialista de Estilhaços (asc. Saboteur) — Projéteis são disparados em direções aleatórias |
-| 1 | sai sozinho com o nó: um mercenário permanente segue você e ataca — a vida máxima é a sua e o golpe é o da sua arma; morto, volta em 10 s (no PoE se contrata um nos mapas, com o equipamento e as habilidades dele) | Sangue Nobre (asc. Luminary) — Você pode contratar um mercenário de forma permanente |
 
 ## As joias dos encaixes da árvore (lotes 27 a 29)
 

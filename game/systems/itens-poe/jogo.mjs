@@ -354,7 +354,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (31 — 16/10, lote 34: "Velocidade dos Clamores"; a aura das Minas; "por cada Mina Detonada (Recentemente)" com o teto e pela detonação.)
 // (32 — 16/10, lote 35: "+X metros ao Alcance de Golpes Corpo a Corpo" com o alcance da arma; "Recuperação de Bloqueio" em todo bloqueio.)
 // (33 — 16/10, lote 36: "Repetição Final das Magias têm Efeito em Área aumentado" pela Área de Efeito em metros.)
-export const VERSAO_DA_TRADUCAO = 33;
+// (34 — 16/10, lote 37: as linhas do Mercenário completo do Luminary.)
+export const VERSAO_DA_TRADUCAO = 34;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
