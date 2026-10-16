@@ -1436,10 +1436,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P001: o alcance em metros — o da arma + os metros; 1 casa = 2 m, a decisão do dono)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo com Espadas$",
@@ -1449,10 +1448,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P001: o alcance em metros — o da arma + os metros; 1 casa = 2 m, a decisão do dono)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos \\{(\\d+)\\} Inimigos Próximos$",
@@ -1463,9 +1461,10 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais; \"Próximos\" = a até 2 casas",
+      "nota": "o alcance em metros (o da arma + os metros; 1 casa = 2 m); \"Próximos\" = a até 2 casas — o PoE não fixa o raio de \"Próximos\" (\"Nearby\" não é palavra-chave)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P033: o alcance em metros; o raio de \"Próximos\" fica para decisão)"
     },
     {
       "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\}%$",
@@ -1602,10 +1601,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P004: a trava em todo bloqueio, a decisão do dono)"
     },
     {
       "padrao": "^Clamores não podem Impelir Habilidades de Deslocamento$",

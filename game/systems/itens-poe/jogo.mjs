@@ -352,7 +352,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (30 — 16/10, lote 33: "Efeito de Afecções Não-Danificadoras" também no Causticar/Fragilizar/Exaurir; o Tiro Distante e a Queima-Roupa das peças
 // pelas tabelas do poedb em unidades; "X% de chance de ganhar Elusivo…" com o Elusivo que decai.)
 // (31 — 16/10, lote 34: "Velocidade dos Clamores"; a aura das Minas; "por cada Mina Detonada (Recentemente)" com o teto e pela detonação.)
-export const VERSAO_DA_TRADUCAO = 31;
+// (32 — 16/10, lote 35: "+X metros ao Alcance de Golpes Corpo a Corpo" com o alcance da arma; "Recuperação de Bloqueio" em todo bloqueio.)
+export const VERSAO_DA_TRADUCAO = 32;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

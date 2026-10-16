@@ -176,6 +176,11 @@ const IMPLEMENTADOS = [
     re: /Velocidade dos Clamores aumentada|Cada Mina aplica|por cada Mina Detonada|Minas Detonadas Recentemente/,
     jogo: 'a Velocidade dos Clamores encurta o tempo de uso do Clamor (e a de Conjuração não vale nele — o Clamor não é ataque nem magia); a aura da Mina plantada nos inimigos a até 35 unidades (3,5 m, 1 casa), cada Mina somando até o teto ("Efeito de Auras das Minas" na de cada uma, não no teto; o "reduzido" é o dano que o inimigo causa); "por cada Mina Detonada Recentemente, até 100%/40%" pela detonação de verdade, nos últimos 4 s',
   },
+  {
+    bloco: 'Zerar a árvore — lote 35 (o alcance em metros e o bloqueio, pelas decisões do dono)',
+    re: /metros ao Alcance de Golpes Corpo a Corpo|Recuperação de Bloqueio aumentada/,
+    jogo: 'o alcance corpo a corpo em metros (a decisão "Medir em metros", 1 casa = 2 m): o da arma (a base do PoE, 1 a 1,4 m) + os "+X metros", o vizinho colado sempre ao alcance e cada casa a mais pedindo 2 m — no golpe básico e no golpe da gema corpo a corpo; a Recuperação de Bloqueio trava em todo bloqueio (a decisão "Como no PoE: todo bloqueio")',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

@@ -239,7 +239,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     else bloqueouAMagia = true;
     // PoE: os eventos "ao Bloquear" dos únicos e o "Bloqueou Recentemente".
     ModsPoe.marcar(hunt, 'bloqueou');
-    // (o bloqueio da magia de um Elite/Chefe trava a próxima ação — a Recuperação de Bloqueio encurta)
+    // (todo bloqueio de magia trava a próxima ação — a Recuperação de Bloqueio encurta; lote 35, P004)
     Controle.travarNoBloqueio(hunt, bicho, ficha);
     ModsPoe.abrirRetaliacao(hunt, 'bloquear', ficha.afPoe);
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
