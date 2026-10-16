@@ -15925,7 +15925,7 @@
       "estado": "novo"
     },
     {
-      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$|\\[One to three random synthesis implicit modifiers\\]$|\\[Aura Bonus Modifier\\]$|\\[Random [246]x influence item bonus\\]$)\\[.*\\]$",
+      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$|\\[One to three random synthesis implicit modifiers\\]$|\\[Aura Bonus Modifier\\]$|\\[Random [246]x influence item bonus\\]$|\\[Two random mods of devotion\\]$)\\[.*\\]$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -40472,6 +40472,152 @@
       "nota": "sorteada na peça: 1 das 18 linhas do pool da única no poedb com o mesmo número de itens com influência (`linhas-sorteadas.json`)",
       "_nova": true,
       "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Mana Regenerada por Segundo$",
+      "efeitos": [
+        {
+          "stat": "mana_regen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Efeito de Afecções que não causam Dano nos Inimigos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_nao_dano",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Efeito das Auras Não-Maldições aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:aura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Habilidades Canalizadas causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@canalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Duração das Afecções Elementais reduzidas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais_propria",
+          "valor": "-{1}"
+        }
+      ],
+      "nota": "o PoE em inglês: \"reduced Elemental Ailment Duration on you\" — em você (o texto em português perdeu o \"em você\")",
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Lacaios tem \\+\\{(\\d+)\\} de Precisão(?: por cada \\{(\\d+)\\} de Devoção)?$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o golpe dos lacaios não erra (não rola a Precisão contra a Evasão do monstro)",
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração dos Lacaios aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_atk_speed",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Defesas do Escudo Equipado aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "defesas_pct_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Dano de Totens aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^\\[Two random mods of devotion\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 2 das 16 linhas de devoção do pool da única no poedb (`linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
     }
   ]
 }

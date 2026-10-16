@@ -73,18 +73,17 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 - **Joias que caem**: Carmesim, Viridiana e Cobalto (Normal, Mágica, Rara e Única), a Prismática (só Única) e os 4 Olhos Abissais (nos encaixes da árvore e nos Encaixes Abissais das peças).
 - **Mods das joias Carmesim/Viridiana/Cobalto/Prismática** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
 - **Mods das joias Abissais** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
-- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; os solos (ardente, sagrado, fúngico…) não existem no jogo) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito.
+- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; os solos (ardente, sagrado, fúngico…) não existem no jogo) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito · Fé Militante 15/16 com efeito (1 não se aplicam: não se aplica ao jogo: o golpe dos lacaios não erra (não rola a Precisão contra a Evasão do monstro)).
 
 | Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |
 |---|---:|---:|---:|---:|
 | Carmesim, Viridiana, Cobalto e Prismática (94) | 238 | 195 | 43 | 0 |
 | Abissais (os 4 Olhos) (4) | 11 | 9 | 2 | 0 |
-| Atemporais (6) | 19 | 7 | 11 | 1 |
+| Atemporais (6) | 19 | 8 | 11 | 0 |
 | Ramificadoras (12) | 24 | 0 | 6 | 18 |
 
 ### O que ainda não funciona nas joias únicas, pelo lote previsto
 
 | Lote | Única — linha |
 |---|---|
-| Atemporais (as tabelas do PoB, com a autorização do download) (1) | Fé Militante — [Two random mods of devotion] _(descrição do catálogo para mods sorteados por um sistema que o jogo não tem (Síntese, mods aleatórios))_ |
 | Ramificadoras (raspar os encantamentos e notáveis no poedb) (18) | Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 7 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 5 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 3 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 1 Pequenas Habilidades Passivas que não concedem nada<br>Megalomaníaco — Adiciona 4 Habilidades Passivas<br>Megalomaníaco — Pequenas Habilidades Passivas Adicionadas não conedem Nada<br>Megalomaníaco — [Three random notable modifiers] _(descrição do catálogo para mods sorteados por um sistema que o jogo não tem (Síntese, mods aleatórios))_<br>Aquele Sem Nada — Adiciona Técnica da Palma Oca<br>Ensinamentos de Kitava — Adiciona Discípulo de Kitava<br>A Interrogação — Adiciona Segredos do Sofrimento<br>Visões Calamitosas — Adiciona Mensageiro<br>Afinidade Natural — Adiciona Paciência da Natureza<br>O Cerco — Adiciona Cineticismo<br>A Linha de Frente — Adiciona Astúcia do Veterano |

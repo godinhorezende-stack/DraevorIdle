@@ -1,6 +1,6 @@
 {
  "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). (lote 56) `nomeSorteado` — a marcação `marca` (\"Passive Skill\") do texto vira um dos `nomes` (a pedra fundamental da Fuga Impossível, o notável de ascendência da Chama/Carne Proibida). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
- "geradoEm": "2026-10-16T22:25:16.663Z",
+ "geradoEm": "2026-10-16T22:44:10.405Z",
  "unicos": {
   "Watchers_Eye": {
    "classe": "Jewels",
@@ -1334,6 +1334,239 @@
       [
        20,
        40
+      ]
+     ]
+    }
+   ]
+  },
+  "Militant_Faith": {
+   "classe": "Jewels",
+   "substitui": {
+    "[Two random mods of devotion]": 2
+   },
+   "fonte": "https://poedb.tw/pt/Militant_Faith",
+   "linhas": [
+    {
+     "texto": "0.6 de Mana Regenerada por Segundo por cada 10 de Devoção",
+     "modelo": "{0} de Mana Regenerada por Segundo por cada {1} de Devoção",
+     "faixas": [
+      [
+       0.6,
+       0.6
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Efeito de Afecções que não causam Dano nos Inimigos aumentado em 3% por cada 10 de Devoção",
+     "modelo": "Efeito de Afecções que não causam Dano nos Inimigos aumentado em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       3,
+       3
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Dano em Área aumentado em 4% por cada 10 de Devoção",
+     "modelo": "Dano em Área aumentado em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Efeito das Auras Não-Maldições aumentado em 1% por cada 10 de Devoção",
+     "modelo": "Efeito das Auras Não-Maldições aumentado em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Runas aumentado em 4% por cada 10 de Devoção",
+     "modelo": "Dano de Runas aumentado em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades Canalizadas causam Dano aumentado em 4% por cada 10 de Devoção",
+     "modelo": "Habilidades Canalizadas causam Dano aumentado em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Duração das Maldições em você reduzida em 4% por cada 10 de Devoção",
+     "modelo": "Duração das Maldições em você reduzida em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Duração das Afecções Elementais reduzidas em 4% por cada 10 de Devoção",
+     "modelo": "Duração das Afecções Elementais reduzidas em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Elemental aumentado em 4% por cada 10 de Devoção",
+     "modelo": "Dano Elemental aumentado em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "+2% de todas as Resistências Elementais por cada 10 de Devoção",
+     "modelo": "+{0}% de todas as Resistências Elementais por cada {1} de Devoção",
+     "faixas": [
+      [
+       2,
+       2
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Eficiência de custo de mana aumentada em 3% por 10 Devoções",
+     "modelo": "Eficiência de custo de mana aumentada em {0}% por {1} Devoções",
+     "faixas": [
+      [
+       3,
+       3
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Lacaios tem +60 de Precisão por cada 10 de Devoção",
+     "modelo": "Lacaios tem +{0} de Precisão por cada {1} de Devoção",
+     "faixas": [
+      [
+       60,
+       60
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Ataque e Conjuração dos Lacaios aumentadas em 1% por cada 10 de Devoção",
+     "modelo": "Velocidade de Ataque e Conjuração dos Lacaios aumentadas em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Custo de Mana das Habilidades reduzido em 1% por cada 10 de Devoção",
+     "modelo": "Custo de Mana das Habilidades reduzido em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Defesas do Escudo Equipado aumentadas em 3% por cada 10 de Devoção",
+     "modelo": "Defesas do Escudo Equipado aumentadas em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       3,
+       3
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Totens aumentado em 4% por cada 10 de Devoção",
+     "modelo": "Dano de Totens aumentado em {0}% por cada {1} de Devoção",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       10,
+       10
       ]
      ]
     }

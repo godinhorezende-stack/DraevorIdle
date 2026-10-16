@@ -19,6 +19,8 @@ const UNICOS = {
   // (lote 56) a Visão Sublime: 1 das 17 combinações (o efeito das auras em você, o bônus de uma aura e "as outras são Desabilitadas")
   Sublime_Vision: { aba: /^VisãoSublimeModificadores$/, substitui: { '[Aura Bonus Modifier]': 1 } },
   // (lote 57) o Limitado pelo Destino: cada marcação sorteia 1 das linhas do seu número de itens ("se 2 / 4 / 6 Itens do <Influência>…")
+  // (lote 58) a Fé Militante (a Atemporal): 2 das 16 linhas de devoção ("por cada 10 de Devoção")
+  Militant_Faith: { aba: /^FéMilitanteModificadores$/, substitui: { '[Two random mods of devotion]': 2 } },
   Bound_By_Destiny: { aba: /^LimitadopeloDestinoModificadores$/, substitui: { '[Random 2x influence item bonus]': { quantidade: 1, itens: 2 }, '[Random 4x influence item bonus]': { quantidade: 1, itens: 4 }, '[Random 6x influence item bonus]': { quantidade: 1, itens: 6 } } },
 };
 

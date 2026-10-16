@@ -119,6 +119,17 @@ export function traduzirParte(parte, valores, opcoes = {}) {
       }
     }
   }
+  // (lote 58, a Fé Militante) a ESCALA da Devoção no texto: "<efeito> por cada N de Devoção" / "por N Devoções" — o efeito pelas regras de sempre,
+  // com `%devocao:N` (a Devoção total da ficha — `condicoes-poe.fatorDaEscala`).
+  if (!opcoes?.semEscala) {
+    const d = /^(.+?),? por (?:cada )?\{(\d+)\} (?:de )?Devoç(?:ão|ões)$/.exec(String(parte).trim());
+    if (d) {
+      const n = Number(valores[Number(d[2])]) || 10;
+      const base = traduzirParte(d[1], valores, { ...opcoes, semEscala: true });
+      const efeitos = base.efeitos.map((e) => ({ ...e, stat: comEscala(e.stat, `devocao:${n}`) }));
+      if (['equivalente', 'aproximado', 'novo'].includes(base.estado) && efeitos.every(temEfeito)) return { estado: 'novo', efeitos, nota: base.nota ?? null, regra: base.regra };
+    }
+  }
   // "{n}% de aumento do X" / "{n}% de redução da X" (o poedb em português escreve das duas formas): a forma das regras ("X aumentado em
   // {n}%"), só quando nenhuma regra casou o texto como está.
   if (!opcoes?.semForma) {
@@ -217,6 +228,8 @@ export function condicaoDoTexto(parte, valores = []) {
   for (const [re, f] of SUFIXOS_COM_PARAMETRO) { const m = re.exec(parte); if (m) { const cond = f(m, valores); if (cond) return { efeito: m[1], cond }; } }
   return null;
 }
+/** (lote 58) O atributo com uma escala: `stat@cond` → `stat%escala@cond` (a escala vem antes da condição — `partir`). */
+const comEscala = (stat, escala) => { const i = String(stat).indexOf('@'); return i < 0 ? `${stat}%${escala}` : `${stat.slice(0, i)}%${escala}${stat.slice(i)}`; };
 /** O atributo com mais uma condição: `stat@a` → `stat@a+cond`. */
 const comCondicao = (stat, cond) => (String(stat).includes('@') ? `${stat}+${cond}` : `${stat}@${cond}`);
 
