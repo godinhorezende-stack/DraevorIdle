@@ -1,5 +1,6 @@
 import { cuidarDasMissoes } from './missoes-poe.mjs';
 import { chegouForjaOpcoes, chegouForjaResultado } from './forja-poe.mjs';
+import { chegouMercenarios } from './mercenarios.mjs';
 import './so-quando-muda.mjs';
 import { anunciarDrop, anunciarSistema } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
@@ -68,7 +69,7 @@ import {
 import {
   initPanels, openHunts, openBlessings, openQuests, openOutfits,
   renderAppearance, openStore, openMarket, openBank, openLocker, openRanking,
-  openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja,
+  openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja, openMercenarios,
   openDiario, openLojaNpc, abrirObterCoins,
   resumoDasGemasParaBalao,
   resumoDaMorteLigado, ligarResumoDaMorte, aplicarEstiloDaRaridade,
@@ -1171,6 +1172,10 @@ function handle(message) {
       break;
     case 'forjaResultado':
       chegouForjaResultado(message);
+      break;
+    // (16/10, lote 38) A tela dos Mercenários do PoE: a resposta de cada pedido é a tela inteira (`mercenarios.mjs`).
+    case 'mercenarios':
+      chegouMercenarios(message);
       break;
     /*
      * E a prévia da transferência, que chega à parte porque ela é uma PERGUNTA
@@ -2867,6 +2872,12 @@ const SISTEMAS = [
   { id: 'gemas', label: 'Gem Atelier', curto: 'Gemas', abre: () => openGemas(),
     tip: 'Revela gemas, encaixa nos domínios da árvore e sobe o grau dos modificadores com fragmentos.',
     corpo: () => resumoDasGemasParaBalao() },
+  /*
+   * (16/10, lote 38) Os MERCENÁRIOS do PoE: contratar por ouro, o equipamento dele e as gemas do arquétipo (o nó do Luminary libera). Sem
+   * desenho próprio ainda: o da ficha do personagem.
+   */
+  { id: 'mercenarios', label: 'Mercenários', curto: 'Mercen.', icone: 'character', abre: () => openMercenarios(),
+    tip: 'Contrata mercenários por ouro (o nó do Luminary), dá peças a eles e escolhe quem vai ao seu lado.' },
 
 ];
 
