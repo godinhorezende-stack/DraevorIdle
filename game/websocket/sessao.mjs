@@ -170,6 +170,8 @@ const COMANDOS_DE_ECONOMIA = new Set(['market', 'coinMarket', 'bank', 'guilda', 
 const COMANDOS_DE_CAIXA = new Set(['split', 'juntar', 'trocar', 'organizar']);
 const LEITURAS = new Set(['offers', 'historico']);
 const PASSAM_CARREGANDO = new Set(['release', 'logout', 'login', 'resume', 'register', 'delta', 'jaTenhoCatalogo', 'oculta']);
+// Sem personagem em jogo: a conta, o handshake e as consultas que não leem o personagem (ver `despachar`).
+const PASSAM_SEM_PERSONAGEM = new Set([...PASSAM_CARREGANDO, 'createCharacter', 'deleteCharacter', 'play', 'previaPoe', 'ranking', 'perfil', 'presenca', 'ouvirAudio']);
 const CAMPOS_DE_TODO_QUADRO = ['hp', 'mana'];
 
 // Catálogo, itens e mapa da cidade: fixos e enormes, viram texto uma vez só (ver `json.mjs`).
@@ -1117,6 +1119,10 @@ export class Sessao {
     // Entrando no personagem (simulação offline rodando): comando de jogo ainda
     // não tem personagem para agir. Sair, trocar de conta e o handshake passam.
     if (this.carregando && !PASSAM_CARREGANDO.has(m.t)) return;
+    // Sem personagem (a tela de escolha; a aba que reconectou, ou que outra aba soltou com `released`, mandando um comando antes do
+    // `play`): o comando de jogo estourava lá dentro, em `this.estado` nulo — 16/10, depois de um deploy: "sessao gema -> Cannot read
+    // properties of null (reading 'equipment')". Como na entrada, ele é ignorado em silêncio; só passa o que não precisa de personagem.
+    if (!this.personagem && !PASSAM_SEM_PERSONAGEM.has(m.t)) return;
     switch (m.t) {
       case 'register':
         return this.registrar(m);
