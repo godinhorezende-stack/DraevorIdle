@@ -216,6 +216,11 @@ const IMPLEMENTADOS = [
     re: /Todos os bônus do Escudo equipado se aplicam aos seus Lacaios/,
     jogo: 'as DEFESAS do escudo nos lacaios (a armadura, a evasão e o escudo de energia da base, com o "+X" e o "aumentado" do próprio escudo; a armadura no golpe pela conta do PoE, a evasão contra o ataque, a supressão contra a magia), a vida fixa, a redução física, o bloqueio aumentado, o dano mágico e o do elemento, o evitar afecções, o reflexo físico e a recarga do escudo',
   },
+  {
+    bloco: 'Zerar a árvore — lote 44 (os lacaios pelo Path of Building: o Sentinela, as Relíquias, as Aranhas, o Poder Fantasmal; a Égide Primitiva; os Robôs)',
+    re: /Cada Fantasma Convocado concede a Você Poder Fantasmal|Ativar Erguer Aranhas|Ativa Erguer Aranhas|Ativa Convocar Robôs Ativadores|Ativa Égide Primitiva|Convocar Sentinela do Resplendor Nível|Ativar Convocar Relíquia Elemental/,
+    jogo: 'a vida, o golpe, o tempo de ataque, o escudo de energia, a armadura e as resistências dos lacaios pelo PoB (a tabela de aliados × o multiplicador do tipo — `gamedata/itens-poe/pob-lacaios.json`); o Poder Fantasmal pelo nível do suporte; o veneno das Aranhas em 4 s; a Égide Primitiva volta em 5 s; as magias ativadas saem do lugar de cada Robô, que corre até os inimigos',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

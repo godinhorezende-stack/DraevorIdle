@@ -57,14 +57,13 @@ function bichoPerto(e, dx = 1) {
   return b;
 }
 
-test('a ÁRVORE: as 7 linhas do Guardian com efeito (o Sentinela e a Relíquia, aproximados — o PoE não publica a vida dos lacaios)', { skip: SEM }, () => {
+test('a ÁRVORE: as 7 linhas do Guardian com efeito (lote 44: o Sentinela equivalente — a exceção do idle — e a Relíquia com a força do PoB)', { skip: SEM }, () => {
   const linhas = P.arvore().nos.filter((n) => n.ascendencia === 'Guardian').flatMap((n) => n.textos.map((t, i) => ({ t, estado: n.estados[i], nota: n.notas?.[i] })))
     .filter((l) => l.estado !== 'nota' && /Chamas? Santificadas?|Sentinela do Resplendor|Relíquia Elemental/.test(l.t));
   assert.equal(linhas.length, 7);
-  for (const l of linhas) assert.ok(['novo', 'aproximado'].includes(l.estado), `${l.estado}: ${l.t}`);
-  const aproximadas = linhas.filter((l) => l.estado === 'aproximado');
-  assert.deepEqual(aproximadas.map((l) => /Convocar Sentinela|Relíquia Elemental/.test(l.t)), [true, true]);
-  for (const l of aproximadas) assert.ok(l.nota, `a nota no balão: ${l.t}`);
+  for (const l of linhas) assert.ok(['novo', 'equivalente'].includes(l.estado), `${l.estado}: ${l.t}`);
+  const equivalentes = linhas.filter((l) => l.estado === 'equivalente');
+  assert.deepEqual(equivalentes.map((l) => /Convocar Sentinela/.test(l.t)), [true]);
 });
 
 test('a CHAMA SANTIFICADA: o acerto corpo a corpo a põe (6 s, +1 Chama, intensidade +20%); não beneficia quem pôs; o Ataque do aliado leva o Fogo extra e a tira; quem pôs ganha Raio extra por Chama removida (até 80%)', { skip: SEM }, () => {
@@ -118,7 +117,8 @@ test('o SENTINELA DO RESPLENDOR: sai sozinho com o nó (0,75 s), volta depois de
   Acoes.tiqueDoGuardian(e, h, t0 + 750);
   assert.equal(sentinelas().length, 1);
   const s = sentinelas()[0];
-  assert.equal(s.maxHp, Math.round(LacaiosPoe.forcaDoNivel(80).vida));
+  // (lote 44: a vida do PoB — a tabela de aliados do nível 80 × 12)
+  assert.equal(s.maxHp, Math.round(LacaiosPoe.forcaDoPob('GuardianSentinel', 80).vida));
   Acoes.tiqueDoGuardian(e, h, t0 + 1000);
   assert.equal(sentinelas().length, 1, 'só um');
   // (a queima: a até 2 casas, não a 3)

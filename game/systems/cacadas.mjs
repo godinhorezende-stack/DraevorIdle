@@ -2669,6 +2669,13 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push(...golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora));
       continue;
     }
+    // (lote 44, P066) os Robôs Ativadores "seguem você e correm até os inimigos" (o PoE): até o alvo do familiar, na folga do combate — as suas
+    // Magias Ativadas saem do lugar deles (`Acoes.doLugarDoRobo`).
+    if (l.robo && !Protecao.imune(hunt)) {
+      const alvo = alvoDoFamiliar(hunt, l, agora);
+      if (alvo && distancia(l, alvo) > 1) { passoDoFamiliar(hunt, grade, l, agora, alvo, { pararEm: (d) => d <= 1, longe: 4 }); continue; }
+      if (alvo) continue;
+    }
     // (14/10) a Relíquia Elemental não ataca: a aura dela vale enquanto estiver viva (`ModsPoe.adds`), e ela segue você.
     if (l.semAtaque) { andarFamiliar(hunt, grade, l, agora); continue; }
     // A AURA (os robôs rastejantes): a cada segundo, um pouco do golpe em quem está em volta (resfria/eletriza na cor).
@@ -2765,9 +2772,10 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
       // (14/10, a Sagração à Cavalaria do Luminary: "Seu mercenário provoca ao atingir")
       if (l.mercenario && Number(ficha.afPoe?.mercenario_provoca) > 0 && b.hp > 0) (b.estados ??= {}).provocado = { ate: (hunt.clock ?? 0) + 3000, por: l.nome, deLacaio: true };
-      // (14/10) o VENENO das Aranhas Espectrais (o Golpe da Víbora): 60% do golpe em 2 s, como o veneno do PoE (sem os seus modificadores)
+      // (14/10) o VENENO das Aranhas Espectrais (o Golpe da Víbora): como o veneno do PoE, 30% do golpe por segundo (sem os seus modificadores) —
+      // lote 44: na duração da habilidade, 4 s (o PoB: "poison_duration_is_skill_duration", 4000 ms)
       if (l.envenenar && Math.random() * 100 < l.envenenar) {
-        const posto = Dot.aplicar(b, { tipo: 'venenoPoe', total: dano * 0.6, duracaoMs: 2000, origem: { fonte: 'lacaio', habilidade: l.nome } }, hunt.clock ?? 0);
+        const posto = Dot.aplicar(b, { tipo: 'venenoPoe', total: (dano * Acoes.ARANHAS.venenoPctPorS * Acoes.ARANHAS.venenoMs) / 100 / 1000, duracaoMs: Acoes.ARANHAS.venenoMs, origem: { fonte: 'lacaio', habilidade: l.nome } }, hunt.clock ?? 0);
         if (posto) eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: posto });
       }
       // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).

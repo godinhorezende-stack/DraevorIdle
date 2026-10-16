@@ -400,10 +400,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a Relíquia (5 s) tem a aura de um elemento ao acaso — Cólera, Ódio ou Ira nível 20 — em você e nos aliados perto e explode ao acabar, nos inimigos a até 2 casas (100% da vida dela, como dano do elemento); a vida dela é a de um monstro comum do seu nível, com a sua \"Vida dos Lacaios\" — o PoE não publica a vida nem a explosão",
+      "nota": "a Relíquia (5 s; recarga de 0,3 s) de um elemento ao acaso tem a aura dele — Cólera, Ódio ou Ira nível 20 — em você e nos aliados perto e explode ao acabar, nos inimigos a até 2 casas (100% da vida dela, como dano do elemento); a vida (a tabela de aliados do seu nível × 4), o escudo de energia (60% da vida) e as resistências são as do PoE (o PoB), com a sua \"Vida dos Lacaios\"",
       "_nova": true,
-      "_lote18": "14/10 — o Guardian (lote 18)"
+      "_lote18": "14/10 — o Guardian (lote 18)",
+      "_lote44": "16/10 — lote 44 (dono: \"Procurar os números\" e \"Aplicar o PoB\" — os lacaios pelo Path of Building)"
     },
     {
       "padrao": "^Ganha um buff de altar aleatório a cada \\{(\\d+)\\} segundos$",
@@ -496,10 +496,10 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "cada Fantasma vivo (do suporte Convocar Fantasma) dá Dano Físico Mágico Adicional igual ao golpe dele (o de um monstro comum do seu nível) — o PoE não publica a tabela pelo nível do Fantasma; pela regra do jogo, o dano adicionado a magias entra nas magias com dano Físico",
+      "nota": "cada Fantasma vivo (do Suporte: Convocar Fantasma) dá o Dano Físico Mágico Adicional do nível do suporte que o convocou (a tabela do PoB: 2 a 3 no nível 1, 42 a 65 no 20, 62 a 92 no 40); pela regra do jogo, o dano adicionado a magias entra nas magias com dano Físico",
       "_nova": true,
-      "_lote21": "14/10 — o Reliquarian (lote 21)"
+      "_lote21": "14/10 — o Reliquarian (lote 21)",
+      "_lote44": "16/10 — lote 44 (dono: \"Procurar os números\" e \"Aplicar o PoB\" — os lacaios pelo Path of Building)"
     },
     {
       "padrao": "^Ativa Convocar Robôs Ativadores Nível \\{(\\d+)\\} quando Alocado$",
@@ -509,10 +509,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): os dois robôs seguem você e não tomam dano; as suas Magias Ativadas saem duas vezes (a segunda ignora a recarga) do seu lugar — no PoE, uma do lugar de cada robô",
+      "nota": "os dois robôs seguem você, correm até os inimigos e não tomam dano; as suas Magias Ativadas saem duas vezes, uma do lugar de cada robô (a segunda ignora a recarga)",
       "_nova": true,
-      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)",
+      "_lote44": "16/10 — lote 44 (dono: \"Procurar os números\" e \"Aplicar o PoB\" — os lacaios pelo Path of Building)"
     },
     {
       "padrao": "^Golens Convocados são Reconvocados \\{(\\d+)\\} segundos após serem Mortos$",
@@ -18280,10 +18280,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Égide toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano elemental de acertos (o tempo das Égides do PoE — o da Primitiva não é publicado)",
+      "nota": "a Égide toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida; volta cheia 5 s depois do último dano elemental de acertos (o PoB e o poedb: 5000 ms; as Égides dos únicos, 10 s)",
       "_nova": true,
-      "_lote20": "14/10 — Égide e as pequenas (lote 20)"
+      "_lote20": "14/10 — Égide e as pequenas (lote 20)",
+      "_lote44": "16/10 — lote 44 (dono: \"Procurar os números\" e \"Aplicar o PoB\" — os lacaios pelo Path of Building)"
     },
     {
       "padrao": "^Égide Primitiva pode sofrer \\{(\\d+)\\} de Dano Elemental por Nódulo de Habilidade Passiva Alocada$",
@@ -18506,10 +18506,11 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Sentinela segue você, ataca corpo a corpo e queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo); volta 0,75 s depois de morrer; a vida e o golpe são os de um monstro comum do seu nível, com a sua \"Vida/Dano dos Lacaios\" — o PoE não publica a tabela dos lacaios",
+      "estado": "equivalente",
+      "nota": "exceção do dono (\"Exceção: o jogo é idle\"): a habilidade sai sozinha (o jogo usa as habilidades sozinho) e o Sentinela volta 0,75 s depois de morrer; ele segue você, ataca corpo a corpo e queima os inimigos a até 2 casas (20% da vida dele por segundo, como Fogo); a vida (a tabela de aliados do seu nível, até o 85, × 12), o golpe (a tabela × 20 × 3, a cada 2,96 s), a armadura e as resistências são as do PoE (o PoB), com a sua \"Vida/Dano dos Lacaios\"",
       "_nova": true,
-      "_lote18": "14/10 — o Guardian (lote 18)"
+      "_lote18": "14/10 — o Guardian (lote 18)",
+      "_lote44": "16/10 — lote 44 (dono: \"Procurar os números\" e \"Aplicar o PoB\" — os lacaios pelo Path of Building)"
     },
     {
       "padrao": "^Concede (?:a |à )?[Hh]abilidade (.+?) [Nn]ível \\{(\\d+)\\}$",
@@ -18600,10 +18601,10 @@
           "valor": "{2}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo e envenenam (60% do golpe em 2 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
+      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo com o Golpe da Víbora (o PoB: a tabela de aliados do nível × 1,76, a cada 0,96 s) e sempre envenenam (30% do golpe por segundo por 4 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
       "_nova": true,
-      "_lote21": "14/10 — o Reliquarian (lote 21)"
+      "_lote21": "14/10 — o Reliquarian (lote 21)",
+      "_lote44": "16/10 — lote 44 (dono: \"Procurar os números\" e \"Aplicar o PoB\" — os lacaios pelo Path of Building)"
     },
     {
       "padrao": "^Ativa Erguer Aranhas Nível \\{(\\d+)\\} ao Matar$",
@@ -18617,10 +18618,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo e envenenam (60% do golpe em 2 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
+      "nota": "ao matar (recarga de 2 s): duas Aranhas Espectrais de cada cadáver a até 4 casas (até 20, por 30 s), imunes a dano, que atacam corpo a corpo com o Golpe da Víbora (o PoB: a tabela de aliados do nível × 1,76, a cada 0,96 s) e sempre envenenam (30% do golpe por segundo por 4 s, sem os seus modificadores); cada aranha dá 2% de Velocidade de Ataque e 15% de Dano com Veneno",
       "_nova": true,
-      "_lote21": "14/10 — o Reliquarian (lote 21)"
+      "_lote21": "14/10 — o Reliquarian (lote 21)",
+      "_lote44": "16/10 — lote 44 (dono: \"Procurar os números\" e \"Aplicar o PoB\" — os lacaios pelo Path of Building)"
     },
     {
       "padrao": "^Ativa (?:o |a )?(.+?) [Nn]ível \\{(\\d+)\\} ao [Mm]atar(?: um Inimigo)?$",

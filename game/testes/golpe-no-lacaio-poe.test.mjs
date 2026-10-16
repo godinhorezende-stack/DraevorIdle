@@ -56,7 +56,11 @@ test('o bicho de 1 bilhão de vida ao lado do Sentinela tira dele a metade do GO
   assert.ok(sentinela, 'o Sentinela saiu');
   assert.ok(golpes.length > 0, 'o bicho acertou o Sentinela');
   const fator = ModsPoe.doBicho(b, h.clock ?? 0, { contraOutro: true }).danoFator;
-  const esperado = Math.max(1, Math.round(melee.min * 0.5 * fator));
-  for (const g of golpes) assert.equal(g.v, esperado, `${g.v} = metade de ${melee.min} × ${fator}`);
+  // (lote 44, dono: "Aplicar o PoB" — o Sentinela tem a armadura do PoE: armadura ÷ (armadura + 5 × o físico), no teto de 90%)
+  const fisico = melee.min * 0.5 * fator;
+  const armadura = sentinela.poe?.armadura ?? 0;
+  const red = Math.min(90, armadura > 0 ? (100 * armadura) / (armadura + 5 * fisico) : 0);
+  const esperado = Math.max(1, Math.round(fisico * (1 - red / 100)));
+  for (const g of golpes) assert.equal(g.v, esperado, `${g.v} = metade de ${melee.min} × ${fator}, menos ${red.toFixed(1)}% da armadura`);
   assert.ok(sentinela.hp > 0 && sentinela.hp >= sentinela.maxHp - esperado * golpes.length, 'vivo, com a vida que os golpes tiraram');
 });

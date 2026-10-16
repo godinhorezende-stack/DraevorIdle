@@ -61,7 +61,7 @@ test('a ÁRVORE: as 7 linhas do bloco com efeito; nenhuma linha sem efeito na á
   assert.deepEqual(semEfeito.map((l) => l.t), []);
 });
 
-test('a ÉGIDE PRIMITIVA: 75 por Notável alocado; toma o Fogo, o Gelo e o Raio dos acertos (não o Físico); esgotada, volta cheia 10 s depois do último dano elemental', { skip: SEM }, () => {
+test('a ÉGIDE PRIMITIVA: 75 por Notável alocado; toma o Fogo, o Gelo e o Raio dos acertos (não o Físico); esgotada, volta cheia 5 s depois do último dano elemental (lote 44: o PoB e o poedb — 5000 ms)', { skip: SEM }, () => {
   const e = personagem({ af: { egide_primitiva: 20, egide_primitiva_por_notavel: 75 } });
   comNotaveis(e, 4);
   assert.equal(Acoes.notaveisAlocados(e), 4);
@@ -78,9 +78,9 @@ test('a ÉGIDE PRIMITIVA: 75 por Notável alocado; toma o Fogo, o Gelo e o Raio 
   assert.equal(ModsPoe.absorverNaEgide(h, gelo, t0 + 1000), 100);
   assert.equal(gelo.ice, 50);
   assert.equal(eg.valor, 0);
-  Acoes.tiqueDasEgides(e, h, t0 + 1000 + 9999);
+  Acoes.tiqueDasEgides(e, h, t0 + 1000 + 4999);
   assert.equal(eg.valor, 0, 'ainda na espera');
-  Acoes.tiqueDasEgides(e, h, t0 + 1000 + 10_000);
+  Acoes.tiqueDasEgides(e, h, t0 + 1000 + 5000);
   assert.equal(eg.valor, 300, 'volta cheia');
   // (o HUD)
   assert.ok(ModsPoe.buffsDoCliente(e).some((c) => c.nome === 'Égide Primitiva' && c.contador === 300));
