@@ -1,6 +1,6 @@
 {
  "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). (lote 56) `nomeSorteado` — a marcação `marca` (\"Passive Skill\") do texto vira um dos `nomes` (a pedra fundamental da Fuga Impossível, o notável de ascendência da Chama/Carne Proibida). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
- "geradoEm": "2026-10-16T22:03:51.114Z",
+ "geradoEm": "2026-10-16T22:25:16.663Z",
  "unicos": {
   "Watchers_Eye": {
    "classe": "Jewels",
@@ -1334,6 +1334,1433 @@
       [
        20,
        40
+      ]
+     ]
+    }
+   ]
+  },
+  "Bound_By_Destiny": {
+   "classe": "Jewels",
+   "substitui": {
+    "[Random 2x influence item bonus]": 1,
+    "[Random 4x influence item bonus]": 1,
+    "[Random 6x influence item bonus]": 1
+   },
+   "pools": {
+    "[Random 2x influence item bonus]": [
+     {
+      "texto": "Mais (10—15)% de vida máxima se 2 Itens do Ancião estiverem equipados",
+      "modelo": "Mais {0}% de vida máxima se {1} Itens do Ancião estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Inimigos próximos são enervados se 2 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "Inimigos próximos são enervados se {0} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "(1—3)% do dano físico roubado como escudo de energia se 2 Itens do Criador estiverem equipados",
+      "modelo": "{0}% do dano físico roubado como escudo de energia se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Mais (10—15)% de mana máximo se 2 Itens do Criador estiverem equipados",
+      "modelo": "Mais {0}% de mana máximo se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Mais (10—20)% de taxa de recuperação do tempo de recarga se 2 Itens do Criador estiverem equipados",
+      "modelo": "Mais {0}% de taxa de recuperação do tempo de recarga se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        10,
+        20
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "(1—3)% do dano elemental roubado como escudo de energia se 2 Itens do Criador estiverem equipados",
+      "modelo": "{0}% do dano elemental roubado como escudo de energia se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        1,
+        3
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Imune a veneno se 2 Itens do Caçador estiverem equipados",
+      "modelo": "Imune a veneno se {0} Itens do Caçador estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "A cada 4 segundos, regenera 35% de vida durante 1 segundo se 2 Itens do Caçador estiverem equipados",
+      "modelo": "A cada {0} segundos, regenera {1}% de vida durante {2} segundo se {3} Itens do Caçador estiverem equipados",
+      "faixas": [
+       [
+        4,
+        4
+       ],
+       [
+        35,
+        35
+       ],
+       [
+        1,
+        1
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Projéteis perfuram 2 alvos adicionais se 2 itens de caçador estiverem equipados",
+      "modelo": "Projéteis perfuram {0} alvos adicionais se {1} itens de caçador estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Imune a incêndio se 2 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "Imune a incêndio se {0} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Inimigos próximos são intimidados se 2 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "Inimigos próximos são intimidados se {0} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Mais (10—15)% de força se 2 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "Mais {0}% de força se {1} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Imune a esfriamento se 2 Itens da Redentora estiverem equipados",
+      "modelo": "Imune a esfriamento se {0} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Inimigos próximos são cegados se 2 Itens da Redentora estiverem equipados",
+      "modelo": "Inimigos próximos são cegados se {0} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Mais (10—15)% de destreza se 2 Itens da Redentora estiverem equipados",
+      "modelo": "Mais {0}% de destreza se {1} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Imune a eletrificação se 2 Itens do Cruzado estiverem equipados",
+      "modelo": "Imune a eletrificação se {0} Itens do Cruzado estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Você tem chão consagrado ao seu redor enquanto estiver imóvel se 2 Itens do Cruzado estiverem equipados",
+      "modelo": "Você tem chão consagrado ao seu redor enquanto estiver imóvel se {0} Itens do Cruzado estiverem equipados",
+      "faixas": [
+       [
+        2,
+        2
+       ]
+      ]
+     },
+     {
+      "texto": "Mais (10—15)% de inteligência se 2 Itens do Cruzado estiverem equipados",
+      "modelo": "Mais {0}% de inteligência se {1} Itens do Cruzado estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        2,
+        2
+       ]
+      ]
+     }
+    ],
+    "[Random 4x influence item bonus]": [
+     {
+      "texto": "+3% para a chance de bloquear dano de ataque máxima se 4 Itens do Ancião estiverem equipados",
+      "modelo": "+{0}% para a chance de bloquear dano de ataque máxima se {1} Itens do Ancião estiverem equipados",
+      "faixas": [
+       [
+        3,
+        3
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Não pode sofrer dano físico refletido se 4 Itens do Ancião estiverem equipados",
+      "modelo": "Não pode sofrer dano físico refletido se {0} Itens do Ancião estiverem equipados",
+      "faixas": [
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Ataques têm +(1—1.5)% a mais de chance de golpe crítico se 4 Itens do Ancião estiverem equipados",
+      "modelo": "Ataques têm +{0}% a mais de chance de golpe crítico se {1} Itens do Ancião estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1.5
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+3% para a chance de bloquear dano de magia máxima se 4 Itens do Criador estiverem equipados",
+      "modelo": "+{0}% para a chance de bloquear dano de magia máxima se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        3,
+        3
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Não pode sofrer dano elemental refletido se 4 Itens do Criador estiverem equipados",
+      "modelo": "Não pode sofrer dano elemental refletido se {0} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+(1—1.5)% à chance de golpe crítico mágico se 4 Itens do Criador estiverem equipados",
+      "modelo": "+{0}% à chance de golpe crítico mágico se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1.5
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Sofre (5—10)% do dano elemental como dano de caos se tiver 4 itens do caçador equipados",
+      "modelo": "Sofre {0}% do dano elemental como dano de caos se tiver {1} itens do caçador equipados",
+      "faixas": [
+       [
+        5,
+        10
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Mais (10—15)% para a velocidade de movimento se 4 Itens do Caçador estiverem equipados",
+      "modelo": "Mais {0}% para a velocidade de movimento se {1} Itens do Caçador estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+(2—3)% para a resistência a dano de caos máxima se 4 Itens do Caçador estiverem equipados",
+      "modelo": "+{0}% para a resistência a dano de caos máxima se {1} Itens do Caçador estiverem equipados",
+      "faixas": [
+       [
+        2,
+        3
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Sofre (5—10)% do dano físico como dano de fogo se tiver 4 itens do senhor da guerra equipados",
+      "modelo": "Sofre {0}% do dano físico como dano de fogo se tiver {1} itens do senhor da guerra equipados",
+      "faixas": [
+       [
+        5,
+        10
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Ganha 1 cargas de tolerância por segundo se tiver sido atingido recentemente se 4 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "Ganha {0} cargas de tolerância por segundo se tiver sido atingido recentemente se {1} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+(2—3)% para a resistência a dano de fogo máxima se 4 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "+{0}% para a resistência a dano de fogo máxima se {1} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        2,
+        3
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Sofre (5—10)% do dano físico como dano de gelo se tiver 4 itens da redentora equipados",
+      "modelo": "Sofre {0}% do dano físico como dano de gelo se tiver {1} itens da redentora equipados",
+      "faixas": [
+       [
+        5,
+        10
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "(10—15)% de chance de ganhar uma Carga de Frenesi ao Atingir se 4 Itens da Redentora estiverem equipados",
+      "modelo": "{0}% de chance de ganhar uma Carga de Frenesi ao Atingir se {1} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+(2—3)% para a resistência a dano de gelo máxima se 4 Itens da Redentora estiverem equipados",
+      "modelo": "+{0}% para a resistência a dano de gelo máxima se {1} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        2,
+        3
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "Sofre (5—10)% do dano físico como dano de raio se tiver 4 itens do cruzado equipados",
+      "modelo": "Sofre {0}% do dano físico como dano de raio se tiver {1} itens do cruzado equipados",
+      "faixas": [
+       [
+        5,
+        10
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "(10—15)% de chance de ganhar uma Carga de Poder ao Atingir se 4 Itens de Cruzado estiverem equipados",
+      "modelo": "{0}% de chance de ganhar uma Carga de Poder ao Atingir se {1} Itens de Cruzado estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     },
+     {
+      "texto": "+(2—3)% para a resistência a dano de raio máxima se 4 Itens do Cruzado estiverem equipados",
+      "modelo": "+{0}% para a resistência a dano de raio máxima se {1} Itens do Cruzado estiverem equipados",
+      "faixas": [
+       [
+        2,
+        3
+       ],
+       [
+        4,
+        4
+       ]
+      ]
+     }
+    ],
+    "[Random 6x influence item bonus]": [
+     {
+      "texto": "Não pode ser atordoado se 6 Itens do Ancião estiverem equipados",
+      "modelo": "Não pode ser atordoado se {0} Itens do Ancião estiverem equipados",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao nível de todas as gemas de habilidades físicas se 6 Itens do Ancião estiverem equipados",
+      "modelo": "+{0} ao nível de todas as gemas de habilidades físicas se {1} Itens do Ancião estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Aumento de (10—15)% dos atributos se 6 Itens do Ancião estiverem equipados",
+      "modelo": "Aumento de {0}% dos atributos se {1} Itens do Ancião estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Ganha (10—15)% de dano físico como dano adicional de cada elemento se 6 Itens do Criador estiverem equipados",
+      "modelo": "Ganha {0}% de dano físico como dano adicional de cada elemento se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        10,
+        15
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+(1—2)% para todas as resistências elementais máximas se 6 Itens do Criador estiverem equipados",
+      "modelo": "+{0}% para todas as resistências elementais máximas se {1} Itens do Criador estiverem equipados",
+      "faixas": [
+       [
+        1,
+        2
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao nível de todas as gemas de suporte não excepcionais se tiver 6 itens do Criador equipados",
+      "modelo": "+{0} ao nível de todas as gemas de suporte não excepcionais se tiver {1} itens do Criador equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Você pode aplicar uma maldição a mais se 6 Itens do Caçador estiverem equipados",
+      "modelo": "Você pode aplicar uma maldição a mais se {0} Itens do Caçador estiverem equipados",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao nível de todas as gemas de habilidade de caos se 6 Itens do Caçador estiverem equipados",
+      "modelo": "+{0} ao nível de todas as gemas de habilidade de caos se {1} Itens do Caçador estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Habilidades disparam um projétil adicional se 6 Itens de Caçador estiverem equipados",
+      "modelo": "Habilidades disparam um projétil adicional se {0} Itens de Caçador estiverem equipados",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Acertos corpo a corpo fortificam se 6 Itens do Senhor de Guerra estiverem equipados",
+      "modelo": "Acertos corpo a corpo fortificam se {0} Itens do Senhor de Guerra estiverem equipados",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao nível de todas as gemas de habilidade de fogo se 6 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "+{0} ao nível de todas as gemas de habilidade de fogo se {1} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 para as cargas de tolerância máximas se 6 Itens do Senhor da Guerra estiverem equipados",
+      "modelo": "+{0} para as cargas de tolerância máximas se {1} Itens do Senhor da Guerra estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "Não pode ser congelado se 6 Itens da Redentora estiverem equipados",
+      "modelo": "Não pode ser congelado se {0} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao nível de todas as gemas de habilidade de gelo se 6 Itens da Redentora estiverem equipados",
+      "modelo": "+{0} ao nível de todas as gemas de habilidade de gelo se {1} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 para as cargas de frenesi máximas se 6 Itens da Redentora estiverem equipados",
+      "modelo": "+{0} para as cargas de frenesi máximas se {1} Itens da Redentora estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "(1—3)% do dano físico impedido recentemente é regenerado como escudo de energia por segundo se 6 Itens do Cruzado estiverem equipados",
+      "modelo": "{0}% do dano físico impedido recentemente é regenerado como escudo de energia por segundo se {1} Itens do Cruzado estiverem equipados",
+      "faixas": [
+       [
+        1,
+        3
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 ao nível de todas as gemas de habilidade de raio se 6 Itens do Cruzado estiverem equipados",
+      "modelo": "+{0} ao nível de todas as gemas de habilidade de raio se {1} Itens do Cruzado estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     },
+     {
+      "texto": "+1 para as cargas de poder máximas se 6 Itens do Cruzado estiverem equipados",
+      "modelo": "+{0} para as cargas de poder máximas se {1} Itens do Cruzado estiverem equipados",
+      "faixas": [
+       [
+        1,
+        1
+       ],
+       [
+        6,
+        6
+       ]
+      ]
+     }
+    ]
+   },
+   "fonte": "https://poedb.tw/pt/Bound_By_Destiny",
+   "linhas": [
+    {
+     "texto": "Mais (10—15)% de vida máxima se 2 Itens do Ancião estiverem equipados",
+     "modelo": "Mais {0}% de vida máxima se {1} Itens do Ancião estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Inimigos próximos são enervados se 2 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "Inimigos próximos são enervados se {0} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "(1—3)% do dano físico roubado como escudo de energia se 2 Itens do Criador estiverem equipados",
+     "modelo": "{0}% do dano físico roubado como escudo de energia se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Mais (10—15)% de mana máximo se 2 Itens do Criador estiverem equipados",
+     "modelo": "Mais {0}% de mana máximo se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Mais (10—20)% de taxa de recuperação do tempo de recarga se 2 Itens do Criador estiverem equipados",
+     "modelo": "Mais {0}% de taxa de recuperação do tempo de recarga se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       10,
+       20
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "(1—3)% do dano elemental roubado como escudo de energia se 2 Itens do Criador estiverem equipados",
+     "modelo": "{0}% do dano elemental roubado como escudo de energia se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       1,
+       3
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a veneno se 2 Itens do Caçador estiverem equipados",
+     "modelo": "Imune a veneno se {0} Itens do Caçador estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "A cada 4 segundos, regenera 35% de vida durante 1 segundo se 2 Itens do Caçador estiverem equipados",
+     "modelo": "A cada {0} segundos, regenera {1}% de vida durante {2} segundo se {3} Itens do Caçador estiverem equipados",
+     "faixas": [
+      [
+       4,
+       4
+      ],
+      [
+       35,
+       35
+      ],
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Projéteis perfuram 2 alvos adicionais se 2 itens de caçador estiverem equipados",
+     "modelo": "Projéteis perfuram {0} alvos adicionais se {1} itens de caçador estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a incêndio se 2 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "Imune a incêndio se {0} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Inimigos próximos são intimidados se 2 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "Inimigos próximos são intimidados se {0} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Mais (10—15)% de força se 2 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "Mais {0}% de força se {1} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a esfriamento se 2 Itens da Redentora estiverem equipados",
+     "modelo": "Imune a esfriamento se {0} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Inimigos próximos são cegados se 2 Itens da Redentora estiverem equipados",
+     "modelo": "Inimigos próximos são cegados se {0} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Mais (10—15)% de destreza se 2 Itens da Redentora estiverem equipados",
+     "modelo": "Mais {0}% de destreza se {1} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a eletrificação se 2 Itens do Cruzado estiverem equipados",
+     "modelo": "Imune a eletrificação se {0} Itens do Cruzado estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Você tem chão consagrado ao seu redor enquanto estiver imóvel se 2 Itens do Cruzado estiverem equipados",
+     "modelo": "Você tem chão consagrado ao seu redor enquanto estiver imóvel se {0} Itens do Cruzado estiverem equipados",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Mais (10—15)% de inteligência se 2 Itens do Cruzado estiverem equipados",
+     "modelo": "Mais {0}% de inteligência se {1} Itens do Cruzado estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "+3% para a chance de bloquear dano de ataque máxima se 4 Itens do Ancião estiverem equipados",
+     "modelo": "+{0}% para a chance de bloquear dano de ataque máxima se {1} Itens do Ancião estiverem equipados",
+     "faixas": [
+      [
+       3,
+       3
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Não pode sofrer dano físico refletido se 4 Itens do Ancião estiverem equipados",
+     "modelo": "Não pode sofrer dano físico refletido se {0} Itens do Ancião estiverem equipados",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Ataques têm +(1—1.5)% a mais de chance de golpe crítico se 4 Itens do Ancião estiverem equipados",
+     "modelo": "Ataques têm +{0}% a mais de chance de golpe crítico se {1} Itens do Ancião estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1.5
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+3% para a chance de bloquear dano de magia máxima se 4 Itens do Criador estiverem equipados",
+     "modelo": "+{0}% para a chance de bloquear dano de magia máxima se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       3,
+       3
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Não pode sofrer dano elemental refletido se 4 Itens do Criador estiverem equipados",
+     "modelo": "Não pode sofrer dano elemental refletido se {0} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+(1—1.5)% à chance de golpe crítico mágico se 4 Itens do Criador estiverem equipados",
+     "modelo": "+{0}% à chance de golpe crítico mágico se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1.5
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Sofre (5—10)% do dano elemental como dano de caos se tiver 4 itens do caçador equipados",
+     "modelo": "Sofre {0}% do dano elemental como dano de caos se tiver {1} itens do caçador equipados",
+     "faixas": [
+      [
+       5,
+       10
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Mais (10—15)% para a velocidade de movimento se 4 Itens do Caçador estiverem equipados",
+     "modelo": "Mais {0}% para a velocidade de movimento se {1} Itens do Caçador estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+(2—3)% para a resistência a dano de caos máxima se 4 Itens do Caçador estiverem equipados",
+     "modelo": "+{0}% para a resistência a dano de caos máxima se {1} Itens do Caçador estiverem equipados",
+     "faixas": [
+      [
+       2,
+       3
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Sofre (5—10)% do dano físico como dano de fogo se tiver 4 itens do senhor da guerra equipados",
+     "modelo": "Sofre {0}% do dano físico como dano de fogo se tiver {1} itens do senhor da guerra equipados",
+     "faixas": [
+      [
+       5,
+       10
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha 1 cargas de tolerância por segundo se tiver sido atingido recentemente se 4 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "Ganha {0} cargas de tolerância por segundo se tiver sido atingido recentemente se {1} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+(2—3)% para a resistência a dano de fogo máxima se 4 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "+{0}% para a resistência a dano de fogo máxima se {1} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       2,
+       3
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Sofre (5—10)% do dano físico como dano de gelo se tiver 4 itens da redentora equipados",
+     "modelo": "Sofre {0}% do dano físico como dano de gelo se tiver {1} itens da redentora equipados",
+     "faixas": [
+      [
+       5,
+       10
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "(10—15)% de chance de ganhar uma Carga de Frenesi ao Atingir se 4 Itens da Redentora estiverem equipados",
+     "modelo": "{0}% de chance de ganhar uma Carga de Frenesi ao Atingir se {1} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+(2—3)% para a resistência a dano de gelo máxima se 4 Itens da Redentora estiverem equipados",
+     "modelo": "+{0}% para a resistência a dano de gelo máxima se {1} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       2,
+       3
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Sofre (5—10)% do dano físico como dano de raio se tiver 4 itens do cruzado equipados",
+     "modelo": "Sofre {0}% do dano físico como dano de raio se tiver {1} itens do cruzado equipados",
+     "faixas": [
+      [
+       5,
+       10
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "(10—15)% de chance de ganhar uma Carga de Poder ao Atingir se 4 Itens de Cruzado estiverem equipados",
+     "modelo": "{0}% de chance de ganhar uma Carga de Poder ao Atingir se {1} Itens de Cruzado estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "+(2—3)% para a resistência a dano de raio máxima se 4 Itens do Cruzado estiverem equipados",
+     "modelo": "+{0}% para a resistência a dano de raio máxima se {1} Itens do Cruzado estiverem equipados",
+     "faixas": [
+      [
+       2,
+       3
+      ],
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Não pode ser atordoado se 6 Itens do Ancião estiverem equipados",
+     "modelo": "Não pode ser atordoado se {0} Itens do Ancião estiverem equipados",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao nível de todas as gemas de habilidades físicas se 6 Itens do Ancião estiverem equipados",
+     "modelo": "+{0} ao nível de todas as gemas de habilidades físicas se {1} Itens do Ancião estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Aumento de (10—15)% dos atributos se 6 Itens do Ancião estiverem equipados",
+     "modelo": "Aumento de {0}% dos atributos se {1} Itens do Ancião estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha (10—15)% de dano físico como dano adicional de cada elemento se 6 Itens do Criador estiverem equipados",
+     "modelo": "Ganha {0}% de dano físico como dano adicional de cada elemento se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+(1—2)% para todas as resistências elementais máximas se 6 Itens do Criador estiverem equipados",
+     "modelo": "+{0}% para todas as resistências elementais máximas se {1} Itens do Criador estiverem equipados",
+     "faixas": [
+      [
+       1,
+       2
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao nível de todas as gemas de suporte não excepcionais se tiver 6 itens do Criador equipados",
+     "modelo": "+{0} ao nível de todas as gemas de suporte não excepcionais se tiver {1} itens do Criador equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Você pode aplicar uma maldição a mais se 6 Itens do Caçador estiverem equipados",
+     "modelo": "Você pode aplicar uma maldição a mais se {0} Itens do Caçador estiverem equipados",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao nível de todas as gemas de habilidade de caos se 6 Itens do Caçador estiverem equipados",
+     "modelo": "+{0} ao nível de todas as gemas de habilidade de caos se {1} Itens do Caçador estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades disparam um projétil adicional se 6 Itens de Caçador estiverem equipados",
+     "modelo": "Habilidades disparam um projétil adicional se {0} Itens de Caçador estiverem equipados",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Acertos corpo a corpo fortificam se 6 Itens do Senhor de Guerra estiverem equipados",
+     "modelo": "Acertos corpo a corpo fortificam se {0} Itens do Senhor de Guerra estiverem equipados",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao nível de todas as gemas de habilidade de fogo se 6 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "+{0} ao nível de todas as gemas de habilidade de fogo se {1} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 para as cargas de tolerância máximas se 6 Itens do Senhor da Guerra estiverem equipados",
+     "modelo": "+{0} para as cargas de tolerância máximas se {1} Itens do Senhor da Guerra estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "Não pode ser congelado se 6 Itens da Redentora estiverem equipados",
+     "modelo": "Não pode ser congelado se {0} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao nível de todas as gemas de habilidade de gelo se 6 Itens da Redentora estiverem equipados",
+     "modelo": "+{0} ao nível de todas as gemas de habilidade de gelo se {1} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 para as cargas de frenesi máximas se 6 Itens da Redentora estiverem equipados",
+     "modelo": "+{0} para as cargas de frenesi máximas se {1} Itens da Redentora estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "(1—3)% do dano físico impedido recentemente é regenerado como escudo de energia por segundo se 6 Itens do Cruzado estiverem equipados",
+     "modelo": "{0}% do dano físico impedido recentemente é regenerado como escudo de energia por segundo se {1} Itens do Cruzado estiverem equipados",
+     "faixas": [
+      [
+       1,
+       3
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 ao nível de todas as gemas de habilidade de raio se 6 Itens do Cruzado estiverem equipados",
+     "modelo": "+{0} ao nível de todas as gemas de habilidade de raio se {1} Itens do Cruzado estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
+      ]
+     ]
+    },
+    {
+     "texto": "+1 para as cargas de poder máximas se 6 Itens do Cruzado estiverem equipados",
+     "modelo": "+{0} para as cargas de poder máximas se {1} Itens do Cruzado estiverem equipados",
+     "faixas": [
+      [
+       1,
+       1
+      ],
+      [
+       6,
+       6
       ]
      ]
     }

@@ -15925,7 +15925,7 @@
       "estado": "novo"
     },
     {
-      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$|\\[One to three random synthesis implicit modifiers\\]$|\\[Aura Bonus Modifier\\]$)\\[.*\\]$",
+      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$|\\[One to three random synthesis implicit modifiers\\]$|\\[Aura Bonus Modifier\\]$|\\[Random [246]x influence item bonus\\]$)\\[.*\\]$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17509,7 +17509,7 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Exarca Cauterizad|Devorador de Mundos|do Criador|do Ancião|Itens? Anci(?:ão|ões)|Remodelad|[Ii]nfluência|Conquistador).*$",
+      "padrao": "^(?!.* se (?:tiver )?\\{\\d+\\} [Ii]tens d[oa] (?:Criador|Ancião) (?:estiverem )?equipados$).*(?:Exarca Cauterizad|Devorador de Mundos|do Criador|do Ancião|Itens? Anci(?:ão|ões)|Remodelad|[Ii]nfluência|Conquistador).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17663,7 +17663,7 @@
       "_unico": true
     },
     {
-      "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
+      "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado|\\{\\d+\\}% de chance de criar Solo Profano no Golpe Crítico|Efeitos do Solo Profano criados por você Perduram).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -39803,6 +39803,675 @@
       "nota": "com a Chama Proibida do mesmo notável encaixada, ele vale como alocado — o notável de uma ascendência da sua classe",
       "_nova": true,
       "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Profano no Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:soloProfano:8",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Solo Profano (dono, 16/10: \"Implementar como o Sagrado\"): 8 s no chão, raio de 1 casa; os inimigos sobre ele levam +100% de chance de crítico e +10% de efeito de maldição",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Efeitos do Solo Profano criados por você Perduram por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "solo_profano_perdura_s",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Solo Profano (dono, 16/10: \"Implementar como o Sagrado\"): 8 s no chão, raio de 1 casa; os inimigos sobre ele levam +100% de chance de crítico e +10% de efeito de maldição",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de vida máxima$",
+      "efeitos": [
+        {
+          "stat": "life_more",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Inimigos próximos são enervados$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:inervado",
+          "valor": "1"
+        }
+      ],
+      "nota": "o Inervado do PoE (Unnerve): 10% mais dano de Magias recebido",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano físico roubado como escudo de energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@fisico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o \"Dano de Fogo Drenado como Vida\" do jogo: o golpe Físico drena (o jogo não separa a parte Física do golpe)",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de mana máximo$",
+      "efeitos": [
+        {
+          "stat": "mana_more",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de taxa de recuperação do tempo de recarga$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano elemental roubado como escudo de energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o \"Dano de Fogo Drenado como Vida\" do jogo: o golpe Elemental drena (o jogo não separa a parte Elemental do golpe)",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a veneno$",
+      "efeitos": [
+        {
+          "stat": "imune_veneno",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a incêndio$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a esfriamento$",
+      "efeitos": [
+        {
+          "stat": "imune_resfriamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a eletrificação$",
+      "efeitos": [
+        {
+          "stat": "imune_eletrizacao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, regenera \\{(\\d+)\\}% de vida durante \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:regenPct:hp:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Projéteis perfuram \\{(\\d+)\\} alvos adicionais$",
+      "efeitos": [
+        {
+          "stat": "perfurar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Inimigos próximos são intimidados$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:intimidado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Inimigos próximos são cegados$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:cego",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de força$",
+      "efeitos": [
+        {
+          "stat": "str_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de destreza$",
+      "efeitos": [
+        {
+          "stat": "dex_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de inteligência$",
+      "efeitos": [
+        {
+          "stat": "int_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Você tem chão consagrado ao seu redor enquanto estiver imóvel$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:soloSagrado:2@parado",
+          "valor": "100"
+        }
+      ],
+      "nota": "como o \"Enquanto parado, a área ao seu redor será Solo Sagrado\"",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a chance de bloquear dano de ataque máxima$",
+      "efeitos": [
+        {
+          "stat": "block_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a chance de bloquear dano de magia máxima$",
+      "efeitos": [
+        {
+          "stat": "spell_block_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode sofrer dano físico refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_fisico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode sofrer dano elemental refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Ataques têm \\+\\{(\\d+)\\}% a mais de chance de golpe crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% à chance de golpe crítico mágico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano elemental como dano de caos$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_chaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_ice_como_chaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% para a velocidade de movimento$",
+      "efeitos": [
+        {
+          "stat": "move_speed_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de caos máxima$",
+      "efeitos": [
+        {
+          "stat": "chaos_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de fogo máxima$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de gelo máxima$",
+      "efeitos": [
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de raio máxima$",
+      "efeitos": [
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano físico como dano de fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano físico como dano de gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano físico como dano de raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} cargas de tolerância por segundo se tiver sido atingido recentemente$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_por_segundo_acertado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi ao Atingir$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Atingir$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode ser atordoado$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode ser congelado$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidades físicas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de caos$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de fogo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de gelo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de raio$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Aumento de \\{(\\d+)\\}% dos atributos$",
+      "efeitos": [
+        {
+          "stat": "str_inc",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex_inc",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de dano físico como dano adicional de cada elemento$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_ice",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para todas as resistências elementais máximas$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de suporte não excepcionais$",
+      "efeitos": [
+        {
+          "stat": "gem_level@suporte+naoExcepcional",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Você pode aplicar uma maldição a mais$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_adicionais",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Habilidades disparam um projétil adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Acertos corpo a corpo fortificam$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} para as cargas de tolerância máximas$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} para as cargas de frenesi máximas$",
+      "efeitos": [
+        {
+          "stat": "max_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} para as cargas de poder máximas$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano físico impedido recentemente é regenerado como escudo de energia por segundo$",
+      "efeitos": [
+        {
+          "stat": "fisico_negado_em_es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\[Random [246]x influence item bonus\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteada na peça: 1 das 18 linhas do pool da única no poedb com o mesmo número de itens com influência (`linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
     }
   ]
 }

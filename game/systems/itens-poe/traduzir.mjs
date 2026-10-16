@@ -188,6 +188,8 @@ const SUFIXOS_DE_CONDICAO = [
   [/^(.+?),? (?:(?:quando|enquanto) (?:estiver )?)?(?:na|com a) [Mm]ão [Pp]rincipal$/, 'naMaoPrincipal'],
   [/^(.+?),? (?:(?:quando|enquanto) (?:estiver )?)?(?:na|com a) [Mm]ão [Ss]ecundária$/, 'naMaoSecundaria'],
 ];
+/** (lote 57) A influência pelo nome do texto (o Limitado pelo Destino) → a de `poe.influencias` (os Exaltados — `moedas.INFLUENCIAS`). */
+const INFLUENCIA_DO_TEXTO = { 'ancião': 'elder', criador: 'shaper', 'senhor da guerra': 'warlord', 'caçador': 'hunter', redentora: 'redeemer', cruzado: 'crusader' };
 const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? enquanto (?:carregando|empunhando|empunhar|segurando) (?:um|uma) (Cajado|Arco|Varinha|Adaga|Garra|Espada|Machado|Maça|Cetro)$/, (m) => ARMA[m[2]]],
   [/^(.+?),? (?:enquanto|quando) (?:você )?(?:estiver )?(?:no máximo de|com o Máximo de) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `cargasMax:${CARGA[m[2]]}`],
@@ -196,6 +198,8 @@ const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? caso você tenha ao menos \{(\d+)\} de Escudo de Energia Máximo$/, (m, valores) => `escudoMin:${Number(valores[Number(m[2])]) || 0}`],
   // (lote 48, as Atemporais: a Fé Militante) "enquanto/se você tiver pelo menos N de Devoção" — a soma da Devoção (`devocao`)
   [/^(.+?),? (?:enquanto|se) você tiver pelo menos \{(\d+)\} de Devoção$/, (m, valores) => `devocaoMin:${Number(valores[Number(m[2])]) || 0}`],
+  // (lote 57, o Limitado pelo Destino) "se N Itens do Ancião estiverem equipados" / "se tiver N itens do Criador equipados" (`itensInfluencia:<inf>:<N>`)
+  [/^(.+?),? se (?:tiver )?\{(\d+)\} itens d[aoe]s? (ancião|criador|senhor d[ae] guerra|caçador|redentora|cruzado) (?:estiverem )?equipados$/i, (m, valores) => `itensInfluencia:${INFLUENCIA_DO_TEXTO[m[3].toLowerCase().replace(/senhor d[ae] guerra/, 'senhor da guerra')]}:${Number(valores[Number(m[2])]) || 0}`],
   // (lote 56, a Doutrina Racional) "se a Força / Destreza / Inteligência for seu maior Atributo" (`maiorAtributo:<atr>`)
   [/^(.+?),? se a (Força|Destreza|Inteligência) for seu maior Atributo$/, (m) => `maiorAtributo:${{ Força: 'str', Destreza: 'dex', Inteligência: 'int' }[m[2]]}`],
   // (lote 55, o Olho do Vigia) "enquanto afetado por <Aura>" / "enquanto sob efeito de <Aura>": a aura da gema ligada (`afetadoPor:<o nome>`);

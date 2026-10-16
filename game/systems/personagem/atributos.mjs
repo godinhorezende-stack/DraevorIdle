@@ -47,7 +47,9 @@ export function principais(estado, adds = {}) {
   const daClasse = classe ? CONFIG.porVocacao[classe.slug.toLowerCase()] ?? { base: classe.atributos, porLevel: {} } : v;
   const daVocacao = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.floor((daClasse.base[k] ?? 0) + (daClasse.porLevel?.[k] ?? 0) * (nivel - 1))]));
   // PoE: "Força aumentada em X%", "Atributos aumentados em X%" (`str_inc`/`dex_inc`/`int_inc`) multiplicam o total do atributo.
-  const total = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.round((daVocacao[k] + Math.round(adds[k] ?? 0)) * (1 + (adds[`${k}_inc`] ?? 0) / 100))]));
+  // (lote 57, o Limitado pelo Destino: + "Mais X% de força / destreza / inteligência" — `str_mais`/`dex_mais`/`int_mais`, que multiplica à parte)
+  const MAIS = { str: 'str_mais', dex: 'dex_mais', int: 'int_mais' };
+  const total = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.round((daVocacao[k] + Math.round(adds[k] ?? 0)) * (1 + (adds[`${k}_inc`] ?? 0) / 100) * Math.max(0, 1 + (Number(adds[MAIS[k]]) || 0) / 100))]));
   return { ...total, daVocacao };
 }
 

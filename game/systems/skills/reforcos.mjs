@@ -11,6 +11,7 @@
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { readFileSync } from 'node:fs';
 import { CONFIG as CONFIG_DAS_GEMAS } from './gemas.mjs';
+import { SOLO_PROFANO, noSoloProfano } from '../itens-poe/condicoes-poe.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/gemas/reforcos.json', import.meta.url), 'utf8'));
 
@@ -242,7 +243,9 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
 export function vulnerabilidade(bicho, tipo, agora) {
   const m = bicho?.marcas?.vulneravel;
   let f = m && m.ate > agora && m.tipos.includes(tipo) ? 1 + m.pct / 100 : 1;
-  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora)) / 100;
+  // (lote 57: + o Solo Profano — "maldições têm efeito aumentado em 10% sobre eles")
+  const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora) * profano) / 100;
   return f;
 }
 
@@ -250,7 +253,8 @@ export function vulnerabilidade(bicho, tipo, agora) {
 export function forcaDoBicho(bicho, agora) {
   const m = bicho?.marcas?.enfraquecido;
   let f = m && m.ate > agora ? 1 - m.pct / 100 : 1;
-  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (e.pct * fatorDoExpirou(c, agora)) / 100);
+  const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (e.pct * fatorDoExpirou(c, agora) * profano) / 100);
   // × o buff de dano das mecânicas do mob (Enfurecido, Vingativo — `mobs/buffs.mjs`).
   return (bicho?.forca ?? 1) * f * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
 }

@@ -375,12 +375,15 @@ export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
 // todas as Gemas Evocar Zumbi" é `gem_level@gema:evocar-zumbi`. Dono, 11/10: os únicos.)
 const ATRIBUTO_DA_COR = [[/verm/i, 'forca'], [/verd/i, 'destreza'], [/azul/i, 'inteligencia']];
 const ENCAIXE_DA_COR = { R: 'encaixeVermelho', G: 'encaixeVerde', B: 'encaixeAzul', W: 'encaixeBranco' };
+/** (lote 57) As gemas de suporte EXCEPCIONAIS do PoE: Maximizar, Aprimorar, Iluminar (e as Despertas) — a definição do suporte não traz a tag. */
+const EXCEPCIONAL = /(?:^|_)(?:Empower|Enhance|Enlighten)_Support$/;
 export function extrasDaGemaPoe(estado, peca, def, indice = null) {
   const cor = ATRIBUTO_DA_COR.find(([re]) => re.test(def?.poe?.cor ?? ''))?.[1];
   // (+ a cor do ENCAIXE em que a gema está: "Gemas Encaixadas nos Encaixes Vermelhos têm +N de Nível" — `gem_level_local@encaixeVermelho`.)
   const s = indice != null && peca ? soquetesDe(peca) : null;
   const doEncaixe = ENCAIXE_DA_COR[s?.cores?.[indice]];
-  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
+  // (lote 57: + `naoExcepcional` — o suporte que não é Excepcional: "+1 ao nível de todas as gemas de suporte não excepcionais", o Limitado pelo Destino)
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !EXCEPCIONAL.test(def?.poe?.slug ?? '') ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
   // A ESCALA (antes ignorada — "+1 ao Nível das Gemas de Habilidade Encaixadas por cada 25 Níveis do Jogador" dava sempre +1): o nível do
   // personagem, as gemas encaixadas na peça ("-1 … por Gema Encaixada") e as outras escalas do PoE; com o teto.
   const fator = (escala) => {

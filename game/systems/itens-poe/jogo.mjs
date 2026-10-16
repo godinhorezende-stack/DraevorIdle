@@ -373,7 +373,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (48 — 16/10, lote 54: a Fúria Fulminante nos ataques com escudo e a Fome Eterna — o Devorador de Almas nos Espectros.)
 // (49 — 16/10, lote 55: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror; "enquanto afetado por <Aura>".)
 // (50 — 16/10, lote 56: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida.)
-export const VERSAO_DA_TRADUCAO = 50;
+// (51 — 16/10, lote 57: o Solo Profano e o Limitado pelo Destino — os itens com influência.)
+export const VERSAO_DA_TRADUCAO = 51;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

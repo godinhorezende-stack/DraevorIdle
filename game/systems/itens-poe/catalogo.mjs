@@ -89,7 +89,7 @@ function linhasSorteadas(cat) {
   for (const [slug, s] of Object.entries(unicos)) {
     for (const u of cat.classes[s.classe]?.unicos ?? []) {
       if (u.slug !== slug) continue;
-      if (s.linhas) u.linhasSorteadas = { substitui: s.substitui, linhas: s.linhas };
+      if (s.linhas) u.linhasSorteadas = { substitui: s.substitui, linhas: s.linhas, ...(s.pools ? { pools: s.pools } : {}) };
       // (lote 56) o NOME sorteado da marcação "Passive Skill" (a Fuga Impossível, a Chama/Carne Proibida)
       if (s.nomeSorteado) u.nomeSorteado = s.nomeSorteado;
     }

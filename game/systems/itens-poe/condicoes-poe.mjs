@@ -42,6 +42,21 @@ export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0) {
   h.solosSagrados = lista.slice(-SOLO_SAGRADO.maximo);
 }
 /**
+ * (lote 57, a Doutrina Racional — dono, 16/10: "Implementar como o Sagrado") O SOLO PROFANO que o personagem cria (`hunt.solosProfanos = [{ x,
+ * y, raio, ate }]`, como o Sagrado): o lembrete da única — "Acertos contra inimigos em Solo Profano têm chance de golpe crítico aumentada em
+ * 100% e maldições têm efeito aumentado em 10% sobre eles". No chão por 8 s (a fonte não diz: a duração do Sagrado criado no acerto); o inimigo
+ * sobre ele fica marcado (`estados.soloProfano`) e, com "Efeitos do Solo Profano criados por você Perduram por N segundos", por mais N s.
+ */
+export const SOLO_PROFANO = Object.freeze({ raio: 1, maximo: 5, duracaoS: 8, critIncPct: 100, efeitoMaldicaoPct: 10 });
+export function criarSoloProfano(h, segundos = SOLO_PROFANO.duracaoS, agora = h?.clock ?? 0) {
+  if (!h?.pos || !(segundos > 0)) return;
+  const lista = (h.solosProfanos ??= []).filter((s) => s.ate > agora);
+  lista.push({ x: h.pos.x, y: h.pos.y, raio: SOLO_PROFANO.raio, ate: agora + segundos * 1000 });
+  h.solosProfanos = lista.slice(-SOLO_PROFANO.maximo);
+}
+/** O inimigo `m` está sob o Solo Profano (sobre ele, ou no "perdura")? */
+export const noSoloProfano = (m, agora) => (m?.estados?.soloProfano?.ate ?? 0) > agora;
+/**
  * (lote 41, P032 — dono, 16/10: "Fazer todos") As ÁREAS FRIAS do PoE (as "Chilling Areas": o Solo Gelado, as áreas da Geada Rastejante e do
  * Golpe Frio, o Vórtice — o poedb, Algor Mortis): as gemas que as criam deixam no chão uma área — o raio em metros da gema (1 casa = 2 m), pela
  * duração dela —, e quem está dentro fica Resfriado ("Unless otherwise specified chilled ground slows for 10%" — `cacadas.resfriarNasAreasFrias`,
@@ -251,7 +266,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(afetadoPorAbissal|afetadoPor|maiorAtributo|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
+const COND_COM_PARAMETRO = /^(afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -273,6 +288,10 @@ export const TAGS_DE_GOLPE = new Set([
   'maoPrincipal', 'maoSecundaria',
   // (lote D) o alvo com Exposição a um elemento; o alvo FORA da Vida Baixa ("contra inimigos que não estiverem em vida baixa").
   'alvoExposicaoFogo', 'alvoExposicaoGelo', 'alvoExposicaoRaio', 'alvoNaoVidaBaixa',
+  // (lote 57) o alvo sob o seu Solo Profano (`noSoloProfano`)
+  'alvoNoSoloProfano',
+  // (lote 57) a gema de suporte que não é Excepcional (`skills/gemas.extrasDaGemaPoe` — o nível das gemas)
+  'naoExcepcional',
   // (lote 54) o ataque com o ESCUDO (a mão secundária do PoE com escudo — `acoes.tagsPoeDaSkill`: a Fúria Fulminante)
   'ataqueDeEscudo',
   // (lote 55) a habilidade que NÃO é de Canalização ("Habilidades Não Canalizadoras têm … de Custo de Mana" — `acoes.tagsPoeDaSkill`)
@@ -515,6 +534,9 @@ export function vale(conds, c) {
     case 'atrMaior': return (principais?.[resto[0]] ?? 0) > (principais?.[resto[1]] ?? 0);
     // (lote 56, a Doutrina Racional) "se a Força for seu maior Atributo": `maiorAtributo:str` — ele não perde para nenhum dos outros (o empate vale,
     // como o PoB: o atributo igual ao maior)
+    // (lote 57, o Limitado pelo Destino) "se N Itens do <Influência> estiverem equipados": `itensInfluencia:<influência>:<N>` — as peças vestidas
+    // com a influência (`poe.influencias`: shaper, elder, crusader, redeemer, hunter, warlord)
+    case 'itensInfluencia': return Object.entries(estado?.equipment ?? {}).filter(([slot, p]) => slot !== 'backpack' && (p?.poe?.influencias ?? []).includes(resto[0])).length >= Number(resto[1]);
     case 'maiorAtributo': { const a = principais?.[resto[0]] ?? 0; return ['str', 'dex', 'int'].every((k) => (principais?.[k] ?? 0) <= a); }
     case 'buff': return buffAtivo(estado, resto[0], total);
     case 'semBuff': return !buffAtivo(estado, resto[0], total);
@@ -1498,7 +1520,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const arcano = t.has('ataque') ? (Number(ficha.afPoe.poder_arcano) || 0) + (s.poder_arcano ?? 0) : 0;
   const doArcano = arcano > 0 ? (((ficha.danoDeMagiaDoPoe ?? 0) + (s.spell_dmg ?? 0)) * arcano) / 100 : 0;
   const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe + doArcano;
-  const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0);
+  // (lote 57: + o Solo Profano — "Acertos contra inimigos em Solo Profano têm chance de golpe crítico aumentada em 100%")
+  const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0) + (t.has('alvoNoSoloProfano') ? SOLO_PROFANO.critIncPct : 0);
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;
   // (13/10: + o "mais Dano Degenerativo" com condição — `dano_dot_mais@magia`, "Mais X% de dano degenerativo com habilidades mágicas")
@@ -1639,6 +1662,7 @@ export function tagsDoAlvo(alvo, agora) {
   // (+ a MALDIÇÃO do PoE posta pelo acerto — `alvo.maldicoes`, `Reforcos.marcar`: antes as regras "@alvoAmaldicoado" não a viam)
   if (dot('maldicao') || at(e.amaldicoado) || amaldicoadoPorVoce(alvo, agora)) t.push('alvoAmaldicoado');
   if (marcaNoBicho(alvo, agora)) t.push('alvoMarcado');
+  if (noSoloProfano(alvo, agora)) t.push('alvoNoSoloProfano');
   // ("contra Inimigos Afetados por ao menos N Venenos": `alvoVenenos:N` para cada N até o número de venenos no alvo)
   const venenos = dots.filter((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0).length;
   for (let n = 1; n <= Math.min(venenos, 100); n++) t.push(`alvoVenenos:${n}`);
@@ -1836,7 +1860,7 @@ export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoar
   // `hunt/combate.matarMonstro`, pelo carimbo de `hunt/quem-feriu`.
   'matarLacaio', 'matarTotem', 'inimigoMorrer']);
 export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
-  'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
+  'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)
   'perdeVida', 'esDaArmadura', 'vidaParaEs', 'degenEmVoce', 'statTemp', 'statTempPorMana', 'furiaPorMana', 'transferirMaldicoes', 'degenNoAlvo', 'danoPorMana', 'empurrarProximos',
   // (ciclo 7, lote D) `mods-poe.aplicarAcao`
@@ -1887,7 +1911,7 @@ const PARAMETRICOS = [
   new RegExp(`^(lacaio_somado_min|lacaio_somado_max|lacaio_conv_fogo|lacaio_so_fogo|lacaio_cinzas|lacaio_incendiar|lacaio_renova|lacaio_dreno_dono|lacaio_explodir|so_lacaio):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
   /^res_fixa(_tem)?:(fire|ice|energy|chaos)$/, // ficha (resistência fixa)
   /^frasco_regen_[ns]:(vida|mana|utilidade|todos)$/, /^frasco_instantaneo_baixa:(vida|mana)$/, /^sem_frasco:(vida|mana|utilidade)$/, // itens-poe/frascos
-  /^aura_proximos:(cego|mutilado|intimidado|debilitado|cinzas|causticado|fragilizado|exaurido|lento|provocado|resfriado|exposicaoFogo|exposicaoGelo|exposicaoRaio|amaldicoado|definhado|semCritico)$/, // mods-poe.aurasProximas
+  /^aura_proximos:(cego|mutilado|intimidado|inervado|debilitado|cinzas|causticado|fragilizado|exaurido|lento|provocado|resfriado|exposicaoFogo|exposicaoGelo|exposicaoRaio|amaldicoado|definhado|semCritico)$/, // mods-poe.aurasProximas
   /^efeito_buff_gema:(aura|clamor|arauto|lacaio|todos|golem|vinculo|guarda|estandarte)$/,
   /^efeito_maldicao_expirou:\d+$/, /^maldicao_(lento|dano)_expirou:\d+$/, // acoes.efeitosDaMaldicao → Reforcos.marcar ("Efeito aumentado se Y% da Duração da Maldição expirou") // itens-poe/gemas-poe (reforços das gemas; golem: os bônus dos golens ao dono)
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes

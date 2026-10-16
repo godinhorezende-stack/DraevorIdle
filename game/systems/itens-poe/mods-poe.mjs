@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 export * from './condicoes-poe.mjs';
 
@@ -643,6 +643,8 @@ const ESTADOS_NO_ALVO = {
   cinzas: (e, ate) => { e.cinzas = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 20) }; }, causticado: (e, ate) => (e.causticado = { ate, pct: 10 }),
   fragilizado: (e, ate) => (e.fragilizado = { ate, pct: 6 }), exaurido: (e, ate) => (e.exaurido = { ate, pct: 10 }), lento: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 30) }),
   provocado: (e, ate) => (e.provocado = { ate }), resfriado: (e, ate) => (e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 10) }),
+  // (lote 57) Inervado (PoE: "Unnerve" — 10% mais dano de Magias recebido: `condicoes-poe`), "Inimigos próximos são enervados" (o Limitado pelo Destino)
+  inervado: (e, ate) => (e.inervado = { ate: Math.max(e.inervado?.ate ?? 0, ate) }),
   // (14/10) Eletrizado sem acerto (o Pacto Cadavérico): 15% mais dano recebido — não troca uma Eletrização mais forte
   eletrizado: (e, ate) => (e.chocado = { ate: Math.max(e.chocado?.ate ?? 0, ate), pct: Math.max(e.chocado?.ate > ate - 1000 ? e.chocado.pct ?? 0 : 0, 15) }),
   // (ciclo 7) O Debilitado tira 10% do dano no `doBicho` — antes também o punha Exaurido (mais 10%): 19% em vez dos 10% do PoE.
@@ -1019,6 +1021,8 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       return;
     }
     case 'fortificacao': ganharFortificacao(hunt, v, ficha?.afPoe, agora); return;
+    // (lote 57) `soloProfano:<segundos>` = a CHANCE de criar Solo Profano onde você está (a Doutrina Racional, no Golpe Crítico).
+    case 'soloProfano': if (sorte(v)) criarSoloProfano(hunt, Number(ev.param) || SOLO_PROFANO.duracaoS, agora); return;
     // (lote G) `soloSagrado:<segundos>` = a CHANCE de criar Solo Sagrado onde você está; `valor` = ganha N de Valor (com um Estandarte ligado).
     case 'soloSagrado': if (sorte(v)) criarSoloSagrado(hunt, Number(ev.param) || 4, agora); return;
     case 'valor': ganharValor(hunt, v, ficha?.afPoe, agora, { semIntervalo: true }); return;
@@ -1257,6 +1261,15 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
       if (!(m.hp > 0) || m.dummy) continue;
       if (doSolo > 0 && (hunt.solosSagrados ?? []).some((s) => s.ate > agora && Math.max(Math.abs(s.x - m.x), Math.abs(s.y - m.y)) <= s.raio)) (m.estados ??= {}).soloFragil = { ate: agora + 1000, pct: doSolo };
       if (daAura > 0 && centroDoEstandarte && Math.max(Math.abs(m.x - centroDoEstandarte.x), Math.abs(m.y - centroDoEstandarte.y)) <= centroDoEstandarte.raio) (m.estados ??= {}).auraFragil = { ate: agora + 1000, pct: daAura };
+    }
+  }
+  // (lote 57) o SOLO PROFANO: o inimigo sobre ele fica marcado — 1 s (o tique renova) e, com "Efeitos do Solo Profano criados por você Perduram
+  // por N segundos", N s a mais depois de sair
+  if ((hunt.solosProfanos ?? []).some((s) => s.ate > agora)) {
+    const fica = 1000 + valor(ficha, 'solo_profano_perdura_s') * 1000;
+    for (const m of hunt.monstros ?? []) {
+      if (!(m.hp > 0) || m.dummy || !hunt.solosProfanos.some((s) => s.ate > agora && Math.max(Math.abs(s.x - m.x), Math.abs(s.y - m.y)) <= s.raio)) continue;
+      (m.estados ??= {}).soloProfano = { ate: Math.max(m.estados.soloProfano?.ate ?? 0, agora + fica) };
     }
   }
   // "Efeitos do Solo Sagrado criado por você Perduram por N segundos": quem está sobre ele leva o efeito por mais N s.

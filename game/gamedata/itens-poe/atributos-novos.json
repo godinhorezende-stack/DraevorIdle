@@ -7694,6 +7694,48 @@
       "unidade": "%",
       "combate": true,
       "efeito": "os mods da joia × (1 + X% × as passivas — `Passivas.passivasAteOInicio`; `afixos.somaDeItens`; a Personalidade Dividida — lote 55)"
+    },
+    "solo_profano_perdura_s": {
+      "nome": "Efeitos do Solo Profano criados por você Perduram por N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o inimigo que sai do seu Solo Profano continua marcado N s (`mods-poe`, `condicoes-poe.SOLO_PROFANO`; a Doutrina Racional — lote 57)"
+    },
+    "mana_more": {
+      "nome": "X% mais Mana Máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a mana inteira, como o `life_more` (`afixos`) (o Limitado pelo Destino — lote 57)"
+    },
+    "str_mais": {
+      "nome": "X% mais Força",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a Força à parte do aumentado (`personagem/atributos.principais`) (o Limitado pelo Destino — lote 57)"
+    },
+    "dex_mais": {
+      "nome": "X% mais Destreza",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a Destreza à parte do aumentado (`personagem/atributos.principais`) (o Limitado pelo Destino — lote 57)"
+    },
+    "int_mais": {
+      "nome": "X% mais Inteligência",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a Inteligência à parte do aumentado (`personagem/atributos.principais`) (o Limitado pelo Destino — lote 57)"
+    },
+    "move_speed_mais": {
+      "nome": "X% mais Velocidade de Movimento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a velocidade (`ficha.speed`) (o Limitado pelo Destino — lote 57)"
+    },
+    "cooldown_recovery_mais": {
+      "nome": "X% mais Taxa de Recuperação da Recarga",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a recuperação da recarga (`ficha.recuperacaoDeRecarga`) (o Limitado pelo Destino — lote 57)"
     }
   }
 }

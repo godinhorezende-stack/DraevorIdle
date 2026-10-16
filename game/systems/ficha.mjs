@@ -483,7 +483,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // (PoE, 12/10: "Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados" — `velocidade_igual_vinculado`.)
     // (lote 32, P049: "Velocidade de Movimento não pode ser modificada para abaixo do valor base" — a ficha não fica abaixo da base; a lentidão em
     // você, no passo — `cacadas.razaoDeVelocidade`)
-    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.max(itensPoeLigado() && af.movimento_minimo_base > 0 ? R.baseSpeed(estado.level ?? 1) : 0, Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af))),
+    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.max(itensPoeLigado() && af.movimento_minimo_base > 0 ? R.baseSpeed(estado.level ?? 1) : 0, Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) * (itensPoeLigado() ? Math.max(0, 1 + (af.move_speed_mais ?? 0) / 100) : 1) + soma((it) => it.speed)) * fatorDeAcao(af))),
     // O alcance a mais dos golpes corpo a corpo, em casas (lote 35 — P001/P033, a decisão do dono "Medir em metros", 1 casa = 2 m): o alcance
     // de verdade é o da ARMA (`alcance_metros` da base, 1 a 1,4 m) + os "+X metros ao Alcance de Golpes Corpo a Corpo"; o vizinho colado está
     // sempre ao alcance (as casas encostam) e cada casa a mais pede 2 m (o vão de uma casa). Antes só os metros a mais contavam, sem a arma.
@@ -535,7 +535,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // Cast Speed (intervalo global entre magias), Cooldown Recovery (recarga de cada magia), Skill Cost Reduction.
     // + a identidade da wand na mão (`armas/poder.json`: conjura mais rápido).
     castSpeed: comAcao((af.cast_speed ?? 0) + espStat('castSpeed') + PoderDaArma.castSpeedDaIdentidade(estado), af),
-    recuperacaoDeRecarga: af.cooldown_recovery ?? 0,
+    // (lote 57, o Limitado pelo Destino: + "Mais X% de taxa de recuperação do tempo de recarga" — `cooldown_recovery_mais`, que multiplica)
+    recuperacaoDeRecarga: itensPoeLigado() && af.cooldown_recovery_mais ? ((1 + (af.cooldown_recovery ?? 0) / 100) * (1 + af.cooldown_recovery_mais / 100) - 1) * 100 : af.cooldown_recovery ?? 0,
     // Damage vs Boss / vs Elite / vs Monsters (não-boss), em %.
     danoContra: { boss: af.dmg_vs_boss ?? 0, elite: af.dmg_vs_elite ?? 0, monstros: af.dmg_vs_monsters ?? 0 },
     // Utilidade: Gold Find, Loot Rate e Experience (%).

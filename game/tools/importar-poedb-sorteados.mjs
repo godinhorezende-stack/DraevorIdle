@@ -18,6 +18,8 @@ const UNICOS = {
   The_Balance_of_Terror: { aba: /^OEquilíbriodoTerrorModificadores$/, substitui: { '[Two random modifiers]': 2 } },
   // (lote 56) a Visão Sublime: 1 das 17 combinações (o efeito das auras em você, o bônus de uma aura e "as outras são Desabilitadas")
   Sublime_Vision: { aba: /^VisãoSublimeModificadores$/, substitui: { '[Aura Bonus Modifier]': 1 } },
+  // (lote 57) o Limitado pelo Destino: cada marcação sorteia 1 das linhas do seu número de itens ("se 2 / 4 / 6 Itens do <Influência>…")
+  Bound_By_Destiny: { aba: /^LimitadopeloDestinoModificadores$/, substitui: { '[Random 2x influence item bonus]': { quantidade: 1, itens: 2 }, '[Random 4x influence item bonus]': { quantidade: 1, itens: 4 }, '[Random 6x influence item bonus]': { quantidade: 1, itens: 6 } } },
 };
 
 /**
@@ -41,7 +43,11 @@ for (const [slug, { aba, substitui }] of Object.entries(UNICOS)) {
   const a = d.abas.find((x) => aba.test(x.id));
   if (!a) throw new Error(`${slug}: a aba do pool não está no arquivo do Scrapling`);
   const linhas = a.cards.flatMap((c) => c.tabelas ?? []).flatMap((t) => t.linhas ?? []).map((r) => noFormatoDoCatalogo(String(r[0]).trim()));
-  unicos[slug] = { classe: 'Jewels', substitui, fonte: d.fonte, linhas };
+  // (lote 57) a marcação com o pool próprio (`{ quantidade, itens }`): `pools[marca]` — as linhas do pool com "se N itens"; `substitui` fica com o número
+  const proprios = Object.entries(substitui).filter(([, x]) => typeof x !== 'number');
+  const pools = Object.fromEntries(proprios.map(([marca, x]) => [marca, linhas.filter((l) => Number(/se (?:tiver )?(\d+) itens/i.exec(l.texto)?.[1]) === x.itens)]));
+  const quantas = Object.fromEntries(Object.entries(substitui).map(([marca, x]) => [marca, typeof x === 'number' ? x : x.quantidade]));
+  unicos[slug] = { classe: 'Jewels', substitui: quantas, ...(proprios.length ? { pools } : {}), fonte: d.fonte, linhas };
   console.log(`${slug}: ${linhas.length} linhas`);
 }
 // (lote 56) Os NOMES SORTEADOS: a marcação "Passive Skill" do texto vira um nome — a Fuga Impossível, uma das pedras fundamentais da aba "Notável"

@@ -137,10 +137,12 @@ export function modificadoresDoUnico(u, rng, manter = null) {
     }
     const n = ls?.substitui?.[m.modelo];
     if (!n) return [{ tipo: m.tipo, ...rolarTexto(m, rng) }];
+    // (lote 57: a marcação com o pool próprio — `pools[marca]`: o Limitado pelo Destino, as linhas do seu número de itens)
+    const pool = ls.pools?.[m.modelo] ?? ls.linhas;
     // (lote 55, J31) a linha de marcação ("[Two random aura modifiers]") vira N linhas do pool da única (`linhas-sorteadas.json`), sem repetir e com
     // a mesma chance; o Orbe Divino (`manter` — os modelos da peça) sorteia de novo só os valores das que ela já tem.
-    const ja = manter ? ls.linhas.filter((l) => manter.has(l.modelo)) : [];
-    return (ja.length ? ja.slice(0, n) : linhasDoPool(ls.linhas, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
+    const ja = manter ? pool.filter((l) => manter.has(l.modelo)) : [];
+    return (ja.length ? ja.slice(0, n) : linhasDoPool(pool, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
   });
 }
 const escaparRe = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
