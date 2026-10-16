@@ -104,6 +104,17 @@ const REGRAS = [
   [/não Custam nada/i, () => ({ custoPct: -100 })],
   [/custam Vida ao invés de Mana|Reservam Vida ao invés de Mana/i, () => ({ custoEmVida: 1 })],
   // (11/10) Os suportes que viraram mecânica (`acoes` — antes das regras gerais de dano: o "mais Dano" deles só vale no caso deles).
+  // (lote 46) O PROPAGAR DANO (Melee Splash): o golpe propaga aos inimigos em volta de cada atingido (1 casa — o raio do Dano Propagado, a decisão
+  // do dono do lote 34 —, × √ da área da Propagação e da habilidade), com "X% menos Dano Propagado"; o "mais Efeito em Área da Propagação" é só
+  // da propagação (antes crescia a área da habilidade) — `acoes`, o `atacar`.
+  [/Propagam Dano aos alvos próximos/i, () => ({ propagar: 1 })],
+  [new RegExp(`causam ${N}% (mais|menos) Dano Propagado aos alvos ao redor`, 'i'), (m) => ({ propagaMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`têm ${N}% (mais|menos) Efeito em Área da Propagação`, 'i'), (m) => ({ propagaAreaMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (lote 46) O PUNHO DE GUERRA (Fist of War): um ataque a cada N segundos é MAXIMIZADO ANCESTRALMENTE — só nele o "X% mais Dano com Acertos e
+  // Afecções" e a "Área de Efeito aumentada" dos Impactos (antes valiam em todo ataque); a repetição do ataque não — `acoes`, o `disparar`.
+  [new RegExp(`são Maximizados Ancestralmente, não mais que uma vez a cada ${N} segundos`, 'i'), (m) => ({ maximizadoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`Ancestralmente Empoderadas causam ${N}% (mais|menos) Dano com Acertos e Afecções`, 'i'), (m) => ({ maximizadoMaisDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`Impactos Maximizados Ancestralmente têm (?:Área de Efeito|Efeito em Área) aumentad[oa] em ${N}%`, 'i'), (m) => ({ maximizadoAreaIncPct: num(m[1]) })],
   // A CRUELDADE: os acertos concedem Crueldade (mais dano degenerativo — `condicoes-poe.BUFFS.crueldade`) por N segundos.
   [new RegExp(`^Crueldade tem Duração Base de ${N} segundos`, 'i'), (m) => ({ crueldadeMs: Math.round(num(m[1]) * 1000) })],
   [/^Acertos de Habilidades Suportadas concedem Crueldade/i, () => ({ crueldade: 1 })],

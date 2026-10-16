@@ -393,7 +393,9 @@ export function buffNoNivel(slug, nivel) {
   if (m.danoRecebido) efeitos.push({ efeito: 'marcaVulneravel', pct: m.danoRecebido, tipos: ['physical', 'fire', 'ice', 'energy', 'chaos', 'earth', 'death', 'holy'], durMarca });
   if (m.menosDano) efeitos.push({ efeito: 'marcaEnfraquece', pct: m.menosDano, durMarca });
   if (m.lentidao) motivos.push('a lentidão da maldição ainda não existe no jogo');
-  if (h.arquetipo === 'clamor') efeitos.push({ efeito: 'provocar', raio: Math.max(3, Math.round(st.raioFinal ?? 4)) });
+  // (lote 46, dono: "Toda área em metros") o raio do Clamor em CASAS: os metros da gema ÷ 2 (antes, os metros como casas — o dobro); no uso, × √
+  // da "Área de Efeito aumentada" — `acoes.raioDoClamor`
+  if (h.arquetipo === 'clamor') efeitos.push({ efeito: 'provocar', raio: Math.max(1, Math.round((st.raioFinal ?? 6) / 2)), raioM: st.raioFinal ?? 6 });
   // Aura e arauto: ligados enquanto a gema estiver encaixada (o uso automático renova); guarda e grito: a duração da gema.
   // (11/10: a aura VAAL tem a duração dela — "Duração base é de 4 segundos" —, e o "Duração de Aura aumentada" passa a valer nela.)
   const vaalComDuracao = h.arquetipo === 'aura' && /^Vaal_/.test(slug) && st.duracao > 0;

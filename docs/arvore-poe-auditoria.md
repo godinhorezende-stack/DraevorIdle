@@ -149,4 +149,5 @@ Status: **pendente**, **em andamento**, **feito (commit)** ou **exceção (decis
 | 42 | 4e441e89 | os limites do motor ("Fazer todos"): P053 (o terreno), P067 (as direções aleatórias), P074 (a canalização contínua) | 20 → 17 | — |
 | 43 | 4d1015cf | P040 em parte: as defesas e os outros bônus do escudo da Égide Necromântica nos lacaios | 17 → 17 | — |
 | 44 | fd277dc3 | P064, P065, P066, P068, P069, P072 (os números do PoB — a tabela de aliados × o multiplicador do lacaio, o Poder Fantasmal, a Égide Primitiva em 5 s, os Robôs); fora da árvore, os lacaios das gemas pelo PoB (dono: "Incluir no lote 44") | 17 → 11 | — |
-| 45 | (este lote) | P061 (o crítico e a área da Rajada Vulcânica; os raios registrados) e P012 (a recarga de 0,2 s do Detonar Minas; a exceção do idle registrada) | 11 → 5 | — |
+| 45 | a4dbc820 | P061 (o crítico e a área da Rajada Vulcânica; os raios registrados) e P012 (a recarga de 0,2 s do Detonar Minas; a exceção do idle registrada) | 11 → 5 | — |
+| 46 | (este lote) | fora da árvore, os três achados de área: o Propagar Dano (a propagação de 40% menos aos vizinhos; o "mais Área da Propagação" só nela), o Punho de Guerra (a Maximização Ancestral um ataque a cada 1,8 s — o "mais Dano" e a área só nele) e o raio dos Clamores (os metros ÷ 2 em casas, × √ da "Área de Efeito aumentada") | 5 → 5 | — |
