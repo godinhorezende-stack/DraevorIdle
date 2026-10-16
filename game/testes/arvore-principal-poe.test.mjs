@@ -224,7 +224,8 @@ test('o FEITICEIRO: liga reservando 20% por magia ligada (÷ a eficácia da maes
   assert.deepEqual(varinha, [5, 9], 'a Varinha de Madeira Balsa');
   const base = G.danoNoNivel('Fireball', 20);
   const fator = semF.max / base.max;
-  const eficacia = G.eficaciaNoNivel('Fireball', 20);
+  // (lote 47, S002: a eficácia do dano adicionado da magia é a do PoB — 4,8 na Bola de Fogo nível 20)
+  const eficacia = G.eficaciaDoAdicionado('Fireball', 20);
   assert.ok(Math.abs(comF.max - (base.max + 9 * 1.74 * eficacia) * fator * 0.8) <= 2, `${comF.max} ~ ${(base.max + 9 * 1.74 * eficacia) * fator * 0.8}`);
   // (sem varinha, o ataque não é de varinha)
   e.equipment.weapon = peca('Two_Hand_Axes/Vaal_Axe');

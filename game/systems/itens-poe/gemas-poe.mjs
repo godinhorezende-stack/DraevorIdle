@@ -288,6 +288,21 @@ export function afeccoesElementaisEm(bicho, agora) {
 }
 /** A eficácia de um ATAQUE no nível (o "Dano de Ataque X% de base"): o golpe da arma × isto. */
 export const eficaciaNoNivel = (slug, nivel) => compilada(slug, nivel)?.stats?.efetividade ?? 1;
+/**
+ * (S002, lote 47) A EFICÁCIA DO DANO ADICIONADO de uma MAGIA no nível ("Eficácia do Dano Adicionado: (300 — 480)%" na Bola de Fogo): a do PoB
+ * (`gamedata/itens-poe/pob-eficacia.json` — `tools/importar-pob-eficacia.mjs`, o `damageEffectiveness` de cada nível; acima da tabela, o
+ * último nível dela); sem a gema no PoB, a da tabela do poedb (`eficaciaNoNivel`). O dano adicionado às magias (peças, suportes, varinhas)
+ * entra × isto.
+ */
+let POB_EFICACIA = null;
+export function eficaciaDoAdicionado(slug, nivel = 1) {
+  POB_EFICACIA ??= JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-eficacia.json', import.meta.url), 'utf8')).gemas;
+  const t = POB_EFICACIA[POR_SLUG.get(slug)?.en ?? String(slug).replace(/_/g, ' ')];
+  if (!t) return eficaciaNoNivel(slug, nivel);
+  const ks = Object.keys(t).map(Number).sort((a, b) => a - b);
+  const k = ks.filter((x) => x <= Math.max(ks[0], Math.round(nivel) || 1)).at(-1) ?? ks[0];
+  return t[k];
+}
 /** A chance de crítico BASE da gema no nível ("Chance de Crítico: 6.00%" do poedb), como fração; null se a gema não diz. */
 export function criticoBaseNoNivel(slug, nivel = 1) {
   const g = POR_SLUG.get(slug);

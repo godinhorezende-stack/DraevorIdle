@@ -383,7 +383,8 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     ? Object.values(fichaBase.danoSomado ?? {}).reduce(([a, b], [x, y]) => [a + x, b + y], [0, 0])
     : ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
   // O dano ADICIONADO dos suportes do PoE ("têm 10 a 15 de Dano de Gelo adicional") × a eficácia do dano adicionado da gema.
-  const eficacia = daGemaPoe ? (daGemaPoe.ataque ? 1 : GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe)) : 1;
+  // (S002, lote 47: a eficácia da MAGIA é a do PoB por nível — `GemasPoe.eficaciaDoAdicionado`; antes, 1 em todas)
+  const eficacia = daGemaPoe ? (daGemaPoe.ataque ? 1 : GemasPoe.eficaciaDoAdicionado(daGemaPoe.slug, nivelPoe)) : 1;
   const doSuporteMin = (efeitoDaGema?.somadoMin ?? 0) * eficacia;
   const doSuporteMax = (efeitoDaGema?.somadoMax ?? 0) * eficacia;
   /*
