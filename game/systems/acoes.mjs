@@ -1697,9 +1697,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   // (09/10, a maestria da árvore) "Habilidades de Golpe Não Vaal focam em N Inimigo próximo adicional": a gema de Golpear (não Vaal).
   const gemaDoGolpe = GemasPoe.doSlug(entry.poeGema.slug)?.gema;
   if (estado && gemaDoGolpe?.tags?.includes('Golpear') && !gemaDoGolpe.tags.includes('Vaal')) e.alvosExtras += Math.max(0, Math.round(ModsPoe.valor(Ficha.combate(estado), 'golpe_alvos_extra')));
-  // (14/10, a Fúria Ancestral do Berserker: "Habilidades de Golpe também miram no local anterior que foram Usadas" — no jogo, sem posições:
-  // mais um inimigo perto)
-  if (estado && gemaDoGolpe?.tags?.includes('Golpear') && ModsPoe.valor(Ficha.combate(estado), 'golpe_local_anterior') > 0) e.alvosExtras += 1;
+  // (A Fúria Ancestral do Berserker — "Habilidades de Golpe também miram no local anterior que foram Usadas" — é o local de verdade desde o lote
+  // 41, P047: `disparar`, `hunt.golpeAnterior`.)
   // (14/10, as linhas que "não se aplicavam" — os projéteis: o Alcance do Ricochete, "N% de chance de Retornarem a você", "de Ricochetear ao
   // colidirem com o terreno", "disparados em direções aleatórias" e "Barragens de Projéteis não se propagam" — `Secundarios.resolver`)
   if (estado) {
@@ -2820,6 +2819,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
      * árvore (depois da magia) contam só do primeiro.
      */
     const propagaGolpe = ModsPoe.valor(ficha, 'golpe_corpo_propaga') > 0 && tagsPoeDaSkill(entry).includes('golpe') && tagsPoeDaSkill(entry).includes('corpo');
+    // (lote 41, P047 — a Fúria Ancestral: "Habilidades de Golpe também miram no local anterior que foram Usadas") a Habilidade de Golpe acerta
+    // também quem está no local do uso anterior dela (a casa do alvo de antes, `hunt.golpeAnterior` — o mais perto de lá, a até 1 casa).
+    const ehGolpe = !!entry.poeGema && tagsPoeDaSkill(entry).includes('golpe');
+    const localAnterior = ehGolpe && ModsPoe.valor(ficha, 'golpe_local_anterior') > 0 && hunt.golpeAnterior && (hunt.golpeAnterior.z ?? 0) === (hunt.z ?? 0) ? hunt.golpeAnterior : null;
     const atacar = (segundo) => {
       // "X% mais Dano por cada Ricochete restante" (Arco): o 1º atingido tem todos os ricochetes pela frente; cada salto gasta um.
       const cp = efeitoDaGema?.cadeiaPoe;
@@ -2828,6 +2831,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (propagaGolpe) {
         const ja = new Set(atingidos);
         for (const b of atingidos) for (const m of vivos) if (m.hp > 0 && !ja.has(m) && Math.max(Math.abs(m.x - b.x), Math.abs(m.y - b.y)) <= 1) { ja.add(m); acertar(m, 100, 'propagado'); }
+      }
+      if (localAnterior && !segundo) {
+        const ja = new Set(atingidos);
+        const longe = (m) => Math.max(Math.abs(m.x - localAnterior.x), Math.abs(m.y - localAnterior.y));
+        const la = vivos.filter((m) => m.hp > 0 && !ja.has(m) && longe(m) <= 1).sort((a, b) => longe(a) - longe(b))[0];
+        if (la) acertar(la, 100, 'localAnterior');
       }
       /*
        * ---- Os golpes SECUNDÁRIOS das supports, combinados em cadeia ----
@@ -2899,6 +2908,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
+    // (lote 41, P047) o local deste uso da Habilidade de Golpe: o próximo uso mira aqui também.
+    if (ehGolpe && atingidos[0]) hunt.golpeAnterior = { x: atingidos[0].x, y: atingidos[0].y, z: hunt.z ?? 0 };
+    // (lote 41, P032) a ÁREA FRIA das gemas do PoE que a criam (o Solo Gelado do Piscar Gélido, a área da Geada Rastejante e do Golpe Frio, o
+    // Vórtice): no chão — no alvo, ou onde a forma caiu —, pela duração da gema (`ModsPoe.criarAreaFria`).
+    const fria = entry.poeGema ? ModsPoe.AREAS_FRIAS.porGema[entry.poeGema.slug] : null;
+    if (fria) {
+      const c = fria.noAlvo && alvo ? alvo : formaNoUso ?? hunt.pos;
+      const segundos = (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)?.stats?.duracao ?? 4) * fatorDeDuracao(estado, entry, efeitoDaGema);
+      ModsPoe.criarAreaFria(hunt, { x: c.x, y: c.y, raioM: fria.raioM, segundos });
+    }
     // (No PoE as magias não roubam: só os ataques — `Ficha.aplicarLeech`.)
     Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha, null, { ataque: !ehMagiaDaConta, danoCritico, danoFisico, danoVezesMaldicoes, semDrenoDeVida: Math.min(total, totalSemDreno), semDrenoDeEs: Math.min(total, totalSemDrenoEs) });
     // Life Leech / Mana Leech (supports): % do dano desta skill volta em vida/mana.

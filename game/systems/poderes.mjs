@@ -398,6 +398,22 @@ export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, 
   return dano > 0 ? aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) : 0;
 }
 
+/**
+ * (lote 41, P019 — dono, 16/10: "Fazer todos") A magia do monstro no LACAIO: no PoE os monstros miram os lacaios — a magia de dano vai em quem
+ * está mais perto do bicho, você ou um lacaio que leva dano (`magiaNoLacaio`, o gancho da caçada: o dano pelas defesas do lacaio e o bloqueio
+ * mágico dele — `cacadas`).
+ */
+let magiaNoLacaio = null;
+export function definirMagiaNoLacaio(fn) { magiaNoLacaio = fn; }
+function lacaioMaisPerto(hunt, bicho, dDoJogador) {
+  let melhor = null;
+  for (const l of hunt.lacaios ?? []) {
+    if (!(l.hp > 0) || l.intocavel) continue;
+    const d = distancia(bicho, l);
+    if (d < dDoJogador && (!melhor || d < melhor.d)) melhor = { l, d };
+  }
+  return melhor?.l ?? null;
+}
 export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo) {
   const p = PODERES[bicho.key];
   if (!p || bicho.hp <= 0 || estado.hp <= 0) return 0;
@@ -411,6 +427,7 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
   }
   let total = 0;
   const alvo = hunt.pos;
+  const noLacaio = magiaNoLacaio ? lacaioMaisPerto(hunt, bicho, distancia(bicho, alvo)) : null;
   p.ataques.forEach((a, i) => {
     if (a.tipo !== 'magia' || agora < (bicho.proximoPoder[i] ?? 0)) return;
     // Morto no meio do tique (a magia anterior matou): as outras não saem — nem o dano depois
@@ -422,7 +439,10 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     // (PoE, o Sabotador: "Inimigos Próximos têm Recuperação da Recarga reduzido em X%" — a aura põe `recargaMenos`, `mods-poe.aurasProximas`.)
     const recarga = ModsPoe.ativo(bicho.estados?.recargaMenos, agora) ? Math.max(0.1, 1 - bicho.estados.recargaMenos.pct / 100) : 1;
     bicho.proximoPoder[i] = agora + a.intervalo / Math.max(0.1, (Number(bicho.velocidadeDeConjuracao) || 1) * eletrizado * recarga);
-    if (Math.random() * 100 >= a.chance || !alcanca(a, bicho, alvo)) return;
+    if (Math.random() * 100 >= a.chance) return;
+    // (lote 41, P019) o lacaio mais perto do bicho que você leva a magia de dano
+    if (noLacaio && noLacaio.hp > 0 && (a.min > 0 || a.max > 0) && alcanca(a, bicho, noLacaio)) return void magiaNoLacaio({ estado, hunt, bicho, l: noLacaio, a, eventos, agora, ficha });
+    if (!alcanca(a, bicho, alvo)) return;
     total += dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a);
   });
   // As curas do boss (`monster.defenses` do arquivo).
