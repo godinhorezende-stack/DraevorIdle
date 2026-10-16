@@ -217,7 +217,8 @@ test('no FIM do vínculo: "Runas têm 100% mais Frequência de Ativação se 75%
   assert.equal(com.tarde, 2, 'com o nó: a de 3 s e a de 3,5 s');
   const { b, r } = com;
   const area = Runas.tique({ clock: 0, monstros: [b], runas: [{ ...r, alvo: b.uid, em: 0, proxima: 0, vinculadaPassou: 3000, vinculadaMs: 4000 }] }, { afPoe: { runa_area_tardia_pct: 30, runa_area_tardia_apos: 50 } }, 0, () => 0);
-  assert.equal(area.ativar[0].areaExtra, 2, '30% → 1,2 casa (o sorteio 0 leva a fração)');
+  // (o dono, 16/10 — lote 36, "Toda área em metros": o tique entrega o aumentado ao uso; o raio cresce × √ no disparo, como as outras áreas)
+  assert.equal(area.ativar[0].areaPct, 30, 'os 30% no aumentado do uso');
 });
 
 test('"Alcance do Vínculo de Runas aumentado": as 3 casas × o aumento', { skip: SEM }, () => {

@@ -220,10 +220,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a última repetição pega a área maior (uma casa a cada ~25%)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote36": "16/10 — lote 36 (P002: a Área de Efeito em metros — o raio da forma × √(1 + o aumentado), a decisão do dono \"Toda área em metros\")"
     },
     {
       "padrao": "^Inimigos próximos a cadáveres Criados por você Recentemente são Resfriados e Eletrizados$",

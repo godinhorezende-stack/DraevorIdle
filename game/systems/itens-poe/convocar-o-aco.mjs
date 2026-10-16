@@ -11,6 +11,8 @@
 // Aqui tudo é dado puro do personagem na caçada (`hunt.aco`, JSON): os fragmentos, a recarga, os consumidos (o "após consumir um total de N
 // Fragmentos") e as Proteções de Aço. Quem usa o Convocar o Aço e gasta os fragmentos é `acoes.mjs` (`convocarOAco`, `fragmentosNoUso`).
 
+import { fatorDaArea, casasPelaArea } from './condicoes-poe.mjs';
+
 export const PADRAO = Object.freeze({
   /** "Você pode ter até 12 Fragmentos de Aço por vez" (poedb, notas da 3.12; Path of Building limita em 12). */
   maximo: 12,
@@ -61,17 +63,12 @@ export const maximo = (ficha) => Math.max(0, PADRAO.maximo + Math.floor(n(ficha,
 export const intervaloMs = (ficha) => Math.max(50, Math.round(PADRAO.recarga.ms / Math.max(0.1, 1 + (Number(ficha?.recuperacaoDeRecarga) || 0) / 100)));
 /** O tempo de uso: 0,5 s ÷ "Convocar o Aço tem Velocidade de Uso aumentada em X%". */
 export const usoMs = (ficha) => Math.max(100, Math.round(PADRAO.usoMs / Math.max(0.1, 1 + n(ficha, 'aco_uso_inc') / 100)));
-/** Casas de raio a mais pela área: +1 a cada 25% (a fração vira chance — a convenção de `condicoes-poe.alvosDasPecas`). */
-function casasDaArea(pct, rng) {
-  const c = pct / 25;
-  return Math.trunc(c) + (rng() < Math.abs(c % 1) ? Math.sign(c) : 0);
-}
-/** A Área de Efeito como um "aumentado" equivalente: o aumentado (+ `extra`) × o "X% mais Área de Efeito" (`area_mais`). */
-const areaPct = (ficha, extra = 0) => ((1 + (n(ficha, 'area_inc') + extra) / 100) * Math.max(0, 1 + n(ficha, 'area_mais') / 100) - 1) * 100;
-/** O raio da chamada (a "área grande"), com a Área de Efeito do personagem. */
-export const raioDaChamada = (ficha, rng = Math.random) => Math.max(1, PADRAO.raioDaChamada + casasDaArea(areaPct(ficha), rng));
+/** O fator da Área de Efeito: (1 + o aumentado + `extra`) × o "X% mais Área de Efeito" (`area_mais`) — `condicoes-poe.fatorDaArea`. */
+const fator = (ficha, extra = 0) => fatorDaArea(n(ficha, 'area_inc') + extra, n(ficha, 'area_mais'));
+/** O raio da chamada (a "área grande"), com a Área de Efeito do personagem: × √ o fator, a fração como chance (lote 36, "Toda área em metros"). */
+export const raioDaChamada = (ficha, rng = Math.random) => Math.max(1, PADRAO.raioDaChamada + casasPelaArea(PADRAO.raioDaChamada, fator(ficha), rng));
 /** O raio do reflexo em volta de cada inimigo, com a Área de Efeito e "Convocar o Aço causa Dano Refletido com Área de Efeito aumentada". */
-export const raioDoReflexo = (ficha, rng = Math.random) => Math.max(0, PADRAO.raioDoReflexo + casasDaArea(areaPct(ficha, n(ficha, 'aco_area_inc')), rng));
+export const raioDoReflexo = (ficha, rng = Math.random) => Math.max(0, PADRAO.raioDoReflexo + casasPelaArea(PADRAO.raioDoReflexo, fator(ficha, n(ficha, 'aco_area_inc')), rng));
 
 /**
  * O tique: a RECARGA (4 fragmentos a cada intervalo, até o máximo — aí para) e o fim das Proteções de Aço. Devolve se algo mudou (as

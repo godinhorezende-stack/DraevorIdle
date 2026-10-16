@@ -1578,8 +1578,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   const a = GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito.nivel ?? 1);
   const e = { ...efeito };
   // PoE: os das PEÇAS — "Habilidades disparam N Projéteis adicionais", "Ataques com Arco disparam N Flechas adicionais", "Gemas Encaixadas
-  // atiram N Projéteis adicionais" (a peça da gema), "Projéteis Perfuram N Alvos" e a "Área de Efeito aumentada" (+1 casa a cada 25%; a
-  // fração vira chance, para a média bater) — `itens-poe/mods-poe.mjs`.
+  // atiram N Projéteis adicionais" (a peça da gema), "Projéteis Perfuram N Alvos" e a "Área de Efeito aumentada" (lote 36: o "aumentado" e o
+  // "mais" em %, com os dos suportes; o raio da forma cresce × √ no uso — `ModsPoe.casasPelaArea`) — `itens-poe/mods-poe.mjs`.
   const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, Ficha.combate(estado), entry, tagsPoeDaSkill(entry), Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide + (dasPecas?.projeteis ?? 0);
   // (12/10) A divisão da gema (o Aço Violento: "Projéteis se Partem na direção de N alvos") — o "Se você não tiver Fragmentos de Aço,
@@ -1607,7 +1607,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
     if (ModsPoe.valor(fichaDoAlvo, 'barragem_nao_propaga') > 0) e.semPropagar = true;
   }
   e.perfurar = Math.max(e.perfurar ?? 0, a.perfurar) + (dasPecas?.perfurar ?? 0);
-  if (dasPecas?.area) e.areaExtra = (e.areaExtra ?? 0) + dasPecas.area;
+  if (dasPecas?.areaInc) e.areaIncPct = (e.areaIncPct ?? 0) + dasPecas.areaInc;
+  if (dasPecas?.areaMais) e.areaMaisPct = ((1 + (e.areaMaisPct ?? 0) / 100) * Math.max(0, 1 + dasPecas.areaMais / 100) - 1) * 100;
   // "Habilidades Ricocheteiam +N vezes": os ricochetes do projétil (os saltos da cadeia, na magia de cadeia).
   if (dasPecas?.ricochetes) e.encadear = (e.encadear ?? 0) + dasPecas.ricochetes;
   e.bifurcar = Math.max(e.bifurcar ?? 0, a.bifurcar) + (dasPecas?.bifurcar ?? 0);
@@ -2097,6 +2098,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    */
   let atingidos = [];
   let casas = null;
+  // (lote 36) Onde a forma caiu (o centro e o lado) e a área deste uso com a Área de Efeito — a Repetição Final a refaz com o "aumentado" dela.
+  let formaNoUso = null;
+  let areaNoUso = null;
   let virarPara = null;
   // (PoE, 12/10) A gema que PLANTA (Armadilha, Mina): o uso joga a armadilha/mina no lugar mirado; a habilidade sai quando ela ativa.
   const tipoPlantado = Plantadas.tipoDaGema(entry);
@@ -2105,8 +2109,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (plantada) {
       // A Armadilha ativada / a Mina detonada / a Runa Ativada: a área em volta DELA (sem alcance — ela está lá); a de alvo único, em quem a
       // ativou (com a cadeia da gema).
-      if (entry.forma) casas = casasDaForma(entry, plantada.x, plantada.y);
-      else if (!(alvo.hp > 0)) atingidos = [];
+      if (entry.forma) {
+        casas = casasDaForma(entry, plantada.x, plantada.y);
+        formaNoUso = { x: plantada.x, y: plantada.y, dir: null };
+      } else if (!(alvo.hp > 0)) atingidos = [];
       else atingidos = entry.cadeia ? saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(entry.cadeia.distance, efeitoDaGema) } : entry.cadeia) : [alvo];
     } else if (!entry.forma) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
@@ -2124,10 +2130,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // A casa que o jogador escolheu na mira (`huntAction` com x, y): a área cai lá, com ou sem alvo.
       if (distanciaChebyshev(hunt.pos, mira) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       casas = casasDaForma(entry, mira.x, mira.y);
+      formaNoUso = { x: mira.x, y: mira.y, dir: null };
     } else if (centradoNoAlvo) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       casas = casasDaForma(entry, alvo.x, alvo.y);
+      formaNoUso = { x: alvo.x, y: alvo.y, dir: null };
     } else {
       const lados = direcional(entry) ? ordemDosLados(hunt.pos, alvo) : [null];
       let melhor = null;
@@ -2138,13 +2146,27 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       casas = melhor.cs;
       virarPara = melhor.dir;
+      formaNoUso = { x, y, dir: melhor.dir };
     }
-    // Area of Effect / Concentrated Effect (supports): a área cresce ou encolhe `areaExtra` casas.
-    // (− a Intensidade: "X% menos Efeito em Área por Intensidade" — uma casa a cada ~25%)
-    const areaDaIntensidade = intensidade > 0 ? -Math.round((intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0)) / 25) : 0;
-    // (+ a Runa: "Runas têm Área de Efeito aumentada em X% caso Y% da Duração do Vínculo tenha expirado" — `plantada.areaExtra`, do tique.)
-    const areaDaRuna = plantada?.areaExtra ?? 0;
-    if (casas && (efeitoDaGema?.areaExtra || areaDaIntensidade || areaDaRuna)) casas = Areas.mudar(casas, Math.round((efeitoDaGema?.areaExtra ?? 0) + areaDaIntensidade + areaDaRuna));
+    // A ÁREA DE EFEITO (lote 36, P002 — a decisão do dono "Toda área em metros"): o raio da forma × √(1 + o "aumentado") × √ de cada
+    // "mais/menos" — o das peças e da ficha, o dos suportes do PoE (Área de Efeito Aumentada, Efeito Concentrado…), a Intensidade ("X% menos
+    // Efeito em Área por Intensidade", um "menos" só: X × a Intensidade) e a Runa ("Runas têm Área de Efeito aumentada em X% caso Y% da
+    // Duração do Vínculo tenha expirado" — `plantada.areaPct`, do tique); a fração vira chance de uma casa (`ModsPoe.casasPelaArea`), e a
+    // FORMA estica (ou encolhe) até o raio novo em volta do centro (`Areas.escalarForma` — o losango segue losango). (+ os suportes do
+    // Draevor, no modo clássico: `areaExtra` casas em volta, `Areas.mudar`.)
+    if (casas && formaNoUso) {
+      const base = casas;
+      const raio = Areas.raioDaForma(entry.forma);
+      const inc = (efeitoDaGema?.areaIncPct ?? 0) + (plantada?.areaPct ?? 0);
+      const mais = [efeitoDaGema?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0) : 0];
+      const legado = Math.round(efeitoDaGema?.areaExtra ?? 0);
+      areaNoUso = (incExtra = 0) => {
+        const n = ModsPoe.casasPelaArea(raio, ModsPoe.fatorDaArea(inc + incExtra, ...mais));
+        const cs = n ? Areas.daForma(Areas.escalarForma(entry.forma, raio + n), formaNoUso, formaNoUso.dir) : base;
+        return legado ? Areas.mudar(cs, legado) : cs;
+      };
+      casas = areaNoUso();
+    }
     // Quem está nas casas da área: por índice de casa (sem varrer área × bichos).
     if (casas) atingidos = Areas.dentro(casas, vivos);
   }
@@ -2739,9 +2761,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     for (let r = 0; r < repeticoes; r++) {
       if (!atingidos.some((b) => b.hp > 0)) break;
       naRepeticaoFinal = r === repeticoes - 1;
-      // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — a área da última repetição cresce: uma casa a cada ~25%.)
-      const areaFinal = naRepeticaoFinal && casas && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
-      if (areaFinal > 0) atingidos = Areas.dentro(Areas.mudar(casas, Math.max(1, Math.round(areaFinal / 25))), vivos.filter((b) => b.hp > 0));
+      // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — lote 36, P002: o X soma no "aumentado" da área da última
+      // repetição, e o raio da forma cresce × √ como o resto da área.)
+      const areaFinal = naRepeticaoFinal && areaNoUso && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
+      if (areaFinal > 0) atingidos = Areas.dentro(areaNoUso(areaFinal), vivos.filter((b) => b.hp > 0));
       atacar(true);
     }
     // (PoE, o Libertar: "Magias Suportadas são Liberadas quando conjuradas, e seus efeitos Ocorrem Novamente para cada Selo perdido" — os Selos
@@ -3080,9 +3103,9 @@ export function tiqueDasRunas(estado, hunt, personagem, eventos = [], agora = hu
   if (!hunt?.runas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   const { ativar, expiradas } = Runas.tique(hunt, ficha, agora);
-  for (const { r, alvo, areaExtra } of ativar) {
+  for (const { r, alvo, areaPct } of ativar) {
     if ((estado.hp ?? 0) <= 0) break;
-    const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaExtra } });
+    const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaPct } });
     if (res?.ok) eventos.push(...(res.eventos ?? []));
   }
   const mana = ModsPoe.valor(ficha, 'mana_runa_expira_vinculada');

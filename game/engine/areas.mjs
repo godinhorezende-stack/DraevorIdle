@@ -41,6 +41,32 @@ export const girar = ([dx, dy], dir) => (dir === 1 ? [-dy, dx] : dir === 2 ? [-d
 export const daForma = (forma, centro, dir = null) =>
   (forma ?? [[0, 0]]).map((d) => (dir == null ? d : girar(d, dir))).map(([dx, dy]) => ({ x: centro.x + dx, y: centro.y + dy }));
 
+/** O RAIO de uma FORMA em casas: a casa mais longe do centro (Chebyshev). A Área de Efeito do PoE cresce por ele (`condicoes-poe.casasPelaArea`). */
+export const raioDaForma = (forma) => (forma ?? []).reduce((r, [dx, dy]) => Math.max(r, Math.abs(dx), Math.abs(dy)), 0);
+
+/**
+ * A FORMA esticada (ou encolhida) até o raio `raioNovo` em volta do centro (lote 36: a Área de Efeito do PoE, o raio × √). Cada casa vale
+ * pelo seu meio: entra se o mesmo ponto na forma original (o deslocamento ÷ a escala, arredondado) está nela; a escala é a da borda
+ * ((raioNovo + ½) ÷ (raio + ½)), para o raio novo ser exato. Assim o losango segue losango e a onda segue onda — `mudar` engorda uma casa em
+ * volta (o losango vira octógono, e encolher tira duas no eixo). Com o raio novo 0, só as casas mais perto do centro.
+ */
+export function escalarForma(forma, raioNovo) {
+  const f = forma ?? [[0, 0]];
+  const r = raioDaForma(f);
+  if (!(r > 0) || raioNovo === r) return f;
+  const perto = (d) => Math.max(Math.abs(d[0]), Math.abs(d[1]));
+  if (!(raioNovo > 0)) {
+    const menor = Math.min(...f.map(perto));
+    return f.filter((d) => perto(d) === menor);
+  }
+  const tem = new Set(f.map(([dx, dy]) => `${dx},${dy}`));
+  const s = (raioNovo + 0.5) / (r + 0.5);
+  const arredondar = (v) => Math.sign(v) * Math.round(Math.abs(v)) || 0;
+  const saida = [];
+  for (let dy = -raioNovo; dy <= raioNovo; dy++) for (let dx = -raioNovo; dx <= raioNovo; dx++) if (tem.has(`${arredondar(dx / s)},${arredondar(dy / s)}`)) saida.push([dx, dy]);
+  return saida;
+}
+
 /** As casas de uma reta de `de` na direção de `para`, até `alcance` casas de `de` (sem `de`). */
 export function reta(de, para, alcance) {
   const dx = para.x - de.x;

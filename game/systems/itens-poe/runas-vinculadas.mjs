@@ -95,11 +95,12 @@ export function vincular(hunt, ficha, r, agora = hunt?.clock ?? 0, { preferido =
 
 /**
  * Um tique das Runas: vinculadas seguem o inimigo e contam a duração vinculada; o inimigo morreu, soltam e procuram outro; soltas contam a
- * duração solta. Devolve `{ ativar: [{ r, alvo, areaExtra }], expiradas: [{ r, vinculada }] }` — as que são Ativadas agora (no lugar do
- * inimigo; `areaExtra`: as casas a mais do "Runas têm Área de Efeito aumentada em X% caso Y% da Duração do Vínculo tenha expirado") e as que
+ * duração solta. Devolve `{ ativar: [{ r, alvo, areaPct }], expiradas: [{ r, vinculada }] }` — as que são Ativadas agora (no lugar do
+ * inimigo; `areaPct`: o "aumentado" do "Runas têm Área de Efeito aumentada em X% caso Y% da Duração do Vínculo tenha expirado" — lote 36: o
+ * raio cresce × √ com o resto da Área de Efeito, no `disparar`) e as que
  * acabaram (`vinculada`: acabou vinculada — "Recupera X% de Mana quando uma Runa expira enquanto Vinculada").
  */
-export function tique(hunt, ficha, agora = hunt?.clock ?? 0, rng = Math.random) {
+export function tique(hunt, ficha, agora = hunt?.clock ?? 0) {
   const ativar = [];
   const expiradas = [];
   if (!hunt?.runas?.length) return { ativar, expiradas };
@@ -127,8 +128,7 @@ export function tique(hunt, ficha, agora = hunt?.clock ?? 0, rng = Math.random) 
     }
     if (agora < (r.proxima ?? agora)) continue;
     const fracao = r.vinculadaPassou / Math.max(1, r.vinculadaMs);
-    const casas = areaPct > 0 && fracao >= areaApos / 100 ? areaPct / 25 : 0;
-    ativar.push({ r, alvo, areaExtra: Math.trunc(casas) + (rng() < casas % 1 ? 1 : 0) });
+    ativar.push({ r, alvo, areaPct: areaPct > 0 && fracao >= areaApos / 100 ? areaPct : 0 });
     // ("Runas têm 100% mais Frequência de Ativação se 75% da Duração de Vínculo houver expirado": o intervalo ÷ 2.)
     const mais = freqPct > 0 && fracao >= freqApos / 100 ? 1 + freqPct / 100 : 1;
     r.proxima = agora + Math.round(r.intervaloMs / mais);

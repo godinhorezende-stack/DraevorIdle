@@ -181,6 +181,11 @@ const IMPLEMENTADOS = [
     re: /metros ao Alcance de Golpes Corpo a Corpo|Recuperação de Bloqueio aumentada/,
     jogo: 'o alcance corpo a corpo em metros (a decisão "Medir em metros", 1 casa = 2 m): o da arma (a base do PoE, 1 a 1,4 m) + os "+X metros", o vizinho colado sempre ao alcance e cada casa a mais pedindo 2 m — no golpe básico e no golpe da gema corpo a corpo; a Recuperação de Bloqueio trava em todo bloqueio (a decisão "Como no PoE: todo bloqueio")',
   },
+  {
+    bloco: 'Zerar a árvore — lote 36 (a Área de Efeito em metros, pela decisão do dono)',
+    re: /Repetição Final das Magias têm Efeito em Área aumentado/,
+    jogo: 'a Área de Efeito como no PoE (a decisão "Toda área em metros"): o raio da forma × √(1 + o aumentado) × √ de cada "mais/menos", a fração como chance de uma casa, e a forma esticada até o raio novo; a Repetição Final soma o X no aumentado da última repetição',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

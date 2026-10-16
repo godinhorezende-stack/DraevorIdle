@@ -184,9 +184,10 @@ const REGRAS = [
   [new RegExp(`Perfuram ${N} Inimigos? adiciona`, 'i'), (m) => ({ perfurar: num(m[1]) })],
   [/Projéteis .*Bifurcam/i, () => ({ bifurcar: 2 })],
   [new RegExp(`Encadeiam \\+?${N} vez`, 'i'), (m) => ({ encadear: num(m[1]) })],
-  // Área (o motor anda em casas: ±1 casa a cada ~25%).
-  [new RegExp(`têm ${N}% (mais|menos) Efeito em Área`, 'i'), (m) => ({ areaExtra: (m[2] === 'mais' ? 1 : -1) * Math.max(1, Math.round(num(m[1]) / 25)) })],
-  [new RegExp(`(?:Área de Efeito|Efeito em Área) aumentad[oa] em ${N}%`, 'i'), (m, t) => (/Maldição|Clamor|Lacaio/i.test(t) ? null : { areaExtra: Math.max(1, Math.round(num(m[1]) / 25)) })],
+  // Área (lote 36, P002 — "Toda área em metros"): o "mais/menos" (multiplica entre os suportes) e o "aumentado" (soma com o das peças) em %;
+  // o raio da forma cresce × √ no uso (`acoes`, `ModsPoe.casasPelaArea`). Antes, ±1 casa a cada ~25%.
+  [new RegExp(`têm ${N}% (mais|menos) Efeito em Área`, 'i'), (m) => ({ areaMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`(?:Área de Efeito|Efeito em Área) aumentad[oa] em ${N}%`, 'i'), (m, t) => (/Maldição|Clamor|Lacaio/i.test(t) ? null : { areaIncPct: num(m[1]) })],
   // Crítico.
   [new RegExp(`têm \\+${N}% (?:de|ao) Multiplicador de (?:Dano de )?Acertos? Críticos?`, 'i'), (m) => ({ critDano: num(m[1]) })],
   [new RegExp(`Chance de Acerto Crítico(?: \\S+)* aumentad[oa] em ${N}%`, 'i'), (m) => ({ critChance: num(m[1]) / 20 })],

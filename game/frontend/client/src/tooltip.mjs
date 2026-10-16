@@ -1061,6 +1061,9 @@ export function blocoDaGemaDaSkill(entry) {
     partes.push(`explode ${lado}×${lado} a cada impacto (${Math.round(e.explosaoPct || e.segundaExplosaoPct)}%)`);
   }
   if (e.areaExtra) partes.push(`área ${e.areaExtra > 0 ? '+' : ''}${Math.round(e.areaExtra)}`);
+  // (lote 36) A Área de Efeito do PoE em %: o "aumentado" e o "mais/menos" (o raio da área cresce × √ no uso, como no PoE).
+  if (e.areaIncPct) partes.push(`área ${e.areaIncPct > 0 ? '+' : ''}${Math.round(e.areaIncPct)}%`);
+  if (e.areaMaisPct) partes.push(`${Math.round(Math.abs(e.areaMaisPct))}% ${e.areaMaisPct > 0 ? 'mais' : 'menos'} área`);
   if (e.igniteChance) partes.push('queima');
   if (e.congelarChance) partes.push('congela');
   if (e.lentidaoPct) partes.push('lentidão');

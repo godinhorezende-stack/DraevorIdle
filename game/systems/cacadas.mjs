@@ -2706,7 +2706,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
     l.acertos = (l.acertos ?? 0) + 1;
     if (est.area && l.acertos % est.area.cada === 0) {
-      // (ciclo 7) "Lacaios têm Efeito em Área aumentado em X%": o raio (1 + a cada 25%).
+      // (ciclo 7) "Lacaios têm Efeito em Área aumentado em X%": o raio (lote 36: 1 casa × √(1 + X%), a fração como chance).
       const raioDaArea = LacaiosPoe.raioDaAreaDoLacaio(l);
       eventos.push({ t: 'explosao', id: est.area.efeito, x: alvo.x, y: alvo.y, lado: 1 + 2 * raioDaArea });
       for (const m of hunt.monstros) {

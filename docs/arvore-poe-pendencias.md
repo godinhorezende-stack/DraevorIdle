@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1359, novo 4586, aproximado (parcial) 58.
+- ✓ Com efeito: **6003** — equivalente 1359, novo 4594, aproximado (parcial) 50.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -43,6 +43,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | Zerar a árvore — lote 33 (os primeiros sistemas B) | 19 | 0 | o "Efeito de Afecções Não-Danificadoras" também no Causticar, no Fragilizar e no Exaurir (o bloqueio, a chance no acerto, a aura, o Segredos do Sofrimento, a Causticação do Warden); as rampas de distância do Path of Building (35 → 70 unidades; 1 casa = 2 m = 20) no crítico das flechas, no Tiro Longo, no Tiro Distante do Deadeye e na Animosidade Adjacente; a Queima-Roupa pela tabela do poedb; o Impacto pela proximidade do PoB (o máximo até 15 unidades, 0 em 40 — o vizinho colado, a 20, dá 80%); o Elusivo perde 20% de efeito por segundo (começa no efeito cheio, com o aumentado) e não se ganha outro enquanto há um |
 | Zerar a árvore — lote 34 (as Minas plantadas e a Velocidade dos Clamores) | 17 | 0 | a Velocidade dos Clamores encurta o tempo de uso do Clamor (e a de Conjuração não vale nele — o Clamor não é ataque nem magia); a aura da Mina plantada nos inimigos a até 35 unidades (3,5 m, 1 casa), cada Mina somando até o teto ("Efeito de Auras das Minas" na de cada uma, não no teto; o "reduzido" é o dano que o inimigo causa); "por cada Mina Detonada Recentemente, até 100%/40%" pela detonação de verdade, nos últimos 4 s |
 | Zerar a árvore — lote 35 (o alcance em metros e o bloqueio, pelas decisões do dono) | 33 | 0 | o alcance corpo a corpo em metros (a decisão "Medir em metros", 1 casa = 2 m): o da arma (a base do PoE, 1 a 1,4 m) + os "+X metros", o vizinho colado sempre ao alcance e cada casa a mais pedindo 2 m — no golpe básico e no golpe da gema corpo a corpo; a Recuperação de Bloqueio trava em todo bloqueio (a decisão "Como no PoE: todo bloqueio") |
+| Zerar a árvore — lote 36 (a Área de Efeito em metros, pela decisão do dono) | 8 | 0 | a Área de Efeito como no PoE (a decisão "Toda área em metros"): o raio da forma × √(1 + o aumentado) × √ de cada "mais/menos", a fração como chance de uma casa, e a forma esticada até o raio novo; a Repetição Final soma o X no aumentado da última repetição |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -53,7 +54,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 
 | Linhas | A diferença | Exemplos (nó — texto) |
 |---:|---|---|
-| 8 | a última repetição pega a área maior (uma casa a cada ~25%) | Domínio de Conjuração (maestria) — Repetição Final das Magias têm Efeito em Área aumentado em 40% |
 | 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
 | 7 | sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o "+8% mais Dano por único") | Cintos Lendários (asc. Luminary) — Seu mercenário pode equipar cintos únicos<br>Botas Lendárias (asc. Luminary) — Seu mercenário pode equipar botas únicas<br>Armas Lendárias (asc. Luminary) — Seu mercenário pode equipar aljavas, armas e escudos únicos |
 | 5 | no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando | Maestria de Minas (maestria) — Detonar Minas é Ativado enquanto você se mover |
