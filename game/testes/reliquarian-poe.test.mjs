@@ -217,9 +217,9 @@ test('o GRANDE EMISSÁRIO DAS DIREÇÕES: sai sozinho (imortal); a cada 6 s, um 
   assert.ok(!h.lacaios.some((l) => l.emissario && l.hp > 0));
 });
 
-test('o CONVOCAR FANTASMA e o PODER FANTASMAL: o suporte convoca no golpe fatal e no Raro/Único (até o máximo, 15 s); cada Fantasma vivo dá o golpe dele como Dano Físico Mágico Adicional', { skip: SEM }, () => {
+test('o CONVOCAR FANTASMA e o PODER FANTASMAL: o suporte convoca no golpe fatal e no Raro/Único (até o máximo, 15 s); cada Fantasma vivo dá o Dano Físico Mágico Adicional do nível do suporte (lote 44: a tabela do PoB)', { skip: SEM }, () => {
   const suporte = SuportesPoe.efeitoNoNivel('Summon_Phantasm_Support', 20);
-  assert.deepEqual({ ...suporte.efeito, custoPct: undefined }, { custoPct: undefined, fantasmaAoMatarPct: 69, fantasmaMax: 10, fantasmaRaroPct: 20, fantasmaDuracaoMs: 15000 });
+  assert.deepEqual({ ...suporte.efeito, custoPct: undefined }, { custoPct: undefined, fantasmaAoMatarPct: 69, fantasmaMax: 10, fantasmaRaroPct: 20, fantasmaDuracaoMs: 15000, fantasmaNivel: 20 });
   assert.deepEqual(suporte.naoFeitas, []);
   const e = personagem({ af: { poder_fantasmal: 1 } });
   const h = e.hunt;
@@ -232,11 +232,12 @@ test('o CONVOCAR FANTASMA e o PODER FANTASMAL: o suporte convoca no golpe fatal 
   assert.ok(fantasmas().every((l) => l.alcanceDeAtaque === 4 && l.duracaoMs === 15000));
   // (o Raro/Único acertado)
   assert.equal(Acoes.convocarFantasmas(e, h, { fantasmaRaroPct: 100, fantasmaMax: 10 }, [{ ...a, raridade: 'raro' }], () => 0), 1);
-  // (o Poder Fantasmal: o golpe de cada Fantasma vivo, somado)
+  // (o Poder Fantasmal: o do nível do suporte de cada Fantasma vivo, somado — lote 44: a tabela do PoB, 42 a 65 no nível 20; sem o nível no
+  // efeito, o 20)
   const s = soma(e);
   const vivos = fantasmas();
-  assert.equal(s.spell_added_physical_dmg_min, vivos.reduce((n, l) => n + l.dano.min, 0));
-  assert.equal(s.spell_added_physical_dmg_max, vivos.reduce((n, l) => n + l.dano.max, 0));
+  assert.equal(s.spell_added_physical_dmg_min, vivos.length * 42);
+  assert.equal(s.spell_added_physical_dmg_max, vivos.length * 65);
   // (sem o nó, os Fantasmas não dão nada)
   e.equipment.weapon.poe.af.poder_fantasmal = 0;
   assert.equal(soma(e).spell_added_physical_dmg_min ?? 0, 0);

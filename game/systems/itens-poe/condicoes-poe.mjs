@@ -709,7 +709,8 @@ export function notarParaReliquia(estado, hunt, agora = hunt?.clock ?? 0) {
  * cheio no tique (`acoes.tiqueDasEgides`, que sabe as peças e a árvore). Aqui, a parte de cada tipo do acerto sai da Égide dele ANTES do Escudo
  * e da Vida (o golpe do monstro e a magia dele). Devolve o total absorvido; `porTipo` sai com o que sobrou.
  */
-export const EGIDE = Object.freeze({ recargaMs: 10000, ordem: ['fisica', 'fogo', 'gelo', 'raio', 'elemental', 'primitiva'] });
+// (lote 44, P072: a Égide Primitiva volta em 5 s — o `aegis_recharge_delay_ms` dela no PoB e no poedb, 5000; as dos únicos, 10000)
+export const EGIDE = Object.freeze({ recargaMs: 10000, recargaPrimitivaMs: 5000, ordem: ['fisica', 'fogo', 'gelo', 'raio', 'elemental', 'primitiva'] });
 export function absorverNaEgide(hunt, porTipo, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt?.egides) return 0;
   let total = 0;
@@ -1149,8 +1150,8 @@ export function adds(estado, total = null) {
     if (removidas) saida.phys_as_extra_energy = (saida.phys_as_extra_energy ?? 0) + Math.min(Number(total?.chama_santificada_raio_max) || Infinity, porRemovida * removidas);
   }
   // (14/10, o Reliquarian) As ARANHAS ESPECTRAIS vivas: 2% de Velocidade de Ataque e 15% de Dano com Veneno cada (`acoes.tiqueDasAranhas`); o
-  // PODER FANTASMAL ("Cada Fantasma Convocado concede a Você Poder Fantasmal": Dano Físico Mágico Adicional — o golpe de cada Fantasma vivo;
-  // o PoE não publica a tabela pelo nível dele: aproximado)
+  // PODER FANTASMAL ("Cada Fantasma Convocado concede a Você Poder Fantasmal": Dano Físico Mágico Adicional — lote 44, P064: o de cada Fantasma
+  // vivo pelo nível do Suporte: Convocar Fantasma que o convocou, a tabela do PoB — `LacaiosPoe.poderFantasmalNoNivel`)
   const vivosDo = (k) => (estado?.hunt?.lacaios ?? []).filter((l) => l?.[k] && l.hp > 0);
   const aranhas = vivosDo('aranha').length;
   if (aranhas) {
@@ -1159,8 +1160,9 @@ export function adds(estado, total = null) {
   }
   if (Number(total?.poder_fantasmal) > 0) {
     for (const l of vivosDo('fantasma')) {
-      saida.spell_added_physical_dmg_min = (saida.spell_added_physical_dmg_min ?? 0) + (l.dano?.min ?? 0);
-      saida.spell_added_physical_dmg_max = (saida.spell_added_physical_dmg_max ?? 0) + (l.dano?.max ?? 0);
+      const [min, max] = l.poderFantasmal ?? [l.dano?.min ?? 0, l.dano?.max ?? 0];
+      saida.spell_added_physical_dmg_min = (saida.spell_added_physical_dmg_min ?? 0) + min;
+      saida.spell_added_physical_dmg_max = (saida.spell_added_physical_dmg_max ?? 0) + max;
     }
   }
   // (14/10, o Rito Profano) A INFUSÃO ESPIRITUAL, por acúmulo (`INFUSAO`)

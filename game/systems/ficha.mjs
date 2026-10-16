@@ -856,7 +856,7 @@ export const afinidadePara = (ficha, tags) => Especializacoes.afinidade(ficha?.a
  */
 function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   // (13/10, a Égide Necromântica: "Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você" — a defesa da base do escudo
-  // também sai de você; os lacaios do jogo não têm armadura/evasão/escudo próprios: ela não vai a ninguém.)
+  // também sai de você; lote 43, P040: ela vai aos lacaios — `Afixos.passarOEscudoAosLacaios`.)
   const semEscudo0 = Afixos.ehEgideComEscudo(estado, af) ? estado.equipment.shield : null;
   // (13/10, A Apóstata: "Ganhe Vida Máxima ao invés de Escudo de Energia Máximo dos Itens de Proteção Equipados") o escudo das peças de
   // armadura não entra aqui: vira Vida (`Afixos.vidaDasArmaduras`).

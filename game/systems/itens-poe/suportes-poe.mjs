@@ -264,6 +264,8 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
     const r = regra[1](linha.match(regra[0]), linha, ativa);
     for (const [k, v] of Object.entries(r ?? {})) efeito[k] = (efeito[k] ?? 0) + v;
   }
+  // (lote 44, P064) o nível do Suporte: Convocar Fantasma — o Poder Fantasmal de cada Fantasma é o desse nível (a tabela do PoB)
+  if (efeito.fantasmaAoMatarPct > 0 || efeito.fantasmaRaroPct > 0) efeito.fantasmaNivel = nivel;
   return { efeito, naoFeitas };
 }
 

@@ -7172,6 +7172,90 @@
       "unidade": "%",
       "combate": true,
       "efeito": "o tempo de uso do Clamor (`acoes.temposDaGemaPoe`, lote 34)"
+    },
+    "minion_armadura": {
+      "nome": "Lacaios: Armadura",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a armadura no físico do golpe no lacaio — o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe.danoNoLacaio`)"
+    },
+    "minion_evasao": {
+      "nome": "Lacaios: Evasão",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a evasão contra o ataque no lacaio — o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe.danoNoLacaio`)"
+    },
+    "minion_es": {
+      "nome": "Lacaios: Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o escudo de energia fixo do lacaio — o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe.danoNoLacaio`)"
+    },
+    "minion_vida_fixa": {
+      "nome": "Lacaios: Vida máxima",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a vida fixa do lacaio — o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe.danoNoLacaio`)"
+    },
+    "minion_supressao": {
+      "nome": "Lacaios: Chance de Suprimir Dano Mágico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a supressão da magia no lacaio (50% menos dano) — o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe.danoNoLacaio`)"
+    },
+    "minion_block_inc": {
+      "nome": "Lacaios: Chance de Bloquear aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_dano_magico": {
+      "nome": "Lacaios que conjuram: Dano Mágico aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_crit_magico": {
+      "nome": "Lacaios que conjuram: Chance de Crítico Mágico aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_dano_fire": {
+      "nome": "Lacaios de Fogo: Dano de Fogo aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_dano_ice": {
+      "nome": "Lacaios de Gelo: Dano de Gelo aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_dano_energy": {
+      "nome": "Lacaios de Raio: Dano de Raio aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_evitar_afeccoes": {
+      "nome": "Lacaios: chance de evitar Afecções Elementais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_reflexo_fisico": {
+      "nome": "Lacaios: Dano Físico refletido a Atacantes Corpo a Corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
+    },
+    "minion_es_recarga_inicio": {
+      "nome": "Lacaios: Início da Recarga do Escudo de Energia mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o escudo da Égide Necromântica nos lacaios (lote 43 — `afixos.passarOEscudoAosLacaios`, `itens-poe/lacaios-poe`)"
     }
   }
 }

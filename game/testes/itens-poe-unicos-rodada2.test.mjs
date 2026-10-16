@@ -116,7 +116,8 @@ test('os lacaios: a resistência a Fogo/Gelo e o dano extra do lacaio físico', 
   const com = Lacaios.oQueInvoca('Raise_Zombie', 10, null, { minion_phys_as_extra: 50, minion_fire_res: 30 });
   assert.ok(sem && com, 'o zumbi existe');
   assert.ok(com.dano.max > sem.dano.max, `dano ${sem.dano.max} → ${com.dano.max}`);
-  assert.equal(com.poe.resFogo, 30);
+  // (lote 44: + os 40% de base do Zumbi no PoB)
+  assert.equal(com.poe.resFogo - sem.poe.resFogo, 30);
 });
 
 test('as regras novas dos amuletos e das sobras: o atributo, a condição, a escala ou o evento que o jogo já tem', { skip: SEM }, () => {

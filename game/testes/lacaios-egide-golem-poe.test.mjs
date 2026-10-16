@@ -106,7 +106,8 @@ test('a resistência de UM elemento do lacaio ("Lacaios têm +X% de Resistência
   assert.equal(Cacadas.resDoLacaio(l, 'energy'), 15);
   assert.equal(Cacadas.resDoLacaio(l, 'fire', { res: 20 }), 60, '+ as auras de aliado');
   const q = LacaiosPoe.oQueInvoca('Raise_Zombie', 10, null, { minion_energy_res: 25 });
-  assert.equal(q.poe.resRaio, 25);
+  // (lote 44: + os 40% de base do Zumbi no PoB)
+  assert.equal(q.poe.resRaio - LacaiosPoe.oQueInvoca('Raise_Zombie', 10, null, {}).poe.resRaio, 25);
 });
 
 test('o SUSERANO DO PRIMORDIAL: o golem morto volta sozinho em 4 s (se a gema segue encaixada)', { skip: SEM }, () => {
