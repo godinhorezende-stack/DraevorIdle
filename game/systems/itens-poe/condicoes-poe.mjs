@@ -2080,6 +2080,23 @@ function usosDaFicha(ficha) {
  * Um tique (a caçada chama, `ms` de tempo): a Fúria, o "movendo-se", a recuperação do dano sofrido (Recoup) e a regeneração do Escudo de
  * Energia ("N de Escudo de Energia Regenerado por segundo"). `ficha`: a do personagem.
  */
+/**
+ * (lote 51, a Dissolução da Carne — dono, 16/10: "Implementar") a VIDA RESERVADA pelo dano (`arvore.danoRecebido`): enquanto houver, a vida não
+ * passa da máxima − a reservada (a recuperação não enche a parte reservada); passados os segundos sem dano na Vida (2 — o da linha), ela volta.
+ * Com a vida toda reservada, você morre (a vida chega a 0, como no PoE).
+ */
+export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
+  const r = hunt?.dissolucao;
+  if (!r || !(r.reservado > 0)) return;
+  const s = Number(ficha?.afPoe?.dissolucao_reserva_s) || 0;
+  const max = estado.maxHp ?? 0;
+  if (!(s > 0) || agora - (r.ultimo ?? 0) >= s * 1000) {
+    if ((estado.hp ?? 0) > 0) estado.hp = Math.min(max, (estado.hp ?? 0) + r.reservado);
+    delete hunt.dissolucao;
+    return;
+  }
+  if ((estado.hp ?? 0) > max - r.reservado) estado.hp = Math.max(0, max - r.reservado);
+}
 export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt) return;
   hunt.poeEntrou ??= agora; // (lote F: "por segundo que você tenha ficado parado" conta desde a entrada, se ainda não andou)
@@ -2087,9 +2104,11 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   // (11/10) Um buff com tempo acabou neste tique (os nomeados — Crueldade, Elusivo, Fanatismo… — e a Oferenda em você): a ficha é refeita, e o
   // bônus sai na hora (não no próximo acerto que a refizesse).
   const venceu = (ate) => typeof ate === 'number' && ate <= agora && ate > agora - Math.max(1, ms);
-  if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate)) hunt.poeFichaMudou = true;
+  // (lote 51: + os bônus temporários — `poeTemporarios`, o modificador do Raro do Aprendizado Inspirado)
+  if (Object.values(hunt.poeBuffs ?? {}).some(venceu) || venceu(hunt.oferendaEmVoce?.ate) || Object.values(hunt.poeTemporarios ?? {}).some((x) => venceu(x?.ate))) hunt.poeFichaMudou = true;
   tiqueDaFuria(hunt, agora);
   tiqueDasCargasFanaticas(hunt, ficha, agora);
+  tiqueDaDissolucao(estado, hunt, ficha, agora);
   // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto
   tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
   // (14/10, o Occultist) a Infusão Espiritual

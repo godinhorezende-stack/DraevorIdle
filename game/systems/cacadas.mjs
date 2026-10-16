@@ -2216,6 +2216,9 @@ const andarFamiliar = (hunt, grade, f, agora) => passoDoFamiliar(hunt, grade, f,
 
 /** Quanto além de `perto` o familiar se afasta do dono para combater (o limite de perseguição): passou disso, volta a seguir. */
 const FOLGA_DO_COMBATE = 5;
+/** (lote 51, dono: "Raio maior, registrado") "Lacaios Convocados são Agressivos": procuram alvo (e se afastam de você) 3 casas mais longe. */
+export const CASAS_DO_AGRESSIVO = 3;
+const folgaDe = (f) => FOLGA_DO_COMBATE + (f?.poe?.agressivo ? CASAS_DO_AGRESSIVO : 0);
 /** Depois de largar um alvo por falta de rota ou de coleira, quanto tempo ele não volta a tentar o mesmo. */
 const ESQUECE_ALVO_MS = 3000;
 
@@ -2231,9 +2234,9 @@ function esquecerAlvo(f, alvo, agora) {
   f.esquecidos = novo;
 }
 
-function alvoDoFamiliar(hunt, f, agora) {
+export function alvoDoFamiliar(hunt, f, agora) {
   if (hunt.lurando) return null;
-  const raio = f.perto + FOLGA_DO_COMBATE;
+  const raio = f.perto + folgaDe(f);
   const ok = (m) => m && m.hp > 0 && distancia(m, hunt.pos) <= raio && !((f.esquecidos?.[m.uid] ?? 0) > agora);
   const doDono = alvoAtual(hunt);
   if (ok(doDono)) return doDono;
@@ -2707,7 +2710,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       andarFamiliar(hunt, grade, l, agora);
       continue;
     }
-    if (distancia(l, hunt.pos) > l.perto + FOLGA_DO_COMBATE + 1) {
+    if (distancia(l, hunt.pos) > l.perto + folgaDe(l) + 1) {
       esquecerAlvo(l, alvo, agora);
       andarFamiliar(hunt, grade, l, agora);
       continue;

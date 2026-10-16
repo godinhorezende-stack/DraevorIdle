@@ -7436,6 +7436,48 @@
       "unidade": "",
       "combate": true,
       "efeito": "o limite de maldições em você (1, como no PoE) + este (`condicoes-poe.amaldicoarJogador`; o Auto-Flagelo — lote 50)"
+    },
+    "vaal_almas_de_volta_chance": {
+      "nome": "Chance das Vaal ganharem as Almas de volta (sem recarga)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a Vaal usada não entra em recarga, na chance (`acoes.disparar`; o Reino de Atziri — lote 51)"
+    },
+    "alma_vaal_ao_estilhacar": {
+      "nome": "Chance de Alma Vaal a mais por Inimigo Estilhaçado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a recarga das Vaal na barra anda uma alma (`acoes`, `ModsPoe.definirAoEstilhacar`; o Calafrio da Corrupção — lote 51)"
+    },
+    "lacaios_agressivos": {
+      "nome": "Lacaios Convocados são Agressivos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a busca de alvo dos lacaios 3 casas mais longe (`cacadas.alvoDoFamiliar`; o Poder Primordial — lote 51)"
+    },
+    "dissolucao_reserva_s": {
+      "nome": "Dissolução da Carne: a Vida perdida fica Reservada (segundos sem dano)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o dano na Vida vira Vida Reservada, que volta depois de N s sem dano na Vida (`arvore.danoRecebido`, `condicoes-poe.tiqueDaDissolucao`; lote 51)"
+    },
+    "raio_aprendizado_notaveis": {
+      "nome": "Joia (raio): o Aprendizado Inspirado — os Notáveis alocados no raio que ele pede",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias: com os notáveis, `aprendizado_inspirado_n`/`_s` (lote 51)"
+    },
+    "raio_aprendizado_n": {
+      "nome": "Joia (raio): o Aprendizado Inspirado — quantos modificadores do Raro você recebe",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mods-poe.aprenderDoRaro` (lote 51)"
+    },
+    "raio_aprendizado_s": {
+      "nome": "Joia (raio): o Aprendizado Inspirado — por quantos segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mods-poe.aprenderDoRaro` (lote 51)"
     }
   }
 }

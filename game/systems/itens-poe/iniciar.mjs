@@ -18,6 +18,8 @@ import * as MoedasPoe from './moedas.mjs';
 import * as MapasAreas from './mapas-areas.mjs';
 // (lote 48) as Joias Atemporais: o módulo se registra na árvore (`passivas/arvore.definirConquista`)
 import './atemporais.mjs';
+// (lote 51) o Aprendizado Inspirado: o que cada modificador de monstro faria em você (o módulo se registra em `mods-poe`)
+import './aprendizado-inspirado.mjs';
 
 /** Os ganchos do jogo de verdade (a magia de cada gema, a gema ativa, o reforço, o suporte) e o catálogo de itens. */
 async function ganchosDoJogo() {

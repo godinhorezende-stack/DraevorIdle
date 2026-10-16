@@ -707,6 +707,33 @@ export function eventosDoFrasco(estado, classe, ficha, ctx = {}) {
 // eslint-disable-next-line no-var
 var gatilhosDeItem;
 export function definirGatilhosDeItem(fn) { gatilhosDeItem = fn; }
+/** (lote 51) O estilhaço de um inimigo (`acoes`: o Calafrio da Corrupção — a recarga das Vaal anda uma Alma). (`var`, como o de cima: o ciclo
+ * de importação chama o `definir` antes deste módulo terminar.) */
+// eslint-disable-next-line no-var
+var aoEstilhacar;
+export function definirAoEstilhacar(fn) { aoEstilhacar = fn; }
+/** (lote 51) O que cada modificador de monstro do PoE faria em você (`id` → `[{stat, valor}]` — quem registra é `aprendizado-inspirado.mjs`). */
+// eslint-disable-next-line no-var
+var efeitosDoModDeMonstro;
+export function definirEfeitosDoModDeMonstro(fn) { efeitosDoModDeMonstro = fn; }
+/**
+ * (lote 51) O APRENDIZADO INSPIRADO: "Com 4 Notáveis Alocados no Raio, Ao Matar um monstro Raro, você recebe 1 de seus Modificadores por 20
+ * segundos" (com os notáveis no raio, a árvore põe `aprendizado_inspirado_n`/`_s` — `passivas/arvore.raiosDasJoias`). Decisão do dono (16/10):
+ * o sorteio é só entre os modificadores do Raro que têm um equivalente em você; o mesmo modificador renova o tempo (não acumula). Os efeitos
+ * ficam em `hunt.poeTemporarios` (`adds`). Devolve os ids ganhos.
+ */
+export function aprenderDoRaro(estado, hunt, ficha, alvo, agora = hunt?.clock ?? 0, rng = Math.random) {
+  const n = Math.floor(valor(ficha, 'aprendizado_inspirado_n'));
+  const s = valor(ficha, 'aprendizado_inspirado_s');
+  if (!hunt || !(n > 0) || !(s > 0) || !efeitosDoModDeMonstro || !['raro', 'elite'].includes(alvo?.raridade)) return [];
+  const pool = (alvo.mods ?? []).filter((id) => efeitosDoModDeMonstro(id).length);
+  const ganhos = [];
+  while (ganhos.length < n && pool.length) ganhos.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]);
+  const t = (hunt.poeTemporarios ??= {});
+  for (const id of ganhos) efeitosDoModDeMonstro(id).forEach((ef, i) => { t[`aprendizado:${id}:${i}`] = { stat: ef.stat, valor: ef.valor, ate: agora + s * 1000 }; });
+  if (ganhos.length) hunt.poeFichaMudou = true;
+  return ganhos;
+}
 /**
  * (13/10) As AFECÇÕES que podem estar em você (as do PoE — o Atordoamento e os danos contínuos que não são afecção, não): `tem` e `tirar` de
  * cada uma. O Veneno do Draevor e o do PoE são o mesmo Envenenamento.
@@ -733,7 +760,10 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   const ultimos = ((hunt.poeUsosRecentes ??= {})[`ev.${nome}`] ??= []);
   ultimos.push(agora);
   while (ultimos.length && (ultimos[0] < agora - 20000 || ultimos.length > 60)) ultimos.shift();
-  if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) marcar(hunt, 'estilhacou', agora);
+  if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) {
+    marcar(hunt, 'estilhacou', agora);
+    aoEstilhacar?.(estado, hunt, ficha, ctx.rng ?? Math.random);
+  }
   // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto; lote 31: o
   // do lacaio e o do totem são os eventos deles — "quando você ou um Aliado próximo Matar")
   if (nome === 'matar' || nome === 'matarLacaio' || nome === 'matarTotem') notarParaReliquia(estado, hunt, agora);
@@ -741,6 +771,7 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   if (nome === 'matar' && hunt) hunt.poeAbatesParaAranhas = (hunt.poeAbatesParaAranhas ?? 0) + 1;
   const rng = ctx.rng ?? Math.random;
   const alvo = ctx.alvo ?? null;
+  if (nome === 'matar' && alvo) aprenderDoRaro(estado, hunt, ficha, alvo, agora, rng);
   const tagsAlvo = new Set([...tagsDoAlvo(alvo, agora), ...(ctx.tags ?? [])]);
   let conds = null;
   for (const ev of lista) {

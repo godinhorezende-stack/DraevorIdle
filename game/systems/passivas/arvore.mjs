@@ -675,6 +675,13 @@ function raiosDasJoias(estado, alocados) {
       }
       // o Instindo Sobrenatural: "Concede todos os bônus das Pequenas Habilidades Passivas Não Alocadas no Raio"
       if (v0(x.af, 'raio_pequenos_livres_concedem') > 0) for (const n of nos) if (!meus.has(n.id) && ehPequena(n)) for (const ef of efeitosDoNo(n, estado.passivas)) if (ef.add) somar(ef.add, ef.valor); else if (ef.stat || ef.tag) daJoia.push(ef);
+      // (lote 51) o Aprendizado Inspirado: "Com 4 Notáveis Alocados no Raio, Ao Matar um monstro Raro, você recebe 1 de seus Modificadores
+      // por 20 segundos" — com os notáveis no raio, o abate do Raro dá o modificador (`mods-poe.aprenderDoRaro`)
+      const pede = v0(x.af, 'raio_aprendizado_notaveis');
+      if (pede > 0 && nos.filter((n) => meus.has(n.id) && n.tipo === 'notable').length >= pede) {
+        somar('aprendizado_inspirado_n', v0(x.af, 'raio_aprendizado_n') || 1);
+        extras.aprendizado_inspirado_s = Math.max(extras.aprendizado_inspirado_s ?? 0, v0(x.af, 'raio_aprendizado_s'));
+      }
     }
   }
   return { porNo, extras, daJoia };

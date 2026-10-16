@@ -953,6 +953,22 @@ export function tiqueDosRobos(estado, hunt, agora = hunt?.ultimoTique ?? Date.no
   for (let i = vivos.length; i < ROBOS.quantos; i++) hunt.lacaios.push(lacaioDoGuardian(estado, hunt, agora, af, ROBOS.nome, 'energy', { robo: true, semAtaque: true, intocavel: true }));
 }
 const comRobos = (estado) => itensPoeLigado() && Number(Ficha.combate(estado).afPoe?.robos_ativadores) > 0;
+/**
+ * (lote 51, o Calafrio da Corrupção — dono: "Traduzir para a recarga") "X% de chance de ganhar uma Alma Vaal adicional por Inimigo
+ * Estilhaçado": na chance, a recarga de cada habilidade Vaal na barra anda UMA alma — o total da recarga ÷ as "Almas por Utilização" da gema.
+ */
+ModsPoe.definirAoEstilhacar((estado, hunt, ficha, rng) => {
+  const chance = ModsPoe.valor(ficha, 'alma_vaal_ao_estilhacar');
+  if (!(chance > 0) || !(rng() * 100 < chance)) return;
+  const agora = hunt.clock ?? 0;
+  for (const a of estado.actions ?? []) {
+    const entry = a?.id ? POR_ID.get(a.id) : null;
+    const cd = entry?.poeGema && hunt.cooldowns?.[a.id];
+    if (!cd || cd.ate <= agora || !tagsPoeDaSkill(entry).includes('vaal')) continue;
+    const almas = Number(GemasPoe.compilada(entry.poeGema.slug, Gemas.efeitoNaSkill(estado, a.id)?.nivel ?? 1)?.stats?.almas) || 0;
+    if (almas > 0) cd.ate = Math.max(agora, cd.ate - (cd.total ?? 0) / almas);
+  }
+});
 /** (lote 44, P066) O disparo `fn` do lugar do `i`-ésimo Robô Ativador vivo: a sua posição (`hunt.pos`, a origem do disparo) trocada só nele. */
 export function doLugarDoRobo(hunt, i, fn) {
   const robo = (hunt?.lacaios ?? []).filter((l) => l.robo && l.hp > 0)[i];
@@ -3027,7 +3043,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const recarga = tempoPoe ? tempoPoe.recarga : Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
   // Tudo a partir do instante LÓGICO (`inicio`), não do tique em que saiu. (A Armadilha/Mina plantada que ativa não mexe na recarga: ela
   // foi do arremesso.)
-  if (!plantada) cds[action.id] = { ate: inicio + recarga, total: recarga };
+  // (lote 51, o Reino de Atziri — dono, 16/10: "Traduzir para a recarga": as Almas Vaal do PoE são a recarga das Vaal no jogo) "Habilidades
+  // Vaal tem X% de chance de ganharem as Almas consumidas novamente quando usadas" = a Vaal usada não entra em recarga, na chance.
+  const vaalDeGraca = !plantada && recarga > 0 && entry.poeGema && tagsPoeDaSkill(entry).includes('vaal') && Math.random() * 100 < ModsPoe.valor(fichaDaRecarga, 'vaal_almas_de_volta_chance');
+  if (!plantada && !vaalDeGraca) cds[action.id] = { ate: inicio + recarga, total: recarga };
   // (14/10, o Coveiro) Profanar e Desenterrar criam os cadáveres deles no alvo (`criarCadaveres`).
   if (entry.poeGema && GemasPoe.cadaveresDaGema(entry.poeGema.slug, 1)) criarCadaveres(estado, hunt, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, alvo ?? hunt.pos);
   // PoE: os eventos "ao usar uma Habilidade" dos únicos (e os "recentemente": usou Movimento, Vaal, Clamor) — a ativada por gatilho não conta.

@@ -17988,7 +17988,7 @@
       "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
-      "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
+      "padrao": "^(?!Vida que seria perdida ao sofrer Dano é, ao invés, Reservada).*(?:Reserva|Reservam?|Reservad[ao]).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17999,7 +17999,8 @@
       "nota": "esta variação da reserva ainda não tem efeito no jogo",
       "_nova": true,
       "_unico": true,
-      "_lote8": "13/10 — a mana reservada (lote 8)"
+      "_lote8": "13/10 — a mana reservada (lote 8)",
+      "_lote51": "16/10 — lote 51: fora a Dissolução da Carne (a regra própria dela)"
     },
     {
       "padrao": "^.*(?:Cadáver|Cadáveres).*$",
@@ -38465,6 +38466,77 @@
       ],
       "_nova": true,
       "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Habilidades Vaal tem \\{(\\d+)\\}% de chance de ganharem as Almas consumidas novamente quando usadas$",
+      "efeitos": [
+        {
+          "stat": "vaal_almas_de_volta_chance",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Traduzir para a recarga\"): o jogo não tem Almas Vaal — as Vaal usam recarga; ganhar as Almas de volta = a Vaal usada não entra em recarga, na chance",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30: as Almas Vaal pela recarga)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Alma Vaal adicional por Inimigo Estilhaçado$",
+      "efeitos": [
+        {
+          "stat": "alma_vaal_ao_estilhacar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Traduzir para a recarga\"): o jogo não tem Almas Vaal — a Alma a mais faz a recarga de cada Vaal na barra andar uma alma (a recarga ÷ as Almas por Utilização da gema)",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30: as Almas Vaal pela recarga)"
+    },
+    {
+      "padrao": "^Lacaios Convocados são Agressivos$",
+      "efeitos": [
+        {
+          "stat": "lacaios_agressivos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Raio maior, registrado\"): o PoE não publica a distância — os lacaios procuram alvo (e se afastam de você) 3 casas mais longe",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30)"
+    },
+    {
+      "padrao": "^Vida que seria perdida ao sofrer Dano é, ao invés, Reservada (?:/ )?até que você não sofra mais Dano na Vida por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dissolucao_reserva_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30)"
+    },
+    {
+      "padrao": "^Com \\{(\\d+)\\} Notáveis Alocados no Raio, Ao Matar um monstro Raro, você recebe \\{(\\d+)\\} de seus Modificadores por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "raio_aprendizado_notaveis",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_aprendizado_n",
+          "valor": "{2}"
+        },
+        {
+          "stat": "raio_aprendizado_s",
+          "valor": "{3}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Implementar\"): o sorteio é só entre os modificadores do Raro que têm um equivalente em você (velocidade, dano, resistências…) — os sem equivalente não entram",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30)"
     }
   ]
 }

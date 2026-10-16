@@ -294,6 +294,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       armadura: m0('minion_armadura') + (pob?.armadura ?? 0) + porTipo('lacaio_armadura'), evasao: m0('minion_evasao') + (pob?.evasao ?? 0), esFixo: m0('minion_es') + (pob?.es ?? 0), supressao: m0('minion_supressao'),
       // (lote 50, o Poder Primordial: "Dano dos Golens aumentado em X% se convocados nos últimos N segundos" — `golpeDoLacaio`, por `l.desde`)
       danoRecentePct: porTipo('lacaio_dano_recente'), danoRecenteMs: porTipo('lacaio_dano_recente_s') * 1000,
+      // (lote 51) "Lacaios Convocados são Agressivos" — a busca de alvo mais longe (`cacadas.CASAS_DO_AGRESSIVO`)
+      agressivo: m0('lacaios_agressivos') > 0,
       bloqueioInc: m0('minion_block_inc'), evitarAfeccoes: m0('minion_evitar_afeccoes'), reflexoFisico: m0('minion_reflexo_fisico'), esRecargaInicio: m0('minion_es_recarga_inicio'),
       recuperacaoPct: m0('minion_recuperacao'), vidaNaMorteDeLacaioPct: m0('minion_vida_na_morte_lacaio'),
       danoDobrado: m0('minion_dano_dobrado'), ignoraReducaoFisica: m0('minion_ignora_reducao_fisica'), penAmaldicoados: m0('minion_pen_amaldicoados'),
