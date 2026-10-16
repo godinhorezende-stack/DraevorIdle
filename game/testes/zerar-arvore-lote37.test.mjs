@@ -51,11 +51,12 @@ function contratado(e, arquetipo = 'barbaro', nivel = 50) {
   return merc;
 }
 
-test('as linhas do mercenário com efeito (as auras seguem parciais: nenhum arquétipo tem gema de aura)', { skip: SEM }, () => {
+// (o dono, 16/10 — lote 39, "Uma aura por arquétipo": a linha das auras passou a ter efeito sem diferença; antes, parcial)
+test('as linhas do mercenário com efeito', { skip: SEM }, () => {
   for (const modelo of ['Você pode contratar um mercenário de forma permanente', 'Seu mercenário pode equipar anéis únicos', 'Seu mercenário pode equipar aljavas, armas e escudos únicos']) assert.equal(T.traduzirMod({ modelo, valores: [] }).estado, 'novo', modelo);
   assert.equal(T.traduzirMod({ modelo: 'Seu mercenário e os lacaios dele causam +{0}% de dano para cada item único equipado por ele', valores: [8] }).estado, 'novo');
   assert.equal(T.traduzirMod({ modelo: 'Se a vida do seu mercenário for menor que a sua, {0}% do dano sofrido por ele é recuperado como vida', valores: [40] }).estado, 'novo');
-  assert.equal(T.traduzirMod({ modelo: 'Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em {0}%', valores: [50] }).estado, 'aproximado');
+  assert.equal(T.traduzirMod({ modelo: 'Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em {0}%', valores: [50] }).estado, 'novo');
 });
 
 test('os ATRIBUTOS das peças: um atributo, as que o têm; dois, só as feitas deles; as sem requisito servem a todos', { skip: SEM }, () => {

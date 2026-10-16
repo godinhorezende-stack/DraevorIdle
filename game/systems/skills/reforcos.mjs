@@ -41,6 +41,13 @@ export function ativos(hunt, agora = hunt?.clock ?? Date.now()) {
     // (`emAura`: a maldição lançada como aura — a Blasfêmia, que reserva; a gema de maldição comum não reserva.)
     if (def) lista.push({ id, def: b.efeitosPoe ? { ...def, efeitos: b.efeitosPoe } : def, fator: b.fator ?? 1, lancado: b.desde ?? 0, emAura: !!b.reserva });
   }
+  // (lote 39, P060) a AURA do mercenário vivo: os efeitos dela valem em você como os de uma aura sua (o `tiqueDoMercenario` não a põe quando você
+  // tem a mesma ligada — uma vez cada).
+  for (const l of hunt?.lacaios ?? []) {
+    const a = l?.mercenario && l.hp > 0 ? l.auraEfeitos : null;
+    const def = a ? REFORCOS[a.id] : null;
+    if (def && !(hunt.buffs?.[a.id]?.ate > agora)) lista.push({ id: a.id, def: { ...def, efeitos: a.efeitos }, fator: a.fator ?? 1, lancado: 0, emAura: false });
+  }
   return lista;
 }
 

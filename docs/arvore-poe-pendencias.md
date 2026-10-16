@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1359, novo 4604, aproximado (parcial) 40.
+- ✓ Com efeito: **6003** — equivalente 1359, novo 4605, aproximado (parcial) 39.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -45,6 +45,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | Zerar a árvore — lote 35 (o alcance em metros e o bloqueio, pelas decisões do dono) | 33 | 0 | o alcance corpo a corpo em metros (a decisão "Medir em metros", 1 casa = 2 m): o da arma (a base do PoE, 1 a 1,4 m) + os "+X metros", o vizinho colado sempre ao alcance e cada casa a mais pedindo 2 m — no golpe básico e no golpe da gema corpo a corpo; a Recuperação de Bloqueio trava em todo bloqueio (a decisão "Como no PoE: todo bloqueio") |
 | Zerar a árvore — lote 36 (a Área de Efeito em metros, pela decisão do dono) | 8 | 0 | a Área de Efeito como no PoE (a decisão "Toda área em metros"): o raio da forma × √(1 + o aumentado) × √ de cada "mais/menos", a fração como chance de uma casa, e a forma esticada até o raio novo; a Repetição Final soma o X no aumentado da última repetição |
 | Zerar a árvore — lote 37 (o Mercenário completo, pelas decisões do dono) | 17 | 0 | o Mercenário completo (as decisões do dono): candidatos sorteados contratados por ouro (até 3, um ao seu lado), o nível preso no da contratação, o equipamento dele com as regras do PoE (70% do nível da peça, os atributos e as armas do arquétipo, únicos só nos tipos que os nós liberam), a ficha dele com o "aumentado" dos seus nós, as gemas fixas do arquétipo na caçada, morto só volta revivido por ouro; o "recuperado como vida" em 4 s |
+| Zerar a árvore — lote 39 (a aura do mercenário e as gemas dele em área, pela decisão do dono) | 1 | 0 | a aura do arquétipo do mercenário (a decisão do dono "Uma aura por arquétipo": espadachim Precisão, bárbaro Determinação, arqueiro Graça, piromante Cólera, criomante Ódio, eletromante Ira) no nível dele, × o efeito da linha — vale nele e em você enquanto ele vive (a ficha e os efeitos; com a mesma aura sua, vale a sua); e as gemas dele acertam como a gema: a área, os saltos e os projéteis |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -75,7 +76,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | 1 | o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s | Rito Profano (asc. Occultist) — Ganha Infusão Espiritual a cada 0.5 segundos enquanto canaliza uma magia |
 | 1 | o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto | Fúria Ancestral (asc. Berserker) — Habilidades de Golpe também miram no local anterior que foram Usadas |
 | 1 | o projétil do jogo não colide com o terreno: a chance de um ricochete a mais, por projétil | Ricochete (asc. Deadeye) — Projéteis têm 30% de chance de conseguirem Ricochetear ao colidirem com o terreno |
-| 1 | os arquétipos dos mercenários do jogo não têm gema de aura: as suas auras de aliado nele valem 50% mais | Sagração à Cavalaria (asc. Luminary) — Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em 50% |
 | 1 | os bônus do escudo vão para os lacaios (bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração, movimento, dreno); o que o lacaio do jogo não tem — a armadura, a evasão e o escudo de energia da base, os condicionais — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
 | 1 | os projéteis a mais vão em inimigos sorteados no alcance (não nos mais perto); o principal segue no alvo | Especialista de Estilhaços (asc. Saboteur) — Projéteis são disparados em direções aleatórias |
 
