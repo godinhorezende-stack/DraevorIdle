@@ -177,9 +177,9 @@ function efeitosDosSuportesNoAcerto(estado, hunt, bicho, ficha, efeito, { crit =
     efeitoDeBuff.crueldade = efeito.crueldadeEfeitoPct ?? 0;
     if (!tinha) Ficha.invalidar(estado);
   }
-  if (crit && efeito.elusivoNoCritico > 0) {
-    ModsPoe.ganharBuff(hunt, 'elusivo', ELUSIVO_DA_LAMINA_S, agora);
-    efeitoDeBuff.elusivo = (efeito.elusivoEfeitoPct ?? 0) + ModsPoe.valor(ficha, 'lamina_elusivo_efeito');
+  // (lote 33: o Elusivo não se ganha de novo enquanto há um; o efeito da Lâmina Noturna entra no efeito inicial dele — `ModsPoe.ganharBuff`)
+  if (crit && efeito.elusivoNoCritico > 0 && !ModsPoe.buffAtivo(estado, 'elusivo')) {
+    ModsPoe.ganharBuff(hunt, 'elusivo', ELUSIVO_DA_LAMINA_S, agora, { efeitoExtra: (efeito.elusivoEfeitoPct ?? 0) + ModsPoe.valor(ficha, 'lamina_elusivo_efeito') });
     Ficha.invalidar(estado);
   }
   if (impiedoso && bicho.hp > 0) {
@@ -2490,10 +2490,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const inc = noAlvo.incPct + (golpe?.atravessados ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_atravessado') + (golpe?.ricochetes ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_ricochete');
       return (inc && mult > 0 ? (mult + (inc / 100) * (sintonia ?? 1)) / mult : 1) * noAlvo.mais;
     };
+    // (lote 33, P045 — o Impacto: "Causa até X% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade": o golpe corpo a corpo da gema,
+    // alvo a alvo — a ficha da habilidade é montada sem alvo; `ModsPoe.maisPelaProximidade`, a rampa do PoB)
+    const corpoDaGema = itensPoeLigado() && tagsDaSkill.includes('corpo');
+    const fatorDaProximidade = (bicho) => (corpoDaGema ? ModsPoe.maisPelaProximidade(ficha, tagsDaSkill, bicho, estado) : 1);
     const acertar = (bicho, pct = 100, fonte = null, golpe = null) => {
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
-      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
       const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora);
@@ -2556,8 +2560,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (+ a quarta Retaliação: sempre crítica)
       // (a Lâmina Noturna: "+X% de Chance de Golpe Crítico enquanto Elusivo"; "Elusivo … concede +X% de Multiplicador de Golpes Críticos para
       // Habilidades Suportadas por Lâmina Noturna" — o do suporte e o da árvore)
+      // (lote 33: o "Elusivo também concede +X% de Multiplicador" é do EFEITO do Elusivo — cai com ele, `ModsPoe.efeitoDoElusivo`; o "+X% de Chance
+      // enquanto Elusivo" é uma condição, inteiro)
+      const efeitoElusivo = hunt.poeElusivo ? ModsPoe.efeitoDoElusivo(hunt, agora) / 100 : 1;
       const fichaDoCritico = (efeitoDaGema?.critElusivo || efeitoDaGema?.critMultElusivo) && ModsPoe.buffAtivo(estado, 'elusivo')
-        ? { ...ficha, critChance: Math.min(1, (ficha.critChance ?? 0) + (efeitoDaGema.critElusivo ?? 0) / 100), critMultiplier: (ficha.critMultiplier ?? 1.5) + ((efeitoDaGema.critMultElusivo ?? 0) + ModsPoe.valor(ficha, 'lamina_crit_mult_elusivo')) / 100 }
+        ? { ...ficha, critChance: Math.min(1, (ficha.critChance ?? 0) + (efeitoDaGema.critElusivo ?? 0) / 100), critMultiplier: (ficha.critMultiplier ?? 1.5) + (((efeitoDaGema.critMultElusivo ?? 0) + ModsPoe.valor(ficha, 'lamina_crit_mult_elusivo')) * efeitoElusivo) / 100 }
         : ficha;
       const rolado = Ficha.rolarCritico(estado, base, bicho, eventos, sempreNaFinal || retaliacaoCritica ? { ...fichaDoCritico, critChance: 1, critChanceMagia: 1 } : semForaDaFinal ? { ...fichaDoCritico, critChance: 0 } : fichaDoCritico);
       // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros" — no crítico, a parte elemental sem a resistência positiva.

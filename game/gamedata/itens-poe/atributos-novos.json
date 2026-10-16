@@ -7154,6 +7154,18 @@
       "unidade": "",
       "combate": true,
       "efeito": "o passo (`cacadas.razaoDeVelocidade`, lote 32)"
+    },
+    "efeito_nao_dano": {
+      "nome": "Efeito de Afecções Não-Danificadoras (Causticar, Fragilizar, Exaurir)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "Causticar/Fragilizar/Exaurir que você inflige (`condicoes-poe.fatorNaoDano`, lote 33)"
+    },
+    "mais_dano_proximidade": {
+      "nome": "Mais Dano Corpo a Corpo pela proximidade",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o golpe corpo a corpo (`condicoes-poe.maisPelaProximidade`, lote 33)"
     }
   }
 }

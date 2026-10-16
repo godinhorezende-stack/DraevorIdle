@@ -204,10 +204,14 @@ test('LÂMINA NOTURNA: só com Garras e Adagas; Elusivo no crítico; crítico e 
   assert.ok(primeiro.crit);
   assert.ok(ModsPoe.buffAtivo(o.e, 'elusivo'), 'o crítico concedeu Elusivo');
   assert.equal(o.h.poeEfeitoDeBuff.elusivo, ef.elusivoEfeitoPct + efeitoDaArvore, 'o efeito do suporte + o da árvore');
-  assert.equal(Number(ficha(o.e).afPoe.move_speed) || 0, 30 * (1 + (ef.elusivoEfeitoPct + efeitoDaArvore) / 100), 'o Elusivo com o efeito');
+  // (16/10, lote 33 — P015, ajuste aprovado pelo dono: o Elusivo começa no efeito cheio — 100% + o do suporte + o da árvore — e perde 20 pontos
+  // por segundo (o poedb); a conferência é 1 s depois do crítico: o efeito de agora, não o cheio)
+  const efeitoAgora = ModsPoe.efeitoDoElusivo(o.h, o.h.clock) / 100;
+  assert.ok(Math.abs(efeitoAgora - (1 + (ef.elusivoEfeitoPct + efeitoDaArvore) / 100 - (0.2 * (o.h.clock - o.h.poeElusivo.desde)) / 1000)) < 1e-9);
+  assert.ok(Math.abs((Number(ficha(o.e).afPoe.move_speed) || 0) - 30 * efeitoAgora) < 1e-9, 'o Elusivo com o efeito');
   const [segundo] = golpes(() => comSorte(0, () => usar(o, 0)));
-  // (o crítico: o final ÷ o depois das defesas — o Multiplicador; enquanto Elusivo, + o do suporte e o da árvore)
-  const razao = (m + (ef.critMultElusivo + multDaArvore) / 100) / m;
+  // (o crítico: o final ÷ o depois das defesas — o Multiplicador; enquanto Elusivo, + o do suporte e o da árvore — pelo efeito do Elusivo agora)
+  const razao = (m + ((ef.critMultElusivo + multDaArvore) * efeitoAgora) / 100) / m;
   const antes = primeiro.final / primeiro.base;
   const depois = segundo.final / segundo.base;
   assert.ok(Math.abs(depois / antes - razao) < 0.01, `enquanto Elusivo: ×${depois.toFixed(3)} ≈ ×${antes.toFixed(3)} × ${razao.toFixed(3)}`);

@@ -1009,9 +1009,31 @@ export function altaresMudaram(estado, total = null) {
   return true;
 }
 /** Ganha um buff por `segundos` (renova para o maior). */
-export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0) {
+/**
+ * (lote 33 — P015/P055) O ELUSIVO do PoE (o lembrete: "Elusivo concede inicialmente 15% de chance de Esquivar de Acertos … e Velocidade de
+ * Movimento aumentada em 30%. O buff reduz seu efeito, sendo removido ao chegar em 0% de efeito. Se você já tiver o buff Elusivo, não poderá
+ * ganhar Elusivo"; o poedb: "perde efetividade a 20% por segundo … a duração vem do efeito do buff, não dos modificadores de duração"): começa
+ * no efeito cheio — 100% + o "Efeito do Elusivo aumentado" (e o do suporte que o deu, a Lâmina Noturna) — e perde 20 pontos por segundo.
+ */
+export const ELUSIVO = Object.freeze({ perdaPorSegundo: 20 });
+/** O efeito do Elusivo em você agora, em % (0 sem ele; o "sempre" das peças — sem `poeElusivo` — fica cheio). */
+export function efeitoDoElusivo(hunt, agora = hunt?.clock ?? 0) {
+  const x = hunt?.poeElusivo;
+  if (!x || !(hunt.poeBuffs?.elusivo > agora)) return 0;
+  return Math.max(0, x.e0 - (ELUSIVO.perdaPorSegundo * (agora - x.desde)) / 1000);
+}
+export function ganharBuff(hunt, nome, segundos, agora = hunt?.clock ?? 0, { efeitoExtra = 0 } = {}) {
   if (!hunt || !BUFFS[nome] || !(segundos > 0)) return;
   const b = (hunt.poeBuffs ??= {});
+  if (nome === 'elusivo') {
+    if (b.elusivo > agora) return;
+    (hunt.poeEfeitoDeBuff ??= {}).elusivo = efeitoExtra;
+    const e0 = 100 * Math.max(0, 1 + ((Number(fichaDa(hunt)?.afPoe?.['efeito_buff:elusivo']) || 0) + efeitoExtra) / 100);
+    hunt.poeElusivo = { desde: agora, e0 };
+    b.elusivo = agora + Math.ceil((e0 / ELUSIVO.perdaPorSegundo) * 1000);
+    hunt.poeFichaMudou = true;
+    return;
+  }
   // (14/10: a ficha é refeita no tique — o buff ganho vale já, como o vencido sai: `tique`)
   if (!(b[nome] > agora)) hunt.poeFichaMudou = true;
   b[nome] = Math.max(b[nome] ?? 0, agora + segundos * 1000);
@@ -1037,7 +1059,9 @@ export function adds(estado, total = null) {
     if (!buffAtivo(estado, nome, total)) continue;
     // (+ o efeito que veio junto com o buff — o do suporte que o concedeu: `hunt.poeEfeitoDeBuff`, a Crueldade, o Elusivo da Lâmina Noturna)
     // (+ 14/10: o "Efeito dos Buffs de Altares em você aumentado" nos altares — não no nível das gemas que eles disparam, `periodico:`)
-    const efeito = 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0) + (b.altar ? Number(total?.efeito_altar) || 0 : 0)) / 100;
+    // (lote 33: o Elusivo ganho decai — o efeito dele agora, `efeitoDoElusivo`, no lugar do aumentado)
+    const elusivoAgora = nome === 'elusivo' && estado?.hunt?.poeElusivo && estado.hunt.poeBuffs?.elusivo > agoraT ? efeitoDoElusivo(estado.hunt, agoraT) / 100 : null;
+    const efeito = elusivoAgora ?? 1 + ((Number(total?.[`efeito_buff:${nome}`]) || 0) + (Number(estado?.hunt?.poeEfeitoDeBuff?.[nome]) || 0) + (b.altar ? Number(total?.efeito_altar) || 0 : 0)) / 100;
     for (const [k, v] of Object.entries(typeof b.af === 'function' ? b.af(estado) : b.af)) saida[k] = (saida[k] ?? 0) + v * (k.startsWith('periodico:') ? 1 : efeito);
   }
   // (lote G) Sobre o Solo Sagrado: 6% da Vida por segundo (× "Efeito de Solos Sagrados Criados por você aumentado"), "Seu chão consagrado
@@ -1280,6 +1304,34 @@ const interpolar = (tabela, x) => {
   for (let i = 1; i < tabela.length; i++) if (x <= tabela[i][0]) { const [x0, y0] = tabela[i - 1]; const [x1, y1] = tabela[i]; return y0 + ((y1 - y0) * (x - x0)) / (x1 - x0); }
   return tabela[tabela.length - 1][1];
 };
+/**
+ * (lote 33 — P013/P021/P030/P052) As RAMPAS DE DISTÂNCIA do Path of Building (`DistanceRamp`, interpolação linear entre os pontos; em
+ * unidades do PoE, 1 casa = 2 m = 20 unidades — dono, 15/10: "Medir em metros"): "ganham … conforme viajam adiante" (o crítico das flechas, o
+ * Tiro Longo, o Tiro Distante do Deadeye, o dano das flechas) = 0 até 35 unidades, o máximo a partir de 70; "no início de seu movimento,
+ * reduzido para 0% na medida em que viajam" (a Animosidade Adjacente) = o máximo até 35, 0 a partir de 70.
+ */
+export const RAMPAS_DE_DISTANCIA = { viajando: [[35, 0], [70, 1]], noInicio: [[35, 1], [70, 0]] };
+/** A distância até o alvo em unidades do PoE (as casas × 20), ou null sem alvo ou posição. */
+export const unidadesAte = (alvo, pos) => (alvo && pos ? Math.max(Math.abs(alvo.x - pos.x), Math.abs(alvo.y - pos.y)) * DISTANCIA_DO_PROJETIL.unidadesPorCasa : null);
+/**
+ * (lote 33 — P045) A PROXIMIDADE do corpo a corpo do PoB (`MeleeProximity`, "Causa até 15% mais Dano Corpo a Corpo aos Inimigos, baseado na
+ * proximidade" — o Impacto): o máximo até 15 unidades, caindo em linha (1/25 por unidade) de 16 a 39, nada a partir de 40 — os ramos do PoB.
+ * O vizinho colado está a 1 casa = 20 unidades: 80% do máximo.
+ */
+export function proximidadeCorpoACorpo(unidades) {
+  if (unidades == null) return 0;
+  if (unidades >= 16 && unidades <= 39) return 1 - (unidades - 15) / 25;
+  if (unidades >= 40) return 0;
+  return 1;
+}
+/** O "X% mais Dano Corpo a Corpo … baseado na proximidade" deste golpe corpo a corpo no `alvo` (1 sem a linha, sem alvo, de longe). */
+export function maisPelaProximidade(ficha, tags, alvo, estado) {
+  const t = tags instanceof Set ? tags : new Set(tags ?? []);
+  if (!ligado() || !ficha?.afPoe || !t.has('corpo')) return 1;
+  const v = (Number(ficha.afPoe.mais_dano_proximidade) || 0) + (somaPorTags(ficha, [...t]).mais_dano_proximidade ?? 0);
+  if (!v) return 1;
+  return Math.max(0, 1 + (v * proximidadeCorpoACorpo(unidadesAte(alvo, estado?.hunt?.pos))) / 100);
+}
 function pelaDistancia(ficha, tags, alvo, estado) {
   const longe = Number(ficha.afPoe.tiro_distante) > 0;
   const perto = Number(ficha.afPoe.queima_roupa) > 0;
@@ -1299,13 +1351,14 @@ export function projetilNoAlvo(ficha, tags, alvo, estado) {
   const pos = estado?.hunt?.pos;
   if (!ligado() || !ficha?.afPoe || !t.has('projetil') || !alvo || !pos) return { incPct: 0, mais: 1 };
   const s = somaPorTags(ficha, [...t]);
-  const dist = Math.max(Math.abs(alvo.x - pos.x), Math.abs(alvo.y - pos.y));
-  const perto = Math.max(0, Math.min(1, 1 - (dist - 1) / 5));
-  const longe = 1 - perto;
+  // (lote 33: as rampas do PoB, em unidades — `RAMPAS_DE_DISTANCIA`; antes, do colado a 6 casas em linha)
+  const u = unidadesAte(alvo, pos);
+  const noInicio = interpolar(RAMPAS_DE_DISTANCIA.noInicio, u);
+  const viajando = interpolar(RAMPAS_DE_DISTANCIA.viajando, u);
   const de = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   return {
-    incPct: de('projetil_perto_dmg_inc') * perto + de('projetil_longe_inc') * longe,
-    mais: Math.max(0, 1 + (de('projetil_perto_mais') * perto + de('projetil_longe_mais') * longe) / 100) * pelaDistancia(ficha, t, alvo, estado),
+    incPct: de('projetil_perto_dmg_inc') * noInicio + de('projetil_longe_inc') * viajando,
+    mais: Math.max(0, 1 + (de('projetil_perto_mais') * noInicio + de('projetil_longe_mais') * viajando) / 100) * pelaDistancia(ficha, t, alvo, estado),
   };
 }
 
@@ -1329,11 +1382,11 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (lote F) A DISTÂNCIA até o alvo, em casas (1 = colado): os projéteis que ganham ou perdem dano conforme viajam — "Projéteis causam Dano
   // aumentado em 40% aos alvos no início de seu movimento, reduzido para 0%" (`projetil_perto_dmg_inc`), "até 30% mais Dano aos alvos no
   // início" (`projetil_perto_mais`), "ganham Dano ao viajar adiante, até 30% mais" (`projetil_longe_mais`), "Flechas ganham Chance de Golpe
-  // Crítico enquanto viajam adiante, até 100%" (`flecha_longe_crit_inc`). Do colado (tudo do "perto") a 6 casas (tudo do "longe").
+  // Crítico enquanto viajam adiante, até 100%" (`flecha_longe_crit_inc`). (lote 33: as rampas do PoB, em unidades — `RAMPAS_DE_DISTANCIA`.)
   const pos = estado?.hunt?.pos;
-  const dist = alvo && pos ? Math.max(Math.abs(alvo.x - pos.x), Math.abs(alvo.y - pos.y)) : null;
-  const perto = dist == null ? 0 : Math.max(0, Math.min(1, 1 - (dist - 1) / 5));
-  const longe = dist == null ? 0 : 1 - perto;
+  const u = unidadesAte(alvo, pos);
+  const perto = u == null ? 0 : interpolar(RAMPAS_DE_DISTANCIA.noInicio, u);
+  const longe = u == null ? 0 : interpolar(RAMPAS_DE_DISTANCIA.viajando, u);
   const doProjetil = (k) => (t.has('projetil') ? (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0) : 0);
   // (lote F) "Causa 1% mais Dano com Acertos e Afecções contra Inimigos Raros e Únicos por cada segundo que passarem em sua Presença, máximo
   // de 100%" (`mais_dano_presenca:<máx>` = X; o tempo de cada um — `mods-poe.aurasProximas`).
@@ -1373,7 +1426,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (lote F) "Acertos têm X% de chance de causar Y% mais Dano em Área": `chance_mais_dano_area:<Y>` = X (só o golpe em Área).
   let maisArea = 1;
   if (t.has('area')) for (const [k, x] of Object.entries(ficha.afPoe)) if (k.startsWith('chance_mais_dano_area:') && x > 0 && rng() * 100 < x) maisArea *= 1 + (Number(k.slice('chance_mais_dano_area:'.length)) || 0) / 100;
-  const fator = (triplo ? 3 : dobro ? 2 : 1) * Math.max(0, 1 + mais / 100) * maisArea * maisDoCaminho * pelaDistancia(ficha, t, alvo, estado);
+  // (+ lote 33, P045: o Impacto — "até X% mais Dano Corpo a Corpo … baseado na proximidade", `maisPelaProximidade`)
+  const fator = (triplo ? 3 : dobro ? 2 : 1) * Math.max(0, 1 + mais / 100) * maisArea * maisDoCaminho * pelaDistancia(ficha, t, alvo, estado) * maisPelaProximidade(ficha, t, alvo, estado);
   if (fator !== 1) f.fatorDasCargas = (ficha.fatorDasCargas ?? 1) * fator;
   // (lote 30, P016/P076) o "X% mais Dano de <tipo>" com as condições deste golpe (o sem condição está na ficha) — `fatorRecebidoPeloBicho` o
   // aplica só na parte daquele tipo.
@@ -1870,14 +1924,18 @@ export function extrasDoFisico(ficha, fisico, rng = Math.random) {
 
 /** O personagem BLOQUEOU o golpe de `bicho`: "Inflige Causticar/Enfraquecer/Exaurir em Inimigos ao Bloquear seu Dano". */
 export const AO_BLOQUEAR = { duracaoMs: 4000, causticar: 10, enfraquecer: 6, exaurir: 10 };
+/** (lote 33, P009) O fator do "Efeito de Afecções Não-Danificadoras aumentado" no Causticar, Fragilizar e Exaurir que VOCÊ inflige. */
+export const fatorNaoDano = (af) => Math.max(0, 1 + (Number(af?.efeito_nao_dano) || 0) / 100);
+export const AFECCOES_NAO_DANO = new Set(['causticado', 'fragilizado', 'exaurido']);
 export function aoBloquear(hunt, bicho, ficha, { agora = hunt?.clock ?? 0, eventos = [] } = {}) {
   if (!ligado() || !bicho || !ficha?.afPoe) return eventos;
   const e = (bicho.estados ??= {});
   const ate = agora + AO_BLOQUEAR.duracaoMs;
   // Causticar: −10% de resistências elementais; Enfraquecer (Fragilizar): +6% de chance de crítico contra; Exaurir (Exaurido): 10% menos dano.
-  if (valor(ficha, 'bloqueio_causticar') > 0) { e.causticado = { ate, pct: AO_BLOQUEAR.causticar }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'causticado' }); }
-  if (valor(ficha, 'bloqueio_enfraquecer') > 0) { e.fragilizado = { ate, pct: AO_BLOQUEAR.enfraquecer }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'fragilizado' }); }
-  if (valor(ficha, 'bloqueio_exaurir') > 0) { e.exaurido = { ate, pct: AO_BLOQUEAR.exaurir }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'exaurido' }); }
+  const f = fatorNaoDano(ficha.afPoe);
+  if (valor(ficha, 'bloqueio_causticar') > 0) { e.causticado = { ate, pct: AO_BLOQUEAR.causticar * f }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'causticado' }); }
+  if (valor(ficha, 'bloqueio_enfraquecer') > 0) { e.fragilizado = { ate, pct: AO_BLOQUEAR.enfraquecer * f }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'fragilizado' }); }
+  if (valor(ficha, 'bloqueio_exaurir') > 0) { e.exaurido = { ate, pct: AO_BLOQUEAR.exaurir * f }; eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'exaurido' }); }
   return eventos;
 }
 
@@ -1993,7 +2051,8 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   const desdeOPasso = agora - (recentes.moveu ?? hunt.poeEntrou ?? agora);
   const sobClamor = hunt.poeSobClamorDesde != null && sobBuffDeClamor(hunt, agora) ? Math.min(60, Math.floor((agora - hunt.poeSobClamorDesde) / 1000)) : -1;
   const valendo = Object.keys(recentes).filter((k) => recente(recentes[k], agora)).sort().join(',');
-  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}`;
+  // (+ lote 33: o efeito do Elusivo que cai — a cada 10 pontos)
+  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}|${Math.floor(efeitoDoElusivo(hunt, agora) / 10)}`;
   if (hunt.poeRelogioDaFicha !== undefined && hunt.poeRelogioDaFicha !== relogio) hunt.poeFichaMudou = true;
   hunt.poeRelogioDaFicha = relogio;
   if (hunt.recuperacoes?.length && (estado.hp ?? 0) > 0) {

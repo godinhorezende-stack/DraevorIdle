@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -235,9 +235,11 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // SEGREDOS DO SOFRIMENTO (keystone da peça): o crítico inflige Causticar, Fragilizar e Exaurir.
   if (crit && v('keystone_sofrimento') > 0) {
     const ate = agora + AO_BLOQUEAR.duracaoMs;
-    e.causticado = { ate, pct: AO_BLOQUEAR.causticar };
-    e.fragilizado = { ate, pct: AO_BLOQUEAR.enfraquecer };
-    e.exaurido = { ate, pct: AO_BLOQUEAR.exaurir };
+    // (lote 33, P009: × o "Efeito de Afecções Não-Danificadoras")
+    const f = fatorNaoDano(ficha.afPoe);
+    e.causticado = { ate, pct: AO_BLOQUEAR.causticar * f };
+    e.fragilizado = { ate, pct: AO_BLOQUEAR.enfraquecer * f };
+    e.exaurido = { ate, pct: AO_BLOQUEAR.exaurir * f };
   }
   // A Fúria ("Ganhe N de Fúria com Acertos Corpo a Corpo").
   // ("X% de chance de que se você fosse ganhar Fúria ao Acertar, você ganha até o seu máximo de fúria ao invés".)
@@ -654,6 +656,12 @@ export const porNoAlvo = (alvo, nome, ate) => ESTADOS_NO_ALVO[nome]?.((alvo.esta
  * (1 − X%)) e "X% de chance de, quando você infligir Definhamento, infligir até um máximo de 15 Debuffs de Definhamento ao invés".
  */
 function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
+  // (lote 33, P009) Causticar, Fragilizar e Exaurir: × o "Efeito de Afecções Não-Danificadoras" (o número fixo do jogo é o de base)
+  if (AFECCOES_NAO_DANO.has(nome)) {
+    fazer(e, ate);
+    if (e[nome]?.pct) e[nome].pct *= fatorNaoDano(ficha?.afPoe);
+    return;
+  }
   if (nome !== 'definhado') return fazer(e, ate);
   const lento = Math.min(90, Math.max(0, valor(ficha, 'definhamento_expira_lento')));
   fazer(e, agora + Math.round((ate - agora) / (1 - lento / 100)));
@@ -1307,7 +1315,11 @@ export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   for (const m of hunt.monstros ?? []) {
     if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) > 3) continue;
     const e = (m.estados ??= {});
-    for (const a of auras) ESTADOS_NO_ALVO[a]?.(e, agora + 1000);
+    for (const a of auras) {
+      ESTADOS_NO_ALVO[a]?.(e, agora + 1000);
+      // (lote 33, P009: a aura "Inimigos Próximos são Causticados" — × o "Efeito de Afecções Não-Danificadoras")
+      if (AFECCOES_NAO_DANO.has(a) && e[a]?.pct) e[a].pct *= fatorNaoDano(ficha.afPoe);
+    }
     if (lento) e.lento = { ate: Math.max(e.lento?.ate ?? 0, agora + 1000), pct: Math.max(e.lento?.ate > agora ? e.lento.pct ?? 0 : 0, lento) };
     if (Object.keys(res).length) e.resAura = { ...res, ate: agora + 1000 };
     if (Object.keys(igual).length) e.resIgual = { ...igual, ate: agora + 1000 };

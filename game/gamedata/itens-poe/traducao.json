@@ -3573,10 +3573,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o Elusivo dura 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P015: o Elusivo decai 20%/s)"
     },
     {
       "padrao": "^Chance de Bloquear o Dano Mágico ou de Ataques é Sortuda se você Bloqueou Recentemente$",
@@ -4571,23 +4570,21 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: tudo colado, nada a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P021: PoB 35,1 / 70,0)"
     },
     {
       "padrao": "^Acertos dos Ataques de Projéteis causam até \\{(\\d+)\\}% mais Dano aos alvos no inicio de seu movimento, causando menos Dano aos alvos na medida em que o projétil viaja.*$",
       "efeitos": [
         {
-          "stat": "projetil_perto_mais@ataque",
-          "valor": "{1}"
+          "stat": "queima_roupa",
+          "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: tudo colado, nada a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P021: a keystone Queima-Roupa (o PoB: a flag PointBlank))"
     },
     {
       "padrao": "^Projéteis ganham Dano ao viajar adiante, causando até \\{(\\d+)\\}% mais Dano com Acertos e Afecções$",
@@ -4597,10 +4594,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: nada colado, tudo a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P052: PoB 35,0 / 70,1)"
     },
     {
       "padrao": "^Flechas ganham Chance de Golpe Crítico enquanto viajam adiante, máximo de até \\{(\\d+)\\}% de Chance de Golpe Crítico$",
@@ -4610,10 +4606,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "Chance de Crítico aumentada pela distância até o alvo: nada colado, tudo a 6 casas",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P013: PoB 35,0 / 70,1)"
     },
     {
       "padrao": "^Habilidades atiram \\{(\\d+)\\} Projéteis adicionais$",
@@ -6871,10 +6866,9 @@
           "valor": "60"
         }
       ],
-      "estado": "aproximado",
-      "nota": "pela distância até o alvo: nada colado, tudo a 6 casas (o \"até 60%\" é a linha de baixo, que o poedb partiu)",
       "_nova": true,
-      "_lote9": "13/10 — os projéteis por projétil (lote 9)"
+      "_lote9": "13/10 — os projéteis por projétil (lote 9)",
+      "_lote33": "16/10 — lote 33 (P030: PoB 35,0 / 70,1)"
     },
     {
       "padrao": "^Efeito de Solos Sagrados Criados por você aumentado em \\{(\\d+)\\}%$",
@@ -7365,14 +7359,13 @@
       "padrao": "^Causa até \\{(\\d+)\\}% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade$",
       "efeitos": [
         {
-          "stat": "mais_dano@corpo+alvoPerto",
+          "stat": "mais_dano_proximidade",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o golpe corpo a corpo do jogo é sempre de perto: o máximo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote33": "16/10 — lote 33 (P045: PoB MeleeProximity)"
     },
     {
       "padrao": "^Área de efeito de ataques aumentada em \\{(\\d+)\\}%, se você tiver pelo menos \\{(\\d+)\\} aliados? por perto$",
@@ -16395,9 +16388,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "pela distância em casas até o alvo (1 casa = 20 unidades do PoE).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote33": "16/10 — lote 33 (a tabela do poedb (3.13), em unidades: 1 casa = 2 m (dono))"
     },
     {
       "padrao": "^Queima[ -]Roupa(?: durante o Efeito)?$",
@@ -16408,9 +16400,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "pela distância em casas até o alvo (1 casa = 20 unidades do PoE).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote33": "16/10 — lote 33 (a tabela do poedb, em unidades: 1 casa = 2 m (dono))"
     },
     {
       "padrao": "^O Dano de Raio dos Inimigos Acertando você é Sortudo$",
@@ -27131,12 +27122,15 @@
         {
           "stat": "efeito_eletrizacao",
           "valor": "{1}"
+        },
+        {
+          "stat": "efeito_nao_dano",
+          "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "Causticar, Fragilizar e Exaurir elementais (os do PoE) ainda não existem: vale no Resfriamento e na Eletrização",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_lote33": "16/10 — lote 33 (P009)"
     },
     {
       "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Ataques$",
@@ -27289,9 +27283,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "o Elusivo do jogo dura 4 s (no PoE ele vai se desfazendo)",
-      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)"
+      "_de": "09/10 — abas do poedb (implícitos eldritch, influências, corrompidos)",
+      "_lote33": "16/10 — lote 33 (P055: o Elusivo decai 20%/s)"
     },
     {
       "padrao": "^Ganha uma Carga de Frenesi a cada \\{(\\d+)\\} segundos$",
