@@ -160,7 +160,7 @@ export function fatorDeEletrizacao(alvo, agora) {
  * crítico; `ataque`: é ataque (golpe da arma, habilidade de ataque) — as chances "com Ataques" só valem nele. `afeccoes`: o de `daSoma`
  * (a ficha guarda). Devolve os nomes dos estados postos (o evento na tela). Sem o sistema do PoE, não faz nada.
  */
-export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null } = {}) {
+export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, aoPor = null } = {}) {
   if (!ligado() || !bicho || bicho.hp <= 0 || bicho.dummy) return [];
   const a = afeccoes ?? daSoma();
   // "Golpes não Críticos não infligem Afecções" (a Agonia Perfeita).
@@ -195,6 +195,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0) + (tipo === 'venenoPoe' ? a.venenoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
+    // (lote 53, a Regra de Ouro: o dano contínuo posto, com o total e a duração — `ModsPoe.refletorDeAfeccoes` o reflete em você)
+    if (estado) aoPor?.(tipo, total, rapido, agora);
     return estado;
   };
   // A DANÇA CARMESIM ("Você pode aplicar Sangramento em um Inimigo até N vezes"): cada pilha é um sangramento à parte (a `chave`); cheio, a

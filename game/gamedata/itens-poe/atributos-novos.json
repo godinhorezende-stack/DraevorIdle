@@ -7556,6 +7556,54 @@
       "unidade": "%",
       "combate": true,
       "efeito": "as mágicas corrompidas da árvore × (1 + X%) (`afixos.somaDeItens`; O Adornado — lote 52)"
+    },
+    "reflete_sangramento": {
+      "nome": "Sangramentos que você infligir são Refletidos para você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o mesmo Sangramento também em você (`ModsPoe.refletorDeAfeccoes` → `dotNoJogador`; a Regra de Ouro — lote 53)"
+    },
+    "reflete_veneno_ate": {
+      "nome": "Envenenamento infligido por você é Refletido a você abaixo de N Envenenamentos em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o mesmo Veneno também em você enquanto você tiver menos de N (`ModsPoe.refletorDeAfeccoes`; a Regra de Ouro — lote 53)"
+    },
+    "esqueleto_caos_pct_es_escudo": {
+      "nome": "Esqueletos: Dano de Caos Adicional igual a X% do Escudo de Energia do Escudo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano somado dos Esqueletos (`afixos.soma` → `lacaio_somado_*:esqueleto`; a Revolta dos Mortos — lote 53)"
+    },
+    "crit_inc_magia_por_intensidade": {
+      "nome": "Chance de Golpe Crítico das Magias aumentada por Intensidade",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o \"aumentado\" de crítico da magia × a Intensidade dela agora (`acoes.comCriticoDaIntensidade`; o Modo Alfa / Nadir — lote 53)"
+    },
+    "intensidade_ganho_n": {
+      "nome": "Magias que ganharam Intensidade Recentemente ganham N de Intensidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Alfa — lote 53)"
+    },
+    "intensidade_ganho_s": {
+      "nome": "… a cada N segundos (o ganho do Modo Alfa)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Alfa — lote 53)"
+    },
+    "intensidade_perda_n": {
+      "nome": "Magias que ganharam Intensidade Recentemente perdem N de Intensidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Nadir — lote 53)"
+    },
+    "intensidade_perda_s": {
+      "nome": "… a cada N segundos (a perda do Modo Nadir)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Nadir — lote 53)"
     }
   }
 }

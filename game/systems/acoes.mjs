@@ -259,16 +259,30 @@ export function selosAgora(hunt, id, efeito, extra = 0, agora = hunt?.clock ?? 0
  * (PoE, o Intensificar) A INTENSIDADE de uma magia agora: a que tinha, menos 1 a cada N ms andando ("perdem 1 de Intensidade a cada 0.5 segundos
  * enquanto se movendo" — andou depois da última conjuração: o tempo desde ela conta como andando).
  */
-export function intensidadeAgora(hunt, id, efeito, agora = hunt?.clock ?? 0) {
+export function intensidadeAgora(hunt, id, efeito, agora = hunt?.clock ?? 0, af = null) {
   const i = hunt.poeIntensidade?.[id];
   if (!i) return 0;
   const andou = hunt.poeRecente?.moveu != null && hunt.poeRecente.moveu > i.em;
   const perde = andou && efeito.intensidadePerdaMs > 0 ? Math.floor((agora - i.em) / efeito.intensidadePerdaMs) : 0;
-  return Math.max(0, i.n - perde);
+  // (lote 53) o MODO ALFA — "Magias que ganharam Intensidade Recentemente ganham 1 de Intensidade a cada 0.5 Segundos" (o ganho também é ganhar:
+  // não para) — e o MODO NADIR — "… perdem 1 de Intensidade a cada 0.5 Segundos" (nos 4 s do Recentemente depois do último ganho). O teto, o
+  // da gema (+ "+N à Intensidade máxima").
+  const v = (k) => Number(af?.[k]) || 0;
+  const ganha = v('intensidade_ganho_s') > 0 ? Math.floor((agora - i.em) / (v('intensidade_ganho_s') * 1000)) * (v('intensidade_ganho_n') || 1) : 0;
+  const nadir = v('intensidade_perda_s') > 0 ? Math.floor(Math.min(agora - i.em, ModsPoe.RECENTE_MS) / (v('intensidade_perda_s') * 1000)) * (v('intensidade_perda_n') || 1) : 0;
+  const teto = Math.max(0, Math.round((efeito.intensidadeMax ?? 0) + v('intensidade_max_extra')));
+  // (o saldo e depois o teto: ganhar 1 e perder 1 a cada 0,5 s andando se anulam, como no PoE)
+  return Math.max(0, Math.min(Math.max(teto, i.n), i.n + ganha - perde - nadir));
 }
-export function ganharIntensidade(hunt, id, efeito, extra = 0, agora = hunt?.clock ?? 0) {
-  const n = intensidadeAgora(hunt, id, efeito, agora);
+export function ganharIntensidade(hunt, id, efeito, extra = 0, agora = hunt?.clock ?? 0, af = null) {
+  const n = intensidadeAgora(hunt, id, efeito, agora, af);
   (hunt.poeIntensidade ??= {})[id] = { n: Math.min(Math.max(0, Math.round((efeito.intensidadeMax ?? 0) + extra)), n + 1), em: agora };
+}
+/** (lote 53, o Modo Alfa / Nadir) "Magias têm Chance de Golpe Crítico reduzida/aumentada em X% por Intensidade": o "aumentado" de crítico da magia. */
+export function comCriticoDaIntensidade(ficha, intensidade) {
+  const pct = ModsPoe.valor(ficha, 'crit_inc_magia_por_intensidade');
+  if (!(intensidade > 0) || !pct || !ficha?.critMagiaPoe) return ficha;
+  return { ...ficha, critMagiaPoe: { ...ficha.critMagiaPoe, aumentada: ficha.critMagiaPoe.aumentada + pct * intensidade } };
 }
 
 /** PoE: a "Duração do Efeito de Habilidades" das peças (com condição: "Habilidades de Armadilha…", o anel do lado certo), em %. */
@@ -2198,7 +2212,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (efeitoDaGema?.soGarraAdaga && !/^(Claws|Daggers|Rune_Daggers)$/.test(String(estado.equipment?.weapon?.poe?.classe ?? ''))) return { ok: false, erro: 'Só com Garras e Adagas (Lâmina Noturna).', motivo: 'ARMA' };
   // (PoE, o Intensificar: a INTENSIDADE desta magia agora — "perdem 1 de Intensidade a cada N segundos enquanto se movendo"; ela vale nesta
   // conjuração — mais dano em área, menos área — e a conjuração ganha 1, até o máximo — `ganharIntensidade`, depois do uso.)
-  const intensidade = efeitoDaGema?.intensidadeMax > 0 ? intensidadeAgora(hunt, entry.id, efeitoDaGema, hunt.clock ?? 0) : 0;
+  const intensidade = efeitoDaGema?.intensidadeMax > 0 ? intensidadeAgora(hunt, entry.id, efeitoDaGema, hunt.clock ?? 0, Ficha.combate(estado).afPoe) : 0;
   // (lote 46, o Punho de Guerra: "Ataques com a Habilidade Suportada são Maximizados Ancestralmente, não mais que uma vez a cada N segundos") este
   // ataque é o MAXIMIZADO? — só nele o "X% mais Dano com Acertos e Afecções" e a "Área de Efeito aumentada" dos Impactos; as repetições, não.
   const maximizado = efeitoDaGema?.maximizadoMs > 0 && !!entry.poeGema?.ataque && (hunt.clock ?? 0) >= (hunt.poeMaximizadoAte?.[entry.id] ?? -Infinity);
@@ -2629,7 +2643,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (Duas armas: este uso é da mão da vez — ou das duas, na gema que as combina —, com o dano e o crítico dela: `maoDaGemaDeAtaque`.)
     // (PoE, o Mestre Destilador: as habilidades não canalizadas consomem 3 Cargas de um Frasco de Diamante / Bismuto / Ametista, se puderem —
     // e ganham o bônus de cada um — `doDestilador`.)
-    const fichaDaGema = doDestilador(estado, Ficha.combate(estado), entry);
+    // (lote 53: + o crítico por Intensidade do Modo Alfa / Nadir)
+    const fichaDaGema = comCriticoDaIntensidade(doDestilador(estado, Ficha.combate(estado), entry), intensidade);
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
     const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: gatilho?.maisDano ?? 0 });
     // (PoE, a Impiedade: "Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso" — este uso é o terceiro?)
@@ -2881,7 +2896,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const comIncendio = incendioAtordoante ? { ...afeccoes, incendioMais: (afeccoes.incendioMais ?? 0) + incendioAtordoante } : afeccoes;
         const afeccoesDoAcerto = congelarDoSuporte ? { ...comIncendio, chance: { ...(comIncendio.chance ?? {}), congelamento: (comIncendio.chance?.congelamento ?? 0) + congelarDoSuporte } } : comIncendio;
         // (a Sobrecarga Elemental: "Afecções nunca contam como sendo de um Golpe Crítico")
-        const postos = AfeccoesPoe.aoAcertar(bicho, partesDaAfeccao, { afeccoes: afeccoesDoAcerto, praga: pragaDoAcerto(hunt), crit: crit && !ficha.sobrecargaElemental, ataque, agora, salaDeBoss: !!hunt.isBoss });
+        const postos = AfeccoesPoe.aoAcertar(bicho, partesDaAfeccao, { afeccoes: afeccoesDoAcerto, praga: pragaDoAcerto(hunt), crit: crit && !ficha.sobrecargaElemental, ataque, agora, salaDeBoss: !!hunt.isBoss, aoPor: ModsPoe.refletorDeAfeccoes(hunt, ficha) });
         for (const st of postos) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
         // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
         ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, agora);
@@ -2979,7 +2994,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       atacar(true);
     }
     reocorrendo = false;
-    if (efeitoDaGema?.intensidadeMax > 0) ganharIntensidade(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'intensidade_max_extra'), hunt.clock ?? 0);
+    if (efeitoDaGema?.intensidadeMax > 0) ganharIntensidade(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'intensidade_max_extra'), hunt.clock ?? 0, ficha.afPoe);
     const totalDoPrimeiro = total;
     const criticoDoPrimeiro = danoCritico;
     const fisicoDoPrimeiro = danoFisico;

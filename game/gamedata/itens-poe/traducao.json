@@ -38706,6 +38706,81 @@
       ],
       "_nova": true,
       "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Sangramentos que você infligir são Refletidos para você$",
+      "efeitos": [
+        {
+          "stat": "reflete_sangramento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Envenenamento inflingido por você é Refletido à voc ?ê caso tenha menos de \\{(\\d+)\\} Envenenamentos em você$",
+      "efeitos": [
+        {
+          "stat": "reflete_veneno_ate",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Esqueletos ganham Dano de Caos Adicional igual a \\{(\\d+)\\}% do Escudo de Energia Máximo no Escudo Equipado$",
+      "efeitos": [
+        {
+          "stat": "esqueleto_caos_pct_es_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano somado dos Esqueletos (o jogo soma o dano adicional dos lacaios numa faixa só, sem o tipo — como o \"Lacaios causam Dano de Caos Adicional\")",
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Magias têm Chance de Golpe Crítico aumentada em \\{(\\d+)\\}% por Intensidade$",
+      "efeitos": [
+        {
+          "stat": "crit_inc_magia_por_intensidade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Magias que ganharam Intensidade Recentemente ganham \\{(\\d+)\\} de Intensidade a cada \\{(\\d+)\\} Segundos$",
+      "efeitos": [
+        {
+          "stat": "intensidade_ganho_n",
+          "valor": "{1}"
+        },
+        {
+          "stat": "intensidade_ganho_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Magias que ganharam Intensidade Recentemente perdem \\{(\\d+)\\} de Intensidae? a cada \\{(\\d+)\\} Segundos$",
+      "efeitos": [
+        {
+          "stat": "intensidade_perda_n",
+          "valor": "{1}"
+        },
+        {
+          "stat": "intensidade_perda_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
     }
   ]
 }

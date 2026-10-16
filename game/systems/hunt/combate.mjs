@@ -1597,7 +1597,7 @@ export function round(estado, personagem) {
           // corpo a corpo que atordoou, como nas gemas — `acoes.mjs`)
           const incendioAtordoante = doAcerto?.atordoou && categoriaDaArma(arma) !== 'distancia' ? ModsPoe.valor(ficha, 'incendio_atordoante_mais') : 0;
           const afeccoesDoGolpe = incendioAtordoante ? { ...ficha.afeccoes, incendioMais: (ficha.afeccoes.incendioMais ?? 0) + incendioAtordoante } : ficha.afeccoes;
-          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: afeccoesDoGolpe, praga: Acoes.pragaDoAcerto(hunt), crit: critico && !ficha.sobrecargaElemental, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss });
+          const postos = AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: afeccoesDoGolpe, praga: Acoes.pragaDoAcerto(hunt), crit: critico && !ficha.sobrecargaElemental, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss, aoPor: ModsPoe.refletorDeAfeccoes(hunt, ficha) });
           // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
           ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, hunt.clock ?? 0);
           for (const st of postos) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });

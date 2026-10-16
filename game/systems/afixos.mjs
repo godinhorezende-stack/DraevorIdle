@@ -223,6 +223,13 @@ export function soma(estado) {
   if (Number(resolvido.incendio_duracao_todas) > 0 && resolvido.duracao_incendio_propria) for (const n of outrasElementais('incendio')) resolvido[`duracao_${n}_propria`] = (resolvido[`duracao_${n}_propria`] ?? 0) + resolvido.duracao_incendio_propria;
   if (Number(resolvido.evitar_eletrizacao_todas) > 0 && resolvido.evitar_eletrizacao) for (const n of outrasElementais('eletrizacao')) resolvido[`evitar_${n}`] = (resolvido[`evitar_${n}`] ?? 0) + resolvido.evitar_eletrizacao;
   if (Number(resolvido.supressao_no_evitar_afeccoes) > 0 && resolvido.spell_suppression) resolvido.avoid_elem_ailments = (resolvido.avoid_elem_ailments ?? 0) + (resolvido.spell_suppression * resolvido.supressao_no_evitar_afeccoes) / 100;
+  // (lote 53, a Revolta dos Mortos: "Esqueletos ganham Dano de Caos Adicional igual a X% do Escudo de Energia Máximo no Escudo Equipado") — o
+  // dano somado dos Esqueletos (`LacaiosPoe.oQueInvoca`), pelo Escudo de Energia da peça do escudo (a mesma conta do "por N de Escudo de Energia
+  // no Escudo" — `defesaDaPecaVestida`).
+  if (Number(resolvido.esqueleto_caos_pct_es_escudo) > 0) {
+    const doEscudo = ((ModsPoe.defesaDaPecaVestida(estado?.equipment?.shield)?.escudo ?? 0) * resolvido.esqueleto_caos_pct_es_escudo) / 100;
+    if (doEscudo > 0) for (const k of ['lacaio_somado_min:esqueleto', 'lacaio_somado_max:esqueleto']) resolvido[k] = (resolvido[k] ?? 0) + doEscudo;
+  }
   // + as MALDIÇÕES dos monstros em você (Fraqueza Elemental, Vulnerabilidade, Enfraquecer; as refletidas): depois das condições, porque a
   // imunidade e o efeito delas podem ser condicionais ("Imune a Maldições enquanto possuir ao menos N de Fúria").
   const malditas = ModsPoe.addsDasMaldicoesNoJogador(estado, resolvido);

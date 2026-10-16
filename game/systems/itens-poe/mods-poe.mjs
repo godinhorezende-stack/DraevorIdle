@@ -557,6 +557,25 @@ export function dotNoJogador(hunt, ef, agora, rng = Math.random) {
 }
 
 
+/**
+ * (lote 53) A REGRA DE OURO: "Sangramentos que você infligir são Refletidos para você"; "Envenenamento inflingido por você é Refletido à você
+ * caso tenha menos de 100 Envenenamentos em você" — o mesmo dano contínuo (o total e a duração do que você pôs) também em você, pelo
+ * `dotNoJogador` (os seus Evitar, Imunidades e Durações valem, como em qualquer afecção em você). Null sem a linha: o `aoPor` de
+ * `afeccoes.aoAcertar` não roda.
+ */
+export function refletorDeAfeccoes(hunt, ficha) {
+  const sangramento = valor(ficha, 'reflete_sangramento') > 0;
+  const venenosAte = valor(ficha, 'reflete_veneno_ate');
+  if (!hunt || (!sangramento && !(venenosAte > 0))) return null;
+  return (tipo, total, duracaoMs, agora = hunt.clock ?? 0) => {
+    const veneno = tipo === 'veneno' || tipo === 'venenoPoe';
+    if (!(tipo === 'sangramento' && sangramento) && !(veneno && venenosAte > 0)) return;
+    if (veneno && (hunt.efeitosDoJogador?.dots ?? []).filter((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0).length >= venenosAte) return;
+    dotNoJogador(hunt, { tipo, total, duracaoMs, origem: { fonte: 'refletido' } }, agora);
+  };
+}
+
+
 // ---------------------------------------------------------------- os EVENTOS dos únicos
 
 /** O disparo de uma habilidade ATIVADA por item ("Ativa X Nível N quando…"): quem registra é `acoes.mjs` (evita o ciclo de importação). */
