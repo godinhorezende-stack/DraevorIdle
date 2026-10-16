@@ -292,6 +292,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (lote 44: + a armadura, a evasão e o escudo de energia de base do lacaio no PoB)
       // (lote 49: + "Golens têm +X de Armadura" — `lacaio_armadura:<tipo>`)
       armadura: m0('minion_armadura') + (pob?.armadura ?? 0) + porTipo('lacaio_armadura'), evasao: m0('minion_evasao') + (pob?.evasao ?? 0), esFixo: m0('minion_es') + (pob?.es ?? 0), supressao: m0('minion_supressao'),
+      // (lote 50, o Poder Primordial: "Dano dos Golens aumentado em X% se convocados nos últimos N segundos" — `golpeDoLacaio`, por `l.desde`)
+      danoRecentePct: porTipo('lacaio_dano_recente'), danoRecenteMs: porTipo('lacaio_dano_recente_s') * 1000,
       bloqueioInc: m0('minion_block_inc'), evitarAfeccoes: m0('minion_evitar_afeccoes'), reflexoFisico: m0('minion_reflexo_fisico'), esRecargaInicio: m0('minion_es_recarga_inicio'),
       recuperacaoPct: m0('minion_recuperacao'), vidaNaMorteDeLacaioPct: m0('minion_vida_na_morte_lacaio'),
       danoDobrado: m0('minion_dano_dobrado'), ignoraReducaoFisica: m0('minion_ignora_reducao_fisica'), penAmaldicoados: m0('minion_pen_amaldicoados'),
@@ -414,7 +416,9 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
     const pen = ficha?.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
     ficha = { ...ficha, penetracao: { ...pen, elemental: Math.min(100, (pen.elemental ?? 0) + p.penAmaldicoados) } };
   }
-  const fator = p.danoDobrado > 0 && rng() * 100 < p.danoDobrado ? 2 : 1;
+  // (lote 50) o "aumentado" do lacaio convocado há pouco (soma aos outros aumentos dele — `danoIncPct`, o da invocação)
+  const recente = p.danoRecentePct > 0 && agora - (l.desde ?? -Infinity) <= (p.danoRecenteMs || 0) ? (1 + ((p.danoIncPct ?? 0) + p.danoRecentePct) / 100) / (1 + (p.danoIncPct ?? 0) / 100) : 1;
+  const fator = (p.danoDobrado > 0 && rng() * 100 < p.danoDobrado ? 2 : 1) * recente;
   const caosExtra = tipo === 'physical' && buffDoLacaio(l, 'poderProfano', agora) ? 1 : 0;
   return { fator, ficha, caosExtra };
 }

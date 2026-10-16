@@ -256,7 +256,7 @@ export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARA
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
   'alvoExcomungado', 'alvoSemArmadura', 'alvoSemEvasao', 'ataque', 'magia', 'corpo', 'projetil', 'area', 'fogo', 'gelo', 'raio', 'fisico', 'caos', 'elemental', 'arco', 'totem', 'armadilha',
-  'mina', 'lacaio', 'arauto', 'vaal', 'movimento', 'clamor', 'aura', 'maldicao', 'alvoVidaBaixa', 'dot', 'habilidade', 'suporte',
+  'mina', 'lacaio', 'arauto', 'vaal', 'movimento', 'clamor', 'aura', 'maldicao', 'alvoVidaBaixa', 'dot', 'habilidade', 'suporte', 'golem',
   // O ALVO do golpe (o estado dele naquele acerto): Resfriado, Congelado, Eletrizado, Cego, Sangrando, Envenenado, Incendiado, Amaldiçoado,
   // Lento, Mutilado, Provocado, a raridade, a vida cheia; e o golpe de perto ("em Curto Alcance"), na mão principal/secundária.
   'alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoCego', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado', 'alvoAmaldicoado',
@@ -864,6 +864,8 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // `joiaUnica:Grand_Spectrum`; "para cada Item Mágico equipado" (o Potencial Oculto): `itemMagico`.
     case 'joiaUnica': return joiasDaArvore(estado).filter((j) => j?.poe?.raridade === 'unico' && j.poe.unico === a).length;
     case 'itemMagico': return eq.filter(([, p]) => p.poe?.raridade === 'magico').length;
+    // (lote 50, o Auto-Flagelo) "por Maldição em Você": as dos monstros, as refletidas e as do mapa, ativas
+    case 'maldicoesEmVoce': return Object.values(h?.maldicoesNoJogador ?? {}).filter((x) => x && x.ate > agora).length + maldicoesDoMapa(estado).length;
     // (+ ciclo 7: o teto — `lacaio::10`, "por Lacaio, até 10%")
     case 'lacaio': { const n = (h?.lacaios ?? []).filter((l) => l.hp > 0 && (!a || new RegExp(a, 'i').test(l.nome ?? ''))).length; return b ? Math.min(Number(b) || n, n) : n; }
     case 'venenoEmVoce': return Math.min(Number(b) || Infinity, (h?.efeitosDoJogador?.dots ?? []).filter((d) => /veneno/i.test(d.tipo) && d.falta > 0).length);
@@ -1231,7 +1233,14 @@ export function amaldicoarJogador(hunt0, id, { nome, af, ms = DURACAO_DA_MALDICA
   if (!hunt || !af) return;
   // ("Duração das Maldições em você aumentada em X%".)
   ms = Math.round(ms * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.duracao_maldicao_propria) || 0) / 100) * fatorDosDebuffs(fichaDa(hunt)?.afPoe));
-  (hunt.maldicoesNoJogador ??= {})[id] = { ate: agora + ms, nome, af };
+  const lista = (hunt.maldicoesNoJogador ??= {});
+  // (lote 50, a regra do PoE) a MESMA maldição não acumula (a nova tira a de antes, de outro monstro), e você tem o LIMITE de 1 maldição — +1 por
+  // "N Maldições adicionais podem ser aplicadas à você" (o Auto-Flagelo, `maldicoes_extra_em_voce`): passou do limite, a mais velha sai.
+  for (const [k, x] of Object.entries(lista)) if (k !== id && x?.nome === nome) delete lista[k];
+  lista[id] = { ate: agora + ms, nome, af, desde: agora };
+  const limite = 1 + Math.max(0, Math.round(Number(fichaDa(hunt)?.afPoe?.maldicoes_extra_em_voce) || 0));
+  const ativas = Object.entries(lista).filter(([, x]) => x && x.ate > agora && !String(x.nome ?? '').startsWith('refletida')).sort((a, b) => (b[1].desde ?? 0) - (a[1].desde ?? 0));
+  for (const [k] of ativas.slice(limite)) delete lista[k];
 }
 /**
  * O que as maldições em você somam agora (`Afixos.soma`, DEPOIS das condições — o "Imune a Maldições enquanto possuir ao menos N de Fúria"
@@ -1309,6 +1318,8 @@ const TAG_DO_POE = {
   Ataque: 'ataque', Magia: 'magia', 'Corpo a Corpo': 'corpo', Projétil: 'projetil', Área: 'area', Fogo: 'fogo', Gelo: 'gelo', Raio: 'raio',
   Físico: 'fisico', Caos: 'caos', Arco: 'arco', Totem: 'totem', Armadilha: 'armadilha', Mina: 'mina', Lacaio: 'lacaio', Arauto: 'arauto',
   Vaal: 'vaal', Movimento: 'movimento', Clamor: 'clamor', Aura: 'aura', Maldição: 'maldicao',
+  // (lote 50) as gemas de Golem — "se você Convocou um Golem nos últimos N segundos" (`nosUltimos:N:usou:golem`, `marcarUsoPorTag`)
+  Golem: 'golem',
   // (09/10, a árvore:) "Habilidade de Guarda" e "Gemas de Habilidade Críticas" (a tag Crítico da gema — não o golpe crítico).
   Guarda: 'guarda', Crítico: 'gemaCritica',
   // (09/10, auditoria da árvore) As tags que existiam em TAGS_DE_GOLPE mas nenhuma gema produzia — as regras com elas nunca valiam. Nas
@@ -1827,7 +1838,7 @@ const TIPOS_DE_LACAIO = '(zumbi|espectro|golem|esqueleto|totem|espirito|fantasma
 const PARAMETRICOS = [
   new RegExp(`^pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento):${ELS_P}$`), // itens-poe/afeccoes.daSoma
   new RegExp(`^nao_pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento)(:${ELS_P})?$`), // itens-poe/afeccoes.daSoma
-  new RegExp(`^(max_lacaio|max_lacaio_pct|lacaio_dano|lacaio_mais_dano|lacaio_vida|lacaio_vida_mais|lacaio_vida_fixa|lacaio_mov|lacaio_duracao|lacaio_degen|lacaio_vel_ataque|lacaio_imune_elemental|lacaio_vel_conj|lacaio_armadura|lacaio_cdr|lacaio_regen_pct):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
+  new RegExp(`^(max_lacaio|max_lacaio_pct|lacaio_dano|lacaio_mais_dano|lacaio_vida|lacaio_vida_mais|lacaio_vida_fixa|lacaio_mov|lacaio_duracao|lacaio_degen|lacaio_vel_ataque|lacaio_imune_elemental|lacaio_vel_conj|lacaio_armadura|lacaio_cdr|lacaio_regen_pct|lacaio_dano_recente|lacaio_dano_recente_s):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
   /^recarga_gema:[A-Za-z_]+$/, // acoes.temposDaGemaPoe (a recarga de UMA gema, pelo começo do slug)
   // (11/10, os únicos:) o dano físico somado, o Avatar do Fogo (a conversão e o "só Fogo"), Cinzas e Incendiar no acerto, a duração renovada
   // no Raro/Único, o dano drenado para o dono, a explosão do morto e a RESTRIÇÃO ("Você não pode ter Lacaios não-Golens": `so_lacaio:golem`).
@@ -1883,7 +1894,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|itemMagico|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -2562,7 +2573,8 @@ export function criticoDoBicho(base, bicho, ficha, agora, rng = Math.random) {
   if (regraDaMarca(bicho, agora, 'semCritico') > 0 || Number(ficha?.afPoe?.sem_critico_recebido) > 0) return { critico: false, fator: 1 };
   // ("Inimigos Próximos não podem causar Acertos Críticos": a aura põe `semCritico` nos de perto — `mods-poe.aurasProximas`.)
   if (ativo(bicho?.estados?.semCritico, agora)) return { critico: false, fator: 1 };
-  const { criticoFator } = doBicho(bicho, agora);
+  // (lote 50, a Defesa Imprudente: "Acertos tem Chance de Acerto Crítico aumentada em X% contra você" — `crit_recebido_inc`)
+  const criticoFator = doBicho(bicho, agora).criticoFator * Math.max(0, 1 + (Number(ficha?.afPoe?.crit_recebido_inc) || 0) / 100);
   // (+ "Você sofre Dano Extra dos Golpes Críticos de Inimigos Amaldiçoados reduzido em X%" — só do monstro amaldiçoado por você)
   const red = (Number(ficha?.afPoe?.crit_dmg_taken_red) || 0) + (amaldicoadoPorVoce(bicho, agora) ? Number(ficha?.afPoe?.crit_dmg_taken_red_amaldicoado) || 0 : 0);
   // (o Slayer: "Inimigos Próximos tem -X% de Multiplicador de Acerto Crítico" — a aura põe `critMultMenos` nos de perto, `mods-poe.aurasProximas`)

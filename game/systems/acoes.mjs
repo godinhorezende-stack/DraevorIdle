@@ -1661,6 +1661,9 @@ export function projeteisDoTotem(estado, entry, { origem, alvo, vivos }) {
   if (!tags.includes('projectile')) return null;
   const efeito = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
   if (!efeito) return null;
+  // (lote 50, a Chuva de Farpas: "Totens atiram N Projéteis adicionais" — `totem_projeteis_extra`, no tiro do totem)
+  const doTotemExtra = estado && itensPoeLigado() ? Math.round(ModsPoe.valor(Ficha.combate(estado), 'totem_projeteis_extra')) : 0;
+  if (doTotemExtra > 0) efeito.alvosExtras = (efeito.alvosExtras ?? 0) + doTotemExtra;
   // (PoE, 12/10) A Balista de Cerco do Aço: "Ataque do Totem consome até 1 dos Fragmentos de Aço" — os SEUS (`itens-poe/convocar-o-aco.mjs`);
   // "Se não tiver Fragmentos de Aço, só Dispara 1 Projétil".
   const doAco = entry.poeGema && estado?.hunt && itensPoeLigado() ? doAcoDaGema(entry.poeGema.slug, efeito.nivel ?? 1) : null;
@@ -1846,7 +1849,7 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
   const porUso = q.tipo === 'totem' && estado && Math.random() * 100 < ModsPoe.valor(Ficha.combate(estado), 'totem_dois_chance') ? Math.max(q.porUso, 2) : q.porUso;
   for (let i = 0; i < porUso; i++) {
     const l = {
-      uid: `lacaio:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, gema: slug, acao: entry.id, tipo: q.tipo, nome: q.nome, nivel: q.nivel,
+      uid: `lacaio:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, gema: slug, acao: entry.id, tipo: q.tipo, nome: q.nome, nivel: q.nivel, desde: agora,
       x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir ?? 2, look: q.desenho.look, lookItem: q.desenho.lookItem ?? 0, colors: q.desenho.colors,
       hp: q.vida, maxHp: q.vida, dano: q.dano, elemento: q.elemento ?? 'physical', intervaloMs: q.intervaloMs, ate: q.duracaoMs ? agora + q.duracaoMs : null, duracaoMs: q.duracaoMs ?? null,
       // (a conversão do dano Físico do golpe e o "só causa dano de X" — `LacaiosPoe.oQueInvoca`)

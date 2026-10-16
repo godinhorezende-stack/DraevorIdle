@@ -366,7 +366,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (41 — 16/10, lote 45: a Rajada Vulcânica com o crítico; o Detonar Minas; as exceções registradas.)
 // (42 — 16/10, lote 48: as Joias Atemporais — o líder, a semente, o Histórico e a Devoção.)
 // (43 — 16/10, lote 49: as únicas de joia, a primeira leva do J30.)
-export const VERSAO_DA_TRADUCAO = 43;
+// (44 — 16/10, lote 50: as únicas de joia, a segunda leva do J30; o limite de maldições em você.)
+export const VERSAO_DA_TRADUCAO = 44;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

@@ -7412,6 +7412,30 @@
       "unidade": "",
       "combate": true,
       "efeito": "o item Primordial: conta para \"caso você tenha N Itens Primordiais Encaixados ou Equipados\" (a Pedra Anima — `condicoes-poe`, `primordiaisMin`; lote 49)"
+    },
+    "crit_recebido_inc": {
+      "nome": "Chance de Crítico dos Acertos contra você aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o crítico dos monstros em você (`condicoes-poe.criticoDoBicho`; a Defesa Imprudente — lote 50)"
+    },
+    "chance_ser_afetado": {
+      "nome": "Chance de ser Congelado, Eletrizado e Incendiado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o acerto elemental do monstro que não é crítico aplica a afecção do elemento na chance (`mobs/mecanicas.aoAcertarJogador`; a Réplica: Defesa Imprudente — lote 50)"
+    },
+    "totem_projeteis_extra": {
+      "nome": "Totens atiram Projéteis adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "os projéteis a mais no tiro do totem (`acoes.projeteisDoTotem`; a Chuva de Farpas — lote 50)"
+    },
+    "maldicoes_extra_em_voce": {
+      "nome": "Maldições adicionais que podem ser aplicadas a você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o limite de maldições em você (1, como no PoE) + este (`condicoes-poe.amaldicoarJogador`; o Auto-Flagelo — lote 50)"
     }
   }
 }

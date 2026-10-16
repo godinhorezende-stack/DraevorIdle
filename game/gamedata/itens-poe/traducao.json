@@ -38351,6 +38351,120 @@
       "nota": "linha interna do PoE (o Espectro Grandioso acumula: cada um conta todos os encaixados — `joiaUnica:Grand_Spectrum`)",
       "_nova": true,
       "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^[Pp]erca uma Carga de Tolerância por segundo$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_perde_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^[Pp]erca uma Carga de Frenesi por segundo$",
+      "efeitos": [
+        {
+          "stat": "frenesi_perde_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^[Pp]erca uma Carga de Poder por segundo$",
+      "efeitos": [
+        {
+          "stat": "poder_perde_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% se você Convocou um Golem nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@nosUltimos:{V2}:usou:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Dano dos Golens aumentado em \\{(\\d+)\\}% se convocados nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "lacaio_dano_recente:golem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_dano_recente_s:golem",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Acertos tem Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% contra você$",
+      "efeitos": [
+        {
+          "stat": "crit_recebido_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de ser Congelado, Eletrizado e Incendiado$",
+      "efeitos": [
+        {
+          "stat": "chance_ser_afetado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Totens atiram \\{(\\d+)\\} Projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "totem_projeteis_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Maldição em Você$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%maldicoesEmVoce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} Maldições adicionais podem ser aplicadas à você$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_extra_em_voce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
     }
   ]
 }

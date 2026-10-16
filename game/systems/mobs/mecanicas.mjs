@@ -279,17 +279,24 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
     else if (mec.efeito === 'carga' && ganharCarga(m, mec.carga, agora, ficha)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: `carga:${mec.carga}` });
   }
   // (+ 12/10: "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais" — `Vinculos.noFeixe`.)
-  if (critico && estado.hp > 0 && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0) && !Vinculos.noFeixe(hunt, m)) {
+  // (lote 50, a Réplica: Defesa Imprudente: "+X% de chance de ser Congelado, Eletrizado e Incendiado" — `chance_ser_afetado`: o acerto que não
+  // é crítico também aplica a afecção do elemento dele, na chance; o crítico segue inerente, sem sortear de novo.)
+  const inerente = critico && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0);
+  const chanceExtra = Number(ficha.afPoe?.chance_ser_afetado) || 0;
+  if ((inerente || chanceExtra > 0) && estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
     const N = NoJogador.NUMEROS;
     const vidaMax = Math.max(1, estado.maxHp ?? 0);
-    if ((brutas.fire ?? 0) > 0) {
+    const pega = () => inerente || rng() * 100 < chanceExtra;
+    if ((brutas.fire ?? 0) > 0 && pega()) {
       const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (brutas.fire * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
       if (posto) naTela(posto);
     }
     const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, vidaMax);
-    if (msGelo > 0 && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
-    const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
-    if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    if (msGelo > 0 && pega() && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
+    if ((partes.energy ?? 0) > 0 && pega()) {
+      const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
+      if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    }
   }
   if (mudou) Ficha.invalidar(estado);
 }
