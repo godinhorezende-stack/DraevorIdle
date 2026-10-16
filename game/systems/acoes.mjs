@@ -135,7 +135,11 @@ export function tagsPoeDaSkill(entry) {
   const gema = entry?.poeGema ? GemasPoe.doSlug(entry.poeGema.slug)?.gema : null;
   const daGema = gema?.tags ?? null;
   // (11/10: as gemas de Estandarte não trazem a tag — "Habilidades de Estandarte têm Duração/Área de Efeito aumentada")
-  if (daGema) return [...ModsPoe.tagsDoPoe(daGema), ...(/_Banner$/.test(entry.poeGema.slug) ? ['estandarte'] : []), ...(ehAtaqueDeEscudo(entry.poeGema.slug, gema) ? ['ataqueDeEscudo'] : []), 'habilidade'];
+  if (daGema) {
+    const t = ModsPoe.tagsDoPoe(daGema);
+    // (lote 55, o Olho do Vigia: "Habilidades Não Canalizadoras" — a tag `naoCanalizar` nas que não são de Canalização)
+    return [...t, ...(/_Banner$/.test(entry.poeGema.slug) ? ['estandarte'] : []), ...(ehAtaqueDeEscudo(entry.poeGema.slug, gema) ? ['ataqueDeEscudo'] : []), ...(t.includes('canalizar') ? [] : ['naoCanalizar']), 'habilidade'];
+  }
   const t = new Set(Tags.tagsDaAcao(entry).map((x) => DRAEVOR_PARA_POE[x]).filter(Boolean));
   if (t.has('corpo') || (t.has('fisico') && t.has('projetil') && !t.has('magia'))) t.add('ataque');
   if (t.has('fogo') || t.has('gelo') || t.has('raio')) t.add('elemental');
@@ -2249,7 +2253,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // "…de habilidades de Retaliação", "Habilidades de marca não custam mana".)
   const doCustoPorTag = entry.poeGema ? ModsPoe.somaPorTags(fichaDoCusto, tagsPoeDaSkill(entry)) : {};
   // (o Vínculo não paga ao conjurar: custa por segundo, enquanto vincula — `tiqueDosVinculos`)
-  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0)) / 100) * Math.max(0, 1 + (doCustoPorTag.custo_mana_mais ?? 0) / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
+  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto || reserva || Vinculos.ehVinculo(entry) || (doCustoPorTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') + (doCustoPorTag.custo_mana_inc ?? 0)) / 100) * Math.max(0, 1 + (doCustoPorTag.custo_mana_mais ?? 0) / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') + (doCustoPorTag.eficiencia_custo_mana ?? 0)) / 100) / Math.max(0.1, 1 + eficaciaDaMina / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo') + (doCustoPorTag.custo_mana_fixo ?? 0)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(Ficha.combate(estado), 'keystone_magia_sanguinea') > 0) && custoDeMana > 0;
@@ -2809,8 +2813,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       // (o Inquisidor: "Acertos Não Críticos penetram X% das Resistências Elementais do Inimigo" — o golpe não crítico, na proporção da parte
       // elemental com a penetração a mais)
-      const penNaoCritico = ModsPoe.valor(ficha, 'pen_nao_critico');
-      if (!rolado.crit && base > 0 && penNaoCritico > 0) {
+      // (lote 55, o Olho do Vigia: + "Acertos Críticos Penetram X% da Resistência Elemental Inimiga" — o golpe crítico, `pen_critico`)
+      const penNaoCritico = ModsPoe.valor(ficha, rolado.crit ? 'pen_critico' : 'pen_nao_critico');
+      if (base > 0 && penNaoCritico > 0) {
         const comPen = { ...ficha, penetracao: { ...(ficha.penetracao ?? {}), elemental: (Number(ficha.penetracao?.elemental) || 0) + penNaoCritico } };
         const comMais = pedacos ? pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, ['fire', 'ice', 'energy'].includes(p.elemento) ? comPen : ficha), 0) : resistido(hunt, bicho, tipo, bruto, ['fire', 'ice', 'energy'].includes(tipo) ? comPen : ficha);
         if (comMais > base) rolado.dano = Math.round((rolado.dano * comMais) / base);
@@ -3084,6 +3089,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (ciclo 7) O uso por TAG — "se você usou uma Habilidade de Retaliação Recentemente", "conjurou uma Magia de Runa/Marca Recentemente" — e
     // QUAIS gemas de cada tag ("por cada Habilidade de Retaliação diferente que você tenha usado nos últimos N segundos").
     ModsPoe.marcarUsoPorTag(hunt, tagsPoe, entry.poeGema.slug, inicio);
+    // (lote 55, o Equilíbrio do Terror: "se você conjurou <Maldição> nos últimos 10 segundos" — `nosUltimos:10:usou:gema:<nome>`)
+    ModsPoe.marcar(hunt, `usou:gema:${ModsPoe.slugDoNome(GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? entry.poeGema.slug)}`, inicio);
     // (a Retaliação usada: gasta o uso na janela — `ModsPoe.usarRetaliacao`)
     if (gatilhoDaRetaliacao) ModsPoe.usarRetaliacao(hunt, gatilhoDaRetaliacao, entry.poeGema.slug, fichaDoUso.afPoe, hunt.clock ?? 0);
     // ("X% de chance de abrir Baús próximos quando você Conjurar uma Magia" — `abrirBausAoConjurar`)

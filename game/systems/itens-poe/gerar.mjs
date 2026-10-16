@@ -125,7 +125,22 @@ export function comMagnitudeNosImplicitos({ implicitos = [], modificadores = [] 
 export function modificadoresDoUnico(u, rng, manter = null) {
   const s = u.implicitosSorteados;
   const sai = (m) => s && m.tipo === 'implicit' && m.modelo === s.substitui && !manter?.has(m.modelo);
-  return u.modificadores.filter((m) => !sai(m)).map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) }));
+  const ls = u.linhasSorteadas;
+  return u.modificadores.filter((m) => !sai(m)).flatMap((m) => {
+    const n = ls?.substitui?.[m.modelo];
+    if (!n) return [{ tipo: m.tipo, ...rolarTexto(m, rng) }];
+    // (lote 55, J31) a linha de marcação ("[Two random aura modifiers]") vira N linhas do pool da única (`linhas-sorteadas.json`), sem repetir e com
+    // a mesma chance; o Orbe Divino (`manter` — os modelos da peça) sorteia de novo só os valores das que ela já tem.
+    const ja = manter ? ls.linhas.filter((l) => manter.has(l.modelo)) : [];
+    return (ja.length ? ja.slice(0, n) : linhasDoPool(ls.linhas, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
+  });
+}
+/** (lote 55) N linhas distintas do pool, com a mesma chance. */
+export function linhasDoPool(linhas, n, rng) {
+  const resto = [...linhas];
+  const saida = [];
+  while (saida.length < n && resto.length) saida.push(resto.splice(Math.floor(rng() * resto.length), 1)[0]);
+  return saida;
 }
 /**
  * Os implícitos da REGRA do único (`implicitosSorteados`: `{ quantidade: [mín, máx], grupos, pesoIgual, corrompido, origem }`): a

@@ -15925,7 +15925,7 @@
       "estado": "novo"
     },
     {
-      "padrao": "^\\[.*\\]$",
+      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$)\\[.*\\]$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -18079,7 +18079,7 @@
       "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
-      "padrao": "^.*(?:Fenda|Grilhões Temporais).*$",
+      "padrao": "^(?!.*conjurou Grilhões Temporais nos últimos).*(?:Fenda|Grilhões Temporais).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -38827,6 +38827,802 @@
       "nota": "o Devorador de Almas do PoE (poedb, dono: \"Pesquisar no poedb\"): +5% de Velocidade de Ataque e Conjuração por alma de inimigo morto perto (3 casas), perde 1 a cada 0,5 s sem alma recente, máximo de 45",
       "_nova": true,
       "_lote54": "16/10 — lote 54 (as únicas de joia do J30, a quinta leva — as decisões do dono)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução adicional de Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "phys_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Vulnerabilidade$",
+      "efeitos": [
+        {
+          "stat": "imune_vulnerabilidade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Debilitar$",
+      "efeitos": [
+        {
+          "stat": "imune_enfraquecer",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Flamabilidade$",
+      "efeitos": [
+        {
+          "stat": "imune_flamabilidade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Congelabilidade$",
+      "efeitos": [
+        {
+          "stat": "imune_congelabilidade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Condutividade$",
+      "efeitos": [
+        {
+          "stat": "imune_condutividade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Fraqueza Elemental$",
+      "efeitos": [
+        {
+          "stat": "imune_fraqueza_elemental",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Desespero$",
+      "efeitos": [
+        {
+          "stat": "imune_desespero",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você sofre \\{(\\d+)\\}% de Dano Extra reduzido de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano físico refletido que você sofreria$",
+      "efeitos": [
+        {
+          "stat": "reflexo_fisico_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano elemental refletido que você sofreria$",
+      "efeitos": [
+        {
+          "stat": "reflexo_elemental_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos que te Acertaram$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:alvo:cego:4",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o PoE: a Cegueira dura 4 s",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia por Segundo$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Início da Recarga do Escudo de Energia é \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "es_recharge_start",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Escudo de Energia por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "es_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Recuperação do Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_es_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Raio é Drenado como Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@raio",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o \"Dano de Fogo Drenado como Vida\" do jogo: o golpe de Raio drena (o jogo não separa a parte de Raio do golpe)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de Dano Físico como Dano de {E} Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_{E}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de auemnto do Dano de {E}$",
+      "efeitos": [
+        {
+          "stat": "{E}_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Chance de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano de Fogo Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:ao|de) Multiplicador de (?:Acerto|Golpe) Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Vida por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "life_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Recuperação de Vida dos Frascos$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Habilidades Não Canalizadoras tem \\{(\\d+)\\} de Custo de Mana Total$",
+      "efeitos": [
+        {
+          "stat": "custo_mana_fixo@naoCanalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano é sofrido pela Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_na_mana_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Recuperar \\{(\\d+)\\}% de Mana ao usar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:manaPctChance:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% de Mana Máxima como Escudo de Energia Máximo Extra$",
+      "efeitos": [
+        {
+          "stat": "mana_como_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Recuperação de Mana$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_mana_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido enquanto afetado por Clareza é Recuperado como Mana$",
+      "efeitos": [
+        {
+          "stat": "recoup_mana@afetadoPor:clareza",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você ganha Agressividade por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você tem Trespassar$",
+      "efeitos": [
+        {
+          "stat": "sempre:trespassar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da velocidade de recuperação de recarga das Habilidades de Movimento utilizadas$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Incêndio$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Congelamento$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Envenenamento$",
+      "efeitos": [
+        {
+          "stat": "imune_veneno",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Gelo e Raio sofrido como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Fogo e Raio é sofrido como Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_ice",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Fogo e Gelo sofrido como Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_energy",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_ice_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% do máximo de Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Frasco quando causar um Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:frasco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Seus Acertos Intimidam Inimigos por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:intimidado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Empalamentos inflingidos por você duram \\{(\\d+)\\} Acertos adicionais$",
+      "efeitos": [
+        {
+          "stat": "empalar_acertos_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Afecções Danificadores infligidas por você causam Dano \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "dot_mais_rapido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Acertos Críticos Penetram \\{(\\d+)\\}% da Resistência Elemental Inimiga$",
+      "efeitos": [
+        {
+          "stat": "pen_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Velocidade de Conjuração enquanto afetado por Fanatismo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@afetadoPor:fanatismo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Inflige )?Exposição a Raio a[om] Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_raio",
+          "valor": "10"
+        }
+      ],
+      "nota": "o PoE: a Exposição tira 10% da resistência",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Inflige )?Exposição a Fogo a[om] Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_fogo",
+          "valor": "10"
+        }
+      ],
+      "nota": "o PoE: a Exposição tira 10% da resistência",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Inflige )?Exposição a Gelo a[om] Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_gelo",
+          "valor": "10"
+        }
+      ],
+      "nota": "o PoE: a Exposição tira 10% da resistência",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Eletrização$",
+      "efeitos": [
+        {
+          "stat": "imune_eletrizacao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Incêndio$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Congelamento$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Sangramento$",
+      "efeitos": [
+        {
+          "stat": "imune_sangramento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Maldições$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Inflige Definhar por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:definhado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Exposição$",
+      "efeitos": [
+        {
+          "stat": "imune_exposicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano Físico como um Elemento Aleatório$",
+      "efeitos": [
+        {
+          "stat": "phys_extra_aleatorio_chance:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Não Sofre Dano Extra de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Dano Refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_fisico",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_reflexo_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Intimida Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:intimidado:4",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a Intimidação dura 4 s",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Velocidade de Ação não pode ser Reduzida abaixo do Valor Base$",
+      "efeitos": [
+        {
+          "stat": "velocidade_acao_minima",
+          "valor": "100"
+        },
+        {
+          "stat": "imune_lento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Recuperação da Recarga aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Evadir Acertos de Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_evadir",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Este Encaixe de Joia tem efeito aumentado em \\{(\\d+)\\}% por Habilidade Passiva Alocada entre ele e o ponto de início da sua Classe(?:' starting location)?$",
+      "efeitos": [
+        {
+          "stat": "joia_efeito_por_passiva_ate_inicio",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "como o PoB: as passivas alocadas no caminho mais curto entre o encaixe e o início da sua classe",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\[Two random aura modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 2 linhas do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\[Three random aura modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 3 linhas do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\[Two random modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 2 linhas do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
     }
   ]
 }

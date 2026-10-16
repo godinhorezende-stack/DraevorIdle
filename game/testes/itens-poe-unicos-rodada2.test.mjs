@@ -104,8 +104,10 @@ test('a MALDIÇÃO do item: "Amaldiçoa Inimigos com Vulnerabilidade ao Bloquear
   assert.deepEqual(Reforcos.maldicoesAtivas(bicho, 1100).map((m) => m.id), ['outra']);
   Reforcos.amaldicoar(bicho, 'terceira', efeito, { agora: 1200, dur: 5000, ignorarLimite: true });
   assert.deepEqual(Reforcos.maldicoesAtivas(bicho, 1200).map((m) => m.id).sort(), ['outra', 'terceira']);
-  // A maldição que o jogo não tem fica sem efeito, com o porquê.
-  assert.equal(traduz('Amaldiçoa Inimigos com Punição quando você Bloquear seu Dano Corpo a Corpo, ignorando o Limite de Maldições').estado, 'inerte');
+  // (dono, 16/10 — lote 55: "Manter o apelido") a Punição do texto é a gema que o jogo chama de Castigo (no PoE, Punishment): a maldição vale.
+  const punicao = traduz('Amaldiçoa Inimigos com Punição quando você Bloquear seu Dano Corpo a Corpo, ignorando o Limite de Maldições');
+  assert.ok(COM_EFEITO.includes(punicao.estado), punicao.estado);
+  assert.equal(punicao.efeitos[0].stat, 'ev:bloquearAtaque:maldicao:castigo:10:semLimite');
 });
 
 test('os lacaios: a resistência a Fogo/Gelo e o dano extra do lacaio físico', { skip: SEM }, () => {

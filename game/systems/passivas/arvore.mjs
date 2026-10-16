@@ -634,6 +634,31 @@ const DA_RESISTENCIA = { 'raio_res_fogo_tolerancia': ['fire_res', 'carga_toleran
 /** O atributo que o nó dá (a soma dos `str`/`dex`/`int` dele). */
 const atributoDoNo = (no, passivas, atr) => efeitosDoNo(no, passivas).reduce((n, ef) => n + (ef.add === atr ? ef.valor : 0), 0);
 
+/**
+ * (lote 55, a Personalidade Dividida: "Este Encaixe de Joia tem efeito aumentado em 25% por Habilidade Passiva Alocada entre ele e o ponto de
+ * início da sua Classe" — "Sempre conta o caminho mais curto possível") Quantas passivas alocadas há entre o encaixe e o início da sua classe:
+ * como o PoB (`PassiveSpec:SetNodeDistanceToClassStart`), a busca em largura do encaixe pelas passivas ALOCADAS (sem passar por Maestria nem por
+ * outro início), até um vizinho ser o início — a distância menos 1. 0 sem caminho.
+ */
+export function passivasAteOInicio(estado, idDoEncaixe) {
+  const inicio = inicioDe(estado);
+  const meus = new Set(estado?.passivas?.alocados ?? []);
+  if (!inicio || !meus.has(idDoEncaixe)) return 0;
+  const dist = new Map([[idDoEncaixe, 0]]);
+  const fila = [idDoEncaixe];
+  for (let i = 0; i < fila.length; i++) {
+    const no = ARVORE.porId.get(fila[i]);
+    const d = dist.get(fila[i]) + 1;
+    for (const c of no?.conexoes ?? []) {
+      if (c === inicio) return d - 1;
+      const outro = ARVORE.porId.get(c);
+      if (!meus.has(c) || dist.has(c) || !outro || outro.tipo === 'start' || outro.ascendencia || no.tipo === 'mastery') continue;
+      dist.set(c, d);
+      fila.push(c);
+    }
+  }
+  return 0;
+}
 /** (lote 52) O Talento Puro: a linha de cada classe → a classe e os atributos que ela dá (os mesmos das linhas comuns do PoE). */
 const TALENTO_PURO = {
   'talento_puro_marauder': ['Marauder', ['area_inc@corpo']], 'talento_puro_duelist': ['Duelist', ['life_leech']], 'talento_puro_ranger': ['Ranger', ['move_speed']],

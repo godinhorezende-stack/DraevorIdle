@@ -1,0 +1,1112 @@
+{
+ "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
+ "geradoEm": "2026-10-16T21:01:19.025Z",
+ "unicos": {
+  "Watchers_Eye": {
+   "classe": "Jewels",
+   "substitui": {
+    "[Two random aura modifiers]": 2,
+    "[Three random aura modifiers]": 3
+   },
+   "fonte": "https://poedb.tw/pt/Watchers_Eye",
+   "linhas": [
+    {
+     "texto": "(5—8)% de Redução adicional de Dano Físico enquanto afetado por Determinação",
+     "modelo": "{0}% de Redução adicional de Dano Físico enquanto afetado por Determinação",
+     "faixas": [
+      [
+       5,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "+(5—8)% de Chance de Bloquear o Dano de Ataques enquanto afetado por Determinação",
+     "modelo": "+{0}% de Chance de Bloquear o Dano de Ataques enquanto afetado por Determinação",
+     "faixas": [
+      [
+       5,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Vulnerabilidade enquanto afetado por Determinação",
+     "modelo": "Imune a Vulnerabilidade enquanto afetado por Determinação",
+     "faixas": []
+    },
+    {
+     "texto": "Você sofre (40—60)% de Dano Extra reduzido de Golpes Críticos enquanto afetado por Determinação",
+     "modelo": "Você sofre {0}% de Dano Extra reduzido de Golpes Críticos enquanto afetado por Determinação",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Evita +(50—75)% do dano físico refletido que você sofreria enquanto sob efeito de Determinação",
+     "modelo": "Evita +{0}% do dano físico refletido que você sofreria enquanto sob efeito de Determinação",
+     "faixas": [
+      [
+       50,
+       75
+      ]
+     ]
+    },
+    {
+     "texto": "+(600—1000) de Armadura enquanto afetado por Determinação",
+     "modelo": "+{0} de Armadura enquanto afetado por Determinação",
+     "faixas": [
+      [
+       600,
+       1000
+      ]
+     ]
+    },
+    {
+     "texto": "+(5—8)% de chance de Evadir Acertos de Ataques enquanto afetado por Graça",
+     "modelo": "+{0}% de chance de Evadir Acertos de Ataques enquanto afetado por Graça",
+     "faixas": [
+      [
+       5,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "+(12—15)% de chance de Suprimir Dano Mágico enquanto afetado por Graça",
+     "modelo": "+{0}% de chance de Suprimir Dano Mágico enquanto afetado por Graça",
+     "faixas": [
+      [
+       12,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Debilitar enquanto afetado por Graça",
+     "modelo": "Imune a Debilitar enquanto afetado por Graça",
+     "faixas": []
+    },
+    {
+     "texto": "Velocidade de Movimento aumentada em (10—15)% enquanto afetado por Graça",
+     "modelo": "Velocidade de Movimento aumentada em {0}% enquanto afetado por Graça",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "(30—50)% de chance de Cegar Inimigos que te Acertaram enquanto afetado por Graça",
+     "modelo": "{0}% de chance de Cegar Inimigos que te Acertaram enquanto afetado por Graça",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "Regenera (1.5—2.5)% de Escudo de Energia por Segundo enquanto afetado por Disciplina",
+     "modelo": "Regenera {0}% de Escudo de Energia por Segundo enquanto afetado por Disciplina",
+     "faixas": [
+      [
+       1.5,
+       2.5
+      ]
+     ]
+    },
+    {
+     "texto": "+(5—8)% de Chance de Bloquear Dano Mágico enquanto afetado por Disciplina",
+     "modelo": "+{0}% de Chance de Bloquear Dano Mágico enquanto afetado por Disciplina",
+     "faixas": [
+      [
+       5,
+       8
+      ]
+     ]
+    },
+    {
+     "texto": "Início da Recarga do Escudo de Energia é (30—40)% mais rápido enquanto afetado por Disciplina",
+     "modelo": "Início da Recarga do Escudo de Energia é {0}% mais rápido enquanto afetado por Disciplina",
+     "faixas": [
+      [
+       30,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha (20—30) de Escudo de Energia por Inimigo Acertado enquanto afetado por Disciplina",
+     "modelo": "Ganha {0} de Escudo de Energia por Inimigo Acertado enquanto afetado por Disciplina",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "(10—15)% de aumento da Recuperação do Escudo de Energia enquanto afetado por Disciplina",
+     "modelo": "{0}% de aumento da Recuperação do Escudo de Energia enquanto afetado por Disciplina",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Penetra (10—15)% de Resistência a Raio enquanto afetado por Ira",
+     "modelo": "Dano Penetra {0}% de Resistência a Raio enquanto afetado por Ira",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "(1—1.5)% do Dano de Raio é Drenado como Escudo de Energia enquanto afetado por Ira",
+     "modelo": "{0}% do Dano de Raio é Drenado como Escudo de Energia enquanto afetado por Ira",
+     "faixas": [
+      [
+       1,
+       1.5
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha (15—25)% de Dano Físico como Dano de Raio Extra enquanto afetado por Ira",
+     "modelo": "Ganha {0}% de Dano Físico como Dano de Raio Extra enquanto afetado por Ira",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "(25—40)% do Dano Físico Convertido para Dano de Raio enquanto afetado por Ira",
+     "modelo": "{0}% do Dano Físico Convertido para Dano de Raio enquanto afetado por Ira",
+     "faixas": [
+      [
+       25,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "(40—60)% de auemnto do Dano de Raio enquanto afetado por Ira",
+     "modelo": "{0}% de auemnto do Dano de Raio enquanto afetado por Ira",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "(70—100)% de aumento da Chance de Acerto Crítico enquanto afetado por Ira",
+     "modelo": "{0}% de aumento da Chance de Acerto Crítico enquanto afetado por Ira",
+     "faixas": [
+      [
+       70,
+       100
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Penetra (10—15)% de Resistência a Fogo enquanto afetado por Cólera",
+     "modelo": "Dano Penetra {0}% de Resistência a Fogo enquanto afetado por Cólera",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "(1—1.5)% de Dano de Fogo Drenado como Vida enquanto afetado por Cólera",
+     "modelo": "{0}% de Dano de Fogo Drenado como Vida enquanto afetado por Cólera",
+     "faixas": [
+      [
+       1,
+       1.5
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha (15—25)% de Dano Físico como Dano de Fogo Extra enquanto afetado por Cólera",
+     "modelo": "Ganha {0}% de Dano Físico como Dano de Fogo Extra enquanto afetado por Cólera",
+     "faixas": [
+      [
+       15,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "(25—40)% do Dano Físico Convertido para Dano de Fogo enquanto afetado por Cólera",
+     "modelo": "{0}% do Dano Físico Convertido para Dano de Fogo enquanto afetado por Cólera",
+     "faixas": [
+      [
+       25,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "(40—60)% de aumento do Dano de Fogo enquanto afetado por Cólera",
+     "modelo": "{0}% de aumento do Dano de Fogo enquanto afetado por Cólera",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "+(30—50)% ao Multiplicador de Acerto Crítico enquanto afetado por Cólera",
+     "modelo": "+{0}% ao Multiplicador de Acerto Crítico enquanto afetado por Cólera",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Penetra (10—15)% de Resistência a Gelo enquanto afetado por Ódio",
+     "modelo": "Dano Penetra {0}% de Resistência a Gelo enquanto afetado por Ódio",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "+(1.2—1.8)% de Chance de Crítico enquanto afetado por Ódio",
+     "modelo": "+{0}% de Chance de Crítico enquanto afetado por Ódio",
+     "faixas": [
+      [
+       1.2,
+       1.8
+      ]
+     ]
+    },
+    {
+     "texto": "Adiciona (58—70) a (88—104) de Dano de Gelo enquanto afetado por Ódio",
+     "modelo": "Adiciona {0} a {1} de Dano de Gelo enquanto afetado por Ódio",
+     "faixas": [
+      [
+       58,
+       70
+      ],
+      [
+       88,
+       104
+      ]
+     ]
+    },
+    {
+     "texto": "(25—40)% do Dano Físico Convertido para Dano de Gelo enquanto afetado por Ódio",
+     "modelo": "{0}% do Dano Físico Convertido para Dano de Gelo enquanto afetado por Ódio",
+     "faixas": [
+      [
+       25,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "(40—60)% de aumento do Dano de Gelo enquanto afetado por Ódio",
+     "modelo": "{0}% de aumento do Dano de Gelo enquanto afetado por Ódio",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "(0.8—1.2)% de Dano drenado como Vida enquanto afetado por Vitalidade",
+     "modelo": "{0}% de Dano drenado como Vida enquanto afetado por Vitalidade",
+     "faixas": [
+      [
+       0.8,
+       1.2
+      ]
+     ]
+    },
+    {
+     "texto": "Regenera (1—1.5)% de Vida por segundo enquanto afetado por Vitalidade",
+     "modelo": "Regenera {0}% de Vida por segundo enquanto afetado por Vitalidade",
+     "faixas": [
+      [
+       1,
+       1.5
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Recuperação de Vida aumentada em (10—15)% enquanto afetado por Vitalidade",
+     "modelo": "Velocidade de Recuperação de Vida aumentada em {0}% enquanto afetado por Vitalidade",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha (20—30) de Vida por Inimigo Acertado enquanto afetado por Vitalidade",
+     "modelo": "Ganha {0} de Vida por Inimigo Acertado enquanto afetado por Vitalidade",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "(50—70)% de aumento da Recuperação de Vida dos Frascos enquanto afetado por Vitalidade",
+     "modelo": "{0}% de aumento da Recuperação de Vida dos Frascos enquanto afetado por Vitalidade",
+     "faixas": [
+      [
+       50,
+       70
+      ]
+     ]
+    },
+    {
+     "texto": "Habilidades Não Canalizadoras tem (-10—-5) de Custo de Mana Total enquanto afetado por Clareza",
+     "modelo": "Habilidades Não Canalizadoras tem {0} de Custo de Mana Total enquanto afetado por Clareza",
+     "faixas": [
+      [
+       -10,
+       -5
+      ]
+     ]
+    },
+    {
+     "texto": "(6—10)% de Dano é sofrido pela Mana antes da Vida enquanto afetado por Clareza",
+     "modelo": "{0}% de Dano é sofrido pela Mana antes da Vida enquanto afetado por Clareza",
+     "faixas": [
+      [
+       6,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "(10—15)% de chance de Recuperar 10% de Mana ao usar uma Habilidade enquanto afetado por Clareza",
+     "modelo": "{0}% de chance de Recuperar {1}% de Mana ao usar uma Habilidade enquanto afetado por Clareza",
+     "faixas": [
+      [
+       10,
+       15
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Ganhe (6—10)% de Mana Máxima como Escudo de Energia Máximo Extra enquanto afetado por Clareza",
+     "modelo": "Ganhe {0}% de Mana Máxima como Escudo de Energia Máximo Extra enquanto afetado por Clareza",
+     "faixas": [
+      [
+       6,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "(10—15)% de aumento da Recuperação de Mana enquanto afetado por Clareza",
+     "modelo": "{0}% de aumento da Recuperação de Mana enquanto afetado por Clareza",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "(15—20)% do Dano sofrido enquanto afetado por Clareza é Recuperado como Mana",
+     "modelo": "{0}% do Dano sofrido enquanto afetado por Clareza é Recuperado como Mana",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Você ganha Agressividade por 4 segundos ao Matar enquanto afetado por Ímpeto",
+     "modelo": "Você ganha Agressividade por {0} segundos ao Matar enquanto afetado por Ímpeto",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Você tem Trespassar enquanto afetado por Ímpeto",
+     "modelo": "Você tem Trespassar enquanto afetado por Ímpeto",
+     "faixas": []
+    },
+    {
+     "texto": "Imune a Grilhões Temporais enquanto afetado por Ímpeto",
+     "modelo": "Imune a Grilhões Temporais enquanto afetado por Ímpeto",
+     "faixas": []
+    },
+    {
+     "texto": "Debuffs em você expiram (15—20)% mais rápido enquanto afetado por Ímpeto",
+     "modelo": "Debuffs em você expiram {0}% mais rápido enquanto afetado por Ímpeto",
+     "faixas": [
+      [
+       15,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "(30—50)% de aumento da velocidade de recuperação de recarga das Habilidades de Movimento utilizadas enquanto afetado por Ímpeto",
+     "modelo": "{0}% de aumento da velocidade de recuperação de recarga das Habilidades de Movimento utilizadas enquanto afetado por Ímpeto",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Incêndio enquanto afetado por Pureza do Fogo",
+     "modelo": "Imune a Incêndio enquanto afetado por Pureza do Fogo",
+     "faixas": []
+    },
+    {
+     "texto": "Imune a Solo Ardente enquanto afetado por Pureza Ardente",
+     "modelo": "Imune a Solo Ardente enquanto afetado por Pureza Ardente",
+     "faixas": []
+    },
+    {
+     "texto": "Imune a Flamabilidade enquanto afetado por Pureza Ardente",
+     "modelo": "Imune a Flamabilidade enquanto afetado por Pureza Ardente",
+     "faixas": []
+    },
+    {
+     "texto": "(10—20)% do Dano de Gelo e Raio sofrido como Dano de Fogo enquanto afetado por Pureza Ardente",
+     "modelo": "{0}% do Dano de Gelo e Raio sofrido como Dano de Fogo enquanto afetado por Pureza Ardente",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Congelamento enquanto afetado por Pureza do Gelo",
+     "modelo": "Imune a Congelamento enquanto afetado por Pureza do Gelo",
+     "faixas": []
+    },
+    {
+     "texto": "Imune a Solo Congelado enquanto afetado por Pureza Glacial",
+     "modelo": "Imune a Solo Congelado enquanto afetado por Pureza Glacial",
+     "faixas": []
+    },
+    {
+     "texto": "Imune a Congelabilidade enquanto afetado por Pureza Glacial",
+     "modelo": "Imune a Congelabilidade enquanto afetado por Pureza Glacial",
+     "faixas": []
+    },
+    {
+     "texto": "(10—20)% do Dano de Fogo e Raio é sofrido como Dano de Gelo enquanto afetado por Pureza Glacial",
+     "modelo": "{0}% do Dano de Fogo e Raio é sofrido como Dano de Gelo enquanto afetado por Pureza Glacial",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Eletrização enquanto afetado por Pureza do Raio",
+     "modelo": "Imune a Eletrização enquanto afetado por Pureza do Raio",
+     "faixas": []
+    },
+    {
+     "texto": "Imune a Solo Eletrizado enquanto afetado por Pureza Elétrica",
+     "modelo": "Imune a Solo Eletrizado enquanto afetado por Pureza Elétrica",
+     "faixas": []
+    },
+    {
+     "texto": "Imune a Condutividade enquanto afetado por Pureza Elétrica",
+     "modelo": "Imune a Condutividade enquanto afetado por Pureza Elétrica",
+     "faixas": []
+    },
+    {
+     "texto": "(10—20)% do Dano de Fogo e Gelo sofrido como Dano de Raio enquanto / afetado por Pureza Elétrica",
+     "modelo": "{0}% do Dano de Fogo e Gelo sofrido como Dano de Raio enquanto / afetado por Pureza Elétrica",
+     "faixas": [
+      [
+       10,
+       20
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Fraqueza Elemental enquanto afetado por Pureza dos Elementos",
+     "modelo": "Imune a Fraqueza Elemental enquanto afetado por Pureza dos Elementos",
+     "faixas": []
+    },
+    {
+     "texto": "Evita +(50—75)% do dano elemental refletido que você sofreria enquanto / sob efeito de Pureza Elemental",
+     "modelo": "Evita +{0}% do dano elemental refletido que você sofreria enquanto / sob efeito de Pureza Elemental",
+     "faixas": [
+      [
+       50,
+       75
+      ]
+     ]
+    },
+    {
+     "texto": "+(30—50)% de Resistência a Caos enquanto afetado por Pureza dos Elementos",
+     "modelo": "+{0}% de Resistência a Caos enquanto afetado por Pureza dos Elementos",
+     "faixas": [
+      [
+       30,
+       50
+      ]
+     ]
+    },
+    {
+     "texto": "+1% do máximo de Resistências Elementais enquanto afetado por Pureza dos Elementos",
+     "modelo": "+{0}% do máximo de Resistências Elementais enquanto afetado por Pureza dos Elementos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "+(20—30)% de Multiplicador de Acerto Crítico enquanto afetado por Precisão",
+     "modelo": "+{0}% de Multiplicador de Acerto Crítico enquanto afetado por Precisão",
+     "faixas": [
+      [
+       20,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Dano de Ataque aumentado em (40—60)% enquanto afetado por Precisão",
+     "modelo": "Dano de Ataque aumentado em {0}% enquanto afetado por Precisão",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha uma Carga de Frasco quando causar um Acerto Crítico enquanto afetado por Precisão",
+     "modelo": "Ganha uma Carga de Frasco quando causar um Acerto Crítico enquanto afetado por Precisão",
+     "faixas": []
+    },
+    {
+     "texto": "Velocidade de Ataque aumentada em (10—15)% enquanto afetado por Precisão",
+     "modelo": "Velocidade de Ataque aumentada em {0}% enquanto afetado por Precisão",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Não pode ser Cegado enquanto afetado por Precisão",
+     "modelo": "Não pode ser Cegado enquanto afetado por Precisão",
+     "faixas": []
+    },
+    {
+     "texto": "(8—12)% de chance de causar Dano Dobrado enquanto usando Orgulho",
+     "modelo": "{0}% de chance de causar Dano Dobrado enquanto usando Orgulho",
+     "faixas": [
+      [
+       8,
+       12
+      ]
+     ]
+    },
+    {
+     "texto": "Seus Acertos Intimidam Inimigos por 4 segundos enquanto estiver usando Orgulho",
+     "modelo": "Seus Acertos Intimidam Inimigos por {0} segundos enquanto estiver usando Orgulho",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Dano Físico aumentado em (40—60)% enquanto usando Orgulho",
+     "modelo": "Dano Físico aumentado em {0}% enquanto usando Orgulho",
+     "faixas": [
+      [
+       40,
+       60
+      ]
+     ]
+    },
+    {
+     "texto": "25% de chance de Empalar Inimigos ao Acertar com Ataques enquanto usando Orgulho",
+     "modelo": "{0}% de chance de Empalar Inimigos ao Acertar com Ataques enquanto usando Orgulho",
+     "faixas": [
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Empalamentos inflingidos por você duram 2 Acertos adicionais enquanto usando Orgulho",
+     "modelo": "Empalamentos inflingidos por você duram {0} Acertos adicionais enquanto usando Orgulho",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Recuperação de Vida e Escudo de Energia aumentada em (8—12)% enquanto afetado por Malevolência",
+     "modelo": "Recuperação de Vida e Escudo de Energia aumentada em {0}% enquanto afetado por Malevolência",
+     "faixas": [
+      [
+       8,
+       12
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Envenenamento enquanto afetado por Malevolência",
+     "modelo": "Imune a Envenenamento enquanto afetado por Malevolência",
+     "faixas": []
+    },
+    {
+     "texto": "Não Afetado por Sangramento enquanto afetado por Malevolência",
+     "modelo": "Não Afetado por Sangramento enquanto afetado por Malevolência",
+     "faixas": []
+    },
+    {
+     "texto": "Afecções Danificadores infligidas por você causam Dano (10—15)% mais rápido enquanto afetadas por Malevolência",
+     "modelo": "Afecções Danificadores infligidas por você causam Dano {0}% mais rápido enquanto afetadas por Malevolência",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "+(18—22)% de Multiplicador de Dano Degenerativo enquanto afetado por Malevolência",
+     "modelo": "+{0}% de Multiplicador de Dano Degenerativo enquanto afetado por Malevolência",
+     "faixas": [
+      [
+       18,
+       22
+      ]
+     ]
+    },
+    {
+     "texto": "Acertos Críticos Penetram (8—10)% da Resistência Elemental Inimiga enquanto afetado por Fanatismo",
+     "modelo": "Acertos Críticos Penetram {0}% da Resistência Elemental Inimiga enquanto afetado por Fanatismo",
+     "faixas": [
+      [
+       8,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Conjuração enquanto afetado por Fanatismo aumentada em (10—15)%",
+     "modelo": "Velocidade de Conjuração enquanto afetado por Fanatismo aumentada em {0}%",
+     "faixas": [
+      [
+       10,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Efeitos de Solo Sagrado criados por você enquanto afetado por Fanatismo Perduram por 2 segundos",
+     "modelo": "Efeitos de Solo Sagrado criados por você enquanto afetado por Fanatismo Perduram por {0} segundos",
+     "faixas": [
+      [
+       2,
+       2
+      ]
+     ]
+    },
+    {
+     "texto": "Solo Sagrado criado por você enquanto afetado por Fanatismo faz com que inimigos sofram Dano aumentado em (8—10)%",
+     "modelo": "Solo Sagrado criado por você enquanto afetado por Fanatismo faz com que inimigos sofram Dano aumentado em {0}%",
+     "faixas": [
+      [
+       8,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Recebe Fúria Arcana por 4 segundos ao criar Solo Sagrado enquanto afetado por Fanatismo",
+     "modelo": "Recebe Fúria Arcana por {0} segundos ao criar Solo Sagrado enquanto afetado por Fanatismo",
+     "faixas": [
+      [
+       4,
+       4
+      ]
+     ]
+    },
+    {
+     "texto": "Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em 30% enquanto afetado por Fanatismo",
+     "modelo": "Recuperação de Escudo de Energia Máxima total do Dreno por segundo aumentada em {0}% enquanto afetado por Fanatismo",
+     "faixas": [
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Chance de Acerto Crítico contra Inimigos em Solo Sagrado enquanto afetado por Fanatismo aumentada em (100—120)%",
+     "modelo": "Chance de Acerto Crítico contra Inimigos em Solo Sagrado enquanto afetado por Fanatismo aumentada em {0}%",
+     "faixas": [
+      [
+       100,
+       120
+      ]
+     ]
+    }
+   ]
+  },
+  "Split_Personality": {
+   "classe": "Jewels",
+   "substitui": {
+    "[Two random modifiers]": 2
+   },
+   "fonte": "https://poedb.tw/pt/Split_Personality",
+   "linhas": [
+    {
+     "texto": "+5 de Força",
+     "modelo": "+{0} de Força",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "+5 de Destreza",
+     "modelo": "+{0} de Destreza",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "+5 de Inteligência",
+     "modelo": "+{0} de Inteligência",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "+5 de Vida máxima",
+     "modelo": "+{0} de Vida máxima",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "+5 de Mana máxima",
+     "modelo": "+{0} de Mana máxima",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "+5 de Escudo de Energia máximo",
+     "modelo": "+{0} de Escudo de Energia máximo",
+     "faixas": [
+      [
+       5,
+       5
+      ]
+     ]
+    },
+    {
+     "texto": "+40 de Armadura",
+     "modelo": "+{0} de Armadura",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "+40 de Evasão",
+     "modelo": "+{0} de Evasão",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "+40 de Precisão",
+     "modelo": "+{0} de Precisão",
+     "faixas": [
+      [
+       40,
+       40
+      ]
+     ]
+    }
+   ]
+  },
+  "The_Balance_of_Terror": {
+   "classe": "Jewels",
+   "substitui": {
+    "[Two random modifiers]": 2
+   },
+   "fonte": "https://poedb.tw/pt/The_Balance_of_Terror",
+   "linhas": [
+    {
+     "texto": "Inflige Exposição a Raio ao Acertar se você conjurou Condutividade nos últimos 10 segundos",
+     "modelo": "Inflige Exposição a Raio ao Acertar se você conjurou Condutividade nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Você Não é Afetado por Eletrização se conjurou Condutividade nos últimos 10 segundos",
+     "modelo": "Você Não é Afetado por Eletrização se conjurou Condutividade nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Maldições se você conjurou Desespero nos últimos 10 segundos",
+     "modelo": "Imune a Maldições se você conjurou Desespero nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Inflige Definhar por 2 segundos ao Acertar se você conjurou Desespero nos últimos 10 segundos",
+     "modelo": "Inflige Definhar por {0} segundos ao Acertar se você conjurou Desespero nos últimos {1} segundos",
+     "faixas": [
+      [
+       2,
+       2
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Exposição se você conjurou Fraqueza Elemental nos últimos 10 segundos",
+     "modelo": "Imune a Exposição se você conjurou Fraqueza Elemental nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Ganha (30—40)% do Dano Físico como um Elemento Aleatório se você conjurar Fraqueza Elemental nos últimos 10 segundos",
+     "modelo": "Ganha {0}% do Dano Físico como um Elemento Aleatório se você conjurar Fraqueza Elemental nos últimos {1} segundos",
+     "faixas": [
+      [
+       30,
+       40
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "+(30—40)% de Multiplicador de Golpe Crítico se você conjurou Debilitar nos últimos 10 segundos",
+     "modelo": "+{0}% de Multiplicador de Golpe Crítico se você conjurou Debilitar nos últimos {1} segundos",
+     "faixas": [
+      [
+       30,
+       40
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Não Sofre Dano Extra de Golpes Críticos se você conjurou Debilitar nos últimos 10 segundos",
+     "modelo": "Não Sofre Dano Extra de Golpes Críticos se você conjurou Debilitar nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Inflige Exposição a Fogo ao Acertar se você conjurou Flamabilidade nos últimos 10 segundos",
+     "modelo": "Inflige Exposição a Fogo ao Acertar se você conjurou Flamabilidade nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Você Não é Afetado por Incêndio se conjurou Flamabilidade nos últimos 10 segundos",
+     "modelo": "Você Não é Afetado por Incêndio se conjurou Flamabilidade nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Exposição a Gelo am Acertar se você conjurou Congelabilidade nos últimos 10 segundos",
+     "modelo": "Exposição a Gelo am Acertar se você conjurou Congelabilidade nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Você Não é Afetado por Congelamento se conjurou Congelabilidade nos últimos 10 segundos",
+     "modelo": "Você Não é Afetado por Congelamento se conjurou Congelabilidade nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Imune a Dano Refletido se você conjurou Punição nos últimos 10 segundos",
+     "modelo": "Imune a Dano Refletido se você conjurou Punição nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Intimida Inimigos ao Acertar se você conjurou Punição nos últimos 10 segundos",
+     "modelo": "Intimida Inimigos ao Acertar se você conjurou Punição nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Velocidade de Ação não pode ser Reduzida abaixo do Valor Base se você conjurou Grilhões Temporais nos últimos 10 segundos",
+     "modelo": "Velocidade de Ação não pode ser Reduzida abaixo do Valor Base se você conjurou Grilhões Temporais nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Recuperação da Recarga aumentado em (20—25)% se você conjurou Grilhões Temporais nos últimos 10 segundos",
+     "modelo": "Recuperação da Recarga aumentado em {0}% se você conjurou Grilhões Temporais nos últimos {1} segundos",
+     "faixas": [
+      [
+       20,
+       25
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "(6—10)% de chance de causar Dano Dobrado se você conjurou Vulnerabilidade nos últimos 10 segundos",
+     "modelo": "{0}% de chance de causar Dano Dobrado se você conjurou Vulnerabilidade nos últimos {1} segundos",
+     "faixas": [
+      [
+       6,
+       10
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Você Não é Afetado por Sangramento se conjurou Vulnerabilidade nos últimos 10 segundos",
+     "modelo": "Você Não é Afetado por Sangramento se conjurou Vulnerabilidade nos últimos {0} segundos",
+     "faixas": [
+      [
+       10,
+       10
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

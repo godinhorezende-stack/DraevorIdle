@@ -1379,7 +1379,8 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
   const azarado = ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0;
   const elementalSortudo = ModsPoe.valor(ficha, 'elemental_sortudo') > 0;
   const raioSortudo = !rolagem?.crit && ModsPoe.valor(ficha, 'raio_nao_critico_sortudo') > 0;
-  const penNaoCritico = rolagem?.crit ? 0 : ModsPoe.valor(ficha, 'pen_nao_critico');
+  // (lote 55: + "Acertos Críticos Penetram X%" — `pen_critico`, no golpe crítico)
+  const penNaoCritico = ModsPoe.valor(ficha, rolagem?.crit ? 'pen_critico' : 'pen_nao_critico');
   const fichaComPen = penNaoCritico > 0 ? { ...ficha, penetracao: { ...(ficha.penetracao ?? {}), elemental: (Number(ficha.penetracao?.elemental) || 0) + penNaoCritico } } : ficha;
   for (const [tipo, [min, max]] of Object.entries(ficha.danoSomado ?? {})) {
     const elemental = tipo === 'fire' || tipo === 'ice' || tipo === 'energy';

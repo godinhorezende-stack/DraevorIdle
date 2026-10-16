@@ -71,6 +71,9 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   'Efeito em Área Aumentado': 'Área de Efeito Aumentada', 'Dano de Caos Adicionado': 'Dano Adicional de Caos', 'Gelo para Fogo': 'Gelo a Fogo',
   'Rajada Maior': 'Grande Rajada', 'Eco Mágico Maior': 'Eco Mágico Maior (Reforço)', Contaminar: 'Profanar',
   'Erguer Zumbi': 'Evocar Zumbi', 'Erguer Espectro': 'Evocar Espectro',
+  // (lote 55, o Equilíbrio do Terror: a Punição do texto é o Castigo da gema)
+  'Punição': 'Castigo',
+  'Pureza Elemental': 'Pureza Elementar',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 
@@ -192,6 +195,11 @@ const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? caso você tenha ao menos \{(\d+)\} de Escudo de Energia Máximo$/, (m, valores) => `escudoMin:${Number(valores[Number(m[2])]) || 0}`],
   // (lote 48, as Atemporais: a Fé Militante) "enquanto/se você tiver pelo menos N de Devoção" — a soma da Devoção (`devocao`)
   [/^(.+?),? (?:enquanto|se) você tiver pelo menos \{(\d+)\} de Devoção$/, (m, valores) => `devocaoMin:${Number(valores[Number(m[2])]) || 0}`],
+  // (lote 55, o Olho do Vigia) "enquanto afetado por <Aura>" / "enquanto sob efeito de <Aura>": a aura da gema ligada (`afetadoPor:<o nome>`);
+  // só com o nome de uma gema que o jogo tem.
+  [/^(.+?),? enquanto ?(?:(?:a ?f?etad[oa]s?|sob (?:o )?efeito) (?:por|de)|(?:estiver )?usando) (.+)$/, (m) => { const s = slugDaGema(m[2].trim()); return gemaConhecida(s) !== false ? `afetadoPor:${s}` : null; }],
+  // (lote 55, o Equilíbrio do Terror) "se você conjurou <Maldição> nos últimos N segundos": o uso da gema (`nosUltimos:N:usou:gema:<o nome>`).
+  [/^(.+?),? se (?:você )?conjur(?:ou|ar) (.+?) nos últimos \{(\d+)\} segundos$/, (m, valores) => { const s = slugDaGema(m[2].trim()); return gemaConhecida(s) !== false ? `nosUltimos:${Number(valores[Number(m[3])]) || 0}:usou:gema:${s}` : null; }],
 ];
 /** Os atributos que o GOLPE resolve com as tags do alvo (`fichaDoGolpe`): dano aumentado, crítico, penetração, dano por elemento, "mais dano". */
 const DO_GOLPE = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|elem_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|life_leech|mana_leech)$/;

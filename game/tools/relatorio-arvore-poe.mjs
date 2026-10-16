@@ -321,10 +321,27 @@ const GRUPOS_DE_JOIA = [
 ];
 const loteDa = (slug, grupo) => (grupo === 'Atemporais' ? 'Atemporais (as tabelas do PoB, com a autorização do download)' : grupo === 'Ramificadoras' ? 'Ramificadoras (raspar os encantamentos e notáveis no poedb)' : LOTE_PREVISTO.find(([re]) => re.test(slug))?.[1] ?? 'lote 30 — as outras linhas dos únicos de joia');
 
+/** (lote 55) O pool das linhas sorteadas da única: `{ total, efeito, inertes: [nota], sem: [modelo] }`. */
+function poolDasSorteadas(T, u) {
+  const r = { total: 0, efeito: 0, inertes: [], sem: [] };
+  for (const l of u.linhasSorteadas?.linhas ?? []) {
+    const t = T.traduzirMod({ modelo: l.modelo, valores: (l.faixas ?? []).map((x) => x[0]) });
+    r.total++;
+    if (['equivalente', 'novo', 'aproximado'].includes(t.estado)) r.efeito++;
+    else if (t.estado === 'inerte' || t.estado === 'lembrete') r.inertes.push(t.partes.find((p) => p.nota)?.nota ?? 'sem nota');
+    else r.sem.push(l.modelo);
+  }
+  return r;
+}
+
 async function secaoDasJoias() {
   process.env.ITENS_POE ??= '1';
   const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
   const T = await import('../systems/itens-poe/traduzir.mjs');
+  // (lote 55) o jogo do PoE carregado (as gemas): as linhas que dependem do nome de uma gema — "enquanto afetado por Graça", "Concede a
+  // Habilidade X" — traduzem como no jogo (sem as gemas, `gemaConhecida` diz que não).
+  const { iniciarJogoDoPoe } = await import('../systems/itens-poe/iniciar.mjs');
+  await iniciarJogoDoPoe();
   const cat = Catalogo.catalogo();
   if (!cat?.classes?.Jewels) return [];
   const md = ['## As joias dos encaixes da árvore (lotes 27 a 29)', ''];
@@ -335,6 +352,10 @@ async function secaoDasJoias() {
     const r = T.cobertura({ classes: { [classe]: { ...c, paginas: Object.fromEntries(Object.entries(c.paginas).filter(([p]) => !fora?.test(p))) } } });
     md.push(`- **Mods das joias ${nome === 'Jewels' ? 'Carmesim/Viridiana/Cobalto/Prismática' : 'Abissais'}** (prefixos e sufixos, pelo peso de sorteio): ${r.comEfeitoNoCombate}% com efeito.`);
   }
+  // (lote 55, J31) os POOLS das linhas sorteadas: quantas linhas de cada um têm efeito (as inertes, com o porquê)
+  const sorteadas = [];
+  for (const u of cat.classes.Jewels.unicos ?? []) if (u.linhasSorteadas && !sorteadas.some((x) => x.slug === u.slug)) sorteadas.push({ slug: u.slug, nome: u.nome, ...poolDasSorteadas(T, u) });
+  if (sorteadas.length) md.push(`- **Linhas sorteadas** (o pool de cada única no poedb — \`linhas-sorteadas.json\`): ${sorteadas.map((x) => `${escapar(x.nome)} ${x.efeito}/${x.total} com efeito${x.inertes.length ? ` (${x.inertes.length} não se aplicam: ${[...new Set(x.inertes)].map(escapar).join('; ')})` : ''}`).join(' · ')}.`);
   md.push('', '| Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
   const faltam = [];
   for (const [grupo, f] of GRUPOS_DE_JOIA) {
@@ -345,6 +366,15 @@ async function secaoDasJoias() {
         if (!f(u, classe) || !u.modificadores?.length) continue;
         unicas++;
         for (const m of u.modificadores) {
+          // (lote 55, J31) a linha de MARCAÇÃO das sorteadas ("[Two random aura modifiers]"): vale pelo pool da única (`linhasSorteadas`) — com
+          // efeito quando nenhuma linha do pool fica sem regra (as inertes do pool têm o porquê no balão).
+          if (u.linhasSorteadas?.substitui?.[m.modelo]) {
+            const pool = poolDasSorteadas(T, u);
+            conta.total++;
+            if (!pool.sem.length) conta.efeito++;
+            else { conta.sem++; faltam.push({ grupo, unica: u.nome, slug: u.slug, texto: m.texto, nota: `${pool.sem.length} das ${pool.total} linhas do pool sem efeito` }); }
+            continue;
+          }
           const t = T.traduzirMod({ modelo: m.modelo, valores: (m.faixas ?? []).map((x) => x[0]) });
           const nota = t.partes.find((p) => p.nota)?.nota ?? '';
           conta.total++;

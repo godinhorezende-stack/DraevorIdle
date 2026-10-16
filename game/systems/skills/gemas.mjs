@@ -600,6 +600,8 @@ function pelosNomes() {
 export const ativaPeloNome = (slug) => pelosNomes().ativas.get(slug) ?? null;
 export const suportePeloNome = (slug) => pelosNomes().suportes.get(slug) ?? null;
 ModsPoe.definirGemasConhecidas((slug) => !!(ativaPeloNome(slug) || suportePeloNome(slug)));
+// (lote 55) "enquanto afetado por <Aura>": o nome da gema → o id da ação dela (a aura ligada em `hunt.buffs`)
+ModsPoe.definirAcaoPeloNome((slug) => ativaPeloNome(slug)?.acao ?? null);
 
 /**
  * As habilidades que as PEÇAS do PoE dão (únicos): "Concede a Habilidade X Nível N" (vira uma gema na barra), "Ativa X Nível N quando…"

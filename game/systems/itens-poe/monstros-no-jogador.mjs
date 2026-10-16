@@ -95,6 +95,8 @@ export const empalamentosEmVoce = (hunt, agora = hunt?.clock ?? 0) => (hunt?.deb
 /** A EXPOSIÇÃO do monstro ao elemento (`pct`: o que ela tira da resistência). × o "Efeito de Exposições em você". A mais forte vale. */
 export function expor(hunt, ficha, elemento, pct = NUMEROS.exposicao.pct, { agora = hunt?.clock ?? 0 } = {}) {
   if (!ligado() || !hunt || !RES[elemento]) return false;
+  // (lote 55, o Equilíbrio do Terror: "Imune a Exposição")
+  if (v(ficha, 'imune_exposicao') > 0) return false;
   const valor = pct * Math.max(0, 1 + v(ficha, 'efeito_exposicao_proprio') / 100);
   if (!(valor > 0)) return false;
   const d = registro(hunt);

@@ -251,7 +251,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(afetadoPorAbissal|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
+const COND_COM_PARAMETRO = /^(afetadoPorAbissal|afetadoPor|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -275,6 +275,8 @@ export const TAGS_DE_GOLPE = new Set([
   'alvoExposicaoFogo', 'alvoExposicaoGelo', 'alvoExposicaoRaio', 'alvoNaoVidaBaixa',
   // (lote 54) o ataque com o ESCUDO (a mão secundária do PoE com escudo — `acoes.tagsPoeDaSkill`: a Fúria Fulminante)
   'ataqueDeEscudo',
+  // (lote 55) a habilidade que NÃO é de Canalização ("Habilidades Não Canalizadoras têm … de Custo de Mana" — `acoes.tagsPoeDaSkill`)
+  'naoCanalizar',
   // (lote F) o ataque com o Tempo de Ataque maior que 1 segundo (o intervalo do golpe da ficha).
   'ataqueLento', 'alvoComEscudo', 'alvoSemDreno',
   // (lote G) a gema de Postura; o ataque Impelido por um Clamor (`hunt.impelidos`).
@@ -500,6 +502,12 @@ export function vale(conds, c) {
     case 'atrMin': return (principais?.[resto[0]] ?? 0) >= Number(resto[1]);
     // (lote 28) "enquanto afetado por uma Joia Abissal Rara/Mágica/Única": `afetadoPorAbissal:raro`.
     case 'afetadoPorAbissal': return joiasAbissaisAfetando(estado).some((j) => j.poe?.raridade === resto[0]);
+    // (lote 55, o Olho do Vigia) "enquanto afetado por <Aura>": `afetadoPor:<o nome da gema>` — a aura da gema ligada (`hunt.buffs`) ou a do seu
+    // mercenário vivo (`l.auraEfeitos`); o id da ação vem do nome (`definirAcaoPeloNome` — `skills/gemas.mjs`).
+    case 'afetadoPor': {
+      const id = acaoPeloNome?.(resto[0]);
+      return !!id && ((h?.buffs?.[id]?.ate ?? 0) > agora || (h?.lacaios ?? []).some((l) => l?.mercenario && l.hp > 0 && l.auraEfeitos?.id === id));
+    }
     // ("Com uma joia Olho X encaixada": a condição é da PEÇA — `daPeca` resolve; solta, não vale.)
     case 'comAbissalLocal': return false;
     // "se você tiver ao menos N Maestrias de Vida alocadas": `maestriasDe:Vida:N` (a árvore registra quem conta — `definirLeitorDeMaestrias`).
@@ -1221,6 +1229,9 @@ export const MALDICOES_DOS_MONSTROS = {
   desespero: { nome: 'Desespero', af: { chaos_res: -15 } },
 };
 export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
+/** (lote 55, o Olho do Vigia) "Imune a <Maldição>": a imunidade a cada maldição que os monstros põem em você (pelo nome dela). */
+const IMUNE_A_MALDICAO = { 'Fraqueza Elemental': 'imune_fraqueza_elemental', Vulnerabilidade: 'imune_vulnerabilidade', Enfraquecer: 'imune_enfraquecer', Flamabilidade: 'imune_flamabilidade', Congelabilidade: 'imune_congelabilidade', Condutividade: 'imune_condutividade', Desespero: 'imune_desespero' };
+const imuneAMaldicao = (af, nome) => Number(af?.[IMUNE_A_MALDICAO[nome]]) > 0;
 /**
  * (lote 30, P017) "Debuffs em você expiram X% mais rápido": o tempo deles corre (1 + X%) vezes mais depressa — a duração ÷ (1 + X%), em TODO
  * debuff em você (as afecções, as maldições, os debuffs dos monstros).
@@ -1235,6 +1246,7 @@ export function amaldicoarJogador(hunt0, id, { nome, af, ms = DURACAO_DA_MALDICA
   if (!hunt || !af) return;
   // (lote 52, a Desgraça das Bruxas: imune a Maldições por tempo — `ModsPoe.desgracaDasBruxas`)
   if ((hunt.imunidadesPoe?.maldicao ?? 0) > agora) return;
+  if (imuneAMaldicao(fichaDa(hunt)?.afPoe, nome)) return;
   // ("Duração das Maldições em você aumentada em X%".)
   ms = Math.round(ms * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.duracao_maldicao_propria) || 0) / 100) * fatorDosDebuffs(fichaDa(hunt)?.afPoe));
   const lista = (hunt.maldicoesNoJogador ??= {});
@@ -1259,10 +1271,13 @@ export function addsDasMaldicoesNoJogador(estado, total) {
   const ativas = [...Object.values(h?.maldicoesNoJogador ?? {}).filter((m) => m && m.ate > agora), ...maldicoesDoMapa(estado).map((id) => MALDICOES_DOS_MONSTROS[id]).filter(Boolean)];
   // (+ lote 52: a imunidade por tempo da Desgraça das Bruxas)
   if (!ativas.length || Number(total?.imune_maldicao) > 0 || (h?.imunidadesPoe?.maldicao ?? 0) > agora) return null;
+  // (lote 55: a imune a ESTA maldição não soma — "Imune a Vulnerabilidade enquanto afetado por Determinação")
+  const valem = ativas.filter((m) => !imuneAMaldicao(total, m.nome));
+  if (!valem.length) return null;
   const efeito = Math.max(0, 1 + (Number(total?.efeito_maldicao_proprio) || 0) / 100);
   const semResElemental = Number(total?.res_elem_nao_reduzida_maldicao) > 0;
   const saida = {};
-  for (const m of ativas) for (const [k, v] of Object.entries(m.af ?? {})) {
+  for (const m of valem) for (const [k, v] of Object.entries(m.af ?? {})) {
     if (semResElemental && v < 0 && /^(fire|ice|energy)_res$/.test(k)) continue;
     saida[k] = (saida[k] ?? 0) + v * efeito;
   }
@@ -1838,6 +1853,10 @@ export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance
 var conhecePelaGema;
 export function definirGemasConhecidas(fn) { conhecePelaGema = fn; }
 export function gemaConhecida(slug) { return conhecePelaGema ? conhecePelaGema(slug) : undefined; }
+/** (lote 55) O id da ação da gema ativa pelo nome (`afetadoPor:<nome>` — "enquanto afetado por <Aura>"): quem registra é `skills/gemas.mjs`. */
+// eslint-disable-next-line no-var
+var acaoPeloNome;
+export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
 const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|keystone):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';

@@ -7628,6 +7628,72 @@
       "unidade": "s",
       "combate": true,
       "efeito": "passivas/arvore.raiosDasJoias → `LacaiosPoe.aoMatarDoLacaio` (lote 54)"
+    },
+    "imune_vulnerabilidade": {
+      "nome": "Imune a Vulnerabilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_enfraquecer": {
+      "nome": "Imune a Debilitar (o Enfraquecer dos monstros)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_flamabilidade": {
+      "nome": "Imune a Flamabilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_congelabilidade": {
+      "nome": "Imune a Congelabilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_condutividade": {
+      "nome": "Imune a Condutividade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_fraqueza_elemental": {
+      "nome": "Imune a Fraqueza Elemental",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_desespero": {
+      "nome": "Imune a Desespero",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_exposicao": {
+      "nome": "Imune a Exposição",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a Exposição dos monstros não pega (`monstros-no-jogador.expor`; o Equilíbrio do Terror — lote 55)"
+    },
+    "pen_critico": {
+      "nome": "Acertos Críticos Penetram X% das Resistências Elementais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a penetração a mais no golpe crítico (`acoes`, `hunt/combate` — como o `pen_nao_critico`; o Olho do Vigia — lote 55)"
+    },
+    "chance_evadir": {
+      "nome": "+X% de chance de Evadir Acertos de Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma à chance da Evasão, no teto de 95% (`personagem/defesa.esquivou`; o Olho do Vigia — lote 55)"
+    },
+    "joia_efeito_por_passiva_ate_inicio": {
+      "nome": "Este Encaixe de Joia tem efeito aumentado por Passiva Alocada entre ele e o início da classe",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os mods da joia × (1 + X% × as passivas — `Passivas.passivasAteOInicio`; `afixos.somaDeItens`; a Personalidade Dividida — lote 55)"
     }
   }
 }

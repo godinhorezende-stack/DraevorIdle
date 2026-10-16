@@ -77,6 +77,17 @@ function implicitosSorteados(cat) {
     u.implicitosSorteados = regra;
   }
 }
+const ARQUIVO_DAS_LINHAS_SORTEADAS = new URL('../../gamedata/itens-poe/linhas-sorteadas.json', import.meta.url);
+/**
+ * (lote 55, J31) As LINHAS SORTEADAS das únicas (`gamedata/itens-poe/linhas-sorteadas.json`, do poedb — `tools/importar-poedb-sorteados.mjs`): o
+ * Olho do Vigia, a Personalidade Dividida, o Equilíbrio do Terror… A coleção traz só a linha de marcação ("[Two random aura modifiers]"); entra
+ * por cima na leitura, como `linhasSorteadas: { substitui, linhas }` do único (o gerador sorteia — `gerar.modificadoresDoUnico`).
+ */
+function linhasSorteadas(cat) {
+  if (!existsSync(ARQUIVO_DAS_LINHAS_SORTEADAS)) return;
+  const { unicos = {} } = JSON.parse(readFileSync(ARQUIVO_DAS_LINHAS_SORTEADAS, 'utf8'));
+  for (const [slug, s] of Object.entries(unicos)) for (const u of cat.classes[s.classe]?.unicos ?? []) if (u.slug === slug) u.linhasSorteadas = { substitui: s.substitui, linhas: s.linhas };
+}
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
 // refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).
 const ARQUIVO_DOS_MAPAS = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
@@ -93,6 +104,7 @@ export function catalogo() {
     if (mapas) cache.classes[mapas.id] = mapas;
     corrigirUnicos(cache);
     implicitosSorteados(cache);
+    linhasSorteadas(cache);
   }
   return cache;
 }

@@ -62,7 +62,9 @@ export const esquivou = (ficha, hunt, bicho, { projetil = false } = {}) => {
   // (a Dança da Flecha: "Evasão é Dobrada contra Ataques de Projéteis"; "X% menos Evasão contra Ataques Corpo a Corpo".)
   const af = itensPoeLigado() ? ficha?.afPoe ?? {} : {};
   const daEvasao = projetil ? (Number(af.evasao_projetil_dobrada) > 0 ? 2 : 1) : Math.max(0, 1 - (Number(af.evasao_corpo_menos) || 0) / 100);
-  return sorteioDoAcerto(Math.min(0.95, Atributos.chanceDeEsquiva((ficha.evasion ?? 0) * daEvasao, level, AtributosDoMob.precisaoDe(bicho, level) * ModsPoe.doBicho(bicho, hunt?.clock ?? 0).precisaoFator) * mais), bicho, 'errosDoBicho');
+  // (lote 55, o Olho do Vigia: "+X% de chance de Evadir Acertos de Ataques" — soma à chance da Evasão, no teto de 95%)
+  const fixa = (Number(af.chance_evadir) || 0) / 100;
+  return sorteioDoAcerto(Math.min(0.95, Atributos.chanceDeEsquiva((ficha.evasion ?? 0) * daEvasao, level, AtributosDoMob.precisaoDe(bicho, level) * ModsPoe.doBicho(bicho, hunt?.clock ?? 0).precisaoFator) * mais + fixa), bicho, 'errosDoBicho');
 };
 
 /** "Chance to Avoid Damage": o dano inteiro não pega. */
