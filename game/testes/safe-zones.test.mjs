@@ -292,7 +292,9 @@ test('EDITOR: pintar e apagar casas seguras, o texto da casa e o corpo de salvar
 });
 
 test('SERVIDOR: o salvar grava as casas seguras (validadas) no arquivo e no mapa em memória; sem o campo, as de antes ficam', () => {
-  const id = 'teste-safe-zones-do-editor';
+  // Um arquivo por modo: o irmão safe-zones.classico.test.mjs roda este mesmo teste junto (a suíte roda os arquivos em paralelo), e no
+  // mesmo arquivo um lia a gravação do outro pela metade ou apagava o mapa dele no `finally`.
+  const id = `teste-safe-zones-do-editor${process.env.DRAEVOR_CLASSICO === '1' ? '-classico' : ''}`;
   const w = 12;
   const h = 8;
   const blocked = new Array(w * h).fill(0);
