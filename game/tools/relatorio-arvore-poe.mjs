@@ -191,6 +191,11 @@ const IMPLEMENTADOS = [
     re: /mercenário/i,
     jogo: 'o Mercenário completo (as decisões do dono): candidatos sorteados contratados por ouro (até 3, um ao seu lado), o nível preso no da contratação, o equipamento dele com as regras do PoE (70% do nível da peça, os atributos e as armas do arquétipo, únicos só nos tipos que os nós liberam), a ficha dele com o "aumentado" dos seus nós, as gemas fixas do arquétipo na caçada, morto só volta revivido por ouro; o "recuperado como vida" em 4 s',
   },
+  {
+    bloco: 'Zerar a árvore — lote 39 (a aura do mercenário e as gemas dele em área, pela decisão do dono)',
+    re: /mercenário tem o efeito das auras/i,
+    jogo: 'a aura do arquétipo do mercenário (a decisão do dono "Uma aura por arquétipo": espadachim Precisão, bárbaro Determinação, arqueiro Graça, piromante Cólera, criomante Ódio, eletromante Ira) no nível dele, × o efeito da linha — vale nele e em você enquanto ele vive (a ficha e os efeitos; com a mesma aura sua, vale a sua); e as gemas dele acertam como a gema: a área, os saltos e os projéteis',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

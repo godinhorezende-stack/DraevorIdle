@@ -2486,10 +2486,9 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   // (PoE, 13/10) as SUAS auras "Você e Aliados" nos seus lacaios (no PoE, "Aliados" inclui os lacaios): o dano, o bloqueio, as resistências,
   // a velocidade das auras e a sua Fortificação — `itens-poe/aliados.mjs`.
   const aliadoBase = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;
-  // (14/10, a Sagração à Cavalaria do Luminary: "Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em 50%" — o
-  // mercenário do jogo não usa habilidades próprias: as suas auras de aliado nele, × 1,5)
-  const auraNoMercenario = Math.max(0, 1 + (Number(ficha.afPoe?.mercenario_auras_inc) || 0) / 100);
-  const aliadoDoMercenario = aliadoBase && auraNoMercenario !== 1 ? Object.fromEntries(Object.entries(aliadoBase).map(([k, x]) => [k, typeof x === 'number' ? x * auraNoMercenario : x])) : aliadoBase;
+  // (A Sagração à Cavalaria do Luminary — "Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em 50%" — vale na aura
+  // DELE desde o lote 39, P060: `Mercenarios.auraDoMercenario`; as suas auras nele valem como num lacaio.)
+  const aliadoDoMercenario = aliadoBase;
   // (13/10) os golens mortos que voltam agora ("Reconvocados 4 segundos após serem Mortos")
   if (hunt.golensAReconvocar?.length) eventos.push(...Acoes.reconvocarGolens(estado, hunt, agora));
   const vivos = [];
@@ -2715,6 +2714,19 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       for (const g of r.golpes) {
         if (g.bicho.hp <= 0) continue;
         if (g.tipo !== 'explosao' && g.tipo !== 'projetil') eventos.push({ t: 'shot', id: tiro, x: g.de.x, y: g.de.y, tx: g.bicho.x, ty: g.bicho.y });
+        golpear(g.bicho, g.pct);
+      }
+    }
+    // (lote 39) O MERCENÁRIO com a gema da vez: a área da forma (com a Área de Efeito dele), os saltos da cadeia e os projéteis a mais dos
+    // suportes dele (`Acoes.alvosDoGolpeDoMercenario`) — o alvo já levou o golpe acima.
+    const doMercenario = l.mercenario ? Acoes.alvosDoGolpeDoMercenario(estado, l, alvo, hunt.monstros.filter((m) => m.hp > 0 && !m.dummy)) : null;
+    if (doMercenario) {
+      eventos.push(...doMercenario.eventos);
+      for (const p of doMercenario.emitidos.slice(1)) eventos.push({ t: 'shot', id: tiro, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y });
+      for (const ex of doMercenario.explosoes) eventos.push({ t: 'explosao', id: 6, x: ex.x, y: ex.y, lado: ex.lado });
+      for (const g of doMercenario.golpes) {
+        if (g.bicho.hp <= 0) continue;
+        if (g.de && !['area', 'explosao', 'projetil'].includes(g.tipo)) eventos.push({ t: 'shot', id: tiro, x: g.de.x, y: g.de.y, tx: g.bicho.x, ty: g.bicho.y });
         golpear(g.bicho, g.pct);
       }
     }

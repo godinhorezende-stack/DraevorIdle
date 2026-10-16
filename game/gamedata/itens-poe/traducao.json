@@ -6171,11 +6171,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "os arquétipos dos mercenários do jogo não têm gema de aura: as suas auras de aliado nele valem 50% mais",
       "_nova": true,
       "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
-      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)",
+      "_lote39": "16/10 — lote 39 (P060: a aura do arquétipo do mercenário, × o efeito — vale nele e em você; a decisão do dono \"Uma aura por arquétipo\")"
     },
     {
       "padrao": "^.*[Mm]ercenário.*$",

@@ -144,6 +144,9 @@ function fichaDe(m) {
   const atributos = (m.atributos ?? []).map((a) => ATRIBUTO[a] ?? a).join(' e ');
   const armas = [...(m.armas ?? []), m.secundaria].filter(Boolean).map((c) => CLASSE[c] ?? c).join(', ');
   caixa.append(el('p', 'merc-linha', `Vida: ${fmt(m.ficha?.vida)} · Peças de ${atributos} · ${armas}`));
+  // (lote 39, P060) a aura dele: vale nele e em você enquanto ele vive (com a mesma aura sua ligada, vale a sua)
+  const aura = m.ficha?.aura;
+  if (aura) caixa.append(el('p', 'merc-linha', `Aura: ${aura.nome} (nível ${aura.nivel})${aura.fator > 1 ? ` · efeito +${Math.round((aura.fator - 1) * 100)}%` : ''} — vale nele e em você enquanto ele vive`));
   const ul = el('ul', 'merc-habilidades');
   for (const h of m.ficha?.habilidades ?? []) {
     const li = el('li');

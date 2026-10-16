@@ -50,21 +50,22 @@ export const UNICOS_DO_SLOT = {
 };
 
 /**
- * Os ARQUÉTIPOS: a classe do PoE (os atributos de partida), os atributos das peças que ele usa, as armas, a mão secundária e as HABILIDADES — as
- * gemas fixas, cada uma com dois suportes (as que funcionam no jogo).
+ * Os ARQUÉTIPOS: a classe do PoE (os atributos de partida), os atributos das peças que ele usa, as armas, a mão secundária, a AURA (lote 39,
+ * P060 — dono: "Uma aura por arquétipo": vale nele e em você) e as HABILIDADES — as gemas fixas, cada uma com dois suportes (as que funcionam
+ * no jogo).
  */
 export const ARQUETIPOS = Object.freeze({
-  espadachim: { nome: 'Espadachim', classePoe: 'Duelist', vocacao: 'monk', atributos: ['str', 'dex'], armas: ['One_Hand_Swords', 'Thrusting_One_Hand_Swords', 'Two_Hand_Swords'], secundaria: 'Shields',
+  espadachim: { nome: 'Espadachim', classePoe: 'Duelist', vocacao: 'monk', atributos: ['str', 'dex'], armas: ['One_Hand_Swords', 'Thrusting_One_Hand_Swords', 'Two_Hand_Swords'], secundaria: 'Shields', aura: 'Precision',
     habilidades: [{ gema: 'Double_Strike', suportes: ['Melee_Physical_Damage_Support', 'Faster_Attacks_Support'] }, { gema: 'Cleave', suportes: ['Melee_Physical_Damage_Support', 'Brutality_Support'] }] },
-  barbaro: { nome: 'Bárbaro', classePoe: 'Marauder', vocacao: 'knight', atributos: ['str'], armas: ['Two_Hand_Maces', 'Two_Hand_Axes', 'One_Hand_Maces', 'One_Hand_Axes'], secundaria: 'Shields',
+  barbaro: { nome: 'Bárbaro', classePoe: 'Marauder', vocacao: 'knight', atributos: ['str'], armas: ['Two_Hand_Maces', 'Two_Hand_Axes', 'One_Hand_Maces', 'One_Hand_Axes'], secundaria: 'Shields', aura: 'Determination',
     habilidades: [{ gema: 'Ground_Slam', suportes: ['Melee_Physical_Damage_Support', 'Brutality_Support'] }, { gema: 'Molten_Strike', suportes: ['Elemental_Damage_with_Attacks_Support', 'Faster_Attacks_Support'] }] },
-  arqueiro: { nome: 'Arqueiro', classePoe: 'Ranger', vocacao: 'paladin', atributos: ['dex'], armas: ['Bows'], secundaria: 'Quivers',
+  arqueiro: { nome: 'Arqueiro', classePoe: 'Ranger', vocacao: 'paladin', atributos: ['dex'], armas: ['Bows'], secundaria: 'Quivers', aura: 'Grace',
     habilidades: [{ gema: 'Split_Arrow', suportes: ['Vicious_Projectiles_Support', 'Faster_Attacks_Support'] }, { gema: 'Lightning_Arrow', suportes: ['Elemental_Damage_with_Attacks_Support', 'Faster_Attacks_Support'] }] },
-  piromante: { nome: 'Piromante', classePoe: 'Witch', vocacao: 'sorcerer', atributos: ['int'], armas: ['Wands'], secundaria: 'Shields',
+  piromante: { nome: 'Piromante', classePoe: 'Witch', vocacao: 'sorcerer', atributos: ['int'], armas: ['Wands'], secundaria: 'Shields', aura: 'Anger',
     habilidades: [{ gema: 'Fireball', suportes: ['Added_Fire_Damage_Support', 'Controlled_Destruction_Support'] }, { gema: 'Firestorm', suportes: ['Fire_Penetration_Support', 'Controlled_Destruction_Support'] }] },
-  criomante: { nome: 'Criomante', classePoe: 'Witch', vocacao: 'sorcerer', atributos: ['int'], armas: ['Wands'], secundaria: 'Shields',
+  criomante: { nome: 'Criomante', classePoe: 'Witch', vocacao: 'sorcerer', atributos: ['int'], armas: ['Wands'], secundaria: 'Shields', aura: 'Hatred',
     habilidades: [{ gema: 'Frostbolt', suportes: ['Added_Cold_Damage_Support', 'Controlled_Destruction_Support'] }, { gema: 'Ice_Nova', suportes: ['Cold_Penetration_Support', 'Controlled_Destruction_Support'] }] },
-  eletromante: { nome: 'Eletromante', classePoe: 'Templar', vocacao: 'druid', atributos: ['str', 'int'], armas: ['Sceptres', 'Staves'], secundaria: 'Shields',
+  eletromante: { nome: 'Eletromante', classePoe: 'Templar', vocacao: 'druid', atributos: ['str', 'int'], armas: ['Sceptres', 'Staves'], secundaria: 'Shields', aura: 'Wrath',
     habilidades: [{ gema: 'Spark', suportes: ['Controlled_Destruction_Support', 'Faster_Casting_Support'] }, { gema: 'Arc', suportes: ['Controlled_Destruction_Support', 'Added_Lightning_Damage_Support'] }] },
 });
 const NOMES = ['Arvel', 'Brenna', 'Caius', 'Dara', 'Elric', 'Fenna', 'Gisla', 'Hakon', 'Iselda', 'Jorund', 'Kaira', 'Lothar', 'Mira', 'Nyle', 'Orla', 'Petra', 'Rurik', 'Sabine', 'Tavin', 'Ulla', 'Varek', 'Wren', 'Yorra', 'Zoltan'];
@@ -196,9 +197,12 @@ export function estadoDoMercenario(merc, afDoDono = {}) {
   const a = ARQUETIPOS[merc.arquetipo] ?? ARQUETIPOS.espadachim;
   const base = R.statsBase(a.vocacao, merc.nivel);
   const doDono = { dmg_inc: Number(afDoDono.mercenario_dano_inc) || 0, life_inc: Number(afDoDono.mercenario_vida_inc) || 0 };
+  // (lote 39, P060: a aura dele vale nele — a ficha como uma peça a mais; os efeitos, como um reforço ligado na "caçada" dele)
+  const aura = auraDoMercenario(merc, afDoDono);
   const m = {
     sistema: 'poe', classePoe: a.classePoe, vocation: a.vocacao, level: merc.nivel, maxHp: base.maxHp, hp: base.maxHp, maxMana: base.maxMana, mana: base.maxMana,
-    equipment: { ...merc.equipment, ...(doDono.dmg_inc || doDono.life_inc ? { doDono: { poe: { af: doDono } } } : {}) }, inventory: [],
+    equipment: { ...merc.equipment, ...(doDono.dmg_inc || doDono.life_inc ? { doDono: { poe: { af: doDono } } } : {}), ...(aura && Object.keys(aura.af).length ? { aura: { poe: { af: aura.af } } } : {}) }, inventory: [],
+    ...(aura?.efeitos.length ? { hunt: { clock: 0, buffs: { [aura.acao]: { ate: Number.MAX_SAFE_INTEGER, efeitosPoe: aura.efeitos, fator: aura.fator } } } } : {}),
   };
   Ficha.invalidar(m);
   Afixos.sincronizarMaximos(m);
@@ -216,6 +220,23 @@ export function habilidades(merc) {
     return { gema: h.gema, acao: g.acao, itemId: g.itemId, nivel, suportes };
   }).filter(Boolean);
 }
+/**
+ * (lote 39, P060) A AURA do mercenário: a gema de aura do arquétipo no nível que o nível dele permite — a ficha (`af`) e os efeitos dela (o dano
+ * e o crítico das auras do jogo), × "Seu mercenário tem o efeito das auras não maldições das habilidades aumentado em X%" (`fator`). Vale
+ * nele (`estadoDoMercenario`) e em você enquanto ele vive (`Acoes.tiqueDoMercenario`: o `afDono` e os efeitos nos reforços). null sem aura.
+ */
+export function auraDoMercenario(merc, afDoDono = {}) {
+  const a = ARQUETIPOS[merc?.arquetipo];
+  const g = a?.aura ? GemasPoe.doSlug(a.aura) : null;
+  if (!g) return null;
+  const nivel = nivelDaGema(a.aura, merc.nivel);
+  const b = GemasPoe.buffNoNivel(a.aura, nivel);
+  if (!b) return null;
+  const fator = Math.max(0, 1 + (Number(afDoDono.mercenario_auras_inc) || 0) / 100);
+  const af = Object.fromEntries(Object.entries(b.af ?? {}).filter(([, v]) => typeof v === 'number').map(([k, v]) => [k, v * fator]));
+  return { gema: a.aura, acao: g.acao, nome: g.gema?.nome ?? a.aura, nivel, af, efeitos: b.efeitos ?? [], fator };
+}
+
 /** O mapa das gemas ativas do mercenário (o formato de `Gemas.skillsAtivas`) para o `efeitoNaSkill` — a gema e os suportes, sem encaixe. */
 export function ativasDoMercenario(merc) {
   const mapa = new Map();
@@ -242,6 +263,8 @@ function pagar(estado, valor) {
   return null;
 }
 const doContratado = (estado, id) => dados(estado).contratados.find((m) => m.id === id) ?? null;
+/** O contratado de id `id`, ou null (sem criar a parte do estado). */
+export const contratado = (estado, id) => estado?.mercenarios?.contratados?.find((m) => m.id === id) ?? null;
 const mudou = (merc) => { merc.v = (merc.v ?? 0) + 1; };
 
 /** O que o mercenário pede para vestir `peca` (o `meta` do catálogo) — a frase do que falta, ou null. */
