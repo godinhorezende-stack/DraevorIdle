@@ -478,6 +478,9 @@ export class Sessao {
     this.conta = null;
     this.personagem = null; // linha do banco
     this.estado = null; // estado quente (JSON já parseado)
+    // Quantas vezes a sessão largou o personagem (`soltarPersonagem`: o socket fechou, `release`, `logout`...). A entrada no personagem
+    // espera o banco: depois de cada `await` ela confere este número e, se mudou, foi abandonada no meio (ver `concluirEntrada`).
+    this.saidas = 0;
     // 100ms: rápido o bastante para o passo (R.PASSO_MS) parecer contínuo, sem
     // mandar `state` mais rápido do que o jogo original (~4x/s).
     /*
@@ -1892,7 +1895,11 @@ export class Sessao {
     if (this.carregando) return;
     // Manutenção com indisponibilidade (desligada por padrão): ninguém NOVO entra; a caçada offline segue correndo.
     if (Manutencao.bloqueada()) return this.erro(Manutencao.mensagemDeBloqueio());
+    // A conexão pode cair (ou o jogador sair) enquanto a entrada espera o banco: depois de cada `await`, a entrada abandonada para em
+    // silêncio — nada foi gravado nem mexido em outra sessão (ver `concluirEntrada`).
+    const saidas = this.saidas;
     let personagem = await B.personagemPorNome(name);
+    if (this.saidas !== saidas) return;
     if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
     // Do Draevor clássico, no jogo oficial: arquivado — não entra e NÃO é convertido (nada abaixo, nem a caçada offline, roda nele).
     if (Legado.arquivado(JSON.parse(personagem.estado))) return this.erroDeAuth(Legado.MENSAGEM_DO_ARQUIVADO);
@@ -1902,6 +1909,7 @@ export class Sessao {
     // tique deste personagem: sem isto, o tamanho da party ficaria "sem
     // nenhum slot comprado" até a próxima vez que algo lesse do banco.
     await B.lerMelhoriasDaConta(this.conta.id);
+    if (this.saidas !== saidas) return;
     // "Sem [o Slot de party], a conta joga e caça com até 2 chars" ao mesmo tempo.
     // Quem ainda está carregando (simulação offline) já conta.
     const limite = Party.limiteDeChars(this.conta.id);
@@ -1922,6 +1930,7 @@ export class Sessao {
       enviar(antiga.ws, { t: 'released', notice: 'Você entrou neste personagem em outra aba.' });
       // A outra aba acabou de gravar: a linha lida lá em cima já está velha.
       personagem = await B.personagemPorNome(name);
+      if (this.saidas !== saidas) return;
     }
 
     const estado = JSON.parse(personagem.estado);
@@ -2145,21 +2154,37 @@ export class Sessao {
 
   /** O resto da entrada, com o estado já com a ausência simulada (`ausencia`: o que `simularAusencia` devolveu). */
   async concluirEntrada(personagem, estado, ausencia) {
+    /*
+     * ---- A conexão pode cair durante os `await`s daqui ----
+     * Logo depois de um deploy todo mundo reconecta junto, e quem fecha a aba (ou perde a rede) no meio da entrada cai aqui. O personagem
+     * só entra na sessão (`this.estado`) depois dos `await`s: até lá o estado é só desta função, e uma saída no meio (`soltarPersonagem`)
+     * não tem o que gravar — a entrada para em silêncio e o banco fica como estava. A próxima entrada simula a ausência de novo, ou mostra
+     * o relatório que já estava gravado (`relatorioDaAusencia`, até o OK): nada se perde e nada se ganha duas vezes. (Antes ele entrava na
+     * sessão ANTES dos `await`s: a saída no meio gravava o estado já simulado SEM o relatório, que só entra lá embaixo, e a entrada seguia
+     * com `this.estado` nulo — 16/10: "Cannot read properties of null (reading 'relatorioDaAusencia')".)
+     * As leituras vêm primeiro; o crédito do Mercado e o presente, que SAEM do banco, por último (ver `gravarSemEntrar`).
+     */
+    const saidas = this.saidas;
+    const saiu = () => this.saidas !== saidas;
+    // Caçada de antes da campanha: vira a fase (barra e progresso), ou termina se a fase está fechada.
+    const daCampanha = Cacadas.adotarNaCampanha(estado);
+    const bauDaConta = await B.lerBauDaConta(this.conta.id);
+    if (saiu()) return;
+    const rankingDeExp = await Ranking.topo('exp');
+    if (saiu()) return;
+    estado.bauDaConta = Deposito.caixaDaConta(bauDaConta);
+    // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
+    const doMercado = await Mercado.receberCreditos(estado, personagem.id);
+    // Os presentes da equipe pendentes NA CONTA caem no personagem que entrou (ver `presentes.mjs`).
+    const doPresente = saiu() ? null : await Presentes.receberNaEntrada(estado, this.conta?.id, personagem.id);
+    if (saiu()) return doMercado || doPresente ? this.gravarSemEntrar(personagem, estado, ausencia) : undefined;
     this.personagem = personagem;
     this.estado = estado;
-    // Caçada de antes da campanha: vira a fase (barra e progresso), ou termina se a fase está fechada.
-    const daCampanha = Cacadas.adotarNaCampanha(this.estado);
     // Os bosses de fim de ato não têm mais recarga: o carimbo antigo (ex.: 72 h do The Primal Menace) não bloqueia mais nada (só o relógio some; progresso e vitórias ficam).
     Bosses.limparRecargasDeAto(this.estado);
-    this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
-    // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
-    const doMercado = await Mercado.receberCreditos(this.estado, personagem.id);
-    // Os presentes da equipe pendentes NA CONTA caem no personagem que entrou (ver `presentes.mjs`).
-    const doPresente = await Presentes.receberNaEntrada(this.estado, this.conta?.id, personagem.id);
     // Personagem que já estava acima da capacidade (loot de antes da regra):
     // o excesso vai para o depósito, com aviso no primeiro `state`.
     this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? ([doPresente, doMercado].filter(Boolean).join(' ') || null) ?? daCampanha;
-    const rankingDeExp = await Ranking.topo('exp');
     /*
      * ---- Nada de `state` antes do `welcome` ----
      * Daqui até o `welcome` é tudo síncrono (o ranking veio antes), e a sessão não manda estado: a volta à party (`entrouNoJogo` atualiza
@@ -2176,37 +2201,9 @@ export class Sessao {
     const naCacadaDoGrupo = Party.voltarParaACacadaJunta(this);
     if (naCacadaDoGrupo) this.avisoPendente = [this.avisoPendente, naCacadaDoGrupo].filter(Boolean).join(' ');
 
-    /*
-     * "Progresso enquanto você esteve fora" — `andamento`, no client — e, se
-     * morreu, a conta da morte (`morte`) NO MESMO relatório: uma janela só, com
-     * o que a caçada rendeu até a morte e o que a morte custou.
-     *
-     * O relatório fica gravado no personagem (`relatorioDaAusencia`) até o
-     * jogador dar OK (`ackAusencia`). O loot e a morte já foram aplicados ao
-     * estado aqui; o que fica pendente é só o AVISO — então reconectar,
-     * atualizar a página ou perder a rede antes do OK mostra o mesmo relatório
-     * de novo, sem refazer nem duplicar nenhuma recompensa.
-     */
-    let andamento = null;
-    let morteDaAusencia = null;
-    if (ausencia) {
-      andamento = ausencia.report;
-      if (ausencia.morreu) {
-        const morte = this.morrerNaHunt();
-        morteDaAusencia = morte;
-        andamento.motivo =
-          `Você morreu caçando enquanto estava fora e perdeu ${morte.lost.toLocaleString('pt-BR')} de experiência` +
-          `${morte.goldLost ? ` e ${morte.goldLost.toLocaleString('pt-BR')} de ouro` : ''}` +
-          `${morte.levelPerdido ? ` (caiu ${morte.levelPerdido} level)` : ''}.`;
-      }
-      this.estado.relatorioDaAusencia = { report: andamento, morte: morteDaAusencia, em: Date.now() };
-      // Grava já: o aviso e o estado já mexido vão juntos para o banco, e a janela de perder o aviso encolhe.
-      this.gravarAgora().catch((e) => console.error('gravar relatório da ausência', e.message));
-    } else if (this.estado.relatorioDaAusencia) {
-      // Entrou de novo sem ter dado OK: o mesmo relatório, como estava.
-      andamento = this.estado.relatorioDaAusencia.report;
-      morteDaAusencia = this.estado.relatorioDaAusencia.morte ?? null;
-    }
+    const { andamento, morte: morteDaAusencia, novo } = this.relatorioDaAusenciaNaEntrada(ausencia);
+    // Grava já: o aviso e o estado já mexido vão juntos para o banco, e a janela de perder o aviso encolhe.
+    if (novo) this.gravarAgora().catch((e) => console.error('gravar relatório da ausência', e.message));
 
     const completo = characterParaCliente(personagem, this.estado);
     this.lembrarCharacter(completo);
@@ -2251,8 +2248,59 @@ export class Sessao {
     });
     // A lista de amigos logo depois do welcome, como o original; e os amigos
     // online veem a bolinha dele acender.
-    this.enviar(await Amigos.lista(personagem.nome));
+    const amigos = await Amigos.lista(personagem.nome);
+    // Já entrou: quem caiu enquanto a lista vinha saiu pelo caminho de sempre (`soltarPersonagem` gravou e apagou a bolinha).
+    if (saiu()) return;
+    this.enviar(amigos);
     Amigos.mudouPresenca(personagem.nome).catch((e) => console.error('amigos mudouPresenca', e.message));
+  }
+
+  /*
+   * "Progresso enquanto você esteve fora" — `andamento`, no client — e, se
+   * morreu, a conta da morte (`morte`) NO MESMO relatório: uma janela só, com
+   * o que a caçada rendeu até a morte e o que a morte custou.
+   *
+   * O relatório fica gravado no personagem (`relatorioDaAusencia`) até o
+   * jogador dar OK (`ackAusencia`). O loot e a morte já foram aplicados ao
+   * estado aqui; o que fica pendente é só o AVISO — então reconectar,
+   * atualizar a página ou perder a rede antes do OK mostra o mesmo relatório
+   * de novo, sem refazer nem duplicar nenhuma recompensa.
+   *
+   * No estado que acabou de entrar (`this.estado`). `{ andamento, morte, novo }` — `novo`: o relatório desta entrada, ainda não gravado.
+   */
+  relatorioDaAusenciaNaEntrada(ausencia) {
+    if (!ausencia) {
+      // Entrou de novo sem ter dado OK: o mesmo relatório, como estava.
+      const pendente = this.estado.relatorioDaAusencia;
+      return { andamento: pendente?.report ?? null, morte: pendente?.morte ?? null, novo: false };
+    }
+    const andamento = ausencia.report;
+    let morte = null;
+    if (ausencia.morreu) {
+      morte = this.morrerNaHunt();
+      andamento.motivo =
+        `Você morreu caçando enquanto estava fora e perdeu ${morte.lost.toLocaleString('pt-BR')} de experiência` +
+        `${morte.goldLost ? ` e ${morte.goldLost.toLocaleString('pt-BR')} de ouro` : ''}` +
+        `${morte.levelPerdido ? ` (caiu ${morte.levelPerdido} level)` : ''}.`;
+    }
+    this.estado.relatorioDaAusencia = { report: andamento, morte, em: Date.now() };
+    return { andamento, morte, novo: true };
+  }
+
+  /**
+   * A entrada foi abandonada DEPOIS de o Mercado ou o presente ter entregado algo ao estado que entrava (ver `concluirEntrada`): aquilo
+   * já saiu do banco, então o estado não pode ser jogado fora. Ele é gravado como numa entrada seguida da saída — com o relatório da
+   * ausência (e a morte, se houve) e a caçada seguindo offline (`gravarAgora`) —, sem o personagem entrar no jogo: nem em `vivas`, nem na
+   * party, nem `welcome`.
+   */
+  gravarSemEntrar(personagem, estado, ausencia) {
+    this.personagem = personagem;
+    this.estado = estado;
+    this.relatorioDaAusenciaNaEntrada(ausencia);
+    const gravando = this.gravarAgora().catch((e) => console.error('gravar a entrada abandonada', personagem.nome, '->', e.message));
+    this.personagem = null;
+    this.estado = null;
+    return gravando;
   }
 
   /*
@@ -2277,6 +2325,8 @@ export class Sessao {
   }
 
   soltarPersonagem() {
+    // Uma entrada no meio (esperando o banco) vê o número mudar e para — ver `concluirEntrada`.
+    this.saidas++;
     // Saiu no meio da simulação offline: nada foi gravado ainda, só descarta.
     if (this.carregando) this.cancelarCarregamento();
     if (!this.personagem) return;
