@@ -41,6 +41,28 @@ export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0) {
   lista.push({ x: h.pos.x, y: h.pos.y, raio: SOLO_SAGRADO.raio, ate: agora + segundos * 1000 });
   h.solosSagrados = lista.slice(-SOLO_SAGRADO.maximo);
 }
+/**
+ * (lote 41, P032 — dono, 16/10: "Fazer todos") As ÁREAS FRIAS do PoE (as "Chilling Areas": o Solo Gelado, as áreas da Geada Rastejante e do
+ * Golpe Frio, o Vórtice — o poedb, Algor Mortis): as gemas que as criam deixam no chão uma área — o raio em metros da gema (1 casa = 2 m), pela
+ * duração dela —, e quem está dentro fica Resfriado ("Unless otherwise specified chilled ground slows for 10%" — `cacadas.resfriarNasAreasFrias`,
+ * no tique). É o que a Geada Cortante lê ("Inimigos nas suas áreas frias sofrem dano de frio aumentado pelo esfriamento" — o Resfriamento).
+ */
+export const AREAS_FRIAS = Object.freeze({
+  efeitoPct: 10,
+  maximo: 12,
+  porGema: Object.freeze({
+    Frostblink: { raioM: 2 }, Creeping_Frost: { raioM: 2, noAlvo: true }, Cold_Snap: { raioM: 3 }, Vaal_Cold_Snap: { raioM: 3.6 }, Vortex: { raioM: 2.3 },
+    Frost_Blades_of_Katabasis: { raioM: 2, noAlvo: true },
+  }),
+});
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0 }) {
+  if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
+  const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora);
+  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000) });
+  h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
+}
+/** O bicho está numa das suas áreas frias agora? */
+export const naAreaFria = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
 /** (lote G) A POSTURA: a da Areia enquanto o buff da gema Sangue e Areia está ligado; senão a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue"). */
 export const posturaDe = (h, agora = h?.clock ?? 0) => (Object.entries(h?.buffs ?? {}).some(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id)) ? 'areia' : 'sangue');
 /**

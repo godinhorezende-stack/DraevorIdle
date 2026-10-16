@@ -1915,10 +1915,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "os monstros só batem nos lacaios de perto: o golpe de um monstro que conjura magias conta como magia",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote41": "16/10 — lote 41 (dono: \"Fazer todos\" — os limites do motor)"
     },
     {
       "padrao": "^Lacaios tem \\{(\\d+)\\}% de Redução de Dano Físico adicional$",
@@ -6328,10 +6327,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto",
       "_nova": true,
-      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)",
+      "_lote41": "16/10 — lote 41 (dono: \"Fazer todos\" — os limites do motor)"
     },
     {
       "padrao": "^Arqueiros Ilusórios não são grudados em você$|^Não pode Convocar Arqueiros Ilusórios enquanto próximo dos seus Arqueiros Ilusórios$",
@@ -8589,10 +8587,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o jogo não tem áreas frias no chão: vale o Resfriamento no inimigo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote41": "16/10 — lote 41 (dono: \"Fazer todos\" — os limites do motor)"
     },
     {
       "padrao": "^\\+?\\{(\\d+)\\}% de Chance de Bloqueio Mágico para cada \\{(\\d+)\\}% de Chance de Bloqueio do Dano de Ataques Excedente$",
@@ -34915,9 +34912,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "vira a chance de bloqueio do lacaio (o jogo não separa a de magia).",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 2)",
+      "_lote41": "16/10 — lote 41 (dono: \"Fazer todos\" — os limites do motor)"
     },
     {
       "padrao": "^Lacaios ganham \\{(\\d+)\\}% do Dano Físico como Dano de (?:Caos|Fogo) Extra$",

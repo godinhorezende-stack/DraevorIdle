@@ -75,6 +75,7 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Poderes from './poderes.mjs';
+import * as Reforcos from './skills/reforcos.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Areas from '../engine/areas.mjs';
@@ -2147,6 +2148,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
   // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções; (o Luminary) o mercenário
   if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDoMercenario(estado, hunt, agora); }
+  // (lote 41, P032) as suas ÁREAS FRIAS: quem está dentro fica Resfriado (`resfriarNasAreasFrias`)
+  if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt);
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
@@ -2424,6 +2427,52 @@ export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo 
  * Físico de Ataques causado pelos seus Totens é Drenado como Vida para você" — o golpe FÍSICO de uma gema de ATAQUE drena para o dono, com as
  * regras do dreno do PoE (`Ficha.drenarPoe`). Devolve os eventos.
  */
+/**
+ * (lote 41, P019) A MAGIA do monstro no LACAIO (`Poderes.lancar` escolhe o lacaio mais perto do bicho que você): o dano da magia e os de outros
+ * tipos dela, com a força do bicho, pelas resistências do lacaio (no teto delas) e o "Lacaios sofrem Dano aumentado/reduzido"; o BLOQUEIO
+ * MÁGICO dele ("Lacaios tem +X% de Chance de Bloquear o Dano Mágico", o das suas auras de aliado, a Oferenda Óssea), a Redução de Dano Física e
+ * o escudo (`LacaiosPoe.danoNoLacaio`); o Vínculo nele, a Fortificação de aliado e o recupera do mercenário, como no golpe corpo a corpo.
+ */
+export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha }) {
+  const relogio = hunt.clock ?? agora;
+  const efeito = a.efeito ?? Poderes.EFEITO_PADRAO?.[a.elemento] ?? 10;
+  if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: l.x, ty: l.y });
+  eventos.push({ t: 'fx', id: efeito, x: l.x, y: l.y });
+  const aliado = itensPoeLigado() ? Aliados.doLacaio(estado, ficha.afPoe, ModsPoe.fortificacao(estado, ficha.afPoe)) : null;
+  const oferenda = l.oferenda && l.oferenda.ate > relogio ? l.oferenda : null;
+  const vinculo = Vinculos.doLacaio(hunt, l, relogio);
+  const forca = Reforcos.forcaDoBicho(bicho, agora) * ModsPoe.doBicho(bicho, relogio, { contraOutro: true }).danoFator * Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100);
+  const teto = LacaiosPoe.tetoDaResDoLacaio(l);
+  const elemental = (el) => ['fire', 'ice', 'energy'].includes(el);
+  const res = (el) => (el === 'chaos' ? l.poe?.resCaos ?? 0 : elemental(el) ? resDoLacaio(l, el, aliado) : 0);
+  let fisico = 0;
+  let outros = 0;
+  for (const p of [{ elemento: a.elemento, min: a.min, max: a.max }, ...AtributosDoMob.danoExtraDoGolpe(null, a)]) {
+    if (l.poe?.imuneElemental && elemental(p.elemento)) continue;
+    const v = ((p.min ?? 0) + Math.random() * Math.max(0, (p.max ?? 0) - (p.min ?? 0))) * forca;
+    if (p.elemento === 'physical') fisico += v;
+    else outros += v * (1 - Math.min(teto, res(p.elemento)) / 100);
+  }
+  const { dano, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico, outros, magia: true, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0) }) : { dano: fisico + outros, bloqueou: false };
+  if (bloqueou) {
+    l.bloqueouEm = relogio;
+    eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true });
+    return 0;
+  }
+  let sofrido = dano;
+  if (vinculo?.menosDano > 0) sofrido *= Math.max(0, 1 - vinculo.menosDano / 100);
+  if (aliado?.fortificacao > 0) sofrido *= Math.max(0, 1 - aliado.fortificacao / 100);
+  if (vinculo?.escudoPct > 0 && (estado.es ?? 0) > 0) { const parte = Math.min(estado.es, (sofrido * vinculo.escudoPct) / 100); estado.es -= parte; sofrido -= parte; }
+  if (!(sofrido > 0)) return 0;
+  const d = Math.max(1, Math.round(sofrido));
+  l.hp -= d;
+  eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: bicho.name, color: '#ff8a8a' });
+  const recupera = l.mercenario && l.hp > 0 && l.hp < (estado.hp ?? 0) ? Number(ficha.afPoe?.mercenario_recupera_pct) || 0 : 0;
+  if (recupera > 0) (l.recoup ??= []).push({ porMs: (d * recupera) / 100 / ModsPoe.RECUPERACAO_MS, ate: relogio + ModsPoe.RECUPERACAO_MS });
+  return d;
+}
+Poderes.definirMagiaNoLacaio(magiaNoLacaio);
+
 // O empalamento solto passa pela Redução de Dano Físico do monstro (`mods-poe.aoAcertar`): a resistência física e a redução de dano dele.
 ModsPoe.definirReducaoFisica((hunt, alvo, valor) => resistido(hunt, alvo, 'physical', valor, null, { armadura: false }));
 // (lote 31, P044) A EXPLOSÃO do morto nos vizinhos: a defesa de cada um (a armadura no físico, a resistência do tipo, os estados dele) — sem os
@@ -2464,6 +2513,22 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
     }
   }
   return eventos;
+}
+
+/**
+ * (lote 41, P032) As suas ÁREAS FRIAS (`ModsPoe.criarAreaFria`): cada monstro dentro de uma fica Resfriado — o efeito do Solo Gelado do PoE
+ * (10%), pelo caminho de sempre do Resfriamento (o chefe, o teto e a duração — `Estados.aplicar`); só renova o que está para acabar. As vencidas
+ * saem.
+ */
+export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0) {
+  hunt.areasFrias = (hunt.areasFrias ?? []).filter((a) => a.ate > agora);
+  if (!hunt.areasFrias.length) return;
+  for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy || !ModsPoe.naAreaFria(hunt, m, agora)) continue;
+    const l = m.estados?.lento;
+    if (l && l.ate - agora > 1000 && l.pct >= ModsPoe.AREAS_FRIAS.efeitoPct) continue;
+    Estados.aplicar(m, { lentidaoPct: ModsPoe.AREAS_FRIAS.efeitoPct }, 1, agora, Math.random, !!hunt.isBoss);
+  }
 }
 
 /**
@@ -2532,8 +2597,9 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // (14/10: os Robôs Ativadores não tomam dano — `intocavel`)
     for (const b of l.intocavel ? [] : hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
-      // (ciclo 7) o golpe de um monstro CONJURADOR (que tem magias) conta como magia no lacaio: o bloqueio mágico dele.
-      const magia = (Poderes.poderesDe(b.key)?.ataques ?? []).some((a) => a.tipo === 'magia');
+      // (lote 41, P019: o golpe corpo a corpo é ATAQUE — as magias do bicho vão de verdade no lacaio, `Poderes.lancar` → `magiaNoLacaio`; antes,
+      // o golpe de um conjurador contava como magia)
+      const magia = false;
       // A Oferenda de Osso: o lacaio bloqueia o golpe (o de ataque; + "Lacaios Recuperam X% de suas Vidas quando Bloqueiam" — `lacaioBloqueia`).
       if (!magia && lacaioBloqueia(l, oferenda, eventos, Math.random, vinculo, aliado?.bloqueio ?? 0)) { l.bloqueouEm = agora; continue; }
       // (PoE: o golpe do bicho com o dano de outros tipos dele passando pelas resistências do lacaio — no teto delas —, e o "Lacaios sofrem

@@ -201,6 +201,11 @@ const IMPLEMENTADOS = [
     re: /Baús próximos quando você Conjurar|Inimigos Próximos$|Furtividade aumentada em \d+% caso|Alcance do Ricochete aumentado/,
     jogo: 'os raios que o PoE não publica viram exceções registradas ("Manter e registrar": os baús a até 4 casas, os "Próximos" a até 2 casas, a Furtividade ÷ (1 + X%)); o salto do ricochete das gemas do PoE pelo PoE 2 ("Ricochete pelo PoE 2": 6 m no projétil, 4 m nas outras cadeias, × o aumento em metros)',
   },
+  {
+    bloco: 'Zerar a árvore — lote 41 (os limites do motor: as áreas frias, o local anterior do Golpe, as magias nos lacaios)',
+    re: /suas áreas frias|local anterior que foram Usadas|Lacaios tem \+?\d+% de Chance de Bloquear o Dano Mágico/,
+    jogo: 'as ÁREAS FRIAS das suas gemas de frio (o Solo Gelado: dentro, Resfriado 10% — a Geada Cortante lê); a Fúria Ancestral acerta quem está no local do uso anterior do Golpe; as MAGIAS dos monstros vão no lacaio mais perto deles que você, e o bloqueio mágico do lacaio vale (o golpe corpo a corpo do conjurador é ataque)',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

@@ -111,10 +111,12 @@ test('"DIREÇÕES ALEATÓRIAS" (os extras em bichos sorteados) e "BARRAGENS NÃO
   assert.ok(projeteis.every((g) => g.bicho.uid === 'alvo'));
 });
 
-test('"HABILIDADES DE GOLPE também miram no local anterior": a gema de Golpear pega mais um inimigo perto', { skip: SEM }, () => {
+// (o dono, 16/10 — lote 41, "Fazer todos": o Golpe acerta o LOCAL do uso anterior de verdade — `zerar-arvore-lote41`; antes, a aproximação de
+// um inimigo a mais perto, que este teste conferia.)
+test('"HABILIDADES DE GOLPE também miram no local anterior": não é mais um alvo a mais perto (o local anterior — o lote 41)', { skip: SEM }, () => {
   const com = personagem({ golpe_local_anterior: 1 }, ['Heavy_Strike']);
   const sem = personagem({}, ['Heavy_Strike']);
   const entry = Acoes.POR_ID_PUBLICO(G.doSlug('Heavy_Strike').acao);
   const extras = (e) => Acoes.comOsAlvosDaGema(entry, GS.efeitoNaSkill(e, entry.id), e).alvosExtras ?? 0;
-  assert.equal(extras(com) - extras(sem), 1);
+  assert.equal(extras(com) - extras(sem), 0);
 });
