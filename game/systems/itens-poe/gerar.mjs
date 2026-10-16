@@ -126,7 +126,15 @@ export function modificadoresDoUnico(u, rng, manter = null) {
   const s = u.implicitosSorteados;
   const sai = (m) => s && m.tipo === 'implicit' && m.modelo === s.substitui && !manter?.has(m.modelo);
   const ls = u.linhasSorteadas;
+  const ns = u.nomeSorteado;
   return u.modificadores.filter((m) => !sai(m)).flatMap((m) => {
+    // (lote 56) o NOME sorteado: a marcação "Passive Skill" vira a pedra fundamental / o notável (o Orbe Divino mantém o que a peça tem)
+    if (ns?.nomes?.length && m.modelo.includes(ns.marca)) {
+      const molde = new RegExp(`^${escaparRe(m.modelo).replace(escaparRe(ns.marca), '(.+)')}$`);
+      const ja = manter ? [...manter].map((x) => molde.exec(x)).find(Boolean) : null;
+      const nome = ja ? ja[1] : ns.nomes[Math.floor(rng() * ns.nomes.length)];
+      return [{ tipo: m.tipo, ...rolarTexto({ ...m, modelo: m.modelo.replace(ns.marca, nome) }, rng) }];
+    }
     const n = ls?.substitui?.[m.modelo];
     if (!n) return [{ tipo: m.tipo, ...rolarTexto(m, rng) }];
     // (lote 55, J31) a linha de marcação ("[Two random aura modifiers]") vira N linhas do pool da única (`linhas-sorteadas.json`), sem repetir e com
@@ -135,6 +143,7 @@ export function modificadoresDoUnico(u, rng, manter = null) {
     return (ja.length ? ja.slice(0, n) : linhasDoPool(ls.linhas, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
   });
 }
+const escaparRe = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** (lote 55) N linhas distintas do pool, com a mesma chance. */
 export function linhasDoPool(linhas, n, rng) {
   const resto = [...linhas];

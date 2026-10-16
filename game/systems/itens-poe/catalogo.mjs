@@ -86,7 +86,14 @@ const ARQUIVO_DAS_LINHAS_SORTEADAS = new URL('../../gamedata/itens-poe/linhas-so
 function linhasSorteadas(cat) {
   if (!existsSync(ARQUIVO_DAS_LINHAS_SORTEADAS)) return;
   const { unicos = {} } = JSON.parse(readFileSync(ARQUIVO_DAS_LINHAS_SORTEADAS, 'utf8'));
-  for (const [slug, s] of Object.entries(unicos)) for (const u of cat.classes[s.classe]?.unicos ?? []) if (u.slug === slug) u.linhasSorteadas = { substitui: s.substitui, linhas: s.linhas };
+  for (const [slug, s] of Object.entries(unicos)) {
+    for (const u of cat.classes[s.classe]?.unicos ?? []) {
+      if (u.slug !== slug) continue;
+      if (s.linhas) u.linhasSorteadas = { substitui: s.substitui, linhas: s.linhas };
+      // (lote 56) o NOME sorteado da marcação "Passive Skill" (a Fuga Impossível, a Chama/Carne Proibida)
+      if (s.nomeSorteado) u.nomeSorteado = s.nomeSorteado;
+    }
+  }
 }
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
 // refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).

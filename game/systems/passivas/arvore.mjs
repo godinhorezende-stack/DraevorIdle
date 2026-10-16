@@ -24,7 +24,7 @@ import { readFileSync } from 'node:fs';
 import * as Keystones from './keystones.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
-import { definirLeitorDeMaestrias, definirLeitorDeJoias } from '../itens-poe/condicoes-poe.mjs';
+import { definirLeitorDeMaestrias, definirLeitorDeJoias, slugDoNome } from '../itens-poe/condicoes-poe.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -125,6 +125,7 @@ export function usarArvore(nova) {
   ARVORE = nova.porId ? nova : preparar(nova);
   CACHE = new WeakMap();
   NO_RAIO.clear();
+  PEDRAS = null;
   return antes;
 }
 
@@ -788,11 +789,40 @@ function efeitosNoRaio(no, efs, joias) {
 export function liberadosPorJoias(estado, semEncaixes = null) {
   const lista = new Map();
   for (const { no: s, peca } of joiasAtivas(estado)) {
-    if (semEncaixes?.has(s.id) || !(v0(peca.poe?.af, 'raio_aloca_sem_conexao') > 0)) continue;
+    if (semEncaixes?.has(s.id)) continue;
     const r = raioDaJoia(peca);
-    if (r) for (const n of passivasNoRaio(s, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+    if (r && v0(peca.poe?.af, 'raio_aloca_sem_conexao') > 0) for (const n of passivasNoRaio(s, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+    // (lote 56, a Fuga Impossível: "Habilidades passivas ao alcance de <Pedra Fundamental> podem ser atribuídas sem estarem conectadas à sua
+    // árvore") — o raio da joia em volta da PEDRA FUNDAMENTAL sorteada, não do encaixe (`fuga_impossivel:<pedra>`)
+    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) {
+      const pedra = r && v > 0 && k.startsWith('fuga_impossivel:') ? PEDRA_PELO_SLUG().get(k.slice('fuga_impossivel:'.length)) : null;
+      if (pedra) for (const n of passivasNoRaio(pedra, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+    }
   }
   return lista;
+}
+/** (lote 56) As pedras fundamentais da árvore pelo nome (`slugDoNome` — a chave da Fuga Impossível). */
+let PEDRAS = null;
+const PEDRA_PELO_SLUG = () => (PEDRAS ??= new Map(ARVORE.nos.filter((n) => n.tipo === 'keystone' && !n.ascendencia).map((n) => [slugDoNome(n.nome), n])));
+/**
+ * (lote 56) A CHAMA PROIBIDA e a CARNE PROIBIDA: "Aloca <Notável> se você possuir o modificador correspondente na Carne/Chama Proibida" — com as
+ * duas encaixadas e o MESMO notável de ascendência nelas, ele vale como alocado; no PoE as joias pedem a classe do notável — aqui, o notável de uma
+ * ascendência da sua classe (de qualquer uma dela, como no PoE). Os ids dos notáveis (fora os já alocados).
+ */
+export function alocadosPelasProibidas(estado) {
+  const chama = new Set();
+  const carne = new Set();
+  for (const { peca } of joiasAtivas(estado)) {
+    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) {
+      if (!(v > 0)) continue;
+      if (k.startsWith('proibida_chama:')) chama.add(k.slice('proibida_chama:'.length));
+      if (k.startsWith('proibida_carne:')) carne.add(k.slice('proibida_carne:'.length));
+    }
+  }
+  if (!chama.size || !carne.size) return [];
+  const classe = classeDe(estado);
+  const meus = new Set(estado?.passivas?.alocados ?? []);
+  return ARVORE.nos.filter((n) => n.ascendencia && n.tipo === 'notable' && ARVORE.ascendencias?.[n.ascendencia]?.classe === classe && !meus.has(n.id) && chama.has(slugDoNome(n.nome)) && carne.has(slugDoNome(n.nome))).map((n) => n.id);
 }
 
 // --------------------------------------------------------------- os efeitos
@@ -828,7 +858,8 @@ export function efeitos(estado) {
     if (ef.tag) { r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano; fonte(ef.tag, 'Joia (raio)', ef.dano); }
     else if (ef.stat) { r.stats[ef.stat] = (r.stats[ef.stat] ?? 0) + ef.pct; fonte(ef.stat, 'Joia (raio)', ef.pct); }
   }
-  for (const id of alocados) {
+  // (lote 56) + os notáveis de ascendência que a Chama e a Carne Proibida alocam
+  for (const id of [...alocados, ...alocadosPelasProibidas(estado)]) {
     const no = ARVORE.porId.get(id);
     if (!no) continue;
     if (no.dominio) r.dominios[no.dominio] = (r.dominios[no.dominio] ?? 0) + 1;

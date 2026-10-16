@@ -1609,8 +1609,19 @@ export function buffsAtivos(hunt, estado = null) {
 export function desligarAurasForaDaBarra(estado, hunt) {
   if (!Object.values(hunt?.buffs ?? {}).some((b) => b?.reserva)) return false;
   const ativas = Gemas.skillsAtivas(estado);
-  return Reserva.desligarAsQueSairam(hunt, (id) => (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id));
+  const so = itensPoeLigado() ? auraPermitida(Ficha.combate(estado)) : null;
+  return Reserva.desligarAsQueSairam(hunt, (id) => (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id) && !auraDesabilitada(POR_ID.get(id), so));
 }
+/**
+ * (lote 56, a Visão Sublime) "Habilidades de Aura diferentes de <Aura> são Desabilitadas": as auras permitidas pela ficha (`aura_unica:<o nome da
+ * gema>` — o conjunto dos nomes), ou null sem a linha. A aura de gema fora dele não liga (`disparar`) e a ligada sai no tique
+ * (`desligarAurasForaDaBarra`).
+ */
+export function auraPermitida(ficha) {
+  const so = Object.entries(ficha?.afPoe ?? {}).filter(([k, v]) => k.startsWith('aura_unica:') && v > 0).map(([k]) => k.slice('aura_unica:'.length));
+  return so.length ? new Set(so) : null;
+}
+const auraDesabilitada = (entry, so) => !!so && !!entry?.poeGema && GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tipos?.includes('Aura') && !so.has(ModsPoe.slugDoNome(GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? ''));
 
 /**
  * As marcas da maldição com o "X% menos Efeito de Maldições Suportadas" da Blasfêmia (`efeitoMaldicaoPct`) e (09/10) o EFEITO das maldições
@@ -2243,6 +2254,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (+ "Habilidades de maldição com aura reservam vida em vez de mana": a maldição em aura — a Blasfêmia.)
   const reservaEmVida = !!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(fichaDoCusto, 'keystone_magia_sanguinea') > 0 || (Reserva.ehMaldicaoEmAura(entry, efeitoDaGema) && ModsPoe.valor(fichaDoCusto, 'maldicao_aura_reserva_vida') > 0);
   const reserva = Reserva.pedida(estado, entry, efeitoDaGema, fichaDoCusto, reservaEmVida);
+  // (lote 56, a Visão Sublime: "Habilidades de Aura diferentes de <Aura> são Desabilitadas")
+  if (itensPoeLigado() && auraDesabilitada(entry, auraPermitida(fichaDoCusto))) return { ok: false, erro: `${entry.name} está Desabilitada (Visão Sublime).`, motivo: 'AURA_DESABILITADA' };
   if (reserva && !Reserva.cabe(estado, entry.id, reserva)) {
     return { ok: false, erro: `Sem ${reserva.recurso} livre para reservar: ${entry.name} reserva ${reserva.valor}.`, motivo: 'RESERVA' };
   }

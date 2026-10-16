@@ -251,7 +251,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(afetadoPorAbissal|afetadoPor|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
+const COND_COM_PARAMETRO = /^(afetadoPorAbissal|afetadoPor|maiorAtributo|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -513,6 +513,9 @@ export function vale(conds, c) {
     // "se você tiver ao menos N Maestrias de Vida alocadas": `maestriasDe:Vida:N` (a árvore registra quem conta — `definirLeitorDeMaestrias`).
     case 'maestriasDe': return (leitorDeMaestrias?.(estado, resto[0]) ?? 0) >= Number(resto[1]);
     case 'atrMaior': return (principais?.[resto[0]] ?? 0) > (principais?.[resto[1]] ?? 0);
+    // (lote 56, a Doutrina Racional) "se a Força for seu maior Atributo": `maiorAtributo:str` — ele não perde para nenhum dos outros (o empate vale,
+    // como o PoB: o atributo igual ao maior)
+    case 'maiorAtributo': { const a = principais?.[resto[0]] ?? 0; return ['str', 'dex', 'int'].every((k) => (principais?.[k] ?? 0) <= a); }
     case 'buff': return buffAtivo(estado, resto[0], total);
     case 'semBuff': return !buffAtivo(estado, resto[0], total);
     // ("se a Vida Máxima e Mana Máxima estiverem dentro de N": a diferença entre elas.)
@@ -1857,7 +1860,9 @@ export function gemaConhecida(slug) { return conhecePelaGema ? conhecePelaGema(s
 // eslint-disable-next-line no-var
 var acaoPeloNome;
 export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
-const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|keystone):[\w-]+$/;
+// (lote 56: + `aura_unica:<gema>` — a Visão Sublime, "Habilidades de Aura diferentes de <Aura> são Desabilitadas" — `acoes.auraPermitida`)
+// (+ lote 56: `fuga_impossivel:<pedra>` e `proibida_chama:<notável>` / `proibida_carne:<notável>` — `passivas/arvore`)
+const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
 const TIPOS_DE_LACAIO = '(zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|qualquer)';

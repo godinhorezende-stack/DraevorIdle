@@ -322,9 +322,10 @@ const GRUPOS_DE_JOIA = [
 const loteDa = (slug, grupo) => (grupo === 'Atemporais' ? 'Atemporais (as tabelas do PoB, com a autorização do download)' : grupo === 'Ramificadoras' ? 'Ramificadoras (raspar os encantamentos e notáveis no poedb)' : LOTE_PREVISTO.find(([re]) => re.test(slug))?.[1] ?? 'lote 30 — as outras linhas dos únicos de joia');
 
 /** (lote 55) O pool das linhas sorteadas da única: `{ total, efeito, inertes: [nota], sem: [modelo] }`. */
-function poolDasSorteadas(T, u) {
+function poolDasSorteadas(T, u, doImplicito = false) {
   const r = { total: 0, efeito: 0, inertes: [], sem: [] };
-  for (const l of u.linhasSorteadas?.linhas ?? []) {
+  const linhas = doImplicito ? (u.implicitosSorteados?.grupos ?? []).flatMap((g) => g.tiers ?? []) : u.linhasSorteadas?.linhas ?? [];
+  for (const l of linhas) {
     const t = T.traduzirMod({ modelo: l.modelo, valores: (l.faixas ?? []).map((x) => x[0]) });
     r.total++;
     if (['equivalente', 'novo', 'aproximado'].includes(t.estado)) r.efeito++;
@@ -368,8 +369,10 @@ async function secaoDasJoias() {
         for (const m of u.modificadores) {
           // (lote 55, J31) a linha de MARCAÇÃO das sorteadas ("[Two random aura modifiers]"): vale pelo pool da única (`linhasSorteadas`) — com
           // efeito quando nenhuma linha do pool fica sem regra (as inertes do pool têm o porquê no balão).
-          if (u.linhasSorteadas?.substitui?.[m.modelo]) {
-            const pool = poolDasSorteadas(T, u);
+          // (lote 56: + os IMPLÍCITOS sorteados — a Doutrina Racional, os de Síntese da base: `implicitosSorteados.grupos`)
+          const doImplicito = u.implicitosSorteados?.substitui === m.modelo;
+          if (u.linhasSorteadas?.substitui?.[m.modelo] || doImplicito) {
+            const pool = poolDasSorteadas(T, u, doImplicito);
             conta.total++;
             if (!pool.sem.length) conta.efeito++;
             else { conta.sem++; faltam.push({ grupo, unica: u.nome, slug: u.slug, texto: m.texto, nota: `${pool.sem.length} das ${pool.total} linhas do pool sem efeito` }); }

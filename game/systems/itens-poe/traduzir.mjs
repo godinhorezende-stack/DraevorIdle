@@ -101,7 +101,8 @@ export function traduzirParte(parte, valores, opcoes = {}) {
     // diz ('equivalente'/'aproximado'), ou 'novo'.
     const soDoDraevor = efeitos.every((e) => FICHAS[e.stat]);
     // A gema nomeada não está na coleção do jogo: o mod não tem como agir (o balão explica).
-    if (r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDaGema(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
+    // (lote 56: `nomeLivre` — o nome não é de gema: a pedra fundamental da Fuga Impossível, o notável da Chama/Carne Proibida)
+    if (!r.nomeLivre && r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDaGema(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
     const estado = !efeitos.every(temEfeito) ? 'registrado' : soDoDraevor ? r.estado ?? 'equivalente' : r._nova && r.estado && r.estado !== 'novo' ? r.estado : 'novo';
     return { estado, efeitos, nota: r.nota ?? null, regra: r.i };
   }
@@ -195,6 +196,8 @@ const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? caso você tenha ao menos \{(\d+)\} de Escudo de Energia Máximo$/, (m, valores) => `escudoMin:${Number(valores[Number(m[2])]) || 0}`],
   // (lote 48, as Atemporais: a Fé Militante) "enquanto/se você tiver pelo menos N de Devoção" — a soma da Devoção (`devocao`)
   [/^(.+?),? (?:enquanto|se) você tiver pelo menos \{(\d+)\} de Devoção$/, (m, valores) => `devocaoMin:${Number(valores[Number(m[2])]) || 0}`],
+  // (lote 56, a Doutrina Racional) "se a Força / Destreza / Inteligência for seu maior Atributo" (`maiorAtributo:<atr>`)
+  [/^(.+?),? se a (Força|Destreza|Inteligência) for seu maior Atributo$/, (m) => `maiorAtributo:${{ Força: 'str', Destreza: 'dex', Inteligência: 'int' }[m[2]]}`],
   // (lote 55, o Olho do Vigia) "enquanto afetado por <Aura>" / "enquanto sob efeito de <Aura>": a aura da gema ligada (`afetadoPor:<o nome>`);
   // só com o nome de uma gema que o jogo tem.
   [/^(.+?),? enquanto ?(?:(?:a ?f?etad[oa]s?|sob (?:o )?efeito) (?:por|de)|(?:estiver )?usando) (.+)$/, (m) => { const s = slugDaGema(m[2].trim()); return gemaConhecida(s) !== false ? `afetadoPor:${s}` : null; }],

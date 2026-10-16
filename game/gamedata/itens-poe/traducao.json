@@ -15925,7 +15925,7 @@
       "estado": "novo"
     },
     {
-      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$)\\[.*\\]$",
+      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$|\\[One to three random synthesis implicit modifiers\\]$|\\[Aura Bonus Modifier\\]$)\\[.*\\]$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17663,7 +17663,7 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
+      "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -39623,6 +39623,186 @@
       "nota": "sorteadas na peça: 2 linhas do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
       "_nova": true,
       "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você tem Solo Sagrado ao seu redor enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:soloSagrado:2@parado",
+          "valor": "100"
+        }
+      ],
+      "nota": "como o \"Enquanto parado, a área ao seu redor será Solo Sagrado\"",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\[One to three random synthesis implicit modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteados na peça: 1 a 3 implícitos de Síntese do pool da base (`implicitos-sorteados.json`, com a mesma chance — como o Nebulis)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Habilidades de Aura diferentes de (.+) são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "aura_unica:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "as outras auras de gema não ligam, e a ligada desliga (`acoes.auraPermitida`)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais chance de Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_mais_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Velocida de Ação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "action_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Sempre (?:inflige )?Fragilizar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:fragilizado",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a afecção dura 4 s",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Sempre (?:inflige )?Exaure$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:exaurido",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a afecção dura 4 s",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Sempre (?:inflige )?Cauteriza$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:causticado",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a afecção dura 4 s",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida durante um segundo ao acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:regenPct:hp:1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Não Afetado por Maldições$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Inimigos que você Matar usando Orgulho têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:10:physical@afetadoPor:orgulho",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\[Aura Bonus Modifier\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteada na peça: 1 das 17 combinações do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Habilidades passivas ao alcance de (.+?) podem ser atribuídas sem estarem conectadas à sua árvore$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "fuga_impossivel:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "o raio Pequeno em volta da pedra fundamental (a sorteada na peça — `linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Aloca (.+?) se você possuir o modificador correspondente na Carne Proibida$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "proibida_chama:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "com a Carne Proibida do mesmo notável encaixada, ele vale como alocado — o notável de uma ascendência da sua classe",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Aloca (.+?) se você possuir o modificador correspondente na Chama Proibida$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "proibida_carne:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "com a Chama Proibida do mesmo notável encaixada, ele vale como alocado — o notável de uma ascendência da sua classe",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
- "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
- "geradoEm": "2026-10-16T21:01:19.025Z",
+ "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). (lote 56) `nomeSorteado` — a marcação `marca` (\"Passive Skill\") do texto vira um dos `nomes` (a pedra fundamental da Fuga Impossível, o notável de ascendência da Chama/Carne Proibida). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
+ "geradoEm": "2026-10-16T22:03:51.114Z",
  "unicos": {
   "Watchers_Eye": {
    "classe": "Jewels",
@@ -1107,6 +1107,637 @@
      ]
     }
    ]
+  },
+  "Sublime_Vision": {
+   "classe": "Jewels",
+   "substitui": {
+    "[Aura Bonus Modifier]": 1
+   },
+   "fonte": "https://poedb.tw/pt/Sublime_Vision",
+   "linhas": [
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Sempre Cauteriza enquantoa fetado por Cólera / Habilidades de Aura diferentes de Cólera são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Sempre Cauteriza enquantoa fetado por Cólera / Habilidades de Aura diferentes de Cólera são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Efeito da Fúria Arcana aumentado em 80% em você enquanto afetado por Clareza / Habilidades de Aura diferentes de Clareza são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Efeito da Fúria Arcana aumentado em {1}% em você enquanto afetado por Clareza / Habilidades de Aura diferentes de Clareza são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       80,
+       80
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / +1 ao Máximo de Cargas de Tolerância enquanto afetado por Determinação / Habilidades de Aura diferentes de Determinação são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / +{1} ao Máximo de Cargas de Tolerância enquanto afetado por Determinação / Habilidades de Aura diferentes de Determinação são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / +1 ao Máximo de Cargas de Poder enquanto afetado por Disciplina / Habilidades de Aura diferentes de Disciplina são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / +{1} ao Máximo de Cargas de Poder enquanto afetado por Disciplina / Habilidades de Aura diferentes de Disciplina são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / +1 ao Máximo de Cargas de Frenesi enquanto afetado por Graça / Habilidades de Aura diferentes de Graça são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / +{1} ao Máximo de Cargas de Frenesi enquanto afetado por Graça / Habilidades de Aura diferentes de Graça são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Velocida de Ação aumentada em 10% enquanto afetado por Ímpeto / Habilidades de Aura diferentes de Ímpeto são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Velocida de Ação aumentada em {1}% enquanto afetado por Ímpeto / Habilidades de Aura diferentes de Ímpeto são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       10,
+       10
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Sempre inflige Fragilizar enquanto afetado por Ódio / Habilidades de Aura diferentes de Ódio são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Sempre inflige Fragilizar enquanto afetado por Ódio / Habilidades de Aura diferentes de Ódio são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Você pode aplicar 1 Maldições adicionais enquanto afetado por Malevolência / Habilidades de Aura diferentes de Malevolência são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Você pode aplicar {1} Maldições adicionais enquanto afetado por Malevolência / Habilidades de Aura diferentes de Malevolência são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / 25% mais chance de Golpe Crítico enquanto afetado por Precisão / Habilidades de Aura diferentes de Precisão são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / {1}% mais chance de Golpe Crítico enquanto afetado por Precisão / Habilidades de Aura diferentes de Precisão são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Efeito de Auras Não-Maldição de suas Habilidades aumentado em (20—40)% nos Inimigos / Inimigos que você Matar usando Orgulho têm 25% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano Físico / Habilidades de Aura diferentes de Orgulho são Desabilitadas",
+     "modelo": "Efeito de Auras Não-Maldição de suas Habilidades aumentado em {0}% nos Inimigos / Inimigos que você Matar usando Orgulho têm {1}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano Físico / Habilidades de Aura diferentes de Orgulho são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       25,
+       25
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / +3% do máximo de Resistências Elementais enquanto afetado por Pureza dos Elementos / Habilidades de Aura diferentes de Pureza Elemental são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / +{1}% do máximo de Resistências Elementais enquanto afetado por Pureza dos Elementos / Habilidades de Aura diferentes de Pureza Elemental são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       3,
+       3
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / 30% do Dano de Gelo e Raio sofrido como Dano de Fogo enquanto afetado por Pureza Ardente / Habilidades de Aura diferentes de Pureza Ardente são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / {1}% do Dano de Gelo e Raio sofrido como Dano de Fogo enquanto afetado por Pureza Ardente / Habilidades de Aura diferentes de Pureza Ardente são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / 30% do Dano de Fogo e Raio é sofrido como Dano de Gelo enquanto afetado por Pureza Glacial / Habilidades de Aura diferentes de Pureza Glacial são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / {1}% do Dano de Fogo e Raio é sofrido como Dano de Gelo enquanto afetado por Pureza Glacial / Habilidades de Aura diferentes de Pureza Glacial são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / 30% do Dano de Fogo e Gelo sofrido como Dano de Raio enquanto / afetado por Pureza Elétrica / Habilidades de Aura diferentes de Pureza Elétrica são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / {1}% do Dano de Fogo e Gelo sofrido como Dano de Raio enquanto / afetado por Pureza Elétrica / Habilidades de Aura diferentes de Pureza Elétrica são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       30,
+       30
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Regenera 15% de Vida durante um segundo ao acertar enquanto afetado por Vitalidade / Habilidades de Aura diferentes de Vitalidade são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Regenera {1}% de Vida durante um segundo ao acertar enquanto afetado por Vitalidade / Habilidades de Aura diferentes de Vitalidade são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ],
+      [
+       15,
+       15
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Sempre Exaure enquantoa fetado por Ira / Habilidades de Aura diferentes de Ira são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Sempre Exaure enquantoa fetado por Ira / Habilidades de Aura diferentes de Ira são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    },
+    {
+     "texto": "Auras das suas Habilidades têm Efeito aumentado em (20—40)% em você / Não Afetado por Maldições enquanto afetado por Fanatismo / Habilidades de Aura diferentes de Fanatismo são Desabilitadas",
+     "modelo": "Auras das suas Habilidades têm Efeito aumentado em {0}% em você / Não Afetado por Maldições enquanto afetado por Fanatismo / Habilidades de Aura diferentes de Fanatismo são Desabilitadas",
+     "faixas": [
+      [
+       20,
+       40
+      ]
+     ]
+    }
+   ]
+  },
+  "Impossible_Escape": {
+   "classe": "Jewels",
+   "fonte": "https://poedb.tw/pt/Impossible_Escape",
+   "nomeSorteado": {
+    "marca": "Passive Skill",
+    "nomes": [
+     "Escudo Divino",
+     "O Agnóstico",
+     "Técnica Resoluta",
+     "Vínculo Ancestral",
+     "Magia Sanguínea",
+     "Juramento do Zelote",
+     "Avatar do Fogo",
+     "Golpes Reveladores",
+     "Mesclador de Runas",
+     "Mobilização",
+     "Arsenal da Vingança",
+     "Juventude Eterna",
+     "Guarda Desequilibrada",
+     "Sobrecarga Elemental",
+     "Mente Sobre Matéria",
+     "O Empalador",
+     "Postura Inabalável",
+     "Dança Carmesim",
+     "Vontade de Ferro",
+     "Combatente Versátil",
+     "Chama Voraz",
+     "Empunhadura de Ferro",
+     "Égide Necromântica",
+     "Tempestade Turbulenta",
+     "Solipsismo",
+     "Terror dos Magos",
+     "Reflexos de Ferro",
+     "Geada Cortante",
+     "Instabilidade do Lacaio",
+     "Conduíte",
+     "Pacto Vaal",
+     "Proteção Perversa",
+     "Equilíbrio Elemental",
+     "Sintonia da Dor",
+     "Lâmina Ensanguentada",
+     "Mestre dos Feitiços",
+     "Bateria Anciã",
+     "Ego Supremo",
+     "Técnica Precisa",
+     "Queima-Roupa",
+     "Dançarino do Vento",
+     "Inoculação do Caos",
+     "Sombra Fluvial",
+     "Dança da Flecha",
+     "Dança Fantasma",
+     "Devastador Fantasma",
+     "Acrobacia",
+     "Agonia Perfeita"
+    ],
+    "foraDaArvore": [
+     "Adore o Coração da Infestação"
+    ]
+   }
+  },
+  "Forbidden_Flame": {
+   "classe": "Jewels",
+   "fonte": "https://poedb.tw/pt/Forbidden_Flame",
+   "nomeSorteado": {
+    "marca": "Passive Skill",
+    "nomes": [
+     "Inspirador",
+     "Mestre do Metal",
+     "Primeiro a Bater, Último a Cair",
+     "Fortitude",
+     "Herói Incontrolável",
+     "Causas Nobres",
+     "Inimigo Digno",
+     "Guerra do Desgaste",
+     "Mais Que Habilidade",
+     "Sobrevivente Determinado",
+     "Técnica Irregular",
+     "Violência Gratuita",
+     "Mestre das Armas",
+     "Retaliação Comedida",
+     "Carrasco",
+     "Fervor Brutal",
+     "Forma Magistral",
+     "Esmagador",
+     "Apetite Insaciável",
+     "Impacto",
+     "Executor de Lendas",
+     "Desafiando a Dor",
+     "Frenesi de Combate",
+     "Dançarino Sanguinolento",
+     "Portador da Guerra",
+     "Fúria Ancestral",
+     "Ritual da Ruína",
+     "Aspecto da Carnificina",
+     "Hinekora, Fúria da Morte",
+     "Sione, Rugido Solar",
+     "Valako, Abraço da Tormenta",
+     "Tasalio, Água Purificadora",
+     "Ngamahu, Avanço da Chama",
+     "Tukohama, Arauto da Guerra",
+     "Ramako, Luz do Sol",
+     "Inabalável",
+     "Incontrolável",
+     "Incansável",
+     "Inegável",
+     "Inquebrável",
+     "Implacável",
+     "Inflexível",
+     "Força Ocupante",
+     "Ponto Focal",
+     "Guarda do Vento",
+     "Ventania",
+     "Munições Infinitas",
+     "Avidez",
+     "Tiro Distante",
+     "Ricochete",
+     "Mestre Toxista",
+     "Mestre Destilador",
+     "Represália da Natureza",
+     "Adrenalina da Natureza",
+     "Mestre Alquimista",
+     "Mestre Cirurgiã",
+     "Dádiva da Natureza",
+     "Ensinamentos da Mãe",
+     "Lição das Estações",
+     "Juramento do Inverno",
+     "Herbalista Experiente",
+     "Juramento da Primavera",
+     "Juramento do Verão",
+     "Caçador Experiente",
+     "Sufusão Persistente",
+     "Avatar da Selva",
+     "Ascensão do Sombra",
+     "Caminho da Caçadora",
+     "Ascensão do Templário",
+     "Caminho do Marauder",
+     "Ascensão do Duelista",
+     "Ascensão da Caçadora",
+     "Ascensão da Bruxa",
+     "Caminho do Sombra",
+     "Caminho do Templário",
+     "Caminho da Bruxa",
+     "Ascensão do Marauder",
+     "Caminho do Duelista",
+     "Guarda-costas Leal",
+     "Juramento de Fidelidade",
+     "Armas Lendárias",
+     "Glória Dourada",
+     "Sangue Nobre",
+     "Sagração à Cavalaria",
+     "Mostruário de Armas de Conjurador",
+     "Mostruário de Armas Marciais",
+     "Mostruário de Pedrarias",
+     "Mostruário de Armaduras",
+     "Infusão Mística",
+     "Infusão Instável",
+     "Assassinar",
+     "Entrega Tóxica",
+     "Toxinas Infundidas",
+     "Andarilho da Névoa",
+     "Sangue Sombreado",
+     "Estilo de Assassinato",
+     "Mortífero",
+     "Nascido nas Sombras",
+     "Risco Calculado",
+     "Ataque Cegante",
+     "Crime Perfeito",
+     "Reação em Cadeia",
+     "Especialista em Demolições",
+     "Especialista em Bombas",
+     "Como Relógio",
+     "Especialista de Estilhaços",
+     "Um Passo a Frente",
+     "Parada Cardíaca",
+     "Arte do Escape",
+     "Assassino Hábil",
+     "Quebra-Feitiço",
+     "Bebedor de Almas",
+     "Polímata",
+     "Marechal da Divindade",
+     "Cruzada Radiante",
+     "Cruzada Implacável",
+     "Baluarte da Esperança",
+     "Fé Radiante",
+     "Hora da Necessidade",
+     "Harmonia do Propósito",
+     "Fé Inabalável",
+     "Orientação Divina",
+     "Busca da Fé",
+     "Convicção de Poder",
+     "Santuário do Pensamento",
+     "Ritual do Despertar",
+     "Benção Arcana",
+     "Sinal de Propósito",
+     "Devoção Iluminada",
+     "Instrumentos de Justiça",
+     "Instrumentos do Fervor",
+     "Instrumentos da Virtude",
+     "Caminho Piedoso",
+     "Santificar",
+     "Presságio do Arrependimento",
+     "Julgamento Inevitável",
+     "Justa Providência",
+     "Arauto da Ruína",
+     "Bastião dos Elementos",
+     "Modelador das Tormentas",
+     "Modelador do Inverno",
+     "Modelador das Chamas",
+     "Suserano do Primordial",
+     "Coração da Destruição",
+     "Gênio da Discórdia",
+     "Gula por Essências",
+     "Portador da Infestação",
+     "Barreira Óssea",
+     "Pacto Cadavérico",
+     "Comandante das Trevas",
+     "Dama do Sacrifício",
+     "Agressão Desmedida",
+     "Força Sobrenatural",
+     "Rito Profano",
+     "Presença Pútrida",
+     "Farol do Além",
+     "Autoridade Profana",
+     "Florescer Profano",
+     "Bastião Vil",
+     "Despertar Frígido",
+     "Poder Proibido"
+    ]
+   }
+  },
+  "Forbidden_Flesh": {
+   "classe": "Jewels",
+   "fonte": "https://poedb.tw/pt/Forbidden_Flesh",
+   "nomeSorteado": {
+    "marca": "Passive Skill",
+    "nomes": [
+     "Inspirador",
+     "Mestre do Metal",
+     "Primeiro a Bater, Último a Cair",
+     "Fortitude",
+     "Herói Incontrolável",
+     "Causas Nobres",
+     "Inimigo Digno",
+     "Guerra do Desgaste",
+     "Mais Que Habilidade",
+     "Sobrevivente Determinado",
+     "Técnica Irregular",
+     "Violência Gratuita",
+     "Mestre das Armas",
+     "Retaliação Comedida",
+     "Carrasco",
+     "Fervor Brutal",
+     "Forma Magistral",
+     "Esmagador",
+     "Apetite Insaciável",
+     "Impacto",
+     "Executor de Lendas",
+     "Desafiando a Dor",
+     "Frenesi de Combate",
+     "Dançarino Sanguinolento",
+     "Portador da Guerra",
+     "Fúria Ancestral",
+     "Ritual da Ruína",
+     "Aspecto da Carnificina",
+     "Hinekora, Fúria da Morte",
+     "Sione, Rugido Solar",
+     "Valako, Abraço da Tormenta",
+     "Tasalio, Água Purificadora",
+     "Ngamahu, Avanço da Chama",
+     "Tukohama, Arauto da Guerra",
+     "Ramako, Luz do Sol",
+     "Inabalável",
+     "Incontrolável",
+     "Incansável",
+     "Inegável",
+     "Inquebrável",
+     "Implacável",
+     "Inflexível",
+     "Força Ocupante",
+     "Ponto Focal",
+     "Guarda do Vento",
+     "Ventania",
+     "Munições Infinitas",
+     "Avidez",
+     "Tiro Distante",
+     "Ricochete",
+     "Mestre Toxista",
+     "Mestre Destilador",
+     "Represália da Natureza",
+     "Adrenalina da Natureza",
+     "Mestre Alquimista",
+     "Mestre Cirurgiã",
+     "Dádiva da Natureza",
+     "Ensinamentos da Mãe",
+     "Lição das Estações",
+     "Juramento do Inverno",
+     "Herbalista Experiente",
+     "Juramento da Primavera",
+     "Juramento do Verão",
+     "Caçador Experiente",
+     "Sufusão Persistente",
+     "Avatar da Selva",
+     "Ascensão do Sombra",
+     "Caminho da Caçadora",
+     "Ascensão do Templário",
+     "Caminho do Marauder",
+     "Ascensão do Duelista",
+     "Ascensão da Caçadora",
+     "Ascensão da Bruxa",
+     "Caminho do Sombra",
+     "Caminho do Templário",
+     "Caminho da Bruxa",
+     "Ascensão do Marauder",
+     "Caminho do Duelista",
+     "Guarda-costas Leal",
+     "Juramento de Fidelidade",
+     "Armas Lendárias",
+     "Glória Dourada",
+     "Sangue Nobre",
+     "Sagração à Cavalaria",
+     "Mostruário de Armas de Conjurador",
+     "Mostruário de Armas Marciais",
+     "Mostruário de Pedrarias",
+     "Mostruário de Armaduras",
+     "Infusão Mística",
+     "Infusão Instável",
+     "Assassinar",
+     "Entrega Tóxica",
+     "Toxinas Infundidas",
+     "Andarilho da Névoa",
+     "Sangue Sombreado",
+     "Estilo de Assassinato",
+     "Mortífero",
+     "Nascido nas Sombras",
+     "Risco Calculado",
+     "Ataque Cegante",
+     "Crime Perfeito",
+     "Reação em Cadeia",
+     "Especialista em Demolições",
+     "Especialista em Bombas",
+     "Como Relógio",
+     "Especialista de Estilhaços",
+     "Um Passo a Frente",
+     "Parada Cardíaca",
+     "Arte do Escape",
+     "Assassino Hábil",
+     "Quebra-Feitiço",
+     "Bebedor de Almas",
+     "Polímata",
+     "Marechal da Divindade",
+     "Cruzada Radiante",
+     "Cruzada Implacável",
+     "Baluarte da Esperança",
+     "Fé Radiante",
+     "Hora da Necessidade",
+     "Harmonia do Propósito",
+     "Fé Inabalável",
+     "Orientação Divina",
+     "Busca da Fé",
+     "Convicção de Poder",
+     "Santuário do Pensamento",
+     "Ritual do Despertar",
+     "Benção Arcana",
+     "Sinal de Propósito",
+     "Devoção Iluminada",
+     "Instrumentos de Justiça",
+     "Instrumentos do Fervor",
+     "Instrumentos da Virtude",
+     "Caminho Piedoso",
+     "Santificar",
+     "Presságio do Arrependimento",
+     "Julgamento Inevitável",
+     "Justa Providência",
+     "Arauto da Ruína",
+     "Bastião dos Elementos",
+     "Modelador das Tormentas",
+     "Modelador do Inverno",
+     "Modelador das Chamas",
+     "Suserano do Primordial",
+     "Coração da Destruição",
+     "Gênio da Discórdia",
+     "Gula por Essências",
+     "Portador da Infestação",
+     "Barreira Óssea",
+     "Pacto Cadavérico",
+     "Comandante das Trevas",
+     "Dama do Sacrifício",
+     "Agressão Desmedida",
+     "Força Sobrenatural",
+     "Rito Profano",
+     "Presença Pútrida",
+     "Farol do Além",
+     "Autoridade Profana",
+     "Florescer Profano",
+     "Bastião Vil",
+     "Despertar Frígido",
+     "Poder Proibido"
+    ]
+   }
   }
  }
 }
