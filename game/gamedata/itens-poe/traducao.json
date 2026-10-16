@@ -206,10 +206,11 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o golpe inteiro nos vivos a 1 casa de cada atingido",
+      "nota": "exceção do dono (16/10): o raio do Dano Propagado do PoE (14 unidades, 1,4 m) é menor que 1 casa — o inimigo colado, que no PoE costuma estar dentro dele, leva o golpe",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "estado": "equivalente",
+      "_lote34": "16/10 — lote 34 (P036: a decisão do dono, \"o vizinho colado\")"
     },
     {
       "padrao": "^Repetição Final das Magias têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
@@ -4076,10 +4077,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a Mina detona logo que um inimigo chega perto (no PoE é a aura da Mina plantada): soma no alvo de cada Mina, por 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (P010: a aura da Mina plantada, 35 unidades)"
     },
     {
       "padrao": "^Cada Mina aplica Dano sofrido reduzido em \\{(\\d+)\\}% aos Inimigos próximos a ela, até \\{(\\d+)\\}%$",
@@ -4089,10 +4089,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no PoE é o dano que o inimigo causa (o poedb traduz \"sofrido\"); soma no alvo de cada Mina, por 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "nota": "o PoE: \"reduced Damage dealt\" — o dano que o inimigo CAUSA (o poedb traduz \"sofrido\")",
+      "_lote34": "16/10 — lote 34 (P011: a aura da Mina plantada)"
     },
     {
       "padrao": "^Efeito de Auras das Minas aumentado em \\{(\\d+)\\}%$",
@@ -4120,12 +4120,13 @@
       "padrao": "^\\{(\\d+)\\}% de Vida Regenerada por Segundo para cada uma das suas Minas Detonadas Recentemente, até \\{(\\d+)\\}% por segundo$",
       "efeitos": [
         {
-          "stat": "life_regen_max_pct%usos:mina:4:5",
+          "stat": "life_regen_max_pct%usos:minaDetonada:4:5",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (as Minas DETONADAS)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% da Vida Regenerada por Segundo para cada uma de suas Armadilhas Ativadas Recentemente, até \\{(\\d+)\\}% por segundo$",
@@ -4234,27 +4235,25 @@
       "padrao": "^Chance de Golpe Crítico aumentada em \\{(\\d+)\\}% por cada Mina Detonada$",
       "efeitos": [
         {
-          "stat": "crit_chance_inc%usos:mina@mina",
+          "stat": "crit_chance_inc%usos:minaDetonada:4:10",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta as Minas detonadas nos últimos 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (P023: \"for each Mine Detonated Recently, up to 100%\")"
     },
     {
       "padrao": "^\\+?\\{(\\d+)\\}% de Multiplicador de Golpes Críticos para cada Mina Detonada$",
       "efeitos": [
         {
-          "stat": "crit_dmg%usos:mina@mina",
+          "stat": "crit_dmg%usos:minaDetonada:4:10",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta as Minas detonadas nos últimos 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote34": "16/10 — lote 34 (P023: \"up to 40%\")"
     },
     {
       "padrao": "^Velocidade de Recuperação da Recarga para lançar Armadilhas aumentada em \\{(\\d+)\\}%$",
@@ -30098,14 +30097,13 @@
       "padrao": "^Velocidade dos Clamores aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "cast_speed@clamor",
+          "stat": "velocidade_clamor",
           "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a velocidade de uso do clamor",
-      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)"
+      "_de": "09/10 — árvore × poedb (as linhas pendentes, 2º lote)",
+      "_lote34": "16/10 — lote 34 (P008: o tempo de uso do Clamor, sem a conjuração)"
     },
     {
       "padrao": "^Habilidades Maldições tem Velociade de Conjuração aumentada em \\{(\\d+)\\}%$",

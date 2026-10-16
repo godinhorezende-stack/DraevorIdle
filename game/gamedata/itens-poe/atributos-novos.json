@@ -7166,6 +7166,12 @@
       "unidade": "%",
       "combate": true,
       "efeito": "o golpe corpo a corpo (`condicoes-poe.maisPelaProximidade`, lote 33)"
+    },
+    "velocidade_clamor": {
+      "nome": "Velocidade dos Clamores",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o tempo de uso do Clamor (`acoes.temposDaGemaPoe`, lote 34)"
     }
   }
 }

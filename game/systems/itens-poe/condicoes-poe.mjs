@@ -541,6 +541,16 @@ export function distintasRecentes(hunt, tag, segundos, agora = hunt?.clock ?? 0)
 }
 
 /** Marca um acontecimento "recente" na caçada (`matou`, `critico`, `acertado`, `dano`, `moveu`, `lacaioMorreu`, `usouLacaio`). */
+/**
+ * (lote 34 — P023) Uma Mina sua DETONOU (`acoes`, a plantada que sai — acertando alguém ou não): "por cada Mina Detonada Recentemente" é a
+ * escala `usos:minaDetonada[:4:<máximo>]` (a contagem dos últimos 4 s).
+ */
+export function marcarMinaDetonada(hunt, agora = hunt?.clock ?? 0) {
+  if (!hunt || !ligado()) return;
+  const lista = ((hunt.poeUsosRecentes ??= {}).minaDetonada ??= []);
+  lista.push(agora);
+  while (lista.length && (lista[0] < agora - 20000 || lista.length > 60)) lista.shift();
+}
 export function marcar(hunt, oque, agora = hunt?.clock ?? 0) {
   if (!hunt || !ligado()) return;
   (hunt.poeRecente ??= {})[oque] = agora;
@@ -1996,6 +2006,18 @@ export const resMenosDaAura = (bicho, agora, tipo) => (ativo(bicho?.estados?.aur
 
 // ---------------------------------------------------------------- o tique da caçada
 
+/** (lote 34) As listas de usos que as escalas da ficha leem (`…%usos:<lista>…`), com cache por ficha. */
+const USOS_DA_FICHA = new WeakMap();
+function usosDaFicha(ficha) {
+  if (!ficha?.afPoe) return new Set();
+  let u = USOS_DA_FICHA.get(ficha);
+  if (!u) {
+    u = new Set();
+    for (const k of Object.keys(ficha.afPoe)) { const m = /%usos:([^:@~]+)/.exec(k); if (m) u.add(m[1]); }
+    USOS_DA_FICHA.set(ficha, u);
+  }
+  return u;
+}
 /**
  * Um tique (a caçada chama, `ms` de tempo): a Fúria, o "movendo-se", a recuperação do dano sofrido (Recoup) e a regeneração do Escudo de
  * Energia ("N de Escudo de Energia Regenerado por segundo"). `ficha`: a do personagem.
@@ -2051,8 +2073,12 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   const desdeOPasso = agora - (recentes.moveu ?? hunt.poeEntrou ?? agora);
   const sobClamor = hunt.poeSobClamorDesde != null && sobBuffDeClamor(hunt, agora) ? Math.min(60, Math.floor((agora - hunt.poeSobClamorDesde) / 1000)) : -1;
   const valendo = Object.keys(recentes).filter((k) => recente(recentes[k], agora)).sort().join(',');
-  // (+ lote 33: o efeito do Elusivo que cai — a cada 10 pontos)
-  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}|${Math.floor(efeitoDoElusivo(hunt, agora) / 10)}`;
+  // (+ lote 33: o efeito do Elusivo que cai — a cada 10 pontos; + lote 34: as contagens "por cada X Recentemente" / "nos últimos N segundos" — as
+  // listas de usos, nas janelas de 4, 8 e 10 s: "por cada Mina Detonada Recentemente", "por cada Magia que você Conjurou Recentemente"…)
+  // (só as listas que alguma linha da ficha usa — `usosDaFicha`; as outras mudam a cada acerto e refariam a ficha à toa)
+  const usados = usosDaFicha(ficha);
+  const usos = usados.size ? Object.entries(hunt.poeUsosRecentes ?? {}).filter(([k]) => usados.has(k)).map(([k, l]) => `${k}:${[4000, 8000, 10000].map((j) => l.filter((t) => agora - t <= j).length).join('/')}`).join(',') : '';
+  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}|${Math.floor(efeitoDoElusivo(hunt, agora) / 10)}|${usos}`;
   if (hunt.poeRelogioDaFicha !== undefined && hunt.poeRelogioDaFicha !== relogio) hunt.poeFichaMudou = true;
   hunt.poeRelogioDaFicha = relogio;
   if (hunt.recuperacoes?.length && (estado.hp ?? 0) > 0) {

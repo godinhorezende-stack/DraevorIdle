@@ -5,7 +5,8 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL } from './condicoes-poe.mjs';
+import * as Plantadas from './armas-plantadas.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -139,18 +140,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     e.esmagado = { ate: Math.max(e.esmagado?.ate ?? 0, agora + 1000 * (v('esmagar_s') || 4)) };
     ev('esmagado');
   }
-  // (lote E) As MINAS: "Cada Mina aplica Dano sofrido aumentado / Dano causado reduzido em X% aos Inimigos próximos a ela, até Y%" — no jogo a
-  // Mina detona no alvo: cada acerto de Mina soma X no alvo, até Y, por 4 s (`mina_fragiliza:<Y>` / `mina_enfraquece:<Y>` = X).
-  if (tags.has('mina')) {
-    for (const [k, x] of Object.entries(ficha.afPoe)) {
-      const mm = /^mina_(fragiliza|enfraquece):(\d+)$/.exec(k);
-      if (!mm || !(x > 0)) continue;
-      const campo = mm[1] === 'fragiliza' ? 'minaFragil' : 'minaFraco';
-      const antes = ativo(e[campo], agora) ? e[campo].pct : 0;
-      // (+ "Efeito de Auras das Minas aumentado em X%")
-      e[campo] = { ate: agora + 4000, pct: Math.min(Number(mm[2]), antes + x * Math.max(0, 1 + v('efeito_aura_mina') / 100)) };
-    }
-  }
+  // (As MINAS — "Cada Mina aplica Dano sofrido aumentado / Dano causado reduzido em X% aos Inimigos próximos a ela, até Y%": lote 34, a aura da
+  // Mina PLANTADA, no tique — `auraDasMinas`; não mais a soma no alvo de cada acerto de Mina.)
   // (11/10) AGRAVAR o Sangramento do alvo: "X% de chance de Agravar o Sangramento em alvos que você Acertar com Ataques / Golpear com um Crítico /
   // Atordoar / Acertar com Ataques Impelidos" (`chance_agravar` com a tag) e "Acertos de Ataques Agravam qualquer Sangramento mais antigos que N
   // segundos" (`agravar_sangramento_apos_s@ataque`) — `combate/dot.agravar`.
@@ -1132,8 +1123,35 @@ export function plantarEstandarte(estado, hunt, ficha, porValor = {}, agora = hu
   return { valor: v, efeitoMais: (Number(porValor?.efeito) || 0) * v, areaMais: (Number(porValor?.area) || 0) * v };
 }
 
+/**
+ * (lote 34 — P010/P011) A AURA DAS MINAS PLANTADAS ("Cada Mina aplica Dano sofrido aumentado em X% aos Inimigos próximos a ela, até Y%" e "…
+ * Dano CAUSADO reduzido…" — `mina_fragiliza:<Y>` / `mina_enfraquece:<Y>` = X): enquanto plantada, cada Mina soma X × (1 + "Efeito de Auras das
+ * Minas") nos inimigos a até 35 unidades dela (3,5 m, o raio base das auras de Mina no PoE — 1 casa), até Y — o efeito aumenta o de cada Mina,
+ * não o teto. O estado dura o tique (renovado enquanto a Mina está lá).
+ */
+export const AURA_DA_MINA_UNIDADES = 35;
+export function auraDasMinas(hunt, ficha, agora = hunt?.clock ?? 0) {
+  const porCampo = {};
+  for (const [k, x] of Object.entries(ficha?.afPoe ?? {})) {
+    const mm = /^mina_(fragiliza|enfraquece):(\d+)$/.exec(k);
+    if (!mm || !(x > 0)) continue;
+    const c = (porCampo[mm[1] === 'fragiliza' ? 'minaFragil' : 'minaFraco'] ??= { porMina: 0, teto: 0 });
+    c.porMina += x * Math.max(0, 1 + valor(ficha, 'efeito_aura_mina') / 100);
+    c.teto = Math.max(c.teto, Number(mm[2]));
+  }
+  if (!Object.keys(porCampo).length) return;
+  const minas = Plantadas.plantadas(hunt, 'mina', agora);
+  if (!minas.length) return;
+  for (const b of hunt.monstros ?? []) {
+    if (!(b.hp > 0) || b.dummy) continue;
+    const n = minas.filter((p) => !(b.z != null && p.z != null && b.z !== p.z) && Math.max(Math.abs(b.x - p.x), Math.abs(b.y - p.y)) * DISTANCIA_DO_PROJETIL.unidadesPorCasa <= AURA_DA_MINA_UNIDADES).length;
+    if (!n) continue;
+    for (const [campo, c] of Object.entries(porCampo)) (b.estados ??= {})[campo] = { ate: agora + 500, pct: Math.min(c.teto, c.porMina * n) };
+  }
+}
 export function aurasProximas(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   if (!ligado() || !hunt?.pos || !ficha?.afPoe) return;
+  auraDasMinas(hunt, ficha, agora);
   // (11/10) O VALOR se ganha "enquanto você tem uma habilidade de Estandarte" (na barra — `condicoes-poe.ganharValor`).
   hunt.poeTemEstandarte = (estado.actions ?? []).some((a) => /_Banner$/.test(String(a?.id ?? '')));
   // (11/10) O ESTANDARTE PLANTADO: sair da área dele o encerra ("termina antes se você sair da aura"); "Bônus do seu estandarte permanecem por N

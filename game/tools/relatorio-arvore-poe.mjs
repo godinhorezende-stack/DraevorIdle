@@ -171,6 +171,11 @@ const IMPLEMENTADOS = [
     re: /Efeito de Afecções Não-Danificadoras aumentado|Flechas ganham Chance de Golpe Crítico enquanto viajam|aos alvos no início de seu movimento|ao viajar adiante, causando até|conforme viajam adiante, causando|baseado na proximidade|chance de ganhar Elusivo/,
     jogo: 'o "Efeito de Afecções Não-Danificadoras" também no Causticar, no Fragilizar e no Exaurir (o bloqueio, a chance no acerto, a aura, o Segredos do Sofrimento, a Causticação do Warden); as rampas de distância do Path of Building (35 → 70 unidades; 1 casa = 2 m = 20) no crítico das flechas, no Tiro Longo, no Tiro Distante do Deadeye e na Animosidade Adjacente; a Queima-Roupa pela tabela do poedb; o Impacto pela proximidade do PoB (o máximo até 15 unidades, 0 em 40 — o vizinho colado, a 20, dá 80%); o Elusivo perde 20% de efeito por segundo (começa no efeito cheio, com o aumentado) e não se ganha outro enquanto há um',
   },
+  {
+    bloco: 'Zerar a árvore — lote 34 (as Minas plantadas e a Velocidade dos Clamores)',
+    re: /Velocidade dos Clamores aumentada|Cada Mina aplica|por cada Mina Detonada|Minas Detonadas Recentemente/,
+    jogo: 'a Velocidade dos Clamores encurta o tempo de uso do Clamor (e a de Conjuração não vale nele — o Clamor não é ataque nem magia); a aura da Mina plantada nos inimigos a até 35 unidades (3,5 m, 1 casa), cada Mina somando até o teto ("Efeito de Auras das Minas" na de cada uma, não no teto; o "reduzido" é o dano que o inimigo causa); "por cada Mina Detonada Recentemente, até 100%/40%" pela detonação de verdade, nos últimos 4 s',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */
