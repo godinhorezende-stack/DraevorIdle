@@ -470,10 +470,11 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque)",
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Registrar\" — os raios que o PoE não publica): os 4 projéteis caem nos inimigos a até 3 casas (6 m) do ponto do impacto e cada queda pega a casa e as vizinhas (1 casa = 2 m, × √ da \"Área de Efeito aumentada\"); no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s), o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados, o crítico do ataque em cada acerto e a resistência de cada inimigo",
       "_nova": true,
-      "_lote21": "14/10 — o Reliquarian (lote 21)"
+      "_lote21": "14/10 — o Reliquarian (lote 21)",
+      "_lote45": "16/10 — lote 45 (a Rajada Vulcânica com o crítico e a área; o Detonar Minas com a recarga de 0,2 s; as exceções registradas pelo dono)"
     },
     {
       "padrao": "^Concede a Habilidade Convocar Grande Emissário das Direções$",
@@ -4344,8 +4345,9 @@
       ],
       "_nova": true,
       "_lote3": "12/10 — Armadilhas e Minas plantadas",
-      "estado": "aproximado",
-      "nota": "no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando"
+      "estado": "equivalente",
+      "nota": "exceção do dono (\"Exceção: o jogo é idle\"; 16/10: \"Registrar a exceção\"): o atalho de Detonar Minas é automático — detona com um inimigo a até 2 casas da Mina, com você parado e, com esta linha, também andando; a recarga de 0,2 s e a sequência de detonação (10% mais rápida por Mina anterior) são as do PoE",
+      "_lote45": "16/10 — lote 45 (a Rajada Vulcânica com o crítico e a área; o Detonar Minas com a recarga de 0,2 s; as exceções registradas pelo dono)"
     },
     {
       "padrao": "^Minas tem Velocidade de Detonação aumentada em \\{(\\d+)\\}%$",

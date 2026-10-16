@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1373, novo 4619, aproximado (parcial) 11.
+- ✓ Com efeito: **6003** — equivalente 1379, novo 4619, aproximado (parcial) 5.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -51,6 +51,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | Zerar a árvore — lote 42 (os limites do motor: a canalização contínua, as direções aleatórias, o terreno) | 3 | 0 | a CANALIZAÇÃO CONTÍNUA (a mesma habilidade de Canalização usada em seguida continua o canalizar; outra interrompe — a Infusão Espiritual a cada 0,5 s canalizando); as DIREÇÕES ALEATÓRIAS (todos os projéteis saem em direções sorteadas e acertam o primeiro do caminho); o TERRENO (o projétil que erra e bate numa casa que não se anda ricocheteia, na chance, para o inimigo mais perto da batida) |
 | Zerar a árvore — lote 43 (a Égide Necromântica: as defesas e os outros bônus do escudo nos lacaios) | 1 | 0 | as DEFESAS do escudo nos lacaios (a armadura, a evasão e o escudo de energia da base, com o "+X" e o "aumentado" do próprio escudo; a armadura no golpe pela conta do PoE, a evasão contra o ataque, a supressão contra a magia), a vida fixa, a redução física, o bloqueio aumentado, o dano mágico e o do elemento, o evitar afecções, o reflexo físico e a recarga do escudo |
 | Zerar a árvore — lote 44 (os lacaios pelo Path of Building: o Sentinela, as Relíquias, as Aranhas, o Poder Fantasmal; a Égide Primitiva; os Robôs) | 6 | 0 | a vida, o golpe, o tempo de ataque, o escudo de energia, a armadura e as resistências dos lacaios pelo PoB (a tabela de aliados × o multiplicador do tipo — `gamedata/itens-poe/pob-lacaios.json`); o Poder Fantasmal pelo nível do suporte; o veneno das Aranhas em 4 s; a Égide Primitiva volta em 5 s; as magias ativadas saem do lugar de cada Robô, que corre até os inimigos |
+| Zerar a árvore — lote 45 (a Rajada Vulcânica com o crítico e a área; o Detonar Minas com a recarga de 0,2 s) | 6 | 0 | a Rajada Vulcânica rola o crítico do ataque em cada acerto e a área de cada queda cresce com a "Área de Efeito aumentada"; o Detonar Minas automático respeita a recarga de 0,2 s; os raios que o PoE não publica e o uso automático, registrados como exceção do dono |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -61,11 +62,9 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 
 | Linhas | A diferença | Exemplos (nó — texto) |
 |---:|---|---|
-| 5 | no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando | Maestria de Minas (maestria) — Detonar Minas é Ativado enquanto você se mover |
 | 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
 | 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
 | 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
-| 1 | no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque) | Chamas de Ngamahu (asc. Reliquarian) — Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo |
 | 1 | os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico e a recarga do escudo; o que o lacaio do jogo não tem — mana, atributos, precisão (ele não erra), atordoamento e recuperação de bloqueio, o crítico dos monstros nele, o máximo de UMA resistência, os efeitos ao bloquear — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
 
 ## As joias dos encaixes da árvore (lotes 27 a 29)

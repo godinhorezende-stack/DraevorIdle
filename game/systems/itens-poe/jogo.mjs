@@ -361,7 +361,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (38 — 16/10, lote 42: a Infusão Espiritual pela canalização contínua, as direções aleatórias e o ricochete no terreno.)
 // (39 — 16/10, lote 43: a Égide Necromântica com as defesas do escudo nos lacaios.)
 // (40 — 16/10, lote 44: os lacaios pelo PoB, a Égide Primitiva em 5 s, os Robôs.)
-export const VERSAO_DA_TRADUCAO = 40;
+// (41 — 16/10, lote 45: a Rajada Vulcânica com o crítico; o Detonar Minas; as exceções registradas.)
+export const VERSAO_DA_TRADUCAO = 41;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

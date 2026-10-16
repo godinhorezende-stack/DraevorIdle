@@ -221,6 +221,11 @@ const IMPLEMENTADOS = [
     re: /Cada Fantasma Convocado concede a Você Poder Fantasmal|Ativar Erguer Aranhas|Ativa Erguer Aranhas|Ativa Convocar Robôs Ativadores|Ativa Égide Primitiva|Convocar Sentinela do Resplendor Nível|Ativar Convocar Relíquia Elemental/,
     jogo: 'a vida, o golpe, o tempo de ataque, o escudo de energia, a armadura e as resistências dos lacaios pelo PoB (a tabela de aliados × o multiplicador do tipo — `gamedata/itens-poe/pob-lacaios.json`); o Poder Fantasmal pelo nível do suporte; o veneno das Aranhas em 4 s; a Égide Primitiva volta em 5 s; as magias ativadas saem do lugar de cada Robô, que corre até os inimigos',
   },
+  {
+    bloco: 'Zerar a árvore — lote 45 (a Rajada Vulcânica com o crítico e a área; o Detonar Minas com a recarga de 0,2 s)',
+    re: /Ativa Rajada Vulcânica [Nn]ível|Detonar Minas é Ativado enquanto você se mover/,
+    jogo: 'a Rajada Vulcânica rola o crítico do ataque em cada acerto e a área de cada queda cresce com a "Área de Efeito aumentada"; o Detonar Minas automático respeita a recarga de 0,2 s; os raios que o PoE não publica e o uso automático, registrados como exceção do dono',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

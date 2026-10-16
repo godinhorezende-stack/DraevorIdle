@@ -570,10 +570,11 @@ export function explosaoDaReliquia(hunt, l, ficha, eventos = []) {
  * A RAJADA VULCÂNICA (Molten Burst — o Ngamahu's Flame, nível 16 com 20% de chance; as Chamas de Ngamahu do Reliquarian, nível 20): no
  * acerto corpo a corpo, a chance do nível (20% no 16 … 100% no 20), recarga de 0,15 s; lança 4 projéteis (1 + 3 adicionais) do ponto do
  * impacto, que caem nos inimigos em volta (a até 3 casas) e causam dano de ataque em área (a casa e as vizinhas): o golpe da arma × o Dano de
- * Ataque do nível (170% … 200%), 60% do Físico convertido em Fogo, com os seus "aumentados" e a resistência de cada um — sem crítico
- * (aproximado: o PoE rola o crítico do ataque).
+ * Ataque do nível (170% … 200%), 60% do Físico convertido em Fogo, com os seus "aumentados" e a resistência de cada um. (Lote 45: cada acerto
+ * rola o CRÍTICO do ataque — a chance e o multiplicador da ficha do golpe, com a Sorte/o Azar e o "sempre"/"nunca" crítico das linhas do PoE —;
+ * a área da queda (a casa e as vizinhas) cresce com a "Área de Efeito aumentada/mais", como toda área — `ModsPoe.casasPelaArea`.)
  */
-export const RAJADA = Object.freeze({ recargaMs: 150, projeteis: 4, raio: 3, conversaoFogoPct: 60 });
+export const RAJADA = Object.freeze({ recargaMs: 150, projeteis: 4, raio: 3, raioDaQueda: 1, conversaoFogoPct: 60 });
 const doNivelDaRajada = (nivel) => { const n = Math.max(16, Math.min(20, Number(nivel) || 20)); return { chance: 20 + (n - 16) * 20, danoPct: 170 + (n - 16) * 7.5 }; };
 export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.random) {
   if (!itensPoeLigado() || !hunt || !alvo) return 0;
@@ -592,18 +593,28 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
   const fisico = bruto - fogo;
   const aum = (el) => Math.max(0, 1 + (ficha.danoDoElemento?.[el] ?? 0) / 100) * (ficha.fatorDasCargas ?? 1);
   const perto = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) <= RAJADA.raio);
+  // (lote 45) a área da queda: 1 casa em volta × √ da "Área de Efeito aumentada" e de cada "mais" (a geral e a das tags do golpe)
+  const tags = ModsPoe.somaPorTags(fichaBase, ['ataque', 'projetil', 'area', 'fogo', 'fisico']);
+  const fatorDaArea = ModsPoe.fatorDaArea(ModsPoe.valor(fichaBase, 'area_inc') + (tags.area_inc ?? 0), ModsPoe.valor(fichaBase, 'area_mais') + (tags.area_mais ?? 0));
+  // (lote 45) o CRÍTICO do ataque em cada acerto (no PoE, cada inimigo acertado rola o seu)
+  const nunca = ModsPoe.valor(ficha, 'nunca_critico') > 0;
+  const sempre = !nunca && ModsPoe.valor(ficha, 'critico_sempre') > 0;
+  const chanceDeCritico = Math.min(ficha.critTeto ?? 1, Math.max(0, ficha.critChance ?? 0));
+  const critou = () => !nunca && (sempre || ModsPoe.sorteado(chanceDeCritico, ficha.critSortudo ? 0 : ModsPoe.valor(ficha, 'critico_sortudo'), ModsPoe.valor(ficha, 'critico_azarado'), rng, ModsPoe.valor(ficha, 'sorte_tres_jogadas') > 0));
   let total = 0;
   for (let i = 0; i < RAJADA.projeteis; i++) {
     const onde = perto.length ? perto[Math.floor(rng() * perto.length)] : alvo;
+    const raio = RAJADA.raioDaQueda + ModsPoe.casasPelaArea(RAJADA.raioDaQueda, fatorDaArea, rng);
     eventos.push({ t: 'shot', id: 4, x: alvo.x, y: alvo.y, tx: onde.x, ty: onde.y });
     for (const m of hunt.monstros ?? []) {
-      if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - onde.x), Math.abs(m.y - onde.y)) > 1) continue;
-      const v = Math.round(resistido(hunt, m, 'physical', fisico * aum('physical'), ficha) + resistido(hunt, m, 'fire', fogo * aum('fire'), ficha));
+      if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - onde.x), Math.abs(m.y - onde.y)) > raio) continue;
+      const crit = critou();
+      const v = Math.round((resistido(hunt, m, 'physical', fisico * aum('physical'), ficha) + resistido(hunt, m, 'fire', fogo * aum('fire'), ficha)) * (crit ? ficha.critMultiplier ?? 1.5 : 1));
       if (!(v > 0)) continue;
       m.hp -= v;
       QuemFeriu.carimbar(m, QuemFeriu.VOCE, ['ataque', 'projetil', 'area', 'fogo', 'fisico']); // (lote 31, S001/P025)
       total += v;
-      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO.fire ?? '#ff9000' });
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, crit, alvo: m.name, color: COR_DO_ELEMENTO.fire ?? '#ff9000' });
     }
   }
   return total;
