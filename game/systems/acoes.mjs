@@ -805,7 +805,7 @@ export function alvosDoGolpeDoMercenario(estado, l, alvo, vivos, rng = Math.rand
     return { golpes, eventos: entry.efeito ? [{ t: 'area', id: entry.efeito, x: origem.x, y: origem.y, casas: Areas.paraTela(casas, origem) }] : [], emitidos: [], explosoes: [] };
   }
   if (entry.cadeia) {
-    const atingidos = saltosDaCadeia(alvo, vivos, efeito.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeito.cadeiaPoe.saltos, distance: alcanceDoRicochete(entry.cadeia.distance, efeito, rng) } : entry.cadeia);
+    const atingidos = saltosDaCadeia(alvo, vivos, efeito.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeito.cadeiaPoe.saltos, distance: alcanceDoRicochete(DISTANCIA_DA_CADEIA_POE(), efeito, rng) } : entry.cadeia);
     return { golpes: atingidos.slice(1).map((b, i) => ({ bicho: b, pct: 100, tipo: 'cadeia', de: atingidos[i] })), eventos: [], emitidos: [], explosoes: [] };
   }
   const tags = Tags.tagsDaAcao(entry);
@@ -1051,6 +1051,8 @@ export function curaMostrada(estado, entry, efeitoDaGema = Gemas.ehSkillDeGema(e
  * (14/10) "Alcance do Ricochete aumentado em X%": a distância do salto × (1 + X%), a fração como chance de uma casa a mais (como a área), para a
  * média bater.
  */
+/** (lote 40, P022 — dono: "Ricochete pelo PoE 2") O salto das CADEIAS das gemas do PoE (o Arco, o Golpe Estático): 4 m — 2 casas (`ricochetePoe`). */
+const DISTANCIA_DA_CADEIA_POE = () => Gemas.CONFIG.golpesSecundarios?.ricochetePoe?.outros ?? 2;
 export function alcanceDoRicochete(base = 1, efeito = null, rng = Math.random) {
   const pct = Number(efeito?.alcanceRicochetePct) || 0;
   if (!pct) return base;
@@ -1703,6 +1705,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   if (estado) {
     const fichaDoAlvo = Ficha.combate(estado);
     e.alcanceRicochetePct = ModsPoe.valor(fichaDoAlvo, 'alcance_ricochete_inc');
+    // (lote 40) a gema do PoE: o ricochete do projétil salta os 6 m do PoE 2 (`Secundarios.resolver`)
+    e.ricochetePoe = true;
     e.retornarChance = ModsPoe.valor(fichaDoAlvo, 'proj_retornar_chance');
     e.ricocheteTerrenoChance = ModsPoe.valor(fichaDoAlvo, 'proj_ricochete_terreno_chance');
     if (ModsPoe.valor(fichaDoAlvo, 'proj_direcoes_aleatorias') > 0) e.direcoesAleatorias = true;
@@ -2215,7 +2219,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         casas = casasDaForma(entry, plantada.x, plantada.y);
         formaNoUso = { x: plantada.x, y: plantada.y, dir: null };
       } else if (!(alvo.hp > 0)) atingidos = [];
-      else atingidos = entry.cadeia ? saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(entry.cadeia.distance, efeitoDaGema) } : entry.cadeia) : [alvo];
+      else atingidos = entry.cadeia ? saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(DISTANCIA_DA_CADEIA_POE(), efeitoDaGema) } : entry.cadeia) : [alvo];
     } else if (!entry.forma) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...). (lote 35 — P001: com o alcance corpo a corpo em metros — o
@@ -2227,7 +2231,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // CADEIA (tag `chain`: Forked Thorns, Forked Glacier, Chained Penance...): do alvo, salta para o
       // bicho vivo mais perto a até `cadeia.distance` sqm do último atingido, até `cadeia.targets` alvos.
       // A cadeia da gema do PoE: 1 + os ricochetes DO NÍVEL dela (+ os do suporte de corrente); a distância do salto é a da magia-molde.
-      if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(entry.cadeia.distance, efeitoDaGema) } : entry.cadeia);
+      if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(DISTANCIA_DA_CADEIA_POE(), efeitoDaGema) } : entry.cadeia);
     } else if (centradoNoAlvo && entry.miraNoChao && mira) {
       // A casa que o jogador escolheu na mira (`huntAction` com x, y): a área cai lá, com ou sem alvo.
       if (distanciaChebyshev(hunt.pos, mira) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Fora de alcance.', motivo: 'FORA_DE_ALCANCE' };

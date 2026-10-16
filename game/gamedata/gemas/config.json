@@ -61,6 +61,8 @@
     "_nota": "O motor de PROJÉTIL e ÁREA (systems/skills/golpes-secundarios.mjs): a distância que a bifurcação e o encadeamento procuram o próximo bicho; a EXPLOSÃO (lado do quadrado centrado no impacto: 3 = 3×3 = 9 casas — pega todos dentro, inclusive o do impacto); e os TETOS por uso da skill (impactos secundários e explosões), contra combinações sem fim.",
     "distanciaDaBifurcacao": 4,
     "distanciaDoEncadeamento": 4,
+    "_ricochetePoe": "(16/10, lote 40 — dono: \"Ricochete pelo PoE 2\") O salto do ricochete das gemas do PoE, em casas (1 casa = 2 m): o PoE 1 não publica a distância; a wiki do PoE 2 dá \"projectiles have a base chaining distance of 6 metres whereas other effects have a chaining distance of 4 metres\" — 6 m no projétil, 4 m nas outras cadeias (o Arco). O \"Alcance do Ricochete aumentado\" multiplica em metros.",
+    "ricochetePoe": { "projetil": 3, "outros": 2 },
     "explosao": { "lado": 3 },
     "limites": { "impactosPorUso": 60, "explosoesPorUso": 30 }
   },
