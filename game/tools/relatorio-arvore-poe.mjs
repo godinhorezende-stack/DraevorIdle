@@ -196,6 +196,11 @@ const IMPLEMENTADOS = [
     re: /mercenário tem o efeito das auras/i,
     jogo: 'a aura do arquétipo do mercenário (a decisão do dono "Uma aura por arquétipo": espadachim Precisão, bárbaro Determinação, arqueiro Graça, piromante Cólera, criomante Ódio, eletromante Ira) no nível dele, × o efeito da linha — vale nele e em você enquanto ele vive (a ficha e os efeitos; com a mesma aura sua, vale a sua); e as gemas dele acertam como a gema: a área, os saltos e os projéteis',
   },
+  {
+    bloco: 'Zerar a árvore — lote 40 (as decisões do dono: os raios registrados e o ricochete do PoE 2)',
+    re: /Baús próximos quando você Conjurar|Inimigos Próximos$|Furtividade aumentada em \d+% caso|Alcance do Ricochete aumentado/,
+    jogo: 'os raios que o PoE não publica viram exceções registradas ("Manter e registrar": os baús a até 4 casas, os "Próximos" a até 2 casas, a Furtividade ÷ (1 + X%)); o salto do ricochete das gemas do PoE pelo PoE 2 ("Ricochete pelo PoE 2": 6 m no projétil, 4 m nas outras cadeias, × o aumento em metros)',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

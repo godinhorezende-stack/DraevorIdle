@@ -356,7 +356,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (33 — 16/10, lote 36: "Repetição Final das Magias têm Efeito em Área aumentado" pela Área de Efeito em metros.)
 // (34 — 16/10, lote 37: as linhas do Mercenário completo do Luminary.)
 // (35 — 16/10, lote 39: "Seu mercenário tem o efeito das auras … aumentado" na aura do arquétipo dele.)
-export const VERSAO_DA_TRADUCAO = 35;
+// (36 — 16/10, lote 40: os raios registrados e o "Alcance do Ricochete aumentado" pelo PoE 2.)
+export const VERSAO_DA_TRADUCAO = 36;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

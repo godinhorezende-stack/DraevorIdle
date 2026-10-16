@@ -187,8 +187,9 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       }
       // Chain: salta para o mais perto (a nova reta é a do salto).
       if (p.encadear > 0) {
-        // (14/10: × o "Alcance do Ricochete aumentado", a fração como chance)
-        const salto = (cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
+        // (14/10: × o "Alcance do Ricochete aumentado", a fração como chance; lote 40: a gema do PoE salta 6 m — 3 casas —, o do PoE 2, pela
+        // decisão do dono — `ricochetePoe`)
+        const salto = (efeito.ricochetePoe ? cfg.ricochetePoe?.projetil ?? 3 : cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
         const [proximo] = maisPerto(vivosNoInicio, atual, Math.floor(salto) + (rng() < salto % 1 ? 1 : 0), 1, p.acertados);
         if (proximo) {
           p.encadear--;

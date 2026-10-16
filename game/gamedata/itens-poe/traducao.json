@@ -1459,11 +1459,12 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o alcance em metros (o da arma + os metros; 1 casa = 2 m); \"Próximos\" = a até 2 casas — o PoE não fixa o raio de \"Próximos\" (\"Nearby\" não é palavra-chave)",
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Manter e registrar\"): o alcance em metros (o da arma + os metros; 1 casa = 2 m); \"Próximos\" = a até 2 casas — o PoE não fixa o raio de \"Próximos\" (\"Nearby\" não é palavra-chave)",
       "_nova": true,
       "_ciclo7": true,
-      "_lote35": "16/10 — lote 35 (P033: o alcance em metros; o raio de \"Próximos\" fica para decisão)"
+      "_lote35": "16/10 — lote 35 (P033: o alcance em metros; o raio de \"Próximos\" fica para decisão)",
+      "_lote40": "16/10 — lote 40 (as decisões do dono sobre os parciais restantes)"
     },
     {
       "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\}%$",
@@ -1563,10 +1564,11 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo",
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Manter e registrar\"): o PoE não publica a fórmula da Furtividade — encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote40": "16/10 — lote 40 (as decisões do dono sobre os parciais restantes)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de abrir Baús próximos quando você Conjurar uma Magia$",
@@ -1576,10 +1578,11 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual)",
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Manter e registrar\"): o PoE não publica o raio dos baús \"próximos\" — os da sala a até 4 casas (o raio de presença do jogo) abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote40": "16/10 — lote 40 (as decisões do dono sobre os parciais restantes)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos contra Inimigos que não podem ter Vida Drenada deles$",
@@ -6210,10 +6213,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais",
+      "nota": "o salto do PoE 2 (dono, 16/10: \"Ricochete pelo PoE 2\" — o PoE 1 não publica): 6 m (3 casas) no projétil e 4 m (2 casas) nas outras cadeias, × (1 + X%) em metros — a fração como chance de uma casa a mais",
       "_nova": true,
-      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)"
+      "_lote25": "14/10 — as linhas que não se aplicavam (lote 25)",
+      "_lote40": "16/10 — lote 40 (as decisões do dono sobre os parciais restantes)"
     },
     {
       "padrao": "^Barragens de Projéteis não se propagam$",

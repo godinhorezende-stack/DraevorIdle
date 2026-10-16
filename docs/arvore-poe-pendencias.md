@@ -5,7 +5,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1359, novo 4605, aproximado (parcial) 39.
+- ✓ Com efeito: **6003** — equivalente 1372, novo 4607, aproximado (parcial) 24.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -46,6 +46,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | Zerar a árvore — lote 36 (a Área de Efeito em metros, pela decisão do dono) | 8 | 0 | a Área de Efeito como no PoE (a decisão "Toda área em metros"): o raio da forma × √(1 + o aumentado) × √ de cada "mais/menos", a fração como chance de uma casa, e a forma esticada até o raio novo; a Repetição Final soma o X no aumentado da última repetição |
 | Zerar a árvore — lote 37 (o Mercenário completo, pelas decisões do dono) | 17 | 0 | o Mercenário completo (as decisões do dono): candidatos sorteados contratados por ouro (até 3, um ao seu lado), o nível preso no da contratação, o equipamento dele com as regras do PoE (70% do nível da peça, os atributos e as armas do arquétipo, únicos só nos tipos que os nós liberam), a ficha dele com o "aumentado" dos seus nós, as gemas fixas do arquétipo na caçada, morto só volta revivido por ouro; o "recuperado como vida" em 4 s |
 | Zerar a árvore — lote 39 (a aura do mercenário e as gemas dele em área, pela decisão do dono) | 1 | 0 | a aura do arquétipo do mercenário (a decisão do dono "Uma aura por arquétipo": espadachim Precisão, bárbaro Determinação, arqueiro Graça, piromante Cólera, criomante Ódio, eletromante Ira) no nível dele, × o efeito da linha — vale nele e em você enquanto ele vive (a ficha e os efeitos; com a mesma aura sua, vale a sua); e as gemas dele acertam como a gema: a área, os saltos e os projéteis |
+| Zerar a árvore — lote 40 (as decisões do dono: os raios registrados e o ricochete do PoE 2) | 15 | 0 | os raios que o PoE não publica viram exceções registradas ("Manter e registrar": os baús a até 4 casas, os "Próximos" a até 2 casas, a Furtividade ÷ (1 + X%)); o salto do ricochete das gemas do PoE pelo PoE 2 ("Ricochete pelo PoE 2": 6 m no projétil, 4 m nas outras cadeias, × o aumento em metros) |
 
 ## Sem efeito (✗), pelo motivo
 
@@ -56,10 +57,7 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 
 | Linhas | A diferença | Exemplos (nó — texto) |
 |---:|---|---|
-| 8 | os baús da sala a até 4 casas abrem como se você os abrisse (a chave, a armadilha e os guardiões valem igual) | Domínio de Conjuração (maestria) — 25% de chance de abrir Baús próximos quando você Conjurar uma Magia |
 | 5 | no jogo o atalho de Detonar Minas é automático: detona com você parado e um inimigo perto da Mina; com esta linha, também andando | Maestria de Minas (maestria) — Detonar Minas é Ativado enquanto você se mover |
-| 4 | encolhe o raio em que os monstros notam você (8 casas ÷ (1 + X%)); quem já persegue segue perseguindo | Maestria de Garras (maestria) — Furtividade aumentada em 50% caso você tenha Acertado com uma Garra Recentemente |
-| 2 | a distância do salto do ricochete (4 casas) × o aumento — a fração como chance de uma casa a mais | Distância do Ricochete (nó) — Alcance do Ricochete aumentado em 15%<br>Tiro Ardil (notável) — Alcance do Ricochete aumentado em 30% |
 | 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
 | 2 | os monstros só batem nos lacaios de perto: o golpe de um monstro que conjura magias conta como magia | Proteção da Podridão (notável) — Lacaios tem +18% de Chance de Bloquear o Dano Mágico<br>Bloqueio Mágico de Lacaios (nó) — Lacaios tem +12% de Chance de Bloquear o Dano Mágico |
 | 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): a Égide toma o dano de Fogo, Gelo e Raio dos acertos antes do Escudo e da Vida; volta cheia 10 s depois do último dano elemental de acertos (o tempo das Égides do PoE — o da Primitiva não é publicado) | Bastião dos Elementos (asc. Elementalist) — Ativa Égide Primitiva Nível 20 quando Alocado |
@@ -71,7 +69,6 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-16, a partir de `gam
 | 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
 | 1 | cada Fantasma vivo (do suporte Convocar Fantasma) dá Dano Físico Mágico Adicional igual ao golpe dele (o de um monstro comum do seu nível) — o PoE não publica a tabela pelo nível do Fantasma; pela regra do jogo, o dano adicionado a magias entra nas magias com dano Físico | O Bastão Negro (asc. Reliquarian) — Cada Fantasma Convocado concede a Você Poder Fantasmal |
 | 1 | no acerto corpo a corpo (100% no nível 20, recarga de 0,15 s): 4 projéteis do ponto do impacto caem nos inimigos a até 3 casas e causam dano de ataque em área — o golpe da arma × 200%, 60% do Físico em Fogo, com os seus aumentados e a resistência deles; sem crítico (o PoE rola o crítico do ataque) | Chamas de Ngamahu (asc. Reliquarian) — Ativa Rajada Vulcânica nível 20 ao atingir corpo a corpo |
-| 1 | o alcance em metros (o da arma + os metros; 1 casa = 2 m); "Próximos" = a até 2 casas — o PoE não fixa o raio de "Próximos" ("Nearby" não é palavra-chave) | Golpe Certeiro (notável) — +0.4 metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos 5 Inimigos Próximos |
 | 1 | o jogo não tem áreas frias no chão: vale o Resfriamento no inimigo | Geada Cortante (keystone) — Inimigos nas suas áreas frias sofrem dano de frio aumentado pelo esfriamento |
 | 1 | o jogo não tem canalização contínua (cada uso é um): usar uma Magia de Canalização conta como canalizar por 1 s — um acúmulo a cada 0,5 s | Rito Profano (asc. Occultist) — Ganha Infusão Espiritual a cada 0.5 segundos enquanto canaliza uma magia |
 | 1 | o jogo não tem posições de uso: as Habilidades de Golpe pegam mais um inimigo perto | Fúria Ancestral (asc. Berserker) — Habilidades de Golpe também miram no local anterior que foram Usadas |
