@@ -695,6 +695,13 @@ function raiosDasJoias(estado, alocados) {
         somar('aprendizado_inspirado_n', v0(x.af, 'raio_aprendizado_n') || 1);
         extras.aprendizado_inspirado_s = Math.max(extras.aprendizado_inspirado_s ?? 0, v0(x.af, 'raio_aprendizado_s'));
       }
+      // (lote 54) a Fome Eterna: "Com ao menos 40 de Inteligência no Raio, Espectros Erguidos tem 50% de chance de ganhar Devorador de Almas por
+      // 20 segundos ao Matar" — a Inteligência das passivas ALOCADAS no raio (`LacaiosPoe.oQueInvoca` → `aoMatarDoLacaio`)
+      const inteligencia = v0(x.af, 'raio_fome_int');
+      if (inteligencia > 0 && nos.filter((n) => meus.has(n.id)).reduce((t, n) => t + atributoDoNo(n, estado.passivas, 'int'), 0) >= inteligencia) {
+        somar('espectro_devorador_chance', v0(x.af, 'raio_fome_chance'));
+        extras.espectro_devorador_s = Math.max(extras.espectro_devorador_s ?? 0, v0(x.af, 'raio_fome_s'));
+      }
     }
     // (lote 52) o TALENTO PURO: "Enquanto sua Árvore Passiva se conectar com a de outra classe, receba: …" — o bônus de cada classe cujo início a
     // árvore alcança (o da sua classe sempre; o de outra, com uma passiva sua encostada nele). Sem raio: vale de qualquer encaixe.

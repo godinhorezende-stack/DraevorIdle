@@ -38781,6 +38781,52 @@
       ],
       "_nova": true,
       "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Golpe Crítico da Mão Secundária por cada \\{(\\d+)\\} de Escudo de Energia Máximo no Escudo$",
+      "efeitos": [
+        {
+          "stat": "crit_base_golpe%esEscudo:{V2}@ataqueDeEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "dono (16/10, \"Nos ataques com escudo\"): a mão secundária com escudo são os ataques com o escudo — as gemas com o dano base da mão secundária (Esmagar Escudos, Investida de Escudo, Arremesso Espectral de Escudo…)",
+      "_nova": true,
+      "_lote54": "16/10 — lote 54 (as únicas de joia do J30, a quinta leva — as decisões do dono)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Golpe Crítico da Mão Secundária por cada \\{(\\d+)\\} de Escudo de Energia Máximo no Escudo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg%esEscudo:{V2}@ataqueDeEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "dono (16/10, \"Nos ataques com escudo\"): a mão secundária com escudo são os ataques com o escudo — as gemas com o dano base da mão secundária (Esmagar Escudos, Investida de Escudo, Arremesso Espectral de Escudo…)",
+      "_nova": true,
+      "_lote54": "16/10 — lote 54 (as únicas de joia do J30, a quinta leva — as decisões do dono)"
+    },
+    {
+      "padrao": "^Com ao menos \\{(\\d+)\\} de Inteligência no Raio, Espectros Erguidos tem \\{(\\d+)\\}% de chance de ganhar Devorador de Almas por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_fome_int",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_fome_chance",
+          "valor": "{2}"
+        },
+        {
+          "stat": "raio_fome_s",
+          "valor": "{3}"
+        }
+      ],
+      "nota": "o Devorador de Almas do PoE (poedb, dono: \"Pesquisar no poedb\"): +5% de Velocidade de Ataque e Conjuração por alma de inimigo morto perto (3 casas), perde 1 a cada 0,5 s sem alma recente, máximo de 45",
+      "_nova": true,
+      "_lote54": "16/10 — lote 54 (as únicas de joia do J30, a quinta leva — as decisões do dono)"
     }
   ]
 }

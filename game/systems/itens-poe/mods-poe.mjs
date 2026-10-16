@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 export * from './condicoes-poe.mjs';
 
@@ -808,6 +808,8 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
     aprenderDoRaro(estado, hunt, ficha, alvo, agora, rng);
     desgracaDasBruxas(hunt, ficha, alvo, agora);
   }
+  // (lote 54, a Fome Eterna: a morte de qualquer inimigo dá a alma aos lacaios com o Devorador de Almas perto)
+  if (nome === 'inimigoMorrer' && alvo) almaParaOsLacaios(hunt.lacaios, alvo, agora);
   const tagsAlvo = new Set([...tagsDoAlvo(alvo, agora), ...(ctx.tags ?? [])]);
   let conds = null;
   for (const ev of lista) {

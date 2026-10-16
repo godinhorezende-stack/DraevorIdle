@@ -273,6 +273,8 @@ export const TAGS_DE_GOLPE = new Set([
   'maoPrincipal', 'maoSecundaria',
   // (lote D) o alvo com Exposição a um elemento; o alvo FORA da Vida Baixa ("contra inimigos que não estiverem em vida baixa").
   'alvoExposicaoFogo', 'alvoExposicaoGelo', 'alvoExposicaoRaio', 'alvoNaoVidaBaixa',
+  // (lote 54) o ataque com o ESCUDO (a mão secundária do PoE com escudo — `acoes.tagsPoeDaSkill`: a Fúria Fulminante)
+  'ataqueDeEscudo',
   // (lote F) o ataque com o Tempo de Ataque maior que 1 segundo (o intervalo do golpe da ficha).
   'ataqueLento', 'alvoComEscudo', 'alvoSemDreno',
   // (lote G) a gema de Postura; o ataque Impelido por um Clamor (`hunt.impelidos`).
@@ -1549,13 +1551,15 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if (s.mana_leech) f.manaLeech = (ficha.manaLeech ?? 0) + s.mana_leech / 100;
   // "Nunca causa Acertos Críticos" / "Não pode Causar Golpes Críticos com Ataques".
   if ((s.nunca_critico ?? 0) > 0) { f.critChance = 0; f.critMagiaPoe = ficha.critMagiaPoe ? { fixa: -100, aumentada: 0 } : null; f.critChanceMagia = 0; return finalizar(f, ficha, s, temAfeccao); }
-  if (critInc && ficha.critPontos != null) {
+  // (lote 54) o crítico BASE a mais deste golpe (`crit_base_golpe` — a Fúria Fulminante nos ataques com escudo): soma à base, antes do "aumentado"
+  const baseDoGolpe = (s.crit_base_golpe ?? 0) / 100;
+  if ((critInc || baseDoGolpe) && ficha.critPontos != null) {
     const teto = ficha.critTeto ?? 1;
-    f.critChance = Math.min(teto, Math.max(0, ficha.critPontos * (1 + ((ficha.critInc ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
+    f.critChance = Math.min(teto, Math.max(0, (ficha.critPontos + baseDoGolpe) * (1 + ((ficha.critInc ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
     // (a chance refeita volta a ser Sortuda só se a da ficha era — `critSortudo`; senão o sorteio do golpe rola duas vezes)
     if (ficha.critSortudo) f.critChance = Math.min(teto, 1 - (1 - Math.min(1, f.critChance)) ** 2);
     if (ficha.critMagiaPoe) f.critMagiaPoe = { ...ficha.critMagiaPoe, aumentada: ficha.critMagiaPoe.aumentada + critInc };
-    if (ficha.critChanceMagia != null) f.critChanceMagia = Math.min(teto, Math.max(0, ficha.critPontos * (1 + ((ficha.critInc ?? 0) + (ficha.critIncMagia ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
+    if (ficha.critChanceMagia != null) f.critChanceMagia = Math.min(teto, Math.max(0, (ficha.critPontos + baseDoGolpe) * (1 + ((ficha.critInc ?? 0) + (ficha.critIncMagia ?? 0) + critInc) / 100) * (ficha.critMais ?? 1)));
   }
   if (s.crit_chance) f.critChance = Math.min(ficha.critTeto ?? 1, (f.critChance ?? 0) + s.crit_chance / 100);
   // (lote D) "X% mais Chance de Crítico contra Inimigos com Vida Baixa" (com condição do golpe): multiplica a chance deste golpe.
@@ -2088,6 +2092,29 @@ function usosDaFicha(ficha) {
  * passa da máxima − a reservada (a recuperação não enche a parte reservada); passados os segundos sem dano na Vida (2 — o da linha), ela volta.
  * Com a vida toda reservada, você morre (a vida chega a 0, como no PoE).
  */
+/**
+ * (lote 54) O DEVORADOR DE ALMAS nos lacaios (a Fome Eterna: "Espectros Erguidos tem 50% de chance de ganhar Devorador de Almas por 20 segundos
+ * ao Matar" — `LacaiosPoe.aoMatarDoLacaio`). Como no PoE (poedb, Soul_Eater): enquanto tiver o buff, o lacaio consome a alma de qualquer coisa
+ * morta perto (60 unidades = 3 casas), +5% de Velocidade de Ataque e Conjuração por alma; sem alma nova Recentemente, perde 1 a cada 0,5 s;
+ * máximo de 45 (o buff não renova enquanto dura; acabou, as almas vão junto).
+ */
+export const DEVORADOR_DE_ALMAS = Object.freeze({ porAlmaPct: 5, maximo: 45, raioCasas: 3, perdaMs: 500 });
+export function almasDoLacaio(l, agora) {
+  if (!((l?.buffs?.devoradorDeAlmas ?? 0) > agora) || !l.almas) return 0;
+  const parado = agora - (l.almas.em ?? agora) - RECENTE_MS;
+  return Math.max(0, l.almas.n - (parado > 0 ? Math.floor(parado / DEVORADOR_DE_ALMAS.perdaMs) : 0));
+}
+/** Um inimigo morreu (`morto`, por quem for): cada lacaio com o Devorador de Almas a até 3 casas consome a alma. Devolve quantos consumiram. */
+export function almaParaOsLacaios(lacaios, morto, agora) {
+  if (!morto) return 0;
+  let n = 0;
+  for (const l of lacaios ?? []) {
+    if (!(l?.hp > 0) || !((l.buffs?.devoradorDeAlmas ?? 0) > agora) || Math.max(Math.abs(l.x - morto.x), Math.abs(l.y - morto.y)) > DEVORADOR_DE_ALMAS.raioCasas) continue;
+    l.almas = { n: Math.min(DEVORADOR_DE_ALMAS.maximo, almasDoLacaio(l, agora) + 1), em: agora };
+    n++;
+  }
+  return n;
+}
 export function tiqueDaDissolucao(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
   const r = hunt?.dissolucao;
   if (!r || !(r.reservado > 0)) return;

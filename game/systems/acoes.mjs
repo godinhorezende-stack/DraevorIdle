@@ -122,10 +122,20 @@ const custoDaSkill = (entry, efeitoDaGema) => (entry.poeGema
  * as outras skills, pelas tags do Draevor.
  */
 const DRAEVOR_PARA_POE = { spell: 'magia', melee: 'corpo', ranged: 'projetil', projectile: 'projetil', area: 'area', wave: 'area', fire: 'fogo', ice: 'gelo', energy: 'raio', physical: 'fisico', summon: 'lacaio' };
+/**
+ * (lote 54) O ATAQUE COM O ESCUDO — a mão secundária do PoE com escudo: as gemas que atacam com o dano base da mão secundária ("Dano Físico Base
+ * como a Mão Secundária" — Esmagar Escudos, Investida de Escudo, Arremesso Espectral de Escudo…); a tag `ataqueDeEscudo` (a Fúria Fulminante).
+ */
+const ATAQUE_DE_ESCUDO = new Map();
+const ehAtaqueDeEscudo = (slug, gema) => {
+  if (!ATAQUE_DE_ESCUDO.has(slug)) ATAQUE_DE_ESCUDO.set(slug, (gema?.mods ?? []).some((m) => /de Dano .*Base (?:cmo a|como a|da) Mão Secund/.test(m)));
+  return ATAQUE_DE_ESCUDO.get(slug);
+};
 export function tagsPoeDaSkill(entry) {
-  const daGema = entry?.poeGema ? GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tags : null;
+  const gema = entry?.poeGema ? GemasPoe.doSlug(entry.poeGema.slug)?.gema : null;
+  const daGema = gema?.tags ?? null;
   // (11/10: as gemas de Estandarte não trazem a tag — "Habilidades de Estandarte têm Duração/Área de Efeito aumentada")
-  if (daGema) return [...ModsPoe.tagsDoPoe(daGema), ...(/_Banner$/.test(entry.poeGema.slug) ? ['estandarte'] : []), 'habilidade'];
+  if (daGema) return [...ModsPoe.tagsDoPoe(daGema), ...(/_Banner$/.test(entry.poeGema.slug) ? ['estandarte'] : []), ...(ehAtaqueDeEscudo(entry.poeGema.slug, gema) ? ['ataqueDeEscudo'] : []), 'habilidade'];
   const t = new Set(Tags.tagsDaAcao(entry).map((x) => DRAEVOR_PARA_POE[x]).filter(Boolean));
   if (t.has('corpo') || (t.has('fisico') && t.has('projetil') && !t.has('magia'))) t.add('ataque');
   if (t.has('fogo') || t.has('gelo') || t.has('raio')) t.add('elemental');

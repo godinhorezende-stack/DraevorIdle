@@ -7604,6 +7604,30 @@
       "unidade": "s",
       "combate": true,
       "efeito": "`acoes.intensidadeAgora` (o Modo Nadir — lote 53)"
+    },
+    "crit_base_golpe": {
+      "nome": "Chance de Golpe Crítico BASE a mais do golpe (com a condição do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma à base do crítico do golpe antes do \"aumentado\" (`condicoes-poe.fichaDoGolpe`; a Fúria Fulminante nos ataques com escudo — lote 54)"
+    },
+    "raio_fome_int": {
+      "nome": "Joia (raio): a Fome Eterna — a Inteligência alocada no raio que ela pede",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `espectro_devorador_chance`/`_s` (lote 54)"
+    },
+    "raio_fome_chance": {
+      "nome": "Joia (raio): a Fome Eterna — a chance do Espectro ganhar o Devorador de Almas ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `LacaiosPoe.aoMatarDoLacaio` (lote 54)"
+    },
+    "raio_fome_s": {
+      "nome": "Joia (raio): a Fome Eterna — a duração do Devorador de Almas",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `LacaiosPoe.aoMatarDoLacaio` (lote 54)"
     }
   }
 }

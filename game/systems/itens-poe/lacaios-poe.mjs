@@ -16,7 +16,7 @@ import { CATALOGO } from '../dados.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
 import * as Controle from '../combate/controle.mjs';
-import { slugDoNome, fatorDaArea, casasPelaArea } from './condicoes-poe.mjs';
+import { slugDoNome, fatorDaArea, casasPelaArea, almasDoLacaio, DEVORADOR_DE_ALMAS } from './condicoes-poe.mjs';
 import { chanceDeEsquiva } from '../personagem/atributos.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -305,7 +305,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       imuneElemental: porTipo('lacaio_imune_elemental') > 0,
       // (11/10) "A Velocidade de Ação dos Totens não pode ser modificada para abaixo do valor base" (`controleNoLacaio`).
       semLentidao: totem && m0('totem_sem_lentidao') > 0,
-      aoMatar: { poderProfano: [m0('minion_poder_profano_ao_matar'), m0('minion_poder_profano_s') || 4], agressividade: [m0('minion_agressividade_ao_matar'), m0('minion_agressividade_s') || 4] },
+      aoMatar: { poderProfano: [m0('minion_poder_profano_ao_matar'), m0('minion_poder_profano_s') || 4], agressividade: [m0('minion_agressividade_ao_matar'), m0('minion_agressividade_s') || 4],
+        // (lote 54, a Fome Eterna: só os Espectros — `espectro_devorador_chance`/`_s`, da árvore com a Inteligência no raio)
+        ...(PALAVRA_DO_TIPO.espectro.test(texto) && m0('espectro_devorador_chance') > 0 ? { devoradorDeAlmas: [m0('espectro_devorador_chance'), m0('espectro_devorador_s') || 20] } : {}) },
     } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
@@ -377,8 +379,8 @@ export function aplicarNoLacaio(l) {
 }
 /** Um buff do lacaio (Poder Profano, Agressividade) ativo agora? */
 export const buffDoLacaio = (l, nome, agora) => (nome === 'poderProfano' && (l?.poe?.poderProfano ?? 0) > 0) || (l?.buffs?.[nome] ?? 0) > agora;
-/** A velocidade de ataque a mais do lacaio agora (%): a Agressividade. */
-export const velocidadeDoLacaio = (l, agora) => (buffDoLacaio(l, 'agressividade', agora) ? AGRESSIVIDADE_PCT : 0);
+/** A velocidade de ataque (e conjuração) a mais do lacaio agora (%): a Agressividade; (lote 54) as almas do Devorador de Almas, 5% cada. */
+export const velocidadeDoLacaio = (l, agora) => (buffDoLacaio(l, 'agressividade', agora) ? AGRESSIVIDADE_PCT : 0) + almasDoLacaio(l, agora) * DEVORADOR_DE_ALMAS.porAlmaPct;
 /**
  * (11/10) A LENTIDÃO nos lacaios e totens: o golpe de um Elite/Chefe pode deixá-los lentos, como faz com você (`combate/controle.json`: a chance
  * e o peso da lentidão de cada classe, a lentidão e a duração do jogador). "A Velocidade de Ação dos Totens não pode ser modificada para abaixo
@@ -508,7 +510,13 @@ export function explosaoDoLacaio(l, monstros = []) {
 export function aoMatarDoLacaio(l, agora, rng = Math.random) {
   const a = l?.poe?.aoMatar;
   if (!a) return;
-  for (const [nome, [chance, seg]] of Object.entries(a)) if (chance > 0 && rng() * 100 < chance) (l.buffs ??= {})[nome] = Math.max(l.buffs[nome] ?? 0, agora + seg * 1000);
+  for (const [nome, [chance, seg]] of Object.entries(a)) {
+    // (lote 54: o Devorador de Almas não renova enquanto dura — "persiste até a fonte expirar", poedb; o novo começa sem almas)
+    if (nome === 'devoradorDeAlmas' && buffDoLacaio(l, nome, agora)) continue;
+    if (!(chance > 0 && rng() * 100 < chance)) continue;
+    (l.buffs ??= {})[nome] = Math.max(l.buffs[nome] ?? 0, agora + seg * 1000);
+    if (nome === 'devoradorDeAlmas') l.almas = { n: 0, em: agora };
+  }
 }
 /** Um lacaio morreu: os outros recuperam X% da vida ("Lacaios Recuperam X% de Vida na Morte de Lacaios"). */
 export function naMorteDeUmLacaio(vivos) {

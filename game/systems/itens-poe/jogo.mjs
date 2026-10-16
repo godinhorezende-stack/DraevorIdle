@@ -370,7 +370,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (45 — 16/10, lote 51: as Almas Vaal na recarga, os lacaios Agressivos, a Dissolução da Carne e o Aprendizado Inspirado.)
 // (46 — 16/10, lote 52: as afecções elementais estendidas, a Desgraça das Bruxas, a Harmonia Primordial, o Talento Puro e O Adornado.)
 // (47 — 16/10, lote 53: os reflexos da Regra de Ouro, a Revolta dos Mortos e o Modo Alfa / Nadir.)
-export const VERSAO_DA_TRADUCAO = 47;
+// (48 — 16/10, lote 54: a Fúria Fulminante nos ataques com escudo e a Fome Eterna — o Devorador de Almas nos Espectros.)
+export const VERSAO_DA_TRADUCAO = 48;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
