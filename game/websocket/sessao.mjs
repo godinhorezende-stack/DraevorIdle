@@ -107,12 +107,13 @@ Inventario.semearChao(CITY_META.chao);
 
 /** Todas as sessões vivas, por nome de personagem — para quando o mapa tiver mais de um jogador. */
 export const vivas = new Map();
-/** Quem está entrando num personagem e esperando a simulação offline (por nome do personagem). */
+/** Quem está entrando num personagem (por nome do personagem): da conferência das outras abas até entrar em `vivas` — ver `entrarNoPersonagem`. */
 const carregandoAgora = new Map();
 /**
  * O personagem está no jogo — conectado, ou entrando (a simulação da volta
- * rodando)? A consolidação em segundo plano (`consolidacao-offline.mjs`) não
- * mexe em quem está: o estado dele é o da sessão, não o do banco.
+ * rodando, ou a entrada esperando o banco)? A consolidação em segundo plano
+ * (`consolidacao-offline.mjs`) não mexe em quem está: o estado dele é o da
+ * sessão, não o do banco.
  */
 export const estaNoJogo = (nome) => !!vivas.get(nome)?.personagem || carregandoAgora.has(nome);
 /** A fila global de transações (Fase 6) — ver `emTransacao`. */
@@ -1890,8 +1891,8 @@ export class Sessao {
 
   async entrarNoPersonagem({ name }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
-    // Já entrando num personagem (a simulação offline está rodando): o cliente
-    // manda `play` uma vez só; outro no meio é repetição.
+    // Já entrando num personagem (esperando o banco ou a simulação offline): o
+    // cliente manda `play` uma vez só; outro no meio é repetição.
     if (this.carregando) return;
     // Manutenção com indisponibilidade (desligada por padrão): ninguém NOVO entra; a caçada offline segue correndo.
     if (Manutencao.bloqueada()) return this.erro(Manutencao.mensagemDeBloqueio());
@@ -1909,144 +1910,172 @@ export class Sessao {
     // tique deste personagem: sem isto, o tamanho da party ficaria "sem
     // nenhum slot comprado" até a próxima vez que algo lesse do banco.
     await B.lerMelhoriasDaConta(this.conta.id);
-    if (this.saidas !== saidas) return;
+    // (A repetição do `play` que chegou enquanto a primeira esperava o banco para aqui: a primeira já está entrando.)
+    if (this.saidas !== saidas || this.carregando) return;
     // "Sem [o Slot de party], a conta joga e caça com até 2 chars" ao mesmo tempo.
-    // Quem ainda está carregando (simulação offline) já conta.
+    // Quem ainda está entrando (a simulação offline, o banco) já conta.
     const limite = Party.limiteDeChars(this.conta.id);
     const jogando = (s) => s.personagem?.nome ?? s.carregando?.nome;
     const daConta = [...vivas.values(), ...carregandoAgora.values()].filter((s) => s !== this && s.conta?.id === this.conta.id && jogando(s) && jogando(s) !== personagem.nome);
     if (daConta.length >= limite) {
       return this.erroDeAuth(`Sua conta já está com ${daConta.length} personagens jogando — o limite é ${limite}. Mais: "Slot de party", na Store.`);
     }
-    // O mesmo personagem aberto (ou ainda carregando) em outra aba: esta ganha.
+    // O mesmo personagem aberto (ou ainda entrando) em outra aba: esta ganha.
     const carregandoLa = carregandoAgora.get(personagem.nome);
+    // O que a outra aba ainda grava ao ser solta: a releitura do personagem, lá embaixo, espera.
+    const gravandoLa = [];
     if (carregandoLa && carregandoLa !== this) {
+      // Solta em `concluirEntrada`, a entrada de lá pode já ter tirado do banco o crédito do Mercado ou o presente: ela grava o estado
+      // com eles (`gravarSemEntrar`) antes de terminar (`concluindo`).
+      if (carregandoLa.carregando?.concluindo) gravandoLa.push(carregandoLa.carregando.concluindo);
       carregandoLa.cancelarCarregamento();
       enviar(carregandoLa.ws, { t: 'released', notice: 'Você entrou neste personagem em outra aba.' });
     }
     const antiga = vivas.get(personagem.nome);
     if (antiga && antiga !== this) {
-      antiga.soltarPersonagem();
+      // A gravação da saída (`soltarPersonagem` a devolve) — no Postgres, a leitura podia sair por outra conexão antes de a escrita chegar.
+      gravandoLa.push(antiga.soltarPersonagem());
       enviar(antiga.ws, { t: 'released', notice: 'Você entrou neste personagem em outra aba.' });
-      // A outra aba acabou de gravar: a linha lida lá em cima já está velha.
-      personagem = await B.personagemPorNome(name);
-      if (this.saidas !== saidas) return;
     }
-
-    const estado = JSON.parse(personagem.estado);
-    // Os bichos da caçada voltam completos (ver `Cacadas.huntParaGravar`).
-    Cacadas.huntAoCarregar(estado.hunt);
-    estado.pos = corrigirPosicaoAntiga(estado.pos);
-    // A CIDADE dele (uma instância por ato — `cidades.mjs`): quem ainda não tem fica na do ato da próxima fase da campanha.
-    if (Cidades.porAto() && !estado.atoDaCidade) estado.atoDaCidade = Campanha.atoDaFronteira(estado);
-    // Migração: personagens salvos antes do sistema de recompensas existir
-    // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
-    // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
-    if (!estado.diario) Object.assign(estado, Recompensas.estadoInicial());
-    // Os sets de marco da VOCAÇÃO dele (os ainda não pegos vinham com os itens de knight).
-    Recompensas.marcosDaVocacao(estado);
-    // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
-    ItensDoJogo.converterPersonagem(estado);
-    // A roupa da classe (uma vez — o boot já vestiu todo mundo; isto é a garantia para quem escapou): `personagem/roupa-da-classe.mjs`.
-    if (ItensPoeCatalogo.ligado()) RoupaDaClasse.aplicar(estado, personagem.sexo);
-    // A Store Inbox e a Boss Pouch saíram: o que ainda estava nelas vai para as Chegadas do Depósito (uma vez; `Deposito.garantir`).
-    Deposito.garantir(estado);
-    // O personagem novo ganha as gemas iniciais da classe (uma vez).
-    GemasDeSkill.darGemasIniciais(estado);
-    // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).
-    Acoes.sincronizarBarraComGemas(estado);
-    // O filtro de loot da conta ("Toda a conta" ligado em algum char): vale neste também.
-    const filtroDaConta = B.melhoriasCache(this.conta.id).filtroDeLoot;
-    if (filtroDaConta?.ativo) FiltroDaConta.aplicar(estado, filtroDaConta);
-    // A árvore de passivas única: garante o início da classe e, para quem tinha a árvore
-    // ANTIGA por vocação, devolve todos os pontos (com um respec grátis) — uma vez.
-    const passivas = Passivas.garantir(estado);
-    if (passivas.migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
-    else if (passivas.arvoreMudou) estado.avisoDaHunt = 'A árvore de passivas ganhou caminhos de atributo (STR/DEX/INT) entre os clusters. Os nós que perderam o caminho saíram e os pontos voltaram — você tem um respec completo grátis para remontar.';
-    // A escala da vida/mana mudou (o sistema de itens do PoE foi ligado ou desligado neste servidor — `R.statsBase`): refaz os máximos.
-    // ('poe-2': a base do PoE de verdade — 50 de vida e 40 de mana no nível 1, dono 07/10 — refaz os máximos de quem estava na escala anterior.)
-    const escala = ItensPoeCatalogo.ligado() ? 'poe-2' : 'draevor';
-    if ((estado.escalaDeVida ?? 'draevor') !== escala) {
-      refazerMaximosDoPersonagem(estado, estado.level ?? 1);
-      estado.hp = Math.min(estado.hp ?? estado.maxHp, estado.maxHp);
-      estado.mana = Math.min(estado.mana ?? estado.maxMana, estado.maxMana);
-      estado.escalaDeVida = escala;
-    }
-    // As peças do PoE traduzidas numa versão antiga (os mods que eram só "registrados" passaram a ter efeito — 07/10): refaz o `af` e os
-    // estados de cada uma (mods, valores, sockets e gemas ficam como estão).
-    ItensPoeJogo.refazerPecasAntigas(estado);
-    // O Buff Power ligado (o +3000 de vida/mana): sai no modo PoE, onde ele não existe; no Draevor, acerta pelo relógio.
-    BuffPower.sincronizarVida(estado);
-    // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
-    Afixos.sincronizarMaximos(estado);
-    // Mesma migração, agora para os campos que a Store passou a usar.
-    if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
-    // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
-    // ganha a exp base do level que já tem, somada ao que caçou.
-    // (Com o PoE ligado não: a curva é outra, e o personagem do PoE já nasce com a exp do level dele.)
-    if (!ItensPoeCatalogo.ligado() && (estado.xp ?? 0) < R.expForLevel(estado.level)) estado.xp = (estado.xp ?? 0) + R.expForLevel(estado.level);
-    Treino.garantir(estado);
-    // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
-    Gemas.sincronizarMaximos(estado);
-    Inventario.moedasParaOBolso(estado);
-    // Peça vestida no slot errado (de antes de o servidor validar o slot): volta para a mochila, sem perda.
-    const noSlotErrado = Inventario.recolherPecasNoSlotErrado(estado);
-    if (noSlotErrado.length) estado.avisoDaHunt = `${noSlotErrado.join(', ')} não ${noSlotErrado.length > 1 ? 'pertencem' : 'pertence'} ao slot em que ${noSlotErrado.length > 1 ? 'estavam' : 'estava'} e ${noSlotErrado.length > 1 ? 'voltaram' : 'voltou'} para a mochila.`;
-    // Arma de duas mãos com escudo vestido (de antes da regra): o escudo volta para a mochila.
-    Inventario.corrigirDuasMaos(estado);
-    // Peça vestida que pede um level acima do dele (a arma agora define o dano): volta para a mochila, sem perda.
-    const acimaDoLevel = Inventario.devolverPecasAcimaDoLevel(estado);
-    if (acimaDoLevel.length) estado.avisoDaHunt = `${acimaDoLevel.join(', ')} ${acimaDoLevel.length > 1 ? 'pedem' : 'pede'} um level acima do seu e ${acimaDoLevel.length > 1 ? 'voltaram' : 'voltou'} para a mochila.`;
-    // Munição/arremessável em pilha (de antes de deixarem de empilhar): uma peça, o resto vendido.
-    const desempilhada = Bolsa.desempilharMunicao(estado);
-    if (desempilhada.pecas) estado.avisoDaHunt = `Munição e armas de arremesso não empilham mais: ficou uma de cada pilha, e ${desempilhada.pecas.toLocaleString('pt-BR')} a mais viraram ${desempilhada.ouro.toLocaleString('pt-BR')} de ouro.`;
-    // O treino (pátio, Exercise, offline) saiu do jogo: quem ainda tinha algo dele gravado sai limpo (`systems/sem-treino.mjs`).
-    SemTreino.limpar(estado);
-    // A barra do PoE tem 8 slots de habilidade (antes eram 22 com as poções): quem vem da barra antiga fica com as ações compactadas e as teclas de fábrica.
-    Acoes.ajustarBarra(estado);
-    // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
-    if (!estado.hunt && personagem.visto_em) Stamina.recuperar(estado, Date.now() - personagem.visto_em);
-    // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.
-    Arena.aoEntrar(estado);
 
     /*
-     * ---- Caçou com a aba fechada? A simulação roda FORA da thread do jogo ----
+     * ---- Daqui até `vivas`, a entrada fica em `carregandoAgora` ----
      *
-     * Até aqui nada foi gravado nem tirado do banco: se a pessoa sair, fechar
-     * a aba ou entrar neste personagem em outra aba enquanto a simulação roda,
-     * o resultado é só jogado fora (`cancelarCarregamento`) e a próxima entrada
-     * simula de novo a partir do mesmo estado gravado — nada se perde e nada
-     * se ganha duas vezes. Enquanto isso a sessão não tem personagem: o tique
-     * e os comandos de jogo passam por ela sem fazer nada.
+     * A entrada ainda espera o banco (a releitura logo abaixo, os `await`s de `concluirEntrada`) e, caçando de aba fechada, a simulação
+     * offline; o personagem só entra em `vivas` no fim. Antes, nesse meio-tempo ela ficava invisível (saía de `carregandoAgora` ao fim
+     * da simulação, ou nem entrava lá, sem ausência para simular): outra aba no mesmo personagem não a achava, lia o mesmo estado do
+     * banco, simulava a mesma ausência, e as duas terminavam vivas com cópias do personagem — gravando uma por cima da outra, e podendo
+     * duplicar o que saísse delas. Agora a outra aba a acha aqui e ganha (`cancelarCarregamento`, acima), e a consolidação offline não
+     * mexe nele (`estaNoJogo`). Sai daqui ao entrar em `vivas` (ver `concluirEntrada`) — ou, por qualquer outro caminho, no `finally`.
      */
-    const agora = Date.now();
-    if (!Cacadas.temAusenciaParaSimular(estado, agora)) {
-      return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora));
-    }
     const pedido = { nome: personagem.nome };
     this.carregando = pedido;
     carregandoAgora.set(personagem.nome, this);
-    const quem = { id: personagem.id, nome: personagem.nome, conta: personagem.conta, vocacao: personagem.vocacao };
-    const ida = { ...estado, hunt: Cacadas.huntParaGravar(estado.hunt) };
-    return SimulacaoOffline.simular(ida, quem, agora).then(
-      ({ estado: simulado, ausencia }) => {
-        if (this.carregando !== pedido) return;
-        this.pararDeCarregar();
-        // Trocou de conta no meio (login em outra): este personagem não é mais dela.
-        if (this.conta?.id !== personagem.conta) return;
-        Cacadas.huntAoCarregar(simulado.hunt);
-        // Devolvida: quem espera a entrada (ver `trazerParaOMundo`) espera ela INTEIRA.
-        return this.concluirEntrada(personagem, simulado, ausencia);
-      },
-      (e) => {
-        if (this.carregando !== pedido) return;
-        // A thread falhou: simula aqui mesmo (trava, mas o jogador entra).
-        console.error('simulação offline ->', e.message);
-        this.pararDeCarregar();
-        if (this.conta?.id !== personagem.conta) return;
-        return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora));
-      },
-    );
+    try {
+      if (gravandoLa.length) {
+        // (Uma entrada de lá que falhou não derruba esta.)
+        await Promise.allSettled(gravandoLa);
+        // A outra aba acabou de gravar: a linha lida lá em cima já está velha.
+        personagem = await B.personagemPorNome(name);
+        if (this.saidas !== saidas) return;
+        if (!personagem) return this.erroDeAuth('Personagem não encontrado.');
+      }
+
+      const estado = JSON.parse(personagem.estado);
+      // Os bichos da caçada voltam completos (ver `Cacadas.huntParaGravar`).
+      Cacadas.huntAoCarregar(estado.hunt);
+      estado.pos = corrigirPosicaoAntiga(estado.pos);
+      // A CIDADE dele (uma instância por ato — `cidades.mjs`): quem ainda não tem fica na do ato da próxima fase da campanha.
+      if (Cidades.porAto() && !estado.atoDaCidade) estado.atoDaCidade = Campanha.atoDaFronteira(estado);
+      // Migração: personagens salvos antes do sistema de recompensas existir
+      // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
+      // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
+      if (!estado.diario) Object.assign(estado, Recompensas.estadoInicial());
+      // Os sets de marco da VOCAÇÃO dele (os ainda não pegos vinham com os itens de knight).
+      Recompensas.marcosDaVocacao(estado);
+      // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
+      ItensDoJogo.converterPersonagem(estado);
+      // A roupa da classe (uma vez — o boot já vestiu todo mundo; isto é a garantia para quem escapou): `personagem/roupa-da-classe.mjs`.
+      if (ItensPoeCatalogo.ligado()) RoupaDaClasse.aplicar(estado, personagem.sexo);
+      // A Store Inbox e a Boss Pouch saíram: o que ainda estava nelas vai para as Chegadas do Depósito (uma vez; `Deposito.garantir`).
+      Deposito.garantir(estado);
+      // O personagem novo ganha as gemas iniciais da classe (uma vez).
+      GemasDeSkill.darGemasIniciais(estado);
+      // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).
+      Acoes.sincronizarBarraComGemas(estado);
+      // O filtro de loot da conta ("Toda a conta" ligado em algum char): vale neste também.
+      const filtroDaConta = B.melhoriasCache(this.conta.id).filtroDeLoot;
+      if (filtroDaConta?.ativo) FiltroDaConta.aplicar(estado, filtroDaConta);
+      // A árvore de passivas única: garante o início da classe e, para quem tinha a árvore
+      // ANTIGA por vocação, devolve todos os pontos (com um respec grátis) — uma vez.
+      const passivas = Passivas.garantir(estado);
+      if (passivas.migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
+      else if (passivas.arvoreMudou) estado.avisoDaHunt = 'A árvore de passivas ganhou caminhos de atributo (STR/DEX/INT) entre os clusters. Os nós que perderam o caminho saíram e os pontos voltaram — você tem um respec completo grátis para remontar.';
+      // A escala da vida/mana mudou (o sistema de itens do PoE foi ligado ou desligado neste servidor — `R.statsBase`): refaz os máximos.
+      // ('poe-2': a base do PoE de verdade — 50 de vida e 40 de mana no nível 1, dono 07/10 — refaz os máximos de quem estava na escala anterior.)
+      const escala = ItensPoeCatalogo.ligado() ? 'poe-2' : 'draevor';
+      if ((estado.escalaDeVida ?? 'draevor') !== escala) {
+        refazerMaximosDoPersonagem(estado, estado.level ?? 1);
+        estado.hp = Math.min(estado.hp ?? estado.maxHp, estado.maxHp);
+        estado.mana = Math.min(estado.mana ?? estado.maxMana, estado.maxMana);
+        estado.escalaDeVida = escala;
+      }
+      // As peças do PoE traduzidas numa versão antiga (os mods que eram só "registrados" passaram a ter efeito — 07/10): refaz o `af` e os
+      // estados de cada uma (mods, valores, sockets e gemas ficam como estão).
+      ItensPoeJogo.refazerPecasAntigas(estado);
+      // O Buff Power ligado (o +3000 de vida/mana): sai no modo PoE, onde ele não existe; no Draevor, acerta pelo relógio.
+      BuffPower.sincronizarVida(estado);
+      // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
+      Afixos.sincronizarMaximos(estado);
+      // Mesma migração, agora para os campos que a Store passou a usar.
+      if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
+      // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
+      // ganha a exp base do level que já tem, somada ao que caçou.
+      // (Com o PoE ligado não: a curva é outra, e o personagem do PoE já nasce com a exp do level dele.)
+      if (!ItensPoeCatalogo.ligado() && (estado.xp ?? 0) < R.expForLevel(estado.level)) estado.xp = (estado.xp ?? 0) + R.expForLevel(estado.level);
+      Treino.garantir(estado);
+      // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
+      Gemas.sincronizarMaximos(estado);
+      Inventario.moedasParaOBolso(estado);
+      // Peça vestida no slot errado (de antes de o servidor validar o slot): volta para a mochila, sem perda.
+      const noSlotErrado = Inventario.recolherPecasNoSlotErrado(estado);
+      if (noSlotErrado.length) estado.avisoDaHunt = `${noSlotErrado.join(', ')} não ${noSlotErrado.length > 1 ? 'pertencem' : 'pertence'} ao slot em que ${noSlotErrado.length > 1 ? 'estavam' : 'estava'} e ${noSlotErrado.length > 1 ? 'voltaram' : 'voltou'} para a mochila.`;
+      // Arma de duas mãos com escudo vestido (de antes da regra): o escudo volta para a mochila.
+      Inventario.corrigirDuasMaos(estado);
+      // Peça vestida que pede um level acima do dele (a arma agora define o dano): volta para a mochila, sem perda.
+      const acimaDoLevel = Inventario.devolverPecasAcimaDoLevel(estado);
+      if (acimaDoLevel.length) estado.avisoDaHunt = `${acimaDoLevel.join(', ')} ${acimaDoLevel.length > 1 ? 'pedem' : 'pede'} um level acima do seu e ${acimaDoLevel.length > 1 ? 'voltaram' : 'voltou'} para a mochila.`;
+      // Munição/arremessável em pilha (de antes de deixarem de empilhar): uma peça, o resto vendido.
+      const desempilhada = Bolsa.desempilharMunicao(estado);
+      if (desempilhada.pecas) estado.avisoDaHunt = `Munição e armas de arremesso não empilham mais: ficou uma de cada pilha, e ${desempilhada.pecas.toLocaleString('pt-BR')} a mais viraram ${desempilhada.ouro.toLocaleString('pt-BR')} de ouro.`;
+      // O treino (pátio, Exercise, offline) saiu do jogo: quem ainda tinha algo dele gravado sai limpo (`systems/sem-treino.mjs`).
+      SemTreino.limpar(estado);
+      // A barra do PoE tem 8 slots de habilidade (antes eram 22 com as poções): quem vem da barra antiga fica com as ações compactadas e as teclas de fábrica.
+      Acoes.ajustarBarra(estado);
+      // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
+      if (!estado.hunt && personagem.visto_em) Stamina.recuperar(estado, Date.now() - personagem.visto_em);
+      // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.
+      Arena.aoEntrar(estado);
+
+      /*
+       * ---- Caçou com a aba fechada? A simulação roda FORA da thread do jogo ----
+       *
+       * Até aqui nada foi gravado nem tirado do banco: se a pessoa sair, fechar
+       * a aba ou entrar neste personagem em outra aba enquanto a simulação roda,
+       * o resultado é só jogado fora (`cancelarCarregamento`) e a próxima entrada
+       * simula de novo a partir do mesmo estado gravado — nada se perde e nada
+       * se ganha duas vezes. Enquanto isso a sessão não tem personagem: o tique
+       * e os comandos de jogo passam por ela sem fazer nada.
+       */
+      const agora = Date.now();
+      // `concluindo`: a outra aba que soltar esta entrada no meio de `concluirEntrada` espera ela terminar (ver acima).
+      const concluir = (final, ausencia) => (pedido.concluindo = this.concluirEntrada(personagem, final, ausencia));
+      if (!Cacadas.temAusenciaParaSimular(estado, agora)) {
+        return await concluir(estado, Cacadas.simularAusencia(estado, personagem, agora));
+      }
+      const quem = { id: personagem.id, nome: personagem.nome, conta: personagem.conta, vocacao: personagem.vocacao };
+      const ida = { ...estado, hunt: Cacadas.huntParaGravar(estado.hunt) };
+      return await SimulacaoOffline.simular(ida, quem, agora).then(
+        ({ estado: simulado, ausencia }) => {
+          if (this.carregando !== pedido) return;
+          // Trocou de conta no meio (login em outra): este personagem não é mais dela.
+          if (this.conta?.id !== personagem.conta) return;
+          Cacadas.huntAoCarregar(simulado.hunt);
+          // Devolvida: quem espera a entrada (ver `trazerParaOMundo`) espera ela INTEIRA.
+          return concluir(simulado, ausencia);
+        },
+        (e) => {
+          if (this.carregando !== pedido) return;
+          // A thread falhou: simula aqui mesmo (trava, mas o jogador entra).
+          console.error('simulação offline ->', e.message);
+          if (this.conta?.id !== personagem.conta) return;
+          return concluir(estado, Cacadas.simularAusencia(estado, personagem, agora));
+        },
+      );
+    } finally {
+      // Terminou sem entrar em `vivas` (trocou de conta, uma consulta ou uma migração falhou...): não fica "entrando" para sempre.
+      if (this.carregando === pedido) this.pararDeCarregar();
+    }
   }
 
   /** "Seguir" da campanha (ver `Cacadas.faseParaSeguir`): entra na próxima fase e traz quem segue o líder. */
@@ -2075,8 +2104,10 @@ export class Sessao {
     this.carregando = null;
   }
 
-  /** A entrada foi abandonada no meio da simulação offline: o resultado dela é descartado. */
+  /** A entrada foi abandonada no meio (esta saiu, ou outra aba entrou no personagem): o resultado dela é descartado. */
   cancelarCarregamento() {
+    // A entrada que espera o banco vê o número mudar e para, como numa saída (ver `concluirEntrada`).
+    this.saidas++;
     this.pararDeCarregar();
   }
 
@@ -2157,11 +2188,12 @@ export class Sessao {
     /*
      * ---- A conexão pode cair durante os `await`s daqui ----
      * Logo depois de um deploy todo mundo reconecta junto, e quem fecha a aba (ou perde a rede) no meio da entrada cai aqui. O personagem
-     * só entra na sessão (`this.estado`) depois dos `await`s: até lá o estado é só desta função, e uma saída no meio (`soltarPersonagem`)
-     * não tem o que gravar — a entrada para em silêncio e o banco fica como estava. A próxima entrada simula a ausência de novo, ou mostra
-     * o relatório que já estava gravado (`relatorioDaAusencia`, até o OK): nada se perde e nada se ganha duas vezes. (Antes ele entrava na
-     * sessão ANTES dos `await`s: a saída no meio gravava o estado já simulado SEM o relatório, que só entra lá embaixo, e a entrada seguia
-     * com `this.estado` nulo — 16/10: "Cannot read properties of null (reading 'relatorioDaAusencia')".)
+     * só entra na sessão (`this.estado`) depois dos `await`s: até lá o estado é só desta função, e uma saída no meio (`soltarPersonagem`,
+     * ou a outra aba que entrou no mesmo personagem — `cancelarCarregamento`) não tem o que gravar — a entrada para em silêncio e o banco
+     * fica como estava. A próxima entrada simula a ausência de novo, ou mostra o relatório que já estava gravado (`relatorioDaAusencia`,
+     * até o OK): nada se perde e nada se ganha duas vezes. (Antes ele entrava na sessão ANTES dos `await`s: a saída no meio gravava o
+     * estado já simulado SEM o relatório, que só entra lá embaixo, e a entrada seguia com `this.estado` nulo — 16/10: "Cannot read
+     * properties of null (reading 'relatorioDaAusencia')".)
      * As leituras vêm primeiro; o crédito do Mercado e o presente, que SAEM do banco, por último (ver `gravarSemEntrar`).
      */
     const saidas = this.saidas;
@@ -2194,6 +2226,8 @@ export class Sessao {
      */
     this.entrando = true;
     vivas.set(personagem.nome, this);
+    // Em `vivas`, deixa de estar "entrando": as outras abas e a consolidação offline o acham por aqui agora (ver `entrarNoPersonagem`).
+    this.pararDeCarregar();
     this.entrouEm = Date.now();
     // Reconexão: volta ao lugar na party (se estava como offline) — ver `Party.entrouNoJogo`.
     Party.entrouNoJogo(this);
@@ -2291,7 +2325,8 @@ export class Sessao {
    * A entrada foi abandonada DEPOIS de o Mercado ou o presente ter entregado algo ao estado que entrava (ver `concluirEntrada`): aquilo
    * já saiu do banco, então o estado não pode ser jogado fora. Ele é gravado como numa entrada seguida da saída — com o relatório da
    * ausência (e a morte, se houve) e a caçada seguindo offline (`gravarAgora`) —, sem o personagem entrar no jogo: nem em `vivas`, nem na
-   * party, nem `welcome`.
+   * party, nem `welcome`. A outra aba que soltou esta entrada espera esta gravação antes de reler o personagem (`concluindo`, em
+   * `entrarNoPersonagem`).
    */
   gravarSemEntrar(personagem, estado, ausencia) {
     this.personagem = personagem;
@@ -2327,7 +2362,7 @@ export class Sessao {
   soltarPersonagem() {
     // Uma entrada no meio (esperando o banco) vê o número mudar e para — ver `concluirEntrada`.
     this.saidas++;
-    // Saiu no meio da simulação offline: nada foi gravado ainda, só descarta.
+    // Saiu no meio da entrada: nada foi gravado ainda, só descarta.
     if (this.carregando) this.cancelarCarregamento();
     if (!this.personagem) return;
     // Campos de movimento são de ida (calculados a cada tique a partir do
