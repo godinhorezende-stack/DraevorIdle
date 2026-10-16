@@ -211,6 +211,11 @@ const IMPLEMENTADOS = [
     re: /Infusão Espiritual a cada|disparados em direções aleatórias|Ricochetear ao colidirem com o terreno/,
     jogo: 'a CANALIZAÇÃO CONTÍNUA (a mesma habilidade de Canalização usada em seguida continua o canalizar; outra interrompe — a Infusão Espiritual a cada 0,5 s canalizando); as DIREÇÕES ALEATÓRIAS (todos os projéteis saem em direções sorteadas e acertam o primeiro do caminho); o TERRENO (o projétil que erra e bate numa casa que não se anda ricocheteia, na chance, para o inimigo mais perto da batida)',
   },
+  {
+    bloco: 'Zerar a árvore — lote 43 (a Égide Necromântica: as defesas e os outros bônus do escudo nos lacaios)',
+    re: /Todos os bônus do Escudo equipado se aplicam aos seus Lacaios/,
+    jogo: 'as DEFESAS do escudo nos lacaios (a armadura, a evasão e o escudo de energia da base, com o "+X" e o "aumentado" do próprio escudo; a armadura no golpe pela conta do PoE, a evasão contra o ataque, a supressão contra a magia), a vida fixa, a redução física, o bloqueio aumentado, o dano mágico e o do elemento, o evitar afecções, o reflexo físico e a recarga do escudo',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

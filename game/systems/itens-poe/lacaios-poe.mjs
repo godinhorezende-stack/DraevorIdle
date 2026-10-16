@@ -14,6 +14,7 @@ import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
 import * as Controle from '../combate/controle.mjs';
 import { slugDoNome, fatorDaArea, casasPelaArea } from './condicoes-poe.mjs';
+import { chanceDeEsquiva } from '../personagem/atributos.mjs';
 
 const BESTIARY = CATALOGO.bestiary;
 /** As palavras de cada tipo de lacaio nos mods das peças (`max_lacaio:golem`, `lacaio_dano:espirito`…). */
@@ -158,12 +159,16 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // (+ os do TIPO de lacaio: "Golens possuem X% menos Vida", "Espíritos Furiosos Convocados causam Dano aumentado", "Zumbis têm X% da Vida
   // máxima aumentada", "Zumbis causam X% mais Dano Físico", "+N de Vida máxima" dos Zumbis…)
   // (ciclo 7: + o "Lacaios tem X% mais Vida Máxima" da árvore — `lacaio_vida_mais:<tipo>`, multiplica.)
-  const vida = Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life') + porTipo('lacaio_vida')) / 100) * Math.max(0, 1 + porTipo('lacaio_vida_mais') / 100)));
+  // (lote 43, P040: + a vida fixa do escudo da Égide Necromântica — `minion_vida_fixa`)
+  const vida = Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa') + m0('minion_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life') + porTipo('lacaio_vida')) / 100) * Math.max(0, 1 + porTipo('lacaio_vida_mais') / 100)));
   // ("Lacaios ganham X% do Dano Físico / Elemental como Dano de Caos/Fogo Extra" — dono, 11/10: os únicos: o extra entra no golpe do lacaio
   // do tipo certo — o físico no lacaio físico, o elemental no de Fogo/Gelo/Raio —, sem a resistência do outro elemento.)
   const fisico = (r.elemento ?? 'physical') === 'physical';
   const extra = 1 + (fisico ? m0('minion_phys_as_extra') : ['fire', 'ice', 'energy'].includes(r.elemento) ? m0('minion_elem_as_extra') : 0) / 100;
-  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano')) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * extra;
+  // (lote 43, P040: + do escudo da Égide Necromântica — o "Dano Mágico aumentado" no lacaio que conjura, o dano do elemento dele)
+  const conjura = /mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`);
+  const doEscudo = (conjura ? m0('minion_dano_magico') : 0) + m0(`minion_dano_${r.elemento ?? 'physical'}`);
+  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * extra;
   // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   // (+ o do TIPO: "Golens têm X a Y de Dano Físico de Ataques Adicional".)
@@ -208,8 +213,11 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (ciclo 7, a árvore) o crítico, a área, a recarga, o bloqueio mágico, a redução física, o escudo, o máximo das resistências, a
       // recuperação, os buffs ao matar, o dano dobrado, ignorar a redução física, a penetração nos amaldiçoados, a vida na morte de outro
       // lacaio, o dreno para o dono — `aplicarNoLacaio`, `golpeDoLacaio`, `danoNoLacaio`, `aoMatarDoLacaio`.
-      critInc: m0('minion_crit_inc'), critMult: m0('minion_crit_mult'), areaPct: m0('minion_area'), recargaPct: m0('minion_cdr'),
+      critInc: m0('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? m0('minion_crit_magico') : 0), critMult: m0('minion_crit_mult'), areaPct: m0('minion_area'), recargaPct: m0('minion_cdr'),
       bloqueioMagico: m0('minion_spell_block'), reducaoFisica: m0('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: m0('minion_es_da_vida'), resMax: m0('minion_res_max'),
+      // (lote 43, P040: as defesas do escudo da Égide Necromântica — a armadura, a evasão, o escudo de energia fixo, a supressão de magia)
+      armadura: m0('minion_armadura'), evasao: m0('minion_evasao'), esFixo: m0('minion_es'), supressao: m0('minion_supressao'),
+      bloqueioInc: m0('minion_block_inc'), evitarAfeccoes: m0('minion_evitar_afeccoes'), reflexoFisico: m0('minion_reflexo_fisico'), esRecargaInicio: m0('minion_es_recarga_inicio'),
       recuperacaoPct: m0('minion_recuperacao'), vidaNaMorteDeLacaioPct: m0('minion_vida_na_morte_lacaio'),
       danoDobrado: m0('minion_dano_dobrado'), ignoraReducaoFisica: m0('minion_ignora_reducao_fisica'), penAmaldicoados: m0('minion_pen_amaldicoados'),
       drenoParaODono: m0('minion_dreno_dono'), poderProfano: m0('minion_poder_profano'), explodeVidaBaixaPct: m0('minion_explode_vida_baixa'),
@@ -278,8 +286,9 @@ const AGRESSIVIDADE_PCT = 20;
 /** O lacaio recém-invocado com os mods do dono: o Escudo de Energia ("ganham X% da Vida Máxima como Escudo de Energia"). */
 export function aplicarNoLacaio(l) {
   const p = l?.poe;
-  if (!p?.esDaVidaPct) return l;
-  l.maxEs = Math.round((l.maxHp * p.esDaVidaPct) / 100);
+  // (+ lote 43, P040: o escudo de energia fixo — o do escudo da Égide Necromântica)
+  if (!p?.esDaVidaPct && !(p?.esFixo > 0)) return l;
+  l.maxEs = Math.round((l.maxHp * (p.esDaVidaPct ?? 0)) / 100 + (p.esFixo ?? 0));
   l.es = l.maxEs;
   return l;
 }
@@ -294,6 +303,8 @@ export const velocidadeDoLacaio = (l, agora) => (buffDoLacaio(l, 'agressividade'
  */
 export function controleNoLacaio(l, bicho, hunt, agora, rng = Math.random) {
   if (!l || l.poe?.semLentidao) return false;
+  // (lote 43, P040: o "chance de evitar Afecções Elementais" do escudo da Égide Necromântica — a lentidão do Resfriamento)
+  if (l.poe?.evitarAfeccoes > 0 && rng() * 100 < l.poe.evitarAfeccoes) return false;
   const classe = Controle.classeDoMob(bicho, !!hunt?.isBoss);
   const cfg = classe ? Controle.CONFIG.mobs[classe] : null;
   const pesos = cfg?.efeitos ?? {};
@@ -358,7 +369,12 @@ export function curarLacaio(l, quanto) {
  * (na parte física), o máximo das resistências elementais (`resMax`) e o escudo antes da vida. `fisico`: a parte física do golpe;
  * `porElemento`: `[{ elemento, valor }]` as outras partes já sem resistência; `magia`: o golpe é de magia. Devolve `{ dano, bloqueou }`.
  */
-export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = Math.random, bloqueioMagicoExtra = 0 } = {}) {
+/**
+ * O dano no lacaio: o bloqueio mágico (a magia); (lote 43, P040) a EVASÃO contra o ataque (a do escudo da Égide Necromântica, pela mesma conta
+ * da sua — `chanceDeEsquiva`, contra a `precisao` do bicho); a SUPRESSÃO de magia (50% menos dano); a ARMADURA no físico (armadura ÷ (armadura +
+ * 5 × o físico), somada à redução física adicional, no teto de 90%); e o escudo. `{ dano, bloqueou, evadiu }`.
+ */
+export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = Math.random, bloqueioMagicoExtra = 0, precisao = 0 } = {}) {
   const p = l?.poe ?? {};
   // (13/10: + o bloqueio mágico das auras "Você e Aliados" do dono — `bloqueioMagicoExtra`)
   const bloqueioMagico = (p.bloqueioMagico ?? 0) + bloqueioMagicoExtra;
@@ -366,14 +382,18 @@ export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = M
     if (p.vidaAoBloquear > 0) curarLacaio(l, (l.maxHp * p.vidaAoBloquear) / 100);
     return { dano: 0, bloqueou: true };
   }
-  const red = Math.min(90, Math.max(0, p.reducaoFisica ?? 0));
+  if (!magia && p.evasao > 0 && precisao > 0 && rng() < chanceDeEsquiva(p.evasao, l.nivel ?? 1, precisao)) return { dano: 0, bloqueou: false, evadiu: true };
+  const daArmadura = p.armadura > 0 && fisico > 0 ? (100 * p.armadura) / (p.armadura + 5 * fisico) : 0;
+  const red = Math.min(90, Math.max(0, (p.reducaoFisica ?? 0) + daArmadura));
   let dano = fisico * (1 - red / 100) + outros;
+  if (magia && p.supressao > 0 && rng() * 100 < p.supressao) dano *= 0.5;
   if (l.es > 0) {
     const absorvido = Math.min(l.es, dano);
     l.es -= absorvido;
     dano -= absorvido;
   }
-  l.esEspera = 2000;
+  // (lote 43, P040: "Início da Recarga do Escudo de Energia X% mais rápido" do escudo da Égide — a espera de 2 s ÷ (1 + X%))
+  l.esEspera = Math.round(2000 / Math.max(0.1, 1 + (p.esRecargaInicio ?? 0) / 100));
   return { dano, bloqueou: false };
 }
 /** O teto da resistência elemental do lacaio (75 + "X% de máximo de todas as Resistências Elementais"). */

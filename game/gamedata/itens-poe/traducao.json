@@ -558,10 +558,11 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "os bônus do escudo vão para os lacaios (bloqueio, resistências, vida %, dano, velocidades, crítico, regeneração, movimento, dreno); o que o lacaio do jogo não tem — a armadura, a evasão e o escudo de energia da base, os condicionais — sai de você sem ir a ninguém",
+      "nota": "os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico e a recarga do escudo; o que o lacaio do jogo não tem — mana, atributos, precisão (ele não erra), atordoamento e recuperação de bloqueio, o crítico dos monstros nele, o máximo de UMA resistência, os efeitos ao bloquear — sai de você sem ir a ninguém",
       "_nova": true,
       "_ciclo7": true,
-      "_lote10": "13/10 — os lacaios (lote 10)"
+      "_lote10": "13/10 — os lacaios (lote 10)",
+      "_lote43": "16/10 — lote 43 (P040: as defesas e os outros bônus do escudo nos lacaios, \"Fazer todos\")"
     },
     {
       "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em \\{(\\d+)\\}% nos Inimigos$",

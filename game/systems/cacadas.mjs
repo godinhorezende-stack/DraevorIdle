@@ -2413,7 +2413,8 @@ export const resDoLacaio = (l, elemento, aliado = null) => (l?.poe?.res ?? 0) + 
 export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo = null, doAliado = 0) {
   // (PoE, 12/10: o Vínculo Protetor no lacaio — a Chance de Bloquear do lacaio é igual à sua, e "Recupera N de Vida ao Bloquear")
   // (13/10: + o bloqueio das suas auras "Você e Aliados" — `doAliado`)
-  const chance = Math.max((oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0) + doAliado, vinculo?.bloqueioPct ?? 0);
+  // (lote 43, P040: × o "Chance de Bloquear aumentada" do escudo da Égide Necromântica)
+  const chance = Math.max(((oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0) + doAliado) * Math.max(0, 1 + (l.poe?.bloqueioInc ?? 0) / 100), vinculo?.bloqueioPct ?? 0);
   if (!(chance > 0) || rng() * 100 >= chance) return false;
   eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true });
   // (ciclo 7: passa pela "Recuperação de Vida" do lacaio)
@@ -2614,7 +2615,10 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const golpeDoBicho = Poderes.golpeCorpoACorpo(b) ?? R.ataqueDoMonstro(b);
       if (!(golpeDoBicho > 0)) continue;
       // (lote 32, P028: + o bloqueio de Magia da Oferenda Óssea)
-      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0) }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      // (lote 43, P040: + a precisão do bicho contra a evasão do lacaio)
+      const precisao = AtributosDoMob.precisaoDe(b, l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
+      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      if (evadiu) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', esquiva: true }); continue; }
       if (bloqueou) l.bloqueouEm = agora;
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
@@ -2627,6 +2631,13 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const d = Math.max(1, Math.round(sofrido));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
+      // (lote 43, P040: "Reflete N de Dano Físico a Atacantes Corpo a Corpo" do escudo da Égide Necromântica — no bicho que bateu no lacaio)
+      if (l.poe?.reflexoFisico > 0 && b.hp > 0) {
+        const r = Math.max(1, Math.round(resistido(hunt, b, 'physical', l.poe.reflexoFisico, ficha)));
+        b.hp -= r;
+        QuemFeriu.carimbar(b, QuemFeriu.LACAIO);
+        eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: r, foe: true, lacaio: true, alvo: b.name, color: '#ff0000' });
+      }
       // (14/10, o Guarda-costas Leal do Luminary: "Se a vida do seu mercenário for menor que a sua, 40% do dano sofrido por ele é recuperado como
       // vida" — dele; lote 37, P057: ao longo de 4 s, como o Recoup do PoE — `recuperarDoMercenario`)
       const recupera = l.mercenario && l.hp > 0 && l.hp < (estado.hp ?? 0) ? Number(ficha.afPoe?.mercenario_recupera_pct) || 0 : 0;

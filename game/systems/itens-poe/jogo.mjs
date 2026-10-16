@@ -359,7 +359,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (36 — 16/10, lote 40: os raios registrados e o "Alcance do Ricochete aumentado" pelo PoE 2.)
 // (37 — 16/10, lote 41: as áreas frias, o local anterior do Golpe e o bloqueio mágico dos lacaios.)
 // (38 — 16/10, lote 42: a Infusão Espiritual pela canalização contínua, as direções aleatórias e o ricochete no terreno.)
-export const VERSAO_DA_TRADUCAO = 38;
+// (39 — 16/10, lote 43: a Égide Necromântica com as defesas do escudo nos lacaios.)
+export const VERSAO_DA_TRADUCAO = 39;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

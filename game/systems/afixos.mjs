@@ -281,6 +281,13 @@ const DO_ESCUDO_PARA_O_LACAIO = {
   chaos_res: 'minion_chaos_res', life_inc: 'minion_life', dmg_inc: 'minion_dmg', atk_speed: 'minion_atk_speed', cast_speed: 'minion_cast_speed',
   crit_chance_inc: 'minion_crit_inc', crit_dmg: 'minion_crit_mult', move_speed: 'minion_move', life_regen: 'minion_regen', life_regen_max_pct: 'minion_regen_pct',
   life_leech: 'minion_leech', move_speed_armadura: 'minion_move',
+  // (lote 43, P040) a vida fixa, a redução física adicional e a supressão de magia também vão aos lacaios (as defesas: `passarOEscudoAosLacaios`)
+  life: 'minion_vida_fixa', phys_res: 'minion_phys_red', spell_suppression: 'minion_supressao',
+  // (+ o bloqueio aumentado, o dano mágico e o crítico mágico — no lacaio que conjura —, o dano de cada elemento — no lacaio daquele elemento
+  // —, o evitar afecções elementais, o reflexo físico corpo a corpo e o início da recarga do escudo de energia)
+  block_inc: 'minion_block_inc', spell_dmg: 'minion_dano_magico', spell_crit_chance_inc: 'minion_crit_magico', fire_dmg: 'minion_dano_fire',
+  ice_dmg: 'minion_dano_ice', energy_dmg: 'minion_dano_energy', avoid_elem_ailments: 'minion_evitar_afeccoes', reflect_phys_melee: 'minion_reflexo_fisico',
+  es_recharge_start: 'minion_es_recarga_inicio',
 };
 export const ehEgideComEscudo = (estado, total) => itensPoeLigado() && Number(total?.egide_necromantica) > 0 && estado?.equipment?.shield?.poe?.classe === 'Shields';
 
@@ -303,12 +310,23 @@ export function vidaDasArmaduras(estado, total) {
   }, 0));
 }
 function passarOEscudoAosLacaios(estado, total) {
-  const doEscudo = somarPeca({}, estado, 'shield', estado.equipment.shield);
+  const escudo = estado.equipment.shield;
+  const doEscudo = somarPeca({}, estado, 'shield', escudo);
   for (const [k, v] of Object.entries(doEscudo)) {
     total[k] = (total[k] ?? 0) - v;
     const doLacaio = DO_ESCUDO_PARA_O_LACAIO[k];
     if (doLacaio) total[doLacaio] = (total[doLacaio] ?? 0) + v;
   }
+  // (lote 43, P040 — dono, 16/10: "Fazer todos") as DEFESAS do escudo nos lacaios: a da base dele (a armadura, a evasão e o escudo de energia —
+  // `faixaDoCampo`, a média) com o "+X" e o "aumentada em X%" do PRÓPRIO escudo (os seus outros aumentos são seus) — `LacaiosPoe.danoNoLacaio`.
+  const base = (campo) => { const [a, b] = faixaDoCampo(escudo, campo); return (a + b) / 2; };
+  const comPct = (campo, fixo, pct) => (base(campo) + (Number(doEscudo[fixo]) || 0)) * Math.max(0, 1 + ((Number(doEscudo[pct]) || 0) + (Number(doEscudo.defesas_pct_escudo) || 0)) / 100);
+  const armadura = comPct('armor', 'armor_flat', 'armour_pct');
+  const evasao = comPct('evasion', 'evasion', 'evasion_pct');
+  const es = comPct('es', 'energy_shield', 'es_pct');
+  if (armadura > 0) total.minion_armadura = (total.minion_armadura ?? 0) + armadura;
+  if (evasao > 0) total.minion_evasao = (total.minion_evasao ?? 0) + evasao;
+  if (es > 0) total.minion_es = (total.minion_es ?? 0) + es;
 }
 
 /** O relógio da sala (o do anfitrião, se for convidado): é nele que contam os efeitos de altar. */
