@@ -37,6 +37,7 @@ import { PARAMETROS as FORMULAS } from './combate/formulas.mjs';
 import * as FORMULAS_FN from './combate/formulas.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as Catalogo from './itens-poe/catalogo.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
@@ -483,8 +484,12 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // (lote 32, P049: "Velocidade de Movimento não pode ser modificada para abaixo do valor base" — a ficha não fica abaixo da base; a lentidão em
     // você, no passo — `cacadas.razaoDeVelocidade`)
     speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.max(itensPoeLigado() && af.movimento_minimo_base > 0 ? R.baseSpeed(estado.level ?? 1) : 0, Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af))),
-    // O alcance a mais dos golpes corpo a corpo (PoE: "+N metros ao Alcance…"; 1 casa = 2 m).
-    alcanceCorpoExtra: itensPoeLigado() ? Math.floor((af.alcance_corpo_m ?? 0) / 2) : 0,
+    // O alcance a mais dos golpes corpo a corpo, em casas (lote 35 — P001/P033, a decisão do dono "Medir em metros", 1 casa = 2 m): o alcance
+    // de verdade é o da ARMA (`alcance_metros` da base, 1 a 1,4 m) + os "+X metros ao Alcance de Golpes Corpo a Corpo"; o vizinho colado está
+    // sempre ao alcance (as casas encostam) e cada casa a mais pede 2 m (o vão de uma casa). Antes só os metros a mais contavam, sem a arma.
+    // Desarmado: o PoB não traz o alcance do golpe desarmado — só os metros a mais.
+    alcanceCorpoM: itensPoeLigado() ? alcanceCorpoEmMetros(pecaDaArma, af) : 0,
+    alcanceCorpoExtra: itensPoeLigado() ? Math.floor(alcanceCorpoEmMetros(pecaDaArma, af) / 2) : 0,
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
@@ -636,6 +641,18 @@ function comOsModsDoPoe(estado, af) {
   const doFogo = Number(af.res_fogo_vale_gelo_raio_pct) || 0;
   if (doFogo) for (const el of ['ice_res', 'energy_res']) novo[el] = (novo[el] ?? af[el] ?? 0) + ((af.fire_res ?? 0) * doFogo) / 100;
   return novo;
+}
+/**
+ * (lote 35 — P001) O alcance corpo a corpo em METROS: o da arma da mão principal (`poe.atributos.alcance_metros`, que a peça traz da base —
+ * a Espada Enferrujada 1,1 m, os Machados de Duas Mãos 1,3 m; a peça antiga sem ele, o da base do catálogo) + `alcance_corpo_m`, com uma
+ * casa decimal (1,1 + 0,9 = 2,0, sem o resto de ponto flutuante). Arma de distância e desarmado: 0 da arma.
+ */
+export function alcanceCorpoEmMetros(peca, af = {}) {
+  const daPeca = Number(peca?.poe?.atributos?.alcance_metros);
+  const id = peca?.poe?.base;
+  const daBase = Number.isFinite(daPeca) ? daPeca : id ? Number(Catalogo.catalogo()?.classes?.[String(id).split('/')[0]]?.bases?.find((b) => b.id === id)?.atributos?.alcance_metros) : NaN;
+  const daArma = Number.isFinite(daBase) && daBase > 0 && daBase < 5 ? daBase : 0;
+  return Math.round((daArma + (Number(af?.alcance_corpo_m) || 0)) * 10) / 10;
 }
 /** O máximo de uma resistência no PoE: 75% + o "+X% de Resistência a <elemento> máxima" (o teto do PoE é 90%). */
 export function maximoDaResistencia(af, el) {

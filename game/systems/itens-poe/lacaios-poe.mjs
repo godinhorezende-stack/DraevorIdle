@@ -13,7 +13,7 @@ import { CATALOGO } from '../dados.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
 import * as Controle from '../combate/controle.mjs';
-import { slugDoNome } from './condicoes-poe.mjs';
+import { slugDoNome, fatorDaArea, casasPelaArea } from './condicoes-poe.mjs';
 
 const BESTIARY = CATALOGO.bestiary;
 /** As palavras de cada tipo de lacaio nos mods das peças (`max_lacaio:golem`, `lacaio_dano:espirito`…). */
@@ -330,10 +330,9 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
   const caosExtra = tipo === 'physical' && buffDoLacaio(l, 'poderProfano', agora) ? 1 : 0;
   return { fator, ficha, caosExtra };
 }
-/** A área do golpe em área do lacaio, em casas de raio: 1 + a cada 25% de "Efeito em Área" (a fração como chance), como a das gemas. */
+/** A área do golpe em área do lacaio, em casas de raio: 1 × √(1 + o "Efeito em Área" dele), a fração como chance — como a das gemas (lote 36). */
 export function raioDaAreaDoLacaio(l, rng = Math.random) {
-  const casas = 1 + (l?.poe?.areaPct ?? 0) / 25;
-  return Math.max(1, Math.trunc(casas) + (rng() < Math.abs(casas % 1) ? 1 : 0));
+  return Math.max(1, 1 + casasPelaArea(1, fatorDaArea(l?.poe?.areaPct ?? 0), rng));
 }
 /** O intervalo de uma magia/habilidade do lacaio com a "Recuperação da Recarga" dele. */
 export const recargaDoLacaio = (l, ms) => Math.round(ms / Math.max(0.1, 1 + (l?.poe?.recargaPct ?? 0) / 100));

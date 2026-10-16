@@ -92,12 +92,14 @@ test('VIDA NÃO PODE SER DRENADA: o modificador de monstro entra no sorteio e ti
   assert.ok(d.hunt.roubos.some((r) => r.recurso === 'vida'));
 });
 
-test('RECUPERAÇÃO DE BLOQUEIO: bloquear o golpe de um Elite/Chefe trava a próxima ação 0,35 s ÷ (1 + X%); o de um comum, não', { skip: SEM }, () => {
+// (o dono, 16/10 — lote 35: o golpe do comum também trava, pela decisão "Como no PoE: todo bloqueio" de 15/10; antes, só o de Elite/Chefe.)
+test('RECUPERAÇÃO DE BLOQUEIO: todo bloqueio trava a próxima ação 0,35 s ÷ (1 + X%) — o golpe de um comum e o de um Elite/Chefe', { skip: SEM }, () => {
   const { e, valor } = com(/^block_recovery$/);
   const f = ficha(e);
-  assert.equal(Controle.travarNoBloqueio(e.hunt, bicho(), f), 0);
+  const esperado = Math.round(350 / (1 + ((Number(f.afPoe.block_recovery) || 0) + (Number(f.afPoe.stun_recovery) || 0)) / 100));
+  assert.equal(Controle.travarNoBloqueio(e.hunt, bicho(), f), esperado);
   const ms = Controle.travarNoBloqueio(e.hunt, bicho({ elite: true }), f);
-  assert.equal(ms, Math.round(350 / (1 + ((Number(f.afPoe.block_recovery) || 0) + (Number(f.afPoe.stun_recovery) || 0)) / 100)));
+  assert.equal(ms, esperado);
   assert.ok(ms < 350 && valor > 0);
   assert.equal(e.hunt.cooldowns['grupo:poe'].ate, e.hunt.clock + ms);
 });

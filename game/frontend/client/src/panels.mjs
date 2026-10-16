@@ -2,6 +2,7 @@
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
 import { balaoPoe, CATEGORIA as CATEGORIA_POE } from './itens-poe-balao.mjs';
 import { abrirForjaPoe, temForjaPoe } from './forja-poe.mjs';
+import { abrirMercenarios } from './mercenarios.mjs';
 import { listaDetalhe } from './lista-detalhe.mjs';
 import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
 import { desenharDispositivo } from './mapas-dispositivo.mjs';
@@ -20129,6 +20130,11 @@ export function corpoDaJanelaDaParty(body) {
  * pergunta ("onde arrumo o token?") e a resposta morarem em telas diferentes.
  */
 const ABAS_DA_FORJA = { craft: 'Craft', desmanche: 'Desmanche', tier: 'Tier', afixos: 'Afixos' };
+
+/** (16/10, lote 38) A tela dos Mercenários do PoE (`mercenarios.mjs`). */
+export function openMercenarios() {
+  abrirMercenarios(ctx);
+}
 
 export function openForja() {
   // No modo PoE a Forja é a bancada do PoE (as moedas — `forja-poe.mjs`).

@@ -1062,7 +1062,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     // PoE: "Inflige Causticar/Enfraquecer/Exaurir em Inimigos ao Bloquear seu Dano" e os eventos "ao Bloquear" dos únicos.
     ModsPoe.aoBloquear(hunt, bicho, ficha, { eventos });
     ModsPoe.marcar(hunt, 'bloqueou');
-    // (PoE: o bloqueio do golpe de um Elite/Chefe trava a próxima ação — a Recuperação de Bloqueio encurta.)
+    // (PoE: todo bloqueio trava a próxima ação — a Recuperação de Bloqueio encurta; lote 35, P004.)
     if (itensPoeLigado()) {
       Controle.travarNoBloqueio(hunt, bicho, ficha);
       // (e abre a janela da Retaliação — "Se Torna Utilizável … quando você Bloquear um Acerto")

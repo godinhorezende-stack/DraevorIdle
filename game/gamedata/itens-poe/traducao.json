@@ -220,10 +220,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a última repetição pega a área maior (uma casa a cada ~25%)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote36": "16/10 — lote 36 (P002: a Área de Efeito em metros — o raio da forma × √(1 + o aumentado), a decisão do dono \"Toda área em metros\")"
     },
     {
       "padrao": "^Inimigos próximos a cadáveres Criados por você Recentemente são Resfriados e Eletrizados$",
@@ -1436,10 +1435,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P001: o alcance em metros — o da arma + os metros; 1 casa = 2 m, a decisão do dono)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo com Espadas$",
@@ -1449,10 +1447,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais (`ficha.alcanceCorpoExtra`)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P001: o alcance em metros — o da arma + os metros; 1 casa = 2 m, a decisão do dono)"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\} metros ao Alcance de Golpes Corpo a Corpo enquanto com ao menos \\{(\\d+)\\} Inimigos Próximos$",
@@ -1463,9 +1460,10 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "soma no alcance em metros: cada 2 m é uma casa a mais; \"Próximos\" = a até 2 casas",
+      "nota": "o alcance em metros (o da arma + os metros; 1 casa = 2 m); \"Próximos\" = a até 2 casas — o PoE não fixa o raio de \"Próximos\" (\"Nearby\" não é palavra-chave)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P033: o alcance em metros; o raio de \"Próximos\" fica para decisão)"
     },
     {
       "padrao": "^Efeito em Área de Habilidades de Aura aumentado em \\{(\\d+)\\}%$",
@@ -1602,10 +1600,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "trava só o bloqueio de golpe de Elite/Chefe (os que atordoam no jogo): 0,35 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote35": "16/10 — lote 35 (P004: a trava em todo bloqueio, a decisão do dono)"
     },
     {
       "padrao": "^Clamores não podem Impelir Habilidades de Deslocamento$",
@@ -5996,10 +5993,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sai sozinho com o nó: um mercenário permanente segue você e ataca — a vida máxima é a sua e o golpe é o da sua arma; morto, volta em 10 s (no PoE se contrata um nos mapas, com o equipamento e as habilidades dele)",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário e os lacaios dele têm a vida máxima aumentada em \\{(\\d+)\\}%$",
@@ -6031,10 +6027,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "8% MAIS dano por único (o texto do PoE em inglês: \"more\"); os únicos dele são os seus nos tipos de peça que os nós \"pode equipar\" liberam",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário pode equipar amuletos únic[oa]s$",
@@ -6044,10 +6039,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário pode equipar cintos únic[oa]s$",
@@ -6057,10 +6051,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário pode equipar botas únic[oa]s$",
@@ -6070,10 +6063,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário pode equipar luvas únic[oa]s$",
@@ -6083,10 +6075,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário pode equipar elmos únic[oa]s$",
@@ -6096,10 +6087,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário pode equipar anéis únic[oa]s$",
@@ -6109,10 +6099,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Seu mercenário pode equipar aljavas, armas e escudos únic[oa]s$",
@@ -6122,10 +6111,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "sem a tela de equipamento do mercenário: cada único SEU neste tipo de peça conta como equipado nele (o \"+8% mais Dano por único\")",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Se a vida do seu mercenário for maior que a sua, \\{(\\d+)\\}% do dano recebido de ataques será subtraído da vida do seu mercenário antes de atingir você$",
@@ -6147,10 +6135,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o mercenário recupera (o PoE em inglês: \"Recouped as Life\") — na hora, no lugar dos 4 s do PoE",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^Se o seu mercenário conectado morrer, o dono da conexão não morrerá$",
@@ -6185,9 +6172,10 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "o mercenário do jogo não usa habilidades próprias: as suas auras de aliado nele valem 50% mais",
+      "nota": "os arquétipos dos mercenários do jogo não têm gema de aura: as suas auras de aliado nele valem 50% mais",
       "_nova": true,
-      "_lote26": "14/10 — o mercenário do Luminary (lote 26)"
+      "_lote26": "14/10 — o mercenário do Luminary (lote 26)",
+      "_lote37": "16/10 — lote 37 (o Mercenário completo, a decisão do dono: contratado por ouro, a tela de equipamento dele, as gemas do arquétipo)"
     },
     {
       "padrao": "^.*[Mm]ercenário.*$",

@@ -28370,3 +28370,56 @@ html[data-perfil="deitado"] #actionbar .controls > #auto-movel .auto-toggle { wi
 .character-card--arquivado:hover { filter: grayscale(.6) brightness(.9); }
 .selo-arquivado { display: inline-block; margin-top: 4px; padding: 2px 7px; border-radius: 4px; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: #e8d6a6; background: #3a2e14; border: 1px solid #6b5626; }
 .aviso-arquivado { color: #e8d6a6; }
+
+/*
+ * ---- Os MERCENÁRIOS do PoE (mercenarios.mjs — dono, 16/10: o "Mercenário completo", lote 38) ----
+ * Os cartões dos contratados e dos candidatos: a ficha (vida e as gemas), os 10 encaixes, as ações. As cores da Forja do PoE (ferro escuro,
+ * filete dourado), para as duas telas do PoE andarem juntas.
+ */
+.modal-box.mercenarios {
+  width: min(980px, 96vw);
+  --mc-ferro: #121417; --mc-ferro-2: #1a1c20; --mc-linha: #3d3222; --mc-linha-forte: #6b5530; --mc-ouro: #d8b56a;
+  --mc-texto: #e6dfd0; --mc-apagado: #a0978a; --mc-ok: #7fd88a; --mc-erro: #e8776c;
+}
+.modal-box.mercenarios h2 { text-transform: uppercase; letter-spacing: .14em; color: var(--mc-ouro); }
+.merc { display: flex; flex-direction: column; gap: 10px; color: var(--mc-texto); }
+.merc-cab { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--mc-apagado); }
+.merc-ouro { color: var(--mc-ouro); font-variant-numeric: tabular-nums; }
+.merc-abas { display: flex; gap: 6px; border-bottom: 1px solid var(--mc-linha); }
+.merc-aba { padding: 6px 14px; background: transparent; border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0; color: var(--mc-apagado); font: 700 12px/1 var(--font-heading); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.merc-aba.ativa { color: var(--mc-ouro); border-color: var(--mc-linha); background: var(--mc-ferro-2); }
+.merc-lista { display: flex; flex-direction: column; gap: 10px; }
+.merc-nota { margin: 0; font-size: 12px; color: var(--mc-apagado); font-style: italic; }
+.merc-vazio { margin: 0; font-size: 13px; color: var(--mc-apagado); }
+.merc-card {
+  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;
+  background: linear-gradient(180deg, var(--mc-ferro-2), var(--mc-ferro)); border: 1px solid var(--mc-linha); border-top-color: var(--mc-linha-forte); border-radius: 6px;
+}
+.merc-card.ativo { border-color: var(--mc-ouro); box-shadow: 0 0 0 1px #d8b56a33, 0 0 12px #d8b56a22; }
+.merc-card.morto { filter: grayscale(.6); }
+.merc-topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.merc-titulo { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.merc-titulo h4 { margin: 0; font: 700 15px/1.2 var(--font-heading); color: var(--mc-ouro); }
+.merc-sub { font-size: 12px; color: var(--mc-apagado); }
+.merc-selo { padding: 2px 8px; border-radius: 4px; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; border: 1px solid var(--mc-linha); color: var(--mc-apagado); }
+.merc-selo.ativo { color: var(--mc-ok); border-color: #3d6b45; }
+.merc-selo.morto { color: var(--mc-erro); border-color: #6b3a35; }
+.merc-ficha { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.merc-linha { margin: 0; color: var(--mc-texto); }
+.merc-habilidades { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; }
+.merc-habilidades small { color: var(--mc-apagado); }
+.merc-encaixes { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; max-width: 560px; }
+.merc-encaixe { position: relative; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; padding: 0; }
+.merc-encaixe.vazio { border: 1px dashed var(--mc-linha); border-radius: 4px; background: #0b0c0e; }
+.merc-encaixe-nome { font-size: 9px; line-height: 1.1; text-align: center; color: var(--mc-apagado); padding: 2px; }
+.merc-sua { position: absolute; right: 2px; bottom: 1px; font-size: 9px; font-style: normal; color: var(--mc-ok); text-shadow: 0 0 2px #000; }
+.merc-acoes { display: flex; flex-wrap: wrap; gap: 6px; }
+.merc-botao { padding: 6px 12px; border-radius: 4px; border: 1px solid var(--mc-linha-forte); background: #1c1710; color: var(--mc-texto); font-size: 13px; cursor: pointer; }
+.merc-botao.forte { color: var(--mc-ouro); border-color: var(--mc-ouro); }
+.merc-botao.aceso { box-shadow: 0 0 8px #d8b56a55; }
+.merc-botao.perigo { color: var(--mc-erro); border-color: #6b3a35; }
+.merc-botao:disabled { opacity: .45; cursor: not-allowed; }
+.merc-mochila { display: flex; flex-direction: column; gap: 6px; padding-top: 6px; border-top: 1px solid var(--mc-linha); }
+.merc-mochila h5 { margin: 0; font: 700 11px/1.2 var(--font-heading); letter-spacing: .1em; text-transform: uppercase; color: var(--mc-apagado); }
+.merc-mochila-grade { display: flex; flex-wrap: wrap; gap: 6px; }
+.merc-peca { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; padding: 0; }

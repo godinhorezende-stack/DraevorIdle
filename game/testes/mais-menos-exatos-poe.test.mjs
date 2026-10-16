@@ -46,13 +46,18 @@ test('a DURAÇÃO: "10% mais Duração do Efeito de Habilidades" multiplica o au
   assert.ok(Math.abs(Acoes.fatorDeDuracao(menos, entry, { duracaoPct: 20 }) - 1.7 * 0.9) < 1e-9, 'o da gema soma ao aumentado; o "menos" multiplica tudo');
 });
 
-test('a ÁREA: "X% mais Área de Efeito" multiplica o aumentado — 50% aumentada e 20% mais = 80% (3 casas a mais, a fração como chance), não 70%', { skip: SEM }, () => {
+// (o dono, 16/10 — lote 36, "Toda área em metros": a peça dá o aumentado e o mais em %, e o raio da forma cresce × √ do fator no uso; antes,
+// as casas a mais pela conta de 1 casa a cada 25%.)
+test('a ÁREA: "X% mais Área de Efeito" multiplica o aumentado — 50% aumentada e 20% mais = fator 1,8, não 1,7 (numa forma de 3 casas, 1,02 casa a mais)', { skip: SEM }, () => {
   const e = personagem();
   const entry = entrada('Steelskin');
-  const casas = (afPoe, rng) => ModsPoe.alvosDasPecas(e, { afPoe }, entry, ['area'], 'weapon', rng).area;
-  assert.equal(casas({ area_inc: 50, area_mais: 20 }, () => 0.99), 3);
-  assert.equal(casas({ area_inc: 50, area_mais: 20 }, () => 0), 4, '80/25 = 3,2: a fração vira chance');
-  assert.equal(casas({ area_inc: 50 }, () => 0.99), 2, 'sem o mais, 50% = 2 casas');
+  const pecas = (afPoe) => ModsPoe.alvosDasPecas(e, { afPoe }, entry, ['area'], 'weapon');
+  const { areaInc, areaMais } = pecas({ area_inc: 50, area_mais: 20 });
+  assert.ok(Math.abs(ModsPoe.fatorDaArea(areaInc, areaMais) - 1.5 * 1.2) < 1e-9);
+  assert.equal(ModsPoe.casasPelaArea(3, ModsPoe.fatorDaArea(areaInc, areaMais), () => 0.99), 1, '3 × (√1,8 − 1) = 1,02');
+  assert.equal(ModsPoe.casasPelaArea(3, ModsPoe.fatorDaArea(areaInc, areaMais), () => 0.01), 2, 'a fração vira chance');
+  const so = pecas({ area_inc: 50 });
+  assert.equal(ModsPoe.casasPelaArea(3, ModsPoe.fatorDaArea(so.areaInc, so.areaMais), () => 0.99), 0, 'sem o mais: 3 × (√1,5 − 1) = 0,67');
   // (o raio da aura: √(1,5 × 1,2) em vez de √1,5)
   const comMais = personagem({ area_inc: 50, area_mais: 20 });
   const sem = personagem({ area_inc: 50 });

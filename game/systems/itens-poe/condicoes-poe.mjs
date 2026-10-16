@@ -2225,10 +2225,25 @@ export function escudoParaOCusto(estado, slot, ficha) {
 }
 
 /**
- * Os projéteis a mais, a perfuração e a área a mais que as PEÇAS dão a uma gema (com as tags `tags`, encaixada na peça do `slot`):
- * `{ projeteis, perfurar, area }` (área em casas de raio: +1 a cada 25%, a fração como chance).
+ * (lote 36, P002 — a decisão do dono "Toda área em metros", 16/10) A ÁREA DE EFEITO do PoE no jogo: o raio cresce × √(o fator da área) — o
+ * fator é (1 + o "aumentado") × cada "mais/menos" —, como no PoE (o raio × √(1 + X%)). Numa forma de raio `raio` casas (2 m cada), as casas
+ * a mais (ou a menos, no fator < 1) são o raio × (√fator − 1), e a fração vira a chance de uma casa (a média bate). Antes, +1 casa a cada
+ * 25%, fosse qual fosse o raio (+100% numa forma de 3 casas dava 7; no PoE, 4,24).
  */
-export function alvosDasPecas(estado, ficha, entry, tags, slot, rng = Math.random) {
+export function fatorDaArea(inc = 0, ...mais) {
+  return Math.max(0, 1 + (Number(inc) || 0) / 100) * mais.reduce((f, m) => f * Math.max(0, 1 + (Number(m) || 0) / 100), 1);
+}
+export function casasPelaArea(raio, fator, rng = Math.random) {
+  const extra = Math.max(0, Number(raio) || 0) * (Math.sqrt(Math.max(0, Number(fator) || 0)) - 1);
+  if (!Number.isFinite(extra) || Math.abs(extra) < 1e-9) return 0;
+  return Math.trunc(extra) + (rng() < Math.abs(extra % 1) ? Math.sign(extra) : 0);
+}
+
+/**
+ * Os projéteis a mais, a perfuração e a Área de Efeito que as PEÇAS dão a uma gema (com as tags `tags`, encaixada na peça do `slot`):
+ * `{ projeteis, perfurar, areaInc, areaMais }` (a área em %: o "aumentado" e o "mais" — o raio cresce no uso, pela forma: `casasPelaArea`).
+ */
+export function alvosDasPecas(estado, ficha, entry, tags, slot) {
   if (!ligado() || !ficha?.afPoe) return null;
   const s = somaPorTags(ficha, tags);
   const base = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
@@ -2243,11 +2258,10 @@ export function alvosDasPecas(estado, ficha, entry, tags, slot, rng = Math.rando
   // colidir com um alvo" (`projeteis_param`: sem Perfurar, Difundir nem Ricochetear).
   const bifurcar = projetil ? base('bifurcar') : 0;
   const param = projetil && base('projeteis_param') > 0;
-  // (13/10) "X% mais Área de Efeito" (`area_mais`) multiplica o aumentado: o total como um "aumentado" equivalente.
-  const areaPct = t.has('area') ? ((1 + (base('area_inc') + localPorTag('area_inc_local')) / 100) * Math.max(0, 1 + base('area_mais') / 100) - 1) * 100 : 0;
-  const casas = areaPct / 25;
-  const area = Math.trunc(casas) + (rng() < Math.abs(casas % 1) ? Math.sign(casas) : 0);
-  return { projeteis: Math.floor(projeteis), perfurar: Math.floor(perfurar), area, ricochetes: Math.floor(ricochetes), bifurcar: Math.floor(bifurcar), param };
+  // (13/10) "X% mais Área de Efeito" (`area_mais`) multiplica o aumentado (lote 36: os dois em %; o raio no uso — `casasPelaArea`).
+  const areaInc = t.has('area') ? base('area_inc') + localPorTag('area_inc_local') : 0;
+  const areaMais = t.has('area') ? base('area_mais') : 0;
+  return { projeteis: Math.floor(projeteis), perfurar: Math.floor(perfurar), areaInc, areaMais, ricochetes: Math.floor(ricochetes), bifurcar: Math.floor(bifurcar), param };
 }
 
 // ---------------------------------------------------------------- o que o personagem RECEBE

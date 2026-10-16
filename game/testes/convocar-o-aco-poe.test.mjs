@@ -261,8 +261,9 @@ test('a ÁRVORE (uma opção da Maestria de Empalamento por personagem): +4 ao m
   bichos(u, [[2, 0]]);
   assert.ok(Acoes.convocarOAco(u, u.hunt, PERSONAGEM).length);
   assert.equal(u.hunt.cooldowns[Acoes.GRUPO_DO_POE].total, Math.round(500 / 1.4));
-  assert.equal(Aco.raioDoReflexo(ficha(u), () => 0.99), 2, '+40%: +1 casa (a fração vira chance)');
-  assert.equal(Aco.raioDoReflexo(ficha(u), () => 0), 3);
+  // (o dono, 16/10 — lote 36, "Toda área em metros": o raio × √(1 + a área), a fração como chance; antes, +1 casa a cada 25%)
+  assert.equal(Aco.raioDoReflexo(ficha(u), () => 0.99), 1, '+40%: 1 × √1,4 = 1,18 casa (18% de chance da segunda)');
+  assert.equal(Aco.raioDoReflexo(ficha(u), () => 0), 2);
   assert.equal(Aco.raioDoReflexo({ afPoe: {} }, () => 0), 1);
 });
 

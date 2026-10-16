@@ -176,6 +176,21 @@ const IMPLEMENTADOS = [
     re: /Velocidade dos Clamores aumentada|Cada Mina aplica|por cada Mina Detonada|Minas Detonadas Recentemente/,
     jogo: 'a Velocidade dos Clamores encurta o tempo de uso do Clamor (e a de Conjuração não vale nele — o Clamor não é ataque nem magia); a aura da Mina plantada nos inimigos a até 35 unidades (3,5 m, 1 casa), cada Mina somando até o teto ("Efeito de Auras das Minas" na de cada uma, não no teto; o "reduzido" é o dano que o inimigo causa); "por cada Mina Detonada Recentemente, até 100%/40%" pela detonação de verdade, nos últimos 4 s',
   },
+  {
+    bloco: 'Zerar a árvore — lote 35 (o alcance em metros e o bloqueio, pelas decisões do dono)',
+    re: /metros ao Alcance de Golpes Corpo a Corpo|Recuperação de Bloqueio aumentada/,
+    jogo: 'o alcance corpo a corpo em metros (a decisão "Medir em metros", 1 casa = 2 m): o da arma (a base do PoE, 1 a 1,4 m) + os "+X metros", o vizinho colado sempre ao alcance e cada casa a mais pedindo 2 m — no golpe básico e no golpe da gema corpo a corpo; a Recuperação de Bloqueio trava em todo bloqueio (a decisão "Como no PoE: todo bloqueio")',
+  },
+  {
+    bloco: 'Zerar a árvore — lote 36 (a Área de Efeito em metros, pela decisão do dono)',
+    re: /Repetição Final das Magias têm Efeito em Área aumentado/,
+    jogo: 'a Área de Efeito como no PoE (a decisão "Toda área em metros"): o raio da forma × √(1 + o aumentado) × √ de cada "mais/menos", a fração como chance de uma casa, e a forma esticada até o raio novo; a Repetição Final soma o X no aumentado da última repetição',
+  },
+  {
+    bloco: 'Zerar a árvore — lote 37 (o Mercenário completo, pelas decisões do dono)',
+    re: /mercenário/i,
+    jogo: 'o Mercenário completo (as decisões do dono): candidatos sorteados contratados por ouro (até 3, um ao seu lado), o nível preso no da contratação, o equipamento dele com as regras do PoE (70% do nível da peça, os atributos e as armas do arquétipo, únicos só nos tipos que os nós liberam), a ficha dele com o "aumentado" dos seus nós, as gemas fixas do arquétipo na caçada, morto só volta revivido por ouro; o "recuperado como vida" em 4 s',
+  },
 ];
 
 /** Todas as linhas da árvore: os nós (com as ascendências) e as opções das maestrias. */

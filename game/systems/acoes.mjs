@@ -44,6 +44,7 @@ import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
 import * as Aco from './itens-poe/convocar-o-aco.mjs';
+import * as Mercenarios from './itens-poe/mercenarios.mjs';
 import * as CargasDoPoe from './itens-poe/cargas.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade, efeitos as efeitosDaArvore, arvore as arvoreDasPassivas } from './passivas/arvore.mjs';
@@ -712,52 +713,87 @@ export function convocarFantasmas(estado, hunt, efeitoDaGema, atingidos, rng = M
 }
 
 /**
- * (14/10, dono: "Mercenário simples") O MERCENÁRIO do Luminary — "Você pode contratar um mercenário de forma permanente" (Sangue Nobre): com o
- * nó, um mercenário permanente segue você e ataca; "do seu nível": a vida máxima é a sua e o golpe é o da sua arma (a faixa e o tempo da
- * ficha), × "Seu mercenário e os lacaios dele têm a vida máxima aumentada / causam dano aumentado" e × "+8% mais Dano para cada item único
- * equipado por ele" — sem a tela de equipamento: cada único SEU num tipo de peça que os nós "Seu mercenário pode equipar … únicos" liberam
- * conta como equipado nele. Morto, volta em 10 s. (O guarda-costas, o "recupera como vida", o provocar e as auras: `arvore.danoRecebido`,
- * `cacadas.tiqueDosLacaios`.)
+ * (16/10, lote 37 — a decisão do dono "Mercenário completo", P005/P057–P060) O MERCENÁRIO do Luminary: contratado por ouro na tela dele
+ * (`itens-poe/mercenarios.mjs` — até 3, um ao seu lado; o nível preso no da contratação; o equipamento dele), segue você e usa as GEMAS do
+ * arquétipo, alternando-as: o dano de cada uma é a conta do jogo para a gema (`danoMostrado`) com a FICHA dele (o nível, a classe e as peças —
+ * e o "aumentado" dos seus nós somado ao das peças dele) e os suportes fixos, × "+8% mais Dano para cada item único equipado por ele"; o
+ * tempo é o de uso da gema; o alcance, o dela. Morto, só volta revivido por ouro (o PoE). (O guarda-costas, o "recupera como vida", o provocar e
+ * as auras: `arvore.danoRecebido`, `cacadas.tiqueDosLacaios`.)
  */
-export const MERCENARIO = Object.freeze({ nome: 'Mercenário', voltaMs: 10000, maisPorUnico: 8 });
-const SLOTS_DO_MERCENARIO = {
-  'mercenario_equipa_amuleto': ['neck'], 'mercenario_equipa_cinto': ['legs'], 'mercenario_equipa_botas': ['feet'], 'mercenario_equipa_luvas': ['gloves'],
-  'mercenario_equipa_elmo': ['head'], 'mercenario_equipa_anel': ['ring', 'ring2'], 'mercenario_equipa_armas': ['weapon', 'shield'],
-};
-/** Quantos únicos "o mercenário tem equipados": os seus nos tipos de peça que os nós liberam. */
-export function unicosDoMercenario(estado, af = Ficha.combate(estado).afPoe ?? {}) {
-  let n = 0;
-  for (const [stat, slots] of Object.entries(SLOTS_DO_MERCENARIO)) {
-    if (!(Number(af[stat]) > 0)) continue;
-    for (const slot of slots) if (estado?.equipment?.[slot]?.poe?.raridade === 'unico') n++;
+export const MERCENARIO = Object.freeze({ desenho: 'Mercenário', maisPorUnico: 8 });
+/** Quantos únicos o mercenário ATIVO tem equipados (só entram nos tipos de peça que os nós liberam — `Mercenarios.faltaParaVestir`). */
+export const unicosDoMercenario = (estado) => Mercenarios.unicosEquipados(Mercenarios.ativo(estado));
+/**
+ * A FICHA de combate do mercenário `merc`: a vida máxima (a ficha dele) e cada habilidade — o dano (a conta da gema com a ficha e os suportes
+ * dele, × o "mais" por único), o tempo de uso, o alcance, o elemento, se é magia e o projétil do desenho.
+ */
+export function fichaDoMercenario(estado, merc, af = Ficha.combate(estado).afPoe ?? {}) {
+  const m = Mercenarios.estadoDoMercenario(merc, af);
+  const f = Ficha.combate(m);
+  const ativas = Mercenarios.ativasDoMercenario(merc);
+  const mais = 1 + ((Number(af.mercenario_dano_por_unico) || 0) * Mercenarios.unicosEquipados(merc)) / 100;
+  const habilidades = [];
+  for (const h of Mercenarios.habilidades(merc)) {
+    const entry = POR_ID.get(h.acao);
+    if (!entry || !ativas.has(entry.id)) continue;
+    const efeito = comOsAlvosDaGema(entry, Gemas.efeitoNaSkill(m, entry.id, ativas), null);
+    const d = danoMostrado(m, entry, efeito);
+    const t = temposDaGemaPoe(m, entry, { nivel: h.nivel }, f, { doJogador: false });
+    habilidades.push({
+      acao: entry.id, gema: h.gema, nome: entry.name, nivel: h.nivel, suportes: efeito?.supports ?? [],
+      dano: { min: Math.max(1, Math.round(d.min * mais)), max: Math.max(1, Math.round(d.max * mais)) },
+      usoMs: Math.max(250, Math.round(t.uso ?? t.conjuracaoMs ?? 1000)), alcance: Math.max(1, entry.range || 1), elemento: entry.element ?? 'physical',
+      magia: !entry.poeGema?.ataque, projetil: entry.projetil || 0,
+    });
   }
-  return n;
+  return { vida: m.maxHp, habilidades };
+}
+/** O mercenário passa a usar a habilidade `i` (a vez dela): o golpe, o tempo, o alcance e o desenho do lacaio. */
+function usarHabilidadeDoMercenario(l, i) {
+  const n = l.habilidades?.length ?? 0;
+  if (!n) return;
+  l.habilidade = ((i % n) + n) % n;
+  const h = l.habilidades[l.habilidade];
+  l.dano = h.dano;
+  l.intervaloMs = h.usoMs;
+  l.alcanceDeAtaque = h.alcance;
+  l.elemento = h.elemento;
+  l.estilo = h.magia ? { magia: true, elementos: [h.elemento], ...(h.projetil ? { projetil: h.projetil } : {}) } : { elemento: h.elemento, ...(h.projetil ? { projetil: h.projetil } : {}) };
+}
+/** Depois de cada golpe do mercenário: a próxima gema do arquétipo (ele alterna as habilidades). */
+export function depoisDoGolpeDoMercenario(l) {
+  if (l?.mercenario && (l.habilidades?.length ?? 0) > 1) usarHabilidadeDoMercenario(l, (l.habilidade ?? 0) + 1);
 }
 export function tiqueDoMercenario(estado, hunt, agora = hunt?.ultimoTique ?? Date.now()) {
   if (!itensPoeLigado() || !hunt?.pos) return;
-  const ficha = Ficha.combate(estado);
-  const af = ficha.afPoe ?? {};
+  const af = Ficha.combate(estado).afPoe ?? {};
   hunt.lacaios ??= [];
+  const merc = Mercenarios.liberado(af) ? Mercenarios.ativo(estado) : null;
+  const quer = merc && !merc.morto ? merc : null;
+  // (o que não é mais o ativo — deixado, despedido, o nó tirado — sai da caçada sem contar como morte)
+  hunt.lacaios = hunt.lacaios.filter((l) => !(l.mercenario && l.hp > 0 && (!quer || l.mercId !== quer.id)));
+  if (!quer) return;
+  const chave = `${quer.id}:${quer.v ?? 0}:${Number(af.mercenario_dano_inc) || 0}:${Number(af.mercenario_vida_inc) || 0}:${Number(af.mercenario_dano_por_unico) || 0}`;
   const vivo = hunt.lacaios.find((l) => l.mercenario && l.hp > 0);
-  if (!(Number(af.mercenario) > 0)) { if (vivo) vivo.hp = 0; delete hunt.poeMercenarioVoltaEm; return; }
-  const vida = Math.max(10, Math.round((estado.maxHp ?? 100) * Math.max(0, 1 + (Number(af.mercenario_vida_inc) || 0) / 100)));
-  const fator = Math.max(0, 1 + (Number(af.mercenario_dano_inc) || 0) / 100) * (1 + ((Number(af.mercenario_dano_por_unico) || 0) * unicosDoMercenario(estado, af)) / 100);
-  const dano = { min: Math.max(1, Math.round((ficha.ataqueMin ?? 1) * fator)), max: Math.max(1, Math.round((ficha.ataqueMax ?? 1) * fator)) };
+  if (vivo?.chaveDaFicha === chave) return;
+  const ficha = fichaDoMercenario(estado, quer, af);
+  if (!ficha.habilidades.length) return;
   if (vivo) {
-    // (a vida máxima e o golpe seguem os seus — subiu de nível, trocou de arma)
-    if (vivo.maxHp !== vida) { vivo.hp = Math.max(1, Math.round((vivo.hp * vida) / vivo.maxHp)); vivo.maxHp = vida; }
-    vivo.dano = dano;
+    // (trocou de peça, os seus nós mudaram: a vida máxima e as habilidades novas, na mesma proporção de vida)
+    if (vivo.maxHp !== ficha.vida) { vivo.hp = Math.max(1, Math.round((vivo.hp * ficha.vida) / vivo.maxHp)); vivo.maxHp = ficha.vida; }
+    vivo.habilidades = ficha.habilidades;
+    vivo.chaveDaFicha = chave;
+    usarHabilidadeDoMercenario(vivo, vivo.habilidade ?? 0);
     return;
   }
-  hunt.poeMercenarioVoltaEm ??= agora;
-  if (agora < hunt.poeMercenarioVoltaEm) return;
-  delete hunt.poeMercenarioVoltaEm;
-  const l = lacaioDoGuardian(estado, hunt, agora, af, MERCENARIO.nome, 'physical', { mercenario: true, hp: vida, maxHp: vida, dano, intervaloMs: Math.max(300, Math.round(ficha.intervaloDoGolpeMs ?? 1000)) });
+  const l = lacaioDoGuardian(estado, hunt, agora, af, MERCENARIO.desenho, ficha.habilidades[0].elemento, { mercenario: true, mercId: quer.id, nivel: quer.nivel, hp: ficha.vida, maxHp: ficha.vida, habilidades: ficha.habilidades, habilidade: 0, chaveDaFicha: chave });
+  l.nome = quer.nome;
+  usarHabilidadeDoMercenario(l, 0);
   hunt.lacaios.push(l);
 }
-/** O mercenário morreu: volta em 10 s (`tiqueDoMercenario`). */
-export function mercenarioMorreu(hunt, agora = hunt?.ultimoTique ?? Date.now()) {
-  if (hunt) hunt.poeMercenarioVoltaEm = agora + MERCENARIO.voltaMs;
+/** O mercenário morreu na caçada: só volta revivido por ouro (`Mercenarios.morreu`; a tela dele). */
+export function mercenarioMorreu(estado, l) {
+  Mercenarios.morreu(estado, l?.mercId);
 }
 
 /**
@@ -1578,8 +1614,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   const a = GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito.nivel ?? 1);
   const e = { ...efeito };
   // PoE: os das PEÇAS — "Habilidades disparam N Projéteis adicionais", "Ataques com Arco disparam N Flechas adicionais", "Gemas Encaixadas
-  // atiram N Projéteis adicionais" (a peça da gema), "Projéteis Perfuram N Alvos" e a "Área de Efeito aumentada" (+1 casa a cada 25%; a
-  // fração vira chance, para a média bater) — `itens-poe/mods-poe.mjs`.
+  // atiram N Projéteis adicionais" (a peça da gema), "Projéteis Perfuram N Alvos" e a "Área de Efeito aumentada" (lote 36: o "aumentado" e o
+  // "mais" em %, com os dos suportes; o raio da forma cresce × √ no uso — `ModsPoe.casasPelaArea`) — `itens-poe/mods-poe.mjs`.
   const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, Ficha.combate(estado), entry, tagsPoeDaSkill(entry), Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide + (dasPecas?.projeteis ?? 0);
   // (12/10) A divisão da gema (o Aço Violento: "Projéteis se Partem na direção de N alvos") — o "Se você não tiver Fragmentos de Aço,
@@ -1607,7 +1643,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
     if (ModsPoe.valor(fichaDoAlvo, 'barragem_nao_propaga') > 0) e.semPropagar = true;
   }
   e.perfurar = Math.max(e.perfurar ?? 0, a.perfurar) + (dasPecas?.perfurar ?? 0);
-  if (dasPecas?.area) e.areaExtra = (e.areaExtra ?? 0) + dasPecas.area;
+  if (dasPecas?.areaInc) e.areaIncPct = (e.areaIncPct ?? 0) + dasPecas.areaInc;
+  if (dasPecas?.areaMais) e.areaMaisPct = ((1 + (e.areaMaisPct ?? 0) / 100) * Math.max(0, 1 + dasPecas.areaMais / 100) - 1) * 100;
   // "Habilidades Ricocheteiam +N vezes": os ricochetes do projétil (os saltos da cadeia, na magia de cadeia).
   if (dasPecas?.ricochetes) e.encadear = (e.encadear ?? 0) + dasPecas.ricochetes;
   e.bifurcar = Math.max(e.bifurcar ?? 0, a.bifurcar) + (dasPecas?.bifurcar ?? 0);
@@ -2097,6 +2134,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    */
   let atingidos = [];
   let casas = null;
+  // (lote 36) Onde a forma caiu (o centro e o lado) e a área deste uso com a Área de Efeito — a Repetição Final a refaz com o "aumentado" dela.
+  let formaNoUso = null;
+  let areaNoUso = null;
   let virarPara = null;
   // (PoE, 12/10) A gema que PLANTA (Armadilha, Mina): o uso joga a armadilha/mina no lugar mirado; a habilidade sai quando ela ativa.
   const tipoPlantado = Plantadas.tipoDaGema(entry);
@@ -2105,13 +2145,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (plantada) {
       // A Armadilha ativada / a Mina detonada / a Runa Ativada: a área em volta DELA (sem alcance — ela está lá); a de alvo único, em quem a
       // ativou (com a cadeia da gema).
-      if (entry.forma) casas = casasDaForma(entry, plantada.x, plantada.y);
-      else if (!(alvo.hp > 0)) atingidos = [];
+      if (entry.forma) {
+        casas = casasDaForma(entry, plantada.x, plantada.y);
+        formaNoUso = { x: plantada.x, y: plantada.y, dir: null };
+      } else if (!(alvo.hp > 0)) atingidos = [];
       else atingidos = entry.cadeia ? saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos, distance: alcanceDoRicochete(entry.cadeia.distance, efeitoDaGema) } : entry.cadeia) : [alvo];
     } else if (!entry.forma) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
-      // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...).
-      if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || 1)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
+      // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...). (lote 35 — P001: com o alcance corpo a corpo em metros — o
+      // da arma + os "+X metros ao Alcance de Golpes Corpo a Corpo", `Ficha.alcanceCorpoExtra` —, como o golpe básico)
+      const corpoDaGemaNoAlvo = itensPoeLigado() && (!entry.range || (entry.poeGema && tagsPoeDaSkill(entry).includes('corpo')));
+      const alcanceDoGolpe = (entry.range || 1) + (corpoDaGemaNoAlvo ? Ficha.combate(estado).alcanceCorpoExtra ?? 0 : 0);
+      if (distanciaChebyshev(hunt.pos, alvo) > alcanceDoGolpe) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       atingidos = [alvo];
       // CADEIA (tag `chain`: Forked Thorns, Forked Glacier, Chained Penance...): do alvo, salta para o
       // bicho vivo mais perto a até `cadeia.distance` sqm do último atingido, até `cadeia.targets` alvos.
@@ -2121,10 +2166,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // A casa que o jogador escolheu na mira (`huntAction` com x, y): a área cai lá, com ou sem alvo.
       if (distanciaChebyshev(hunt.pos, mira) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       casas = casasDaForma(entry, mira.x, mira.y);
+      formaNoUso = { x: mira.x, y: mira.y, dir: null };
     } else if (centradoNoAlvo) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       casas = casasDaForma(entry, alvo.x, alvo.y);
+      formaNoUso = { x: alvo.x, y: alvo.y, dir: null };
     } else {
       const lados = direcional(entry) ? ordemDosLados(hunt.pos, alvo) : [null];
       let melhor = null;
@@ -2135,13 +2182,27 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       casas = melhor.cs;
       virarPara = melhor.dir;
+      formaNoUso = { x, y, dir: melhor.dir };
     }
-    // Area of Effect / Concentrated Effect (supports): a área cresce ou encolhe `areaExtra` casas.
-    // (− a Intensidade: "X% menos Efeito em Área por Intensidade" — uma casa a cada ~25%)
-    const areaDaIntensidade = intensidade > 0 ? -Math.round((intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0)) / 25) : 0;
-    // (+ a Runa: "Runas têm Área de Efeito aumentada em X% caso Y% da Duração do Vínculo tenha expirado" — `plantada.areaExtra`, do tique.)
-    const areaDaRuna = plantada?.areaExtra ?? 0;
-    if (casas && (efeitoDaGema?.areaExtra || areaDaIntensidade || areaDaRuna)) casas = Areas.mudar(casas, Math.round((efeitoDaGema?.areaExtra ?? 0) + areaDaIntensidade + areaDaRuna));
+    // A ÁREA DE EFEITO (lote 36, P002 — a decisão do dono "Toda área em metros"): o raio da forma × √(1 + o "aumentado") × √ de cada
+    // "mais/menos" — o das peças e da ficha, o dos suportes do PoE (Área de Efeito Aumentada, Efeito Concentrado…), a Intensidade ("X% menos
+    // Efeito em Área por Intensidade", um "menos" só: X × a Intensidade) e a Runa ("Runas têm Área de Efeito aumentada em X% caso Y% da
+    // Duração do Vínculo tenha expirado" — `plantada.areaPct`, do tique); a fração vira chance de uma casa (`ModsPoe.casasPelaArea`), e a
+    // FORMA estica (ou encolhe) até o raio novo em volta do centro (`Areas.escalarForma` — o losango segue losango). (+ os suportes do
+    // Draevor, no modo clássico: `areaExtra` casas em volta, `Areas.mudar`.)
+    if (casas && formaNoUso) {
+      const base = casas;
+      const raio = Areas.raioDaForma(entry.forma);
+      const inc = (efeitoDaGema?.areaIncPct ?? 0) + (plantada?.areaPct ?? 0);
+      const mais = [efeitoDaGema?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0) : 0];
+      const legado = Math.round(efeitoDaGema?.areaExtra ?? 0);
+      areaNoUso = (incExtra = 0) => {
+        const n = ModsPoe.casasPelaArea(raio, ModsPoe.fatorDaArea(inc + incExtra, ...mais));
+        const cs = n ? Areas.daForma(Areas.escalarForma(entry.forma, raio + n), formaNoUso, formaNoUso.dir) : base;
+        return legado ? Areas.mudar(cs, legado) : cs;
+      };
+      casas = areaNoUso();
+    }
     // Quem está nas casas da área: por índice de casa (sem varrer área × bichos).
     if (casas) atingidos = Areas.dentro(casas, vivos);
   }
@@ -2736,9 +2797,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     for (let r = 0; r < repeticoes; r++) {
       if (!atingidos.some((b) => b.hp > 0)) break;
       naRepeticaoFinal = r === repeticoes - 1;
-      // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — a área da última repetição cresce: uma casa a cada ~25%.)
-      const areaFinal = naRepeticaoFinal && casas && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
-      if (areaFinal > 0) atingidos = Areas.dentro(Areas.mudar(casas, Math.max(1, Math.round(areaFinal / 25))), vivos.filter((b) => b.hp > 0));
+      // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — lote 36, P002: o X soma no "aumentado" da área da última
+      // repetição, e o raio da forma cresce × √ como o resto da área.)
+      const areaFinal = naRepeticaoFinal && areaNoUso && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
+      if (areaFinal > 0) atingidos = Areas.dentro(areaNoUso(areaFinal), vivos.filter((b) => b.hp > 0));
       atacar(true);
     }
     // (PoE, o Libertar: "Magias Suportadas são Liberadas quando conjuradas, e seus efeitos Ocorrem Novamente para cada Selo perdido" — os Selos
@@ -3077,9 +3139,9 @@ export function tiqueDasRunas(estado, hunt, personagem, eventos = [], agora = hu
   if (!hunt?.runas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   const { ativar, expiradas } = Runas.tique(hunt, ficha, agora);
-  for (const { r, alvo, areaExtra } of ativar) {
+  for (const { r, alvo, areaPct } of ativar) {
     if ((estado.hp ?? 0) <= 0) break;
-    const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaExtra } });
+    const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaPct } });
     if (res?.ok) eventos.push(...(res.eventos ?? []));
   }
   const mana = ModsPoe.valor(ficha, 'mana_runa_expira_vinculada');
