@@ -7136,6 +7136,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "o dano no monstro Provocado pelo Clamor (`condicoes-poe.fatorRecebidoPeloBicho`, lote 31)"
+    },
+    "armadura_na_recarga_es": {
+      "nome": "Aumentos de Armadura na Recarga do Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o \"aumentado\" de Armadura resolvido na Recarga do Escudo (`afixos.soma`, lote 32)"
+    },
+    "perde_vida_pct_s_por_furia": {
+      "nome": "Vida perdida por segundo por Fúria (sem perder Fúria)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o tique (`condicoes-poe.furiaSemPerder`, lote 32)"
+    },
+    "movimento_minimo_base": {
+      "nome": "Velocidade de Movimento não fica abaixo da base",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o passo (`cacadas.razaoDeVelocidade`, lote 32)"
     }
   }
 }

@@ -480,7 +480,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // (× a "Velocidade de Ação" do PoE.)
     // ("Sua Velocidade de Movimento é de X% de seu valor base": o valor fixo, nada mais muda.)
     // (PoE, 12/10: "Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados" — `velocidade_igual_vinculado`.)
-    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af)),
+    // (lote 32, P049: "Velocidade de Movimento não pode ser modificada para abaixo do valor base" — a ficha não fica abaixo da base; a lentidão em
+    // você, no passo — `cacadas.razaoDeVelocidade`)
+    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.max(itensPoeLigado() && af.movimento_minimo_base > 0 ? R.baseSpeed(estado.level ?? 1) : 0, Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af))),
     // O alcance a mais dos golpes corpo a corpo (PoE: "+N metros ao Alcance…"; 1 casa = 2 m).
     alcanceCorpoExtra: itensPoeLigado() ? Math.floor((af.alcance_corpo_m ?? 0) / 2) : 0,
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por

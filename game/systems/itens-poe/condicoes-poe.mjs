@@ -49,6 +49,8 @@ export const posturaDe = (h, agora = h?.clock ?? 0) => (Object.entries(h?.buffs 
  */
 export const estandartePlantado = (h, agora = h?.clock ?? 0) => Object.entries(h?.buffs ?? {}).find(([id, b]) => b && b.ate > agora && /_Banner/.test(id))?.[1] ?? null;
 export const estandarteAtivo = (h, agora = h?.clock ?? 0) => !!estandartePlantado(h, agora);
+/** (lote 32) Algum Buff de Clamor do PoE em você agora (`hunt.buffs`, tipo `poe-clamor`)? */
+export const sobBuffDeClamor = (h, agora = h?.clock ?? 0) => Object.values(h?.buffs ?? {}).some((b) => b && b.tipo === 'poe-clamor' && b.ate > agora);
 /** (lote 31) O inimigo está na área do seu Estandarte plantado (o raio do buff — o mesmo da aura, `mods-poe.aurasProximas`)? */
 export function pertoDoEstandarte(h, alvo, agora = h?.clock ?? 0) {
   const p = estandartePlantado(h, agora);
@@ -67,6 +69,16 @@ export function fisicoPorEmpalamento(ficha, alvo, agora) {
   if (!n) return null;
   const min = Math.min(Number(ficha.afPoe.empalar_fisico_add_min) || 0, max);
   return [n * min, n * max];
+}
+/**
+ * (lote 32, P038 — as Forças Profanadas: "Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você") AO AMALDIÇOAR o
+ * inimigo, o Resfriamento e a Eletrização que ele tem voltam à duração cheia deles (`dur`, gravada quando foram postos; sem ela, 2 s).
+ */
+export function renovarFrioEChoque(bicho, agora) {
+  const e = bicho?.estados;
+  if (!e) return;
+  for (const k of ['lento', 'chocado']) if (e[k]?.ate > agora) e[k].ate = Math.max(e[k].ate, agora + (e[k].dur ?? 2000));
+  for (const x of e.chocadosPilha ?? []) if (x.ate > agora) x.ate = Math.max(x.ate, agora + (x.dur ?? 2000));
 }
 /**
  * (15/10, lote 31 — P037) A PROVOCAÇÃO: a do Clamor (`Reforcos.provocar` grava `provocadoAte`) e a do acerto, do frasco, do totem, do lacaio e do
@@ -217,7 +229,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(afetadoPorAbissal|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos):/;
+const COND_COM_PARAMETRO = /^(afetadoPorAbissal|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -475,6 +487,8 @@ export function vale(conds, c) {
     // ("caso o Escudo Equipado possua ao menos N% de Chance de Bloquear": a do próprio escudo.)
     case 'bloqueioEscudoMin': return (Number(estado?.equipment?.shield?.poe?.af?.block) || 0) >= Number(resto[0]);
     case 'semCargas': return cargas(resto[0]) === 0;
+    // (lote 32, P041) "se você não se moveu nos últimos N segundos": `paradoHa:N` — desde o último passo (ou a entrada, sem passo ainda).
+    case 'paradoHa': { const r = h?.poeRecente ?? {}; return agora - (r.moveu ?? h?.poeEntrou ?? agora) >= Number(resto[0]) * 1000; }
     case 'comCargas': return cargas(resto[0]) > 0;
     // (+ "Conta como ter o número máximo de cargas de poder" — `conta_max_poder`.)
     case 'cargasMax': return cargas(resto[0]) >= maxCargas(resto[0]) || (resto[0] === 'poder' && Number(total?.conta_max_poder) > 0);
@@ -554,7 +568,8 @@ export function fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora = hun
  */
 export function fatorDoDanoElemental(ficha, hunt, habilidade, elemento, agora = hunt?.clock ?? 0) {
   if (!['fire', 'ice', 'energy'].includes(elemento)) return 1;
-  return fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora) * Math.max(0, 1 + valor(ficha, 'mais_dano_elemental') / 100);
+  // (+ lote 32: a Convergência, um "mais" de outra fonte — multiplica)
+  return fatorDaSobrecarga(ficha, hunt, habilidade, elemento, agora) * Math.max(0, 1 + valor(ficha, 'mais_dano_elemental') / 100) * Math.max(0, 1 + valor(ficha, 'mais_dano_elemental_convergencia') / 100);
 }
 
 /**
@@ -826,6 +841,9 @@ export function fatorDaEscala(estado, total, principais, escala) {
     case 'valorDoEstandarte': return estandartePlantado(h, agora)?.estandarte?.valor ?? 0;
     // "para cada segundo que você for afetado por um Buff de Clamor": `desdeUsou:clamor` (os segundos desde o último uso, nos últimos 20 s).
     case 'desdeUsou': { const t = h?.poeRecente?.[`usou:${a}`]; return t != null && agora - t <= 20000 ? Math.floor((agora - t) / 1000) : 0; }
+    // (lote 32, P042) "para cada segundo que você for afetado por um Buff de Clamor": os segundos SEGUIDOS sob algum (`acoes` grava o começo,
+    // `hunt.poeSobClamorDesde`, quando o Clamor sai sem nenhum outro ativo); sem buff de Clamor em você, 0.
+    case 'afetadoPorClamor': { const d = h?.poeSobClamorDesde; return d != null && sobBuffDeClamor(h, agora) ? Math.floor((agora - d) / 1000) : 0; }
     case 'paradoS': { const r = h?.poeRecente ?? {}; return r.moveu != null && agora - r.moveu <= MOVENDO_MS ? 0 : Math.floor((agora - (r.moveu ?? h?.poeEntrou ?? agora)) / 1000); }
     // (lote F) "por Habilidade Passiva de Maestria Alocada" (`maestrias`) e "para cada tipo diferente de Maestria Alocada" (`tiposDeMaestria`).
     case 'maestrias': return leitorDeMaestrias?.(estado, null) ?? 0;
@@ -963,7 +981,8 @@ export const BUFFS = {
   // (o Inquisidor: "Fanatismo concede às magias conjuradas por você +75% de velocidade de conjuração, -75% de custo e área de efeito
   // aumentada em 75%"; o Elementalista: "Convergência concede 30% mais Dano Elemental e dura 4 segundos" — aproximado: nas habilidades Elementais.)
   fanatismo: { nome: 'Fanatismo', af: { cast_speed: 75, 'custo_mana_inc@magia': -75, 'area_inc@magia': 75 } },
-  convergencia: { nome: 'Convergência', af: { 'mais_dano@elemental': 30 } },
+  // (lote 32, P073: "Convergência concede 30% mais Dano Elemental" — as partes de Fogo, Gelo e Raio do golpe; era o golpe inteiro com a tag)
+  convergencia: { nome: 'Convergência', af: { mais_dano_elemental_convergencia: 30 } },
   // (o suporte Crueldade: "Crueldade: até 40% mais Dano Degenerativo" — aproximado: os 40%; o "Efeito da Crueldade" multiplica)
   crueldade: { nome: 'Crueldade', af: { dano_dot_mais: 40 } },
   // (o suporte Momentum: "Rapidez concede Velocidade de Movimento aumentada em 15% por Momentum perdido" — o valor é o do momento em que veio)
@@ -1030,11 +1049,13 @@ export function adds(estado, total = null) {
     if (Number(total?.solo_sagrado_es) > 0) saida.es_regen_pct = (saida.es_regen_pct ?? 0) + regen;
   }
   // (o Necromante: "Suas Habilidades de Oferenda também afetam você", "Suas Oferendas possuem X% de redução do Efeito em você" — a Oferenda
-  // usada vale em você: a velocidade de ataque, o crítico, o bloqueio e a regeneração dela — `acoes`, `hunt.oferendaEmVoce`.)
+  // usada vale em você, tudo o que ela dá — `acoes`, `hunt.oferendaEmVoce`. Lote 32, P028: a Carnal também na Conjuração e no Movimento; a
+  // Óssea também no bloqueio de Magia, e a regeneração dela só "se Bloqueou recentemente"; a Espiritual, o crítico.)
   const of = estado?.hunt?.oferendaEmVoce;
   if (of && of.ate > agoraT && Number(total?.oferenda_em_voce) > 0) {
     const f = Math.max(0, 1 - (Number(total?.oferenda_efeito_reduzido) || 0) / 100);
-    for (const [k, v] of [['atk_speed', of.velAtaquePct], ['crit_chance_inc', of.critInc], ['crit_dmg', of.critMult], ['block', of.bloqueioPct], ['life_regen_max_pct', of.regenPct]]) if (v) saida[k] = (saida[k] ?? 0) + v * f;
+    const regen = of.regenPct && (!of.regenSeBloqueou || recente(estado.hunt.poeRecente?.bloqueou, agoraT)) ? of.regenPct : 0;
+    for (const [k, v] of [['atk_speed', of.velAtaquePct], ['cast_speed', of.velConjPct], ['move_speed', of.velMovPct], ['crit_chance_inc', of.critInc], ['crit_dmg', of.critMult], ['block', of.bloqueioPct], ['spell_block', of.bloqueioMagicoPct], ['life_regen_max_pct', regen]]) if (v) saida[k] = (saida[k] ?? 0) + v * f;
   }
   // (14/10, o Warden) A CASCA da Pele de Árvore (`hunt.casca` — `tiqueDoWarden`): -60 de Dano Físico dos Acertos de Ataque por Casca e 4% mais
   // chance de Evadir Ataques por Casca abaixo do máximo; a Lição das Estações: -25 de cada tipo de dano dos Acertos de Magia por Casca
@@ -1554,6 +1575,17 @@ function tiqueDoRampage(hunt, ficha, agora) {
   hunt.poeFichaMudou = true;
 }
 
+/**
+ * (lote 32, P048 — o Ritual da Ruína: "Perca X% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria") A Fúria que você tem
+ * enquanto NÃO a perde — 0 enquanto ela cai (a perda inerente começou: 2 s sem ganhar, + o "começa N segundos depois"; ou "Perde N de Fúria
+ * por segundo", que tira sempre).
+ */
+export function furiaSemPerder(hunt, af, agora = hunt?.clock ?? 0) {
+  const f = hunt?.furia;
+  if (!f || !(f.n > 0) || Number(af?.furia_perde_por_s) > 0) return 0;
+  if (agora - f.ganhou >= FURIA.esperaMs + 1000 * (Number(af?.furia_atraso_s) || 0)) return 0;
+  return Math.min(maximoDeFuria(af), f.n | 0);
+}
 export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
   const f = hunt?.furia;
   if (!f || !(f.n > 0)) return;
@@ -1740,7 +1772,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|desdeUsou|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -1953,6 +1985,17 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   const pos = hunt.pos ? `${hunt.pos.x},${hunt.pos.y}` : null;
   if (pos && hunt.poeUltimaPos && pos !== hunt.poeUltimaPos) marcar(hunt, 'moveu', agora);
   hunt.poeUltimaPos = pos;
+  // (lote 32) As condições e escalas do RELÓGIO, que nenhum acontecimento refaz na ficha — "movendo-se"/"parado", "se você não se moveu nos
+  // últimos N segundos", "por segundo parado", "para cada segundo afetado por um Buff de Clamor" e os "Recentemente" que começam e acabam
+  // ("se você não foi Acertado por um Ataque Recentemente" volta 4 s depois do acerto): a ficha é refeita quando o segundo inteiro delas muda
+  // (até 10 s parado, até 60 s sob Clamor — depois, nada muda) ou quando um "recente" entra ou sai da janela.
+  const recentes = hunt.poeRecente ?? {};
+  const desdeOPasso = agora - (recentes.moveu ?? hunt.poeEntrou ?? agora);
+  const sobClamor = hunt.poeSobClamorDesde != null && sobBuffDeClamor(hunt, agora) ? Math.min(60, Math.floor((agora - hunt.poeSobClamorDesde) / 1000)) : -1;
+  const valendo = Object.keys(recentes).filter((k) => recente(recentes[k], agora)).sort().join(',');
+  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}`;
+  if (hunt.poeRelogioDaFicha !== undefined && hunt.poeRelogioDaFicha !== relogio) hunt.poeFichaMudou = true;
+  hunt.poeRelogioDaFicha = relogio;
   if (hunt.recuperacoes?.length && (estado.hp ?? 0) > 0) {
     for (const r of hunt.recuperacoes) {
       const fim = Math.min(agora, r.ate);
@@ -2004,7 +2047,9 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   // A perda por segundo dos únicos ("Perde N de Vida por segundo", "Perde X% de Mana por Segundo", "se você foi Acertado Recentemente"…).
   const s = ms / 1000;
   const perde = (campo, max, quanto) => { if (quanto > 0 && (estado.hp ?? 0) > 0) estado[campo] = Math.max(campo === 'hp' ? 1 : 0, (estado[campo] ?? 0) - quanto * s); };
-  perde('hp', estado.maxHp, valor(ficha, 'perde_vida_s') + ((estado.maxHp ?? 0) * valor(ficha, 'perde_vida_pct_s')) / 100);
+  // (+ lote 32, P048: o Ritual da Ruína — X% por Fúria, enquanto ela não cai)
+  const porFuria = valor(ficha, 'perde_vida_pct_s_por_furia') * furiaSemPerder(hunt, ficha?.afPoe, agora);
+  perde('hp', estado.maxHp, valor(ficha, 'perde_vida_s') + ((estado.maxHp ?? 0) * (valor(ficha, 'perde_vida_pct_s') + porFuria)) / 100);
   perde('mana', estado.maxMana, ((estado.maxMana ?? 0) * valor(ficha, 'perde_mana_pct_s')) / 100);
   perde('es', esMax, (esMax * valor(ficha, 'perde_es_pct_s')) / 100);
   // (O Agnóstico: "Enquanto não estiver em Vida Cheia, Sacrifica 20% da Mana por Segundo para Recuperar a mesma quantidade de Vida".)
@@ -2391,7 +2436,8 @@ export function fatorDoDanoRecebido(ficha, elemento, { magia = false } = {}) {
   const elemental = ['fire', 'ice', 'energy'].includes(elemento);
   const inc = v('dano_recebido_inc') + v(`dano_${elemento}_recebido_inc`) + (elemental ? v('dano_elemental_recebido_inc') : 0) + (magia ? v('dano_magico_recebido_inc') : 0);
   // ("Ganha Redução de Dano Elemental adicional igual a metade da sua Resistência a Caos": no dano elemental, o "menos" da metade dela.)
-  const pelaResCaos = elemental && v('reducao_elemental_meia_res_caos') > 0 ? Math.max(0, 1 - Math.max(0, ficha.protection?.chaos ?? 0) / 200) : 1;
+  // (lote 32, P035: no teto da redução — 90%, ou o da Guarda Desequilibrada)
+  const pelaResCaos = elemental && v('reducao_elemental_meia_res_caos') > 0 ? Math.max(0, 1 - Math.min(tetoDaReducao(ficha), Math.max(0, ficha.protection?.chaos ?? 0) / 2) / 100) : 1;
   // (O Físico do golpe corpo a corpo passa por aqui também: o "Dano Físico recebido aumentado".)
   // (+ o "mais/menos" de UM tipo — "X% menos Dano Físico e de Caos sofrido enquanto São", "10% menos Dano Físico Sofrido enquanto em Escudo
   // de Energia Cheio": `dano_<elemento>_recebido_mais`; lote 30: os cinco tipos.)
@@ -2403,12 +2449,18 @@ export function fatorDoDanoRecebido(ficha, elemento, { magia = false } = {}) {
  * armadura do personagem nesse golpe (a conta do PoE, sobre o golpe daquele tipo) — 1 sem o mod.
  */
 const ARMADURA_NO = { energy: 'armadura_no_energy', chaos: 'armadura_no_chaos' };
+/**
+ * (lote 32, P035) O TETO da Redução de Dano de qualquer tipo: 90% (o PoE); a Guarda Desequilibrada ("Redução de Dano Máxima para qualquer Tipo
+ * de Dano é 50%") baixa — na física (`fracaoFisicaRecebida`), na da Armadura contra os outros tipos (`armaduraNoElemento`) e na adicional
+ * elemental ("metade da sua Resistência a Caos" — `fatorDoDanoRecebido`).
+ */
+export const tetoDaReducao = (ficha) => { const t = ligado() ? Number(ficha?.afPoe?.reducao_maxima) || 0 : 0; return t > 0 ? Math.min(90, t) : 90; };
 export function armaduraNoElemento(ficha, elemento, golpe) {
   // (+ o Juggernaut: "15% de Armadura também é aplicado ao Dano de Caos sofrido dos Acertos" — só essa parte da Armadura.)
   const parteNoCaos = elemento === 'chaos' ? Number(ficha?.afPoe?.armadura_no_caos_pct) || 0 : 0;
   if (!ligado() || !(golpe > 0) || !ARMADURA_NO[elemento] || !(Number(ficha?.afPoe?.[ARMADURA_NO[elemento]]) > 0 || parteNoCaos > 0)) return 1;
   const pct = Number(ficha?.afPoe?.[ARMADURA_NO[elemento]]) > 0 ? 100 : Math.min(100, parteNoCaos);
-  return Math.max(0, 1 - Formulas.reducaoDeArmaduraPoe(((ficha.armor ?? 0) * pct) / 100, golpe));
+  return Math.max(0, 1 - Math.min(tetoDaReducao(ficha) / 100, Formulas.reducaoDeArmaduraPoe(((ficha.armor ?? 0) * pct) / 100, golpe)));
 }
 /** O dano FIXO a menos (ou a mais) por golpe: "-25 de Dano Físico sofrido dos Acertos de Ataques", "+N de Dano de Fogo sofrido quando acertado". */
 export function fixoRecebido(ficha, elemento, { ataque = false, magia = false } = {}) {

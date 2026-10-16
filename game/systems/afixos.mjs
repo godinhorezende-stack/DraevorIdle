@@ -204,6 +204,10 @@ export function soma(estado) {
   // por aqui, e não pela tradução, para duas peças com a keystone não dobrarem os bônus)
   const vinteAbates = Number(resolvido.rampage) > 0 ? ModsPoe.fatorDaEscala(estado, resolvido, null, 'rampage:20') : 0;
   if (vinteAbates) { resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + 2 * vinteAbates; resolvido.move_speed = (resolvido.move_speed ?? 0) + vinteAbates; }
+  // (lote 32, P024 — a Maestria de Armadura e Escudo de Energia: "Aumentos e Reduções à Armadura também se aplicam à Recarga do Escudo de
+  // Energia em X% de seu valor" — todo o "aumentado/reduzido" de Armadura que vale agora (das peças, da árvore, as Defesas Globais, os
+  // condicionais e os "por X": depois do `resolver`), na fração; antes a escala lia a soma de antes das condições.)
+  if (Number(resolvido.armadura_na_recarga_es) > 0 && resolvido.armour_pct) resolvido.es_recharge = (resolvido.es_recharge ?? 0) + (resolvido.armour_pct * resolvido.armadura_na_recarga_es) / 100;
   // ("Aumentos e reduções à sua evasão também se aplicam ao seu dano mágico" — O Olho Aberto: o "aumentado" da evasão entra no Dano Mágico.)
   if (Number(resolvido.evasao_no_dano_magico) > 0 && resolvido.evasion_pct) resolvido.spell_dmg = (resolvido.spell_dmg ?? 0) + (resolvido.evasion_pct * resolvido.evasao_no_dano_magico) / 100;
   // (as Transfigurações — keystones dos únicos: "Aumentos e Reduções ao Escudo de Energia Máximo também são aplicados ao Dano Mágico em 30%

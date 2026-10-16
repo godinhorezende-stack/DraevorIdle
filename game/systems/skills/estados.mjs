@@ -79,7 +79,8 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
       const ate = agora + duracaoNo(bicho, (cfg.lento?.duracao ?? 3000) * (1 + (efeito.lentidaoDuracaoPct ?? 0) / 100));
       const l = estados.lento;
       // Vale a MAIOR lentidão (não a última) e nunca encurta o que já corre.
-      estados.lento = ativo(l, agora) ? { ate: Math.max(l.ate, ate), pct: Math.max(l.pct, pct) } : { ate, pct };
+      // (`dur`: a duração cheia do que vale — as Forças Profanadas a renovam ao amaldiçoar, `ModsPoe.renovarFrioEChoque`)
+      estados.lento = ativo(l, agora) ? { ate: Math.max(l.ate, ate), pct: Math.max(l.pct, pct), dur: ate >= l.ate ? ate - agora : l.dur } : { ate, pct, dur: ate - agora };
       postos.push('lento');
     }
   }

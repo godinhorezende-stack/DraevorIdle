@@ -361,7 +361,8 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   //  - um ATAQUE do PoE = golpe físico de perto ou de longe (tags physical + melee/ranged, como o Brutal Strike): o dano somado a
   //    ataques de TODOS os elementos ("Adiciona X a Y de Dano de Fogo a Ataques") entra na faixa, como no golpe da arma;
   //  - uma MAGIA (o resto das skills com tag spell): o dano somado a magias do mesmo elemento dela entra na faixa antes dos aumentos,
-  //    e a chance de crítico é a de magia (`critChanceMagia`). Dano somado de outro elemento não entra (a magia tem um elemento só).
+  //    e a chance de crítico é a de magia (`critChanceMagia`). Dano somado de outro elemento não entra (a magia tem um elemento só) — só na
+  //    skill que não é gema do PoE: na gema (abaixo, lote 32), o adicionado às magias de todo tipo entra, × a eficácia do dano adicionado.
   const tagsDaSkill = Tags.tagsDaAcao(entry);
   // A gema do PoE diz o que é (tipo "Attack" ou "Spell" no poedb); as outras skills, pelas tags.
   const ehAtaqueDoPoe = !entry.heals && (daGemaPoe ? !!daGemaPoe.ataque : tagsDaSkill.includes('physical') && (tagsDaSkill.includes('melee') || tagsDaSkill.includes('ranged')));
@@ -397,7 +398,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     } else {
       const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe);
       for (const [el, v] of Object.entries(daMagia)) somar(el, v);
-      for (const el of Object.keys(daMagia)) somar(el, fichaBase.danoSomadoMagia?.[el] ?? [0, 0]);
+      // (lote 32, P071: o dano ADICIONADO às magias das peças e do Mago de Batalha — de todo tipo, não só dos elementos da magia ("Adiciona X a Y de
+      // Dano de Fogo às Magias" vale numa magia de Gelo), × a eficácia do dano adicionado, como o dos suportes)
+      for (const [el, v] of Object.entries(fichaBase.danoSomadoMagia ?? {})) somar(el, v, eficacia);
       for (const [el, v] of Object.entries(doSuporte)) somar(el, v, eficacia);
       // (14/10, o Feiticeiro: "Dano Mágico Adicional igual a X% do Dano da Varinha Equipada" — cada elemento da varinha, × a eficácia do dano
       // adicionado, como o dos suportes)
@@ -843,7 +846,9 @@ export function tiqueDaPraga(estado, hunt, ms = 250, agora = hunt?.clock ?? 0) {
     return eventos;
   }
   const dano = Math.min(p.valor, ((p.inicio * p.porSegundoPct) / 100) * (ms / 1000));
-  for (const m of perto) {
+  // (lote 32, P039 — o Vínculo Ancestral: "Você não pode causar Dano com Habilidades por si só" — a Infestação é a habilidade; o Valor cai igual)
+  const semDano = ModsPoe.valor(ficha, 'sem_dano_proprio') > 0;
+  for (const m of semDano ? [] : perto) {
     const v = Math.round(resistido(hunt, m, 'chaos', dano, ficha));
     if (!(v > 0)) continue;
     m.hp -= v;
@@ -2333,6 +2338,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const fichaDoClamor = buff.tipo === 'poe-clamor' && itensPoeLigado() ? Ficha.combate(estado) : null;
     const clamorSemBuff = !!fichaDoClamor && ModsPoe.valor(fichaDoClamor, 'clamor_sem_buff_em_voce') > 0;
     const duracaoDoClamor = doPoe ? Math.round(doPoe.dur * Math.max(0.1, 1 + (fichaDoClamor ? ModsPoe.valor(fichaDoClamor, 'clamor_duracao_mais') : 0) / 100)) : 0;
+    // (lote 32, P042: o Clamor que sai sem outro Buff de Clamor ativo começa a contagem "para cada segundo que você for afetado por um Buff de Clamor")
+    if (!clamorSemBuff && buff.tipo === 'poe-clamor' && !ModsPoe.sobBuffDeClamor(hunt, agora)) hunt.poeSobClamorDesde = agora;
     if (!clamorSemBuff) (hunt.buffs ??= {})[entry.id] = doPoe
       ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
         ...(plantado ? { estandarte: { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, valor: plantado.valor, efeitoMais: plantado.efeitoMais } } : {}),
@@ -3018,9 +3025,11 @@ export function convocarOAco(estado, hunt, personagem, agora = hunt?.clock ?? 0)
   const { reflexos } = Aco.chamar(hunt, ficha, centro, raio, agora);
   const eventos = [{ t: 'fx', id: 13, uid: 'player', x: centro.x, y: centro.y }];
   const raioDoReflexo = Aco.raioDoReflexo(ficha);
+  // (lote 32, P039: o Vínculo Ancestral — o reflexo é o dano da habilidade; os empalamentos são chamados igual)
+  const semDano = ModsPoe.valor(ficha, 'sem_dano_proprio') > 0;
   for (const r of reflexos) {
     eventos.push({ t: 'explosao', id: 6, x: r.x, y: r.y, lado: 1 + 2 * raioDoReflexo });
-    for (const m of hunt.monstros) {
+    for (const m of semDano ? [] : hunt.monstros) {
       if (!(m.hp > 0) || !perto(m, r, raioDoReflexo)) continue;
       const d = Math.max(1, Math.round(resistido(hunt, m, 'physical', r.dano, null, { armadura: false })));
       m.hp -= d;
@@ -3241,8 +3250,10 @@ ModsPoe.definirMaldicao((hunt, alvo, nome, nivel, semLimite, agora) => {
   const def = Gemas.ativaPeloNome(nome);
   if (!def?.poe?.slug) return;
   const b = GemasPoe.buffNoNivel(def.poe.slug, nivel);
-  if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, def.acao, b.efeitos, { agora, dur: b.dur || 6000, ignorarLimite: semLimite });
+  if (b?.efeitos?.length) Reforcos.amaldicoar(alvo, def.acao, b.efeitos, { agora, dur: b.dur || 6000, ignorarLimite: semLimite, hunt });
 });
+// (lote 32, P038) A maldição sua que pegou: as Forças Profanadas renovam o Resfriamento e a Eletrização do inimigo (a ficha da caçada).
+Reforcos.definirAoAmaldicoar((hunt, bicho, agora) => ModsPoe.aoAmaldicoar(ModsPoe.fichaDa(hunt), bicho, agora));
 
 /**
  * O DANO RECEBIDO pelo personagem ("Conjurar ao Receber Dano"): soma no grupo e, passando do limiar do nível do suporte, ativa as magias

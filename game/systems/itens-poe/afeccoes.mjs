@@ -305,7 +305,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     if (pct > 0 && a.eletrizacoesMax > 1) {
       // "Você pode aplicar até N Eletrizações em cada Inimigo": a pilha (as N mais fortes ativas) — o dano a mais é a soma.
       const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
-      pilha.push({ ate, pct });
+      pilha.push({ ate, pct, dur: ate - agora });
       e.chocadosPilha = pilha.sort((x, y) => y.pct - x.pct).slice(0, Math.floor(a.eletrizacoesMax));
       e.chocado = { ate: Math.max(...e.chocadosPilha.map((x) => x.ate)), pct: e.chocadosPilha.reduce((t, x) => t + x.pct, 0) };
       postos.push('eletrizado');
@@ -313,7 +313,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
       const atual = e.chocado;
       // Vale a mais forte; não encurta a que já corre.
       if (pct > 0 && !(atual && atual.ate > agora && atual.pct >= pct)) {
-        e.chocado = { ate, pct };
+        e.chocado = { ate, pct, dur: ate - agora };
         postos.push('eletrizado');
       }
     }

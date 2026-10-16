@@ -347,7 +347,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (28 — 15/10, lote 31: o abate é de quem deu o golpe fatal — "ao Matar Corpo a Corpo" pelo golpe fatal, "por você ou seus Lacaios/Totens",
 // "Inimigos Mortos próximos ao seu Estandarte"; as explosões com o tipo de dano da linha e a defesa dos atingidos; "Provocados por seus
 // Clamores"; "Dano com Acertos é Azarado", os "Sortudo" e "Acertos Não Críticos penetram" também no golpe básico.)
-export const VERSAO_DA_TRADUCAO = 28;
+// (29 — 15/10, lote 32: o Mago de Batalha (também "durante o Efeito" do frasco) com o adicionado de todo tipo; "Velocidade de Movimento não pode
+// ser modificada para abaixo do valor base"; "Perca X% de Vida por segundo por Fúria…"; a Armadura na Recarga do Escudo resolvida.)
+export const VERSAO_DA_TRADUCAO = 29;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

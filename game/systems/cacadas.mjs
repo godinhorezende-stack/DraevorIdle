@@ -823,7 +823,11 @@ export function portalParaCliente(estado, hunt) {
 export function razaoDeVelocidade(estado) {
   const base = R.baseSpeed(estado.level ?? 1);
   // Lento (controle de boss/elite): anda mais devagar (`combate/controle.mjs`); preso, nem anda (`podeAgir`, no tique).
-  return Math.min(2, Math.max(0.25, (Ficha.combate(estado).speed ?? base) / Math.max(1, base) / Controle.fatorDeLentidao(estado.hunt)));
+  // (lote 32, P049 — o Juggernaut: "Velocidade de Movimento não pode ser modificada para abaixo do valor base": nenhuma redução — a lentidão, as
+  // penalidades, o "reduzido" — põe o passo abaixo da base)
+  const ficha = Ficha.combate(estado);
+  const piso = ModsPoe.valor(ficha, 'movimento_minimo_base') > 0 ? 1 : 0.25;
+  return Math.min(2, Math.max(piso, (ficha.speed ?? base) / Math.max(1, base) / Controle.fatorDeLentidao(estado.hunt)));
 }
 
 /** Quantos passos ele dá neste tique: o crédito acumulado (fração de passo) + a razão, inteiro, até 2. */
@@ -2502,7 +2506,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // (PoE, 12/10) os seus Vínculos neste lacaio ("Habilidades de Vínculo podem focar em Lacaios Danificáveis" — `Vinculos.doLacaio`)
     const vinculo = Vinculos.doLacaio(hunt, l, agora);
     // (ciclo 7: a regeneração passa pela "Recuperação de Vida" do lacaio; o escudo dele recarrega)
-    if (oferenda?.regenPct) LacaiosPoe.curarLacaio(l, (l.maxHp * oferenda.regenPct) / 100 / 4);
+    // (lote 32, P028: a regeneração da Oferenda Óssea é "se eles Bloquearam recentemente" — `bloqueouEm`)
+    if (oferenda?.regenPct && (!oferenda.regenSeBloqueou || agora - (l.bloqueouEm ?? -Infinity) <= ModsPoe.RECENTE_MS)) LacaiosPoe.curarLacaio(l, (l.maxHp * oferenda.regenPct) / 100 / 4);
     // PoE: "Lacaios Regeneram X% / N de Vida por segundo" (o tique é de 1/4 s).
     if (l.poe && (l.poe.regenPct || l.poe.regen)) LacaiosPoe.curarLacaio(l, ((l.maxHp * l.poe.regenPct) / 100 + l.poe.regen) / 4);
     if (regenDosTotens > 0 && LacaiosPoe.ehTotem(l)) LacaiosPoe.curarLacaio(l, (l.maxHp * regenDosTotens) / 100 / 4);
@@ -2517,7 +2522,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (ciclo 7) o golpe de um monstro CONJURADOR (que tem magias) conta como magia no lacaio: o bloqueio mágico dele.
       const magia = (Poderes.poderesDe(b.key)?.ataques ?? []).some((a) => a.tipo === 'magia');
       // A Oferenda de Osso: o lacaio bloqueia o golpe (o de ataque; + "Lacaios Recuperam X% de suas Vidas quando Bloqueiam" — `lacaioBloqueia`).
-      if (!magia && lacaioBloqueia(l, oferenda, eventos, Math.random, vinculo, aliado?.bloqueio ?? 0)) continue;
+      if (!magia && lacaioBloqueia(l, oferenda, eventos, Math.random, vinculo, aliado?.bloqueio ?? 0)) { l.bloqueouEm = agora; continue; }
       // (PoE: o golpe do bicho com o dano de outros tipos dele passando pelas resistências do lacaio — no teto delas —, e o "Lacaios sofrem
       // Dano aumentado/reduzido"; ciclo 7: a Redução de Dano Física, o bloqueio mágico e o escudo do lacaio — `LacaiosPoe.danoNoLacaio`.)
       const teto = LacaiosPoe.tetoDaResDoLacaio(l);
@@ -2529,7 +2534,9 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // para o monstro sem golpe no arquivo. Antes era sempre ela: um chefe com muita vida matava qualquer lacaio de um golpe.
       const golpeDoBicho = Poderes.golpeCorpoACorpo(b) ?? R.ataqueDoMonstro(b);
       if (!(golpeDoBicho > 0)) continue;
-      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: aliado?.bloqueioMagico ?? 0 }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      // (lote 32, P028: + o bloqueio de Magia da Oferenda Óssea)
+      const { dano: noLacaio, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0) }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      if (bloqueou) l.bloqueouEm = agora;
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }
       // (o Vínculo D'Alma no lacaio: "sofre X% menos Dano" e os 30% do dano no SEU Escudo de Energia antes do dele)
       let sofrido = noLacaio;
@@ -2614,7 +2621,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     }
     if (!R.jaPode(agora, l.proximoGolpe)) continue;
     // A velocidade: a do monstro do nível × o jeito (o espírito é rápido) ÷ os bônus (a gema, a Oferenda de Carne, a Agressividade).
-    const vel = 1 + ((l.velAtaquePct ?? 0) + (oferenda?.velAtaquePct ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora) + (aliado?.velPct ?? 0)) / 100;
+    // (lote 32, P028: a Oferenda Carnal — a velocidade de Conjuração no lacaio que conjura)
+    const vel = 1 + ((l.velAtaquePct ?? 0) + ((est.magia ? oferenda?.velConjPct : oferenda?.velAtaquePct) ?? 0) + LacaiosPoe.velocidadeDoLacaio(l, agora) + (aliado?.velPct ?? 0)) / 100;
     // ("Tempo de ataque base dos lacaios não espectrais é equivalente ao tempo de ataque da arma da sua mão principal": a base é a da arma.)
     const fichaDoDono = Ficha.combate(estado);
     const daArma = ModsPoe.valor(fichaDoDono, 'lacaio_tempo_da_arma') > 0 && !/espectro|spectre/i.test(l.nome ?? '') ? Ficha.intervaloBaseDoGolpe(fichaDoDono.arma) : null;

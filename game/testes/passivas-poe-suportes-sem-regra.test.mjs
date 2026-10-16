@@ -422,12 +422,14 @@ test('FORÇA CONCUSSIVA: "Incêndios de Acertos Corpo a Corpo Atordoantes causam
   assert.ok(perto(incendioDoTerceiro(), sem * (1 + valor / 100)));
 });
 
-test('FORÇAS PROFANADAS: o acerto no inimigo amaldiçoado por você renova o Resfriamento e a Eletrização', { skip: SEM }, () => {
+// (15/10, lote 32 — P038, ajuste aprovado pelo dono: "Refresh Duration of Chill and Shock on Enemies you Curse" — AO AMALDIÇOAR
+// (`ModsPoe.aoAmaldicoar`, que o `Reforcos.marcar`/`amaldicoar` chamam), com a duração cheia de cada um — 2 s sem ela gravada; o acerto não renova)
+test('FORÇAS PROFANADAS: amaldiçoar o inimigo renova o Resfriamento e a Eletrização', { skip: SEM }, () => {
   const { e } = com(/^renova_frio_choque_amaldicoado$/);
   const agora = e.hunt.clock;
   const alvo = (maldito) => bicho({ maldicoes: maldito ? { x: { ate: agora + 5000 } } : {}, estados: { lento: { ate: agora + 300, pct: 10 }, chocado: { ate: agora + 300, pct: 10 } } });
   const m = alvo(true);
-  ModsPoe.aoAcertar(e, e.hunt, m, golpe(e, ['ataque']), { dano: 1, rng: () => 0.99 });
+  ModsPoe.aoAmaldicoar(ficha(e), m, agora);
   assert.equal(m.estados.lento.ate, agora + 2000);
   assert.equal(m.estados.chocado.ate, agora + 2000);
   const n = alvo(false);
@@ -435,7 +437,7 @@ test('FORÇAS PROFANADAS: o acerto no inimigo amaldiçoado por você renova o Re
   assert.equal(n.estados.lento.ate, agora + 300, 'o não amaldiçoado, não');
   const s = novo();
   const k = alvo(true);
-  ModsPoe.aoAcertar(s, s.hunt, k, golpe(s, ['ataque']), { dano: 1, rng: () => 0.99 });
+  ModsPoe.aoAmaldicoar(ficha(s), k, agora);
   assert.equal(k.estados.lento.ate, agora + 300, 'sem a linha, não');
 });
 

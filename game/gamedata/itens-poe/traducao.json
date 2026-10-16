@@ -21,10 +21,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a velocidade de ataque, o crítico, o bloqueio e a regeneração da Oferenda",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P028)"
     },
     {
       "padrao": "^Suas Oferendas possuem \\{(\\d+)\\}% de redução do Efeito em você$",
@@ -195,10 +194,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o acerto no amaldiçoado renova os 2 s de base",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P038: ao amaldiçoar, com a duração cheia)"
     },
     {
       "padrao": "^Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor$",
@@ -722,10 +720,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a cura sai junto do golpe, da vida que faltava antes dele",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P046: antes do acerto, da Vida não reservada)"
     },
     {
       "padrao": "^Ganha \\{(\\d+)\\} de Força dos Ventos ao usar uma Habilidade$",
@@ -769,10 +766,11 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "quando Acertado (o PoE: \"when Hit\")",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "estado": "equivalente",
+      "nota": "o PoE: \"Lose all Gale Force when Hit\" — quando VOCÊ é Acertado (o texto do poedb em português diz \"ao Acertar\")",
+      "_lote32": "15/10 — lote 32 (P051)"
     },
     {
       "padrao": "^Ganha Fanatismo por \\{(\\d+)\\} segundos ao atingir o Máximo de Cargas Fanáticas$",
@@ -849,10 +847,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "Convergência: 30% mais dano nas habilidades Elementais, por 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P073)"
     },
     {
       "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}% enquanto você não possuir Convergência$",
@@ -991,10 +988,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o bloqueio-base do escudo vira N (o aumentado local dele não entra)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P026: como o PoB — ReplaceShieldBlock)"
     },
     {
       "padrao": "^Definhamentos infligidos por você expiram \\{(\\d+)\\}% mais lentamente$",
@@ -1187,10 +1183,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o acerto e o dano degenerativo das suas gemas não ferem (os totens e lacaios, sim); o golpe básico não sai",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P039)"
     },
     {
       "padrao": "^Habilidades de Estandarte têm Duração aumentada em \\{(\\d+)\\}%$",
@@ -4742,14 +4737,13 @@
       "padrao": "^Velocidade de Movimento não pode ser modificada para abaixo do valor base$",
       "efeitos": [
         {
-          "stat": "imune_lento",
+          "stat": "movimento_minimo_base",
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "a lentidão dos monstros não pega",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P049)"
     },
     {
       "padrao": "^Magias Conjuradas por Totens têm \\{(\\d+)\\}% de Velocidade de Conjuração aumentada$",
@@ -4859,14 +4853,13 @@
       "padrao": "^\\{(\\d+)\\} menos dano de Ataque sofrido se você não foi Acertado por um Ataque Recentemente$",
       "efeitos": [
         {
-          "stat": "physical_sofrido_ataque@naoAcertadoAtaqueRecente",
+          "stat": "dano_ataque_recebido_mais@naoAcertadoAtaqueRecente",
           "valor": "-{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no golpe físico dos monstros",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P031: \"20% less Attack Damage taken\" no inglês)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% mais chance de Evadir Ataques se você foi Acertado por um Ataque Recentemente$",
@@ -5179,14 +5172,13 @@
       "padrao": "^Perca \\{(\\d+)\\}% de Vida por segundo por Fúria enquanto não estiver perdendo Fúria$",
       "efeitos": [
         {
-          "stat": "perde_vida_pct_s%furia",
+          "stat": "perde_vida_pct_s_por_furia",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "vale com qualquer Fúria",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P048)"
     },
     {
       "padrao": "^Efeito da Fúria Arcana aumentado em \\{(\\d+)\\}% em você$",
@@ -5815,14 +5807,13 @@
       "padrao": "^Inimigos Próximos são Cobertos em Cinzas se você não se moveu nos últimos \\{(\\d+)\\} segundos$",
       "efeitos": [
         {
-          "stat": "aura_proximos:cinzas@parado",
+          "stat": "aura_proximos:cinzas@paradoHa:{V1}",
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "parado: sem andar há pouco",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P041)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Cobrir Inimigos Raros ou Únicos em Cinzas por \\{(\\d+)\\} Segundos quando você Acertá-los$",
@@ -5947,10 +5938,9 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "1% de Escudo de Energia máximo aumentado por 1% de chance de Bloquear Magias",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P075: a conta do PoB, na segunda passada)"
     },
     {
       "padrao": "^Campo de Visão é baseado no Escudo de Energia em vez de na Vida$",
@@ -6633,14 +6623,13 @@
       "padrao": "^Dano Corpo a Corpo aumentado em \\{(\\d+)\\}% para cada segundo que você for afetado por um Buff de Clamor, máximo de \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc%desdeUsou:clamor~{V2}@corpo",
+          "stat": "dmg_inc%afetadoPorClamor~{V2}@corpo",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta os segundos desde o último Clamor",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P042)"
     },
     {
       "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano refletido$",
@@ -6924,18 +6913,17 @@
       "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Sagrado ao Acertar um Inimigo Raro ou Único$",
       "efeitos": [
         {
-          "stat": "ev:acertar:soloSagrado:4@alvoRaro",
+          "stat": "ev:acertar:soloSagrado:8@alvoRaro",
           "valor": "{1}"
         },
         {
-          "stat": "ev:acertar:soloSagrado:4@alvoUnico",
+          "stat": "ev:acertar:soloSagrado:8@alvoUnico",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o Solo dura 4 s",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P056: \"lasting 8 seconds\" no inglês)"
     },
     {
       "padrao": "^Enquanto parado, a área ao seu redor será Solo Sagrado$",
@@ -7354,14 +7342,13 @@
       "padrao": "^Aumentos e Reduções à Armadura também se aplicam à Recarga do Escudo de Energia em \\{(\\d+)\\}% de seu valor$",
       "efeitos": [
         {
-          "stat": "es_recharge%stat:armour_pct",
+          "stat": "armadura_na_recarga_es",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "conta os aumentos de Armadura em % (o valor/100 vira a fração)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P024)"
     },
     {
       "padrao": "^\\+?\\{(\\d+)\\} ao multiplicador de dano de gelo degenerativo por \\{(\\d+)\\}% de resistência a dano de gelo excedente$",
@@ -8644,10 +8631,9 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o teto vale na redução de dano físico (armadura + redução adicional)",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote32": "15/10 — lote 32 (P035)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% do Dano Físico negado de Acertos Recentes é Regenerado como Escudo de Energia por segundo$",
@@ -15992,9 +15978,8 @@
         }
       ],
       "_nova": true,
-      "estado": "aproximado",
-      "nota": "a faixa física da arma (com os locais e a qualidade) e o elemental somado da própria arma.",
-      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)"
+      "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 8)",
+      "_lote32": "15/10 — lote 32 (P071: o adicionado às magias de todo tipo, × a eficácia)"
     },
     {
       "padrao": "^Fúria(?: durante o Efeito)?$",

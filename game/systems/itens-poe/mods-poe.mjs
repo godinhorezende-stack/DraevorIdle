@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { amaldicoadoPorVoce, RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque } from './condicoes-poe.mjs';
 export * from './condicoes-poe.mjs';
 
 
@@ -159,12 +159,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     const apos = v('agravar_sangramento_apos_s');
     if (apos > 0) Dot.agravar(alvo, agora, apos * 1000);
   }
-  // (PoE, as Forças Profanadas: "Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você" — o acerto no amaldiçoado
-  // renova os 2 s de base do Resfriamento e da Eletrização que ele tem.)
-  if (v('renova_frio_choque_amaldicoado') > 0 && amaldicoadoPorVoce(alvo, agora)) {
-    if (e.lento?.ate > agora) e.lento.ate = Math.max(e.lento.ate, agora + 2000);
-    if (e.chocado?.ate > agora) e.chocado.ate = Math.max(e.chocado.ate, agora + 2000);
-  }
+  // (As Forças Profanadas — "Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você": lote 32, P038, AO
+  // AMALDIÇOAR, com a duração cheia de cada um — `aoAmaldicoar`; não mais a cada acerto, com 2 s.)
   // "Seus Acertos Intimidam permanentemente Inimigos com Vida Cheia" (a tag `alvoVidaCheia` do golpe).
   if (v('intimidar_permanente') > 0) e.intimidado = { ate: agora + 3600 * 1000 };
   if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) {
@@ -330,6 +326,31 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
  * Recoup do PoE) e o "chance de Congelar Inimigos quando te Acertarem". Devolve os eventos.
  */
 
+/**
+ * (lote 32, P046 — o Berserker: "Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio") O acerto do
+ * inimigo vai entrar (passou da esquiva e do bloqueio): ANTES do dano, ganha X% × o Desafio da Vida NÃO RESERVADA que falta. Quem chama é o
+ * golpe do monstro e a magia dele (`hunt/combate`, `poderes`). Devolve a vida ganha.
+ */
+export function antesDeSerAcertado(estado, hunt, ficha, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt || !ficha?.afPoe) return 0;
+  const pct = valor(ficha, 'desafio_cura_faltante_pct');
+  const d = hunt.desafio;
+  if (!(pct > 0) || !(d?.ate > agora) || !(d.n > 0) || !((estado.hp ?? 0) > 0) || vidaSoPeloDreno(ficha.afPoe)) return 0;
+  const naoReservada = Math.max(0, (estado.maxHp ?? 0) - reservadoAgora(estado, 'vida', ficha.afPoe));
+  const faltava = Math.max(0, naoReservada - estado.hp);
+  const ganho = Math.min(faltava, Math.round((faltava * pct * d.n) / 100));
+  if (ganho > 0) estado.hp += ganho;
+  return ganho;
+}
+/**
+ * (lote 32, P038) Uma maldição sua PEGOU no inimigo agora (`Reforcos.marcar` → `amaldicoou`, `Reforcos.amaldicoar`): as Forças Profanadas
+ * ("Redefine a duração de esfriamentos e eletrificações em inimigos amaldiçoados por você") renovam o Resfriamento e a Eletrização dele.
+ */
+export function aoAmaldicoar(ficha, bicho, agora) {
+  if (!ligado() || !bicho || !(valor(ficha, 'renova_frio_choque_amaldicoado') > 0)) return;
+  renovarFrioEChoque(bicho, agora);
+}
+
 /** O "X% do Dano de <elemento> sofrido é Recuperado como Vida" de cada elemento de golpe. */
 const RECOUP_DO_ELEMENTO = { physical: 'recoup_life_phys', fire: 'recoup_life_fire', ice: 'recoup_life_ice', energy: 'recoup_life_energy', chaos: 'recoup_life_chaos' };
 export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorpo = false, ataque = false, magia = false, tipo = null, agora = hunt?.clock ?? 0, rng = Math.random, eventos = [] } = {}) {
@@ -348,17 +369,13 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
     at.reagiu = true;
     aoSerAtordoado(estado, hunt, bicho, ficha, { dano, duracaoMs: at.ms ?? 0, agora, eventos });
   }
-  // (11/10, o Berserker) O DESAFIO: "Ganha 3% da vida não reservada faltante antes de ser atingido por um inimigo para cada Desafio" (a cura
-  // sai junto do golpe: da vida que faltava antes dele); "Ganha Desafio por 10 segundos ao perder Vida para um Acerto Inimigo, não mais do que
-  // uma vez a cada 0.3 segundos"; "Perde todo o Desafio quando chegar a 10 de Desafio".
-  const porDesafio = v('desafio_cura_faltante_pct');
+  // (11/10, o Berserker) O DESAFIO: "Ganha Desafio por 10 segundos ao perder Vida para um Acerto Inimigo, não mais do que uma vez a cada 0.3
+  // segundos"; "Perde todo o Desafio quando chegar a 10 de Desafio". (A cura por Desafio é ANTES do acerto — `antesDeSerAcertado`, lote 32.)
   const ganhaDesafio = v('desafio_ao_perder_vida');
-  if ((porDesafio > 0 || ganhaDesafio > 0) && dano > 0) {
+  if (ganhaDesafio > 0 && dano > 0) {
     const d = (hunt.desafio ??= { n: 0, ate: 0, ultimo: -Infinity });
     if (!(d.ate > agora)) d.n = 0;
-    const faltava = Math.max(0, (estado.maxHp ?? 0) - ((estado.hp ?? 0) + dano));
-    if (porDesafio > 0 && d.n > 0 && faltava > 0 && (estado.hp ?? 0) > 0 && !vidaSoPeloDreno(ficha.afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, estado.hp + Math.round((faltava * porDesafio * d.n) / 100));
-    if (ganhaDesafio > 0 && agora - d.ultimo >= 300) {
+    if (agora - d.ultimo >= 300) {
       d.ultimo = agora;
       d.n += 1;
       d.ate = agora + 10000;

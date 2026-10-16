@@ -253,10 +253,15 @@ export function estiloDoLacaio(texto, elemento) {
 
 /** Os bônus de uma OFERENDA aos lacaios em campo: velocidade de ataque, crítico, bloqueio, regeneração. */
 function bonusDaOferenda(linhas) {
-  const b = { velAtaquePct: 0, critInc: 0, critMult: 0, bloqueioPct: 0, regenPct: 0 };
+  // (lote 32, P028: + a Conjuração e o Movimento da Carnal, o bloqueio de Magia da Óssea, e a regeneração dela só "se eles Bloquearam recentemente")
+  const b = { velAtaquePct: 0, velConjPct: 0, velMovPct: 0, critInc: 0, critMult: 0, bloqueioPct: 0, bloqueioMagicoPct: 0, regenPct: 0, regenSeBloqueou: false };
   for (const l of linhas) {
     let m;
     if ((m = l.match(/Velocidade de Ataque dos Lacaios em (\d+)/i))) b.velAtaquePct += Number(m[1]);
+    if ((m = l.match(/Velocidade de Conjuração dos Lacaios em (\d+)/i))) b.velConjPct += Number(m[1]);
+    if ((m = l.match(/Velocidade de Movimento dos Lacaios em (\d+)/i))) b.velMovPct += Number(m[1]);
+    if ((m = l.match(/\+(\d+) ?% de Chance de Bloquear Dano Mágico/i))) b.bloqueioMagicoPct += Number(m[1]);
+    if (/(\d+(?:\.\d+)?) ?% da Vida Regenerada por Segundo se eles Bloquearam recentemente/i.test(l)) b.regenSeBloqueou = true;
     if ((m = l.match(/Chance de Golpe Crítico aumentada em (\d+)/i))) b.critInc += Number(m[1]);
     if ((m = l.match(/\+(\d+) ?% de Multiplicador de Golpe Crítico/i))) b.critMult += Number(m[1]);
     if ((m = l.match(/\+(\d+) ?% de Chance de Bloquear o Dano de Ataques/i))) b.bloqueioPct += Number(m[1]);

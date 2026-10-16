@@ -1179,6 +1179,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   const danoDoAcerto = final;
+  // (lote 32, P046 — o Berserker: "Ganha X% da vida não reservada faltante ANTES de ser atingido … para cada Desafio")
+  if (final > 0) ModsPoe.antesDeSerAcertado(estado, hunt, ficha);
   // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
   if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
   // (14/10, as Égides — a Primitiva do Elementalist e as dos únicos: a parte de cada tipo do acerto sai da Égide dele antes do Escudo e da
