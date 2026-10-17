@@ -2025,7 +2025,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   // Congelado ou atordoado (controle de boss/elite): a conjuração em andamento se perde, e o jogador não age até acabar.
   // (Na Safe Zone, também: o jogador não ataca dali.)
   const livre = Controle.podeAgir(hunt) && !naZonaSegura;
-  if (!livre) hunt.conjurando = null;
+  // (lote 73, o Mal Inabalável: a conjuração de Caos segue no atordoamento — `Acoes.conjuracaoSegueNoAtordoamento`)
+  if (!livre && !(!naZonaSegura && Acoes.conjuracaoSegueNoAtordoamento(estado, hunt))) hunt.conjurando = null;
   // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
   eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
   // No manual, o alvo CLICADO (vivo) é atacado com o golpe básico mesmo com o "Ataque automático" desligado (dono, 07/10: "no manual,

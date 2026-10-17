@@ -24,6 +24,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
   const v = (k) => valor(fichaR, k);
   const tags = new Set(ficha.tagsDoGolpe ?? []);
+  // (lote 73) o Empalamento DESTE acerto (a Cutilada Perigosa o reforça se o acerto também Sangrar — `aoPorAfeccoes`)
+  if (alvo.estados?.empalamentoDoAcerto) delete alvo.estados.empalamentoDoAcerto;
   // (lote 72, o Rítmo de Combate) "caso você tenha Acertado com sua Arma da Mão Principal/Secundária Recentemente": o acerto de ATAQUE com arma
   // — a mão da ficha do golpe (`Ficha.fichaDaMao`: `mao`; a que acerta com as duas, as duas); sem duas armas, a principal.
   if (tags.has('ataque') && estado?.equipment?.weapon) {
@@ -197,10 +199,14 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
       if ((em.empalarBloqueadoAte ?? 0) > agora) return false;
       const lista = (em.empalado ??= []);
       const naoEmpalado = !lista.some((x) => x.ate > agora && x.acertos > 0);
-      const valor2 = (fisico * NO_ACERTO.empalar.pctDoFisico * (1 + (v('efeito_empalamento') + (naoEmpalado ? v('efeito_empalamento_nao_empalado') : 0)) / 100)) / 100;
+      const efeitoInc = v('efeito_empalamento') + (naoEmpalado ? v('efeito_empalamento_nao_empalado') : 0);
+      const valor2 = (fisico * NO_ACERTO.empalar.pctDoFisico * (1 + efeitoInc / 100)) / 100;
       const acertos = NO_ACERTO.empalar.acertos + Math.max(0, Math.floor(v('empalar_acertos_extra')));
       const ate = agora + Math.round(NO_ACERTO.empalar.duracaoMs * Math.max(0.1, 1 + v('duracao_empalamento') / 100));
-      for (let k = 0; k <= Math.max(0, Math.floor(v('empalamentos_extras'))); k++) lista.push({ valor: valor2, acertos, ate });
+      const novos = [];
+      for (let k = 0; k <= Math.max(0, Math.floor(v('empalamentos_extras'))); k++) novos.push({ valor: valor2, acertos, ate });
+      lista.push(...novos);
+      if (m === alvo) em.empalamentoDoAcerto = { novos, efeitoInc };
       if (lista.length > NO_ACERTO.empalar.maximo) lista.splice(0, lista.length - NO_ACERTO.empalar.maximo);
       if (v('empalar_bloqueio_s') > 0) em.empalarBloqueadoAte = agora + v('empalar_bloqueio_s') * 1000;
       marcar(hunt, 'empalou', agora);
@@ -279,6 +285,21 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
 /** As afecções que um acerto PÔS no alvo (`queimando`, `congelado`, `eletrizado`, `envenenado`…) → os eventos e os "recentemente". */
 // (lote 67: + o Resfriamento — o estado `lento` que o acerto pôs —: "caso você tenha Resfriado um Inimigo Recentemente")
 const EVENTO_DA_AFECCAO = { queimando: ['incendiar', 'incendiou'], congelado: ['congelar', 'congelou'], eletrizado: ['eletrizar', 'eletrizou'], envenenado: ['envenenar', null], lento: ['resfriar', 'resfriou'] };
+/**
+ * (lote 73, a Cutilada Perigosa) "Efeito dos Empalamentos infligidos por Acertos que também infligem Sangramento aumentado em X%": o acerto que
+ * Empalou (`empalamentoDoAcerto`, de `aoAcertar`) e Sangrou — por qualquer fonte: as afecções do PoE ou a gema de suporte (`Estados.aplicar`);
+ * quem chama confere as duas, depois de todas as afecções do acerto. O X soma aos outros "Efeito do Empalamento aumentado" daquele
+ * empalamento. Sempre tira a marca do acerto.
+ */
+export function empalamentoComSangramento(alvo, ficha, sangrou) {
+  const doAcerto = alvo?.estados?.empalamentoDoAcerto;
+  if (!doAcerto) return;
+  delete alvo.estados.empalamentoDoAcerto;
+  const comSangue = valor(ficha, 'efeito_empalamento_com_sangramento');
+  if (!sangrou || !(comSangue > 0)) return;
+  const fator = (1 + (doAcerto.efeitoInc + comSangue) / 100) / Math.max(0.01, 1 + doAcerto.efeitoInc / 100);
+  for (const x of doAcerto.novos) x.valor *= fator;
+}
 export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos = null, personagem = null } = {}) {
   if (!ligado() || !postos?.length) return;
   for (const p of new Set(postos)) {
@@ -394,7 +415,11 @@ export function aoSerAcertado(estado, hunt, bicho, ficha, { dano = 0, corpoACorp
   // (11/10) A RETALIAÇÃO: o Acerto Selvagem ("Um Acerto que remove ao menos 15% da Vida Máxima") abre a janela das que dependem dele; "Habilidades
   // de Retaliação Nocivas se tornam Utilizáveis a cada sexto Acerto dos Inimigos" (o Arsenal da Vingança) abre a das que causam dano (as do
   // bloqueio — o Clamor Vingativo, do Acerto Selvagem, não causa dano) a cada N acertos.
-  if (dano > 0 && (estado.maxHp ?? 0) > 0 && dano >= (estado.maxHp * RETALIACAO.selvagemPct) / 100) abrirRetaliacao(hunt, 'selvagem', ficha.afPoe, agora);
+  if (dano > 0 && (estado.maxHp ?? 0) > 0 && dano >= (estado.maxHp * RETALIACAO.selvagemPct) / 100) {
+    abrirRetaliacao(hunt, 'selvagem', ficha.afPoe, agora);
+    // (lote 73) "caso você tenha sofrido um Acerto Selvagem Recentemente"
+    marcar(hunt, 'sofreuSelvagem', agora);
+  }
   const aCada = v('retaliacao_a_cada_acertos');
   if (aCada > 0) {
     hunt.poeAcertosSofridos = (hunt.poeAcertosSofridos ?? 0) + 1;

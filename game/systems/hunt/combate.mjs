@@ -1605,6 +1605,8 @@ export function round(estado, personagem) {
           ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, hunt.clock ?? 0);
           for (const st of postos) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
           ModsPoe.aoPorAfeccoes(estado, hunt, alvo, ficha, postos, { eventos, personagem });
+          // (lote 73, a Cutilada Perigosa: o Empalamento deste golpe, se ele também Sangrou)
+          ModsPoe.empalamentoComSangramento(alvo, ficha, postos.includes('sangrando'));
         }
         // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
         if (!segundo) Charms.aoAcertar(estado, hunt, alvo, eventos);

@@ -261,11 +261,15 @@ function marcaDoAssassino(estado, hunt, bicho, ficha, agora = hunt?.clock ?? 0) 
   Reforcos.marcar(hunt, bicho, agora);
 }
 
-/** (PoE, o Libertar) Os SELOS de uma magia: um a cada N ms desde a última conjuração, até o máximo (+ "+N ao número máximo de Selos"); gasta todos. */
-export function selosAgora(hunt, id, efeito, extra = 0, agora = hunt?.clock ?? 0) {
+/**
+ * (PoE, o Libertar) Os SELOS de uma magia: um a cada N ms desde a última conjuração, até o máximo (+ "+N ao número máximo de Selos"); gasta todos.
+ * (lote 73, o Cersidor de Selos: `freqPct` — "frequência de ganho de Selo aumentada em X%": o intervalo ÷ (1 + X%).)
+ */
+export function selosAgora(hunt, id, efeito, extra = 0, agora = hunt?.clock ?? 0, freqPct = 0) {
   const s = ((hunt.poeSelos ??= {})[id] ??= { desde: agora });
   const max = Math.max(0, Math.round((efeito.selosMax ?? 0) + extra));
-  const n = Math.min(max, Math.floor(Math.max(0, agora - s.desde) / Math.max(1, efeito.seloIntervaloMs)));
+  // (o tempo × a frequência, ÷ o intervalo: sem a divisão do intervalo, que perdia um Selo nos múltiplos exatos — 2000 ÷ (800 ÷ 1,2))
+  const n = Math.min(max, Math.floor((Math.max(0, agora - s.desde) * Math.max(0.1, 1 + freqPct / 100)) / Math.max(1, efeito.seloIntervaloMs) + 1e-9));
   s.desde = agora;
   return n;
 }
@@ -1234,6 +1238,19 @@ export function concluirConjuracao(estado, hunt, personagem) {
   return [{ t: 'castFim', uid: 'player', quem: personagem?.nome }, ...(r.eventos ?? [])];
 }
 
+/**
+ * (lote 73, o Mal Inabalável) "Habilidades de Caos ignoram interrupções de Atordoamentos": só atordoado (não congelado), a conjuração de uma
+ * habilidade de Caos segue — o tique não a perde (`cacadas.tique`) e ela sai no fim (`disparar` com `concluir`).
+ */
+export function conjuracaoSegueNoAtordoamento(estado, hunt) {
+  if (!hunt?.conjurando) return false;
+  const presos = Controle.ativosNoJogador(hunt);
+  if (!presos.includes('atordoado') || presos.includes('congelado')) return false;
+  if (!(ModsPoe.valor(Ficha.combate(estado), 'caos_ignora_interrupcao') > 0)) return false;
+  const entry = POR_ID.get(hunt.conjurando.id);
+  return !!entry && tagsPoeDaSkill(entry).includes('caos');
+}
+
 /** A origem do dano base de uma gema de ataque, para o balão: a família da arma e de onde sai a base (o dano normal da ficha, ou o Magic Attack da wand/rod). */
 function armaDoDano(estado, entry) {
   const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
@@ -2143,8 +2160,9 @@ export const intervaloGlobalCom = (castSpeed = 0) => Math.round(R.GLOBAL_SPELL_C
 export const intervaloGlobal = (estado) => intervaloGlobalCom(Ficha.combate(estado).castSpeed);
 
 export function disparar(estado, hunt, personagem, slot, alvo, opcoes) {
-  // Congelado ou atordoado (controle de boss/elite, `combate/controle.mjs`): nada sai.
-  if (!Controle.podeAgir(hunt, hunt?.clock ?? 0)) return { ok: false, erro: 'Você está paralisado.', motivo: 'CONTROLE' };
+  // Congelado ou atordoado (controle de boss/elite, `combate/controle.mjs`): nada sai. (lote 73: salvo a conjuração de Caos que segue no
+  // atordoamento — o Mal Inabalável, `conjuracaoSegueNoAtordoamento` — quando chega ao fim.)
+  if (!Controle.podeAgir(hunt, hunt?.clock ?? 0) && !(opcoes?.concluir && conjuracaoSegueNoAtordoamento(estado, hunt))) return { ok: false, erro: 'Você está paralisado.', motivo: 'CONTROLE' };
   const r = dispararSemMarcar(estado, hunt, personagem, slot, alvo, opcoes);
   marcarParado(hunt, slot, r);
   return r;
@@ -2784,7 +2802,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const d = Math.max(Math.abs(bicho.x - x), Math.abs(bicho.y - y));
       if (!porDistancia.has(d)) porDistancia.set(d, ModsPoe.projetilNoAlvo(ficha, tagsDaSkill, bicho, estado));
       const noAlvo = porDistancia.get(d);
-      const inc = noAlvo.incPct + (golpe?.atravessados ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_atravessado') + (golpe?.ricochetes ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_ricochete');
+      // (lote 73, o Acompanhamento: "… aumentado em X% por cada propagação restante, até Y%" — os ricochetes que faltam; o acerto direto tem todos)
+      const restantes = golpe ? golpe.restantes ?? 0 : Math.max(0, Math.round(Number(efeitoDaGema?.encadear) || 0));
+      const porRestante = restantes > 0 ? Math.min(ModsPoe.valor(ficha, 'proj_inc_por_ricochete_restante_max') || Infinity, restantes * ModsPoe.valor(ficha, 'proj_inc_por_ricochete_restante')) : 0;
+      const inc = noAlvo.incPct + (golpe?.atravessados ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_atravessado') + (golpe?.ricochetes ?? 0) * ModsPoe.valor(ficha, 'proj_inc_por_ricochete') + porRestante;
       return (inc && mult > 0 ? (mult + (inc / 100) * (sintonia ?? 1)) / mult : 1) * noAlvo.mais;
     };
     // (lote 33, P045 — o Impacto: "Causa até X% mais Dano Corpo a Corpo aos Inimigos, baseado na proximidade": o golpe corpo a corpo da gema,
@@ -2975,6 +2996,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
         ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, agora);
         ModsPoe.aoPorAfeccoes(estado, hunt, bicho, ficha, postos, { eventos, personagem });
+        // (lote 73, a Cutilada Perigosa: o Sangramento das afecções do PoE ou o da gema de suporte — `postosDaGema`)
+        ModsPoe.empalamentoComSangramento(bicho, ficha, postos.includes('sangrando') || postosDaGema.includes('sangrando'));
       }
     };
     /*
@@ -3061,7 +3084,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     }
     // (PoE, o Libertar: "Magias Suportadas são Liberadas quando conjuradas, e seus efeitos Ocorrem Novamente para cada Selo perdido" — os Selos
     // juntados desde a última conjuração, com menos dano: `selosAgora`.)
-    const selos = efeitoDaGema?.seloIntervaloMs > 0 ? selosAgora(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'selos_max_extra'), hunt.clock ?? 0) : 0;
+    // (lote 73, o Cersidor de Selos: "Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em X%")
+    const selos = efeitoDaGema?.seloIntervaloMs > 0 ? selosAgora(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'selos_max_extra'), hunt.clock ?? 0, ModsPoe.valor(ficha, 'selo_frequencia_inc')) : 0;
     for (let r = 0; r < selos; r++) {
       if (!atingidos.some((b) => b.hp > 0)) break;
       reocorrendo = true;
@@ -3398,13 +3422,16 @@ export function convocarOAco(estado, hunt, personagem, agora = hunt?.clock ?? 0)
  * ÷ a Velocidade de Conjuração (a da ficha, a "com Habilidades de Runas" e a da gema — "Aumentos e Reduções à Velocidade de Conjuração também
  * se aplicam à frequência de Ativação"), as durações × a Duração de Habilidades; vincula ao alvo e já processa as Runas. Devolve os eventos.
  */
-function conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora) {
+export function conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora) {
   const ficha = Ficha.combate(estado);
   const props = Runas.daGema(GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas);
   const castSpeed = (ficha.castSpeed ?? 0) + (ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry)).cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
   const fatorDaDuracao = fatorDeDuracao(estado, entry, efeitoDaGema);
-  const r = Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100), fatorDaDuracao, agora });
-  Runas.vincular(hunt, ficha, r, agora, { preferido: alvo });
+  const conjurar = () => Runas.vincular(hunt, ficha, Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100), fatorDaDuracao, agora }), agora, { preferido: alvo });
+  conjurar();
+  // (lote 73, o Notável) "Habilidades que criam Runas têm X% de chance de criarem uma Runa adicional": a outra no mesmo lugar (ela procura o
+  // inimigo dela — o alvo já tem a vaga ocupada).
+  if (Math.random() * 100 < ModsPoe.valor(ficha, 'runa_adicional_chance')) conjurar();
   return tiqueDasRunas(estado, hunt, personagem, [], agora);
 }
 

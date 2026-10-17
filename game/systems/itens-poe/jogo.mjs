@@ -403,7 +403,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (60 — 17/10, lote 72: as Ramificadoras — os aliados (a regeneração e a Agressividade ao Clamar), o Quebra-Maldições, o Caos contra o dano
 // contínuo, o Esconjuro da maldição, o Emissário, o Definhar até N, os Clamores por Poder (a carga e a Armadura), a Chama Santificada (do
 // Clamor e pelo bloqueio), o Gastou Vida e as mãos principal/secundária)
-export const VERSAO_DA_TRADUCAO = 60;
+// (61 — 17/10, lote 73: as Ramificadoras — o Acerto Selvagem recente, os Selos do Liberar, as Runas soltas e a Runa adicional, o Caos que
+// não se interrompe no atordoamento, as propagações restantes dos Projéteis, o Empalamento com Sangramento)
+export const VERSAO_DA_TRADUCAO = 61;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

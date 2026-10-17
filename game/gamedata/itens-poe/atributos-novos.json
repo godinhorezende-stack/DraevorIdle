@@ -7928,6 +7928,54 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes (o Clamor do PoE) (lote 72)"
+    },
+    "selo_frequencia_inc": {
+      "nome": "Frequência de ganho de Selo aumentada (Liberar) (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (os Selos) (lote 73)"
+    },
+    "runa_solta_alcance_por_s": {
+      "nome": "Alcance do Vínculo de Runas aumentado por segundo enquanto solta (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas.alcanceDaSolta (lote 73)"
+    },
+    "runa_solta_alcance_max": {
+      "nome": "Alcance do Vínculo de Runas aumentado enquanto solta, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas.alcanceDaSolta (lote 73)"
+    },
+    "runa_adicional_chance": {
+      "nome": "Chance de criar uma Runa adicional (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.conjurarRuna (lote 73)"
+    },
+    "caos_ignora_interrupcao": {
+      "nome": "Habilidades de Caos ignoram interrupções de Atordoamentos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas (a conjuração no atordoamento) (lote 73)"
+    },
+    "proj_inc_por_ricochete_restante": {
+      "nome": "Dano de Projéteis aumentado por propagação restante (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (fatorDoProjetil) (lote 73)"
+    },
+    "proj_inc_por_ricochete_restante_max": {
+      "nome": "Dano de Projéteis aumentado por propagação restante, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (fatorDoProjetil) (lote 73)"
+    },
+    "efeito_empalamento_com_sangramento": {
+      "nome": "Efeito dos Empalamentos de Acertos que também Sangram aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoPorAfeccoes (lote 73)"
     }
   }
 }

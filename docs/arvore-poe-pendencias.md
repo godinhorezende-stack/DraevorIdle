@@ -90,21 +90,13 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 658 | 3 | 10 |
+| Notáveis | 671 | 665 | 3 | 3 |
 
 <details><summary>As linhas sem efeito</summary>
 
-- Cersidor de Selos — Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em 30%
 - Pura Agonia — +5 de Virulência Máxima
-- Resposta Selvagem — +30% de Multiplicador de Golpes Críticos caso você tenha sofrido um Acerto Selvagem Recentemente
 - Reduzir — Convocação de Runas concede alcance do Vínculo de Runas aumentado em 20% para Runas convocadas
 - Reduzir — Convocação de Runas tem Recuperação da Recarga aumentada em 4%, máximo de 40%
-- Cutilada Perigosa — Efeito dos Empalamentos inflingidos por Acertos que também infligem Sangramento aumentado em 15%
-- Runas Perseguidoras — Runas Desvinculadas ganham Alcance do Vínculo de Runas reduzido em 20% por segundo, até 100%
-- Mal Inabalável — Habilidades de Caos ignoram interrupções de Atordoamentos
-- Acompanhamento — Projéteis causam dano com ataques e afecções aumentado em 20% por
-cada propagação restante, até 100%
-- Notável — Habilidades que criam Runas têm 35% de chance de criarem uma Runa adicional
 
 </details>
 

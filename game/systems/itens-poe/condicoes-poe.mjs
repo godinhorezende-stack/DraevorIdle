@@ -253,6 +253,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (lote 72) gastou Vida no Custo recentemente (`acoes` — o custo pago em Vida); acertou com a arma da mão principal / secundária
   // recentemente (`mods-poe.aoAcertar` — a mão da ficha do golpe).
   'gastouVidaRecente', 'acertouMaoPrincipalRecente', 'acertouMaoSecundariaRecente',
+  // (lote 73) sofreu um Acerto Selvagem recentemente (o acerto de ao menos 15% da Vida máxima — `RETALIACAO.selvagemPct`).
+  'sofreuAcertoSelvagemRecente',
   // (lote E) canalizando agora (usou uma habilidade de Canalização há pouco).
   'canalizando',
   // (14/10) a Égide Física esgotada (ou não) — `hunt.egides`
@@ -533,6 +535,7 @@ const RECENTES = {
   detonouMina: 'detonouMinaRecente', usouFogo: 'usouFogoRecente', acertouUnico: 'acertouUnicoRecente', usouFrascoVida: 'usouFrascoVidaRecente',
   resfriou: 'resfriouRecente', matouAmaldicoado: 'matouAmaldicoadoRecente',
   gastouVida: 'gastouVidaRecente', acertouMaoPrincipal: 'acertouMaoPrincipalRecente', acertouMaoSecundaria: 'acertouMaoSecundariaRecente',
+  sofreuSelvagem: 'sofreuAcertoSelvagemRecente',
 };
 /** Uma condição vale? (as com parâmetro leem o estado, a soma e os atributos guardados no Set). */
 export function vale(conds, c) {

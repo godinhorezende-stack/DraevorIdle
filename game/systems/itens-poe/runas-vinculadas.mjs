@@ -45,7 +45,13 @@ export function daGema(linhas = []) {
 /** Quantas Runas cabem ativas de uma vez (todas as gemas juntas). */
 export const maximo = (ficha) => PADRAO.maximo + v(ficha, 'runas_extras');
 /** O alcance do vínculo (casas). */
-export const alcance = (ficha) => Math.max(1, Math.round(PADRAO.alcance * Math.max(0.1, 1 + v(ficha, 'alcance_vinculo_runas') / 100)));
+export const alcance = (ficha, extraPct = 0) => Math.max(1, Math.round(PADRAO.alcance * Math.max(0.1, 1 + (v(ficha, 'alcance_vinculo_runas') + extraPct) / 100)));
+/**
+ * (lote 73, as Runas Perseguidoras) "Runas Desvinculadas ganham Alcance do Vínculo de Runas aumentado em X% por segundo, até Y%" (o inglês do
+ * PoE — "gain … increased"; o português do poedb diz "reduzido"): o aumentado a mais da Runa solta, pelo tempo desde que se soltou desta vez
+ * (`soltaDesde`: a conjuração ou a morte do inimigo dela).
+ */
+export const alcanceDaSolta = (ficha, r, agora) => (r?.alvo != null ? 0 : Math.min(v(ficha, 'runa_solta_alcance_max') || Infinity, (v(ficha, 'runa_solta_alcance_por_s') * Math.max(0, agora - (r?.soltaDesde ?? r?.desde ?? agora))) / 1000));
 /** Quantas Runas podem estar vinculadas a um mesmo inimigo (desta Runa). */
 export const porInimigo = (ficha, r) => PADRAO.porInimigo + v(ficha, 'runas_por_inimigo_extra') + (r?.porInimigoExtra ?? 0);
 
@@ -69,7 +75,7 @@ export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, prop
   while (lista.length >= maximo(ficha)) lista.shift();
   hunt.runasN = (hunt.runasN ?? 0) + 1;
   const r = {
-    id: `runa-${hunt.runasN}`, acao, slot, x, y, z, desde: agora, em: agora, alvo: null,
+    id: `runa-${hunt.runasN}`, acao, slot, x, y, z, desde: agora, em: agora, alvo: null, soltaDesde: agora,
     intervaloMs: Math.max(50, Math.round(intervaloMs ?? props.intervaloMs)), unica: !!props.unica,
     vinculadaMs: Math.round(props.vinculadaMs * fatorDaDuracao), soltaMs: Math.round(props.soltaMs * fatorDaDuracao), vinculadaPassou: 0, soltaPassou: 0,
     ...(props.trocaMs != null ? { trocaMs: props.trocaMs } : {}), ...(props.porInimigoExtra ? { porInimigoExtra: props.porInimigoExtra } : {}),
@@ -81,7 +87,7 @@ export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, prop
 
 /** Vincula a Runa ao inimigo vivo mais perto no alcance que ainda tem vaga (`fora`: um uid para pular — a troca de alvo). */
 export function vincular(hunt, ficha, r, agora = hunt?.clock ?? 0, { preferido = null, fora = null } = {}) {
-  const raio = alcance(ficha);
+  const raio = alcance(ficha, alcanceDaSolta(ficha, r, agora));
   const cabe = (b) => b && b.hp > 0 && !b.dummy && b.uid !== fora && !(b.z != null && r.z != null && b.z !== r.z) && distancia(b, r) <= raio && vinculadasA(hunt, b.uid) < porInimigo(ficha, r);
   let alvo = cabe(preferido) ? preferido : null;
   if (!alvo) {
@@ -114,7 +120,7 @@ export function tique(hunt, ficha, agora = hunt?.clock ?? 0) {
     const dt = Math.max(0, agora - (r.em ?? agora));
     r.em = agora;
     let alvo = r.alvo != null ? porUid.get(r.alvo) : null;
-    if (r.alvo != null && !(alvo?.hp > 0)) { r.alvo = null; alvo = null; }
+    if (r.alvo != null && !(alvo?.hp > 0)) { r.alvo = null; alvo = null; r.soltaDesde = agora; }
     if (alvo) {
       r.x = alvo.x;
       r.y = alvo.y;
@@ -138,6 +144,7 @@ export function tique(hunt, ficha, agora = hunt?.clock ?? 0) {
     if (trocaMs != null && agora - (r.trocouEm ?? -Infinity) >= trocaMs) {
       const antes = r.alvo;
       r.alvo = null;
+      r.soltaDesde = agora; // (a troca não é Runa solta: sem o alcance a mais das Perseguidoras)
       if (vincular(hunt, ficha, r, agora, { fora: antes })) { r.trocouEm = agora; r.proxima = agora + Math.round(r.intervaloMs / mais); }
       else Object.assign(r, { alvo: antes });
     }

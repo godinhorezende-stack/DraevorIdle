@@ -43202,6 +43202,92 @@
       ],
       "_nova": true,
       "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos caso você tenha sofrido um Acerto Selvagem Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@sofreuAcertoSelvagemRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "selo_frequencia_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Runas Desvinculadas ganham Alcance do Vínculo de Runas reduzido em \\{(\\d+)\\}% por\\s+segundo, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "runa_solta_alcance_por_s",
+          "valor": "{1}"
+        },
+        {
+          "stat": "runa_solta_alcance_max",
+          "valor": "{2}"
+        }
+      ],
+      "nota": "como no PoE (o inglês): o alcance AUMENTA enquanto a Runa está solta — o português do poedb diz \"reduzido\"",
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Habilidades que criam Runas têm \\{(\\d+)\\}% de chance de criarem uma Runa adicional$",
+      "efeitos": [
+        {
+          "stat": "runa_adicional_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Habilidades de Caos ignoram interrupções de Atordoamentos$",
+      "efeitos": [
+        {
+          "stat": "caos_ignora_interrupcao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Projéteis causam dano com ataques e afecções aumentado em \\{(\\d+)\\}% por\\s+cada propagação restante, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "proj_inc_por_ricochete_restante",
+          "valor": "{1}"
+        },
+        {
+          "stat": "proj_inc_por_ricochete_restante_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Efeito dos Empalamentos inflingidos por Acertos que também infligem Sangramento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_empalamento_com_sangramento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
     }
   ]
 }
