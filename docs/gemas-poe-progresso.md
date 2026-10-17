@@ -102,13 +102,19 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - Pendentes: a Troca de Corpo (o deslocamento e o "6% da sua Vida Máxima"), o Golpe Infernal (as cargas do debuff), a Reação em Cadeia dos cadáveres que a própria explosão cria.
 - Teste: `cadaveres-poe.test.mjs` (4). Ativas parciais 372 → 365.
 
-### G13 — Runas, Estandartes e Minas (17/10)
+### G13 — Runas, Estandartes e Minas (17/10, commit 5b6da156)
 
 - O status passa a reconhecer as linhas que o sistema das Runas (`runas-vinculadas.daGema`: "É Ativado a cada", "Pode ser Vinculada/Desvinculada por N segundos", a troca de alvo, as Runas adicionais, a Ativada uma vez) e o do Estandarte (`mods-poe.plantarEstandarte`: o "mais Área / Efeito de Aura por Valor consumido", o ganho de Valor) já faziam.
 - A Runa: "Causa X% mais/menos Dano com Acertos contra o Inimigo Vinculado" — só no inimigo a que ela está vinculada (`plantada.vinculado`).
 - O Estandarte: "Estandarte concede … a Você e Aliados" vira atributo do buff (a supressão, a velocidade, o bloqueio); a "Precisão aumentada" fica pendente (o jogo não tem a precisão aumentada em %).
 - As Minas da gema: "Dispara um Projétil adicional para cada N Minas anteriores na Sequência de Detonação" (`plantada.anteriores`); a aura "Cada Mina aplica Chance de Golpe Crítico aumentada em X% contra Inimigos próximos, até Y%" (Mina de Gelo — `minaCritico`, lido no golpe) e "Cada mina aplica Dano aumentado em X% aos Inimigos próximos" (Mina de Tempestade — o dano sofrido, `minaFragil`).
 - Teste: `runas-estandartes-minas-poe.test.mjs` (2). Ativas parciais 365 → 358.
+
+### G14 — suportes do uso, da maldição e da aura (17/10)
+
+- Regras novas em `suportes-poe.mjs`: a duração das afecções, o empurrão (a chance e a distância), o ponto de atordoamento reduzido e a duração dobrada (Atordoar), a Vida por Inimigo Acertado (só ataques), a Velocidade de Clamor (Ordens Urgentes), o multiplicador degenerativo das afecções de crítico, o alcance do ricochete (Encadear), o "Efeito das Auras aumentado" e a área das auras (Arrogância, Generosidade), "Auras Suportadas não afetam você" (Generosidade — a aura vale só nos companheiros) e a duração das maldições (Toque Maldito).
+- A Vida/Mana por acerto das gemas de ataque passa a sair do `valor` do acerto (a da soma, a da Marca no alvo e a local do suporte).
+- Teste: `suportes-uso-e-aura-poe.test.mjs` (3). Suportes sem efeito 17 → 12; testados 29 → 36.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -123,6 +129,6 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. Commitar G13 (FULL por exceção — autorização do dono para os lotes desta tarefa).
+1. Commitar G14 (FULL por exceção — autorização do dono para os lotes desta tarefa).
 2. G11: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
 3. As repetições do golpe (11 gemas) e as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).

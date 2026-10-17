@@ -27,10 +27,10 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 29 |
-| implementada, sem teste próprio | 52 |
-| parcial | 164 |
-| sem efeito | 17 |
+| implementada e testada | 36 |
+| implementada, sem teste próprio | 55 |
+| parcial | 159 |
+| sem efeito | 12 |
 
 ### Variantes
 
@@ -40,10 +40,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 853 linhas distintas (178 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 840 linhas distintas (169 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 142/562 ativas, 38/262 suportes.
+- Testes que citam a gema: 142/562 ativas, 44/262 suportes.
 
 ## Linhas que faltam (por quantidade de gemas)
 
@@ -58,9 +58,7 @@ Só os ataques:
 | 5 | Habilidades Suportadas têm #% mais Velocidade de Posicionamento de Totens |
 | 4 | Debuff pode ter até # camadas de Dano |
 | 4 | Duração da penalidade base é de # segundos |
-| 4 | Duração de Afecções infligidas com Habilidades Suportadas aumentada em #% |
 | 4 | Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada |
-| 4 | Habilidades Suportadas têm Efeito das Auras aumentado em #% |
 | 3 | # % de aumento do ângulo por estágio, até # % |
 | 3 | # segundos adicionais de Duração Base por Cadáver extra consumido |
 | 3 | +# metro ao Raio por # de Fúria |
@@ -74,9 +72,7 @@ Só os ataques:
 | 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
 | 3 | Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
-| 3 | Habilidades Suportadas têm #% de Duração de Maldições aumentada |
-| 3 | Habilidades Suportadas têm #% de Ponto de Atordoamento Inimigo reduzido |
-| 3 | Habilidades Suportadas têm alcance do Ricochete aumentado em #% |
+| 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Parede terá # metros |
 | 3 | Projéteis de Estilhas Causam # % menos Dano |
 | 3 | Projéteis podem se Dividir sem acertar um alvo |
@@ -111,8 +107,6 @@ Só os ataques:
 | 2 | Acertos da onda final causam # % de dano por estágio |
 | 2 | Aplica feixes aos # Inimigos próximos |
 | 2 | Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo |
-| 2 | Auras Não-Maldições das Habilidades Suportadas possuem #% de aumento do Efeito |
-| 2 | Auras Suportadas não afetam você |
 | 2 | Buff concede Trespassar |
 | 2 | Cada Esporo aplica # % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de # % |
 | 2 | Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado # % mais Dano |
@@ -160,7 +154,6 @@ Só os ataques:
 | 2 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo |
 | 2 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\ne dos lados da área alvo |
 | 2 | Habilidades reforçadas têm #% de chance de fazer os monstros fugirem ao atingir |
-| 2 | Habilidades reforçadas têm #% de duração de maldição |
 | 2 | Habilidades reforçadas têm +#% de chance de fazer os monstros fugirem ao atingir |
 | 2 | Habilidades Suportadas aplicam Maldições Suportadas em Acertos |
 | 2 | Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo |
@@ -175,9 +168,7 @@ Só os ataques:
 | 2 | Habilidades Suportadas também disparam Projéteis de até # pontos de cada lado seu |
 | 2 | Habilidades Suportadas têm #% de Velocidade de Projétil aumentada |
 | 2 | Habilidades Suportadas têm #% do Efeito de Afecções não Danificantes aumentado em Inimigos |
-| 2 | Habilidades Suportadas têm a Área de Efeito das Auras aumentada em #% |
 | 2 | Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #% |
-| 2 | Habilidades Suportadas têm Velocidade de Clamor aumentada em #% |
 | 2 | Impele o próximo # Ataque de Golpe Corpo a Corpo que você executar |
 | 2 | Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até # %, com base na distância da Esfera do Vazio |
 | 2 | Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida em # % |
@@ -281,7 +272,6 @@ Só os ataques:
 | 1 | # % menos velocidade de lançar armadilhas com arma de duas mãos |
 | 1 | # % menos Velocidade de Movimento |
 | 1 | # % menos Velocidade de Movimento por Estágio |
-| 1 | # de Vida recebida por Inimigo Acertado com Ataques Suportados |
 | 1 | # de Virulência Máxima |
 | 1 | # do Nível das Gemas de Habilidade de Caos Suportadas |
 | 1 | # metros ao raio do Solo Sagrado |
@@ -370,6 +360,7 @@ Só os ataques:
 | 1 | Aumenta a Velocidade de Conjuração dos Lacaios em # % |
 | 1 | Aumenta a Velocidade de Movimento dos Lacaios em # % |
 | 1 | Aura faz com que Castigo ataque +# alvos com relâmpagos |
+| 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
 | 1 | Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas |
 | 1 | Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas |
 | 1 | Buff concede # de Regeneração de Escudo de Energia por segundo |
@@ -644,14 +635,11 @@ Só os ataques:
 | 1 | Habilidades Suportadas só podem ser usadas com Maças, Cetros ou Cajados |
 | 1 | Habilidades Suportadas só podem ser usadas com Machados e Espadas |
 | 1 | Habilidades Suportadas só podem ser usadas com Varinhas |
-| 1 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 1 | Habilidades Suportadas têm # a # de Dano de Ataque Físico Adicional por Traumatismo |
 | 1 | Habilidades Suportadas têm #% da duração da Cegueira aumentada |
 | 1 | Habilidades Suportadas têm #% de chance de Cegar inimigos ao acertar |
-| 1 | Habilidades Suportadas têm #% de chance de Empurrar Inimigos ao Acertar |
 | 1 | Habilidades Suportadas têm #% de chance de Enervar Inimigos por # segundos ao Acertar |
 | 1 | Habilidades Suportadas têm #% de chance de Esmagar Inimigos por # segundos ao Acertar |
-| 1 | Habilidades Suportadas têm #% de chance de ganhar Duração de Atordoamento dobrada |
 | 1 | Habilidades Suportadas têm #% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado |
 | 1 | Habilidades Suportadas têm #% de chance de ganhar uma Carga de Poder com Golpes Críticos |
 | 1 | Habilidades Suportadas têm #% de chance de infligir Exposição a Gelo ao Acertar |
@@ -661,7 +649,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas têm #% de Dano de Gelo Convertido para Dano de Fogo |
 | 1 | Habilidades Suportadas têm #% de Dano Drenado como Vida |
 | 1 | Habilidades Suportadas têm #% de Dano Físico Convertido em Dano de Raio |
-| 1 | Habilidades Suportadas têm #% de Distância do Empurrão aumentada |
 | 1 | Habilidades Suportadas têm #% de Duração de Atordoamentos em Inimigos aumentada |
 | 1 | Habilidades Suportadas têm #% de Duração de Efeito da Habilidade aumentada |
 | 1 | Habilidades Suportadas têm #% de Duração de Eletrização aumentada em Inimigos |
@@ -674,7 +661,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas têm +# de Precisão |
 | 1 | Habilidades Suportadas têm +# metros ao Alcance de Golpes Corpo a Corpo |
 | 1 | Habilidades Suportadas têm +#% de chance de Congelar Inimigos Resfriados |
-| 1 | Habilidades Suportadas têm +#% de Multiplicador de Dano Degenerativo para Afecções de Golpes Críticos |
 | 1 | Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em #% |
 | 1 | Habilidades Suportadas tem Chance de Golpe Crítico aumentada em #% por Carga de Inspiração |
 | 1 | Habilidades Suportadas têm Custo de Vida aumentado em #% |
@@ -869,6 +855,7 @@ Só os ataques:
 | 1 | Solo Eletrizado causa # % de Dano sofrido aumentado |
 | 1 | Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação |
 | 1 | Suas Habilidades e de seus aliados próximos não Custam Mana |
+| 1 | Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você |
 | 1 | Subjugado aplica #% à chance de Bloquear o Dano Mágico e de Ataques |
 | 1 | Taxa base de explosão do orbe é de uma vez por segundo |
 | 1 | Taxa de Acerto aumentada em # % por cada lâmina |
@@ -2159,9 +2146,6 @@ Só os ataques:
 - **Archmage_Support** (Arquimago) — parcial
   - não simulado: Habilidades Suportadas ganham Dano de Raio Adicional igual a 14% da Mana Máxima não Reservada
   - não simulado: Habilidades reforçadas ganham custo de mana base equivalente a 5% do mana máximo não reservado
-- **Arrogance_Support** (Arrogância) — parcial
-  - não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 19%
-  - não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 5%
 - **Arrow_Nova_Support** (Nova de Flechas) — parcial
   - não simulado: Habilidades Suportadas disparam uma Flecha Carregada no ar Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair
   - não simulado: Habilidades Suportadas Disparam Projéteis em um círculo
@@ -2183,8 +2167,6 @@ Só os ataques:
   - não simulado: Magias Suportadas têm Recuperação da Recarga aumentada em 52%
 - **Awakened_Cast_While_Channelling_Support** (Suporte Desperto: Conjurar ao Canalizar) — sem efeito
   - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
-- **Awakened_Chain_Support** (Suporte Desperto: Ricochete) — parcial
-  - não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 10%
 - **Awakened_Cold_Penetration_Support** (Suporte Desperto: Penetração de Gelo) — parcial
   - não simulado: Habilidades Suportadas têm 10% de chance de infligir Exposição a Gelo ao Acertar
 - **Awakened_Controlled_Destruction_Support** (Suporte Desperto: Destruição Controlada) — parcial
@@ -2199,16 +2181,10 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm 10% de chance de infligirem Exposição a Fogo ao Acertar
 - **Awakened_Fork_Support** (Suporte Desperto: Difundir) — parcial
   - não simulado: Projéteis das Habilidades Suportadas podem Difundir 1 Vezes adicionais
-- **Awakened_Generosity_Support** (Suporte Desperto: Generosidade) — parcial
-  - não simulado: Auras Suportadas não afetam você
-  - não simulado: Auras Não-Maldições das Habilidades Suportadas possuem 52% de aumento do Efeito
-  - não simulado: Habilidades Suportadas têm a Área de Efeito das Auras aumentada em 40%
 - **Awakened_Hextouch_Support** (Suporte Desperto: Toque Maldito) — parcial
   - não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos
   - não simulado: Você não pode Conjurar Magias Maldição Suportadas
   - não simulado: Feitiços aplicados por habilidades de maldição reforçadas têm 34% de chance de afetar inimigos imunes a feitiços
-  - não simulado: Habilidades reforçadas têm -16% de duração de maldição
-  - não simulado: Habilidades Suportadas têm 10% de Duração de Maldições aumentada
 - **Awakened_Lightning_Penetration_Support** (Suporte Desperto: Penetração de Raio) — parcial
   - não simulado: Habilidades Suportadas têm 10% de chance de infligir Exposição a Raio ao Acertar
 - **Awakened_Melee_Physical_Damage_Support** (Suporte Desperto: Dano Físico Corpo a Corpo) — parcial
@@ -2221,9 +2197,7 @@ Só os ataques:
 - **Awakened_Swift_Affliction_Support** (Suporte Desperto: Sofrimento Veloz) — parcial
   - não simulado: 25% menos Duração das Habilidades Suportadas e Afecções Danificadoras que infligirem
 - **Awakened_Unbound_Ailments_Support** (Suporte Desperto: Afecções Libertas) — parcial
-  - não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 77%
   - não simulado: Habilidades Suportadas têm 77% do Efeito de Afecções não Danificantes aumentado em Inimigos
-  - não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%
 - **Awakened_Void_Manipulation_Support** (Suporte Desperto: Manipulação do Vácuo) — parcial
   - não simulado: 1 do Nível das Gemas de Habilidade de Caos Suportadas
 - **Ballista_Totem_Support** (Totem Balista) — parcial
@@ -2243,7 +2217,6 @@ Só os ataques:
   - não simulado: Clamores reforçados criam um chão consagrado com duração de 6 segundos
   - não simulado: Clamores reforçados têm -40% de área de efeito
   - não simulado: Clamores reforçados têm a velocidade de recarga reduzida em 20%
-  - não simulado: Habilidades Suportadas têm Velocidade de Clamor aumentada em 10%
 - **Blind_Support** (Cegar) — parcial
   - não simulado: Habilidades Suportadas têm 10% de chance de Cegar inimigos ao acertar
   - não simulado: Habilidades Suportadas têm 38% da duração da Cegueira aumentada
@@ -2275,8 +2248,6 @@ Só os ataques:
   - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
 - **Cast_while_Channelling_Support** (Conjurar ao Canalizar) — sem efeito
   - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
-- **Chain_Support** (Ricochete) — parcial
-  - não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 10%
 - **Chance_to_Flee_Support** (Chance de Fugir) — sem efeito
   - não simulado: Habilidades reforçadas têm 44% de chance de fazer os monstros fugirem ao atingir
   - não simulado: Habilidades reforçadas têm +20% de chance de fazer os monstros fugirem ao atingir
@@ -2317,10 +2288,6 @@ Só os ataques:
   - não simulado: Eletrifica inimigos quando eles são esfriados por seus ataques, aumentando o dano sofrido com base no efeito de esfriamento
   - não simulado: Eletrifica inimigos quando eles são esfriados por ataques de habilidades reforçadas, aumentando o dano sofrido com base no efeito de esfriamento
   - não simulado: Esfria inimigos quando eles são eletrificados por ataques de habilidades reforçadas, reduzindo a velocidade de ação com base no efeito de eletrificação
-  - não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%
-- **Critical_Strike_Affliction_Support** (Aflição dos Golpes Críticos) — parcial
-  - não simulado: Habilidades Suportadas têm +98% de Multiplicador de Dano Degenerativo para Afecções de Golpes Críticos
-  - não simulado: Habilidades Suportadas têm +10% de Multiplicador de Dano Degenerativo para Afecções de Golpes Críticos
 - **Crystalfall_Support** (Cristal em Queda (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ativam Cristal em Queda ao atingir
 - **Cull_the_Weak_Support** (Exterminar os Fracos (Reforço)) — parcial
@@ -2336,11 +2303,11 @@ Só os ataques:
   - não simulado: Habilidades Suportadas infligem Podridão ao Acertar, causando 1230 de Dano de Caos por segundo durante 8 segundos
 - **Devour_Support** (Devorar) — parcial
   - não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 366 de Vida e 40 de Mana
-- **Divine_Blessing_Support** (Bênção Divina) — sem efeito
-  - não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 29%
+- **Divine_Blessing_Support** (Bênção Divina) — parcial
   - não simulado: Habilidades Suportadas Custam +233 de Mana
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
-  - nenhuma linha do suporte tem efeito no jogo ainda
+  - não simulado: Auras das Habilidades Suportadas têm uma duração base de 10.9 segundos
+  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
 - **Divine_Sentinel_Support** (Sentinela Divina (Reforço)) — sem efeito
   - esses lacaios especiais ainda não existem no jogo
 - **Earthbreaker_Support** (Devastador) — parcial
@@ -2368,18 +2335,17 @@ Só os ataques:
   - não simulado: Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de 1.5 metros
 - **Endurance_Charge_on_Melee_Stun_Support** (Carga de Tolerância ao Atordoar Corpo a Corpo) — parcial
   - não simulado: 4% mais Dano por Carga de Tolerância
-  - não simulado: Habilidades Suportadas têm 19% de Ponto de Atordoamento Inimigo reduzido
   - não simulado: Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas
   - não simulado: Habilidades Suportadas têm 20% de Duração de Atordoamentos em Inimigos aumentada
 - **Energy_Leech_Support** (Dreno de Energia) — parcial
   - não simulado: Habilidades Suportadas tem 1.9% do Dano Drenado como Escudo de Energia
 - **Enhance_Support** (Melhorar) — parcial
   - não simulado: 72% de Qualidade das Gemas de Habilidade Suportadas
-- **Eternal_Blessing_Support** (Bênção Eterna) — sem efeito
-  - não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 19%
+- **Eternal_Blessing_Support** (Bênção Eterna) — parcial
   - não simulado: Habilidades Suportadas não tem Reserva
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
-  - nenhuma linha do suporte tem efeito no jogo ainda
+  - não simulado: Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você
+  - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
 - **Excommunicate_Support** (Excomungar (Reforço)) — parcial
   - não simulado: Habilidades reforçadas excomungam os inimigos ao atingir corpo a corpo por 3 segundos
 - **Exemplar_Support** (Exemplar (Reforço)) — parcial
@@ -2434,11 +2400,6 @@ Só os ataques:
 - **Frostmage_Support** (Mago do Gelo (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ganham dano de frio adicionado equivalente a 39% do mana máximo reservado
   - não simulado: Habilidades reforçadas ganham custo de mana base equivalente a 5% do mana máximo reservado
-- **Generosity_Support** (Generosidade) — sem efeito
-  - não simulado: Auras Suportadas não afetam você
-  - não simulado: Auras Não-Maldições das Habilidades Suportadas possuem 39% de aumento do Efeito
-  - não simulado: Habilidades Suportadas têm a Área de Efeito das Auras aumentada em 40%
-  - nenhuma linha do suporte tem efeito no jogo ainda
 - **Gluttony_Support** (Gula (Reforço)) — parcial
   - não simulado: Ganha 1 de Gula ao conjurar magias reforçadas
   - não simulado: Ao atingir 10 de Gula, perde toda a Gula e ganha Regurgitação por 4 segundos
@@ -2446,9 +2407,7 @@ Só os ataques:
 - **Greater_Ancestral_Call_Support** (Convocação Ancestral Maior (Reforço)) — parcial
   - não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 105% mais distânte
 - **Greater_Chain_Support** (Propagação Maior (Reforço)) — parcial
-  - não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 127%
   - não simulado: Habilidades reforçadas se propagam 50% mais vezes
-  - não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 10%
 - **Greater_Devour_Support** (Devorar Maior (Reforço)) — parcial
   - não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 757 de Vida e 74 de Mana
   - não simulado: Consumir um cadáver com habilidades reforçadas tem 10.5% de chance de conceder uma alma por poder
@@ -2472,7 +2431,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada
   - não simulado: Lacaios das Habilidades Suportadas sofrem 14.3% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
-  - não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 5%
 - **Hallow_Support** (Santificação (Reforço)) — parcial
   - não simulado: Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em 36%
   - não simulado: Habilidades reforçadas infligem Chama Santificada ao atingir corpo a corpo
@@ -2485,7 +2443,6 @@ Só os ataques:
   - não simulado: Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços
   - não simulado: Efeito em Área de Habilidades Maldição Suportadas reduzido em 12%
   - não simulado: Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos
-  - não simulado: Habilidades Suportadas têm 10% de Duração de Maldições aumentada
 - **Hextoad_Support** (Sapo Enfeitiçado (Reforço)) — parcial
   - não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 27 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito
   - não simulado: Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada 0.7 segundo
@@ -2495,8 +2452,6 @@ Só os ataques:
 - **Hextouch_Support** (Toque Maldito) — parcial
   - não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos
   - não simulado: Você não pode Conjurar Magias Maldição Suportadas
-  - não simulado: Habilidades reforçadas têm -26% de duração de maldição
-  - não simulado: Habilidades Suportadas têm 10% de Duração de Maldições aumentada
 - **High-Impact_Mine_Support** (Mina de Alto Impacto) — parcial
   - não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida
   - não simulado: Cada Mina das Habilidades Suportadas aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de 100%
@@ -2553,16 +2508,8 @@ Só os ataques:
   - não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal
   - não simulado: Máximo de 20 anomalias
   - não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética
-- **Knockback_Support** (Empurrar) — sem efeito
-  - não simulado: Habilidades Suportadas têm 44% de chance de Empurrar Inimigos ao Acertar
-  - não simulado: Habilidades Suportadas têm 50% de Distância do Empurrão aumentada
-  - não simulado: Habilidades Suportadas têm 10% de chance de Empurrar Inimigos ao Acertar
-  - nenhuma linha do suporte tem efeito no jogo ainda
 - **Lethal_Dose_Support** (Dose Letal (Reforço)) — parcial
   - não simulado: Envenenar inimigos não envenenados com habilidades reforçadas inflige 2 envenenamentos adicionais
-- **Life_Gain_on_Hit_Support** (Ganho de Vida no Acerto) — parcial
-  - não simulado: 44 de Vida recebida por Inimigo Acertado com Ataques Suportados
-  - não simulado: 10 de Vida recebida por Inimigo Acertado com Ataques Suportados
 - **Life_Leech_Support** (Dreno de Vida) — parcial
   - não simulado: Habilidades Suportadas têm 3.9% de Dano Drenado como Vida
 - **Lifetap_Support** (Fonte de Vida) — parcial
@@ -2626,7 +2573,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm 20% de Duração de Eletrização aumentada em Inimigos
 - **Overheat_Support** (Superaquecimento (Reforço)) — parcial
   - não simulado: Habilidades reforçadas consomem toda a Fortificação ao usar, causando +14% de dano com afecções por 3 de Fortificação consumida
-  - não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%
 - **Overloaded_Intensity_Support** (Intensidade Sobrecarregada (Reforço)) — parcial
   - não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após perder 6 de Intensidade com habilidades reforçadas
   - não simulado: Habilidades reforçadas têm +2.7% de chance de causar golpe crítico por Intensidade Sobrecarregada
@@ -2701,10 +2647,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens
 - **Spellblade_Support** (Lâmina Mágica) — parcial
   - não simulado: Habilidades Suportadas têm Dano Mágico Adicional igual a 135% doDano das Armas Corpo a Corpo de Uma Mão Equipadas Se duas Armas forem Equipadas, cada uma contribuindo com 60% da quantidade de Dano Adicional
-- **Stun_Support** (Atordoar) — sem efeito
-  - não simulado: Habilidades Suportadas têm 49% de Ponto de Atordoamento Inimigo reduzido
-  - não simulado: Habilidades Suportadas têm 10% de chance de ganhar Duração de Atordoamento dobrada
-  - nenhuma linha do suporte tem efeito no jogo ainda
 - **Swift_Affliction_Support** (Sofrimento Veloz) — parcial
   - não simulado: 25% menos Duração das Habilidades Suportadas e Afecções Danificadoras que infligirem
 - **Swiftbrand_Support** (Runa Repentina) — parcial
@@ -2719,23 +2661,17 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm Duração do Atordoamento aumentada em 5% por Traumatismo
   - não simulado: Ganha 1 Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre 146 de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram 6.9 segundos
   - não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados
-  - não simulado: Habilidades Suportadas têm 10% de Ponto de Atordoamento Inimigo reduzido
 - **Trinity_Support** (Suporte Trindade) — parcial
   - não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos Perde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando
   - não simulado: Habilidades Suportadas penetram 16% da Resistência Elemental enquanto cada Ressonância estiver em ao menos 25
   - não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos\nPerde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando
 - **Unbound_Ailments_Support** (Afecções Libertas) — parcial
-  - não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 54%
   - não simulado: Habilidades Suportadas têm 54% do Efeito de Afecções não Danificantes aumentado em Inimigos
-  - não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%
 - **Unholy_Trinity_Support** (Tríade Profana (Reforço)) — parcial
   - não simulado: Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar 25 de Ressonância Profana dos outros tipos por segundo durante 2 segundos Perde 5 de Ressonância Profana por segundo para cada tipo que não ganhar
   - não simulado: Habilidades reforçadas têm 100% de chance de ignorar a resistência a dano de caos e elétrico do inimigo, se cada Ressonância Profana for de, no mínimo, 25
   - não simulado: Habilidades reforçadas têm 100% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, 25
   - não simulado: Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar 25 de Ressonância Profana dos outros tipos por segundo durante 2 segundos\nPerde 5 de Ressonância Profana por segundo para cada tipo que não ganhar
-- **Urgent_Orders_Support** (Ordens Urgentes) — parcial
-  - não simulado: Habilidades Suportadas têm Velocidade de Clamor aumentada em 69%
-  - não simulado: Habilidades Suportadas têm Velocidade de Clamor aumentada em 10%
 - **Vaal_Sacrifice_Support** (Sacrifício Vaal (Reforço)) — parcial
   - não simulado: Habilidades reforçadas sacrificam tudo, menos 1, da sua vida e escudo de energia ao usar
 - **Vaal_Temptation_Support** (Tentação Vaal (Reforço)) — parcial
@@ -2765,4 +2701,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Icicle_Mine_of_Fanning, Icicle_Mine_of_Sabotage, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Detonate_Dead, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volatile_Dead_of_Seething, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Icicle_Mine_of_Fanning, Icicle_Mine_of_Sabotage, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Stun_Support, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Detonate_Dead, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volatile_Dead_of_Seething, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike

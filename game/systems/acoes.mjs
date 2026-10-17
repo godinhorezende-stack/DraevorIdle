@@ -166,12 +166,12 @@ export function raioDoClamor(estado, entry, base, rng = Math.random) {
  * (PoE, 11/10) O RAIO da aura em casas: o da gema (`GemasPoe.buffNoNivel`) × √(1 + a "Área de Efeito aumentada" — a geral e a das tags dela,
  * "Efeito em Área de Habilidades de Aura aumentado"). É até onde ela vale nos companheiros de grupo (`GemasPoe.adds`).
  */
-export function raioDaAuraDe(estado, entry, base, mais = 1) {
+export function raioDaAuraDe(estado, entry, base, mais = 1, incExtra = 0) {
   const f = Ficha.combate(estado);
   const tags = ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry));
-  // (13/10: + o "X% mais Área de Efeito" — `area_mais`, multiplica)
+  // (13/10: + o "X% mais Área de Efeito" — `area_mais`, multiplica; 17/10, lote G14: + `incExtra`, a do suporte — a Generosidade)
   const maisArea = Math.max(0, 1 + (ModsPoe.valor(f, 'area_mais') + (tags.area_mais ?? 0)) / 100);
-  return Math.max(1, Math.round(base * Math.sqrt(Math.max(0.1, 1 + (ModsPoe.valor(f, 'area_inc') + (tags.area_inc ?? 0)) / 100) * Math.max(0.1, mais) * maisArea)));
+  return Math.max(1, Math.round(base * Math.sqrt(Math.max(0.1, 1 + (ModsPoe.valor(f, 'area_inc') + (tags.area_inc ?? 0) + incExtra) / 100) * Math.max(0.1, mais) * maisArea)));
 }
 
 /**
@@ -1724,7 +1724,8 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   const dasPecas = f ? valorPoe(f, 'efeito_maldicao') + (nome ? valorPoe(f, `efeito_maldicao_gema:${slugDoNome(nome)}`) : 0) + (ehMarca ? valorPoe(f, 'efeito_marca') : 0) : 0;
   const pct = (Number(efeitoDaGema?.efeitoMaldicaoPct) || 0) + dasPecas;
   // (09/10, auditoria de dependências) "Duração da Maldição aumentada em X%" (a árvore, as peças): a marca da maldição dura mais no monstro.
-  const duracao = f ? valorPoe(f, 'duracao_maldicao') : 0;
+  // (lote G14: + a do suporte — "Habilidades reforçadas têm -X% de duração de maldição", o Toque Maldito)
+  const duracao = (f ? valorPoe(f, 'duracao_maldicao') : 0) + (Number(efeitoDaGema?.duracaoMaldicaoPct) || 0);
   // "X% menos Efeito das suas Maldições" e "Seus Feitiços têm Duração infinita" (Mestre dos Feitiços — só os Feitiços, as maldições Hex).
   const menos = f ? valorPoe(f, 'efeito_maldicao_menos') : 0;
   const tagsDaGema = GemasPoe.doSlug(entry?.poeGema?.slug)?.gema?.tags ?? [];
@@ -1732,7 +1733,7 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   const infinita = !!f && ehFeitico && valorPoe(f, 'feitico_duracao_infinita') > 0;
   const fatorPct = Math.max(0, 1 + pct / 100) * Math.max(0, 1 - menos / 100);
   const saida = efeitos.map((e) => (/^marca/.test(e.efeito) && typeof e.pct === 'number'
-    ? { ...e, pct: e.pct * fatorPct, ...(e.durMarca && (duracao || infinita) ? { durMarca: infinita ? DURACAO_INFINITA_MS : Math.round(e.durMarca * Math.max(0, 1 + duracao / 100)) } : {}) }
+    ? { ...e, pct: e.pct * fatorPct, ...(e.durMarca && (duracao || infinita) ? { durMarca: infinita ? DURACAO_INFINITA_MS : Math.round(e.durMarca * Math.max(0.1, 1 + duracao / 100)) } : {}) }
     : e));
   // As REGRAS da maldição no monstro (`Reforcos.marcar`): o limite ("Você pode aplicar uma Maldição adicional"), o "Efeito aumentado se Y% da
   // Duração expirou" (`efeito_maldicao_expirou:<Y>`) e o "Inimigos Amaldiçoados por você são Desacelerados" — da ficha de quem conjurou.
@@ -1885,7 +1886,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   // colidirem com o terreno", "disparados em direções aleatórias" e "Barragens de Projéteis não se propagam" — `Secundarios.resolver`)
   if (estado) {
     const fichaDoAlvo = Ficha.combate(estado);
-    e.alcanceRicochetePct = ModsPoe.valor(fichaDoAlvo, 'alcance_ricochete_inc');
+    // (lote G14: + o do suporte — "têm alcance do Ricochete aumentado em X%", o Encadear)
+    e.alcanceRicochetePct = ModsPoe.valor(fichaDoAlvo, 'alcance_ricochete_inc') + (efeito.alcanceRicochetePct ?? 0);
     // (lote 40) a gema do PoE: o ricochete do projétil salta os 6 m do PoE 2 (`Secundarios.resolver`)
     e.ricochetePoe = true;
     e.retornarChance = ModsPoe.valor(fichaDoAlvo, 'proj_retornar_chance');
@@ -2862,7 +2864,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (11/10) O ESTANDARTE: plantar consome o Valor — a aura fica no chão, onde você está, maior e mais forte pelo Valor consumido
     // (`ModsPoe.plantarEstandarte`; o efeito multiplica os efeitos do nível — `fator` — e os atributos — `GemasPoe.adds`).
     const plantado = doPoe?.porValor ? ModsPoe.plantarEstandarte(estado, hunt, Ficha.combate(estado), doPoe.porValor, agora) : null;
-    const raioDaAura = plantado ? raioDaAuraDe(estado, entry, (doPoe.raioM ?? 2) / 2, 1 + plantado.areaMais / 100) : doPoe?.raio ? raioDaAuraDe(estado, entry, doPoe.raio) : null;
+    const raioDaAura = plantado ? raioDaAuraDe(estado, entry, (doPoe.raioM ?? 2) / 2, 1 + plantado.areaMais / 100) : doPoe?.raio ? raioDaAuraDe(estado, entry, doPoe.raio, 1, efeitoDaGema?.auraAreaIncPct ?? 0) : null;
     // (PoE, a Mobilização: "Seus Clamores não concedem Buffs ou Cargas a Você" — o Clamor provoca e Impele, mas o buff dele não fica em você;
     // "X% mais Duração dos Clamores" — a provocação dura mais.)
     const fichaDoClamor = buff.tipo === 'poe-clamor' && itensPoeLigado() ? Ficha.combate(estado) : null;
@@ -2876,7 +2878,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (peloPoder && Object.keys(peloPoder.af).length) doPoe.af = { ...doPoe.af, ...Object.fromEntries(Object.entries(peloPoder.af).map(([k, v]) => [k, (doPoe.af?.[k] ?? 0) + v])) };
     if (peloPoder?.tolerancia > 0 && !clamorSemBuff && CargasPoe.ganhar(estado, 'tolerancia', fichaDoClamor.afPoe, peloPoder.tolerancia)) Ficha.invalidar(estado);
     if (!clamorSemBuff) (hunt.buffs ??= {})[entry.id] = doPoe
-      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
+      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1,
+        // (17/10, lote G14) o suporte de aura: "têm Efeito das Auras aumentado em X%" (Arrogância, Generosidade…) e "Auras Suportadas não afetam
+        // você" (Generosidade — só os aliados: `GemasPoe.adds`)
+        ...(efeitoDaGema?.efeitoAuraPct ? { efeitoAuraPct: efeitoDaGema.efeitoAuraPct } : {}), ...(efeitoDaGema?.auraSoAliados ? { soAliados: true } : {}), ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
         ...(plantado ? { estandarte: { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, valor: plantado.valor, efeitoMais: plantado.efeitoMais } } : {}),
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
@@ -3219,7 +3224,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const doAcerto = ModsPoe.aoAcertar(estado, hunt, bicho, fichaDoAcerto, { dano, fisico: fisicoDoAcerto, fogo: fogoDoAcerto, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: pedacos ? pedacos.map((p) => p.elemento) : [tipo], habilidade: entry.id });
       // (17/10, lote G7) a VIDA/MANA POR INIMIGO ACERTADO ("Ganha X de Vida por Inimigo Acertado com Ataques", e a da Marca do Caçador) também
       // nos acertos das gemas de ataque — antes só o golpe básico a aplicava
-      if (entry.poeGema?.ataque && (fichaNoAlvo.vidaPorAcerto || fichaNoAlvo.manaPorAcerto) && (estado.hp ?? 0) > 0) Ficha.curar(estado, fichaNoAlvo.vidaPorAcerto ?? 0, fichaNoAlvo.manaPorAcerto ?? 0, eventos, personagem?.nome, hunt.pos);
+      // (lote G14: pelo `valor` do acerto — a da soma, a da Marca no alvo e a local do uso: o suporte Vida no Acerto)
+      const vidaNoAcerto = entry.poeGema?.ataque ? ModsPoe.valor(fichaDoAcerto, 'life_on_hit') : 0;
+      const manaNoAcerto = entry.poeGema?.ataque ? ModsPoe.valor(fichaDoAcerto, 'mana_on_hit') : 0;
+      if ((vidaNoAcerto > 0 || manaNoAcerto > 0) && (estado.hp ?? 0) > 0) Ficha.curar(estado, Math.round(vidaNoAcerto), Math.round(manaNoAcerto), eventos, personagem?.nome, hunt.pos);
       // O suporte Fúria: "Ganhe 3 de Fúria no Acerto com Ataques" (cada acerto do ataque suportado, como o "Fúria com Acertos" das peças).
       if (efeitoDaGema?.furiaNoAcerto > 0 && entry.poeGema?.ataque) ModsPoe.ganharFuria(hunt, efeitoDaGema.furiaNoAcerto, agora);
       // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.

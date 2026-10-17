@@ -17,10 +17,10 @@
   },
   "suportes": {
    "total": 262,
-   "implementada, sem teste próprio": 52,
-   "implementada e testada": 29,
-   "parcial": 164,
-   "sem efeito": 17
+   "implementada, sem teste próprio": 55,
+   "implementada e testada": 36,
+   "parcial": 159,
+   "sem efeito": 12
   },
   "variantes": {
    "vaal": {
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 853,
-   "emDuasOuMais": 178
+   "linhasDistintas": 840,
+   "emDuasOuMais": 169
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -62,7 +62,7 @@
   },
   "testes": {
    "ativasCitadas": 142,
-   "suportesCitados": 38
+   "suportesCitados": 44
   }
  },
  "ativas": [
@@ -8764,25 +8764,16 @@
   {
    "slug": "Knockback_Support",
    "nome": "Empurrar",
-   "estado": "sem efeito",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 44% de chance de Empurrar Inimigos ao Acertar",
-    "não simulado: Habilidades Suportadas têm 50% de Distância do Empurrão aumentada",
-    "não simulado: Habilidades Suportadas têm 10% de chance de Empurrar Inimigos ao Acertar"
-   ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "outros": [],
    "icone": true
   },
   {
    "slug": "Life_Gain_on_Hit_Support",
    "nome": "Ganho de Vida no Acerto",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: 44 de Vida recebida por Inimigo Acertado com Ataques Suportados",
-    "não simulado: 10 de Vida recebida por Inimigo Acertado com Ataques Suportados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8831,14 +8822,9 @@
   {
    "slug": "Stun_Support",
    "nome": "Atordoar",
-   "estado": "sem efeito",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 49% de Ponto de Atordoamento Inimigo reduzido",
-    "não simulado: Habilidades Suportadas têm 10% de chance de ganhar Duração de Atordoamento dobrada"
-   ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
+   "outros": [],
    "icone": true
   },
   {
@@ -8892,7 +8878,6 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: 4% mais Dano por Carga de Tolerância",
-    "não simulado: Habilidades Suportadas têm 19% de Ponto de Atordoamento Inimigo reduzido",
     "não simulado: Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas",
     "não simulado: Habilidades Suportadas têm 20% de Duração de Atordoamentos em Inimigos aumentada"
    ],
@@ -8957,11 +8942,8 @@
   {
    "slug": "Arrogance_Support",
    "nome": "Arrogância",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 19%",
-    "não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 5%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8972,8 +8954,7 @@
    "ausentes": [
     "não simulado: Clamores reforçados criam um chão consagrado com duração de 6 segundos",
     "não simulado: Clamores reforçados têm -40% de área de efeito",
-    "não simulado: Clamores reforçados têm a velocidade de recarga reduzida em 20%",
-    "não simulado: Habilidades Suportadas têm Velocidade de Clamor aumentada em 10%"
+    "não simulado: Clamores reforçados têm a velocidade de recarga reduzida em 20%"
    ],
    "outros": [],
    "icone": true
@@ -9024,15 +9005,14 @@
   {
    "slug": "Divine_Blessing_Support",
    "nome": "Bênção Divina",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 29%",
     "não simulado: Habilidades Suportadas Custam +233 de Mana",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção"
+    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
+    "não simulado: Auras das Habilidades Suportadas têm uma duração base de 10.9 segundos",
+    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção"
    ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "outros": [],
    "icone": true
   },
   {
@@ -9076,15 +9056,9 @@
   {
    "slug": "Generosity_Support",
    "nome": "Generosidade",
-   "estado": "sem efeito",
-   "ausentes": [
-    "não simulado: Auras Suportadas não afetam você",
-    "não simulado: Auras Não-Maldições das Habilidades Suportadas possuem 39% de aumento do Efeito",
-    "não simulado: Habilidades Suportadas têm a Área de Efeito das Auras aumentada em 40%"
-   ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "outros": [],
    "icone": true
   },
   {
@@ -9097,8 +9071,7 @@
     "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
     "não simulado: Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada",
     "não simulado: Lacaios das Habilidades Suportadas sofrem 14.3% de sua Vida e Escudo de Energia Máximos total como Dano Físico por segundo enquanto você tiver uma Aura de uma Habilidade Suportada em você",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção",
-    "não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 5%"
+    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção"
    ],
    "outros": [],
    "icone": true
@@ -9153,11 +9126,8 @@
   {
    "slug": "Urgent_Orders_Support",
    "nome": "Ordens Urgentes",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm Velocidade de Clamor aumentada em 69%",
-    "não simulado: Habilidades Suportadas têm Velocidade de Clamor aumentada em 10%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9200,15 +9170,14 @@
   {
    "slug": "Eternal_Blessing_Support",
    "nome": "Bênção Eterna",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas têm Efeito das Auras aumentado em 19%",
     "não simulado: Habilidades Suportadas não tem Reserva",
-    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção"
+    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção",
+    "não simulado: Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
+    "não simulado: Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção"
    ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "outros": [],
    "icone": true
   },
   {
@@ -9254,8 +9223,7 @@
     "não simulado: Habilidades Suportadas têm 10 a 17 de Dano de Ataque Físico Adicional por Traumatismo",
     "não simulado: Habilidades Suportadas têm Duração do Atordoamento aumentada em 5% por Traumatismo",
     "não simulado: Ganha 1 Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre 146 de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram 6.9 segundos",
-    "não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados",
-    "não simulado: Habilidades Suportadas têm 10% de Ponto de Atordoamento Inimigo reduzido"
+    "não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados"
    ],
    "outros": [],
    "icone": true
@@ -9338,12 +9306,8 @@
   {
    "slug": "Awakened_Generosity_Support",
    "nome": "Suporte Desperto: Generosidade",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Auras Suportadas não afetam você",
-    "não simulado: Auras Não-Maldições das Habilidades Suportadas possuem 52% de aumento do Efeito",
-    "não simulado: Habilidades Suportadas têm a Área de Efeito das Auras aumentada em 40%"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9452,8 +9416,7 @@
    "nome": "Superaquecimento (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades reforçadas consomem toda a Fortificação ao usar, causando +14% de dano com afecções por 3 de Fortificação consumida",
-    "não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%"
+    "não simulado: Habilidades reforçadas consomem toda a Fortificação ao usar, causando +14% de dano com afecções por 3 de Fortificação consumida"
    ],
    "outros": [],
    "icone": true
@@ -9814,11 +9777,8 @@
   {
    "slug": "Critical_Strike_Affliction_Support",
    "nome": "Aflição dos Golpes Críticos",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm +98% de Multiplicador de Dano Degenerativo para Afecções de Golpes Críticos",
-    "não simulado: Habilidades Suportadas têm +10% de Multiplicador de Dano Degenerativo para Afecções de Golpes Críticos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9967,10 +9927,8 @@
   {
    "slug": "Chain_Support",
    "nome": "Ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 10%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10092,10 +10050,8 @@
   {
    "slug": "Awakened_Chain_Support",
    "nome": "Suporte Desperto: Ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 10%"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10211,9 +10167,7 @@
    "nome": "Propagação Maior (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 127%",
-    "não simulado: Habilidades reforçadas se propagam 50% mais vezes",
-    "não simulado: Habilidades Suportadas têm alcance do Ricochete aumentado em 10%"
+    "não simulado: Habilidades reforçadas se propagam 50% mais vezes"
    ],
    "outros": [],
    "icone": true
@@ -10455,9 +10409,7 @@
    "nome": "Afecções Libertas",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 54%",
-    "não simulado: Habilidades Suportadas têm 54% do Efeito de Afecções não Danificantes aumentado em Inimigos",
-    "não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%"
+    "não simulado: Habilidades Suportadas têm 54% do Efeito de Afecções não Danificantes aumentado em Inimigos"
    ],
    "outros": [],
    "icone": true
@@ -10938,9 +10890,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
-    "não simulado: Você não pode Conjurar Magias Maldição Suportadas",
-    "não simulado: Habilidades reforçadas têm -26% de duração de maldição",
-    "não simulado: Habilidades Suportadas têm 10% de Duração de Maldições aumentada"
+    "não simulado: Você não pode Conjurar Magias Maldição Suportadas"
    ],
    "outros": [],
    "icone": true
@@ -11079,9 +11029,7 @@
    "ausentes": [
     "não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos",
     "não simulado: Você não pode Conjurar Magias Maldição Suportadas",
-    "não simulado: Feitiços aplicados por habilidades de maldição reforçadas têm 34% de chance de afetar inimigos imunes a feitiços",
-    "não simulado: Habilidades reforçadas têm -16% de duração de maldição",
-    "não simulado: Habilidades Suportadas têm 10% de Duração de Maldições aumentada"
+    "não simulado: Feitiços aplicados por habilidades de maldição reforçadas têm 34% de chance de afetar inimigos imunes a feitiços"
    ],
    "outros": [],
    "icone": true
@@ -11138,9 +11086,7 @@
    "nome": "Suporte Desperto: Afecções Libertas",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 77%",
-    "não simulado: Habilidades Suportadas têm 77% do Efeito de Afecções não Danificantes aumentado em Inimigos",
-    "não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%"
+    "não simulado: Habilidades Suportadas têm 77% do Efeito de Afecções não Danificantes aumentado em Inimigos"
    ],
    "outros": [],
    "icone": true
@@ -11280,8 +11226,7 @@
    "ausentes": [
     "não simulado: Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços",
     "não simulado: Efeito em Área de Habilidades Maldição Suportadas reduzido em 12%",
-    "não simulado: Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos",
-    "não simulado: Habilidades Suportadas têm 10% de Duração de Maldições aumentada"
+    "não simulado: Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos"
    ],
    "outros": [],
    "icone": true
@@ -11377,8 +11322,7 @@
     "não simulado: Esfria inimigos quando eles são eletrificados por seus ataques, reduzindo a velocidade de ação com base no efeito de eletrificação",
     "não simulado: Eletrifica inimigos quando eles são esfriados por seus ataques, aumentando o dano sofrido com base no efeito de esfriamento",
     "não simulado: Eletrifica inimigos quando eles são esfriados por ataques de habilidades reforçadas, aumentando o dano sofrido com base no efeito de esfriamento",
-    "não simulado: Esfria inimigos quando eles são eletrificados por ataques de habilidades reforçadas, reduzindo a velocidade de ação com base no efeito de eletrificação",
-    "não simulado: Duração de Afecções infligidas com Habilidades Suportadas aumentada em 10%"
+    "não simulado: Esfria inimigos quando eles são eletrificados por ataques de habilidades reforçadas, reduzindo a velocidade de ação com base no efeito de eletrificação"
    ],
    "outros": [],
    "icone": true
@@ -11519,30 +11463,12 @@
    ]
   },
   {
-   "linha": "Duração de Afecções infligidas com Habilidades Suportadas aumentada em #%",
-   "gemas": [
-    "Awakened_Unbound_Ailments_Support",
-    "Coursing_Current_Support",
-    "Overheat_Support",
-    "Unbound_Ailments_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada",
    "gemas": [
     "Congregation_Support",
     "Feeding_Frenzy_Support",
     "Meat_Shield_Support",
     "Minion_Speed_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Efeito das Auras aumentado em #%",
-   "gemas": [
-    "Arrogance_Support",
-    "Divine_Blessing_Support",
-    "Eternal_Blessing_Support",
-    "Guardians_Blessing_Support"
    ]
   },
   {
@@ -11650,27 +11576,11 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm #% de Duração de Maldições aumentada",
+   "linha": "Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção",
    "gemas": [
-    "Awakened_Hextouch_Support",
-    "Hexpass_Support",
-    "Hextouch_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Ponto de Atordoamento Inimigo reduzido",
-   "gemas": [
-    "Endurance_Charge_on_Melee_Stun_Support",
-    "Stun_Support",
-    "Trauma_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm alcance do Ricochete aumentado em #%",
-   "gemas": [
-    "Awakened_Chain_Support",
-    "Chain_Support",
-    "Greater_Chain_Support"
+    "Divine_Blessing_Support",
+    "Eternal_Blessing_Support",
+    "Guardians_Blessing_Support"
    ]
   },
   {
@@ -11914,20 +11824,6 @@
    "gemas": [
     "Pyroclast_Mine",
     "Pyroclast_Mine_of_Sabotage"
-   ]
-  },
-  {
-   "linha": "Auras Não-Maldições das Habilidades Suportadas possuem #% de aumento do Efeito",
-   "gemas": [
-    "Awakened_Generosity_Support",
-    "Generosity_Support"
-   ]
-  },
-  {
-   "linha": "Auras Suportadas não afetam você",
-   "gemas": [
-    "Awakened_Generosity_Support",
-    "Generosity_Support"
    ]
   },
   {
@@ -12260,13 +12156,6 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas têm #% de duração de maldição",
-   "gemas": [
-    "Awakened_Hextouch_Support",
-    "Hextouch_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas têm +#% de chance de fazer os monstros fugirem ao atingir",
    "gemas": [
     "Chance_to_Flee_Support",
@@ -12365,24 +12254,10 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm a Área de Efeito das Auras aumentada em #%",
-   "gemas": [
-    "Awakened_Generosity_Support",
-    "Generosity_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #%",
    "gemas": [
     "Cluster_Traps_Support",
     "Multiple_Traps_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Velocidade de Clamor aumentada em #%",
-   "gemas": [
-    "Blessed_Call_Support",
-    "Urgent_Orders_Support"
    ]
   },
   {
@@ -13053,12 +12928,6 @@
    ]
   },
   {
-   "linha": "# de Vida recebida por Inimigo Acertado com Ataques Suportados",
-   "gemas": [
-    "Life_Gain_on_Hit_Support"
-   ]
-  },
-  {
    "linha": "# de Virulência Máxima",
    "gemas": [
     "Herald_of_Agony"
@@ -13584,6 +13453,12 @@
    "linha": "Aura faz com que Castigo ataque +# alvos com relâmpagos",
    "gemas": [
     "Vaal_Smite"
+   ]
+  },
+  {
+   "linha": "Auras das Habilidades Suportadas têm uma duração base de # segundos",
+   "gemas": [
+    "Divine_Blessing_Support"
    ]
   },
   {
@@ -15231,12 +15106,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas também contam como Habilidades Bênção\\nVocê só pode ter uma Aura de suas Habilidades Bênção",
-   "gemas": [
-    "Guardians_Blessing_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm # a # de Dano de Ataque Físico Adicional por Traumatismo",
    "gemas": [
     "Trauma_Support"
@@ -15255,12 +15124,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm #% de chance de Empurrar Inimigos ao Acertar",
-   "gemas": [
-    "Knockback_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm #% de chance de Enervar Inimigos por # segundos ao Acertar",
    "gemas": [
     "Awakened_Controlled_Destruction_Support"
@@ -15270,12 +15133,6 @@
    "linha": "Habilidades Suportadas têm #% de chance de Esmagar Inimigos por # segundos ao Acertar",
    "gemas": [
     "Awakened_Brutality_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de ganhar Duração de Atordoamento dobrada",
-   "gemas": [
-    "Stun_Support"
    ]
   },
   {
@@ -15330,12 +15187,6 @@
    "linha": "Habilidades Suportadas têm #% de Dano Físico Convertido em Dano de Raio",
    "gemas": [
     "Physical_to_Lightning_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Distância do Empurrão aumentada",
-   "gemas": [
-    "Knockback_Support"
    ]
   },
   {
@@ -15408,12 +15259,6 @@
    "linha": "Habilidades Suportadas têm +#% de chance de Congelar Inimigos Resfriados",
    "gemas": [
     "Hypothermia_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm +#% de Multiplicador de Dano Degenerativo para Afecções de Golpes Críticos",
-   "gemas": [
-    "Critical_Strike_Affliction_Support"
    ]
   },
   {
@@ -16578,6 +16423,12 @@
    "linha": "Suas Habilidades e de seus aliados próximos não Custam Mana",
    "gemas": [
     "Vaal_Clarity"
+   ]
+  },
+  {
+   "linha": "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
+   "gemas": [
+    "Eternal_Blessing_Support"
    ]
   },
   {
