@@ -2448,7 +2448,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     ? Math.min(agora, hunt.conjurando?.inicio ?? agora)
     : R.instanteLogico(agora, hunt.relogioAnterior, [globalLibera, cd?.ate, grupoQueConta ? cds[grupoQueConta]?.ate : null]);
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
-  const efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
+  let efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
+  // (17/10, lote G13) a MINA detonada: "Dispara um Projétil adicional para cada N Minas anteriores na Sequência de Detonação" (`plantada.anteriores`)
+  if (plantada?.tipo === 'mina' && entry.poeGema && efeitoDaGema) {
+    const n = GemasPoe.minaDaGema(entry.poeGema.slug, efeitoDaGema.nivel ?? 1)?.porAnteriores;
+    if (n > 0 && plantada.anteriores > 0) efeitoDaGema = { ...efeitoDaGema, alvosExtras: (efeitoDaGema.alvosExtras ?? 0) + Math.floor(plantada.anteriores / n) };
+  }
   // (17/10, lote G2) A FORMA da área no RAIO DO PoE da gema (o da magia-molde do Draevor era fixo: a nova pegava 5 casas, fosse a Nova de Gelo
   // de 3 m ou a de 2,2 m) — `formaNoRaioDoPoe`.
   // (17/10, lote G10) o ESTÁGIO de canalização deste uso (`GemasPoe.estagiosDaGema`): o uso seguido da mesma habilidade canalizada ganha 1, até o
@@ -3058,7 +3063,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote G7: o roubo a mais deste alvo — a Marca do Senhor da Guerra, "…concedem X% de Dreno de Vida quando Acertados por Ataques" —, × o dano
     // nele; no fim entra na conta do roubo como a fração do total)
     const rouboDosAlvos = { vida: 0, mana: 0 };
-    const acertar = (bicho, pct = 100, fonte = null, golpe = null) => {
+    // (17/10, lote G13) a RUNA: "Causa X% mais/menos Dano com Acertos contra o Inimigo Vinculado" — só no inimigo a que ela está vinculada
+    const contraVinculado = plantada?.vinculado != null && entry.poeGema ? GemasPoe.contraOVinculado(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : 0;
+    const acertar = (bicho, pct0 = 100, fonte = null, golpe = null) => {
+      const pct = contraVinculado && bicho.uid === plantada.vinculado ? pct0 * Math.max(0, 1 + contraVinculado / 100) : pct0;
       const noAlvo = ajusteDoAlvo(bicho);
       const fichaNoAlvo = noAlvo?.ficha ?? ficha;
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
@@ -3728,7 +3736,7 @@ export function tiqueDasRunas(estado, hunt, personagem, eventos = [], agora = hu
   const { ativar, expiradas } = Runas.tique(hunt, ficha, agora);
   for (const { r, alvo, areaPct } of ativar) {
     if ((estado.hp ?? 0) <= 0) break;
-    const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaPct } });
+    const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaPct, vinculado: alvo.uid } });
     if (res?.ok) eventos.push(...(res.eventos ?? []));
   }
   const mana = ModsPoe.valor(ficha, 'mana_runa_expira_vinculada');
@@ -3766,7 +3774,38 @@ function tiqueDasTorres(estado, hunt, personagem, eventos, agora) {
   if (!hunt.poeTorres.length) delete hunt.poeTorres;
 }
 
+/**
+ * (17/10, lote G13) A AURA DAS MINAS DA GEMA: "Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em X% contra Inimigos próximos a ela,
+ * até Y%" (a Mina de Gelo — `minaCritico` no inimigo, lido no golpe: `ModsPoe.golpeNoAlvo`/`fichaDoGolpe`) e "Cada mina aplica Dano aumentado em
+ * X% aos Inimigos próximos máximo de Y%" (a Mina de Tempestade — o dano sofrido, `minaFragil`): cada Mina plantada daquela gema soma X × (1 +
+ * "Efeito de Auras das Minas") nos inimigos a até 35 unidades dela (o raio das auras de Mina do lote 34), até Y. O estado dura o tique.
+ */
+function auraDasMinasDaGema(estado, hunt, agora) {
+  const minas = Plantadas.plantadas(hunt, 'mina', agora);
+  if (!minas.length) return;
+  const efeitoAura = Math.max(0, 1 + ModsPoe.valor(Ficha.combate(estado), 'efeito_aura_mina') / 100);
+  const porGema = new Map();
+  for (const p of minas) {
+    if (!porGema.has(p.acao)) porGema.set(p.acao, GemasPoe.minaDaGema(String(p.acao).replace(GemasPoe.PREFIXO, ''), Gemas.efeitoNaSkill(estado, p.acao)?.nivel ?? 1));
+  }
+  for (const b of hunt.monstros ?? []) {
+    if (!(b.hp > 0) || b.dummy) continue;
+    const soma = { minaCritico: { pct: 0, teto: 0 }, minaFragil: { pct: 0, teto: 0 } };
+    for (const p of minas) {
+      const d = porGema.get(p.acao);
+      if (!d || (b.z != null && p.z != null && b.z !== p.z) || Math.max(Math.abs(b.x - p.x), Math.abs(b.y - p.y)) * ModsPoe.DISTANCIA_DO_PROJETIL.unidadesPorCasa > ModsPoe.AURA_DA_MINA_UNIDADES) continue;
+      if (d.auraCritico) { soma.minaCritico.pct += d.auraCritico.porMina * efeitoAura; soma.minaCritico.teto = Math.max(soma.minaCritico.teto, d.auraCritico.teto); }
+      if (d.auraDano) { soma.minaFragil.pct += d.auraDano.porMina * efeitoAura; soma.minaFragil.teto = Math.max(soma.minaFragil.teto, d.auraDano.teto); }
+    }
+    for (const [campo, c] of Object.entries(soma)) if (c.pct > 0) {
+      const ja = b.estados?.[campo]?.ate > agora ? b.estados[campo].pct ?? 0 : 0;
+      (b.estados ??= {})[campo] = { ate: agora + 500, pct: Math.max(ja, Math.min(c.teto, c.pct)) };
+    }
+  }
+}
+
 export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+  if (itensPoeLigado() && hunt?.plantadas?.length) auraDasMinasDaGema(estado, hunt, agora);
   if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
   // (lote G12: os gêiseres da Cremação, no mesmo tique)
   if (itensPoeLigado() && hunt?.poeGeiseres?.length) tiqueDosGeiseres(estado, hunt, personagem, eventos, agora);

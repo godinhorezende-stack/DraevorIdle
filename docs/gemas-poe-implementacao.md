@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 64 |
-| implementada, sem teste próprio | 80 |
+| implementada e testada | 69 |
+| implementada, sem teste próprio | 82 |
 | limitação do modelo idle | 42 |
-| parcial | 365 |
+| parcial | 358 |
 | sem efeito | 11 |
 
 Só os ataques:
@@ -35,28 +35,25 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 1 · parcial 41 · implementada, sem teste próprio 10
-- Alternativas (198): parcial 140 · implementada e testada 6 · limitação do modelo idle 14 · implementada, sem teste próprio 36 · sem efeito 2
+- Alternativas (198): parcial 137 · implementada e testada 7 · limitação do modelo idle 14 · implementada, sem teste próprio 38 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 869 linhas distintas (186 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 853 linhas distintas (178 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 139/562 ativas, 38/262 suportes.
+- Testes que citam a gema: 142/562 ativas, 38/262 suportes.
 
 ## Linhas que faltam (por quantidade de gemas)
 
 | Gemas | Linha |
 |---|---|
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
-| 15 | nenhum efeito do buff tem equivalente no jogo |
+| 14 | nenhum efeito do buff tem equivalente no jogo |
 | 14 | sem dano direto: nenhum efeito no combate |
-| 9 | Pode ser Desvinculada por uma Duração total de # segundos |
-| 7 | Pode ser Vinculada por uma Duração total de # segundos |
 | 6 | esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido) |
 | 5 | as repetições do golpe não existem: no jogo é um |
-| 5 | Dispara um Projétil adicional para cada # Minas anteriores na Sequência de Detonação |
 | 5 | Efeito em Área de Habilidades Maldição Suportadas aumentado em #% |
 | 5 | Habilidades Suportadas têm #% mais Velocidade de Posicionamento de Totens |
 | 4 | Debuff pode ter até # camadas de Dano |
@@ -65,18 +62,13 @@ Só os ataques:
 | 4 | Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada |
 | 4 | Habilidades Suportadas têm Efeito das Auras aumentado em #% |
 | 3 | # % de aumento do ângulo por estágio, até # % |
-| 3 | # % mais Área de Efeito por Valor consumido |
-| 3 | # % mais Efeito de Aura por Valor consumido |
 | 3 | # segundos adicionais de Duração Base por Cadáver extra consumido |
 | 3 | +# metro ao Raio por # de Fúria |
 | 3 | Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte |
 | 3 | Área de Efeito aumentada em # % por cada # metro de Alcance de Golpe Corpo a Corpo adicional |
 | 3 | Cada Flecha pode disparar # Feixes |
-| 3 | Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em # % contra Inimigos próximos a ela, até um máximo de # % |
-| 3 | Causa # % mais Dano com Acertos contra o Inimigo Vinculado |
 | 3 | Cria # Estaca |
 | 3 | Efeito das Auras aumentado em # % |
-| 3 | Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor |
 | 3 | Estacas Despedaçadoras causam # % mais dano |
 | 3 | Flecha dispara Raios a cada # segundos |
 | 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
@@ -395,7 +387,6 @@ Só os ataques:
 | 1 | Cada Esporo inflige # Debuff de Definhamento nos Inimigos próximos |
 | 1 | Cada Flecha deixa # Esporos |
 | 1 | Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #% |
-| 1 | Cada mina aplica Dano aumentado em # % aos Inimigos próximos máximo de # % |
 | 1 | Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #% |
 | 1 | Cada onda tem # Explosões |
 | 1 | Cada rajada dispara # lâminas, que permanecem no chão |
@@ -408,7 +399,6 @@ Só os ataques:
 | 1 | Causa # % mais Dano com Acertos e Afecções quando conjurada em um Disparo Congelante |
 | 1 | Causa # % mais Dano com Acertos por cada # segundos de Duração |
 | 1 | Causa # % mais Dano com Afecções por cada # segundos de Duração |
-| 1 | Causa # % menos Dano com Acertos contra o Inimigo Vinculado |
 | 1 | Causa # a # de Dano de Fogo |
 | 1 | Causa # a # de Dano de Gelo |
 | 1 | Causa # Ondas |
@@ -502,8 +492,6 @@ Só os ataques:
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
 | 1 | Duração do Buff é atualizada após você gastar um total de # de Vida |
 | 1 | Durante a Duração Secundária, Reflete # % do Dano Sofrido aos Inimigos |
-| 1 | É Ativado a cada segundo enquanto Vinculado |
-| 1 | É Ativado uma vez quando Vinculada, então é Destruída |
 | 1 | Efeito da Cegueira aumentado em # % |
 | 1 | Efeito das Marcas de Habilidades Suportadas aumentado em #% |
 | 1 | Efeito das Marcas de Habilidades Suportadas reduzido em #% |
@@ -534,8 +522,6 @@ Só os ataques:
 | 1 | Esta Magia perde # de Intensidade a cada # segundos enquanto se movendo, ou imediatamente ao teleportar |
 | 1 | Estacas Despedaçadas têm # % mais Área de Efeito |
 | 1 | Estandarte concede # de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados |
-| 1 | Estandarte concede +# % de Chance de Bloquear o Dano de Ataques a Você e Aliados |
-| 1 | Estandarte concede +# % de chance de Suprimir o Dano Mágico a Você e Aliados |
 | 1 | Estandarte concede Precisão aumentada em # % a Você e Aliados |
 | 1 | Estandarte faz com que você e Aliados Recuperem # de Vida ao Bloquear |
 | 1 | Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área |
@@ -808,7 +794,6 @@ Só os ataques:
 | 1 | Pode aglomerar até # usos |
 | 1 | Pode explor de até # Projéteis de Disparo Congelante |
 | 1 | Pode se expandir de até # Projéteis de Disparo Congelante |
-| 1 | Pode ter # Runas adicionais Vinculadas a um Inimigo |
 | 1 | Possui # lâminas |
 | 1 | Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação |
 | 1 | Primeiro Impacto causa # % mais Dano com Acertos e Afecções |
@@ -908,7 +893,6 @@ Só os ataques:
 | 1 | Velocidade de Movimento dos Lacaios aumentada em # % |
 | 1 | Velocidade de Recuperação da Recarga aumentada em # % para cada Inimigo Normal ou Mágico na Área Velocidade de Recuperação da Recarga aumentada em # % para cada Inimigo Raro ou Único na Área |
 | 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
-| 1 | Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada # segundos |
 | 1 | Você e Aliados não-Lacaios Próximos têm # % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando # segundos |
 | 1 | Você e Aliados próximos ganham # % de Velocidade de Recarga de Escudo de Energia aumentada |
 | 1 | Você e aliados próximos têm +# % de chance de Evadirem Acertos de Ataques |
@@ -964,18 +948,8 @@ Só os ataques:
   - efeito não simulado: Buff concede Dano de Raio Adicional igual a 10 % da Mana Gasta pelo efeito desta Habilidade
 - **Arcanist_Brand** (Runa Arcanista) — parcial
   - sem dano direto: nenhum efeito no combate
-- **Armageddon_Brand** (Runa do Armagedom) — parcial
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos
-  - efeito não simulado: Causa 29 % mais Dano com Acertos contra o Inimigo Vinculado
-- **Armageddon_Brand_of_Recall** (Runa do Armagedom da Convocação) — parcial
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos
-  - efeito não simulado: Causa 80 % menos Dano com Acertos contra o Inimigo Vinculado
 - **Armageddon_Brand_of_Volatility** (Runa do Armagedom da Volatilidade) — parcial
   - efeito não simulado: Não pode ser Convocada
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: É Ativado uma vez quando Vinculada, então é Destruída
 - **Artillery_Ballista** (Balista de Artilharia) — limitação do modelo idle
   - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Artillery_Ballista_of_Cross_Strafe** (Balista de Artilharia do Fogo Cruzado) — parcial
@@ -1181,10 +1155,6 @@ Só os ataques:
   - efeito não simulado: Totens Convocados por esta Habilidade não podem Evadir
   - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Defiance_Banner** (Estandarte Desafiador) — parcial
-  - efeito não simulado: Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor
-  - efeito não simulado: 10 % mais Área de Efeito por Valor consumido
-  - efeito não simulado: 10 % mais Efeito de Aura por Valor consumido
-  - efeito não simulado: Estandarte concede +8 % de chance de Suprimir o Dano Mágico a Você e Aliados
   - efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados
 - **Detonate_Dead_of_Scavenging** (Detonar Morto da Limpeza) — parcial
   - sem dano direto: nenhum efeito no combate
@@ -1226,11 +1196,6 @@ Só os ataques:
   - efeito não simulado: 10 % mais Velocidade de Ataque por cada Estágio
   - efeito não simulado: Ganhe um Estágio no início de cada ataque par Máximo de 10 Estágios
 - **Dread_Banner** (Estandarte Horrendo) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor
-  - efeito não simulado: 10 % mais Área de Efeito por Valor consumido
-  - efeito não simulado: 10 % mais Efeito de Aura por Valor consumido
-  - efeito não simulado: Estandarte concede +4 % de Chance de Bloquear o Dano de Ataques a Você e Aliados
   - efeito não simulado: Estandarte faz com que você e Aliados Recuperem 34 de Vida ao Bloquear
 - **Dual_Strike_of_Ambidexterity** (Golpe Duplo da Ambidestria) — parcial
   - efeito não simulado: Utiliza o Tempo de Ataque da Arma Secundária
@@ -1496,15 +1461,6 @@ Só os ataques:
   - efeito não simulado: Projéteis podem se Dividir ao acertar o terreno
 - **Ice_Trap** (Armadilha Glacial) — parcial
   - efeito não simulado: Raio Base terciário igual a 0.6 metros
-- **Icicle_Mine** (Mina Congelante) — parcial
-  - efeito não simulado: Dispara um Projétil adicional para cada 2 Minas anteriores na Sequência de Detonação
-  - efeito não simulado: Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em 10 % contra Inimigos próximos a ela, até um máximo de 500 %
-- **Icicle_Mine_of_Fanning** (Mina Congelante da Ventilação) — parcial
-  - efeito não simulado: Dispara um Projétil adicional para cada 2 Minas anteriores na Sequência de Detonação
-  - efeito não simulado: Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em 10 % contra Inimigos próximos a ela, até um máximo de 500 %
-- **Icicle_Mine_of_Sabotage** (Mina Congelante da Sabotagem) — parcial
-  - efeito não simulado: Dispara um Projétil adicional para cada 2 Minas anteriores na Sequência de Detonação
-  - efeito não simulado: Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em 40 % contra Inimigos próximos a ela, até um máximo de 500 %
 - **Immortal_Call** (Chamado Imortal) — parcial
   - efeito não simulado: Duração do Buff aumentada em 20 % por Carga de Tolerância removida
 - **Incinerate** (Incinerar) — parcial
@@ -1626,20 +1582,12 @@ Só os ataques:
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: [Empowered|Fortalece] a próxima magia vaal danosa que você conjurar
   - efeito não simulado: Habilidades fortalecidas causam + 29 % de dano
-- **Penance_Brand** (Runa da Penitência) — parcial
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
 - **Penance_Brand_of_Conduction** (Runa da Penitência da Condução) — parcial
   - efeito não simulado: Até 0.9 metros ao raio da propagação de Energia, escalonado pela distância da Runa
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: Pode ser Vinculada por uma Duração total de 0.5 segundos
-  - efeito não simulado: Causa 100 % mais Dano com Acertos contra o Inimigo Vinculado
 - **Penance_Brand_of_Dissipation** (Runa da Penitência da Dissipação) — parcial
-  - efeito não simulado: É Ativado a cada segundo enquanto Vinculado
   - efeito não simulado: Pulsos causam 20 % mais Dano com Afecções por Energia após a primeira
   - efeito não simulado: Pulsos causam 20 % mais Dano com Dano com Acertos por Energia após a primeira
   - efeito não simulado: +0.1 metros ao raio do Pulso por Energia
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos
 - **Perforate** (Perfurar) — parcial
   - efeito não simulado: Cria 7 Estaca
 - **Perforate_of_Bloodshed** (Perfuração da Carnificina) — parcial
@@ -1683,10 +1631,8 @@ Só os ataques:
 - **Purity_of_Elements** (Pureza Elementar) — parcial
   - a imunidade a afecções ainda não existe no jogo
 - **Pyroclast_Mine** (Mina Explosiva de Fogo) — parcial
-  - efeito não simulado: Dispara um Projétil adicional para cada 3 Minas anteriores na Sequência de Detonação
   - efeito não simulado: Aura de Exposição ao Fogo aplica -15 % à resistência a dano de fogo
 - **Pyroclast_Mine_of_Sabotage** (Mina Piroclástica da Sabotagem) — parcial
-  - efeito não simulado: Dispara um Projétil adicional para cada 3 Minas anteriores na Sequência de Detonação
   - efeito não simulado: Aura de Exposição ao Fogo aplica -25 % à resistência a dano de fogo
 - **Quickstep** (Passo Rápido) — parcial
   - o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
@@ -1881,14 +1827,8 @@ Só os ataques:
 - **Steelskin** (Pele de Aço) — parcial
   - a absorção de dano da guarda ainda não existe no jogo
 - **Storm_Brand** (Runa Tempestuosa) — parcial
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos
   - efeito não simulado: Envia feixes até 3 Inimigos, incluindo o Inimigo Vinculado
-  - efeito não simulado: Causa 80 % mais Dano com Acertos contra o Inimigo Vinculado
 - **Storm_Brand_of_Indecision** (Runa Tempestuosa da Indecisão) — parcial
-  - efeito não simulado: Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada 0.3 segundos
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos
   - efeito não simulado: Envia um feixe ao Inimigo Vinculado
 - **Storm_Burst** (Tormenta Explosiva) — parcial
   - efeito não simulado: Orbes saltam a cada 0.4 segundos
@@ -1909,8 +1849,6 @@ Só os ataques:
   - efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta
 - **Stormbind_of_Teleportation** (Vínculo Tempestuoso do Teleporte) — parcial
   - efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta
-- **Stormblast_Mine** (Mina da Tormenta Explosiva) — parcial
-  - efeito não simulado: Cada mina aplica Dano aumentado em 3 % aos Inimigos próximos máximo de 150 %
 - **Summon_Carrion_Golem** (Convocar Golem da Carniça) — parcial
   - efeito não simulado: Golens causam 5 % mais Dano por Lacaio Não-Golem próximo deles, até 50 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -2173,9 +2111,6 @@ Só os ataques:
 - **Wall_of_Force** (Parede de Força) — sem efeito
   - a gema não tem comportamento de combate reconhecido
 - **War_Banner** (Estandarte da Guerra) — parcial
-  - efeito não simulado: Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor
-  - efeito não simulado: 10 % mais Área de Efeito por Valor consumido
-  - efeito não simulado: 10 % mais Efeito de Aura por Valor consumido
   - efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados
 - **Wave_of_Conviction** (Onda de Convicção) — parcial
   - efeito não simulado: Exposição aplica -15 % de Resistência Elemental que combine com o maior Dano sofrido
@@ -2192,9 +2127,6 @@ Só os ataques:
   - efeito não simulado: 20 % de aumento da Frequência de Projéteis por Estágio
 - **Wintertide_Brand** (Runa da Maré Invernal) — parcial
   - os estágios de canalização não existem: no jogo é um uso por vez
-  - efeito não simulado: Pode ter 1 Runas adicionais Vinculadas a um Inimigo
-  - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
-  - efeito não simulado: Pode ser Vinculada por uma Duração total de 2 segundos
   - efeito não simulado: Duração Base do Debuff é de 2 segundos
 - **Wither** (Definhar) — parcial
   - sem dano direto: nenhum efeito no combate
@@ -2833,4 +2765,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Detonate_Dead, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volatile_Dead_of_Seething, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Icicle_Mine_of_Fanning, Icicle_Mine_of_Sabotage, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Detonate_Dead, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volatile_Dead_of_Seething, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike

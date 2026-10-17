@@ -547,6 +547,40 @@ export function cadaverDaGema(slug, nivel = 1, qualidade = 0) {
   };
 }
 
+/**
+ * (17/10, lote G13) As linhas que outros sistemas já fazem e o status não reconhecia: as da RUNA (`runas-vinculadas.daGema` lê "É Ativado a cada",
+ * "Pode ser Vinculada/Desvinculada por uma Duração total de N segundos", a troca de alvo, as Runas adicionais, a Ativada uma vez) e as do
+ * ESTANDARTE (`mods-poe.plantarEstandarte`: o "X% mais Área de Efeito / Efeito de Aura por Valor consumido" e o ganho de Valor).
+ */
+const LINHA_DA_RUNA = /^É Ativad[ao] a cada (?:[\d.]+ )?segundos? enquanto Vinculad[ao]$|^Pode ser (?:Des)?[Vv]inculada por uma Duração total de [\d.]+ segundos?$|^Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada [\d.]+ segundos?$|^Pode ter \d+ Runas? adiciona(?:l|is) Vinculadas? a um Inimigo$|^É Ativado uma vez quando Vinculada, então é Destruída$|^Causa [\d.]+ ?% (?:mais|menos) Dano com Acertos contra o Inimigo Vinculado$/i;
+const LINHA_DO_ESTANDARTE = /^Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor$|^[\d.]+ ?% mais (?:Área de Efeito|Efeito de Aura) por Valor consumido$/i;
+export const ehLinhaDaRuna = (l) => LINHA_DA_RUNA.test(l);
+export const ehLinhaDoEstandarte = (l) => LINHA_DO_ESTANDARTE.test(l);
+/** (lote G13) "Causa X% mais/menos Dano com Acertos contra o Inimigo Vinculado" (a Runa): o % (negativo no "menos"), ou 0. */
+export function contraOVinculado(slug, nivel = 1) {
+  for (const l of textosDaGema(slug, nivel).linhas) { const m = /^Causa ([\d.]+) ?% (mais|menos) Dano com Acertos contra o Inimigo Vinculado$/i.exec(l); if (m) return (m[2] === 'menos' ? -1 : 1) * Number(m[1]); }
+  return 0;
+}
+/**
+ * (lote G13) As linhas das MINAS da gema: "Dispara um Projétil adicional para cada N Minas anteriores na Sequência de Detonação" (`porAnteriores`),
+ * "Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em X% contra Inimigos próximos a ela, até Y%" (`auraCritico`) e "Cada mina aplica
+ * Dano aumentado em X% aos Inimigos próximos máximo de Y%" (`auraDano` — o dano sofrido, `minaFragil`). `{…}` ou null.
+ */
+const LINHA_DA_MINA = /^Dispara um Projétil adicional para cada \d+ Minas anteriores na Sequência de Detonação$|^Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em [\d.]+ ?% contra Inimigos próximos a ela, até um máximo de [\d.]+ ?%$|^Cada mina aplica Dano aumentado em [\d.]+ ?% aos Inimigos próximos máximo de [\d.]+ ?%$/i;
+export const ehLinhaDaMina = (l) => LINHA_DA_MINA.test(l);
+export function minaDaGema(slug, nivel = 1) {
+  const r = {};
+  for (const l of textosDaGema(slug, nivel).linhas) {
+    let m = /^Dispara um Projétil adicional para cada (\d+) Minas anteriores/i.exec(l);
+    if (m) r.porAnteriores = Number(m[1]);
+    m = /^Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em ([\d.]+) ?% contra Inimigos próximos a ela, até um máximo de ([\d.]+)/i.exec(l);
+    if (m) r.auraCritico = { porMina: Number(m[1]), teto: Number(m[2]) };
+    m = /^Cada mina aplica Dano aumentado em ([\d.]+) ?% aos Inimigos próximos máximo de ([\d.]+)/i.exec(l);
+    if (m) r.auraDano = { porMina: Number(m[1]), teto: Number(m[2]) };
+  }
+  return Object.keys(r).length ? r : null;
+}
+
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
 const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
 export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
@@ -781,7 +815,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 

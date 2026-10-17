@@ -141,13 +141,15 @@ const BUFF_PROPRIO = [
   // Sangue, que valeria com ele desligado, segue "não simulada")
   [new RegExp(`^Habilidades Corpo a Corpo (?:causam|têm) ${N} ?% (mais|menos) (Dano|Efeito) em Área enquanto na Postura de Areia$`, 'i'),
     (m) => ({ [`${m[3] === 'Dano' ? 'mais_dano' : 'area_mais'}@corpo+area+posturaAreia`]: (m[2] === 'menos' ? -1 : 1) * num(m[1]) })],
+  [new RegExp(`^Estandarte concede \\+${N} ?% de chance de Suprimir o Dano Mágico a Você e Aliados$`, 'i'), (m) => ({ spell_suppression: num(m[1]) })],
   [new RegExp(`^Buff concede ${N} ?% mais Dano (Físico|de Fogo|de Gelo|de Raio|de Caos)$`, 'i'), (m) => ({ [{ Físico: 'mais_dano_fisico', 'de Fogo': 'mais_dano_fogo', 'de Gelo': 'mais_dano_gelo', 'de Raio': 'mais_dano_raio', 'de Caos': 'mais_dano_caos' }[m[2]]]: num(m[1]) })],
 ];
 export function atributosDoBuff(linha) {
   const l = String(linha).trim();
   for (const [re, f] of BUFF_PROPRIO) { const m = re.exec(l); if (m) { const af = f(m); return Object.keys(af).every(atributoTemEfeito) ? af : null; } }
-  const sem = l.replace(/^Buff concede /i, '').replace(/^Você e (?:seus )?aliados próxim\S* (?:ganham|têm|tem|possuem) /i, '').replace(/^Você e (?:seus )?aliados próxim\S* são /i, 'Você é ');
-  if (sem === l && !/^Dano não pode ser Refletido$/i.test(l)) return null;
+  // (lote G13: "Estandarte concede Precisão aumentada em 8% a Você e Aliados" — o buff do Estandarte vale em você e nos aliados na área)
+  const sem = l.replace(/^Estandarte concede (.+?) a Você e Aliados$/i, '$1').replace(/^Buff concede /i, '').replace(/^Você e (?:seus )?aliados próxim\S* (?:ganham|têm|tem|possuem) /i, '').replace(/^Você e (?:seus )?aliados próxim\S* são /i, 'Você é ');
+  if (sem === l && !/^Dano não pode ser Refletido$/i.test(l) && !/^Você é /i.test(sem)) return null;
   const t0 = sem.charAt(0).toUpperCase() + sem.slice(1);
   const valores = [];
   const modelo = t0.replace(/(\d+(?:[.,]\d+)?)\s*%/g, (_, x) => `${x}%`).replace(/\d+(?:[.,]\d+)?/g, (x) => { valores.push(num(x)); return `{${valores.length - 1}}`; });

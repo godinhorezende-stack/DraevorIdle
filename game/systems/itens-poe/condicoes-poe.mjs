@@ -1469,7 +1469,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const arcano = t.has('ataque') ? (Number(ficha.afPoe.poder_arcano) || 0) + (s.poder_arcano ?? 0) : 0;
   const doArcano = arcano > 0 ? (((ficha.danoDeMagiaDoPoe ?? 0) + (s.spell_dmg ?? 0)) * arcano) / 100 : 0;
   const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe + doArcano;
-  const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0);
+  // (lote G13: + a aura de crítico das Minas da gema no alvo — `minaCritico`)
+  const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0) + (alvo && ativo(alvo.estados?.minaCritico, agora) ? alvo.estados.minaCritico.pct ?? 0 : 0);
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;
   // (13/10: + o "mais Dano Degenerativo" com condição — `dano_dot_mais@magia`, "Mais X% de dano degenerativo com habilidades mágicas")
@@ -1649,6 +1650,8 @@ export function golpeNoAlvo(ficha, alvo, agora) {
     const m = fatorDoAlvo(alvo, agora, x.escala);
     if (m) s[x.stat] = (s[x.stat] ?? 0) + comTeto(x.valor, m, x.teto);
   }
+  // (lote G13: a aura de crítico das Minas da gema — "Cada Mina aplica Chance de Golpe Crítico aumentada em X% contra Inimigos próximos")
+  if (ativo(alvo.estados?.minaCritico, agora)) s.crit_chance_inc = (s.crit_chance_inc ?? 0) + (alvo.estados.minaCritico.pct ?? 0);
   for (const m of Object.values(alvo.maldicoes ?? {})) {
     if (!m?.contra || !(m.ate > agora)) continue;
     for (const [k, v] of Object.entries(m.contra.golpe ?? {})) {

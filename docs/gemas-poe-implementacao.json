@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 64,
-   "parcial": 365,
-   "implementada, sem teste próprio": 80,
+   "implementada e testada": 69,
+   "parcial": 358,
+   "implementada, sem teste próprio": 82,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
@@ -31,10 +31,10 @@
    },
    "alternativas": {
     "total": 198,
-    "parcial": 140,
-    "implementada e testada": 6,
+    "parcial": 137,
+    "implementada e testada": 7,
     "limitação do modelo idle": 14,
-    "implementada, sem teste próprio": 36,
+    "implementada, sem teste próprio": 38,
     "sem efeito": 2
    }
   },
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 869,
-   "emDuasOuMais": 186
+   "linhasDistintas": 853,
+   "emDuasOuMais": 178
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,7 +61,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 139,
+   "ativasCitadas": 142,
    "suportesCitados": 38
   }
  },
@@ -605,9 +605,6 @@
    "arquetipo": "aura",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor",
-    "efeito não simulado: 10 % mais Área de Efeito por Valor consumido",
-    "efeito não simulado: 10 % mais Efeito de Aura por Valor consumido",
     "efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados"
    ],
    "idle": [],
@@ -1121,10 +1118,6 @@
    "arquetipo": "aura",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor",
-    "efeito não simulado: 10 % mais Área de Efeito por Valor consumido",
-    "efeito não simulado: 10 % mais Efeito de Aura por Valor consumido",
-    "efeito não simulado: Estandarte concede +8 % de chance de Suprimir o Dano Mágico a Você e Aliados",
     "efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados"
    ],
    "idle": [],
@@ -1348,11 +1341,6 @@
    "arquetipo": "aura",
    "estado": "parcial",
    "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor",
-    "efeito não simulado: 10 % mais Área de Efeito por Valor consumido",
-    "efeito não simulado: 10 % mais Efeito de Aura por Valor consumido",
-    "efeito não simulado: Estandarte concede +4 % de Chance de Bloquear o Dano de Ataques a Você e Aliados",
     "efeito não simulado: Estandarte faz com que você e Aliados Recuperem 34 de Vida ao Bloquear"
    ],
    "idle": [],
@@ -5443,10 +5431,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada mina aplica Dano aumentado em 3 % aos Inimigos próximos máximo de 150 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6315,11 +6301,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara um Projétil adicional para cada 2 Minas anteriores na Sequência de Detonação",
-    "efeito não simulado: Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em 10 % contra Inimigos próximos a ela, até um máximo de 500 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6331,11 +6314,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara um Projétil adicional para cada 2 Minas anteriores na Sequência de Detonação",
-    "efeito não simulado: Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em 10 % contra Inimigos próximos a ela, até um máximo de 500 %"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6347,11 +6327,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "mina",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara um Projétil adicional para cada 2 Minas anteriores na Sequência de Detonação",
-    "efeito não simulado: Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em 40 % contra Inimigos próximos a ela, até um máximo de 500 %"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6565,10 +6542,7 @@
    "arquetipo": "marca",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos",
-    "efeito não simulado: Envia feixes até 3 Inimigos, incluindo o Inimigo Vinculado",
-    "efeito não simulado: Causa 80 % mais Dano com Acertos contra o Inimigo Vinculado"
+    "efeito não simulado: Envia feixes até 3 Inimigos, incluindo o Inimigo Vinculado"
    ],
    "idle": [],
    "outros": [],
@@ -6583,9 +6557,6 @@
    "arquetipo": "marca",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada 0.3 segundos",
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos",
     "efeito não simulado: Envia um feixe ao Inimigo Vinculado"
    ],
    "idle": [],
@@ -6753,9 +6724,6 @@
    "estado": "parcial",
    "ausentes": [
     "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: Pode ter 1 Runas adicionais Vinculadas a um Inimigo",
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: Pode ser Vinculada por uma Duração total de 2 segundos",
     "efeito não simulado: Duração Base do Debuff é de 2 segundos"
    ],
    "idle": [],
@@ -7382,12 +7350,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos",
-    "efeito não simulado: Causa 29 % mais Dano com Acertos contra o Inimigo Vinculado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7401,9 +7365,7 @@
    "arquetipo": "marca",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Não pode ser Convocada",
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: É Ativado uma vez quando Vinculada, então é Destruída"
+    "efeito não simulado: Não pode ser Convocada"
    ],
    "idle": [],
    "outros": [],
@@ -7416,12 +7378,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos",
-    "efeito não simulado: Causa 80 % menos Dano com Acertos contra o Inimigo Vinculado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7977,10 +7935,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7994,12 +7950,9 @@
    "arquetipo": "marca",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: É Ativado a cada segundo enquanto Vinculado",
     "efeito não simulado: Pulsos causam 20 % mais Dano com Afecções por Energia após a primeira",
     "efeito não simulado: Pulsos causam 20 % mais Dano com Dano com Acertos por Energia após a primeira",
-    "efeito não simulado: +0.1 metros ao raio do Pulso por Energia",
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos"
+    "efeito não simulado: +0.1 metros ao raio do Pulso por Energia"
    ],
    "idle": [],
    "outros": [],
@@ -8014,10 +7967,7 @@
    "arquetipo": "marca",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Até 0.9 metros ao raio da propagação de Energia, escalonado pela distância da Runa",
-    "efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos",
-    "efeito não simulado: Pode ser Vinculada por uma Duração total de 0.5 segundos",
-    "efeito não simulado: Causa 100 % mais Dano com Acertos contra o Inimigo Vinculado"
+    "efeito não simulado: Até 0.9 metros ao raio da propagação de Energia, escalonado pela distância da Runa"
    ],
    "idle": [],
    "outros": [],
@@ -8032,7 +7982,6 @@
    "arquetipo": "mina",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara um Projétil adicional para cada 3 Minas anteriores na Sequência de Detonação",
     "efeito não simulado: Aura de Exposição ao Fogo aplica -15 % à resistência a dano de fogo"
    ],
    "idle": [],
@@ -8048,7 +7997,6 @@
    "arquetipo": "mina",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara um Projétil adicional para cada 3 Minas anteriores na Sequência de Detonação",
     "efeito não simulado: Aura de Exposição ao Fogo aplica -25 % à resistência a dano de fogo"
    ],
    "idle": [],
@@ -11480,7 +11428,6 @@
     "Arcane_Cloak",
     "Bane",
     "Bane_of_Condemnation",
-    "Dread_Banner",
     "Hexblast",
     "Hexblast_of_Contradiction",
     "Hexblast_of_Havoc",
@@ -11513,32 +11460,6 @@
    ]
   },
   {
-   "linha": "Pode ser Desvinculada por uma Duração total de # segundos",
-   "gemas": [
-    "Armageddon_Brand",
-    "Armageddon_Brand_of_Recall",
-    "Armageddon_Brand_of_Volatility",
-    "Penance_Brand",
-    "Penance_Brand_of_Conduction",
-    "Penance_Brand_of_Dissipation",
-    "Storm_Brand",
-    "Storm_Brand_of_Indecision",
-    "Wintertide_Brand"
-   ]
-  },
-  {
-   "linha": "Pode ser Vinculada por uma Duração total de # segundos",
-   "gemas": [
-    "Armageddon_Brand",
-    "Armageddon_Brand_of_Recall",
-    "Penance_Brand_of_Conduction",
-    "Penance_Brand_of_Dissipation",
-    "Storm_Brand",
-    "Storm_Brand_of_Indecision",
-    "Wintertide_Brand"
-   ]
-  },
-  {
    "linha": "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)",
    "gemas": [
     "Awakened_Cast_While_Channelling_Support",
@@ -11557,16 +11478,6 @@
     "Bladefall_of_Volleys",
     "Earthshatter",
     "Earthshatter_of_Fragility"
-   ]
-  },
-  {
-   "linha": "Dispara um Projétil adicional para cada # Minas anteriores na Sequência de Detonação",
-   "gemas": [
-    "Icicle_Mine",
-    "Icicle_Mine_of_Fanning",
-    "Icicle_Mine_of_Sabotage",
-    "Pyroclast_Mine",
-    "Pyroclast_Mine_of_Sabotage"
    ]
   },
   {
@@ -11643,22 +11554,6 @@
    ]
   },
   {
-   "linha": "# % mais Área de Efeito por Valor consumido",
-   "gemas": [
-    "Defiance_Banner",
-    "Dread_Banner",
-    "War_Banner"
-   ]
-  },
-  {
-   "linha": "# % mais Efeito de Aura por Valor consumido",
-   "gemas": [
-    "Defiance_Banner",
-    "Dread_Banner",
-    "War_Banner"
-   ]
-  },
-  {
    "linha": "# segundos adicionais de Duração Base por Cadáver extra consumido",
    "gemas": [
     "Bone_Offering",
@@ -11699,22 +11594,6 @@
    ]
   },
   {
-   "linha": "Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em # % contra Inimigos próximos a ela, até um máximo de # %",
-   "gemas": [
-    "Icicle_Mine",
-    "Icicle_Mine_of_Fanning",
-    "Icicle_Mine_of_Sabotage"
-   ]
-  },
-  {
-   "linha": "Causa # % mais Dano com Acertos contra o Inimigo Vinculado",
-   "gemas": [
-    "Armageddon_Brand",
-    "Penance_Brand_of_Conduction",
-    "Storm_Brand"
-   ]
-  },
-  {
    "linha": "Cria # Estaca",
    "gemas": [
     "Perforate",
@@ -11728,14 +11607,6 @@
     "Vaal_Impurity_of_Fire",
     "Vaal_Impurity_of_Ice",
     "Vaal_Impurity_of_Lightning"
-   ]
-  },
-  {
-   "linha": "Enquanto você não tiver nenhum Estandarte plantado, você pode ganhar Valor",
-   "gemas": [
-    "Defiance_Banner",
-    "Dread_Banner",
-    "War_Banner"
    ]
   },
   {
@@ -13818,12 +13689,6 @@
    ]
   },
   {
-   "linha": "Cada mina aplica Dano aumentado em # % aos Inimigos próximos máximo de # %",
-   "gemas": [
-    "Stormblast_Mine"
-   ]
-  },
-  {
    "linha": "Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #%",
    "gemas": [
     "High-Impact_Mine_Support"
@@ -13893,12 +13758,6 @@
    "linha": "Causa # % mais Dano com Afecções por cada # segundos de Duração",
    "gemas": [
     "Frost_Bomb_of_Forthcoming"
-   ]
-  },
-  {
-   "linha": "Causa # % menos Dano com Acertos contra o Inimigo Vinculado",
-   "gemas": [
-    "Armageddon_Brand_of_Recall"
    ]
   },
   {
@@ -14460,18 +14319,6 @@
    ]
   },
   {
-   "linha": "É Ativado a cada segundo enquanto Vinculado",
-   "gemas": [
-    "Penance_Brand_of_Dissipation"
-   ]
-  },
-  {
-   "linha": "É Ativado uma vez quando Vinculada, então é Destruída",
-   "gemas": [
-    "Armageddon_Brand_of_Volatility"
-   ]
-  },
-  {
    "linha": "Efeito da Cegueira aumentado em # %",
    "gemas": [
     "Vaal_Blade_Flurry"
@@ -14647,18 +14494,6 @@
   },
   {
    "linha": "Estandarte concede # de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados",
-   "gemas": [
-    "Defiance_Banner"
-   ]
-  },
-  {
-   "linha": "Estandarte concede +# % de Chance de Bloquear o Dano de Ataques a Você e Aliados",
-   "gemas": [
-    "Dread_Banner"
-   ]
-  },
-  {
-   "linha": "Estandarte concede +# % de chance de Suprimir o Dano Mágico a Você e Aliados",
    "gemas": [
     "Defiance_Banner"
    ]
@@ -16296,12 +16131,6 @@
    ]
   },
   {
-   "linha": "Pode ter # Runas adicionais Vinculadas a um Inimigo",
-   "gemas": [
-    "Wintertide_Brand"
-   ]
-  },
-  {
    "linha": "Possui # lâminas",
    "gemas": [
     "Vaal_Blade_Vortex"
@@ -16893,12 +16722,6 @@
    "linha": "Velocidade de rotação aumentada em # % se em Empunhadura Dupla",
    "gemas": [
     "Blade_Trap"
-   ]
-  },
-  {
-   "linha": "Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada # segundos",
-   "gemas": [
-    "Storm_Brand_of_Indecision"
    ]
   },
   {
