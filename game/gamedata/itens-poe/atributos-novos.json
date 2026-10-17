@@ -7892,6 +7892,42 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/armas-plantadas.extrasDoArremesso (lote 71)"
+    },
+    "canalizar_remove_maldicao_s": {
+      "nome": "Remove uma Maldição após Canalizar por N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.tique (lote 72)"
+    },
+    "chaos_res_contra_degen": {
+      "nome": "Resistência a Caos contra Dano Degenerativo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mobs/mecanicas (o dano contínuo em você) (lote 72)"
+    },
+    "amaldicoados_esconjuro_apos_pct": {
+      "nome": "Inimigos Amaldiçoados por você têm Esconjuro depois de X% da Duração da Maldição",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.esconjurado (lote 72)"
+    },
+    "aura_em_voce_menos_por_arauto": {
+      "nome": "Efeito das suas Auras em você reduzido por Arauto (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "gemas-poe.adds (lote 72)"
+    },
+    "aura_em_voce_menos_por_arauto_max": {
+      "nome": "Efeito das suas Auras em você reduzido por Arauto, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "gemas-poe.adds (lote 72)"
+    },
+    "clamor_chama_santificada": {
+      "nome": "Seus Clamores infligem Chama Santificada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o Clamor do PoE) (lote 72)"
     }
   }
 }

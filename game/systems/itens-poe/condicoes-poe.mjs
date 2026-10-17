@@ -250,6 +250,9 @@ export const CONDICOES_DE_ESTADO = new Set([
   'estilhacouRecente', 'exposicaoRecente', 'empalouRecente',
   // (lote 71) matou um inimigo Amaldiçoado recentemente (`mods-poe.evento` — o `matar` com maldição no alvo).
   'matouAmaldicoadoRecente',
+  // (lote 72) gastou Vida no Custo recentemente (`acoes` — o custo pago em Vida); acertou com a arma da mão principal / secundária
+  // recentemente (`mods-poe.aoAcertar` — a mão da ficha do golpe).
+  'gastouVidaRecente', 'acertouMaoPrincipalRecente', 'acertouMaoSecundariaRecente',
   // (lote E) canalizando agora (usou uma habilidade de Canalização há pouco).
   'canalizando',
   // (14/10) a Égide Física esgotada (ou não) — `hunt.egides`
@@ -529,6 +532,7 @@ const RECENTES = {
   infligiuExposicao: 'exposicaoRecente', empalou: 'empalouRecente', mudouPostura: 'mudouPosturaRecente',
   detonouMina: 'detonouMinaRecente', usouFogo: 'usouFogoRecente', acertouUnico: 'acertouUnicoRecente', usouFrascoVida: 'usouFrascoVidaRecente',
   resfriou: 'resfriouRecente', matouAmaldicoado: 'matouAmaldicoadoRecente',
+  gastouVida: 'gastouVidaRecente', acertouMaoPrincipal: 'acertouMaoPrincipalRecente', acertouMaoSecundaria: 'acertouMaoSecundariaRecente',
 };
 /** Uma condição vale? (as com parâmetro leem o estado, a soma e os atributos guardados no Set). */
 export function vale(conds, c) {
@@ -725,8 +729,9 @@ export function ganharFuriaLiberta(estado, hunt, afPoe, postos, agora = hunt?.cl
 export const CHAMA_SANTIFICADA = Object.freeze({ duracaoMs: 6000, fogoPct: 25, recenteMs: 4000 });
 /** O id de quem põe a Chama (o da caçada: dura o tempo da Chama). */
 export const idDaChama = (hunt) => (hunt ? (hunt.idChama ??= `c${Math.random().toString(36).slice(2, 10)}`) : null);
-export function porChamaSantificada(hunt, alvo, afPoe, agora = hunt?.clock ?? 0) {
-  if (!ligado() || !hunt || !alvo || !(Number(afPoe?.chama_santificada_corpo) > 0)) return false;
+export function porChamaSantificada(hunt, alvo, afPoe, agora = hunt?.clock ?? 0, { doClamor = false } = {}) {
+  // (lote 72, a Palavra Sagrada: "Seus clamores infligem Chama Santificada" — `doClamor`, o Clamor de quem tem a linha: `acoes`)
+  if (!ligado() || !hunt || !alvo || !(doClamor || Number(afPoe?.chama_santificada_corpo) > 0)) return false;
   const dono = idDaChama(hunt);
   const e = (alvo.estados ??= {});
   const vivas = (e.chamas ?? []).filter((c) => c.ate > agora);
@@ -1906,6 +1911,8 @@ export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance
   'consumirCadaver', 'vidaDaRegen',
   // (lote F)
   'stat', 'congelarProximos', 'regenDaDefesa', 'vidaChance', 'vidaPorDefinhamento', 'vidaPorVeneno', 'furiaPorPoder',
+  // (lote 72) `mods-poe.aplicarAcao`: a carga aleatória por Poder do Clamor e o atributo temporário por Poder
+  'cargaAleatoriaPorPoder', 'statTempPorPoder',
   // (lote G)
   'valor', 'mortalha']);
 /** Os prefixos de atributo montados pelo nome (`sempre:<buff>`, `efeito_buff:<buff>`, `concede:<gema>`, `suporte_local:<gema>`). */
@@ -2101,6 +2108,19 @@ export function aoBloquear(hunt, bicho, ficha, { agora = hunt?.clock ?? 0, event
   return eventos;
 }
 
+/** O ESCONJURO do PoE: 10% de dano causado reduzido e 10% de dano sofrido aumentado. */
+export const ESCONJURO = Object.freeze({ pct: 10 });
+/**
+ * O bicho está Esconjurado? O Cegado com Esconjuro ("Inimigos Cegados por você têm Esconjuro") e, lote 72, o Amaldiçoado por você quando X% da
+ * duração de uma maldição nele já passou (`amaldicoados_esconjuro_apos_pct` de `afPoe` — `maldicoes[id] = { desde, dur, ate }`).
+ */
+export function esconjurado(bicho, afPoe, agora) {
+  const e = bicho?.estados ?? {};
+  if (ativo(e.cego, agora) && e.cego.esconjuro) return true;
+  const pct = Number(afPoe?.amaldicoados_esconjuro_apos_pct) || 0;
+  if (!(pct > 0) || !ligado()) return false;
+  return Object.values(bicho?.maldicoes ?? {}).some((m) => m && m.ate > agora && m.dur > 0 && agora - (m.desde ?? agora) >= (m.dur * pct) / 100);
+}
 /** O que os estados do PoE no BICHO mudam no golpe dele: `{ danoFator, precisaoFator, criticoFator }` (Cego, Exaurido, Provocado). */
 export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}) {
   const e = bicho?.estados ?? {};
@@ -2122,13 +2142,15 @@ export function doBicho(bicho, agora, { contraOutro = false, ficha = null } = {}
     // (O "Efeito do Cegamento aumentado" de quem cegou: `e.cego.efeito`.)
     precisaoFator *= 1 - (NO_ACERTO.cegar.precisaoMenosPct * (e.cego.efeito ?? 1)) / 100;
     criticoFator *= 1 - (e.cego.criticoMenosPct ?? 0) / 100;
-    // "Inimigos Cegados por você têm Esconjuro": causam 10% menos dano.
-    if (e.cego.esconjuro) danoFator *= 0.9;
+    // "Inimigos Cegados por você têm Esconjuro": causam 10% menos dano (o Esconjuro — `esconjurado`, abaixo da Cegueira).
     // (lote D) "Dano Sofrido de Inimigos Cegos reduzido em X%" (de quem leva o golpe — `ficha`).
     // (lote E: o "Dano reduzido" das Minas vai abaixo, fora da Cegueira.)
     const red = Number(ficha?.afPoe?.dano_de_cegos_red) || 0;
     if (red > 0 && ligado()) danoFator *= Math.max(0, 1 - red / 100);
   }
+  // O ESCONJURO (o lembrete do PoE: "dano causado reduzido em 10% e dano sofrido aumentado em 10%"): o do Cegado e, lote 72, o do Amaldiçoado
+  // ("Inimigos Amaldiçoados por você tem Esconjuro se X% da Duração da Maldição expirou" — de quem leva o golpe, `ficha`).
+  if (esconjurado(bicho, ficha?.afPoe, agora)) danoFator *= 1 - ESCONJURO.pct / 100;
   if (ativo(e.debilitado, agora)) danoFator *= 0.9;
   // (ciclo 7) "Inimigo Marcado tem Precisão reduzida em X%".
   const precisaoMenos = regraDaMarca(bicho, agora, 'precisaoMenos');
@@ -2229,6 +2251,14 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   tiqueDaDissolucao(estado, hunt, ficha, agora);
   // (14/10) o Warden: a Casca da Pele de Árvore e o Avatar Liberto
   tiqueDoWarden(estado, hunt, ficha?.afPoe, agora);
+  // (lote 72, o Quebra-Maldições) "Remove uma Maldição após Canalizar por N segundos": uma por canalização (a que começou em `desde`).
+  const canal = hunt.canalizacao;
+  const apos = Number(ficha?.afPoe?.canalizar_remove_maldicao_s) || 0;
+  if (apos > 0 && canalizandoAgora(hunt, agora) && agora - (canal.desde ?? agora) >= apos * 1000 && hunt.poeMaldicaoQuebrada !== canal.desde) {
+    hunt.poeMaldicaoQuebrada = canal.desde;
+    const [id] = Object.entries(hunt.maldicoesNoJogador ?? {}).find(([, m]) => m && m.ate > agora) ?? [];
+    if (id) { delete hunt.maldicoesNoJogador[id]; hunt.poeFichaMudou = true; }
+  }
   // (14/10, o Occultist) a Infusão Espiritual
   tiqueDaInfusao(hunt, ficha?.afPoe, agora);
   // (14/10, os únicos: "Habilidades de retaliação se tornam usáveis a cada N segundos" — as duas janelas, a do bloqueio e a do Acerto
@@ -2842,6 +2872,8 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // Inervado (PoE: "Unnerve"): o alvo sofre 10% mais dano de magias.
   const inervado = ativo(e.inervado, agora) || (Number(ficha?.afPoe?.amaldicoados_inervados) > 0 && maldicoesNoAlvo(alvo, agora) > 0);
   if (inervado && (ficha?.tagsDoGolpe ?? []).includes('magia')) f *= 1.1;
+  // (lote 72) o Esconjuro: 10% de dano sofrido aumentado (`esconjurado`)
+  if (esconjurado(alvo, ficha?.afPoe, agora)) f *= 1 + ESCONJURO.pct / 100;
   if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + (Number(ficha?.afPoe?.efeito_definhamento) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
   if (tipo === 'ice' && ativo(e.cobertoGelo, agora)) f *= 1.2;

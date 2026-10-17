@@ -2568,6 +2568,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       sessao.supplies += preco;
     }
   }
+  // (lote 72) "se você Gastou Vida Recentemente": o Custo pago em Vida (inteiro, em parte ou a Vida a mais).
+  if (vidaAMais || pagaComVida || parteEmVida) ModsPoe.marcar(hunt, 'gastouVida');
   if (vidaAMais) estado.hp = Math.max(1, (estado.hp ?? 0) - vidaAMais);
   if (escudoAMais) estado.es = Math.max(0, (estado.es ?? 0) - escudoAMais);
   if (pagaComVida) estado.hp = Math.max(1, (estado.hp ?? 0) - custoDeMana);
@@ -2635,6 +2637,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
     // (lote 46) o raio do Clamor: o da gema em casas × √ da "Área de Efeito aumentada/mais" (a geral e a dos Clamores — `area_inc@clamor`)
     if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos.map((e) => (e.efeito === 'provocar' ? { ...e, raio: raioDoClamor(estado, entry, e.raio) } : e)), dur: duracaoDoClamor }, distanciaChebyshev);
+    // (lote 72, a Palavra Sagrada) "Seus clamores infligem Chama Santificada": nos inimigos no raio do Clamor.
+    const doClamor = doPoe?.efeitos.find((e) => e.efeito === 'provocar');
+    const afDoClamor = doClamor ? Ficha.combate(estado).afPoe : null;
+    if (doClamor && ModsPoe.valor({ afPoe: afDoClamor }, 'clamor_chama_santificada') > 0) {
+      const raio = raioDoClamor(estado, entry, doClamor.raio);
+      for (const m of hunt.monstros ?? []) if (m.hp > 0 && !m.dummy && distanciaChebyshev(hunt.pos, m) <= raio) ModsPoe.porChamaSantificada(hunt, m, afDoClamor, hunt.clock ?? 0, { doClamor: true });
+    }
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' });
   }
   if (cancela) {

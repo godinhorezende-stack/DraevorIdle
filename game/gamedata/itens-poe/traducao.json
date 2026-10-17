@@ -18133,6 +18133,28 @@
       "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
+      "padrao": "^Você e Aliados próximos Regeneram \\{(\\d+)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "aliados:life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Quando você Clamar, você e Aliados próximos ganham Agressividade por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "aliados:sempre:agressividade@clamouRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
       "padrao": "^.*(?:Aliados|Membros do (?:seu )?Grupo|membros próximos do Grupo|Vinculad|Habilidades de Vínculo).*$",
       "efeitos": [
         {
@@ -43044,6 +43066,142 @@
       "nota": "a Mina a mais não demora os 10% a mais do arremesso (o jogo não tem o tempo de arremesso da Mina)",
       "_nova": true,
       "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Remove uma Maldição após Canalizar por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "canalizar_remove_maldicao_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Caos contra Dano Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "chaos_res_contra_degen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados por você tem Esconjuro se \\{(\\d+)\\}% da Duração da Maldição expirou$",
+      "efeitos": [
+        {
+          "stat": "amaldicoados_esconjuro_apos_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Auras das suas Habilidades têm Efeito reduzido em \\{(\\d+)\\}% em você\\s+para cada Arauto te afetando, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_em_voce_menos_por_arauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aura_em_voce_menos_por_arauto_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de infligir Definhar por dois segundos ao Acertar se houver \\{(\\d+)\\} ou menos Debuffs de Definhar no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:definhado:2@alvoDefinhadosAte:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Clamores têm \\{(\\d+)\\}% de Chance de conceder uma Carga de Tolerância, Frenesi ou Poder por Poder$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:cargaAleatoriaPorPoder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Ganha Armadura aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Poder por \\{(\\d+)\\} segundos ao Clamar, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:statTempPorPoder:armour_pct:{V3}:{V2}:{V4}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Chama Santificada infligida por você tem a intensidade aumentada em \\{(\\d+)\\}% por \\{(\\d+)\\}% de chance de bloquear ataques$",
+      "efeitos": [
+        {
+          "stat": "chama_santificada_efeito%bloqueio:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Seus clamores infligem Chama Santificada$",
+      "efeitos": [
+        {
+          "stat": "clamor_chama_santificada",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Físico Degenerativo se você Gastou Vida Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_phys@gastouVidaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% caso você tenha Acertado com sua Arma da Mão Principal Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@acertouMaoPrincipalRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% caso você tenha Acertado com sua Arma da Mão Secundária Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@acertouMaoSecundariaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
     }
   ]
 }

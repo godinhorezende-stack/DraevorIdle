@@ -24,6 +24,12 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
   const v = (k) => valor(fichaR, k);
   const tags = new Set(ficha.tagsDoGolpe ?? []);
+  // (lote 72, o Rítmo de Combate) "caso você tenha Acertado com sua Arma da Mão Principal/Secundária Recentemente": o acerto de ATAQUE com arma
+  // — a mão da ficha do golpe (`Ficha.fichaDaMao`: `mao`; a que acerta com as duas, as duas); sem duas armas, a principal.
+  if (tags.has('ataque') && estado?.equipment?.weapon) {
+    if (ficha.mao !== 'secundaria') marcar(hunt, 'acertouMaoPrincipal', agora);
+    if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') marcar(hunt, 'acertouMaoSecundaria', agora);
+  }
   // (14/10, o Guardian: a Chama Santificada no acerto corpo a corpo — o Marechal da Divindade; o Raro ou Único acertado é ocasião da Relíquia
   // Elemental — a Cruzada Implacável)
   if (tags.has('corpo')) porChamaSantificada(hunt, alvo, ficha.afPoe, agora);
@@ -644,6 +650,8 @@ const RAIO_DO_EMPALAR_ESPALHADO = 2;
 // eslint-disable-next-line no-var
 var reducaoFisica;
 export function definirReducaoFisica(fn) { reducaoFisica = fn; }
+/** (lote 72) Quantos Definhar o bicho tem agora (o `definhado` acumula até 15). */
+const definhadosNoAlvo = (alvo, agora) => (ativo(alvo?.estados?.definhado, agora) ? alvo.estados.definhado.n ?? 1 : 0);
 const ESTADOS_NO_ALVO = {
   cego: (e, ate) => (e.cego = { ate }), mutilado: (e, ate) => { e.mutilado = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 30) }; },
   intimidado: (e, ate) => (e.intimidado = { ate }), debilitado: (e, ate) => { e.debilitado = { ate }; e.lento = { ate, pct: Math.max(e.lento?.pct ?? 0, 20) }; },
@@ -828,7 +836,8 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
     if (ev.conds.length) {
       conds ??= condicoesDe(estado, ficha.afPoe);
       // (+ "afetado por MENOS de N Venenos" — `alvoMenosVenenos:N`: o alvo não tem a tag `alvoVenenos:N`.)
-      if (!ev.conds.every((c) => (ehCondDeEstado(c) ? vale(conds, c) : /^alvoMenosVenenos:\d+$/.test(c) ? !tagsAlvo.has(`alvoVenenos:${c.split(':')[1]}`) : tagsAlvo.has(c)))) continue;
+      // (+ lote 72: "se houver N ou menos Debuffs de Definhar no Inimigo" — `alvoDefinhadosAte:N`.)
+      if (!ev.conds.every((c) => (ehCondDeEstado(c) ? vale(conds, c) : /^alvoMenosVenenos:\d+$/.test(c) ? !tagsAlvo.has(`alvoVenenos:${c.split(':')[1]}`) : /^alvoDefinhadosAte:\d+$/.test(c) ? definhadosNoAlvo(alvo, agora) <= Number(c.split(':')[1]) : tagsAlvo.has(c)))) continue;
     }
     // (o evento com ESCALA: o valor × o fator agora — "por Carga de Frenesi", com o teto)
     const acao = ev.escala ? { ...ev, valor: comTeto(ev.valor, fatorDaEscala(estado, ficha.afPoe, null, ev.escala), ev.teto) } : ev;
@@ -950,6 +959,20 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
     case 'cargaMax': if (sorte(v)) leitorDeCargas?.(estado, 'max', ev.param); return;
     case 'perdeCargas': if (sorte(v)) leitorDeCargas?.(estado, 'perder', ev.param); return;
     case 'cargaAleatoria': if (sorte(v)) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;
+    // (lote 72, a Mentalidade da Multidão) `cargaAleatoriaPorPoder` = X: X% de chance POR PODER do Clamor (até 100%) de uma carga aleatória.
+    case 'cargaAleatoriaPorPoder': if (sorte(Math.min(100, v * poderDoClamor(hunt, ficha)))) leitorDeCargas?.(estado, 'ganhar', ['frenesi', 'poder', 'tolerancia'][Math.floor(rng() * 3)], 1); return;
+    // (lote 72, o Chamado Alarmante) `statTempPorPoder:<stat>:<segundos>:<cada>:<máximo>` = X: X do atributo por cada `<cada>` de Poder do
+    // Clamor, até `<máximo>`, por N segundos (renova; não soma ao que já está).
+    case 'statTempPorPoder': {
+      const [stat, seg, cada, max] = String(ev.param).split(':');
+      const quanto = Number(cada) > 0 ? Math.min(Number(max) || Infinity, Math.floor(poderDoClamor(hunt, ficha) / Number(cada)) * v) : 0;
+      if (!(quanto > 0)) return;
+      const t = (hunt.poeTemporarios ??= {});
+      const ate = agora + (Number(seg) || 1) * 1000;
+      t[stat] = t[stat] && t[stat].ate > agora ? { stat, valor: Math.max(t[stat].valor, quanto), ate: Math.max(t[stat].ate, ate) } : { stat, valor: quanto, ate };
+      hunt.poeFichaMudou = true;
+      return;
+    }
     case 'roubarCargas': if (sorte(v)) for (const t of ['frenesi', 'poder', 'tolerancia']) leitorDeCargas?.(estado, 'ganhar', t, 1); return;
     case 'buff': return ganhar(ev.param, v);
     // `buffChance:<buff>:<segundos>` = a CHANCE (%) de ganhar o buff por N segundos ("X% de chance de ganhar Agressividade por 4 segundos ao Matar").

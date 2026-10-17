@@ -415,10 +415,21 @@ export function tique(estado, hunt, personagem, eventos) {
     return m && m.estados?.lento?.ate > agora && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3 ? Math.max(0, 1 - lentoMenos / 100) : 1;
   };
   const andando = (tipo) => (afPoe && tipo === 'sangramento' && !(Number(afPoe.sangrar_andando_sem_extra) > 0) && agora - (hunt.poeRecente?.moveu ?? -Infinity) <= Dot.MOVIMENTO.janelaMs ? Dot.MOVIMENTO.fator : 1);
+  // (lote 72, a Terapia de Exposição) "+X% de Resistência a Caos contra Dano Degenerativo": no dano contínuo de Caos, a resistência a Caos + X,
+  // até o máximo dela (a do golpe: `protection.chaos`, já no máximo).
+  const resCaosDegen = Number(afPoe?.chaos_res_contra_degen) || 0;
+  const doCaosDegen = (el) => {
+    if (el !== 'chaos' || !(resCaosDegen > 0)) return 1;
+    const f = Ficha.combate(estado);
+    const res = Math.min(100, f.protection?.chaos ?? 0);
+    if (res >= 100) return 1;
+    const comX = Math.min(Ficha.maximoDaResistencia(f.afPoe, 'chaos'), res + resCaosDegen);
+    return Math.max(0, 1 - comX / 100) / (1 - res / 100);
+  };
   Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome, tipo) => {
     if (inafetado(tipo)) return 0;
     const el = doTipo(tipo, elemento);
-    const quanto = Math.round(valor * menosDegen * andando(tipo) * doLento(origem));
+    const quanto = Math.round(valor * menosDegen * andando(tipo) * doLento(origem) * doCaosDegen(el));
     if (cura(el)) { if (!ModsPoe.vidaSoPeloDreno(afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + quanto); return 0; }
     return ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, quanto, el, eventos, nome);
   }, () => estado.hp > 0);

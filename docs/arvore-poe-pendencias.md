@@ -90,36 +90,21 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 644 | 3 | 24 |
+| Notáveis | 671 | 658 | 3 | 10 |
 
 <details><summary>As linhas sem efeito</summary>
 
 - Cersidor de Selos — Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em 30%
 - Pura Agonia — +5 de Virulência Máxima
-- Chamado Alarmante — Ganha Armadura aumentada em 25% por cada 5 de Poder por 8 segundos ao Clamar, máximo de 100%
-- Égide Ardente — Chama Santificada infligida por você tem a intensidade aumentada em 1% por 2% de chance de bloquear ataques
-- Artista Sangrento — +6% de Multiplicador de Dano Físico Degenerativo se você Gastou Vida Recentemente
-- Sofrimento Eterno — 50% de chance de infligir Definhar por dois segundos ao Acertar se houver 5 ou menos Debuffs de Definhar no Inimigo
-- Rítmo de Combate — Velocidade de Ataque aumentada em 10% caso você tenha Acertado com sua Arma da Mão Principal Recentemente
-- Rítmo de Combate — Velocidade de Movimento aumentada em 10% caso você tenha Acertado com sua Arma da Mão Secundária Recentemente
 - Resposta Selvagem — +30% de Multiplicador de Golpes Críticos caso você tenha sofrido um Acerto Selvagem Recentemente
 - Reduzir — Convocação de Runas concede alcance do Vínculo de Runas aumentado em 20% para Runas convocadas
 - Reduzir — Convocação de Runas tem Recuperação da Recarga aumentada em 4%, máximo de 40%
 - Cutilada Perigosa — Efeito dos Empalamentos inflingidos por Acertos que também infligem Sangramento aumentado em 15%
-- Mentalidade da Multidão — Clamores têm 5% de Chance de conceder uma Carga de Tolerância, Frenesi ou Poder por Poder
-- Liderar pelo Exemplo — Quando você Clamar, você e Aliados próximos ganham Agressividade por 4 segundos _(esta variação de efeito em aliados ainda não tem efeito no jogo)_
 - Runas Perseguidoras — Runas Desvinculadas ganham Alcance do Vínculo de Runas reduzido em 20% por segundo, até 100%
 - Mal Inabalável — Habilidades de Caos ignoram interrupções de Atordoamentos
 - Acompanhamento — Projéteis causam dano com ataques e afecções aumentado em 20% por
 cada propagação restante, até 100%
-- Criador de Vítimas — Inimigos Amaldiçoados por você tem Esconjuro se 33% da Duração da Maldição expirou
-- Palavra Sagrada — Seus clamores infligem Chama Santificada
-- Emissário do Propósito — Auras das suas Habilidades têm Efeito reduzido em 8% em você
-para cada Arauto te afetando, até 40%
-- Terapia de Exposição — +30% de Resistência a Caos contra Dano Degenerativo
 - Notável — Habilidades que criam Runas têm 35% de chance de criarem uma Runa adicional
-- Presença Revigorante — Você e Aliados próximos Regeneram 1.00% de Vida por segundo _(esta variação de efeito em aliados ainda não tem efeito no jogo)_
-- Quebra-Maldições — Remove uma Maldição após Canalizar por 2 segundos
 
 </details>
 

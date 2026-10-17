@@ -400,7 +400,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (59 — 17/10, lote 71: as Ramificadoras — Fortificar com Maça/Cetro/Cajado, o Incêndio que se espalha, Intimidar/Cegar os próximos, a
 // Carga de Poder ao Eletrizar um Resfriado, o Gênio Alquímico, os Provocados Intimidados, os Amaldiçoados Enervados, o máximo das
 // Resistências depois de matar um Amaldiçoado, os Incendiados destruídos, o Dano Dobrado no crítico, a Armadilha ou Mina adicional)
-export const VERSAO_DA_TRADUCAO = 59;
+// (60 — 17/10, lote 72: as Ramificadoras — os aliados (a regeneração e a Agressividade ao Clamar), o Quebra-Maldições, o Caos contra o dano
+// contínuo, o Esconjuro da maldição, o Emissário, o Definhar até N, os Clamores por Poder (a carga e a Armadura), a Chama Santificada (do
+// Clamor e pelo bloqueio), o Gastou Vida e as mãos principal/secundária)
+export const VERSAO_DA_TRADUCAO = 60;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
