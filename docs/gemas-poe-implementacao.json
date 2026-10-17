@@ -2,16 +2,16 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 58,
-   "parcial": 377,
-   "implementada, sem teste próprio": 74,
+   "implementada e testada": 61,
+   "parcial": 372,
+   "implementada, sem teste próprio": 76,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 21,
-   "parcial": 141,
+   "implementada e testada": 23,
+   "parcial": 139,
    "implementada, sem teste próprio": 37,
    "limitação do modelo idle": 11
   },
@@ -31,10 +31,10 @@
    },
    "alternativas": {
     "total": 198,
-    "parcial": 145,
-    "implementada e testada": 5,
+    "parcial": 142,
+    "implementada e testada": 6,
     "limitação do modelo idle": 14,
-    "implementada, sem teste próprio": 32,
+    "implementada, sem teste próprio": 34,
     "sem efeito": 2
    }
   },
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 874,
-   "emDuasOuMais": 192
+   "linhasDistintas": 869,
+   "emDuasOuMais": 188
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,7 +61,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 132,
+   "ativasCitadas": 135,
    "suportesCitados": 38
   }
  },
@@ -953,15 +953,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
-    "efeito não simulado: Ondas de Choque causam 40 % menos Dano",
-    "efeito não simulado: Onda causa Ondas de Choque de até 5 Inimigos em cada Área",
-    "efeito não simulado: Onda tem o delay entre Áreas reduzido em 25 %",
-    "efeito não simulado: Onda não pode parar antes de causar Dano em 2 Áreas",
-    "efeito não simulado: Áreas de onda ganham +0.2 metros de raio para cada área anterior da onda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -973,13 +966,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
-    "efeito não simulado: Ondas de Choque causam 40 % menos Dano",
-    "efeito não simulado: Onda causa Ondas de Choque de até 3 Inimigos em cada Área",
-    "efeito não simulado: Onda tem o delay entre Áreas reduzido em 75 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -993,11 +981,6 @@
    "arquetipo": "impacto",
    "estado": "parcial",
    "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
-    "efeito não simulado: Ondas de Choque causam 40 % menos Dano",
-    "efeito não simulado: Onda causa Ondas de Choque de até 5 Inimigos em cada Área",
-    "efeito não simulado: Onda tem o delay entre Áreas reduzido em 25 %",
-    "efeito não simulado: Onda não pode parar antes de causar Dano em 2 Áreas",
     "efeito não simulado: Onda pode recomeçar até 3 vezes Áreas de onda ganham +0.1 metros de raio para cada área anterior"
    ],
    "idle": [],
@@ -7973,10 +7956,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7988,10 +7969,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8003,10 +7982,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11554,22 +11531,6 @@
    ]
   },
   {
-   "linha": "as repetições do golpe não existem: no jogo é um",
-   "gemas": [
-    "Bladefall",
-    "Bladefall_of_Impaling",
-    "Bladefall_of_Volleys",
-    "Earthshatter",
-    "Earthshatter_of_Fragility",
-    "Lightning_Spire_Trap",
-    "Lightning_Spire_Trap_of_Overloading",
-    "Lightning_Spire_Trap_of_Zapping",
-    "Sunder",
-    "Sunder_of_Earthbreaking",
-    "Sunder_of_Trarthus"
-   ]
-  },
-  {
    "linha": "o uso de cadáveres não existe no jogo",
    "gemas": [
     "Bodyswap",
@@ -11620,6 +11581,16 @@
     "Cast_while_Channelling_Support",
     "Focused_Channelling_Support",
     "Infused_Channelling_Support"
+   ]
+  },
+  {
+   "linha": "as repetições do golpe não existem: no jogo é um",
+   "gemas": [
+    "Bladefall",
+    "Bladefall_of_Impaling",
+    "Bladefall_of_Volleys",
+    "Earthshatter",
+    "Earthshatter_of_Fragility"
    ]
   },
   {
@@ -11863,30 +11834,6 @@
     "Awakened_Chain_Support",
     "Chain_Support",
     "Greater_Chain_Support"
-   ]
-  },
-  {
-   "linha": "Onda causa Ondas de Choque de até # Inimigos em cada Área",
-   "gemas": [
-    "Sunder",
-    "Sunder_of_Earthbreaking",
-    "Sunder_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Onda tem o delay entre Áreas reduzido em # %",
-   "gemas": [
-    "Sunder",
-    "Sunder_of_Earthbreaking",
-    "Sunder_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Ondas de Choque causam # % menos Dano",
-   "gemas": [
-    "Sunder",
-    "Sunder_of_Earthbreaking",
-    "Sunder_of_Trarthus"
    ]
   },
   {
@@ -12683,13 +12630,6 @@
    "gemas": [
     "Greater_Kinetic_Instability_Support",
     "Kinetic_Instability_Support"
-   ]
-  },
-  {
-   "linha": "Onda não pode parar antes de causar Dano em # Áreas",
-   "gemas": [
-    "Sunder",
-    "Sunder_of_Trarthus"
    ]
   },
   {
@@ -13640,12 +13580,6 @@
    "linha": "Após atacar, os totens desaparecem",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Áreas de onda ganham +# metros de raio para cada área anterior da onda",
-   "gemas": [
-    "Sunder"
    ]
   },
   {

@@ -2480,6 +2480,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    * menos `minTargets` (1 por padrão, o "Bichos por perto" do slot).
    */
   let atingidos = [];
+  // (lote G11: os acertos da sequência de áreas da Ruptura — `{ bicho, pct, choque }`; null fora dela)
+  let golpesDaSequencia = null;
   let casas = null;
   // (lote 36) Onde a forma caiu (o centro e o lado) e a área deste uso com a Área de Efeito — a Repetição Final a refaz com o "aumentado" dela.
   let formaNoUso = null;
@@ -2556,6 +2558,28 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     }
     // Quem está nas casas da área: por índice de casa (sem varrer área × bichos).
     if (casas) atingidos = Areas.dentro(casas, vivos);
+    // (17/10, lote G11) a SEQUÊNCIA DE ÁREAS da Ruptura: as N áreas em linha à frente (o raio cresce a cada área), cada uma acertando quem está
+    // nela (a mesma criatura pode levar de mais de uma área), e as Ondas de Choque dos primeiros M acertados de cada área — `golpesDaSequencia`
+    const seq = itensPoeLigado() && entry.poeGema && formaNoUso ? GemasPoe.sequenciaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+    if (seq) {
+      const dir = formaNoUso.dir ?? ordemDosLados(hunt.pos, alvo)[0];
+      const [ux, uy] = [[0, -1], [1, 0], [0, 1], [-1, 0]][dir] ?? [1, 0];
+      const fator = ModsPoe.fatorDaArea((efeitoDaGema?.areaIncPct ?? 0), efeitoDaGema?.areaMaisPct ?? 0);
+      const emCasas = (m) => { const c = (m * Math.sqrt(fator)) / 2; return Math.max(0, Math.trunc(c) + (Math.random() < c % 1 ? 1 : 0)); };
+      golpesDaSequencia = [];
+      const unicos = new Set();
+      for (let i = 0; i < seq.areas; i++) {
+        const cx = x + ux * (i + 1);
+        const cy = y + uy * (i + 1);
+        const r = emCasas(seq.raioM + seq.porAreaM * i);
+        const naArea = vivos.filter((b) => b.hp > 0 && Math.max(Math.abs(b.x - cx), Math.abs(b.y - cy)) <= r);
+        for (const b of naArea) { golpesDaSequencia.push({ bicho: b, pct: 100 }); unicos.add(b); }
+        for (const fonte of naArea.slice(0, seq.choques)) {
+          for (const b of vivos) if (b !== fonte && b.hp > 0 && Math.max(Math.abs(b.x - fonte.x), Math.abs(b.y - fonte.y)) <= Math.max(1, r)) { golpesDaSequencia.push({ bicho: b, pct: 100 - seq.choqueMenos, choque: true }); unicos.add(b); }
+        }
+      }
+      atingidos = [...unicos];
+    }
   }
   /*
    * ---- A faixa de criaturas do slot ("Mínimo" e "Máximo de criaturas") ----
@@ -3175,7 +3199,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (estagioDoUso?.soCarrega) return;
       // "X% mais Dano por cada Ricochete restante" (Arco): o 1º atingido tem todos os ricochetes pela frente; cada salto gasta um.
       const cp = efeitoDaGema?.cadeiaPoe;
-      if (!projeteisAleatorios()) atingidos.forEach((bicho, i) => { if (!segundo || bicho.hp > 0) acertar(bicho, cp?.pct ? 100 * (1 + (cp.pct * Math.max(0, cp.saltos - i)) / 100) : 100); });
+      // (lote G11: a sequência de áreas — cada área e cada Onda de Choque é um acerto, com o "menos Dano" da Onda de Choque)
+      if (golpesDaSequencia) { for (const g of golpesDaSequencia) if (g.bicho.hp > 0 || !segundo) acertar(g.bicho, g.pct, g.choque ? 'choque' : null); }
+      else if (!projeteisAleatorios()) atingidos.forEach((bicho, i) => { if (!segundo || bicho.hp > 0) acertar(bicho, cp?.pct ? 100 * (1 + (cp.pct * Math.max(0, cp.saltos - i)) / 100) : 100); });
       // (PoE, a Fúria Tribal: "Habilidades de Golpe Corpo a Corpo causam Dano Propagado aos alvos ao redor" — os vivos a 1 casa de cada atingido.)
       if (propagaGolpe || propagaDoSuporte) {
         const ja = new Set(atingidos);
@@ -3633,12 +3659,47 @@ export function tiqueDasRunas(estado, hunt, personagem, eventos = [], agora = hu
  * ativam (e as próximas, com "Quando suas Armadilhas Ativarem, suas Armadilhas próximas também Ativam"); as Minas detonam na sequência.
  * Cada uma sai do lugar dela (`dispararSemMarcar` com `plantada`). Devolve os eventos.
  */
+/**
+ * (17/10, lote G11) As TORRES da Armadilha de Torre Elétrica (`GemasPoe.torreDaGema`): ativada, a armadilha vira uma torre no lugar dela que, a
+ * cada intervalo ("Ataca a cada 0.36 segundos", ÷ a Velocidade de Arremesso de Armadilhas — "também se aplicam à Frequência dos golpes"), pela
+ * duração da gema, golpeia N áreas: a habilidade da gema sai DO LUGAR da torre num inimigo sorteado a até 2 casas dela (cada área, um uso sem
+ * custo — o mesmo caminho do dano da Armadilha). `hunt.poeTorres` (JSON puro).
+ */
+export const RAIO_DA_TORRE = 2;
+function tiqueDasTorres(estado, hunt, personagem, eventos, agora) {
+  if (!hunt.poeTorres?.length) return;
+  for (const t of hunt.poeTorres) {
+    while (t.proxima <= Math.min(agora, t.ate) && (estado.hp ?? 0) > 0) {
+      t.proxima += t.intervaloMs;
+      for (let k = 0; k < t.areas; k++) {
+        const perto = Plantadas.inimigosPerto(hunt, t, RAIO_DA_TORRE);
+        if (!perto.length) break;
+        const alvo = perto[Math.floor(Math.random() * perto.length)];
+        const r = dispararSemMarcar(estado, hunt, personagem, t.slot, alvo, { plantada: { ...t, tipo: 'torre' } });
+        if (r?.ok) eventos.push(...(r.eventos ?? []));
+      }
+    }
+  }
+  hunt.poeTorres = hunt.poeTorres.filter((t) => t.ate > agora);
+  if (!hunt.poeTorres.length) delete hunt.poeTorres;
+}
+
 export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+  if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora)]) {
     if ((estado.hp ?? 0) <= 0) break;
     Plantadas.tirar(hunt, p);
+    // (lote G11) a Torre Elétrica: a ativação cria a torre (os golpes saem no tique — `tiqueDasTorres`)
+    const torre = GemasPoe.torreDaGema(String(p.acao).replace(GemasPoe.PREFIXO, ''), Gemas.efeitoNaSkill(estado, p.acao)?.nivel ?? 1);
+    if (torre) {
+      const ef = Gemas.efeitoNaSkill(estado, p.acao);
+      const vel = torre.velocidadeDeArremesso ? 1 + (ef?.velArremessoArmadilhaPct ?? 0) / 100 : 1;
+      (hunt.poeTorres ??= []).push({ id: `torre-${p.id}`, slot: p.slot, acao: p.acao, x: p.x, y: p.y, z: p.z, ate: agora + torre.duracaoMs, proxima: agora, intervaloMs: Math.max(50, Math.round(torre.intervaloMs / Math.max(0.1, vel))), areas: torre.areas });
+      tiqueDasTorres(estado, hunt, personagem, eventos, agora);
+      continue;
+    }
     const r = dispararSemMarcar(estado, hunt, personagem, p.slot, alvo, { plantada: p });
     if (r?.ok) eventos.push(...(r.eventos ?? []));
     // (17/10, lote G3) as Armadilhas e Minas CARREGADAS: "X% de chance de receber uma Carga de Frenesi/Poder quando sua Armadilha for ativada

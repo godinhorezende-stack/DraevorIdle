@@ -482,6 +482,43 @@ export function estagiosDaGema(slug, nivel = 1) {
   return r;
 }
 
+/**
+ * (17/10, lote G11) A SEQUÊNCIA DE ÁREAS da Ruptura (Sunder): a onda causa dano em N áreas em linha à sua frente ("Onda causa Dano em 5 Áreas"),
+ * cada uma com o raio-base da gema + "+X metros de raio para cada área anterior"; até M inimigos acertados em cada área soltam uma ONDA DE
+ * CHOQUE ("Onda causa Ondas de Choque de até 5 Inimigos em cada Área") com "X% menos Dano". `{ areas, raioM, porAreaM, choques, choqueMenos }`
+ * ou null. (O "delay entre Áreas" e o "não pode parar antes de N Áreas" são do tempo da onda e da interrupção pelo novo uso: o idle resolve a
+ * onda inteira no uso — sem efeito aqui.)
+ */
+const LINHA_DA_SEQUENCIA = /^Onda causa Dano em \d+ Áreas$|^Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior(?: da onda)?$|^Onda causa Ondas de Choque de até \d+ Inimigos em cada Área$|^Ondas de Choque causam \d+ ?% menos Dano$|^Onda tem o delay entre Áreas reduzido em [\d.]+ ?%$|^Onda não pode parar antes de causar Dano em \d+ Áreas$/i;
+export const ehLinhaDaSequencia = (l) => LINHA_DA_SEQUENCIA.test(l);
+export function sequenciaDaGema(slug, nivel = 1, qualidade = 0) {
+  if (!/^Sunder/.test(slug)) return null;
+  const linhas = textosDaGema(slug, nivel).linhas;
+  const achar = (re) => { for (const l of linhas) { const m = re.exec(l); if (m) return Number(m[1]); } return null; };
+  const areas = achar(/^Onda causa Dano em (\d+) Áreas$/i);
+  if (!areas) return null;
+  return {
+    areas, raioM: areaNoNivel(slug, nivel, qualidade).raioM ?? 1.2, porAreaM: achar(/^Áreas de onda ganham \+([\d.]+) metros/i) ?? 0,
+    choques: achar(/^Onda causa Ondas de Choque de até (\d+) Inimigos em cada Área$/i) ?? 0, choqueMenos: achar(/^Ondas de Choque causam (\d+) ?% menos Dano$/i) ?? 0,
+  };
+}
+
+/**
+ * (17/10, lote G11) Os GOLPES REPETIDOS NO TEMPO da Armadilha de Torre Elétrica: ativada, ela "Ataca a cada X segundos" pela "Duração base",
+ * golpeando "N Áreas" a cada vez (`Acoes.tiqueDasTorres`). `{ intervaloMs, duracaoMs, areas }` ou null.
+ */
+const LINHA_DA_TORRE = /^Ataca a cada [\d.]+ segundos?$|^Golpeia \d+ Áreas$|^Modificadores à Velocidade de Arremesso de Armadilhas também se aplicam à Frequência dos golpes$/i;
+export const ehLinhaDaTorre = (l) => LINHA_DA_TORRE.test(l);
+export function torreDaGema(slug, nivel = 1, qualidade = 0) {
+  if (!/^Lightning_Spire_Trap/.test(slug)) return null;
+  const linhas = textosDaGema(slug, nivel).linhas;
+  const achar = (re) => { for (const l of linhas) { const m = re.exec(l); if (m) return Number(m[1]); } return null; };
+  const intervalo = achar(/^Ataca a cada ([\d.]+) segundos?$/i);
+  const areas = achar(/^Golpeia (\d+) Áreas$/i);
+  if (!intervalo || !areas) return null;
+  return { intervaloMs: Math.round(intervalo * 1000), duracaoMs: Math.round((compilada(slug, nivel, qualidade)?.stats?.duracao ?? 3.5) * 1000), areas, velocidadeDeArremesso: linhas.some((l) => /Frequência dos golpes/i.test(l)) };
+}
+
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
 const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
 export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
@@ -707,14 +744,15 @@ function avaliarNoJogo(h, formato) {
     if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
     // (lote G10: os estágios que o jogo faz — `estagiosDaGema`; o resto segue)
     if (st.estagios && !estagiosDaGema(h.slug, h.nivel)) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
-    if (st.repeticoes) motivos.push('as repetições do golpe não existem: no jogo é um');
+    // (lote G11: a sequência de áreas da Ruptura existe — `sequenciaDaGema`)
+    if (st.repeticoes && !sequenciaDaGema(h.slug, h.nivel) && !torreDaGema(h.slug, h.nivel)) motivos.push('as repetições do golpe não existem: no jogo é um');
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k] && !CHANCE_NO_ACERTO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
     if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel) && ehLinhaDaTorre(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 

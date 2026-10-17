@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 58 |
-| implementada, sem teste próprio | 74 |
+| implementada e testada | 61 |
+| implementada, sem teste próprio | 76 |
 | limitação do modelo idle | 42 |
-| parcial | 377 |
+| parcial | 372 |
 | sem efeito | 11 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 21 |
+| implementada e testada | 23 |
 | implementada, sem teste próprio | 37 |
 | limitação do modelo idle | 11 |
-| parcial | 141 |
+| parcial | 139 |
 
 ### Gemas de suporte (262)
 
@@ -35,15 +35,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 1 · parcial 42 · implementada, sem teste próprio 9
-- Alternativas (198): parcial 145 · implementada e testada 5 · limitação do modelo idle 14 · implementada, sem teste próprio 32 · sem efeito 2
+- Alternativas (198): parcial 142 · implementada e testada 6 · limitação do modelo idle 14 · implementada, sem teste próprio 34 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 874 linhas distintas (192 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 869 linhas distintas (188 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 132/562 ativas, 38/262 suportes.
+- Testes que citam a gema: 135/562 ativas, 38/262 suportes.
 
 ## Linhas que faltam (por quantidade de gemas)
 
@@ -52,11 +52,11 @@ Só os ataques:
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
 | 15 | nenhum efeito do buff tem equivalente no jogo |
 | 14 | sem dano direto: nenhum efeito no combate |
-| 11 | as repetições do golpe não existem: no jogo é um |
 | 11 | o uso de cadáveres não existe no jogo |
 | 9 | Pode ser Desvinculada por uma Duração total de # segundos |
 | 7 | Pode ser Vinculada por uma Duração total de # segundos |
 | 6 | esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido) |
+| 5 | as repetições do golpe não existem: no jogo é um |
 | 5 | Dispara um Projétil adicional para cada # Minas anteriores na Sequência de Detonação |
 | 5 | Efeito em Área de Habilidades Maldição Suportadas aumentado em #% |
 | 5 | Habilidades Suportadas têm #% mais Velocidade de Posicionamento de Totens |
@@ -86,9 +86,6 @@ Só os ataques:
 | 3 | Habilidades Suportadas têm #% de Duração de Maldições aumentada |
 | 3 | Habilidades Suportadas têm #% de Ponto de Atordoamento Inimigo reduzido |
 | 3 | Habilidades Suportadas têm alcance do Ricochete aumentado em #% |
-| 3 | Onda causa Ondas de Choque de até # Inimigos em cada Área |
-| 3 | Onda tem o delay entre Áreas reduzido em # % |
-| 3 | Ondas de Choque causam # % menos Dano |
 | 3 | Parede terá # metros |
 | 3 | Projéteis de Estilhas Causam # % menos Dano |
 | 3 | Projéteis podem se Dividir sem acertar um alvo |
@@ -202,7 +199,6 @@ Só os ataques:
 | 2 | Martelos causam - # % de dano |
 | 2 | Martelos Sagrados se acumulam em cascata até # vezes |
 | 2 | Máximo de # anomalias |
-| 2 | Onda não pode parar antes de causar Dano em # Áreas |
 | 2 | Orbes desaparecem após # Golpes |
 | 2 | Orbes Explosivas causam # % do Dano da Habilidade para cada # segundos de Duração restante |
 | 2 | Orbes saltam a cada # segundos |
@@ -355,7 +351,6 @@ Só os ataques:
 | 1 | Anima até # Armas |
 | 1 | Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos |
 | 1 | Após atacar, os totens desaparecem |
-| 1 | Áreas de onda ganham +# metros de raio para cada área anterior da onda |
 | 1 | Arqueiro Ilusório dura # segundos |
 | 1 | Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque |
 | 1 | As flechas após a primeira caem em um raio base de # metros |
@@ -1583,12 +1578,6 @@ Só os ataques:
   - efeito não simulado: 20 % mais Dano com Acertos por cada 1 % de Efeito de Eletrização no Inimigo
 - **Lightning_Conduit_of_the_Heavens** (Condutor Elétrico dos Céus) — parcial
   - efeito não simulado: Acerta até 15 Inimigos
-- **Lightning_Spire_Trap** (Armadilha Espiral Relampejante) — parcial
-  - as repetições do golpe não existem: no jogo é um
-- **Lightning_Spire_Trap_of_Overloading** (Armadilha da Espiral Relampejante da Sobrecarga) — parcial
-  - as repetições do golpe não existem: no jogo é um
-- **Lightning_Spire_Trap_of_Zapping** (Armadilha da Espiral Relampejante da Eletrização) — parcial
-  - as repetições do golpe não existem: no jogo é um
 - **Lightning_Tendrils** (Tentáculos Relampejantes) — parcial
   - efeito não simulado: Libera um Pulso Mais Forte a cada 3 Pulsos Pulsos Mais Fortes sempre são Golpes Críticos
 - **Lightning_Tendrils_of_Eccentricity** (Tentáculos Relampejantes da Excentricidade) — parcial
@@ -2001,24 +1990,7 @@ Só os ataques:
 - **Summon_Stone_Golem_of_Safeguarding** (Convocar Golem de Pedra da Proteção) — parcial
   - efeito não simulado: Lacaios têm 50 % menos Vida Máxima
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Sunder** (Ruptura) — parcial
-  - as repetições do golpe não existem: no jogo é um
-  - efeito não simulado: Ondas de Choque causam 40 % menos Dano
-  - efeito não simulado: Onda causa Ondas de Choque de até 5 Inimigos em cada Área
-  - efeito não simulado: Onda tem o delay entre Áreas reduzido em 25 %
-  - efeito não simulado: Onda não pode parar antes de causar Dano em 2 Áreas
-  - efeito não simulado: Áreas de onda ganham +0.2 metros de raio para cada área anterior da onda
-- **Sunder_of_Earthbreaking** (Ruptura da Rachadura) — parcial
-  - as repetições do golpe não existem: no jogo é um
-  - efeito não simulado: Ondas de Choque causam 40 % menos Dano
-  - efeito não simulado: Onda causa Ondas de Choque de até 3 Inimigos em cada Área
-  - efeito não simulado: Onda tem o delay entre Áreas reduzido em 75 %
 - **Sunder_of_Trarthus** (Ruptura de Trarthus) — parcial
-  - as repetições do golpe não existem: no jogo é um
-  - efeito não simulado: Ondas de Choque causam 40 % menos Dano
-  - efeito não simulado: Onda causa Ondas de Choque de até 5 Inimigos em cada Área
-  - efeito não simulado: Onda tem o delay entre Áreas reduzido em 25 %
-  - efeito não simulado: Onda não pode parar antes de causar Dano em 2 Áreas
   - efeito não simulado: Onda pode recomeçar até 3 vezes Áreas de onda ganham +0.1 metros de raio para cada área anterior
 - **Swordstorm** (Tormenta de Espadas) — parcial
   - efeito não simulado: Causa Dano nos Inimigos 8 vezes
@@ -2879,4 +2851,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike

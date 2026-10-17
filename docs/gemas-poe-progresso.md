@@ -81,13 +81,20 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - Teste: 3 novos em `buffs-das-gemas-poe.test.mjs`. Do G8, saiu a asserção "o Trovão ainda não tem o efeito ao matar" (agora tem).
 - Ativas parciais 384 → 382.
 
-### G10 — os estágios de canalização (17/10)
+### G10 — os estágios de canalização (17/10, commit 115e35b4)
 
 - `GemasPoe.estagiosDaGema` + `Acoes.estagioDaCanalizacao`: o uso seguido da mesma habilidade canalizada ganha 1 estágio (até o máximo; outra habilidade no meio zera). **No máximo a canalização se libera sozinha** — a abstração do idle (no PoE, soltar o botão). `carrega` (Rajada de Chamas, Flecha Flagelante): os usos só carregam (sem dano, sem precisar de alvo na área) e a liberação causa o "X% mais Dano por estágio" × os estágios; `intensifica` (Lâminas Velozes, Incinerar): cada uso acerta com o "mais Dano" do estágio, e a liberação solta um golpe por estágio (Lâminas Velozes) ou a onda final ("A onda final causa X% mais Dano com Acertos" — Incinerar); `tempo` (Ciclone do Tumulto): um estágio a cada 0,4 s canalizando, "25% mais Velocidade de Ataque por Estágio". O raio cresce "+X metros ao raio por estágio" (até o máximo da linha); "X% mais Chance de Crítico por Estágio" (Incisão).
 - A Rajada de Chamas passou ao formato de explosão no lugar mirado (antes, a onda que sai de você — `FORMATO_PROPRIO`).
 - Compilador: "Área de Efeito aumentada em 15% por cada 0,1 metro de Alcance" (Ciclone do Tumulto) não é mais +15% fixo; "Raio Base é de N metros" e "-0.2 metros ao raio por Estágio" (transfiguradas da Rajada de Chamas) lidos.
 - Pendentes: os esporos da Flecha Flagelante, o ângulo do Incinerar ("100% de aumento do ângulo por estágio"), o "mais Dano com Afecções por estágio" separado do acerto (as afecções saem do acerto — G11), o Orbe Invernal, a Runa da Maré Invernal.
 - Teste: `canalizacao-estagios-poe.test.mjs` (3). Ativas parciais 382 → 377.
+
+### G11 — a sequência de áreas e os golpes repetidos no tempo (17/10)
+
+- **Ruptura** (`GemasPoe.sequenciaDaGema`, `golpesDaSequencia` no `disparar`): "Onda causa Dano em N Áreas" em linha à frente, o raio crescendo "+X metros para cada área anterior", cada área um acerto (a mesma criatura pode levar de mais de uma), e as Ondas de Choque dos primeiros M acertados de cada área ("40% menos Dano"; o raio da Onda de Choque é o da área — o PoE não publica). O "delay entre Áreas" e o "não pode parar antes de N Áreas" são do tempo da onda e da interrupção pelo novo uso: o idle resolve a onda inteira no uso.
+- **Armadilha de Torre Elétrica** (`GemasPoe.torreDaGema`, `Acoes.tiqueDasTorres`): ativada, vira uma torre que golpeia N áreas a cada intervalo pela duração da gema — cada área é a habilidade saindo do lugar da torre num inimigo a até 2 casas; a velocidade de arremesso de armadilhas encurta o intervalo.
+- Pendentes: a Ruptura de Trarthus ("Onda pode recomeçar até 3 vezes"), as Lâminas Cadentes (as rajadas), o Estilhaçar a Terra (fissuras e Estacas).
+- Teste: `sequencia-de-areas-poe.test.mjs` (3). Ativas parciais 377 → 372.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -102,6 +109,6 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. Commitar G10 (FULL por exceção — autorização do dono para os lotes desta tarefa).
+1. Commitar G11 (FULL por exceção — autorização do dono para os lotes desta tarefa).
 2. G11: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
 3. As repetições do golpe (11 gemas) e as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).
