@@ -678,6 +678,91 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
 }
 
 /**
+ * (17/10, lote G9) O EFEITO DOS ARAUTOS AO MATAR (o buff ligado — `hunt.buffs` da gema —, o dano no nível dela), como no PoE:
+ *   Gelo   — o inimigo Congelado que você mata ("despedaçar") EXPLODE: o dano de Gelo da gema na área dele (o raio do PoE, 1 casa = 2 m, × √ da
+ *            Área de Efeito); "não é afetado por modificadores de dano mágico": o "aumentado" de Gelo e o geral da ficha, sem o de magias.
+ *   Trovão — matar um Eletrizado cria uma TEMPESTADE por N segundos ("Duração base é de 6 segundos"): a cada 0,25 s um raio num inimigo a até o
+ *            raio dela (3,2 m) de você, com o dano de Raio da gema ("Não Pode aplicar Eletrizar"); sem os modificadores de dano mágico.
+ *   Cinzas — abater um inimigo com um ATAQUE queima os inimigos em volta dele (o raio de 1 m): "Dano Ardente Base é igual a 25% do Dano
+ *            Excedente" por segundo, pela duração (4 s) — só os modificadores de dano degenerativo.
+ * O abate anota (`aoMatarComArautos`, no `hunt/combate`); o tique aplica (`tiqueDosArautos`, com os outros tiques do PoE).
+ */
+const ARAUTOS = Object.freeze({ gelo: 'Herald_of_Ice', trovao: 'Herald_of_Thunder', cinzas: 'Herald_of_Ash', raioDaTempestadeM: 3.2, raioDasCinzasM: 1, tempestadeMs: 250, excedentePct: 25 });
+/** O nível do Arauto ligado (o buff da gema ativo), ou 0. */
+function arautoLigado(estado, hunt, slug, agora) {
+  const acao = GemasPoe.doSlug(slug)?.acao;
+  const b = acao ? hunt?.buffs?.[acao] : null;
+  if (!b || !(b.ate > agora)) return 0;
+  return Gemas.efeitoNaSkill(estado, acao)?.nivel ?? 1;
+}
+export function aoMatarComArautos(estado, hunt, alvo, tags = []) {
+  if (!itensPoeLigado() || !hunt || !alvo) return;
+  const agora = hunt.clock ?? 0;
+  const e = alvo.estados ?? {};
+  const pend = (hunt.poeArautos ??= []);
+  const gelo = arautoLigado(estado, hunt, ARAUTOS.gelo, agora);
+  if (gelo && (e.congelado?.ate ?? 0) > agora) pend.push({ tipo: 'gelo', x: alvo.x, y: alvo.y, nivel: gelo });
+  const trovao = arautoLigado(estado, hunt, ARAUTOS.trovao, agora);
+  if (trovao && (e.chocado?.ate ?? 0) > agora) {
+    const dur = Math.round((GemasPoe.compilada(ARAUTOS.trovao, trovao)?.stats?.duracao ?? 6) * 1000 * fatorDeDuracao(estado, POR_ID.get(GemasPoe.doSlug(ARAUTOS.trovao).acao), { nivel: trovao }));
+    hunt.poeTempestade = { ate: agora + dur, proxima: hunt.poeTempestade?.ate > agora ? hunt.poeTempestade.proxima : agora, nivel: trovao };
+  }
+  const cinzas = arautoLigado(estado, hunt, ARAUTOS.cinzas, agora);
+  const excedente = Math.max(0, -(Number(alvo.hp) || 0));
+  if (cinzas && excedente > 0 && (tags ?? []).includes('ataque')) pend.push({ tipo: 'cinzas', x: alvo.x, y: alvo.y, nivel: cinzas, excedente });
+  if (!pend.length) delete hunt.poeArautos;
+}
+export function tiqueDosArautos(estado, hunt, agora = hunt?.clock ?? 0, rng = Math.random) {
+  if (!itensPoeLigado() || !hunt) return [];
+  const eventos = [];
+  const pend = hunt.poeArautos ?? [];
+  delete hunt.poeArautos;
+  const t = hunt.poeTempestade;
+  if (!pend.length && !(t && t.ate > agora)) { if (t) delete hunt.poeTempestade; return eventos; }
+  const ficha = Ficha.combate(estado);
+  const vivos = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy);
+  const area = ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc'), ModsPoe.valor(ficha, 'area_mais'));
+  const casas = (m) => { const c = (m * Math.sqrt(area)) / 2; return Math.max(0, Math.trunc(c) + (rng() < c % 1 ? 1 : 0)); };
+  // (o acerto do Arauto: o dano da gema × o "aumentado" do elemento e o geral da ficha — sem o de magias — × a resistência do alvo)
+  const acertar = (m, el, [a, b], slug) => {
+    const v = Math.round(resistido(hunt, m, el, (a + rng() * (b - a)) * Math.max(0, 1 + (ficha.danoDoElemento?.[el] ?? 0) / 100), ficha));
+    if (!(v > 0)) return;
+    m.hp -= v;
+    QuemFeriu.carimbar(m, QuemFeriu.VOCE, ['magia', 'area', el === 'ice' ? 'gelo' : 'raio']);
+    eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO[el] ?? '#ffffff', sk: GemasPoe.doSlug(slug)?.acao });
+  };
+  for (const p of pend) {
+    if (p.tipo === 'gelo') {
+      const d = GemasPoe.danoNoNivel(ARAUTOS.gelo, p.nivel);
+      const r = casas(GemasPoe.areaNoNivel(ARAUTOS.gelo, p.nivel).raioM ?? 1.2);
+      for (const m of vivos) if (m.hp > 0 && Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) <= r) acertar(m, 'ice', [d.min, d.max], ARAUTOS.gelo);
+    } else if (p.tipo === 'cinzas') {
+      const a = ficha.afeccoes ?? AfeccoesPoe.daSoma(ficha.afPoe ?? {});
+      const durMs = Math.round((GemasPoe.compilada(ARAUTOS.cinzas, p.nivel)?.stats?.duracao ?? 4) * 1000);
+      const total = ((p.excedente * ARAUTOS.excedentePct) / 100) * (durMs / 1000) * (1 + ((a.multiplicador ?? 0) + (a.multiplicadorFogo ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoIncendio ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
+      const r = casas(ARAUTOS.raioDasCinzasM);
+      for (const m of vivos) {
+        if (!(m.hp > 0) || Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y)) > r || !(total > 0)) continue;
+        const posto = Dot.aplicar(m, { tipo: GemasPoe.DEGEN_DO_ELEMENTO.fire, total, duracaoMs: durMs, chave: ARAUTOS.cinzas, origem: { fonte: 'gema', habilidade: GemasPoe.doSlug(ARAUTOS.cinzas)?.acao } }, agora);
+        if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto });
+      }
+    }
+  }
+  // a TEMPESTADE: um raio a cada 0,25 s num inimigo a até o raio dela de você (o atraso que sobrou — um tique longo — sai em vários raios)
+  if (t && t.ate > agora && hunt.pos) {
+    const d = GemasPoe.danoNoNivel(ARAUTOS.trovao, t.nivel);
+    while (t.proxima <= Math.min(agora, t.ate)) {
+      t.proxima += ARAUTOS.tempestadeMs;
+      const r = casas(ARAUTOS.raioDaTempestadeM);
+      const perto = vivos.filter((m) => m.hp > 0 && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= r);
+      if (perto.length) acertar(perto[Math.floor(rng() * perto.length)], 'energy', [d.min, d.max], ARAUTOS.trovao);
+    }
+  }
+  if (t && !(t.ate > agora)) delete hunt.poeTempestade;
+  return eventos;
+}
+
+/**
  * ERGUER ARANHAS (Raise Spiders — a Presa de Arakaali, o único e o nó do Reliquarian): ao matar (a chance da linha; recarga de 2 s), duas
  * aranhas espectrais de cada cadáver perto (a até 4 casas — o cadáver é consumido), até 20, por 30 s; imunes a dano, atacam corpo a corpo e
  * envenenam (o Golpe da Víbora — lote 44: o veneno de 30% do golpe por segundo por 4 s, sem os seus modificadores; o golpe pelo PoB); cada aranha dá 2% de Velocidade de Ataque e

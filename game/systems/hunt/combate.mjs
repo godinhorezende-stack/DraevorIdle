@@ -852,6 +852,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (ModsPoe.valor(f, 'mortos_eletrizados') > 0) (alvo.estados ??= {}).chocado = { ate: (hunt.clock ?? 0) + 2000, pct: Math.max(alvo.estados?.chocado?.pct ?? 0, 15) };
     // (o "ao Matar Corpo a Corpo", o "ao Matar com Ataque": as tags do golpe fatal)
     ModsPoe.evento(estado, hunt, 'matar', f, { alvo, eventos, personagem, tags: QuemFeriu.tagsDoAbate(alvo) });
+    // (17/10, lote G9) os Arautos ligados: a explosão do Congelado, a tempestade do Eletrizado, a queimadura do dano excedente (`Acoes.tiqueDosArautos`)
+    Acoes.aoMatarComArautos(estado, hunt, alvo, QuemFeriu.tagsDoAbate(alvo));
     // (17/10, lote G6) o abate do amaldiçoado pela sua MARCA: as cargas ("uma chance de 100% de concederem uma Carga de Poder quando mortos"), a
     // Vida e a Mana ("concedem 600 de Vida quando Mortos") — `contra.morte` da maldição do bicho
     for (const m of Object.values(alvo.maldicoes ?? {})) {

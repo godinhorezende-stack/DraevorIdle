@@ -2148,6 +2148,11 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
   // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções; (o Luminary) o mercenário
   if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDoMercenario(estado, hunt, agora); }
+  // (17/10, lote G9) os Arautos ao matar (a explosão, a tempestade, a queimadura): os eventos vão para a tela com os da caçada
+  if (itensPoeLigado() && (hunt.poeArautos?.length || hunt.poeTempestade)) {
+    const doArauto = Acoes.tiqueDosArautos(estado, hunt, hunt.clock ?? 0);
+    if (doArauto.length) { eventos.push(...doArauto); processarMortes(estado, personagem, eventos); }
+  }
   // (lote 41, P032) as suas ÁREAS FRIAS: quem está dentro fica Resfriado (`resfriarNasAreasFrias`)
   if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt);
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)

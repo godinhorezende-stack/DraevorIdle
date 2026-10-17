@@ -436,6 +436,11 @@ function contraOAmaldicoado(linhas = []) {
   return { golpe, morte, atordoar };
 }
 
+/** (17/10, lote G9) Os Arautos com o efeito ao matar no jogo (`Acoes.aoMatarComArautos`) e as linhas dele que o compilador não lê. */
+const ARAUTOS_AO_MATAR = new Set(['Herald_of_Ice', 'Herald_of_Thunder', 'Herald_of_Ash']);
+const LINHA_DO_ARAUTO = /^Tempestade Acerta um Inimigo a cada 0\.25 Segundos$|^Cria uma tempestade quando você Matar um Inimigo Eletrizado$|^Dano Ardente Base é igual a 25 ?% do Dano Excedente$/i;
+export const ehLinhaDoArauto = (l) => LINHA_DO_ARAUTO.test(l);
+
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
 const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
 export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
@@ -651,7 +656,8 @@ function avaliarNoJogo(h, formato) {
     motivos.push(...b.motivos);
     // (17/10, lote G8) o ARAUTO tem o efeito ao matar (a explosão do Gelo, a tempestade do Trovão, o fogo das Cinzas) com o dano da gema: o jogo
     // ainda faz só o buff — o dano "Causa X a Y" que o compilador lê não vai a lugar nenhum
-    if (h.arquetipo === 'arauto' && (Object.keys(st.dano ?? {}).length || (st.dot ?? []).length)) motivos.push('o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff');
+    // (lote G9: o do Gelo, do Trovão e das Cinzas já existe — `Acoes.aoMatarComArautos`/`tiqueDosArautos`)
+    if (h.arquetipo === 'arauto' && !ARAUTOS_AO_MATAR.has(h.slug) && (Object.keys(st.dano ?? {}).length || (st.dot ?? []).length)) motivos.push('o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff');
     if (!b.efeitos.length && !Object.keys(b.af).length) motivos.push('nenhum efeito do buff tem equivalente no jogo');
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
@@ -666,7 +672,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 

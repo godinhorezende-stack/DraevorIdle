@@ -68,12 +68,18 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - A Vida/Mana por Inimigo Acertado passa a valer nos acertos das gemas de ataque (antes só no golpe básico).
 - Teste: `gemas-alvo-e-marcas-poe.test.mjs` (3: o "mais" contra Vida Cheia no acerto da Bola de Fogo, o "aumentado" de alvo, as Marcas).
 
-### G8 — as linhas de buff das auras, arautos, guardas e clamores (17/10)
+### G8 — as linhas de buff das auras, arautos, guardas e clamores (17/10, commit fe26433e)
 
 - `linhas-das-gemas.atributosDoBuff`: "Buff concede…" e "Você e aliados próximos ganham/têm/são…" viram os atributos do buff (`GemasPoe.buffNoNivel`) — frases próprias (o dano adicionado dos Arautos aos ataques e às magias, o "mais Armadura", o máximo de resistência das Purezas, a duração da Malevolência, as imunidades, a Postura de Areia) e, sem regra própria, o tradutor das peças com o começo tirado ("Buff concede Imunidade a Sangramento", "Dano não pode ser Refletido").
 - O status do ARAUTO diz que o efeito ao matar (a explosão do Gelo, a tempestade do Trovão, o fogo das Cinzas) ainda não existe — antes o Arauto de Gelo saía "funciona" porque o compilador lia o dano da explosão.
 - A Postura de SANGUE do Sangue e Areia segue pendente (no jogo o buff ligado é a Areia; o atributo do buff não vale com ele desligado).
 - Teste: `buffs-das-gemas-poe.test.mjs` (2: os números e o Arauto de Gelo ligado na ficha). Ativas parciais 390 → 384.
+
+### G9 — o efeito dos Arautos ao matar (17/10)
+
+- `Acoes.aoMatarComArautos` (no abate, `hunt/combate`) e `Acoes.tiqueDosArautos` (no tique da caçada): **Gelo** — o Congelado morto explode com o dano de Gelo da gema no raio dela (1,2 m), sem os modificadores de dano mágico; **Trovão** — o Eletrizado morto cria a tempestade (a duração da gema, 6 s): um raio a cada 0,25 s num inimigo a até 3,2 m de você; **Cinzas** — o abate por ATAQUE queima os inimigos a até 1 m do morto com 25% do dano excedente por segundo, pela duração (4 s), só com os modificadores de dano degenerativo.
+- Teste: 3 novos em `buffs-das-gemas-poe.test.mjs`. Do G8, saiu a asserção "o Trovão ainda não tem o efeito ao matar" (agora tem).
+- Ativas parciais 384 → 382.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -88,7 +94,7 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. G9: o efeito dos Arautos ao matar (Gelo: a explosão no Congelado morto; Trovão: a tempestade no Eletrizado morto; Cinzas: o fogo do dano excedente) — o dano da gema no nível dela.
+1. Commitar G9 (FULL por exceção, com aval).
 2. G10: os estágios de canalização (Lâminas Velozes, Ciclone, Flecha Flagelante, Rajada de Chamas — 12 gemas) e as repetições do golpe (11): `hunt.canalizacao` já existe (lote 42 da árvore).
 3. G11: as afecções que saem do acerto final.
 4. Depois, as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).

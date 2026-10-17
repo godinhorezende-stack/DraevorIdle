@@ -2,8 +2,8 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 54,
-   "parcial": 384,
+   "implementada e testada": 56,
+   "parcial": 382,
    "implementada, sem teste próprio": 71,
    "limitação do modelo idle": 42,
    "sem efeito": 11
@@ -31,8 +31,8 @@
    },
    "alternativas": {
     "total": 198,
-    "parcial": 150,
-    "implementada e testada": 3,
+    "parcial": 148,
+    "implementada e testada": 5,
     "limitação do modelo idle": 14,
     "implementada, sem teste próprio": 29,
     "sem efeito": 2
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 888,
-   "emDuasOuMais": 196
+   "linhasDistintas": 884,
+   "emDuasOuMais": 195
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -1186,7 +1186,6 @@
    "arquetipo": "arauto",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dano Ardente Base é igual a 25 % do Dano Excedente",
     "efeito não simulado: 38 % mais Dano Incendiário sofrido"
    ],
    "idle": [],
@@ -4083,10 +4082,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "arauto",
-   "estado": "parcial",
-   "ausentes": [
-    "o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6988,12 +6985,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "arauto",
-   "estado": "parcial",
-   "ausentes": [
-    "o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff",
-    "efeito não simulado: Tempestade Acerta um Inimigo a cada 0.25 Segundos",
-    "efeito não simulado: Cria uma tempestade quando você Matar um Inimigo Eletrizado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -12750,13 +12743,6 @@
    ]
   },
   {
-   "linha": "o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff",
-   "gemas": [
-    "Herald_of_Ice",
-    "Herald_of_Thunder"
-   ]
-  },
-  {
    "linha": "onda final sempre Incendeia",
    "gemas": [
     "Incinerate",
@@ -14446,21 +14432,9 @@
    ]
   },
   {
-   "linha": "Cria uma tempestade quando você Matar um Inimigo Eletrizado",
-   "gemas": [
-    "Herald_of_Thunder"
-   ]
-  },
-  {
    "linha": "Dano abrasador aplicado pela detonação causa + # % de dano por totem detonado",
    "gemas": [
     "Searing_Bond_of_Detonation"
-   ]
-  },
-  {
-   "linha": "Dano Ardente Base é igual a # % do Dano Excedente",
-   "gemas": [
-    "Herald_of_Ash"
    ]
   },
   {
@@ -16987,12 +16961,6 @@
    "linha": "Taxa de Acerto aumentada em # % por cada lâmina",
    "gemas": [
     "Blade_Vortex"
-   ]
-  },
-  {
-   "linha": "Tempestade Acerta um Inimigo a cada # Segundos",
-   "gemas": [
-    "Herald_of_Thunder"
    ]
   },
   {

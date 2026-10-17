@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 54 |
+| implementada e testada | 56 |
 | implementada, sem teste próprio | 71 |
 | limitação do modelo idle | 42 |
-| parcial | 384 |
+| parcial | 382 |
 | sem efeito | 11 |
 
 Só os ataques:
@@ -35,12 +35,12 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 1 · parcial 42 · implementada, sem teste próprio 9
-- Alternativas (198): parcial 150 · implementada e testada 3 · limitação do modelo idle 14 · implementada, sem teste próprio 29 · sem efeito 2
+- Alternativas (198): parcial 148 · implementada e testada 5 · limitação do modelo idle 14 · implementada, sem teste próprio 29 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 888 linhas distintas (196 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 884 linhas distintas (195 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 128/562 ativas, 38/262 suportes.
@@ -205,7 +205,6 @@ Só os ataques:
 | 2 | Martelos causam - # % de dano |
 | 2 | Martelos Sagrados se acumulam em cascata até # vezes |
 | 2 | Máximo de # anomalias |
-| 2 | o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff |
 | 2 | onda final sempre Incendeia |
 | 2 | Onda não pode parar antes de causar Dano em # Áreas |
 | 2 | Orbes desaparecem após # Golpes |
@@ -481,9 +480,7 @@ Só os ataques:
 | 1 | Cria # Pilares de Cinzas |
 | 1 | Cria +# fendas |
 | 1 | Cria +# Pilar de Cinzas |
-| 1 | Cria uma tempestade quando você Matar um Inimigo Eletrizado |
 | 1 | Dano abrasador aplicado pela detonação causa + # % de dano por totem detonado |
-| 1 | Dano Ardente Base é igual a # % do Dano Excedente |
 | 1 | Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até # de dano antes de explodir |
 | 1 | Dano de Caos com Acertos é Resistido pela maior Resistência ao invés |
 | 1 | Dano de Caos com Acertos é Resistido pela Resistência mais baixa |
@@ -905,7 +902,6 @@ Só os ataques:
 | 1 | Subjugado aplica #% à chance de Bloquear o Dano Mágico e de Ataques |
 | 1 | Taxa base de explosão do orbe é de uma vez por segundo |
 | 1 | Taxa de Acerto aumentada em # % por cada lâmina |
-| 1 | Tempestade Acerta um Inimigo a cada # Segundos |
 | 1 | Tempestade Furiosa causa # % mais Dano por cada # de Fúria Sacrificada |
 | 1 | Tempestades ganham um estágio por # segundos, até # |
 | 1 | Tempestades têm +#% de área de efeito por estágio |
@@ -1475,19 +1471,12 @@ Só os ataques:
   - efeito não simulado: Rastejador Agonizante causa Dano Físico aumentado em 9 % por Virulência possuida por você
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Herald_of_Ash** (Arauto Flamejante) — parcial
-  - efeito não simulado: Dano Ardente Base é igual a 25 % do Dano Excedente
   - efeito não simulado: 38 % mais Dano Incendiário sofrido
-- **Herald_of_Ice** (Arauto Glacial) — parcial
-  - o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff
 - **Herald_of_Purity** (Arauto da Pureza) — parcial
   - efeito não simulado: Convoca um Sentinela da Pureza quando você Matar um Inimigo
   - efeito não simulado: 20 % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único
   - efeito não simulado: Lacaios causam 95 % de Dano Físico
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Herald_of_Thunder** (Arauto Trovejante) — parcial
-  - o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff
-  - efeito não simulado: Tempestade Acerta um Inimigo a cada 0.25 Segundos
-  - efeito não simulado: Cria uma tempestade quando você Matar um Inimigo Eletrizado
 - **Hexblast** (Feitiço Explosivo) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Todos os Danos podem Incendiar, Congelar e Eletrizar
