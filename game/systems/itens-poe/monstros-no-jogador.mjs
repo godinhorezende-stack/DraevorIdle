@@ -95,6 +95,8 @@ export const empalamentosEmVoce = (hunt, agora = hunt?.clock ?? 0) => (hunt?.deb
 /** A EXPOSIÇÃO do monstro ao elemento (`pct`: o que ela tira da resistência). × o "Efeito de Exposições em você". A mais forte vale. */
 export function expor(hunt, ficha, elemento, pct = NUMEROS.exposicao.pct, { agora = hunt?.clock ?? 0 } = {}) {
   if (!ligado() || !hunt || !RES[elemento]) return false;
+  // (lote 55, o Equilíbrio do Terror: "Imune a Exposição")
+  if (v(ficha, 'imune_exposicao') > 0) return false;
   const valor = pct * Math.max(0, 1 + v(ficha, 'efeito_exposicao_proprio') / 100);
   if (!(valor > 0)) return false;
   const d = registro(hunt);
@@ -104,6 +106,17 @@ export function expor(hunt, ficha, elemento, pct = NUMEROS.exposicao.pct, { agor
   return true;
 }
 
+/**
+ * (lote 70) O SOLO ELETRIZADO (o do monstro Raro com "Solo Eletrizado ao Morrer" — `mobs/mecanicas`): você nele fica Eletrizado (o efeito
+ * fixo do solo, 20% — a wiki do PoE), renovado a cada tique enquanto está no solo. Não vale com a imunidade à Eletrização. Devolve o % posto.
+ */
+export function eletrizarPeloSolo(hunt, ficha, pct, agora = hunt?.clock ?? 0) {
+  if (!ligado() || !hunt || !(pct > 0) || v(ficha, 'imune_eletrizacao') > 0 || (hunt.imunidadesPoe?.eletrizacao ?? 0) > agora) return 0;
+  const d = registro(hunt);
+  const antes = ativo(d.eletrizado, agora) ? d.eletrizado : null;
+  d.eletrizado = { ate: Math.max(antes?.ate ?? 0, agora + 1000), pct: Math.max(antes?.pct ?? 0, pct) };
+  return pct;
+}
 /** A ELETRIZAÇÃO do crítico do monstro (`dano`: o de Raio que o acerto causou; `vidaMax`: o limiar). Devolve o % posto (0: nada). */
 export function eletrizar(hunt, ficha, dano, vidaMax, { agora = hunt?.clock ?? 0, rng = Math.random } = {}) {
   const E = NUMEROS.eletrizacao;

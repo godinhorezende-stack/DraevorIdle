@@ -50,11 +50,15 @@ export function detonacaoDaGema(linhas = []) {
  * e, na chance, as do "X% de chance de arremessar até N Armadilhas adicionais" (o "até" do PoE: as N, em volta do lugar).
  */
 export function extrasDoArremesso(ficha, tipo, rng = Math.random) {
-  if (tipo !== 'armadilha') return 0;
+  // (lote 71, a Dispensabilidade: "X% de chance de Arremessar até N Armadilha ou Mina adicional" — vale nas duas)
+  const chanceDasDuas = v(ficha, 'plantadas_extras_chance');
+  const nDasDuas = Math.max(0, Math.round(v(ficha, 'plantadas_extras_n')));
+  const dasDuas = chanceDasDuas > 0 && nDasDuas > 0 && rng() * 100 < chanceDasDuas ? nDasDuas : 0;
+  if (tipo !== 'armadilha') return tipo === 'mina' ? dasDuas : 0;
   const sempre = Math.max(0, Math.round(v(ficha, 'armadilhas_extras')));
   const chance = v(ficha, 'armadilhas_extras_chance');
   const n = Math.max(0, Math.round(v(ficha, 'armadilhas_extras_n')));
-  return sempre + (chance > 0 && n > 0 && rng() * 100 < chance ? n : 0);
+  return sempre + (chance > 0 && n > 0 && rng() * 100 < chance ? n : 0) + dasDuas;
 }
 
 /** As casas das armadilhas a mais, em volta do lugar mirado (a casa do lugar fica com a primeira). */

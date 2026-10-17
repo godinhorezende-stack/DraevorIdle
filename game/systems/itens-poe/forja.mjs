@@ -126,7 +126,8 @@ function familiasDa(p) {
 function vagas(p, r) {
   const R = Catalogo.REGRAS.raridades[r] ?? {};
   const rb = Gerar.regrasDaBase(p.implicitos);
-  return { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos) };
+  // (lote 62) a joia: no máximo 2 + 2, como no PoE (`Gerar.vagasDaPeca`)
+  return Gerar.vagasDaPeca(R, rb, p.classe);
 }
 
 // ---------------------------------------------------------------- a VALIDAÇÃO do desejo

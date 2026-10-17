@@ -426,7 +426,9 @@ export function auditarArvore({ verificar = true, limite = Infinity, cobertura =
     }
     let verificacao = null;
     // (todo nó que não é início: a alocação vale também para o que não tem efeito — o encaixe de joia, o pai de escolha)
-    if (verificar && verificados < limite && !['inicio', 'ascendencia-inicio'].includes(categoria)) {
+    // (lote 60, dono 16/10: "Pular como o início") o proxy e o encaixe interno das Ramificadoras só existem com a joia encaixada — como no PoE,
+    // não se alocam soltos (a recusa, nó a nó: testes/zerar-arvore-lote60)
+    if (verificar && verificados < limite && !['inicio', 'ascendencia-inicio'].includes(categoria) && !Passivas.soDaRamificadora(no)) {
       verificados++;
       verificacao = no.tipo === 'mastery' ? opcoes.map((o) => ({ opcao: o.id, ...verificarNo(no.id, { opcao: o.id }) })) : [verificarNo(no.id)];
     }

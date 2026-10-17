@@ -76,8 +76,12 @@ export function daSoma(af = {}) {
     incendiosExtra: n('incendios_extra'), incendioDuracaoBaseMs: n('incendio_duracao_base_s') * 1000,
     // (o Warden: "Acertos que causariam Incêndio causam Causticação ao invés"; "Você pode infligir uma Causticação adicional em cada Inimigo")
     incendioViraCausticacao: n('incendio_vira_causticacao') > 0, causticacoesExtra: n('causticacoes_extra'),
-    danoSangramento: n('bleed_dmg_inc'),
-    danoVeneno: n('poison_dmg_inc'),
+    // (lote 65) o "Dano Físico Degenerativo aumentado" vale no Sangramento (o dano Físico ao longo do tempo), como no PoE
+    danoSangramento: n('bleed_dmg_inc') + n('dot_dmg_inc_fisico'),
+    // (lote 65) e o "Dano de Caos Degenerativo aumentado", no Veneno (o de Caos)
+    danoVeneno: n('poison_dmg_inc') + n('dot_dmg_inc_caos'),
+    // (lote 65, as Ramificadoras) o "Dano Degenerativo aumentado" de UM tipo — o degenerativo das gemas desse elemento (`acoes`)
+    danoDegenDoElemento: { chaos: n('dot_dmg_inc_caos'), physical: n('dot_dmg_inc_fisico'), ice: n('dot_dmg_inc_gelo') },
     duracaoIncendio: n('duracao_incendio') + n('duracao_afeccoes_elementais'),
     duracaoSangramento: n('duracao_sangramento'),
     duracaoCongelamento: n('duracao_congelamento') + n('duracao_afeccoes_elementais'),
@@ -118,7 +122,9 @@ export function daSoma(af = {}) {
     resfriamentoMinimo: n('resfriamento_minimo'), resfriamentoMaximo: n('resfriamento_maximo'), resfriamentoReduzDano: n('resfriamento_reduz_dano') > 0,
     // o crítico: o efeito das não danificadoras, o multiplicador degenerativo (de todas e do veneno), o "mais dano" do veneno; a Agonia Perfeita
     efeitoNaoDanoCritico: n('efeito_nao_dano_critico'), multiplicadorCritico: n('dot_multi_critico'), multiplicadorVenenoCritico: n('dot_multi_poison_critico'), multiplicadorSangramentoCritico: n('dot_multi_bleed_critico'), multiplicadorIncendioCritico: n('dot_multi_ignite_critico'),
-    venenoCriticoMais: n('veneno_critico_mais'), venenoMaisChance: n('veneno_mais_chance'), venenoMaisPct: n('veneno_mais_pct'), agoniaPerfeita: n('agonia_perfeita') > 0, semAfeccaoSemCritico: n('sem_afeccao_sem_critico') > 0,
+    venenoCriticoMais: n('veneno_critico_mais'), venenoMaisChance: n('veneno_mais_chance'), venenoMaisPct: n('veneno_mais_pct'),
+    // (lote 75, o buff do Arauto da Agonia: "Buff concede 10% mais Dano com Veneno" — o MORE do PoB, só no Veneno; multiplica à parte)
+    venenoMaisFinal: n('veneno_mais_final'), agoniaPerfeita: n('agonia_perfeita') > 0, semAfeccaoSemCritico: n('sem_afeccao_sem_critico') > 0,
     // o veneno em inimigo não envenenado / sangrando; o sangramento por empalamento, as pilhas (Dança Carmesim) e o "menos dano"
     venenoNaoEnvenenado: n('veneno_nao_envenenado_inc'), multiplicadorVenenoSangrando: n('dot_multi_poison_sangrando'),
     multiplicadorSangramentoPorEmpalamento: n('dot_multi_bleed_por_empalamento'), sangramentoPilhas: n('sangramento_pilhas'), sangramentoMenos: n('sangramento_menos'),
@@ -132,6 +138,9 @@ export function daSoma(af = {}) {
     // as resistências a menos dos Incendiados/Resfriados e dos Envenenados por você (`hunt/resistencia.resistenciaDe`)
     // (o texto traz o "−": o valor chega negativo — vale o tamanho)
     resMenosIncendiadoResfriado: Math.abs(n('res_menos_incendiado_resfriado')), resMenosCaosEnvenenado: Math.abs(n('res_menos_caos_envenenado')),
+    // (lote 69, as Ramificadoras) "Inimigos Incendiados por você têm −X% de Resistência a Fogo"; "Inimigos Envenenados por você não podem
+    // Regenerar Vida" (`skills/estados` — a regeneração do monstro)
+    resMenosFogoIncendiado: Math.abs(n('res_menos_fogo_incendiado')), envenenadosSemRegen: n('envenenados_sem_regen') > 0,
   };
 }
 
@@ -160,7 +169,7 @@ export function fatorDeEletrizacao(alvo, agora) {
  * crítico; `ataque`: é ataque (golpe da arma, habilidade de ataque) — as chances "com Ataques" só valem nele. `afeccoes`: o de `daSoma`
  * (a ficha guarda). Devolve os nomes dos estados postos (o evento na tela). Sem o sistema do PoE, não faz nada.
  */
-export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null } = {}) {
+export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, aoPor = null } = {}) {
   if (!ligado() || !bicho || bicho.hp <= 0 || bicho.dummy) return [];
   const a = afeccoes ?? daSoma();
   // "Golpes não Críticos não infligem Afecções" (a Agonia Perfeita).
@@ -195,6 +204,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0) + (tipo === 'venenoPoe' ? a.venenoMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
+    // (lote 53, a Regra de Ouro: o dano contínuo posto, com o total e a duração — `ModsPoe.refletorDeAfeccoes` o reflete em você)
+    if (estado) aoPor?.(tipo, total, rapido, agora);
     return estado;
   };
   // A DANÇA CARMESIM ("Você pode aplicar Sangramento em um Inimigo até N vezes"): cada pilha é um sangramento à parte (a `chave`); cheio, a
@@ -261,10 +272,11 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     // (14/10, o Infestador Incubando: "20% menos Dano com Veneno enquanto Incubando e não estiver no Máximo do Valor da Praga" e "Ao infligir
     // Veneno enquanto Incubando, adiciona 40% do Dano Esperado de Veneno ao Valor da Praga" — `acoes.pragaDoAcerto`)
     for (let k = 0; k <= Math.max(0, Math.floor(a.venenosExtras ?? 0)) && jaTem + k < teto; k++) {
-      if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno), baseDoVeneno, multVeneno, aumVeneno, { mais: ((1 + maisDoVeneno() / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100 })) praga?.somar(ultimoTotal);
+      if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno), baseDoVeneno, multVeneno, aumVeneno, { mais: ((1 + maisDoVeneno() / 100) * (1 + (a.venenoMaisFinal ?? 0) / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100 })) praga?.somar(ultimoTotal);
     }
     // ("Inimigos Envenenados por você têm −X% de Resistência a Caos" — `hunt/resistencia.resistenciaDe`)
     if (a.resMenosCaosEnvenenado > 0) (bicho.estados ??= {}).resMenosCaos = Math.max(bicho.estados.resMenosCaos ?? 0, a.resMenosCaosEnvenenado);
+    if (a.envenenadosSemRegen) (bicho.estados ??= {}).semRegenEnvenenado = true;
   }
   const limiar = bicho.maxHp ?? bicho.hp;
   // (+ "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado": o Resfriamento e a Eletrização do crítico)
@@ -323,6 +335,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     }
   }
   // ("Inimigos Incendiados ou Resfriados por você têm −X% de Resistências Elementais" — `hunt/resistencia.resistenciaDe`)
+  if (a.resMenosFogoIncendiado > 0 && postos.includes('queimando')) (bicho.estados ??= {}).resMenosFogo = Math.max(bicho.estados.resMenosFogo ?? 0, a.resMenosFogoIncendiado);
   if (a.resMenosIncendiadoResfriado > 0 && (postos.includes('queimando') || (bicho.estados?.lento?.ate ?? 0) > agora)) {
     (bicho.estados ??= {}).resMenosElemental = Math.max(bicho.estados.resMenosElemental ?? 0, a.resMenosIncendiadoResfriado);
   }

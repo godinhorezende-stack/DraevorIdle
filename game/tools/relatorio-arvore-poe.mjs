@@ -321,10 +321,28 @@ const GRUPOS_DE_JOIA = [
 ];
 const loteDa = (slug, grupo) => (grupo === 'Atemporais' ? 'Atemporais (as tabelas do PoB, com a autorização do download)' : grupo === 'Ramificadoras' ? 'Ramificadoras (raspar os encantamentos e notáveis no poedb)' : LOTE_PREVISTO.find(([re]) => re.test(slug))?.[1] ?? 'lote 30 — as outras linhas dos únicos de joia');
 
+/** (lote 55) O pool das linhas sorteadas da única: `{ total, efeito, inertes: [nota], sem: [modelo] }`. */
+function poolDasSorteadas(T, u, doImplicito = false) {
+  const r = { total: 0, efeito: 0, inertes: [], sem: [] };
+  const linhas = doImplicito ? (u.implicitosSorteados?.grupos ?? []).flatMap((g) => g.tiers ?? []) : u.linhasSorteadas?.linhas ?? [];
+  for (const l of linhas) {
+    const t = T.traduzirMod({ modelo: l.modelo, valores: (l.faixas ?? []).map((x) => x[0]) });
+    r.total++;
+    if (['equivalente', 'novo', 'aproximado'].includes(t.estado)) r.efeito++;
+    else if (t.estado === 'inerte' || t.estado === 'lembrete') r.inertes.push(t.partes.find((p) => p.nota)?.nota ?? 'sem nota');
+    else r.sem.push(l.modelo);
+  }
+  return r;
+}
+
 async function secaoDasJoias() {
   process.env.ITENS_POE ??= '1';
   const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
   const T = await import('../systems/itens-poe/traduzir.mjs');
+  // (lote 55) o jogo do PoE carregado (as gemas): as linhas que dependem do nome de uma gema — "enquanto afetado por Graça", "Concede a
+  // Habilidade X" — traduzem como no jogo (sem as gemas, `gemaConhecida` diz que não).
+  const { iniciarJogoDoPoe } = await import('../systems/itens-poe/iniciar.mjs');
+  await iniciarJogoDoPoe();
   const cat = Catalogo.catalogo();
   if (!cat?.classes?.Jewels) return [];
   const md = ['## As joias dos encaixes da árvore (lotes 27 a 29)', ''];
@@ -335,6 +353,10 @@ async function secaoDasJoias() {
     const r = T.cobertura({ classes: { [classe]: { ...c, paginas: Object.fromEntries(Object.entries(c.paginas).filter(([p]) => !fora?.test(p))) } } });
     md.push(`- **Mods das joias ${nome === 'Jewels' ? 'Carmesim/Viridiana/Cobalto/Prismática' : 'Abissais'}** (prefixos e sufixos, pelo peso de sorteio): ${r.comEfeitoNoCombate}% com efeito.`);
   }
+  // (lote 55, J31) os POOLS das linhas sorteadas: quantas linhas de cada um têm efeito (as inertes, com o porquê)
+  const sorteadas = [];
+  for (const u of cat.classes.Jewels.unicos ?? []) if (u.linhasSorteadas && !sorteadas.some((x) => x.slug === u.slug)) sorteadas.push({ slug: u.slug, nome: u.nome, ...poolDasSorteadas(T, u) });
+  if (sorteadas.length) md.push(`- **Linhas sorteadas** (o pool de cada única no poedb — \`linhas-sorteadas.json\`): ${sorteadas.map((x) => `${escapar(x.nome)} ${x.efeito}/${x.total} com efeito${x.inertes.length ? ` (${x.inertes.length} não se aplicam: ${[...new Set(x.inertes)].map(escapar).join('; ')})` : ''}`).join(' · ')}.`);
   md.push('', '| Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
   const faltam = [];
   for (const [grupo, f] of GRUPOS_DE_JOIA) {
@@ -345,6 +367,17 @@ async function secaoDasJoias() {
         if (!f(u, classe) || !u.modificadores?.length) continue;
         unicas++;
         for (const m of u.modificadores) {
+          // (lote 55, J31) a linha de MARCAÇÃO das sorteadas ("[Two random aura modifiers]"): vale pelo pool da única (`linhasSorteadas`) — com
+          // efeito quando nenhuma linha do pool fica sem regra (as inertes do pool têm o porquê no balão).
+          // (lote 56: + os IMPLÍCITOS sorteados — a Doutrina Racional, os de Síntese da base: `implicitosSorteados.grupos`)
+          const doImplicito = u.implicitosSorteados?.substitui === m.modelo;
+          if (u.linhasSorteadas?.substitui?.[m.modelo] || doImplicito) {
+            const pool = poolDasSorteadas(T, u, doImplicito);
+            conta.total++;
+            if (!pool.sem.length) conta.efeito++;
+            else { conta.sem++; faltam.push({ grupo, unica: u.nome, slug: u.slug, texto: m.texto, nota: `${pool.sem.length} das ${pool.total} linhas do pool sem efeito` }); }
+            continue;
+          }
           const t = T.traduzirMod({ modelo: m.modelo, valores: (m.faixas ?? []).map((x) => x[0]) });
           const nota = t.partes.find((p) => p.nota)?.nota ?? '';
           conta.total++;
@@ -359,6 +392,9 @@ async function secaoDasJoias() {
     }
     md.push(`| ${escapar(grupo)} (${unicas}) | ${conta.total} | ${conta.efeito} | ${conta.lembrete} | ${conta.sem} |`);
   }
+  // (lote 63) As LINHAS DOS NÓS das Ramificadoras (o que a joia gerada cria na árvore): as pequenas concedem o encantamento e os "também
+  // concedem" da peça; os notáveis, os efeitos deles — pelo tradutor da árvore, como os nós da árvore.
+  md.push(...await secaoDasRamificadoras(cat));
   md.push('', '### O que ainda não funciona nas joias únicas, pelo lote previsto', '');
   md.push('| Lote | Única — linha |', '|---|---|');
   const porLote = new Map();
@@ -369,6 +405,59 @@ async function secaoDasJoias() {
   }
   for (const [lote, xs] of porLote) md.push(`| ${escapar(lote)} (${xs.length}) | ${xs.map((x) => `${escapar(x.unica)} — ${escapar(x.texto)}${x.nota ? ` _(${escapar(x.nota)})_` : ''}`).join('<br>')} |`);
   md.push('');
+  return md;
+}
+
+/**
+ * (lote 63) As linhas dos nós que as Ramificadoras criam (`catalogo.ramificadoras`): a tabela (encantamento das pequenas, "também concedem",
+ * notáveis) e a lista das sem efeito. Exportada para o teste conferir a conta.
+ */
+export async function linhasDasRamificadoras(cat) {
+  const { traduzirLinha } = await import('../systems/itens-poe/arvore.mjs');
+  const D = cat?.ramificadoras;
+  const grupos = { encantamento: { total: 0, efeito: 0, nota: 0, sem: 0 }, tambem: { total: 0, efeito: 0, nota: 0, sem: 0 }, notavel: { total: 0, efeito: 0, nota: 0, sem: 0 } };
+  const sem = [];
+  if (!D) return { grupos, sem };
+  const contar = (grupo, onde, linha) => {
+    const t = traduzirLinha(linha);
+    const g = grupos[grupo];
+    g.total++;
+    if (t.efeitos.length) g.efeito++;
+    else if (t.estado === 'nota' || (t.estado === 'inerte' && /^não se aplica/i.test(t.nota ?? ''))) g.nota++;
+    else { g.sem++; sem.push({ grupo, onde, linha, estado: t.estado, nota: t.nota ?? null }); }
+  };
+  const vistas = new Set();
+  for (const T of Object.values(D.tamanhos)) for (const e of T.encantamentos) for (const l of e.linhas) if (!vistas.has(l)) { vistas.add(l); contar('encantamento', `${T.en}: ${e.nome ?? e.en}`, l); }
+  const TAMBEM = /^(?:Pequenas )?Habilidades Passivas [Aa]dicionadas também concedem: (.+)$/;
+  // (lote 65) só o que PODE SAIR na peça: o mod com algum peso fora dos encantamentos descontinuados (`old_do_not_use_…`) e o notável de
+  // algum encantamento de hoje
+  const saiNaPeca = (m) => Object.entries(m.pesos ?? {}).some(([k, v]) => v > 0 && !/^old_do_not_use/.test(k));
+  const notaveisDeHoje = new Set(Object.values(D.tamanhos).flatMap((T) => T.encantamentos.flatMap((e) => e.notaveis.map((n) => n.nome))));
+  for (const m of D.mods) {
+    if (!saiNaPeca(m)) continue;
+    const x = TAMBEM.exec(m.texto ?? '');
+    // (a faixa vira o maior valor: o que se conta é a regra da linha)
+    const linha = x?.[1].replace(/\((-?[\d.]+)—(-?[\d.]+)\)/g, '$2');
+    if (linha && !vistas.has(`t:${linha}`)) { vistas.add(`t:${linha}`); contar('tambem', m.nome ?? m.id, linha); }
+  }
+  for (const [chave, n] of Object.entries(D.notaveis)) if (notaveisDeHoje.has(chave)) for (const l of n.linhas) contar('notavel', n.nome ?? chave, l);
+  return { grupos, sem };
+}
+async function secaoDasRamificadoras(cat) {
+  const { grupos, sem } = await linhasDasRamificadoras(cat);
+  if (!grupos.notavel.total) return [];
+  const md = ['', '### As linhas dos nós das Ramificadoras (lote 63)', ''];
+  md.push('A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados).', '');
+  md.push('| Linhas | Total | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
+  for (const [k, nome] of [['encantamento', 'Encantamentos (as pequenas)'], ['tambem', '"Também concedem" (as pequenas)'], ['notavel', 'Notáveis']]) {
+    const g = grupos[k];
+    md.push(`| ${nome} | ${g.total} | ${g.efeito} | ${g.nota} | ${g.sem} |`);
+  }
+  if (sem.length) {
+    md.push('', '<details><summary>As linhas sem efeito</summary>', '');
+    for (const x of sem) md.push(`- ${escapar(x.onde)} — ${escapar(x.linha)}${x.nota ? ` _(${escapar(x.nota)})_` : ''}`);
+    md.push('', '</details>');
+  }
   return md;
 }
 

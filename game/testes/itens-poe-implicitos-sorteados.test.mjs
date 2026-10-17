@@ -70,6 +70,15 @@ test('só o Lobo Grandioso muda: o Talismã do Grande Lobo segue com o Rito da L
     for (const b of c.bases) {
       if (b.id === LOBO) continue;
       const p = gerar(b.id, 'normal', 13);
+      // (lote 61, dono 17/10: "Conferir a troca nele") a RAMIFICADORA troca a marcação "concedem #" da base pelo encantamento sorteado — no
+      // PoE ela sempre cai com ele; os outros implícitos seguem os da base
+      if (/_Cluster_Jewel$/.test(b.id)) {
+        const marcacao = 'Habilidades Passivas Adicionadas concedem #';
+        assert.ok(b.implicitos.some((i) => i.modelo === marcacao), b.id);
+        assert.deepEqual(p.implicitos.filter((i) => !i.encantamento).map((i) => i.modelo), b.implicitos.map((i) => i.modelo).filter((m) => m !== marcacao), b.id);
+        assert.ok(p.implicitos.some((i) => i.encantamento && /^Habilidades Passivas Adicionadas concedem .+[^#]$/.test(i.modelo)), b.id);
+        continue;
+      }
       assert.deepEqual(p.implicitos.map((i) => i.modelo), b.implicitos.map((i) => i.modelo), b.id);
     }
   }

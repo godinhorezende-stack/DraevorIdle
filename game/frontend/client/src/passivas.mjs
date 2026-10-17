@@ -177,7 +177,7 @@ function caminhoAte(id) {
   for (const x of livres) if (!veioDe.has(x)) { veioDe.set(x, null); fila.push(x); }
   for (let i = 0; i < fila.length; i++) {
     for (const c of a.porId.get(fila[i])?.conexoes ?? []) {
-      if (veioDe.has(c) || a.porId.get(c)?.tipo === 'start') continue;
+      if (veioDe.has(c) || a.porId.get(c)?.tipo === 'start' || a.porId.get(c)?.soDaRamificadora) continue;
       veioDe.set(c, fila[i]);
       if (c === id) {
         const caminho = [];
@@ -231,6 +231,8 @@ function estadoDoNo(n) {
   const mine = meus();
   if (mine.has(n.id)) return 'alocado';
   if (n.tipo === 'start') return 'bloqueado';
+  // (lote 60) o proxy e o encaixe interno das Ramificadoras: só com uma Joia Ramificadora encaixada (a regra do servidor).
+  if (n.soDaRamificadora) return 'bloqueado';
   // A maestria abre com um notável alocado no grupo dela.
   if (n.tipo === 'mastery') return gruposComNotavel(arvore(), mine).has(n.grupo) ? 'disponivel' : 'bloqueado';
   // A opção de escolha de uma ascendência: uma por pai (a irmã escolhida bloqueia as outras).
@@ -1204,8 +1206,8 @@ function montar(body) {
     if (n.tipo !== 'start') linhas.push(`Custo: ${n.custo} ponto${n.custo === 1 ? '' : 's'}${n.ascendencia ? ' de ascendência' : ''}`);
     if (n.ascendencia) linhas.push(`Ascendência: ${arvore()?.ascendencias?.[n.ascendencia]?.nome ?? n.ascendencia}`);
     if (n.levelMinimo) linhas.push(`Requer level ${n.levelMinimo}${lv < n.levelMinimo ? ' (você não tem)' : ''}`);
-    let rotuloEstado = { alocado: 'Alocado', disponivel: 'Disponível', bloqueado: n.tipo === 'start' ? 'Início de outra classe' : 'Bloqueado — sem ligação com um nó seu' }[estado];
-    if (estado === 'bloqueado' && n.tipo !== 'start') {
+    let rotuloEstado = { alocado: 'Alocado', disponivel: 'Disponível', bloqueado: n.tipo === 'start' ? 'Início de outra classe' : n.soDaRamificadora ? 'Só com uma Joia Ramificadora encaixada' : 'Bloqueado — sem ligação com um nó seu' }[estado];
+    if (estado === 'bloqueado' && n.tipo !== 'start' && !n.soDaRamificadora) {
       const c = caminhoAte(n.id);
       if (c?.length) {
         linhas.push(`Caminho: ${c.length} nós · ${c.reduce((s2, id) => s2 + (arvore().porId.get(id)?.custo ?? 0), 0)} pontos`);

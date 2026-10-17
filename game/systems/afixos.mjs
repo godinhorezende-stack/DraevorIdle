@@ -216,6 +216,20 @@ export function soma(estado) {
   if (transf('transf_es_magia', 'es_pct')) resolvido.spell_dmg = (resolvido.spell_dmg ?? 0) + transf('transf_es_magia', 'es_pct');
   if (transf('transf_vida_ataque', 'life_inc')) resolvido['dmg_inc@ataque'] = (resolvido['dmg_inc@ataque'] ?? 0) + transf('transf_vida_ataque', 'life_inc');
   if (transf('transf_mana_dano', 'mana_inc')) resolvido.dmg_inc = (resolvido.dmg_inc ?? 0) + transf('transf_mana_dano', 'mana_inc');
+  // (lote 52) as únicas que estendem um modificador a TODAS as Afecções Elementais em você: a Canção das Chamas ("Modificadores de Duração de
+  // Incêndio em você se aplicam a Todas as Afecções Elementais"), a Mortalha da Tormenta ("Modificadores de Chance de Evitar ser Eletrizado …")
+  // e a Visão Ancestral ("Modificadores de Chance de Suprimir Dano Mágico também se aplicam à Chance de Evitar Afecções Elementais em 50%").
+  const outrasElementais = (de) => ['incendio', 'congelamento', 'resfriamento', 'eletrizacao'].filter((n) => n !== de);
+  if (Number(resolvido.incendio_duracao_todas) > 0 && resolvido.duracao_incendio_propria) for (const n of outrasElementais('incendio')) resolvido[`duracao_${n}_propria`] = (resolvido[`duracao_${n}_propria`] ?? 0) + resolvido.duracao_incendio_propria;
+  if (Number(resolvido.evitar_eletrizacao_todas) > 0 && resolvido.evitar_eletrizacao) for (const n of outrasElementais('eletrizacao')) resolvido[`evitar_${n}`] = (resolvido[`evitar_${n}`] ?? 0) + resolvido.evitar_eletrizacao;
+  if (Number(resolvido.supressao_no_evitar_afeccoes) > 0 && resolvido.spell_suppression) resolvido.avoid_elem_ailments = (resolvido.avoid_elem_ailments ?? 0) + (resolvido.spell_suppression * resolvido.supressao_no_evitar_afeccoes) / 100;
+  // (lote 53, a Revolta dos Mortos: "Esqueletos ganham Dano de Caos Adicional igual a X% do Escudo de Energia Máximo no Escudo Equipado") — o
+  // dano somado dos Esqueletos (`LacaiosPoe.oQueInvoca`), pelo Escudo de Energia da peça do escudo (a mesma conta do "por N de Escudo de Energia
+  // no Escudo" — `defesaDaPecaVestida`).
+  if (Number(resolvido.esqueleto_caos_pct_es_escudo) > 0) {
+    const doEscudo = ((ModsPoe.defesaDaPecaVestida(estado?.equipment?.shield)?.escudo ?? 0) * resolvido.esqueleto_caos_pct_es_escudo) / 100;
+    if (doEscudo > 0) for (const k of ['lacaio_somado_min:esqueleto', 'lacaio_somado_max:esqueleto']) resolvido[k] = (resolvido[k] ?? 0) + doEscudo;
+  }
   // + as MALDIÇÕES dos monstros em você (Fraqueza Elemental, Vulnerabilidade, Enfraquecer; as refletidas): depois das condições, porque a
   // imunidade e o efeito delas podem ser condicionais ("Imune a Maldições enquanto possuir ao menos N de Fúria").
   const malditas = ModsPoe.addsDasMaldicoesNoJogador(estado, resolvido);
@@ -245,7 +259,19 @@ export function somaDeItens(estado) {
     somarPeca(total, estado, slot, peca, daAljava !== 1 && peca.poe?.classe === 'Quivers' ? daAljava : 1);
   }
   // (15/10, lote 27) as JOIAS nos encaixes alocados da árvore do PoE: os mods delas somam como os de uma peça.
-  for (const { peca } of Passivas.joiasAtivas(estado)) somarPeca(total, estado, 'joia', peca);
+  // (lote 52, O Adornado: "Efeito de Habilidades Passivas em Encaixes de Joias contendo Joias Mágicas Corrompidas aumentado em X%" — as mágicas
+  // corrompidas × (1 + X%))
+  const joias = Passivas.joiasAtivas(estado);
+  const adornado = 1 + joias.reduce((n, { peca }) => n + (Number(peca?.poe?.af?.efeito_joias_magicas_corrompidas) || 0), 0) / 100;
+  // (lote 55, a Personalidade Dividida: "Este Encaixe de Joia tem efeito aumentado em 25% por Habilidade Passiva Alocada entre ele e o ponto de
+  // início da sua Classe" — os mods dela × (1 + 25% × as passivas no caminho mais curto, `Passivas.passivasAteOInicio`))
+  for (const { no, peca } of joias) {
+    // (lote 64) a RAMIFICADORA não soma no personagem: o que ela concede vale pelos nós que cria na árvore (`passivas/ramificadoras`)
+    if (peca?.poe?.ramificadora) continue;
+    const porPassiva = Number(peca?.poe?.af?.joia_efeito_por_passiva_ate_inicio) || 0;
+    const fator = (adornado !== 1 && peca.poe?.raridade === 'magico' && peca.poe?.corrompido ? adornado : 1) * (porPassiva > 0 ? 1 + (porPassiva * Passivas.passivasAteOInicio(estado, no.id)) / 100 : 1);
+    somarPeca(total, estado, 'joia', peca, fator);
+  }
   return total;
 }
 /** Soma UMA peça vestida em `total` (a do Draevor e a do PoE — `poe.af`, com as condições da própria peça e do lado do anel). */
@@ -787,6 +813,9 @@ export function sincronizarMaximos(estado) {
   // (09/10) "X% MAIS Vida Máxima" (a maestria de vida da árvore: `life_more`): multiplica a vida inteira.
   const maisVida = itensPoeLigado() ? Number(t.life_more) || 0 : 0;
   if (maisVida) quer.hp = Math.round((base.maxHp + quer.hp) * (1 + maisVida / 100) - base.maxHp);
+  // (lote 57, o Limitado pelo Destino: "Mais X% de mana máximo" — `mana_more`, como o da vida)
+  const maisMana = itensPoeLigado() ? Number(t.mana_more) || 0 : 0;
+  if (maisMana) quer.mana = Math.round((base.maxMana + quer.mana) * (1 + maisMana / 100) - base.maxMana);
   // PoE: "X% de Vida Máxima Convertida em Escudo de Energia" — sai da vida e vira escudo (a ficha soma `vidaConvertidaPoe` no escudo).
   const converte = itensPoeLigado() ? Math.min(100, Number(t.vida_em_escudo) || 0) : 0;
   const vidaConvertida = converte > 0 ? Math.round(((base.maxHp + quer.hp) * converte) / 100) : 0;

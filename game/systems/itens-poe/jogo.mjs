@@ -75,7 +75,15 @@ export const JOIAS = Object.freeze({
   'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004,
   'Jewels/Timeless_Jewel': 7_800_005,
   'Abyss_Jewels/Murderous_Eye_Jewel': 7_800_011, 'Abyss_Jewels/Searching_Eye_Jewel': 7_800_012, 'Abyss_Jewels/Hypnotic_Eye_Jewel': 7_800_013, 'Abyss_Jewels/Ghastly_Eye_Jewel': 7_800_014,
+  // (lote 64) as RAMIFICADORAS (`itens-poe/ramificadoras.mjs` e `passivas/ramificadoras.mjs`): nos encaixes de expansão da árvore
+  'Jewels/Large_Cluster_Jewel': 7_800_021, 'Jewels/Medium_Cluster_Jewel': 7_800_022, 'Jewels/Small_Cluster_Jewel': 7_800_023,
 });
+/**
+ * (lote 64) As Ramificadoras ainda NÃO CAEM (dono, 17/10: "Servidor, linhas, tela, únicas" — a joia entra no drop no último passo, com a
+ * tela e as únicas): ficam no catálogo (encaixar, testar), fora do drop e do baú.
+ */
+export const RAMIFICADORAS_NO_DROP = false;
+export const ehRamificadora = (base) => /^Jewels\/(?:Large|Medium|Small)_Cluster_Jewel$/.test(base?.id ?? base ?? '');
 export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel', 'Jewels/Timeless_Jewel']);
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
@@ -301,6 +309,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       // (O único que já cai corrompido — a Corda da Servidão — não aceita moeda comum, como no PoE.)
       ...(gerada.corrompido ? { corrompido: true } : {}),
+      // (lote 64) a Ramificadora: o tamanho e o encantamento (`itens-poe/ramificadoras.mjs`) — os nós que ela cria na árvore saem dele
+      ...(gerada.ramificadora ? { ramificadora: gerada.ramificadora } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [],
       estados: t.linhas.map((l) => l.estado), notas: notasDe(t), af, tv: VERSAO_DA_TRADUCAO,
     },
@@ -365,7 +375,39 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (40 — 16/10, lote 44: os lacaios pelo PoB, a Égide Primitiva em 5 s, os Robôs.)
 // (41 — 16/10, lote 45: a Rajada Vulcânica com o crítico; o Detonar Minas; as exceções registradas.)
 // (42 — 16/10, lote 48: as Joias Atemporais — o líder, a semente, o Histórico e a Devoção.)
-export const VERSAO_DA_TRADUCAO = 42;
+// (43 — 16/10, lote 49: as únicas de joia, a primeira leva do J30.)
+// (44 — 16/10, lote 50: as únicas de joia, a segunda leva do J30; o limite de maldições em você.)
+// (45 — 16/10, lote 51: as Almas Vaal na recarga, os lacaios Agressivos, a Dissolução da Carne e o Aprendizado Inspirado.)
+// (46 — 16/10, lote 52: as afecções elementais estendidas, a Desgraça das Bruxas, a Harmonia Primordial, o Talento Puro e O Adornado.)
+// (47 — 16/10, lote 53: os reflexos da Regra de Ouro, a Revolta dos Mortos e o Modo Alfa / Nadir.)
+// (48 — 16/10, lote 54: a Fúria Fulminante nos ataques com escudo e a Fome Eterna — o Devorador de Almas nos Espectros.)
+// (49 — 16/10, lote 55: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror; "enquanto afetado por <Aura>".)
+// (50 — 16/10, lote 56: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida.)
+// (51 — 16/10, lote 57: o Solo Profano e o Limitado pelo Destino — os itens com influência.)
+// (52 — 16/10, lote 58: a Fé Militante — os mods de devoção sorteados e a escala da Devoção.)
+// (53 — 17/10, lote 65: as Ramificadoras — as linhas das pequenas: "+X de Vida Máxima" com maiúscula, o Dano Degenerativo por tipo, "enquanto
+// afetado por um Arauto", a velocidade de ataque e conjuração por tipo de habilidade…)
+// (54 — 17/10, lote 66: as Ramificadoras — os notáveis com mecânica que o jogo já tem: as armas de qualquer mão ("Garra ou Adaga"…), o
+// Impelido com Dano Dobrado…)
+// (55 — 17/10, lote 67: as Ramificadoras — a Exposição com chance, as maldições à Prova de Feitiços, os totens, "Resfriou Recentemente", a
+// reserva de UMA gema com "de Reserva"…)
+// (56 — 17/10, lote 68: as Ramificadoras — as afecções contra o alvo, "Canalizado por N segundo", "foi Congelado Recentemente", o crítico
+// de Arauto Recentemente…)
+// (57 — 17/10, lote 69: as Ramificadoras — os lacaios criados Recentemente, por tipo (Esqueletos, Zumbis, Sentinelas), os inimigos
+// Incendiados (−X% de Resistência a Fogo) e Envenenados (sem regeneração), as exceções do dono)
+// (58 — 17/10, lote 70: as Ramificadoras — os Solos Ardente e Eletrizado dos monstros ("Inafetado por"), o alcance do posicionamento do
+// totem, a Fúria Arcana e a Lentidão ao Convocar um Totem)
+// (59 — 17/10, lote 71: as Ramificadoras — Fortificar com Maça/Cetro/Cajado, o Incêndio que se espalha, Intimidar/Cegar os próximos, a
+// Carga de Poder ao Eletrizar um Resfriado, o Gênio Alquímico, os Provocados Intimidados, os Amaldiçoados Enervados, o máximo das
+// Resistências depois de matar um Amaldiçoado, os Incendiados destruídos, o Dano Dobrado no crítico, a Armadilha ou Mina adicional)
+// (60 — 17/10, lote 72: as Ramificadoras — os aliados (a regeneração e a Agressividade ao Clamar), o Quebra-Maldições, o Caos contra o dano
+// contínuo, o Esconjuro da maldição, o Emissário, o Definhar até N, os Clamores por Poder (a carga e a Armadura), a Chama Santificada (do
+// Clamor e pelo bloqueio), o Gastou Vida e as mãos principal/secundária)
+// (61 — 17/10, lote 73: as Ramificadoras — o Acerto Selvagem recente, os Selos do Liberar, as Runas soltas e a Runa adicional, o Caos que
+// não se interrompe no atordoamento, as propagações restantes dos Projéteis, o Empalamento com Sangramento)
+// (62 — 17/10, lote 74: as Ramificadoras — o Reduzir, com a gema Convocar Runas que passa a existir no jogo)
+// (63 — 17/10, lote 75: as Ramificadoras — a Pura Agonia, com o Arauto da Agonia e a Virulência)
+export const VERSAO_DA_TRADUCAO = 63;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -573,7 +615,7 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
  * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
  */
 // (lote 27) A Joia Prismática só cai Única (o PoE não tem Prismática Normal, Mágica nem Rara; a coleção traz o pool genérico das joias nela).
-export const podeCairComo = (classe, base, raridade) => (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
+export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
 
 export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null) {
   const cat = Catalogo.catalogo();

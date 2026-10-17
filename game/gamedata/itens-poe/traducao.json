@@ -7969,9 +7969,10 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção do jogo",
+      "nota": "não se aplica ao jogo: as Habilidades Prismáticas (Golpe Elemental, Golpe Selvagem) não estão na coleção de gemas do jogo",
       "_nova": true,
-      "_lote29": "15/10 — os raios das joias únicas (lote 29)"
+      "_lote29": "15/10 — os raios das joias únicas (lote 29)",
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
     },
     {
       "padrao": "^Efeito das Tatuagens no Raio aumentado em \\{(\\d+)\\}%$",
@@ -15924,7 +15925,7 @@
       "estado": "novo"
     },
     {
-      "padrao": "^\\[.*\\]$",
+      "padrao": "^(?!\\[(?:Two|Three) random (?:aura )?modifiers\\]$|\\[One to three random synthesis implicit modifiers\\]$|\\[Aura Bonus Modifier\\]$|\\[Random [246]x influence item bonus\\]$|\\[Two random mods of devotion\\]$)\\[.*\\]$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17508,7 +17509,7 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Exarca Cauterizad|Devorador de Mundos|do Criador|do Ancião|Itens? Anci(?:ão|ões)|Remodelad|[Ii]nfluência|Conquistador).*$",
+      "padrao": "^(?!.* se (?:tiver )?\\{\\d+\\} [Ii]tens d[oa] (?:Criador|Ancião) (?:estiverem )?equipados$).*(?:Exarca Cauterizad|Devorador de Mundos|do Criador|do Ancião|Itens? Anci(?:ão|ões)|Remodelad|[Ii]nfluência|Conquistador).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17617,9 +17618,21 @@
         }
       ],
       "estado": "inerte",
-      "nota": "efeito só visual (luz, visão, tamanho)",
+      "nota": "não se aplica ao jogo: efeito só visual (luz, visão, tamanho) — o jogo mostra a tela inteira e o tamanho não muda nada",
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote49": "16/10 — lote 49 (como na árvore: luz, visão e tamanho não se aplicam ao jogo)"
+    },
+    {
+      "padrao": "^Acertos Corpo a Corpo com Maças, Cetros ou Cajados Fortificam por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+comMacaCetroOuCajado",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
     },
     {
       "padrao": "^.*(?:Fortificaç(?:ão|ões)|Fortificad[oa]s?|Fortifica[mr]?)\\b.*$",
@@ -17661,7 +17674,42 @@
       "_unico": true
     },
     {
-      "padrao": "^.*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
+      "padrao": "^Inafetado por Solo Congelado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: nada no jogo cria Solo Congelado (dono, 17/10)",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Inafetado por Solo Ardente$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_ardente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Inafetado por Solo Eletrizado$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_eletrizado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado|\\{\\d+\\}% de chance de criar Solo Profano no Golpe Crítico|Efeitos do Solo Profano criados por você Perduram).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17986,7 +18034,29 @@
       "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
-      "padrao": "^.*(?:Reserva|Reservam?|Reservad[ao]).*$",
+      "padrao": "^(.+?) tem Eficácia de Reserva de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura por cada \\{(\\d+)\\} de Mana Máxima não Reservada$",
+      "efeitos": [
+        {
+          "stat": "armor_flat%manaNaoReservada:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^(?!Vida que seria perdida ao sofrer Dano é, ao invés, Reservada).*(?:Reserva|Reservam?|Reservad[ao]).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -17997,7 +18067,8 @@
       "nota": "esta variação da reserva ainda não tem efeito no jogo",
       "_nova": true,
       "_unico": true,
-      "_lote8": "13/10 — a mana reservada (lote 8)"
+      "_lote8": "13/10 — a mana reservada (lote 8)",
+      "_lote51": "16/10 — lote 51: fora a Dissolução da Carne (a regra própria dela)"
     },
     {
       "padrao": "^.*(?:Cadáver|Cadáveres).*$",
@@ -18062,6 +18133,28 @@
       "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
+      "padrao": "^Você e Aliados próximos Regeneram \\{(\\d+)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "aliados:life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Quando você Clamar, você e Aliados próximos ganham Agressividade por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "aliados:sempre:agressividade@clamouRecente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
       "padrao": "^.*(?:Aliados|Membros do (?:seu )?Grupo|membros próximos do Grupo|Vinculad|Habilidades de Vínculo).*$",
       "efeitos": [
         {
@@ -18076,7 +18169,18 @@
       "_lote7": "13/10 — os aliados de verdade (lote 7)"
     },
     {
-      "padrao": "^.*(?:Fenda|Grilhões Temporais).*$",
+      "padrao": "^Grilhões Temporais pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Temporal_Chains",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^(?!.*conjurou Grilhões Temporais nos últimos).*(?:Fenda|Grilhões Temporais).*$",
       "efeitos": [
         {
           "stat": "inerte",
@@ -18178,6 +18282,17 @@
       "nota": "parte interna do item (sem texto no PoE)",
       "_nova": true,
       "_unico": true
+    },
+    {
+      "padrao": "^Ataques Impelidos têm \\{(\\d+)\\}% de chance de causar Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@impelido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
     },
     {
       "padrao": "^.*(?:Impelid|Impelem|Impelindo|Impelir).*$",
@@ -38052,6 +38167,5165 @@
       ],
       "_nova": true,
       "_lote48": "16/10 — lote 48 (as Joias Atemporais pelo Path of Building)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "fire_res%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Tolerância por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "min_tolerancia%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Frenesi por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "min_frenesi%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Poder por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "min_poder%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Vida Máxima aumentada em \\{(\\d+)\\}% por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "life_inc%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Dano Element(?:al|ao) aumentado em \\{(\\d+)\\}% por (?:Espectro Grandioso|Grande Espectro)$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Afecções Elementais por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "avoid_elem_ailments%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de Multiplicador de Golpe Crítico por Espectro Grandioso$",
+      "efeitos": [
+        {
+          "stat": "minion_crit_mult%joiaUnica:Grand_Spectrum",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque dos Esqueletos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_ataque:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Conjuração dos Esqueletos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_conj:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento dos Esqueletos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_mov:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração dos Golens aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_vel_ataque:golem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_vel_conj:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Golens têm \\+\\{(\\d+)\\} de Armadura$",
+      "efeitos": [
+        {
+          "stat": "lacaio_armadura:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Velocidade de Recarga das habilidades dos Golens aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cdr:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Golens Convocados têm Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cdr:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Golens Convocados Regeneram \\{(\\d+)\\}% de sua Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "lacaio_regen_pct:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de chance de Suprimirem o Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "minion_supressao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Duração do efeito das habilidades vaal aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "life_more",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% para cada Item Mágico equipado$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%itemMagico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Caos por Veneno em você$",
+      "efeitos": [
+        {
+          "stat": "chaos_res%venenoEmVoce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^Primordial$",
+      "efeitos": [
+        {
+          "stat": "primordial",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao número máximo de Golens Convocados caso você tenha \\{(\\d+)\\} Itens Primordiais Encaixados ou Equipados$",
+      "efeitos": [
+        {
+          "stat": "max_lacaio:golem@primordiaisMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^number of stackable unique jewels \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "linha interna do PoE (o Espectro Grandioso acumula: cada um conta todos os encaixados — `joiaUnica:Grand_Spectrum`)",
+      "_nova": true,
+      "_lote49": "16/10 — lote 49 (as únicas de joia, J30: a primeira leva)"
+    },
+    {
+      "padrao": "^[Pp]erca uma Carga de Tolerância por segundo$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_perde_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^[Pp]erca uma Carga de Frenesi por segundo$",
+      "efeitos": [
+        {
+          "stat": "frenesi_perde_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^[Pp]erca uma Carga de Poder por segundo$",
+      "efeitos": [
+        {
+          "stat": "poder_perde_a_cada_s",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% se você Convocou um Golem nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@nosUltimos:{V2}:usou:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Dano dos Golens aumentado em \\{(\\d+)\\}% se convocados nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "lacaio_dano_recente:golem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "lacaio_dano_recente_s:golem",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Acertos tem Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% contra você$",
+      "efeitos": [
+        {
+          "stat": "crit_recebido_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de ser Congelado, Eletrizado e Incendiado$",
+      "efeitos": [
+        {
+          "stat": "chance_ser_afetado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Totens atiram \\{(\\d+)\\} Projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "totem_projeteis_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Maldição em Você$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%maldicoesEmVoce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} Maldições adicionais podem ser aplicadas à você$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_extra_em_voce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote50": "16/10 — lote 50 (as únicas de joia, J30: a segunda leva)"
+    },
+    {
+      "padrao": "^Habilidades Vaal tem \\{(\\d+)\\}% de chance de ganharem as Almas consumidas novamente quando usadas$",
+      "efeitos": [
+        {
+          "stat": "vaal_almas_de_volta_chance",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Traduzir para a recarga\"): o jogo não tem Almas Vaal — as Vaal usam recarga; ganhar as Almas de volta = a Vaal usada não entra em recarga, na chance",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30: as Almas Vaal pela recarga)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Alma Vaal adicional por Inimigo Estilhaçado$",
+      "efeitos": [
+        {
+          "stat": "alma_vaal_ao_estilhacar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Traduzir para a recarga\"): o jogo não tem Almas Vaal — a Alma a mais faz a recarga de cada Vaal na barra andar uma alma (a recarga ÷ as Almas por Utilização da gema)",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30: as Almas Vaal pela recarga)"
+    },
+    {
+      "padrao": "^Lacaios Convocados são Agressivos$",
+      "efeitos": [
+        {
+          "stat": "lacaios_agressivos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Raio maior, registrado\"): o PoE não publica a distância — os lacaios procuram alvo (e se afastam de você) 3 casas mais longe",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30)"
+    },
+    {
+      "padrao": "^Vida que seria perdida ao sofrer Dano é, ao invés, Reservada (?:/ )?até que você não sofra mais Dano na Vida por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dissolucao_reserva_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30)"
+    },
+    {
+      "padrao": "^Com \\{(\\d+)\\} Notáveis Alocados no Raio, Ao Matar um monstro Raro, você recebe \\{(\\d+)\\} de seus Modificadores por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "raio_aprendizado_notaveis",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_aprendizado_n",
+          "valor": "{2}"
+        },
+        {
+          "stat": "raio_aprendizado_s",
+          "valor": "{3}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "exceção do dono (16/10: \"Implementar\"): o sorteio é só entre os modificadores do Raro que têm um equivalente em você (velocidade, dano, resistências…) — os sem equivalente não entram",
+      "_nova": true,
+      "_lote51": "16/10 — lote 51 (as decisões do dono do J30)"
+    },
+    {
+      "padrao": "^Modificadores de Duração de Inc(?:%e|ê)ndio em você se aplicam a Todas as Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "incendio_duracao_todas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Modificadores de Chance de Evitar ser Eletrizado se aplicam a Todas as Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "evitar_eletrizacao_todas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Modificadores de Chance de Suprimir Dano Mágico também se aplicam à Chance de Evitar Afecções Elementais em \\{(\\d+)\\}% de seus Valores$",
+      "efeitos": [
+        {
+          "stat": "supressao_no_evitar_afeccoes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Dano do Golem aumentado em \\{(\\d+)\\}% por cada Tipo de Golem Convocado por você$",
+      "efeitos": [
+        {
+          "stat": "golem_dano_por_tipo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Efeito de Habilidades Passivas em Encaixes de Joias contendo Joias Mágicas Corrompidas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_joias_magicas_corrompidas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Quando você Matar um Inimigo Amaldiçoado com um Feitiço Não-Aura, fique imune a$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao_ao_matar_amaldicoado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Maldições pelo resto da Duração do Feitiço$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "a continuação da linha de cima (a Desgraça das Bruxas: o poedb quebrou a frase em duas)",
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Enquanto sua Árvore Passiva se conectar com a de outra classe, receba:$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "o PoE em inglês: \"While your Passive Skill Tree connects to a class' Starting location\" — o início da sua classe conta (a árvore sempre sai dele) e o de outra classe, quando uma passiva sua encosta nele (as linhas de baixo)",
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Marauder: Habilidades Corpo a Corpo possuem \\{(\\d+)\\}% de aumento do Efeito em Área$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_marauder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Duelista: \\{(\\d+)\\}% do Dano de Ataque Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_duelist",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Caçadora: Velocidade de Movimento aumentada \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_ranger",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Sombra: \\+\\{(\\d+)\\}% à Chance de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_shadow",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Bruxa: \\{(\\d+)\\}% da Mana Máxima regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_witch",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Templário: Dano Penetra \\{(\\d+)\\}% das Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_templar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Heredeira: \\+\\{(\\d+)\\} de Todos os Atributos$",
+      "efeitos": [
+        {
+          "stat": "talento_puro_scion",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote52": "16/10 — lote 52 (as únicas de joia do J30, a terceira leva)"
+    },
+    {
+      "padrao": "^Sangramentos que você infligir são Refletidos para você$",
+      "efeitos": [
+        {
+          "stat": "reflete_sangramento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Envenenamento inflingido por você é Refletido à voc ?ê caso tenha menos de \\{(\\d+)\\} Envenenamentos em você$",
+      "efeitos": [
+        {
+          "stat": "reflete_veneno_ate",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Esqueletos ganham Dano de Caos Adicional igual a \\{(\\d+)\\}% do Escudo de Energia Máximo no Escudo Equipado$",
+      "efeitos": [
+        {
+          "stat": "esqueleto_caos_pct_es_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o dano somado dos Esqueletos (o jogo soma o dano adicional dos lacaios numa faixa só, sem o tipo — como o \"Lacaios causam Dano de Caos Adicional\")",
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Magias têm Chance de Golpe Crítico aumentada em \\{(\\d+)\\}% por Intensidade$",
+      "efeitos": [
+        {
+          "stat": "crit_inc_magia_por_intensidade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Magias que ganharam Intensidade Recentemente ganham \\{(\\d+)\\} de Intensidade a cada \\{(\\d+)\\} Segundos$",
+      "efeitos": [
+        {
+          "stat": "intensidade_ganho_n",
+          "valor": "{1}"
+        },
+        {
+          "stat": "intensidade_ganho_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^Magias que ganharam Intensidade Recentemente perdem \\{(\\d+)\\} de Intensidae? a cada \\{(\\d+)\\} Segundos$",
+      "efeitos": [
+        {
+          "stat": "intensidade_perda_n",
+          "valor": "{1}"
+        },
+        {
+          "stat": "intensidade_perda_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote53": "16/10 — lote 53 (as únicas de joia do J30, a quarta leva)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Golpe Crítico da Mão Secundária por cada \\{(\\d+)\\} de Escudo de Energia Máximo no Escudo$",
+      "efeitos": [
+        {
+          "stat": "crit_base_golpe%esEscudo:{V2}@ataqueDeEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "dono (16/10, \"Nos ataques com escudo\"): a mão secundária com escudo são os ataques com o escudo — as gemas com o dano base da mão secundária (Esmagar Escudos, Investida de Escudo, Arremesso Espectral de Escudo…)",
+      "_nova": true,
+      "_lote54": "16/10 — lote 54 (as únicas de joia do J30, a quinta leva — as decisões do dono)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Golpe Crítico da Mão Secundária por cada \\{(\\d+)\\} de Escudo de Energia Máximo no Escudo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg%esEscudo:{V2}@ataqueDeEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "dono (16/10, \"Nos ataques com escudo\"): a mão secundária com escudo são os ataques com o escudo — as gemas com o dano base da mão secundária (Esmagar Escudos, Investida de Escudo, Arremesso Espectral de Escudo…)",
+      "_nova": true,
+      "_lote54": "16/10 — lote 54 (as únicas de joia do J30, a quinta leva — as decisões do dono)"
+    },
+    {
+      "padrao": "^Com ao menos \\{(\\d+)\\} de Inteligência no Raio, Espectros Erguidos tem \\{(\\d+)\\}% de chance de ganhar Devorador de Almas por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "raio_fome_int",
+          "valor": "{1}"
+        },
+        {
+          "stat": "raio_fome_chance",
+          "valor": "{2}"
+        },
+        {
+          "stat": "raio_fome_s",
+          "valor": "{3}"
+        }
+      ],
+      "nota": "o Devorador de Almas do PoE (poedb, dono: \"Pesquisar no poedb\"): +5% de Velocidade de Ataque e Conjuração por alma de inimigo morto perto (3 casas), perde 1 a cada 0,5 s sem alma recente, máximo de 45",
+      "_nova": true,
+      "_lote54": "16/10 — lote 54 (as únicas de joia do J30, a quinta leva — as decisões do dono)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução adicional de Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "phys_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Vulnerabilidade$",
+      "efeitos": [
+        {
+          "stat": "imune_vulnerabilidade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Debilitar$",
+      "efeitos": [
+        {
+          "stat": "imune_enfraquecer",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Flamabilidade$",
+      "efeitos": [
+        {
+          "stat": "imune_flamabilidade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Congelabilidade$",
+      "efeitos": [
+        {
+          "stat": "imune_congelabilidade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Condutividade$",
+      "efeitos": [
+        {
+          "stat": "imune_condutividade",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Fraqueza Elemental$",
+      "efeitos": [
+        {
+          "stat": "imune_fraqueza_elemental",
+          "valor": "1"
+        }
+      ],
+      "nota": "a maldição que os monstros põem em você (`condicoes-poe.MALDICOES_DOS_MONSTROS`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Desespero$",
+      "efeitos": [
+        {
+          "stat": "imune_desespero",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você sofre \\{(\\d+)\\}% de Dano Extra reduzido de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano físico refletido que você sofreria$",
+      "efeitos": [
+        {
+          "stat": "reflexo_fisico_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Evita \\+?\\{(\\d+)\\}% do dano elemental refletido que você sofreria$",
+      "efeitos": [
+        {
+          "stat": "reflexo_elemental_evitado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos que te Acertaram$",
+      "efeitos": [
+        {
+          "stat": "ev:serAcertado:alvo:cego:4",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o PoE: a Cegueira dura 4 s",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia por Segundo$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Início da Recarga do Escudo de Energia é \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "es_recharge_start",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Escudo de Energia por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "es_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Recuperação do Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_es_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Raio é Drenado como Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@raio",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o \"Dano de Fogo Drenado como Vida\" do jogo: o golpe de Raio drena (o jogo não separa a parte de Raio do golpe)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de Dano Físico como Dano de {E} Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_{E}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de auemnto do Dano de {E}$",
+      "efeitos": [
+        {
+          "stat": "{E}_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Chance de Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano de Fogo Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% (?:ao|de) Multiplicador de (?:Acerto|Golpe) Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Vida por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "life_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Recuperação de Vida dos Frascos$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Habilidades Não Canalizadoras tem \\{(\\d+)\\} de Custo de Mana Total$",
+      "efeitos": [
+        {
+          "stat": "custo_mana_fixo@naoCanalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Dano é sofrido pela Mana antes da Vida$",
+      "efeitos": [
+        {
+          "stat": "dano_na_mana_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Recuperar \\{(\\d+)\\}% de Mana ao usar uma Habilidade$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:manaPctChance:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% de Mana Máxima como Escudo de Energia Máximo Extra$",
+      "efeitos": [
+        {
+          "stat": "mana_como_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Recuperação de Mana$",
+      "efeitos": [
+        {
+          "stat": "recuperacao_mana_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido enquanto afetado por Clareza é Recuperado como Mana$",
+      "efeitos": [
+        {
+          "stat": "recoup_mana@afetadoPor:clareza",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você ganha Agressividade por \\{(\\d+)\\} segundos ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:buff:agressividade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você tem Trespassar$",
+      "efeitos": [
+        {
+          "stat": "sempre:trespassar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da velocidade de recuperação de recarga das Habilidades de Movimento utilizadas$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Incêndio$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Congelamento$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Envenenamento$",
+      "efeitos": [
+        {
+          "stat": "imune_veneno",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Gelo e Raio sofrido como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Fogo e Raio é sofrido como Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_ice",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Fogo e Gelo sofrido como Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_energy",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_ice_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% do máximo de Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Frasco quando causar um Acerto Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:frasco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Seus Acertos Intimidam Inimigos por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:intimidado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Empalamentos inflingidos por você duram \\{(\\d+)\\} Acertos adicionais$",
+      "efeitos": [
+        {
+          "stat": "empalar_acertos_extra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Afecções Danificadores infligidas por você causam Dano \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "dot_mais_rapido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Acertos Críticos Penetram \\{(\\d+)\\}% da Resistência Elemental Inimiga$",
+      "efeitos": [
+        {
+          "stat": "pen_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Velocidade de Conjuração enquanto afetado por Fanatismo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@afetadoPor:fanatismo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Inflige )?Exposição a Raio a[om] Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_raio",
+          "valor": "10"
+        }
+      ],
+      "nota": "o PoE: a Exposição tira 10% da resistência",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Inflige )?Exposição a Fogo a[om] Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_fogo",
+          "valor": "10"
+        }
+      ],
+      "nota": "o PoE: a Exposição tira 10% da resistência",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Inflige )?Exposição a Gelo a[om] Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_acerto_gelo",
+          "valor": "10"
+        }
+      ],
+      "nota": "o PoE: a Exposição tira 10% da resistência",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Eletrização$",
+      "efeitos": [
+        {
+          "stat": "imune_eletrizacao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Incêndio$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Congelamento$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^(?:Você )?Não é Afetado por Sangramento$",
+      "efeitos": [
+        {
+          "stat": "imune_sangramento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Maldições$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Inflige Definhar por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:definhado:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Exposição$",
+      "efeitos": [
+        {
+          "stat": "imune_exposicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano Físico como um Elemento Aleatório$",
+      "efeitos": [
+        {
+          "stat": "phys_extra_aleatorio_chance:{V1}",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Não Sofre Dano Extra de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Imune a Dano Refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_fisico",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_reflexo_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Intimida Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:intimidado:4",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a Intimidação dura 4 s",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Velocidade de Ação não pode ser Reduzida abaixo do Valor Base$",
+      "efeitos": [
+        {
+          "stat": "velocidade_acao_minima",
+          "valor": "100"
+        },
+        {
+          "stat": "imune_lento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Recuperação da Recarga aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Evadir Acertos de Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_evadir",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Este Encaixe de Joia tem efeito aumentado em \\{(\\d+)\\}% por Habilidade Passiva Alocada entre ele e o ponto de início da sua Classe(?:' starting location)?$",
+      "efeitos": [
+        {
+          "stat": "joia_efeito_por_passiva_ate_inicio",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "como o PoB: as passivas alocadas no caminho mais curto entre o encaixe e o início da sua classe",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\[Two random aura modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 2 linhas do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\[Three random aura modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 3 linhas do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^\\[Two random modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 2 linhas do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote55": "16/10 — lote 55 (J31: as linhas sorteadas do Olho do Vigia, da Personalidade Dividida e do Equilíbrio do Terror)"
+    },
+    {
+      "padrao": "^Você tem Solo Sagrado ao seu redor enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:soloSagrado:2@parado",
+          "valor": "100"
+        }
+      ],
+      "nota": "como o \"Enquanto parado, a área ao seu redor será Solo Sagrado\"",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\[One to three random synthesis implicit modifiers\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteados na peça: 1 a 3 implícitos de Síntese do pool da base (`implicitos-sorteados.json`, com a mesma chance — como o Nebulis)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Habilidades de Aura diferentes de (.+) são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "aura_unica:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "as outras auras de gema não ligam, e a ligada desliga (`acoes.auraPermitida`)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais chance de Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_mais_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Velocida de Ação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "action_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Sempre (?:inflige )?Fragilizar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:fragilizado",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a afecção dura 4 s",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Sempre (?:inflige )?Exaure$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:exaurido",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a afecção dura 4 s",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Sempre (?:inflige )?Cauteriza$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:causticado",
+          "valor": "100"
+        }
+      ],
+      "nota": "o PoE: a afecção dura 4 s",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida durante um segundo ao acertar$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:regenPct:hp:1",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Não Afetado por Maldições$",
+      "efeitos": [
+        {
+          "stat": "imune_maldicao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Inimigos que você Matar usando Orgulho têm \\{(\\d+)\\}% de chance de Explodirem, causando um décimo de sua Vida máxima como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:10:physical@afetadoPor:orgulho",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\[Aura Bonus Modifier\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteada na peça: 1 das 17 combinações do pool da única no poedb (`gamedata/itens-poe/linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Habilidades passivas ao alcance de (.+?) podem ser atribuídas sem estarem conectadas à sua árvore$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "fuga_impossivel:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "o raio Pequeno em volta da pedra fundamental (a sorteada na peça — `linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Aloca (.+?) se você possuir o modificador correspondente na Carne Proibida$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "proibida_chama:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "com a Carne Proibida do mesmo notável encaixada, ele vale como alocado — o notável de uma ascendência da sua classe",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^Aloca (.+?) se você possuir o modificador correspondente na Chama Proibida$",
+      "nomeLivre": true,
+      "efeitos": [
+        {
+          "stat": "proibida_carne:{NOME}",
+          "valor": "1"
+        }
+      ],
+      "nota": "com a Chama Proibida do mesmo notável encaixada, ele vale como alocado — o notável de uma ascendência da sua classe",
+      "_nova": true,
+      "_lote56": "16/10 — lote 56 (J31: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar Solo Profano no Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:soloProfano:8",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Solo Profano (dono, 16/10: \"Implementar como o Sagrado\"): 8 s no chão, raio de 1 casa; os inimigos sobre ele levam +100% de chance de crítico e +10% de efeito de maldição",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Efeitos do Solo Profano criados por você Perduram por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "solo_profano_perdura_s",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "o Solo Profano (dono, 16/10: \"Implementar como o Sagrado\"): 8 s no chão, raio de 1 casa; os inimigos sobre ele levam +100% de chance de crítico e +10% de efeito de maldição",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de vida máxima$",
+      "efeitos": [
+        {
+          "stat": "life_more",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Inimigos próximos são enervados$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:inervado",
+          "valor": "1"
+        }
+      ],
+      "nota": "o Inervado do PoE (Unnerve): 10% mais dano de Magias recebido",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano físico roubado como escudo de energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@fisico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o \"Dano de Fogo Drenado como Vida\" do jogo: o golpe Físico drena (o jogo não separa a parte Física do golpe)",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de mana máximo$",
+      "efeitos": [
+        {
+          "stat": "mana_more",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de taxa de recuperação do tempo de recarga$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano elemental roubado como escudo de energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o \"Dano de Fogo Drenado como Vida\" do jogo: o golpe Elemental drena (o jogo não separa a parte Elemental do golpe)",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a veneno$",
+      "efeitos": [
+        {
+          "stat": "imune_veneno",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a incêndio$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a esfriamento$",
+      "efeitos": [
+        {
+          "stat": "imune_resfriamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Imune a eletrificação$",
+      "efeitos": [
+        {
+          "stat": "imune_eletrizacao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^A cada \\{(\\d+)\\} segundos, regenera \\{(\\d+)\\}% de vida durante \\{(\\d+)\\} segundo$",
+      "efeitos": [
+        {
+          "stat": "periodico:{V1}:regenPct:hp:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Projéteis perfuram \\{(\\d+)\\} alvos adicionais$",
+      "efeitos": [
+        {
+          "stat": "perfurar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Inimigos próximos são intimidados$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:intimidado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Inimigos próximos são cegados$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:cego",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de força$",
+      "efeitos": [
+        {
+          "stat": "str_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de destreza$",
+      "efeitos": [
+        {
+          "stat": "dex_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% de inteligência$",
+      "efeitos": [
+        {
+          "stat": "int_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Você tem chão consagrado ao seu redor enquanto estiver imóvel$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:soloSagrado:2@parado",
+          "valor": "100"
+        }
+      ],
+      "nota": "como o \"Enquanto parado, a área ao seu redor será Solo Sagrado\"",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a chance de bloquear dano de ataque máxima$",
+      "efeitos": [
+        {
+          "stat": "block_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a chance de bloquear dano de magia máxima$",
+      "efeitos": [
+        {
+          "stat": "spell_block_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode sofrer dano físico refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_fisico",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode sofrer dano elemental refletido$",
+      "efeitos": [
+        {
+          "stat": "imune_reflexo_elemental",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Ataques têm \\+\\{(\\d+)\\}% a mais de chance de golpe crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% à chance de golpe crítico mágico$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano elemental como dano de caos$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_chaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_ice_como_chaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Mais \\{(\\d+)\\}% para a velocidade de movimento$",
+      "efeitos": [
+        {
+          "stat": "move_speed_mais",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de caos máxima$",
+      "efeitos": [
+        {
+          "stat": "chaos_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de fogo máxima$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de gelo máxima$",
+      "efeitos": [
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para a resistência a dano de raio máxima$",
+      "efeitos": [
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano físico como dano de fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano físico como dano de gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\}% do dano físico como dano de raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_physical_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} cargas de tolerância por segundo se tiver sido atingido recentemente$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_por_segundo_acertado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi ao Atingir$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Atingir$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode ser atordoado$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Não pode ser congelado$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidades físicas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de caos$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de fogo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de gelo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de habilidade de raio$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Aumento de \\{(\\d+)\\}% dos atributos$",
+      "efeitos": [
+        {
+          "stat": "str_inc",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex_inc",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de dano físico como dano adicional de cada elemento$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_ice",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_as_extra_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% para todas as resistências elementais máximas$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao nível de todas as gemas de suporte não excepcionais$",
+      "efeitos": [
+        {
+          "stat": "gem_level@suporte+naoExcepcional",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Você pode aplicar uma maldição a mais$",
+      "efeitos": [
+        {
+          "stat": "maldicoes_adicionais",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Habilidades disparam um projétil adicional$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^Acertos corpo a corpo fortificam$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} para as cargas de tolerância máximas$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} para as cargas de frenesi máximas$",
+      "efeitos": [
+        {
+          "stat": "max_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} para as cargas de poder máximas$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano físico impedido recentemente é regenerado como escudo de energia por segundo$",
+      "efeitos": [
+        {
+          "stat": "fisico_negado_em_es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\[Random [246]x influence item bonus\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteada na peça: 1 das 18 linhas do pool da única no poedb com o mesmo número de itens com influência (`linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote57": "16/10 — lote 57 (J31: o Solo Profano e o Limitado pelo Destino)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Mana Regenerada por Segundo$",
+      "efeitos": [
+        {
+          "stat": "mana_regen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Efeito de Afecções que não causam Dano nos Inimigos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "efeito_nao_dano",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Efeito das Auras Não-Maldições aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_gema:aura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Habilidades Canalizadas causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@canalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Duração das Afecções Elementais reduzidas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais_propria",
+          "valor": "-{1}"
+        }
+      ],
+      "nota": "o PoE em inglês: \"reduced Elemental Ailment Duration on you\" — em você (o texto em português perdeu o \"em você\")",
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Lacaios tem \\+\\{(\\d+)\\} de Precisão(?: por cada \\{(\\d+)\\} de Devoção)?$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: o golpe dos lacaios não erra (não rola a Precisão contra a Evasão do monstro)",
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração dos Lacaios aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_atk_speed",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Defesas do Escudo Equipado aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "defesas_pct_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Dano de Totens aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^\\[Two random mods of devotion\\]$",
+      "efeitos": [
+        {
+          "stat": "lembrete",
+          "valor": "1"
+        }
+      ],
+      "estado": "lembrete",
+      "nota": "sorteadas na peça: 2 das 16 linhas de devoção do pool da única no poedb (`linhas-sorteadas.json`)",
+      "_nova": true,
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Dano de Caos Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc_caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Dano Físico Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc_fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Dano Degenerativo de Gelo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Dano enquanto afetado por um Arauto aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios causam Dano aumentado em \\{(\\d+)\\}% enquanto você for afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "minion_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "life",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Mana Máxima$",
+      "efeitos": [
+        {
+          "stat": "mana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Escudo de Energia Máximo$",
+      "efeitos": [
+        {
+          "stat": "energy_shield",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Todos os Atributos$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por Segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios Regeneram \\{(\\d+)\\}% de Vida por Segundo$",
+      "efeitos": [
+        {
+          "stat": "minion_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Duração do Clamor aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Arremesso de Armadilha e Mina aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@armadilha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Posicionamento de Totem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Alcance de Vínculo de Marcas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "alcance_vinculo_runas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Habilidades Canalizadas têm Velocidade de Ataque e Conjuração aumentada \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@canalizar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@canalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Cargas de Frasco ganhadas aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_recebidas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Fogo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@fogo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Gelo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@gelo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Raio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@raio",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Caos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@caos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades Físicas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@fisico",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades Elementais aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@elemental",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios têm Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_atk_speed",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto você for afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios têm Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto você for afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "minion_atk_speed@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_cast_speed@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Golpe Crítico de Habilidades Arauto$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear Dano Mágico enquanto no Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "spell_block@cargasMax:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto no Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "block@cargasMax:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos com Garras ou Adagas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Crítico se você Bloqueou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@bloqueouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquar Dano Mágico enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "spell_block@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquar o Dano de Ataques enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "block@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Físico Degenerativo enquanto portando um Machado ou Espada$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_phys@comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo para Envenenamentos enquanto portando uma Garra ou Adaga$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison@comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear Dano Mágico caso tenha Conjurado uma Magia Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_block@usouTag:magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Raio Drenado como Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar, Eletrizar e Incendiar enquanto afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_shock@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_ignite@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empalar Inimigos ao Acertar com Machados ou Espadas$",
+      "efeitos": [
+        {
+          "stat": "chance_empalar@ataque+comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Provocar Inimigos ao Acertar com Projéteis$",
+      "efeitos": [
+        {
+          "stat": "chance_provocar@projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar uma Núvem de Fumaça ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:fumaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Fúria Arcana ao Acertar um inimigo Único$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buffChance:furiaArcana:4@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar com Acertos contra Inimigos Sangrando$",
+      "efeitos": [
+        {
+          "stat": "chance_cegar@alvoSangrando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado enquanto portando uma Maça, Cetro ou Cajado$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@comMacaCetroOuCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado caso tenha causado um Golpe Crítico com uma Arma de Duas Mãos Corpo a Corpo Recen[e]?mente$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@criticoRecente+duasMaos+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Atordoado enquanto Canaliza[n]+do$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empurrar Inimigos ao Acertar com Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Ataques com Machados ou Espadas causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Ataques com Maça, Cetro ou Cajado causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMacaCetroOuCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comMacaCetroOuCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% caso você não tenha Bloqueado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@naoBloqueouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico contra Inimigos Amaldiçoados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico contra Inimigos Provocados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@alvoProvocado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Degenerativo aumentado em \\{(\\d+)\\}% enquanto afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% caso você tenha Incendiado um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@incendiouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@incendiouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@incendiouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% caso você tenha Eletrizado um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@eletrizouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@eletrizouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@eletrizouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% enquanto afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Físico com Machados e Espadas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% enquanto com Escudo de Energia Cheio$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@escudoCheio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% caso você tenha usado uma Habilidade de Deslocamento Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@usouMovimentoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Inimigos Únicos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoUnico",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano com Maças, Cetros ou Cajados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@comMacaCetroOuCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano da Armadilha Penetra \\{(\\d+)\\}% de Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataque contra Inimigos Mutilados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+alvoMutilado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataque de Projéteis com Garras ou Adagas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+projetil+comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataque quando em Vida Cheia aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+vidaCheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataques aumentado em \\{(\\d+)\\}% enquanto Drenando Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+drenandoEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo com Acertos contra Inimigos Eletrizados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg@alvoEletrizado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Raio com Acertos contra Inimigos Resfriados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "energy_dmg@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano do Ataque com a Mão Primária aumentado em \\{(\\d+)\\}% enquanto portando dois Tipos Diferentes de Armas$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+maoPrincipal+armasDiferentes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano em Área aumentado em \\{(\\d+)\\}% enquanto portando uma Arma Corpo a Corpo de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@area+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Duração das Afecções de Fogo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_incendio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Duração de Afecções infligidas enquanto portando um Arco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades Canalizadoras possuem Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@canalizar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@canalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração enquanto Canalizando aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@canalizando",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Arauto causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Arco têm Área de Efeito aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Arco têm Duração do Efeito de Habilidade aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Magias conjuradas por Totens causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@magia+totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Projéteis causam Dano aumentado em \\{(\\d+)\\}% com Acertos contra Inimigos próximos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@projetil+alvoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Escudo de Energia quando você Matar um Inimigo Amaldiçoado$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:esPct@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao Matar um Inimigo Resfriado$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPct@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia por segundo se você Matou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia por segundo enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct@parado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo se um Lacaio Morreu Recentemente$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@lacaioMorreuRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% se você Congelou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@congelouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% se você Eletrizou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@eletrizouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto Drenando Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@drenandoEs",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@drenandoEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% se você convocou um Totem Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@usouTag:totem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@usouTag:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto não estiver sob Efeito de Frascos$",
+      "efeitos": [
+        {
+          "stat": "move_speed@semFrasco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "move_speed@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocid?ade de Movimento aumentada em \\{(\\d+)\\}% caso você tenha causado um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}% enquanto portando uma Arma Corpo a Corpo de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "area_inc@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% caso você tenha ao menos \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@atrMin:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque da Mão Secundária aumentada em \\{(\\d+)\\}% enquanto portando Tipos de Armas diferentes$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@maoSecundaria+armasDiferentes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Você tem Agressividade se Convocou um Totem Recentemente$",
+      "efeitos": [
+        {
+          "stat": "sempre:agressividade@usouTag:totem",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Fogo têm chance de \\{(\\d+)\\}% de aplicar Exposição a Fogo ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_chance_fogo@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades de Gelo têm chance de \\{(\\d+)\\}% de aplicar Exposição a Gelo ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_chance_gelo@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades de Raio têm chance de \\{(\\d+)\\}% de aplicar Exposição a Raio ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_chance_raio@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Fogo$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoFogo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Fogo enquanto você estiver afetado por Arauto Flamejante$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoFogo@afetadoPor:arauto-flamejante",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Gelo enquanto você estiver afetado por Arauto Glacial$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoGelo@afetadoPor:arauto-glacial",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Raio enquanto você estiver afetado por Arauto Trovejante$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoRaio@afetadoPor:arauto-trovejante",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Flamabilidade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Flammability",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Congelabilidade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Frostbite",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Condutividade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Conductivity",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Vulnerabilidade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Vulnerability",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Debilitar pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Enfeeble",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Desespero pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Despair",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Fraqueza Elemental pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Elemental_Weakness",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Totens Regeneram \\{(\\d+)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "totem_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Totens ganham \\+\\{(\\d+)\\}% de Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "totem_res_caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano Físico de Varinhas como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_chaos@comVarinha+ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico de Varinhas convertido para Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "phys_conv_energy@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% do Dano de Raio como Dano de Gelo Extra contra Inimigos Resfriados$",
+      "efeitos": [
+        {
+          "stat": "energy_as_extra_ice@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Poder Profano por \\{(\\d+)\\} segundos no Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:buffChance:poderProfano:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Tolerância por segundo enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:carga:tolerancia@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Lacaios têm uma chance de \\{(\\d+)\\}% de Empalar ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_empalar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por segundo que você estiver parado, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc%paradoS~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por Carga de Poder, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc%carga:poder~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Dano de Caos aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana máxima, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "chaos_dmg%manaMax:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% caso você tenha Matado ao menos \\{(\\d+)\\} Inimigos Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@matouRecenteMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Dano de Totens aumentado em \\{(\\d+)\\}% caso você tenha Convocado um Totem nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@totem+nosUltimos:{V2}:usou:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Seus Golpes Críticos Empurram Inimigos Eletrizados$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@critico+alvoEletrizado",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades em Área têm \\{(\\d+)\\}% de chance de Empurrar Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@area",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Remove Sangramento ao usar um Frasco de Vida$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrascoVida:removerAfeccao:sangramento",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder quando usar um Frasco de Mana$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrascoMana:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder em Golpes Não Críticos com uma Garra ou Adaga$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:poder@naoCritico+comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Machados ou Espadas$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:furia@comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana quando sua Armadilha for Ativada por um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:armadilha:buff:furiaArcana",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana quando sua Mina for Detonada focando em um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:mina:buff:furiaArcana",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Recuperação de Vida e Mana de Frascos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_rec",
+          "valor": "{1}"
+        },
+        {
+          "stat": "frasco_mana_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% se você plantou uma Mina ou arremessou uma Armadilha Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@plantouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% caso você tenha Resfriado um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@resfriouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@resfriouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@resfriouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades de Raio têm Limite de Atordoamento Inimigo reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Maldições em você reduzido em \\{(\\d+)\\}% durante o Efeito de Qualquer Frasco de Mana$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio@duranteFrascoMana",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Não Afetado por Resfriamentos enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "imune_resfriamento@canalizando",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos que você Amaldiçoa sofrem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "maldicao_dano_expirou:0",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Golem Convocado$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%lacaio:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Flechas ganham Dano enquanto viajam adiante, causando Dano com Acertos em alvos aumentado em até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projetil_longe_inc@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Habilidades de Arco têm \\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Habilidades de Arauto causam Dano Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque disparam um Projétil adicional enquanto portando uma Garra ou Adaga$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@ataque+comGarraOuAdaga",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano com Incêndios infligidos em Inimigos Amaldiçoados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ignite_dmg_inc@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Duração dos Congelamentos infligidos por você em Inimigos Amaldiçoados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_congelamento@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito de Eletrizações infligidas em Inimigos Amaldiçoados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano com Sangramento infligidos por você em Inimigos Mutilados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "bleed_dmg_inc@alvoMutilado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Afecções de Gelo infligidas por você em Inimigos Eletrizados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento@alvoEletrizado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Afecções de Raio infligidas por você em Inimigos Resfriados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por Sangramento infligido em Inimigos Envenenados$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_bleed@alvoEnvenenado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Inimigos afetados por Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoComAfeccao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoComAfeccao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Afecções Não-Danificadoras infligidas por você reduzido em \\{(\\d+)\\}% durante o Efeito do Frasco de Vida$",
+      "efeitos": [
+        {
+          "stat": "efeito_nao_dano@duranteFrascoVida",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "efeito_resfriamento@duranteFrascoVida",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao@duranteFrascoVida",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos mortos por seus Acertos com Varinhas têm chance de \\{(\\d+)\\}% de Explodir, causando um quarto de sua Vida como Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:25:chaos@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos mortos por seus Acertos de Ataques têm chance de \\{(\\d+)\\}% de Explodir, causando um décimo de sua vida máxima como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:10:physical@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% caso você tenha Atordoado um Inimigo com uma Arma de Duas Mãos Corpo a Corpo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@atordoouRecente+duasMaos+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Você não pode ser Congelado se você foi Congelado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_congelamento",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Você não pode ser Eletrizado se foi Eletrizado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_eletrizacao",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Você não pode ser Incendiado se foi Incendiado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_incendio",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana após Canalizar por \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "sempre:furiaArcana@canalizandoHa:{V1}",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos caso você tenha Canalizado por ao menos \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@canalizandoHa:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos caso você tenha causado um Golpe Crítico com uma Habilidade Arauto Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@nosUltimos:4:critico:arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% do Escudo de Energia por segundo se você Amaldiçoou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct@usouTag:maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"Amaldiçoou Recentemente\" é o usar uma Maldição recentemente (o inimigo à prova de Maldições conta igual)",
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos Desacelerados por você sofrem Dano de Caos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "chaos_dmg@alvoLento",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o seu dano de Caos nos Desacelerados (o dos lacaios e aliados neles, não)",
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Lacaios [Cc]riados Recentemente têm Velocidade de Movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_move_recente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios [Cc]riados Recentemente não podem sofrer Dano$",
+      "efeitos": [
+        {
+          "stat": "minion_invulneravel_recente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios [Cc]riados Recentemente têm Velocidades de Ataque e Conjuração aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_vel_recente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de Empurrar Inimigos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_empurrar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o empurrão do jogo: o inimigo vai para longe de você (no PoE, para longe do lacaio)",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de causar Dano Dobrado enquanto estiverem em Vida Cheia$",
+      "efeitos": [
+        {
+          "stat": "minion_dano_dobrado_vida_cheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios têm Velocidade de Movimento aumentada em \\{(\\d+)\\}% para cada Arauto afetando você$",
+      "efeitos": [
+        {
+          "stat": "minion_move%arautosAtivos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}% contra Inimigos Incendiados$",
+      "efeitos": [
+        {
+          "stat": "minion_dano_incendiados",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Esqueletos Convocados possuem \\{(\\d+)\\}% do Dano Físico Convertido para Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "lacaio_conv_caos:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Esqueletos Convocados têm \\{(\\d+)\\}% de chance de Definhar Inimigos por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_definhar:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Zumbis Erguidos têm \\{(\\d+)\\}% de chance de Provocar Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_provocar:zumbi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Sentinelas Convocados têm Velocidade da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cdr:sentinela",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Inimigos Incendiados por você têm -?\\{(\\d+)\\}% de Resist[eê]n?cia a Fogo$",
+      "efeitos": [
+        {
+          "stat": "res_menos_fogo_incendiado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Inimigos Envenenados por você não podem Regenerar Vida$",
+      "efeitos": [
+        {
+          "stat": "envenenados_sem_regen",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Magias de Caos têm \\{(\\d+)\\}% de chance de Desacelerar Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_desacelerar@magia+caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Punição pode afetar Inimigos Infeitiçáveis$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: a maldição Punição não existe no PoE 3.29 — não há a gema (dono, 17/10)",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Alcance do Posicionamento de Totens aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "totem_alcance_posicionamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana ao Convocar um Totem$",
+      "efeitos": [
+        {
+          "stat": "ev:convocarTotem:buff:furiaArcana",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Totens Desaceleram Inimigos próximos deles quando Convocados$",
+      "efeitos": [
+        {
+          "stat": "totem_desacelera_ao_convocar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Incêndios infligidos por você se espalham para outros Inimigos em um Raio de \\{(\\d+)\\} metros$",
+      "efeitos": [
+        {
+          "stat": "ev:incendiar:espalhar:incendioRaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Intimidar Inimigos próximos por \\{(\\d+)\\} segundos ao Matar Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:proximos:intimidado:{V2}@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos próximos ao usar uma Habilidade Elemental$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:proximos:cego@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Eletrizar um Inimigo Resfriado$",
+      "efeitos": [
+        {
+          "stat": "ev:eletrizar:carga:poder@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Ganha Gênio Alquímico ao usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:buff:genioAlquimico",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Inimigos Provocados por seus Clamores são Intimidados$",
+      "efeitos": [
+        {
+          "stat": "provocados_clamor_intimidados",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados por você são Enervados$",
+      "efeitos": [
+        {
+          "stat": "amaldicoados_inervados",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de máximo das Resistências Elementais se você Matou um Inimigo Amaldiçoado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max@matouAmaldicoadoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max@matouAmaldicoadoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max@matouAmaldicoadoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Inimigos Incendiados Mortos por seus Acertos são destruídos$",
+      "efeitos": [
+        {
+          "stat": "incendiados_mortos_destruidos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Seus Golpes Críticos têm chance de \\{(\\d+)\\}% de causar Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "critico_chance_dano_dobrado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Arremessar até \\{(\\d+)\\} Armadilha ou Mina adicional$",
+      "efeitos": [
+        {
+          "stat": "plantadas_extras_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "plantadas_extras_n",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Mina a mais não demora os 10% a mais do arremesso (o jogo não tem o tempo de arremesso da Mina)",
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Remove uma Maldição após Canalizar por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "canalizar_remove_maldicao_s",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Caos contra Dano Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "chaos_res_contra_degen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados por você tem Esconjuro se \\{(\\d+)\\}% da Duração da Maldição expirou$",
+      "efeitos": [
+        {
+          "stat": "amaldicoados_esconjuro_apos_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Auras das suas Habilidades têm Efeito reduzido em \\{(\\d+)\\}% em você\\s+para cada Arauto te afetando, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "aura_em_voce_menos_por_arauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "aura_em_voce_menos_por_arauto_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de infligir Definhar por dois segundos ao Acertar se houver \\{(\\d+)\\} ou menos Debuffs de Definhar no Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:alvo:definhado:2@alvoDefinhadosAte:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Clamores têm \\{(\\d+)\\}% de Chance de conceder uma Carga de Tolerância, Frenesi ou Poder por Poder$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:cargaAleatoriaPorPoder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Ganha Armadura aumentada em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Poder por \\{(\\d+)\\} segundos ao Clamar, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ev:usarClamor:statTempPorPoder:armour_pct:{V3}:{V2}:{V4}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Chama Santificada infligida por você tem a intensidade aumentada em \\{(\\d+)\\}% por \\{(\\d+)\\}% de chance de bloquear ataques$",
+      "efeitos": [
+        {
+          "stat": "chama_santificada_efeito%bloqueio:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Seus clamores infligem Chama Santificada$",
+      "efeitos": [
+        {
+          "stat": "clamor_chama_santificada",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Físico Degenerativo se você Gastou Vida Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_phys@gastouVidaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% caso você tenha Acertado com sua Arma da Mão Principal Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@acertouMaoPrincipalRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% caso você tenha Acertado com sua Arma da Mão Secundária Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@acertouMaoSecundariaRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote72": "17/10 — lote 72 (as Ramificadoras: os notáveis — aliados, Clamores, maldições, Canalizar, dano contínuo em você, mãos)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos caso você tenha sofrido um Acerto Selvagem Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@sofreuAcertoSelvagemRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "selo_frequencia_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Runas Desvinculadas ganham Alcance do Vínculo de Runas reduzido em \\{(\\d+)\\}% por\\s+segundo, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "runa_solta_alcance_por_s",
+          "valor": "{1}"
+        },
+        {
+          "stat": "runa_solta_alcance_max",
+          "valor": "{2}"
+        }
+      ],
+      "nota": "como no PoE (o inglês): o alcance AUMENTA enquanto a Runa está solta — o português do poedb diz \"reduzido\"",
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Habilidades que criam Runas têm \\{(\\d+)\\}% de chance de criarem uma Runa adicional$",
+      "efeitos": [
+        {
+          "stat": "runa_adicional_chance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Habilidades de Caos ignoram interrupções de Atordoamentos$",
+      "efeitos": [
+        {
+          "stat": "caos_ignora_interrupcao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Projéteis causam dano com ataques e afecções aumentado em \\{(\\d+)\\}% por\\s+cada propagação restante, até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "proj_inc_por_ricochete_restante",
+          "valor": "{1}"
+        },
+        {
+          "stat": "proj_inc_por_ricochete_restante_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Efeito dos Empalamentos inflingidos por Acertos que também infligem Sangramento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_empalamento_com_sangramento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Convocação de Runas concede alcance do Vínculo de Runas aumentado em \\{(\\d+)\\}% para Runas convocadas$",
+      "efeitos": [
+        {
+          "stat": "convocar_runas_alcance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote74": "17/10 — lote 74 (as Ramificadoras: o Reduzir — a gema Convocar Runas, decisão do dono \"Implementar a gema\")"
+    },
+    {
+      "padrao": "^Convocação de Runas tem Recuperação da Recarga aumentada em \\{(\\d+)\\}%, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "convocar_runas_recarga_por_runa",
+          "valor": "{1}"
+        },
+        {
+          "stat": "convocar_runas_recarga_max",
+          "valor": "{2}"
+        }
+      ],
+      "nota": "como no PoE (o inglês): por Runa sua em campo — o português do poedb não diz \"por Runa\"",
+      "_nova": true,
+      "_lote74": "17/10 — lote 74 (as Ramificadoras: o Reduzir — a gema Convocar Runas, decisão do dono \"Implementar a gema\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Virulência Máxima$",
+      "efeitos": [
+        {
+          "stat": "virulencia_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote75": "17/10 — lote 75 (as Ramificadoras: a Pura Agonia — o Arauto da Agonia com a Virulência, decisão do dono \"No máximo, como o PoB\")"
     }
   ]
 }
