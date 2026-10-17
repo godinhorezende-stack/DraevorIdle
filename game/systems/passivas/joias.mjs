@@ -16,6 +16,32 @@ function seguraNos(estado, encaixe) {
   const presos = Passivas.ilhadosSemEles(estado, [], [encaixe]).filter((x) => !antes.has(x));
   return presos.length ? erro('JOIA_SEGURA_NOS', `Essa joia segura ${presos.length} nó(s) sem ligação com a árvore — tire-os antes.`) : null;
 }
+/**
+ * (lote 64) TIRAR a Ramificadora do encaixe `id` (ou trocá-la): os nós dela (e os das joias menores dentro dela) saem da alocação e os pontos
+ * voltam — como no PoE ("tirar a joia devolve todos os pontos gastos nela; se um encaixe de joia ou uma pedra fundamental estava alocado, custa
+ * 1 ponto de reembolso": aqui, o preço de 1 nó no respec, de graça no jogo oficial). As joias menores voltam à mochila em `garantir`.
+ * Devolve o erro (sem ouro) ou null.
+ */
+function soltarRamificadora(estado, id) {
+  const { passivas: p } = Passivas.garantir(estado);
+  if (!p.joias?.[id]?.poe?.ramificadora) return null;
+  const dela = new Set(Passivas.nosDaRamificadora(estado, id));
+  const alocados = p.alocados.filter((x) => dela.has(x));
+  if (!alocados.length) return null;
+  const g = Passivas.grafoDe(estado);
+  const custa = alocados.some((x) => g.internos.has(x) || g.porId.get(x)?.tipo === 'keystone');
+  const preco = custa ? Passivas.precoDoRespec(estado, 1) : 0;
+  if (preco) {
+    const total = (estado.gold ?? 0) + (estado.bank ?? 0);
+    if (total < preco) return erro('SEM_OURO', `Tirar essa Joia Ramificadora custa ${preco.toLocaleString('pt-BR')} de ouro (um encaixe ou pedra fundamental alocado nela).`);
+    const doBolso = Math.min(estado.gold ?? 0, preco);
+    estado.gold = (estado.gold ?? 0) - doBolso;
+    estado.bank = (estado.bank ?? 0) - (preco - doBolso);
+  }
+  p.alocados.splice(0, p.alocados.length, ...p.alocados.filter((x) => !dela.has(x)));
+  for (const x of dela) delete p.maestrias?.[x];
+  return null;
+}
 /** A peça é uma joia de encaixe (`itens-poe/jogo.JOIAS`)? */
 export const ehJoia = (peca) => !!peca && !!ITEM_CATALOG[peca.id]?.joia;
 
@@ -26,8 +52,9 @@ export const ehJoia = (peca) => !!peca && !!ITEM_CATALOG[peca.id]?.joia;
 export function encaixar(estado, { no, pilha, id } = {}) {
   const { passivas: p } = Passivas.garantir(estado);
   if (Passivas.arvore().id !== 'poe') return erro('SEM_ENCAIXES', 'A árvore em uso não tem encaixes de joia.');
-  const encaixe = Passivas.arvore().porId.get(String(no ?? ''));
-  if (!Passivas.ehEncaixeDeJoia(encaixe)) return erro('NAO_E_ENCAIXE', 'Esse nó não é um encaixe de joia.');
+  const encaixe = Passivas.grafoDe(estado).porId.get(String(no ?? ''));
+  // (lote 64: + os encaixes internos das Ramificadoras encaixadas)
+  if (!Passivas.ehEncaixeDoPersonagem(estado, encaixe)) return erro('NAO_E_ENCAIXE', 'Esse nó não é um encaixe de joia.');
   if (!p.alocados.includes(encaixe.id)) return erro('ENCAIXE_SEM_PONTO', 'Aloque o encaixe antes de pôr a joia.');
   const mochila = (estado.inventory ??= []);
   // (a mochila pode ter mudado no caminho: o índice só vale se ainda for a mesma peça)
@@ -35,6 +62,13 @@ export function encaixar(estado, { no, pilha, id } = {}) {
   if (!Number.isInteger(i) || (id != null && mochila[i]?.id !== Number(id))) i = id != null ? mochila.findIndex((x) => x?.id === Number(id)) : -1;
   const peca = i >= 0 ? mochila[i] : null;
   if (!ehJoia(peca)) return erro('NAO_E_JOIA', 'Essa peça não é uma joia.');
+  // (lote 64) a RAMIFICADORA só entra num encaixe de EXPANSÃO (o Grande da borda e os internos das Ramificadoras) do tamanho dela ou maior —
+  // como no PoE (o PoB: `IsItemValidForSlot`); a joia comum entra em todos
+  const tamanho = peca.poe?.ramificadora?.tamanho;
+  if (tamanho) {
+    if (!encaixe.expansao) return erro('RAMIFICADORA_FORA', 'A Joia Ramificadora só entra num encaixe de expansão (os Grandes da borda e os que as Ramificadoras criam).');
+    if (Passivas.INDICE_DO_TAMANHO[tamanho] > encaixe.expansao.tamanho) return erro('RAMIFICADORA_GRANDE', 'Essa Joia Ramificadora é grande demais para este encaixe.');
+  }
   const nivel = nivelExigido(ITEM_CATALOG[peca.id], peca);
   if (nivel > (estado.level ?? 0)) return erro('NIVEL', `Precisa do level ${nivel}.`);
   // (lote 29) "Limitado a: N" (a joia única): não mais que N iguais nos encaixes (a que sai deste encaixe não conta).
@@ -47,6 +81,8 @@ export function encaixar(estado, { no, pilha, id } = {}) {
   if (p.joias?.[encaixe.id]) {
     const preso = seguraNos(estado, encaixe.id);
     if (preso) return preso;
+    const semOuro = soltarRamificadora(estado, encaixe.id);
+    if (semOuro) return semOuro;
   }
   if ((peca.count ?? 1) > 1) peca.count -= 1;
   else mochila.splice(i, 1);
@@ -65,6 +101,8 @@ export function retirar(estado, { no } = {}) {
   if (!peca) return erro('ENCAIXE_VAZIO', 'Esse encaixe está vazio.');
   const preso = seguraNos(estado, id);
   if (preso) return preso;
+  const semOuro = soltarRamificadora(estado, id);
+  if (semOuro) return semOuro;
   delete p.joias[id];
   p.joiasVersao = (p.joiasVersao ?? 0) + 1;
   (estado.inventory ??= []).push({ ...peca, count: 1 });

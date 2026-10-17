@@ -266,6 +266,8 @@ export function somaDeItens(estado) {
   // (lote 55, a Personalidade Dividida: "Este Encaixe de Joia tem efeito aumentado em 25% por Habilidade Passiva Alocada entre ele e o ponto de
   // início da sua Classe" — os mods dela × (1 + 25% × as passivas no caminho mais curto, `Passivas.passivasAteOInicio`))
   for (const { no, peca } of joias) {
+    // (lote 64) a RAMIFICADORA não soma no personagem: o que ela concede vale pelos nós que cria na árvore (`passivas/ramificadoras`)
+    if (peca?.poe?.ramificadora) continue;
     const porPassiva = Number(peca?.poe?.af?.joia_efeito_por_passiva_ate_inicio) || 0;
     const fator = (adornado !== 1 && peca.poe?.raridade === 'magico' && peca.poe?.corrompido ? adornado : 1) * (porPassiva > 0 ? 1 + (porPassiva * Passivas.passivasAteOInicio(estado, no.id)) / 100 : 1);
     somarPeca(total, estado, 'joia', peca, fator);

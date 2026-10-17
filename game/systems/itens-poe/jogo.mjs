@@ -75,7 +75,15 @@ export const JOIAS = Object.freeze({
   'Jewels/Crimson_Jewel': 7_800_001, 'Jewels/Viridian_Jewel': 7_800_002, 'Jewels/Cobalt_Jewel': 7_800_003, 'Jewels/Prismatic_Jewel': 7_800_004,
   'Jewels/Timeless_Jewel': 7_800_005,
   'Abyss_Jewels/Murderous_Eye_Jewel': 7_800_011, 'Abyss_Jewels/Searching_Eye_Jewel': 7_800_012, 'Abyss_Jewels/Hypnotic_Eye_Jewel': 7_800_013, 'Abyss_Jewels/Ghastly_Eye_Jewel': 7_800_014,
+  // (lote 64) as RAMIFICADORAS (`itens-poe/ramificadoras.mjs` e `passivas/ramificadoras.mjs`): nos encaixes de expansão da árvore
+  'Jewels/Large_Cluster_Jewel': 7_800_021, 'Jewels/Medium_Cluster_Jewel': 7_800_022, 'Jewels/Small_Cluster_Jewel': 7_800_023,
 });
+/**
+ * (lote 64) As Ramificadoras ainda NÃO CAEM (dono, 17/10: "Servidor, linhas, tela, únicas" — a joia entra no drop no último passo, com a
+ * tela e as únicas): ficam no catálogo (encaixar, testar), fora do drop e do baú.
+ */
+export const RAMIFICADORAS_NO_DROP = false;
+export const ehRamificadora = (base) => /^Jewels\/(?:Large|Medium|Small)_Cluster_Jewel$/.test(base?.id ?? base ?? '');
 export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel', 'Jewels/Timeless_Jewel']);
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
@@ -301,6 +309,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       // (O único que já cai corrompido — a Corda da Servidão — não aceita moeda comum, como no PoE.)
       ...(gerada.corrompido ? { corrompido: true } : {}),
+      // (lote 64) a Ramificadora: o tamanho e o encantamento (`itens-poe/ramificadoras.mjs`) — os nós que ela cria na árvore saem dele
+      ...(gerada.ramificadora ? { ramificadora: gerada.ramificadora } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [],
       estados: t.linhas.map((l) => l.estado), notas: notasDe(t), af, tv: VERSAO_DA_TRADUCAO,
     },
@@ -583,7 +593,7 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
  * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
  */
 // (lote 27) A Joia Prismática só cai Única (o PoE não tem Prismática Normal, Mágica nem Rara; a coleção traz o pool genérico das joias nela).
-export const podeCairComo = (classe, base, raridade) => (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
+export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
 
 export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null) {
   const cat = Catalogo.catalogo();

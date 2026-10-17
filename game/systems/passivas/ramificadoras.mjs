@@ -14,6 +14,8 @@
 //     o efeito, truncado); o notável, os efeitos dele (a árvore 3.29 do poedb). As linhas pelo mesmo tradutor da árvore.
 import { traduzirLinha } from '../itens-poe/arvore.mjs';
 import { encantamentoDa } from '../itens-poe/ramificadoras.mjs';
+import { definirRamificadoras } from './arvore.mjs';
+import { catalogo } from '../itens-poe/catalogo.mjs';
 
 export const ID_BASE = 0x10000;
 /** Os ângulos da órbita de 16 nós do PoE (graus); as outras são divididas por igual. */
@@ -169,3 +171,6 @@ export function montar({ dados, arvore, encaixe, poe, id = ID_BASE, joiaNoEncaix
   }
   return saida;
 }
+
+// (lote 64) a árvore do personagem monta os nós das Ramificadoras encaixadas por aqui (`passivas/arvore.grafoDe`)
+definirRamificadoras({ montar, dados: () => catalogo()?.ramificadoras ?? null });
