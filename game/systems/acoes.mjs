@@ -25,7 +25,7 @@ import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Gemas from './skills/gemas.mjs';
 import * as Tags from './skills/tags.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
-import { valor as valorPoe, slugDoNome } from './itens-poe/condicoes-poe.mjs';
+import { valor as valorPoe, slugDoNome, NO_ACERTO } from './itens-poe/condicoes-poe.mjs';
 import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
@@ -1902,10 +1902,12 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
   }
   // (ciclo 7) "Habilidades que invocam um Totem têm X% de chance de invocar dois em vez de um".
   const porUso = q.tipo === 'totem' && estado && Math.random() * 100 < ModsPoe.valor(Ficha.combate(estado), 'totem_dois_chance') ? Math.max(q.porUso, 2) : q.porUso;
+  const fichaDoTotem = q.tipo === 'totem' && estado ? Ficha.combate(estado) : null;
+  const lugar = lugarDoTotem(hunt, fichaDoTotem ? alvo : null, ModsPoe.valor(fichaDoTotem, 'totem_alcance_posicionamento'));
   for (let i = 0; i < porUso; i++) {
     const l = {
       uid: `lacaio:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, gema: slug, acao: entry.id, tipo: q.tipo, nome: q.nome, nivel: q.nivel, desde: agora,
-      x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir ?? 2, look: q.desenho.look, lookItem: q.desenho.lookItem ?? 0, colors: q.desenho.colors,
+      x: lugar.x, y: lugar.y, dir: hunt.pos.dir ?? 2, look: q.desenho.look, lookItem: q.desenho.lookItem ?? 0, colors: q.desenho.colors,
       hp: q.vida, maxHp: q.vida, dano: q.dano, elemento: q.elemento ?? 'physical', intervaloMs: q.intervaloMs, ate: q.duracaoMs ? agora + q.duracaoMs : null, duracaoMs: q.duracaoMs ?? null,
       // (a conversão do dano Físico do golpe e o "só causa dano de X" — `LacaiosPoe.oQueInvoca`)
       ...(q.conversao ? { conversao: q.conversao, soDano: q.soDano ?? null } : {}),
@@ -1936,19 +1938,53 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
     LacaiosPoe.aplicarNoLacaio(l);
     hunt.lacaios.push(l);
     eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
-    // (ciclo 7) "Totens Provocam Inimigos ao redor deles por N segundo quando Convocados".
-    const provoca = q.tipo === 'totem' && estado ? ModsPoe.valor(Ficha.combate(estado), 'totem_provoca_s') : 0;
-    if (provoca > 0) for (const m of hunt.monstros ?? []) {
-      if (m.hp <= 0 || m.dummy || Math.max(Math.abs(m.x - l.x), Math.abs(m.y - l.y)) > 3) continue;
-      (m.estados ??= {}).provocado = { ate: agora + provoca * 1000, por: l.nome, deLacaio: true };
-      eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
-    }
+    if (fichaDoTotem) eventos.push(...aoConvocarTotem(estado, hunt, l, fichaDoTotem, agora));
   }
   // Passou do máximo da gema: os mais velhos saem.
   const desta = hunt.lacaios.filter((l) => l.gema === slug);
   for (const velho of desta.slice(0, Math.max(0, desta.length - q.maximo))) velho.hp = 0;
   // O golem dá bônus ao dono: a ficha muda.
   if (q.afDono || q.porLacaioFisico) hunt.lacaiosMudaramAFicha = true;
+  return eventos;
+}
+
+/**
+ * (lote 70 — dono, 17/10: "Alcance do totem em casas") Onde o TOTEM nasce: com "Alcance do Posicionamento de Totens aumentado em X%", na
+ * direção do alvo, a até X% da distância até ele (casa a casa, só nas andáveis, nunca na casa do alvo); sem o mod (ou sem alvo), na sua casa.
+ */
+export function lugarDoTotem(hunt, alvo, pct) {
+  const p = { x: hunt.pos.x, y: hunt.pos.y };
+  if (!alvo || !(pct > 0)) return p;
+  const andavel = ModsPoe.gradeDoCombate(hunt)?.andavel ?? null;
+  const passos = Math.round((Math.max(Math.abs(alvo.x - p.x), Math.abs(alvo.y - p.y)) * pct) / 100);
+  for (let k = 0; k < passos; k++) {
+    const prox = { x: p.x + Math.sign(alvo.x - p.x), y: p.y + Math.sign(alvo.y - p.y) };
+    if ((prox.x === alvo.x && prox.y === alvo.y) || (andavel && !andavel.has(`${prox.x},${prox.y}`))) break;
+    Object.assign(p, prox);
+  }
+  return p;
+}
+/** Ao CONVOCAR um totem (`l`, já na caçada): o que os mods fazem nos inimigos perto dele (a até 3 casas) e o evento. Devolve os eventos. */
+export function aoConvocarTotem(estado, hunt, l, ficha, agora) {
+  const eventos = [];
+  const perto = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - l.x), Math.abs(m.y - l.y)) <= 3);
+  // (ciclo 7) "Totens Provocam Inimigos ao redor deles por N segundo quando Convocados".
+  const provoca = ModsPoe.valor(ficha, 'totem_provoca_s');
+  if (provoca > 0) for (const m of perto) {
+    (m.estados ??= {}).provocado = { ate: agora + provoca * 1000, por: l.nome, deLacaio: true };
+    eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'provocado' });
+  }
+  // (lote 70) "Totens Desaceleram Inimigos próximos deles quando Convocados": a Lentidão do PoE — o lembrete do catálogo, "reduz a velocidade de
+  // movimento em 30% por 4 segundos" (`NO_ACERTO.desacelerar`, a mesma das Magias que Desaceleram).
+  if (ModsPoe.valor(ficha, 'totem_desacelera_ao_convocar') > 0) for (const m of perto) {
+    const e = (m.estados ??= {});
+    const { duracaoMs, lentidaoPct } = NO_ACERTO.desacelerar;
+    e.desacelerado = { ate: Math.max(e.desacelerado?.ate ?? 0, agora + duracaoMs), regenMenosPct: ModsPoe.valor(ficha, 'desacelerados_regen_red') };
+    e.lento = e.lento?.ate > agora ? { ate: Math.max(e.lento.ate, agora + duracaoMs), pct: Math.max(e.lento.pct, lentidaoPct) } : { ate: agora + duracaoMs, pct: lentidaoPct };
+    eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: 'lento' });
+  }
+  // (lote 70) o evento "ao Convocar um Totem" ("Ganhe Fúria Arcana ao Convocar um Totem" — `ev:convocarTotem:buff:furiaArcana`): um por totem.
+  ModsPoe.evento(estado, hunt, 'convocarTotem', ficha, { eventos, totem: l });
   return eventos;
 }
 

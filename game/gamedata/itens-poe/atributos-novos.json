@@ -7832,6 +7832,30 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/afeccoes + skills/estados (a regeneração do monstro) (lote 69)"
+    },
+    "imune_solo_ardente": {
+      "nome": "Inafetado por Solo Ardente",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) / acoes (o totem) (lote 70)"
+    },
+    "imune_solo_eletrizado": {
+      "nome": "Inafetado por Solo Eletrizado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) / acoes (o totem) (lote 70)"
+    },
+    "totem_alcance_posicionamento": {
+      "nome": "Alcance do Posicionamento de Totens aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) / acoes (o totem) (lote 70)"
+    },
+    "totem_desacelera_ao_convocar": {
+      "nome": "Totens Desaceleram Inimigos próximos deles quando Convocados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (a Lentidão ao Convocar um Totem) (lote 70)"
     }
   }
 }

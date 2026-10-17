@@ -395,7 +395,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // de Arauto Recentemente…)
 // (57 — 17/10, lote 69: as Ramificadoras — os lacaios criados Recentemente, por tipo (Esqueletos, Zumbis, Sentinelas), os inimigos
 // Incendiados (−X% de Resistência a Fogo) e Envenenados (sem regeneração), as exceções do dono)
-export const VERSAO_DA_TRADUCAO = 57;
+// (58 — 17/10, lote 70: as Ramificadoras — os Solos Ardente e Eletrizado dos monstros ("Inafetado por"), o alcance do posicionamento do
+// totem, a Fúria Arcana e a Lentidão ao Convocar um Totem)
+export const VERSAO_DA_TRADUCAO = 58;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

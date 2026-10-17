@@ -129,6 +129,11 @@ function mecanicasDoAcerto(a) {
  * maldição nem o nível; vale a gema no nível mais baixo (`condicoes-poe.MALDICOES_DOS_MONSTROS`).
  */
 const HABILIDADES = {
+  // (lote 70 — dono, 17/10: "Implementar os 2 solos") os SOLOS ao morrer (`mobs/mecanicas.criarSolo`): o poedb ("Burns Ground on Death": 6000 ms,
+  // raio 16 = 1,6 m, 3750% do dano máximo por minuto = 62,5%/s) e, no Eletrizado, os 20% fixos do Solo Eletrizado (a wiki do PoE)
+  MonsterModBurningGroundOnDeath: { mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'ardente', duracaoMs: 6000, raioMetros: 1.6, dpsPctDoGolpe: 62.5 }], linhas: ['Deixa Solo Ardente ao Morrer'] },
+  MonsterModBurningGroundOnDeathSanctum: { mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'ardente', duracaoMs: 6000, raioMetros: 1.6, dpsPctDoGolpe: 62.5 }], linhas: ['Deixa Solo Ardente ao Morrer'] },
+  MonsterModShockedGroundOnDeath: { mecanicas: [{ gatilho: 'aoMorrer', efeito: 'solo', solo: 'eletrizado', duracaoMs: 6000, raioMetros: 1.6, danoRecebidoPct: 20 }], linhas: ['Deixa Solo Eletrizado ao Morrer'] },
   MonsterModHexingEffigy: { mecanicas: [{ gatilho: 'aoAtacar', efeito: 'maldicao', chance: 100, maldicoes: ['fraquezaElemental', 'vulnerabilidade', 'enfraquecer'], duracaoMs: 6000 }], linhas: ['Amaldiçoa com Fraqueza Elemental, Vulnerabilidade ou Enfraquecer ao Acertar'] },
 };
 

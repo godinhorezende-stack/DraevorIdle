@@ -112,6 +112,7 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
         ferirJogador(estado, hunt, personagem, m, (m.maxHp * (mec.danoPctDaVida ?? 5)) / 100, mec.elemento ?? 'fire', eventos, 'Explosão');
       }
     } else if (mec.efeito === 'gerar') gerar(hunt, m, mec, eventos);
+    else if (mec.efeito === 'solo') criarSolo(hunt, m, mec, agora, eventos);
   }
   for (const o of hunt.monstros) {
     if (o === m || o.hp <= 0) continue;
@@ -119,6 +120,33 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
       if (mec.gatilho !== 'aliadoMorreu' || distancia(o, m) > (mec.raio ?? 4)) continue;
       Buffs.por(o, { chave: `${mec.modificador}:aliado`, ate: agora + (mec.duracaoMs ?? 5000), danoPct: mec.danoPct ?? 0, velocidadeDeAtaquePct: mec.velocidadeDeAtaquePct ?? 0 }, agora);
       eventos.push({ t: 'fx', id: 14, uid: o.uid, x: o.x, y: o.y });
+    }
+  }
+}
+
+/**
+ * (lote 70 — dono, 17/10: "Implementar os 2 solos") O SOLO que o monstro deixa ao morrer ("Solo Ardente ao Morrer", "Solo Eletrizado ao Morrer"
+ * — os mods do Raro do PoE): na casa dele, com o raio em metros (1 casa = 2 m, ao menos 1 — o poedb: raio 16 = 1,6 m), pela duração (6 s). O
+ * ARDENTE queima quem está nele: 62,5% do golpe máximo do monstro por segundo (o poedb: "3750% do dano máximo por minuto"), de Fogo — não é
+ * Incêndio; o ELETRIZADO Eletriza (`monstros-no-jogador.eletrizarPeloSolo`). "Inafetado por Solo Ardente/Eletrizado" (`imune_solo_<tipo>`).
+ */
+function criarSolo(hunt, m, mec, agora, eventos) {
+  const raio = Math.max(1, Math.round((mec.raioMetros ?? 1.6) / 2));
+  const golpe = (Poderes.golpeMaximoDoBicho(m) ?? 0) * (m.forca ?? 1);
+  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), de: m });
+  eventos.push({ t: 'area', id: 6, x: m.x, y: m.y, casas: Areas.paraTela(Areas.quadrado(m, raio), m) });
+}
+/** (lote 70) Os solos dos monstros a cada tique: o que vale em você agora (e os que acabaram saem). */
+function tiqueDosSolos(estado, hunt, personagem, eventos, agora, ficha) {
+  if (!hunt.solosDosMonstros?.length) return;
+  hunt.solosDosMonstros = hunt.solosDosMonstros.filter((s) => s.ate > agora);
+  for (const s of hunt.solosDosMonstros) {
+    if (s.z !== (hunt.z ?? 0) || !hunt.pos || distancia(hunt.pos, s) > s.raio || estado.hp <= 0) continue;
+    if (Number(ficha?.afPoe?.[`imune_solo_${s.tipo}`]) > 0) continue;
+    if (s.tipo === 'eletrizado') NoJogador.eletrizarPeloSolo(hunt, ficha, s.pct, agora);
+    else if (s.tipo === 'ardente' && s.dps > 0 && agora >= s.proximo) {
+      s.proximo = agora + 1000;
+      ferirJogador(estado, hunt, personagem, s.de, s.dps, 'fire', eventos, 'Solo Ardente');
     }
   }
 }
@@ -332,6 +360,7 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
 export function tique(estado, hunt, personagem, eventos) {
   const agora = relogio(hunt);
   const fichaDoJogador = ModsPoe.fichaDa?.(hunt) ?? null;
+  tiqueDosSolos(estado, hunt, personagem, eventos, agora, fichaDoJogador);
   for (const m of hunt.monstros) {
     // (PoE, 12/10) A vida que o monstro drenou de você volta ao longo do tempo.
     if (m.drenoPoe && m.hp > 0) tiqueDoDreno(m, agora);

@@ -127,6 +127,12 @@ export const semCorpoACorpo = (bicho) => (bicho?.boss ? !bicho.boss.melee : !!PO
 /** O EFEITO na tela quando o golpe corpo a corpo acerta (o id do efeito do Tibia): o do cadastro (aba Mobs → Ataques e efeitos) ou o sangue (1). */
 export const efeitoDoGolpe = (bicho) => (bicho?.boss ? bicho.boss.melee?.efeito : PODERES[bicho?.key]?.ataques.find((a) => a.tipo === 'melee')?.efeito) ?? EFEITO_DO_SANGUE;
 
+/** (lote 70) O MAIOR golpe corpo a corpo do bicho (o arquivo de poderes dele: o máximo da faixa), ou null sem golpe no arquivo. */
+export function golpeMaximoDoBicho(bicho) {
+  if (bicho?.boss) return bicho.boss.melee?.max ?? null;
+  const m = PODERES[bicho?.key]?.ataques?.find((a) => a.tipo === 'melee');
+  return m ? m.max : null;
+}
 /** O melee do arquivo; `null` = bicho sem poderes (usa a regra de sempre); 0 = boss sem melee. */
 export function golpeCorpoACorpo(bicho) {
   if (bicho?.boss) return bicho.boss.melee ? sortear(bicho.boss.melee.min, bicho.boss.melee.max) : 0;

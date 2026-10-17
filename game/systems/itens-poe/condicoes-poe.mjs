@@ -1887,7 +1887,9 @@ export const EVENTOS = new Set(['incendiarNovo', 'ganharAdrenalina', 'amaldicoar
   // (15/10, lote 31 — S001) o abate do seu LACAIO e do seu TOTEM ("por você ou seus Lacaios", "você ou seus Totens Matarem") e a morte de
   // qualquer inimigo, por quem for ("Inimigos Mortos próximos ao seu Estandarte", "Provocados por seus Clamores Explodem ao morrer") —
   // `hunt/combate.matarMonstro`, pelo carimbo de `hunt/quem-feriu`.
-  'matarLacaio', 'matarTotem', 'inimigoMorrer']);
+  'matarLacaio', 'matarTotem', 'inimigoMorrer',
+  // (lote 70) ao Convocar um Totem (`acoes.invocarLacaios`)
+  'convocarTotem']);
 export const ACOES = new Set(['transferirMarca', 'frascoChance', 'explodirChance', 'buffChance', 'vidaPctChance', 'manaPctChance', 'vidaFaltaPct', 'perdeMana', 'perdeUmaCarga', 'refletir', 'vida', 'vidaPct', 'mana', 'manaPct', 'es', 'esPct', 'carga', 'cargaMax', 'perdeCargas', 'cargaAleatoria', 'buff', 'alvo', 'proximos',
   'dano', 'danoPctVida', 'furia', 'frasco', 'recargaEs', 'explodir', 'gatilho', 'espalhar', 'roubarCargas', 'maldicao', 'soloSagrado', 'soloProfano', 'fumaca', 'removerAfeccao', 'perdeVidaPct', 'perdeEsPct', 'perdeManaPct',
   // (11/10, os únicos)

@@ -17676,6 +17676,28 @@
       "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
     },
     {
+      "padrao": "^Inafetado por Solo Ardente$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_ardente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Inafetado por Solo Eletrizado$",
+      "efeitos": [
+        {
+          "stat": "imune_solo_eletrizado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
       "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado|\\{\\d+\\}% de chance de criar Solo Profano no Golpe Crítico|Efeitos do Solo Profano criados por você Perduram).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
       "efeitos": [
         {
@@ -42843,6 +42865,39 @@
       "nota": "não se aplica ao jogo: a maldição Punição não existe no PoE 3.29 — não há a gema (dono, 17/10)",
       "_nova": true,
       "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Alcance do Posicionamento de Totens aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "totem_alcance_posicionamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana ao Convocar um Totem$",
+      "efeitos": [
+        {
+          "stat": "ev:convocarTotem:buff:furiaArcana",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Totens Desaceleram Inimigos próximos deles quando Convocados$",
+      "efeitos": [
+        {
+          "stat": "totem_desacelera_ao_convocar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
     }
   ]
 }

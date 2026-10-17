@@ -90,12 +90,11 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 627 | 3 | 41 |
+| Notáveis | 671 | 632 | 3 | 36 |
 
 <details><summary>As linhas sem efeito</summary>
 
 - Cersidor de Selos — Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em 30%
-- Espíritos Aprisionadores — Totens Desaceleram Inimigos próximos deles quando Convocados
 - Pura Agonia — +5 de Virulência Máxima
 - Grito Assustador — Inimigos Provocados por seus Clamores são Intimidados
 - Chamado Alarmante — Ganha Armadura aumentada em 25% por cada 5 de Poder por 8 segundos ao Clamar, máximo de 100%
@@ -103,11 +102,9 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Artista Sangrento — +6% de Multiplicador de Dano Físico Degenerativo se você Gastou Vida Recentemente
 - Sofrimento Eterno — 50% de chance de infligir Definhar por dois segundos ao Acertar se houver 5 ou menos Debuffs de Definhar no Inimigo
 - Soberano — Acertos Corpo a Corpo com Maças, Cetros ou Cajados Fortificam por 6 segundos _(a Fortificação não existe no jogo)_
-- Inspiração Ancestral — Ganhe Fúria Arcana ao Convocar um Totem
 - Apatia de Doedre — Inimigos Amaldiçoados por você são Enervados
 - Demonstração Desorientadora — 10% de chance de Cegar Inimigos próximos ao usar uma Habilidade Elemental
 - Guerreiro Destemido — 25% de chance de Intimidar Inimigos próximos por 4 segundos ao Matar Corpo a Corpo
-- Capacitor — Inafetado por Solo Eletrizado _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
 - Rítmo de Combate — Velocidade de Ataque aumentada em 10% caso você tenha Acertado com sua Arma da Mão Principal Recentemente
 - Rítmo de Combate — Velocidade de Movimento aumentada em 10% caso você tenha Acertado com sua Arma da Mão Secundária Recentemente
 - Composto Tonificado — Ganha Gênio Alquímico ao usar um Frasco
@@ -123,7 +120,6 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Pontos de Pressão — Seus Golpes Críticos têm chance de 5% de causar Dano Dobrado
 - Acompanhamento — Projéteis causam dano com ataques e afecções aumentado em 20% por
 cada propagação restante, até 100%
-- Sintonia do Fogo — Inafetado por Solo Ardente _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
 - Criador de Vítimas — Inimigos Amaldiçoados por você tem Esconjuro se 33% da Duração da Maldição expirou
 - Palavra Sagrada — Seus clamores infligem Chama Santificada
 - Mestre do Turbilhão — +1% de máximo das Resistências Elementais se você Matou um Inimigo Amaldiçoado Recentemente
@@ -132,7 +128,6 @@ cada propagação restante, até 100%
 para cada Arauto te afetando, até 40%
 - Terapia de Exposição — +30% de Resistência a Caos contra Dano Degenerativo
 - Cremador — Inimigos Incendiados Mortos por seus Acertos são destruídos
-- Alcance Ancestral — Alcance do Posicionamento de Totens aumentado em 25%
 - Notável — Habilidades que criam Runas têm 35% de chance de criarem uma Runa adicional
 - Presença Revigorante — Você e Aliados próximos Regeneram 1.00% de Vida por segundo _(esta variação de efeito em aliados ainda não tem efeito no jogo)_
 - Quebra-Maldições — Remove uma Maldição após Canalizar por 2 segundos
