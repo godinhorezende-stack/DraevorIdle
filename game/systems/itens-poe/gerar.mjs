@@ -9,6 +9,8 @@
 //   4. o implícito e os atributos da base (ex.: armadura 19–27) também são sorteados nas faixas deles.
 // O Único não sorteia mods: são os fixos do cadastro dele, com os valores sorteados nas faixas.
 
+import * as Ramificadoras from './ramificadoras.mjs';
+
 /** Sorteio pelo peso numa lista de `[item, peso]`. */
 function porPeso(lista, rng) {
   const total = lista.reduce((n, [, p]) => n + p, 0);
@@ -299,6 +301,8 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), nome: u.nome, unico: u.slug };
   }
   const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
+  // (lote 61) a RAMIFICADORA: o encantamento e os mods pelos pesos do PoE (`itens-poe/ramificadoras.mjs` — o catálogo traz os dados)
+  if (Ramificadoras.tamanhoDaBase(base.id)) return Ramificadoras.gerarRamificadora({ dados: catalogo.ramificadoras, peca, R, quantos, rng });
   if (!quantos) return peca;
   const pool = poolDa(classe, base);
   if (!pool) return { ...peca, aviso: 'a coleção não tem pool de mods para esta base: saiu sem mods' };
@@ -331,6 +335,8 @@ export { porPeso, rolarTexto };
  * vaga na raridade (`lados` restringe). Devolve `{ lado, mod }` (o mod no formato da peça) ou null (sem vaga / pool esgotado).
  */
 export function sortearUmMod({ catalogo, regras, poe, rng = Math.random, lados = ['prefixo', 'sufixo'] }) {
+  // (lote 61) a Ramificadora sorteia pelos pesos do PoE (o encantamento e os notáveis que ela já tem mudam os pesos)
+  if (poe?.ramificadora) return Ramificadoras.sortearUmMod({ dados: catalogo?.ramificadoras, poe, R: regras?.raridades?.[poe.raridade], rng, lados });
   const achado = acharBase(catalogo, poe.base);
   if (!achado) return null;
   const pool = poolDa(achado.classe, achado.base);
@@ -379,6 +385,7 @@ export function sortearDoPool({ pagina, poe, regras, origem, rng = Math.random, 
 
 /** O tier do pool de onde o mod saiu (as faixas dele) — `{ tier, tiers }` (todos os tiers da família, do pool da base) — ou null. */
 export function tierDoMod(catalogo, poe, mod) {
+  if (poe?.ramificadora) return Ramificadoras.tierDoMod(catalogo?.ramificadoras, mod);
   const achado = acharBase(catalogo, poe.base);
   const pool = achado && poolDa(achado.classe, achado.base);
   for (const lado of ['prefixos', 'sufixos']) {

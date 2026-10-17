@@ -95,6 +95,15 @@ function linhasSorteadas(cat) {
     }
   }
 }
+// (lote 61) As RAMIFICADORAS (`gamedata/itens-poe/ramificadoras.json`, tools/importar-ramificadoras.mjs): os encantamentos, os notáveis e os mods
+// da peça (o PoB e o poedb) entram no catálogo na leitura (`catalogo.ramificadoras`) — o gerador, que não lê disco, gera a peça por eles
+// (`itens-poe/ramificadoras.mjs`).
+const ARQUIVO_DAS_RAMIFICADORAS = new URL('../../gamedata/itens-poe/ramificadoras.json', import.meta.url);
+function ramificadoras(cat) {
+  if (!existsSync(ARQUIVO_DAS_RAMIFICADORAS)) return;
+  const { tamanhos, notaveis, pedras, deslocamentos, mods } = JSON.parse(readFileSync(ARQUIVO_DAS_RAMIFICADORAS, 'utf8'));
+  Object.defineProperty(cat, 'ramificadoras', { value: { tamanhos, notaveis, pedras, deslocamentos, mods }, enumerable: false });
+}
 // Os MAPAS do endgame (classe Mapas — `gamedata/itens-poe/mapas.json`, tools/montar-mapas-poe.mjs): ficam num arquivo à parte (o importador
 // refaz este inteiro) e entram no catálogo na leitura, como mais uma classe. Os ids deles são fixos (`itens-poe/jogo.iniciar`).
 const ARQUIVO_DOS_MAPAS = new URL('../../gamedata/itens-poe/mapas.json', import.meta.url);
@@ -112,6 +121,7 @@ export function catalogo() {
     corrigirUnicos(cache);
     implicitosSorteados(cache);
     linhasSorteadas(cache);
+    ramificadoras(cache);
   }
   return cache;
 }
