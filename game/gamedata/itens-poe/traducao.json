@@ -17988,6 +17988,28 @@
       "_lote19": "14/10 — a árvore principal (lote 19)"
     },
     {
+      "padrao": "^(.+?) tem Eficácia de Reserva de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_gema:{NOME}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura por cada \\{(\\d+)\\} de Mana Máxima não Reservada$",
+      "efeitos": [
+        {
+          "stat": "armor_flat%manaNaoReservada:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
       "padrao": "^(?!Vida que seria perdida ao sofrer Dano é, ao invés, Reservada).*(?:Reserva|Reservam?|Reservad[ao]).*$",
       "efeitos": [
         {
@@ -18077,6 +18099,17 @@
       "_nova": true,
       "_unico": true,
       "_lote7": "13/10 — os aliados de verdade (lote 7)"
+    },
+    {
+      "padrao": "^Grilhões Temporais pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Temporal_Chains",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
     },
     {
       "padrao": "^(?!.*conjurou Grilhões Temporais nos últimos).*(?:Fenda|Grilhões Temporais).*$",
@@ -41863,6 +41896,436 @@
       ],
       "_nova": true,
       "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Fogo têm chance de \\{(\\d+)\\}% de aplicar Exposição a Fogo ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_chance_fogo@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades de Gelo têm chance de \\{(\\d+)\\}% de aplicar Exposição a Gelo ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_chance_gelo@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades de Raio têm chance de \\{(\\d+)\\}% de aplicar Exposição a Raio ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "exposicao_chance_raio@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Fogo$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoFogo",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Fogo enquanto você estiver afetado por Arauto Flamejante$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoFogo@afetadoPor:arauto-flamejante",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Gelo enquanto você estiver afetado por Arauto Glacial$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoGelo@afetadoPor:arauto-glacial",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Inimigos Próximos têm Exposição a Raio enquanto você estiver afetado por Arauto Trovejante$",
+      "efeitos": [
+        {
+          "stat": "aura_proximos:exposicaoRaio@afetadoPor:arauto-trovejante",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Flamabilidade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Flammability",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Congelabilidade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Frostbite",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Condutividade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Conductivity",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Vulnerabilidade pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Vulnerability",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Debilitar pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Enfeeble",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Desespero pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Despair",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Fraqueza Elemental pode afetar Inimigos a Prova de Feitiços$",
+      "efeitos": [
+        {
+          "stat": "feitico_afeta_aprova:Elemental_Weakness",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Totens Regeneram \\{(\\d+)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "totem_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Totens ganham \\+\\{(\\d+)\\}% de Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "totem_res_caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% do Dano Físico de Varinhas como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_chaos@comVarinha+ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico de Varinhas convertido para Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "phys_conv_energy@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% do Dano de Raio como Dano de Gelo Extra contra Inimigos Resfriados$",
+      "efeitos": [
+        {
+          "stat": "energy_as_extra_ice@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Poder Profano por \\{(\\d+)\\} segundos no Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "ev:critico:buffChance:poderProfano:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Tolerância por segundo enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:carga:tolerancia@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Lacaios têm uma chance de \\{(\\d+)\\}% de Empalar ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_empalar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por segundo que você estiver parado, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc%paradoS~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% por Carga de Poder, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc%carga:poder~{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Dano de Caos aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Mana máxima, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "chaos_dmg%manaMax:{V2}~{V3}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% caso você tenha Matado ao menos \\{(\\d+)\\} Inimigos Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@matouRecenteMin:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Dano de Totens aumentado em \\{(\\d+)\\}% caso você tenha Convocado um Totem nos últimos \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@totem+nosUltimos:{V2}:usou:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Seus Golpes Críticos Empurram Inimigos Eletrizados$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@critico+alvoEletrizado",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades em Área têm \\{(\\d+)\\}% de chance de Empurrar Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@area",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Remove Sangramento ao usar um Frasco de Vida$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrascoVida:removerAfeccao:sangramento",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder quando usar um Frasco de Mana$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrascoMana:carga:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder em Golpes Não Críticos com uma Garra ou Adaga$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:carga:poder@naoCritico+comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria no Acerto com Machados ou Espadas$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:furia@comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana quando sua Armadilha for Ativada por um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:armadilha:buff:furiaArcana",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana quando sua Mina for Detonada focando em um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "ev:mina:buff:furiaArcana",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Recuperação de Vida e Mana de Frascos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_rec",
+          "valor": "{1}"
+        },
+        {
+          "stat": "frasco_mana_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% se você plantou uma Mina ou arremessou uma Armadilha Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@plantouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% caso você tenha Resfriado um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@resfriouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@resfriouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@resfriouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
     }
   ]
 }

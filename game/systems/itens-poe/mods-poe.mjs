@@ -169,9 +169,12 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   if (sorte(v('chance_inervar'))) { e.inervado = { ate: agora + 1000 * (v('inervar_s') || 4) }; ev('inervado'); }
   // A EXPOSIÇÃO no acerto ("Inflige Exposição a Fogo ao Acertar, aplicando −X% de Resistência a Fogo"): −X na resistência do alvo por 4 s
   // (`condicoes-poe.exposicao`, lida em `hunt/resistencia`). Como no PoE, só a mais forte de cada elemento vale.
-  for (const [el, k, extra] of [['fire', 'exposicao_acerto_fogo', 'exposicao_extra_fogo'], ['ice', 'exposicao_acerto_gelo', 'exposicao_extra_gelo'], ['energy', 'exposicao_acerto_raio', 'exposicao_extra_raio']]) {
+  // (lote 67, as Ramificadoras: "Habilidades de Fogo têm chance de 25% de aplicar Exposição a Fogo ao Acertar" — `exposicao_chance_<el>`, a
+  // Exposição padrão do PoE: −10%)
+  for (const [el, k, extra, comChance] of [['fire', 'exposicao_acerto_fogo', 'exposicao_extra_fogo', 'exposicao_chance_fogo'], ['ice', 'exposicao_acerto_gelo', 'exposicao_extra_gelo', 'exposicao_chance_gelo'], ['energy', 'exposicao_acerto_raio', 'exposicao_extra_raio', 'exposicao_chance_raio']]) {
     // (+ "Exposição a Fogo infligida por você aplica X% extra de Resistência a Fogo" — a maestria da árvore.)
-    const pct = Math.abs(v(k)) + (v(k) ? Math.abs(v(extra)) : 0);
+    const base = Math.abs(v(k)) || (sorte(v(comChance)) ? 10 : 0);
+    const pct = base + (base ? Math.abs(v(extra)) : 0);
     if (!pct) continue;
     const ainda = (e.exposicao?.[el] ?? 0) > agora;
     e.exposicao = { ...(e.exposicao ?? {}), [el]: agora + 4000 };
@@ -265,7 +268,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
 }
 
 /** As afecções que um acerto PÔS no alvo (`queimando`, `congelado`, `eletrizado`, `envenenado`…) → os eventos e os "recentemente". */
-const EVENTO_DA_AFECCAO = { queimando: ['incendiar', 'incendiou'], congelado: ['congelar', 'congelou'], eletrizado: ['eletrizar', 'eletrizou'], envenenado: ['envenenar', null] };
+// (lote 67: + o Resfriamento — o estado `lento` que o acerto pôs —: "caso você tenha Resfriado um Inimigo Recentemente")
+const EVENTO_DA_AFECCAO = { queimando: ['incendiar', 'incendiou'], congelado: ['congelar', 'congelou'], eletrizado: ['eletrizar', 'eletrizou'], envenenado: ['envenenar', null], lento: ['resfriar', 'resfriou'] };
 export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos = null, personagem = null } = {}) {
   if (!ligado() || !postos?.length) return;
   for (const p of new Set(postos)) {

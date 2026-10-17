@@ -7754,6 +7754,36 @@
       "unidade": "%",
       "combate": true,
       "efeito": "itens-poe/afeccoes.daSoma — o Veneno/Sangramento e o degenerativo das gemas do elemento (lote 65)"
+    },
+    "exposicao_chance_fogo": {
+      "nome": "Chance de aplicar Exposição a Fogo ao Acertar (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar — a Exposição padrão (−10%) (lote 67)"
+    },
+    "exposicao_chance_gelo": {
+      "nome": "Chance de aplicar Exposição a Gelo ao Acertar (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar — a Exposição padrão (−10%) (lote 67)"
+    },
+    "exposicao_chance_raio": {
+      "nome": "Chance de aplicar Exposição a Raio ao Acertar (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar — a Exposição padrão (−10%) (lote 67)"
+    },
+    "totem_res_caos": {
+      "nome": "Totens: Resistência a Caos (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe — a resistência do totem (lote 67)"
+    },
+    "totem_regen_pct": {
+      "nome": "Totens: Regeneração de Vida (% por segundo)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe — a regeneração do totem (lote 67)"
     }
   }
 }
