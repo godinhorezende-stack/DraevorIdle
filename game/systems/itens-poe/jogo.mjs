@@ -393,7 +393,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // reserva de UMA gema com "de Reserva"…)
 // (56 — 17/10, lote 68: as Ramificadoras — as afecções contra o alvo, "Canalizado por N segundo", "foi Congelado Recentemente", o crítico
 // de Arauto Recentemente…)
-export const VERSAO_DA_TRADUCAO = 56;
+// (57 — 17/10, lote 69: as Ramificadoras — os lacaios criados Recentemente, por tipo (Esqueletos, Zumbis, Sentinelas), os inimigos
+// Incendiados (−X% de Resistência a Fogo) e Envenenados (sem regeneração), as exceções do dono)
+export const VERSAO_DA_TRADUCAO = 57;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

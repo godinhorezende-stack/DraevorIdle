@@ -1918,11 +1918,11 @@ export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
 const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
-const TIPOS_DE_LACAIO = '(zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|qualquer)';
+const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|qualquer)';
 const PARAMETRICOS = [
   new RegExp(`^pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento):${ELS_P}$`), // itens-poe/afeccoes.daSoma
   new RegExp(`^nao_pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento)(:${ELS_P})?$`), // itens-poe/afeccoes.daSoma
-  new RegExp(`^(max_lacaio|max_lacaio_pct|lacaio_dano|lacaio_mais_dano|lacaio_vida|lacaio_vida_mais|lacaio_vida_fixa|lacaio_mov|lacaio_duracao|lacaio_degen|lacaio_vel_ataque|lacaio_imune_elemental|lacaio_vel_conj|lacaio_armadura|lacaio_cdr|lacaio_regen_pct|lacaio_dano_recente|lacaio_dano_recente_s):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
+  new RegExp(`^(max_lacaio|max_lacaio_pct|lacaio_dano|lacaio_mais_dano|lacaio_vida|lacaio_vida_mais|lacaio_vida_fixa|lacaio_mov|lacaio_duracao|lacaio_degen|lacaio_vel_ataque|lacaio_imune_elemental|lacaio_vel_conj|lacaio_armadura|lacaio_cdr|lacaio_regen_pct|lacaio_dano_recente|lacaio_dano_recente_s|lacaio_conv_caos|lacaio_definhar|lacaio_provocar):${TIPOS_DE_LACAIO}$`), // lacaios-poe.oQueInvoca
   /^recarga_gema:[A-Za-z_]+$/, // acoes.temposDaGemaPoe (a recarga de UMA gema, pelo começo do slug)
   // (11/10, os únicos:) o dano físico somado, o Avatar do Fogo (a conversão e o "só Fogo"), Cinzas e Incendiar no acerto, a duração renovada
   // no Raro/Único, o dano drenado para o dono, a explosão do morto e a RESTRIÇÃO ("Você não pode ter Lacaios não-Golens": `so_lacaio:golem`).
@@ -2907,7 +2907,10 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
   const dot = (...t) => (alvo.dots ?? []).some((d) => t.includes(d.tipo) && d.falta > 0);
   // (lote 28: + o Definhado — "têm −X% de todas as Resistências", nos quatro tipos, somado às das afecções)
   const definhado = ['fire', 'ice', 'energy', 'chaos'].includes(tipo) && e.resMenosDefinhado > 0 && ativo(e.definhado, agora) ? e.resMenosDefinhado : 0;
-  if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental + definhado;
+  // (lote 69: + o "−X% de Resistência a Fogo" do Incendiado, somado)
+  const doFogo = tipo === 'fire' && e.resMenosFogo > 0 && dot('queimadura') ? e.resMenosFogo : 0;
+  if (['fire', 'ice', 'energy'].includes(tipo) && e.resMenosElemental > 0 && (dot('queimadura') || ativo(e.lento, agora))) return e.resMenosElemental + definhado + doFogo;
+  if (doFogo) return doFogo + definhado;
   if (tipo === 'chaos' && e.resMenosCaos > 0 && dot('veneno', 'venenoPoe')) return e.resMenosCaos + definhado;
   return definhado;
 }

@@ -2183,7 +2183,9 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`, ...(hunt.lacaios ?? []).filter((l) => l !== f && l.hp > 0).map((l) => `${l.x},${l.y}`)]);
   const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
   // (PoE: "Lacaios têm X% da Velocidade de Movimento aumentada" — a fração vira a chance de um passo a mais no tique.)
-  const passos = (d > longe ? 2 : 1) + (f.poe?.movimentoPct > 0 && Math.random() * 100 < f.poe.movimentoPct ? 1 : 0);
+  // (lote 69: + o "Lacaios Criados Recentemente têm Velocidade de Movimento aumentada" — `LacaiosPoe.movimentoDoLacaio`)
+  const movimentoPct = LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0);
+  const passos = (d > longe ? 2 : 1) + (movimentoPct > 0 && Math.random() * 100 < movimentoPct ? 1 : 0);
   let deu = 0;
   for (let k = 0; k < passos; k++) {
     let destino;
@@ -2389,6 +2391,8 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
   if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000); ev('cinzas'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
   if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs, deLacaio: true }; ev('provocado'); }
+  // (lote 69) "Lacaios têm X% de chance de Empurrar Inimigos ao Acertar com Ataques" (o empurrão do jogo: para longe de você)
+  if (!ctx.magia && sorte(p.chances.empurrar) && ModsPoe.empurrar(hunt, alvo)) ev('empurrado');
   if (sorte(p.chances.desacelerar)) {
     const ate = agora + ModsPoe.NO_ACERTO.desacelerar.duracaoMs;
     e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, ate), pct: Math.max(e.lento.pct, 30) } : { ate, pct: 30 };
@@ -2457,7 +2461,7 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
     if (p.elemento === 'physical') fisico += v;
     else outros += v * (1 - Math.min(teto, res(p.elemento)) / 100);
   }
-  const { dano, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico, outros, magia: true, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0) }) : { dano: fisico + outros, bloqueou: false };
+  const { dano, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico, outros, magia: true, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), agora: hunt?.clock ?? null }) : { dano: fisico + outros, bloqueou: false };
   if (bloqueou) {
     l.bloqueouEm = relogio;
     eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true });
@@ -2620,7 +2624,7 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (lote 32, P028: + o bloqueio de Magia da Oferenda Óssea)
       // (lote 43, P040: + a precisão do bicho contra a evasão do lacaio)
       const precisao = AtributosDoMob.precisaoDe(b, l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
-      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao, agora }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
       if (evadiu) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', esquiva: true }); continue; }
       if (bloqueou) l.bloqueouEm = agora;
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }

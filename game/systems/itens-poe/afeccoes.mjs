@@ -136,6 +136,9 @@ export function daSoma(af = {}) {
     // as resistências a menos dos Incendiados/Resfriados e dos Envenenados por você (`hunt/resistencia.resistenciaDe`)
     // (o texto traz o "−": o valor chega negativo — vale o tamanho)
     resMenosIncendiadoResfriado: Math.abs(n('res_menos_incendiado_resfriado')), resMenosCaosEnvenenado: Math.abs(n('res_menos_caos_envenenado')),
+    // (lote 69, as Ramificadoras) "Inimigos Incendiados por você têm −X% de Resistência a Fogo"; "Inimigos Envenenados por você não podem
+    // Regenerar Vida" (`skills/estados` — a regeneração do monstro)
+    resMenosFogoIncendiado: Math.abs(n('res_menos_fogo_incendiado')), envenenadosSemRegen: n('envenenados_sem_regen') > 0,
   };
 }
 
@@ -271,6 +274,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     }
     // ("Inimigos Envenenados por você têm −X% de Resistência a Caos" — `hunt/resistencia.resistenciaDe`)
     if (a.resMenosCaosEnvenenado > 0) (bicho.estados ??= {}).resMenosCaos = Math.max(bicho.estados.resMenosCaos ?? 0, a.resMenosCaosEnvenenado);
+    if (a.envenenadosSemRegen) (bicho.estados ??= {}).semRegenEnvenenado = true;
   }
   const limiar = bicho.maxHp ?? bicho.hp;
   // (+ "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado": o Resfriamento e a Eletrização do crítico)
@@ -329,6 +333,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     }
   }
   // ("Inimigos Incendiados ou Resfriados por você têm −X% de Resistências Elementais" — `hunt/resistencia.resistenciaDe`)
+  if (a.resMenosFogoIncendiado > 0 && postos.includes('queimando')) (bicho.estados ??= {}).resMenosFogo = Math.max(bicho.estados.resMenosFogo ?? 0, a.resMenosFogoIncendiado);
   if (a.resMenosIncendiadoResfriado > 0 && (postos.includes('queimando') || (bicho.estados?.lento?.ate ?? 0) > agora)) {
     (bicho.estados ??= {}).resMenosElemental = Math.max(bicho.estados.resMenosElemental ?? 0, a.resMenosIncendiadoResfriado);
   }

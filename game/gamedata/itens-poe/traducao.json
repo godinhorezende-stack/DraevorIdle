@@ -17663,6 +17663,19 @@
       "_unico": true
     },
     {
+      "padrao": "^Inafetado por Solo Congelado$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: nada no jogo cria Solo Congelado (dono, 17/10)",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
       "padrao": "^(?!Você tem Solo Sagrado ao seu redor enquanto parado|\\{\\d+\\}% de chance de criar Solo Profano no Golpe Crítico|Efeitos do Solo Profano criados por você Perduram).*(?:Solo (?:Ardente|Eletrizado|Congelado|Profano|Profanado|Fúngico|Cáustico|Sagrado|Resfriado)|Áreas Resfriadas|Piche).*$",
       "efeitos": [
         {
@@ -42661,6 +42674,175 @@
       "nota": "o seu dano de Caos nos Desacelerados (o dos lacaios e aliados neles, não)",
       "_nova": true,
       "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Lacaios [Cc]riados Recentemente têm Velocidade de Movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_move_recente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios [Cc]riados Recentemente não podem sofrer Dano$",
+      "efeitos": [
+        {
+          "stat": "minion_invulneravel_recente",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios [Cc]riados Recentemente têm Velocidades de Ataque e Conjuração aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_vel_recente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de Empurrar Inimigos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_empurrar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o empurrão do jogo: o inimigo vai para longe de você (no PoE, para longe do lacaio)",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de causar Dano Dobrado enquanto estiverem em Vida Cheia$",
+      "efeitos": [
+        {
+          "stat": "minion_dano_dobrado_vida_cheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios têm Velocidade de Movimento aumentada em \\{(\\d+)\\}% para cada Arauto afetando você$",
+      "efeitos": [
+        {
+          "stat": "minion_move%arautosAtivos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Lacaios causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}% contra Inimigos Incendiados$",
+      "efeitos": [
+        {
+          "stat": "minion_dano_incendiados",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Esqueletos Convocados possuem \\{(\\d+)\\}% do Dano Físico Convertido para Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "lacaio_conv_caos:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Esqueletos Convocados têm \\{(\\d+)\\}% de chance de Definhar Inimigos por \\{(\\d+)\\} segundos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_definhar:esqueleto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Zumbis Erguidos têm \\{(\\d+)\\}% de chance de Provocar Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "lacaio_provocar:zumbi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Sentinelas Convocados têm Velocidade da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaio_cdr:sentinela",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Inimigos Incendiados por você têm -?\\{(\\d+)\\}% de Resist[eê]n?cia a Fogo$",
+      "efeitos": [
+        {
+          "stat": "res_menos_fogo_incendiado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Inimigos Envenenados por você não podem Regenerar Vida$",
+      "efeitos": [
+        {
+          "stat": "envenenados_sem_regen",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Magias de Caos têm \\{(\\d+)\\}% de chance de Desacelerar Inimigos ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_desacelerar@magia+caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
+    },
+    {
+      "padrao": "^Punição pode afetar Inimigos Infeitiçáveis$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "não se aplica ao jogo: a maldição Punição não existe no PoE 3.29 — não há a gema (dono, 17/10)",
+      "_nova": true,
+      "_lote69": "17/10 — lote 69 (as Ramificadoras: os notáveis — os lacaios, os inimigos Incendiados e Envenenados, as exceções do dono)"
     }
   ]
 }

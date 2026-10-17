@@ -90,32 +90,24 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 613 | 1 | 57 |
+| Notáveis | 671 | 627 | 3 | 41 |
 
 <details><summary>As linhas sem efeito</summary>
 
-- Cadáveres Monstruosos — Zumbis Erguidos têm 5% de chance de Provocar Inimigos ao Acertar
-- Queimado Vivo — Inimigos Incendiados por você têm -5% de Resistêcia a Fogo
 - Cersidor de Selos — Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em 30%
 - Espíritos Aprisionadores — Totens Desaceleram Inimigos próximos deles quando Convocados
 - Pura Agonia — +5 de Virulência Máxima
 - Grito Assustador — Inimigos Provocados por seus Clamores são Intimidados
-- Demolir e Pilhar — Lacaios causam Dano com Acertos e Afecções aumentado em 20% contra Inimigos Incendiados
 - Chamado Alarmante — Ganha Armadura aumentada em 25% por cada 5 de Poder por 8 segundos ao Clamar, máximo de 100%
 - Égide Ardente — Chama Santificada infligida por você tem a intensidade aumentada em 1% por 2% de chance de bloquear ataques
 - Artista Sangrento — +6% de Multiplicador de Dano Físico Degenerativo se você Gastou Vida Recentemente
-- Guarda-Costas — Lacaios têm 10% de chance de Empurrar Inimigos ao Acertar com Ataques
-- Atrofia Esqueletal — Esqueletos Convocados têm 10% de chance de Definhar Inimigos por 2 segundos ao Acertar
-- Atrofia Esqueletal — Esqueletos Convocados possuem 30% do Dano Físico Convertido para Dano de Caos
 - Sofrimento Eterno — 50% de chance de infligir Definhar por dois segundos ao Acertar se houver 5 ou menos Debuffs de Definhar no Inimigo
 - Soberano — Acertos Corpo a Corpo com Maças, Cetros ou Cajados Fortificam por 6 segundos _(a Fortificação não existe no jogo)_
 - Inspiração Ancestral — Ganhe Fúria Arcana ao Convocar um Totem
 - Apatia de Doedre — Inimigos Amaldiçoados por você são Enervados
 - Demonstração Desorientadora — 10% de chance de Cegar Inimigos próximos ao usar uma Habilidade Elemental
-- Hibernador — Inafetado por Solo Congelado _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
 - Guerreiro Destemido — 25% de chance de Intimidar Inimigos próximos por 4 segundos ao Matar Corpo a Corpo
 - Capacitor — Inafetado por Solo Eletrizado _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
-- Discípulos — Sentinelas Convocados têm Velocidade da Recarga aumentada em 25%
 - Rítmo de Combate — Velocidade de Ataque aumentada em 10% caso você tenha Acertado com sua Arma da Mão Principal Recentemente
 - Rítmo de Combate — Velocidade de Movimento aumentada em 10% caso você tenha Acertado com sua Arma da Mão Secundária Recentemente
 - Composto Tonificado — Ganha Gênio Alquímico ao usar um Frasco
@@ -127,28 +119,20 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Liderar pelo Exemplo — Quando você Clamar, você e Aliados próximos ganham Agressividade por 4 segundos _(esta variação de efeito em aliados ainda não tem efeito no jogo)_
 - Runas Perseguidoras — Runas Desvinculadas ganham Alcance do Vínculo de Runas reduzido em 20% por segundo, até 100%
 - Calvagando a Tormenta — 10% de chance de ganhar uma Carga de Poder ao Eletrizar um Inimigo Resfriado
-- Gula de Doedre — Punição pode afetar Inimigos Infeitiçáveis
 - Mal Inabalável — Habilidades de Caos ignoram interrupções de Atordoamentos
 - Pontos de Pressão — Seus Golpes Críticos têm chance de 5% de causar Dano Dobrado
-- Presságios Revigorantes — Lacaios têm Velocidade de Movimento aumentada em 10% para cada Arauto afetando você
 - Acompanhamento — Projéteis causam dano com ataques e afecções aumentado em 20% por
 cada propagação restante, até 100%
-- Renascimento Abençoado — Lacaios criados Recentemente não podem sofrer Dano
 - Sintonia do Fogo — Inafetado por Solo Ardente _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
 - Criador de Vítimas — Inimigos Amaldiçoados por você tem Esconjuro se 33% da Duração da Maldição expirou
 - Palavra Sagrada — Seus clamores infligem Chama Santificada
 - Mestre do Turbilhão — +1% de máximo das Resistências Elementais se você Matou um Inimigo Amaldiçoado Recentemente
 - Lenha na Fogueira — Incêndios infligidos por você se espalham para outros Inimigos em um Raio de 1,5 metros
-- Toque da Crueldade — Magias de Caos têm 10% de chance de Desacelerar Inimigos ao Acertar
 - Emissário do Propósito — Auras das suas Habilidades têm Efeito reduzido em 8% em você
 para cada Arauto te afetando, até 40%
-- Chamado da Carnificina — Lacaios criados Recentemente têm Velocidades de Ataque e Conjuração aumentadas em 10%
-- Chamado da Carnificina — Lacaios Criados Recentemente têm Velocidade de Movimento aumentada em 30%
 - Terapia de Exposição — +30% de Resistência a Caos contra Dano Degenerativo
 - Cremador — Inimigos Incendiados Mortos por seus Acertos são destruídos
-- Vetor de Doenças — Inimigos Envenenados por você não podem Regenerar Vida
 - Alcance Ancestral — Alcance do Posicionamento de Totens aumentado em 25%
-- Renovação — Lacaios têm 5% de chance de causar Dano Dobrado enquanto estiverem em Vida Cheia
 - Notável — Habilidades que criam Runas têm 35% de chance de criarem uma Runa adicional
 - Presença Revigorante — Você e Aliados próximos Regeneram 1.00% de Vida por segundo _(esta variação de efeito em aliados ainda não tem efeito no jogo)_
 - Quebra-Maldições — Remove uma Maldição após Canalizar por 2 segundos

@@ -7784,6 +7784,54 @@
       "unidade": "%",
       "combate": true,
       "efeito": "itens-poe/lacaios-poe — a regeneração do totem (lote 67)"
+    },
+    "minion_chance_empurrar": {
+      "nome": "Lacaios: chance de Empurrar com Ataques (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_dano_dobrado_vida_cheia": {
+      "nome": "Lacaios: chance de Dano Dobrado em Vida Cheia (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_dano_incendiados": {
+      "nome": "Lacaios: Dano com Acertos e Afecções contra Incendiados aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_move_recente": {
+      "nome": "Lacaios criados Recentemente: Velocidade de Movimento aumentada (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_vel_recente": {
+      "nome": "Lacaios criados Recentemente: Velocidades de Ataque e Conjuração aumentadas (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_invulneravel_recente": {
+      "nome": "Lacaios criados Recentemente não podem sofrer Dano",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "res_menos_fogo_incendiado": {
+      "nome": "Inimigos Incendiados por você: −% de Resistência a Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes + condicoes-poe.resMenosDasAfeccoes (lote 69)"
+    },
+    "envenenados_sem_regen": {
+      "nome": "Inimigos Envenenados por você não podem Regenerar Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes + skills/estados (a regeneração do monstro) (lote 69)"
     }
   }
 }
