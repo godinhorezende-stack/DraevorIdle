@@ -258,6 +258,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'maxUmRaroPerto', 'doisRarosPerto',
   // (lote G) a Postura (Sangue / Areia — a gema Sangue e Areia), com um Estandarte (a aura de Estandarte ligada).
   'posturaSangue', 'posturaAreia', 'estandarteAtivo',
+  // (lote 65, as Ramificadoras) afetado por um Arauto (ao menos uma gema de Arauto ligada)
+  'afetadoPorArauto',
   // (11/10, os únicos:) nenhum item equipado corrompido / todos corrompidos; um Anel Mágico (em qualquer lado, no esquerdo, no direito); drenando
   // Escudo de Energia / Mana; as garras no desarmado (`garra_desarmado` dá o "com Garra" ao desarmado).
   'semItemCorrompido', 'todosCorrompidos', 'semVidaNosOutros', 'anelMagico', 'anelMagicoEsquerdo', 'anelMagicoDireito', 'drenandoEs', 'drenandoMana',
@@ -480,6 +482,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (noSoloSagrado(h, agora)) v.add('soloSagrado');
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');
+    if (Object.values(h.buffs ?? {}).some((b) => b && b.ate > agora && b.tipo === 'poe-arauto')) v.add('afetadoPorArauto');
     if (!recente(r.detonouMina, agora)) v.add('naoDetonouMinaRecente');
     // A PRESENÇA: quem está vivo a até `RAIO_DA_PRESENCA` casas — o Único (ou o chefe), o Raro, e o chefe pináculo da sala (o "Chefe Final do
     // Atlas" dos implícitos eldritch: `hunt.bossPinaculo`, marcado na entrada — `cacadas.entrar`).

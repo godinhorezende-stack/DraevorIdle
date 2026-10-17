@@ -385,7 +385,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (50 — 16/10, lote 56: a Doutrina Racional, a Visão Sublime, a Fuga Impossível e a Chama/Carne Proibida.)
 // (51 — 16/10, lote 57: o Solo Profano e o Limitado pelo Destino — os itens com influência.)
 // (52 — 16/10, lote 58: a Fé Militante — os mods de devoção sorteados e a escala da Devoção.)
-export const VERSAO_DA_TRADUCAO = 52;
+// (53 — 17/10, lote 65: as Ramificadoras — as linhas das pequenas: "+X de Vida Máxima" com maiúscula, o Dano Degenerativo por tipo, "enquanto
+// afetado por um Arauto", a velocidade de ataque e conjuração por tipo de habilidade…)
+export const VERSAO_DA_TRADUCAO = 53;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

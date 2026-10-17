@@ -7736,6 +7736,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "multiplica a recuperação da recarga (`ficha.recuperacaoDeRecarga`) (o Limitado pelo Destino — lote 57)"
+    },
+    "dot_dmg_inc_caos": {
+      "nome": "Dano de Caos Degenerativo aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.daSoma — o Veneno/Sangramento e o degenerativo das gemas do elemento (lote 65)"
+    },
+    "dot_dmg_inc_fisico": {
+      "nome": "Dano Físico Degenerativo aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.daSoma — o Veneno/Sangramento e o degenerativo das gemas do elemento (lote 65)"
+    },
+    "dot_dmg_inc_gelo": {
+      "nome": "Dano Degenerativo de Gelo aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.daSoma — o Veneno/Sangramento e o degenerativo das gemas do elemento (lote 65)"
     }
   }
 }

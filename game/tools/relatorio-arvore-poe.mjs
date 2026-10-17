@@ -429,20 +429,25 @@ export async function linhasDasRamificadoras(cat) {
   const vistas = new Set();
   for (const T of Object.values(D.tamanhos)) for (const e of T.encantamentos) for (const l of e.linhas) if (!vistas.has(l)) { vistas.add(l); contar('encantamento', `${T.en}: ${e.nome ?? e.en}`, l); }
   const TAMBEM = /^(?:Pequenas )?Habilidades Passivas [Aa]dicionadas também concedem: (.+)$/;
+  // (lote 65) só o que PODE SAIR na peça: o mod com algum peso fora dos encantamentos descontinuados (`old_do_not_use_…`) e o notável de
+  // algum encantamento de hoje
+  const saiNaPeca = (m) => Object.entries(m.pesos ?? {}).some(([k, v]) => v > 0 && !/^old_do_not_use/.test(k));
+  const notaveisDeHoje = new Set(Object.values(D.tamanhos).flatMap((T) => T.encantamentos.flatMap((e) => e.notaveis.map((n) => n.nome))));
   for (const m of D.mods) {
+    if (!saiNaPeca(m)) continue;
     const x = TAMBEM.exec(m.texto ?? '');
     // (a faixa vira o maior valor: o que se conta é a regra da linha)
     const linha = x?.[1].replace(/\((-?[\d.]+)—(-?[\d.]+)\)/g, '$2');
     if (linha && !vistas.has(`t:${linha}`)) { vistas.add(`t:${linha}`); contar('tambem', m.nome ?? m.id, linha); }
   }
-  for (const [chave, n] of Object.entries(D.notaveis)) for (const l of n.linhas) contar('notavel', n.nome ?? chave, l);
+  for (const [chave, n] of Object.entries(D.notaveis)) if (notaveisDeHoje.has(chave)) for (const l of n.linhas) contar('notavel', n.nome ?? chave, l);
   return { grupos, sem };
 }
 async function secaoDasRamificadoras(cat) {
   const { grupos, sem } = await linhasDasRamificadoras(cat);
   if (!grupos.notavel.total) return [];
   const md = ['', '### As linhas dos nós das Ramificadoras (lote 63)', ''];
-  md.push('A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore.', '');
+  md.push('A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados).', '');
   md.push('| Linhas | Total | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
   for (const [k, nome] of [['encantamento', 'Encantamentos (as pequenas)'], ['tambem', '"Também concedem" (as pequenas)'], ['notavel', 'Notáveis']]) {
     const g = grupos[k];

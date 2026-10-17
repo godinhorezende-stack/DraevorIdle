@@ -76,8 +76,12 @@ export function daSoma(af = {}) {
     incendiosExtra: n('incendios_extra'), incendioDuracaoBaseMs: n('incendio_duracao_base_s') * 1000,
     // (o Warden: "Acertos que causariam Incêndio causam Causticação ao invés"; "Você pode infligir uma Causticação adicional em cada Inimigo")
     incendioViraCausticacao: n('incendio_vira_causticacao') > 0, causticacoesExtra: n('causticacoes_extra'),
-    danoSangramento: n('bleed_dmg_inc'),
-    danoVeneno: n('poison_dmg_inc'),
+    // (lote 65) o "Dano Físico Degenerativo aumentado" vale no Sangramento (o dano Físico ao longo do tempo), como no PoE
+    danoSangramento: n('bleed_dmg_inc') + n('dot_dmg_inc_fisico'),
+    // (lote 65) e o "Dano de Caos Degenerativo aumentado", no Veneno (o de Caos)
+    danoVeneno: n('poison_dmg_inc') + n('dot_dmg_inc_caos'),
+    // (lote 65, as Ramificadoras) o "Dano Degenerativo aumentado" de UM tipo — o degenerativo das gemas desse elemento (`acoes`)
+    danoDegenDoElemento: { chaos: n('dot_dmg_inc_caos'), physical: n('dot_dmg_inc_fisico'), ice: n('dot_dmg_inc_gelo') },
     duracaoIncendio: n('duracao_incendio') + n('duracao_afeccoes_elementais'),
     duracaoSangramento: n('duracao_sangramento'),
     duracaoCongelamento: n('duracao_congelamento') + n('duracao_afeccoes_elementais'),

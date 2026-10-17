@@ -84,106 +84,16 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-17, a partir de `gam
 
 ### As linhas dos nós das Ramificadoras (lote 63)
 
-A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore.
+A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados).
 
 | Linhas | Total | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |
 |---|---:|---:|---:|---:|
-| Encantamentos (as pequenas) | 56 | 51 | 0 | 5 |
-| "Também concedem" (as pequenas) | 160 | 75 | 0 | 85 |
-| Notáveis | 685 | 465 | 1 | 219 |
+| Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
+| "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
+| Notáveis | 671 | 461 | 1 | 209 |
 
 <details><summary>As linhas sem efeito</summary>
 
-- Medium Cluster Jewel: Dano de Caos Degenerativo — Dano de Caos Degenerativo aumentado em 12%
-- Medium Cluster Jewel: Dano Físico Degenerativo — Dano Físico Degenerativo aumentado em 12%
-- Medium Cluster Jewel: Dano de Gelo Degenerativo — Dano Degenerativo de Gelo aumentado em 12%
-- Medium Cluster Jewel: Dano enquanto possuir um Arauto — Dano enquanto afetado por um Arauto aumentado em 10%
-- Medium Cluster Jewel: Dano de Lacaio enquanto possuir um Arauto — Lacaios causam Dano aumentado em 10% enquanto você for afetado por um Arauto
-- Robusta — +3 de Vida Máxima
-- Saudável — +7 de Vida Máxima
-- Sanguínea — +10 de Vida Máxima
-- Berila — +5 de Mana Máxima
-- Cobalto — +8 de Mana Máxima
-- Índigo — +10 de Mana Máxima
-- Brilhante — +5 de Escudo de Energia Máximo
-- Cintilante — +9 de Escudo de Energia Máximo
-- Radiante — +12 de Escudo de Energia Máximo
-- da Núvem — +2 de Todos os Atributos
-- do Céu — +3 de Todos os Atributos
-- do Meteoro — +4 de Todos os Atributos
-- do Tritão — Regenera 0.1% de Vida por Segundo
-- do Lagarto — Regenera 0.15% de Vida por Segundo
-- do Platelminto — Regenera 0.2% de Vida por Segundo
-- Robusta — +13 de Vida Máxima
-- Corpulenta — +16 de Vida Máxima
-- Safira — +13 de Mana Máxima
-- Cerúlea — +16 de Mana Máxima
-- Radiante — +16 de Escudo de Energia Máximo
-- Pulsante — +20 de Escudo de Energia Máximo
-- do Cometa — +5 de Todos os Atributos
-- dos Céus — +6 de Todos os Atributos
-- do Peixe Estrela — Regenera 0.25% de Vida por Segundo
-- da Hidra — Regenera 0.3% de Vida por Segundo
-- AfflictionJewelSmallPassivesGrantAuraAreaOfEffect__ — Área de Efeito das Habilidades de Aura aumentado em 2%
-- AfflictionJewelSmallPassivesGrantAuraAreaOfEffect2 — Área de Efeito das Habilidades de Aura aumentado em 4%
-- AfflictionJewelSmallPassivesGrantAuraAreaOfEffect3 — Área de Efeito das Habilidades de Aura aumentado em 6%
-- AfflictionJewelSmallPassivesGrantCurseAreaOfEffect — Efeito de Habilidades Feitiço aumentado em 1%
-- AfflictionJewelSmallPassivesGrantCurseAreaOfEffect2 — Efeito de Habilidades Feitiço aumentado em 2%
-- AfflictionJewelSmallPassivesGrantCurseAreaOfEffect3 — Efeito de Habilidades Feitiço aumentado em 3%
-- AfflictionJewelSmallPassivesGrantWarcryDuration — Duração do Clamor aumentada em 2%
-- AfflictionJewelSmallPassivesGrantWarcryDuration2 — Duração do Clamor aumentada em 3%
-- AfflictionJewelSmallPassivesGrantWarcryDuration3 — Duração do Clamor aumentada em 4%
-- AfflictionJewelSmallPassivesGrantCriticalStrikeMultiplier — +1% de Multiplicador de Golpes Críticos
-- AfflictionJewelSmallPassivesGrantCriticalStrikeMultiplier2_ — +2% de Multiplicador de Golpes Críticos
-- AfflictionJewelSmallPassivesGrantCriticalStrikeMultiplier3 — +3% de Multiplicador de Golpes Críticos
-- AfflictionJewelSmallPassivesGrantMinionLifeRegen — Lacaios Regeneram 0.1% de Vida por Segundo
-- AfflictionJewelSmallPassivesGrantMinionLifeRegen2 — Lacaios Regeneram 0.15% de Vida por Segundo
-- AfflictionJewelSmallPassivesGrantMinionLifeRegen3 — Lacaios Regeneram 0.2% de Vida por Segundo
-- AfflictionJewelSmallPassivesGrantProjectileSpeed — Velocidade de Projétil aumentada em 2%
-- AfflictionJewelSmallPassivesGrantProjectileSpeed2 — Velocidade de Projétil aumentada em 3%
-- AfflictionJewelSmallPassivesGrantProjectileSpeed3 — Velocidade de Projétil aumentada em 4%
-- AfflictionJewelSmallPassivesGrantTrapAndMineSpeed_ — Velocidade de Arremesso de Armadilha e Mina aumentada em 1%
-- AfflictionJewelSmallPassivesGrantTrapAndMineSpeed2 — Velocidade de Arremesso de Armadilha e Mina aumentada em 2%
-- AfflictionJewelSmallPassivesGrantTrapAndMineSpeed3_ — Velocidade de Arremesso de Armadilha e Mina aumentada em 3%
-- AfflictionJewelSmallPassivesGrantTotemPlacementSpeed — Velocidade de Posicionamento de Totem aumentada em 1%
-- AfflictionJewelSmallPassivesGrantTotemPlacementSpeed2 — Velocidade de Posicionamento de Totem aumentada em 2%
-- AfflictionJewelSmallPassivesGrantTotemPlacementSpeed3 — Velocidade de Posicionamento de Totem aumentada em 3%
-- AfflictionJewelSmallPassivesGrantBrandAttachmentRange_ — Alcance de Vínculo de Marcas aumentado em 1%
-- AfflictionJewelSmallPassivesGrantBrandAttachmentRange2 — Alcance de Vínculo de Marcas aumentado em 2%
-- AfflictionJewelSmallPassivesGrantBrandAttachmentRange3____ — Alcance de Vínculo de Marcas aumentado em 3%
-- AfflictionJewelSmallPassivesGrantChannelledAttackAndCastSpeed — Habilidades Canalizadas têm Velocidade de Ataque e Conjuração aumentada 1%
-- AfflictionJewelSmallPassivesGrantChannelledAttackAndCastSpeed2 — Habilidades Canalizadas têm Velocidade de Ataque e Conjuração aumentada 2%
-- AfflictionJewelSmallPassivesGrantChannelledAttackAndCastSpeed3 — Habilidades Canalizadas têm Velocidade de Ataque e Conjuração aumentada 3%
-- AfflictionJewelSmallPassivesGrantFlaskChargesGained — Cargas de Frasco ganhadas aumentadas em 1%
-- AfflictionJewelSmallPassivesGrantFlaskChargesGained2_ — Cargas de Frasco ganhadas aumentadas em 2%
-- AfflictionJewelSmallPassivesGrantFlaskChargesGained3 — Cargas de Frasco ganhadas aumentadas em 3%
-- AfflictionJewelSmallPassivesGrantFireSkillAttackAndCastSpeed — Velocidade de Ataque e Conjuração com Habilidades de Fogo aumentada em 1%
-- AfflictionJewelSmallPassivesGrantFireSkillAttackAndCastSpeed2 — Velocidade de Ataque e Conjuração com Habilidades de Fogo aumentada em 2%
-- AfflictionJewelSmallPassivesGrantFireSkillAttackAndCastSpeed3_ — Velocidade de Ataque e Conjuração com Habilidades de Fogo aumentada em 3%
-- AfflictionJewelSmallPassivesGrantColdSkillAttackAndCastSpeed — Velocidade de Ataque e Conjuração com Habilidades de Gelo aumentada em 1%
-- AfflictionJewelSmallPassivesGrantColdSkillAttackAndCastSpeed2_ — Velocidade de Ataque e Conjuração com Habilidades de Gelo aumentada em 2%
-- AfflictionJewelSmallPassivesGrantColdSkillAttackAndCastSpeed3 — Velocidade de Ataque e Conjuração com Habilidades de Gelo aumentada em 3%
-- AfflictionJewelSmallPassivesGrantLightningSkillAttackAndCastSpeed — Velocidade de Ataque e Conjuração com Habilidades de Raio aumentada em 1%
-- AfflictionJewelSmallPassivesGrantLightningSkillAttackAndCastSpeed2 — Velocidade de Ataque e Conjuração com Habilidades de Raio aumentada em 2%
-- AfflictionJewelSmallPassivesGrantLightningSkillAttackAndCastSpeed3 — Velocidade de Ataque e Conjuração com Habilidades de Raio aumentada em 3%
-- AfflictionJewelSmallPassivesGrantChaosSkillAttackAndCastSpeed — Velocidade de Ataque e Conjuração com Habilidades de Caos aumentada em 1%
-- AfflictionJewelSmallPassivesGrantChaosSkillAttackAndCastSpeed2____ — Velocidade de Ataque e Conjuração com Habilidades de Caos aumentada em 2%
-- AfflictionJewelSmallPassivesGrantChaosSkillAttackAndCastSpeed3 — Velocidade de Ataque e Conjuração com Habilidades de Caos aumentada em 3%
-- AfflictionJewelSmallPassivesGrantPhysicalSkillAttackAndCastSpeed — Velocidade de Ataque e Conjuração com Habilidades Físicas aumentada em 1%
-- AfflictionJewelSmallPassivesGrantPhysicalSkillAttackAndCastSpeed2 — Velocidade de Ataque e Conjuração com Habilidades Físicas aumentada em 2%
-- AfflictionJewelSmallPassivesGrantPhysicalSkillAttackAndCastSpeed3_ — Velocidade de Ataque e Conjuração com Habilidades Físicas aumentada em 3%
-- AfflictionJewelSmallPassivesGrantElementalSkillAttackAndCastSpeed — Velocidade de Ataque e Conjuração com Habilidades Elementais aumentada em 1%
-- AfflictionJewelSmallPassivesGrantElementalSkillAttackAndCastSpeed2_ — Velocidade de Ataque e Conjuração com Habilidades Elementais aumentada em 2%
-- AfflictionJewelSmallPassivesGrantElementalSkillAttackAndCastSpeed3_ — Velocidade de Ataque e Conjuração com Habilidades Elementais aumentada em 3%
-- AfflictionJewelSmallPassivesGrantMinionAttackAndCastSpeed — Lacaios têm Velocidade de Ataque e Conjuração aumentada em 1%
-- AfflictionJewelSmallPassivesGrantMinionAttackAndCastSpeed2 — Lacaios têm Velocidade de Ataque e Conjuração aumentada em 2%
-- AfflictionJewelSmallPassivesGrantMinionAttackAndCastSpeed3 — Lacaios têm Velocidade de Ataque e Conjuração aumentada em 3%
-- AfflictionJewelSmallPassivesGrantHeraldAttackAndCastSpeed — Velocidade de Ataque e Conjuração aumentada em 1% enquanto você for afetado por um Arauto
-- AfflictionJewelSmallPassivesGrantHeraldAttackAndCastSpeed2_ — Velocidade de Ataque e Conjuração aumentada em 2% enquanto você for afetado por um Arauto
-- AfflictionJewelSmallPassivesGrantHeraldAttackAndCastSpeed3 — Velocidade de Ataque e Conjuração aumentada em 3% enquanto você for afetado por um Arauto
-- AfflictionJewelSmallPassivesGrantHeraldMinionAttackAndCastSpeed — Lacaios têm Velocidade de Ataque e Conjuração aumentada em 1% enquanto você for afetado por um Arauto
-- AfflictionJewelSmallPassivesGrantHeraldMinionAttackAndCastSpeed2_ — Lacaios têm Velocidade de Ataque e Conjuração aumentada em 2% enquanto você for afetado por um Arauto
-- AfflictionJewelSmallPassivesGrantHeraldMinionAttackAndCastSpeed3 — Lacaios têm Velocidade de Ataque e Conjuração aumentada em 3% enquanto você for afetado por um Arauto
 - Lorde da Seca — Flamabilidade pode afetar Inimigos a Prova de Feitiços
 - Lorde da Seca — Dano com Incêndios infligidos em Inimigos Amaldiçoados aumentado em 30%
 - Cadáveres Monstruosos — Zumbis Erguidos têm 5% de chance de Provocar Inimigos ao Acertar
@@ -205,7 +115,6 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Abstinência  — Velocidade de Movimento aumentada em 10% enquanto não estiver sob Efeito de Frascos
 - Projeção de Fardo — 8% de chance de Empurrar Inimigos ao Acertar com Dano Mágico
 - Pura Agonia — +5 de Virulência Máxima
-- Pura Agonia — Lacaios causam Dano aumentado em 20% enquanto você for afetado por um Arauto
 - Infâmia Brutal — Dano com Acertos e Afecções contra Inimigos Únicos aumentado em 40%
 - Grito Assustador — Inimigos Provocados por seus Clamores são Intimidados
 - Demolir e Pilhar — Lacaios causam Dano com Acertos e Afecções aumentado em 20% contra Inimigos Incendiados
@@ -216,7 +125,6 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Proteção Tolerante — +10% de Chance de Bloquear o Dano de Ataques enquanto no Máximo de Cargas de Tolerância
 - Artista Sangrento — +6% de Multiplicador de Dano Físico Degenerativo se você Gastou Vida Recentemente
 - Guarda-Costas — Lacaios têm 10% de chance de Empurrar Inimigos ao Acertar com Ataques
-- Combatente Confiante — 1% de aumento de Dano por cada 1% de Chance de Bloquear o Dano de Ataques
 - Atrofia Esqueletal — Esqueletos Convocados têm 10% de chance de Definhar Inimigos por 2 segundos ao Acertar
 - Atrofia Esqueletal — Esqueletos Convocados possuem 30% do Dano Físico Convertido para Dano de Caos
 - Assalto Poderoso — Habilidades em Área têm 10% de chance de Empurrar Inimigos ao Acertar
@@ -231,21 +139,18 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Miséria Eterna — Desespero pode afetar Inimigos a Prova de Feitiços
 - Miséria Eterna — Recupera 2% de Escudo de Energia quando você Matar um Inimigo Amaldiçoado
 - Taumaturgo — Dano Mágico aumentado em 25% enquanto com Escudo de Energia Cheio
-- Mestre do Medo — Inimigos Amaldiçoados por você são Enervados
 - Maestria Marcial — Velocidade de Ataque aumentada em 10% caso você tenha ao menos 600 de Força
 - Adepto Arcano — Velocidade de Ataque e Conjuração enquanto Canalizando aumentada em 5%
 - Adepto Arcano — Ganhe Fúria Arcana após Canalizar por 1 segundo
 - Apatia de Doedre — Grilhões Temporais pode afetar Inimigos a Prova de Feitiços _(as Fendas e os Grilhões Temporais não existem no jogo)_
 - Apatia de Doedre — Inimigos Amaldiçoados por você são Enervados
 - Garras Pútridas — Lacaios têm uma chance de 12% de Empalar ao Acertar com Ataques
-- Líder do Culto — Lacaios causam Dano aumentado em 35% enquanto você for afetado por um Arauto
 - Emissário Maximizado — Habilidades de Arauto causam Dano aumentado em 40%
 - Demonstração Desorientadora — 10% de chance de Cegar Inimigos próximos ao usar uma Habilidade Elemental
 - Tentando a Tormenta — Condutividade pode afetar Inimigos a Prova de Feitiços
 - Tentando a Tormenta — Efeito de Eletrizações infligidas em Inimigos Amaldiçoados aumentado em 30%
 - Impressões Duradouras — Dano Degenerativo aumentado em 30% enquanto afetado por um Arauto
 - Impressões Duradouras — Habilidades de Arauto causam Dano Degenerativo aumentado em 50%
-- Sem Testemunhas — 10% de chance de ganhar Elusivo ao Matar
 - Dominador do Campo de Batalha — Efeito em Área aumentado em 15% caso você tenha Atordoado um Inimigo com uma Arma de Duas Mãos Corpo a Corpo Recentemente
 - Despeito de Doedre — Debilitar pode afetar Inimigos a Prova de Feitiços
 - Despeito de Doedre — Chance de Golpe Crítico contra Inimigos Amaldiçoados aumentada em 35%
@@ -264,8 +169,6 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Bebedor de Tormentas — 0.5% do Dano de Raio Drenado como Escudo de Energia
 - Matador Sangue Frio — Recupera 2% de Vida ao Matar um Inimigo Resfriado
 - Portal Rápido — Velociade de Movimento aumentada em 5% caso você tenha causado um Golpe Crítico Recentemente
-- Finalizador — Dano enquanto afetado por um Arauto aumentado em 20%
-- Discípulos — Lacaios causam Dano aumentado em 20% enquanto você for afetado por um Arauto
 - Discípulos — Sentinelas Convocados têm Velocidade da Recarga aumentada em 25%
 - Rítmo de Combate — Velocidade de Ataque aumentada em 10% caso você tenha Acertado com sua Arma da Mão Principal Recentemente
 - Rítmo de Combate — Velocidade de Movimento aumentada em 10% caso você tenha Acertado com sua Arma da Mão Secundária Recentemente
@@ -296,7 +199,6 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Força Explosiva — Inimigos mortos por seus Acertos com Varinhas têm chance de 10% de Explodir, causando um quarto de sua Vida como Dano de Caos
 - Força Explosiva — Ganha 10% do Dano Físico de Varinhas como Dano de Caos Extra
 - Provocador — Chance de Golpe Crítico contra Inimigos Provocados aumentada em 40%
-- Provocador — +10% de Multiplicador de Golpes Críticos contra Inimigos Provocados
 - Mestre do Fogo — Inimigos Próximos têm Exposição a Fogo
 - Foco Estóico — +5% de Chance de Bloquar o Dano de Ataques enquanto Canalizando
 - Foco Estóico — +5% de Chance de Bloquar Dano Mágico enquanto Canalizando
@@ -320,7 +222,6 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Rápido e Mortal — Velocidade de Ataque da Mão Secundária aumentada em 30% enquanto portando Tipos de Armas diferentes
 - Leque de Lâminas — Habilidades de Ataque disparam um Projétil adicional enquanto portando uma Garra ou Adaga
 - Leque de Lâminas — Dano de Ataque de Projéteis com Garras ou Adagas aumentado em 20%
-- Presságios Revigorantes — Lacaios causam Dano aumentado em 20% enquanto você for afetado por um Arauto
 - Presságios Revigorantes — Lacaios têm Velocidade de Movimento aumentada em 10% para cada Arauto afetando você
 - Ideação Sombria — Dano de Caos aumentado em 2% por cada 100 de Mana máxima, máximo de 80%
 - Tormenta de Neve — Ganhe 8% do Dano de Raio como Dano de Gelo Extra contra Inimigos Resfriados
@@ -389,7 +290,6 @@ para cada Arauto te afetando, até 40%
 - Agravar Ferimento — Dano Físico com Machados e Espadas aumentado em 20%
 - Agravar Ferimento — +5% de Multiplicador de Dano Físico Degenerativo enquanto portando um Machado ou Espada
 - Golpeador Certeiro — 5% de chance de causar Dano Dobrado caso tenha causado um Golpe Crítico com uma Arma de Duas Mãos Corpo a Corpo Recenemente
-- Palavras Proibidas — Efeito em Área de Habilidades de Maldição aumentado em 25%
 - Presença Volátil — Cólera tem Eficácia de Reserva de Mana aumentada em 50% _(esta variação da reserva ainda não tem efeito no jogo)_
 - Presença Volátil — Duração das Afecções de Fogo aumentada em 20%
 - Agente da Destruição — 10% de chance de Congelar, Eletrizar e Incendiar enquanto afetado por um Arauto

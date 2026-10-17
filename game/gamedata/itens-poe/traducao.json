@@ -40618,6 +40618,370 @@
       "nota": "sorteadas na peça: 2 das 16 linhas de devoção do pool da única no poedb (`linhas-sorteadas.json`)",
       "_nova": true,
       "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+    },
+    {
+      "padrao": "^Dano de Caos Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc_caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Dano Físico Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc_fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Dano Degenerativo de Gelo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc_gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Dano enquanto afetado por um Arauto aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios causam Dano aumentado em \\{(\\d+)\\}% enquanto você for afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "minion_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Vida Máxima$",
+      "efeitos": [
+        {
+          "stat": "life",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Mana Máxima$",
+      "efeitos": [
+        {
+          "stat": "mana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Escudo de Energia Máximo$",
+      "efeitos": [
+        {
+          "stat": "energy_shield",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Todos os Atributos$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por Segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios Regeneram \\{(\\d+)\\}% de Vida por Segundo$",
+      "efeitos": [
+        {
+          "stat": "minion_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Duração do Clamor aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Arremesso de Armadilha e Mina aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@armadilha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Posicionamento de Totem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Alcance de Vínculo de Marcas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "alcance_vinculo_runas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Habilidades Canalizadas têm Velocidade de Ataque e Conjuração aumentada \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@canalizar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@canalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Cargas de Frasco ganhadas aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_recebidas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Fogo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@fogo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Gelo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@gelo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Raio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@raio",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades de Caos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@caos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades Físicas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@fisico",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração com Habilidades Elementais aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@elemental",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios têm Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_atk_speed",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto você for afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^Lacaios têm Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto você for afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "minion_atk_speed@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_cast_speed@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
     }
   ]
 }
