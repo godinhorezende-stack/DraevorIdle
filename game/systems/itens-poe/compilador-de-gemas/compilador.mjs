@@ -34,10 +34,12 @@ function lerProps(props, st) {
 
 const RAIO_PADRAO = { area: 1.8, nova: 2.4, impacto: 1.8, corpo_a_corpo: 1.6, chuva: 1.2, orbe: 2, aura: 4, maldicao: 2, clamor: 6, arauto: 2, marca: 2.2, canalizacao: 2.5, mina: 2, armadilha: 2 };
 
-export function compilarHabilidade(gema, nivel) {
+// (17/10, lote G2) `extras`: as linhas da QUALIDADE da gema já no valor dela ("+2 segundos à duração base", "+0.4 metros de raio") — entram com
+// as do nível (o raio, a duração, os projéteis da qualidade valem como os do nível).
+export function compilarHabilidade(gema, nivel, extras = []) {
   const nmax = nivelMaximo(gema);
   nivel = Math.min(Math.max(1, nivel | 0), nmax);
-  const linhas = textosDoNivel(gema, nivel);
+  const linhas = [...textosDoNivel(gema, nivel), ...extras];
   const res = interpretar(linhas, statsVazios());
   const st = res.stats;
   const propsNao = lerProps(propsDoNivel(gema, nivel), st);
@@ -49,7 +51,8 @@ export function compilarHabilidade(gema, nivel) {
   const ataque = tipos.has("Attack");
 
   const baseRaio = st.raio ?? st.raioProp ?? RAIO_PADRAO[carga] ?? 1.5;
-  st.raioFinal = Math.max(0.4, (baseRaio + st.raioBonus) * Math.sqrt(Math.max(0.2, 1 + st.areaMais / 100)));
+  st.raioFinal = Math.max(0.4, (baseRaio + st.raioBonus) * Math.sqrt(Math.max(0.2, (1 + (st.areaInc ?? 0) / 100) * (1 + st.areaMais / 100))));
+  if (st.duracao != null && st.duracaoBonus) st.duracao += st.duracaoBonus;
   st.critico += st.criticoBase ?? 5;
   if (st.recarga && st.velRecarga) st.recarga = st.recarga / (1 + st.velRecarga / 100);
   // Gemas Vaal gastam almas; na arena não existe ganho de almas, então viram recarga fixa.

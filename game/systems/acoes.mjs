@@ -39,6 +39,7 @@ import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as LinhasDasGemas from './itens-poe/linhas-das-gemas.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
@@ -273,7 +274,8 @@ export function ganharIntensidade(hunt, id, efeito, extra = 0, agora = hunt?.clo
 
 /** PoE: a "Duração do Efeito de Habilidades" das peças (com condição: "Habilidades de Armadilha…", o anel do lado certo), em %. */
 export function duracaoDasPecas(estado, entry) {
-  const f = Ficha.combate(estado);
+  // (17/10: + a "Duração do Efeito de Habilidades aumentada" da própria gema — a da qualidade — `comAsLinhasDaGema`)
+  const f = comAsLinhasDaGema(estado, Ficha.combate(estado), entry);
   return ModsPoe.valor(f, 'duracao_habilidades') + (ModsPoe.somaPorTags(f, tagsPoeDaSkill(entry)).duracao_habilidades ?? 0);
 }
 /**
@@ -335,7 +337,22 @@ function maoDaGemaDeAtaque(entry, ficha, hunt = null) {
   return (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria) ? { arma: secundaria, ficha: Ficha.fichaDaMao(ficha, 'secundaria') } : null;
 }
 
+/**
+ * (17/10) A ficha deste USO com as LINHAS LOCAIS da gema do PoE no nível e na qualidade dela — "200% de Poder Arcano", "X% mais Velocidade de
+ * Ataque por Carga de Frenesi", a qualidade ("(0 — 20)% de chance de causar Dano Dobrado")… — como condicionais do golpe (`ficha.porTag`):
+ * `itens-poe/linhas-das-gemas.mjs`. A mesma ficha fora do PoE, nos buffs e sem linhas.
+ */
+export function comAsLinhasDaGema(estado, ficha, entry, efeito = undefined) {
+  if (!entry?.poeGema || entry.poeGema.buff || !ficha?.afPoe) return ficha;
+  const e = efeito === undefined ? Gemas.efeitoNaSkill(estado, entry.id) : efeito;
+  const nivel = e?.nivel ?? 1;
+  const q = e?.qualidade ?? 0;
+  const { af } = GemasPoe.linhasLocaisNoNivel(entry.poeGema.slug, nivel, q);
+  return LinhasDasGemas.fichaComAsLinhas(estado, ficha, af, `${entry.poeGema.slug}@${nivel}@${q}`);
+}
+
 function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null, { ativada = false, custaVida = false, maisDano = 0 } = {}) {
+  fichaBase = comAsLinhasDaGema(estado, fichaBase, entry, efeitoDaGema);
   // PoE: a ficha DESTA habilidade — os mods condicionais pelas tags dela ("Dano em Área", "Chance de Crítico com Habilidades de Fogo"…) e os
   // sorteios do uso (dano dobrado, ignorar a redução física) — `itens-poe/mods-poe.mjs`. Sem o PoE, a mesma ficha. (+ a habilidade ATIVADA por
   // um gatilho — os suportes, as peças, os únicos — leva a tag `ativada`: "Magias ativadas envenenam ao atingir".)
@@ -834,9 +851,11 @@ export function alvosDoGolpeDoMercenario(estado, l, alvo, vivos, rng = Math.rand
   const origem = { x: l.x, y: l.y };
   if (entry.forma) {
     const noAlvo = entry.miraNoChao || entry.alvoNoCentro;
-    const raio = Areas.raioDaForma(entry.forma);
+    // (17/10, lote G2: a forma no raio do PoE da gema — `formaNoRaioDoPoe`)
+    const forma = formaNoRaioDoPoe(entry, efeito, rng).forma;
+    const raio = Areas.raioDaForma(forma);
     const n = ModsPoe.casasPelaArea(raio, ModsPoe.fatorDaArea(efeito.areaIncPct ?? 0, efeito.areaMaisPct ?? 0), rng);
-    const casas = Areas.daForma(n ? Areas.escalarForma(entry.forma, raio + n) : entry.forma, noAlvo ? alvo : origem, !noAlvo && direcional(entry) ? ordemDosLados(origem, alvo)[0] : null);
+    const casas = Areas.daForma(n ? Areas.escalarForma(forma, raio + n) : forma, noAlvo ? alvo : origem, !noAlvo && direcional(entry) ? ordemDosLados(origem, alvo)[0] : null);
     const golpes = Areas.dentro(casas, vivos).filter((b) => b !== alvo).map((b) => ({ bicho: b, pct: 100, tipo: 'area' }));
     return { golpes, eventos: entry.efeito ? [{ t: 'area', id: entry.efeito, x: origem.x, y: origem.y, casas: Areas.paraTela(casas, origem) }] : [], emitidos: [], explosoes: [] };
   }
@@ -1695,7 +1714,7 @@ function fragmentosNoUso(estado, hunt, entry, efeitoDaGema, agora) {
   const gastos = Aco.consumir(hunt, ficha, d.consome + consumoExtraDoAco(ficha, entry), agora);
   Object.assign(efeitoDaGema, Aco.projeteisNoUso(d, gastos, { base: efeitoDaGema.projeteisBase ?? 1, extras: efeitoDaGema.alvosExtras ?? 0, divisao: efeitoDaGema.divisao ?? 0 }));
   if (d.protecao) {
-    const duracaoMs = Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1)?.stats?.duracao ?? 0) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema));
+    const duracaoMs = Math.round((GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema.nivel ?? 1, efeitoDaGema.qualidade ?? 0)?.stats?.duracao ?? 0) * 1000 * fatorDeDuracao(estado, entry, efeitoDaGema));
     if (Aco.ganharProtecao(hunt, d, antes, duracaoMs, agora)) Ficha.invalidar(estado);
   }
   return { d, gastos };
@@ -1724,12 +1743,13 @@ const recargaDe = (entry, ms) => (entry.papeis?.[0] === 'attack' ? Math.round(ms
  */
 export function comOsAlvosDaGema(entry, efeito, estado = null) {
   if (!entry.poeGema || entry.poeGema.buff || !efeito) return efeito;
-  const a = GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito.nivel ?? 1);
+  const a = GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito.nivel ?? 1, efeito.qualidade ?? 0);
   const e = { ...efeito };
   // PoE: os das PEÇAS — "Habilidades disparam N Projéteis adicionais", "Ataques com Arco disparam N Flechas adicionais", "Gemas Encaixadas
   // atiram N Projéteis adicionais" (a peça da gema), "Projéteis Perfuram N Alvos" e a "Área de Efeito aumentada" (lote 36: o "aumentado" e o
   // "mais" em %, com os dos suportes; o raio da forma cresce × √ no uso — `ModsPoe.casasPelaArea`) — `itens-poe/mods-poe.mjs`.
-  const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, Ficha.combate(estado), entry, tagsPoeDaSkill(entry), Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
+  // (17/10: + a área das linhas locais da gema — "X% mais Área de Efeito por Carga de Tolerância" — `comAsLinhasDaGema`)
+  const dasPecas = estado ? ModsPoe.alvosDasPecas(estado, comAsLinhasDaGema(estado, Ficha.combate(estado), entry, efeito), entry, tagsPoeDaSkill(entry), Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null) : null;
   e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide + (dasPecas?.projeteis ?? 0);
   // (12/10) A divisão da gema (o Aço Violento: "Projéteis se Partem na direção de N alvos") — o "Se você não tiver Fragmentos de Aço,
   // Projéteis contam como se já tivessem se Partido" a tira (`fragmentosNoUso`); e o "Habilidades Disparam N Projéteis adicionais por S
@@ -1758,6 +1778,9 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
   }
   e.perfurar = Math.max(e.perfurar ?? 0, a.perfurar) + (dasPecas?.perfurar ?? 0);
   if (dasPecas?.areaInc) e.areaIncPct = (e.areaIncPct ?? 0) + dasPecas.areaInc;
+  // (17/10, lote G2) a "Área de Efeito aumentada em X%" da PRÓPRIA gema (do nível e da qualidade): soma com a das peças e a dos suportes
+  const daGema = GemasPoe.areaNoNivel(entry.poeGema.slug, efeito.nivel ?? 1, efeito.qualidade ?? 0);
+  if (daGema.areaIncPct) e.areaIncPct = (e.areaIncPct ?? 0) + daGema.areaIncPct;
   if (dasPecas?.areaMais) e.areaMaisPct = ((1 + (e.areaMaisPct ?? 0) / 100) * Math.max(0, 1 + dasPecas.areaMais / 100) - 1) * 100;
   // "Habilidades Ricocheteiam +N vezes": os ricochetes do projétil (os saltos da cadeia, na magia de cadeia).
   if (dasPecas?.ricochetes) e.encadear = (e.encadear ?? 0) + dasPecas.ricochetes;
@@ -1903,6 +1926,37 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
 // (A geometria é a compartilhada — `engine/areas.mjs`, a mesma que a tela usa.)
 const direcional = (entry) => Areas.direcional(entry.forma);
 const casasDaForma = (entry, cx, cy, dir = null) => Areas.daForma(entry.forma, { x: cx, y: cy }, dir);
+/**
+ * (17/10, lote G2 — a decisão do dono "Toda área em metros": 1 casa = 2 m) A FORMA da gema do PoE no RAIO DELA (`GemasPoe.areaNoNivel`: o raio-base
+ * do PoE, os "+X metros de raio" e o "X% mais Área de Efeito" da gema, no nível e na qualidade): a forma da magia-molde (a onda, o losango, a
+ * varredura) esticada ou encolhida até o raio em casas (os metros ÷ 2; a fração é a chance de uma casa a mais, como `ModsPoe.casasPelaArea`).
+ * Depois, a Área de Efeito das peças, dos suportes e da gema cresce essa forma (`areaNoUso`). Sem raio publicado no PoE, a forma do molde fica
+ * (o status da gema não muda por isto). `entry` sem forma (o projétil, o golpe no alvo, a cadeia) volta igual.
+ */
+export function formaNoRaioDoPoe(entry, efeito, rng = Math.random, { hunt = null, minimo = 0 } = {}) {
+  if (!itensPoeLigado() || !entry?.poeGema || entry.poeGema.buff || !entry.forma) return entry;
+  const { raioM } = GemasPoe.areaNoNivel(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
+  if (raioM == null) return entry;
+  const casas = raioM / 2;
+  // (`hunt`: o sorteio da fração fica guardado até um uso SAIR — `consumirRaioDoPoe` — para a área que não pegou ninguém não sortear de novo no
+  // tique seguinte: sem isto, a fração virava "a casa a mais" na prática, de tanto tentar)
+  const chave = `${entry.poeGema.slug}@${raioM}`;
+  let r = hunt?.poeRaioPendente?.[chave];
+  if (r == null) {
+    r = Math.max(0, Math.trunc(casas) + (rng() < casas % 1 ? 1 : 0));
+    if (hunt) (hunt.poeRaioPendente ??= {})[chave] = r;
+  }
+  // (`minimo`: a ARMADILHA — no PoE o inimigo que a ativa está sempre na explosão, porque o raio de ativação é menor que o dela; aqui a
+  // ativação é a 1 casa, `Plantadas.PADRAO.armadilha.raioDeAtivacao`, e a explosão pega ao menos essa casa)
+  r = Math.max(r, minimo);
+  return r === Areas.raioDaForma(entry.forma) ? entry : { ...entry, forma: Areas.escalarForma(entry.forma, r) };
+}
+/** O uso SAIU: o sorteio do raio da gema guardado (`formaNoRaioDoPoe`) vale só para ele. */
+export function consumirRaioDoPoe(hunt, entry) {
+  if (!hunt?.poeRaioPendente || !entry?.poeGema) return;
+  for (const k of Object.keys(hunt.poeRaioPendente)) if (k.startsWith(`${entry.poeGema.slug}@`)) delete hunt.poeRaioPendente[k];
+  if (!Object.keys(hunt.poeRaioPendente).length) delete hunt.poeRaioPendente;
+}
 
 /** Os 4 lados, começando pelo que aponta para o alvo (eixo dominante). */
 function ordemDosLados(pos, alvo) {
@@ -2005,8 +2059,10 @@ function velocidadeCondicional(estado, efeito) {
 }
 /** A gema instantânea (sem tempo de uso: 0 de conjuração, ou "Utilizar Habilidades Suportadas é Instantâneo") ocupa um tique. */
 const USO_DA_INSTANTANEA_MS = 250;
-export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), ficha = Ficha.combate(estado), { doJogador = true } = {}) {
-  const t = GemasPoe.temposNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
+export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), fichaDoPersonagem = Ficha.combate(estado), { doJogador = true } = {}) {
+  // (17/10: + as linhas locais da gema — "X% mais Velocidade de Ataque por Carga de Frenesi" — `comAsLinhasDaGema`)
+  const ficha = comAsLinhasDaGema(estado, fichaDoPersonagem, entry, efeitoDaGema);
+  const t = GemasPoe.temposNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
   const suportes = 1 + (efeitoDaGema?.castTimePct ?? 0) / 100;
   const ataque = !!entry.poeGema.ataque;
   // PoE: a velocidade de conjuração / a recuperação de recarga "com Habilidades de Fogo", "de Movimento", "do Totem"… (pelas tags da gema).
@@ -2016,12 +2072,14 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const global = ficha.velocidadeDeAtaque ?? 0;
   // (ciclo 7) + a velocidade de ataque "com Habilidades de X" (`atk_speed@<tag>` — Retaliação, Movimento…): antes não entrava em lugar nenhum.
   const daGema = (efeitoDaGema?.velAtaquePct ?? 0) + (doJogador ? velocidadeCondicional(estado, efeitoDaGema) : 0) + (porTag.atk_speed ?? 0);
-  const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + daGema) / 100);
+  // (17/10) o "X% mais Velocidade de Ataque" com condição (a da gema — o Frenesi, "por Carga de Frenesi"): multiplica.
+  const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + daGema) / 100) / Math.max(0.1, 1 + (porTag.atk_speed_mais ?? 0) / 100);
   const lentidao = doJogador ? Controle.fatorDeLentidao(estado.hunt) : 1;
   // (lote 34, P008: o CLAMOR não é ataque nem magia — a Velocidade de Conjuração não vale nele; o tempo de uso dele encurta pela "Velocidade dos
   // Clamores aumentada", `velocidade_clamor`)
   const ehClamor = entry.poeGema.arquetipo === 'clamor';
-  const velocidadeDoUso = ehClamor ? ModsPoe.valor(ficha, 'velocidade_clamor') + (porTag.velocidade_clamor ?? 0) : castSpeed;
+  // (17/10, lote G2: + a "Velocidade de Clamor aumentada" da própria gema — `temposNoNivel.velClamor`)
+  const velocidadeDoUso = ehClamor ? ModsPoe.valor(ficha, 'velocidade_clamor') + (porTag.velocidade_clamor ?? 0) + (t.velClamor ?? 0) : castSpeed;
   const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, velocidadeDoUso) / 100)) * lentidao;
   // (ciclo 7) + a "Recuperação da Recarga" de UMA gema ("Convocação tem Recuperação da Recarga aumentada"): `recarga_gema:<slug>` — vale também
   // nas versões transfiguradas (o slug começa igual: Blink_Arrow → Blink_Arrow_of_Prismatic_Clones).
@@ -2106,7 +2164,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const action = gatilho ? gatilho.acao : estado.actions?.[slot];
   if (!action?.id) return { ok: false, erro: 'Esse slot está vazio.', motivo: 'VAZIO' };
   if (action.enabled === false) return { ok: false, erro: 'Esse slot está desligado.', motivo: 'DESLIGADA' };
-  const entry = POR_ID.get(action.id);
+  let entry = POR_ID.get(action.id);
   if (!entry) return { ok: false, erro: 'Ação desconhecida.', motivo: 'DESCONHECIDA' };
   // Defesa em profundidade: `definir()` já recusa vocação/level errados ao
   // configurar o slot, mas um arranjo salvo (`actionPresets`) antes de um
@@ -2175,6 +2233,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     : R.instanteLogico(agora, hunt.relogioAnterior, [globalLibera, cd?.ate, grupoQueConta ? cds[grupoQueConta]?.ate : null]);
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
   const efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
+  // (17/10, lote G2) A FORMA da área no RAIO DO PoE da gema (o da magia-molde do Draevor era fixo: a nova pegava 5 casas, fosse a Nova de Gelo
+  // de 3 m ou a de 2,2 m) — `formaNoRaioDoPoe`.
+  entry = formaNoRaioDoPoe(entry, efeitoDaGema, Math.random, { hunt, minimo: plantada?.tipo === 'armadilha' ? Plantadas.PADRAO.armadilha.raioDeAtivacao : 0 });
   // (PoE, a Lâmina Noturna: "Habilidades Suportadas só podem ser usadas com Garras e Adagas".)
   if (efeitoDaGema?.soGarraAdaga && !/^(Claws|Daggers|Rune_Daggers)$/.test(String(estado.equipment?.weapon?.poe?.classe ?? ''))) return { ok: false, erro: 'Só com Garras e Adagas (Lâmina Noturna).', motivo: 'ARMA' };
   // (PoE, o Intensificar: a INTENSIDADE desta magia agora — "perdem 1 de Intensidade a cada N segundos enquanto se movendo"; ela vale nesta
@@ -2333,6 +2394,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    * Na magia de área conta quem a área PEGA; na de alvo único (e na cadeia), quem
    * está a até `RAIO_DA_FAIXA` sqm — o que a tela diz. Máximo 0 = sem teto.
    */
+  // (a Armadilha/Mina: o raio sorteado vale só para esta ativação)
+  if (plantada) consumirRaioDoPoe(hunt, entry);
   if (ataque && !plantada) {
     // (O próprio alvo sempre conta: a magia de 7 sqm no bicho a 6 não some da faixa.)
     const n = casas ? atingidos.length : new Set([...atingidos, ...vivos.filter((b) => distanciaChebyshev(hunt.pos, b) <= RAIO_DA_FAIXA)]).size;
@@ -2340,6 +2403,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       return casas ? { ok: false, erro: 'Nenhum bicho na área.', motivo: 'SEM_BICHO_NA_AREA' } : { ok: false, erro: 'Poucas criaturas para o mínimo do slot.', motivo: 'POUCAS_CRIATURAS' };
     }
     if (action.maxTargets > 0 && n > action.maxTargets) return { ok: false, erro: 'Criaturas demais para o máximo do slot.', motivo: 'CRIATURAS_DEMAIS' };
+    // (17/10, lote G2) o uso sai: o raio sorteado da gema vale só para ele (`formaNoRaioDoPoe`)
+    consumirRaioDoPoe(hunt, entry);
   } else if (!entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
     // Suporte/velocidade (haste, buffs): só com bicho por perto, senão era mana jogada fora sem parar.
     return { ok: false, erro: 'Nenhum bicho por perto.', motivo: 'SEM_BICHO_POR_PERTO' };
@@ -2512,7 +2577,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // Skill Duration (support): +% na duração do reforço.
     const duracao = Math.round(buff.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
     // A gema do PoE: os efeitos e os atributos do NÍVEL dela (`GemasPoe.buffNoNivel`) ficam no buff; a ficha é refeita (atributos novos).
-    const doPoe = entry.poeGema?.buff ? GemasPoe.buffNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
+    const doPoe = entry.poeGema?.buff ? GemasPoe.buffNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     // (A aura que reserva fica LIGADA — sem expirar — e guarda a reserva dela: o recurso, a % ou o fixo, e o fator dos suportes/eficácia.)
     // (11/10: o RAIO da aura em casas, × √ do "Efeito em Área de Habilidades de Aura aumentado" de quem lança — os companheiros a esse raio
     // também a recebem: `GemasPoe.adds`.)
@@ -2804,7 +2869,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos, { corpoACorpo: Tags.tagsDaAcao(entry).includes('melee') });
       // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
       // (A gema só de dano degenerativo — Flecha Cáustica, Contagiar… — não mostra um "0": o dano dela vem nos pulsos.)
-      if (dano > 0 || !(entry.poeGema && GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1))) {
+      if (dano > 0 || !(entry.poeGema && GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0))) {
         eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: pedacos ? COR_DO_ELEMENTO[tipo] ?? cor : cor, ...(fonte ? { fonte } : {}) });
       }
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
@@ -2837,7 +2902,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // A resistência do alvo vale em cada pulso; não rola crítico. Uma instância por gema: a mesma habilidade não acumula com ela mesma.
       // (O Vínculo Ancestral: sem dano por si só — `semDanoProprio`.)
       if (entry.poeGema && !semDanoProprio) {
-        const dg = GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
+        const dg = GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
         const a = ficha.afeccoes ?? AfeccoesPoe.daSoma(ficha.afPoe ?? {});
         const MULTI = { fire: a.multiplicadorFogo, ice: a.multiplicadorGelo, energy: a.multiplicadorRaio, chaos: a.multiplicadorCaos, physical: a.multiplicadorFisico };
         for (const p of dg?.partes ?? []) {
@@ -2984,7 +3049,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const fria = entry.poeGema ? ModsPoe.AREAS_FRIAS.porGema[entry.poeGema.slug] : null;
     if (fria) {
       const c = fria.noAlvo && alvo ? alvo : formaNoUso ?? hunt.pos;
-      const segundos = (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)?.stats?.duracao ?? 4) * fatorDeDuracao(estado, entry, efeitoDaGema);
+      const segundos = (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 4) * fatorDeDuracao(estado, entry, efeitoDaGema);
       ModsPoe.criarAreaFria(hunt, { x: c.x, y: c.y, raioM: fria.raioM, segundos });
     }
     // (No PoE as magias não roubam: só os ataques — `Ficha.aplicarLeech`.)
@@ -3141,7 +3206,7 @@ function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efei
   const tipo = Plantadas.tipoDaGema(entry);
   const ficha = Ficha.combate(estado);
   const slug = entry.poeGema.slug;
-  const dur = Plantadas.duracaoMs(ficha, tipo, GemasPoe.compilada(slug, efeitoDaGema?.nivel ?? 1)?.stats?.duracaoObjeto ?? null);
+  const dur = Plantadas.duracaoMs(ficha, tipo, GemasPoe.compilada(slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracaoObjeto ?? null);
   const detonacaoMs = tipo === 'mina' ? Plantadas.detonacaoDaGema(GemasPoe.doSlug(slug)?.gema?.mods ?? []) : null;
   const eventos = [];
   // ("Minas Desaceleram Inimigos próximos delas por N segundos quando são Plantadas" — os a até 3 casas da Mina.)

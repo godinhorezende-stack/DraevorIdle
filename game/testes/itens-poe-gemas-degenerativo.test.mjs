@@ -48,7 +48,9 @@ async function montar(slugs, af = {}) {
     for (let i = 0; i < (segundos * 1000) / 250 && e.hunt; i++) {
       const h = e.hunt;
       h.monstros = h.monstros.slice(0, 1);
-      Object.assign(h.monstros[0], { hp: Math.max(h.monstros[0].hp, 1e11), maxHp: 1e12, x: h.pos.x + 2, y: h.pos.y });
+      // (17/10, lote G2 — o dono: "Monstro a 1 casa") colado: as áreas têm o raio do PoE (o Vórtice, 2,3 m = 1,15 casa), e a 2 casas (4 m) ele
+      // só pegava quando sorteava a casa a mais
+      Object.assign(h.monstros[0], { hp: Math.max(h.monstros[0].hp, 1e11), maxHp: 1e12, x: h.pos.x + 1, y: h.pos.y });
       h.alvo = h.monstros[0].uid;
       e.hp = e.maxHp; e.mana = 1e6; e.maxMana = 1e6;
       Cacadas.tique(e, PERSONAGEM, (t += 250));

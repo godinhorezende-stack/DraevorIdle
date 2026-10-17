@@ -50,7 +50,9 @@ const grade = () => {
   return vivos;
 };
 
-test('a ÁREA: a Nova de Gelo do criomante pega o losango de 5 casas em volta dele; com +100% de Área de Efeito nas peças dele, a forma esticada até 7', { skip: SEM }, () => {
+// (17/10, lote G2 — o dono: "Aplicar raio do PoE") a Nova de Gelo tem o raio do PoE (2,6 a 3 m = 1,3 a 1,5 casa: no sorteio 0,5, o losango de
+// 1 casa — `Acoes.formaNoRaioDoPoe`), não as 5 casas da magia-molde.
+test('a ÁREA: a Nova de Gelo do criomante pega o losango do raio do PoE em volta dele; com +300% de Área de Efeito nas peças dele, o raio dobra', { skip: SEM }, () => {
   const e = dono();
   const { merc, l } = mercenario(e, 'criomante', 1);
   assert.equal(l.habilidades[1].gema, 'Ice_Nova');
@@ -58,19 +60,19 @@ test('a ÁREA: a Nova de Gelo do criomante pega o losango de 5 casas em volta de
   const alvo = vivos.find((b) => b.x === 12 && b.y === 10);
   const dentro = (r) => vivos.filter((b) => b !== alvo && Math.abs(b.x - 10) + Math.abs(b.y - 10) <= r).length;
   const r = Acoes.alvosDoGolpeDoMercenario(e, l, alvo, vivos, () => 0.5);
-  assert.equal(r.golpes.length, dentro(5));
+  assert.equal(r.golpes.length, dentro(1));
   assert.ok(r.golpes.every((g) => g.tipo === 'area'));
   assert.equal(r.eventos[0].t, 'area');
-  // um amuleto com +100% de Área de Efeito NELE: 5 × (√2 − 1) = 2,07 → a forma esticada até 7 casas (no sorteio 0,5 — `Areas.escalarForma`)
+  // um amuleto com +300% de Área de Efeito NELE: × √4 = o raio 2 (1 × (2 − 1) = 1 casa inteira, sem sorteio — `Areas.escalarForma`)
   const amuleto = peca('Amulets/Coral_Amulet');
-  amuleto.poe.af = { ...amuleto.poe.af, area_inc: 100 };
+  amuleto.poe.af = { ...amuleto.poe.af, area_inc: 300 };
   merc.equipment.neck = amuleto;
   merc.v = 1;
   const r2 = Acoes.alvosDoGolpeDoMercenario(e, l, alvo, vivos, () => 0.5);
-  const forma = Acoes.POR_ID_PUBLICO(GemasPoe.doSlug('Ice_Nova').acao).forma;
-  const esticada = Areas.dentro(Areas.daForma(Areas.escalarForma(forma, 7), { x: 10, y: 10 }), vivos).filter((b) => b !== alvo).length;
+  const forma = Areas.escalarForma(Acoes.POR_ID_PUBLICO(GemasPoe.doSlug('Ice_Nova').acao).forma, 1);
+  const esticada = Areas.dentro(Areas.daForma(Areas.escalarForma(forma, 2), { x: 10, y: 10 }), vivos).filter((b) => b !== alvo).length;
   assert.equal(r2.golpes.length, esticada);
-  assert.ok(esticada > dentro(5));
+  assert.ok(esticada > dentro(1));
 });
 
 test('os PROJÉTEIS: a Flecha Dividida do arqueiro dispara os projéteis da gema, cada um num inimigo', { skip: SEM }, () => {

@@ -21,6 +21,7 @@ import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
+import { ehLinhaLocalDaGema, atributosDasLinhas } from './linhas-das-gemas.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
@@ -99,14 +100,33 @@ const POR_SLUG = new Map();
 export const REGISTRO = new Map();
 const CACHE = new Map();
 
-/** A gema compilada no nível (cache): os números do PoE (`compilarHabilidade` da arena do dono). */
-export function compilada(slug, nivel = 1) {
+/** (uma frase nova começa numa faixa "(a — b)" quando a parte de antes já tem a sua faixa e termina num número, "%" ou palavra fechada) */
+function partirQualidade(t) {
+  const out = [];
+  let resto = String(t);
+  for (;;) {
+    const re = / (?=[+-]?\(-?\d[^)]*—[^)]*\))/g;
+    let corte = -1;
+    for (let m; (m = re.exec(resto));) if (/\(-?\d[^)]*—[^)]*\)/.test(resto.slice(0, m.index)) && !/\b(em|de|a|até|por|ao|do|da)$/i.test(resto.slice(0, m.index))) { corte = m.index; break; }
+    if (corte < 0) { out.push(resto); return out; }
+    out.push(resto.slice(0, corte));
+    resto = resto.slice(corte + 1);
+  }
+}
+/** As linhas da QUALIDADE da gema no valor da fração `q` (0–1). */
+const linhasDaQualidade = (g, q) => (g?.qualidade ?? []).flatMap(partirQualidade).map((t) => naFracao(t, q));
+/**
+ * A gema compilada no nível (cache): os números do PoE (`compilarHabilidade` da arena do dono). (17/10, lote G2: + a QUALIDADE, 0–20 — as
+ * linhas dela entram com as do nível: "+0.4 metros de raio", "+2 segundos à duração base", "Dispara +1 projétil"…)
+ */
+export function compilada(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   if (!g || !COMPILADOR) return null;
   const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
-  const k = `${slug}@${n}`;
+  const q = Math.max(0, Math.min(20, Math.round(Number(qualidade) || 0)));
+  const k = `${slug}@${n}@${q}`;
   if (!CACHE.has(k)) {
-    const h = COMPILADOR.compilarHabilidade(g, n);
+    const h = COMPILADOR.compilarHabilidade(g, n, q > 0 ? linhasDaQualidade(g, q / 20) : []);
     CACHE.set(k, h && ARQUETIPO_PROPRIO[slug] ? { ...h, arquetipo: ARQUETIPO_PROPRIO[slug] } : h);
   }
   return CACHE.get(k);
@@ -117,9 +137,10 @@ export function compilada(slug, nivel = 1) {
  * própria (s, só as que têm "Recarga" no PoE — a maioria não tem) com as cargas, e a velocidade de ataque da gema de ataque ("X% de base":
  * o golpe da arma × X%).
  */
-export function temposNoNivel(slug, nivel = 1) {
-  const st = compilada(slug, nivel)?.stats ?? {};
-  return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100 };
+export function temposNoNivel(slug, nivel = 1, qualidade = 0) {
+  // (17/10, lote G2: + a qualidade — "Velocidade de Recarga aumentada em X%" da qualidade encurta a recarga)
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100, velClamor: st.velClamor ?? 0 };
 }
 
 /**
@@ -140,6 +161,8 @@ const REGRAS_DE_ALVOS = [
   [/^Dispara (\d+) (?:projéteis|flechas)$/i, (m, a) => { a.base = Math.max(a.base ?? 0, Number(m[1])); }],
   [/^Dispara Projéteis em sequência$/i, (m, a) => { a.sequencia = true; }],
   [/^Dispara (?:um|1) Projétil adicional$/i, (m, a) => { a.projeteis += 1; }],
+  // (17/10, lote G2) a qualidade escreve os adicionais com "+": "Dispara +2 projéteis", "Dispara +1 Flecha" (a fração arredonda para baixo)
+  [/^Dispara \+(\d+(?:\.\d+)?) (?:projéteis|projétil|Flechas?)$/i, (m, a) => { a.projeteis += Math.floor(Number(m[1])); }],
   [/se divide em direção a (\d+) alvos adiciona/i, (m, a) => { a.divide += Number(m[1]); }],
   // (12/10) O Aço Violento: "Projéteis se Partem na direção de N alvos" (o compilador lia o número, mas nada o usava: a divisão não saía).
   [/^Projéteis se Partem na direção de (\d+) alvos$/i, (m, a) => { a.divide += Number(m[1]); }],
@@ -197,13 +220,16 @@ export function cadaveresDaGema(slug, nivel = 1) {
 /** As linhas da gema que o jogo agora faz (saem de "não simulado"). */
 export const ehLinhaDeAlvos = (linha) => REGRAS_DE_ALVOS.some(([re]) => re.test(linha));
 const ALVOS = new Map();
-export function alvosNoNivel(slug, nivel = 1) {
+export function alvosNoNivel(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR?.nivelMaximo?.(g) ?? 40));
-  const k = `${slug}@${n}`;
+  const q = Math.max(0, Math.min(20, Math.round(Number(qualidade) || 0)));
+  const k = `${slug}@${n}@${q}`;
   if (ALVOS.has(k)) return ALVOS.get(k);
   const a = { saltos: 0, pctPorRestante: 0, perfurar: 0, projeteis: 0, bifurcar: 0, divide: 0 };
-  for (const linha of g && COMPILADOR?.textosDoNivel ? COMPILADOR.textosDoNivel(g, n) : []) for (const [re, fazer] of REGRAS_DE_ALVOS) { const m = linha.match(re); if (m) fazer(m, a); }
+  // (17/10, lote G2: + as linhas da qualidade — "Dispara +1 projétil", "Ricocheteia +1 Vezes")
+  const linhas = g && COMPILADOR?.textosDoNivel ? [...COMPILADOR.textosDoNivel(g, n), ...(q > 0 ? linhasDaQualidade(g, q / 20) : [])] : [];
+  for (const linha of linhas) for (const [re, fazer] of REGRAS_DE_ALVOS) { const m = linha.match(re); if (m) fazer(m, a); }
   ALVOS.set(k, a);
   return a;
 }
@@ -253,6 +279,54 @@ export function partesDaMagia(slug, nivel) {
   for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; const x = p[k] ?? [0, 0]; p[k] = [x[0] + v[0], x[1] + v[1]]; }
   return p;
 }
+/**
+ * (17/10) As LINHAS LOCAIS da gema no nível e na QUALIDADE (`itens-poe/linhas-das-gemas.mjs`): as linhas que o compilador não lê mas que são
+ * um modificador que o jogo já calcula ("200% de Poder Arcano", "X% mais Velocidade de Ataque por Carga de Frenesi"…) e as linhas da
+ * qualidade da gema ("+(0 — 50)% de Poder Arcano", "(0 — 20)% de chance de causar Dano Dobrado"), × a fração da qualidade — antes a
+ * qualidade das gemas ativas não valia (só o "mais Dano por cada tipo de Afecção" do Acerto Elemental). `{ af, feitas, qualidade }`: os
+ * atributos somados, as linhas do nível que viraram atributo e as linhas da qualidade que o jogo faz (as outras ficam fora do balão).
+ */
+const LOCAIS = new Map();
+/** As linhas da qualidade que o compilador lê E o jogo usa (o raio, a área, a duração, a recarga). */
+const QUALIDADE_PELO_COMPILADOR = /metros? (?:de|ao) raio$|^O raio Base|Área de Efeito aumentada|% (?:mais|menos) Área de Efeito$|segundos? à duração base$|^Duração base é de|Velocidade de Recarga aumentada/i;
+/** As linhas da qualidade (o poedb junta duas numa: "+(0 — 2)% mais Dano … +(0 — 2)% mais Velocidade …"), × a fração `q` (0–1). */
+export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
+  const g = POR_SLUG.get(slug);
+  const q = Math.max(0, Math.min(20, Math.round(Number(qualidade) || 0)));
+  const h = compilada(slug, nivel, q);
+  if (!g || !h) return { af: {}, feitas: [], qualidade: [] };
+  const k = `${slug}@${h.nivel}@${q}`;
+  if (LOCAIS.has(k)) return LOCAIS.get(k);
+  // (as linhas que o compilador não leu — as do nível e as da qualidade —; as da qualidade que ele leu (raio, duração, projéteis) já valem
+  // pela compilada)
+  const daQ = new Set(q > 0 ? linhasDaQualidade(g, q / 20) : []);
+  const nao = h.linhas?.naoImplementadas ?? [];
+  const uso = ehUso(h);
+  const doNivel = uso ? atributosDasLinhas(nao.filter((l) => !daQ.has(l))) : { af: {}, feitas: [] };
+  const daQualidade = uso ? atributosDasLinhas(nao.filter((l) => daQ.has(l))) : { af: {}, feitas: [] };
+  const af = { ...doNivel.af };
+  for (const [x, v] of Object.entries(daQualidade.af)) af[x] = (af[x] ?? 0) + v;
+  // (só as que o JOGO usa da compilada: o raio e a área — `areaNoNivel`/`formaNoRaioDoPoe` —, a duração e a recarga — `temposNoNivel`; o
+  // resto que o compilador lê não vale no jogo e fica fora)
+  const lidasPeloCompilador = [...daQ].filter((l) => !nao.includes(l) && QUALIDADE_PELO_COMPILADOR.test(l));
+  const r = { af, feitas: doNivel.feitas, qualidade: [...lidasPeloCompilador, ...daQualidade.feitas] };
+  LOCAIS.set(k, r);
+  return r;
+}
+
+/**
+ * (17/10, lote G2) A ÁREA DO PoE da gema no nível e na qualidade: `raioM` — o raio-base em metros ("O raio Base é de 3 metros", "Raio: 3.5"), +
+ * os "+X metros de raio" da gema, × √ do "X% mais Área de Efeito" dela —, ou null se o PoE não publica o raio; `areaIncPct` — a "Área de
+ * Efeito aumentada em X%" da gema (soma com a das peças e dos suportes).
+ */
+export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
+  const st = compilada(slug, nivel, qualidade)?.stats;
+  if (!st) return { raioM: null, areaIncPct: 0 };
+  const base = st.raio ?? st.raioProp ?? null;
+  const raioM = base == null ? null : Math.max(0, (base + (st.raioBonus ?? 0)) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
+  return { raioM, areaIncPct: st.areaInc ?? 0 };
+}
+
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
 const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
 export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
@@ -349,8 +423,8 @@ export const DEGEN_DO_ELEMENTO = { physical: 'degenFisico', fire: 'degenFogo', i
  * O dano degenerativo da gema no nível ("Causa 765 de Dano de Gelo Base por segundo" — Vórtice, Geada Rastejante, Flecha Cáustica…):
  * `{ partes: [{ elemento, dps }], duracaoMs }` ou null. A duração é a da habilidade (sem ela, 4 s; no mínimo 1 s: um pulso inteiro).
  */
-export function degenerativoNoNivel(slug, nivel) {
-  const st = compilada(slug, nivel)?.stats;
+export function degenerativoNoNivel(slug, nivel, qualidade = 0) {
+  const st = compilada(slug, nivel, qualidade)?.stats;
   const partes = (st?.dot ?? []).map((d) => ({ elemento: ELEMENTO[d.el], dps: Number(d.dps) || 0 })).filter((p) => p.elemento && p.dps > 0);
   if (!partes.length) return null;
   return { partes, duracaoMs: Math.round(Math.max(1, Number(st.duracao) || 4) * 1000) };
@@ -359,8 +433,8 @@ export function degenerativoNoNivel(slug, nivel) {
 // ---- os BUFFS (auras, arautos, guardas, gritos, maldições) no nível: os efeitos de reforço do Draevor + atributos na ficha ----
 const AF_DO_ELEMENTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', fisico: 'phys', caos: 'chaos' };
 /** `{ efeitos, af, dur, motivos }` do buff da gema no nível. */
-export function buffNoNivel(slug, nivel) {
-  const h = compilada(slug, nivel);
+export function buffNoNivel(slug, nivel, qualidade = 0) {
+  const h = compilada(slug, nivel, qualidade);
   if (!h) return null;
   const st = h.stats;
   const b = st.buff ?? {};
@@ -468,9 +542,13 @@ function avaliarNoJogo(h, formato) {
     if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l)) motivos.push(`efeito não simulado: ${l}`);
+  // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
+
+/** (17/10) A gema é um USO com golpe (as linhas locais valem nos acertos dela — `linhasLocaisNoNivel`): não é buff, lacaio nem totem. */
+const ehUso = (h) => !BUFF.has(h.arquetipo) && !['lacaio', 'totem', 'vinculo', 'praga', 'feiticeiro'].includes(h.arquetipo);
 
 /** A magia do catálogo de ações da gema (o molde + os números do PoE no nível 1). */
 function acaoDaGema(g, h, itemId, formato, elemento) {
@@ -607,7 +685,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

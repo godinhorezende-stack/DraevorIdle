@@ -123,12 +123,15 @@ export const REGRAS = [
   [r(`Raio de alcance secundário base é de ${N}`), (s, m) => (s.raio2 = num(m[1]))],
   [r(`^\\+?${N} metros? (?:de|ao) raio$`), (s, m) => (s.raioBonus += num(m[1]))],
   [r(`^${N} % (mais|menos) Área de Efeito$`), (s, m) => (s.areaMais += num(m[1]) * sinal(m[2]))],
-  [r(`^Área de Efeito aumentada em ${N}`), (s, m) => (s.areaMais += num(m[1]))],
+  // (17/10, lote G2: o "aumentada" é aditivo com o das peças e dos suportes — `areaInc`; o "mais/menos" multiplica — `areaMais`)
+  [r(`^Área de Efeito aumentada em ${N}`), (s, m) => (s.areaInc = (s.areaInc ?? 0) + num(m[1]))],
   [r(`\\+${N} metros ao raio por (?:estágio|Estágio)`), (s, m) => (s.raioPorEstagio = num(m[1]))],
   [r(`${N} % mais Área de Efeito por cada estágio`), (s, m) => (s.raioPorEstagio = num(m[1]) / 100)],
   [r(`^Máximo de ${N} Estágios`), (s, m) => (s.estagios = num(m[1]))],
   [r(`^\\+?${N} ao máximo de Estágios`), (s, m) => (s.estagios = (s.estagios || 0) + num(m[1]))],
   [r(`Duração base é de ${N} segundos?`), (s, m) => (s.duracao = num(m[1]))],
+  // (lote G2: a qualidade — "+(0 — 2) segundos à duração base": soma na duração base, depois de lida)
+  [r(`^\\+${N} segundos? à duração base$`), (s, m) => (s.duracaoBonus = (s.duracaoBonus ?? 0) + num(m[1]))],
   [r(`Duração Base Secundária é de ${N}`), (s, m) => (s.duracao2 = num(m[1]))],
   [r(`(?:Armadilha|Totem|Mina) dura ${N}`), (s, m) => (s.duracaoObjeto = num(m[1]))],
   [r(`Tempo Base de Detonação de Mina é de ${N}`), (s, m) => (s.detonacao = num(m[1]))],
@@ -198,7 +201,10 @@ export const REGRAS = [
   [r(`^(?:Você e aliados próxim|Buff concede|Aura concede|Estandarte)`), (s, m) => (s.buff.textos.push(m.input), false)],
 
   // ---------------- tempo ----------------
-  [r(`Velocidade de (?:Recarga|Clamor) aumentada em ${N}`), (s, m) => (s.velRecarga += num(m[1]))],
+  [r(`Velocidade de Recarga aumentada em ${N}`), (s, m) => (s.velRecarga += num(m[1]))],
+  // (17/10, lote G2) a "Velocidade de Clamor aumentada" dos clamores encurta o TEMPO DE USO do clamor (Warcry Speed), não a recarga — antes
+  // virava recuperação da recarga (o Clamor Resistente nível 20 saía com 5,8 s de recarga no lugar dos 8 s do PoE)
+  [r(`^Velocidade de Clamor aumentada em ${N}`), (s, m) => (s.velClamor = (s.velClamor ?? 0) + num(m[1]))],
   [r(`^\\+${N} segundos ao Tempo de Ataque`), (s, m) => (s.tempoAtaqueExtra += num(m[1]))],
   [r(`É Ativado a cada ${N} segundos`), (s, m) => (s.intervalo = num(m[1]))],
   [r(`Ataca a cada ${N} segundos`), (s, m) => (s.intervalo = num(m[1]))],
