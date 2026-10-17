@@ -218,6 +218,17 @@ export function regrasDaBase(implicitos = []) {
   }
   return r;
 }
+/**
+ * (lote 62 — dono, 17/10: "2+2 em todas") As VAGAS de cada lado (`{ prefixo, sufixo }`) na raridade `R`, com as regras da base (`rb`, os
+ * implícitos): a JOIA (Carmesim, Viridiana, Cobalto, Abissais, Ramificadoras) tem no máximo 2 Prefixos e 2 Sufixos, como no PoE (o PoB:
+ * `affixLimit` 4 para "Jewel"); antes ela seguia a regra geral da Rara (até 3 + 3). O drop, as moedas e a Forja usam esta conta.
+ */
+const CLASSES_DE_JOIA = new Set(['Jewels', 'Abyss_Jewels']);
+export const MAXIMO_DA_JOIA = 2;
+export function vagasDaPeca(R, rb, classe) {
+  const teto = CLASSES_DE_JOIA.has(classe) ? MAXIMO_DA_JOIA : Infinity;
+  return { prefixo: Math.max(0, Math.min(teto, (R?.maxPrefixos ?? 0) + (rb?.prefixos ?? 0))), sufixo: Math.max(0, Math.min(teto, (R?.maxSufixos ?? 0) + (rb?.sufixos ?? 0))) };
+}
 /** O tier pode sair nesta base? (o "só dano de um tipo" e o "sem Conjuração"). A Forja (`itens-poe/forja.mjs`) usa a mesma regra. */
 export const permitidoNaBase = (c, regras) => {
   const tags = c.tags ?? [];
@@ -309,7 +320,7 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
   const todos = elegiveis(pool, nivel);
   // As regras da BASE (os implícitos): vagas a mais/a menos, magnitude dos valores, só um tipo de dano, sem Conjuração.
   const rb = regrasDaBase(peca.implicitos);
-  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos) };
+  const max = vagasDaPeca(R, rb, classe.id);
   const usadas = new Set();
   for (let i = 0; i < quantos; i++) {
     const vagas = ['prefixo', 'sufixo'].filter((l) => peca[`${l}s`].length < max[l]);
@@ -343,7 +354,7 @@ export function sortearUmMod({ catalogo, regras, poe, rng = Math.random, lados =
   if (!pool) return null;
   const R = regras?.raridades?.[poe.raridade] ?? {};
   const rb = regrasDaBase(poe.implicitos);
-  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos) };
+  const max = vagasDaPeca(R, rb, achado.classe.id);
   const usadas = new Set([...(poe.prefixos ?? []), ...(poe.sufixos ?? [])].map((m) => m.familia));
   const todos = elegiveis(pool, Math.max(1, Number(poe.ilvl) || 1));
   const vagas = lados.filter((l) => (poe[`${l}s`] ?? []).length < max[l]);
@@ -364,7 +375,7 @@ export function sortearDoPool({ pagina, poe, regras, origem, rng = Math.random, 
   if (!pagina) return null;
   const R = regras?.raridades?.[poe.raridade] ?? {};
   const rb = regrasDaBase(poe.implicitos);
-  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos), implicito: Infinity };
+  const max = { ...vagasDaPeca(R, rb, poe.classe), implicito: Infinity };
   const usadas = new Set([...(poe.prefixos ?? []), ...(poe.sufixos ?? [])].map((m) => m.familia));
   const ilvl = Math.max(1, Number(poe.ilvl) || 1);
   const candidatos = [];

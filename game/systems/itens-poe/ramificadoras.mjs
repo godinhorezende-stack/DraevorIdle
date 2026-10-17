@@ -12,13 +12,11 @@
 //   - joia: no máximo 2 Prefixos e 2 Sufixos (o `affixLimit` do PoB para joia).
 // A peça guarda `ramificadora: { tamanho, encantamento, tag }` (o id do encantamento no PoB — a tag se repete: o Bloqueio de Ataques e o
 // Mágico da Pequena); cada mod, o `id` do mod do PoE (e o notável, `notavel`). Sem os dados, nada muda.
-import { porPeso, rolarTexto } from './gerar.mjs';
+import { porPeso, rolarTexto, MAXIMO_DA_JOIA } from './gerar.mjs';
 
 /** As bases → o tamanho (o nome do PoB). */
 export const TAMANHOS = Object.freeze({ 'Jewels/Large_Cluster_Jewel': 'Large', 'Jewels/Medium_Cluster_Jewel': 'Medium', 'Jewels/Small_Cluster_Jewel': 'Small' });
 const TAG_DO_TAMANHO = { Large: 'expansion_jewel_large', Medium: 'expansion_jewel_medium', Small: 'expansion_jewel_small' };
-/** (PoE) a joia: no máximo 2 Prefixos e 2 Sufixos (o PoB: `affixLimit` 4 para "Jewel"). */
-export const MAXIMO_POR_LADO = 2;
 /** A marcação do encantamento na base (o catálogo do poedb). */
 const MARCACAO = 'Habilidades Passivas Adicionadas concedem #';
 
@@ -50,7 +48,8 @@ const primeira = (tabela, tags) => {
 export const pesoDoMod = (m, tags) => ((primeira(m.pesos, tags) ?? 0) * (primeira(m.multiplicadores, tags) ?? 100)) / 100;
 
 /** Quantos mods cabem de cada lado na raridade (`R`: a regra da raridade), com o teto da joia. */
-const vagasDa = (R) => ({ prefixo: Math.min(MAXIMO_POR_LADO, R?.maxPrefixos ?? 0), sufixo: Math.min(MAXIMO_POR_LADO, R?.maxSufixos ?? 0) });
+// (a joia: no máximo 2 + 2 — o mesmo teto das outras joias, `gerar.vagasDaPeca`)
+const vagasDa = (R) => ({ prefixo: Math.min(MAXIMO_DA_JOIA, R?.maxPrefixos ?? 0), sufixo: Math.min(MAXIMO_DA_JOIA, R?.maxSufixos ?? 0) });
 
 /**
  * UM mod novo para a Ramificadora `poe` (`{ base, ramificadora, raridade, ilvl, prefixos, sufixos }`): de um grupo ainda não usado, de um
