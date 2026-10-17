@@ -7856,6 +7856,42 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes (a Lentidão ao Convocar um Totem) (lote 70)"
+    },
+    "provocados_clamor_intimidados": {
+      "nome": "Inimigos Provocados por seus Clamores são Intimidados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 71)"
+    },
+    "amaldicoados_inervados": {
+      "nome": "Inimigos Amaldiçoados por você são Enervados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 71)"
+    },
+    "incendiados_mortos_destruidos": {
+      "nome": "Inimigos Incendiados Mortos por seus Acertos são destruídos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate.processarMortes (lote 71)"
+    },
+    "critico_chance_dano_dobrado": {
+      "nome": "Seus Golpes Críticos têm chance de causar Dano Dobrado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.rolarCritico (lote 71)"
+    },
+    "plantadas_extras_chance": {
+      "nome": "Chance de Arremessar Armadilha ou Mina adicional (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas.extrasDoArremesso (lote 71)"
+    },
+    "plantadas_extras_n": {
+      "nome": "Armadilhas ou Minas adicionais na chance",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas.extrasDoArremesso (lote 71)"
     }
   }
 }

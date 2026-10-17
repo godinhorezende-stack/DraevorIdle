@@ -397,7 +397,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Incendiados (−X% de Resistência a Fogo) e Envenenados (sem regeneração), as exceções do dono)
 // (58 — 17/10, lote 70: as Ramificadoras — os Solos Ardente e Eletrizado dos monstros ("Inafetado por"), o alcance do posicionamento do
 // totem, a Fúria Arcana e a Lentidão ao Convocar um Totem)
-export const VERSAO_DA_TRADUCAO = 58;
+// (59 — 17/10, lote 71: as Ramificadoras — Fortificar com Maça/Cetro/Cajado, o Incêndio que se espalha, Intimidar/Cegar os próximos, a
+// Carga de Poder ao Eletrizar um Resfriado, o Gênio Alquímico, os Provocados Intimidados, os Amaldiçoados Enervados, o máximo das
+// Resistências depois de matar um Amaldiçoado, os Incendiados destruídos, o Dano Dobrado no crítico, a Armadilha ou Mina adicional)
+export const VERSAO_DA_TRADUCAO = 59;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

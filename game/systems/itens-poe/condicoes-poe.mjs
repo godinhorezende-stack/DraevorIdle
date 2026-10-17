@@ -248,6 +248,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   // Fortificado, estilhaçou um inimigo / infligiu Exposição / Empalou recentemente.
   'atordoadoRecente', 'atordoadoConjurandoRecente', 'acertadoAtaqueRecente', 'naoAcertadoAtaqueRecente', 'conjurando', 'fortificado',
   'estilhacouRecente', 'exposicaoRecente', 'empalouRecente',
+  // (lote 71) matou um inimigo Amaldiçoado recentemente (`mods-poe.evento` — o `matar` com maldição no alvo).
+  'matouAmaldicoadoRecente',
   // (lote E) canalizando agora (usou uma habilidade de Canalização há pouco).
   'canalizando',
   // (14/10) a Égide Física esgotada (ou não) — `hunt.egides`
@@ -526,7 +528,7 @@ const RECENTES = {
   atordoado: 'atordoadoRecente', atordoadoConjurando: 'atordoadoConjurandoRecente', acertadoAtaque: 'acertadoAtaqueRecente', estilhacou: 'estilhacouRecente',
   infligiuExposicao: 'exposicaoRecente', empalou: 'empalouRecente', mudouPostura: 'mudouPosturaRecente',
   detonouMina: 'detonouMinaRecente', usouFogo: 'usouFogoRecente', acertouUnico: 'acertouUnicoRecente', usouFrascoVida: 'usouFrascoVidaRecente',
-  resfriou: 'resfriouRecente',
+  resfriou: 'resfriouRecente', matouAmaldicoado: 'matouAmaldicoadoRecente',
 };
 /** Uma condição vale? (as com parâmetro leem o estado, a soma e os atributos guardados no Set). */
 export function vale(conds, c) {
@@ -1041,6 +1043,8 @@ export const BUFFS = {
   imunidadeFisica: { nome: 'Imunidade a Dano Físico', af: { dano_physical_recebido_inc: -1000 } },
   poderCaotico: { nome: 'Poder Caótico', af: { phys_as_extra_chaos: 30 } },
   furiaArcana: { nome: 'Fúria Arcana', af: { cast_speed: 10, mana_regen_pct: 30, spell_dmg: 10 } },
+  // (lote 71) o lembrete do catálogo: "aumenta as Cargas de Frasco recebidas em 20% e efeito de Frascos em 10%"
+  genioAlquimico: { nome: 'Gênio Alquímico', af: { frasco_cargas_recebidas: 20, frasco_efeito: 10 } },
   elusivo: { nome: 'Elusivo', af: { avoid_damage: 15, move_speed: 30 } },
   trespassar: { nome: 'Trespassar', af: {} },
   divindade: { nome: 'Divindade', af: { fire_dmg: 50, ice_dmg: 50, energy_dmg: 50, dmg_reduction: 10 } },
@@ -1562,6 +1566,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const invertida = chance('chance_res_invertida') > 0 && rng() * 100 < chance('chance_res_invertida');
   const f = { ...ficha };
   f.tagsDoGolpe = [...t];
+  // (lote 71: o golpe já Dobrado/Triplicado — o "Seus Golpes Críticos têm chance de causar Dano Dobrado" não dobra de novo: `Ficha.rolarCritico`)
+  f.danoDobradoNoGolpe = triplo || dobro;
   // "X% mais/menos Dano" (com condição): multiplica o golpe inteiro (o mesmo fator das cargas, em `Ficha.rolarCritico`).
   const mais = (s.mais_dano ?? 0) + (Number(ficha.afPoe.mais_dano) || 0);
   const maisDoCaminho = Math.max(0, 1 + (doProjetil('projetil_perto_mais') * perto + doProjetil('projetil_longe_mais') * longe + daPresenca) / 100);
@@ -2830,9 +2836,12 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   const maisDoTipo = ficha?.maisDoElemento?.[tipo] ?? (Number(ficha?.afPoe?.[MAIS_DANO_DO_TIPO[tipo]]) || 0);
   if (maisDoTipo) f *= Math.max(0, 1 + maisDoTipo / 100);
   if (tipo === 'fire' && ativo(e.cinzas, agora)) f *= 1.2;
-  if (ativo(e.intimidado, agora) && (ficha?.tagsDoGolpe ?? []).includes('ataque')) f *= 1.1;
+  // (lote 71: + "Inimigos Provocados por seus Clamores são Intimidados" e "Inimigos Amaldiçoados por você são Enervados")
+  const intimidado = ativo(e.intimidado, agora) || (Number(ficha?.afPoe?.provocados_clamor_intimidados) > 0 && provocadoPeloClamor(alvo, agora));
+  if (intimidado && (ficha?.tagsDoGolpe ?? []).includes('ataque')) f *= 1.1;
   // Inervado (PoE: "Unnerve"): o alvo sofre 10% mais dano de magias.
-  if (ativo(e.inervado, agora) && (ficha?.tagsDoGolpe ?? []).includes('magia')) f *= 1.1;
+  const inervado = ativo(e.inervado, agora) || (Number(ficha?.afPoe?.amaldicoados_inervados) > 0 && maldicoesNoAlvo(alvo, agora) > 0);
+  if (inervado && (ficha?.tagsDoGolpe ?? []).includes('magia')) f *= 1.1;
   if (tipo === 'chaos' && ativo(e.definhado, agora)) f *= 1 + 0.06 * Math.max(0, 1 + (Number(ficha?.afPoe?.efeito_definhamento) || 0) / 100) * Math.min(15, e.definhado.n ?? 1);
   // Coberto de Gelo (PoE): +20% de dano de Gelo recebido.
   if (tipo === 'ice' && ativo(e.cobertoGelo, agora)) f *= 1.2;

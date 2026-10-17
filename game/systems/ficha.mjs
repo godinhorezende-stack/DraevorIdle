@@ -939,6 +939,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const crit = primeira || segunda;
   const bifurcado = mesmaRolagem ? !!mesmaRolagem.bifurcado : bifurca && primeira && segunda;
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
+  // (lote 71, Pontos de Pressão) "Seus Golpes Críticos têm chance de X% de causar Dano Dobrado": a chance no crítico, uma vez por golpe (as
+  // outras partes do mesmo golpe usam a mesma rolagem); o golpe que já saiu Dobrado/Triplicado não dobra de novo (`danoDobradoNoGolpe`).
+  const dobraNoCritico = crit && itensPoeLigado() && !ficha.danoDobradoNoGolpe && (mesmaRolagem ? !!mesmaRolagem.dobraNoCritico : Math.random() * 100 < ModsPoe.valor(ficha, 'critico_chance_dano_dobrado'));
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
@@ -947,9 +950,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // ("Golpes Críticos não causam Dano", "Golpes não-críticos causam N% menos Dano": `mais_dano_critico` / `mais_dano_nao_critico`, o golpe inteiro.)
   const doTipoDeGolpe = Math.max(0, 1 + ModsPoe.valor(ficha, crit ? 'mais_dano_critico' : 'mais_dano_nao_critico') / 100);
   const multiplicador = ficha.critMultiplier + doCharm.dano / 100;
-  const dano = Math.round(base * doTipoDeGolpe * (crit ? (bifurcado ? 1 + 2 * (multiplicador - 1) : multiplicador) : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
+  const dano = Math.round(base * doTipoDeGolpe * (crit ? (bifurcado ? 1 + 2 * (multiplicador - 1) : multiplicador) : 1) * (dobraNoCritico ? 2 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
-  return { dano, crit, onslaught, chance: chanceDeCritico, ...(bifurcado ? { bifurcado } : {}) };
+  return { dano, crit, onslaught, chance: chanceDeCritico, ...(bifurcado ? { bifurcado } : {}), ...(dobraNoCritico ? { dobraNoCritico } : {}) };
 }
 
 /**

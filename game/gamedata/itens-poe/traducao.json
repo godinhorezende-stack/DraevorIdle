@@ -17624,6 +17624,17 @@
       "_lote49": "16/10 — lote 49 (como na árvore: luz, visão e tamanho não se aplicam ao jogo)"
     },
     {
+      "padrao": "^Acertos Corpo a Corpo com Maças, Cetros ou Cajados Fortificam por \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "chance_fortificar@corpo+comMacaCetroOuCajado",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
       "padrao": "^.*(?:Fortificaç(?:ão|ões)|Fortificad[oa]s?|Fortifica[mr]?)\\b.*$",
       "efeitos": [
         {
@@ -42898,6 +42909,141 @@
       ],
       "_nova": true,
       "_lote70": "17/10 — lote 70 (as Ramificadoras: os notáveis — os solos dos monstros e os totens)"
+    },
+    {
+      "padrao": "^Incêndios infligidos por você se espalham para outros Inimigos em um Raio de \\{(\\d+)\\} metros$",
+      "efeitos": [
+        {
+          "stat": "ev:incendiar:espalhar:incendioRaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Intimidar Inimigos próximos por \\{(\\d+)\\} segundos ao Matar Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:proximos:intimidado:{V2}@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos próximos ao usar uma Habilidade Elemental$",
+      "efeitos": [
+        {
+          "stat": "ev:usarHabilidade:proximos:cego@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Eletrizar um Inimigo Resfriado$",
+      "efeitos": [
+        {
+          "stat": "ev:eletrizar:carga:poder@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Ganha Gênio Alquímico ao usar um Frasco$",
+      "efeitos": [
+        {
+          "stat": "ev:usarFrasco:buff:genioAlquimico",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Inimigos Provocados por seus Clamores são Intimidados$",
+      "efeitos": [
+        {
+          "stat": "provocados_clamor_intimidados",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Inimigos Amaldiçoados por você são Enervados$",
+      "efeitos": [
+        {
+          "stat": "amaldicoados_inervados",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de máximo das Resistências Elementais se você Matou um Inimigo Amaldiçoado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max@matouAmaldicoadoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max@matouAmaldicoadoRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max@matouAmaldicoadoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Inimigos Incendiados Mortos por seus Acertos são destruídos$",
+      "efeitos": [
+        {
+          "stat": "incendiados_mortos_destruidos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^Seus Golpes Críticos têm chance de \\{(\\d+)\\}% de causar Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "critico_chance_dano_dobrado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Arremessar até \\{(\\d+)\\} Armadilha ou Mina adicional$",
+      "efeitos": [
+        {
+          "stat": "plantadas_extras_chance",
+          "valor": "{1}"
+        },
+        {
+          "stat": "plantadas_extras_n",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "a Mina a mais não demora os 10% a mais do arremesso (o jogo não tem o tempo de arremesso da Mina)",
+      "_nova": true,
+      "_lote71": "17/10 — lote 71 (as Ramificadoras: os notáveis — Fortificar, espalhar, intimidar/cegar os próximos, cargas, buffs, maldições)"
     }
   ]
 }

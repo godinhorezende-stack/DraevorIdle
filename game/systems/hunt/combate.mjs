@@ -89,7 +89,9 @@ export function processarMortes(estado, personagem, eventos) {
     // Os CADÁVERES recentes (o Erguer Espectro do PoE ergue o último): o tipo do bicho, o desenho e onde caiu. ("Inimigos Amaldiçoados Mortos
     // por você são destruídos": a maldição do PoE com essa regra não deixa cadáver.)
     // (+ "Inimigos Mortos pelos seus Acertos são destruídos": nenhum morto deixa cadáver.)
-    if (!m.boss && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
+    // (+ lote 71, o Cremador: "Inimigos Incendiados Mortos por seus Acertos são destruídos" — o golpe fatal foi um acerto seu e ele queimava.)
+    const cremado = ModsPoe.valor(Ficha.combate(estado), 'incendiados_mortos_destruidos') > 0 && QuemFeriu.abateSeu(m) && QuemFeriu.tagsDoAbate(m).includes('acerto') && (m.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0);
+    if (!m.boss && !cremado && !(m.maldicoes && Reforcos.regrasDasMaldicoes(m, hunt.clock ?? 0).destruir) && !(ModsPoe.valor(Ficha.combate(estado), 'mortos_destruidos') > 0)) {
       // (PoE, 12/10: o cadáver guarda os Empalamentos do morto — o Convocar o Aço os chama "de inimigos, vivos ou mortos".)
       const empalado = (m.estados?.empalado ?? []).filter((x) => x.ate > (hunt.clock ?? 0) && x.acertos > 0);
       const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};
@@ -1527,7 +1529,7 @@ export function round(estado, personagem) {
           extrasDoFisico.fire = [x[0] + doFisico, x[1] + doFisico];
         }
         const semResistencia = ModsPoe.semFisico(ficha) ? 0 : fisicoCheio * (1 - convertidoPct / 100);
-        const { dano: bruto, crit: critico, onslaught, chance: chanceCritica } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
+        const { dano: bruto, crit: critico, onslaught, chance: chanceCritica, dobraNoCritico } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
         registrarGolpe(() => ({ origem: segundo ? 'golpe-basico-2o-golpe' : 'golpe-basico', alvo: alvo.name, tipo: 'physical', danoAntesDaResistencia: Math.round(semResistencia), resistenciaDoAlvo: resistenciaDe(hunt, alvo, 'physical'), penetracao: ficha.penetracao?.fisica ?? 0, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, 'physical', ficha), chanceCritica, critico: critico, danoFinal: bruto, vidaRestante: Math.max(0, alvo.hp - bruto) }));
         if (!segundo) Treino.treinar(estado, pericia);
         // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).
@@ -1538,7 +1540,7 @@ export function round(estado, personagem) {
         QuemFeriu.carimbar(alvo, QuemFeriu.VOCE, ficha.tagsDoGolpe ?? ['ataque', categoriaDaArma(arma) === 'distancia' ? 'projetil' : 'corpo']);
         // (PoE: o golpe corpo a corpo num Raro com espinhos do mapa — `corpoACorpo`.)
         Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, 'physical', eventos, { corpoACorpo: categoriaDaArma(arma) !== 'distancia' });
-        const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
+        const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught, dobraNoCritico });
         const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
         // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
         // físico, X% dele em cada elemento (decisão do dono), na mesma rolagem.
@@ -1546,7 +1548,7 @@ export function round(estado, personagem) {
         // (lote 31, P043: + o Físico adicional pelos Empalamentos no alvo — o Mestre do Metal)
         const doEmpalar = poe ? ModsPoe.fisicoPorEmpalamento(ficha, alvo, hunt.clock ?? 0) : null;
         const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(somarFaixas(ficha.danoSomado, extrasDoFisico), doEmpalar ? { physical: doEmpalar } : {})) } : ficha;
-        const dosAtributos = [...(poe ? [] : elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught })), ...danoSomadoDoPoe(estado, hunt, alvo, fichaDasPartes, { crit: critico, onslaught })];
+        const dosAtributos = [...(poe ? [] : elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught, dobraNoCritico })), ...danoSomadoDoPoe(estado, hunt, alvo, fichaDasPartes, { crit: critico, onslaught, dobraNoCritico })];
         // (14/10, a Rajada Vulcânica: o golpe básico corpo a corpo que acerta — `Acoes.rajadaVulcanica`)
         if (poe && !segundo && categoriaDaArma(arma) !== 'distancia') Acoes.rajadaVulcanica(estado, hunt, alvo, eventos);
         // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
