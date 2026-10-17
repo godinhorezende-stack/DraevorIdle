@@ -315,6 +315,8 @@ export function podeAlocar(estado, id, opcao = null) {
   const meus = new Set(passivas.alocados);
   if (meus.has(id)) return erro('JA_ALOCADO', 'Você já tem esse nó.');
   if (no.tipo === 'start') return erro('INICIO', 'O início de outra classe não se aloca.');
+  // (lote 60, as Ramificadoras) o PROXY e o encaixe interno (Pequeno, Médio) só existem com uma Joia Ramificadora encaixada — como no PoE
+  if (soDaRamificadora(no)) return erro('RAMIFICADORA', 'Esse nó só existe com uma Joia Ramificadora encaixada.');
   if (no.tipo === 'mastery') return podeAlocarMaestria(estado, no, opcao, meus);
   const extras = new Set(iniciosExtras(estado));
   // (lote 29) o nó no raio de uma joia "pode ser atribuída sem estar conectada à sua árvore" (o Salto Intuitivo, o Fio de Esperança)
@@ -356,7 +358,7 @@ export function caminhoAte(estado, id) {
   for (let i = 0; i < fila.length; i++) {
     const atual = fila[i];
     for (const c of ARVORE.porId.get(atual)?.conexoes ?? []) {
-      if (veioDe.has(c) || ARVORE.porId.get(c)?.tipo === 'start') continue;
+      if (veioDe.has(c) || ARVORE.porId.get(c)?.tipo === 'start' || soDaRamificadora(ARVORE.porId.get(c))) continue;
       veioDe.set(c, atual);
       if (c === id) {
         const caminho = [];
@@ -494,6 +496,8 @@ export function respec(estado, pedido, emCacada = false) {
  */
 const ENCAIXES_DE_JOIA = new Set(['Basic Jewel Socket', 'Large Jewel Socket']);
 export const ehEncaixeDeJoia = (no) => !!no && !no.ascendencia && ENCAIXES_DE_JOIA.has(no.nomeEn);
+/** (lote 60) O nó que só existe com uma Joia Ramificadora: o proxy de posicionamento e o encaixe de expansão interno (Pequeno, Médio). */
+export const soDaRamificadora = (no) => !!no && (!!no.placeholder || (no.expansao != null && no.expansao.tamanho < 2));
 /**
  * Os raios das joias do PoE nas unidades da árvore (as mesmas de `x`/`y`): desde a 3.16, com a árvore espaçada, 20% maiores que o número do
  * item ("Raio: Grande (1500)" → 1800) — como no Path of Building (dono, 15/10: "Como no PoE/PoB"). `aneis`: os anéis do Fio de Esperança
@@ -974,6 +978,8 @@ export function arvoreParaCliente() {
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
       // (lote 27) o encaixe de joia que aceita joia (os das Ramificadoras, não).
       ...(ehEncaixeDeJoia(n) ? { encaixeDeJoia: true } : {}),
+      // (lote 60) o proxy e o encaixe interno das Ramificadoras: só com a joia encaixada (a tela não os oferece).
+      ...(soDaRamificadora(n) ? { soDaRamificadora: true } : {}),
       ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
       // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
       ...(n.icone ? { icone: n.icone } : {}),

@@ -49,6 +49,24 @@ arvore.nos.push(...asc.nos);
 Object.assign(arvore.inicios, asc.inicios);
 arvore.ascendencias = asc.ascendencias;
 relatorio.ascendencias = asc.relatorio;
+// (lote 60, as Ramificadoras) a EXPANSÃO da árvore do poedb, como o PoB monta a Ramificadora: os encaixes de expansão (o tamanho — 0 Pequeno, 1
+// Médio, 2 Grande —, o índice, o proxy e o encaixe-pai: `expansao`), os PROXIES (o centro do grupo deles, a órbita e os encaixes internos do grupo:
+// `proxy`) e as órbitas (`orbitas`: os raios e quantos nós cabem em cada uma).
+if (existsSync(POEDB)) {
+  const db = JSON.parse(readFileSync(POEDB, 'utf8'));
+  const porId = new Map(arvore.nos.map((n) => [n.id, n]));
+  for (const [id, n] of Object.entries(db.nodes ?? {})) {
+    const no = porId.get(String(id));
+    if (!no) continue;
+    if (n.expansionJewel) no.expansao = { tamanho: n.expansionJewel.size, indice: n.expansionJewel.index, proxy: String(n.expansionJewel.proxy), ...(n.expansionJewel.parent != null ? { pai: String(n.expansionJewel.parent) } : {}) };
+    if (n.isProxy) {
+      const g = db.groups?.[String(n.group)];
+      const encaixes = (g?.nodes ?? []).map((x) => db.nodes[String(x)]).filter((x) => x?.expansionJewel).map((x) => ({ id: String(x.skill), indice: x.expansionJewel.index, tamanho: x.expansionJewel.size }));
+      no.proxy = { grupo: { x: g?.x ?? no.x, y: g?.y ?? no.y }, orbita: n.orbit, indice: n.orbitIndex, encaixes };
+    }
+  }
+  arvore.orbitas = { raios: db.constants?.orbitRadii ?? [], nos: db.constants?.skillsPerOrbit ?? [] };
+}
 const erros = validar(arvore);
 if (erros.length) {
   console.error(`árvore inválida (${erros.length} problemas):\n${erros.slice(0, 20).join('\n')}`);
