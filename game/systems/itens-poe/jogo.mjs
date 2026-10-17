@@ -391,7 +391,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // Impelido com Dano Dobrado…)
 // (55 — 17/10, lote 67: as Ramificadoras — a Exposição com chance, as maldições à Prova de Feitiços, os totens, "Resfriou Recentemente", a
 // reserva de UMA gema com "de Reserva"…)
-export const VERSAO_DA_TRADUCAO = 55;
+// (56 — 17/10, lote 68: as Ramificadoras — as afecções contra o alvo, "Canalizado por N segundo", "foi Congelado Recentemente", o crítico
+// de Arauto Recentemente…)
+export const VERSAO_DA_TRADUCAO = 56;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

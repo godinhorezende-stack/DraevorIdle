@@ -90,11 +90,10 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 584 | 1 | 86 |
+| Notáveis | 671 | 613 | 1 | 57 |
 
 <details><summary>As linhas sem efeito</summary>
 
-- Lorde da Seca — Dano com Incêndios infligidos em Inimigos Amaldiçoados aumentado em 30%
 - Cadáveres Monstruosos — Zumbis Erguidos têm 5% de chance de Provocar Inimigos ao Acertar
 - Queimado Vivo — Inimigos Incendiados por você têm -5% de Resistêcia a Fogo
 - Cersidor de Selos — Habilidades Suportadas por Liberar têm frequência de ganho de Selo aumentada em 30%
@@ -103,7 +102,6 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Grito Assustador — Inimigos Provocados por seus Clamores são Intimidados
 - Demolir e Pilhar — Lacaios causam Dano com Acertos e Afecções aumentado em 20% contra Inimigos Incendiados
 - Chamado Alarmante — Ganha Armadura aumentada em 25% por cada 5 de Poder por 8 segundos ao Clamar, máximo de 100%
-- Tiro Arqueador — Flechas ganham Dano enquanto viajam adiante, causando Dano com Acertos em alvos aumentado em até 50%
 - Égide Ardente — Chama Santificada infligida por você tem a intensidade aumentada em 1% por 2% de chance de bloquear ataques
 - Artista Sangrento — +6% de Multiplicador de Dano Físico Degenerativo se você Gastou Vida Recentemente
 - Guarda-Costas — Lacaios têm 10% de chance de Empurrar Inimigos ao Acertar com Ataques
@@ -112,76 +110,49 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 - Sofrimento Eterno — 50% de chance de infligir Definhar por dois segundos ao Acertar se houver 5 ou menos Debuffs de Definhar no Inimigo
 - Soberano — Acertos Corpo a Corpo com Maças, Cetros ou Cajados Fortificam por 6 segundos _(a Fortificação não existe no jogo)_
 - Inspiração Ancestral — Ganhe Fúria Arcana ao Convocar um Totem
-- Adepto Arcano — Ganhe Fúria Arcana após Canalizar por 1 segundo
 - Apatia de Doedre — Inimigos Amaldiçoados por você são Enervados
 - Demonstração Desorientadora — 10% de chance de Cegar Inimigos próximos ao usar uma Habilidade Elemental
-- Tentando a Tormenta — Efeito de Eletrizações infligidas em Inimigos Amaldiçoados aumentado em 30%
-- Impressões Duradouras — Habilidades de Arauto causam Dano Degenerativo aumentado em 50%
-- Dominador do Campo de Batalha — Efeito em Área aumentado em 15% caso você tenha Atordoado um Inimigo com uma Arma de Duas Mãos Corpo a Corpo Recentemente
-- Hibernador — Você não pode ser Congelado se você foi Congelado Recentemente
 - Hibernador — Inafetado por Solo Congelado _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
 - Guerreiro Destemido — 25% de chance de Intimidar Inimigos próximos por 4 segundos ao Matar Corpo a Corpo
-- Capacitor — Você não pode ser Eletrizado se foi Eletrizado Recentemente
 - Capacitor — Inafetado por Solo Eletrizado _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
-- Devastador — Inimigos mortos por seus Acertos de Ataques têm chance de 15% de Explodir, causando um décimo de sua vida máxima como Dano Físico
 - Discípulos — Sentinelas Convocados têm Velocidade da Recarga aumentada em 25%
 - Rítmo de Combate — Velocidade de Ataque aumentada em 10% caso você tenha Acertado com sua Arma da Mão Principal Recentemente
 - Rítmo de Combate — Velocidade de Movimento aumentada em 10% caso você tenha Acertado com sua Arma da Mão Secundária Recentemente
 - Composto Tonificado — Ganha Gênio Alquímico ao usar um Frasco
-- Condução Gélida — Efeito das Afecções de Gelo infligidas por você em Inimigos Eletrizados aumentado em 25%
-- Condução Gélida — Efeito das Afecções de Raio infligidas por você em Inimigos Resfriados aumentado em 25%
-- Convocador da Nevasca — Duração dos Congelamentos infligidos por você em Inimigos Amaldiçoados aumentada em 30%
 - Resposta Selvagem — +30% de Multiplicador de Golpes Críticos caso você tenha sofrido um Acerto Selvagem Recentemente
 - Reduzir — Convocação de Runas concede alcance do Vínculo de Runas aumentado em 20% para Runas convocadas
 - Reduzir — Convocação de Runas tem Recuperação da Recarga aumentada em 4%, máximo de 40%
 - Cutilada Perigosa — Efeito dos Empalamentos inflingidos por Acertos que também infligem Sangramento aumentado em 15%
 - Mentalidade da Multidão — Clamores têm 5% de Chance de conceder uma Carga de Tolerância, Frenesi ou Poder por Poder
-- Paralisia — Habilidades de Raio têm Limite de Atordoamento Inimigo reduzido em 10%
-- Força Explosiva — Inimigos mortos por seus Acertos com Varinhas têm chance de 10% de Explodir, causando um quarto de sua Vida como Dano de Caos
 - Liderar pelo Exemplo — Quando você Clamar, você e Aliados próximos ganham Agressividade por 4 segundos _(esta variação de efeito em aliados ainda não tem efeito no jogo)_
 - Runas Perseguidoras — Runas Desvinculadas ganham Alcance do Vínculo de Runas reduzido em 20% por segundo, até 100%
-- Ferida Composta — Dano com Sangramento infligidos por você em Inimigos Mutilados aumentado em 35%
 - Calvagando a Tormenta — 10% de chance de ganhar uma Carga de Poder ao Eletrizar um Inimigo Resfriado
 - Gula de Doedre — Punição pode afetar Inimigos Infeitiçáveis
-- Flechas Temperadas — Habilidades de Arco têm +6% de Multiplicador de Dano Degenerativo
 - Mal Inabalável — Habilidades de Caos ignoram interrupções de Atordoamentos
 - Pontos de Pressão — Seus Golpes Críticos têm chance de 5% de causar Dano Dobrado
-- Leque de Lâminas — Habilidades de Ataque disparam um Projétil adicional enquanto portando uma Garra ou Adaga
 - Presságios Revigorantes — Lacaios têm Velocidade de Movimento aumentada em 10% para cada Arauto afetando você
 - Acompanhamento — Projéteis causam dano com ataques e afecções aumentado em 20% por
 cada propagação restante, até 100%
 - Renascimento Abençoado — Lacaios criados Recentemente não podem sofrer Dano
-- Olho Perverso — Inimigos que você Amaldiçoa sofrem Dano aumentado em 6%
-- Sintonia do Fogo — Você não pode ser Incendiado se foi Incendiado Recentemente
 - Sintonia do Fogo — Inafetado por Solo Ardente _(os solos (ardente, sagrado, fúngico…) não existem no jogo)_
-- Exaurir a Psique — Regenera 1% do Escudo de Energia por segundo se você Amaldiçoou um Inimigo Recentemente
 - Criador de Vítimas — Inimigos Amaldiçoados por você tem Esconjuro se 33% da Duração da Maldição expirou
 - Palavra Sagrada — Seus clamores infligem Chama Santificada
 - Mestre do Turbilhão — +1% de máximo das Resistências Elementais se você Matou um Inimigo Amaldiçoado Recentemente
 - Lenha na Fogueira — Incêndios infligidos por você se espalham para outros Inimigos em um Raio de 1,5 metros
-- Foco Irrestrito — Não Afetado por Resfriamentos enquanto Canalizando
-- Tormento Contínuo — +6% de Multiplicador de Dano Degenerativo por Sangramento infligido em Inimigos Envenenados
 - Toque da Crueldade — Magias de Caos têm 10% de chance de Desacelerar Inimigos ao Acertar
-- Toque da Crueldade — Inimigos Desacelerados por você sofrem Dano de Caos aumentado em 10%
-- Aflição Surpreendente — Dano com Acertos e Afecções contra Inimigos afetados por Afecções aumentado em 20%
 - Emissário do Propósito — Auras das suas Habilidades têm Efeito reduzido em 8% em você
 para cada Arauto te afetando, até 40%
 - Chamado da Carnificina — Lacaios criados Recentemente têm Velocidades de Ataque e Conjuração aumentadas em 10%
 - Chamado da Carnificina — Lacaios Criados Recentemente têm Velocidade de Movimento aumentada em 30%
-- Foco Preciso — +20% de Multiplicador de Golpes Críticos caso você tenha Canalizado por ao menos 1 segundo
 - Terapia de Exposição — +30% de Resistência a Caos contra Dano Degenerativo
 - Cremador — Inimigos Incendiados Mortos por seus Acertos são destruídos
 - Vetor de Doenças — Inimigos Envenenados por você não podem Regenerar Vida
 - Alcance Ancestral — Alcance do Posicionamento de Totens aumentado em 25%
-- Vínculo Primordial — Dano aumentado em 10% por Golem Convocado
 - Renovação — Lacaios têm 5% de chance de causar Dano Dobrado enquanto estiverem em Vida Cheia
 - Notável — Habilidades que criam Runas têm 35% de chance de criarem uma Runa adicional
 - Presença Revigorante — Você e Aliados próximos Regeneram 1.00% de Vida por segundo _(esta variação de efeito em aliados ainda não tem efeito no jogo)_
-- Elixir Anestésico — Efeito das Maldições em você reduzido em 40% durante o Efeito de Qualquer Frasco de Mana
-- Elixir Anestésico — Efeito das Afecções Não-Danificadoras infligidas por você reduzido em 40% durante o Efeito do Frasco de Vida
 - Quebra-Maldições — Remove uma Maldição após Canalizar por 2 segundos
 - Dispensabilidade — 10% de chance de Arremessar até 1 Armadilha ou Mina adicional
-- Profecia Auto-Cumprida — +15% de Multiplicador de Golpes Críticos caso você tenha causado um Golpe Crítico com uma Habilidade Arauto Recentemente
 
 </details>
 

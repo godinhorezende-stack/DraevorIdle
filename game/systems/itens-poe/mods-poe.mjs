@@ -263,6 +263,9 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   const ctx = { alvo, eventos, personagem, agora, tags: [...tags, ...(crit ? [] : ['naoCritico'])] };
   evento(estado, hunt, 'acertar', ficha, ctx);
   if (crit) evento(estado, hunt, 'critico', ficha, ctx);
+  // (lote 68) o crítico de uma habilidade de Arauto: "caso você tenha causado um Golpe Crítico com uma Habilidade Arauto Recentemente"
+  // (`nosUltimos:4:critico:arauto`)
+  if (crit && tags.has('arauto')) marcar(hunt, 'critico:arauto', agora);
   if (saida.atordoou) evento(estado, hunt, 'atordoar', ficha, ctx);
   return saida;
 }

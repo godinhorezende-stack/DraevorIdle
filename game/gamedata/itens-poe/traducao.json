@@ -42326,6 +42326,341 @@
       ],
       "_nova": true,
       "_lote67": "17/10 — lote 67 (as Ramificadoras: os notáveis — Exposição, maldições à Prova de Feitiços, totens, Resfriou Recentemente…)"
+    },
+    {
+      "padrao": "^Habilidades de Raio têm Limite de Atordoamento Inimigo reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Maldições em você reduzido em \\{(\\d+)\\}% durante o Efeito de Qualquer Frasco de Mana$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio@duranteFrascoMana",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Não Afetado por Resfriamentos enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "imune_resfriamento@canalizando",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos que você Amaldiçoa sofrem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "maldicao_dano_expirou:0",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Golem Convocado$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc%lacaio:golem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Flechas ganham Dano enquanto viajam adiante, causando Dano com Acertos em alvos aumentado em até \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projetil_longe_inc@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Habilidades de Arco têm \\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Habilidades de Arauto causam Dano Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Habilidades de Ataque disparam um Projétil adicional enquanto portando uma Garra ou Adaga$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@ataque+comGarraOuAdaga",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano com Incêndios infligidos em Inimigos Amaldiçoados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ignite_dmg_inc@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Duração dos Congelamentos infligidos por você em Inimigos Amaldiçoados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_congelamento@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito de Eletrizações infligidas em Inimigos Amaldiçoados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano com Sangramento infligidos por você em Inimigos Mutilados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "bleed_dmg_inc@alvoMutilado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Afecções de Gelo infligidas por você em Inimigos Eletrizados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento@alvoEletrizado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Afecções de Raio infligidas por você em Inimigos Resfriados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo por Sangramento infligido em Inimigos Envenenados$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_bleed@alvoEnvenenado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Inimigos afetados por Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoComAfeccao",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoComAfeccao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito das Afecções Não-Danificadoras infligidas por você reduzido em \\{(\\d+)\\}% durante o Efeito do Frasco de Vida$",
+      "efeitos": [
+        {
+          "stat": "efeito_nao_dano@duranteFrascoVida",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "efeito_resfriamento@duranteFrascoVida",
+          "valor": "-{1}"
+        },
+        {
+          "stat": "efeito_eletrizacao@duranteFrascoVida",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos mortos por seus Acertos com Varinhas têm chance de \\{(\\d+)\\}% de Explodir, causando um quarto de sua Vida como Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:25:chaos@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos mortos por seus Acertos de Ataques têm chance de \\{(\\d+)\\}% de Explodir, causando um décimo de sua vida máxima como Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:explodirChance:10:physical@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Efeito em Área aumentado em \\{(\\d+)\\}% caso você tenha Atordoado um Inimigo com uma Arma de Duas Mãos Corpo a Corpo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "area_inc@atordoouRecente+duasMaos+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Você não pode ser Congelado se você foi Congelado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_congelamento",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Você não pode ser Eletrizado se foi Eletrizado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_eletrizacao",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Você não pode ser Incendiado se foi Incendiado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "imune_apos_incendio",
+          "valor": "4"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Ganhe Fúria Arcana após Canalizar por \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "sempre:furiaArcana@canalizandoHa:{V1}",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos caso você tenha Canalizado por ao menos \\{(\\d+)\\} segundos?$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@canalizandoHa:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos caso você tenha causado um Golpe Crítico com uma Habilidade Arauto Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@nosUltimos:4:critico:arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% do Escudo de Energia por segundo se você Amaldiçoou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct@usouTag:maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o \"Amaldiçoou Recentemente\" é o usar uma Maldição recentemente (o inimigo à prova de Maldições conta igual)",
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
+    },
+    {
+      "padrao": "^Inimigos Desacelerados por você sofrem Dano de Caos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "chaos_dmg@alvoLento",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o seu dano de Caos nos Desacelerados (o dos lacaios e aliados neles, não)",
+      "_nova": true,
+      "_lote68": "17/10 — lote 68 (as Ramificadoras: os notáveis — as afecções contra o alvo, a Canalização há N s, \"foi X Recentemente\"…)"
     }
   ]
 }

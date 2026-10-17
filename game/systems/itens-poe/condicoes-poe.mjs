@@ -265,6 +265,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   'comGarraOuAdaga', 'comMachadoOuEspada', 'comMacaCetroOuCajado',
   // (lote 67) Resfriou um inimigo recentemente; plantou uma Mina ou arremessou uma Armadilha recentemente
   'resfriouRecente', 'plantouRecente',
+  // (lote 68) durante o efeito de um Frasco de VIDA
+  'duranteFrascoVida',
   // (11/10, os únicos:) nenhum item equipado corrompido / todos corrompidos; um Anel Mágico (em qualquer lado, no esquerdo, no direito); drenando
   // Escudo de Energia / Mana; as garras no desarmado (`garra_desarmado` dá o "com Garra" ao desarmado).
   'semItemCorrompido', 'todosCorrompidos', 'semVidaNosOutros', 'anelMagico', 'anelMagicoEsquerdo', 'anelMagicoDireito', 'drenandoEs', 'drenandoMana',
@@ -273,7 +275,7 @@ export const CONDICOES_DE_ESTADO = new Set([
 export const RAIO_DA_PRESENCA = 6;
 /** As condições de estado com PARÂMETRO: `atrMin:str:200` (ao menos 200 de Força), `atrMaior:dex:int`, `buff:agressividade`,
  * `semCargas:frenesi`, `comCargas:poder`, `cargasMax:tolerancia`, `furiaMin:N`, `lacaio:bestial`. */
-const COND_COM_PARAMETRO = /^(matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
+const COND_COM_PARAMETRO = /^(canalizandoHa|matouRecenteMin|afetadoPorAbissal|afetadoPor|maiorAtributo|itensInfluencia|comAbissalLocal|atrMin|atrMaior|buff|semBuff|bloqueioEscudoMin|vidaManaPerto|semCargas|comCargas|cargasMax|furiaMin|lacaio|escudoMin|resMin|maestriasDe|usouTag|fortMin|evRecente|naoEvRecente|armaComEncaixes|inimigosPertoMin|aliadosPerto|nosUltimos|paradoHa|devocaoMin|primordiaisMin):/;
 export const ehCondDeEstado = (c) => CONDICOES_DE_ESTADO.has(c) || COND_COM_PARAMETRO.test(c);
 /** As tags de GOLPE conhecidas (as do poedb em português viram estas — `tagsDoPoe`). */
 export const TAGS_DE_GOLPE = new Set([
@@ -286,6 +288,9 @@ export const TAGS_DE_GOLPE = new Set([
   'golpe', 'pancada', 'nova', 'runa', 'marca', 'feitico', 'vinculo', 'ativada', 'desarmadoGolpe', 'naoCritico',
   // (ciclo 7) o alvo com a SUA Marca ("contra o Inimigo Marcado", "Golpe de Misericórdia contra Inimigos Marcados").
   'alvoMarcado',
+  // (lote 68) o alvo com alguma Afecção ("contra Inimigos afetados por Afecções": Incendiado, Sangrando, Envenenado, Resfriado, Congelado,
+  // Eletrizado, Causticado, Fragilizado, Exaurido)
+  'alvoComAfeccao',
   // (A cor da GEMA — o atributo dela —, para o nível das gemas encaixadas: `skills/gemas.extrasDaGemaPoe`; e a cor do ENCAIXE em que ela está.)
   'forca', 'destreza', 'inteligencia', 'encaixeVermelho', 'encaixeVerde', 'encaixeAzul', 'encaixeBranco',
   // (ciclo 7, lote D) o que o golpe FEZ — resolvido depois do sorteio, no `aoAcertar`: foi Crítico ("Acertos Críticos possuem Golpe de
@@ -467,6 +472,7 @@ export function condicoesDe(estado, total = null, principais = null) {
     const frascos = Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora);
     v.add(frascos ? 'duranteFrasco' : 'semFrasco');
     if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && a.recurso === 'mana')) v.add('duranteFrascoMana');
+    if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && a.recurso === 'vida')) v.add('duranteFrascoVida');
     if (Object.values(h.frascosPoe?.tinturas ?? {}).some((t) => t?.ativa)) v.add('tinturaAtiva');
     if ((h.roubos ?? []).some((x) => x.restante > 0)) v.add('drenando');
     if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'es')) v.add('drenandoEs');
@@ -537,6 +543,8 @@ export function vale(conds, c) {
     case 'atrMin': return (principais?.[resto[0]] ?? 0) >= Number(resto[1]);
     // (lote 67) "caso você tenha Matado ao menos N Inimigos Recentemente": `matouRecenteMin:N`
     case 'matouRecenteMin': return (h?.poeMortesRecentes ?? []).filter((t) => agora - t <= RECENTE_MS).length >= Number(resto[0]);
+    // (lote 68) "caso você tenha Canalizado por ao menos N segundo" / "após Canalizar por N segundo": canalizando agora, há N s (`hunt.canalizacao.desde`)
+    case 'canalizandoHa': return canalizandoAgora(h, agora) && agora - (h.canalizacao.desde ?? agora) >= (Number(resto[0]) || 0) * 1000;
     // (lote 28) "enquanto afetado por uma Joia Abissal Rara/Mágica/Única": `afetadoPorAbissal:raro`.
     case 'afetadoPorAbissal': return joiasAbissaisAfetando(estado).some((j) => j.poe?.raridade === resto[0]);
     // (lote 55, o Olho do Vigia) "enquanto afetado por <Aura>": `afetadoPor:<o nome da gema>` — a aura da gema ligada (`hunt.buffs`) ou a do seu
@@ -1687,6 +1695,7 @@ export function tagsDoAlvo(alvo, agora) {
   const venenos = dots.filter((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0).length;
   for (let n = 1; n <= Math.min(venenos, 100); n++) t.push(`alvoVenenos:${n}`);
   if (at(e.chocado) || at(e.congelado)) t.push('alvoEletrizadoOuCongelado');
+  if (['alvoResfriado', 'alvoCongelado', 'alvoEletrizado', 'alvoSangrando', 'alvoEnvenenado', 'alvoIncendiado'].some((x) => t.includes(x)) || at(e.causticado) || at(e.fragilizado) || at(e.exaurido)) t.push('alvoComAfeccao');
   const rar = alvo.raridade ?? alvo.raridadePoe;
   if (rar === 'raro') t.push('alvoRaro');
   if (rar === 'unico' || alvo.boss || alvo.chefe) t.push('alvoUnico');
