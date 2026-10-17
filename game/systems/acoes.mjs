@@ -360,7 +360,7 @@ export function comAsLinhasDaGema(estado, ficha, entry, efeito = undefined) {
   return LinhasDasGemas.fichaComAsLinhas(estado, ficha, af, marca);
 }
 
-function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null, { ativada = false, custaVida = false, maisDano = 0 } = {}) {
+function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null, { ativada = false, custaVida = false, maisDano = 0, critMais = 0 } = {}) {
   fichaBase = comAsLinhasDaGema(estado, fichaBase, entry, efeitoDaGema);
   // PoE: a ficha DESTA habilidade — os mods condicionais pelas tags dela ("Dano em Área", "Chance de Crítico com Habilidades de Fogo"…) e os
   // sorteios do uso (dano dobrado, ignorar a redução física) — `itens-poe/mods-poe.mjs`. Sem o PoE, a mesma ficha. (+ a habilidade ATIVADA por
@@ -489,6 +489,8 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     const pontos = (escudoDaGema.critPorEs.pct * Math.floor(Math.max(0, es) / Math.max(1, escudoDaGema.critPorEs.por))) / 100;
     if (pontos > 0) ficha = { ...ficha, critChance: Math.min(1, (ficha.critChance ?? 0) + pontos) };
   }
+  // (17/10, lote G10) "X% mais Chance de Golpe Crítico por cada Estágio" (as Lâminas Velozes da Incisão): × os estágios deste uso
+  if (critMais) ficha = { ...ficha, critChance: Math.min(ficha.critTeto ?? 1, (ficha.critChance ?? 0) * Math.max(0, 1 + critMais / 100)) };
   // (A proficiência de arma saiu — dono, 06/10: o "% da perícia como dano" e o crítico de runa dela não existem mais.)
   const daPericia = 0;
   // O treino em %: magic level (mágicas), melee (físicas de perto), distance (físicas de longe).
@@ -2046,10 +2048,12 @@ const casasDaForma = (entry, cx, cy, dir = null) => Areas.daForma(entry.forma, {
  * Depois, a Área de Efeito das peças, dos suportes e da gema cresce essa forma (`areaNoUso`). Sem raio publicado no PoE, a forma do molde fica
  * (o status da gema não muda por isto). `entry` sem forma (o projétil, o golpe no alvo, a cadeia) volta igual.
  */
-export function formaNoRaioDoPoe(entry, efeito, rng = Math.random, { hunt = null, minimo = 0 } = {}) {
+export function formaNoRaioDoPoe(entry, efeito, rng = Math.random, { hunt = null, minimo = 0, raioExtraM = 0 } = {}) {
   if (!itensPoeLigado() || !entry?.poeGema || entry.poeGema.buff || !entry.forma) return entry;
-  const { raioM } = GemasPoe.areaNoNivel(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
-  if (raioM == null) return entry;
+  const doNivel = GemasPoe.areaNoNivel(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0).raioM;
+  if (doNivel == null) return entry;
+  // (lote G10: + o raio dos estágios — "+X metros ao raio por estágio")
+  const raioM = Math.max(0.2, doNivel + raioExtraM);
   const casas = raioM / 2;
   // (`hunt`: o sorteio da fração fica guardado até um uso SAIR — `consumirRaioDoPoe` — para a área que não pegou ninguém não sortear de novo no
   // tique seguinte: sem isto, a fração virava "a casa a mais" na prática, de tanto tentar)
@@ -2064,6 +2068,31 @@ export function formaNoRaioDoPoe(entry, efeito, rng = Math.random, { hunt = null
   r = Math.max(r, minimo);
   return r === Areas.raioDaForma(entry.forma) ? entry : { ...entry, forma: Areas.escalarForma(entry.forma, r) };
 }
+/**
+ * (17/10, lote G10) O ESTÁGIO de canalização deste uso: `{ estagio, liberar, soCarrega, maisPct, critMaisPct, raioExtraM, est }` ou null. A
+ * habilidade canalizada usada de novo em seguida (a mesma, até o fim do uso anterior + um tique — `hunt.canalizacao`) ganha 1 estágio, até o
+ * máximo; outra habilidade no meio zera. No máximo, LIBERA: a Rajada de Chamas e a Flecha Flagelante (`carrega`) só causam dano aí, com o
+ * "mais Dano por estágio" × os estágios; as Lâminas Velozes soltam um golpe por estágio; o Incinerar, a onda final. (O Ciclone do Tumulto
+ * ganha estágios pelo tempo — `temposDaGemaPoe`.)
+ */
+function estagioDaCanalizacao(hunt, entry, efeito, inicio, { gatilho = null, plantada = null } = {}) {
+  if (!itensPoeLigado() || !entry?.poeGema || gatilho || plantada) return null;
+  const est = GemasPoe.estagiosDaGema(entry.poeGema.slug, efeito?.nivel ?? 1);
+  if (!est) return null;
+  const c = hunt?.canalizacao;
+  const continua = c && c.acao === entry.id && inicio <= c.ate + 250;
+  const estagio = est.modo === 'tempo'
+    ? (continua ? Math.min(est.max, Math.floor(Math.max(0, inicio - c.desde) / Math.max(1, est.porMs))) : 0)
+    : Math.min(est.max, (continua ? c.estagios ?? 0 : 0) + 1);
+  const liberar = est.modo !== 'tempo' && estagio >= est.max;
+  const raioExtraM = est.raioMaxM != null ? Math.sign(est.raioM) * Math.min(Math.abs(est.raioM * estagio), est.raioMaxM) : est.raioM * estagio;
+  // o "mais Dano": por estágio (no `carrega`, só na liberação) × a onda final × os golpes da liberação das Lâminas Velozes (um por estágio, cada
+  // um com o dano do estágio)
+  const porEstagio = est.modo === 'carrega' && !liberar ? 0 : est.mais * estagio;
+  const fator = (1 + porEstagio / 100) * (liberar && est.final ? 1 + est.final / 100 : 1) * (liberar && est.golpesFinais ? 1 + estagio : 1);
+  return { est, estagio, liberar, soCarrega: est.modo === 'carrega' && !liberar, maisPct: (fator - 1) * 100, critMaisPct: est.critMais * estagio, raioExtraM };
+}
+
 /** O uso SAIU: o sorteio do raio da gema guardado (`formaNoRaioDoPoe`) vale só para ele. */
 export function consumirRaioDoPoe(hunt, entry) {
   if (!hunt?.poeRaioPendente || !entry?.poeGema) return;
@@ -2191,7 +2220,10 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   // (ciclo 7) + a velocidade de ataque "com Habilidades de X" (`atk_speed@<tag>` — Retaliação, Movimento…): antes não entrava em lugar nenhum.
   const daGema = (efeitoDaGema?.velAtaquePct ?? 0) + (doJogador ? velocidadeCondicional(estado, efeitoDaGema) : 0) + (porTag.atk_speed ?? 0) + arremessoPct;
   // (17/10) o "X% mais Velocidade de Ataque" com condição (a da gema — o Frenesi, "por Carga de Frenesi"): multiplica.
-  const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + daGema) / 100) / Math.max(0.1, 1 + (porTag.atk_speed_mais ?? 0) / 100);
+  // (17/10, lote G10) "X% mais Velocidade de Ataque por Estágio" (o Ciclone do Tumulto — um estágio a cada N s canalizando)
+  const estDoTempo = doJogador && estado.hunt ? estagioDaCanalizacao(estado.hunt, entry, efeitoDaGema, estado.hunt.clock ?? 0) : null;
+  const porEstagioVel = estDoTempo?.est?.velMais ? 1 + (estDoTempo.est.velMais * estDoTempo.estagio) / 100 : 1;
+  const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + daGema) / 100) / Math.max(0.1, 1 + (porTag.atk_speed_mais ?? 0) / 100) / porEstagioVel;
   const lentidao = doJogador ? Controle.fatorDeLentidao(estado.hunt) : 1;
   // (lote 34, P008: o CLAMOR não é ataque nem magia — a Velocidade de Conjuração não vale nele; o tempo de uso dele encurta pela "Velocidade dos
   // Clamores aumentada", `velocidade_clamor`)
@@ -2360,7 +2392,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
   // (17/10, lote G2) A FORMA da área no RAIO DO PoE da gema (o da magia-molde do Draevor era fixo: a nova pegava 5 casas, fosse a Nova de Gelo
   // de 3 m ou a de 2,2 m) — `formaNoRaioDoPoe`.
-  entry = formaNoRaioDoPoe(entry, efeitoDaGema, Math.random, { hunt, minimo: plantada?.tipo === 'armadilha' ? Plantadas.PADRAO.armadilha.raioDeAtivacao : 0 });
+  // (17/10, lote G10) o ESTÁGIO de canalização deste uso (`GemasPoe.estagiosDaGema`): o uso seguido da mesma habilidade canalizada ganha 1, até o
+  // máximo; no máximo, a canalização se LIBERA (a abstração do idle: o PoE solta o botão) — `estagioDoUso`
+  const estagioDoUso = estagioDaCanalizacao(hunt, entry, efeitoDaGema, inicio, { gatilho, plantada });
+  entry = formaNoRaioDoPoe(entry, efeitoDaGema, Math.random, { hunt, minimo: plantada?.tipo === 'armadilha' ? Plantadas.PADRAO.armadilha.raioDeAtivacao : 0, raioExtraM: estagioDoUso?.raioExtraM ?? 0 });
   // (PoE, a Lâmina Noturna: "Habilidades Suportadas só podem ser usadas com Garras e Adagas".)
   if (efeitoDaGema?.soGarraAdaga && !/^(Claws|Daggers|Rune_Daggers)$/.test(String(estado.equipment?.weapon?.poe?.classe ?? ''))) return { ok: false, erro: 'Só com Garras e Adagas (Lâmina Noturna).', motivo: 'ARMA' };
   // (17/10, lote G3) "Habilidades de Ataque Suportadas não podem ser usadas com Armas Corpo a Corpo" (os suportes de Armadilha e Mina) e "só podem
@@ -2529,7 +2564,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    */
   // (a Armadilha/Mina: o raio sorteado vale só para esta ativação)
   if (plantada) consumirRaioDoPoe(hunt, entry);
-  if (ataque && !plantada) {
+  // (lote G10: o uso que só carrega estágios — a Rajada de Chamas antes do máximo — sai sem ninguém na área, como no PoE)
+  if (ataque && !plantada && !estagioDoUso?.soCarrega) {
     // (O próprio alvo sempre conta: a magia de 7 sqm no bicho a 6 não some da faixa.)
     const n = casas ? atingidos.length : new Set([...atingidos, ...vivos.filter((b) => distanciaChebyshev(hunt.pos, b) <= RAIO_DA_FAIXA)]).size;
     if (n < Math.max(1, Number(action.minTargets) || 1)) {
@@ -2815,7 +2851,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // e ganham o bônus de cada um — `doDestilador`.)
     const fichaDaGema = doDestilador(estado, Ficha.combate(estado), entry);
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
-    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: (gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora) });
+    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: ((1 + ((gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora)) / 100) * (1 + (estagioDoUso?.maisPct ?? 0) / 100) - 1) * 100, critMais: estagioDoUso?.critMaisPct ?? 0 });
     // (PoE, a Impiedade: "Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso" — este uso é o terceiro?)
     const impiedosoCada = Math.round(efeitoDaGema?.impiedosoCada ?? 0);
     let impiedoso = false;
@@ -3135,6 +3171,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const ehGolpe = !!entry.poeGema && tagsPoeDaSkill(entry).includes('golpe');
     const localAnterior = ehGolpe && ModsPoe.valor(ficha, 'golpe_local_anterior') > 0 && hunt.golpeAnterior && (hunt.golpeAnterior.z ?? 0) === (hunt.z ?? 0) ? hunt.golpeAnterior : null;
     const atacar = (segundo) => {
+      // (lote G10: o uso que só CARREGA estágios — a Rajada de Chamas, a Flecha Flagelante antes do máximo — não acerta ninguém)
+      if (estagioDoUso?.soCarrega) return;
       // "X% mais Dano por cada Ricochete restante" (Arco): o 1º atingido tem todos os ricochetes pela frente; cada salto gasta um.
       const cp = efeitoDaGema?.cadeiaPoe;
       if (!projeteisAleatorios()) atingidos.forEach((bicho, i) => { if (!segundo || bicho.hp > 0) acertar(bicho, cp?.pct ? 100 * (1 + (cp.pct * Math.max(0, cp.saltos - i)) / 100) : 100); });
@@ -3315,7 +3353,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const canal = hunt.canalizacao;
     if (tagsPoe.includes('canalizar')) {
       const continua = canal && canal.acao === entry.id && inicio <= canal.ate + 250;
-      hunt.canalizacao = { acao: entry.id, desde: continua ? canal.desde : inicio, ate: inicio + Math.max(250, Math.round(tempoPoe?.uso ?? tempoPoe?.conjuracaoMs ?? 500)), magia: tagsPoe.includes('magia') };
+      hunt.canalizacao = { acao: entry.id, desde: continua ? canal.desde : inicio, ate: inicio + Math.max(250, Math.round(tempoPoe?.uso ?? tempoPoe?.conjuracaoMs ?? 500)), magia: tagsPoe.includes('magia'),
+        // (lote G10: o estágio deste uso — zera na liberação)
+        ...(estagioDoUso && estagioDoUso.est.modo !== 'tempo' ? { estagios: estagioDoUso.liberar ? 0 : estagioDoUso.estagio } : {}) };
     } else if (canal && canal.ate > inicio) canal.ate = inicio;
     // (14/10, Suspender no Tempo: a magia não instantânea, não canalizada, não de lacaio, não Vaal cria uma Miragem Suspensa)
     if (tagsPoe.includes('magia') && !tagsPoe.some((t) => ['canalizar', 'lacaio', 'vaal'].includes(t)) && (tempoPoe?.conjuracaoMs ?? 0) > 0) eventos.push(...suspenderNoTempo(estado, hunt, personagem, entry, alvo, hunt.clock ?? 0));

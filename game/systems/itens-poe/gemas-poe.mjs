@@ -56,6 +56,8 @@ const MOLDES = {
 };
 /** O formato de cada arquétipo da arena (o `carga` dos objetos: armadilha e mina valem pelo que soltam). */
 const FORMATO = { projetil: 'projetil', area: 'chao', chuva: 'chao', orbe: 'chao', marca: 'chao', armadilha: 'chao', mina: 'chao', nova: 'nova', impacto: 'onda', canalizacao: 'feixe', ricochete: 'cadeia' };
+/** (17/10, lote G10) O formato de gemas que o arquétipo erra: a Rajada de Chamas canaliza uma EXPLOSÃO no lugar mirado (não o feixe). */
+const FORMATO_PROPRIO = { Flameblast: 'chao' };
 const BUFF = new Set(['aura', 'arauto', 'guarda', 'clamor', 'maldicao']);
 const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconhecido' };
 /**
@@ -441,6 +443,45 @@ const ARAUTOS_AO_MATAR = new Set(['Herald_of_Ice', 'Herald_of_Thunder', 'Herald_
 const LINHA_DO_ARAUTO = /^Tempestade Acerta um Inimigo a cada 0\.25 Segundos$|^Cria uma tempestade quando você Matar um Inimigo Eletrizado$|^Dano Ardente Base é igual a 25 ?% do Dano Excedente$/i;
 export const ehLinhaDoArauto = (l) => LINHA_DO_ARAUTO.test(l);
 
+/**
+ * (17/10, lote G10) Os ESTÁGIOS DE CANALIZAÇÃO da gema (o PoE: cada uso enquanto canaliza ganha um estágio, até o máximo): `{ max, modo, mais,
+ * critMais, velMais, raioM, raioMaxM, final, golpesFinais, porMs }` ou null (a gema não tem estágio que o jogo faça).
+ *   `intensifica` — cada uso acerta com "X% mais Dano por estágio" (Lâminas Velozes, Incinerar); no MÁXIMO a canalização se libera sozinha: as
+ *                   Lâminas Velozes soltam "um golpe adicional por cada estágio" (`golpesFinais`), o Incinerar a onda final ("A onda final causa
+ *                   X% mais Dano com Acertos" — `final`);
+ *   `carrega`     — os usos só carregam (Rajada de Chamas, Flecha Flagelante); no máximo, a liberação com o "X% mais Dano por estágio" × os estágios;
+ *   `tempo`       — um estágio a cada N s canalizando (o Ciclone do Tumulto: "25% mais Velocidade de Ataque por Estágio").
+ * O raio cresce "+X metros ao raio por estágio" (até o máximo da linha). O idle não solta o botão: a liberação no máximo é a abstração (a
+ * canalização interrompida por outra habilidade perde os estágios, como a do PoE que não chegou a soltar).
+ */
+const CARREGAM = /^(Flameblast|Scourge_Arrow)/;
+const LINHAS_DE_ESTAGIO = [
+  [/^(\d+(?:\.\d+)?) ?% mais Dano (?:com Acertos e Afecções|Mágico) por (?:cada )?estágio$/i, (m, e) => { e.mais += Number(m[1]); }],
+  [/^(\d+(?:\.\d+)?) ?% mais Dano com Afecções por estágio$/i, () => {}],
+  [/^(\d+(?:\.\d+)?) ?% mais Change? de Golpe Crítico por cada Estágio$/i, (m, e) => { e.critMais += Number(m[1]); }],
+  [/^(\d+(?:\.\d+)?) ?% mais Velocidade de Ataque por Estágio$/i, (m, e) => { e.velMais += Number(m[1]); }],
+  [/^Concede 1 Estágio a cada (\d+(?:\.\d+)?) segundos? enquanto Canalizando$/i, (m, e) => { e.porMs = Math.round(Number(m[1]) * 1000); }],
+  [/^Perde 1 Estágio a cada (\d+(?:\.\d+)?) segundos? enquanto não Canalizada$/i, () => {}],
+  [/^\+?(\d+(?:\.\d+)?) metros ao raio por estágio, máximo de \+(\d+(?:\.\d+)?) metros$/i, (m, e) => { e.raioM = Number(m[1]); e.raioMaxM = Number(m[2]); }],
+  [/^A onda final causa (\d+(?:\.\d+)?) ?% mais Dano com Acertos$/i, (m, e) => { e.final += Number(m[1]); }],
+  [/^A onda final causa (\d+(?:\.\d+)?) ?% mais Dano com Incêndio$/i, () => {}],
+  [/^onda final sempre Incendeia$/i, () => {}],
+];
+export const ehLinhaDeEstagio = (l) => LINHAS_DE_ESTAGIO.some(([re]) => re.test(l));
+const ESTAGIOS = new Map();
+export function estagiosDaGema(slug, nivel = 1) {
+  const h = compilada(slug, nivel);
+  if (!h?.stats?.estagios) return null;
+  const k = `${slug}@${h.nivel}`;
+  if (ESTAGIOS.has(k)) return ESTAGIOS.get(k);
+  const e = { max: h.stats.estagios, mais: 0, critMais: 0, velMais: 0, raioM: h.stats.raioPorEstagio ?? 0, raioMaxM: null, final: 0, golpesFinais: /^Blade_Flurry/.test(slug), porMs: 0 };
+  for (const l of textosDaGema(slug, nivel).linhas) for (const [re, f] of LINHAS_DE_ESTAGIO) { const m = re.exec(l); if (m) f(m, e); }
+  e.modo = e.porMs ? 'tempo' : CARREGAM.test(slug) ? 'carrega' : 'intensifica';
+  const r = e.mais || e.critMais || e.velMais || e.raioM || e.final || e.golpesFinais ? e : null;
+  ESTAGIOS.set(k, r);
+  return r;
+}
+
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
 const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
 export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
@@ -664,7 +705,8 @@ function avaliarNoJogo(h, formato) {
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
     // (09/10) O dano degenerativo da gema se aplica no acerto (`acoes`: `degenerativoNoNivel`); o "% da Vida por segundo" do Fogo Justo, ainda não.
     if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
-    if (st.estagios) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
+    // (lote G10: os estágios que o jogo faz — `estagiosDaGema`; o resto segue)
+    if (st.estagios && !estagiosDaGema(h.slug, h.nivel)) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
     if (st.repeticoes) motivos.push('as repetições do golpe não existem: no jogo é um');
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k] && !CHANCE_NO_ACERTO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
@@ -672,7 +714,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -840,7 +882,7 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     const nivelRef = Math.min(20, prog.nivelMaximo(g));
     const h = compilada(g.slug, nivelRef);
     if (!h) continue;
-    const formato = FORMATO[h.arquetipo] ?? FORMATO[h.carga] ?? null;
+    const formato = FORMATO_PROPRIO[g.slug.replace(/_of_.*$/, '')] ?? FORMATO[h.arquetipo] ?? FORMATO[h.carga] ?? null;
     const elemento = ELEMENTO[h.elemento] ?? 'physical';
     const itemId = ids[g.slug];
     const entry = acaoDaGema(g, h, itemId, formato, elemento);

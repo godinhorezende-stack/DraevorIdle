@@ -75,11 +75,19 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - A Postura de SANGUE do Sangue e Areia segue pendente (no jogo o buff ligado é a Areia; o atributo do buff não vale com ele desligado).
 - Teste: `buffs-das-gemas-poe.test.mjs` (2: os números e o Arauto de Gelo ligado na ficha). Ativas parciais 390 → 384.
 
-### G9 — o efeito dos Arautos ao matar (17/10)
+### G9 — o efeito dos Arautos ao matar (17/10, commit 3ae0ee93)
 
 - `Acoes.aoMatarComArautos` (no abate, `hunt/combate`) e `Acoes.tiqueDosArautos` (no tique da caçada): **Gelo** — o Congelado morto explode com o dano de Gelo da gema no raio dela (1,2 m), sem os modificadores de dano mágico; **Trovão** — o Eletrizado morto cria a tempestade (a duração da gema, 6 s): um raio a cada 0,25 s num inimigo a até 3,2 m de você; **Cinzas** — o abate por ATAQUE queima os inimigos a até 1 m do morto com 25% do dano excedente por segundo, pela duração (4 s), só com os modificadores de dano degenerativo.
 - Teste: 3 novos em `buffs-das-gemas-poe.test.mjs`. Do G8, saiu a asserção "o Trovão ainda não tem o efeito ao matar" (agora tem).
 - Ativas parciais 384 → 382.
+
+### G10 — os estágios de canalização (17/10)
+
+- `GemasPoe.estagiosDaGema` + `Acoes.estagioDaCanalizacao`: o uso seguido da mesma habilidade canalizada ganha 1 estágio (até o máximo; outra habilidade no meio zera). **No máximo a canalização se libera sozinha** — a abstração do idle (no PoE, soltar o botão). `carrega` (Rajada de Chamas, Flecha Flagelante): os usos só carregam (sem dano, sem precisar de alvo na área) e a liberação causa o "X% mais Dano por estágio" × os estágios; `intensifica` (Lâminas Velozes, Incinerar): cada uso acerta com o "mais Dano" do estágio, e a liberação solta um golpe por estágio (Lâminas Velozes) ou a onda final ("A onda final causa X% mais Dano com Acertos" — Incinerar); `tempo` (Ciclone do Tumulto): um estágio a cada 0,4 s canalizando, "25% mais Velocidade de Ataque por Estágio". O raio cresce "+X metros ao raio por estágio" (até o máximo da linha); "X% mais Chance de Crítico por Estágio" (Incisão).
+- A Rajada de Chamas passou ao formato de explosão no lugar mirado (antes, a onda que sai de você — `FORMATO_PROPRIO`).
+- Compilador: "Área de Efeito aumentada em 15% por cada 0,1 metro de Alcance" (Ciclone do Tumulto) não é mais +15% fixo; "Raio Base é de N metros" e "-0.2 metros ao raio por Estágio" (transfiguradas da Rajada de Chamas) lidos.
+- Pendentes: os esporos da Flecha Flagelante, o ângulo do Incinerar ("100% de aumento do ângulo por estágio"), o "mais Dano com Afecções por estágio" separado do acerto (as afecções saem do acerto — G11), o Orbe Invernal, a Runa da Maré Invernal.
+- Teste: `canalizacao-estagios-poe.test.mjs` (3). Ativas parciais 382 → 377.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -94,7 +102,6 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. Commitar G9 (FULL por exceção, com aval).
-2. G10: os estágios de canalização (Lâminas Velozes, Ciclone, Flecha Flagelante, Rajada de Chamas — 12 gemas) e as repetições do golpe (11): `hunt.canalizacao` já existe (lote 42 da árvore).
-3. G11: as afecções que saem do acerto final.
-4. Depois, as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).
+1. Commitar G10 (FULL por exceção — autorização do dono para os lotes desta tarefa).
+2. G11: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
+3. As repetições do golpe (11 gemas) e as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).

@@ -119,6 +119,9 @@ export const REGRAS = [
 
   // ---------------- área / duração ----------------
   [r(`O raio Base é de ${N} metros?`), (s, m) => (s.raio = num(m[1]))],
+  // (lote G10: as transfiguradas da Rajada de Chamas escrevem sem o "O": "Raio Base é de 3 metros")
+  [r(`^Raio Base é de ${N} metros?$`), (s, m) => (s.raio = num(m[1]))],
+  [r(`^-${N} metros ao raio por Estágio$`), (s, m) => (s.raioPorEstagio = -num(m[1]))],
   [r(`Raio Base da (?:explos[aã]o|Aura) igual a ${N}`), (s, m) => (s.raio = num(m[1]))],
   [r(`Raio do Estouro é de ${N}`), (s, m) => (s.raio = num(m[1]))],
   [r(`Raio de (?:implosão|alcance base do impacto do martelo) (?:base )?é de ${N}`), (s, m) => (s.raio = num(m[1]))],
@@ -126,7 +129,9 @@ export const REGRAS = [
   [r(`^\\+?${N} metros? (?:de|ao) raio$`), (s, m) => (s.raioBonus += num(m[1]))],
   [r(`^${N} % (mais|menos) Área de Efeito$`), (s, m) => (s.areaMais += num(m[1]) * sinal(m[2]))],
   // (17/10, lote G2: o "aumentada" é aditivo com o das peças e dos suportes — `areaInc`; o "mais/menos" multiplica — `areaMais`)
-  [r(`^Área de Efeito aumentada em ${N}`), (s, m) => (s.areaInc = (s.areaInc ?? 0) + num(m[1]))],
+  // (lote G10: "… aumentada em 15% por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional" — o Ciclone do Tumulto — é por alcance, não
+  // fixo; segue "não simulado")
+  [r(`^Área de Efeito aumentada em ${N} ?%?$`), (s, m) => (s.areaInc = (s.areaInc ?? 0) + num(m[1]))],
   [r(`\\+${N} metros ao raio por (?:estágio|Estágio)`), (s, m) => (s.raioPorEstagio = num(m[1]))],
   [r(`${N} % mais Área de Efeito por cada estágio`), (s, m) => (s.raioPorEstagio = num(m[1]) / 100)],
   [r(`^Máximo de ${N} Estágios`), (s, m) => (s.estagios = num(m[1]))],

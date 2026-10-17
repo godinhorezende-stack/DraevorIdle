@@ -2,16 +2,16 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 56,
-   "parcial": 382,
-   "implementada, sem teste próprio": 71,
+   "implementada e testada": 58,
+   "parcial": 377,
+   "implementada, sem teste próprio": 74,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 20,
-   "parcial": 142,
+   "implementada e testada": 21,
+   "parcial": 141,
    "implementada, sem teste próprio": 37,
    "limitação do modelo idle": 11
   },
@@ -31,10 +31,10 @@
    },
    "alternativas": {
     "total": 198,
-    "parcial": 148,
+    "parcial": 145,
     "implementada e testada": 5,
     "limitação do modelo idle": 14,
-    "implementada, sem teste próprio": 29,
+    "implementada, sem teste próprio": 32,
     "sem efeito": 2
    }
   },
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 884,
-   "emDuasOuMais": 195
+   "linhasDistintas": 874,
+   "emDuasOuMais": 192
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,7 +61,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 128,
+   "ativasCitadas": 132,
    "suportesCitados": 38
   }
  },
@@ -4323,11 +4323,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: 25 % mais Dano com Acertos e Afecções por cada estágio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4339,11 +4336,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: 40 % mais Change de Golpe Crítico por cada Estágio"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4556,6 +4550,7 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional",
     "efeito não simulado: 20 % menos Velocidade de Movimento"
    ],
    "idle": [],
@@ -4571,11 +4566,8 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: 25 % mais Velocidade de Ataque por Estágio",
-    "efeito não simulado: Concede 1 Estágio a cada 0.4 segundos enquanto Canalizando",
-    "efeito não simulado: 10 % menos Velocidade de Movimento por Estágio",
-    "efeito não simulado: Perde 1 Estágio a cada 0.4 segundo enquanto não Canalizada"
+    "efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional",
+    "efeito não simulado: 10 % menos Velocidade de Movimento por Estágio"
    ],
    "idle": [],
    "outros": [],
@@ -4749,7 +4741,6 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
     "efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano"
    ],
    "idle": [],
@@ -4962,8 +4953,10 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6407,11 +6400,7 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %",
-    "efeito não simulado: onda final sempre Incendeia",
-    "efeito não simulado: A onda final causa 500 % mais Dano com Acertos",
-    "efeito não simulado: A onda final causa 250 % mais Dano com Incêndio"
+    "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %"
    ],
    "idle": [],
    "outros": [],
@@ -6426,11 +6415,7 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %",
-    "efeito não simulado: onda final sempre Incendeia",
-    "efeito não simulado: A onda final causa 700 % mais Dano com Acertos",
-    "efeito não simulado: A onda final causa 400 % mais Dano com Incêndio"
+    "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %"
    ],
    "idle": [],
    "outros": [],
@@ -6445,7 +6430,6 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
     "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %"
    ],
    "idle": [],
@@ -7770,10 +7754,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7785,11 +7767,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: Raio Base é de 1 metro"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7801,12 +7780,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: Raio Base é de 3 metros",
-    "efeito não simulado: -0.2 metros ao raio por Estágio"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8355,10 +8330,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: -0.2 metros ao raio por Estágio"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11581,23 +11554,6 @@
    ]
   },
   {
-   "linha": "os estágios de canalização não existem: no jogo é um uso por vez",
-   "gemas": [
-    "Blade_Flurry",
-    "Blade_Flurry_of_Incision",
-    "Cyclone_of_Tumult",
-    "Flameblast",
-    "Flameblast_of_Celerity",
-    "Flameblast_of_Contraction",
-    "Incinerate",
-    "Incinerate_of_Expanse",
-    "Incinerate_of_Venting",
-    "Scourge_Arrow",
-    "Winter_Orb",
-    "Wintertide_Brand"
-   ]
-  },
-  {
    "linha": "as repetições do golpe não existem: no jogo é um",
    "gemas": [
     "Bladefall",
@@ -11787,6 +11743,14 @@
     "Ancestral_Call_Support",
     "Awakened_Ancestral_Call_Support",
     "Greater_Ancestral_Call_Support"
+   ]
+  },
+  {
+   "linha": "Área de Efeito aumentada em # % por cada # metro de Alcance de Golpe Corpo a Corpo adicional",
+   "gemas": [
+    "Cyclone",
+    "Cyclone_of_Tumult",
+    "Vaal_Cyclone"
    ]
   },
   {
@@ -12085,13 +12049,6 @@
    ]
   },
   {
-   "linha": "# metros ao raio por Estágio",
-   "gemas": [
-    "Flameblast_of_Contraction",
-    "Vaal_Flameblast"
-   ]
-  },
-  {
    "linha": "# segundos entre o aparecimento de seções da Parede",
    "gemas": [
     "Frost_Wall",
@@ -12138,20 +12095,6 @@
    "gemas": [
     "Charged_Dash",
     "Charged_Dash_of_Projection"
-   ]
-  },
-  {
-   "linha": "A onda final causa # % mais Dano com Acertos",
-   "gemas": [
-    "Incinerate",
-    "Incinerate_of_Expanse"
-   ]
-  },
-  {
-   "linha": "A onda final causa # % mais Dano com Incêndio",
-   "gemas": [
-    "Incinerate",
-    "Incinerate_of_Expanse"
    ]
   },
   {
@@ -12743,13 +12686,6 @@
    ]
   },
   {
-   "linha": "onda final sempre Incendeia",
-   "gemas": [
-    "Incinerate",
-    "Incinerate_of_Expanse"
-   ]
-  },
-  {
    "linha": "Onda não pode parar antes de causar Dano em # Áreas",
    "gemas": [
     "Sunder",
@@ -12775,6 +12711,13 @@
    "gemas": [
     "Storm_Burst",
     "Storm_Burst_of_Repulsion"
+   ]
+  },
+  {
+   "linha": "os estágios de canalização não existem: no jogo é um uso por vez",
+   "gemas": [
+    "Winter_Orb",
+    "Wintertide_Brand"
    ]
   },
   {
@@ -13178,12 +13121,6 @@
    ]
   },
   {
-   "linha": "# % mais Change de Golpe Crítico por cada Estágio",
-   "gemas": [
-    "Blade_Flurry_of_Incision"
-   ]
-  },
-  {
    "linha": "# % mais Dano com Acertos contra Inimigos Incendiados",
    "gemas": [
     "Flame_Surge"
@@ -13193,12 +13130,6 @@
    "linha": "# % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento",
    "gemas": [
     "Voltaxic_Burst"
-   ]
-  },
-  {
-   "linha": "# % mais Dano com Acertos e Afecções por cada estágio",
-   "gemas": [
-    "Blade_Flurry"
    ]
   },
   {
@@ -13325,12 +13256,6 @@
    "linha": "# % mais Velocidade de Ataque por cada Estágio",
    "gemas": [
     "Double_Strike_of_Momentum"
-   ]
-  },
-  {
-   "linha": "# % mais Velocidade de Ataque por Estágio",
-   "gemas": [
-    "Cyclone_of_Tumult"
    ]
   },
   {
@@ -14273,12 +14198,6 @@
    "linha": "Concede # de Regeneração de Vida por segundo para cada Inimigo afetado",
    "gemas": [
     "Siphoning_Trap"
-   ]
-  },
-  {
-   "linha": "Concede # Estágio a cada # segundos enquanto Canalizando",
-   "gemas": [
-    "Cyclone_of_Tumult"
    ]
   },
   {
@@ -16454,12 +16373,6 @@
    ]
   },
   {
-   "linha": "Perde # Estágio a cada # segundo enquanto não Canalizada",
-   "gemas": [
-    "Cyclone_of_Tumult"
-   ]
-  },
-  {
    "linha": "Pode aglomerar até # usos",
    "gemas": [
     "Lightning_Warp"
@@ -16673,18 +16586,6 @@
    "linha": "Raio Base do Círculo é de # metro +# metros ao Raio do Círculo por Estágio A Canalização é interrompida quando o Raio Total do Círculo atingir # metros",
    "gemas": [
     "Vaal_Blade_Flurry"
-   ]
-  },
-  {
-   "linha": "Raio Base é de # metro",
-   "gemas": [
-    "Flameblast_of_Celerity"
-   ]
-  },
-  {
-   "linha": "Raio Base é de # metros",
-   "gemas": [
-    "Flameblast_of_Contraction"
    ]
   },
   {

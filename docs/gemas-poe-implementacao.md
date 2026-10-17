@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 56 |
-| implementada, sem teste próprio | 71 |
+| implementada e testada | 58 |
+| implementada, sem teste próprio | 74 |
 | limitação do modelo idle | 42 |
-| parcial | 382 |
+| parcial | 377 |
 | sem efeito | 11 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 20 |
+| implementada e testada | 21 |
 | implementada, sem teste próprio | 37 |
 | limitação do modelo idle | 11 |
-| parcial | 142 |
+| parcial | 141 |
 
 ### Gemas de suporte (262)
 
@@ -35,15 +35,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 1 · parcial 42 · implementada, sem teste próprio 9
-- Alternativas (198): parcial 148 · implementada e testada 5 · limitação do modelo idle 14 · implementada, sem teste próprio 29 · sem efeito 2
+- Alternativas (198): parcial 145 · implementada e testada 5 · limitação do modelo idle 14 · implementada, sem teste próprio 32 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 884 linhas distintas (195 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 874 linhas distintas (192 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 128/562 ativas, 38/262 suportes.
+- Testes que citam a gema: 132/562 ativas, 38/262 suportes.
 
 ## Linhas que faltam (por quantidade de gemas)
 
@@ -52,7 +52,6 @@ Só os ataques:
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
 | 15 | nenhum efeito do buff tem equivalente no jogo |
 | 14 | sem dano direto: nenhum efeito no combate |
-| 12 | os estágios de canalização não existem: no jogo é um uso por vez |
 | 11 | as repetições do golpe não existem: no jogo é um |
 | 11 | o uso de cadáveres não existe no jogo |
 | 9 | Pode ser Desvinculada por uma Duração total de # segundos |
@@ -72,6 +71,7 @@ Só os ataques:
 | 3 | # segundos adicionais de Duração Base por Cadáver extra consumido |
 | 3 | +# metro ao Raio por # de Fúria |
 | 3 | Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte |
+| 3 | Área de Efeito aumentada em # % por cada # metro de Alcance de Golpe Corpo a Corpo adicional |
 | 3 | Cada Flecha pode disparar # Feixes |
 | 3 | Cada Mina aplica Chance de Golpe Crítico de Acertos aumentada em # % contra Inimigos próximos a ela, até um máximo de # % |
 | 3 | Causa # % mais Dano com Acertos contra o Inimigo Vinculado |
@@ -111,7 +111,6 @@ Só os ataques:
 | 2 | # a # de Dano de Fogo adicionado contra Inimigos Queimando |
 | 2 | # de largura do Efeito em Área |
 | 2 | # Estágios Máximos |
-| 2 | # metros ao raio por Estágio |
 | 2 | # segundos entre o aparecimento de seções da Parede |
 | 2 | #% de Qualidade das Gemas de Habilidade Suportadas |
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
@@ -119,8 +118,6 @@ Só os ataques:
 | 2 | % de chance de remover um Feitiço após Causar Dano |
 | 2 | +# % ao Máximo de Efeito da Eletrização |
 | 2 | A Ilusão se move com # % da sua Velocidade de Movimento |
-| 2 | A onda final causa # % mais Dano com Acertos |
-| 2 | A onda final causa # % mais Dano com Incêndio |
 | 2 | Abalo Secundário causa # % mais Dano com Acertos e Afecções |
 | 2 | Acertos aós o primeiro em cada Inimigo causam # % menos Dano |
 | 2 | Acertos da onda final causam # % de dano por estágio |
@@ -205,11 +202,11 @@ Só os ataques:
 | 2 | Martelos causam - # % de dano |
 | 2 | Martelos Sagrados se acumulam em cascata até # vezes |
 | 2 | Máximo de # anomalias |
-| 2 | onda final sempre Incendeia |
 | 2 | Onda não pode parar antes de causar Dano em # Áreas |
 | 2 | Orbes desaparecem após # Golpes |
 | 2 | Orbes Explosivas causam # % do Dano da Habilidade para cada # segundos de Duração restante |
 | 2 | Orbes saltam a cada # segundos |
+| 2 | os estágios de canalização não existem: no jogo é um uso por vez |
 | 2 | Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome # Carga de # Frasco de cada tipo válido, se possível, por Projétil Disparado |
 | 2 | Pode focar em cada inimigo apenas uma vez a cada # segundos |
 | 2 | Pode ter até # Áreas Resfriadas |
@@ -271,10 +268,8 @@ Só os ataques:
 | 1 | # % mais Área de Efeito quando Conjurada em um Disparo Congelante |
 | 1 | # % mais Área de Efeito se Consumindo um Lacaio |
 | 1 | # % mais Área de Efeito se Consumiu um cadáver |
-| 1 | # % mais Change de Golpe Crítico por cada Estágio |
 | 1 | # % mais Dano com Acertos contra Inimigos Incendiados |
 | 1 | # % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento |
-| 1 | # % mais Dano com Acertos e Afecções por cada estágio |
 | 1 | # % mais Dano com Acertos e Afecções por Intensidade |
 | 1 | # % mais Dano com Acertos e Afecções se usar sua Vida |
 | 1 | # % mais Dano com Acertos na Distância Máxima da Investida |
@@ -296,7 +291,6 @@ Só os ataques:
 | 1 | # % mais Frequência de Projéteis enquanto Canalizando |
 | 1 | # % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido |
 | 1 | # % mais Velocidade de Ataque por cada Estágio |
-| 1 | # % mais Velocidade de Ataque por Estágio |
 | 1 | # % menos Velocidade de Arremesso de Armadilhas |
 | 1 | # % menos velocidade de lançar armadilhas com arma de duas mãos |
 | 1 | # % menos Velocidade de Movimento |
@@ -454,7 +448,6 @@ Só os ataques:
 | 1 | Concede # de Regeneração de Mana por segundo se qualquer Inimigo está afetado |
 | 1 | Concede # de Regeneração de Vida por segundo caso um Inimigo esteja afetado |
 | 1 | Concede # de Regeneração de Vida por segundo para cada Inimigo afetado |
-| 1 | Concede # Estágio a cada # segundos enquanto Canalizando |
 | 1 | Concede +# ao máximo de Cargas de Sangue |
 | 1 | Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico |
 | 1 | Concede até o máximo de Cargas de Sangue |
@@ -817,7 +810,6 @@ Só os ataques:
 | 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
 | 1 | Perca todo o Traumatismo ao atingir # Traumatismos |
 | 1 | Perca Vida e Escudo de Energia igual a # % do Dano do Debuff |
-| 1 | Perde # Estágio a cada # segundo enquanto não Canalizada |
 | 1 | Pode aglomerar até # usos |
 | 1 | Pode explor de até # Projéteis de Disparo Congelante |
 | 1 | Pode se expandir de até # Projéteis de Disparo Congelante |
@@ -854,8 +846,6 @@ Só os ataques:
 | 1 | Raio base da lâmina é de # metro |
 | 1 | Raio Base da Mão Principal é de # metros |
 | 1 | Raio Base do Círculo é de # metro +# metros ao Raio do Círculo por Estágio A Canalização é interrompida quando o Raio Total do Círculo atingir # metros |
-| 1 | Raio Base é de # metro |
-| 1 | Raio Base é de # metros |
 | 1 | Raio Base final do Solo Resfriado igual a # metros |
 | 1 | Raio de alcance base da mão secundária é de # metros |
 | 1 | Raio de alcance base do impacto é de # metro |
@@ -1020,12 +1010,6 @@ Só os ataques:
 - **Blade_Blast_of_Unloading** (Explosão de Lâminas do Descarrego) — parcial
   - efeito não simulado: 5 % mais dano por lâmina de Vórtice de Lâminas
   - efeito não simulado: 100 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada
-- **Blade_Flurry** (Rajada de Lâminas) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
-  - efeito não simulado: 25 % mais Dano com Acertos e Afecções por cada estágio
-- **Blade_Flurry_of_Incision** (Rajada de Lâminas da Incisão) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
-  - efeito não simulado: 40 % mais Change de Golpe Crítico por cada Estágio
 - **Blade_Trap** (Armadilha de Lâminas) — parcial
   - efeito não simulado: Gira 4 vezes
   - efeito não simulado: Velocidade de rotação aumentada em 25 % se em Empunhadura Dupla
@@ -1186,13 +1170,11 @@ Só os ataques:
 - **Cremation_of_the_Volcano** (Cremação do Vulcão) — parcial
   - efeito não simulado: Dispara Projéteis a cada 1 segundos
 - **Cyclone** (Ciclone) — parcial
+  - efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional
   - efeito não simulado: 20 % menos Velocidade de Movimento
 - **Cyclone_of_Tumult** (Ciclone do Tumulto) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
-  - efeito não simulado: 25 % mais Velocidade de Ataque por Estágio
-  - efeito não simulado: Concede 1 Estágio a cada 0.4 segundos enquanto Canalizando
+  - efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional
   - efeito não simulado: 10 % menos Velocidade de Movimento por Estágio
-  - efeito não simulado: Perde 1 Estágio a cada 0.4 segundo enquanto não Canalizada
 - **Dark_Bargain** (Barganha Sombria) — parcial
   - efeito não simulado: Sacrifica 12 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos
   - efeito não simulado: Usa sua Vida se não houver Esqueletos em alcance
@@ -1374,15 +1356,6 @@ Só os ataques:
 - **Flame_Wall** (Parede Flamejante) — parcial
   - efeito não simulado: Parede terá 5.9 metros
   - efeito não simulado: Projéteis que passam pela parede causam 78 a 117 de Dano de Fogo Adicional
-- **Flameblast** (Explosão Flamejante) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
-- **Flameblast_of_Celerity** (Explosão Flamejante da Celeridade) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
-  - efeito não simulado: Raio Base é de 1 metro
-- **Flameblast_of_Contraction** (Explosão Flamejante da Contração) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
-  - efeito não simulado: Raio Base é de 3 metros
-  - efeito não simulado: -0.2 metros ao raio por Estágio
 - **Flamethrower_Trap** (Armadilha Lança-Chamas) — parcial
   - efeito não simulado: Tem 4 chamas
 - **Flamethrower_Trap_of_Stability** (Armadilha Lança-chamas da Estabilidade) — parcial
@@ -1550,19 +1523,10 @@ Só os ataques:
 - **Immortal_Call** (Chamado Imortal) — parcial
   - efeito não simulado: Duração do Buff aumentada em 20 % por Carga de Tolerância removida
 - **Incinerate** (Incinerar) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
   - efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %
-  - efeito não simulado: onda final sempre Incendeia
-  - efeito não simulado: A onda final causa 500 % mais Dano com Acertos
-  - efeito não simulado: A onda final causa 250 % mais Dano com Incêndio
 - **Incinerate_of_Expanse** (Incinerar da Expansão) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
   - efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %
-  - efeito não simulado: onda final sempre Incendeia
-  - efeito não simulado: A onda final causa 700 % mais Dano com Acertos
-  - efeito não simulado: A onda final causa 400 % mais Dano com Incêndio
 - **Incinerate_of_Venting** (Incinerar da Exaustão) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
   - efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %
 - **Infernal_Blow** (Golpe Infernal) — parcial
   - o uso de cadáveres não existe no jogo
@@ -1820,7 +1784,6 @@ Só os ataques:
   - efeito não simulado: Debuff Incendiário pode ter no máximo 8 estágios
   - efeito não simulado: Estágios Adicionais do Debuff adicionam 10 % de Dano
 - **Scourge_Arrow** (Flecha Virulenta) — parcial
-  - os estágios de canalização não existem: no jogo é um uso por vez
   - efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano
 - **Scourge_Arrow_of_Menace** (Flecha Virulenta da Ameaça) — parcial
   - efeito não simulado: Cada Flecha deixa 1 Esporos
@@ -2121,6 +2084,8 @@ Só os ataques:
 - **Vaal_Cold_Snap** (Estalo Gélido Vaal) — parcial
   - efeito não simulado: Raio Base terciário igual a 3.6 metros
   - efeito não simulado: Ganhe uma Carga de Poder quando um Inimigo Morrer enquanto na Área dessa Habilidade A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área dessa Habilidade
+- **Vaal_Cyclone** (Ciclone Vaal) — parcial
+  - efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional
 - **Vaal_Detonate_Dead** (Detonar Morto Vaal) — parcial
   - o uso de cadáveres não existe no jogo
 - **Vaal_Discipline** (Disciplina Vaal) — parcial
@@ -2138,8 +2103,6 @@ Só os ataques:
   - efeito não simulado: Solo Ardente dura 6 segundos
   - efeito não simulado: 16 Tiros
   - efeito não simulado: Impactos têm 20 % mais Efeito em Área
-- **Vaal_Flameblast** (Explosão Flamejante Vaal) — parcial
-  - efeito não simulado: -0.2 metros ao raio por Estágio
 - **Vaal_Flicker_Strike** (Golpe Súbito Vaal) — parcial
   - o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
   - _idle:_ o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
@@ -2916,4 +2879,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Cyclone, Vaal_Fireball, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
