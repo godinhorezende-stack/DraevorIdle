@@ -260,6 +260,9 @@ export const CONDICOES_DE_ESTADO = new Set([
   'posturaSangue', 'posturaAreia', 'estandarteAtivo',
   // (lote 65, as Ramificadoras) afetado por um Arauto (ao menos uma gema de Arauto ligada)
   'afetadoPorArauto',
+  // (lote 66) "enquanto portando um(a) X ou Y" — a arma em QUALQUER das mãos (as condições `comX` são da mão principal): Garra ou Adaga, Machado
+  // ou Espada, Maça, Cetro ou Cajado
+  'comGarraOuAdaga', 'comMachadoOuEspada', 'comMacaCetroOuCajado',
   // (11/10, os únicos:) nenhum item equipado corrompido / todos corrompidos; um Anel Mágico (em qualquer lado, no esquerdo, no direito); drenando
   // Escudo de Energia / Mana; as garras no desarmado (`garra_desarmado` dá o "com Garra" ao desarmado).
   'semItemCorrompido', 'todosCorrompidos', 'semVidaNosOutros', 'anelMagico', 'anelMagicoEsquerdo', 'anelMagicoDireito', 'drenandoEs', 'drenandoMana',
@@ -378,6 +381,12 @@ export function condicoesDe(estado, total = null, principais = null) {
   const pecas = Object.values(estado?.equipment ?? {});
   if (pecas.some((p) => Number(p?.poe?.af?.conta_duas_armas) > 0)) v.add('duasArmas');
   if (pecas.some((p) => Number(p?.poe?.af?.conta_todas_armas_uma_mao) > 0)) for (const c of ['comEspada', 'comMachado', 'comMaca', 'comAdaga', 'comGarra', 'comCetro', 'umaMao', 'armaCorpo']) v.add(c);
+  // (lote 66) a arma em qualquer das mãos
+  const nasMaos = new Set([COND_DA_CLASSE[arma], COND_DA_CLASSE[outra]].filter(Boolean));
+  const tem = (...cs) => cs.some((c) => v.has(c) || nasMaos.has(c));
+  if (tem('comGarra', 'comAdaga')) v.add('comGarraOuAdaga');
+  if (tem('comMachado', 'comEspada')) v.add('comMachadoOuEspada');
+  if (tem('comMaca', 'comCetro', 'comCajado')) v.add('comMacaCetroOuCajado');
   const h = estado?.hunt;
   const r = h?.poeRecente ?? {};
   const agora = h?.clock ?? 0;

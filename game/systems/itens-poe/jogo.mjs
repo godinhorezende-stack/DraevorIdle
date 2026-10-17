@@ -387,7 +387,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (52 — 16/10, lote 58: a Fé Militante — os mods de devoção sorteados e a escala da Devoção.)
 // (53 — 17/10, lote 65: as Ramificadoras — as linhas das pequenas: "+X de Vida Máxima" com maiúscula, o Dano Degenerativo por tipo, "enquanto
 // afetado por um Arauto", a velocidade de ataque e conjuração por tipo de habilidade…)
-export const VERSAO_DA_TRADUCAO = 53;
+// (54 — 17/10, lote 66: as Ramificadoras — os notáveis com mecânica que o jogo já tem: as armas de qualquer mão ("Garra ou Adaga"…), o
+// Impelido com Dano Dobrado…)
+export const VERSAO_DA_TRADUCAO = 54;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

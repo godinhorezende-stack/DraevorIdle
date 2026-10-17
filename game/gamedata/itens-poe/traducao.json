@@ -18183,6 +18183,17 @@
       "_unico": true
     },
     {
+      "padrao": "^Ataques Impelidos têm \\{(\\d+)\\}% de chance de causar Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@impelido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
       "padrao": "^.*(?:Impelid|Impelem|Impelindo|Impelir).*$",
       "efeitos": [
         {
@@ -40982,6 +40993,876 @@
       ],
       "_nova": true,
       "_lote65": "17/10 — lote 65 (as Ramificadoras: as linhas das pequenas — o encantamento e os \"também concedem\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Golpe Crítico de Habilidades Arauto$",
+      "efeitos": [
+        {
+          "stat": "crit_chance@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear Dano Mágico enquanto no Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "spell_block@cargasMax:poder",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto no Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "block@cargasMax:tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpes Críticos com Garras ou Adagas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Crítico se você Bloqueou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@bloqueouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquar Dano Mágico enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "spell_block@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquar o Dano de Ataques enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "block@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Físico Degenerativo enquanto portando um Machado ou Espada$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_phys@comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo para Envenenamentos enquanto portando uma Garra ou Adaga$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison@comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear Dano Mágico caso tenha Conjurado uma Magia Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_block@usouTag:magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Raio Drenado como Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar, Eletrizar e Incendiar enquanto afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_shock@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_ignite@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empalar Inimigos ao Acertar com Machados ou Espadas$",
+      "efeitos": [
+        {
+          "stat": "chance_empalar@ataque+comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Provocar Inimigos ao Acertar com Projéteis$",
+      "efeitos": [
+        {
+          "stat": "chance_provocar@projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de criar uma Núvem de Fumaça ao Matar$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:fumaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar Fúria Arcana ao Acertar um inimigo Único$",
+      "efeitos": [
+        {
+          "stat": "ev:acertar:buffChance:furiaArcana:4@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar com Acertos contra Inimigos Sangrando$",
+      "efeitos": [
+        {
+          "stat": "chance_cegar@alvoSangrando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado enquanto portando uma Maça, Cetro ou Cajado$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@comMacaCetroOuCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado caso tenha causado um Golpe Crítico com uma Arma de Duas Mãos Corpo a Corpo Recen[e]?mente$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado@criticoRecente+duasMaos+armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Atordoado enquanto Canaliza[n]+do$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empurrar Inimigos ao Acertar com Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Ataques com Machados ou Espadas causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_dmg_inc@ataque+comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Ataques com Maça, Cetro ou Cajado causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMacaCetroOuCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@ataque+comMacaCetroOuCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico aumentada em \\{(\\d+)\\}% caso você não tenha Bloqueado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@naoBloqueouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico contra Inimigos Amaldiçoados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico contra Inimigos Provocados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@alvoProvocado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Degenerativo aumentado em \\{(\\d+)\\}% enquanto afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% caso você tenha Incendiado um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@incendiouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@incendiouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@incendiouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% caso você tenha Eletrizado um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@eletrizouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@eletrizouRecente",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@eletrizouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}% enquanto afetado por um Arauto$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg@afetadoPorArauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Físico com Machados e Espadas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg@comMachadoOuEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% enquanto com Escudo de Energia Cheio$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@escudoCheio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% caso você tenha usado uma Habilidade de Deslocamento Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@usouMovimentoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano com Acertos e Afecções contra Inimigos Únicos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@alvoUnico",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ailment_dmg_inc@alvoUnico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano com Maças, Cetros ou Cajados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@comMacaCetroOuCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano da Armadilha Penetra \\{(\\d+)\\}% de Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataque contra Inimigos Mutilados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+alvoMutilado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataque de Projéteis com Garras ou Adagas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+projetil+comGarraOuAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataque quando em Vida Cheia aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+vidaCheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Ataques aumentado em \\{(\\d+)\\}% enquanto Drenando Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+drenandoEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg%atr:dex:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg%atr:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo aumentado em \\{(\\d+)\\}% por cada \\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg%atr:int:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Gelo com Acertos contra Inimigos Eletrizados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg@alvoEletrizado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano de Raio com Acertos contra Inimigos Resfriados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "energy_dmg@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano do Ataque com a Mão Primária aumentado em \\{(\\d+)\\}% enquanto portando dois Tipos Diferentes de Armas$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+maoPrincipal+armasDiferentes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Dano em Área aumentado em \\{(\\d+)\\}% enquanto portando uma Arma Corpo a Corpo de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@area+armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Duração das Afecções de Fogo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_incendio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Duração de Afecções infligidas enquanto portando um Arco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades Canalizadoras possuem Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@canalizar",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed_tag@canalizar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração enquanto Canalizando aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@canalizando",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Arauto causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Arco têm Área de Efeito aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Habilidades de Arco têm Duração do Efeito de Habilidade aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Magias conjuradas por Totens causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@magia+totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Projéteis causam Dano aumentado em \\{(\\d+)\\}% com Acertos contra Inimigos próximos$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@projetil+alvoPerto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Escudo de Energia quando você Matar um Inimigo Amaldiçoado$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:esPct@alvoAmaldicoado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% de Vida ao Matar um Inimigo Resfriado$",
+      "efeitos": [
+        {
+          "stat": "ev:matar:vidaPct@alvoResfriado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia por segundo se você Matou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Escudo de Energia por segundo enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "es_regen_pct@parado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo enquanto Canalizando$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@canalizando",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo se um Lacaio Morreu Recentemente$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@lacaioMorreuRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% se você Congelou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@congelouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% se você Eletrizou um Inimigo Recentemente$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@eletrizouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% enquanto Drenando Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@drenandoEs",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@drenandoEs",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}% se você convocou um Totem Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@usouTag:totem",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed@usouTag:totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto não estiver sob Efeito de Frascos$",
+      "efeitos": [
+        {
+          "stat": "move_speed@semFrasco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "move_speed@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocid?ade de Movimento aumentada em \\{(\\d+)\\}% caso você tenha causado um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}% enquanto portando uma Arma Corpo a Corpo de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "area_inc@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% caso você tenha ao menos \\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@atrMin:str:{V2}",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Velocidade de Ataque da Mão Secundária aumentada em \\{(\\d+)\\}% enquanto portando Tipos de Armas diferentes$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@maoSecundaria+armasDiferentes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
+    },
+    {
+      "padrao": "^Você tem Agressividade se Convocou um Totem Recentemente$",
+      "efeitos": [
+        {
+          "stat": "sempre:agressividade@usouTag:totem",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote66": "17/10 — lote 66 (as Ramificadoras: os notáveis — as linhas com mecânica que o jogo já tem)"
     }
   ]
 }
