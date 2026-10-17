@@ -2,25 +2,25 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 46,
-   "parcial": 397,
-   "implementada, sem teste próprio": 66,
+   "implementada e testada": 48,
+   "parcial": 394,
+   "implementada, sem teste próprio": 67,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 18,
-   "parcial": 145,
-   "implementada, sem teste próprio": 36,
+   "implementada e testada": 20,
+   "parcial": 142,
+   "implementada, sem teste próprio": 37,
    "limitação do modelo idle": 11
   },
   "suportes": {
    "total": 262,
-   "implementada, sem teste próprio": 51,
-   "implementada e testada": 23,
-   "parcial": 157,
-   "sem efeito": 31
+   "implementada, sem teste próprio": 52,
+   "implementada e testada": 29,
+   "parcial": 164,
+   "sem efeito": 17
   },
   "variantes": {
    "vaal": {
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 934,
-   "emDuasOuMais": 203
+   "linhasDistintas": 928,
+   "emDuasOuMais": 199
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -274,10 +274,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 300 a 450 de Dano Físico Base cmo a Mão Secundaria"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -291,7 +289,6 @@
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 389 a 583 de Dano de Fogo Base da Mão Secundária",
     "efeito não simulado: Onda Central tem 88 % mais Área de Efeito"
    ],
    "idle": [],
@@ -447,10 +444,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundo quando você Bloquear um Acerto"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -566,7 +561,6 @@
    "estado": "parcial",
    "ausentes": [
     "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "efeito não simulado: 252 a 378 de Dano Físico Base cmo a Mão Secundaria",
     "efeito não simulado: 100 % mais Dano com Acertos na Distância Máxima da Investida"
    ],
    "idle": [
@@ -1177,7 +1171,6 @@
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundo quando você Bloquear um Acerto",
     "efeito não simulado: Extensão da onda é de 10 metros",
     "efeito não simulado: Circunferência base da onda é de 5 metros"
    ],
@@ -1278,10 +1271,6 @@
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: +0.1 % de Chance de Golpe Crítico da Mão Secundária por cada 10 de Escudo de Energia Máximo no Escudo",
-    "efeito não simulado: 158 a 237 de Dano Físico Base cmo a Mão Secundaria",
-    "efeito não simulado: 8 a 11 de dano físico adicionado por 15 de armadura no escudo",
-    "efeito não simulado: Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundo quando você Bloquear um Acerto",
     "efeito não simulado: Ondas adicionais serão criadas a partir dos aliados dentro de um raio base de 4 metros do primeiro inimigo atingido"
    ],
    "idle": [],
@@ -1297,7 +1286,6 @@
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundo quando você Bloquear um Acerto",
     "efeito não simulado: Causa Dano nos Inimigos 8 vezes"
    ],
    "idle": [],
@@ -1547,7 +1535,6 @@
    "arquetipo": "clamor",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundos quando você sofrer um Acerto Selvagem",
     "efeito não simulado: Conta o Poder total de Inimigos no Alcance",
     "efeito não simulado: Buff concede 3 de Fúria por segundo por cada 5 de Poder, contando um máximo de 25 de Poder",
     "efeito não simulado: Buff concede + 25 ao Máximo de Fúria Buff impede a perda inerente de Fúria"
@@ -1739,9 +1726,6 @@
    "arquetipo": "area",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: +0.1 % de Chance de Golpe Crítico da Mão Secundária por cada 10 de Escudo de Energia Máximo no Escudo",
-    "efeito não simulado: 184 a 276 de Dano Físico Base cmo a Mão Secundaria",
-    "efeito não simulado: 3 a 6 de dano físico adicionado por 15 de armadura no escudo",
     "efeito não simulado: Explosão causa 100 % mais Dano com Acertos e Afecções"
    ],
    "idle": [],
@@ -1757,9 +1741,6 @@
    "arquetipo": "orbe",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: +0.1 % de Chance de Golpe Crítico da Mão Secundária por cada 10 de Escudo de Energia Máximo no Escudo",
-    "efeito não simulado: 184 a 276 de Dano Físico Base cmo a Mão Secundaria",
-    "efeito não simulado: 3 a 6 de dano físico adicionado por 15 de armadura no escudo",
     "efeito não simulado: Taxa base de explosão do orbe é de uma vez por segundo"
    ],
    "idle": [],
@@ -4104,11 +4085,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 607 a 911 de Dano Físico Base cmo a Mão Secundaria",
-    "efeito não simulado: Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundo quando você Bloquear um Acerto"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4885,8 +4863,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano",
-    "efeito não simulado: 243 a 364 de Dano Físico Base cmo a Mão Secundaria"
+    "efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano"
    ],
    "idle": [],
    "outros": [],
@@ -4901,8 +4878,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano",
-    "efeito não simulado: 297 a 446 de Dano de Gelo Base da Mão Secundária"
+    "efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano"
    ],
    "idle": [],
    "outros": [],
@@ -4918,7 +4894,6 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano",
-    "efeito não simulado: 122 a 182 de Dano Físico Base cmo a Mão Secundaria",
     "efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados"
    ],
    "idle": [],
@@ -6985,7 +6960,6 @@
    "arquetipo": "area",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundo quando você Bloquear um Acerto",
     "efeito não simulado: Cada onda tem 6 Explosões",
     "efeito não simulado: Causa 4 Ondas"
    ],
@@ -8944,7 +8918,6 @@
    "nome": "Totem Balista",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades de Ataque Suportadas não podem ser usadas com Armas Corpo a Corpo",
     "não simulado: Habilidades suportadas invocam um Totem de Balista que usa tal habilidade",
     "não simulado: Totem dura 8 segundos",
     "não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens"
@@ -9020,7 +8993,6 @@
    "nome": "Mutilação",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas têm 30% de chance de Mutilar ao Acertar",
     "não simulado: Habilidades Suportadas têm Efeito da Mutilação aumentado em 20%"
    ],
    "outros": [],
@@ -9286,7 +9258,6 @@
    "nome": "Fortificar",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Acertos Corpo a Corpo das Habilidades Suportadas Fortificam",
     "não simulado: Habilidades Suportadas têm Duração da Fortificação aumentada em 20%"
    ],
    "outros": [],
@@ -9778,10 +9749,8 @@
   {
    "slug": "Swift_Assembly_Support",
    "nome": "Montagem Rápida",
-   "estado": "sem efeito",
-   "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9833,8 +9802,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Habilidades Suportadas têm 10% de chance de Cegar inimigos ao acertar",
-    "não simulado: Habilidades Suportadas têm 38% da duração da Cegueira aumentada",
-    "não simulado: Efeito do Cegamento aumentado em 10%"
+    "não simulado: Habilidades Suportadas têm 38% da duração da Cegueira aumentada"
    ],
    "outros": [],
    "icone": true
@@ -9871,9 +9839,14 @@
   {
    "slug": "Locus_Mine_Support",
    "nome": "Mina Local",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
+    "não simulado: Habilidades Suportadas sempre disparam ao menos 1 Projétil",
+    "não simulado: Habilidades Suportadas disparam 30% menos Projéteis",
+    "não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida",
+    "não simulado: Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de 3 metros de você",
+    "não simulado: Minas usando Habilidades Suportadas sempre focam na sua localização",
+    "não simulado: Habilidades Suportadas arremessam Minas em um Arco"
    ],
    "outros": [],
    "icone": true
@@ -9892,9 +9865,9 @@
   {
    "slug": "Multiple_Traps_Support",
    "nome": "Múltiplas Armadilhas",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
+    "não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%"
    ],
    "outros": [],
    "icone": true
@@ -9902,10 +9875,8 @@
   {
    "slug": "Trap_Support",
    "nome": "Armadilha",
-   "estado": "sem efeito",
-   "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9993,10 +9964,8 @@
   {
    "slug": "Trap_and_Mine_Damage_Support",
    "nome": "Dano de Armadilha e Mina",
-   "estado": "sem efeito",
-   "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10011,20 +9980,16 @@
   {
    "slug": "Advanced_Traps_Support",
    "nome": "Armadilhas Avançadas",
-   "estado": "sem efeito",
-   "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Charged_Traps_Support",
    "nome": "Armadilhas Carregadas",
-   "estado": "sem efeito",
-   "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10166,10 +10131,8 @@
   {
    "slug": "Barrage_Support",
    "nome": "Barragem",
-   "estado": "sem efeito",
-   "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10204,9 +10167,9 @@
   {
    "slug": "Cluster_Traps_Support",
    "nome": "Grupo de Armadilhas",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
+    "não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%"
    ],
    "outros": [],
    "icone": true
@@ -10459,9 +10422,9 @@
   {
    "slug": "Invention_Support",
    "nome": "Invenção (Reforço)",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
+    "não simulado: Habilidades Suportadas têm Duração da Armadilha aumentada em 20% Habilidades reforçadas têm a duração de mina aumentada em 20%"
    ],
    "outros": [],
    "icone": true
@@ -10546,9 +10509,7 @@
    "nome": "Proliferação Elemental",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Duração de Afecções Elementais em Inimigos aumentada em 19%",
-    "não simulado: Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de 1.5 metros",
-    "não simulado: Duração de Afecções Elementais em Inimigos aumentada em 10%"
+    "não simulado: Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de 1.5 metros"
    ],
    "outros": [],
    "icone": true
@@ -10614,9 +10575,9 @@
   {
    "slug": "Blastchain_Mine_Support",
    "nome": "Mina da Cadeia Explosiva",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
+    "não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida"
    ],
    "outros": [],
    "icone": true
@@ -10762,7 +10723,6 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Habilidades reforçadas ativam Fluxo Cinético no golpe fatal",
-    "não simulado: 150% de Poder Arcano",
     "não simulado: Máximo de 20 anomalias",
     "não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética"
    ],
@@ -10812,7 +10772,6 @@
    "nome": "Sobrecarga",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas têm 50% de chance de Eletrizar",
     "não simulado: Habilidades Suportadas Eletrizam Inimigos como se causassem 690% mais Dano",
     "não simulado: Habilidades Suportadas têm 20% de Duração de Eletrização aumentada em Inimigos"
    ],
@@ -10911,10 +10870,8 @@
   {
    "slug": "Charged_Mines_Support",
    "nome": "Minas Carregadas",
-   "estado": "sem efeito",
-   "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10988,9 +10945,10 @@
   {
    "slug": "High-Impact_Mine_Support",
    "nome": "Mina de Alto Impacto",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
+    "não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida",
+    "não simulado: Cada Mina das Habilidades Suportadas aplicadas 2% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de 100%"
    ],
    "outros": [],
    "icone": true
@@ -11015,7 +10973,6 @@
     "não simulado: Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas",
     "não simulado: Invervação concede 8 a 145 de Dano de Raio",
     "não simulado: Estímulo dura 8 segundos",
-    "não simulado: Habilidades Suportadas têm 20% de chance de Eletrizar",
     "não simulado: Inervação dura 2 segundos"
    ],
    "outros": [],
@@ -11207,9 +11164,9 @@
   {
    "slug": "Minefield_Support",
    "nome": "Campo Minado",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "armadilhas e minas ainda não existem no jogo"
+    "não simulado: Habilidades Suportadas podem ter até 3 Minas Remotas adicionais plantadas de uma vez"
    ],
    "outros": [],
    "icone": true
@@ -11473,7 +11430,6 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Habilidades reforçadas ativam Fluxo Cinético ao causar golpe crítico",
-    "não simulado: 150% de Poder Arcano",
     "não simulado: Máximo de 20 anomalias",
     "não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética"
    ],
@@ -11683,25 +11639,6 @@
    ]
   },
   {
-   "linha": "armadilhas e minas ainda não existem no jogo",
-   "gemas": [
-    "Advanced_Traps_Support",
-    "Barrage_Support",
-    "Blastchain_Mine_Support",
-    "Charged_Mines_Support",
-    "Charged_Traps_Support",
-    "Cluster_Traps_Support",
-    "High-Impact_Mine_Support",
-    "Invention_Support",
-    "Locus_Mine_Support",
-    "Minefield_Support",
-    "Multiple_Traps_Support",
-    "Swift_Assembly_Support",
-    "Trap_Support",
-    "Trap_and_Mine_Damage_Support"
-   ]
-  },
-  {
    "linha": "sem dano direto: nenhum efeito no combate",
    "gemas": [
     "Ambush",
@@ -11784,19 +11721,6 @@
    ]
   },
   {
-   "linha": "# a # de Dano Físico Base cmo a Mão Secundaria",
-   "gemas": [
-    "Divine_Blast",
-    "Divine_Blast_of_Radiance",
-    "Glacial_Shield_Swipe",
-    "Shield_Charge",
-    "Shield_Crush",
-    "Shield_of_Light",
-    "Spectral_Shield_Throw",
-    "Spectral_Shield_Throw_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Pode ser Vinculada por uma Duração total de # segundos",
    "gemas": [
     "Armageddon_Brand",
@@ -11817,17 +11741,6 @@
     "Cast_while_Channelling_Support",
     "Focused_Channelling_Support",
     "Infused_Channelling_Support"
-   ]
-  },
-  {
-   "linha": "Não pode ser usado por padrão Se Torna Utilizável uma vez por # segundo quando você Bloquear um Acerto",
-   "gemas": [
-    "Crushing_Fist",
-    "Divine_Retribution",
-    "Eviscerate",
-    "Glacial_Shield_Swipe",
-    "Shield_of_Light",
-    "Swordstorm"
    ]
   },
   {
@@ -11940,27 +11853,11 @@
    ]
   },
   {
-   "linha": "# a # de dano físico adicionado por # de armadura no escudo",
-   "gemas": [
-    "Divine_Blast",
-    "Divine_Blast_of_Radiance",
-    "Shield_of_Light"
-   ]
-  },
-  {
    "linha": "# segundos adicionais de Duração Base por Cadáver extra consumido",
    "gemas": [
     "Bone_Offering",
     "Flesh_Offering",
     "Spirit_Offering"
-   ]
-  },
-  {
-   "linha": "+# % de Chance de Golpe Crítico da Mão Secundária por cada # de Escudo de Energia Máximo no Escudo",
-   "gemas": [
-    "Divine_Blast",
-    "Divine_Blast_of_Radiance",
-    "Shield_of_Light"
    ]
   },
   {
@@ -12041,6 +11938,14 @@
     "Storm_Rain",
     "Storm_Rain_of_the_Conduit",
     "Storm_Rain_of_the_Fence"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida",
+   "gemas": [
+    "Blastchain_Mine_Support",
+    "High-Impact_Mine_Support",
+    "Locus_Mine_Support"
    ]
   },
   {
@@ -12278,13 +12183,6 @@
    "gemas": [
     "Frost_Wall",
     "Frost_Wall_of_Encroachment"
-   ]
-  },
-  {
-   "linha": "#% de Poder Arcano",
-   "gemas": [
-    "Greater_Kinetic_Instability_Support",
-    "Kinetic_Instability_Support"
    ]
   },
   {
@@ -12806,6 +12704,13 @@
    ]
   },
   {
+   "linha": "Habilidades Suportadas sempre disparam ao menos # Projétil",
+   "gemas": [
+    "Locus_Mine_Support",
+    "Pinpoint_Support"
+   ]
+  },
+  {
    "linha": "Habilidades Suportadas só podem ser usadas com Arcos",
    "gemas": [
     "Arrow_Nova_Support",
@@ -12817,13 +12722,6 @@
    "gemas": [
     "Greater_Volley_Support",
     "Volley_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Eletrizar",
-   "gemas": [
-    "Innervate_Support",
-    "Overcharge_Support"
    ]
   },
   {
@@ -12845,6 +12743,13 @@
    "gemas": [
     "Awakened_Generosity_Support",
     "Generosity_Support"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #%",
+   "gemas": [
+    "Cluster_Traps_Support",
+    "Multiple_Traps_Support"
    ]
   },
   {
@@ -13561,18 +13466,6 @@
    ]
   },
   {
-   "linha": "# a # de Dano de Fogo Base da Mão Secundária",
-   "gemas": [
-    "Shield_Crush_of_the_Chieftain"
-   ]
-  },
-  {
-   "linha": "# a # de Dano de Gelo Base da Mão Secundária",
-   "gemas": [
-    "Spectral_Shield_Throw_of_Shattering"
-   ]
-  },
-  {
    "linha": "# de Vida recebida por Inimigo Acertado com Ataques Suportados",
    "gemas": [
     "Life_Gain_on_Hit_Support"
@@ -13834,12 +13727,6 @@
    "linha": "Acertos contra Inimigos Amaldiçoados ganham +# % de Chance de Acerto Crítico",
    "gemas": [
     "Assassins_Mark"
-   ]
-  },
-  {
-   "linha": "Acertos Corpo a Corpo das Habilidades Suportadas Fortificam",
-   "gemas": [
-    "Fortify_Support"
    ]
   },
   {
@@ -14314,6 +14201,12 @@
    "linha": "Cada mina aplica Dano aumentado em # % aos Inimigos próximos máximo de # %",
    "gemas": [
     "Stormblast_Mine"
+   ]
+  },
+  {
+   "linha": "Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #%",
+   "gemas": [
+    "High-Impact_Mine_Support"
    ]
   },
   {
@@ -14953,12 +14846,6 @@
    ]
   },
   {
-   "linha": "Duração de Afecções Elementais em Inimigos aumentada em #%",
-   "gemas": [
-    "Elemental_Proliferation_Support"
-   ]
-  },
-  {
    "linha": "Duração do Buff é atualizada após você gastar um total de # de Vida",
    "gemas": [
     "Corrupting_Fever"
@@ -15004,12 +14891,6 @@
    "linha": "Efeito de eletrificações infligidos com habilidades reforçadas aumentado em #%",
    "gemas": [
     "Coursing_Current_Support"
-   ]
-  },
-  {
-   "linha": "Efeito do Cegamento aumentado em #%",
-   "gemas": [
-    "Blind_Support"
    ]
   },
   {
@@ -15577,12 +15458,6 @@
    ]
   },
   {
-   "linha": "Habilidades de Ataque Suportadas não podem ser usadas com Armas Corpo a Corpo",
-   "gemas": [
-    "Ballista_Totem_Support"
-   ]
-  },
-  {
    "linha": "Habilidades de Aura Suportadas não tem Reserva",
    "gemas": [
     "Guardians_Blessing_Support"
@@ -15763,6 +15638,12 @@
    ]
   },
   {
+   "linha": "Habilidades Suportadas arremessam Minas em um Arco",
+   "gemas": [
+    "Locus_Mine_Support"
+   ]
+  },
+  {
    "linha": "Habilidades Suportadas Ativam Explosão Prismática ao Acertar",
    "gemas": [
     "Prismatic_Burst_Support"
@@ -15820,6 +15701,12 @@
    "linha": "Habilidades Suportadas Custam +# de Mana",
    "gemas": [
     "Divine_Blessing_Support"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas disparam #% menos Projéteis",
+   "gemas": [
+    "Locus_Mine_Support"
    ]
   },
   {
@@ -15883,6 +15770,12 @@
    ]
   },
   {
+   "linha": "Habilidades Suportadas podem ter até # Minas Remotas adicionais plantadas de uma vez",
+   "gemas": [
+    "Minefield_Support"
+   ]
+  },
+  {
    "linha": "Habilidades Suportadas possuem #% de chance de causar Definhado ao Acertar",
    "gemas": [
     "Withering_Touch_Support"
@@ -15892,12 +15785,6 @@
    "linha": "Habilidades Suportadas recebem #% de Dano Físico como Dano de Caos Extra",
    "gemas": [
     "Withering_Touch_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas sempre disparam ao menos # Projétil",
-   "gemas": [
-    "Pinpoint_Support"
    ]
   },
   {
@@ -16000,12 +15887,6 @@
    "linha": "Habilidades Suportadas têm #% de chance de Intimidar Inimigos por # segundos ao Acertar",
    "gemas": [
     "Awakened_Melee_Physical_Damage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de chance de Mutilar ao Acertar",
-   "gemas": [
-    "Maim_Support"
    ]
   },
   {
@@ -16132,6 +16013,12 @@
    "linha": "Habilidades Suportadas têm Dano Mágico Adicional igual a #% doDano das Armas Corpo a Corpo de Uma Mão Equipadas Se duas Armas forem Equipadas, cada uma contribuindo com #% da quantidade de Dano Adicional",
    "gemas": [
     "Spellblade_Support"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas têm Duração da Armadilha aumentada em #% Habilidades reforçadas têm a duração de mina aumentada em #%",
+   "gemas": [
+    "Invention_Support"
    ]
   },
   {
@@ -16693,9 +16580,21 @@
    ]
   },
   {
+   "linha": "Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você",
+   "gemas": [
+    "Locus_Mine_Support"
+   ]
+  },
+  {
    "linha": "Minas não podem ser Re-armadas",
    "gemas": [
     "Smoke_Mine"
+   ]
+  },
+  {
+   "linha": "Minas usando Habilidades Suportadas sempre focam na sua localização",
+   "gemas": [
+    "Locus_Mine_Support"
    ]
   },
   {
@@ -16744,12 +16643,6 @@
    "linha": "Não pode ser Convocada",
    "gemas": [
     "Armageddon_Brand_of_Volatility"
-   ]
-  },
-  {
-   "linha": "Não pode ser usado por padrão Se Torna Utilizável uma vez por # segundos quando você sofrer um Acerto Selvagem",
-   "gemas": [
-    "Vengeful_Cry"
    ]
   },
   {

@@ -40,6 +40,7 @@ import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as LinhasDasGemas from './itens-poe/linhas-das-gemas.mjs';
+import { defesaDaPecaVestida } from './itens-poe/condicoes-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Runas from './itens-poe/runas-vinculadas.mjs';
@@ -347,8 +348,16 @@ export function comAsLinhasDaGema(estado, ficha, entry, efeito = undefined) {
   const e = efeito === undefined ? Gemas.efeitoNaSkill(estado, entry.id) : efeito;
   const nivel = e?.nivel ?? 1;
   const q = e?.qualidade ?? 0;
-  const { af } = GemasPoe.linhasLocaisNoNivel(entry.poeGema.slug, nivel, q);
-  return LinhasDasGemas.fichaComAsLinhas(estado, ficha, af, `${entry.poeGema.slug}@${nivel}@${q}`);
+  const { af: daGema } = GemasPoe.linhasLocaisNoNivel(entry.poeGema.slug, nivel, q);
+  // (17/10, lote G3: + as linhas dos SUPORTES que são modificador local do uso — `af:<atributo>` no efeito, de `suportes-poe.efeitoNoNivel`)
+  let af = daGema;
+  const doSuporte = Object.entries(e ?? {}).filter(([k, v]) => k.startsWith('af:') && typeof v === 'number' && v);
+  if (doSuporte.length) {
+    af = { ...daGema };
+    for (const [k, v] of doSuporte) af[k.slice(3)] = (af[k.slice(3)] ?? 0) + v;
+  }
+  const marca = `${entry.poeGema.slug}@${nivel}@${q}${doSuporte.length ? `|${doSuporte.map(([k, v]) => `${k}=${v}`).join(',')}` : ''}`;
+  return LinhasDasGemas.fichaComAsLinhas(estado, ficha, af, marca);
 }
 
 function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null, { ativada = false, custaVida = false, maisDano = 0 } = {}) {
@@ -374,9 +383,12 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const daGemaPoe = entry.poeGema && !entry.poeGema.buff ? entry.poeGema : null;
   const nivelPoe = efeitoDaGema?.nivel ?? 1;
   // A faixa da ARMA deste uso (duas armas: a da mão da vez, ou as duas combinadas — `maoDaGemaDeAtaque`).
-  const armaDoGolpe0 = armaDoUso ?? fichaBase.damage ?? { min: 1, max: 1 };
+  // (17/10, lote G4) As GEMAS DE ESCUDO: a "arma" é o escudo — a base da mão secundária da gema ("X a Y de Dano Físico Base como a Mão
+  // Secundária", de Fogo/Gelo nas transfiguradas) — `GemasPoe.escudoDaGema`.
+  const escudoDaGema = daGemaPoe?.ataque ? GemasPoe.escudoDaGema(daGemaPoe.slug, nivelPoe) : null;
+  const armaDoGolpe0 = escudoDaGema?.base ? { min: escudoDaGema.base.min, max: escudoDaGema.base.max, elemento: escudoDaGema.base.elemento } : armaDoUso ?? fichaBase.damage ?? { min: 1, max: 1 };
   // (PoE: "X% mais Dano Físico Máximo de Ataques" — o máximo da arma no golpe de ataque.)
-  const maisNoMaximo = ModsPoe.valor(fichaBase, 'fisico_max_mais');
+  const maisNoMaximo = (armaDoGolpe0.elemento ?? 'physical') === 'physical' ? ModsPoe.valor(fichaBase, 'fisico_max_mais') : 0;
   const armaDoGolpe = maisNoMaximo ? { ...armaDoGolpe0, max: armaDoGolpe0.max * Math.max(0, 1 + maisNoMaximo / 100) } : armaDoGolpe0;
   const doNivel = daGemaPoe
     ? daGemaPoe.ataque
@@ -420,11 +432,21 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     if (daGemaPoe.ataque) {
       const extras = { ...(fichaBase.danoSomado ?? {}) };
       for (const [el, [a, b]] of Object.entries(doSuporte)) extras[el] = [(extras[el]?.[0] ?? 0) + a, (extras[el]?.[1] ?? 0) + b];
+      // (lote G4) "X a Y de Dano Adicional por cada 15 de Armadura (ou Evasão) no Escudo": × as defesas do escudo vestido, × a eficácia do ataque
+      // (o dano adicionado do ataque escala com o "Dano de Ataque X% de base", como a base)
+      if (escudoDaGema?.porDefesa?.length) {
+        const de = defesaDaPecaVestida(estado.equipment?.shield) ?? { armadura: 0, evasao: 0 };
+        const ef = GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe);
+        for (const x of escudoDaGema.porDefesa) {
+          const n = Math.floor(Math.max(0, x.defesa === 'armEva' ? (de.armadura ?? 0) + (de.evasao ?? 0) : de[x.defesa] ?? 0) / Math.max(1, x.por));
+          if (n > 0) extras[x.elemento] = [(extras[x.elemento]?.[0] ?? 0) + x.min * n * ef, (extras[x.elemento]?.[1] ?? 0) + x.max * n * ef];
+        }
+      }
       // PoE: o Físico da arma como Caos/Fogo extra, e o convertido para um elemento aleatório (sai do Físico).
-      const doFisico = ModsPoe.extrasDoFisico(fichaBase, [armaDoGolpe.min, armaDoGolpe.max]);
+      const doFisico = (armaDoGolpe.elemento ?? 'physical') === 'physical' ? ModsPoe.extrasDoFisico(fichaBase, [armaDoGolpe.min, armaDoGolpe.max]) : { extras: {}, convertidoPct: 0 };
       for (const [el, [a, b]] of Object.entries(doFisico.extras)) extras[el] = [(extras[el]?.[0] ?? 0) + a, (extras[el]?.[1] ?? 0) + b];
       const fConv = 1 - doFisico.convertidoPct / 100;
-      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min * fConv, max: armaDoGolpe.max * fConv }, extras))) somar(el, v);
+      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min * fConv, max: armaDoGolpe.max * fConv, elemento: armaDoGolpe.elemento ?? 'physical' }, extras))) somar(el, v);
     } else {
       const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe);
       for (const [el, v] of Object.entries(daMagia)) somar(el, v);
@@ -460,6 +482,12 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     const daGema = daArma ?? GemasPoe.criticoBaseNoNivel(daGemaPoe.slug, nivelPoe) ?? 0;
     const cm = fichaBase.critMagiaPoe;
     ficha = { ...ficha, critChance: Math.min(1, Math.max(0, (daGema + cm.fixa) * (1 + cm.aumentada / 100) * (cm.mais ?? 1))), critBaseDaGema: daGema, critSortudo: false };
+  }
+  // (17/10, lote G4) "+0,1% de Chance de Golpe Crítico da Mão Secundária por cada 10 de Escudo de Energia Máximo no Escudo" (as gemas de escudo).
+  if (escudoDaGema?.critPorEs) {
+    const es = (defesaDaPecaVestida(estado.equipment?.shield) ?? {}).escudo ?? 0;
+    const pontos = (escudoDaGema.critPorEs.pct * Math.floor(Math.max(0, es) / Math.max(1, escudoDaGema.critPorEs.por))) / 100;
+    if (pontos > 0) ficha = { ...ficha, critChance: Math.min(1, (ficha.critChance ?? 0) + pontos) };
   }
   // (A proficiência de arma saiu — dono, 06/10: o "% da perícia como dano" e o crítico de runa dela não existem mais.)
   const daPericia = 0;
@@ -2067,11 +2095,16 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const ataque = !!entry.poeGema.ataque;
   // PoE: a velocidade de conjuração / a recuperação de recarga "com Habilidades de Fogo", "de Movimento", "do Totem"… (pelas tags da gema).
   const porTag = ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry));
-  const castSpeed = (ficha.castSpeed ?? 0) + (porTag.cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
+  // (17/10, lote G3) a VELOCIDADE DE ARREMESSO dos suportes de Armadilha/Mina, só no tipo que a habilidade planta (`Plantadas.tipoDaGema`): o
+  // "aumentada" soma (na conjuração e no ataque — o arremesso usa o tempo da habilidade) e o "mais/menos" multiplica o tempo.
+  const plantaTipo = Plantadas.tipoDaGema(entry, efeitoDaGema);
+  const arremessoPct = plantaTipo === 'armadilha' ? efeitoDaGema?.velArremessoArmadilhaPct ?? 0 : plantaTipo === 'mina' ? efeitoDaGema?.velArremessoMinaPct ?? 0 : 0;
+  const arremessoMais = plantaTipo === 'armadilha' ? efeitoDaGema?.velArremessoArmadilhaMaisPct ?? 0 : plantaTipo === 'mina' ? efeitoDaGema?.velArremessoMinaMaisPct ?? 0 : 0;
+  const castSpeed = (ficha.castSpeed ?? 0) + (porTag.cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0) + arremessoPct;
   // O ataque: o intervalo da ficha (`1000 / APS` ÷ (1 + aumentos globais)) com os aumentos da gema somados aos globais.
   const global = ficha.velocidadeDeAtaque ?? 0;
   // (ciclo 7) + a velocidade de ataque "com Habilidades de X" (`atk_speed@<tag>` — Retaliação, Movimento…): antes não entrava em lugar nenhum.
-  const daGema = (efeitoDaGema?.velAtaquePct ?? 0) + (doJogador ? velocidadeCondicional(estado, efeitoDaGema) : 0) + (porTag.atk_speed ?? 0);
+  const daGema = (efeitoDaGema?.velAtaquePct ?? 0) + (doJogador ? velocidadeCondicional(estado, efeitoDaGema) : 0) + (porTag.atk_speed ?? 0) + arremessoPct;
   // (17/10) o "X% mais Velocidade de Ataque" com condição (a da gema — o Frenesi, "por Carga de Frenesi"): multiplica.
   const intervalo = ((ficha.intervaloDoGolpeMs ?? 2000) * Math.max(0.1, 1 + global / 100)) / Math.max(0.1, 1 + (global + daGema) / 100) / Math.max(0.1, 1 + (porTag.atk_speed_mais ?? 0) / 100);
   const lentidao = doJogador ? Controle.fatorDeLentidao(estado.hunt) : 1;
@@ -2080,7 +2113,12 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const ehClamor = entry.poeGema.arquetipo === 'clamor';
   // (17/10, lote G2: + a "Velocidade de Clamor aumentada" da própria gema — `temposNoNivel.velClamor`)
   const velocidadeDoUso = ehClamor ? ModsPoe.valor(ficha, 'velocidade_clamor') + (porTag.velocidade_clamor ?? 0) + (t.velClamor ?? 0) : castSpeed;
-  const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, velocidadeDoUso) / 100)) * lentidao;
+  // (17/10, lote G3: a Rajada — "X% mais Tempo de Ataque por Projétil" / "de Arremesso de Minas e Armadilhas por Projétil": × (1 + X × os
+  // projéteis do uso), o "mais" do PoE por projétil; e o "mais/menos Velocidade de Arremesso" dos suportes de Armadilha/Mina)
+  const projeteisDoUso = 1 + Math.max(0, Math.floor(efeitoDaGema?.alvosExtras ?? 0));
+  const porProjetil = (ataque ? efeitoDaGema?.tempoPorProjetilPct ?? 0 : 0) + (plantaTipo ? efeitoDaGema?.tempoArremessoPorProjetilPct ?? 0 : 0);
+  const maisTempo = (1 + (porProjetil * projeteisDoUso) / 100) / Math.max(0.1, 1 + arremessoMais / 100);
+  const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, velocidadeDoUso) / 100)) * lentidao * maisTempo;
   // (ciclo 7) + a "Recuperação da Recarga" de UMA gema ("Convocação tem Recuperação da Recarga aumentada"): `recarga_gema:<slug>` — vale também
   // nas versões transfiguradas (o slug começa igual: Blink_Arrow → Blink_Arrow_of_Prismatic_Clones).
   const daGemaNomeada = Object.entries(ficha.afPoe ?? {}).reduce((n, [k, v]) => (k.startsWith('recarga_gema:') && typeof v === 'number' && entry.poeGema.slug.startsWith(k.slice('recarga_gema:'.length)) ? n + v : n), 0);
@@ -2091,7 +2129,9 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const recargaBase = Math.max(0, (clamorFixo > 0 ? clamorFixo * 1000 : t.recargaMs ?? 0) + (efeitoDaGema?.recargaExtraMs ?? 0) + 1000 * (porTag.recarga_extra_s ?? 0));
   // ("Clamores não instantâneos ignoram o tempo de recarga ao serem utilizados": o clamor com tempo de uso sai sem recarga.)
   const clamorSemRecarga = entry.poeGema.arquetipo === 'clamor' && (t.conjuracaoMs ?? 0) > 0 && ModsPoe.valor(ficha, 'clamor_sem_recarga') > 0;
-  const recarga = recargaBase > 0 && !clamorSemRecarga ? Math.round((recargaBase / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0) + daGemaNomeada) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
+  // (17/10, lote G3: + "Velocidade de Recarga por armar Armadilhas aumentada" das Armadilhas Avançadas, só na habilidade que planta Armadilha)
+  const doArremesso = plantaTipo === 'armadilha' ? efeitoDaGema?.recuperacaoArmadilhaPct ?? 0 : 0;
+  const recarga = recargaBase > 0 && !clamorSemRecarga ? Math.round((recargaBase / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0) + daGemaNomeada + doArremesso) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
   // (O piso de 250 ms é só da INSTANTÂNEA, um tique; o resto vai até `R.INTERVALO_MINIMO_DA_ACAO_MS` — mais de uma ação cabe num tique.)
   const uso = bruto > 0 ? Math.max(R.INTERVALO_MINIMO_DA_ACAO_MS, Math.round(bruto)) : USO_DA_INSTANTANEA_MS;
   // (+ "Habilidades de Clamor Encaixadas têm +N Usos de Recarga" — os usos a mais da peça, `efeitoDaGema.usosExtra`; + 12/10, a árvore:
@@ -2238,6 +2278,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   entry = formaNoRaioDoPoe(entry, efeitoDaGema, Math.random, { hunt, minimo: plantada?.tipo === 'armadilha' ? Plantadas.PADRAO.armadilha.raioDeAtivacao : 0 });
   // (PoE, a Lâmina Noturna: "Habilidades Suportadas só podem ser usadas com Garras e Adagas".)
   if (efeitoDaGema?.soGarraAdaga && !/^(Claws|Daggers|Rune_Daggers)$/.test(String(estado.equipment?.weapon?.poe?.classe ?? ''))) return { ok: false, erro: 'Só com Garras e Adagas (Lâmina Noturna).', motivo: 'ARMA' };
+  // (17/10, lote G3) "Habilidades de Ataque Suportadas não podem ser usadas com Armas Corpo a Corpo" (os suportes de Armadilha e Mina) e "só podem
+  // ser usadas com Arcos e Varinhas" (a Rajada).
+  const classeDaArma = String(estado.equipment?.weapon?.poe?.classe ?? '');
+  if (efeitoDaGema?.ataqueSemArmaCorpo && entry.poeGema?.ataque && classeDaArma && !/^(Bows|Wands)$/.test(classeDaArma)) return { ok: false, erro: 'Não com Arma Corpo a Corpo (Armadilha/Mina).', motivo: 'ARMA' };
+  if (efeitoDaGema?.soArcoVarinha && !/^(Bows|Wands)$/.test(classeDaArma)) return { ok: false, erro: 'Só com Arcos e Varinhas (Rajada).', motivo: 'ARMA' };
+  // (lote G4) as gemas de escudo exigem um Escudo (a base delas é a da mão secundária)
+  if (itensPoeLigado() && entry.poeGema?.ataque && GemasPoe.escudoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)?.base && estado.equipment?.shield?.poe?.classe !== 'Shields') return { ok: false, erro: 'Requer um Escudo.', motivo: 'ARMA' };
   // (PoE, o Intensificar: a INTENSIDADE desta magia agora — "perdem 1 de Intensidade a cada N segundos enquanto se movendo"; ela vale nesta
   // conjuração — mais dano em área, menos área — e a conjuração ganha 1, até o máximo — `ganharIntensidade`, depois do uso.)
   const intensidade = efeitoDaGema?.intensidadeMax > 0 ? intensidadeAgora(hunt, entry.id, efeitoDaGema, hunt.clock ?? 0) : 0;
@@ -2322,7 +2369,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const projeteisAleatorios = () => !!efeitoDaGema?.direcoesAleatorias && !casas && Tags.tagsDaAcao(entry).includes('projectile');
   let virarPara = null;
   // (PoE, 12/10) A gema que PLANTA (Armadilha, Mina): o uso joga a armadilha/mina no lugar mirado; a habilidade sai quando ela ativa.
-  const tipoPlantado = Plantadas.tipoDaGema(entry);
+  const tipoPlantado = Plantadas.tipoDaGema(entry, efeitoDaGema);
   if (ataque) {
     const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro;
     if (plantada) {
@@ -2376,7 +2423,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (casas && formaNoUso) {
       const base = casas;
       const raio = Areas.raioDaForma(entry.forma);
-      const inc = (efeitoDaGema?.areaIncPct ?? 0) + (plantada?.areaPct ?? 0) + (maximizado ? efeitoDaGema.maximizadoAreaIncPct ?? 0 : 0);
+      // (17/10, lote G3: + a Invenção — "área de efeito aumentada em X% por segundo que ficaram posicionadas antes de serem ativadas, até Y%")
+      const inc = (efeitoDaGema?.areaIncPct ?? 0) + (plantada?.areaPct ?? 0) + (maximizado ? efeitoDaGema.maximizadoAreaIncPct ?? 0 : 0) + daInvencao(plantada, efeitoDaGema, agora).area;
       const mais = [efeitoDaGema?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeitoDaGema.intensidadeMenosAreaPct ?? 0) : 0];
       const legado = Math.round(efeitoDaGema?.areaExtra ?? 0);
       areaNoUso = (incExtra = 0) => {
@@ -2677,7 +2725,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // e ganham o bônus de cada um — `doDestilador`.)
     const fichaDaGema = doDestilador(estado, Ficha.combate(estado), entry);
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
-    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: gatilho?.maisDano ?? 0 });
+    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: (gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora) });
     // (PoE, a Impiedade: "Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso" — este uso é o terceiro?)
     const impiedosoCada = Math.round(efeitoDaGema?.impiedosoCada ?? 0);
     let impiedoso = false;
@@ -3202,17 +3250,40 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
  * chance de arremessar até N Armadilhas adicionais", em volta —, com a duração da gema ("Armadilha/Mina dura N segundos") e o tempo de
  * detonação da Mina, e já processa as plantadas (`tiqueDasPlantadas`). Devolve os eventos.
  */
+/**
+ * (17/10, lote G3) O que a Armadilha/Mina que SOLTOU a habilidade dá ao uso: a Invenção ("+X% de dano / área de efeito aumentada em X% por
+ * segundo que ficaram posicionadas antes de serem ativadas, até Y%" — o tempo desde o arremesso, `plantada.desde`) e a Explosão em Cadeia ("X%
+ * mais Dano para cada Mina anterior na Sequência de Detonação" — `plantada.anteriores`, de `Plantadas.minasQueDetonam`).
+ */
+function daInvencao(plantada, efeito, agora) {
+  if (!plantada || !efeito) return { dano: 0, area: 0 };
+  const s = Math.max(0, ((agora ?? 0) - (plantada.desde ?? agora ?? 0)) / 1000);
+  return {
+    dano: efeito.invencaoDanoPorS > 0 ? Math.min(efeito.invencaoDanoMax || 100, efeito.invencaoDanoPorS * s) : 0,
+    area: efeito.invencaoAreaPorS > 0 ? Math.min(efeito.invencaoAreaMax || 100, efeito.invencaoAreaPorS * s) : 0,
+  };
+}
+/** O "X% mais dano" do uso que sai da plantada: a Invenção e a Explosão em Cadeia (os dois "mais" somados num só, como no PoE no mesmo suporte). */
+function maisDaPlantada(plantada, efeito, agora) {
+  if (!plantada || !efeito) return 0;
+  const cadeia = plantada.tipo === 'mina' && efeito.maisPorMinaAnteriorPct > 0 ? efeito.maisPorMinaAnteriorPct * Math.max(0, plantada.anteriores ?? 0) : 0;
+  const invencao = daInvencao(plantada, efeito, agora).dano;
+  return ((1 + cadeia / 100) * (1 + invencao / 100) - 1) * 100;
+}
+
 function plantarArmas(estado, hunt, personagem, slot, entry, action, lugar, efeitoDaGema, agora) {
-  const tipo = Plantadas.tipoDaGema(entry);
+  const tipo = Plantadas.tipoDaGema(entry, efeitoDaGema);
   const ficha = Ficha.combate(estado);
   const slug = entry.poeGema.slug;
-  const dur = Plantadas.duracaoMs(ficha, tipo, GemasPoe.compilada(slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracaoObjeto ?? null);
-  const detonacaoMs = tipo === 'mina' ? Plantadas.detonacaoDaGema(GemasPoe.doSlug(slug)?.gema?.mods ?? []) : null;
+  // (17/10, lote G3: a duração e o tempo de detonação do SUPORTE que a transforma em Armadilha/Mina — "Armadilha dura 4 segundo", "Tempo Base de
+  // Detonação de Minas de 0.25 segundos" —; sem eles, os da gema)
+  const dur = Plantadas.duracaoMs(ficha, tipo, efeitoDaGema?.plantaDuracaoMs > 0 ? efeitoDaGema.plantaDuracaoMs / 1000 : GemasPoe.compilada(slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracaoObjeto ?? null);
+  const detonacaoMs = tipo === 'mina' ? (efeitoDaGema?.plantaDetonacaoMs > 0 ? efeitoDaGema.plantaDetonacaoMs : Plantadas.detonacaoDaGema(GemasPoe.doSlug(slug)?.gema?.mods ?? [])) : null;
   const eventos = [];
   // ("Minas Desaceleram Inimigos próximos delas por N segundos quando são Plantadas" — os a até 3 casas da Mina.)
   const lentidao = tipo === 'mina' ? Plantadas.segundosDaLentidaoAoPlantar(ficha) : 0;
-  for (const c of Plantadas.casasDoArremesso(lugar.x, lugar.y, Plantadas.extrasDoArremesso(ficha, tipo))) {
-    const p = Plantadas.plantar(hunt, ficha, { tipo, acao: action.id, slot, x: c.x, y: c.y, z: hunt.z ?? 0, duracaoMs: dur, detonacaoMs, agora });
+  for (const c of Plantadas.casasDoArremesso(lugar.x, lugar.y, Plantadas.extrasDoArremesso(ficha, tipo, Math.random, efeitoDaGema))) {
+    const p = Plantadas.plantar(hunt, ficha, { tipo, acao: action.id, slot, x: c.x, y: c.y, z: hunt.z ?? 0, duracaoMs: dur, detonacaoMs, agora, maximoExtra: tipo === 'armadilha' ? efeitoDaGema?.maxArmadilhasExtra ?? 0 : 0 });
     if (lentidao > 0) for (const b of Plantadas.inimigosPerto(hunt, p, Plantadas.PADRAO.mina.raioDosProximos)) {
       ModsPoe.porNoAlvo(b, 'lento', agora + lentidao * 1000);
       eventos.push({ t: 'estado', uid: b.uid, x: b.x, y: b.y, estado: 'lento' });
@@ -3392,6 +3463,15 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
     Plantadas.tirar(hunt, p);
     const r = dispararSemMarcar(estado, hunt, personagem, p.slot, alvo, { plantada: p });
     if (r?.ok) eventos.push(...(r.eventos ?? []));
+    // (17/10, lote G3) as Armadilhas e Minas CARREGADAS: "X% de chance de receber uma Carga de Frenesi/Poder quando sua Armadilha for ativada
+    // por um Inimigo" / "quando uma Mina … for Detonada focando um Inimigo"
+    if (r?.ok && alvo) {
+      const ef = Gemas.efeitoNaSkill(estado, p.acao);
+      for (const tipo of ['frenesi', 'poder']) {
+        const chance = Number(ef?.[`cargaAoAtivar:${tipo}`]) || 0;
+        if (chance > 0 && Math.random() * 100 < chance && CargasPoe.ganhar(estado, tipo, ficha.afPoe)) Ficha.invalidar(estado);
+      }
+    }
     // ("X% de Chance das Armadilhas Ativarem uma vez adicional", "Minas têm uma chance de X% de serem Detonadas uma Vez Adicional": a
     // habilidade sai mais uma vez do mesmo lugar, no inimigo mais perto que sobrou.)
     if (r?.ok && Plantadas.ativaDeNovo(ficha, p.tipo) && (estado.hp ?? 0) > 0) {

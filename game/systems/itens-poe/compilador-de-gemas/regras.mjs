@@ -74,7 +74,9 @@ export const REGRAS = [
   [r(`Causa ${N} (?:de |do )?Dano (?:de )?${EL} Base por segundo`), (s, m) => s.dot.push({ el: el(m[2]), dps: num(m[1]) })],
   [r(`Causa ${N} % de sua Vida Máxima como Dano Base de ${EL} por segundo`), (s, m) => (s.dotPctVida = { el: el(m[2]), pct: num(m[1]) })],
   [r(`(?:Causa ${N} % do seu Escudo de Energia|Você Queima por)`), () => false],
-  [r(`^${N} a ${N} de Dano (?:de )?${EL} Adicional`), (s, m) => (s.adicional[el(m[3])] = [num(m[1]), num(m[2])])],
+  // (17/10, lote G4: "… de Dano Físico Adicional por cada 15 de Armadura ou Evasão no escudo" é por defesa do escudo — `GemasPoe.escudoDaGema` —,
+  // não o adicional fixo; antes o Golpe de Escudo somava os 3–8 a 5–12 a todo ataque, com ou sem escudo)
+  [r(`^${N} a ${N} de Dano (?:de )?${EL} Adicional(?! por)`), (s, m) => (s.adicional[el(m[3])] = [num(m[1]), num(m[2])])],
   [r(`^${N} a ${N} de dano ${EL} adicionado$`), (s, m) => (s.adicional[el(m[3])] = [num(m[1]), num(m[2])])],
   [r(`${N} % (?:do|de) Dano Físico Convertido (?:em|para) Dano de ${EL}`), (s, m) => s.conversao.push({ para: el(m[2]), pct: num(m[1]) })],
   [r(`Converte[m]? ${N} % do Dano Físico (?:para|em) Dano de ${EL}`), (s, m) => s.conversao.push({ para: el(m[2]), pct: num(m[1]) })],

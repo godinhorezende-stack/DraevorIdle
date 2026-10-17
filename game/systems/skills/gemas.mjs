@@ -285,7 +285,7 @@ export function registrarSuporte({ itemId, suporte, requer = [], algum = [], exc
   const indicePoe = CompatSuportes.indiceDoSuporte(suporte.slug);
   const def = {
     itemId, tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, levelMinimo,
-    suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho, ...(indicePoe != null ? { indicePoe } : {}) },
+    suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho, ...(indicePoe != null ? { indicePoe } : {}), ...(CompatSuportes.ADICIONA_TIPOS[suporte.slug] ? { adiciona: CompatSuportes.ADICIONA_TIPOS[suporte.slug] } : {}) },
     poe: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, en: suporte.en, suporte: true },
     poeXp: tabelaDeXpDoPoe(suporte),
   };
@@ -505,7 +505,7 @@ export function sortearSoquetes(meta, raridade, rng = Math.random) {
 
 // Os grupos ligados e a compatibilidade por tag: a MESMA regra que a tela usa (engine/sockets-de-gema.mjs).
 export { gruposLigados, grupoDoSocket, compativel } from '../../engine/sockets-de-gema.mjs';
-import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
+import { gruposLigados, compativel, compativelNoGrupo } from '../../engine/sockets-de-gema.mjs';
 import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from '../itens-poe/so-itens-do-poe.mjs';
 
 // + as luvas, que no PoE têm slot próprio (e sockets).
@@ -571,7 +571,8 @@ export function skillsAtivas(estado) {
           def: x.def,
           supports: unicas(
             supports
-              .filter((sp) => compativel(sp.def.suporte, x.def.tags))
+              // (17/10, lote G3: + o tipo que outro suporte do grupo acrescenta — `compativelNoGrupo`)
+              .filter((sp) => compativelNoGrupo(sp.def.suporte, x.def.tags, supports.map((o) => o.def.suporte)))
               .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def, sp.i); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
           ),
           onde: { slot, indice: x.i },

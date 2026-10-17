@@ -208,7 +208,8 @@ test('os 262 suportes do PoE viram gemas de suporte, com o status no jogo e a co
   assert.ok(st.funciona > 40 && st.parcial > 100, JSON.stringify(st));
   assert.equal(SP.doSlug('Cast_On_Critical_Strike_Support').status, 'funciona');
   assert.equal(SP.doSlug('Minion_Damage_Support')?.status, 'funciona', 'o suporte de dano de lacaio vale nos lacaios');
-  assert.equal(SP.doSlug('Trap_Support')?.status ?? 'nao', 'nao', 'armadilha ainda não existe no jogo');
+  // (17/10, lote G3 — o dono: "Inverter para funciona") o Suporte de Armadilha transforma a habilidade em Armadilha (`armas-plantadas.mjs`)
+  assert.equal(SP.doSlug('Trap_Support')?.status, 'funciona', 'vira Armadilha (lote G3)');
   const def = (s) => GS.defDaGema(SP.doSlug(s).itemId);
   assert.deepEqual(def('Cast_On_Critical_Strike_Support').suporte.requer, ['poe:Magia'], 'o gatilho restringe só a magia que ativa');
   assert.ok(def('Faster_Projectiles_Support')?.suporte.requer.includes('poe:Projétil') ?? true);

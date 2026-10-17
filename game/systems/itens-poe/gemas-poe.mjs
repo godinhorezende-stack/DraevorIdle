@@ -253,7 +253,8 @@ export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = 
   const ef = st.efetividade ?? 1;
   const p = {};
   const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; };
-  somar('physical', [arma.min ?? 1, arma.max ?? 1], ef);
+  // (17/10, lote G4: a "arma" pode ser de outro elemento — a base de Fogo/Gelo do escudo nas gemas de escudo transfiguradas, `escudoDaGema`)
+  somar(arma.elemento ?? 'physical', [arma.min ?? 1, arma.max ?? 1], ef);
   for (const [el, v] of Object.entries(st.adicional ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v, ef);
   for (const [el, v] of Object.entries(extras)) if (v && (v[0] || v[1])) somar(el, v);
   if (p.physical) {
@@ -325,6 +326,48 @@ export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   const base = st.raio ?? st.raioProp ?? null;
   const raioM = base == null ? null : Math.max(0, (base + (st.raioBonus ?? 0)) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
   return { raioM, areaIncPct: st.areaInc ?? 0 };
+}
+
+/**
+ * (17/10, lote G4) As GEMAS DE ESCUDO do PoE (Golpe de Escudo, Investida com Escudo, Arremesso Espectral de Escudo, Escudo da Luz, Explosão Divina,
+ * Golpe de Escudo Glacial…): o ataque usa o ESCUDO como a arma da mão secundária — "X a Y de Dano Físico Base como a Mão Secundária" (ou de
+ * Fogo/Gelo, nas transfiguradas) no lugar do golpe da arma —, + "X a Y de Dano Adicional por cada 15 de Armadura (ou Evasão) no Escudo" e
+ * "+0,1% de Chance de Golpe Crítico da Mão Secundária por cada 10 de Escudo de Energia Máximo no Escudo". `{ base: { elemento, min, max },
+ * porDefesa: [{ elemento, min, max, por, defesa: 'armadura'|'evasao'|'armEva' }], critPorEs: { pct, por } | null }` ou null (a gema não é de escudo).
+ */
+const EL_DO_TEXTO = { Físico: 'physical', Fogo: 'fire', Gelo: 'ice', Raio: 'energy', Caos: 'chaos', físico: 'physical' };
+const LINHA_DE_ESCUDO = /de Dano (?:Físico|de Fogo|de Gelo|de Raio) Base (?:cmo a|como a|da) Mão Secund[aá]ria|Dano (?:Físico|de Fogo|de Gelo|de Raio) Adicional por cada \d+ de (?:Armadura|Evasão)|dano físico adicionado por \d+ de armadura no escudo|Chance de Golpe Crítico da Mão Secundária por cada \d+ de Escudo de Energia Máximo no Escudo/i;
+export const ehLinhaDeEscudo = (l) => LINHA_DE_ESCUDO.test(l);
+/**
+ * (lote G4) A linha da RETALIAÇÃO ("Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundos quando você Bloquear um Acerto" /
+ * "sofrer um Acerto Selvagem"): o jogo a faz desde 11/10 (`gatilhoDeRetaliacao`, a janela de 2 s de `condicoes-poe.RETALIACAO`). Só a de 2
+ * segundos (a janela do jogo); outro número seguiria "não simulado".
+ */
+const LINHA_DE_RETALIACAO = /^Não pode ser usado por padrão Se Torna Utilizável uma vez por 2 segundos? quando você (?:Bloquear um Acerto|sofrer um Acerto Selvagem)$/i;
+export const ehLinhaDeRetaliacao = (l) => LINHA_DE_RETALIACAO.test(l);
+const ESCUDOS = new Map();
+export function escudoDaGema(slug, nivel = 1) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.textosDoNivel) return null;
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  const k = `${slug}@${n}`;
+  if (ESCUDOS.has(k)) return ESCUDOS.get(k);
+  let base = null;
+  const porDefesa = [];
+  let critPorEs = null;
+  for (const l of COMPILADOR.textosDoNivel(g, n)) {
+    let m = /^(\d+(?:\.\d+)?) a (\d+(?:\.\d+)?) de Dano (?:de )?(Físico|Fogo|Gelo|Raio|Caos) Base (?:cmo a|como a|da) Mão Secund[aá]ria/i.exec(l);
+    if (m) { base = { elemento: EL_DO_TEXTO[m[3]] ?? 'physical', min: Number(m[1]), max: Number(m[2]) }; continue; }
+    m = /^(\d+(?:\.\d+)?) a (\d+(?:\.\d+)?) de Dano (?:de )?(Físico|Fogo|Gelo|Raio|Caos) Adicional por cada (\d+) de (Armadura ou Evasão|Armadura|Evasão) no Escudo/i.exec(l);
+    if (m) { porDefesa.push({ elemento: EL_DO_TEXTO[m[3]] ?? 'physical', min: Number(m[1]), max: Number(m[2]), por: Number(m[4]), defesa: /ou/i.test(m[5]) ? 'armEva' : /Armadura/i.test(m[5]) ? 'armadura' : 'evasao' }); continue; }
+    m = /^(\d+(?:\.\d+)?) a (\d+(?:\.\d+)?) de dano físico adicionado por (\d+) de armadura no escudo/i.exec(l);
+    if (m) { porDefesa.push({ elemento: 'physical', min: Number(m[1]), max: Number(m[2]), por: Number(m[3]), defesa: 'armadura' }); continue; }
+    m = /^\+?(\d+(?:\.\d+)?) ?% de Chance de Golpe Crítico da Mão Secundária por cada (\d+) de Escudo de Energia Máximo no Escudo/i.exec(l);
+    if (m) critPorEs = { pct: Number(m[1]), por: Number(m[2]) };
+  }
+  const r = base || porDefesa.length || critPorEs ? { base, porDefesa, critPorEs } : null;
+  ESCUDOS.set(k, r);
+  return r;
 }
 
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
@@ -543,7 +586,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -685,7 +728,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

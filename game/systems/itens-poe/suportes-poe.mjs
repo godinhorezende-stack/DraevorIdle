@@ -10,6 +10,7 @@
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
+import { atributosDaLinha } from './linhas-das-gemas.mjs';
 
 const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
@@ -61,12 +62,22 @@ const substituir = (cab, celula, doNivel1 = null) => {
 export function textosDoNivel(s, nivel = 1, qualidade = 0) {
   const n = Math.max(1, Math.min(nivel | 0 || 1, s.linhas.length || 1));
   const linha = linhaDoNivel(s, n);
+  // (17/10, lote G3: várias colunas com o MESMO molde — a Montagem Ágil, "X% de chance de arremessar até 2 / até 3 Armadilhas ou Minas
+  // adicionais" — ficam numa lista, e cada mod escolhe a coluna cujo cabeçalho tem os números FIXOS dele (os que não são faixa: o "2", o "3");
+  // antes a última coluna ganhava e a faixa de 2 sumia)
   const porMolde = new Map();
-  s.colunas.forEach((c, i) => { if (!PADRAO.has(c)) porMolde.set(molde(c), { cab: c, valor: linha[i], doNivel1: s.linhas[0]?.[i] }); });
+  s.colunas.forEach((c, i) => { if (!PADRAO.has(c)) { const k = molde(c); (porMolde.get(k) ?? porMolde.set(k, []).get(k)).push({ cab: c, valor: linha[i], doNivel1: s.linhas[0]?.[i] }); } });
+  const fixos = (t) => (String(t).replace(FAIXA, ' ').match(NUM) ?? []).map((x) => Number(x.replace(',', '.')));
+  const colunaDe = (m) => {
+    const lista = porMolde.get(molde(m));
+    if (!lista || lista.length < 2) return lista?.[0];
+    const f = fixos(m);
+    return lista.find((c) => { const n = fixos(c.cab); return f.every((x) => n.includes(x)); }) ?? lista[0];
+  };
   const out = [];
   const add = (t) => t && !out.includes(t) && out.push(t);
   for (const m of [...s.mods, ...(s.implicitos ?? []).filter((t) => !/^Mana:/.test(t))]) {
-    const col = porMolde.get(molde(m));
+    const col = colunaDe(m);
     if (col) col.valor !== undefined && col.valor !== '' && add(substituir(col.cab, col.valor, col.doNivel1));
     else add(m.includes('—') ? interpolar(m, (n - 1) / 19) : m);
   }
@@ -115,6 +126,44 @@ const REGRAS = [
   [new RegExp(`são Maximizados Ancestralmente, não mais que uma vez a cada ${N} segundos`, 'i'), (m) => ({ maximizadoMs: Math.round(num(m[1]) * 1000) })],
   [new RegExp(`Ancestralmente Empoderadas causam ${N}% (mais|menos) Dano com Acertos e Afecções`, 'i'), (m) => ({ maximizadoMaisDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Impactos Maximizados Ancestralmente têm (?:Área de Efeito|Efeito em Área) aumentad[oa] em ${N}%`, 'i'), (m) => ({ maximizadoAreaIncPct: num(m[1]) })],
+  // (17/10, lote G3) As ARMADILHAS e MINAS dos suportes (`itens-poe/armas-plantadas.mjs` — as plantadas existem desde 12/10): o Suporte de
+  // Armadilha e os de Mina TRANSFORMAM a habilidade suportada em Armadilha/Mina ("Armadilha dura 4 segundo", "Mina dura 5 segundos" — a
+  // duração; `Plantadas.tipoDaGema(entry, efeito)`), o tempo de detonação das Minas, as Armadilhas/Minas a mais do arremesso (sempre, e as
+  // faixas de chance da Montagem Ágil), o limite a mais, a velocidade de arremesso (o "mais/menos" e o "aumentada", só no tipo que a
+  // habilidade planta — `Acoes.temposDaGemaPoe`), a recuperação da recarga do arremesso das Armadilhas, as cargas ao ativar/detonar
+  // (`Acoes.tiqueDasPlantadas`), a Invenção (mais dano e área por segundo plantada) e a Explosão em Cadeia (mais dano por Mina anterior na
+  // Sequência de Detonação).
+  [new RegExp(`^Armadilha dura ${N} segundos?$`, 'i'), (m) => ({ plantaArmadilha: 1, plantaDuracaoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Mina dura ${N} segundos?$`, 'i'), (m) => ({ plantaMina: 1, plantaDuracaoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`tem um Tempo Base de Detonação de Minas de ${N} segundos?`, 'i'), (m) => ({ plantaDetonacaoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`arremessam até ${N} Armadilhas? adiciona(?:l|is)`, 'i'), (m) => ({ armadilhasExtras: num(m[1]) })],
+  [new RegExp(`arremessam até ${N} Minas? adiciona(?:l|is)`, 'i'), (m) => ({ minasExtras: num(m[1]) })],
+  [new RegExp(`podem ter até ${N} Armadilhas adicionais armadas de uma vez`, 'i'), (m) => ({ maxArmadilhasExtra: num(m[1]) })],
+  [new RegExp(`tem ${N}% de chance de arremessar até ${N} Armadilhas? ou Minas? adiciona(?:l|is)`, 'i'), (m) => ({ [`arremessoChance:${num(m[2])}`]: num(m[1]) })],
+  [/arremessam Armadilhas aleatoriamente ao redor do local alvo/i, () => ({})],
+  [new RegExp(`têm ${N}% (mais|menos) Velocidade de Arremesso de (Minas|Armadilhas)`, 'i'), (m) => ({ [m[3] === 'Minas' ? 'velArremessoMinaMaisPct' : 'velArremessoArmadilhaMaisPct']: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`têm ${N}% de Velocidade de Armação de Armadilhas aumentada`, 'i'), (m) => ({ velArremessoArmadilhaPct: num(m[1]) })],
+  [new RegExp(`(?:têm|tem) Velocidade de Arremesso de Minas aumentada em ${N}%$`, 'i'), (m) => ({ velArremessoMinaPct: num(m[1]) })],
+  [new RegExp(`têm ${N}% de Velocidade de Recarga por armar Armadilhas aumentada`, 'i'), (m) => ({ recuperacaoArmadilhaPct: num(m[1]) })],
+  [new RegExp(`possuem ${N}% de chance de receber uma Carga de (Frenesi|Poder) quando sua Armadilha for ativada por um Inimigo`, 'i'), (m) => ({ [`cargaAoAtivar:${m[2] === 'Poder' ? 'poder' : 'frenesi'}`]: num(m[1]) })],
+  [new RegExp(`^${N}% de chance de ganhar uma Carga de (Frenesi|Poder) quando uma Mina de Habilidades Suportadas for Detonada focando um Inimigo`, 'i'), (m) => ({ [`cargaAoAtivar:${m[2] === 'Poder' ? 'poder' : 'frenesi'}`]: num(m[1]) })],
+  [new RegExp(`possuem \\+${N}% ao Multiplicador de Acertos Críticos por Carga de Poder quando utilizadas por Armadilhas`, 'i'), (m) => ({ 'af:crit_dmg%carga:poder': num(m[1]) })],
+  [new RegExp(`têm Chance de Golpe Crítico aumentada em ${N}% por Carga de Poder quando utilizadas por Minas`, 'i'), (m) => ({ 'af:crit_chance_inc%carga:poder': num(m[1]) })],
+  // (a cópia da mesma linha com um "\n" literal no meio, que o poedb repete nos implícitos: não soma de novo)
+  [/por\\nCarga de Poder quando utilizadas por Minas/i, () => ({})],
+  [new RegExp(`possuem ${N}% de aumento da Velocidade de Arremesso de Armadilhas por Carga de Frenesi`, 'i'), (m) => ({ 'af:cast_speed_tag%carga:frenesi': num(m[1]), 'af:atk_speed%carga:frenesi': num(m[1]) })],
+  [new RegExp(`têm Velocidade de Arremesso de Minas aumentada em ${N}% por Carga de Frenesi`, 'i'), (m) => ({ 'af:cast_speed_tag%carga:frenesi': num(m[1]), 'af:atk_speed%carga:frenesi': num(m[1]) })],
+  [new RegExp(`causam \\+?${N}% de dano por segundo que ficaram posicionadas antes de serem ativadas, até ${N}%`, 'i'), (m) => ({ invencaoDanoPorS: num(m[1]), invencaoDanoMax: num(m[2]) })],
+  [new RegExp(`têm a área de efeito aumentada em ${N}% por segundo que ficaram posicionadas antes de serem ativadas, até ${N}%`, 'i'), (m) => ({ invencaoAreaPorS: num(m[1]), invencaoAreaMax: num(m[2]) })],
+  [new RegExp(`causam ${N}% mais Dano para cada Mina anterior na Sequência de Detonação`, 'i'), (m) => ({ maisPorMinaAnteriorPct: num(m[1]) })],
+  // As restrições de arma ("não podem ser usadas com Armas Corpo a Corpo", "só com Arcos e Varinhas") — `Acoes.dispararSemMarcar`.
+  [/Habilidades de Ataque Suportadas não podem ser usadas com Armas Corpo a Corpo/i, () => ({ ataqueSemArmaCorpo: 1 })],
+  [/só podem ser usadas com Arcos e Varinhas/i, () => ({ soArcoVarinha: 1 })],
+  // A RAJADA (Barrage): os projéteis em sequência (`Secundarios.resolver`) e "X% mais Tempo de Ataque por Projétil" (no `temposDaGemaPoe`,
+  // pelos projéteis do uso).
+  [/Disparam Projéteis em sequência/i, () => ({ sequencia: 1 })],
+  [new RegExp(`têm ${N}% mais Tempo de Ataque por Projétil`, 'i'), (m) => ({ tempoPorProjetilPct: num(m[1]) })],
+  [new RegExp(`têm ${N}% mais Tempo de Arremesso de Minas e Armadilhas por Projétil`, 'i'), (m) => ({ tempoArremessoPorProjetilPct: num(m[1]) })],
   // A CRUELDADE: os acertos concedem Crueldade (mais dano degenerativo — `condicoes-poe.BUFFS.crueldade`) por N segundos.
   [new RegExp(`^Crueldade tem Duração Base de ${N} segundos`, 'i'), (m) => ({ crueldadeMs: Math.round(num(m[1]) * 1000) })],
   [/^Acertos de Habilidades Suportadas concedem Crueldade/i, () => ({ crueldade: 1 })],
@@ -257,11 +306,18 @@ function gatilhoDe(s, textos) {
 /** O que o jogo não tem (o suporte inteiro não age): totens, armadilhas, minas, lacaios, marcas, clamores, estandartes. */
 const SEM_SISTEMA = [
   // ("Mina" como palavra: o "mina" de "Lâmina Noturna" travava o suporte — 11/10)
-  [/(?<!\p{L})(?:Armadilha|Minas?)(?!\p{L})/iu, 'armadilhas e minas ainda não existem no jogo'],
   [/Sentinela|torres de osso/i, 'esses lacaios especiais ainda não existem no jogo'],
   [/ao Morrer|quando (?:você (?:for|é) )?Atordoad|enquanto (?:você )?Canaliz|Canalização/i, 'esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)'],
 ];
 
+/** A linha do suporte sem o "Habilidades Suportadas têm"/"com Habilidades Suportadas" (o modificador como a gema o escreveria). */
+function linhaSemSuportadas(l) {
+  const t = String(l)
+    .replace(/^(?:Habilidades|Ataques|Magias) Suportad[ao]s (?:têm|tem|possuem|causam) /i, '')
+    .replace(/ (?:infligid[ao]s? )?(?:com|por|de|das|pelas|nas) (?:Habilidades|Ataques|Magias) Suportad[ao]s/i, '')
+    .replace(/ das Habilidades Suportadas/i, '');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 /** O efeito do suporte no nível, para esta ativa: `{ efeito, naoFeitas }`. */
 export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const s = POR_SLUG.get(slug);
@@ -271,7 +327,15 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const naoFeitas = [];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
     const regra = REGRAS.find(([re]) => re.test(linha));
-    if (!regra) { naoFeitas.push(linha); continue; }
+    if (!regra) {
+      // (17/10, lote G3) sem regra própria: a linha como modificador LOCAL do uso suportado ("Habilidades Suportadas têm 30% de chance de Mutilar
+      // ao Acertar" → `chance_mutilar`), pelas linhas locais das gemas (`linhas-das-gemas.atributosDaLinha`) — entra no uso como as linhas da
+      // gema (`af:<atributo>`, `Acoes.comAsLinhasDaGema`).
+      const af = atributosDaLinha(linhaSemSuportadas(linha));
+      if (!af) { naoFeitas.push(linha); continue; }
+      for (const [k, v] of Object.entries(af)) efeito[`af:${k}`] = (efeito[`af:${k}`] ?? 0) + v;
+      continue;
+    }
     const r = regra[1](linha.match(regra[0]), linha, ativa);
     for (const [k, v] of Object.entries(r ?? {})) efeito[k] = (efeito[k] ?? 0) + v;
   }
