@@ -123,7 +123,7 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - Pendente: o "Conjurar ao ser Atordoado" no Bloquear um Acerto Atordoante e nas magias do bicho (só no golpe corpo a corpo); o "Ignora Atordoamentos" do Desperto.
 - Teste: `gatilhos-canalizacao-poe.test.mjs` (4). Suportes sem efeito 12 → 6.
 
-### G16 — o teste geral de todas as gemas "funciona" (17/10)
+### G16 — o teste geral de todas as gemas "funciona" (17/10, commit ea9d58ad; push no PR)
 
 - `testes/gemas-todas-funcionam-poe.test.mjs`: cada uma das 151 ativas `funciona` é usada de verdade numa caçada, com a primeira arma (de seis: varinha, arco, espada com escudo, maça de duas mãos, adaga, cajado) que ela aceita, contra um alvo imortal colado. A de uso precisa causar dano no alvo; a de buff, ligar o buff. Na Retaliação a janela fica aberta; no Vínculo há um aliado perto; a Rajada de Chamas carrega até explodir; armadilhas, minas, gêiseres e torres rodam pelo tique. Cada suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa aparecer no código do jogo (fora as `af:`, que a ficha do uso lê).
 - **Dois defeitos reais que o teste achou:**
@@ -132,11 +132,38 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - O relatório cita o teste geral. "Sem teste próprio" passa a querer dizer que só o teste geral cobre a gema.
 - Teste: `gemas-todas-funcionam-poe.test.mjs` (4). Suportes parciais 160 → 159; testados 41 → 42.
 
+### G17 — o dano só do acerto e o só das afecções, nos suportes (17/10)
+
+Referência: o PoB recalcula o dano-base de cada afecção de dano com um `dotCfg` próprio, sem as flags Hit, Spell, Attack, Melee, Projectile e Area (CalcOffence: `calcAilmentSourceDamage`). Antes do lote, o "mais/menos" de todo suporte virava `maisDanoPct`, multiplicava o acerto e chegava à afecção pelo dano do acerto. Uma revisão com agentes (o PoB, o patch e a varredura das linhas, com verificação adversarial) confirmou 21 de 23 achados.
+- **Só no acerto** (`maisDanoAcertoPct`, multiplica entre os suportes, a afecção sai sem ele): o "X% mais/menos Dano com Acertos" (as Afecções Mortais, 80% menos; o Encadear; a Crueldade) e o "mais/menos" com qualificador de acerto: Mágico, de Projétil, Corpo a Corpo, de Ataque, em Área. No `acertar`, também saem da afecção, alvo a alvo: o "mais Dano Corpo a Corpo" do Golpe Impiedoso, a Intensidade, o Aço, a Proximidade, a Runa contra o vinculado, o Toxinas Vis e a Sede de Sangue.
+- **Só nas afecções e no degenerativo:**
+  - o "mais Dano de/com Afecções" (`maisAfeccaoPct`);
+  - o de cada afecção (`maisIncendioPct`, `maisSangramentoPct`, `maisVenenoPct`);
+  - o "mais Dano Degenerativo" (`maisDotPct`), que também vale no degenerativo da gema;
+  - o de um tipo: "de Caos degenerativo", "Físico degenerativo", "de Gelo Degenerativo" e o "Incendiário", que é o Fogo degenerativo (`maisDot<Tipo>Pct`);
+  - o "aumentado" só das afecções: `af:dot_dmg_inc`, `af:ignite_dmg_inc`, `af:poison_dmg_inc`, `af:bleed_dmg_inc`.
+- **As chances de afecção dos suportes** (Chance de Sangramento, Chance de Envenenar, Combustão, Proliferação Elemental — esta agora com as três) entram nas afecções do PoE (`af:chance_*`). Antes iam ao estado antigo do Draevor, que punha um dano 0.
+- **Mecânicas novas:**
+  - o "mais" de cada repetição do Golpe Múltiplo vale só nela (`repeticaoMaisPct:<n>`);
+  - o "+X% de dano mágico por repetição" do Eco de Magia Maior;
+  - a Volatilidade, nas pontas da faixa de cada parte do ataque;
+  - o Toxinas Vis, por Veneno no alvo até o teto;
+  - o Sobre-esforço, só no golpe Impelido;
+  - a Sede de Sangue, contra quem sangra;
+  - Decapitar e Hipotermia, só no alvo em Vida Baixa ou Resfriado;
+  - o "não pode" do Foco Elemental e da Sede de Sangue;
+  - o Sadismo, mais rápido e com a duração "menos" multiplicando;
+  - as Afecções Desenfreadas, no efeito das não danificadoras;
+  - a Aflição Ágil, na duração da habilidade e das afecções de dano.
+- **Honestidade:** o "por cada …" sem mecânica (Flechas Manaforjadas, Labareda Controlada, "por cada Clamor" do Sobre-esforço), o Retorno e a Onda de Choque e a Tormenta do Vazio viram linha não feita, em vez de um "mais" fixo. Duas linhas do mesmo suporte na mesma chave de "mais" multiplicam, em vez de somar. O "Dano Físico" num ataque vale sem a tag Físico, porque o físico vem da arma.
+- Números: Projéteis Viciosos de 147% mais no acerto para 49% no acerto + 49% no Caos degenerativo + 49% no Físico degenerativo; Fortificar de 38% para 19% no acerto + 19% nas afecções corpo a corpo. Suportes "funciona" 97 → 104 (o Sobre-esforço desce a parcial); testados 42 → 51.
+- Teste: `afeccoes-acerto-poe.test.mjs` (10), medido no jogo: Bola de Fogo + Afecções Mortais (acerto ×0,2, Incêndio ×1,44); Dano Incendiário (acerto igual, Incêndio ×1,34); Sangramento do PoE; Flecha Cáustica (degenerativo igual com as Afecções Mortais, ×1,49 com os Projéteis Viciosos); Golpe Múltiplo (×0,8, ×1,22, ×1,44); Volatilidade; Toxinas Vis; Foco Elemental; Sadismo.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
 2. **A qualidade que falta** (332 de 540 linhas): "Lacaios têm Recuperação da Recarga", "Efeito do Buff aumentado", "Velocidade de Projéteis", "Projéteis que Atravessaram causam X% mais Dano", "mais Vida de Totens", "Máximo de Armas Animadas/Esqueletos", o estágio máximo…
-3. **As afecções que saem do acerto final.** O jogo deriva a afecção do dano do acerto já multiplicado ("mais Dano com Acertos" também cresce o Incêndio). No PoE a afecção usa o dano-base com os modificadores DELA. Até mudar isso, "mais Dano com Acertos" (só acertos) não entra como linha local.
+3. ~~As afecções que saem do acerto final~~ — os suportes feitos no G17 (o "mais" só do acerto e o só das afecções); as ativas no G18; a soma do "aumentado", o crítico, o "mais" geral e as cargas no G19.
 4. **As mecânicas compartilhadas maiores:** canalização por estágios (12 gemas), repetições do golpe (11), uso de cadáveres (11), deslocamento (21, hoje "golpe na área"), armadilhas/minas nos suportes (14 suportes: "armadilhas e minas ainda não existem no jogo" — conferir, porque as ativas já plantam), buffs sem equivalente (22: Marcas, Manto Arcano, Desgraça…).
 5. **"Dano Físico Base como a Mão Secundária"** (8 gemas de escudo) e os bônus do escudo (crítico pelo Escudo de Energia, dano pela armadura do escudo).
 6. **Os outros suportes:** 157 parciais e 31 sem efeito; gatilhos que faltam (Conjurar ao Morrer, ao ser Atordoado, enquanto Canaliza), totens (velocidade de posicionamento), auras (efeito), maldições (efeito em área, duração).
@@ -146,6 +173,12 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. Commitar G16 (FULL por exceção — autorização do dono para os lotes desta tarefa) e fazer o push no PR.
-2. G17: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
-3. O dano por elemento dos suportes (pendência 9) e as mecânicas próprias das gemas de ataque, por quantidade: Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).
+1. Commitar G17 (FULL por exceção — autorização do dono para os lotes desta tarefa) e fazer o push no PR.
+2. **G18 — as linhas das ATIVAS que o compilador marca como aplicadas e ninguém lê** (achados confirmados da revisão do G17):
+   - `stats.maisDano` ("Projéteis causam X% …": Golpe Fundido, Lâminas Gélidas), `afeccaoMais` ("X% menos Dano de Afecções": Punho Esmagador, Golpe de Escudo Glacial, Descarga…), `danoPorEstagio` (Snipe, Ira Divina), `danoPorRicochete`, `afeccaoDuracao` e o "Efeito de Afecções de Gelo" do Martelo Glacial: ligar ao motor ou devolver `false` (não feita);
+   - o Incinerar ("500% mais com Acertos" só no acerto; "250% mais com Incêndio" e "sempre Incendeia") e a Rajada de Chamas ("mais Dano com Afecções por estágio");
+   - a qualidade das ativas no status (avaliar também com qualidade 20);
+   - a Vulnerabilidade e a Inflamabilidade (as chances contra o amaldiçoado em `CONTRA`); o Arauto da Agonia e a Cutilada Vaal (buff que não existe → não feita); a qualidade do Golpe Selvagem nas chances (`afeccoesComAGema` sem qualidade);
+   - a Malevolência ("mais Dano Degenerativo" → `dano_dot_mais` no buff, não dano geral);
+   - os lacaios: "mais Dano" dos suportes de lacaio somado no "aumentado" (`lacaioMaisDanoPct` à parte; "às suas Presas"/"aos Inimigos Próximos" → não feita); o Ceifador ("mais Dano com Sangramento") e o Golem do Caos (multiplicador degenerativo).
+3. **G19 — as afecções pela conta do PoB:** o "aumentado" numa soma só (hoje o do acerto vem no `bruto` e o das afecções multiplica por cima); o "aumentado" de Mágico/Ataque/Projétil/Área/arma fora da afecção; o `danoPct` dos suportes na soma do "aumentado" (hoje um fator à parte); o "mais" geral e as cargas (`fatorDasCargas`) na afecção (achado B19); o crítico (o PoB não dá ×1,5 à afecção do crítico — conferir a decisão de `BASE.criticoMaisPct` antes de mudar); o dano sofrido (Eletrização, Definhamento) no tique do degenerativo.

@@ -98,9 +98,21 @@ function valeParaOTipo(texto, ativa) {
   if (/Dano de Ataque|Ataques Suportad|Habilidades de Ataque/i.test(texto)) return temTag(ativa, 'Ataque');
   if (/Corpo a Corpo/i.test(texto)) return temTag(ativa, 'Corpo a Corpo');
   if (/Dano Elemental/i.test(texto)) return ['Fogo', 'Gelo', 'Raio'].some((t) => temTag(ativa, t));
-  for (const [tag] of Object.entries(ELEMENTO_DA_TAG)) if (new RegExp(`Dano (de )?${tag}`, 'i').test(texto) && !/Dano .* como Dano Extra/i.test(texto)) return temTag(ativa, tag);
+  // (17/10, lote G17: o "Dano Físico" num ATAQUE vale sem a tag Físico — o físico vem da arma; os ataques de arco não têm a tag e batem físico)
+  for (const [tag] of Object.entries(ELEMENTO_DA_TAG)) if (new RegExp(`Dano (de )?${tag}`, 'i').test(texto) && !/Dano .* como Dano Extra/i.test(texto)) return temTag(ativa, tag) || (tag === 'Físico' && temTag(ativa, 'Ataque'));
   return true;
 }
+/*
+ * (17/10, lote G17) O "mais/menos Dano" com qualificador de ACERTO — Mágico, de Projétil, Corpo a Corpo, de Ataque, em Área — fica só no acerto
+ * (`maisDanoAcertoPct`): no PoB esses são ModFlag Spell/Projectile/Melee/Attack/Area, e o `dotCfg` das afecções não os tem (CalcOffence:
+ * calcAilmentSourceDamage). O resto (sem qualificador, "de Fogo", "Elemental", "com Acertos e Afecções") vale no acerto e na afecção (`maisDanoPct`).
+ */
+const SO_DO_ACERTO = /Dano (?:Físico )?(?:Mágico|(?:de Ataque )?de Projétil|Corpo a Corpo|de Ataque|em Área)|de dano mágico/i;
+const chaveDoMais = (texto) => (SO_DO_ACERTO.test(texto) ? 'maisDanoAcertoPct' : 'maisDanoPct');
+/** O "mais Dano <tipo> degenerativo" → a chave do degenerativo daquele tipo (`acoes` — as afecções de dano e o degenerativo da gema). */
+const MAIS_DOT_DO_TIPO = { caos: 'maisDotCaosPct', 'físico': 'maisDotFisicoPct', gelo: 'maisDotGeloPct', fogo: 'maisDotFogoPct', raio: 'maisDotRaioPct' };
+/** Os "mais/menos" em % que MULTIPLICAM (duas linhas do mesmo suporte na mesma chave: ×, não +). */
+const MAIS_MULTIPLICA = new Set(['maisDanoPct', 'maisDanoAcertoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', ...Object.values(MAIS_DOT_DO_TIPO)]);
 /** Velocidade X% mais/aumentada → o % do TEMPO de uso (o motor: `castTimePct`). */
 const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
 
@@ -231,16 +243,67 @@ const REGRAS = [
   [new RegExp(`têm ${N}% (mais|menos) Vida de Lacaio`, 'i'), (m) => ({ lacaioVidaPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`têm ${N}% de Vida máxima de Lacaios aumentada`, 'i'), (m) => ({ lacaioVidaPct: num(m[1]) })],
   [new RegExp(`\\+${N} (?:ao|de) número máximo de Totens`, 'i'), (m) => ({ totensExtras: num(m[1]) })],
+  // (17/10, lote G17) O dano SÓ DO ACERTO e o SÓ DAS AFECÇÕES (antes da regra geral de "mais/menos Dano", que os pegava): o "X% menos Dano com
+  // Acertos" das Afecções Mortais e do Encadear não diminui o Incêndio/Sangramento/Veneno que o acerto põe; o "mais Dano de Afecções" e o de cada
+  // uma (Sangramento, Incêndio, Veneno) multiplicam só a afecção — `Gemas.efeitoNaSkill` (multiplicam entre si) e `AfeccoesPoe.aoAcertar`.
+  [new RegExp(`causam ${N}% (mais|menos) Dano com Acertos$`, 'i'), (m) => ({ maisDanoAcertoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (o Toxinas Vis: "X% mais Dano com Acertos por Veneno no Inimigo, até N" — só no acerto, × os Venenos no alvo agora: `acoes`, o `acertar`)
+  [new RegExp(`causam ${N}% mais Dano com Acertos por Veneno no Inimigo, até ${N}`, 'i'), (m) => ({ maisAcertoPorVenenoPct: num(m[1]), maisAcertoPorVenenoMax: num(m[2]) })],
+  // ("…com Acertos e Afecções contra Inimigos em Vida Baixa / Resfriados" — Decapitar, Hipotermia: o "mais" só no alvo com a condição, no acerto
+  // e na afecção — `af:mais_dano@alvo…`, `ModsPoe.golpeNoAlvo`)
+  [new RegExp(`causam ${N}% (mais|menos) Dano com Acertos e Afecções contra Inimigos (em Vida Baixa|Resfriados)$`, 'i'), (m) => ({ [`af:mais_dano@${m[3].toLowerCase() === 'resfriados' ? 'alvoResfriado' : 'alvoVidaBaixa'}`]: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (o Golpe Múltiplo: o "mais Dano" de cada repetição vale só nela — `repeticaoMaisPct:<n>`, no `acertar`)
+  [new RegExp(`^(Primeira|Segunda|Terceira) Repetição (?:de|das) Habilidades Suportadas causam? ${N}% (mais|menos) Dano$`, 'i'), (m) => ({ [`repeticaoMaisPct:${{ primeira: 1, segunda: 2, terceira: 3 }[m[1].toLowerCase()]}`]: (m[3] === 'mais' ? 1 : -1) * num(m[2]) })],
+  // (o DEGENERATIVO — o PoB: ModFlag.Dot — vale nas afecções de dano e no degenerativo da gema, nunca no acerto; o de um tipo ("Dano de Caos
+  // degenerativo" — o Veneno e o Caos da gema) e o "Incendiário" (o Fogo degenerativo: o Incêndio e o Fogo da gema))
+  [new RegExp(`causam ${N}% (mais|menos) Dano Degenerativo$`, 'i'), (m) => ({ maisDotPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`causam ${N}% (mais|menos) Dano (?:de )?(Caos|Físico|Gelo|Fogo|Raio) [Dd]egenerativo$`, 'i'), (m) => ({ [MAIS_DOT_DO_TIPO[m[3].toLowerCase()]]: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`causam ${N}% (mais|menos) Dano Incendiário$`, 'i'), (m) => ({ maisDotFogoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (o "aumentado" só do degenerativo e de uma afecção entra na soma das afecções — `af:dot_dmg_inc`, `af:ignite_dmg_inc`… —, não no acerto; o
+  // "Dano com Acertos aumentado contra Inimigos em Vida Baixa" do Decapitar, só no alvo com a condição)
+  [new RegExp(`causam ${N}% de Dano Degenerativo aumentado`, 'i'), (m) => ({ 'af:dot_dmg_inc': num(m[1]) })],
+  [new RegExp(`causam ${N}% de Dano Incendiário aumentado`, 'i'), (m) => ({ 'af:ignite_dmg_inc': num(m[1]) })],
+  [new RegExp(`causam Dano aumentado em ${N}% com (Veneno|Sangramento)`, 'i'), (m) => ({ [m[2].toLowerCase() === 'veneno' ? 'af:poison_dmg_inc' : 'af:bleed_dmg_inc']: num(m[1]) })],
+  [new RegExp(`causam Dano com Acertos aumentado em ${N}% contra Inimigos que estejam em Vida Baixa`, 'i'), (m) => ({ 'af:dmg_inc@alvoVidaBaixa': num(m[1]) })],
+  // (a Volatilidade: "X% mais Dano Máximo de Ataque" / "Y% menos Dano Mínimo de Ataque" — as pontas da faixa de cada parte do ataque, `contaDoDano`)
+  [new RegExp(`causam ${N}% (mais|menos) Dano (Máximo|Mínimo) de Ataque$`, 'i'), (m, t, a) => (temTag(a, 'Ataque') ? { [m[3].toLowerCase() === 'máximo' ? 'maisMaxAtaquePct' : 'maisMinAtaquePct']: (m[2] === 'mais' ? 1 : -1) * num(m[1]) } : {})],
+  // (o Sobre-esforço: o "mais" e o "aumentado" só no ataque Impelido — a tag `impelido` do golpe)
+  [new RegExp(`Ataques Suportados causam ${N}% (mais|menos) Dano se Impelidos$`, 'i'), (m) => ({ 'af:mais_dano@impelido': (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`Ataques Suportados causam Dano aumentado em ${N}% se Impelidos$`, 'i'), (m) => ({ 'af:dmg_inc@impelido': num(m[1]) })],
+  // (a Sede de Sangue: o "mais Dano Físico Corpo a Corpo" só contra o alvo Sangrando — só no acerto, `acoes`; o "aumentado" contra ele)
+  [new RegExp(`causam ${N}% mais Dano Físico Corpo a Corpo contra inimigos Sangrando`, 'i'), (m, t, a) => (temTag(a, 'Corpo a Corpo') ? { maisAcertoContraSangrandoPct: num(m[1]) } : {})],
+  [new RegExp(`causam ${N}% de Dano Corpo a Corpo aumentado contra Inimigos Sangrando`, 'i'), (m, t, a) => (temTag(a, 'Corpo a Corpo') ? { 'af:dmg_inc@alvoSangrando': num(m[1]) } : {})],
+  // (o Eco de Magia Maior: "+X% de dano mágico por repetição" — cada repetição X% a mais que a anterior, só no acerto da magia)
+  [new RegExp(`causam \\+${N}% de dano mágico por repetição`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { repeticaoMaisPorPct: num(m[1]) } : {})],
+  // (as chaves que as afecções do PoE já leem — `afeccoes.daSoma`: o Foco Elemental e a Sede de Sangue não infligem; o Sadismo "mais rápido" e a
+  // duração "menos" (multiplica); as Afecções Desenfreadas no efeito das não danificadoras; a Aflição Ágil, a duração da habilidade e das de dano)
+  [/^Habilidades Suportadas não podem infligir Afecções Elementais$/i, () => ({ 'af:nao_pode:incendio': 1, 'af:nao_pode:congelamento': 1, 'af:nao_pode:resfriamento': 1, 'af:nao_pode:eletrizacao': 1 })],
+  [/^Ataques Suportados não podem causar Sangramento$/i, () => ({ 'af:nao_pode:sangramento': 1 })],
+  [new RegExp(`^Afecções Danificadoras infligidas com Habilidades Suportadas causam Dano ${N}% mais rápido`, 'i'), (m) => ({ 'af:dot_mais_rapido': num(m[1]) })],
+  [new RegExp(`^${N}% (mais|menos) Duração de Afecções infligidas com Habilidades Suportadas`, 'i'), (m) => ({ 'af:ailment_duration_mais': (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`têm ${N}% do Efeito de Afecções não Danificantes aumentado`, 'i'), (m) => ({ 'af:efeito_nao_dano': num(m[1]), 'af:efeito_resfriamento': num(m[1]), 'af:efeito_eletrizacao': num(m[1]) })],
+  [new RegExp(`^${N}% (mais|menos) Duração das Habilidades Suportadas e Afecções Danificadoras`, 'i'), (m) => ({ duracaoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]), 'af:duracao_afeccoes_dano_mais': (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (a Dose Letal: "-2% de dano com venenos" — só o Veneno)
+  [new RegExp(`causam ([+-])${N}% de dano com venenos`, 'i'), (m) => ({ maisVenenoPct: (m[1] === '-' ? -1 : 1) * num(m[2]) })],
+  // (a Proliferação Elemental: a chance das três — antes só a de Congelar saía)
+  [new RegExp(`têm ${N}% de chance de Congelar, Eletrizar e Incendiar`, 'i'), (m) => ({ congelarChance: num(m[1]), 'af:chance_shock': num(m[1]), 'af:chance_ignite': num(m[1]) })],
+  [new RegExp(`causam ${N}% (mais|menos) Dano (?:de|com) Afecções$`, 'i'), (m) => ({ maisAfeccaoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`causam ${N}% mais Dano com Afecções causad[oa]s por Acertos Corpo a Corpo`, 'i'), (m, t, a) => (temTag(a, 'Corpo a Corpo') ? { maisAfeccaoPct: num(m[1]) } : {})],
+  [new RegExp(`causam ${N}% mais Dano com Sangramento e Veneno causados por Acertos Corpo a Corpo`, 'i'), (m, t, a) => (temTag(a, 'Corpo a Corpo') ? { maisSangramentoPct: num(m[1]), maisVenenoPct: num(m[1]) } : {})],
+  [new RegExp(`(?:causam )?${N}% (mais|menos) Dano com (Sangramento|Incêndio|Veneno)$`, 'i'), (m) => ({ [{ sangramento: 'maisSangramentoPct', incêndio: 'maisIncendioPct', veneno: 'maisVenenoPct' }[m[3].toLowerCase()]]: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (a chance de cada afecção do suporte entra na ficha do uso — `af:chance_*`, as afecções do PoE —, não no estado do Draevor)
+  [new RegExp(`têm ${N}% de chance de Incendiar`, 'i'), (m) => ({ 'af:chance_ignite': num(m[1]) })],
+  [new RegExp(`têm ${N}% de chance de Envenenar`, 'i'), (m) => ({ 'af:chance_poison': num(m[1]) })],
+  [new RegExp(`têm ${N}% de chance de causar Sangramento`, 'i'), (m) => ({ 'af:chance_bleed': num(m[1]) })],
+  [/^Causa Sangramento$/i, () => ({ 'af:chance_bleed': 100 })],
   // Dano: "mais/menos" multiplica (como no PoE); "aumentado/reduzido" soma.
-  [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { maisDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) } : null)],
-  [new RegExp(`causam? ([+-])${N}% de dano`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { maisDanoPct: (m[1] === '-' ? -1 : 1) * num(m[2]) } : null)],
-  [new RegExp(`Magias Suportadas têm ${N}% mais Dano Mágico`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { maisDanoPct: num(m[1]) } : null)],
+  [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra| com Acertos por|[^%]* por cada |[^%]* enquanto Retornam)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { [chaveDoMais(t)]: (m[2] === 'mais' ? 1 : -1) * num(m[1]) } : null)],
+  [new RegExp(`^(?!Repetições|Explosão)[^%]*?causam? ([+-])${N}% de dano(?![^%]*por estágio)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { [chaveDoMais(t)]: (m[1] === '-' ? -1 : 1) * num(m[2]) } : null)],
+  [new RegExp(`Magias Suportadas têm ${N}% mais Dano Mágico`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { maisDanoAcertoPct: num(m[1]) } : null)],
   [new RegExp(`causam? ${N}% de Dano (?:de )?(\\S+)? ?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`causam Dano aumentado em ${N}%`, 'i'), (m) => ({ danoPct: num(m[1]) })],
   [new RegExp(`Dano [^%]*?aumentado em ${N}%`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`${N}% de Dano [^%]*?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
-  [new RegExp(`causam ${N}% mais Dano com Acertos`, 'i'), (m) => ({ maisDanoPct: num(m[1]) })],
-  [new RegExp(`causam ${N}% menos Dano com Acertos`, 'i'), (m) => ({ maisDanoPct: -num(m[1]) })],
   [new RegExp(`ganham ${N}% de Dano (\\S+) como Dano Extra de`, 'i'), (m, t, a) => (temTag(a, m[2]) ? { danoPct: num(m[1]) } : null)],
   [/não causam Dano Elemental/i, (m, t, a) => (['Fogo', 'Gelo', 'Raio'].some((x) => temTag(a, x)) ? { maisDanoPct: -100 } : null)],
   [/não causam Dano de Caos/i, (m, t, a) => (temTag(a, 'Caos') ? { maisDanoPct: -100 } : null)],
@@ -293,12 +356,7 @@ const REGRAS = [
   [/^O raio Base é de|^Duração base é de|^Raio de alcance secundário/i, () => ({})],
   [new RegExp(`têm ${N}% mais Recuperação da Recarga`, 'i'), (m) => ({ recargaPct: tempoDaVelocidade(num(m[1])) })],
   // Afecções ao acertar.
-  [new RegExp(`têm ${N}% de chance de Incendiar`, 'i'), (m) => ({ igniteChance: num(m[1]) })],
-  [new RegExp(`têm ${N}% de chance de Envenenar`, 'i'), (m) => ({ venenoChance: num(m[1]) })],
-  [new RegExp(`têm ${N}% de chance de causar Sangramento`, 'i'), (m) => ({ sangramentoChance: num(m[1]) })],
-  [/^Causa Sangramento$/i, () => ({ sangramentoChance: 100 })],
   [new RegExp(`têm ${N}% de chance de Congelar`, 'i'), (m) => ({ congelarChance: num(m[1]) })],
-  [new RegExp(`causam ${N}% mais Dano (?:com )?(?:Incendiário|com Incêndio|com Sangramento|de Afecções)`, 'i'), (m) => ({ ignitePct: num(m[1]), venenoPct: num(m[1]), sangramentoPct: num(m[1]) })],
   // Duração, recarga, drenagem.
   [new RegExp(`têm ${N}% (mais|menos) Duração`, 'i'), (m) => ({ duracaoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Duração (?:de Habilidade )?aumentada em ${N}%`, 'i'), (m) => ({ duracaoPct: num(m[1]) })],
@@ -372,7 +430,7 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
       continue;
     }
     const r = regra[1](linha.match(regra[0]), linha, ativa);
-    for (const [k, v] of Object.entries(r ?? {})) efeito[k] = (efeito[k] ?? 0) + v;
+    for (const [k, v] of Object.entries(r ?? {})) efeito[k] = MAIS_MULTIPLICA.has(k) && efeito[k] != null ? ((1 + efeito[k] / 100) * (1 + v / 100) - 1) * 100 : (efeito[k] ?? 0) + v;
   }
   // (lote 44, P064) o nível do Suporte: Convocar Fantasma — o Poder Fantasmal de cada Fantasma é o desse nível (a tabela do PoB)
   if (efeito.fantasmaAoMatarPct > 0 || efeito.fantasmaRaroPct > 0) efeito.fantasmaNivel = nivel;

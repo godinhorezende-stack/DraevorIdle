@@ -360,6 +360,9 @@ export function comAsLinhasDaGema(estado, ficha, entry, efeito = undefined) {
   return LinhasDasGemas.fichaComAsLinhas(estado, ficha, af, marca);
 }
 
+/** (17/10, lote G17) O "mais Dano <tipo> degenerativo" dos suportes pelo elemento da parte do degenerativo da gema. */
+const MAIS_DOT_DO_ELEMENTO = { fire: 'maisDotFogoPct', ice: 'maisDotGeloPct', energy: 'maisDotRaioPct', chaos: 'maisDotCaosPct', physical: 'maisDotFisicoPct' };
+
 function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null, { ativada = false, custaVida = false, maisDano = 0, critMais = 0 } = {}) {
   fichaBase = comAsLinhasDaGema(estado, fichaBase, entry, efeitoDaGema);
   // PoE: a ficha DESTA habilidade — os mods condicionais pelas tags dela ("Dano em Área", "Chance de Crítico com Habilidades de Fogo"…) e os
@@ -463,6 +466,15 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     }
     // PoE (únicos): as conversões entre elementos, os ganhos extras e a máscara de dano ("Não Causa Dano Elemental"…).
     porElemento = ModsPoe.transformarPartes(fichaBase, porElemento);
+    // (17/10, lote G17) a Volatilidade: "X% mais Dano Máximo de Ataque" e "Y% menos Dano Mínimo de Ataque" — as pontas da faixa de cada parte (o
+    // mínimo não passa do máximo)
+    if (daGemaPoe.ataque && porElemento && (efeitoDaGema?.maisMaxAtaquePct || efeitoDaGema?.maisMinAtaquePct)) {
+      for (const el of Object.keys(porElemento)) {
+        const [a, b] = porElemento[el];
+        const b2 = b * Math.max(0, 1 + (efeitoDaGema.maisMaxAtaquePct ?? 0) / 100);
+        porElemento[el] = [Math.min(b2, a * Math.max(0, 1 + (efeitoDaGema.maisMinAtaquePct ?? 0) / 100)), b2];
+      }
+    }
     if (!porElemento || !Object.keys(porElemento).length) porElemento = null;
   }
   const somaDe = (i) => Object.values(porElemento).reduce((t, v) => t + v[i], 0);
@@ -2984,6 +2996,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     }
     // (o Libertar: o golpe que Ocorre Novamente por um Selo causa menos dano — `reocorrendo`; a Intensidade: mais dano em área)
     let reocorrendo = false;
+    // (17/10, lote G17) a repetição da vez (0 = o uso, 1 = a primeira repetição…): o "mais Dano" da Primeira/Segunda Repetição do Golpe Múltiplo
+    let repeticaoAtual = 0;
+    const maisDaRepeticao = () => (repeticaoAtual ? Math.max(0, 1 + (efeitoDaGema?.[`repeticaoMaisPct:${repeticaoAtual}`] ?? 0) / 100) : 1);
     const maisDaIntensidade = intensidade > 0 && tagsPoeDaSkill(entry).includes('area') ? 1 + (intensidade * (efeitoDaGema.intensidadeMaisDanoPct ?? 0)) / 100 : 1;
     // (lote 46, o Punho de Guerra: o "mais Dano" da Pancada Maximizada — só no primeiro ataque do uso, não nas repetições)
     let noMaximizado = maximizado;
@@ -3078,15 +3093,25 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const rouboDosAlvos = { vida: 0, mana: 0 };
     // (17/10, lote G13) a RUNA: "Causa X% mais/menos Dano com Acertos contra o Inimigo Vinculado" — só no inimigo a que ela está vinculada
     const contraVinculado = plantada?.vinculado != null && entry.poeGema ? GemasPoe.contraOVinculado(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : 0;
+    // (17/10, lote G17) o Toxinas Vis: "X% mais Dano com Acertos por Veneno no Inimigo, até N" — os Venenos no alvo agora
+    const porVeneno = (bicho) => (efeitoDaGema?.maisAcertoPorVenenoPct > 0 ? 1 + (efeitoDaGema.maisAcertoPorVenenoPct * Math.min(efeitoDaGema.maisAcertoPorVenenoMax ?? Infinity, (bicho.dots ?? []).filter((d) => (d.tipo === 'venenoPoe' || d.tipo === 'veneno') && d.falta > 0).length)) / 100 : 1);
+    // (a Sede de Sangue: "X% mais Dano Físico Corpo a Corpo contra inimigos Sangrando" — só no acerto; o Eco de Magia Maior: "+X% de dano mágico por
+    // repetição" — só no acerto da magia, X a mais por repetição)
+    const contraSangrando = (bicho) => (efeitoDaGema?.maisAcertoContraSangrandoPct > 0 && (bicho.dots ?? []).some((d) => d.tipo === 'sangramento' && d.falta > 0) ? 1 + efeitoDaGema.maisAcertoContraSangrandoPct / 100 : 1);
+    const porRepeticao = () => Math.max(0, 1 + (repeticaoAtual * (efeitoDaGema?.repeticaoMaisPorPct ?? 0)) / 100);
     const acertar = (bicho, pct0 = 100, fonte = null, golpe = null) => {
       const pct = contraVinculado && bicho.uid === plantada.vinculado ? pct0 * Math.max(0, 1 + contraVinculado / 100) : pct0;
       const noAlvo = ajusteDoAlvo(bicho);
       const fichaNoAlvo = noAlvo?.ficha ?? ficha;
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
-      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
+      // (17/10, lote G17) o que no PoB vale SÓ NO ACERTO e o jogo põe no `fator`: o "mais/menos Dano com Acertos" e os de Mágico/Projétil/Corpo a
+      // Corpo/Ataque/Área dos suportes, o "mais Dano Corpo a Corpo" do Golpe Impiedoso, a Intensidade (Área com Acertos), o Aço, a Proximidade (o
+      // Impacto), o Toxinas Vis e a Runa contra o vinculado ("com Acertos") — a afecção de dano sai sem eles (`fatoresDoDano`)
+      const soNoAcerto = Math.max(1e-9, (1 + (efeitoDaGema?.maisDanoAcertoPct ?? 0) / 100) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * maisDaIntensidade * fatorDoAco(bicho) * fatorDaProximidade(bicho) * porVeneno(bicho) * contraSangrando(bicho) * porRepeticao() * (pct0 ? pct / pct0 : 1));
       const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora) * (noAlvo ? noAlvo.fatorEl(p.elemento, p.mult) : 1);
       // (o Sabotador: "Dano com Acertos é Azarado" — rola duas vezes e fica o menor; com o Sortudo junto, os dois se anulam)
       const azarado = ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0;
@@ -3256,7 +3281,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const MULTI = { fire: a.multiplicadorFogo, ice: a.multiplicadorGelo, energy: a.multiplicadorRaio, chaos: a.multiplicadorCaos, physical: a.multiplicadorFisico };
         for (const p of dg?.partes ?? []) {
           const tipoDegen = GemasPoe.DEGEN_DO_ELEMENTO[p.elemento];
-          const total = p.dps * (dg.duracaoMs / 1000) * fatorDaGema * (1 + ((a.multiplicador ?? 0) + (MULTI[p.elemento] ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (ficha.danoDoElemento?.[p.elemento] ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
+          // (lote G17: o degenerativo não é acerto — sem o "mais/menos Dano com Acertos" do fator da gema)
+          const maisDoDot = Math.max(0, 1 + (efeitoDaGema?.maisDotPct ?? 0) / 100) * Math.max(0, 1 + (efeitoDaGema?.[MAIS_DOT_DO_ELEMENTO[p.elemento]] ?? 0) / 100);
+          const total = p.dps * (dg.duracaoMs / 1000) * (fatorDaGema / Math.max(1e-9, 1 + (efeitoDaGema?.maisDanoAcertoPct ?? 0) / 100)) * maisDoDot * (1 + ((a.multiplicador ?? 0) + (MULTI[p.elemento] ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (ficha.danoDoElemento?.[p.elemento] ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
           const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: dg.duracaoMs, chave: entry.poeGema.slug, origem: { fonte: 'gema', habilidade: entry.id } }, agora);
           if (posto) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: posto });
         }
@@ -3267,8 +3294,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         // A gema do PoE soma as chances dela (incendiar, congelar, eletrizar, envenenar, sangrar) no nível em que está.
         const afeccoes = entry.poeGema ? GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha.afeccoes;
         // (o Golpe Impiedoso: "X% mais Dano com Afecções causadas por Acertos Corpo a Corpo")
+        // (17/10, lote G17) O DANO das afecções (Incêndio, Sangramento, Veneno) sai do acerto SEM o "mais/menos Dano com Acertos" dos suportes (as
+        // Afecções Mortais: 80% menos no acerto, a afecção inteira) e COM o "mais Dano de Afecções" e o de cada uma — `fatoresDoDano`. A força das
+        // não danificadoras (Eletrização, Resfriamento, Congelamento) segue o dano do acerto, como no PoE.
         const maisNaAfeccao = impiedoso ? 1 + (efeitoDaGema.impiedosoMaisAfeccaoPct ?? 0) / 100 : 1;
-        const partesDaAfeccao = (pedacos ?? [{ elemento: tipo, dano: bruto }]).map((p) => (maisNaAfeccao !== 1 ? { ...p, dano: p.dano * maisNaAfeccao } : p));
+        const m = (k) => Math.max(0, 1 + (efeitoDaGema?.[k] ?? 0) / 100);
+        const fatoresDoDano = {
+          todas: (maisNaAfeccao * m('maisAfeccaoPct') * m('maisDotPct')) / soNoAcerto,
+          incendio: m('maisIncendioPct') * m('maisDotFogoPct'),
+          sangramento: m('maisSangramentoPct') * m('maisDotFisicoPct'),
+          veneno: m('maisVenenoPct') * m('maisDotCaosPct'),
+        };
+        const partesDaAfeccao = pedacos ?? [{ elemento: tipo, dano: bruto }];
         // (PoE, a Força Concussiva: "Incêndios de Acertos Corpo a Corpo Atordoantes causam X% mais Dano" — o acerto corpo a corpo que atordoou: pelo
         // suporte, pelo Golpe Impiedoso ou pelo atordoamento do PoE)
         const atordoouAgora = postosDaGema.includes('atordoado') || !!doAcerto?.atordoou || !!doSuporte?.atordoou;
@@ -3276,7 +3313,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const comIncendio = incendioAtordoante ? { ...afeccoes, incendioMais: (afeccoes.incendioMais ?? 0) + incendioAtordoante } : afeccoes;
         const afeccoesDoAcerto = congelarDoSuporte ? { ...comIncendio, chance: { ...(comIncendio.chance ?? {}), congelamento: (comIncendio.chance?.congelamento ?? 0) + congelarDoSuporte } } : comIncendio;
         // (a Sobrecarga Elemental: "Afecções nunca contam como sendo de um Golpe Crítico")
-        const postos = AfeccoesPoe.aoAcertar(bicho, partesDaAfeccao, { afeccoes: afeccoesDoAcerto, praga: pragaDoAcerto(hunt), crit: crit && !ficha.sobrecargaElemental, ataque, agora, salaDeBoss: !!hunt.isBoss });
+        const postos = AfeccoesPoe.aoAcertar(bicho, partesDaAfeccao, { afeccoes: afeccoesDoAcerto, praga: pragaDoAcerto(hunt), crit: crit && !ficha.sobrecargaElemental, ataque, agora, salaDeBoss: !!hunt.isBoss, fatoresDoDano });
         for (const st of postos) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
         // (14/10, o Avatar da Selva: a Fúria Liberta pelas Afecções Elementais que o acerto pôs)
         ModsPoe.ganharFuriaLiberta(estado, hunt, ficha.afPoe, postos, agora);
@@ -3363,6 +3400,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     for (let r = 0; r < repeticoes; r++) {
       if (!atingidos.some((b) => b.hp > 0)) break;
       naRepeticaoFinal = r === repeticoes - 1;
+      repeticaoAtual = r + 1;
       // (PoE: "Repetição Final das Magias têm Efeito em Área aumentado em X%" — lote 36, P002: o X soma no "aumentado" da área da última
       // repetição, e o raio da forma cresce × √ como o resto da área.)
       const areaFinal = naRepeticaoFinal && areaNoUso && ehMagiaDaConta ? ModsPoe.valor(ficha, 'repeticao_final_area') : 0;
@@ -3371,6 +3409,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (areaFinal > 0 || semMaximizado > 0) atingidos = Areas.dentro(areaNoUso(areaFinal - semMaximizado), vivos.filter((b) => b.hp > 0));
       atacar(true);
     }
+    repeticaoAtual = 0;
     // (PoE, o Libertar: "Magias Suportadas são Liberadas quando conjuradas, e seus efeitos Ocorrem Novamente para cada Selo perdido" — os Selos
     // juntados desde a última conjuração, com menos dano: `selosAgora`.)
     const selos = efeitoDaGema?.seloIntervaloMs > 0 ? selosAgora(hunt, entry.id, efeitoDaGema, ModsPoe.valor(ficha, 'selos_max_extra'), hunt.clock ?? 0) : 0;

@@ -2,24 +2,24 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 69,
+   "implementada e testada": 70,
    "parcial": 358,
-   "implementada, sem teste próprio": 82,
+   "implementada, sem teste próprio": 81,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 23,
+   "implementada e testada": 24,
    "parcial": 139,
-   "implementada, sem teste próprio": 37,
+   "implementada, sem teste próprio": 36,
    "limitação do modelo idle": 11
   },
   "suportes": {
    "total": 262,
-   "implementada, sem teste próprio": 55,
-   "implementada e testada": 42,
-   "parcial": 159,
+   "implementada e testada": 51,
+   "parcial": 152,
+   "implementada, sem teste próprio": 53,
    "sem efeito": 6
   },
   "variantes": {
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 839,
-   "emDuasOuMais": 168
+   "linhasDistintas": 841,
+   "emDuasOuMais": 165
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,8 +61,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 142,
-   "suportesCitados": 50,
+   "ativasCitadas": 143,
+   "suportesCitados": 62,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -2245,7 +2245,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -8673,7 +8673,7 @@
   {
    "slug": "Chance_to_Bleed_Support",
    "nome": "Chance de Sangramento",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8831,10 +8831,8 @@
   {
    "slug": "Bloodlust_Support",
    "nome": "Violência",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Ataques Suportados não podem causar Sangramento"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -8935,7 +8933,7 @@
   {
    "slug": "Volatility_Support",
    "nome": "Volatilidade",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8974,7 +8972,7 @@
   {
    "slug": "Burning_Damage_Support",
    "nome": "Dano Incendiário",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -8984,7 +8982,8 @@
    "nome": "Incêndio Controlado",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Cada Habilidade Suportada causa 14% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de 364%"
+    "não simulado: Cada Habilidade Suportada causa 14% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de 364%",
+    "não simulado: Cada Habilidade Suportada causa 3% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de 78%"
    ],
    "outros": [],
    "icone": true
@@ -9211,8 +9210,10 @@
   {
    "slug": "Overexertion_Support",
    "nome": "Esforço Excessivo",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "não simulado: Ataques Suportados causam 10% mais Dano por cada Clamor que os Impelir"
+   ],
    "outros": [],
    "icone": true
   },
@@ -9465,7 +9466,8 @@
    "ausentes": [
     "não simulado: Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo",
     "não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados",
-    "não simulado: Onda de choque se repete de até 10 inimigos na área"
+    "não simulado: Onda de choque se repete de até 10 inimigos na área",
+    "não simulado: Repetições da onda de choque causam -50% de dano com ataques e afecções"
    ],
    "outros": [],
    "icone": true
@@ -9630,6 +9632,7 @@
    "nome": "Flecha Forjada com Mana",
    "estado": "parcial",
    "ausentes": [
+    "não simulado: Habilidades Suportadas causam 1% mais Dano com Acertos e Afecções por cada 1 de Custo de Mana",
     "não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques de Arco excederem 300% do seu Custo de Mana",
     "não simulado: Habilidades Suportadas Ativam uma vez que o Custo de Mana total em outros Ataques\\nde Arco excederem 300% do seu Custo de Mana"
    ],
@@ -9703,7 +9706,7 @@
   {
    "slug": "Deadly_Ailments_Support",
    "nome": "Afecções Mortais",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9727,11 +9730,8 @@
   {
    "slug": "Sadism_Support",
    "nome": "Sadismo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Afecções Danificadoras infligidas com Habilidades Suportadas causam Dano 98% mais rápido",
-    "não simulado: 70% menos Duração de Afecções infligidas com Habilidades Suportadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9746,7 +9746,7 @@
   {
    "slug": "Vicious_Projectiles_Support",
    "nome": "Projéteis Perigosos",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9878,10 +9878,8 @@
   {
    "slug": "Swift_Affliction_Support",
    "nome": "Sofrimento Veloz",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: 25% menos Duração das Habilidades Suportadas e Afecções Danificadoras que infligirem"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9977,6 +9975,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Projéteis de Habilidades Suportadas Retornam a você",
+    "não simulado: Projéteis de Habilidades Suportadas causam 66% menos Dano com Acertos e Afecções enquanto Retornam",
     "não simulado: Projéteis de Habilidades Suportadas Atravessam todos os Alvos enquanto Retornando",
     "não simulado: Habilidades Suportadas têm 10% de Velocidade de Projétil aumentada"
    ],
@@ -9998,7 +9997,7 @@
   {
    "slug": "Vile_Toxins_Support",
    "nome": "Toxinas Letais",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -10103,10 +10102,8 @@
   {
    "slug": "Awakened_Swift_Affliction_Support",
    "nome": "Suporte Desperto: Sofrimento Veloz",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: 25% menos Duração das Habilidades Suportadas e Afecções Danificadoras que infligirem"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10249,6 +10246,7 @@
     "não simulado: Máximo de 3 tempestades",
     "não simulado: Tempestades ganham um estágio por 0.2 segundos, até 10",
     "não simulado: Tempestades têm +15% de área de efeito por estágio",
+    "não simulado: Explosão causa +40% de dano com ataques e afecções por estágio",
     "não simulado: Habilidades reforçadas ativam Tormenta do Vazio ao atingir o chão\\nTormentas do Vazio não podem ser ativadas a menos de 3 metros de você"
    ],
    "outros": [],
@@ -10404,10 +10402,8 @@
   {
    "slug": "Unbound_Ailments_Support",
    "nome": "Afecções Libertas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 54% do Efeito de Afecções não Danificantes aumentado em Inimigos"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10422,7 +10418,7 @@
   {
    "slug": "Controlled_Destruction_Support",
    "nome": "Destruição Controlada",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -10430,10 +10426,8 @@
   {
    "slug": "Elemental_Focus_Support",
    "nome": "Foco Elemental",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas não podem infligir Afecções Elementais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10590,6 +10584,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos Perde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando",
+    "não simulado: Habilidades Suportadas causam 3% mais Dano Elemental por cada 5 da sua menor Ressonância",
     "não simulado: Habilidades Suportadas penetram 16% da Resistência Elemental enquanto cada Ressonância estiver em ao menos 25",
     "não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos\\nPerde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando"
    ],
@@ -10782,6 +10777,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Magias Suportadas ganham Intensidade quando você as Conjurar, máximo de 3 Habilidades Suportadas disparam um Projétil a menos por Intensidade",
+    "não simulado: Projéteis das Habilidades Suportadas causam 20% mais Dano com Acertos por Intensidade",
     "não simulado: Habilidades Suportadas sempre disparam ao menos 1 Projétil",
     "não simulado: Magias Suportadas ganham Intensidade quando você as Conjurar, máximo de 3\\nHabilidades Suportadas disparam um Projétil a menos por Intensidade"
    ],
@@ -10996,10 +10992,8 @@
   {
    "slug": "Awakened_Elemental_Focus_Support",
    "nome": "Suporte Desperto: Foco Elemental",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas não podem infligir Afecções Elementais"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -11073,10 +11067,8 @@
   {
    "slug": "Awakened_Unbound_Ailments_Support",
    "nome": "Suporte Desperto: Afecções Libertas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 77% do Efeito de Afecções não Danificantes aumentado em Inimigos"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -11742,13 +11734,6 @@
    ]
   },
   {
-   "linha": "#% menos Duração das Habilidades Suportadas e Afecções Danificadoras que infligirem",
-   "gemas": [
-    "Awakened_Swift_Affliction_Support",
-    "Swift_Affliction_Support"
-   ]
-  },
-  {
    "linha": "% de chance de remover um Feitiço após Causar Dano",
    "gemas": [
     "Hexblast",
@@ -12190,13 +12175,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas não podem infligir Afecções Elementais",
-   "gemas": [
-    "Awakened_Elemental_Focus_Support",
-    "Elemental_Focus_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas sempre disparam ao menos # Projétil",
    "gemas": [
     "Locus_Mine_Support",
@@ -12222,13 +12200,6 @@
    "gemas": [
     "Faster_Projectiles_Support",
     "Returning_Projectiles_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% do Efeito de Afecções não Danificantes aumentado em Inimigos",
-   "gemas": [
-    "Awakened_Unbound_Ailments_Support",
-    "Unbound_Ailments_Support"
    ]
   },
   {
@@ -12954,12 +12925,6 @@
    ]
   },
   {
-   "linha": "#% menos Duração de Afecções infligidas com Habilidades Suportadas",
-   "gemas": [
-    "Sadism_Support"
-   ]
-  },
-  {
    "linha": "+ # do máximo de Estágios",
    "gemas": [
     "Vaal_Reave"
@@ -13182,12 +13147,6 @@
    ]
   },
   {
-   "linha": "Afecções Danificadoras infligidas com Habilidades Suportadas causam Dano #% mais rápido",
-   "gemas": [
-    "Sadism_Support"
-   ]
-  },
-  {
    "linha": "Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros",
    "gemas": [
     "Elemental_Proliferation_Support"
@@ -13344,6 +13303,12 @@
    ]
   },
   {
+   "linha": "Ataques Suportados causam #% mais Dano por cada Clamor que os Impelir",
+   "gemas": [
+    "Overexertion_Support"
+   ]
+  },
+  {
    "linha": "Ataques Suportados causam Dano Físico com Armas Adicional igual a #% da Vida Máxima enquanto em Vida Baixa",
    "gemas": [
     "Bloodthirst_Support"
@@ -13353,12 +13318,6 @@
    "linha": "Ataques Suportados causam Dano Físico com Armas Adicional igual a\\n#% da Vida Máxima enquanto em Vida Baixa",
    "gemas": [
     "Bloodthirst_Support"
-   ]
-  },
-  {
-   "linha": "Ataques Suportados não podem causar Sangramento",
-   "gemas": [
-    "Bloodlust_Support"
    ]
   },
   {
@@ -13537,6 +13496,12 @@
   },
   {
    "linha": "Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #%",
+   "gemas": [
+    "Controlled_Blaze_Support"
+   ]
+  },
+  {
+   "linha": "Cada Habilidade Suportada causa #% menos Dano por cada Incêndio infligido com ela Recentemente, máximo de #%",
    "gemas": [
     "Controlled_Blaze_Support"
    ]
@@ -14424,6 +14389,12 @@
    ]
   },
   {
+   "linha": "Explosão causa +#% de dano com ataques e afecções por estágio",
+   "gemas": [
+    "Voidstorm_Support"
+   ]
+  },
+  {
    "linha": "Explosão Final Causa + # % mais Dano",
    "gemas": [
     "Glacial_Cascade"
@@ -14949,6 +14920,18 @@
    "linha": "Habilidades Suportadas causam # Dano Base de Gelo por segundo",
    "gemas": [
     "Frigid_Bond_Support"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas causam #% mais Dano com Acertos e Afecções por cada # de Custo de Mana",
+   "gemas": [
+    "Manaforged_Arrows_Support"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas causam #% mais Dano Elemental por cada # da sua menor Ressonância",
+   "gemas": [
+    "Trinity_Support"
    ]
   },
   {
@@ -15978,6 +15961,12 @@
    ]
   },
   {
+   "linha": "Projéteis das Habilidades Suportadas causam #% mais Dano com Acertos por Intensidade",
+   "gemas": [
+    "Pinpoint_Support"
+   ]
+  },
+  {
    "linha": "Projéteis de Habilidades Suportadas Atravessam # Alvos adicionais",
    "gemas": [
     "Pierce_Support"
@@ -15985,6 +15974,12 @@
   },
   {
    "linha": "Projéteis de Habilidades Suportadas Atravessam todos os Alvos enquanto Retornando",
+   "gemas": [
+    "Returning_Projectiles_Support"
+   ]
+  },
+  {
+   "linha": "Projéteis de Habilidades Suportadas causam #% menos Dano com Acertos e Afecções enquanto Retornam",
    "gemas": [
     "Returning_Projectiles_Support"
    ]
@@ -16245,6 +16240,12 @@
    "linha": "Repetição Final das Habilidades Suportadas tem #% de chance de causar Dano Dobrado",
    "gemas": [
     "Awakened_Spell_Echo_Support"
+   ]
+  },
+  {
+   "linha": "Repetições da onda de choque causam #% de dano com ataques e afecções",
+   "gemas": [
+    "Void_Shockwave_Support"
    ]
   },
   {

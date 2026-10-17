@@ -1474,7 +1474,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;
   // (13/10: + o "mais Dano Degenerativo" com condição — `dano_dot_mais@magia`, "Mais X% de dano degenerativo com habilidades mágicas")
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|congelamento_como)/.test(k));
+  // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');

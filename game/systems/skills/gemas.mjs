@@ -728,6 +728,8 @@ export const temSkill = (estado, acao) => skillsAtivas(estado).has(acao);
 // (+ os da Blasfêmia, que não escalam com a gema de suporte: a reserva sobreposta, a maldição em aura e o efeito dela.)
 const CONTAGENS = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra', 'reservaSobreposta', 'maldicaoEmAura', 'efeitoMaldicaoPct']);
 const MULTIPLICATIVOS = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct']);
+// (lote G17) os "mais/menos" do acerto só e das afecções só (em % — multiplicam entre os suportes, como o `maisDanoPct`)
+const MAIS_DA_AFECCAO = new Set(['maisDanoAcertoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', 'maisDotFogoPct', 'maisDotFisicoPct', 'maisDotCaosPct', 'maisDotGeloPct', 'maisDotRaioPct']);
 export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   const a = ativas.get(acao);
   if (!a) return null;
@@ -759,6 +761,12 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
       else if (k === 'custoPct') e.custoPct = ((1 + e.custoPct / 100) * (1 + valor / 100) - 1) * 100;
       // O "X% mais/menos Dano" dos suportes do PoE MULTIPLICA (como no PoE), por cima do fator da gema.
       else if (k === 'maisDanoPct') e.fatorDeDano *= Math.max(0, 1 + valor / 100);
+      // (17/10, lote G17) o "mais/menos Dano com Acertos" multiplica o acerto (o fator da gema) e fica à parte (`maisDanoAcertoPct`) para a afecção
+      // que o acerto põe sair sem ele; o "mais Dano de Afecções" e o de cada afecção multiplicam só a afecção (`AfeccoesPoe.aoAcertar`).
+      else if (MAIS_DA_AFECCAO.has(k)) {
+        e[k] = ((1 + (e[k] ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
+        if (k === 'maisDanoAcertoPct') e.fatorDeDano *= Math.max(0, 1 + valor / 100);
+      }
       // O tempo de uso dos suportes do PoE também multiplica (40% mais velocidade e 20% menos são ×1/1,4 × ×1/0,8).
       else if (k === 'castTimePct' && doPoe) e.castTimePct = ((1 + (e.castTimePct ?? 0) / 100) * (1 + valor / 100) - 1) * 100;
       // (lote 36) O "X% mais/menos Efeito em Área" dos suportes do PoE também multiplica (o "aumentado", `areaIncPct`, soma).

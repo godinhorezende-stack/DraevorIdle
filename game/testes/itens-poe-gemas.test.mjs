@@ -227,7 +227,8 @@ test('o efeito do suporte no nível: "mais/menos" multiplica, custo, velocidade,
   const magia = { tags: ['poe:Magia', 'poe:Projétil', 'poe:Fogo'] };
   const gmp = SP.efeitoNoNivel('Greater_Multiple_Projectiles_Support', 10, 0, magia).efeito;
   assert.equal(gmp.alvosExtras, 4);
-  assert.ok(gmp.maisDanoPct < 0 && gmp.custoPct === 50);
+  // (dono, 17/10 — lote G17: o "menos Dano de Projétil" fica só no acerto, como no PoB — `maisDanoAcertoPct`; a afecção sai sem ele)
+  assert.ok(gmp.maisDanoAcertoPct < 0 && gmp.custoPct === 50);
   // (C — dono, 09/10, correção 3 da auditoria da velocidade: o "aumentada" do suporte SOMA com a velocidade da ficha — vai em
   // `velConjuracaoPct`, não mais no tempo de uso `castTimePct`, que fica só para o "mais/menos".)
   const fc = SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, magia).efeito;
