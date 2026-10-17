@@ -43288,6 +43288,33 @@
       ],
       "_nova": true,
       "_lote73": "17/10 — lote 73 (as Ramificadoras: os notáveis — Acerto Selvagem, Selos, Runas, Caos atordoado, propagações restantes, Empalamento com Sangramento)"
+    },
+    {
+      "padrao": "^Convocação de Runas concede alcance do Vínculo de Runas aumentado em \\{(\\d+)\\}% para Runas convocadas$",
+      "efeitos": [
+        {
+          "stat": "convocar_runas_alcance",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote74": "17/10 — lote 74 (as Ramificadoras: o Reduzir — a gema Convocar Runas, decisão do dono \"Implementar a gema\")"
+    },
+    {
+      "padrao": "^Convocação de Runas tem Recuperação da Recarga aumentada em \\{(\\d+)\\}%, máximo de \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "convocar_runas_recarga_por_runa",
+          "valor": "{1}"
+        },
+        {
+          "stat": "convocar_runas_recarga_max",
+          "valor": "{2}"
+        }
+      ],
+      "nota": "como no PoE (o inglês): por Runa sua em campo — o português do poedb não diz \"por Runa\"",
+      "_nova": true,
+      "_lote74": "17/10 — lote 74 (as Ramificadoras: o Reduzir — a gema Convocar Runas, decisão do dono \"Implementar a gema\")"
     }
   ]
 }

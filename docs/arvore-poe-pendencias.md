@@ -90,13 +90,11 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 665 | 3 | 3 |
+| Notáveis | 671 | 667 | 3 | 1 |
 
 <details><summary>As linhas sem efeito</summary>
 
 - Pura Agonia — +5 de Virulência Máxima
-- Reduzir — Convocação de Runas concede alcance do Vínculo de Runas aumentado em 20% para Runas convocadas
-- Reduzir — Convocação de Runas tem Recuperação da Recarga aumentada em 4%, máximo de 40%
 
 </details>
 

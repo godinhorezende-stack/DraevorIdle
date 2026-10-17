@@ -437,6 +437,9 @@ function avaliarNoJogo(h, formato) {
   // (14/10) O Infestador sai sozinho (o jogo usa as habilidades sozinho); o Feiticeiro liga reservando e ativa as magias ligadas.
   if (h.arquetipo === 'praga') return { status: 'parcial', motivos: ['sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)'] };
   if (h.arquetipo === 'feiticeiro') return { status: 'funciona', motivos: [] };
+  // (lote 74 — dono, 17/10: "Implementar a gema") a Convocar Runas: traz as suas Runas, Ativa as vinculadas pagando 20% do custo de cada uma e dá o
+  // Alcance de Vínculo da gema até se vincularem de novo (`acoes.convocarRunas`).
+  if (h.slug === 'Brand_Recall') return { status: 'funciona', motivos: [] };
   // LACAIOS e TOTENS (`lacaios-poe.mjs`): invocam de verdade, com o máximo, a duração e os bônus da gema; o que ainda é simplificado vai nos motivos.
   if (h.arquetipo === 'lacaio' || h.arquetipo === 'totem') {
     const motivos = h.arquetipo === 'totem'
@@ -479,12 +482,14 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
   const vinculo = h.arquetipo === 'vinculo';
   // (14/10: o Feiticeiro liga como as auras — reserva e fica ligado; o Infestador, sem alvo)
   const buff = BUFF.has(h.arquetipo) || vinculo || h.arquetipo === 'feiticeiro';
+  const convocaRunas = g.slug === 'Brand_Recall';
   const tagsArea = (g.tags ?? []).some((t) => /Área/i.test(t));
   let moldeId;
   if (buff) moldeId = 'spell-blood-rage';
   else if (h.arquetipo === 'praga') moldeId = 'spell-haste';
   // O lacaio só invoca (o visual é o do estilo da gema): o molde sem alvo. O totem usa o molde da skill que ele vai usar (o projétil, a área).
-  else if (h.arquetipo === 'lacaio') moldeId = 'spell-haste';
+  // (lote 74: a Convocar Runas também — no PoE ela sai em você, sem alvo nem área: `acoes.convocarRunas`)
+  else if (h.arquetipo === 'lacaio' || convocaRunas) moldeId = 'spell-haste';
   else if (h.arquetipo === 'corpo_a_corpo') moldeId = tagsArea ? 'spell-front-sweep' : 'spell-brutal-strike';
   else if (h.arquetipo === 'movimento') moldeId = h.ataque || Object.keys(h.stats.dano ?? {}).length ? 'spell-ethereal-barrage' : 'spell-haste';
   else moldeId = MOLDES[formato]?.[visual] ?? MOLDES.projetil[visual] ?? 'spell-brutal-strike';
@@ -519,7 +524,7 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     kind: 'spell',
     vocations: null,
     // Lacaio e totem são de SUPORTE na barra (invocam; quem bate é o invocado).
-    papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
+    papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) || convocaRunas ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
     group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
     poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}) },

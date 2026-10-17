@@ -7976,6 +7976,24 @@
       "unidade": "%",
       "combate": true,
       "efeito": "mods-poe.aoPorAfeccoes (lote 73)"
+    },
+    "convocar_runas_alcance": {
+      "nome": "Alcance do Vínculo das Runas convocadas aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.convocarRunas (lote 74)"
+    },
+    "convocar_runas_recarga_por_runa": {
+      "nome": "Recuperação da Recarga da Convocar Runas por Runa em campo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe (lote 74)"
+    },
+    "convocar_runas_recarga_max": {
+      "nome": "Recuperação da Recarga da Convocar Runas por Runa, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe (lote 74)"
     }
   }
 }

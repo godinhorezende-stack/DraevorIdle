@@ -21,7 +21,9 @@ const distancia = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 const segundos = (s) => Math.round(parseFloat(String(s).replace(',', '.')) * 1000);
 
 /** A gema é uma Runa (Brand) do PoE? (o arquétipo `marca` do compilador), só no modo PoE. */
-export const ehRuna = (entry) => ligado() && entry?.poeGema?.arquetipo === 'marca';
+export const ehRuna = (entry) => ligado() && entry?.poeGema?.arquetipo === 'marca' && !ehConvocarRunas(entry);
+/** (lote 74) A gema CONVOCAR RUNAS (Brand Recall): é de Runa no PoE, mas não cria Runa — traz as suas (`convocar`, `acoes.convocarRunas`). */
+export const ehConvocarRunas = (entry) => ligado() && entry?.poeGema?.slug === 'Brand_Recall';
 
 /** O que a gema diz da Runa (as linhas do nível): a ativação, as durações, a troca de alvo e o vínculo a mais por inimigo. */
 export function daGema(linhas = []) {
@@ -70,12 +72,15 @@ export const cheias = (hunt, ficha) => ativas(hunt).length >= maximo(ficha) && a
  * Conjura uma Runa no lugar (`x`, `y`) — com a gema (`props`: `daGema`), o intervalo já com a velocidade de conjuração (`intervaloMs`) e
  * as durações com a Duração de Habilidades (`fatorDaDuracao`). Passou do máximo: a mais velha sai. Devolve a Runa (solta: o tique a vincula).
  */
-export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, props, intervaloMs, fatorDaDuracao = 1, agora = hunt?.clock ?? 0 }) {
+export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, props, intervaloMs, fatorDaDuracao = 1, agora = hunt?.clock ?? 0, custo = null }) {
   const lista = [...ativas(hunt)];
   while (lista.length >= maximo(ficha)) lista.shift();
   hunt.runasN = (hunt.runasN ?? 0) + 1;
   const r = {
+    // (lote 74: o custo pago ao conjurar — `custo` e em quê, `custoEm`: 'mana' (com a parte em Vida, `parteEmVidaPct`), 'vida' ou 'es'; a
+    // Convocar Runas cobra uma parte dele para Ativar a Runa)
     id: `runa-${hunt.runasN}`, acao, slot, x, y, z, desde: agora, em: agora, alvo: null, soltaDesde: agora,
+    custo: Math.max(0, Math.round(custo?.valor ?? 0)), custoEm: custo?.em ?? 'mana', ...(custo?.parteEmVidaPct > 0 ? { parteEmVidaPct: custo.parteEmVidaPct } : {}),
     intervaloMs: Math.max(50, Math.round(intervaloMs ?? props.intervaloMs)), unica: !!props.unica,
     vinculadaMs: Math.round(props.vinculadaMs * fatorDaDuracao), soltaMs: Math.round(props.soltaMs * fatorDaDuracao), vinculadaPassou: 0, soltaPassou: 0,
     ...(props.trocaMs != null ? { trocaMs: props.trocaMs } : {}), ...(props.porInimigoExtra ? { porInimigoExtra: props.porInimigoExtra } : {}),
@@ -87,7 +92,8 @@ export function conjurar(hunt, ficha, { acao, slot, x, y, z = hunt?.z ?? 0, prop
 
 /** Vincula a Runa ao inimigo vivo mais perto no alcance que ainda tem vaga (`fora`: um uid para pular — a troca de alvo). */
 export function vincular(hunt, ficha, r, agora = hunt?.clock ?? 0, { preferido = null, fora = null } = {}) {
-  const raio = alcance(ficha, alcanceDaSolta(ficha, r, agora));
+  // (+ lote 74: o alcance a mais da Runa CONVOCADA, até se vincular de novo — `convocar`)
+  const raio = alcance(ficha, alcanceDaSolta(ficha, r, agora) + (r.convocadaPct ?? 0));
   const cabe = (b) => b && b.hp > 0 && !b.dummy && b.uid !== fora && !(b.z != null && r.z != null && b.z !== r.z) && distancia(b, r) <= raio && vinculadasA(hunt, b.uid) < porInimigo(ficha, r);
   let alvo = cabe(preferido) ? preferido : null;
   if (!alvo) {
@@ -96,7 +102,18 @@ export function vincular(hunt, ficha, r, agora = hunt?.clock ?? 0, { preferido =
   }
   if (!alvo) return null;
   Object.assign(r, { alvo: alvo.uid, x: alvo.x, y: alvo.y, proxima: agora });
+  delete r.convocadaPct;
   return alvo;
+}
+
+/**
+ * (lote 74) A Runa CONVOCADA (a gema Convocar Runas): vem até você (`pos`), solta, com `alcancePct` de Alcance de Vínculo aumentado até se
+ * vincular de novo (o da gema + o "para Runas convocadas" — `acoes.convocarRunas`). A duração não se renova (a wiki do PoE, 3.11).
+ */
+export function convocar(r, pos, agora, alcancePct = 0, z = r.z) {
+  Object.assign(r, { alvo: null, x: pos.x, y: pos.y, z, soltaDesde: agora });
+  if (alcancePct > 0) r.convocadaPct = alcancePct;
+  else delete r.convocadaPct;
 }
 
 /**
@@ -113,8 +130,6 @@ export function tique(hunt, ficha, agora = hunt?.clock ?? 0) {
   const porUid = new Map((hunt.monstros ?? []).map((b) => [b.uid, b]));
   const freqPct = v(ficha, 'runa_frequencia_tardia_pct');
   const freqApos = v(ficha, 'runa_frequencia_tardia_apos') || 75;
-  const areaPct = v(ficha, 'runa_area_tardia_pct');
-  const areaApos = v(ficha, 'runa_area_tardia_apos') || 50;
   const trocaDaArvore = v(ficha, 'runas_trocam_alvo_s');
   for (const r of [...hunt.runas]) {
     const dt = Math.max(0, agora - (r.em ?? agora));
@@ -134,7 +149,7 @@ export function tique(hunt, ficha, agora = hunt?.clock ?? 0) {
     }
     if (agora < (r.proxima ?? agora)) continue;
     const fracao = r.vinculadaPassou / Math.max(1, r.vinculadaMs);
-    ativar.push({ r, alvo, areaPct: areaPct > 0 && fracao >= areaApos / 100 ? areaPct : 0 });
+    ativar.push({ r, alvo, areaPct: areaTardiaPct(ficha, r) });
     // ("Runas têm 100% mais Frequência de Ativação se 75% da Duração de Vínculo houver expirado": o intervalo ÷ 2.)
     const mais = freqPct > 0 && fracao >= freqApos / 100 ? 1 + freqPct / 100 : 1;
     r.proxima = agora + Math.round(r.intervaloMs / mais);
@@ -153,6 +168,16 @@ export function tique(hunt, ficha, agora = hunt?.clock ?? 0) {
   hunt.runas = hunt.runas.filter((r) => !fora.has(r));
   marcarNosInimigos(hunt);
   return { ativar, expiradas };
+}
+
+/**
+ * O "Runas têm Área de Efeito aumentada em X% caso Y% da Duração do Vínculo tenha expirado" desta Runa agora: o X, ou 0 (vale em toda
+ * Ativação — a do tique e a da Convocar Runas).
+ */
+export function areaTardiaPct(ficha, r) {
+  const pct = v(ficha, 'runa_area_tardia_pct');
+  const apos = v(ficha, 'runa_area_tardia_apos') || 50;
+  return pct > 0 && r.vinculadaPassou / Math.max(1, r.vinculadaMs) >= apos / 100 ? pct : 0;
 }
 
 /** Quantas Runas suas estão vinculadas a cada inimigo (`m.runasVinculadas` — "Inimigos sofrem Dano aumentado em X% para cada uma…"). */

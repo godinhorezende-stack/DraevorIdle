@@ -2136,7 +2136,10 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const bruto = (ataque ? (intervalo / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, velocidadeDoUso) / 100)) * lentidao;
   // (ciclo 7) + a "Recuperação da Recarga" de UMA gema ("Convocação tem Recuperação da Recarga aumentada"): `recarga_gema:<slug>` — vale também
   // nas versões transfiguradas (o slug começa igual: Blink_Arrow → Blink_Arrow_of_Prismatic_Clones).
-  const daGemaNomeada = Object.entries(ficha.afPoe ?? {}).reduce((n, [k, v]) => (k.startsWith('recarga_gema:') && typeof v === 'number' && entry.poeGema.slug.startsWith(k.slice('recarga_gema:'.length)) ? n + v : n), 0);
+  // (+ lote 74, o Reduzir: "Convocação de Runas tem Recuperação da Recarga aumentada em X% por Runa, até Y%" — as suas Runas em campo agora)
+  const porRuna = Runas.ehConvocarRunas(entry) ? ModsPoe.valor(ficha, 'convocar_runas_recarga_por_runa') : 0;
+  const daConvocacao = porRuna > 0 ? Math.min(ModsPoe.valor(ficha, 'convocar_runas_recarga_max') || Infinity, porRuna * Runas.ativas(estado?.hunt).length) : 0;
+  const daGemaNomeada = daConvocacao + Object.entries(ficha.afPoe ?? {}).reduce((n, [k, v]) => (k.startsWith('recarga_gema:') && typeof v === 'number' && entry.poeGema.slug.startsWith(k.slice('recarga_gema:'.length)) ? n + v : n), 0);
   // (PoE, os únicos: "A Recarga de Habilidades Clamor é de N segundos" — a base do clamor no lugar da da gema; a recuperação vale por cima.)
   const clamorFixo = entry.poeGema.arquetipo === 'clamor' ? ModsPoe.valor(ficha, 'recarga_clamor_fixa') : 0;
   // (+ "Projéteis Mágicos Encaixados têm +N segundos de Recarga" — a recarga a mais da peça, na base; + ciclo 7, lote G: "Habilidades de Postura
@@ -2484,6 +2487,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (Runas.ehRuna(entry) && !manual && !gatilho && !concluir && Runas.cheias(hunt, Ficha.combate(estado))) {
     return { ok: false, erro: `Já estão todas as Runas em campo (${Runas.ativas(hunt).length}/${Runas.maximo(Ficha.combate(estado))}).`, motivo: 'RUNAS_COMPLETAS' };
   }
+  // (lote 74) a Convocar Runas sem Runa em campo: o automático não a gasta (o clique usa).
+  if (Runas.ehConvocarRunas(entry) && !manual && !gatilho && !concluir && !Runas.ativas(hunt).length) {
+    return { ok: false, erro: 'Nenhuma Runa em campo para convocar.', motivo: 'SEM_RUNAS' };
+  }
   // (PoE, 12/10) o VÍNCULO (`itens-poe/vinculos.mjs`): com o da gema ainda ligado (e não acabando), não relança; sem aliado para focar, não sai.
   if (Vinculos.ehVinculo(entry)) {
     const ligado = Vinculos.vinculos(hunt).find((lk) => lk.acao === entry.id);
@@ -2683,6 +2690,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const hp = entry.kind === 'item' ? entry.heal : conta ? [conta.min, conta.max] : null;
     const mp = entry.kind === 'item' ? entry.mana : null;
     if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x, y });
+    // (lote 74 — dono, 17/10: "Implementar a gema") a CONVOCAR RUNAS: sai em você (sem alvo nem área); as suas Runas vêm até você e são Ativadas
+    // (`convocarRunas`).
+    if (Runas.ehConvocarRunas(entry) && !plantada) eventos.push(...convocarRunas(estado, hunt, personagem, efeitoDaGema, agora));
     if (hp) {
       // Poção: o número dela. Magia: × a conta, e a árvore (Graça, Fonte viva) por cima, no momento.
       const curaBruta = entry.kind === 'item' ? sortear(hp[0], hp[1]) : Arvore.aoCurarComMagia(estado, Math.round((sortear(hp[0], hp[1]) + conta.pericia) * conta.mult));
@@ -2708,7 +2718,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (PoE, 12/10) A RUNA: conjurada no lugar mirado, vincula ao alvo e é Ativada na hora — e depois a cada N segundos, enquanto vinculada
     // (`tiqueDasRunas`).
     const lugar = mira && entry.miraNoChao ? mira : alvo ? { x: alvo.x, y: alvo.y } : { x, y };
-    eventos.push(...conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora));
+    // (lote 74: o custo pago e em quê — a Convocar Runas cobra 20% dele no mesmo recurso)
+    const custo = { valor: custoDeMana, em: pagaComVida ? 'vida' : pagaComEscudo ? 'es' : 'mana', parteEmVidaPct: !pagaComVida && !pagaComEscudo && custoDeMana > 0 ? Math.round((100 * parteEmVida) / custoDeMana) : 0 };
+    eventos.push(...conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora, custo));
   } else {
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x, y, color: '#f36500' });
     // (PoE: "Velocidade do Projétil aumentada" — o projétil voa mais rápido na tela.)
@@ -3422,17 +3434,65 @@ export function convocarOAco(estado, hunt, personagem, agora = hunt?.clock ?? 0)
  * ÷ a Velocidade de Conjuração (a da ficha, a "com Habilidades de Runas" e a da gema — "Aumentos e Reduções à Velocidade de Conjuração também
  * se aplicam à frequência de Ativação"), as durações × a Duração de Habilidades; vincula ao alvo e já processa as Runas. Devolve os eventos.
  */
-export function conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora) {
+export function conjurarRuna(estado, hunt, personagem, slot, entry, action, lugar, alvo, efeitoDaGema, agora, custo = null) {
   const ficha = Ficha.combate(estado);
   const props = Runas.daGema(GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas);
   const castSpeed = (ficha.castSpeed ?? 0) + (ModsPoe.somaPorTags(ficha, tagsPoeDaSkill(entry)).cast_speed_tag ?? 0) + (efeitoDaGema?.velConjuracaoPct ?? 0);
   const fatorDaDuracao = fatorDeDuracao(estado, entry, efeitoDaGema);
-  const conjurar = () => Runas.vincular(hunt, ficha, Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100), fatorDaDuracao, agora }), agora, { preferido: alvo });
+  const conjurar = () => Runas.vincular(hunt, ficha, Runas.conjurar(hunt, ficha, { acao: action.id, slot, x: lugar.x, y: lugar.y, z: hunt.z ?? 0, props, intervaloMs: props.intervaloMs / Math.max(0.1, 1 + castSpeed / 100), fatorDaDuracao, agora, custo }), agora, { preferido: alvo });
   conjurar();
   // (lote 73, o Notável) "Habilidades que criam Runas têm X% de chance de criarem uma Runa adicional": a outra no mesmo lugar (ela procura o
   // inimigo dela — o alvo já tem a vaga ocupada).
   if (Math.random() * 100 < ModsPoe.valor(ficha, 'runa_adicional_chance')) conjurar();
   return tiqueDasRunas(estado, hunt, personagem, [], agora);
+}
+
+/**
+ * (lote 74 — dono, 17/10: "Implementar a gema") A CONVOCAR RUNAS (Brand Recall do PoE): todas as suas Runas vêm até você, soltas, com o
+ * Alcance de Vínculo aumentado da gema ("Runas recebem Alcance de Vínculo aumentado em X%", pelo nível) + o do Reduzir ("Convocação de Runas
+ * concede alcance do Vínculo de Runas aumentado em X% para Runas convocadas") até se vincularem de novo; e cada uma vinculada é ATIVADA no
+ * inimigo dela, pagando 20% do custo de mana dela ("Gasta 20% do Custo da Runa" — a wiki do PoE, 3.11: "spends 20% of each recalled brand's
+ * mana cost to activate them"; sem a mana, aquela não ativa). A duração não se renova. Devolve os eventos.
+ */
+export function convocarRunas(estado, hunt, personagem, efeitoDaGema, agora = hunt?.clock ?? 0) {
+  const eventos = [];
+  if (!hunt?.runas?.length || !hunt.pos) return eventos;
+  const ficha = Ficha.combate(estado);
+  const linhas = (GemasPoe.textosDaGema('Brand_Recall', efeitoDaGema?.nivel ?? 1)?.linhas ?? []).join('\n');
+  const daGema = Number(/Alcance de Vínculo aumentado em (\d+)\s*%/.exec(linhas)?.[1]) || 0;
+  const pctDoCusto = Number(/Gasta (\d+)\s*% do Custo da Runa/.exec(linhas)?.[1]) || 20;
+  const alcancePct = daGema + ModsPoe.valor(ficha, 'convocar_runas_alcance');
+  const porUid = new Map((hunt.monstros ?? []).map((b) => [b.uid, b]));
+  for (const r of [...hunt.runas]) {
+    const alvo = r.alvo != null ? porUid.get(r.alvo) : null;
+    // A parte do custo, no recurso em que a Runa foi paga (Vida — a Magia Sanguínea —, Escudo de Energia, ou Mana com a parte em Vida); só
+    // depois que a Ativação saiu.
+    const total = Math.round(((r.custo ?? 0) * pctDoCusto) / 100);
+    const emVida = r.custoEm === 'vida' ? total : r.custoEm === 'mana' ? Math.round((total * (r.parteEmVidaPct ?? 0)) / 100) : 0;
+    const emEs = r.custoEm === 'es' ? total : 0;
+    const emMana = total - emVida - emEs;
+    const pode = (estado.hp ?? 0) > emVida && (estado.es ?? 0) >= emEs && (estado.mana ?? 0) >= emMana;
+    if (alvo?.hp > 0 && (estado.hp ?? 0) > 0 && pode) {
+      const res = dispararSemMarcar(estado, hunt, personagem, r.slot, alvo, { plantada: { tipo: 'runa', id: r.id, acao: r.acao, slot: r.slot, x: alvo.x, y: alvo.y, z: r.z, areaPct: Runas.areaTardiaPct(ficha, r) } });
+      if (res?.ok) {
+        eventos.push(...(res.eventos ?? []));
+        if (emVida) estado.hp = Math.max(1, (estado.hp ?? 0) - emVida);
+        if (emEs) estado.es = Math.max(0, (estado.es ?? 0) - emEs);
+        if (emMana > 0) {
+          estado.mana = Math.max(0, (estado.mana ?? 0) - emMana);
+          // (a mana gasta conta como no Custo: "por cada N de Mana Gasta Recentemente", "ao Gastar Mana")
+          hunt.poeManaGasta = [...(hunt.poeManaGasta ?? []).filter((x) => (hunt.clock ?? 0) - x.t <= ModsPoe.RECENTE_MS), { t: hunt.clock ?? 0, n: emMana }].slice(-40);
+          ModsPoe.marcar(hunt, 'gastouMana');
+          ModsPoe.evento(estado, hunt, 'gastarMana', ficha, { personagem, quantidade: emMana, eventos: [] });
+          Treino.gastarMana(estado, emMana);
+        }
+        if (emVida) ModsPoe.marcar(hunt, 'gastouVida');
+      }
+    }
+    Runas.convocar(r, hunt.pos, agora, alcancePct, hunt.z ?? 0);
+  }
+  Runas.marcarNosInimigos(hunt);
+  return eventos;
 }
 
 /**
