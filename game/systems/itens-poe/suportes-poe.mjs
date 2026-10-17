@@ -281,7 +281,10 @@ const REGRAS = [
   [new RegExp(`têm ${N}% da Chance de Crítico aumentada`, 'i'), (m) => ({ critChance: num(m[1]) / 20 })],
   [new RegExp(`têm ${N}% menos Chance de (?:Golpe|Acerto) Crítico`, 'i'), (m) => ({ critChance: -num(m[1]) / 20 })],
   [new RegExp(`têm \\+${N}% de Multiplicador de Crítico`, 'i'), (m) => ({ critDano: num(m[1]) })],
-  [new RegExp(`Penetram ${N}% de Resistência (?:a |ao )?(\\S+)`, 'i'), (m, t, a) => (temTag(a, m[2]) ? { penetracaoPct: num(m[1]) } : null)],
+  // (17/10, lote G16) a Penetração entra no uso como o atributo da ficha (`af:fire_pen`… → `ficha.penetracao` pela ficha do golpe): só o dano
+  // daquele elemento penetra — o `penetracaoPct` de antes ninguém lia (o teste das gemas "funciona" achou).
+  [new RegExp(`Penetram ${N}% de Resistência (?:a |ao )?(Fogo|Gelo|Raio)`, 'i'), (m) => ({ [`af:${ELEMENTO_DA_TAG[m[2][0].toUpperCase() + m[2].slice(1).toLowerCase()]}_pen`]: num(m[1]) })],
+  [new RegExp(`Penetram ${N}% das Resistências Elementais`, 'i'), (m) => ({ 'af:elem_pen': num(m[1]) })],
   [/Utilizar Habilidades Suportadas é Instantâneo/i, () => ({ castTimePct: -100 })],
   [new RegExp(`Velocidade de Recuperação da Recarga aumentada em ${N}%`, 'i'), (m) => ({ recargaPct: tempoDaVelocidade(num(m[1])) })],
   [new RegExp(`têm ${N}% menos Custo de Mana`, 'i'), (m) => ({ custoPct: -num(m[1]) })],

@@ -116,12 +116,21 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - A Vida/Mana por acerto das gemas de ataque passa a sair do `valor` do acerto (a da soma, a da Marca no alvo e a local do suporte).
 - Teste: `suportes-uso-e-aura-poe.test.mjs` (3). Suportes sem efeito 17 → 12; testados 29 → 36.
 
-### G15 — os gatilhos que faltavam e os suportes de canalização (17/10)
+### G15 — os gatilhos que faltavam e os suportes de canalização (17/10, commit 3b393ea5; push no PR)
 
 - Saiu a trava "esse gatilho ainda não existe no jogo". `gatilhoDe` lê: **Conjurar enquanto Canaliza** (`canalizar` — as magias do grupo saem a cada intervalo enquanto a habilidade de Canalização do grupo canaliza: `Acoes.tiqueDaCanalizacao`, no tique da caçada; nos grupos, quem dispara é a habilidade canalizada), **Conjurar ao ser Atordoado** (`atordoado`, com a chance — o atordoamento que o acerto pôs: `Acoes.depoisDeSerAcertado`) e **Conjurar ao Morrer** (`morte` — a vida chegou a 0; o "mais Dano enquanto Morto"). O `ativarGatilhos` passou a respeitar a chance do gatilho.
 - **Canalização Focada**: "X% mais dano / custo por segundo canalizando, até Y%" pelo tempo de `hunt.canalizacao`. **Canalização Infundida**: "sofra X% menos Dano dos Acertos" enquanto canaliza a habilidade suportada (`Acoes.menosDanoDaCanalizacao`, no golpe do bicho).
 - Pendente: o "Conjurar ao ser Atordoado" no Bloquear um Acerto Atordoante e nas magias do bicho (só no golpe corpo a corpo); o "Ignora Atordoamentos" do Desperto.
 - Teste: `gatilhos-canalizacao-poe.test.mjs` (4). Suportes sem efeito 12 → 6.
+
+### G16 — o teste geral de todas as gemas "funciona" (17/10)
+
+- `testes/gemas-todas-funcionam-poe.test.mjs`: cada uma das 151 ativas `funciona` é usada de verdade numa caçada, com a primeira arma (de seis: varinha, arco, espada com escudo, maça de duas mãos, adaga, cajado) que ela aceita, contra um alvo imortal colado. A de uso precisa causar dano no alvo; a de buff, ligar o buff. Na Retaliação a janela fica aberta; no Vínculo há um aliado perto; a Rajada de Chamas carrega até explodir; armadilhas, minas, gêiseres e torres rodam pelo tique. Cada suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa aparecer no código do jogo (fora as `af:`, que a ficha do uso lê).
+- **Dois defeitos reais que o teste achou:**
+  - **Os suportes de Penetração (Fogo, Gelo, Raio) não faziam nada.** O efeito era `penetracaoPct`, que nenhum código lia. Agora é o atributo da ficha (`af:fire_pen`, `af:ice_pen`, `af:energy_pen`), que a ficha do golpe soma em `ficha.penetracao`. A Penetração Elemental (antes parcial) entra junto, como `af:elem_pen`. Medido no jogo: a Bola de Fogo com o suporte baixa em 34 pontos a resistência a Fogo efetiva do alvo.
+  - **O cone esticado perdia a fileira da frente.** `Areas.escalarForma` levava o cone de 1 casa (`spell-front-sweep`) para 3 casas ou mais sem as casas coladas em quem usa. O Golpe de Escudo Glacial, de 8 m, não pegava o monstro colado à frente; vale para todo ataque corpo a corpo em área com raio de 6 m ou mais. Agora a forma que sai de quem usa (sem a casa do centro) começa colada: 3 casas na frente, a largura toda atrás. As formas com centro (a Nova, o losango) não mudam.
+- O relatório cita o teste geral. "Sem teste próprio" passa a querer dizer que só o teste geral cobre a gema.
+- Teste: `gemas-todas-funcionam-poe.test.mjs` (4). Suportes parciais 160 → 159; testados 41 → 42.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -132,10 +141,11 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 5. **"Dano Físico Base como a Mão Secundária"** (8 gemas de escudo) e os bônus do escudo (crítico pelo Escudo de Energia, dano pela armadura do escudo).
 6. **Os outros suportes:** 157 parciais e 31 sem efeito; gatilhos que faltam (Conjurar ao Morrer, ao ser Atordoado, enquanto Canaliza), totens (velocidade de posicionamento), auras (efeito), maldições (efeito em área, duração).
 7. **A interface:** o balão da gema mostra as linhas da qualidade que não valem; marcar cada linha (feita / não feita) e o motivo, nos encaixes e na barra.
-8. **Testes parametrizados** de todas as gemas `funciona` (ativação, dano > 0, custo) e de todos os suportes `funciona` (o efeito muda o resultado).
+8. ~~Testes parametrizados~~ feito no G16 (uso real e dano/buff de toda ativa `funciona`; efeito lido de todo suporte `funciona`). Falta: medir o efeito de CADA suporte num uso (com e sem), não só que o código o lê.
+9. **O "Dano de Fogo/Gelo/Raio aumentado" dos suportes** vale para todo o dano da habilidade que tem a tag (`valeParaOTipo` → `danoPct`): numa habilidade de dano misto, o PoE só aumenta a parte daquele elemento. Trocar por `af:fire_dmg`… (a ficha do golpe aplica por elemento).
 
 ## Próximo passo exato
 
-1. Commitar G15 (FULL por exceção — autorização do dono para os lotes desta tarefa).
-2. G11: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
-3. As repetições do golpe (11 gemas) e as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).
+1. Commitar G16 (FULL por exceção — autorização do dono para os lotes desta tarefa) e fazer o push no PR.
+2. G17: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
+3. O dano por elemento dos suportes (pendência 9) e as mecânicas próprias das gemas de ataque, por quantidade: Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).

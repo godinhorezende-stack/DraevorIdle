@@ -1,0 +1,171 @@
+// TODAS AS GEMAS "FUNCIONA" NO JOGO (lote G16, 17/10 — o pedido do dono: "Crie testes para todas as gemas e suportes … resultados concretos"):
+// cada gema ativa do PoE com o status `funciona` é usada de verdade numa caçada — com a primeira arma (de um conjunto) que a habilidade aceita
+// — e precisa fazer o que o status promete: a de USO (ataque, magia, armadilha, mina, runa) causa dano no alvo; a de BUFF (aura, arauto, clamor,
+// maldição, vínculo) liga o buff. E cada suporte `funciona` precisa de um efeito no nível 20 sem linha "não feita". Uma gema que o status diz
+// funcionar e não faz nada é uma falha (o status mente).
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+
+process.env.ITENS_POE = '1';
+const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no modo PoE, com o catálogo do PoE';
+const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+const Acoes = await import('../systems/acoes.mjs');
+const GS = await import('../systems/skills/gemas.mjs');
+const G = await import('../systems/itens-poe/gemas-poe.mjs');
+const SP = await import('../systems/itens-poe/suportes-poe.mjs');
+const Cacadas = await import('../systems/cacadas.mjs');
+const Ficha = await import('../systems/ficha.mjs');
+const Afixos = await import('../systems/afixos.mjs');
+const Registro = await import('../systems/combate/registro.mjs');
+const Areas = await import('../engine/areas.mjs');
+
+/** As armas tentadas (a primeira que a gema aceita): a varinha, o arco, a espada com escudo, a maça de duas mãos, a adaga, o cajado. */
+const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/Rusted_Sword', 'Shields/Splintered_Tower_Shield'], ['Two_Hand_Maces/Driftwood_Maul'], ['Daggers/Sai'], ['Staves/Gnarled_Branch']];
+const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo', 'feiticeiro']);
+
+let J;
+let gerarPeca;
+const pecas = new Map();
+const peca = (base) => {
+  if (!pecas.has(base)) pecas.set(base, J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base, raridade: 'normal', ilvl: 60, rng: () => 0.5 })));
+  return structuredClone(pecas.get(base));
+};
+/** Um personagem com a arma (e o escudo) e a gema no slot 1, numa caçada, com um alvo imortal colado e os outros longe. */
+function montar(slug, [arma, escudo], suportes = []) {
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 90 }), { classePoe: 'Scion', sistema: 'poe' });
+  const a = peca(arma);
+  const n = 1 + suportes.length;
+  a.soquetes = { abertos: n, links: Array.from({ length: n - 1 }, () => true), gemas: Array(n).fill(null), cores: Array(n).fill('W') };
+  e.equipment = { ...e.equipment, weapon: a };
+  if (escudo) e.equipment.shield = peca(escudo);
+  else delete e.equipment.shield;
+  e.inventory = [slug, ...suportes].map((s) => GS.itemDaGema({ id: (G.doSlug(s) ?? SP.doSlug(s)).itemId, nivel: 20, xp: 0, raridade: 'comum' }));
+  for (let i = 0; i < n; i++) GS.encaixar(e, { de: 0, slot: 'weapon', indice: i });
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  e.actions[0] = { id: G.doSlug(slug).acao, enabled: true, minMana: 0, conditions: [] };
+  Afixos.sincronizarMaximos(e);
+  Ficha.invalidar(e);
+  if (!Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok) return null;
+  e.hunt.clock = 100_000;
+  e.mana = e.maxMana = 1e7;
+  e.maxHp = e.hp = 1e7;
+  const [b, ...resto] = e.hunt.monstros;
+  for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
+  Object.assign(b, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {} });
+  // (as gemas de cadáver precisam de um cadáver perto do alvo; as de Retaliação, da janela aberta — o bloqueio, o Acerto Selvagem; os Vínculos,
+  // de um aliado perto — o mercenário)
+  e.hunt.cadaveres = [{ key: 'x', nome: 'Morto', look: 1, x: b.x, y: b.y, maxHp: 10000 }];
+  const retaliacao = G.gatilhoDeRetaliacao(slug);
+  if (retaliacao) e.hunt.retaliacao = { [retaliacao]: { ate: Infinity, usados: [] } };
+  if (G.doSlug(slug).arquetipo === 'vinculo') (e.hunt.lacaios ??= []).push({ uid: 'aliado', nome: 'Aliado', mercenario: true, hp: 1000, maxHp: 1000, x: e.hunt.pos.x - 1, y: e.hunt.pos.y });
+  return { e, b };
+}
+/** Usa a gema (conjuração, armadilha/mina/gêiser pelo tique) e devolve `{ ok, dano, buff, erro }`. */
+function usar({ e, b }, slug) {
+  // (a que CARREGA — a Rajada de Chamas — só explode no último estágio: usa até lá)
+  const estagios = G.estagiosDaGema(slug, 20);
+  const vezes = estagios?.modo === 'carrega' ? estagios.max : 1;
+  const ev = [];
+  for (let i = 0; i < vezes; i++) {
+    // (o próximo uso logo depois do fim deste: a canalização continua)
+    if (i) e.hunt.clock = Math.max(e.hunt.clock, e.hunt.canalizacao?.ate ?? e.hunt.clock);
+    const r = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true });
+    if (!r.ok) return { ok: false, erro: r.motivo ?? r.erro };
+    ev.push(...(r.eventos ?? []));
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+  }
+  // (a Mina detona com você parado e o inimigo perto; a Armadilha, com o inimigo a 1 casa; o gêiser e a torre, no tempo)
+  for (let i = 0; i < 6; i++) { e.hunt.clock += 400; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
+  const dano = ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + (x.v ?? 0), 0) + (b.dots?.length ? 1 : 0);
+  return { ok: true, dano, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length };
+}
+
+test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
+  J = await import('../systems/itens-poe/jogo.mjs');
+  ({ gerarPeca } = await import('../systems/itens-poe/gerar.mjs'));
+  const falhas = [];
+  let testadas = 0;
+  for (const [slug, r] of G.REGISTRO) {
+    if (r.statusNoJogo !== 'funciona') continue;
+    testadas++;
+    const buff = BUFF.has(r.arquetipo);
+    let feito = null;
+    const erros = [];
+    for (const armas of ARMAS) {
+      const m = montar(slug, armas);
+      if (!m) continue;
+      let u;
+      try { u = usar(m, slug); } catch (err) { u = { ok: false, erro: `exceção: ${err.message}` }; }
+      if (!u.ok) { erros.push(`${armas[0]}: ${u.erro}`); continue; }
+      if (buff ? u.buff : u.dano > 0) { feito = armas[0]; break; }
+      erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
+    }
+    if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);
+  }
+  assert.ok(testadas > 100, `gemas testadas: ${testadas}`);
+  assert.deepEqual(falhas, [], `${falhas.length} de ${testadas} gemas "funciona" não fizeram o prometido:\n${falhas.join('\n')}`);
+});
+
+// (o efeito do suporte é lido pelo jogo: cada chave que o suporte escreve — fora as `af:` dos atributos, que a ficha do uso lê — aparece no
+// código de quem usa o efeito: um suporte cujo efeito ninguém lê seria "funciona" de mentira)
+function codigoDoJogo() {
+  const raiz = new URL('../systems/', import.meta.url).pathname;
+  let tudo = '';
+  const ler = (d) => { for (const n of readdirSync(d)) { const c = `${d}${n}`; if (statSync(c).isDirectory()) ler(`${c}/`); else if (n.endsWith('.mjs') && n !== 'suportes-poe.mjs') tudo += readFileSync(c, 'utf8'); } };
+  ler(raiz);
+  return tudo;
+}
+test('G16: todo suporte "funciona" tem efeito, nenhuma linha não feita, e cada efeito é lido pelo jogo', { skip: SEM }, () => {
+  const codigo = codigoDoJogo();
+  const lido = new Map();
+  const ehLido = (k) => { if (!lido.has(k)) lido.set(k, new RegExp(`\\b${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(codigo)); return lido.get(k); };
+  const falhas = [];
+  let n = 0;
+  for (const [slug, r] of SP.REGISTRO) {
+    if (r.status !== 'funciona') continue;
+    n++;
+    const nivel = Math.min(20, r.suporte.linhas.length || 1);
+    const tags = ['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico', 'Duração', 'Aura', 'Golpe'].map((x) => `poe:${x}`);
+    const { efeito, naoFeitas } = SP.efeitoNoNivel(slug, nivel, 20, { tags });
+    const gatilho = !!SP.fichaNoNivel(slug, nivel)?.gatilho;
+    const chaves = Object.keys(efeito).filter((k) => !k.startsWith('af:'));
+    const naoLidas = chaves.filter((k) => !ehLido(k.split(':')[0]));
+    if ((!Object.keys(efeito).length && !gatilho) || naoFeitas.length || naoLidas.length) falhas.push(`${slug}: ${!Object.keys(efeito).length && !gatilho ? 'sem efeito ' : ''}${naoFeitas.join(' | ')}${naoLidas.length ? ` chaves que ninguém lê: ${naoLidas.join(', ')}` : ''}`);
+  }
+  assert.ok(n > 40, `suportes: ${n}`);
+  assert.deepEqual(falhas, [], falhas.join('\n'));
+});
+
+test('G16: a Penetração do suporte entra no golpe — a resistência a Fogo efetiva do alvo cai 34 pontos com a Bola de Fogo', { skip: SEM }, async () => {
+  J ??= await import('../systems/itens-poe/jogo.mjs');
+  gerarPeca ??= (await import('../systems/itens-poe/gerar.mjs')).gerarPeca;
+  const resistencia = (suportes) => {
+    const m = montar('Fireball', ARMAS[0], suportes);
+    m.b.resist = { fire: 60 };
+    Registro.definirNivel(1);
+    Registro.limparRegistro();
+    try { usar(m, 'Fireball'); } finally { Registro.definirNivel(0); }
+    const g = Registro.ultimosGolpes(50).find((x) => x.origem === 'gema' && x.tipo === 'fire');
+    assert.ok(g, 'a Bola de Fogo acertou com Fogo');
+    return { pen: g.penetracao, efetiva: g.resistenciaEfetiva };
+  };
+  const sem = resistencia([]);
+  const com = resistencia(['Fire_Penetration_Support']);
+  assert.equal(com.pen - sem.pen, 34);
+  assert.equal(sem.efetiva - com.efetiva, 34, `${sem.efetiva} → ${com.efetiva}`);
+});
+
+test('G16: o cone esticado começa colado em quem usa (a fileira da frente não some) e abre para trás', () => {
+  const tem = (f, x, y) => f.some(([dx, dy]) => dx === x && dy === y);
+  const cone = [[-1, -1], [0, -1], [1, -1]];
+  for (const r of [2, 3, 4, 6]) {
+    const f = Areas.escalarForma(cone, r);
+    assert.ok(tem(f, 0, -1) && tem(f, -1, -1) && tem(f, 1, -1), `as 3 casas coladas no raio ${r}`);
+    assert.ok(tem(f, r, -r) && tem(f, -r, -r), `a largura toda na última fileira do raio ${r}`);
+    assert.ok(!f.some(([, dy]) => dy >= 0), `nada do lado ou atrás no raio ${r}`);
+  }
+  // (a forma com o centro não muda: a cruz segue cruz — e o losango da Nova segue losango, o teste do lote 36)
+  assert.deepEqual(Areas.escalarForma([[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]], 2), [[0, -2], [0, -1], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [0, 1], [0, 2]]);
+});

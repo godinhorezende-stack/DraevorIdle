@@ -18,8 +18,8 @@
   "suportes": {
    "total": 262,
    "implementada, sem teste próprio": 55,
-   "implementada e testada": 41,
-   "parcial": 160,
+   "implementada e testada": 42,
+   "parcial": 159,
    "sem efeito": 6
   },
   "variantes": {
@@ -46,7 +46,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 840,
+   "linhasDistintas": 839,
    "emDuasOuMais": 168
   },
   "imagens": {
@@ -62,7 +62,8 @@
   },
   "testes": {
    "ativasCitadas": 142,
-   "suportesCitados": 49
+   "suportesCitados": 50,
+   "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
  "ativas": [
@@ -9038,7 +9039,7 @@
   {
    "slug": "Fire_Penetration_Support",
    "nome": "Penetração de Fogo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -10660,10 +10661,8 @@
   {
    "slug": "Elemental_Penetration_Support",
    "nome": "Penetração Elemental",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas Penetram 28% das Resistências Elementais"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -15040,12 +15039,6 @@
    "linha": "Habilidades Suportadas penetram #% da Resistência Elemental enquanto cada Ressonância estiver em ao menos #",
    "gemas": [
     "Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas Penetram #% das Resistências Elementais",
-   "gemas": [
-    "Elemental_Penetration_Support"
    ]
   },
   {
