@@ -674,10 +674,14 @@ export function gruposComGatilho(estado) {
       for (const x of noGrupo.filter((y) => y.def.tipo === 'support' && y.def.suporte?.gatilho)) {
         const gat = typeof x.def.suporte.gatilho === 'function' ? x.def.suporte.gatilho(x.g.nivel + bonus) : x.def.suporte.gatilho;
         const ativas = noGrupo.filter((y) => y.def.tipo === 'ativa');
+        // (17/10, lote G15) Conjurar enquanto Canaliza: quem DISPARA é a habilidade de Canalização do grupo (ataque ou magia); as ativadas são as
+        // magias que não canalizam
+        const canal = gat?.quando === 'canalizar';
+        const canaliza = (y) => y.def.tags?.includes('poe:Canalização');
         saida.push({
           chave: `${slot}:${x.i}`, nome: x.def.nome, nivel: x.g.nivel + bonus, gatilho: gat,
-          ataques: ativas.filter((y) => y.def.tags?.includes('poe:Ataque')).map((y) => y.def.acao),
-          magias: ativas.filter((y) => y.def.tags?.includes('poe:Magia') && !y.def.tags?.includes('poe:Ataque') && compativel(x.def.suporte, y.def.tags)).map((y) => y.def.acao),
+          ataques: (canal ? ativas.filter(canaliza) : ativas.filter((y) => y.def.tags?.includes('poe:Ataque'))).map((y) => y.def.acao),
+          magias: ativas.filter((y) => y.def.tags?.includes('poe:Magia') && !y.def.tags?.includes('poe:Ataque') && !(canal && canaliza(y)) && compativel(x.def.suporte, y.def.tags)).map((y) => y.def.acao),
         });
       }
     }

@@ -179,6 +179,17 @@ const REGRAS = [
   [new RegExp(`têm a Área de Efeito das Auras aumentada em ${N}%`, 'i'), (m) => ({ auraAreaIncPct: num(m[1]) })],
   [new RegExp(`têm ${N}% de chance de ganhar Duração de Atordoamento dobrada`, 'i'), (m) => ({ 'af:chance_dobrar_atordoamento': num(m[1]) })],
   [new RegExp(`(?:têm|reforçadas têm) ([+-]?)${N}% de [Dd]uração de [Mm]aldiç(?:ão|ões)(?: aumentada)?`, 'i'), (m) => ({ duracaoMaldicaoPct: (m[1] === '-' ? -1 : 1) * num(m[2]) })],
+  // (17/10, lote G15) os gatilhos (as linhas do gatilho são lidas por `gatilhoDe`) e os suportes de canalização: a Canalização Focada ("X% mais
+  // dano / custo por segundo canalizando, até Y%" — `Acoes.dispararSemMarcar`, pelo tempo de `hunt.canalizacao`), o "mais Dano enquanto Morto"
+  // da Conjurar ao Morrer (as magias dela só saem ao morrer).
+  [/Ativa uma Magia Suportada a cada [\d.]+ segundos enquanto Canalizando|de chance de Ativar Magias Suportadas quando você for Atordoado|de chance de Ativar Magias de Não-Lacaios Suportadas ao Morrer/i, () => ({})],
+  [new RegExp(`^${N}% mais Dano enquanto Morto`, 'i'), (m) => ({ maisDanoPct: num(m[1]) })],
+  // (a Canalização Infundida: o personagem sofre menos dano de acertos enquanto canaliza a habilidade suportada — `Acoes.menosDanoDaCanalizacao`;
+  // a cópia da linha com um "\n" literal, que o poedb repete, não soma)
+  [new RegExp(`^Enquanto Canalizando uma Habilidade Suportada, sofra ${N}% menos Dano dos Acertos$`, 'i'), (m) => ({ infusaMenosDanoPct: num(m[1]) })],
+  [/^Enquanto Canalizando uma Habilidade Suportada,\s*(?:\\n)?\s*sofra/i, () => ({})],
+  [new RegExp(`causam ${N}% mais dano por segundo canalizando, até ${N}%`, 'i'), (m) => ({ focadoDanoPorS: num(m[1]), focadoDanoMax: num(m[2]) })],
+  [new RegExp(`têm ${N}% mais custo por segundo canalizando, até ${N}%`, 'i'), (m) => ({ focadoCustoPorS: num(m[1]), focadoCustoMax: num(m[2]) })],
   // A CRUELDADE: os acertos concedem Crueldade (mais dano degenerativo — `condicoes-poe.BUFFS.crueldade`) por N segundos.
   [new RegExp(`^Crueldade tem Duração Base de ${N} segundos`, 'i'), (m) => ({ crueldadeMs: Math.round(num(m[1]) * 1000) })],
   [/^Acertos de Habilidades Suportadas concedem Crueldade/i, () => ({ crueldade: 1 })],
@@ -315,6 +326,13 @@ function gatilhoDe(s, textos) {
   if (/Ativarão uma Magia Suportada ao Matar/i.test(tudo)) return { quando: 'abate', recargaMs };
   const dano = tudo.match(/Ativa Magias Suportadas quando você sofrer (\d+(?:\.\d+)?) de Dano total/i);
   if (dano) return { quando: 'danoRecebido', recargaMs, limiar: parseFloat(dano[1]) };
+  // (17/10, lote G15) Conjurar enquanto Canaliza ("Ativa uma Magia Suportada a cada N segundos enquanto Canalizando" — o intervalo é a recarga do
+  // gatilho), Conjurar ao ser Atordoado ("X% de chance de Ativar Magias Suportadas quando você for Atordoado") e Conjurar ao Morrer
+  const canal = tudo.match(/Ativa uma Magia Suportada a cada (\d+(?:\.\d+)?) segundos enquanto Canalizando/i);
+  if (canal) return { quando: 'canalizar', recargaMs: Math.round(parseFloat(canal[1]) * 1000) };
+  const atordoado = tudo.match(/(\d+(?:\.\d+)?)% de chance de Ativar Magias Suportadas quando você for Atordoado/i);
+  if (atordoado) return { quando: 'atordoado', recargaMs, chance: parseFloat(atordoado[1]) };
+  if (/chance de Ativar Magias de Não-Lacaios Suportadas ao Morrer/i.test(tudo)) return { quando: 'morte', recargaMs };
   return null;
 }
 
@@ -322,7 +340,6 @@ function gatilhoDe(s, textos) {
 const SEM_SISTEMA = [
   // ("Mina" como palavra: o "mina" de "Lâmina Noturna" travava o suporte — 11/10)
   [/Sentinela|torres de osso/i, 'esses lacaios especiais ainda não existem no jogo'],
-  [/ao Morrer|quando (?:você (?:for|é) )?Atordoad|enquanto (?:você )?Canaliz|Canalização/i, 'esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)'],
 ];
 
 /** A linha do suporte sem o "Habilidades Suportadas têm"/"com Habilidades Suportadas" (o modificador como a gema o escreveria). */

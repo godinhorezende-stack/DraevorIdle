@@ -110,11 +110,18 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - As Minas da gema: "Dispara um Projétil adicional para cada N Minas anteriores na Sequência de Detonação" (`plantada.anteriores`); a aura "Cada Mina aplica Chance de Golpe Crítico aumentada em X% contra Inimigos próximos, até Y%" (Mina de Gelo — `minaCritico`, lido no golpe) e "Cada mina aplica Dano aumentado em X% aos Inimigos próximos" (Mina de Tempestade — o dano sofrido, `minaFragil`).
 - Teste: `runas-estandartes-minas-poe.test.mjs` (2). Ativas parciais 365 → 358.
 
-### G14 — suportes do uso, da maldição e da aura (17/10)
+### G14 — suportes do uso, da maldição e da aura (17/10, commit a5c385b3)
 
 - Regras novas em `suportes-poe.mjs`: a duração das afecções, o empurrão (a chance e a distância), o ponto de atordoamento reduzido e a duração dobrada (Atordoar), a Vida por Inimigo Acertado (só ataques), a Velocidade de Clamor (Ordens Urgentes), o multiplicador degenerativo das afecções de crítico, o alcance do ricochete (Encadear), o "Efeito das Auras aumentado" e a área das auras (Arrogância, Generosidade), "Auras Suportadas não afetam você" (Generosidade — a aura vale só nos companheiros) e a duração das maldições (Toque Maldito).
 - A Vida/Mana por acerto das gemas de ataque passa a sair do `valor` do acerto (a da soma, a da Marca no alvo e a local do suporte).
 - Teste: `suportes-uso-e-aura-poe.test.mjs` (3). Suportes sem efeito 17 → 12; testados 29 → 36.
+
+### G15 — os gatilhos que faltavam e os suportes de canalização (17/10)
+
+- Saiu a trava "esse gatilho ainda não existe no jogo". `gatilhoDe` lê: **Conjurar enquanto Canaliza** (`canalizar` — as magias do grupo saem a cada intervalo enquanto a habilidade de Canalização do grupo canaliza: `Acoes.tiqueDaCanalizacao`, no tique da caçada; nos grupos, quem dispara é a habilidade canalizada), **Conjurar ao ser Atordoado** (`atordoado`, com a chance — o atordoamento que o acerto pôs: `Acoes.depoisDeSerAcertado`) e **Conjurar ao Morrer** (`morte` — a vida chegou a 0; o "mais Dano enquanto Morto"). O `ativarGatilhos` passou a respeitar a chance do gatilho.
+- **Canalização Focada**: "X% mais dano / custo por segundo canalizando, até Y%" pelo tempo de `hunt.canalizacao`. **Canalização Infundida**: "sofra X% menos Dano dos Acertos" enquanto canaliza a habilidade suportada (`Acoes.menosDanoDaCanalizacao`, no golpe do bicho).
+- Pendente: o "Conjurar ao ser Atordoado" no Bloquear um Acerto Atordoante e nas magias do bicho (só no golpe corpo a corpo); o "Ignora Atordoamentos" do Desperto.
+- Teste: `gatilhos-canalizacao-poe.test.mjs` (4). Suportes sem efeito 12 → 6.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -129,6 +136,6 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. Commitar G14 (FULL por exceção — autorização do dono para os lotes desta tarefa).
+1. Commitar G15 (FULL por exceção — autorização do dono para os lotes desta tarefa).
 2. G11: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
 3. As repetições do golpe (11 gemas) e as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).

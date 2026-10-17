@@ -27,10 +27,10 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 36 |
+| implementada e testada | 41 |
 | implementada, sem teste próprio | 55 |
-| parcial | 159 |
-| sem efeito | 12 |
+| parcial | 160 |
+| sem efeito | 6 |
 
 ### Variantes
 
@@ -40,10 +40,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 840 linhas distintas (169 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 840 linhas distintas (168 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 142/562 ativas, 44/262 suportes.
+- Testes que citam a gema: 142/562 ativas, 49/262 suportes.
 
 ## Linhas que faltam (por quantidade de gemas)
 
@@ -52,7 +52,6 @@ Só os ataques:
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
 | 14 | nenhum efeito do buff tem equivalente no jogo |
 | 14 | sem dano direto: nenhum efeito no combate |
-| 6 | esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido) |
 | 5 | as repetições do golpe não existem: no jogo é um |
 | 5 | Efeito em Área de Habilidades Maldição Suportadas aumentado em #% |
 | 5 | Habilidades Suportadas têm #% mais Velocidade de Posicionamento de Totens |
@@ -672,6 +671,7 @@ Só os ataques:
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
 | 1 | Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em #% |
 | 1 | Habilidades Suportadas têm Vida do Totem aumentada em #% |
+| 1 | Ignora Atordoamentos enquanto Usando Habilidades Suportadas |
 | 1 | Impactos têm # % mais Efeito em Área |
 | 1 | Impele os próximos # Ataques de Golpe Corpo a Corpo que você executar |
 | 1 | Impele os próximos # Ataques de Pancada Corpo a Corpo que você executar |
@@ -2165,8 +2165,8 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm 10% de chance de Esmagar Inimigos por 4 segundos ao Acertar
 - **Awakened_Cast_On_Critical_Strike_Support** (Suporte Desperto: Conjurar no Acerto Crítico) — parcial
   - não simulado: Magias Suportadas têm Recuperação da Recarga aumentada em 52%
-- **Awakened_Cast_While_Channelling_Support** (Suporte Desperto: Conjurar ao Canalizar) — sem efeito
-  - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
+- **Awakened_Cast_While_Channelling_Support** (Suporte Desperto: Conjurar ao Canalizar) — parcial
+  - não simulado: Ignora Atordoamentos enquanto Usando Habilidades Suportadas
 - **Awakened_Cold_Penetration_Support** (Suporte Desperto: Penetração de Gelo) — parcial
   - não simulado: Habilidades Suportadas têm 10% de chance de infligir Exposição a Gelo ao Acertar
 - **Awakened_Controlled_Destruction_Support** (Suporte Desperto: Destruição Controlada) — parcial
@@ -2240,14 +2240,8 @@ Só os ataques:
   - não simulado: Inimigos em Áreas Resfriadas por Habilidades Suportadas tem o Dano de Gelo sofrido aumentado pelo Efeito de Resfriamento
 - **Bonespire_Support** (Torre Óssea (Reforço)) — sem efeito
   - esses lacaios especiais ainda não existem no jogo
-- **Cast_on_Death_Support** (Conjurar ao Morrer) — sem efeito
-  - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
 - **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — parcial
   - não simulado: Ativa esta magia reforçada quando sua salvaguarda quebra
-- **Cast_when_Stunned_Support** (Conjurar quando Atordoado) — sem efeito
-  - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
-- **Cast_while_Channelling_Support** (Conjurar ao Canalizar) — sem efeito
-  - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
 - **Chance_to_Flee_Support** (Chance de Fugir) — sem efeito
   - não simulado: Habilidades reforçadas têm 44% de chance de fazer os monstros fugirem ao atingir
   - não simulado: Habilidades reforçadas têm +20% de chance de fazer os monstros fugirem ao atingir
@@ -2377,8 +2371,6 @@ Só os ataques:
 - **Focused_Ballista_Support** (Balista Focada) — parcial
   - não simulado: Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque
   - não simulado: Habilidades Suportadas têm 68% mais Velocidade de Posicionamento de Totens
-- **Focused_Channelling_Support** (Suporte de Canalização Concentrada) — sem efeito
-  - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
 - **Fortify_Support** (Fortificar) — parcial
   - não simulado: Habilidades Suportadas têm Duração da Fortificação aumentada em 20%
 - **Foulgrasp_Support** (Constrição Pérfida (Reforço)) — parcial
@@ -2480,8 +2472,6 @@ Só os ataques:
   - não simulado: Lacaios de Habilidades Suportadas sofrem 40% de sua Vida Máxima como Dano de Fogo por segundo
   - não simulado: Lacaios de Habilidades Suportadas causam 2468.6 de Dano de Fogo por segundo aos Inimigos próximos a eles
   - não simulado: Lacaios das Habilidades Suportadas têm 0.5 metros ao Raio de seu Efeito Incendiário
-- **Infused_Channelling_Support** (Canalização Infundida) — sem efeito
-  - esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)
 - **Innervate_Support** (Inervação) — parcial
   - não simulado: Ganha Invervação ao Matar um Inimigo Eletrizado com Habilidades Suportadas
   - não simulado: Invervação concede 8 a 145 de Dano de Raio

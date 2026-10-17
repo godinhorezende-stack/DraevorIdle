@@ -18,9 +18,9 @@
   "suportes": {
    "total": 262,
    "implementada, sem teste próprio": 55,
-   "implementada e testada": 36,
-   "parcial": 159,
-   "sem efeito": 12
+   "implementada e testada": 41,
+   "parcial": 160,
+   "sem efeito": 6
   },
   "variantes": {
    "vaal": {
@@ -47,7 +47,7 @@
   },
   "efeitosCompartilhados": {
    "linhasDistintas": 840,
-   "emDuasOuMais": 169
+   "emDuasOuMais": 168
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -62,7 +62,7 @@
   },
   "testes": {
    "ativasCitadas": 142,
-   "suportesCitados": 44
+   "suportesCitados": 49
   }
  },
  "ativas": [
@@ -9917,10 +9917,8 @@
   {
    "slug": "Cast_on_Death_Support",
    "nome": "Conjurar ao Morrer",
-   "estado": "sem efeito",
-   "ausentes": [
-    "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10303,10 +10301,8 @@
   {
    "slug": "Infused_Channelling_Support",
    "nome": "Canalização Infundida",
-   "estado": "sem efeito",
-   "ausentes": [
-    "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10697,10 +10693,8 @@
   {
    "slug": "Focused_Channelling_Support",
    "nome": "Suporte de Canalização Concentrada",
-   "estado": "sem efeito",
-   "ausentes": [
-    "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10831,20 +10825,16 @@
   {
    "slug": "Cast_when_Stunned_Support",
    "nome": "Conjurar quando Atordoado",
-   "estado": "sem efeito",
-   "ausentes": [
-    "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
   {
    "slug": "Cast_while_Channelling_Support",
    "nome": "Conjurar ao Canalizar",
-   "estado": "sem efeito",
-   "ausentes": [
-    "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10987,9 +10977,9 @@
   {
    "slug": "Awakened_Cast_While_Channelling_Support",
    "nome": "Suporte Desperto: Conjurar ao Canalizar",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)"
+    "não simulado: Ignora Atordoamentos enquanto Usando Habilidades Suportadas"
    ],
    "outros": [],
    "icone": true
@@ -11401,17 +11391,6 @@
     "Smoke_Mine",
     "Wither",
     "Withering_Step"
-   ]
-  },
-  {
-   "linha": "esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)",
-   "gemas": [
-    "Awakened_Cast_While_Channelling_Support",
-    "Cast_on_Death_Support",
-    "Cast_when_Stunned_Support",
-    "Cast_while_Channelling_Support",
-    "Focused_Channelling_Support",
-    "Infused_Channelling_Support"
    ]
   },
   {
@@ -15325,6 +15304,12 @@
    "linha": "Habilidades Suportadas têm Vida do Totem aumentada em #%",
    "gemas": [
     "Flamewood_Support"
+   ]
+  },
+  {
+   "linha": "Ignora Atordoamentos enquanto Usando Habilidades Suportadas",
+   "gemas": [
+    "Awakened_Cast_While_Channelling_Support"
    ]
   },
   {

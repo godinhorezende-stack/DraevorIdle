@@ -2451,6 +2451,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     : R.instanteLogico(agora, hunt.relogioAnterior, [globalLibera, cd?.ate, grupoQueConta ? cds[grupoQueConta]?.ate : null]);
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
   let efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
+  // (17/10, lote G15) a CANALIZAÇÃO FOCADA: "X% mais dano / custo por segundo canalizando, até Y%" — os segundos desde o começo do canalizar
+  // desta habilidade (`hunt.canalizacao`, contínua)
+  if ((efeitoDaGema?.focadoDanoPorS || efeitoDaGema?.focadoCustoPorS) && hunt.canalizacao?.acao === entry.id && (hunt.clock ?? 0) <= hunt.canalizacao.ate + 250) {
+    const seg = Math.max(0, ((hunt.clock ?? 0) - hunt.canalizacao.desde) / 1000);
+    const dano = Math.min(efeitoDaGema.focadoDanoMax ?? 0, (efeitoDaGema.focadoDanoPorS ?? 0) * seg);
+    const custo = Math.min(efeitoDaGema.focadoCustoMax ?? 0, (efeitoDaGema.focadoCustoPorS ?? 0) * seg);
+    efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + dano / 100), custoPct: ((1 + (efeitoDaGema.custoPct ?? 0) / 100) * (1 + custo / 100) - 1) * 100 };
+  }
   // (17/10, lote G13) a MINA detonada: "Dispara um Projétil adicional para cada N Minas anteriores na Sequência de Detonação" (`plantada.anteriores`)
   if (plantada?.tipo === 'mina' && entry.poeGema && efeitoDaGema) {
     const n = GemasPoe.minaDaGema(entry.poeGema.slug, efeitoDaGema.nivel ?? 1)?.porAnteriores;
@@ -3881,6 +3889,8 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
   let n = 0;
   for (const g of Gemas.gruposComGatilho(estado)) {
     if (g.gatilho.quando !== evento) continue;
+    // (17/10, lote G15: a chance do gatilho — "X% de chance de Ativar Magias Suportadas quando você for Atordoado")
+    if (g.gatilho.chance != null && !(Math.random() * 100 < g.gatilho.chance)) continue;
     // O ataque que dispara tem de estar no MESMO grupo (o dano recebido não tem ataque). (14/10: o Feiticeiro — qualquer ataque de varinha,
     // com ele LIGADO: a reserva dele.)
     if (acao && !g.feiticeiro && !g.ataques.includes(acao)) continue;
@@ -4013,6 +4023,31 @@ ModsPoe.definirMaldicao((hunt, alvo, nome, nivel, semLimite, agora) => {
 });
 // (lote 32, P038) A maldição sua que pegou: as Forças Profanadas renovam o Resfriamento e a Eletrização do inimigo (a ficha da caçada).
 Reforcos.definirAoAmaldicoar((hunt, bicho, agora) => ModsPoe.aoAmaldicoar(ModsPoe.fichaDa(hunt), bicho, agora));
+
+/**
+ * (17/10, lote G15) Depois do acerto no personagem: "Conjurar ao ser Atordoado" (o atordoamento que este acerto pôs — `hunt.controle.atordoado`,
+ * uma vez) e "Conjurar ao Morrer" (a vida chegou a 0: as magias saem antes do fim). Quem chama: o golpe e a magia do bicho no personagem.
+ */
+export function depoisDeSerAcertado(estado, hunt, personagem, eventos = []) {
+  if (!itensPoeLigado() || !hunt) return 0;
+  let n = 0;
+  const at = hunt.controle?.atordoado;
+  if (at && at.desde === (hunt.clock ?? 0) && !at.gatilhou) { at.gatilhou = true; n += ativarGatilhos(estado, hunt, personagem, 'atordoado', {}, eventos); }
+  if ((estado.hp ?? 0) <= 0 && !hunt.poeGatilhouMorte) { hunt.poeGatilhouMorte = true; n += ativarGatilhos(estado, hunt, personagem, 'morte', {}, eventos); }
+  return n;
+}
+/** (lote G15) A Canalização Infundida: o % de "menos Dano dos Acertos" enquanto canaliza a habilidade suportada por ela (0 sem canalizar). */
+export function menosDanoDaCanalizacao(estado, hunt) {
+  const c = hunt?.canalizacao;
+  if (!itensPoeLigado() || !c || !(c.ate + 250 >= (hunt.clock ?? 0))) return 0;
+  return Math.max(0, Number(Gemas.efeitoNaSkill(estado, c.acao)?.infusaMenosDanoPct) || 0);
+}
+/** (lote G15) Conjurar enquanto Canaliza: canalizando agora a habilidade do grupo, as magias dele saem a cada intervalo (a recarga do gatilho). */
+export function tiqueDaCanalizacao(estado, hunt, personagem, eventos = []) {
+  const c = hunt?.canalizacao;
+  if (!itensPoeLigado() || !c || !(c.ate + 250 >= (hunt.clock ?? 0))) return 0;
+  return ativarGatilhos(estado, hunt, personagem, 'canalizar', { acao: c.acao }, eventos);
+}
 
 /**
  * O DANO RECEBIDO pelo personagem ("Conjurar ao Receber Dano"): soma no grupo e, passando do limiar do nível do suporte, ativa as magias

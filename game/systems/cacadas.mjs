@@ -2148,6 +2148,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
   // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções; (o Luminary) o mercenário
   if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDoMercenario(estado, hunt, agora); }
+  // (17/10, lote G15) Conjurar enquanto Canaliza: as magias do grupo da habilidade canalizada agora
+  if (itensPoeLigado() && hunt.canalizacao) Acoes.tiqueDaCanalizacao(estado, hunt, personagem, eventos);
   // (17/10, lote G9) os Arautos ao matar (a explosão, a tempestade, a queimadura): os eventos vão para a tela com os da caçada
   if (itensPoeLigado() && (hunt.poeArautos?.length || hunt.poeTempestade)) {
     const doArauto = Acoes.tiqueDosArautos(estado, hunt, hunt.clock ?? 0);

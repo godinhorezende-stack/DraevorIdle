@@ -1187,7 +1187,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
   // (PoE: "X% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente" — o golpe do monstro é o ataque dele.)
   // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — `menos_dano_acertos`, só nos acertos)
-  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100);
+  // (17/10, lote G15: + a Canalização Infundida — "Enquanto Canalizando uma Habilidade Suportada, sofra X% menos Dano dos Acertos")
+  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   const danoDoAcerto = final;
   // (lote 32, P046 — o Berserker: "Ganha X% da vida não reservada faltante ANTES de ser atingido … para cada Desafio")
@@ -1226,6 +1227,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   // PoE: o "acertado/dano recentemente", o Reflexo aos agressores corpo a corpo, a recuperação do dano sofrido e o congelar quem acerta.
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, final), corpoACorpo: true, tipo: 'physical', eventos });
+  // (17/10, lote G15) "Conjurar ao ser Atordoado" e "Conjurar ao Morrer"
+  Acoes.depoisDeSerAcertado(estado, hunt, personagem, eventos);
   // ("ao sofrer um Golpe Crítico": "Ganha até o máximo de Cargas de Tolerância ao sofrer um Golpe Crítico".)
   if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
   registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
