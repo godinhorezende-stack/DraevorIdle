@@ -120,3 +120,44 @@ export function fichaComAsLinhas(estado, ficha, af, marca) {
   if (!extra.length) return { ...ficha, linhasDaGema: marca };
   return { ...ficha, porTag: [...(ficha.porTag ?? []), ...extra], linhasDaGema: marca };
 }
+
+/**
+ * (17/10, lote G8) As linhas de BUFF das gemas de aura, arauto, guarda e clamor ("Buff concede…"): o que o buff dá a quem o tem, como os
+ * atributos da soma (`GemasPoe.buffNoNivel` → `afPoe` do buff → a ficha). Primeiro as frases próprias (o dano adicionado dos Arautos — aos
+ * ataques e às magias), depois o tradutor das peças com o "Buff concede" tirado ("Buff concede Imunidade a Sangramento" → `imune_sangramento`).
+ * Só entra o atributo com efeito no combate. `{ stat: valor }` ou null.
+ */
+const EL_DO_BUFF = { Gelo: 'ice', Fogo: 'fire', Raio: 'energy', Caos: 'chaos', Físico: 'physical' };
+const BUFF_PROPRIO = [
+  [new RegExp(`^Buff concede (?:de )?${N} a ${N} de Dano (?:de Ataque de (Gelo|Fogo|Raio|Caos|Físico)|de (Gelo|Fogo|Raio|Caos|Físico) com Ataques) Adicional$`, 'i'), (m) => { const e = EL_DO_BUFF[m[3] ?? m[4]]; return { [`added_${e}_dmg_min`]: num(m[1]), [`added_${e}_dmg_max`]: num(m[2]) }; }],
+  [new RegExp(`^Buff concede (?:de )?${N} a ${N} de Dano (?:Mágico de (Gelo|Fogo|Raio|Caos|Físico) Adicional|de (Gelo|Fogo|Raio|Caos|Físico) Mágico)$`, 'i'), (m) => { const e = EL_DO_BUFF[m[3] ?? m[4]]; return { [`spell_added_${e}_dmg_min`]: num(m[1]), [`spell_added_${e}_dmg_max`]: num(m[2]) }; }],
+  // (as auras: "Você e aliados próximos ganham 49 % mais Armadura", "… 4 % de Resistência máxima a Fogo adicional", "… são Imunes à Incêndio")
+  [new RegExp(`^(?:Buff concede |Você e aliados próximos ganham )${N} ?% mais Armadura$`, 'i'), (m) => ({ armour_mais: num(m[1]) })],
+  [new RegExp(`^(?:Buff concede |Você e aliados próximos ganham )${N} ?% de Resistência máxima a (Fogo|Frio|Gelo|Raio|Caos) adicional$`, 'i'), (m) => ({ [`${{ Fogo: 'fire', Frio: 'ice', Gelo: 'ice', Raio: 'energy', Caos: 'chaos' }[m[2]]}_res_max`]: num(m[1]) })],
+  [new RegExp(`^Você e (?:seus )?aliados próxim\\S* (?:ganham|têm|tem) Duração do Efeito de Habilidades aumentada em ${N} ?%$`, 'i'), (m) => ({ duracao_habilidades: num(m[1]) })],
+  [/^(?:Buff concede Imunidade a|Você e (?:seus )?aliados próxim\S* são Imunes [àa]) (Incêndio|Resfriamento|Congelamento|Eletrização|Sangramento|Veneno|Envenenamento)$/i, (m) => ({ [`imune_${{ Incêndio: 'incendio', Resfriamento: 'resfriamento', Congelamento: 'congelamento', Eletrização: 'eletrizacao', Sangramento: 'sangramento', Veneno: 'veneno', Envenenamento: 'veneno' }[m[1]]}`]: 1 })],
+  // (Sangue e Areia: "Habilidades Corpo a Corpo causam 27 % mais Efeito em Área enquanto na Postura de Areia" — a condição `posturaAreia`)
+  // (só a de AREIA: no jogo o buff ligado É a Postura de Areia — `condicoes-poe.posturaDe` —, e o atributo do buff só vale com ele ligado; a de
+  // Sangue, que valeria com ele desligado, segue "não simulada")
+  [new RegExp(`^Habilidades Corpo a Corpo (?:causam|têm) ${N} ?% (mais|menos) (Dano|Efeito) em Área enquanto na Postura de Areia$`, 'i'),
+    (m) => ({ [`${m[3] === 'Dano' ? 'mais_dano' : 'area_mais'}@corpo+area+posturaAreia`]: (m[2] === 'menos' ? -1 : 1) * num(m[1]) })],
+  [new RegExp(`^Buff concede ${N} ?% mais Dano (Físico|de Fogo|de Gelo|de Raio|de Caos)$`, 'i'), (m) => ({ [{ Físico: 'mais_dano_fisico', 'de Fogo': 'mais_dano_fogo', 'de Gelo': 'mais_dano_gelo', 'de Raio': 'mais_dano_raio', 'de Caos': 'mais_dano_caos' }[m[2]]]: num(m[1]) })],
+];
+export function atributosDoBuff(linha) {
+  const l = String(linha).trim();
+  for (const [re, f] of BUFF_PROPRIO) { const m = re.exec(l); if (m) { const af = f(m); return Object.keys(af).every(atributoTemEfeito) ? af : null; } }
+  const sem = l.replace(/^Buff concede /i, '').replace(/^Você e (?:seus )?aliados próxim\S* (?:ganham|têm|tem|possuem) /i, '').replace(/^Você e (?:seus )?aliados próxim\S* são /i, 'Você é ');
+  if (sem === l && !/^Dano não pode ser Refletido$/i.test(l)) return null;
+  const t0 = sem.charAt(0).toUpperCase() + sem.slice(1);
+  const valores = [];
+  const modelo = t0.replace(/(\d+(?:[.,]\d+)?)\s*%/g, (_, x) => `${x}%`).replace(/\d+(?:[.,]\d+)?/g, (x) => { valores.push(num(x)); return `{${valores.length - 1}}`; });
+  const t = traduzirParte(modelo, valores);
+  if (!['equivalente', 'aproximado', 'novo'].includes(t.estado) || !t.efeitos.length) return null;
+  const af = {};
+  for (const e of t.efeitos) {
+    if (typeof e.valor !== 'number' || !atributoTemEfeito(e.stat)) return null;
+    af[e.stat] = (af[e.stat] ?? 0) + e.valor;
+  }
+  return af;
+}
+export const ehLinhaDoBuff = (l) => !!atributosDoBuff(l);

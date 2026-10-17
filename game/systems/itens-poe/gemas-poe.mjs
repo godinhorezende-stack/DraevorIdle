@@ -21,7 +21,7 @@ import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
-import { ehLinhaLocalDaGema, atributosDasLinhas } from './linhas-das-gemas.mjs';
+import { ehLinhaLocalDaGema, atributosDasLinhas, atributosDoBuff, ehLinhaDoBuff } from './linhas-das-gemas.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
@@ -567,6 +567,12 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
     if (e === 'phys') af.phys_res = (af.phys_res ?? 0) + v;
     else if (e) af[`${e}_res`] = (af[`${e}_res`] ?? 0) + v;
   }
+  // (17/10, lote G8) as linhas "Buff concede…" que o compilador não lê (o dano adicionado dos Arautos, as imunidades, o "mais Dano Físico"):
+  // os atributos delas no buff (`linhas-das-gemas.atributosDoBuff`)
+  for (const l of h.linhas?.naoImplementadas ?? []) {
+    const x = atributosDoBuff(l);
+    if (x) for (const [k, v] of Object.entries(x)) af[k] = (af[k] ?? 0) + v;
+  }
   if (b.armadura) af.armor_flat = (af.armor_flat ?? 0) + Math.round(b.armadura);
   if (b.evasao) af.evasion = (af.evasion ?? 0) + Math.round(b.evasao);
   if (b.escudo) af.energy_shield = (af.energy_shield ?? 0) + Math.round(b.escudo);
@@ -643,6 +649,9 @@ function avaliarNoJogo(h, formato) {
   if (BUFF.has(h.arquetipo)) {
     const b = buffNoNivel(h.slug, h.nivel);
     motivos.push(...b.motivos);
+    // (17/10, lote G8) o ARAUTO tem o efeito ao matar (a explosão do Gelo, a tempestade do Trovão, o fogo das Cinzas) com o dano da gema: o jogo
+    // ainda faz só o buff — o dano "Causa X a Y" que o compilador lê não vai a lugar nenhum
+    if (h.arquetipo === 'arauto' && (Object.keys(st.dano ?? {}).length || (st.dot ?? []).length)) motivos.push('o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff');
     if (!b.efeitos.length && !Object.keys(b.af).length) motivos.push('nenhum efeito do buff tem equivalente no jogo');
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
@@ -657,7 +666,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 

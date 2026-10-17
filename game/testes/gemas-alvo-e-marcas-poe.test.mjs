@@ -39,30 +39,38 @@ async function bruxa(gema, af = null) {
   return e;
 }
 function comSorte(v, fn) { const a = Math.random; Math.random = () => v; try { return fn(); } finally { Math.random = a; } }
-/** O dano da Bola de Fogo num alvo colado com `hp` de `max` (o resto longe), com o sorteio fixo. */
+/** O dano da Nova de Gelo num alvo colado com `hp` de `max` (o resto longe), com o sorteio fixo. (A Nova acerta na hora: o projétil de uma
+ * Bola de Fogo cai depois e entrava na medição seguinte.) */
 function danoNoAlvo(e, hp, max = 1e9) {
   e.hunt.monstros.forEach((m, i) => Object.assign(m, i ? { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 } : { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp, maxHp: max }));
   const b = e.hunt.monstros[0];
-  const antes = b.hp;
   e.hunt.clock += 10_000;
-  comSorte(0.5, () => {
-    const r = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, {});
+  // (o dano pelos EVENTOS deste uso — a vida do bicho também mudaria com o laço da caçada usando a gema sozinho entre os passos)
+  const eventos = comSorte(0.5, () => {
+    const r = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true });
     assert.ok(r.ok, r.erro);
-    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM); }
+    const ev = [...(r.eventos ?? [])];
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+    return ev;
   });
-  return antes - b.hp;
+  return eventos.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + x.v, 0);
 }
 
 test('G7: "X% mais Dano contra Inimigos em Vida Cheia" (da soma) vale no acerto da gema — antes só no golpe básico', { skip: SEM }, async () => {
-  const sem = await bruxa('Fireball');
-  const com = await bruxa('Fireball', { 'mais_dano@alvoVidaCheia': 100 });
+  // o MESMO personagem e o MESMO monstro (a caçada sorteia a raridade e os modificadores dele no entrar): com o anel e sem ele
+  const e = await bruxa('Ice_Nova', { 'mais_dano@alvoVidaCheia': 100 });
+  const anel = e.equipment.ring;
+  const medir = (comAnel) => {
+    if (comAnel) e.equipment.ring = anel;
+    else delete e.equipment.ring;
+    Ficha.invalidar(e);
+    return { cheio: danoNoAlvo(e, 1e9), metade: danoNoAlvo(e, 5e8) };
+  };
+  const sem = medir(false);
+  const com = medir(true);
   // alvo com a vida cheia: o dobro; com a vida pela metade: igual
-  const cheioSem = danoNoAlvo(sem, 1e9);
-  const cheioCom = danoNoAlvo(com, 1e9);
-  assert.ok(Math.abs(cheioCom / cheioSem - 2) < 0.02, `vida cheia: ${cheioCom} / ${cheioSem}`);
-  const metadeSem = danoNoAlvo(sem, 5e8);
-  const metadeCom = danoNoAlvo(com, 5e8);
-  assert.ok(Math.abs(metadeCom / metadeSem - 1) < 0.02, `vida pela metade: ${metadeCom} / ${metadeSem}`);
+  assert.ok(Math.abs(com.cheio / sem.cheio - 2) < 0.02, `vida cheia: ${com.cheio} / ${sem.cheio}`);
+  assert.ok(Math.abs(com.metade / sem.metade - 1) < 0.02, `vida pela metade: ${com.metade} / ${sem.metade}`);
 });
 
 test('G7: o "aumentado" com tag de alvo soma ao aumentado do golpe (não multiplica)', { skip: SEM }, async () => {

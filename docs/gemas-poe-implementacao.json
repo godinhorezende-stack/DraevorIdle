@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 52,
-   "parcial": 390,
-   "implementada, sem teste próprio": 67,
+   "implementada e testada": 54,
+   "parcial": 384,
+   "implementada, sem teste próprio": 71,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
@@ -31,10 +31,10 @@
    },
    "alternativas": {
     "total": 198,
-    "parcial": 153,
-    "implementada e testada": 2,
+    "parcial": 150,
+    "implementada e testada": 3,
     "limitação do modelo idle": 14,
-    "implementada, sem teste próprio": 27,
+    "implementada, sem teste próprio": 29,
     "sem efeito": 2
    }
   },
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 906,
-   "emDuasOuMais": 198
+   "linhasDistintas": 888,
+   "emDuasOuMais": 196
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -427,11 +427,8 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
     "efeito não simulado: Habilidades Corpo a Corpo causam 27 % mais Dano em Área enquanto na Postura de Sangue",
-    "efeito não simulado: Habilidades Corpo a Corpo têm 5 % menos Efeito em Área enquanto na Postura de Sangue",
-    "efeito não simulado: Habilidades Corpo a Corpo causam 27 % mais Efeito em Área enquanto na Postura de Areia",
-    "efeito não simulado: Habilidades Corpo a Corpo causam 5 % mais Dano em Área enquanto na Postura de Areia"
+    "efeito não simulado: Habilidades Corpo a Corpo têm 5 % menos Efeito em Área enquanto na Postura de Sangue"
    ],
    "idle": [],
    "outros": [],
@@ -528,9 +525,7 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "a absorção de dano da guarda ainda não existe no jogo",
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Buff concede Imunidade a Sangramento"
+    "a absorção de dano da guarda ainda não existe no jogo"
    ],
    "idle": [],
    "outros": [],
@@ -1356,10 +1351,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximos ganham 49 % mais Armadura"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1464,10 +1457,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Fogo adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1501,8 +1492,6 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Fogo adicional",
-    "efeito não simulado: Você e aliados próximos são Imunes à Incêndio",
     "efeito não simulado: Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos"
    ],
    "idle": [],
@@ -3151,10 +3140,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximos ganham +701 de Precisão"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3932,8 +3919,7 @@
    "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Resfria Inimigos por 0.5 segundos ao Acertar, reduzindo sua Velocidade de Ação em 30 %",
-    "efeito não simulado: Buff concede Imunidade a Congelamento"
+    "efeito não simulado: Resfria Inimigos por 0.5 segundos ao Acertar, reduzindo sua Velocidade de Ação em 30 %"
    ],
    "idle": [],
    "outros": [],
@@ -4099,10 +4085,7 @@
    "arquetipo": "arauto",
    "estado": "parcial",
    "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Dano não pode ser Refletido",
-    "efeito não simulado: Buff concede 38 a 56 de Dano de Ataque de Gelo Adicional",
-    "efeito não simulado: Buff concede 38 a 56 de Dano Mágico de Gelo Adicional"
+    "o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff"
    ],
    "idle": [],
    "outros": [],
@@ -4219,10 +4202,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Frio adicional"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4283,9 +4264,6 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Frio adicional",
-    "efeito não simulado: Você e aliados próximos são Imunes à Resfriamento",
-    "efeito não simulado: Você e aliados próximos são Imunes à Congelamento",
     "efeito não simulado: Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos"
    ],
    "idle": [],
@@ -7012,11 +6990,9 @@
    "arquetipo": "arauto",
    "estado": "parcial",
    "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
+    "o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff",
     "efeito não simulado: Tempestade Acerta um Inimigo a cada 0.25 Segundos",
-    "efeito não simulado: Cria uma tempestade quando você Matar um Inimigo Eletrizado",
-    "efeito não simulado: Buff concede 19 a 76 de Dano de Raio com Ataques Adicional",
-    "efeito não simulado: Buff concede de 19 a 76 de Dano de Raio Mágico"
+    "efeito não simulado: Cria uma tempestade quando você Matar um Inimigo Eletrizado"
    ],
    "idle": [],
    "outros": [],
@@ -7351,10 +7327,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximnos tem Duração do Efeito de Habilidades aumentada em 19 %"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7381,10 +7355,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "aura",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Raio adicional"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7427,8 +7399,6 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Efeito das Auras aumentado em 76 %",
-    "efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Raio adicional",
-    "efeito não simulado: Você e aliados próximos são Imunes à Eletrização",
     "efeito não simulado: Resistência à Raio de Inimigos Próximos é Ignorada por Acertos"
    ],
    "idle": [],
@@ -11585,10 +11555,7 @@
     "Arcane_Cloak",
     "Bane",
     "Bane_of_Condemnation",
-    "Blood_and_Sand",
     "Dread_Banner",
-    "Herald_of_Ice",
-    "Herald_of_Thunder",
     "Hexblast",
     "Hexblast_of_Contradiction",
     "Hexblast_of_Havoc",
@@ -11597,7 +11564,6 @@
     "Righteous_Fire",
     "Righteous_Fire_of_Arcane_Devotion",
     "Snipers_Mark",
-    "Steelskin",
     "Temporal_Chains",
     "Vaal_Righteous_Fire"
    ]
@@ -12784,6 +12750,13 @@
    ]
   },
   {
+   "linha": "o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff",
+   "gemas": [
+    "Herald_of_Ice",
+    "Herald_of_Thunder"
+   ]
+  },
+  {
    "linha": "onda final sempre Incendeia",
    "gemas": [
     "Incinerate",
@@ -13040,27 +13013,6 @@
    "gemas": [
     "Raise_Spectre",
     "Raise_Spectre_of_Transience"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos ganham # % de Resistência máxima a Fogo adicional",
-   "gemas": [
-    "Purity_of_Fire",
-    "Vaal_Impurity_of_Fire"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos ganham # % de Resistência máxima a Frio adicional",
-   "gemas": [
-    "Purity_of_Ice",
-    "Vaal_Impurity_of_Ice"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos ganham # % de Resistência máxima a Raio adicional",
-   "gemas": [
-    "Purity_of_Lightning",
-    "Vaal_Impurity_of_Lightning"
    ]
   },
   {
@@ -13972,24 +13924,6 @@
    ]
   },
   {
-   "linha": "Buff concede # a # de Dano de Ataque de Gelo Adicional",
-   "gemas": [
-    "Herald_of_Ice"
-   ]
-  },
-  {
-   "linha": "Buff concede # a # de Dano de Raio com Ataques Adicional",
-   "gemas": [
-    "Herald_of_Thunder"
-   ]
-  },
-  {
-   "linha": "Buff concede # a # de Dano Mágico de Gelo Adicional",
-   "gemas": [
-    "Herald_of_Ice"
-   ]
-  },
-  {
    "linha": "Buff concede # de Regeneração de Escudo de Energia por segundo",
    "gemas": [
     "Vaal_Arctic_Armour"
@@ -14020,33 +13954,15 @@
    ]
   },
   {
-   "linha": "Buff concede de # a # de Dano de Raio Mágico",
-   "gemas": [
-    "Herald_of_Thunder"
-   ]
-  },
-  {
    "linha": "Buff concede Furtividade aumentada em # %",
    "gemas": [
     "Old_Phase_Run"
    ]
   },
   {
-   "linha": "Buff concede Imunidade a Congelamento",
-   "gemas": [
-    "Old_Arctic_Armour"
-   ]
-  },
-  {
    "linha": "Buff concede Imunidade a Eletrização",
    "gemas": [
     "Tempest_Shield"
-   ]
-  },
-  {
-   "linha": "Buff concede Imunidade a Sangramento",
-   "gemas": [
-    "Steelskin"
    ]
   },
   {
@@ -14587,12 +14503,6 @@
    "linha": "Dano Mágico Suprimido causado em você é Azarado",
    "gemas": [
     "Vaal_Grace"
-   ]
-  },
-  {
-   "linha": "Dano não pode ser Refletido",
-   "gemas": [
-    "Herald_of_Ice"
    ]
   },
   {
@@ -15322,19 +15232,7 @@
    ]
   },
   {
-   "linha": "Habilidades Corpo a Corpo causam # % mais Dano em Área enquanto na Postura de Areia",
-   "gemas": [
-    "Blood_and_Sand"
-   ]
-  },
-  {
    "linha": "Habilidades Corpo a Corpo causam # % mais Dano em Área enquanto na Postura de Sangue",
-   "gemas": [
-    "Blood_and_Sand"
-   ]
-  },
-  {
-   "linha": "Habilidades Corpo a Corpo causam # % mais Efeito em Área enquanto na Postura de Areia",
    "gemas": [
     "Blood_and_Sand"
    ]
@@ -17236,51 +17134,9 @@
    ]
   },
   {
-   "linha": "Você e aliados próximnos tem Duração do Efeito de Habilidades aumentada em # %",
-   "gemas": [
-    "Malevolence"
-   ]
-  },
-  {
    "linha": "Você e Aliados próximos ganham # % de Velocidade de Recarga de Escudo de Energia aumentada",
    "gemas": [
     "Discipline"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos ganham # % mais Armadura",
-   "gemas": [
-    "Determination"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos ganham +# de Precisão",
-   "gemas": [
-    "Precision"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos são Imunes à Congelamento",
-   "gemas": [
-    "Vaal_Impurity_of_Ice"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos são Imunes à Eletrização",
-   "gemas": [
-    "Vaal_Impurity_of_Lightning"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos são Imunes à Incêndio",
-   "gemas": [
-    "Vaal_Impurity_of_Fire"
-   ]
-  },
-  {
-   "linha": "Você e aliados próximos são Imunes à Resfriamento",
-   "gemas": [
-    "Vaal_Impurity_of_Ice"
    ]
   },
   {

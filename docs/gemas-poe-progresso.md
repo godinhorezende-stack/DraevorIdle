@@ -54,7 +54,7 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - Teste novo: `gemas-de-escudo-poe.test.mjs` (3).
 - Depois de G3+G4: ativas parciais 397 → 394 (ataques 145 → 142); suportes sem efeito 31 → 17, testados 23 → 29.
 
-### G5 — os clamores pelo Poder (17/10)
+### G5 — os clamores pelo Poder (17/10, commit 05112a6c com G6 e G7)
 
 - `GemasPoe.clamorPeloPoder(slug, nivel, poder)`: o Poder contado no uso (`ModsPoe.poderDoClamor`) vira os atributos do buff "por cada N de Poder, contando um máximo de M" — a vida regenerada (Resistente), as resistências e o máximo delas (Ancestral), o "mais Armadura" (Sísmico), a Fúria por segundo, o máximo e "impede a perda inerente" (Vingativo) —, as Cargas de Tolerância por Poder (Resistente) e o "Ataques Impelidos causam Dano Dobrado" (Intimidador). Teste: `clamores-poder-poe.test.mjs` (2).
 
@@ -67,6 +67,13 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - **Lacuna sistêmica corrigida:** a ficha da gema é montada sem alvo, e os condicionais com tag de alvo da soma ("contra Inimigos em Vida Cheia", "contra Eletrizados", os da árvore e das peças) e as escalas do alvo não entravam nos acertos das gemas, só no golpe básico. `ModsPoe.golpeNoAlvo` soma, alvo a alvo, o que depende dele (+ as Marcas): o "aumentado" (somado ao do golpe), o "mais", o crítico, o roubo (na conta do roubo, pela fração do dano) e as tags do golpe para o `valor` do acerto.
 - A Vida/Mana por Inimigo Acertado passa a valer nos acertos das gemas de ataque (antes só no golpe básico).
 - Teste: `gemas-alvo-e-marcas-poe.test.mjs` (3: o "mais" contra Vida Cheia no acerto da Bola de Fogo, o "aumentado" de alvo, as Marcas).
+
+### G8 — as linhas de buff das auras, arautos, guardas e clamores (17/10)
+
+- `linhas-das-gemas.atributosDoBuff`: "Buff concede…" e "Você e aliados próximos ganham/têm/são…" viram os atributos do buff (`GemasPoe.buffNoNivel`) — frases próprias (o dano adicionado dos Arautos aos ataques e às magias, o "mais Armadura", o máximo de resistência das Purezas, a duração da Malevolência, as imunidades, a Postura de Areia) e, sem regra própria, o tradutor das peças com o começo tirado ("Buff concede Imunidade a Sangramento", "Dano não pode ser Refletido").
+- O status do ARAUTO diz que o efeito ao matar (a explosão do Gelo, a tempestade do Trovão, o fogo das Cinzas) ainda não existe — antes o Arauto de Gelo saía "funciona" porque o compilador lia o dano da explosão.
+- A Postura de SANGUE do Sangue e Areia segue pendente (no jogo o buff ligado é a Areia; o atributo do buff não vale com ele desligado).
+- Teste: `buffs-das-gemas-poe.test.mjs` (2: os números e o Arauto de Gelo ligado na ficha). Ativas parciais 390 → 384.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -81,6 +88,7 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. Commitar G5–G7 (FULL por exceção com o aval do dono, como nos lotes anteriores).
-2. G8: os outros buffs "sem equivalente" — Arautos (o dano adicionado do buff: "Buff concede X a Y de Dano de Ataque/Mágico de Gelo Adicional"), Sangue e Areia (as posturas), Pele de Aço (imunidade a Sangramento, a absorção), Punição e Marca do Atirador ("sofrem Dano aumentado … em Vida Baixa / de Projéteis" como vulnerabilidade condicional), Fogo Justo (o queimar a si mesmo e o dano por % da vida/ES).
-3. G9: as afecções que saem do acerto final.
+1. G9: o efeito dos Arautos ao matar (Gelo: a explosão no Congelado morto; Trovão: a tempestade no Eletrizado morto; Cinzas: o fogo do dano excedente) — o dano da gema no nível dela.
+2. G10: os estágios de canalização (Lâminas Velozes, Ciclone, Flecha Flagelante, Rajada de Chamas — 12 gemas) e as repetições do golpe (11): `hunt.canalizacao` já existe (lote 42 da árvore).
+3. G11: as afecções que saem do acerto final.
+4. Depois, as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).

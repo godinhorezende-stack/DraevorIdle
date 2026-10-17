@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 52 |
-| implementada, sem teste próprio | 67 |
+| implementada e testada | 54 |
+| implementada, sem teste próprio | 71 |
 | limitação do modelo idle | 42 |
-| parcial | 390 |
+| parcial | 384 |
 | sem efeito | 11 |
 
 Só os ataques:
@@ -35,12 +35,12 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 1 · parcial 42 · implementada, sem teste próprio 9
-- Alternativas (198): parcial 153 · implementada e testada 2 · limitação do modelo idle 14 · implementada, sem teste próprio 27 · sem efeito 2
+- Alternativas (198): parcial 150 · implementada e testada 3 · limitação do modelo idle 14 · implementada, sem teste próprio 29 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 906 linhas distintas (198 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 888 linhas distintas (196 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 128/562 ativas, 38/262 suportes.
@@ -50,7 +50,7 @@ Só os ataques:
 | Gemas | Linha |
 |---|---|
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
-| 19 | nenhum efeito do buff tem equivalente no jogo |
+| 15 | nenhum efeito do buff tem equivalente no jogo |
 | 14 | sem dano direto: nenhum efeito no combate |
 | 12 | os estágios de canalização não existem: no jogo é um uso por vez |
 | 11 | as repetições do golpe não existem: no jogo é um |
@@ -205,6 +205,7 @@ Só os ataques:
 | 2 | Martelos causam - # % de dano |
 | 2 | Martelos Sagrados se acumulam em cascata até # vezes |
 | 2 | Máximo de # anomalias |
+| 2 | o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff |
 | 2 | onda final sempre Incendeia |
 | 2 | Onda não pode parar antes de causar Dano em # Áreas |
 | 2 | Orbes desaparecem após # Golpes |
@@ -242,9 +243,6 @@ Só os ataques:
 | 2 | Um impacto a cada # segundos |
 | 2 | Uma Runa é Melhorada para cada # de Mana Gasta |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
-| 2 | Você e aliados próximos ganham # % de Resistência máxima a Fogo adicional |
-| 2 | Você e aliados próximos ganham # % de Resistência máxima a Frio adicional |
-| 2 | Você e aliados próximos ganham # % de Resistência máxima a Raio adicional |
 | 2 | Você não pode Conjurar Magias Maldição Suportadas |
 | 2 | ㅤ- # % de dano de ataque com duas armas |
 | 1 | [DNT] Deals # % more Damage per active wall |
@@ -396,19 +394,13 @@ Só os ataques:
 | 1 | Aura faz com que Castigo ataque +# alvos com relâmpagos |
 | 1 | Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas |
 | 1 | Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas |
-| 1 | Buff concede # a # de Dano de Ataque de Gelo Adicional |
-| 1 | Buff concede # a # de Dano de Raio com Ataques Adicional |
-| 1 | Buff concede # a # de Dano Mágico de Gelo Adicional |
 | 1 | Buff concede # de Regeneração de Escudo de Energia por segundo |
 | 1 | Buff concede # de Regeneração de Mana por segundo |
 | 1 | Buff concede +# % de Chance de Bloquear o Dano Mágico enquanto portando um Escudo |
 | 1 | Buff concede Dano de Ataque Adicional igual a # % do Dano da sua Arma da Mão Principal por cada # de Poder, contando um máximo de # de Poder |
 | 1 | Buff concede Dano de Raio Adicional igual a # % da Mana Gasta pelo efeito desta Habilidade |
-| 1 | Buff concede de # a # de Dano de Raio Mágico |
 | 1 | Buff concede Furtividade aumentada em # % |
-| 1 | Buff concede Imunidade a Congelamento |
 | 1 | Buff concede Imunidade a Eletrização |
-| 1 | Buff concede Imunidade a Sangramento |
 | 1 | Buff é removido para Impelir o próximo Ataque Corpo a Corpo que você executar Ataques Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades |
 | 1 | Buff tem # % mais Efeito em seus Lacaios |
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Normais ou Mágicos |
@@ -499,7 +491,6 @@ Só os ataques:
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
 | 1 | Dano Elemental das Habilidades Suportadas não pode ser Refletido |
 | 1 | Dano Mágico Suprimido causado em você é Azarado |
-| 1 | Dano não pode ser Refletido |
 | 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
 | 1 | Definhado dura # segundos |
 | 1 | Deixa uma Lâmina Persistente no solo para cada # Saraivadas |
@@ -621,9 +612,7 @@ Só os ataques:
 | 1 | Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham +#% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório |
 | 1 | Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por # segundos |
 | 1 | Golpes Impelidos focam em # Inimigos adicionais |
-| 1 | Habilidades Corpo a Corpo causam # % mais Dano em Área enquanto na Postura de Areia |
 | 1 | Habilidades Corpo a Corpo causam # % mais Dano em Área enquanto na Postura de Sangue |
-| 1 | Habilidades Corpo a Corpo causam # % mais Efeito em Área enquanto na Postura de Areia |
 | 1 | Habilidades Corpo a Corpo têm # % menos Efeito em Área enquanto na Postura de Sangue |
 | 1 | Habilidades de arauto reforçadas não têm efeito bônus |
 | 1 | Habilidades de Aura Suportadas não tem Reserva |
@@ -940,14 +929,7 @@ Só os ataques:
 | 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
 | 1 | Vincula a um novo Inimigo após ser Ativada, não mais que uma vez a cada # segundos |
 | 1 | Você e Aliados não-Lacaios Próximos têm # % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando # segundos |
-| 1 | Você e aliados próximnos tem Duração do Efeito de Habilidades aumentada em # % |
 | 1 | Você e Aliados próximos ganham # % de Velocidade de Recarga de Escudo de Energia aumentada |
-| 1 | Você e aliados próximos ganham # % mais Armadura |
-| 1 | Você e aliados próximos ganham +# de Precisão |
-| 1 | Você e aliados próximos são Imunes à Congelamento |
-| 1 | Você e aliados próximos são Imunes à Eletrização |
-| 1 | Você e aliados próximos são Imunes à Incêndio |
-| 1 | Você e aliados próximos são Imunes à Resfriamento |
 | 1 | Você e aliados próximos têm +# % de chance de Evadirem Acertos de Ataques |
 | 1 | Você Queima por # % da sua Mana Máxima por segundo como Dano de Fogo |
 | 1 | Você Queima por # % de sua Vida máxima por segundo como Dano de Fogo |
@@ -1103,11 +1085,8 @@ Só os ataques:
 - **Blink_Arrow_of_Prismatic_Clones** (Flecha Ilusória dos Clones Prismáticos) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Blood_and_Sand** (Sangue e Areia) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Habilidades Corpo a Corpo causam 27 % mais Dano em Área enquanto na Postura de Sangue
   - efeito não simulado: Habilidades Corpo a Corpo têm 5 % menos Efeito em Área enquanto na Postura de Sangue
-  - efeito não simulado: Habilidades Corpo a Corpo causam 27 % mais Efeito em Área enquanto na Postura de Areia
-  - efeito não simulado: Habilidades Corpo a Corpo causam 5 % mais Dano em Área enquanto na Postura de Areia
 - **Blood_Rage** (Fúria Sangrenta) — sem efeito
   - a gema não tem comportamento de combate reconhecido
 - **Bodyswap** (Troca de Corpos) — parcial
@@ -1239,8 +1218,6 @@ Só os ataques:
   - efeito não simulado: 10 % mais Efeito de Aura por Valor consumido
   - efeito não simulado: Estandarte concede +8 % de chance de Suprimir o Dano Mágico a Você e Aliados
   - efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados
-- **Determination** (Determinação) — parcial
-  - efeito não simulado: Você e aliados próximos ganham 49 % mais Armadura
 - **Detonate_Dead** (Detonar Morto) — parcial
   - o uso de cadáveres não existe no jogo
 - **Detonate_Dead_of_Chain_Reaction** (Detonar Morto da Reação em Cadeia) — parcial
@@ -1501,21 +1478,16 @@ Só os ataques:
   - efeito não simulado: Dano Ardente Base é igual a 25 % do Dano Excedente
   - efeito não simulado: 38 % mais Dano Incendiário sofrido
 - **Herald_of_Ice** (Arauto Glacial) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Dano não pode ser Refletido
-  - efeito não simulado: Buff concede 38 a 56 de Dano de Ataque de Gelo Adicional
-  - efeito não simulado: Buff concede 38 a 56 de Dano Mágico de Gelo Adicional
+  - o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff
 - **Herald_of_Purity** (Arauto da Pureza) — parcial
   - efeito não simulado: Convoca um Sentinela da Pureza quando você Matar um Inimigo
   - efeito não simulado: 20 % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único
   - efeito não simulado: Lacaios causam 95 % de Dano Físico
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Herald_of_Thunder** (Arauto Trovejante) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
+  - o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff
   - efeito não simulado: Tempestade Acerta um Inimigo a cada 0.25 Segundos
   - efeito não simulado: Cria uma tempestade quando você Matar um Inimigo Eletrizado
-  - efeito não simulado: Buff concede 19 a 76 de Dano de Raio com Ataques Adicional
-  - efeito não simulado: Buff concede de 19 a 76 de Dano de Raio Mágico
 - **Hexblast** (Feitiço Explosivo) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Todos os Danos podem Incendiar, Congelar e Eletrizar
@@ -1679,8 +1651,6 @@ Só os ataques:
   - efeito não simulado: Pode aglomerar até 50 usos
   - efeito não simulado: Duração reduzida em 49 %
   - _idle:_ o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
-- **Malevolence** (Malevolência) — parcial
-  - efeito não simulado: Você e aliados próximnos tem Duração do Efeito de Habilidades aumentada em 19 %
 - **Mana-Infused_Staff** (Cajado Impregnado de Mana) — sem efeito
   - a gema não tem comportamento de combate reconhecido
 - **Manabond** (Vínculo de Mana) — parcial
@@ -1697,7 +1667,6 @@ Só os ataques:
   - efeito não simulado: Reflete 3000 % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar
 - **Old_Arctic_Armour** (Armadura Ártica) — parcial
   - efeito não simulado: Resfria Inimigos por 0.5 segundos ao Acertar, reduzindo sua Velocidade de Ação em 30 %
-  - efeito não simulado: Buff concede Imunidade a Congelamento
 - **Old_Phase_Run** (Passo Etéreo) — parcial
   - o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
   - sem dano direto: nenhum efeito no combate
@@ -1769,8 +1738,6 @@ Só os ataques:
 - **Power_Siphon_of_the_Archmage** (Sifão de Poder do Arquimago) — parcial
   - efeito não simulado: Causa Dano de Raio Adicional igual a 24 % da Mana máxima
   - efeito não simulado: 20 % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-- **Precision** (Precisão) — parcial
-  - efeito não simulado: Você e aliados próximos ganham +701 de Precisão
 - **Punishment** (Castigo) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 58 % enquanto em Vida Baixa
@@ -1783,12 +1750,6 @@ Só os ataques:
   - efeito não simulado: Onda de Choque causa 150 % mais Dano
 - **Purity_of_Elements** (Pureza Elementar) — parcial
   - a imunidade a afecções ainda não existe no jogo
-- **Purity_of_Fire** (Pureza Ardente) — parcial
-  - efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Fogo adicional
-- **Purity_of_Ice** (Pureza Glacial) — parcial
-  - efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Frio adicional
-- **Purity_of_Lightning** (Pureza Elétrica) — parcial
-  - efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Raio adicional
 - **Pyroclast_Mine** (Mina Explosiva de Fogo) — parcial
   - efeito não simulado: Dispara um Projétil adicional para cada 3 Minas anteriores na Sequência de Detonação
   - efeito não simulado: Aura de Exposição ao Fogo aplica -15 % à resistência a dano de fogo
@@ -1988,8 +1949,6 @@ Só os ataques:
   - efeito não simulado: ㅤ+ 8 % de dano com ataques e afecções por Relâmpagos Concentrados
 - **Steelskin** (Pele de Aço) — parcial
   - a absorção de dano da guarda ainda não existe no jogo
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Buff concede Imunidade a Sangramento
 - **Storm_Brand** (Runa Tempestuosa) — parcial
   - efeito não simulado: Pode ser Desvinculada por uma Duração total de 6 segundos
   - efeito não simulado: Pode ser Vinculada por uma Duração total de 5 segundos
@@ -2211,19 +2170,12 @@ Só os ataques:
   - efeito não simulado: A expiração do Buff não pode ser modificada
 - **Vaal_Impurity_of_Fire** (Impureza Ardente Vaal) — parcial
   - efeito não simulado: Efeito das Auras aumentado em 76 %
-  - efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Fogo adicional
-  - efeito não simulado: Você e aliados próximos são Imunes à Incêndio
   - efeito não simulado: Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos
 - **Vaal_Impurity_of_Ice** (Impureza Glacial Vaal) — parcial
   - efeito não simulado: Efeito das Auras aumentado em 76 %
-  - efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Frio adicional
-  - efeito não simulado: Você e aliados próximos são Imunes à Resfriamento
-  - efeito não simulado: Você e aliados próximos são Imunes à Congelamento
   - efeito não simulado: Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos
 - **Vaal_Impurity_of_Lightning** (Impureza Elétrica Vaal) — parcial
   - efeito não simulado: Efeito das Auras aumentado em 76 %
-  - efeito não simulado: Você e aliados próximos ganham 4 % de Resistência máxima a Raio adicional
-  - efeito não simulado: Você e aliados próximos são Imunes à Eletrização
   - efeito não simulado: Resistência à Raio de Inimigos Próximos é Ignorada por Acertos
 - **Vaal_Lightning_Arrow** (Flecha Relampejante Vaal) — parcial
   - efeito não simulado: Projéteis mudam de direção 9 vezes Projéteis podem Acertar alvos cada vez que mudam de direção
@@ -2975,4 +2927,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Pulverise_Support, Puncture_of_Shanking, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Cyclone, Vaal_Fireball, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Cyclone, Vaal_Fireball, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
