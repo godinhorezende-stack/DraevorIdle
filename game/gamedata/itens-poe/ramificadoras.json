@@ -5,7 +5,7 @@
   "poedb.tw/pt/<Large|Medium|Small>_Cluster_Jewel — a aba EnchantmentModifiers (o Scrapling)",
   "poedb — a árvore 3.29 (data_pt.json / data_us.json)"
  ],
- "geradoEm": "2026-10-17T00:23:12.593Z",
+ "geradoEm": "2026-10-17T01:11:40.338Z",
  "tamanhos": {
   "Small": {
    "base": "Jewels/Small_Cluster_Jewel",
@@ -38,6 +38,8 @@
      "id": "affliction_maximum_life",
      "tag": "affliction_maximum_life",
      "en": "Life",
+     "nome": "Vida",
+     "idDaPequena": 47192,
      "icone": "Art/2DArt/SkillIcons/passives/IncreasedMaximumLifeNode.png",
      "linhas": [
       "Vida máxima aumentada em 4%"
@@ -173,6 +175,8 @@
      "id": "affliction_maximum_energy_shield",
      "tag": "affliction_maximum_energy_shield",
      "en": "Energy Shield",
+     "nome": "Escudo de Energia e Mana",
+     "idDaPequena": 38342,
      "icone": "Art/2DArt/SkillIcons/passives/EnergyShieldNode.png",
      "linhas": [
       "Escudo de Energia máximo aumentado em 6%"
@@ -248,6 +252,8 @@
      "id": "affliction_maximum_mana",
      "tag": "affliction_maximum_mana",
      "en": "Mana",
+     "nome": "Mana",
+     "idDaPequena": 28321,
      "icone": "Art/2DArt/SkillIcons/passives/MaxManaNode.png",
      "linhas": [
       "Mana máxima aumentada em 6%"
@@ -359,6 +365,8 @@
      "id": "affliction_armour",
      "tag": "affliction_armour",
      "en": "Armour",
+     "nome": "Armadura",
+     "idDaPequena": 3879,
      "icone": "Art/2DArt/SkillIcons/passives/ArmourNode.png",
      "linhas": [
       "Armadura aumentada em 15%"
@@ -434,6 +442,8 @@
      "id": "affliction_evasion",
      "tag": "affliction_evasion",
      "en": "Evasion",
+     "nome": "Evasão",
+     "idDaPequena": 8073,
      "icone": "Art/2DArt/SkillIcons/passives/EvasionNode.png",
      "linhas": [
       "Evasão aumentada em 15%"
@@ -491,6 +501,8 @@
      "id": "affliction_chance_to_block_attack_damage",
      "tag": "affliction_chance_to_block",
      "en": "Chance to Block Attack Damage",
+     "nome": "Chance de Bloquear Dano de Ataques",
+     "idDaPequena": 17271,
      "icone": "Art/2DArt/SkillIcons/passives/BlockAttackDmgNode.png",
      "linhas": [
       "+2% de Chance de Bloquear o Dano de Ataques"
@@ -596,6 +608,8 @@
      "id": "affliction_chance_to_block_spell_damage",
      "tag": "affliction_chance_to_block",
      "en": "Chance to Block Spell Damage",
+     "nome": "Chance de Bloquear Dano Mágico",
+     "idDaPequena": 45180,
      "icone": "Art/2DArt/SkillIcons/passives/BlockSpellDmgNode.png",
      "linhas": [
       "2% de Chance de Bloquear o Dano Mágico"
@@ -701,6 +715,8 @@
      "id": "affliction_fire_resistance",
      "tag": "affliction_fire_resistance",
      "en": "Fire Resistance",
+     "nome": "Resistência a Fogo",
+     "idDaPequena": 36551,
      "icone": "Art/2DArt/SkillIcons/passives/FireResistNode.png",
      "linhas": [
       "+15% de Resistência a Fogo"
@@ -776,6 +792,8 @@
      "id": "affliction_cold_resistance",
      "tag": "affliction_cold_resistance",
      "en": "Cold Resistance",
+     "nome": "Resistência a Gelo",
+     "idDaPequena": 37926,
      "icone": "Art/2DArt/SkillIcons/passives/ColdResistNode.png",
      "linhas": [
       "+15% de Resistência a Gelo"
@@ -845,6 +863,8 @@
      "id": "affliction_lightning_resistance",
      "tag": "affliction_lightning_resistance",
      "en": "Lightning Resistance",
+     "nome": "Resistência a Raio",
+     "idDaPequena": 65026,
      "icone": "Art/2DArt/SkillIcons/passives/LightningResistNode.png",
      "linhas": [
       "+15% de Resistência a Raio"
@@ -914,6 +934,8 @@
      "id": "affliction_chaos_resistance",
      "tag": "affliction_chaos_resistance",
      "en": "Chaos Resistance",
+     "nome": "Resistência a Caos",
+     "idDaPequena": 28987,
      "icone": "Art/2DArt/SkillIcons/passives/ChaosResistNode.png",
      "linhas": [
       "+12% de Resistência a Caos"
@@ -965,6 +987,8 @@
      "id": "affliction_chance_to_dodge_attacks",
      "tag": "affliction_chance_to_dodge_attacks",
      "en": "Chance to Suppress Spell Damage",
+     "nome": "Chance de Suprimir Dano Mágico",
+     "idDaPequena": 45284,
      "icone": "Art/2DArt/SkillIcons/passives/DodgeAtksNode.png",
      "linhas": [
       "+4% de chance de Suprimir Dano Mágico"
@@ -1012,6 +1036,8 @@
      "id": "affliction_reservation_efficiency_small",
      "tag": "affliction_reservation_efficiency_small",
      "en": "Reservation Efficiency",
+     "nome": "Eficácia da Reserva",
+     "idDaPequena": 21796,
      "icone": "Art/2DArt/SkillIcons/passives/AuraEffectNode.png",
      "linhas": [
       "Eficácia da Reserva de Mana das Habilidades aumentada em 6%"
@@ -1129,6 +1155,8 @@
      "id": "affliction_curse_effect_small",
      "tag": "affliction_curse_effect_small",
      "en": "Curse Effect",
+     "nome": "Efeito de Maldições",
+     "idDaPequena": 18530,
      "icone": "Art/2DArt/SkillIcons/passives/CurseEffectNode.png",
      "linhas": [
       "Efeito das suas Maldições aumentado em 2%"
@@ -1246,6 +1274,8 @@
      "id": "affliction_fire_damage_over_time_multiplier",
      "tag": "affliction_fire_damage_over_time_multiplier",
      "en": "Fire Damage over Time",
+     "nome": "Dano de Fogo Degenerativo",
+     "idDaPequena": 31549,
      "icone": "Art/2DArt/SkillIcons/passives/FireDamageOverTimeNode.png",
      "linhas": [
       "Dano Incendiário aumentado em 12%"
@@ -1369,6 +1399,8 @@
      "id": "affliction_chaos_damage_over_time_multiplier",
      "tag": "affliction_chaos_damage_over_time_multiplier",
      "en": "Chaos Damage over Time",
+     "nome": "Dano de Caos Degenerativo",
+     "idDaPequena": 35020,
      "icone": "Art/2DArt/SkillIcons/passives/ChaosDamageOverTimeNode.png",
      "linhas": [
       "Dano de Caos Degenerativo aumentado em 12%"
@@ -1486,6 +1518,8 @@
      "id": "affliction_physical_damage_over_time_multiplier",
      "tag": "affliction_physical_damage_over_time_multiplier",
      "en": "Physical Damage over Time",
+     "nome": "Dano Físico Degenerativo",
+     "idDaPequena": 14036,
      "icone": "Art/2DArt/SkillIcons/passives/PhysicalDamageOverTimeNode.png",
      "linhas": [
       "Dano Físico Degenerativo aumentado em 12%"
@@ -1603,6 +1637,8 @@
      "id": "affliction_cold_damage_over_time_multiplier",
      "tag": "affliction_cold_damage_over_time_multiplier",
      "en": "Cold Damage over Time",
+     "nome": "Dano de Gelo Degenerativo",
+     "idDaPequena": 39222,
      "icone": "Art/2DArt/SkillIcons/passives/ColdDamageOverTimeNode.png",
      "linhas": [
       "Dano Degenerativo de Gelo aumentado em 12%"
@@ -1690,6 +1726,8 @@
      "id": "affliction_damage_over_time_multiplier",
      "tag": "affliction_damage_over_time_multiplier",
      "en": "Damage over Time",
+     "nome": "Dano Degenerativo",
+     "idDaPequena": 32169,
      "icone": "Art/2DArt/SkillIcons/passives/DamageOverTimeNode.png",
      "linhas": [
       "Dano Degenerativo aumentado em 10%"
@@ -1759,6 +1797,8 @@
      "id": "affliction_effect_of_non-damaging_ailments",
      "tag": "affliction_effect_of_non-damaging_ailments",
      "en": "Effect of Non-Damaging Ailments",
+     "nome": "Efeito de Afecções Não Nocivas",
+     "idDaPequena": 61851,
      "icone": "Art/2DArt/SkillIcons/passives/IncreasedNonDamageAilmentNode.png",
      "linhas": [
       "Efeito de Afecções Não-Danificadoras aumentado em 10%"
@@ -1830,6 +1870,8 @@
      "id": "affliction_damage_while_you_have_a_herald",
      "tag": "affliction_damage_while_you_have_a_herald",
      "en": "Damage while you have a Herald",
+     "nome": "Dano enquanto possuir um Arauto",
+     "idDaPequena": 17198,
      "icone": "Art/2DArt/SkillIcons/passives/DmgHeraldSkillsNode.png",
      "linhas": [
       "Dano enquanto afetado por um Arauto aumentado em 10%"
@@ -1893,6 +1935,8 @@
      "id": "affliction_minion_damage_while_you_have_a_herald",
      "tag": "affliction_minion_damage_while_you_have_a_herald",
      "en": "Minion Damage while you have a Herald",
+     "nome": "Dano de Lacaio enquanto possuir um Arauto",
+     "idDaPequena": 3367,
      "icone": "Art/2DArt/SkillIcons/passives/MinionDmgHeraldSkillsNode.png",
      "linhas": [
       "Lacaios causam Dano aumentado em 10% enquanto você for afetado por um Arauto"
@@ -1956,6 +2000,8 @@
      "id": "affliction_warcry_buff_effect",
      "tag": "affliction_warcry_buff_effect",
      "en": "Exerted Attack Damage",
+     "nome": "Dano de Ataques impelidos",
+     "idDaPequena": 3870,
      "icone": "Art/2DArt/SkillIcons/passives/IncreasedWarcryNode.png",
      "linhas": [
       "Ataques Impelidos causam Dano aumentado em 20%"
@@ -2019,6 +2065,8 @@
      "id": "affliction_critical_chance",
      "tag": "affliction_critical_chance",
      "en": "Critical Chance",
+     "nome": "Chance de Crítico",
+     "idDaPequena": 10695,
      "icone": "Art/2DArt/SkillIcons/passives/IncreaseCritChanceNode.png",
      "linhas": [
       "Chance de Crítico aumentada em 15%"
@@ -2100,6 +2148,8 @@
      "id": "affliction_minion_life",
      "tag": "affliction_minion_life",
      "en": "Minion Life",
+     "nome": "Vida do Lacaio",
+     "idDaPequena": 20492,
      "icone": "Art/2DArt/SkillIcons/passives/IncreaseMinionLifeNode.png",
      "linhas": [
       "Vida máxima dos Lacaios aumentada em 12%"
@@ -2157,6 +2207,8 @@
      "id": "affliction_area_damage",
      "tag": "affliction_area_damage",
      "en": "Area Damage",
+     "nome": "Dano em Área",
+     "idDaPequena": 44483,
      "icone": "Art/2DArt/SkillIcons/passives/AreaDmgNode.png",
      "linhas": [
       "Dano em Área aumentado em 10%"
@@ -2214,6 +2266,8 @@
      "id": "affliction_projectile_damage",
      "tag": "affliction_projectile_damage",
      "en": "Projectile Damage",
+     "nome": "Dano de Projétil",
+     "idDaPequena": 1371,
      "icone": "Art/2DArt/SkillIcons/passives/ProjectileDmgNode.png",
      "linhas": [
       "Dano de Projétil aumentado em 10%"
@@ -2265,6 +2319,8 @@
      "id": "affliction_trap_and_mine_damage",
      "tag": "affliction_trap_and_mine_damage",
      "en": "Trap and Mine Damage",
+     "nome": "Dano de Armadilha e Mina",
+     "idDaPequena": 48881,
      "icone": "Art/2DArt/SkillIcons/passives/TrapAndMineDmgNode.png",
      "linhas": [
       "Dano da Armadilha aumentado em 12%",
@@ -2324,6 +2380,8 @@
      "id": "affliction_totem_damage",
      "tag": "affliction_totem_damage",
      "en": "Totem Damage",
+     "nome": "Dano de Totem",
+     "idDaPequena": 46909,
      "icone": "Art/2DArt/SkillIcons/passives/TotemDmgNode.png",
      "linhas": [
       "Dano do Totem aumentado em 12%"
@@ -2387,6 +2445,8 @@
      "id": "affliction_brand_damage",
      "tag": "affliction_brand_damage",
      "en": "Brand Damage",
+     "nome": "Dano de Runa",
+     "idDaPequena": 21126,
      "icone": "Art/2DArt/SkillIcons/passives/BrandDmgNode.png",
      "linhas": [
       "Dano de Runas aumentado em 12%"
@@ -2440,6 +2500,8 @@
      "id": "affliction_channelling_skill_damage",
      "tag": "affliction_channelling_skill_damage",
      "en": "Channelling Skill Damage",
+     "nome": "Dano de Habilidade Canalizadora",
+     "idDaPequena": 10493,
      "icone": "Art/2DArt/SkillIcons/passives/DmgWhenChannelSkillsNode.png",
      "linhas": [
       "Habilidades Canalizadoras causam Dano aumentado em 12%"
@@ -2497,6 +2559,8 @@
      "id": "affliction_flask_duration",
      "tag": "affliction_flask_duration",
      "en": "Flask Duration",
+     "nome": "Duração de Frasco",
+     "idDaPequena": 27625,
      "icone": "Art/2DArt/SkillIcons/passives/FlaskDurationnode.png",
      "linhas": [
       "Duração do efeito do Frasco aumentada em 6%"
@@ -2566,6 +2630,8 @@
      "id": "affliction_life_and_mana_recovery_from_flasks",
      "tag": "affliction_life_and_mana_recovery_from_flasks",
      "en": "Life and Mana recovery from Flasks",
+     "nome": "Vida e Mana Recuperadas de Frascos",
+     "idDaPequena": 51042,
      "icone": "Art/2DArt/SkillIcons/passives/LifeManaFlasksrecoverynode.png",
      "linhas": [
       "Vida Recuperada de Frascos aumentada em 10%",
@@ -2658,6 +2724,8 @@
      "id": "affliction_axe_and_sword_damage",
      "tag": "affliction_axe_and_sword_damage",
      "en": "Axe and Sword Damage",
+     "nome": "Dano de Maça e Espada",
+     "idDaPequena": 14084,
      "icone": "Art/2DArt/SkillIcons/passives/NodeAxeandSwordDamage.png",
      "linhas": [
       "Ataques com Machados causam Dano com Acertos e Afecções aumentado em 12%",
@@ -2755,6 +2823,8 @@
      "id": "affliction_mace_and_staff_damage",
      "tag": "affliction_mace_and_staff_damage",
      "en": "Mace and Staff Damage",
+     "nome": "Dano de Maça e Cajado",
+     "idDaPequena": 51642,
      "icone": "Art/2DArt/SkillIcons/passives/NodeMaceandStaffDamage.png",
      "linhas": [
       "Ataques com Cajados causam Dano com Acertos e Afecções aumentado em 12%",
@@ -2853,6 +2923,8 @@
      "id": "affliction_dagger_and_claw_damage",
      "tag": "affliction_dagger_and_claw_damage",
      "en": "Dagger and Claw Damage",
+     "nome": "Dano de Garra e Adaga",
+     "idDaPequena": 31680,
      "icone": "Art/2DArt/SkillIcons/passives/NodeDaggerandClawDamage.png",
      "linhas": [
       "Ataques com Garras causam Dano com Acertos e Afecções aumentado em 12%",
@@ -2951,6 +3023,8 @@
      "id": "affliction_bow_damage",
      "tag": "affliction_bow_damage",
      "en": "Bow Damage",
+     "nome": "Dano de Arco",
+     "idDaPequena": 18870,
      "icone": "Art/2DArt/SkillIcons/passives/NodeBowDamage.png",
      "linhas": [
       "Dano com Arcos aumentado em 12%",
@@ -3040,6 +3114,8 @@
      "id": "affliction_wand_damage",
      "tag": "affliction_wand_damage",
      "en": "Wand Damage",
+     "nome": "Dano de Varinha",
+     "idDaPequena": 41204,
      "icone": "Art/2DArt/SkillIcons/passives/NodeWandDamage.png",
      "linhas": [
       "Ataques com Varinhas causam Dano com Acertos e Afecções aumentado em 12%"
@@ -3129,6 +3205,8 @@
      "id": "affliction_damage_with_two_handed_melee_weapons",
      "tag": "affliction_damage_with_two_handed_melee_weapons",
      "en": "Damage with Two Handed Weapons",
+     "nome": "Dano com Armas de Duas Mãos",
+     "idDaPequena": 58031,
      "icone": "Art/2DArt/SkillIcons/passives/NodeTwoHandedMeleeDamage.png",
      "linhas": [
       "Dano com Armas de Duas Mãos aumentado em 12%"
@@ -3240,6 +3318,8 @@
      "id": "affliction_attack_damage_while_dual_wielding_",
      "tag": "affliction_attack_damage_while_dual_wielding_",
      "en": "Attack Damage while Dual Wielding",
+     "nome": "Dano de Ataque enquanto em Empunhadura Dupla",
+     "idDaPequena": 16404,
      "icone": "Art/2DArt/SkillIcons/passives/NodeDualWieldingDamage.png",
      "linhas": [
       "Dano de Ataques enquanto em Dupla Empunhadura aumentado em 12%"
@@ -3351,6 +3431,8 @@
      "id": "affliction_attack_damage_while_holding_a_shield",
      "tag": "affliction_attack_damage_while_holding_a_shield",
      "en": "Attack Damage while holding a Shield",
+     "nome": "Dano de Ataque enquanto portando um Escudo",
+     "idDaPequena": 14303,
      "icone": "Art/2DArt/SkillIcons/passives/NodeHoldingShieldDamage.png",
      "linhas": [
       "Dano de Ataques aumentado em 12% enquanto empunhando um Escudo"
@@ -3462,6 +3544,8 @@
      "id": "affliction_attack_damage_",
      "tag": "affliction_attack_damage_",
      "en": "Attack Damage",
+     "nome": "Dano de Ataque",
+     "idDaPequena": 747,
      "icone": "Art/2DArt/SkillIcons/passives/IncreasedAttackDamageNode.png",
      "linhas": [
       "Dano de Ataque aumentado em 10%"
@@ -3531,6 +3615,8 @@
      "id": "affliction_spell_damage",
      "tag": "affliction_spell_damage",
      "en": "Spell Damage",
+     "nome": "Dano Mágico",
+     "idDaPequena": 21845,
      "icone": "Art/2DArt/SkillIcons/passives/IncreasedSpellDamageNode.png",
      "linhas": [
       "Dano Mágico aumentado em 10%"
@@ -3612,6 +3698,8 @@
      "id": "affliction_elemental_damage",
      "tag": "affliction_elemental_damage",
      "en": "Elemental Damage",
+     "nome": "Dano Elemental",
+     "idDaPequena": 49465,
      "icone": "Art/2DArt/SkillIcons/passives/ElementalDamagenode.png",
      "linhas": [
       "Dano Elemental aumentado em 10%"
@@ -3669,6 +3757,8 @@
      "id": "affliction_physical_damage",
      "tag": "affliction_physical_damage",
      "en": "Physical Damage",
+     "nome": "Dano Físico",
+     "idDaPequena": 37171,
      "icone": "Art/2DArt/SkillIcons/passives/PhysicalDamagenode2.png",
      "linhas": [
       "Dano Físico aumentado em 12%"
@@ -3720,6 +3810,8 @@
      "id": "affliction_fire_damage",
      "tag": "affliction_fire_damage",
      "en": "Fire Damage",
+     "nome": "Dano de Fogo",
+     "idDaPequena": 13146,
      "icone": "Art/2DArt/SkillIcons/passives/FireDamagenode.png",
      "linhas": [
       "Dano de Fogo aumentado em 12%"
@@ -3795,6 +3887,8 @@
      "id": "affliction_lightning_damage",
      "tag": "affliction_lightning_damage",
      "en": "Lightning Damage",
+     "nome": "Dano de Raio",
+     "idDaPequena": 49817,
      "icone": "Art/2DArt/SkillIcons/passives/LightningDamagenode.png",
      "linhas": [
       "Dano de Raio aumentado em 12%"
@@ -3894,6 +3988,8 @@
      "id": "affliction_cold_damage",
      "tag": "affliction_cold_damage",
      "en": "Cold Damage",
+     "nome": "Dano de Gelo",
+     "idDaPequena": 41355,
      "icone": "Art/2DArt/SkillIcons/passives/ColdDamagenode.png",
      "linhas": [
       "Dano de Gelo aumentado em 12%"
@@ -3993,6 +4089,8 @@
      "id": "affliction_chaos_damage",
      "tag": "affliction_chaos_damage",
      "en": "Chaos Damage",
+     "nome": "Dano de Caos",
+     "idDaPequena": 46248,
      "icone": "Art/2DArt/SkillIcons/passives/ChaosDamagenode.png",
      "linhas": [
       "Dano de Caos aumentado em 12%"
@@ -4056,6 +4154,8 @@
      "id": "affliction_minion_damage",
      "tag": "affliction_minion_damage",
      "en": "Minion Damage",
+     "nome": "Dano de Lacaio",
+     "idDaPequena": 49331,
      "icone": "Art/2DArt/SkillIcons/passives/IncreasedMinionDamageNode.png",
      "linhas": [
       "Lacaios causam Dano aumentado em 10%"

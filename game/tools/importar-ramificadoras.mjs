@@ -42,6 +42,13 @@ for (const [id, pt] of Object.entries(arvorePt.nodes)) {
   notaveis[chave] = { id: Number(id), nome: pt.name, en: us.name, linhas: pt.stats ?? [], ...(pt.reminderText?.length ? { lembretes: pt.reminderText } : {}), icone: pt.icon, ordem: cluster.notableSortOrder?.[us.name] ?? null };
 }
 const porSlug = new Map(Object.entries(notaveis).map(([nome, n]) => [slugEn(n.en), nome]));
+// (lote 63) As PEQUENAS de cada encantamento (a árvore do poedb também as tem sem grupo: "Attack Damage" → "Dano de Ataque"): o nome em
+// português e o ícone, pelo nome em inglês e — quando o inglês se repete — pelas linhas
+const pequenasSemGrupo = Object.entries(arvoreUs.nodes).filter(([id, n]) => n && n.group == null && !n.isNotable && !n.isKeystone && !n.isMastery && id !== 'root').map(([id, n]) => ({ id: Number(id), en: n.name, pt: arvorePt.nodes[id] }));
+const pequenaDe = (en, linhas) => {
+  const lista = pequenasSemGrupo.filter((x) => x.en === en && x.pt?.name);
+  return lista.find((x) => JSON.stringify(x.pt.stats ?? []) === JSON.stringify(linhas)) ?? lista[0] ?? null;
+};
 
 // As pedras fundamentais das únicas Ramificadoras (O Aquele Sem Nada — a Técnica da Palma Oca…): o nome em português e os efeitos
 const pedras = {};
@@ -75,7 +82,9 @@ for (const [chave, j] of Object.entries(cluster.jewels)) {
         if (!notaveis[nome]) semNotavel.push(`${tam}/${s.tag}: ${n.nome}`);
         return { nome, peso: n.peso, nivel: n.nivel, lado: n.lado };
       });
-      return { id: idDoPob, tag: s.tag, en: s.name, icone: s.icon, linhas: (p?.linhas ?? []).filter((l) => !/^\(/.test(l)), lembretes: (p?.linhas ?? []).filter((l) => /^\(/.test(l)), atributosEn: s.stats ?? [], notaveis: lista };
+      const linhasPt = (p?.linhas ?? []).filter((l) => !/^\(/.test(l));
+      const pequena = pequenaDe(s.name, linhasPt);
+      return { id: idDoPob, tag: s.tag, en: s.name, ...(pequena ? { nome: pequena.pt.name, idDaPequena: pequena.id } : {}), icone: s.icon, linhas: linhasPt, lembretes: (p?.linhas ?? []).filter((l) => /^\(/.test(l)), atributosEn: s.stats ?? [], notaveis: lista };
     }),
   };
 }

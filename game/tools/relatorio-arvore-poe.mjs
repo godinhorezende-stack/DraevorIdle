@@ -392,6 +392,9 @@ async function secaoDasJoias() {
     }
     md.push(`| ${escapar(grupo)} (${unicas}) | ${conta.total} | ${conta.efeito} | ${conta.lembrete} | ${conta.sem} |`);
   }
+  // (lote 63) As LINHAS DOS NÓS das Ramificadoras (o que a joia gerada cria na árvore): as pequenas concedem o encantamento e os "também
+  // concedem" da peça; os notáveis, os efeitos deles — pelo tradutor da árvore, como os nós da árvore.
+  md.push(...await secaoDasRamificadoras(cat));
   md.push('', '### O que ainda não funciona nas joias únicas, pelo lote previsto', '');
   md.push('| Lote | Única — linha |', '|---|---|');
   const porLote = new Map();
@@ -402,6 +405,54 @@ async function secaoDasJoias() {
   }
   for (const [lote, xs] of porLote) md.push(`| ${escapar(lote)} (${xs.length}) | ${xs.map((x) => `${escapar(x.unica)} — ${escapar(x.texto)}${x.nota ? ` _(${escapar(x.nota)})_` : ''}`).join('<br>')} |`);
   md.push('');
+  return md;
+}
+
+/**
+ * (lote 63) As linhas dos nós que as Ramificadoras criam (`catalogo.ramificadoras`): a tabela (encantamento das pequenas, "também concedem",
+ * notáveis) e a lista das sem efeito. Exportada para o teste conferir a conta.
+ */
+export async function linhasDasRamificadoras(cat) {
+  const { traduzirLinha } = await import('../systems/itens-poe/arvore.mjs');
+  const D = cat?.ramificadoras;
+  const grupos = { encantamento: { total: 0, efeito: 0, nota: 0, sem: 0 }, tambem: { total: 0, efeito: 0, nota: 0, sem: 0 }, notavel: { total: 0, efeito: 0, nota: 0, sem: 0 } };
+  const sem = [];
+  if (!D) return { grupos, sem };
+  const contar = (grupo, onde, linha) => {
+    const t = traduzirLinha(linha);
+    const g = grupos[grupo];
+    g.total++;
+    if (t.efeitos.length) g.efeito++;
+    else if (t.estado === 'nota' || (t.estado === 'inerte' && /^não se aplica/i.test(t.nota ?? ''))) g.nota++;
+    else { g.sem++; sem.push({ grupo, onde, linha, estado: t.estado, nota: t.nota ?? null }); }
+  };
+  const vistas = new Set();
+  for (const T of Object.values(D.tamanhos)) for (const e of T.encantamentos) for (const l of e.linhas) if (!vistas.has(l)) { vistas.add(l); contar('encantamento', `${T.en}: ${e.nome ?? e.en}`, l); }
+  const TAMBEM = /^(?:Pequenas )?Habilidades Passivas [Aa]dicionadas também concedem: (.+)$/;
+  for (const m of D.mods) {
+    const x = TAMBEM.exec(m.texto ?? '');
+    // (a faixa vira o maior valor: o que se conta é a regra da linha)
+    const linha = x?.[1].replace(/\((-?[\d.]+)—(-?[\d.]+)\)/g, '$2');
+    if (linha && !vistas.has(`t:${linha}`)) { vistas.add(`t:${linha}`); contar('tambem', m.nome ?? m.id, linha); }
+  }
+  for (const [chave, n] of Object.entries(D.notaveis)) for (const l of n.linhas) contar('notavel', n.nome ?? chave, l);
+  return { grupos, sem };
+}
+async function secaoDasRamificadoras(cat) {
+  const { grupos, sem } = await linhasDasRamificadoras(cat);
+  if (!grupos.notavel.total) return [];
+  const md = ['', '### As linhas dos nós das Ramificadoras (lote 63)', ''];
+  md.push('A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore.', '');
+  md.push('| Linhas | Total | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
+  for (const [k, nome] of [['encantamento', 'Encantamentos (as pequenas)'], ['tambem', '"Também concedem" (as pequenas)'], ['notavel', 'Notáveis']]) {
+    const g = grupos[k];
+    md.push(`| ${nome} | ${g.total} | ${g.efeito} | ${g.nota} | ${g.sem} |`);
+  }
+  if (sem.length) {
+    md.push('', '<details><summary>As linhas sem efeito</summary>', '');
+    for (const x of sem) md.push(`- ${escapar(x.onde)} — ${escapar(x.linha)}${x.nota ? ` _(${escapar(x.nota)})_` : ''}`);
+    md.push('', '</details>');
+  }
   return md;
 }
 
