@@ -187,7 +187,9 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
         if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator });
         if (/^marca/.test(e.efeito)) dur = Math.max(dur, e.durMarca ?? 0);
       }
-      if (!efeitos.length && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
+      // (17/10, lote G6: + o que a Marca dá aos acertos CONTRA o amaldiçoado e ao abate dele — `maldicaoContra`, de `GemasPoe.buffNoNivel`)
+      const contra = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoContra');
+      if (!efeitos.length && !contra && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
       const regras = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoRegras') ?? {};
       // À PROVA DE MALDIÇÕES (o "Infeitiçável" do PoE): o Feitiço não pega — a Marca, sim; e o "Seus Feitiços podem afetar Inimigos a Prova
       // de Maldições" (a Ocultista) passa.
@@ -212,7 +214,8 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
         ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
         // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
-        ...(regras.daMarca ? { daMarca: regras.daMarca } : {}) };
+        ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),
+        ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
       amaldicoou = true;
       if (!emAura) naoAura = true;
       // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).

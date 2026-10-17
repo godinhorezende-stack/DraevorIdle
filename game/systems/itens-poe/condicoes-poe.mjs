@@ -1430,6 +1430,17 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');
   }
   const s = somaPorTags(ficha, [...t]);
+  // (17/10, lote G6) o que as suas MARCAS/maldições no alvo dão a este golpe ("Acertos contra Inimigos Amaldiçoados ganham…", "…Dreno de Vida
+  // quando Acertados por Ataques" — `contra.golpe` da maldição do bicho, × o efeito dela; `@ataque`: só nos ataques)
+  const contraOAlvo = {};
+  for (const m of Object.values(alvo?.maldicoes ?? {})) {
+    if (!m?.contra || !(m.ate > agora)) continue;
+    for (const [k, v] of Object.entries(m.contra.golpe ?? {})) {
+      const { stat, conds } = partir(k);
+      if (conds.every((c) => t.has(c))) contraOAlvo[stat] = (contraOAlvo[stat] ?? 0) + v * (m.contra.fator ?? 1);
+    }
+  }
+  for (const [k, v] of Object.entries(contraOAlvo)) s[k] = (s[k] ?? 0) + v;
   // (lote F) A DISTÂNCIA até o alvo, em casas (1 = colado): os projéteis que ganham ou perdem dano conforme viajam — "Projéteis causam Dano
   // aumentado em 40% aos alvos no início de seu movimento, reduzido para 0%" (`projetil_perto_dmg_inc`), "até 30% mais Dano aos alvos no
   // início" (`projetil_perto_mais`), "ganham Dano ao viajar adiante, até 30% mais" (`projetil_longe_mais`), "Flechas ganham Chance de Golpe
@@ -1502,6 +1513,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (o que a escala do ALVO deu — `valor` soma, para quem lê pela ficha do golpe: a conversão das partes, os eventos…)
   if (Object.keys(doAlvo).length) f.extrasDoAlvo = doAlvo;
   else delete f.extrasDoAlvo;
+  // (lote G6: o da Marca também, para quem lê pelo `valor` — a Vida/Mana por acerto do `aoAcertar`)
+  if (Object.keys(contraOAlvo).length) f.extrasDoAlvo = { ...(f.extrasDoAlvo ?? {}), ...Object.fromEntries(Object.entries(contraOAlvo).map(([k, v]) => [k, v + (Number(f.extrasDoAlvo?.[k]) || 0)])) };
   // ("Adiciona X a Y de Dano de Caos para cada Maldição no Inimigo" — nos ataques e nas magias: × as maldições no alvo agora.)
   const porMaldicao = [Number(ficha.afPoe.added_chaos_por_maldicao_min) || 0, Number(ficha.afPoe.added_chaos_por_maldicao_max) || 0];
   const maldicoes = (porMaldicao[0] || porMaldicao[1]) && alvo ? maldicoesNoAlvo(alvo, agora) : 0;
@@ -1615,6 +1628,36 @@ export function tagsDoAlvo(alvo, agora) {
   return t;
 }
 const somarSobre = (base, s) => Object.fromEntries(Object.entries(s).map(([k, v]) => [k, (base[k] ?? 0) + v]));
+
+/**
+ * (17/10, lote G7) O ALVO no golpe das GEMAS: a ficha da habilidade é montada sem alvo (`acoes.contaDoDano`), então o que depende DELE — os
+ * condicionais da soma com tag de alvo ("Chance de Crítico aumentada em X% contra Inimigos Eletrizados" = `crit_chance_inc@alvoEletrizado`, "X%
+ * mais Dano contra Inimigos em Vida Cheia", os da árvore e das peças), as escalas do alvo (o Resfriamento/a Eletrização nele) e o que as suas
+ * Marcas no alvo dão (`contra.golpe`) — não entrava nos acertos das gemas (só no golpe básico, que monta a ficha com o alvo). Devolve `{ s, tags }`:
+ * a SOMA a mais deste alvo (só o que depende dele) e as tags do golpe com as do alvo. O resto (a distância, a proximidade) já é alvo a alvo.
+ */
+export function golpeNoAlvo(ficha, alvo, agora) {
+  if (!ligado() || !alvo || !ficha) return null;
+  const doAlvo = new Set(tagsDoAlvo(alvo, agora));
+  if (alvo.maxHp > 0 && alvo.hp <= VIDA_BAIXA * alvo.maxHp) doAlvo.add('alvoVidaBaixa');
+  else if (alvo.maxHp > 0) doAlvo.add('alvoNaoVidaBaixa');
+  const t = new Set([...(ficha.tagsDoGolpe ?? []), ...doAlvo]);
+  const s = {};
+  for (const x of ficha.porTag ?? []) if (x.tags.some((tag) => doAlvo.has(tag)) && x.tags.every((tag) => t.has(tag))) s[x.stat] = (s[x.stat] ?? 0) + x.valor;
+  for (const x of escaladosPeloAlvo(ficha.afPoe)) {
+    if (!x.tags.every((c) => t.has(c))) continue;
+    const m = fatorDoAlvo(alvo, agora, x.escala);
+    if (m) s[x.stat] = (s[x.stat] ?? 0) + comTeto(x.valor, m, x.teto);
+  }
+  for (const m of Object.values(alvo.maldicoes ?? {})) {
+    if (!m?.contra || !(m.ate > agora)) continue;
+    for (const [k, v] of Object.entries(m.contra.golpe ?? {})) {
+      const { stat, conds } = partir(k);
+      if (conds.every((c) => t.has(c))) s[stat] = (s[stat] ?? 0) + v * (m.contra.fator ?? 1);
+    }
+  }
+  return Object.keys(s).length ? { s, tags: [...t] } : { s, tags: [...t], vazio: true };
+}
 
 /** O elemento de uma tag (`'fogo'` → `'fire'`). */
 export const elementoDaTag = (tag) => ELEMENTO_DA_TAG[tag] ?? null;

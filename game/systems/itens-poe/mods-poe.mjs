@@ -103,6 +103,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     if (rng() * 100 < v('chance_dobrar_atordoamento')) dur *= 2;
     if (Estados.atordoar(alvo, Math.round(dur), agora, salaDeBoss)) {
       saida.atordoou = true;
+      // (17/10, lote G6) "Inimigos Amaldiçoados concedem N de Fúria quando Atordoados" (a Marca do Senhor da Guerra — `contra.atordoar` da maldição)
+      for (const m of Object.values(alvo.maldicoes ?? {})) if (m?.contra?.atordoar?.furia > 0 && m.ate > agora) ganharFuria(hunt, m.contra.atordoar.furia, agora);
       ev('atordoado');
       fichaR = { ...fichaR, tagsDoGolpe: [...(fichaR.tagsDoGolpe ?? []), 'golpeAtordoou'] };
       // ("Acertos Corpo a Corpo que Atordoam têm X% de chance de Fortificar": só a parte que depende de ter atordoado.)

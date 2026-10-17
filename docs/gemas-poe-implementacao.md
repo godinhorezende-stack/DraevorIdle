@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 48 |
+| implementada e testada | 52 |
 | implementada, sem teste próprio | 67 |
 | limitação do modelo idle | 42 |
-| parcial | 394 |
+| parcial | 390 |
 | sem efeito | 11 |
 
 Só os ataques:
@@ -40,17 +40,17 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 928 linhas distintas (199 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 906 linhas distintas (198 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 125/562 ativas, 38/262 suportes.
+- Testes que citam a gema: 128/562 ativas, 38/262 suportes.
 
 ## Linhas que faltam (por quantidade de gemas)
 
 | Gemas | Linha |
 |---|---|
-| 22 | nenhum efeito do buff tem equivalente no jogo |
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
+| 19 | nenhum efeito do buff tem equivalente no jogo |
 | 14 | sem dano direto: nenhum efeito no combate |
 | 12 | os estágios de canalização não existem: no jogo é um uso por vez |
 | 11 | as repetições do golpe não existem: no jogo é um |
@@ -58,7 +58,6 @@ Só os ataques:
 | 9 | Pode ser Desvinculada por uma Duração total de # segundos |
 | 7 | Pode ser Vinculada por uma Duração total de # segundos |
 | 6 | esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido) |
-| 5 | Conta o Poder total de Inimigos no Alcance |
 | 5 | Dispara um Projétil adicional para cada # Minas anteriores na Sequência de Detonação |
 | 5 | Efeito em Área de Habilidades Maldição Suportadas aumentado em #% |
 | 5 | Habilidades Suportadas têm #% mais Velocidade de Posicionamento de Totens |
@@ -348,11 +347,9 @@ Só os ataques:
 | 1 | Acerta Inimigos a cada # Segundos |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos Perde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
-| 1 | Acertos contra Inimigos Amaldiçoados ganham +# % de Chance de Acerto Crítico |
 | 1 | Acertos Corpo a Corpo Fortificam por # segundos |
 | 1 | Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada # segundos |
 | 1 | Acertos tratam os valores da Resistência Elemental dos Monstros Inimigos como invertidos |
-| 1 | Adiciona # a # de Dano Físico aos Acertos contra Inimigos Amaldiçoados |
 | 1 | Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo |
 | 1 | Afecções Danificadoras infligidas com Habilidades Suportadas causam Dano #% mais rápido |
 | 1 | Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros |
@@ -378,7 +375,6 @@ Só os ataques:
 | 1 | Ataques de habilidades reforçadas não podem matar inimigos |
 | 1 | Ataques de habilidades reforçadas têm #% de chance de considerar os valores de resistência elemental dos monstros inimigos como invertidos |
 | 1 | Ataques Impelidos causam # % mais Dano por Aliado afetado, máximo de # % |
-| 1 | Ataques Impelidos causam Dano Dobrado |
 | 1 | Ataques Impelidos têm # % mais Área de Efeito |
 | 1 | Ataques Impelidos têm +# % de Chance de Golpe Crítico |
 | 1 | Ataques Impelidos têm +# % de Multiplicador de Dano Crítico |
@@ -400,18 +396,12 @@ Só os ataques:
 | 1 | Aura faz com que Castigo ataque +# alvos com relâmpagos |
 | 1 | Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas |
 | 1 | Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas |
-| 1 | Buff concede # % da Vida Regenerada por segundo por cada # de poder, contando um máximo de # de Poder |
-| 1 | Buff concede # % mais Armadura por cada # de Poder, contando um máximo de # de Poder |
 | 1 | Buff concede # a # de Dano de Ataque de Gelo Adicional |
 | 1 | Buff concede # a # de Dano de Raio com Ataques Adicional |
 | 1 | Buff concede # a # de Dano Mágico de Gelo Adicional |
-| 1 | Buff concede # de Fúria por segundo por cada # de Poder, contando um máximo de # de Poder |
 | 1 | Buff concede # de Regeneração de Escudo de Energia por segundo |
 | 1 | Buff concede # de Regeneração de Mana por segundo |
-| 1 | Buff concede + # ao Máximo de Fúria Buff impede a perda inerente de Fúria |
-| 1 | Buff concede +# % ao Máximo de todas as Resistências Elementais por cada # de Poder, contando um máximo de # de Poder |
 | 1 | Buff concede +# % de Chance de Bloquear o Dano Mágico enquanto portando um Escudo |
-| 1 | Buff concede +# % de todas as Resistências Elementais por cada # de poder, contando um máximo de # de Poder |
 | 1 | Buff concede Dano de Ataque Adicional igual a # % do Dano da sua Arma da Mão Principal por cada # de Poder, contando um máximo de # de Poder |
 | 1 | Buff concede Dano de Raio Adicional igual a # % da Mana Gasta pelo efeito desta Habilidade |
 | 1 | Buff concede de # a # de Dano de Raio Mágico |
@@ -469,7 +459,6 @@ Só os ataques:
 | 1 | Comprimento do raio aumentado em # % |
 | 1 | Comprimento máximo da corrente: # metros |
 | 1 | Concede # % mais velocidade de conjuração |
-| 1 | Concede # Carga de Tolerância por cada # de Poder a Você e Jogadores Aliados |
 | 1 | Concede # de Regeneração de Mana por segundo para cada Inimigo afetado |
 | 1 | Concede # de Regeneração de Mana por segundo se qualquer Inimigo está afetado |
 | 1 | Concede # de Regeneração de Vida por segundo caso um Inimigo esteja afetado |
@@ -737,7 +726,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
 | 1 | Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em #% |
 | 1 | Habilidades Suportadas têm Vida do Totem aumentada em #% |
-| 1 | Hits against Cursed Enemies have +# % to Critical Strike Multiplier |
 | 1 | Impactos têm # % mais Efeito em Área |
 | 1 | Impele os próximos # Ataques de Golpe Corpo a Corpo que você executar |
 | 1 | Impele os próximos # Ataques de Pancada Corpo a Corpo que você executar |
@@ -747,16 +735,6 @@ Só os ataques:
 | 1 | Inflige # Debuffs de Definhamento adicionais na primeira vez que cada Inimigo entrar na Área |
 | 1 | Inflige Definhando por # segundos ao Acertar |
 | 1 | Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos |
-| 1 | Inimigos Amaldiçoados concedem # % de Dreno de Mana quando Acertados por Ataques |
-| 1 | Inimigos Amaldiçoados concedem # % de Dreno de Vida quando Acertados por Ataques |
-| 1 | Inimigos Amaldiçoados concedem # de Fúria quando Atordoados |
-| 1 | Inimigos Amaldiçoados concedem # de Mana quando Acertados por Ataques |
-| 1 | Inimigos Amaldiçoados concedem # de Mana quando Mortos |
-| 1 | Inimigos Amaldiçoados concedem # de Vida quando Acertados por Ataques |
-| 1 | Inimigos Amaldiçoados concedem # de Vida quando Mortos |
-| 1 | Inimigos Amaldiçoados possuem uma chance de # % de concederem uma Carga de Frenesi quando mortos |
-| 1 | Inimigos Amaldiçoados possuem uma chance de # % de concederem uma Carga de Poder quando mortos |
-| 1 | Inimigos Amaldiçoados possuem uma chance de # % de concederem uma Carga de Tolerância quando mortos |
 | 1 | Inimigos Amaldiçoados possuem uma redução de # % de Precisão |
 | 1 | Inimigos Amaldiçoados são Debilitados por # Segundos quando Acertarem |
 | 1 | Inimigos Amaldiçoados sofrem Dano aumentado em # % de Acertos de Projéteis |
@@ -997,9 +975,6 @@ Só os ataques:
   - efeito não simulado: Duração da penalidade base é de 3 segundos
   - _idle:_ o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
 - **Ancestral_Cry** (Clamor Ancestral) — parcial
-  - efeito não simulado: Conta o Poder total de Inimigos no Alcance
-  - efeito não simulado: Buff concede +5 % de todas as Resistências Elementais por cada 5 de poder, contando um máximo de 30 de Poder
-  - efeito não simulado: Buff concede +1 % ao Máximo de todas as Resistências Elementais por cada 10 de Poder, contando um máximo de 30 de Poder
   - efeito não simulado: Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar
   - efeito não simulado: Golpes Impelidos focam em 2 Inimigos adicionais
 - **Ancestral_Protector** (Protetor Ancestral) — limitação do modelo idle
@@ -1046,13 +1021,6 @@ Só os ataques:
 - **Artillery_Ballista_of_Focus_Fire** (Balista de Artilharia do Fogo Concentrado) — parcial
   - efeito não simulado: Dispara até 5 Flechas em alvos diferentes
   - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
-- **Assassins_Mark** (Marca do Assassino) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Inimigos Amaldiçoados possuem uma chance de 100 % de concederem uma Carga de Poder quando mortos
-  - efeito não simulado: Acertos contra Inimigos Amaldiçoados ganham +1.5 % de Chance de Acerto Crítico
-  - efeito não simulado: Hits against Cursed Enemies have +49 % to Critical Strike Multiplier
-  - efeito não simulado: Inimigos Amaldiçoados concedem 600 de Vida quando Mortos
-  - efeito não simulado: Inimigos Amaldiçoados concedem 80 de Mana quando Mortos
 - **Automation** (Automação) — sem efeito
   - a gema não tem comportamento de combate reconhecido
 - **Bane** (Banir) — parcial
@@ -1344,10 +1312,6 @@ Só os ataques:
   - efeito não simulado: Cria 1 fissura
 - **Elemental_Hit** (Acerto Elemental) — parcial
   - efeito não simulado: 80 % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido
-- **Enduring_Cry** (Clamor Fortalecedor) — parcial
-  - efeito não simulado: Conta o Poder total de Inimigos no Alcance
-  - efeito não simulado: Concede 1 Carga de Tolerância por cada 5 de Poder a Você e Jogadores Aliados
-  - efeito não simulado: Buff concede 2 % da Vida Regenerada por segundo por cada 5 de poder, contando um máximo de 25 de Poder
 - **Energy_Blade** (Lâmina de Energia) — sem efeito
   - a gema não tem comportamento de combate reconhecido
 - **Enfeeble** (Debilitar) — parcial
@@ -1648,9 +1612,7 @@ Só os ataques:
   - efeito não simulado: Duração da penalidade base é de 3.4 segundos
 - **Intimidating_Cry** (Clamor Intimidador) — parcial
   - efeito não simulado: Inimigos Provocados por este Clamor são Intimidados
-  - efeito não simulado: Conta o Poder total de Inimigos no Alcance
   - efeito não simulado: Impele o próximo 2 Ataque de Golpe Corpo a Corpo que você executar
-  - efeito não simulado: Ataques Impelidos causam Dano Dobrado
 - **Intuitive_Link** (Vínculo Intuitivo) — parcial
   - efeito não simulado: Magias Suportadas causam 44 % menos Dano
   - os acertos do alvo vinculado ainda não ativam as suas magias suportadas
@@ -1792,12 +1754,7 @@ Só os ataques:
 - **Plague_Bearer** (Infestador) — limitação do modelo idle
   - _idle:_ sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)
 - **Poachers_Mark** (Marca do Larápio) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Inimigos Amaldiçoados possuem uma chance de 100 % de concederem uma Carga de Frenesi quando mortos
-  - efeito não simulado: Inimigos Amaldiçoados concedem 50 de Vida quando Acertados por Ataques
-  - efeito não simulado: Inimigos Amaldiçoados concedem 25 de Mana quando Acertados por Ataques
   - efeito não simulado: Inimigos Amaldiçoados têm -20 % de Reducão de Dano Físico
-  - efeito não simulado: Adiciona 30 a 45 de Dano Físico aos Acertos contra Inimigos Amaldiçoados
 - **Poisonous_Concoction** (Composto Venenoso) — parcial
   - efeito não simulado: Consome 1 Carga de 1 Frasco de Vida, se possível, por Projétil Disparado
   - efeito não simulado: Dano de Caos Adicional igual a 16 % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida
@@ -1927,8 +1884,6 @@ Só os ataques:
 - **Seismic_Cry** (Clamor Sísmico) — parcial
   - efeito não simulado: 200 % de aumento da Distância do Empurrão
   - efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área
-  - efeito não simulado: Conta o Poder total de Inimigos no Alcance
-  - efeito não simulado: Buff concede 5 % mais Armadura por cada 5 de Poder, contando um máximo de 25 de Poder
   - efeito não simulado: Impele os próximos 6 Ataques de Pancada Corpo a Corpo que você executar
   - efeito não simulado: Ataques Impelidos têm 50 % mais Área de Efeito
 - **Seismic_Trap** (Armadilha Císmica) — parcial
@@ -2319,10 +2274,6 @@ Só os ataques:
   - efeito não simulado: 40 % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias
 - **Vaal_Volcanic_Fissure** (Fissura Vulcânica Vaal) — parcial
   - efeito não simulado: Fissuras irrompem 2 vezes adicionais
-- **Vengeful_Cry** (Clamor Vingativo) — parcial
-  - efeito não simulado: Conta o Poder total de Inimigos no Alcance
-  - efeito não simulado: Buff concede 3 de Fúria por segundo por cada 5 de Poder, contando um máximo de 25 de Poder
-  - efeito não simulado: Buff concede + 25 ao Máximo de Fúria Buff impede a perda inerente de Fúria
 - **Venom_Gyre** (Espiral Venenosa) — parcial
   - efeito não simulado: Projéteis Retornam a você
   - efeito não simulado: Projéteis Retornando causam 75 % menos Dano com Acertos e Afecções
@@ -2368,12 +2319,6 @@ Só os ataques:
   - efeito não simulado: 10 % mais Área de Efeito por Valor consumido
   - efeito não simulado: 10 % mais Efeito de Aura por Valor consumido
   - efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados
-- **Warlords_Mark** (Marca do Comandante) — parcial
-  - nenhum efeito do buff tem equivalente no jogo
-  - efeito não simulado: Inimigos Amaldiçoados concedem 2.95 % de Dreno de Vida quando Acertados por Ataques
-  - efeito não simulado: Inimigos Amaldiçoados concedem 2.95 % de Dreno de Mana quando Acertados por Ataques
-  - efeito não simulado: Inimigos Amaldiçoados possuem uma chance de 100 % de concederem uma Carga de Tolerância quando mortos
-  - efeito não simulado: Inimigos Amaldiçoados concedem 10 de Fúria quando Atordoados
 - **Wave_of_Conviction** (Onda de Convicção) — parcial
   - efeito não simulado: Exposição aplica -15 % de Resistência Elemental que combine com o maior Dano sofrido
 - **Whirling_Blades** (Lâminas Giratórias) — parcial

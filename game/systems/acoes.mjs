@@ -2640,6 +2640,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const duracaoDoClamor = doPoe ? Math.round(doPoe.dur * Math.max(0.1, 1 + (fichaDoClamor ? ModsPoe.valor(fichaDoClamor, 'clamor_duracao_mais') : 0) / 100)) : 0;
     // (lote 32, P042: o Clamor que sai sem outro Buff de Clamor ativo começa a contagem "para cada segundo que você for afetado por um Buff de Clamor")
     if (!clamorSemBuff && buff.tipo === 'poe-clamor' && !ModsPoe.sobBuffDeClamor(hunt, agora)) hunt.poeSobClamorDesde = agora;
+    // (17/10, lote G5) o PODER do Clamor, contado agora: os atributos do buff "por cada N de Poder" e as Cargas de Tolerância por Poder
+    // (`GemasPoe.clamorPeloPoder`; "Seus Clamores não concedem Buffs ou Cargas a Você" tira os dois)
+    const peloPoder = fichaDoClamor && doPoe ? GemasPoe.clamorPeloPoder(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, ModsPoe.poderDoClamor(hunt, fichaDoClamor)) : null;
+    if (peloPoder && Object.keys(peloPoder.af).length) doPoe.af = { ...doPoe.af, ...Object.fromEntries(Object.entries(peloPoder.af).map(([k, v]) => [k, (doPoe.af?.[k] ?? 0) + v])) };
+    if (peloPoder?.tolerancia > 0 && !clamorSemBuff && CargasPoe.ganhar(estado, 'tolerancia', fichaDoClamor.afPoe, peloPoder.tolerancia)) Ficha.invalidar(estado);
     if (!clamorSemBuff) (hunt.buffs ??= {})[entry.id] = doPoe
       ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
         ...(plantado ? { estandarte: { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, valor: plantado.valor, efeitoMais: plantado.efeitoMais } } : {}),
@@ -2798,13 +2803,45 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // alvo a alvo — a ficha da habilidade é montada sem alvo; `ModsPoe.maisPelaProximidade`, a rampa do PoB)
     const corpoDaGema = itensPoeLigado() && tagsDaSkill.includes('corpo');
     const fatorDaProximidade = (bicho) => (corpoDaGema ? ModsPoe.maisPelaProximidade(ficha, tagsDaSkill, bicho, estado) : 1);
+    // (17/10, lote G7) o ALVO no golpe da gema (`ModsPoe.golpeNoAlvo`): o que depende dele — os condicionais com tag de alvo da soma, as escalas
+    // do alvo, as Marcas — no "aumentado" (somado ao `mult` de cada parte, como o projétil acima), no "mais", no crítico, no roubo e nas tags do
+    // golpe (o `valor` do acerto lê as de alvo). A ficha da gema segue sem alvo; isto entra alvo a alvo.
+    const EL_DO_AUMENTADO = { physical: 'phys_dmg', fire: 'fire_dmg', ice: 'ice_dmg', energy: 'energy_dmg', chaos: 'chaos_dmg' };
+    const ajusteDoAlvo = (bicho) => {
+      const g = itensPoeLigado() && entry.poeGema ? ModsPoe.golpeNoAlvo(ficha, bicho, agora) : null;
+      if (!g || g.vazio) return g ? { fatorEl: () => 1, ficha: { ...ficha, tagsDoGolpe: g.tags } } : null;
+      const a = g.s;
+      const fatorEl = (el, m) => {
+        const inc = (a.dmg_inc ?? 0) + (a[EL_DO_AUMENTADO[el]] ?? 0);
+        const doInc = inc && m > 0 ? (m + (inc / 100) * (sintonia ?? 1)) / m : 1;
+        return doInc * Math.max(0, 1 + (a.mais_dano ?? 0) / 100) * Math.max(0, 1 + (a[ModsPoe.MAIS_DANO_DO_TIPO[el]] ?? 0) / 100);
+      };
+      // o crítico: o "aumentada" (pelos pontos da ficha, como o `fichaDoGolpe`), o "mais", o "+X%" e o multiplicador
+      let critChance = ficha.critChance ?? 0;
+      if (a.crit_chance_inc && ficha.critPontos != null) critChance *= (1 + ((ficha.critInc ?? 0) + a.crit_chance_inc) / 100) / Math.max(0.01, 1 + (ficha.critInc ?? 0) / 100);
+      if (a.crit_mais_pct) critChance *= Math.max(0, 1 + a.crit_mais_pct / 100);
+      if (a.crit_chance) critChance += a.crit_chance / 100;
+      const extras = Object.fromEntries(Object.entries(a).map(([k, v]) => [k, v + (Number(ficha.extrasDoAlvo?.[k]) || 0)]));
+      return {
+        fatorEl, somado: [a.added_physical_dmg_min ?? 0, a.added_physical_dmg_max ?? 0],
+        ficha: { ...ficha, tagsDoGolpe: g.tags, extrasDoAlvo: { ...(ficha.extrasDoAlvo ?? {}), ...extras }, critChance: Math.min(ficha.critTeto ?? 1, critChance),
+          ...(a.crit_dmg ? { critMultiplier: (ficha.critMultiplier ?? 1.5) + a.crit_dmg / 100 } : {}),
+          ...(a.life_leech ? { lifeLeech: (ficha.lifeLeech ?? 0) + a.life_leech / 100 } : {}), ...(a.mana_leech ? { manaLeech: (ficha.manaLeech ?? 0) + a.mana_leech / 100 } : {}),
+          ...(a.life_on_hit ? { vidaPorAcerto: (ficha.vidaPorAcerto ?? 0) + a.life_on_hit } : {}), ...(a.mana_on_hit ? { manaPorAcerto: (ficha.manaPorAcerto ?? 0) + a.mana_on_hit } : {}) },
+      };
+    };
+    // (lote G7: o roubo a mais deste alvo — a Marca do Senhor da Guerra, "…concedem X% de Dreno de Vida quando Acertados por Ataques" —, × o dano
+    // nele; no fim entra na conta do roubo como a fração do total)
+    const rouboDosAlvos = { vida: 0, mana: 0 };
     const acertar = (bicho, pct = 100, fonte = null, golpe = null) => {
+      const noAlvo = ajusteDoAlvo(bicho);
+      const fichaNoAlvo = noAlvo?.ficha ?? ficha;
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
       const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
-      const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora);
+      const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora) * (noAlvo ? noAlvo.fatorEl(p.elemento, p.mult) : 1);
       // (o Sabotador: "Dano com Acertos é Azarado" — rola duas vezes e fica o menor; com o Sortudo junto, os dois se anulam)
       const azarado = ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0;
       // (lote 31: a Sorte e o Azar juntos se anulam — UM sorteio, como no PoE; antes, com os dois, ficava o Sortudo. Os mesmos sorteios de antes.)
@@ -2826,10 +2863,19 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         if (fisico) fisico.dano += v;
         else pedacos.push({ elemento: 'physical', dano: v });
       }
+      // (lote G7: "Adiciona X a Y de Dano Físico aos Acertos contra Inimigos Amaldiçoados" — a Marca do Caçador — na parte Física, como o do
+      // Empalamento acima)
+      if (pedacos && noAlvo?.somado && (noAlvo.somado[0] || noAlvo.somado[1])) {
+        const v = (noAlvo.somado[0] + Math.random() * (noAlvo.somado[1] - noAlvo.somado[0])) * (eficaciaDoAdicionado ?? 1) * fator * (multFisico ?? mult) * Reforcos.vulnerabilidade(bicho, 'physical', agora) * noAlvo.fatorEl('physical', multFisico ?? mult);
+        const fisico = pedacos.find((p) => p.elemento === 'physical');
+        if (fisico) fisico.dano += v;
+        else pedacos.push({ elemento: 'physical', dano: v });
+      }
       const tipo = pedacos ? pedacos.reduce((a, b) => (b.dano > a.dano ? b : a)).elemento : entry.element ?? 'physical';
       const rolagem = sorteDoGolpe.sempre.has(tipo) || sorteDoGolpe.naoCritico.has(tipo) ? [sortear(min, max), sortear(min, max)] : azarado ? [Math.min(sortear(min, max), sortear(min, max))] : [sortear(min, max)];
-      const bruto = pedacos ? pedacos.reduce((t, p) => t + p.dano, 0) : ((sorteDoGolpe.sempre.has(tipo) ? Math.max(...rolagem) : rolagem[0]) + daPericia) * fator * mult * sobrecarga * Reforcos.vulnerabilidade(bicho, tipo, agora);
-      const brutoNaoCritico = pedacos ? null : (Math.max(...rolagem) + daPericia) * fator * mult * sobrecarga * Reforcos.vulnerabilidade(bicho, tipo, agora);
+      const doAlvoNoTipo = !pedacos && noAlvo ? noAlvo.fatorEl(tipo, mult) : 1;
+      const bruto = pedacos ? pedacos.reduce((t, p) => t + p.dano, 0) : ((sorteDoGolpe.sempre.has(tipo) ? Math.max(...rolagem) : rolagem[0]) + daPericia) * fator * mult * sobrecarga * Reforcos.vulnerabilidade(bicho, tipo, agora) * doAlvoNoTipo;
+      const brutoNaoCritico = pedacos ? null : (Math.max(...rolagem) + daPericia) * fator * mult * sobrecarga * Reforcos.vulnerabilidade(bicho, tipo, agora) * doAlvoNoTipo;
       // Gema de DANO CONTÍNUO (Ignite, Envenom, Inflict Wound...): o dano dela é o TOTAL de um efeito ao longo do tempo (`combate/dot.mjs`),
       // não um golpe — sem acerto, sem crítico, e a resistência passa em cada pulso.
       const tipoDoDot = entry.overTime ? Dot.tipoDaFonte(entry.overTime.type) : null;
@@ -2868,8 +2914,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // enquanto Elusivo" é uma condição, inteiro)
       const efeitoElusivo = hunt.poeElusivo ? ModsPoe.efeitoDoElusivo(hunt, agora) / 100 : 1;
       const fichaDoCritico = (efeitoDaGema?.critElusivo || efeitoDaGema?.critMultElusivo) && ModsPoe.buffAtivo(estado, 'elusivo')
-        ? { ...ficha, critChance: Math.min(1, (ficha.critChance ?? 0) + (efeitoDaGema.critElusivo ?? 0) / 100), critMultiplier: (ficha.critMultiplier ?? 1.5) + (((efeitoDaGema.critMultElusivo ?? 0) + ModsPoe.valor(ficha, 'lamina_crit_mult_elusivo')) * efeitoElusivo) / 100 }
-        : ficha;
+        ? { ...fichaNoAlvo, critChance: Math.min(1, (fichaNoAlvo.critChance ?? 0) + (efeitoDaGema.critElusivo ?? 0) / 100), critMultiplier: (fichaNoAlvo.critMultiplier ?? 1.5) + (((efeitoDaGema.critMultElusivo ?? 0) + ModsPoe.valor(ficha, 'lamina_crit_mult_elusivo')) * efeitoElusivo) / 100 }
+        : fichaNoAlvo;
       const rolado = Ficha.rolarCritico(estado, base, bicho, eventos, sempreNaFinal || retaliacaoCritica ? { ...fichaDoCritico, critChance: 1, critChanceMagia: 1 } : semForaDaFinal ? { ...fichaDoCritico, critChance: 0 } : fichaDoCritico);
       // PoE: "Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros" — no crítico, a parte elemental sem a resistência positiva.
       if (rolado.crit && base > 0 && ModsPoe.valor(ficha, 'critico_ignora_res') > 0) {
@@ -2910,6 +2956,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         detalhe: { min, max, daPericia, multiplicador: mult, fatorDaGema, porcentagemDoGolpe: pct, fatorDoAtaque, ataqueDuplo: fatorDoAtaque !== 100, ...(pedacos ? { porElemento: Object.fromEntries(pedacos.map((p) => [p.elemento, Math.round(p.dano)])) } : {}) },
       }));
       total += dano;
+      if (noAlvo?.ficha) { rouboDosAlvos.vida += dano * ((noAlvo.ficha.lifeLeech ?? 0) - (ficha.lifeLeech ?? 0)); rouboDosAlvos.mana += dano * ((noAlvo.ficha.manaLeech ?? 0) - (ficha.manaLeech ?? 0)); }
       if (bicho.semDreno) totalSemDreno += dano;
       if (Mecanicas.semDrenoDeEs(bicho)) totalSemDrenoEs += dano;
       danos.push({ bicho, dano });
@@ -2930,11 +2977,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const fisicoDoAcerto = pedacos ? pedacos.filter((p) => p.elemento === 'physical').reduce((t, p) => t + p.dano, 0) : tipo === 'physical' ? bruto : 0;
       if (fisicoDoAcerto > 0 && base > 0) danoFisico += dano * Math.min(1, resistido(hunt, bicho, 'physical', fisicoDoAcerto, ficha) / base);
       // (a gema do PoE soma as chances dela que não são afecção — o empalamento — `GemasPoe.fichaComAsChancesDaGema`)
-      const fichaDoAcerto = entry.poeGema ? GemasPoe.fichaComAsChancesDaGema(ficha, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha;
+      const fichaComAsChances = entry.poeGema ? GemasPoe.fichaComAsChancesDaGema(ficha, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha;
+      // (lote G7: com o alvo — as tags, os extras do alvo e o crítico dele —, e as chances da gema no `afPoe`)
+      const fichaDoAcerto = noAlvo ? { ...fichaNoAlvo, afPoe: fichaComAsChances.afPoe } : fichaComAsChances;
       // (lote 31, P034: a parte de Fogo do acerto, na proporção do dano final — como o físico acima; + o Fogo da Chama Santificada)
       const fogoBruto = pedacos ? pedacos.filter((p) => p.elemento === 'fire').reduce((t, p) => t + p.dano, 0) : tipo === 'fire' ? bruto : 0;
       const fogoDoAcerto = base > 0 && (fogoBruto > 0 || fogoDaChama > 0) ? dano * Math.min(1, ((fogoBruto > 0 ? resistido(hunt, bicho, 'fire', fogoBruto, ficha) : 0) + fogoDaChama) / base) : 0;
       const doAcerto = ModsPoe.aoAcertar(estado, hunt, bicho, fichaDoAcerto, { dano, fisico: fisicoDoAcerto, fogo: fogoDoAcerto, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: pedacos ? pedacos.map((p) => p.elemento) : [tipo], habilidade: entry.id });
+      // (17/10, lote G7) a VIDA/MANA POR INIMIGO ACERTADO ("Ganha X de Vida por Inimigo Acertado com Ataques", e a da Marca do Caçador) também
+      // nos acertos das gemas de ataque — antes só o golpe básico a aplicava
+      if (entry.poeGema?.ataque && (fichaNoAlvo.vidaPorAcerto || fichaNoAlvo.manaPorAcerto) && (estado.hp ?? 0) > 0) Ficha.curar(estado, fichaNoAlvo.vidaPorAcerto ?? 0, fichaNoAlvo.manaPorAcerto ?? 0, eventos, personagem?.nome, hunt.pos);
       // O suporte Fúria: "Ganhe 3 de Fúria no Acerto com Ataques" (cada acerto do ataque suportado, como o "Fúria com Acertos" das peças).
       if (efeitoDaGema?.furiaNoAcerto > 0 && entry.poeGema?.ataque) ModsPoe.ganharFuria(hunt, efeitoDaGema.furiaNoAcerto, agora);
       // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
@@ -3101,7 +3153,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       ModsPoe.criarAreaFria(hunt, { x: c.x, y: c.y, raioM: fria.raioM, segundos });
     }
     // (No PoE as magias não roubam: só os ataques — `Ficha.aplicarLeech`.)
-    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha, null, { ataque: !ehMagiaDaConta, danoCritico, danoFisico, danoVezesMaldicoes, semDrenoDeVida: Math.min(total, totalSemDreno), semDrenoDeEs: Math.min(total, totalSemDrenoEs) });
+    const fichaDoRoubo = total > 0 && (rouboDosAlvos.vida > 0 || rouboDosAlvos.mana > 0) ? { ...ficha, lifeLeech: (ficha.lifeLeech ?? 0) + rouboDosAlvos.vida / total, manaLeech: (ficha.manaLeech ?? 0) + rouboDosAlvos.mana / total } : ficha;
+    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, fichaDoRoubo, null, { ataque: !ehMagiaDaConta, danoCritico, danoFisico, danoVezesMaldicoes, semDrenoDeVida: Math.min(total, totalSemDreno), semDrenoDeEs: Math.min(total, totalSemDrenoEs) });
     // Life Leech / Mana Leech (supports): % do dano desta skill volta em vida/mana.
     const vidaDoLeech = Math.round((total * (efeitoDaGema?.leechVidaPct ?? 0)) / 100);
     const manaDoLeech = Math.round((total * (efeitoDaGema?.leechManaPct ?? 0)) / 100);

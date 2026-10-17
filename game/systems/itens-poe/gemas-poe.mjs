@@ -370,6 +370,72 @@ export function escudoDaGema(slug, nivel = 1) {
   return r;
 }
 
+/**
+ * (17/10, lote G5) Os CLAMORES pelo PODER (PoE: "Conta o Poder total de Inimigos no Alcance" — `ModsPoe.poderDoClamor`, contado no uso): o buff
+ * de cada clamor "por cada N de Poder, contando um máximo de M" — a regeneração de vida (Resistente), as resistências e o máximo delas
+ * (Ancestral), o "mais Armadura" (Sísmico), a Fúria por segundo, o máximo e "impede a perda inerente" (Vingativo) —, as Cargas de Tolerância
+ * por Poder (Resistente) e o "Ataques Impelidos causam Dano Dobrado" (Intimidador). `{ af, tolerancia }` no `poder` dado.
+ */
+const POR_PODER = [
+  [/^Buff concede (\d+(?:\.\d+)?) ?% da Vida Regenerada por segundo por cada (\d+) de poder, contando um máximo de (\d+) de Poder$/i, (x) => ({ life_regen_pct: x })],
+  [/^Buff concede \+(\d+(?:\.\d+)?) ?% de todas as Resistências Elementais por cada (\d+) de poder, contando um máximo de (\d+) de Poder$/i, (x) => ({ fire_res: x, ice_res: x, energy_res: x })],
+  [/^Buff concede \+(\d+(?:\.\d+)?) ?% ao Máximo de todas as Resistências Elementais por cada (\d+) de Poder, contando um máximo de (\d+) de Poder$/i, (x) => ({ fire_res_max: x, ice_res_max: x, energy_res_max: x })],
+  [/^Buff concede (\d+(?:\.\d+)?) ?% mais Armadura por cada (\d+) de Poder, contando um máximo de (\d+) de Poder$/i, (x) => ({ armour_mais: x })],
+  [/^Buff concede (\d+(?:\.\d+)?) de Fúria por segundo por cada (\d+) de Poder, contando um máximo de (\d+) de Poder$/i, (x) => ({ 'periodico:1:furia': x })],
+];
+const LINHAS_FIXAS_DO_CLAMOR = [
+  [/^Buff concede \+ ?(\d+) ao Máximo de Fúria Buff impede a perda inerente de Fúria$/i, (m) => ({ furia_max: Number(m[1]), furia_perda_lenta: 1e6 })],
+  [/^Ataques Impelidos causam Dano Dobrado$/i, () => ({ 'chance_dano_dobrado@impelido': 100 })],
+];
+const TOLERANCIA_POR_PODER = /^Concede (\d+) Carga de Tolerância por cada (\d+) de Poder a Você e Jogadores Aliados$/i;
+const CONTA_O_PODER = /^Conta o Poder total de Inimigos no Alcance$/i;
+export const ehLinhaDoClamor = (l) => CONTA_O_PODER.test(l) || TOLERANCIA_POR_PODER.test(l) || POR_PODER.some(([re]) => re.test(l)) || LINHAS_FIXAS_DO_CLAMOR.some(([re]) => re.test(l));
+export function clamorPeloPoder(slug, nivel = 1, poder = 0) {
+  const af = {};
+  let tolerancia = 0;
+  const somar = (o, m = 1) => { for (const [k, v] of Object.entries(o)) af[k] = (af[k] ?? 0) + v * m; };
+  for (const l of textosDaGema(slug, nivel).linhas) {
+    for (const [re, f] of POR_PODER) {
+      const m = re.exec(l);
+      if (m) somar(f(Number(m[1])), Math.floor(Math.min(Math.max(0, poder), Number(m[3])) / Math.max(1, Number(m[2]))));
+    }
+    for (const [re, f] of LINHAS_FIXAS_DO_CLAMOR) { const m = re.exec(l); if (m) somar(f(m)); }
+    const t = TOLERANCIA_POR_PODER.exec(l);
+    if (t) tolerancia += Number(t[1]) * Math.floor(Math.max(0, poder) / Math.max(1, Number(t[2])));
+  }
+  return { af, tolerancia };
+}
+
+/**
+ * (17/10, lote G6) As linhas de MARCA/maldição contra o amaldiçoado: `golpe` — atributos do seu golpe nele (`@ataque`: só com ataques) —, e
+ * `morte` — o que o abate dele dá (`carga:<tipo>` = a chance, `vida`, `mana`).
+ */
+const CONTRA = [
+  [/^Inimigos Amaldiçoados concedem ([\d.]+) ?% de Dreno de (Vida|Mana) quando Acertados por Ataques$/i, (m) => ({ golpe: { [`${m[2] === 'Vida' ? 'life' : 'mana'}_leech@ataque`]: Number(m[1]) } })],
+  [/^Inimigos Amaldiçoados concedem (\d+) de (Vida|Mana) quando Acertados por Ataques$/i, (m) => ({ golpe: { [`${m[2] === 'Vida' ? 'life' : 'mana'}_on_hit@ataque`]: Number(m[1]) } })],
+  [/^Inimigos Amaldiçoados possuem uma chance de (\d+) ?% de concederem uma Carga de (Tolerância|Frenesi|Poder) quando mortos$/i, (m) => ({ morte: { [`carga:${{ Tolerância: 'tolerancia', Frenesi: 'frenesi', Poder: 'poder' }[m[2]]}`]: Number(m[1]) } })],
+  [/^Inimigos Amaldiçoados concedem (\d+) de (Vida|Mana) quando Mortos$/i, (m) => ({ morte: { [m[2] === 'Vida' ? 'vida' : 'mana']: Number(m[1]) } })],
+  [/^Acertos contra Inimigos Amaldiçoados ganham \+([\d.]+) ?% de Chance de Acerto Crítico$/i, (m) => ({ golpe: { crit_chance: Number(m[1]) } })],
+  [/^Hits against Cursed Enemies have \+(\d+) ?% to Critical Strike Multiplier$/i, (m) => ({ golpe: { crit_dmg: Number(m[1]) } })],
+  [/^Adiciona (\d+) a (\d+) de Dano Físico aos Acertos contra Inimigos Amaldiçoados$/i, (m) => ({ golpe: { added_physical_dmg_min: Number(m[1]), added_physical_dmg_max: Number(m[2]) } })],
+  [/^Inimigos Amaldiçoados concedem (\d+) de Fúria quando Atordoados$/i, (m) => ({ atordoar: { furia: Number(m[1]) } })],
+];
+export const ehLinhaContraOAmaldicoado = (l) => CONTRA.some(([re]) => re.test(l));
+function contraOAmaldicoado(linhas = []) {
+  const golpe = {};
+  const morte = {};
+  const atordoar = {};
+  for (const l of linhas) for (const [re, f] of CONTRA) {
+    const m = re.exec(l);
+    if (!m) continue;
+    const r = f(m);
+    for (const [k, v] of Object.entries(r.golpe ?? {})) golpe[k] = (golpe[k] ?? 0) + v;
+    for (const [k, v] of Object.entries(r.morte ?? {})) morte[k] = (morte[k] ?? 0) + v;
+    for (const [k, v] of Object.entries(r.atordoar ?? {})) atordoar[k] = (atordoar[k] ?? 0) + v;
+  }
+  return { golpe, morte, atordoar };
+}
+
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
 const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
 export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
@@ -525,6 +591,11 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   if (m.danoRecebido) efeitos.push({ efeito: 'marcaVulneravel', pct: m.danoRecebido, tipos: ['physical', 'fire', 'ice', 'energy', 'chaos', 'earth', 'death', 'holy'], durMarca });
   if (m.menosDano) efeitos.push({ efeito: 'marcaEnfraquece', pct: m.menosDano, durMarca });
   if (m.lentidao) motivos.push('a lentidão da maldição ainda não existe no jogo');
+  // (17/10, lote G6) O que a MARCA/maldição dá aos seus acertos CONTRA o inimigo amaldiçoado por ela ("Acertos contra Inimigos Amaldiçoados
+  // ganham…", "Inimigos Amaldiçoados concedem X% de Dreno de Vida quando Acertados por Ataques") e ao matá-lo ("…concedem uma Carga de Poder
+  // quando mortos", "…600 de Vida quando Mortos"): guardado na maldição do bicho (`Reforcos.marcar`) e lido no golpe (`fichaDoGolpe`) e no abate.
+  const contra = contraOAmaldicoado(textosDaGema(slug, nivel).linhas);
+  if (Object.keys(contra.golpe).length || Object.keys(contra.morte).length || Object.keys(contra.atordoar).length) efeitos.push({ efeito: 'maldicaoContra', golpe: contra.golpe, morte: contra.morte, atordoar: contra.atordoar });
   // (lote 46, dono: "Toda área em metros") o raio do Clamor em CASAS: os metros da gema ÷ 2 (antes, os metros como casas — o dobro); no uso, × √
   // da "Área de Efeito aumentada" — `acoes.raioDoClamor`
   if (h.arquetipo === 'clamor') efeitos.push({ efeito: 'provocar', raio: Math.max(1, Math.round((st.raioFinal ?? 6) / 2)), raioM: st.raioFinal ?? 6 });
@@ -586,7 +657,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 

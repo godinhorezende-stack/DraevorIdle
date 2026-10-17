@@ -2,8 +2,8 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 48,
-   "parcial": 394,
+   "implementada e testada": 52,
+   "parcial": 390,
    "implementada, sem teste próprio": 67,
    "limitação do modelo idle": 42,
    "sem efeito": 11
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 928,
-   "emDuasOuMais": 199
+   "linhasDistintas": 906,
+   "emDuasOuMais": 198
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,7 +61,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 125,
+   "ativasCitadas": 128,
    "suportesCitados": 38
   }
  },
@@ -626,12 +626,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Conta o Poder total de Inimigos no Alcance",
-    "efeito não simulado: Concede 1 Carga de Tolerância por cada 5 de Poder a Você e Jogadores Aliados",
-    "efeito não simulado: Buff concede 2 % da Vida Regenerada por segundo por cada 5 de poder, contando um máximo de 25 de Poder"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -646,9 +642,7 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Inimigos Provocados por este Clamor são Intimidados",
-    "efeito não simulado: Conta o Poder total de Inimigos no Alcance",
-    "efeito não simulado: Impele o próximo 2 Ataque de Golpe Corpo a Corpo que você executar",
-    "efeito não simulado: Ataques Impelidos causam Dano Dobrado"
+    "efeito não simulado: Impele o próximo 2 Ataque de Golpe Corpo a Corpo que você executar"
    ],
    "idle": [],
    "outros": [],
@@ -1117,9 +1111,6 @@
    "arquetipo": "clamor",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Conta o Poder total de Inimigos no Alcance",
-    "efeito não simulado: Buff concede +5 % de todas as Resistências Elementais por cada 5 de poder, contando um máximo de 30 de Poder",
-    "efeito não simulado: Buff concede +1 % ao Máximo de todas as Resistências Elementais por cada 10 de Poder, contando um máximo de 30 de Poder",
     "efeito não simulado: Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar",
     "efeito não simulado: Golpes Impelidos focam em 2 Inimigos adicionais"
    ],
@@ -1253,8 +1244,6 @@
    "ausentes": [
     "efeito não simulado: 200 % de aumento da Distância do Empurrão",
     "efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área",
-    "efeito não simulado: Conta o Poder total de Inimigos no Alcance",
-    "efeito não simulado: Buff concede 5 % mais Armadura por cada 5 de Poder, contando um máximo de 25 de Poder",
     "efeito não simulado: Impele os próximos 6 Ataques de Pancada Corpo a Corpo que você executar",
     "efeito não simulado: Ataques Impelidos têm 50 % mais Área de Efeito"
    ],
@@ -1315,14 +1304,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Inimigos Amaldiçoados concedem 2.95 % de Dreno de Vida quando Acertados por Ataques",
-    "efeito não simulado: Inimigos Amaldiçoados concedem 2.95 % de Dreno de Mana quando Acertados por Ataques",
-    "efeito não simulado: Inimigos Amaldiçoados possuem uma chance de 100 % de concederem uma Carga de Tolerância quando mortos",
-    "efeito não simulado: Inimigos Amaldiçoados concedem 10 de Fúria quando Atordoados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1533,12 +1516,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Conta o Poder total de Inimigos no Alcance",
-    "efeito não simulado: Buff concede 3 de Fúria por segundo por cada 5 de Poder, contando um máximo de 25 de Poder",
-    "efeito não simulado: Buff concede + 25 ao Máximo de Fúria Buff impede a perda inerente de Fúria"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4138,12 +4117,7 @@
    "arquetipo": "maldicao",
    "estado": "parcial",
    "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Inimigos Amaldiçoados possuem uma chance de 100 % de concederem uma Carga de Frenesi quando mortos",
-    "efeito não simulado: Inimigos Amaldiçoados concedem 50 de Vida quando Acertados por Ataques",
-    "efeito não simulado: Inimigos Amaldiçoados concedem 25 de Mana quando Acertados por Ataques",
-    "efeito não simulado: Inimigos Amaldiçoados têm -20 % de Reducão de Dano Físico",
-    "efeito não simulado: Adiciona 30 a 45 de Dano Físico aos Acertos contra Inimigos Amaldiçoados"
+    "efeito não simulado: Inimigos Amaldiçoados têm -20 % de Reducão de Dano Físico"
    ],
    "idle": [],
    "outros": [],
@@ -6889,15 +6863,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "maldicao",
-   "estado": "parcial",
-   "ausentes": [
-    "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Inimigos Amaldiçoados possuem uma chance de 100 % de concederem uma Carga de Poder quando mortos",
-    "efeito não simulado: Acertos contra Inimigos Amaldiçoados ganham +1.5 % de Chance de Acerto Crítico",
-    "efeito não simulado: Hits against Cursed Enemies have +49 % to Critical Strike Multiplier",
-    "efeito não simulado: Inimigos Amaldiçoados concedem 600 de Vida quando Mortos",
-    "efeito não simulado: Inimigos Amaldiçoados concedem 80 de Mana quando Mortos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11586,33 +11553,6 @@
  ],
  "linhasFaltando": [
   {
-   "linha": "nenhum efeito do buff tem equivalente no jogo",
-   "gemas": [
-    "Alchemists_Mark",
-    "Arcane_Cloak",
-    "Assassins_Mark",
-    "Bane",
-    "Bane_of_Condemnation",
-    "Blood_and_Sand",
-    "Dread_Banner",
-    "Herald_of_Ice",
-    "Herald_of_Thunder",
-    "Hexblast",
-    "Hexblast_of_Contradiction",
-    "Hexblast_of_Havoc",
-    "Pact_of_KTash",
-    "Poachers_Mark",
-    "Punishment",
-    "Righteous_Fire",
-    "Righteous_Fire_of_Arcane_Devotion",
-    "Snipers_Mark",
-    "Steelskin",
-    "Temporal_Chains",
-    "Vaal_Righteous_Fire",
-    "Warlords_Mark"
-   ]
-  },
-  {
    "linha": "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
    "gemas": [
     "Ambush",
@@ -11636,6 +11576,30 @@
     "Vaal_Lightning_Warp",
     "Whirling_Blades",
     "Withering_Step"
+   ]
+  },
+  {
+   "linha": "nenhum efeito do buff tem equivalente no jogo",
+   "gemas": [
+    "Alchemists_Mark",
+    "Arcane_Cloak",
+    "Bane",
+    "Bane_of_Condemnation",
+    "Blood_and_Sand",
+    "Dread_Banner",
+    "Herald_of_Ice",
+    "Herald_of_Thunder",
+    "Hexblast",
+    "Hexblast_of_Contradiction",
+    "Hexblast_of_Havoc",
+    "Pact_of_KTash",
+    "Punishment",
+    "Righteous_Fire",
+    "Righteous_Fire_of_Arcane_Devotion",
+    "Snipers_Mark",
+    "Steelskin",
+    "Temporal_Chains",
+    "Vaal_Righteous_Fire"
    ]
   },
   {
@@ -11741,16 +11705,6 @@
     "Cast_while_Channelling_Support",
     "Focused_Channelling_Support",
     "Infused_Channelling_Support"
-   ]
-  },
-  {
-   "linha": "Conta o Poder total de Inimigos no Alcance",
-   "gemas": [
-    "Ancestral_Cry",
-    "Enduring_Cry",
-    "Intimidating_Cry",
-    "Seismic_Cry",
-    "Vengeful_Cry"
    ]
   },
   {
@@ -13724,12 +13678,6 @@
    ]
   },
   {
-   "linha": "Acertos contra Inimigos Amaldiçoados ganham +# % de Chance de Acerto Crítico",
-   "gemas": [
-    "Assassins_Mark"
-   ]
-  },
-  {
    "linha": "Acertos Corpo a Corpo Fortificam por # segundos",
    "gemas": [
     "Vigilant_Strike"
@@ -13745,12 +13693,6 @@
    "linha": "Acertos tratam os valores da Resistência Elemental dos Monstros Inimigos como invertidos",
    "gemas": [
     "Wild_Strike_of_Extremes"
-   ]
-  },
-  {
-   "linha": "Adiciona # a # de Dano Físico aos Acertos contra Inimigos Amaldiçoados",
-   "gemas": [
-    "Poachers_Mark"
    ]
   },
   {
@@ -13904,12 +13846,6 @@
    ]
   },
   {
-   "linha": "Ataques Impelidos causam Dano Dobrado",
-   "gemas": [
-    "Intimidating_Cry"
-   ]
-  },
-  {
    "linha": "Ataques Impelidos têm # % mais Área de Efeito",
    "gemas": [
     "Seismic_Cry"
@@ -14036,18 +13972,6 @@
    ]
   },
   {
-   "linha": "Buff concede # % da Vida Regenerada por segundo por cada # de poder, contando um máximo de # de Poder",
-   "gemas": [
-    "Enduring_Cry"
-   ]
-  },
-  {
-   "linha": "Buff concede # % mais Armadura por cada # de Poder, contando um máximo de # de Poder",
-   "gemas": [
-    "Seismic_Cry"
-   ]
-  },
-  {
    "linha": "Buff concede # a # de Dano de Ataque de Gelo Adicional",
    "gemas": [
     "Herald_of_Ice"
@@ -14066,12 +13990,6 @@
    ]
   },
   {
-   "linha": "Buff concede # de Fúria por segundo por cada # de Poder, contando um máximo de # de Poder",
-   "gemas": [
-    "Vengeful_Cry"
-   ]
-  },
-  {
    "linha": "Buff concede # de Regeneração de Escudo de Energia por segundo",
    "gemas": [
     "Vaal_Arctic_Armour"
@@ -14084,27 +14002,9 @@
    ]
   },
   {
-   "linha": "Buff concede + # ao Máximo de Fúria Buff impede a perda inerente de Fúria",
-   "gemas": [
-    "Vengeful_Cry"
-   ]
-  },
-  {
-   "linha": "Buff concede +# % ao Máximo de todas as Resistências Elementais por cada # de Poder, contando um máximo de # de Poder",
-   "gemas": [
-    "Ancestral_Cry"
-   ]
-  },
-  {
    "linha": "Buff concede +# % de Chance de Bloquear o Dano Mágico enquanto portando um Escudo",
    "gemas": [
     "Tempest_Shield"
-   ]
-  },
-  {
-   "linha": "Buff concede +# % de todas as Resistências Elementais por cada # de poder, contando um máximo de # de Poder",
-   "gemas": [
-    "Ancestral_Cry"
    ]
   },
   {
@@ -14447,12 +14347,6 @@
    "linha": "Concede # % mais velocidade de conjuração",
    "gemas": [
     "Righteous_Fire_of_Arcane_Devotion"
-   ]
-  },
-  {
-   "linha": "Concede # Carga de Tolerância por cada # de Poder a Você e Jogadores Aliados",
-   "gemas": [
-    "Enduring_Cry"
    ]
   },
   {
@@ -16058,12 +15952,6 @@
    ]
   },
   {
-   "linha": "Hits against Cursed Enemies have +# % to Critical Strike Multiplier",
-   "gemas": [
-    "Assassins_Mark"
-   ]
-  },
-  {
    "linha": "Impactos têm # % mais Efeito em Área",
    "gemas": [
     "Vaal_Firestorm"
@@ -16115,66 +16003,6 @@
    "linha": "Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos",
    "gemas": [
     "Hexpass_Support"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados concedem # % de Dreno de Mana quando Acertados por Ataques",
-   "gemas": [
-    "Warlords_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados concedem # % de Dreno de Vida quando Acertados por Ataques",
-   "gemas": [
-    "Warlords_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados concedem # de Fúria quando Atordoados",
-   "gemas": [
-    "Warlords_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados concedem # de Mana quando Acertados por Ataques",
-   "gemas": [
-    "Poachers_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados concedem # de Mana quando Mortos",
-   "gemas": [
-    "Assassins_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados concedem # de Vida quando Acertados por Ataques",
-   "gemas": [
-    "Poachers_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados concedem # de Vida quando Mortos",
-   "gemas": [
-    "Assassins_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados possuem uma chance de # % de concederem uma Carga de Frenesi quando mortos",
-   "gemas": [
-    "Poachers_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados possuem uma chance de # % de concederem uma Carga de Poder quando mortos",
-   "gemas": [
-    "Assassins_Mark"
-   ]
-  },
-  {
-   "linha": "Inimigos Amaldiçoados possuem uma chance de # % de concederem uma Carga de Tolerância quando mortos",
-   "gemas": [
-    "Warlords_Mark"
    ]
   },
   {
