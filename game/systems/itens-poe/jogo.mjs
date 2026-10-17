@@ -406,7 +406,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (61 — 17/10, lote 73: as Ramificadoras — o Acerto Selvagem recente, os Selos do Liberar, as Runas soltas e a Runa adicional, o Caos que
 // não se interrompe no atordoamento, as propagações restantes dos Projéteis, o Empalamento com Sangramento)
 // (62 — 17/10, lote 74: as Ramificadoras — o Reduzir, com a gema Convocar Runas que passa a existir no jogo)
-export const VERSAO_DA_TRADUCAO = 62;
+// (63 — 17/10, lote 75: as Ramificadoras — a Pura Agonia, com o Arauto da Agonia e a Virulência)
+export const VERSAO_DA_TRADUCAO = 63;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

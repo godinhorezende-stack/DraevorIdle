@@ -122,7 +122,9 @@ export function daSoma(af = {}) {
     resfriamentoMinimo: n('resfriamento_minimo'), resfriamentoMaximo: n('resfriamento_maximo'), resfriamentoReduzDano: n('resfriamento_reduz_dano') > 0,
     // o crítico: o efeito das não danificadoras, o multiplicador degenerativo (de todas e do veneno), o "mais dano" do veneno; a Agonia Perfeita
     efeitoNaoDanoCritico: n('efeito_nao_dano_critico'), multiplicadorCritico: n('dot_multi_critico'), multiplicadorVenenoCritico: n('dot_multi_poison_critico'), multiplicadorSangramentoCritico: n('dot_multi_bleed_critico'), multiplicadorIncendioCritico: n('dot_multi_ignite_critico'),
-    venenoCriticoMais: n('veneno_critico_mais'), venenoMaisChance: n('veneno_mais_chance'), venenoMaisPct: n('veneno_mais_pct'), agoniaPerfeita: n('agonia_perfeita') > 0, semAfeccaoSemCritico: n('sem_afeccao_sem_critico') > 0,
+    venenoCriticoMais: n('veneno_critico_mais'), venenoMaisChance: n('veneno_mais_chance'), venenoMaisPct: n('veneno_mais_pct'),
+    // (lote 75, o buff do Arauto da Agonia: "Buff concede 10% mais Dano com Veneno" — o MORE do PoB, só no Veneno; multiplica à parte)
+    venenoMaisFinal: n('veneno_mais_final'), agoniaPerfeita: n('agonia_perfeita') > 0, semAfeccaoSemCritico: n('sem_afeccao_sem_critico') > 0,
     // o veneno em inimigo não envenenado / sangrando; o sangramento por empalamento, as pilhas (Dança Carmesim) e o "menos dano"
     venenoNaoEnvenenado: n('veneno_nao_envenenado_inc'), multiplicadorVenenoSangrando: n('dot_multi_poison_sangrando'),
     multiplicadorSangramentoPorEmpalamento: n('dot_multi_bleed_por_empalamento'), sangramentoPilhas: n('sangramento_pilhas'), sangramentoMenos: n('sangramento_menos'),
@@ -270,7 +272,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     // (14/10, o Infestador Incubando: "20% menos Dano com Veneno enquanto Incubando e não estiver no Máximo do Valor da Praga" e "Ao infligir
     // Veneno enquanto Incubando, adiciona 40% do Dano Esperado de Veneno ao Valor da Praga" — `acoes.pragaDoAcerto`)
     for (let k = 0; k <= Math.max(0, Math.floor(a.venenosExtras ?? 0)) && jaTem + k < teto; k++) {
-      if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno), baseDoVeneno, multVeneno, aumVeneno, { mais: ((1 + maisDoVeneno() / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100 })) praga?.somar(ultimoTotal);
+      if (dot('venenoPoe', BASE.veneno.porSegundo, duracaoDe(BASE.veneno.duracaoMs, a.duracaoVeneno), baseDoVeneno, multVeneno, aumVeneno, { mais: ((1 + maisDoVeneno() / 100) * (1 + (a.venenoMaisFinal ?? 0) / 100) * (1 - (praga?.menosPct ?? 0) / 100) - 1) * 100 })) praga?.somar(ultimoTotal);
     }
     // ("Inimigos Envenenados por você têm −X% de Resistência a Caos" — `hunt/resistencia.resistenciaDe`)
     if (a.resMenosCaosEnvenenado > 0) (bicho.estados ??= {}).resMenosCaos = Math.max(bicho.estados.resMenosCaos ?? 0, a.resMenosCaosEnvenenado);

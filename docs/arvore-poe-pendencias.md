@@ -90,13 +90,7 @@ A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento 
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 667 | 3 | 1 |
-
-<details><summary>As linhas sem efeito</summary>
-
-- Pura Agonia — +5 de Virulência Máxima
-
-</details>
+| Notáveis | 671 | 668 | 3 | 0 |
 
 ### O que ainda não funciona nas joias únicas, pelo lote previsto
 

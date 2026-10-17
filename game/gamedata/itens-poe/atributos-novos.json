@@ -7994,6 +7994,18 @@
       "unidade": "%",
       "combate": true,
       "efeito": "acoes.temposDaGemaPoe (lote 74)"
+    },
+    "virulencia_max": {
+      "nome": "Virulência Máxima (Arauto da Agonia)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/virulencia.maxima (lote 75)"
+    },
+    "veneno_mais_final": {
+      "nome": "Dano com Veneno, mais (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (o buff do Arauto da Agonia) (lote 75)"
     }
   }
 }

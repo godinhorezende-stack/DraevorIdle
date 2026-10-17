@@ -37,6 +37,7 @@ import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
+import * as Virulencia from './itens-poe/virulencia.mjs';
 import * as Poderes from './poderes.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
@@ -732,6 +733,39 @@ export function suspenderNoTempo(estado, hunt, personagem, entry, alvo, agora = 
  * ao acaso: +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5). O PoE não publica a frequência
  * nem a duração do buff: aproximado, com a nota.
  */
+/**
+ * (lote 75 — dono, 17/10: "No máximo, como o PoB") O ARAUTO DA AGONIA a cada tique: com o Arauto ligado e você Envenenando (`Virulencia.atual`
+ * — a Virulência no máximo), o Rastejador Agonizante vem (sem contar como uso de Lacaio) e escala pela Virulência (`LacaiosPoe.oQueInvoca` com
+ * `efeito.virulencia`; os números refeitos quando o nível, a qualidade ou o máximo mudam — `chaveDaVirulencia`); sem Virulência, ele SOME
+ * (pelo `ate`: não é morte — no PoB ele não pode morrer). Devolve os eventos.
+ */
+export function tiqueDoArautoDaAgonia(estado, hunt, agora = hunt?.clock ?? 0) {
+  const parede = Math.max(1, hunt?.ultimoTique ?? Date.now());
+  const b = hunt?.buffs?.[Virulencia.ID];
+  const vivos = (hunt?.lacaios ?? []).filter((l) => l.gema === Virulencia.SLUG && l.hp > 0 && !(l.ate && l.ate <= parede));
+  if (!b && !vivos.length) return [];
+  const entry = POR_ID.get(Virulencia.ID);
+  const ef = entry ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  const af = Ficha.combate(estado).afPoe ?? {};
+  const V = b && ef ? Virulencia.atual(hunt, Virulencia.maxima(ef.nivel ?? 1, ef.qualidade ?? 0, af), agora) : 0;
+  if (!(V > 0)) {
+    for (const l of vivos) l.ate = parede;
+    return [];
+  }
+  const chave = `${ef.nivel ?? 1}:${V}`;
+  if (vivos.length) {
+    for (const l of vivos) {
+      if (l.chaveDaVirulencia === chave) continue;
+      const q = LacaiosPoe.oQueInvoca(Virulencia.SLUG, ef.nivel ?? 1, { ...ef, virulencia: V }, af);
+      if (q) Object.assign(l, { dano: q.dano, somado: q.somado, velAtaquePct: q.velAtaquePct, poe: q.poe, virulencia: V, chaveDaVirulencia: chave });
+    }
+    return [];
+  }
+  const eventos = invocarLacaios(hunt, entry, { ...ef, virulencia: V }, null, estado, { semUso: true });
+  for (const l of hunt.lacaios ?? []) if (l.gema === Virulencia.SLUG && l.hp > 0 && l.chaveDaVirulencia == null) Object.assign(l, { virulencia: V, chaveDaVirulencia: chave });
+  return eventos;
+}
+
 export const EMISSARIO = Object.freeze({ nome: 'Grande Emissário das Direções', periodoMs: 6000, duracaoS: 6, buffs: ['emissarioProjeteis', 'emissarioRicochetes', 'emissarioPerfuracao', 'emissarioDifusao', 'emissarioTodos'] });
 export function tiqueDoEmissario(estado, hunt, agora = hunt?.clock ?? 0, rng = Math.random) {
   if (!itensPoeLigado() || !hunt?.pos) return;
@@ -1890,10 +1924,10 @@ export function reconvocarGolens(estado, hunt, agora) {
   }
   return eventos;
 }
-function invocarLacaios(hunt, entry, efeito, alvo, estado = null) {
+function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = false } = {}) {
   const slug = entry.poeGema.slug;
-  // (PoE: "usou uma Habilidade de Lacaio Recentemente".)
-  ModsPoe.marcar(hunt, 'usouLacaio');
+  // (PoE: "usou uma Habilidade de Lacaio Recentemente". Lote 75: `semUso` — o Rastejador que o Arauto da Agonia chama ao Envenenar não é uso.)
+  if (!semUso) ModsPoe.marcar(hunt, 'usouLacaio');
   const q = LacaiosPoe.oQueInvoca(slug, efeito?.nivel ?? 1, efeito, estado ? Ficha.combate(estado)?.afPoe ?? null : null);
   // (a restrição de uma peça — "Você não pode ter Lacaios não-Golens": o de outro tipo não vem)
   if (!q || q.proibido) return [];
@@ -2656,6 +2690,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
+    // (lote 75) ligar o Arauto da Agonia é usar uma habilidade de Lacaio (a gema tem o tipo Minion — o Rastejador vem depois, ao Envenenar)
+    if (entry.poeGema && (GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tipos ?? []).includes('Minion')) ModsPoe.marcar(hunt, 'usouLacaio');
     // A parte reservada sai da mana (ou da vida) atual na hora.
     if (reserva) Reserva.cortarNoLivre(estado);
     // A provocação: os bichos por perto vêm atacar você (o grito do PoE traz o `provocar` nos efeitos do nível).

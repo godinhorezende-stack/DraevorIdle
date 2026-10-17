@@ -2153,6 +2153,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt);
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
+  // (lote 75) o Arauto da Agonia: o Rastejador vem ao Envenenar e some sem Virulência (`Acoes.tiqueDoArautoDaAgonia`)
+  if (itensPoeLigado()) eventos.push(...Acoes.tiqueDoArautoDaAgonia(estado, hunt, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
   if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 

@@ -62,6 +62,8 @@ export function statsVazios() {
     buff: {
       adicional: {}, extra: [], maisDano: 0, velAtaque: 0, velConj: 0, velMov: 0, critico: 0, resist: {},
       armadura: 0, evasao: 0, escudo: 0, regen: 0, regenMana: 0, menosDanoRecebido: 0, absorve: 0, imuneAfeccoes: false, textos: [],
+      // (lote 75, o Arauto da Agonia: "Buff concede X% de chance de Envenenar ao Acertar" e "Buff concede X% mais Dano com Veneno")
+      chanceVeneno: 0, maisVeneno: 0,
     },
     flags: new Set(),
   };
@@ -91,6 +93,10 @@ export const REGRAS = [
   [r(`${N} % mais Dano(?: Mágico| com Acertos e Afecções| com Afecções| com Acertos)? por (?:estágio|Estágio)`), (s, m) => (s.danoPorEstagio = num(m[1]))],
 
   // ---------------- afecções no acerto ----------------
+  // (lote 75) as do BUFF do Arauto da Agonia: antes das de baixo (a chance de Envenenar só no acerto da gema e o "Concede X% mais Dano", que
+  // tomaria o "mais Dano com Veneno" por dano em tudo)
+  [r(`^Buff concede ${N} % de chance de Envenenar`), (s, m) => (s.buff.chanceVeneno += num(m[1]))],
+  [r(`^Buff concede ${N} % mais Dano com Veneno$`), (s, m) => (s.buff.maisVeneno += num(m[1]))],
   [r(`${N} % de chance de Congelar, Eletrizar e Incendiar`), (s, m) => (s.chances.congelar = s.chances.eletrizar = s.chances.incendiar = num(m[1]))],
   [r(`${N} % de chance de Incendiar`), (s, m) => (s.chances.incendiar = num(m[1]))],
   [r(`${N} % de chance de Congelar`), (s, m) => (s.chances.congelar = num(m[1]))],

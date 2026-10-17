@@ -43315,6 +43315,17 @@
       "nota": "como no PoE (o inglês): por Runa sua em campo — o português do poedb não diz \"por Runa\"",
       "_nova": true,
       "_lote74": "17/10 — lote 74 (as Ramificadoras: o Reduzir — a gema Convocar Runas, decisão do dono \"Implementar a gema\")"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Virulência Máxima$",
+      "efeitos": [
+        {
+          "stat": "virulencia_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote75": "17/10 — lote 75 (as Ramificadoras: a Pura Agonia — o Arauto da Agonia com a Virulência, decisão do dono \"No máximo, como o PoB\")"
     }
   ]
 }

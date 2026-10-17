@@ -127,10 +127,12 @@ export function forcaDoNivel(n) {
 }
 
 // ---- o desenho do lacaio, pelo nome ----
+/** (lote 75) A conversão do lacaio no PoB (Minions.lua) que o importador do `pob-lacaios.json` não lê: o id do PoB → `{ <elemento>: % }`. */
+const CONVERSAO_DO_POB = { HeraldOfAgonySpiderPlated: { chaos: 40 } };
 const DESENHO_POR_PALAVRA = [
   [/zumbi/i, 'zombie'], [/esqueleto/i, 'skeleton-warrior'], [/espectro/i, 'spectre'], [/fantasma|espírito/i, 'ghost'], [/golem.*(chama|fogo)/i, 'fire-elemental'],
   [/golem.*(gelo|geada)/i, 'ice-golem'], [/golem.*(relâmp|raio)/i, 'energy-elemental'], [/golem.*(caos)/i, 'lich'], [/golem/i, 'stone-golem'], [/guardi/i, 'gargoyle'],
-  [/sentinela/i, 'banshee'], [/totem/i, 'minotaur-totem'], [/arma|lâmina|armas animadas/i, 'demon-skeleton'], [/aranha/i, 'giant-spider'], [/corvo|abutre/i, 'gargoyle'],
+  [/sentinela/i, 'banshee'], [/totem/i, 'minotaur-totem'], [/arma|lâmina|armas animadas/i, 'demon-skeleton'], [/aranha|rastejador/i, 'giant-spider'], [/corvo|abutre/i, 'gargoyle'],
 ];
 const DESENHO_DO_ELEMENTO = { fire: 'fire-elemental', ice: 'ice-golem', energy: 'energy-elemental', chaos: 'lich', physical: 'skeleton' };
 export function desenhoDe(nome, elemento, totem) {
@@ -141,7 +143,7 @@ export function desenhoDe(nome, elemento, totem) {
   return { look: b.look, colors: b.colors ?? null, lookItem: b.lookItem ?? 0 };
 }
 /** "Zumbis Evocados" → "Zumbi"; "Espíritos Furiosos" → "Espírito Furioso". */
-const singular = (t) => String(t).trim().split(/\s+/).map((p) => (/ões$|ãos$/i.test(p) ? p.replace(/(ões|ãos)$/i, 'ão') : /ns$/i.test(p) ? p.replace(/ns$/i, 'm') : /ais$/i.test(p) ? p.replace(/ais$/i, 'al') : /eis$/i.test(p) ? p.replace(/eis$/i, 'el') : p.replace(/s$/i, ''))).join(' ');
+const singular = (t) => String(t).trim().split(/\s+/).map((p) => (/ões$|ãos$/i.test(p) ? p.replace(/(ões|ãos)$/i, 'ão') : /ns$/i.test(p) ? p.replace(/ns$/i, 'm') : /ais$/i.test(p) ? p.replace(/ais$/i, 'al') : /eis$/i.test(p) ? p.replace(/eis$/i, 'el') : /ores$/i.test(p) ? p.replace(/ores$/i, 'or') : p.replace(/s$/i, ''))).join(' ');
 
 /**
  * O que a gema invoca no `nivel`: `{ tipo: 'lacaio'|'totem', nome, maximo, porUso, duracaoMs, nivel, vida, dano: {min,max}, intervaloMs, desenho }`.
@@ -169,9 +171,20 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   let sangrar = 0;
   const afDono = {};
   let porLacaioFisico = null;
+  // (lote 75 — o Arauto da Agonia, dono: "No máximo, como o PoB") o Rastejador por VIRULÊNCIA (`efeito.virulencia` — `itens-poe/virulencia.mjs`):
+  // a velocidade de ataque, o Dano Físico aumentado e o adicionado por Virulência; "Lacaios não podem Provocar Inimigos".
+  const V = Math.max(0, Number(efeito?.virulencia) || 0);
+  let velV = 0;
+  let incV = 0;
+  let somadoV = [0, 0];
+  let semProvocar = false;
   const soma = (k, v) => { afDono[k] = (afDono[k] ?? 0) + v; };
   for (const l of t.linhas) {
     let m;
+    if ((m = l.match(/^Rastejador Agonizante possui (\d+(?:\.\d+)?) ?% de aumento da Velocidade de Ataque por Virulência/i))) velV += Number(m[1]) * V;
+    if ((m = l.match(/^Rastejador Agonizante causa Dano Físico aumentado em (\d+(?:\.\d+)?) ?% por Virulência/i))) incV += Number(m[1]) * V;
+    if ((m = l.match(/^O Rastejador da Agonia possui de (\d+) a (\d+) de Dano Físico Adicional por Virulência/i))) somadoV = [Number(m[1]) * V, Number(m[2]) * V];
+    if (/^Lacaios não podem Provocar Inimigos$/i.test(l)) semProvocar = true;
     if ((m = l.match(/Lacaios? (?:tem|têm) (\d+(?:\.\d+)?) ?% mais Velocidade de Ataque/i))) velAtaquePct += Number(m[1]);
     if (/Acertos dos Lacaios são sempre Golpes Críticos/i.test(l)) semprecritico = true;
     if ((m = l.match(/Lacaios têm \+(\d+) ?% de Multiplicador de Acerto Crítico/i))) critMult += Number(m[1]);
@@ -220,6 +233,9 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // (lote 44) a força do PoE: a tabela de aliados × o multiplicador do lacaio no PoB (`forcaDoPob`); o golpe de quem usa a arma e o lacaio sem
   // tipo no PoB, a de um monstro comum do nível.
   const pob = totem ? null : forcaDoPob(lacaioDoPob(slug), n);
+  // (lote 75) a CONVERSÃO do lacaio no PoB que o importador não lê (o Rastejador Agonizante: Físico, com 40% convertidos em Caos — Minions.lua)
+  const conv = CONVERSAO_DO_POB[pob?.id] ?? null;
+  const elemento = conv ? 'physical' : r.elemento;
   const f0 = forcaDoNivel(n);
   const f = pob ? { vida: pob.vida, dano: pob.dano ?? f0.dano, tempo: pob.tempo ?? f0.tempo } : f0;
   const spread = pob?.spread ?? 0.2;
@@ -231,16 +247,19 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   const vida = Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa') + m0('minion_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life') + porTipo('lacaio_vida')) / 100) * Math.max(0, 1 + porTipo('lacaio_vida_mais') / 100)));
   // ("Lacaios ganham X% do Dano Físico / Elemental como Dano de Caos/Fogo Extra" — dono, 11/10: os únicos: o extra entra no golpe do lacaio
   // do tipo certo — o físico no lacaio físico, o elemental no de Fogo/Gelo/Raio —, sem a resistência do outro elemento.)
-  const fisico = (r.elemento ?? 'physical') === 'physical';
-  const extra = 1 + (fisico ? m0('minion_phys_as_extra') : ['fire', 'ice', 'energy'].includes(r.elemento) ? m0('minion_elem_as_extra') : 0) / 100;
+  const fisico = (elemento ?? 'physical') === 'physical';
+  const extra = 1 + (fisico ? m0('minion_phys_as_extra') : ['fire', 'ice', 'energy'].includes(elemento) ? m0('minion_elem_as_extra') : 0) / 100;
   // (lote 43, P040: + do escudo da Égide Necromântica — o "Dano Mágico aumentado" no lacaio que conjura, o dano do elemento dele)
   const conjura = /mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`);
-  const doEscudo = (conjura ? m0('minion_dano_magico') : 0) + m0(`minion_dano_${r.elemento ?? 'physical'}`);
-  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * extra;
+  const doEscudo = (conjura ? m0('minion_dano_magico') : 0) + m0(`minion_dano_${elemento ?? 'physical'}`);
+  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + doEscudo + incV) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100) * extra;
   // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   // (+ o do TIPO: "Golens têm X a Y de Dano Físico de Ataques Adicional".)
   somado = [somado[0] + porTipo('lacaio_somado_min'), somado[1] + porTipo('lacaio_somado_max')];
+  // (lote 75: + o adicionado por Virulência, com o aumentado e o mais do golpe — no PoE o dano adicionado também os recebe)
+  if (somadoV[1] > 0) somado = [somado[0] + (somadoV[0] * golpe) / f.dano, somado[1] + (somadoV[1] * golpe) / f.dano];
+  velAtaquePct += velV;
   velAtaquePct += m0('minion_atk_speed') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? m0('minion_cast_speed') : 0);
   // (lote 49, as únicas de joia: "Velocidade de Conjuração dos Esqueletos", "…de Ataque e Conjuração dos Golens" — no lacaio que conjura)
   if (conjura) velAtaquePct += porTipo('lacaio_vel_conj');
@@ -248,13 +267,13 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   velAtaquePct += porTipo('lacaio_vel_ataque');
   // (ciclo 7, lote F) "Magias Conjuradas por Totens têm X% de Velocidade de Conjuração aumentada" (o totem de uma gema de Magia).
   if (totem && (r.gema?.tags ?? []).includes('Magia')) velAtaquePct += m0('totem_vel_magia');
-  const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, r.elemento);
+  const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, elemento);
   // (lote 44: o tempo de ataque do PoB já é o do tipo — o "rápido" do Espírito Furioso não multiplica de novo)
   if (pob?.tempo) delete estilo.rapido;
   // A CONVERSÃO do dano Físico do golpe (dono, 11/10: os únicos): "Lacaios convertem X% do Dano Físico para Dano de Gelo" (por Encaixe da cor,
   // com a escala), e o AVATAR DO FOGO de um tipo ("Zumbis Erguidos têm Avatar do Fogo": 50% do Físico vira Fogo e o resto não causa dano).
   // `soDano`: só esse elemento causa dano ("Lacaios não causam Dano Não-Gélido").
-  const conversao = { fire: m0('minion_conv_fire') + (porTipo('lacaio_so_fogo') > 0 ? 50 : 0) + porTipo('lacaio_conv_fogo'), ice: m0('minion_conv_ice'), energy: m0('minion_conv_energy'), chaos: m0('minion_conv_chaos') + porTipo('lacaio_conv_caos') };
+  const conversao = { fire: m0('minion_conv_fire') + (porTipo('lacaio_so_fogo') > 0 ? 50 : 0) + porTipo('lacaio_conv_fogo'), ice: m0('minion_conv_ice'), energy: m0('minion_conv_energy'), chaos: m0('minion_conv_chaos') + porTipo('lacaio_conv_caos') + (conv?.chaos ?? 0) };
   const soDano = m0('minion_so_gelo') > 0 ? 'ice' : porTipo('lacaio_so_fogo') > 0 ? 'fire' : null;
   // A RESTRIÇÃO das peças ("Você não pode ter Lacaios não-Golens / Não-Espectrais", "…que não sejam animados"): o lacaio de outro tipo não vem.
   const permitidos = Object.entries(af ?? {}).filter(([k, v]) => /^so_lacaio:\w+$/.test(k) && v > 0).map(([k]) => k.split(':')[1]);
@@ -267,7 +286,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     // chances de Cegar/Provocar/Desacelerar/Envenenar/Incendiar.
     poe: af ? {
       // (13/10) a soma dos "Dano aumentado" do lacaio na invocação: o das auras "Você e Aliados" do dono soma a ela no golpe (`cacadas`).
-      danoIncPct: (efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano'),
+      danoIncPct: (efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano') + incV,
       // (lote 44: + as resistências de base do lacaio no PoB — 40% elementais e 20% de Caos na maioria)
       // (lote 67: + a Resistência a Caos e a regeneração dos TOTENS — "Totens ganham +25% de Resistência a Caos", "Totens Regeneram 2% de Vida")
       res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: m0('minion_chaos_res') + (totem ? m0('totem_res_caos') : 0) + (pob?.res.chaos ?? 0), danoRecebidoPct: m0('lacaios_dano_recebido'), regenPct: m0('minion_regen_pct') + porTipo('lacaio_regen_pct') + (totem ? m0('totem_regen_pct') : 0), regen: m0('minion_regen'),
@@ -275,7 +294,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       bloqueio: m0('minion_block'), resFogo: m0('minion_fire_res') + (pob?.res.fire ?? 0), resGelo: m0('minion_ice_res') + (pob?.res.ice ?? 0), resRaio: m0('minion_energy_res') + (pob?.res.energy ?? 0),
       // (lote 69, as Ramificadoras: + por TIPO — "Zumbis Erguidos têm X% de chance de Provocar", "Esqueletos Convocados têm X% de chance de Definhar" —
       // e Empurrar com Ataques)
-      chances: { cegar: m0('minion_chance_cegar'), provocar: m0('minion_chance_provocar') + porTipo('lacaio_provocar'), desacelerar: m0('minion_chance_desacelerar'), envenenar: m0('minion_chance_envenenar'), incendiar: m0('minion_chance_incendiar') + porTipo('lacaio_incendiar'),
+      chances: { cegar: m0('minion_chance_cegar'), provocar: semProvocar ? 0 : m0('minion_chance_provocar') + porTipo('lacaio_provocar'), desacelerar: m0('minion_chance_desacelerar'), envenenar: m0('minion_chance_envenenar'), incendiar: m0('minion_chance_incendiar') + porTipo('lacaio_incendiar'),
         definhar: m0('minion_chance_definhar') + porTipo('lacaio_definhar'), cinzas: porTipo('lacaio_cinzas'), empurrar: m0('minion_chance_empurrar'),
         // (lote 28) o Rasgacarne único: "Lacaios têm X% de chance de empalar ao atingir com ataques por joia Olho Medonho encaixada".
         empalar: m0('minion_chance_empalar') },
@@ -317,11 +336,12 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
-    vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento: r.elemento,
-    // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado)
-    ...(pob?.imune ? { intocavel: true } : {}), ...(pob ? { pob: pob.id } : {}),
+    vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento,
+    // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema
+    // "MinionsAreUndamagable", o Rastejador Agonizante)
+    ...(pob?.imune || (r.gema?.tipos ?? []).includes('MinionsAreUndamagable') ? { intocavel: true } : {}), ...(pob ? { pob: pob.id } : {}),
     // O desenho pelo nome do lacaio e o da gema ("Golem" + "Convocar Golem de Chamas").
-    desenho: desenhoDe(`${nome} ${t.nome}`, r.elemento, totem),
+    desenho: desenhoDe(`${nome} ${t.nome}`, elemento, totem),
   };
 }
 
