@@ -89,12 +89,18 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - Pendentes: os esporos da Flecha Flagelante, o ângulo do Incinerar ("100% de aumento do ângulo por estágio"), o "mais Dano com Afecções por estágio" separado do acerto (as afecções saem do acerto — G11), o Orbe Invernal, a Runa da Maré Invernal.
 - Teste: `canalizacao-estagios-poe.test.mjs` (3). Ativas parciais 382 → 377.
 
-### G11 — a sequência de áreas e os golpes repetidos no tempo (17/10)
+### G11 — a sequência de áreas e os golpes repetidos no tempo (17/10, commit 7efa08b6; push e PR em 17/10)
 
 - **Ruptura** (`GemasPoe.sequenciaDaGema`, `golpesDaSequencia` no `disparar`): "Onda causa Dano em N Áreas" em linha à frente, o raio crescendo "+X metros para cada área anterior", cada área um acerto (a mesma criatura pode levar de mais de uma), e as Ondas de Choque dos primeiros M acertados de cada área ("40% menos Dano"; o raio da Onda de Choque é o da área — o PoE não publica). O "delay entre Áreas" e o "não pode parar antes de N Áreas" são do tempo da onda e da interrupção pelo novo uso: o idle resolve a onda inteira no uso.
 - **Armadilha de Torre Elétrica** (`GemasPoe.torreDaGema`, `Acoes.tiqueDasTorres`): ativada, vira uma torre que golpeia N áreas a cada intervalo pela duração da gema — cada área é a habilidade saindo do lugar da torre num inimigo a até 2 casas; a velocidade de arremesso de armadilhas encurta o intervalo.
 - Pendentes: a Ruptura de Trarthus ("Onda pode recomeçar até 3 vezes"), as Lâminas Cadentes (as rajadas), o Estilhaçar a Terra (fissuras e Estacas).
 - Teste: `sequencia-de-areas-poe.test.mjs` (3). Ativas parciais 377 → 372.
+
+### G12 — o uso de cadáveres (17/10)
+
+- O cadáver da caçada guarda a Vida Máxima do morto (os criados pelo Profanar: a do monstro da área). `GemasPoe.cadaverDaGema` + `Acoes.explodirCadaveres`: a explosão "X% da Vida Máxima do Cadáver" como dano de Fogo, sem os modificadores de dano mágico, no raio da explosão; o cadáver some. **Detonar os Mortos** (o cadáver mais perto do alvo, ao alcance, e o dano mágico em volta dele; a do Saque só a explosão e não mira os criados; a de Reação em Cadeia como a normal), **Vaal** (todos os cadáveres a até 3 casas do primeiro), **Mortos Voláteis** (até N cadáveres; o orbe de cada um vai ao inimigo mais perto — o dano mágico ali × os cadáveres consumidos, a abstração do idle: os orbes vão juntos), **Cremação** (o gêiser no lugar do cadáver: N projéteis a cada intervalo pela duração, até o máximo de gêiseres — `tiqueDosGeiseres`). Sem cadáver ao alcance, a gema não sai (`SEM_CADAVER`).
+- Pendentes: a Troca de Corpo (o deslocamento e o "6% da sua Vida Máxima"), o Golpe Infernal (as cargas do debuff), a Reação em Cadeia dos cadáveres que a própria explosão cria.
+- Teste: `cadaveres-poe.test.mjs` (4). Ativas parciais 372 → 365.
 
 ## Pendências conhecidas (por ordem de prioridade)
 
@@ -109,6 +115,6 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 
 ## Próximo passo exato
 
-1. Commitar G11 (FULL por exceção — autorização do dono para os lotes desta tarefa).
+1. Commitar G12 (FULL por exceção — autorização do dono para os lotes desta tarefa).
 2. G11: as afecções que saem do acerto final (o "mais Dano com Acertos" não deve crescer a afecção; o "mais Dano com Afecções" separado).
 3. As repetições do golpe (11 gemas) e as mecânicas próprias das gemas de ataque, por quantidade: Ruptura (Ondas de Choque), Estilhaçar a Terra (Estacas), Perfurar, Chuva Tempestuosa, Tempestade de Lâminas, Esmagaossos (Traumatismo).

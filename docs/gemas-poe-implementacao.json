@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 61,
-   "parcial": 372,
-   "implementada, sem teste próprio": 76,
+   "implementada e testada": 64,
+   "parcial": 365,
+   "implementada, sem teste próprio": 80,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
@@ -26,15 +26,15 @@
    "vaal": {
     "total": 52,
     "implementada e testada": 1,
-    "parcial": 42,
-    "implementada, sem teste próprio": 9
+    "parcial": 41,
+    "implementada, sem teste próprio": 10
    },
    "alternativas": {
     "total": 198,
-    "parcial": 142,
+    "parcial": 140,
     "implementada e testada": 6,
     "limitação do modelo idle": 14,
-    "implementada, sem teste próprio": 34,
+    "implementada, sem teste próprio": 36,
     "sem efeito": 2
    }
   },
@@ -47,7 +47,7 @@
   },
   "efeitosCompartilhados": {
    "linhasDistintas": 869,
-   "emDuasOuMais": 188
+   "emDuasOuMais": 186
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,7 +61,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 135,
+   "ativasCitadas": 139,
    "suportesCitados": 38
   }
  },
@@ -2843,10 +2843,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2860,7 +2858,6 @@
    "arquetipo": "area",
    "estado": "parcial",
    "ausentes": [
-    "o uso de cadáveres não existe no jogo",
     "sem dano direto: nenhum efeito no combate"
    ],
    "idle": [],
@@ -2874,10 +2871,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2979,10 +2974,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3854,10 +3847,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3869,10 +3860,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3884,10 +3873,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4483,11 +4470,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "o uso de cadáveres não existe no jogo",
-    "efeito não simulado: Dispara Projéteis a cada 1 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4501,8 +4485,6 @@
    "arquetipo": "area",
    "estado": "parcial",
    "ausentes": [
-    "o uso de cadáveres não existe no jogo",
-    "efeito não simulado: Dispara projéteis a cada 0.8 segundos",
     "efeito não simulado: Explode um Cadáver próximo ao Disparar Projéteis"
    ],
    "idle": [],
@@ -11531,22 +11513,6 @@
    ]
   },
   {
-   "linha": "o uso de cadáveres não existe no jogo",
-   "gemas": [
-    "Bodyswap",
-    "Cremation",
-    "Cremation_of_Exhuming",
-    "Detonate_Dead",
-    "Detonate_Dead_of_Chain_Reaction",
-    "Detonate_Dead_of_Scavenging",
-    "Infernal_Blow",
-    "Vaal_Detonate_Dead",
-    "Volatile_Dead",
-    "Volatile_Dead_of_Confinement",
-    "Volatile_Dead_of_Seething"
-   ]
-  },
-  {
    "linha": "Pode ser Desvinculada por uma Duração total de # segundos",
    "gemas": [
     "Armageddon_Brand",
@@ -12241,20 +12207,6 @@
    ]
   },
   {
-   "linha": "Dispara projéteis a cada # segundos",
-   "gemas": [
-    "Cremation_of_Exhuming",
-    "Winter_Orb"
-   ]
-  },
-  {
-   "linha": "Dispara Projéteis a cada # segundos",
-   "gemas": [
-    "Cremation",
-    "Cremation_of_the_Volcano"
-   ]
-  },
-  {
    "linha": "Dispara Projéteis extras em até # Inimigos ao redor",
    "gemas": [
     "Forbidden_Rite",
@@ -12630,6 +12582,13 @@
    "gemas": [
     "Greater_Kinetic_Instability_Support",
     "Kinetic_Instability_Support"
+   ]
+  },
+  {
+   "linha": "o uso de cadáveres não existe no jogo",
+   "gemas": [
+    "Bodyswap",
+    "Infernal_Blow"
    ]
   },
   {
@@ -14402,6 +14361,18 @@
    "linha": "Dispara até # Flechas em alvos diferentes",
    "gemas": [
     "Artillery_Ballista_of_Focus_Fire"
+   ]
+  },
+  {
+   "linha": "Dispara projéteis a cada # segundos",
+   "gemas": [
+    "Winter_Orb"
+   ]
+  },
+  {
+   "linha": "Dispara Projéteis a cada # segundos",
+   "gemas": [
+    "Cremation_of_the_Volcano"
    ]
   },
   {

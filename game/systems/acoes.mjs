@@ -1169,7 +1169,9 @@ export function criarCadaveres(estado, hunt, slug, nivelDaGema = 1, onde = hunt?
     const desenho = base ? { look: base.look, lookItem: base.lookItem ?? 0, colors: base.colors ?? null } : LacaiosPoe.desenhoDe('Arqueiro de Ossos', 'physical', false);
     const x = onde.x + (i ? Math.floor(rng() * 3) - 1 : 0);
     const y = onde.y + (i ? Math.floor(rng() * 3) - 1 : 0);
-    lista.push({ key: base?.key ?? 'skeleton', nome: base?.name ?? 'Arqueiro de Ossos', look: desenho.look, lookItem: desenho.lookItem ?? 0, colors: desenho.colors ?? null, x, y, nivel, criadoPor: slug, criadoEm: hunt.clock ?? 0 });
+    // (17/10, lote G12: + a Vida Máxima — a do monstro da área que deu o desenho; o Arqueiro de Ossos, a média dos monstros da área)
+    const vidaDaArea = daArea.length ? daArea.reduce((t, m) => t + (m.maxHp ?? 0), 0) / daArea.length : 0;
+    lista.push({ key: base?.key ?? 'skeleton', nome: base?.name ?? 'Arqueiro de Ossos', look: desenho.look, lookItem: desenho.lookItem ?? 0, colors: desenho.colors ?? null, x, y, nivel, maxHp: Math.round(base?.maxHp ?? vidaDaArea), criadoPor: slug, criadoEm: hunt.clock ?? 0 });
   }
   const dela = lista.filter((c) => c.criadoPor === slug);
   const sai = new Set(dela.slice(0, Math.max(0, dela.length - maximo)));
@@ -2093,6 +2095,63 @@ function estagioDaCanalizacao(hunt, entry, efeito, inicio, { gatilho = null, pla
   return { est, estagio, liberar, soCarrega: est.modo === 'carrega' && !liberar, maisPct: (fator - 1) * 100, critMaisPct: est.critMais * estagio, raioExtraM };
 }
 
+/**
+ * (17/10, lote G12) A EXPLOSÃO DOS CADÁVERES do uso: cada um causa "X% da Vida Máxima do Cadáver" como dano de Fogo — sem os modificadores de dano
+ * mágico ("A explosão não é afetada por modificadores de dano mágico": o "aumentado" de Fogo e o geral da ficha) — nos inimigos no raio da
+ * explosão (1 casa = 2 m, × √ da Área de Efeito), pela resistência a Fogo; o cadáver some. A Cremação deixa no lugar um GÊISER que dispara os
+ * projéteis dela a cada intervalo, pela duração, até o máximo de gêiseres (`tiqueDosGeiseres`). Devolve os eventos.
+ */
+function explodirCadaveres(estado, hunt, entry, efeito, def, cadaveres, ficha, agora) {
+  const eventos = [];
+  const fator = ModsPoe.fatorDaArea(efeito?.areaIncPct ?? 0, efeito?.areaMaisPct ?? 0);
+  const c0 = (def.raioExplosaoM * Math.sqrt(fator)) / 2;
+  const aumento = Math.max(0, 1 + (ficha.danoDoElemento?.fire ?? 0) / 100);
+  for (const c of cadaveres) {
+    const r = Math.max(0, Math.trunc(c0) + (Math.random() < c0 % 1 ? 1 : 0));
+    const bruto = ((def.pct / 100) * Math.max(0, Number(c.maxHp) || 0)) * aumento;
+    if (bruto > 0) for (const m of hunt.monstros ?? []) {
+      if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - c.x), Math.abs(m.y - c.y)) > r) continue;
+      const v = Math.round(resistido(hunt, m, 'fire', bruto, ficha));
+      if (!(v > 0)) continue;
+      m.hp -= v;
+      QuemFeriu.carimbar(m, QuemFeriu.VOCE, ['magia', 'area', 'fogo']);
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO.fire ?? '#ff9000', sk: entry.id });
+    }
+    eventos.push({ t: 'area', id: entry.efeito ?? null, x: c.x, y: c.y, casas: Areas.paraTela(Areas.quadrado({ x: c.x, y: c.y }, r), { x: c.x, y: c.y }), sk: entry.id });
+    if (def.geiser) {
+      const g = (hunt.poeGeiseres ??= []).filter((x) => x.acao === entry.id);
+      while (g.length >= def.geiser.max) { const velho = g.shift(); hunt.poeGeiseres = hunt.poeGeiseres.filter((x) => x !== velho); }
+      hunt.poeGeiseres.push({ id: `geiser-${agora}-${c.x},${c.y}`, acao: entry.id, slot: Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null, x: c.x, y: c.y, z: c.z ?? hunt.z ?? 0, ate: agora + def.geiser.duracaoMs, proxima: agora + def.geiser.intervaloMs, intervaloMs: def.geiser.intervaloMs, projeteis: def.geiser.projeteis });
+    }
+  }
+  const usados = new Set(cadaveres);
+  hunt.cadaveres = (hunt.cadaveres ?? []).filter((c) => !usados.has(c));
+  return eventos;
+}
+/** O raio em que o projétil do GÊISER da Cremação procura um inimigo (o PoE solta em volta: "na área ao redor"). */
+export const RAIO_DO_GEISER = 3;
+/** Os gêiseres da Cremação: a cada intervalo, os N projéteis — cada um a habilidade saindo do lugar do gêiser num inimigo sorteado em volta dele. */
+export function tiqueDosGeiseres(estado, hunt, personagem, eventos, agora) {
+  if (!hunt?.poeGeiseres?.length) return;
+  const slotDe = (acao) => (estado.actions ?? []).findIndex((a) => a?.id === acao);
+  for (const g of hunt.poeGeiseres) {
+    const slot = slotDe(g.acao);
+    while (g.proxima <= Math.min(agora, g.ate) && (estado.hp ?? 0) > 0) {
+      g.proxima += g.intervaloMs;
+      if (slot < 0) continue;
+      for (let k = 0; k < g.projeteis; k++) {
+        const perto = Plantadas.inimigosPerto(hunt, g, RAIO_DO_GEISER);
+        if (!perto.length) break;
+        const alvo = perto[Math.floor(Math.random() * perto.length)];
+        const r = dispararSemMarcar(estado, hunt, personagem, slot, alvo, { plantada: { ...g, tipo: 'geiser' } });
+        if (r?.ok) eventos.push(...(r.eventos ?? []));
+      }
+    }
+  }
+  hunt.poeGeiseres = hunt.poeGeiseres.filter((g) => g.ate > agora);
+  if (!hunt.poeGeiseres.length) delete hunt.poeGeiseres;
+}
+
 /** O uso SAIU: o sorteio do raio da gema guardado (`formaNoRaioDoPoe`) vale só para ele. */
 export function consumirRaioDoPoe(hunt, entry) {
   if (!hunt?.poeRaioPendente || !entry?.poeGema) return;
@@ -2466,6 +2525,27 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const vivos = hunt.monstros.filter((b) => b.hp > 0);
   const x = hunt.pos.x;
   const y = hunt.pos.y;
+  // (17/10, lote G12) as gemas de CADÁVER (`GemasPoe.cadaverDaGema`): o(s) cadáver(es) deste uso — o mais perto do alvo, ao alcance (os da Vaal:
+  // todos em volta dele; os Mortos Voláteis: até N) — e a área da gema centrada nele (os Mortos Voláteis: no inimigo mais perto do cadáver, onde o
+  // orbe vai). Sem cadáver, não sai. `cadaveresDoUso` explodem depois da faixa (`explodirCadaveres`).
+  const doCadaver = itensPoeLigado() && entry.poeGema && !plantada && !gatilho ? GemasPoe.cadaverDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  let cadaveresDoUso = null;
+  if (doCadaver) {
+    const centro = mira ?? alvo ?? hunt.pos;
+    const alcance = entry.range || ALCANCE_PADRAO;
+    const podem = (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === (hunt.z ?? 0)) && !(doCadaver.soMortos && c.criadoPor) && distanciaChebyshev(hunt.pos, c) <= alcance)
+      .sort((a, b) => distanciaChebyshev(a, centro) - distanciaChebyshev(b, centro));
+    if (!podem.length) return { ok: false, erro: 'Sem cadáver.', motivo: 'SEM_CADAVER' };
+    cadaveresDoUso = doCadaver.modo === 'todos' ? podem.filter((c) => distanciaChebyshev(c, podem[0]) <= 3) : podem.slice(0, doCadaver.modo === 'consumir' ? doCadaver.maximo : 1);
+    const primeiro = cadaveresDoUso[0];
+    const doOrbe = doCadaver.modo === 'consumir' ? vivos.filter((b) => !b.dummy).sort((a, b) => distanciaChebyshev(a, primeiro) - distanciaChebyshev(b, primeiro))[0] : null;
+    mira = doOrbe ? { x: doOrbe.x, y: doOrbe.y } : { x: primeiro.x, y: primeiro.y };
+    // sem enemigo na explosão nem no dano mágico, não vale o uso
+    const raioDaExplosao = Math.max(1, Math.round(doCadaver.raioExplosaoM / 2)) + (doCadaver.modo === 'geiser' ? 2 : 0);
+    if (!vivos.some((b) => !b.dummy && cadaveresDoUso.some((c) => distanciaChebyshev(b, c) <= raioDaExplosao)) && !doOrbe) return { ok: false, erro: 'Nenhum bicho perto do cadáver.', motivo: 'SEM_BICHO_NA_AREA' };
+  }
+  // (lote G12: o uso que não tem acerto próprio — a Detonação do Saque, só a explosão; a Cremação, cujo dano mágico é o dos projéteis do gêiser)
+  const semGolpeDireto = !!doCadaver && (!doCadaver.comDano || doCadaver.modo === 'geiser');
 
   /*
    * ---- Onde a magia de ataque pega, ANTES de gastar nada ----
@@ -2589,7 +2669,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (a Armadilha/Mina: o raio sorteado vale só para esta ativação)
   if (plantada) consumirRaioDoPoe(hunt, entry);
   // (lote G10: o uso que só carrega estágios — a Rajada de Chamas antes do máximo — sai sem ninguém na área, como no PoE)
-  if (ataque && !plantada && !estagioDoUso?.soCarrega) {
+  if (ataque && !plantada && !estagioDoUso?.soCarrega && !semGolpeDireto) {
     // (O próprio alvo sempre conta: a magia de 7 sqm no bicho a 6 não some da faixa.)
     const n = casas ? atingidos.length : new Set([...atingidos, ...vivos.filter((b) => distanciaChebyshev(hunt.pos, b) <= RAIO_DA_FAIXA)]).size;
     if (n < Math.max(1, Number(action.minTargets) || 1)) {
@@ -2875,7 +2955,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // e ganham o bônus de cada um — `doDestilador`.)
     const fichaDaGema = doDestilador(estado, Ficha.combate(estado), entry);
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
-    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: ((1 + ((gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora)) / 100) * (1 + (estagioDoUso?.maisPct ?? 0) / 100) - 1) * 100, critMais: estagioDoUso?.critMaisPct ?? 0 });
+    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: ((1 + ((gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora)) / 100) * (1 + (estagioDoUso?.maisPct ?? 0) / 100) * (doCadaver?.modo === 'consumir' ? cadaveresDoUso.length : 1) - 1) * 100, critMais: estagioDoUso?.critMaisPct ?? 0 });
     // (PoE, a Impiedade: "Cada terceiro Ataque com Ataques Corpo a Corpo Suportados causa um Golpe Impiedoso" — este uso é o terceiro?)
     const impiedosoCada = Math.round(efeitoDaGema?.impiedosoCada ?? 0);
     let impiedoso = false;
@@ -3196,7 +3276,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const localAnterior = ehGolpe && ModsPoe.valor(ficha, 'golpe_local_anterior') > 0 && hunt.golpeAnterior && (hunt.golpeAnterior.z ?? 0) === (hunt.z ?? 0) ? hunt.golpeAnterior : null;
     const atacar = (segundo) => {
       // (lote G10: o uso que só CARREGA estágios — a Rajada de Chamas, a Flecha Flagelante antes do máximo — não acerta ninguém)
-      if (estagioDoUso?.soCarrega) return;
+      if (estagioDoUso?.soCarrega || semGolpeDireto) return;
       // "X% mais Dano por cada Ricochete restante" (Arco): o 1º atingido tem todos os ricochetes pela frente; cada salto gasta um.
       const cp = efeitoDaGema?.cadeiaPoe;
       // (lote G11: a sequência de áreas — cada área e cada Onda de Choque é um acerto, com o "menos Dano" da Onda de Choque)
@@ -3250,6 +3330,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (+ 14/10, o Altar Ecoante: "Habilidades se Repetem 1 Vezes mais" — todas as usadas, não as ativadas por gatilho)
     const repeticoes = Math.min(3, (efeitoDaGema?.repeticoes ?? 0) + (entry.poeGema?.ataque && !gatilho ? ModsPoe.valor(ficha, 'repeticoes_ataque_proprio') : 0) + (!gatilho ? ModsPoe.valor(ficha, 'repeticoes_extra') : 0));
     naRepeticaoFinal = repeticoes === 0;
+    // (17/10, lote G12) os CADÁVERES deste uso explodem (e a Cremação deixa os gêiseres) — `explodirCadaveres`
+    if (cadaveresDoUso?.length) eventos.push(...explodirCadaveres(estado, hunt, entry, efeitoDaGema, doCadaver, cadaveresDoUso, ficha, agora));
     atacar(false);
     // (lote 46, o Punho de Guerra: a Maximização vale só neste primeiro ataque — a próxima, daqui a N s)
     if (maximizado) { noMaximizado = false; (hunt.poeMaximizadoAte ??= {})[entry.id] = (hunt.clock ?? 0) + efeitoDaGema.maximizadoMs; }
@@ -3686,6 +3768,8 @@ function tiqueDasTorres(estado, hunt, personagem, eventos, agora) {
 
 export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
   if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
+  // (lote G12: os gêiseres da Cremação, no mesmo tique)
+  if (itensPoeLigado() && hunt?.poeGeiseres?.length) tiqueDosGeiseres(estado, hunt, personagem, eventos, agora);
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora)]) {

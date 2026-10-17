@@ -519,6 +519,34 @@ export function torreDaGema(slug, nivel = 1, qualidade = 0) {
   return { intervaloMs: Math.round(intervalo * 1000), duracaoMs: Math.round((compilada(slug, nivel, qualidade)?.stats?.duracao ?? 3.5) * 1000), areas, velocidadeDeArremesso: linhas.some((l) => /Frequência dos golpes/i.test(l)) };
 }
 
+/**
+ * (17/10, lote G12) O USO DE CADÁVERES das gemas (os cadáveres da caçada — `hunt.cadaveres`, com a Vida Máxima do morto): a EXPLOSÃO ("Explosão
+ * causa Dano de Fogo base igual a X% da Vida Máxima do Cadáver" — sem os modificadores de dano mágico, no raio da explosão) e o modo de cada
+ * gema: `detonar` (Detonar os Mortos: o cadáver mais perto do alvo explode, com o dano mágico da gema em volta dele; a do Saque não mira os
+ * criados e não tem dano mágico), `todos` (a Vaal: todos os cadáveres em volta do alvo), `consumir` (Mortos Voláteis: até N cadáveres perto do
+ * alvo explodem, e cada um solta um orbe que causa o dano mágico em volta do inimigo mais perto), `geiser` (Cremação: o cadáver explode e vira
+ * um gêiser que dispara N projéteis a cada intervalo pela duração, até o máximo de gêiseres). Sem cadáver, a gema não sai.
+ */
+const MODO_DO_CADAVER = { Detonate_Dead: 'detonar', Vaal_Detonate_Dead: 'todos', Volatile_Dead: 'consumir', Cremation: 'geiser' };
+const LINHA_DE_CADAVER_DA_GEMA = /^Explosão causa Dano de Fogo base igual a [\d.]+ ?% da Vida M[áa]xima do Cad[áa]ver$|^Consome até \d+ cadáveres$|^Raio Base da explos[aã]o igual a [\d.]+ metros?$|^Dispara Projéteis a cada [\d.]+ segundos?$|^Máximo de \d+ gêiseres por vez$|^Máximo de \d+ Orbes por vez$/i;
+export const ehLinhaDeCadaverDaGema = (l) => LINHA_DE_CADAVER_DA_GEMA.test(l);
+export function cadaverDaGema(slug, nivel = 1, qualidade = 0) {
+  const base = slug.replace(/_of_.*$/, '');
+  const modo = MODO_DO_CADAVER[base];
+  if (!modo) return null;
+  const linhas = textosDaGema(slug, nivel).linhas;
+  const achar = (re) => { for (const l of linhas) { const m = re.exec(l); if (m) return Number(m[1]); } return null; };
+  const pct = achar(/^Explosão causa Dano de Fogo base igual a ([\d.]+) ?% da Vida M[áa]xima do Cad[áa]ver$/i);
+  if (pct == null) return null;
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  return {
+    modo, pct, soMortos: /Scavenging/.test(slug), comDano: !!Object.keys(st.dano ?? {}).length,
+    raioExplosaoM: achar(/^Raio Base da explos[aã]o igual a ([\d.]+) metros?$/i) ?? achar(/^O raio Base é de ([\d.]+) metros?$/i) ?? 1.5,
+    maximo: achar(/^Consome até (\d+) cadáveres$/i) ?? 1,
+    ...(modo === 'geiser' ? { geiser: { intervaloMs: Math.round((achar(/^Dispara Projéteis a cada ([\d.]+) segundos?$/i) ?? 1) * 1000), duracaoMs: Math.round((st.duracao ?? 8) * 1000), projeteis: achar(/^Dispara (\d+) projéteis$/i) ?? 4, max: achar(/^Máximo de (\d+) gêiseres por vez$/i) ?? 3 } } : {}),
+  };
+}
+
 /** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
 const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
 export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
@@ -747,12 +775,13 @@ function avaliarNoJogo(h, formato) {
     // (lote G11: a sequência de áreas da Ruptura existe — `sequenciaDaGema`)
     if (st.repeticoes && !sequenciaDaGema(h.slug, h.nivel) && !torreDaGema(h.slug, h.nivel)) motivos.push('as repetições do golpe não existem: no jogo é um');
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k] && !CHANCE_NO_ACERTO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
-    if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
+    // (lote G12: as gemas de cadáver que o jogo faz — `cadaverDaGema`)
+    if (st.cadaver && !cadaverDaGema(h.slug, h.nivel)) motivos.push('o uso de cadáveres não existe no jogo');
     if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel) && ehLinhaDaTorre(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 

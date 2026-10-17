@@ -94,7 +94,8 @@ export function processarMortes(estado, personagem, eventos) {
       const empalado = (m.estados?.empalado ?? []).filter((x) => x.ate > (hunt.clock ?? 0) && x.acertos > 0);
       const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};
       // (14/10: os 10 mortos mais recentes; os cadáveres CRIADOS — Profanar, Desenterrar — têm o teto deles, `Acoes.criarCadaveres`)
-      const lista = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, ...doAco }];
+      // (17/10, lote G12: + a Vida Máxima do morto — a explosão dos cadáveres do PoE é "X% da Vida Máxima do Cadáver")
+      const lista = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, maxHp: m.maxHp ?? 0, ...doAco }];
       const mortos = lista.filter((c) => !c.criadoPor);
       const sai = new Set(mortos.slice(0, Math.max(0, mortos.length - 10)));
       hunt.cadaveres = lista.filter((c) => !sai.has(c));

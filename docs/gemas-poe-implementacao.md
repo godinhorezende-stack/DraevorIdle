@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 61 |
-| implementada, sem teste próprio | 76 |
+| implementada e testada | 64 |
+| implementada, sem teste próprio | 80 |
 | limitação do modelo idle | 42 |
-| parcial | 372 |
+| parcial | 365 |
 | sem efeito | 11 |
 
 Só os ataques:
@@ -34,16 +34,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 1 · parcial 42 · implementada, sem teste próprio 9
-- Alternativas (198): parcial 142 · implementada e testada 6 · limitação do modelo idle 14 · implementada, sem teste próprio 34 · sem efeito 2
+- Vaal (52): implementada e testada 1 · parcial 41 · implementada, sem teste próprio 10
+- Alternativas (198): parcial 140 · implementada e testada 6 · limitação do modelo idle 14 · implementada, sem teste próprio 36 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 869 linhas distintas (188 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 869 linhas distintas (186 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 135/562 ativas, 38/262 suportes.
+- Testes que citam a gema: 139/562 ativas, 38/262 suportes.
 
 ## Linhas que faltam (por quantidade de gemas)
 
@@ -52,7 +52,6 @@ Só os ataques:
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
 | 15 | nenhum efeito do buff tem equivalente no jogo |
 | 14 | sem dano direto: nenhum efeito no combate |
-| 11 | o uso de cadáveres não existe no jogo |
 | 9 | Pode ser Desvinculada por uma Duração total de # segundos |
 | 7 | Pode ser Vinculada por uma Duração total de # segundos |
 | 6 | esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido) |
@@ -143,8 +142,6 @@ Só os ataques:
 | 2 | Debuff Incendiário pode ter no máximo # estágios |
 | 2 | Debuffs causam # % de Dano por Carga |
 | 2 | Dispara # Fragmentos de Projéteis em uma Espiral quando o Projétil terminar |
-| 2 | Dispara projéteis a cada # segundos |
-| 2 | Dispara Projéteis a cada # segundos |
 | 2 | Dispara Projéteis extras em até # Inimigos ao redor |
 | 2 | Dispara um feixe a cada # segundos |
 | 2 | Distância de Deslocamento máxima aumentada em # % |
@@ -199,6 +196,7 @@ Só os ataques:
 | 2 | Martelos causam - # % de dano |
 | 2 | Martelos Sagrados se acumulam em cascata até # vezes |
 | 2 | Máximo de # anomalias |
+| 2 | o uso de cadáveres não existe no jogo |
 | 2 | Orbes desaparecem após # Golpes |
 | 2 | Orbes Explosivas causam # % do Dano da Habilidade para cada # segundos de Duração restante |
 | 2 | Orbes saltam a cada # segundos |
@@ -488,6 +486,8 @@ Só os ataques:
 | 1 | Dispara # projétil |
 | 1 | Dispara # sequências de flechas adicionais |
 | 1 | Dispara até # Flechas em alvos diferentes |
+| 1 | Dispara projéteis a cada # segundos |
+| 1 | Dispara Projéteis a cada # segundos |
 | 1 | Dispara Projéteis em cada inimigo Próximo |
 | 1 | Dispara Projéteis em direções aleatórias |
 | 1 | Dispara tentáculos em até # Alvo |
@@ -1155,12 +1155,7 @@ Só os ataques:
   - efeito não simulado: Pode ter até 10 Áreas Resfriadas
 - **Creeping_Frost_of_Floes** (Geada Gradativa das Banquisas) — parcial
   - efeito não simulado: Pode ter até 5 Áreas Resfriadas
-- **Cremation** (Cremação) — parcial
-  - o uso de cadáveres não existe no jogo
-  - efeito não simulado: Dispara Projéteis a cada 1 segundos
 - **Cremation_of_Exhuming** (Cremação da Exumação) — parcial
-  - o uso de cadáveres não existe no jogo
-  - efeito não simulado: Dispara projéteis a cada 0.8 segundos
   - efeito não simulado: Explode um Cadáver próximo ao Disparar Projéteis
 - **Cremation_of_the_Volcano** (Cremação do Vulcão) — parcial
   - efeito não simulado: Dispara Projéteis a cada 1 segundos
@@ -1191,12 +1186,7 @@ Só os ataques:
   - efeito não simulado: 10 % mais Efeito de Aura por Valor consumido
   - efeito não simulado: Estandarte concede +8 % de chance de Suprimir o Dano Mágico a Você e Aliados
   - efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados
-- **Detonate_Dead** (Detonar Morto) — parcial
-  - o uso de cadáveres não existe no jogo
-- **Detonate_Dead_of_Chain_Reaction** (Detonar Morto da Reação em Cadeia) — parcial
-  - o uso de cadáveres não existe no jogo
 - **Detonate_Dead_of_Scavenging** (Detonar Morto da Limpeza) — parcial
-  - o uso de cadáveres não existe no jogo
   - sem dano direto: nenhum efeito no combate
 - **Detonate_Mines** (Detonar Minas) — parcial
   - sem dano direto: nenhum efeito no combate
@@ -2058,8 +2048,6 @@ Só os ataques:
   - efeito não simulado: Ganhe uma Carga de Poder quando um Inimigo Morrer enquanto na Área dessa Habilidade A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área dessa Habilidade
 - **Vaal_Cyclone** (Ciclone Vaal) — parcial
   - efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional
-- **Vaal_Detonate_Dead** (Detonar Morto Vaal) — parcial
-  - o uso de cadáveres não existe no jogo
 - **Vaal_Discipline** (Disciplina Vaal) — parcial
   - efeito não simulado: A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano
 - **Vaal_Domination** (Dominação Vaal) — parcial
@@ -2172,12 +2160,6 @@ Só os ataques:
 - **Void_Sphere_of_Rending** (Esfera do Vazio da Fenda) — parcial
   - efeito não simulado: Pulsa a cada 0.25 segundos
   - efeito não simulado: Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até 39 %, com base na distância da Esfera do Vazio
-- **Volatile_Dead** (Morto Volátil) — parcial
-  - o uso de cadáveres não existe no jogo
-- **Volatile_Dead_of_Confinement** (Morto Volátil do Confinamento) — parcial
-  - o uso de cadáveres não existe no jogo
-- **Volatile_Dead_of_Seething** (Morto Volátil do Fervor) — parcial
-  - o uso de cadáveres não existe no jogo
 - **Volcanic_Fissure_of_Snaking** (Fissura Vulcânica do Serpenteado) — parcial
   - efeito não simulado: Fissuras irrompem 2 vezes adicionais
 - **Voltaxic_Burst** (Explosão Voltáxica) — parcial
@@ -2851,4 +2833,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Deadly_Ailments_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Boneshatter_of_Carnage, Brutality_Support, Burning_Damage_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow, Caustic_Arrow_of_Poison, Chance_to_Bleed_Support, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Controlled_Destruction_Support, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Deadly_Ailments_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Fire_Penetration_Support, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Overexertion_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Thunderstorm, Tornado_Shot, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Detonate_Dead, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vicious_Projectiles_Support, Vile_Toxins_Support, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volatile_Dead_of_Seething, Volatility_Support, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
