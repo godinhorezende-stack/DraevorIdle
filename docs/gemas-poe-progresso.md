@@ -132,7 +132,7 @@ Arquivo de progresso do pedido do dono de 17/10/2026 ("Auditoria completa e fide
 - O relatório cita o teste geral. "Sem teste próprio" passa a querer dizer que só o teste geral cobre a gema.
 - Teste: `gemas-todas-funcionam-poe.test.mjs` (4). Suportes parciais 160 → 159; testados 41 → 42.
 
-### G17 — o dano só do acerto e o só das afecções, nos suportes (17/10)
+### G17 — o dano só do acerto e o só das afecções, nos suportes (17/10, commit 2578a5c5; push no PR)
 
 Referência: o PoB recalcula o dano-base de cada afecção de dano com um `dotCfg` próprio, sem as flags Hit, Spell, Attack, Melee, Projectile e Area (CalcOffence: `calcAilmentSourceDamage`). Antes do lote, o "mais/menos" de todo suporte virava `maisDanoPct`, multiplicava o acerto e chegava à afecção pelo dano do acerto. Uma revisão com agentes (o PoB, o patch e a varredura das linhas, com verificação adversarial) confirmou 21 de 23 achados.
 - **Só no acerto** (`maisDanoAcertoPct`, multiplica entre os suportes, a afecção sai sem ele): o "X% mais/menos Dano com Acertos" (as Afecções Mortais, 80% menos; o Encadear; a Crueldade) e o "mais/menos" com qualificador de acerto: Mágico, de Projétil, Corpo a Corpo, de Ataque, em Área. No `acertar`, também saem da afecção, alvo a alvo: o "mais Dano Corpo a Corpo" do Golpe Impiedoso, a Intensidade, o Aço, a Proximidade, a Runa contra o vinculado, o Toxinas Vis e a Sede de Sangue.
@@ -159,6 +159,38 @@ Referência: o PoB recalcula o dano-base de cada afecção de dano com um `dotCf
 - Números: Projéteis Viciosos de 147% mais no acerto para 49% no acerto + 49% no Caos degenerativo + 49% no Físico degenerativo; Fortificar de 38% para 19% no acerto + 19% nas afecções corpo a corpo. Suportes "funciona" 97 → 104 (o Sobre-esforço desce a parcial); testados 42 → 51.
 - Teste: `afeccoes-acerto-poe.test.mjs` (10), medido no jogo: Bola de Fogo + Afecções Mortais (acerto ×0,2, Incêndio ×1,44); Dano Incendiário (acerto igual, Incêndio ×1,34); Sangramento do PoE; Flecha Cáustica (degenerativo igual com as Afecções Mortais, ×1,49 com os Projéteis Viciosos); Golpe Múltiplo (×0,8, ×1,22, ×1,44); Volatilidade; Toxinas Vis; Foco Elemental; Sadismo.
 
+### G18a — as linhas das ativas que o compilador lia e ninguém usava (17/10)
+
+Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMais`, `danoPorEstagio`, `danoPorRicochete` e `afeccaoDuracao`, que nenhum código lia. A linha contava como "aplicada" e sumia do status (cerca de 40 ativas, umas 25 como "funciona"). Um workflow de desenho (5 analistas, um por família, mais um crítico, todos pelo PoB) deu 79 itens. Este lote faz três famílias.
+- **Afecções da gema:**
+  - "X% menos Dano de Afecções" (Punho Esmagador, Golpe de Escudo Glacial, Descarga, Pacto Sombrio) e "X% mais Dano com Sangramento" (Punctura, Laceração, Perfuração, Tempestade de Lâminas), com nível e qualidade somados, como no PoE, entram nas afecções pelo `fatoresDoDano` do G17 (`GemasPoe.maisNasAfeccoesDaGema`).
+  - "Eletriza/Resfria/Congela como se causasse X% mais Dano" (Tiro Gélido, Flecha Relampejante, Nova de Gelo do Congelamento Profundo, Martelo Glacial Vaal), o Efeito da Eletrização e das afecções de Gelo (Armadilha de Raio, Martelo Glacial) e a Duração das afecções de Gelo passam a linhas locais, lidas em `afeccoes.daSoma`.
+  - O terceiro golpe seguido do Martelo Glacial ganhou a tag de golpe `terceiroGolpe`, com contador por uso: "Congela como se houvesse causado 390% mais", e o crítico do Despedaçamento.
+  - A explosão dos cadáveres agora põe afecções (é um acerto de Fogo no PoB). O Detonar Mortos da Limpeza leva 70% menos.
+  - A Troca de Corpos do Sacrifício (lacaio, não acerta) fica com a linha não feita.
+- **"Mais Dano" da gema:**
+  - "até X% mais Dano com Acertos aos alvos próximos" (Golpe no Chão, Caminho Consagrado; o Esmagar com Escudo pela rampa do corpo a corpo) vale só no acerto e só no alvo perto, até 2 casas (o Curto Alcance).
+  - "Projéteis causam X% …" vale nos projéteis secundários do Golpe Vulcânico e das Lâminas Gélidas; o golpe direto é o corpo a corpo do PoB. O quinto ataque do Zênite dispara 5 projéteis a mais com 600% mais.
+  - O "Concede X% mais Dano Mágico" do Fogo Justo fica não feito até a queima em você existir. A revisão mostrou que, como aura, ele ia aos aliados, crescia com o Efeito de Aura e saía de graça. O motor ganhou o atributo só do acerto `mais_dano_acerto`, que o Zelotismo usa no G18b.
+  - As regras 84 e 85 saíram: nenhuma linha "X% mais Dano" pura de ativa.
+- **Estágios:**
+  - O "mais" de cada estágio segue a flag do PoB: "com Acertos e Afecções" (os dois), "Mágico por estágio" da Rajada (só o acerto), "com Afecções por estágio" (só as afecções).
+  - A onda final do Incinerar: "com Acertos" só no acerto, "com Incêndio" só no Incêndio, e "sempre Incendeia".
+  - A qualidade entra nos estágios. Só libera quem tem o que liberar (o Incinerar da Exaustão fica no máximo).
+  - O Chicote da Naja: "8% mais por Ricochete restante" no golpe direto e em cada ricochete.
+  - Snipe, Ira Divina, Rajada de Chamas Vaal e Marca da Maré Invernal (estágios que o jogo não tem) ficam parciais, com as linhas não feitas; antes pareciam feitos.
+- **Revisão adversarial do lote** (3 lentes: PoB, motor, status), que confirmou 13 achados, todos corrigidos:
+  - o golpe direto do Golpe Vulcânico e das Lâminas Gélidas não ocupa mais um dos projéteis (4 bolas além dele);
+  - o máximo de estágios com a qualidade passou a inteiro;
+  - a qualidade dupla da onda final do Incinerar da Expansão (`partirQualidade` corta na frase repetida);
+  - o Chicote da Naja também na perfuração e na volta;
+  - o contador do terceiro golpe zera com qualquer habilidade no meio;
+  - a coluna mal rotulada do Martelo Glacial Vaal (o "terceiro golpe" contava em dobro);
+  - o degenerativo das gemas com "Modificadores de Dano Mágico aplicam-se ao Dano Degenerativo" (o `dotIsSpell` do PoB) leva o "mais Dano Mágico" (`maisDanoMagicoPct`).
+  - Aproximação que fica: o "como se causasse" soma com o das outras fontes; no PoB cada fonte multiplica. Só muda junto de um único que também dê "como se".
+- Teste: `ativas-linhas-lidas-poe.test.mjs` (16), medido no jogo: Punho Esmagador (Sangramento por acerto ×0,4), Punctura (a qualidade soma), Tiro Gélido (a força do Resfriamento pelo Gelo × 2,95), Golpe no Chão (perto ×1,49), Golpe Vulcânico (projéteis ×0,4) e Zênite (o quinto ×2,8 e 5 projéteis a mais), Fogo Justo (acerto ×1,39, Incêndio igual), Incinerar (onda final: acerto ×6, Incêndio ×3,5, sempre Incendeia), Rajada de Chamas (Incêndio por acerto 7 ÷ 17,5), Chicote da Naja, explosão do Detonar Mortos da Limpeza, terceiro golpe do Martelo Glacial.
+- Pendente do G18 (os planos estão no workflow `g18-ativas-desenho`): a tabela do Fogo Justo Vaal (19% e 3 m no PoE; os dados copiam a do comum) e a do Impacto Sísmico Vaal (só 2 níveis); a Ira Divina (zaps e o dado da afecção do poedb), o Snipe, a Rajada Vaal e a Maré Invernal; o raio por estágio da Rajada (a partir do 2º); depois o G18b e o G18c.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
@@ -173,12 +205,7 @@ Referência: o PoB recalcula o dano-base de cada afecção de dano com um `dotCf
 
 ## Próximo passo exato
 
-1. Commitar G17 (FULL por exceção — autorização do dono para os lotes desta tarefa) e fazer o push no PR.
-2. **G18 — as linhas das ATIVAS que o compilador marca como aplicadas e ninguém lê** (achados confirmados da revisão do G17):
-   - `stats.maisDano` ("Projéteis causam X% …": Golpe Fundido, Lâminas Gélidas), `afeccaoMais` ("X% menos Dano de Afecções": Punho Esmagador, Golpe de Escudo Glacial, Descarga…), `danoPorEstagio` (Snipe, Ira Divina), `danoPorRicochete`, `afeccaoDuracao` e o "Efeito de Afecções de Gelo" do Martelo Glacial: ligar ao motor ou devolver `false` (não feita);
-   - o Incinerar ("500% mais com Acertos" só no acerto; "250% mais com Incêndio" e "sempre Incendeia") e a Rajada de Chamas ("mais Dano com Afecções por estágio");
-   - a qualidade das ativas no status (avaliar também com qualidade 20);
-   - a Vulnerabilidade e a Inflamabilidade (as chances contra o amaldiçoado em `CONTRA`); o Arauto da Agonia e a Cutilada Vaal (buff que não existe → não feita); a qualidade do Golpe Selvagem nas chances (`afeccoesComAGema` sem qualidade);
-   - a Malevolência ("mais Dano Degenerativo" → `dano_dot_mais` no buff, não dano geral);
-   - os lacaios: "mais Dano" dos suportes de lacaio somado no "aumentado" (`lacaioMaisDanoPct` à parte; "às suas Presas"/"aos Inimigos Próximos" → não feita); o Ceifador ("mais Dano com Sangramento") e o Golem do Caos (multiplicador degenerativo).
-3. **G19 — as afecções pela conta do PoB:** o "aumentado" numa soma só (hoje o do acerto vem no `bruto` e o das afecções multiplica por cima); o "aumentado" de Mágico/Ataque/Projétil/Área/arma fora da afecção; o `danoPct` dos suportes na soma do "aumentado" (hoje um fator à parte); o "mais" geral e as cargas (`fatorDasCargas`) na afecção (achado B19); o crítico (o PoB não dá ×1,5 à afecção do crítico — conferir a decisão de `BASE.criticoMaisPct` antes de mudar); o dano sofrido (Eletrização, Definhamento) no tique do degenerativo.
+1. Commitar G18a (FULL por exceção) e fazer o push no PR.
+2. **G18b** (planos do workflow `g18-ativas-desenho`, analistas "statusQualidade" e "critico"): o status das ativas com qualidade 20 (as linhas de qualidade não feitas no status); as chances do Golpe Selvagem pela qualidade (`afeccoesComAGema` com qualidade); as maldições (Vulnerabilidade, Inflamabilidade, Condutividade, Queimadura de Gelo: as chances contra o amaldiçoado em `CONTRA`, e a duração na qualidade); os arautos (Agonia: chance de Envenenar e "mais Dano com Veneno"; Pureza); a Cutilada Vaal; as auras (Malevolência "mais Dano Degenerativo" → `dano_dot_mais`, Ira e Zelotismo "mais Dano Mágico", Precisão e Zelotismo crítico); o Campo Galvânico; o Golpe de Misericórdia; as linhas de atordoamento; as chaves do compilador que o crítico achou sem leitor (regras 112, 147–149, 153, 179, 204/205, 215, o `cull`).
+3. **G18c** — os lacaios (o "mais Dano" dos suportes de lacaio à parte do "aumentado"; o Ceifador; os Golens do Caos e da Carniça).
+4. **G19** — as afecções pela conta do PoB (ver o fim do G17).

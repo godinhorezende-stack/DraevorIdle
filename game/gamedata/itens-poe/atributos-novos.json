@@ -7161,6 +7161,12 @@
       "combate": true,
       "efeito": "Causticar/Fragilizar/Exaurir que você inflige (`condicoes-poe.fatorNaoDano`, lote 33)"
     },
+    "mais_dano_acerto": {
+      "nome": "Mais Dano só com Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o fator do acerto da gema, fora das afecções e do degenerativo (`acoes.contaDoDano`, lote G18 — o Fogo Justo)"
+    },
     "mais_dano_proximidade": {
       "nome": "Mais Dano Corpo a Corpo pela proximidade",
       "unidade": "%",

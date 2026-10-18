@@ -107,6 +107,10 @@ function partirQualidade(t) {
   const out = [];
   let resto = String(t);
   for (;;) {
+    // (17/10, lote G18a: a frase que REPETE o começo — "A onda final causa +(0 — 150)% … A onda final causa +(0 — 80)% …" — corta ali)
+    const inicio = resto.split(' ').slice(0, 3).join(' ');
+    const rep = inicio.length > 6 ? resto.indexOf(` ${inicio}`, 1) : -1;
+    if (rep > 0) { out.push(resto.slice(0, rep)); resto = resto.slice(rep + 1); continue; }
     const re = / (?=[+-]?\(-?\d[^)]*—[^)]*\))/g;
     let corte = -1;
     for (let m; (m = re.exec(resto));) if (/\(-?\d[^)]*—[^)]*\)/.test(resto.slice(0, m.index)) && !/\b(em|de|a|até|por|ao|do|da)$/i.test(resto.slice(0, m.index))) { corte = m.index; break; }
@@ -291,7 +295,7 @@ export function partesDaMagia(slug, nivel) {
  */
 const LOCAIS = new Map();
 /** As linhas da qualidade que o compilador lê E o jogo usa (o raio, a área, a duração, a recarga). */
-const QUALIDADE_PELO_COMPILADOR = /metros? (?:de|ao) raio$|^O raio Base|Área de Efeito aumentada|% (?:mais|menos) Área de Efeito$|segundos? à duração base$|^Duração base é de|Velocidade de Recarga aumentada/i;
+const QUALIDADE_PELO_COMPILADOR = /metros? (?:de|ao) raio$|^O raio Base|Área de Efeito aumentada|% (?:mais|menos) Área de Efeito$|segundos? à duração base$|^Duração base é de|Velocidade de Recarga aumentada|% (?:mais|menos) dano (?:com sangramento|de afecções)$|^Causa até \+?[\d.]+ ?% mais Dano com Acertos aos alvos próximos$|^Projéteis causam \+?[\d.]+ ?% (?:mais|menos) Dano com Acertos e Afecções$|^A cada cinco Ataques, Projéteis causam/i;
 /** As linhas da qualidade (o poedb junta duas numa: "+(0 — 2)% mais Dano … +(0 — 2)% mais Velocidade …"), × a fração `q` (0–1). */
 export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
@@ -303,7 +307,7 @@ export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
   // (as linhas que o compilador não leu — as do nível e as da qualidade —; as da qualidade que ele leu (raio, duração, projéteis) já valem
   // pela compilada)
   const daQ = new Set(q > 0 ? linhasDaQualidade(g, q / 20) : []);
-  const nao = h.linhas?.naoImplementadas ?? [];
+  const nao = (h.linhas?.naoImplementadas ?? []).filter((l) => !ehColunaMalRotulada(slug, l));
   const uso = ehUso(h);
   const doNivel = uso ? atributosDasLinhas(nao.filter((l) => !daQ.has(l))) : { af: {}, feitas: [] };
   const daQualidade = uso ? atributosDasLinhas(nao.filter((l) => daQ.has(l))) : { af: {}, feitas: [] };
@@ -455,29 +459,35 @@ export const ehLinhaDoArauto = (l) => LINHA_DO_ARAUTO.test(l);
  * canalização interrompida por outra habilidade perde os estágios, como a do PoE que não chegou a soltar).
  */
 const CARREGAM = /^(Flameblast|Scourge_Arrow)/;
+// (17/10, lote G18) o "mais" de cada estágio pela flag do PoB: "com Acertos e Afecções" (Hit|Ailment — o Incinerar, a Flecha Flagelante: `mais` e
+// `maisAmbos`), "Mágico" (só o acerto — a Rajada de Chamas, ModFlag.Hit: só `mais`) e "com Afecções" (só as afecções — `maisAfeccao`); a onda final
+// do Incinerar: o "com Acertos" (só o acerto), o "com Incêndio" (só o Incêndio) e o "sempre Incendeia". A qualidade entra (`linhasDaQualidade`).
 const LINHAS_DE_ESTAGIO = [
-  [/^(\d+(?:\.\d+)?) ?% mais Dano (?:com Acertos e Afecções|Mágico) por (?:cada )?estágio$/i, (m, e) => { e.mais += Number(m[1]); }],
-  [/^(\d+(?:\.\d+)?) ?% mais Dano com Afecções por estágio$/i, () => {}],
+  [/^\+?(\d+(?:\.\d+)?) ?% mais Dano com Acertos e Afecções por (?:cada )?estágio$/i, (m, e) => { e.mais += Number(m[1]); e.maisAmbos += Number(m[1]); }],
+  [/^\+?(\d+(?:\.\d+)?) ?% mais Dano Mágico por (?:cada )?estágio$/i, (m, e) => { e.mais += Number(m[1]); }],
+  [/^\+?(\d+(?:\.\d+)?) ?% mais Dano com Afecções por estágio$/i, (m, e) => { e.maisAfeccao += Number(m[1]); }],
   [/^(\d+(?:\.\d+)?) ?% mais Change? de Golpe Crítico por cada Estágio$/i, (m, e) => { e.critMais += Number(m[1]); }],
   [/^(\d+(?:\.\d+)?) ?% mais Velocidade de Ataque por Estágio$/i, (m, e) => { e.velMais += Number(m[1]); }],
   [/^Concede 1 Estágio a cada (\d+(?:\.\d+)?) segundos? enquanto Canalizando$/i, (m, e) => { e.porMs = Math.round(Number(m[1]) * 1000); }],
   [/^Perde 1 Estágio a cada (\d+(?:\.\d+)?) segundos? enquanto não Canalizada$/i, () => {}],
   [/^\+?(\d+(?:\.\d+)?) metros ao raio por estágio, máximo de \+(\d+(?:\.\d+)?) metros$/i, (m, e) => { e.raioM = Number(m[1]); e.raioMaxM = Number(m[2]); }],
-  [/^A onda final causa (\d+(?:\.\d+)?) ?% mais Dano com Acertos$/i, (m, e) => { e.final += Number(m[1]); }],
-  [/^A onda final causa (\d+(?:\.\d+)?) ?% mais Dano com Incêndio$/i, () => {}],
-  [/^onda final sempre Incendeia$/i, () => {}],
+  [/^A onda final causa \+?(\d+(?:\.\d+)?) ?% mais Dano com Acertos$/i, (m, e) => { e.final += Number(m[1]); }],
+  [/^A onda final causa \+?(\d+(?:\.\d+)?) ?% mais Dano com Incêndio$/i, (m, e) => { e.finalIncendio += Number(m[1]); }],
+  [/^onda final sempre Incendeia$/i, (m, e) => { e.finalIncendeia = true; }],
 ];
 export const ehLinhaDeEstagio = (l) => LINHAS_DE_ESTAGIO.some(([re]) => re.test(l));
 const ESTAGIOS = new Map();
-export function estagiosDaGema(slug, nivel = 1) {
-  const h = compilada(slug, nivel);
+export function estagiosDaGema(slug, nivel = 1, qualidade = 0) {
+  const h = compilada(slug, nivel, qualidade);
   if (!h?.stats?.estagios) return null;
-  const k = `${slug}@${h.nivel}`;
+  const q = Math.max(0, Math.min(20, Number(qualidade) || 0));
+  const k = `${slug}@${h.nivel}@${q}`;
   if (ESTAGIOS.has(k)) return ESTAGIOS.get(k);
-  const e = { max: h.stats.estagios, mais: 0, critMais: 0, velMais: 0, raioM: h.stats.raioPorEstagio ?? 0, raioMaxM: null, final: 0, golpesFinais: /^Blade_Flurry/.test(slug), porMs: 0 };
-  for (const l of textosDaGema(slug, nivel).linhas) for (const [re, f] of LINHAS_DE_ESTAGIO) { const m = re.exec(l); if (m) f(m, e); }
+  // (a qualidade soma frações — "+0.5 ao máximo de Estágios" —: no PoE os estágios são inteiros, arredondados para baixo)
+  const e = { max: Math.floor(h.stats.estagios), mais: 0, maisAmbos: 0, maisAfeccao: 0, critMais: 0, velMais: 0, raioM: h.stats.raioPorEstagio ?? 0, raioMaxM: null, final: 0, finalIncendio: 0, finalIncendeia: false, golpesFinais: /^Blade_Flurry/.test(slug), porMs: 0 };
+  for (const l of [...textosDaGema(slug, nivel).linhas, ...(q ? linhasDaQualidade(POR_SLUG.get(slug), q / 20) : [])]) for (const [re, f] of LINHAS_DE_ESTAGIO) { const m = re.exec(l); if (m) f(m, e); }
   e.modo = e.porMs ? 'tempo' : CARREGAM.test(slug) ? 'carrega' : 'intensifica';
-  const r = e.mais || e.critMais || e.velMais || e.raioM || e.final || e.golpesFinais ? e : null;
+  const r = e.mais || e.maisAfeccao || e.critMais || e.velMais || e.raioM || e.final || e.finalIncendio || e.finalIncendeia || e.golpesFinais ? e : null;
   ESTAGIOS.set(k, r);
   return r;
 }
@@ -667,6 +677,38 @@ export function afeccoesComAGema(afeccoes, slug, nivel) {
   for (const [k, v] of extra) chance[AFECCAO_NO_JOGO[k]] = (chance[AFECCAO_NO_JOGO[k]] ?? 0) + v;
   return { ...afeccoes, chance };
 }
+/**
+ * (17/10, lote G18) O "mais/menos" só das afecções de dano da própria gema, no nível e com a qualidade: `{ maisAfeccaoPct, maisSangramentoPct }`
+ * ("60 % menos Dano de Afecções" do Punho Esmagador; "49 % mais Dano com Sangramento" da Punctura) — o `acertar` multiplica no dano das
+ * afecções (`AfeccoesPoe.aoAcertar`, `fatoresDoDano`), como o dos suportes (lote G17).
+ */
+/**
+ * (17/10, lote G18a) As colunas MAL ROTULADAS dos dados (o poedb): a tabela do Martelo Glacial Vaal traz o cabeçalho "Cada terceiro golpe sucessivo
+ * Congela…" para os números do "Congela inimigos causando X% mais Dano" dele (o PoB: só `freeze_as_though_dealt_damage_+%`) — a linha some.
+ */
+const COLUNAS_MAL_ROTULADAS = { Vaal_Glacial_Hammer: /^Cada terceiro golpe sucessivo Congela/i };
+const ehColunaMalRotulada = (slug, l) => !!COLUNAS_MAL_ROTULADAS[slug]?.test(l);
+/** (lote G18a) A gema cujo degenerativo leva os modificadores de Dano Mágico (o `dotIsSpell` do PoB): o "mais Dano Mágico" vale no DoT dela. */
+export const dotEhMagico = (slug) => textosDaGema(slug, 1).linhas.some((l) => /Modificadores de Dano Mágico aplicam-se ao Dano Degenerativo/i.test(l));
+export function maisNasAfeccoesDaGema(slug, nivel = 1, qualidade = 0) {
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  return { maisAfeccaoPct: st.maisAfeccaoPct ?? 0, maisSangramentoPct: st.maisSangramentoPct ?? 0 };
+}
+/**
+ * (17/10, lote G18) O "até X% mais Dano com Acertos aos alvos próximos" da gema (o Golpe no Chão, o Caminho Consagrado, o Esmagar com Escudo):
+ * `{ pct, rampa }` — o PoB: o "AtCloseRange" (binário — o Curto Alcance do jogo, até 2 casas) ou, no Esmagar com Escudo, a rampa do corpo a corpo
+ * (`MeleeProximity` — `ModsPoe.proximidadeCorpoACorpo`). Só no acerto.
+ */
+const RAMPA_DO_PERTO = { Shield_Crush: 'proximidade' };
+export function maisPertoNoNivel(slug, nivel = 1, qualidade = 0) {
+  const pct = compilada(slug, nivel, qualidade)?.stats?.maisPertoPct ?? 0;
+  return pct ? { pct, rampa: RAMPA_DO_PERTO[slug.replace(/_of_.*$/, '')] ?? 'perto' } : null;
+}
+/** (lote G18) Os projéteis secundários da gema (o Golpe Vulcânico, as Lâminas Gélidas): `{ pct, quintoPct, quintoProjeteis }` ou null. */
+export function projeteisDaGema(slug, nivel = 1, qualidade = 0) {
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  return st.maisProjetilPct || st.quintoMaisPct || st.quintoProjeteis ? { pct: st.maisProjetilPct ?? 0, quintoPct: st.quintoMaisPct ?? 0, quintoProjeteis: st.quintoProjeteis ?? 0 } : null;
+}
 /** O custo de mana da gema no nível. */
 export const custoNoNivel = (slug, nivel) => Math.max(0, Math.round(compilada(slug, nivel)?.stats?.custo ?? 0));
 
@@ -782,6 +824,9 @@ function avaliarNoJogo(h, formato) {
       ? ['o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)']
       : ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
     for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeLacaio(l) && !ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l)) motivos.push(`efeito não simulado: ${l}`);
+    // (17/10, lote G18: o "mais/menos Dano de Afecções" que o compilador lê vale no ACERTO da gema; a de lacaio não acerta — a Troca de Corpos do
+    // Sacrifício —, então a linha fica não feita)
+    for (const l of h.linhas?.aplicadas ?? []) if (/% (?:mais|menos) Dano (?:de|com) (?:Afecções|Sangramento)$/i.test(l)) motivos.push(`efeito não simulado: ${l}`);
     return { status: 'parcial', motivos };
   }
   // (12/10) O VÍNCULO (`itens-poe/vinculos.mjs`): foca um aliado; as linhas que o jogo ainda não faz vão nos motivos.
@@ -815,7 +860,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -957,7 +1002,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

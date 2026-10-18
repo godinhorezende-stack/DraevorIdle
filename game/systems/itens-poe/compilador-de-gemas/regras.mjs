@@ -46,15 +46,21 @@ export function statsVazios() {
     lacaioVida: 0,
     lacaioVelAtaque: 0,
     lacaioVelMov: 0,
-    maisDano: 0,
     critico: 0,
+    // (17/10, lote G18) o "até X% mais Dano com Acertos aos alvos próximos" (`maisPertoNoNivel`), o "Projéteis causam X% …" dos projéteis
+    // secundários e o quinto ataque do Golpe Vulcânico do Zênite (`projeteisDaGema`) — lidos no `disparar`
+    maisPertoPct: 0,
+    maisProjetilPct: 0,
+    quintoMaisPct: 0,
+    quintoProjeteis: 0,
     velRecarga: 0,
     tempoAtaqueExtra: 0,
-    afeccaoMais: 0,
+    // (17/10, lote G18) o "mais/menos" só das afecções da própria gema (lido no `acertar` — `GemasPoe.maisNasAfeccoesDaGema`)
+    maisAfeccaoPct: 0,
+    maisSangramentoPct: 0,
     cull: false,
     sempreAtordoa: false,
     estagios: null,
-    danoPorEstagio: 0,
     raioPorEstagio: 0,
     lentidaoAcerto: 0,
     danoRecebidoAcerto: 0,
@@ -81,16 +87,28 @@ export const REGRAS = [
   [r(`${N} % (?:do|de) Dano Físico Convertido (?:em|para) Dano de ${EL}`), (s, m) => s.conversao.push({ para: el(m[2]), pct: num(m[1]) })],
   [r(`Converte[m]? ${N} % do Dano Físico (?:para|em) Dano de ${EL}`), (s, m) => s.conversao.push({ para: el(m[2]), pct: num(m[1]) })],
   [r(`${N} % de Dano Físico Convertido em Dano de Fogo, Gelo ou Raio`), (s, m) => s.conversao.push({ para: "aleatorio", pct: num(m[1]) })],
-  [r(`^(?:Concede |Causa )?${N} % (mais|menos) Dano(?: Mágico)?$`), (s, m) => (s.maisDano += num(m[1]) * sinal(m[2]))],
-  [r(`^${N} % (mais|menos) Dano com (?:Acertos e Afecções|Acertos)$`), (s, m) => (s.maisDano += num(m[1]) * sinal(m[2]))],
-  [r(`Projéteis causam ${N} % (mais|menos) Dano`), (s, m) => (s.maisDano += num(m[1]) * sinal(m[2]))],
-  [r(`Causa até ${N} % mais Dano com Acertos aos alvos próximos`), (s, m) => (s.maisDano += num(m[1]) / 2)],
+  // (17/10, lote G18) o "mais Dano" das ativas: antes ia a `stats.maisDano`, que ninguém lia (as linhas sumiam do status como "aplicadas"):
+  // - "Concede X% mais Dano Mágico" (o Fogo Justo) é linha de BUFF (`linhas-das-gemas`, `mais_dano_acerto@magia` — só no acerto das magias);
+  // - "Causa X% mais Dano" (a coluna do Impacto Sísmico Vaal no nível 1 — não é do PoE 1) fica não feita;
+  // - "Projéteis causam X% …" vale nos projéteis secundários (o golpe direto é o corpo a corpo do PoB) e o quinto ataque do Zênite;
+  // - "até X% mais Dano com Acertos aos alvos próximos" vale só no acerto, no alvo perto.
+  [r(`^Concede ${N} % mais Dano Mágico$`), () => false],
+  [r(`^Causa ${N} % mais Dano$`), () => false],
+  [r(`^A cada cinco Ataques, Projéteis causam \\+?${N} % mais Dano com Acertos e Afecções$`), (s, m) => (s.quintoMaisPct += num(m[1]))],
+  [r(`^Cada quinto Ataque dispara ${N} Projéteis adicionais$`), (s, m) => (s.quintoProjeteis = num(m[1]))],
+  [r(`^Projéteis causam \\+?${N} % (mais|menos) Dano com Acertos e Afecções$`), (s, m) => (s.maisProjetilPct += num(m[1]) * sinal(m[2]))],
+  [r(`^Causa até \\+?${N} % mais Dano com Acertos aos alvos próximos$`), (s, m) => (s.maisPertoPct += num(m[1]))],
   [r(`^\\+${N} % à Chance de Crítico`), (s, m) => (s.critico += num(m[1]))],
-  [r(`^${N} % (mais|menos) Dano (?:de|com) Afecções$`), (s, m) => (s.afeccaoMais += num(m[1]) * sinal(m[2]))],
-  [r(`^${N} % mais Dano com Sangramento$`), (s, m) => (s.afeccaoMais += num(m[1]))],
+  // (17/10, lote G18: o "mais/menos" só das afecções de dano — o Punho Esmagador, a Descarga… — e o só do Sangramento — a Punctura, a Laceração…;
+  // o da qualidade, "+20 % mais dano com sangramento", soma no mesmo, como no PoE. Antes iam a `afeccaoMais`, que ninguém lia.)
+  [r(`^${N} % (mais|menos) Dano (?:de|com) Afecções$`), (s, m) => (s.maisAfeccaoPct += num(m[1]) * sinal(m[2]))],
+  [r(`^\\+?${N} % (mais|menos) Dano com Sangramento$`), (s, m) => (s.maisSangramentoPct += num(m[1]) * sinal(m[2]))],
   [r(`Golpe de Misericórdia`), (s) => (s.cull = true)],
-  [r(`${N} % mais Dano com Acertos e Afecções por cada Ricochete restante`), (s, m) => (s.danoPorRicochete = num(m[1]))],
-  [r(`${N} % mais Dano(?: Mágico| com Acertos e Afecções| com Afecções| com Acertos)? por (?:estágio|Estágio)`), (s, m) => (s.danoPorEstagio = num(m[1]))],
+  // (17/10, lote G18) o "por cada Ricochete restante" é feito por `GemasPoe.alvosNoNivel` (`pctPorRestante`) → `Acoes.atacar`; o "por estágio"
+  // pelos estágios de canalização (`GemasPoe.estagiosDaGema`) — a linha vai para `naoImplementadas` e o status a tira só onde há estágios (antes
+  // ia a `danoPorEstagio`, que ninguém lia: a Ira Divina, o Snipe e a Rajada Vaal pareciam feitos)
+  [r(`${N} % mais Dano com Acertos e Afecções por cada Ricochete restante`), () => {}],
+  [r(`${N} % mais Dano(?: Mágico| com Acertos e Afecções| com Afecções| com Acertos)? por (?:estágio|Estágio)`), () => false],
 
   // ---------------- afecções no acerto ----------------
   [r(`${N} % de chance de Congelar, Eletrizar e Incendiar`), (s, m) => (s.chances.congelar = s.chances.eletrizar = s.chances.incendiar = num(m[1]))],
@@ -105,9 +123,11 @@ export const REGRAS = [
   [r(`^Sempre Eletriza`), (s) => (s.chances.eletrizar = 100)],
   [r(`^Causa Sangramento`), (s) => (s.chances.sangrar = 100)],
   [r(`^Não Pode aplicar Eletrizar`), (s) => (s.chances.eletrizar = -1)],
-  [r(`(?:Eletriza|Resfria|Congela|Incendeia) Inimigos como se causasse ${N} % mais Dano`), (s, m) => (s.afeccaoMais += num(m[1]) / 4)],
-  [r(`Efeito de (?:Eletrização|Afecções de Gelo) aumentado em ${N}`), (s, m) => (s.afeccaoMais += num(m[1]) / 2)],
-  [r(`Duração de Afecções de Gelo aumentada em ${N}`), (s, m) => (s.afeccaoDuracao = num(m[1]))],
+  // (17/10, lote G18: o "como se causasse", o Efeito e a Duração das afecções de Gelo/Eletrização são linhas LOCAIS da gema — `linhas-das-gemas`,
+  // `*_como_mais`, `efeito_*`, `duracao_*` lidos em `afeccoes.daSoma`; antes iam a chaves que ninguém lia, com divisores inventados)
+  [r(`(?:Eletriza|Resfria|Congela|Incendeia) Inimigos como se causasse ${N} % mais Dano`), () => false],
+  [r(`Efeito de (?:Eletrização|Afecções de Gelo) aumentado em ${N}`), () => false],
+  [r(`Duração de Afecções de Gelo aumentada em ${N}`), () => false],
   [r(`Acertos que Causam Dano sempre Atordoam`), (s) => (s.sempreAtordoa = true)],
   [r(`Atordoamento`), (s) => s.flags.add("atordoa")],
   [r(`^Velocidade de Movimento reduzida em ${N} %`), (s, m) => (s.lentidaoAcerto = num(m[1]))],
@@ -134,6 +154,9 @@ export const REGRAS = [
   [r(`^Área de Efeito aumentada em ${N} ?%?$`), (s, m) => (s.areaInc = (s.areaInc ?? 0) + num(m[1]))],
   [r(`\\+${N} metros ao raio por (?:estágio|Estágio)`), (s, m) => (s.raioPorEstagio = num(m[1]))],
   [r(`${N} % mais Área de Efeito por cada estágio`), (s, m) => (s.raioPorEstagio = num(m[1]) / 100)],
+  // (lote G18: os ESPOROS da Flecha Flagelante não existem no jogo — o máximo vale, a linha fica não feita)
+  [r(`^Máximo de ${N} Estágios Deixa \\d+ Esporos? por Estágio$`), (s, m) => { s.estagios = num(m[1]); return false; }],
+  [r(`^Cada Esporo dispara`), () => false],
   [r(`^Máximo de ${N} Estágios`), (s, m) => (s.estagios = num(m[1]))],
   [r(`^\\+?${N} ao máximo de Estágios`), (s, m) => (s.estagios = (s.estagios || 0) + num(m[1]))],
   [r(`Duração base é de ${N} segundos?`), (s, m) => (s.duracao = num(m[1]))],
@@ -144,7 +167,7 @@ export const REGRAS = [
   [r(`Tempo Base de Detonação de Mina é de ${N}`), (s, m) => (s.detonacao = num(m[1]))],
 
   // ---------------- projéteis / alvos ----------------
-  [r(`Dispara ${N} Projéteis adicionais`), (s, m) => (s.projeteisExtra += num(m[1]))],
+  [r(`^Dispara ${N} Projéteis adicionais`), (s, m) => (s.projeteisExtra += num(m[1]))],
   [r(`Dispara ${N} (?:projéteis|Flechas|Projéteis)`), (s, m) => (s.projeteis = num(m[1]))],
   [r(`Dispara Projéteis em um círculo`), (s) => (s.circulo = true)],
   [r(`Projéteis Perfuram todos Alvos`), (s) => (s.perfura = 99)],

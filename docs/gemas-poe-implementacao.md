@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 70 |
-| implementada, sem teste próprio | 81 |
+| implementada e testada | 77 |
+| implementada, sem teste próprio | 75 |
 | limitação do modelo idle | 42 |
-| parcial | 358 |
+| parcial | 357 |
 | sem efeito | 11 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 24 |
-| implementada, sem teste próprio | 36 |
+| implementada e testada | 30 |
+| implementada, sem teste próprio | 32 |
 | limitação do modelo idle | 11 |
-| parcial | 139 |
+| parcial | 137 |
 
 ### Gemas de suporte (262)
 
@@ -34,16 +34,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 1 · parcial 41 · implementada, sem teste próprio 10
-- Alternativas (198): parcial 137 · implementada e testada 7 · limitação do modelo idle 14 · implementada, sem teste próprio 38 · sem efeito 2
+- Vaal (52): implementada e testada 2 · parcial 41 · implementada, sem teste próprio 9
+- Alternativas (198): parcial 136 · implementada, sem teste próprio 39 · implementada e testada 7 · limitação do modelo idle 14 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 841 linhas distintas (165 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 848 linhas distintas (167 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 143/562 ativas, 62/262 suportes.
+- Testes que citam a gema: 158/562 ativas, 63/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -68,6 +68,7 @@ Só os ataques:
 | 3 | Cria # Estaca |
 | 3 | Efeito das Auras aumentado em # % |
 | 3 | Estacas Despedaçadoras causam # % mais dano |
+| 3 | Feixe causa # % mais Dano com Acertos por Estágio após o primeiro Feixe causa # % mais Dano com Afecções por Estágio após o primeiro |
 | 3 | Flecha dispara Raios a cada # segundos |
 | 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
 | 3 | Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados |
@@ -108,7 +109,7 @@ Só os ataques:
 | 2 | Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo |
 | 2 | Buff concede Trespassar |
 | 2 | Cada Esporo aplica # % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de # % |
-| 2 | Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado # % mais Dano |
+| 2 | Cada Esporo dispara # Flechas de Espinho |
 | 2 | Causa # % do seu máximo de Escudo de Energia como Dano de Caos base |
 | 2 | Causa # % mais Dano por Carga Sangrenta |
 | 2 | Causa # a # de Dano de Caos |
@@ -122,6 +123,7 @@ Só os ataques:
 | 2 | Causa Dano em # Inimigos próximos quando você ganha Estágios |
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores causem # % menos Dano |
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores tenham # % menos Vida Máxima |
+| 2 | Concede # % mais Dano Mágico |
 | 2 | Custa # % mais Vida por Carga Sangrenta |
 | 2 | Dano de Caos Adicional igual a # % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida |
 | 2 | Debuff Incendiário pode ter no máximo # estágios |
@@ -249,10 +251,12 @@ Só os ataques:
 | 1 | # % mais Dano com Acertos na Distância Máxima da Investida |
 | 1 | # % mais Dano com Acertos por cada # % de Efeito de Eletrização no Inimigo |
 | 1 | # % mais Dano com Acertos por cada # % de Efeito do Resfriamento no Inimigo |
+| 1 | # % mais Dano com Afecções por estágio |
 | 1 | # % mais Dano com Envenenamentos |
 | 1 | # % mais Dano em Área |
 | 1 | # % mais Dano Físico Corpo a Corpo |
 | 1 | # % mais Dano Incendiário sofrido |
+| 1 | # % mais Dano Mágico por estágio |
 | 1 | # % mais Dano por Carga de Tolerância removida |
 | 1 | # % mais dano por lâmina |
 | 1 | # % mais dano por lâmina de Vórtice de Lâminas |
@@ -265,6 +269,7 @@ Só os ataques:
 | 1 | # % mais Frequência de Projéteis enquanto Canalizando |
 | 1 | # % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido |
 | 1 | # % mais Velocidade de Ataque por cada Estágio |
+| 1 | # % menos Dano de Afecções |
 | 1 | # % menos Velocidade de Arremesso de Armadilhas |
 | 1 | # % menos velocidade de lançar armadilhas com arma de duas mãos |
 | 1 | # % menos Velocidade de Movimento |
@@ -329,6 +334,8 @@ Só os ataques:
 | 1 | Arqueiro Ilusório dura # segundos |
 | 1 | Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque |
 | 1 | As flechas após a primeira caem em um raio base de # metros |
+| 1 | As Flechas desta Habilidade causam # % mais Dano com Acertos por Estágio |
+| 1 | As Flechas desta Habilidade causam # % mais Dano com Afecções por Estágio |
 | 1 | Ataca um Inimigo a cada # segundos |
 | 1 | Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em # % |
 | 1 | Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos Perde # de Ressonância Profana por segundo para cada tipo que não ganhar |
@@ -377,7 +384,6 @@ Só os ataques:
 | 1 | Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #% |
 | 1 | Cada onda tem # Explosões |
 | 1 | Cada rajada dispara # lâminas, que permanecem no chão |
-| 1 | Cada terceiro golpe sucessivo é um Golpe Crítico |
 | 1 | Campo ganha # % mais Dano com Ataques por cada # % de Efeito de Eletrização no Inimigo quando criado |
 | 1 | Campo ganha +# metros ao raio por cada # % de Efeito de Eletrização no Inimigo quando criado |
 | 1 | Causa # % da sua Mana Máxima como Dano de Fogo Base por segundo |
@@ -422,7 +428,6 @@ Só os ataques:
 | 1 | Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico |
 | 1 | Concede até o máximo de Cargas de Sangue |
 | 1 | Concede Virulência ao Envenenar um Inimigo |
-| 1 | Congela inimigos causando # % mais Dano |
 | 1 | Consome # Carga de # Frasco de Vida, se possível, por Projétil Disparado |
 | 1 | Consome # Cargas de # Frasco de Vida, se possível, por Projétil Disparado |
 | 1 | Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por # segundo por Carga consumida |
@@ -451,6 +456,7 @@ Só os ataques:
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
 | 1 | Dano Elemental das Habilidades Suportadas não pode ser Refletido |
 | 1 | Dano Mágico Suprimido causado em você é Azarado |
+| 1 | Debuff causa # % mais Dano por Estágio |
 | 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
 | 1 | Definhado dura # segundos |
 | 1 | Deixa uma Lâmina Persistente no solo para cada # Saraivadas |
@@ -743,6 +749,7 @@ Só os ataques:
 | 1 | Mata Inimigos com #% de Vida ou menos quando Acertado por Habilidades Suportadas |
 | 1 | Mata inimigos de raridade normal e mágica com #% de vida ou menos quando atingidos por habilidades reforçadas |
 | 1 | Máximo de # Arqueiro Ilusório Convocado |
+| 1 | Máximo de # Estágios Deixa # Esporo por Estágio |
 | 1 | Máximo de # Lacaios Relâmpagos Vivos |
 | 1 | Máximo de # mãos |
 | 1 | Máximo de # Nascido(s) da Colmeia |
@@ -1036,6 +1043,7 @@ Só os ataques:
   - efeito não simulado: Esta Magia causa 210 a 315 , mais 4 % da sua Vida Máxima, como Dano de Fogo base
   - efeito não simulado: Explosões causam Dano de Fogo base igual a 29 % da Vida máxima do Lacaio
   - efeito não simulado: 300 % mais Área de Efeito se Consumindo um Lacaio
+  - efeito não simulado: 50 % menos Dano de Afecções
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Bone_Offering** (Oferenda Óssea) — parcial
   - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
@@ -1166,10 +1174,13 @@ Só os ataques:
   - efeito não simulado: Taxa base de explosão do orbe é de uma vez por segundo
 - **Divine_Ire** (Ira Divina) — parcial
   - efeito não simulado: Causa Dano em 5 Inimigos próximos quando você ganha Estágios
+  - efeito não simulado: Feixe causa 250 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 250 % mais Dano com Afecções por Estágio após o primeiro
 - **Divine_Ire_of_Disintegration** (Ira Divina da Desintegração) — parcial
   - efeito não simulado: Comprimento do raio aumentado em 19 %
+  - efeito não simulado: Feixe causa 200 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 200 % mais Dano com Afecções por Estágio após o primeiro
 - **Divine_Ire_of_Holy_Lightning** (Ira Divina do Relâmpago Sagrado) — parcial
   - efeito não simulado: Causa Dano em 10 Inimigos próximos quando você ganha Estágios
+  - efeito não simulado: Feixe causa 140 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 140 % mais Dano com Afecções por Estágio após o primeiro
 - **Divine_Retribution** (Retribuição Divina) — parcial
   - efeito não simulado: Cada onda tem 6 Explosões
   - efeito não simulado: Causa 4 Ondas
@@ -1370,10 +1381,6 @@ Só os ataques:
   - efeito não simulado: Causa 4 rajadas
 - **Glacial_Cascade_of_the_Fissure** (Cascata Glacial da Fissura) — parcial
   - efeito não simulado: Causa 6 rajadas
-- **Glacial_Hammer** (Martelo Glacial) — parcial
-  - efeito não simulado: Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado 390 % mais Dano
-- **Glacial_Hammer_of_Shattering** (Martelo Glacial do Despedaçamento) — parcial
-  - efeito não simulado: Cada terceiro golpe sucessivo é um Golpe Crítico
 - **Ground_Slam_of_Earthshaking** (Impacto Sísmico do Tremor) — parcial
   - efeito não simulado: Ângulo aumentado em 100 %
 - **Herald_of_Agony** (Arauto Agonizante) — parcial
@@ -1683,6 +1690,7 @@ Só os ataques:
   - efeito não simulado: Causa 70 % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo
   - efeito não simulado: Você Queima por 90 % de sua Vida máxima por segundo como Dano de Fogo
   - efeito não simulado: Você Queima por 70 % do seu Escudo de Energia máximo por segundo como Dano de Fogo
+  - efeito não simulado: Concede 39 % mais Dano Mágico
 - **Righteous_Fire_of_Arcane_Devotion** (Círculo Ardente da Devoção Arcana) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Causa 70 % da sua Mana Máxima como Dano de Fogo Base por segundo
@@ -1698,9 +1706,12 @@ Só os ataques:
   - efeito não simulado: Debuff Incendiário pode ter no máximo 8 estágios
   - efeito não simulado: Estágios Adicionais do Debuff adicionam 10 % de Dano
 - **Scourge_Arrow** (Flecha Virulenta) — parcial
+  - efeito não simulado: Máximo de 5 Estágios Deixa 1 Esporo por Estágio
+  - efeito não simulado: Cada Esporo dispara 9 Flechas de Espinho
   - efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano
 - **Scourge_Arrow_of_Menace** (Flecha Virulenta da Ameaça) — parcial
   - efeito não simulado: Cada Flecha deixa 1 Esporos
+  - efeito não simulado: Cada Esporo dispara 4 Flechas de Espinho
   - efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano
 - **Searing_Bond** (Vínculo Cauterizador) — limitação do modelo idle
   - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
@@ -1771,6 +1782,9 @@ Só os ataques:
   - efeito não simulado: Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação
   - efeito não simulado: Minas não podem ser Re-armadas
   - efeito não simulado: Detonação da Mina é Instantânea
+- **Snipe** (Atirar) — parcial
+  - efeito não simulado: As Flechas desta Habilidade causam 1 % mais Dano com Afecções por Estágio
+  - efeito não simulado: As Flechas desta Habilidade causam 1 % mais Dano com Acertos por Estágio
 - **Snipers_Mark** (Marca do Atirador) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 29 % de Acertos de Projéteis
@@ -1990,12 +2004,12 @@ Só os ataques:
   - efeito não simulado: Solo Ardente dura 6 segundos
   - efeito não simulado: 16 Tiros
   - efeito não simulado: Impactos têm 20 % mais Efeito em Área
+- **Vaal_Flameblast** (Explosão Flamejante Vaal) — parcial
+  - efeito não simulado: 200 % mais Dano Mágico por estágio
+  - efeito não simulado: 110 % mais Dano com Afecções por estágio
 - **Vaal_Flicker_Strike** (Golpe Súbito Vaal) — parcial
   - o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
   - _idle:_ o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
-- **Vaal_Glacial_Hammer** (Martelo Glacial Vaal) — parcial
-  - efeito não simulado: Congela inimigos causando 390 % mais Dano
-  - efeito não simulado: Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado 390 % mais Dano
 - **Vaal_Grace** (Graça Vaal) — parcial
   - efeito não simulado: Você e aliados próximos têm +15 % de chance de Evadirem Acertos de Ataques
   - efeito não simulado: Dano Mágico Suprimido causado em você é Azarado
@@ -2050,6 +2064,7 @@ Só os ataques:
 - **Vaal_Righteous_Fire** (Círculo Ardente Vaal) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo
+  - efeito não simulado: Concede 39 % mais Dano Mágico
 - **Vaal_Smite** (Castigo Vaal) — parcial
   - efeito não simulado: Raio acerta 30 alvos dentro de 10 metros
   - efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos
@@ -2116,6 +2131,7 @@ Só os ataques:
   - efeito não simulado: 20 % de aumento da Frequência de Projéteis por Estágio
 - **Wintertide_Brand** (Runa da Maré Invernal) — parcial
   - os estágios de canalização não existem: no jogo é um uso por vez
+  - efeito não simulado: Debuff causa 20 % mais Dano por Estágio
   - efeito não simulado: Duração Base do Debuff é de 2 segundos
 - **Wither** (Definhar) — parcial
   - sem dano direto: nenhum efeito no combate
@@ -2683,4 +2699,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Boneshatter_of_Carnage, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Chance_to_Poison_Support, Cobra_Lash, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Crushing_Fist, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Icicle_Mine_of_Fanning, Icicle_Mine_of_Sabotage, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Arrow, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Lightning_Trap, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, Molten_Strike_of_the_Zenith, More_Duration_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Snipe, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Tornado_Shot, Unbound_Ailments_Support, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Detonate_Dead, Vaal_Fireball, Vaal_Flameblast, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volatile_Dead_of_Seething, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Arc_of_Surging, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Barrage_of_Volley_Fire, Battlemages_Cry, Blade_Blast, Blade_Flurry_of_Incision, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Boneshatter_of_Carnage, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Chance_to_Poison_Support, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Blades_of_Katabasis, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Ice_Shot_of_Penetration, Ice_Trap_of_Hollowness, Icicle_Mine_of_Fanning, Icicle_Mine_of_Sabotage, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Spire_Trap_of_Zapping, Lightning_Strike, Lightning_Strike_of_Arcing, Malevolence, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, More_Duration_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Precision, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Soulrend_of_the_Spiral, Spark_of_Unpredictability, Spark_of_the_Nova, Spectral_Throw, Spectral_Throw_of_Trarthus, Storm_Call, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Tornado_Shot, Unbound_Ailments_Support, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Detonate_Dead, Vaal_Fireball, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vaal_Spectral_Throw, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volatile_Dead_of_Seething, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus, Wild_Strike

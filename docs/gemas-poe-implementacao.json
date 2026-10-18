@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 70,
-   "parcial": 358,
-   "implementada, sem teste próprio": 81,
+   "implementada e testada": 77,
+   "parcial": 357,
+   "implementada, sem teste próprio": 75,
    "limitação do modelo idle": 42,
    "sem efeito": 11
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 24,
-   "parcial": 139,
-   "implementada, sem teste próprio": 36,
+   "implementada e testada": 30,
+   "parcial": 137,
+   "implementada, sem teste próprio": 32,
    "limitação do modelo idle": 11
   },
   "suportes": {
@@ -25,16 +25,16 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 1,
+    "implementada e testada": 2,
     "parcial": 41,
-    "implementada, sem teste próprio": 10
+    "implementada, sem teste próprio": 9
    },
    "alternativas": {
     "total": 198,
-    "parcial": 137,
+    "parcial": 136,
+    "implementada, sem teste próprio": 39,
     "implementada e testada": 7,
     "limitação do modelo idle": 14,
-    "implementada, sem teste próprio": 38,
     "sem efeito": 2
    }
   },
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 841,
-   "emDuasOuMais": 165
+   "linhasDistintas": 848,
+   "emDuasOuMais": 167
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,8 +61,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 143,
-   "suportesCitados": 62,
+   "ativasCitadas": 158,
+   "suportesCitados": 63,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -101,10 +101,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado 390 % mais Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -116,10 +114,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada terceiro golpe sucessivo é um Golpe Crítico"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -216,7 +212,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -348,11 +344,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Congela inimigos causando 390 % mais Dano",
-    "efeito não simulado: Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado 390 % mais Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -442,7 +435,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2271,7 +2264,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3412,7 +3405,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4695,6 +4688,8 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: Máximo de 5 Estágios Deixa 1 Esporo por Estágio",
+    "efeito não simulado: Cada Esporo dispara 9 Flechas de Espinho",
     "efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano"
    ],
    "idle": [],
@@ -4711,6 +4706,7 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Cada Flecha deixa 1 Esporos",
+    "efeito não simulado: Cada Esporo dispara 4 Flechas de Espinho",
     "efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano"
    ],
    "idle": [],
@@ -5011,8 +5007,11 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: As Flechas desta Habilidade causam 1 % mais Dano com Afecções por Estágio",
+    "efeito não simulado: As Flechas desta Habilidade causam 1 % mais Dano com Acertos por Estágio"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5801,7 +5800,8 @@
    "ausentes": [
     "efeito não simulado: Esta Magia causa 210 a 315 , mais 4 % da sua Vida Máxima, como Dano de Fogo base",
     "efeito não simulado: Explosões causam Dano de Fogo base igual a 29 % da Vida máxima do Lacaio",
-    "efeito não simulado: 300 % mais Área de Efeito se Consumindo um Lacaio"
+    "efeito não simulado: 300 % mais Área de Efeito se Consumindo um Lacaio",
+    "efeito não simulado: 50 % menos Dano de Afecções"
    ],
    "idle": [
     "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
@@ -6416,7 +6416,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "armadilha",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -6725,6 +6725,7 @@
    "estado": "parcial",
    "ausentes": [
     "os estágios de canalização não existem: no jogo é um uso por vez",
+    "efeito não simulado: Debuff causa 20 % mais Dano por Estágio",
     "efeito não simulado: Duração Base do Debuff é de 2 segundos"
    ],
    "idle": [],
@@ -6936,7 +6937,8 @@
     "nenhum efeito do buff tem equivalente no jogo",
     "efeito não simulado: Causa 70 % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo",
     "efeito não simulado: Você Queima por 90 % de sua Vida máxima por segundo como Dano de Fogo",
-    "efeito não simulado: Você Queima por 70 % do seu Escudo de Energia máximo por segundo como Dano de Fogo"
+    "efeito não simulado: Você Queima por 70 % do seu Escudo de Energia máximo por segundo como Dano de Fogo",
+    "efeito não simulado: Concede 39 % mais Dano Mágico"
    ],
    "idle": [],
    "outros": [],
@@ -7022,7 +7024,8 @@
    "estado": "parcial",
    "ausentes": [
     "nenhum efeito do buff tem equivalente no jogo",
-    "efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo"
+    "efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo",
+    "efeito não simulado: Concede 39 % mais Dano Mágico"
    ],
    "idle": [],
    "outros": [],
@@ -7543,7 +7546,8 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Causa Dano em 5 Inimigos próximos quando você ganha Estágios"
+    "efeito não simulado: Causa Dano em 5 Inimigos próximos quando você ganha Estágios",
+    "efeito não simulado: Feixe causa 250 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 250 % mais Dano com Afecções por Estágio após o primeiro"
    ],
    "idle": [],
    "outros": [],
@@ -7558,7 +7562,8 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Causa Dano em 10 Inimigos próximos quando você ganha Estágios"
+    "efeito não simulado: Causa Dano em 10 Inimigos próximos quando você ganha Estágios",
+    "efeito não simulado: Feixe causa 140 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 140 % mais Dano com Afecções por Estágio após o primeiro"
    ],
    "idle": [],
    "outros": [],
@@ -7573,7 +7578,8 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Comprimento do raio aumentado em 19 %"
+    "efeito não simulado: Comprimento do raio aumentado em 19 %",
+    "efeito não simulado: Feixe causa 200 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 200 % mais Dano com Afecções por Estágio após o primeiro"
    ],
    "idle": [],
    "outros": [],
@@ -8238,8 +8244,11 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: 200 % mais Dano Mágico por estágio",
+    "efeito não simulado: 110 % mais Dano com Afecções por estágio"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11514,6 +11523,14 @@
    ]
   },
   {
+   "linha": "Feixe causa # % mais Dano com Acertos por Estágio após o primeiro Feixe causa # % mais Dano com Afecções por Estágio após o primeiro",
+   "gemas": [
+    "Divine_Ire",
+    "Divine_Ire_of_Disintegration",
+    "Divine_Ire_of_Holy_Lightning"
+   ]
+  },
+  {
    "linha": "Flecha dispara Raios a cada # segundos",
    "gemas": [
     "Storm_Rain",
@@ -11804,10 +11821,10 @@
    ]
   },
   {
-   "linha": "Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado # % mais Dano",
+   "linha": "Cada Esporo dispara # Flechas de Espinho",
    "gemas": [
-    "Glacial_Hammer",
-    "Vaal_Glacial_Hammer"
+    "Scourge_Arrow",
+    "Scourge_Arrow_of_Menace"
    ]
   },
   {
@@ -11899,6 +11916,13 @@
    "gemas": [
     "Summon_Reaper",
     "Summon_Reaper_of_Eviscerating"
+   ]
+  },
+  {
+   "linha": "Concede # % mais Dano Mágico",
+   "gemas": [
+    "Righteous_Fire",
+    "Vaal_Righteous_Fire"
    ]
   },
   {
@@ -12757,6 +12781,12 @@
    ]
   },
   {
+   "linha": "# % mais Dano com Afecções por estágio",
+   "gemas": [
+    "Vaal_Flameblast"
+   ]
+  },
+  {
    "linha": "# % mais Dano com Envenenamentos",
    "gemas": [
     "Viper_Strike_of_the_Mamba"
@@ -12778,6 +12808,12 @@
    "linha": "# % mais Dano Incendiário sofrido",
    "gemas": [
     "Herald_of_Ash"
+   ]
+  },
+  {
+   "linha": "# % mais Dano Mágico por estágio",
+   "gemas": [
+    "Vaal_Flameblast"
    ]
   },
   {
@@ -12850,6 +12886,12 @@
    "linha": "# % mais Velocidade de Ataque por cada Estágio",
    "gemas": [
     "Double_Strike_of_Momentum"
+   ]
+  },
+  {
+   "linha": "# % menos Dano de Afecções",
+   "gemas": [
+    "Bodyswap_of_Sacrifice"
    ]
   },
   {
@@ -13237,6 +13279,18 @@
    ]
   },
   {
+   "linha": "As Flechas desta Habilidade causam # % mais Dano com Acertos por Estágio",
+   "gemas": [
+    "Snipe"
+   ]
+  },
+  {
+   "linha": "As Flechas desta Habilidade causam # % mais Dano com Afecções por Estágio",
+   "gemas": [
+    "Snipe"
+   ]
+  },
+  {
    "linha": "Ataca um Inimigo a cada # segundos",
    "gemas": [
     "Vaal_Storm_Call"
@@ -13525,12 +13579,6 @@
    ]
   },
   {
-   "linha": "Cada terceiro golpe sucessivo é um Golpe Crítico",
-   "gemas": [
-    "Glacial_Hammer_of_Shattering"
-   ]
-  },
-  {
    "linha": "Campo ganha # % mais Dano com Ataques por cada # % de Efeito de Eletrização no Inimigo quando criado",
    "gemas": [
     "Galvanic_Field"
@@ -13795,12 +13843,6 @@
    ]
   },
   {
-   "linha": "Congela inimigos causando # % mais Dano",
-   "gemas": [
-    "Vaal_Glacial_Hammer"
-   ]
-  },
-  {
    "linha": "Consome # Carga de # Frasco de Vida, se possível, por Projétil Disparado",
    "gemas": [
     "Poisonous_Concoction"
@@ -13966,6 +14008,12 @@
    "linha": "Dano Mágico Suprimido causado em você é Azarado",
    "gemas": [
     "Vaal_Grace"
+   ]
+  },
+  {
+   "linha": "Debuff causa # % mais Dano por Estágio",
+   "gemas": [
+    "Wintertide_Brand"
    ]
   },
   {
@@ -15718,6 +15766,12 @@
    "linha": "Máximo de # Arqueiro Ilusório Convocado",
    "gemas": [
     "Mirage_Archer_Support"
+   ]
+  },
+  {
+   "linha": "Máximo de # Estágios Deixa # Esporo por Estágio",
+   "gemas": [
+    "Scourge_Arrow"
    ]
   },
   {

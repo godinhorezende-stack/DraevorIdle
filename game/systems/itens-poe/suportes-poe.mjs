@@ -109,10 +109,12 @@ function valeParaOTipo(texto, ativa) {
  */
 const SO_DO_ACERTO = /Dano (?:Físico )?(?:Mágico|(?:de Ataque )?de Projétil|Corpo a Corpo|de Ataque|em Área)|de dano mágico/i;
 const chaveDoMais = (texto) => (SO_DO_ACERTO.test(texto) ? 'maisDanoAcertoPct' : 'maisDanoPct');
+/** O "mais" pelo qualificador; o MÁGICO também vai a `maisDanoMagicoPct` (lote G18a: a parte que volta no degenerativo `dotIsSpell`). */
+const maisDe = (texto, v) => ({ [chaveDoMais(texto)]: v, ...(/Dano Mágico|de dano mágico/i.test(texto) ? { maisDanoMagicoPct: v } : {}) });
 /** O "mais Dano <tipo> degenerativo" → a chave do degenerativo daquele tipo (`acoes` — as afecções de dano e o degenerativo da gema). */
 const MAIS_DOT_DO_TIPO = { caos: 'maisDotCaosPct', 'físico': 'maisDotFisicoPct', gelo: 'maisDotGeloPct', fogo: 'maisDotFogoPct', raio: 'maisDotRaioPct' };
 /** Os "mais/menos" em % que MULTIPLICAM (duas linhas do mesmo suporte na mesma chave: ×, não +). */
-const MAIS_MULTIPLICA = new Set(['maisDanoPct', 'maisDanoAcertoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', ...Object.values(MAIS_DOT_DO_TIPO)]);
+const MAIS_MULTIPLICA = new Set(['maisDanoPct', 'maisDanoAcertoPct', 'maisDanoMagicoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', ...Object.values(MAIS_DOT_DO_TIPO)]);
 /** Velocidade X% mais/aumentada → o % do TEMPO de uso (o motor: `castTimePct`). */
 const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
 
@@ -297,9 +299,9 @@ const REGRAS = [
   [new RegExp(`têm ${N}% de chance de causar Sangramento`, 'i'), (m) => ({ 'af:chance_bleed': num(m[1]) })],
   [/^Causa Sangramento$/i, () => ({ 'af:chance_bleed': 100 })],
   // Dano: "mais/menos" multiplica (como no PoE); "aumentado/reduzido" soma.
-  [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra| com Acertos por|[^%]* por cada |[^%]* enquanto Retornam)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { [chaveDoMais(t)]: (m[2] === 'mais' ? 1 : -1) * num(m[1]) } : null)],
-  [new RegExp(`^(?!Repetições|Explosão)[^%]*?causam? ([+-])${N}% de dano(?![^%]*por estágio)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { [chaveDoMais(t)]: (m[1] === '-' ? -1 : 1) * num(m[2]) } : null)],
-  [new RegExp(`Magias Suportadas têm ${N}% mais Dano Mágico`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { maisDanoAcertoPct: num(m[1]) } : null)],
+  [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra| com Acertos por|[^%]* por cada |[^%]* enquanto Retornam)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[2] === 'mais' ? 1 : -1) * num(m[1])) : null)],
+  [new RegExp(`^(?!Repetições|Explosão)[^%]*?causam? ([+-])${N}% de dano(?![^%]*por estágio)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[1] === '-' ? -1 : 1) * num(m[2])) : null)],
+  [new RegExp(`Magias Suportadas têm ${N}% mais Dano Mágico`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { maisDanoAcertoPct: num(m[1]), maisDanoMagicoPct: num(m[1]) } : null)],
   [new RegExp(`causam? ${N}% de Dano (?:de )?(\\S+)? ?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`causam Dano aumentado em ${N}%`, 'i'), (m) => ({ danoPct: num(m[1]) })],
   [new RegExp(`Dano [^%]*?aumentado em ${N}%`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],

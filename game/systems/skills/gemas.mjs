@@ -729,7 +729,7 @@ export const temSkill = (estado, acao) => skillsAtivas(estado).has(acao);
 const CONTAGENS = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra', 'reservaSobreposta', 'maldicaoEmAura', 'efeitoMaldicaoPct']);
 const MULTIPLICATIVOS = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct']);
 // (lote G17) os "mais/menos" do acerto só e das afecções só (em % — multiplicam entre os suportes, como o `maisDanoPct`)
-const MAIS_DA_AFECCAO = new Set(['maisDanoAcertoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', 'maisDotFogoPct', 'maisDotFisicoPct', 'maisDotCaosPct', 'maisDotGeloPct', 'maisDotRaioPct']);
+const MAIS_DA_AFECCAO = new Set(['maisDanoAcertoPct', 'maisDanoMagicoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', 'maisDotFogoPct', 'maisDotFisicoPct', 'maisDotCaosPct', 'maisDotGeloPct', 'maisDotRaioPct']);
 export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   const a = ativas.get(acao);
   if (!a) return null;
