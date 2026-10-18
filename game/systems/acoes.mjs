@@ -194,6 +194,23 @@ export function raioDaAuraDe(estado, entry, base, mais = 1) {
  * Impiedosos Intimidam Inimigos por N segundos").
  */
 export const ELUSIVO_DA_LAMINA_S = 4;
+/**
+ * (lote 76) O "X% mais Dano" de cada afecção que os suportes do PoE dão à gema (`suportes-poe`: `maisIncendioPct`, `maisVenenoPct`,
+ * `maisSangramentoPct` e o de todas, `maisAfeccoesPct`): `{ incendio, veneno, sangramento }` em %, os dois multiplicando; null sem nenhum.
+ */
+export function maisDasAfeccoesDoSuporte(efeito) {
+  const todas = Number(efeito?.maisAfeccoesPct) || 0;
+  const de = (k) => ((1 + (Number(efeito?.[k]) || 0) / 100) * (1 + todas / 100) - 1) * 100;
+  // (o Incêndio: o "com Incêndio" × o "Dano Incendiário" — `maisQueimaduraPct`, que também vale no degenerativo de Fogo da gema)
+  const queima = 1 + (Number(efeito?.maisQueimaduraPct) || 0) / 100;
+  const r = { incendio: ((1 + de('maisIncendioPct') / 100) * queima - 1) * 100, veneno: de('maisVenenoPct'), sangramento: de('maisSangramentoPct') };
+  return Object.values(r).some((v) => Math.abs(v) > 1e-9) ? r : null;
+}
+/** (lote 76) O "Dano aumentado com <afecção>" dos suportes do PoE (`aumVenenoPct`…): `{ incendio, veneno, sangramento }` em %, ou null. */
+export function aumDasAfeccoesDoSuporte(efeito) {
+  const r = { incendio: Number(efeito?.aumIncendioPct) || 0, veneno: Number(efeito?.aumVenenoPct) || 0, sangramento: Number(efeito?.aumSangramentoPct) || 0 };
+  return Object.values(r).some((v) => v) ? r : null;
+}
 function efeitosDosSuportesNoAcerto(estado, hunt, bicho, ficha, efeito, { crit = false, impiedoso = false, agora = hunt?.clock ?? 0, eventos = [] } = {}) {
   const saida = { atordoou: false };
   if (!efeito || !itensPoeLigado()) return saida;
@@ -2987,7 +3004,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (PoE, 14/10: a chance de Congelar dos suportes — "têm X% de chance de Congelar" — vai para a conta do PoE, nas afecções abaixo: a
       // duração pelo dano de Gelo; o resto dos estados do suporte segue aqui.)
       const congelarDoSuporte = ficha.afeccoes && efeitoDaGema?.congelarChance > 0 ? efeitoDaGema.congelarChance : 0;
-      const postosDaGema = Estados.aplicar(bicho, congelarDoSuporte ? { ...efeitoDaGema, congelarChance: 0 } : efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto);
+      // (lote 76 — dono, 17/10: "Corrigir num lote próprio aqui") as chances de Incendiar, Envenenar e Sangrar dos suportes ("têm X% de chance
+      // de Envenenar ao Acertar", "Causa Sangramento") também vão para a conta do PoE, como o Congelar — antes iam para o dano contínuo antigo
+      // do Draevor (um % do acerto, e o Veneno sem o %, 0). O "X% mais Dano" de cada afecção dos suportes multiplica nela (`maisDoSuporte`).
+      const chanceDoSuporte = ficha.afeccoes ? { incendio: efeitoDaGema?.igniteChance ?? 0, veneno: efeitoDaGema?.venenoChance ?? 0, sangramento: efeitoDaGema?.sangramentoChance ?? 0 } : null;
+      const efeitoDosEstados = ficha.afeccoes ? { ...efeitoDaGema, congelarChance: 0, igniteChance: 0, venenoChance: 0, sangramentoChance: 0 } : efeitoDaGema;
+      const postosDaGema = Estados.aplicar(bicho, efeitoDosEstados, dano, agora, Math.random, !!hunt.isBoss, bruto);
       for (const st of postosDaGema) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       // Os efeitos de acerto do PoE (atordoamento, Mutilar, Cegar, Desacelerar, Empalar, Empurrar, Provocar, Fúria — `itens-poe/mods-poe.mjs`).
       const fisicoDoAcerto = pedacos ? pedacos.filter((p) => p.elemento === 'physical').reduce((t, p) => t + p.dano, 0) : tipo === 'physical' ? bruto : 0;
@@ -3019,7 +3041,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         for (const p of dg?.partes ?? []) {
           const tipoDegen = GemasPoe.DEGEN_DO_ELEMENTO[p.elemento];
           // (lote 65: + o "Dano Degenerativo aumentado" do elemento — "Dano de Caos Degenerativo aumentado")
-          const total = p.dps * (dg.duracaoMs / 1000) * fatorDaGema * (1 + ((a.multiplicador ?? 0) + (MULTI[p.elemento] ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (ficha.danoDoElemento?.[p.elemento] ?? 0) + (a.danoDegenDoElemento?.[p.elemento] ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
+          // (lote 76: o degenerativo não é acerto — sem o `fatorSoAcerto`; o Fogo, com o "mais Dano Incendiário" dos suportes)
+          const doSuporteNoDegen = (1 / Math.max(1e-9, efeitoDaGema?.fatorSoAcerto ?? 1)) * (p.elemento === 'fire' ? Math.max(0, 1 + (Number(efeitoDaGema?.maisQueimaduraPct) || 0) / 100) : 1);
+          const total = p.dps * (dg.duracaoMs / 1000) * fatorDaGema * doSuporteNoDegen * (1 + ((a.multiplicador ?? 0) + (MULTI[p.elemento] ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (ficha.danoDoElemento?.[p.elemento] ?? 0) + (a.danoDegenDoElemento?.[p.elemento] ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
           const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: dg.duracaoMs, chave: entry.poeGema.slug, origem: { fonte: 'gema', habilidade: entry.id } }, agora);
           if (posto) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: posto });
         }
@@ -3031,13 +3055,27 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const afeccoes = entry.poeGema ? GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha.afeccoes;
         // (o Golpe Impiedoso: "X% mais Dano com Afecções causadas por Acertos Corpo a Corpo")
         const maisNaAfeccao = impiedoso ? 1 + (efeitoDaGema.impiedosoMaisAfeccaoPct ?? 0) / 100 : 1;
-        const partesDaAfeccao = (pedacos ?? [{ elemento: tipo, dano: bruto }]).map((p) => (maisNaAfeccao !== 1 ? { ...p, dano: p.dano * maisNaAfeccao } : p));
+        // (lote 76: sem o "mais" que vale só no acerto — "com Acertos", "Corpo a Corpo": `fatorSoAcerto`)
+        const naAfeccao = maisNaAfeccao / Math.max(1e-9, efeitoDaGema?.fatorSoAcerto ?? 1);
+        const partesDaAfeccao = (pedacos ?? [{ elemento: tipo, dano: bruto }]).map((p) => (naAfeccao !== 1 ? { ...p, dano: p.dano * naAfeccao } : p));
         // (PoE, a Força Concussiva: "Incêndios de Acertos Corpo a Corpo Atordoantes causam X% mais Dano" — o acerto corpo a corpo que atordoou: pelo
         // suporte, pelo Golpe Impiedoso ou pelo atordoamento do PoE)
         const atordoouAgora = postosDaGema.includes('atordoado') || !!doAcerto?.atordoou || !!doSuporte?.atordoou;
         const incendioAtordoante = atordoouAgora && tagsPoeDaSkill(entry).includes('corpo') ? ModsPoe.valor(ficha, 'incendio_atordoante_mais') : 0;
         const comIncendio = incendioAtordoante ? { ...afeccoes, incendioMais: (afeccoes.incendioMais ?? 0) + incendioAtordoante } : afeccoes;
-        const afeccoesDoAcerto = congelarDoSuporte ? { ...comIncendio, chance: { ...(comIncendio.chance ?? {}), congelamento: (comIncendio.chance?.congelamento ?? 0) + congelarDoSuporte } } : comIncendio;
+        const maisDoSuporte = maisDasAfeccoesDoSuporte(efeitoDaGema);
+        const aumDoSuporte = aumDasAfeccoesDoSuporte(efeitoDaGema);
+        const duracaoDoSuporte = Number(efeitoDaGema?.duracaoAfeccoesPct) || 0;
+        const comSuporte = congelarDoSuporte || Object.values(chanceDoSuporte ?? {}).some((v) => v > 0) || maisDoSuporte || aumDoSuporte || duracaoDoSuporte
+          ? {
+            ...comIncendio,
+            chance: { ...(comIncendio.chance ?? {}), congelamento: (comIncendio.chance?.congelamento ?? 0) + congelarDoSuporte, incendio: (comIncendio.chance?.incendio ?? 0) + (chanceDoSuporte?.incendio ?? 0), veneno: (comIncendio.chance?.veneno ?? 0) + (chanceDoSuporte?.veneno ?? 0), sangramento: (comIncendio.chance?.sangramento ?? 0) + (chanceDoSuporte?.sangramento ?? 0) },
+            ...(maisDoSuporte ? { maisDoSuporte } : {}),
+            ...(aumDoSuporte ? { aumDoSuporte } : {}),
+            ...(duracaoDoSuporte ? { duracao: (comIncendio.duracao ?? 0) + duracaoDoSuporte } : {}),
+          }
+          : comIncendio;
+        const afeccoesDoAcerto = comSuporte;
         // (a Sobrecarga Elemental: "Afecções nunca contam como sendo de um Golpe Crítico")
         const postos = AfeccoesPoe.aoAcertar(bicho, partesDaAfeccao, { afeccoes: afeccoesDoAcerto, praga: pragaDoAcerto(hunt), crit: crit && !ficha.sobrecargaElemental, ataque, agora, salaDeBoss: !!hunt.isBoss, aoPor: ModsPoe.refletorDeAfeccoes(hunt, ficha) });
         for (const st of postos) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
