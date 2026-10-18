@@ -98,7 +98,12 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     const nota = notas.shift();
     return e ? Object.assign(no('em', `poe-tr ${e}`, SIMBOLO[e] ?? ''), { title: nota && e === 'inerte' ? `${ESTADO[e]}: ${nota}` : ESTADO[e] ?? e }) : null;
   };
-  const linhas = (lista, classe, sigla) => (lista ?? []).map((m) => no('div', `poe-mod ${classe}`, estados ? marca() : null, no('span', null, m.texto), m.tier != null ? Object.assign(no('i', null, `${sigla} T${m.tier}`), { title: `${m.familia ?? ''} · iLvl ${m.ilvl ?? '?'}` }) : null));
+  const linhas = (lista, classe, sigla, marcas = null) => (lista ?? []).map((m, i) => no('div', `poe-mod ${classe}`, marcas ? marcas[i] : estados ? marca() : null, no('span', null, m.texto), m.tier != null ? Object.assign(no('i', null, `${sigla} T${m.tier}`), { title: `${m.familia ?? ''} · iLvl ${m.ilvl ?? '?'}` }) : null));
+  // (lote 78) o ENCANTAMENTO (a Ramificadora: "Habilidades Passivas Adicionadas concedem …") numa seção própria, acima dos implícitos, como no
+  // PoE — as marcas saem na ordem dos implícitos (a dos estados), e só o desenho troca de lugar
+  const implicitos = (p.implicitos ?? []).map((m) => [m, estados ? marca() : null]);
+  const encantamentos = implicitos.filter(([m]) => m.encantamento);
+  const outrosImplicitos = implicitos.filter(([m]) => !m.encantamento);
   const sep = () => no('div', 'poe-sep');
   const titulo = (texto) => no('div', 'poe-secao', texto);
   // A QUALIDADE (poedb › Quality): a linha "Qualidade: +X%" em cima e o dano físico/defesa já escalados (em azul, como no PoE).
@@ -128,7 +133,8 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
       : null,
     p.frasco ? [sep(), resumoDoFrasco(p.frasco)] : null,
     p.mapa ? [sep(), resumoDoMapa(p.mapa)] : null,
-    p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp', '')] : null,
+    encantamentos.length ? [sep(), linhas(encantamentos.map(([m]) => m), 'enc', '', encantamentos.map(([, x]) => x))] : null,
+    outrosImplicitos.length ? [sep(), linhas(outrosImplicitos.map(([m]) => m), 'imp', '', outrosImplicitos.map(([, x]) => x))] : null,
     p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
     p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,
     p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', null, m.texto), m.consumido ? Object.assign(no('i', null, 'consumido'), { title: `da ${m.consumido}` }) : null))] : null,

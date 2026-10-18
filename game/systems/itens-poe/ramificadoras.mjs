@@ -21,6 +21,8 @@ const TAG_DO_TAMANHO = { Large: 'expansion_jewel_large', Medium: 'expansion_jewe
 const MARCACAO = 'Habilidades Passivas Adicionadas concedem #';
 
 export const tamanhoDaBase = (base) => TAMANHOS[base] ?? null;
+/** (lote 79) A Ramificadora ÚNICA (a Vozes, o Megalomaníaco, as Pequenas da pedra fundamental): o tamanho, sem encantamento — as linhas do único montam os nós. */
+export const ramificadoraDoUnico = (base) => (TAMANHOS[base] ? { tamanho: TAMANHOS[base], encantamento: null, tag: null, unico: true } : null);
 const cacheDosMods = new WeakMap();
 const modsPorId = (dados) => {
   let m = cacheDosMods.get(dados);
@@ -83,6 +85,15 @@ export function tierDoMod(dados, mod) {
 }
 
 /** O encantamento da peça (o do tamanho dela, pela tag), ou null. */
+/**
+ * (lote 78) Os ESTADOS das linhas da peça (o ✓/✗ do balão): a Ramificadora não soma no personagem — vale pelos nós que cria —, então cada linha
+ * leva o estado das linhas dos nós (`passivas/ramificadoras.estadosDaPeca`, que se registra aqui: os nós importam a árvore, que importa as peças).
+ * `{ estados, notas }` ou null (sem o registro, ou não é Ramificadora: os estados da tradução comum ficam).
+ */
+let ESTADOS_DA_PECA = null;
+export function definirEstadosDaPeca(f) { ESTADOS_DA_PECA = f; }
+export const estadosDaRamificadora = (poe, estados, notas) => (poe?.ramificadora && ESTADOS_DA_PECA ? ESTADOS_DA_PECA(poe, estados, notas) : null);
+
 export const encantamentoDa = (dados, poe) => dados?.tamanhos?.[poe?.ramificadora?.tamanho]?.encantamentos?.find((e) => e.id === poe.ramificadora.encantamento) ?? null;
 
 /**

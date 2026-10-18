@@ -1677,19 +1677,49 @@ export function buffsAtivos(hunt, estado = null) {
 export function desligarAurasForaDaBarra(estado, hunt) {
   if (!Object.values(hunt?.buffs ?? {}).some((b) => b?.reserva)) return false;
   const ativas = Gemas.skillsAtivas(estado);
-  const so = itensPoeLigado() ? auraPermitida(Ficha.combate(estado)) : null;
-  return Reserva.desligarAsQueSairam(hunt, (id) => (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id) && !auraDesabilitada(POR_ID.get(id), so));
+  const ficha = itensPoeLigado() ? Ficha.combate(estado) : null;
+  const so = ficha ? auraPermitida(ficha) : null;
+  // (lote 80, o Mensageiro Solitário: "Você só pode ter um Arauto" — com dois ligados, o mais novo desliga)
+  const umArauto = !!ficha && ModsPoe.valor(ficha, 'so_um_arauto') > 0;
+  return Reserva.desligarAsQueSairam(hunt, (id) => (estado.actions ?? []).some((a) => a?.id === id && a.enabled !== false) && ativas.has(id) && !auraDesabilitada(POR_ID.get(id), so, POR_ID.get(id)?.poeGema?.arquetipo === 'maldicao' && !!hunt.buffs?.[id]?.reserva) && !(umArauto && arautoExcedente(hunt, id, ficha)));
 }
+/**
+ * (lote 80, o Mensageiro Solitário) "Você só pode ter um Arauto": o Arauto `id` passa do limite — há outro ligado (o mais antigo fica: o 2º não liga
+ * e, com dois ligados, o mais novo sai). Religar o mesmo pode.
+ */
+export function arautoExcedente(hunt, id, ficha) {
+  if (!(ModsPoe.valor(ficha, 'so_um_arauto') > 0) || !ehArauto(POR_ID.get(id))) return false;
+  const agora = hunt?.clock ?? 0;
+  // (o Arauto da Pureza é Arauto no PoE, mas no jogo é lacaio: ligado = as Sentinelas dele em campo. Ela só sai sem outro Arauto ligado, então
+  // com Sentinela em campo o Arauto de buff é o excedente — as Sentinelas contam o tempo em outro relógio, não dá para comparar o `desde`)
+  if (id === PUREZA) return Object.values(hunt?.buffs ?? {}).some((b) => b?.tipo === 'poe-arauto' && b.ate > agora);
+  if ((hunt?.lacaios ?? []).some((l) => l?.acao === PUREZA && l.hp > 0)) return true;
+  const meu = hunt?.buffs?.[id];
+  return Object.entries(hunt?.buffs ?? {}).some(([o, b]) => o !== id && b?.tipo === 'poe-arauto' && b.ate > agora && (!meu || (b.desde ?? 0) < (meu.desde ?? 0)));
+}
+const PUREZA = 'poe-gema:Herald_of_Purity';
+/** A gema é de Arauto (o arquétipo; a Pureza, pelo slug — no jogo ela é lacaio). */
+const ehArauto = (entry) => entry?.poeGema?.arquetipo === 'arauto' || /^Herald_of_/.test(entry?.poeGema?.slug ?? '');
 /**
  * (lote 56, a Visão Sublime) "Habilidades de Aura diferentes de <Aura> são Desabilitadas": as auras permitidas pela ficha (`aura_unica:<o nome da
  * gema>` — o conjunto dos nomes), ou null sem a linha. A aura de gema fora dele não liga (`disparar`) e a ligada sai no tique
  * (`desligarAurasForaDaBarra`).
  */
 export function auraPermitida(ficha) {
+  // (lote 80, o Mensageiro Solitário: "Suas Habilidades de Aura são Desabilitadas" — nenhuma aura de gema)
+  if (Number(ficha?.afPoe?.auras_desabilitadas) > 0) return new Set();
   const so = Object.entries(ficha?.afPoe ?? {}).filter(([k, v]) => k.startsWith('aura_unica:') && v > 0).map(([k]) => k.slice('aura_unica:'.length));
   return so.length ? new Set(so) : null;
 }
-const auraDesabilitada = (entry, so) => !!so && !!entry?.poeGema && GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tipos?.includes('Aura') && !so.has(ModsPoe.slugDoNome(GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? ''));
+/**
+ * A gema é Aura (o tipo, ou a tag — o Orgulho e os Estandartes trazem só a tag) — ou a maldição em aura da Blasfêmia (`ehAura`: o PoB dá o
+ * tipo Aura à habilidade suportada) — e está fora das permitidas.
+ */
+export const auraDesabilitada = (entry, so, ehAura = false) => {
+  if (!so || !entry?.poeGema) return false;
+  const g = GemasPoe.doSlug(entry.poeGema.slug)?.gema;
+  return (ehAura || !!g?.tipos?.includes('Aura') || !!g?.tags?.includes('Aura')) && !so.has(ModsPoe.slugDoNome(g?.nome ?? ''));
+};
 
 /**
  * As marcas da maldição com o "X% menos Efeito de Maldições Suportadas" da Blasfêmia (`efeitoMaldicaoPct`) e (09/10) o EFEITO das maldições
@@ -1902,6 +1932,8 @@ export function comOsAlvosDaGema(entry, efeito, estado = null) {
     e.bifurcar = 0;
     e.bifurcarDeNovo = 0;
     e.encadear = 0;
+    // (lote 80, o Cineticismo: "não podem Ricochetear" — o ricochete no terreno também é Ricochete, o CannotChain do PoB)
+    e.ricocheteTerrenoChance = 0;
     if (e.cadeiaPoe) e.cadeiaPoe = { ...e.cadeiaPoe, saltos: 0 };
   }
   return e;
@@ -2363,7 +2395,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const reservaEmVida = !!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(fichaDoCusto, 'keystone_magia_sanguinea') > 0 || (Reserva.ehMaldicaoEmAura(entry, efeitoDaGema) && ModsPoe.valor(fichaDoCusto, 'maldicao_aura_reserva_vida') > 0);
   const reserva = Reserva.pedida(estado, entry, efeitoDaGema, fichaDoCusto, reservaEmVida);
   // (lote 56, a Visão Sublime: "Habilidades de Aura diferentes de <Aura> são Desabilitadas")
-  if (itensPoeLigado() && auraDesabilitada(entry, auraPermitida(fichaDoCusto))) return { ok: false, erro: `${entry.name} está Desabilitada (Visão Sublime).`, motivo: 'AURA_DESABILITADA' };
+  if (itensPoeLigado() && auraDesabilitada(entry, auraPermitida(fichaDoCusto), Reserva.ehMaldicaoEmAura(entry, efeitoDaGema))) return { ok: false, erro: `${entry.name} está Desabilitada.`, motivo: 'AURA_DESABILITADA' };
+  // (lote 80, o Mensageiro Solitário: "Você só pode ter um Arauto")
+  if (itensPoeLigado() && arautoExcedente(hunt, entry.id, fichaDoCusto)) return { ok: false, erro: `${entry.name}: você só pode ter um Arauto.`, motivo: 'ARAUTO_UNICO' };
   if (reserva && !Reserva.cabe(estado, entry.id, reserva)) {
     return { ok: false, erro: `Sem ${reserva.recurso} livre para reservar: ${entry.name} reserva ${reserva.valor}.`, motivo: 'RESERVA' };
   }
@@ -2701,8 +2735,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const duracaoDoClamor = doPoe ? Math.round(doPoe.dur * Math.max(0.1, 1 + (fichaDoClamor ? ModsPoe.valor(fichaDoClamor, 'clamor_duracao_mais') : 0) / 100)) : 0;
     // (lote 32, P042: o Clamor que sai sem outro Buff de Clamor ativo começa a contagem "para cada segundo que você for afetado por um Buff de Clamor")
     if (!clamorSemBuff && buff.tipo === 'poe-clamor' && !ModsPoe.sobBuffDeClamor(hunt, agora)) hunt.poeSobClamorDesde = agora;
+    // (lote 80, a Astúcia do Veterano) o buff de GUARDA pela tag da gema ("Habilidade de Guarda não Vaal" — o arquétipo `guarda` junta outras);
+    // o que expirou e volta guarda o fim do anterior ("se um Buff de Guarda não Vaal terminou Recentemente")
+    const tagsDoBuff = doPoe && entry.poeGema ? tagsPoeDaSkill(entry) : [];
+    const anterior = hunt.buffs?.[entry.id];
+    if (anterior?.guarda && !anterior.vaal && anterior.ate <= agora) ModsPoe.marcar(hunt, 'guardaNaoVaalTerminou', anterior.ate);
     if (!clamorSemBuff) (hunt.buffs ??= {})[entry.id] = doPoe
-      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)), desde: agora, tipo: buff.tipo, fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
+      ? { ate: reserva ? Reserva.LIGADA_ATE : agora + Math.round(doPoe.dur * fatorDeDuracao(estado, entry, efeitoDaGema)), desde: agora, tipo: buff.tipo, ...(tagsDoBuff.includes('guarda') ? { guarda: true, ...(tagsDoBuff.includes('vaal') ? { vaal: true } : {}) } : {}), fator: plantado ? 1 + plantado.efeitoMais / 100 : 1, ...(raioDaAura ? { raio: raioDaAura } : {}), efeitosPoe: efeitosDaMaldicao(doPoe.efeitos, efeitoDaGema, estado, entry), afPoe: doPoe.af,
         ...(plantado ? { estandarte: { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, valor: plantado.valor, efeitoMais: plantado.efeitoMais } } : {}),
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };

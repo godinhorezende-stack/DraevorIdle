@@ -1,6 +1,6 @@
 {
  "_nota": "As LINHAS SORTEADAS das únicas de joia do PoE (lote 55, J31): `substitui` — a linha de marcação do catálogo (\"[Two random aura modifiers]\") → quantas linhas do pool `linhas` ela vira, sem repetir e com a mesma chance (o poedb não dá o peso). (lote 56) `nomeSorteado` — a marcação `marca` (\"Passive Skill\") do texto vira um dos `nomes` (a pedra fundamental da Fuga Impossível, o notável de ascendência da Chama/Carne Proibida). A coleção não traz; o catálogo põe por cima (`itens-poe/catalogo.mjs`) e o gerador sorteia (`itens-poe/gerar.modificadoresDoUnico`). Feito por `tools/importar-poedb-sorteados.mjs` a partir das abas \"Modificadores\" do poedb (o Scrapling).",
- "geradoEm": "2026-10-16T22:44:10.405Z",
+ "geradoEm": "2026-10-18T17:57:47.361Z",
  "unicos": {
   "Watchers_Eye": {
    "classe": "Jewels",
@@ -3058,6 +3058,3459 @@
      "Adore o Coração da Infestação"
     ]
    }
+  },
+  "Megalomaniac": {
+   "classe": "Jewels",
+   "substitui": {
+    "[Three random notable modifiers]": 3
+   },
+   "fonte": "https://poedb.tw/pt/Megalomaniac",
+   "linhas": [
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Defesa Prodigiosa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Defesa Prodigiosa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Defesa Prodigiosa",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Guarda Avançada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Guarda Avançada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Guarda Avançada",
+     "nivel": 50
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Tentando a Tormenta",
+     "modelo": "{0} Habilidade Passiva Adicionada é Tentando a Tormenta",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Tentando a Tormenta",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Líder Golpeador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Líder Golpeador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Líder Golpeador",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Proteção Poderosa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Proteção Poderosa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Proteção Poderosa",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Proteção Tolerante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Proteção Tolerante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Proteção Tolerante",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Fortitude do Gladiador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Fortitude do Gladiador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Fortitude do Gladiador",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Retaliação Precisa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Retaliação Precisa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Retaliação Precisa",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Defensor Veterano",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Defensor Veterano",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Defensor Veterano",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Quebra-Ferro",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Quebra-Ferro",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Quebra-Ferro",
+     "nivel": 1
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Lorde da Seca",
+     "modelo": "{0} Habilidade Passiva Adicionada é Lorde da Seca",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Lorde da Seca",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mestre dos Fundamentos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mestre dos Fundamentos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mestre dos Fundamentos",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Multiplicador de Força",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Multiplicador de Força",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Multiplicador de Força",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Assalto Furioso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Assalto Furioso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Assalto Furioso",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Cutilada Perigosa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Cutilada Perigosa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Cutilada Perigosa",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Juramento Sombrio",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Juramento Sombrio",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Juramento Sombrio",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Endurecido Pela Batalha",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Endurecido Pela Batalha",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Endurecido Pela Batalha",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Presença Revigorante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Presença Revigorante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Presença Revigorante",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mestre do Comando",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mestre do Comando",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mestre do Comando",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Presença Rancorosa",
+     "modelo": "{0} das Passivas Adicionadas é Presença Rancorosa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Presença Malévola",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Emissário do Propósito",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Emissário do Propósito",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Emissário do Propósito",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Aspecto Destrutivo",
+     "modelo": "{0} das Passivas Adicionadas é Aspecto Destrutivo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Aspecto Destrutivo",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Presença Eletrizante",
+     "modelo": "{0} das Passivas Adicionadas é Presença Eletrizante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Presença Elétrica",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Presença Volátil",
+     "modelo": "{0} das Passivas Adicionadas é Presença Volátil",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Presença Volátil",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Caminho Casto",
+     "modelo": "{0} das Passivas Adicionadas é Caminho Casto",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Caminho Virtuoso",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Quebra-crânios",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Quebra-crânios",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Quebra-Crânios",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Pontos de Pressão",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Pontos de Pressão",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Pontos de Pressão",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Malícia Esmagadora",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Malícia Esmagadora",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Malícia Esmagadora",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Lupa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Lupa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Lupa",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Resposta Selvagem",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Resposta Selvagem",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Resposta Selvagem",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Olho da Tormenta",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Olho da Tormenta",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Olho da Tormenta",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Básicos da Dor",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Básicos da Dor",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Básicos da Dor",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Portal Rápido",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Portal Rápido",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Portal Rápido",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Domínio Assertivo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Domínio Assertivo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Domínio Assertivo",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Vasto Poder",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Vasto Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Vasto Poder",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Assalto Poderoso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Assalto Poderoso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Assalto Poderoso",
+     "nivel": 50
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Explore a Fraqueza",
+     "modelo": "{0} Habilidade Passiva Adicionada é Explore a Fraqueza",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Explorar a Fraqueza",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Golpes Titânicos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Golpes Titânicos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Golpes Titânicos",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Grande Ameaça",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Grande Ameaça",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Grande Ameaça",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Eco Ancestral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Eco Ancestral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Eco Ancestral",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Alcance Ancestral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Alcance Ancestral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Alcance Ancestral",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Poder Ancestral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Poder Ancestral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Poder Ancestral",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Preservação Ancestral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Preservação Ancestral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Preservação Ancestral",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Espíritos Aprisionados",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Espíritos Aprisionados",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Espíritos Aprisionadores",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sentinelas Incansáveis",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sentinelas Incansáveis",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sentinelas Incansáveis",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Guia Ancestral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Guia Ancestral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Guia Ancestral",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Inspiração Ancestral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Inspiração Ancestral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Inspiração Ancestral",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Foco Vital",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Foco Vital",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Foco Vital",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Foco Irrestrito",
+     "modelo": "{0} das Passivas Adicionadas é Foco Irrestrito",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Foco Irrestrito",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Foco Inabalável",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Foco Inabalável",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Foco Inabalável",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Foco Tolerante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Foco Tolerante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Foco Tolerante",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Foco Preciso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Foco Preciso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Foco Preciso",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Foco Estóico",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Foco Estóico",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Foco Estóico",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Quebra-Maldições",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Quebra-Maldições",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Quebra-Maldições",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Adepto Arcano",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Adepto Arcano",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Adepto Arcano",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Perfeição Destilada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Perfeição Destilada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Perfeição Destilada",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mistura Cravada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mistura Cravada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Composto Tonificado",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Abstinência",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Abstinência",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Abstinência ",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Fonte do Reparador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Fonte do Reparador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Fonte do Reparador",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Reserva Especial",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Reserva Especial",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Reserva Especial",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Elixir Anestésico",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Elixir Anestésico",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Elixir Anestésico",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mentalidade da Multidão",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mentalidade da Multidão",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mentalidade da Multidão",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Clamor Lupino",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Clamor Lupino",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Clamor Lupino",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Grito Assustador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Grito Assustador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Grito Assustador",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Liderar Pelo Exemplo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Liderar Pelo Exemplo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Liderar pelo Exemplo",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Provocador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Provocador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Provocador",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Chamado Alarmante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Chamado Alarmante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Chamado Alarmante",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Rugido Barulhento",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Rugido Barulhento",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Rugido Barulhento",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Cheiro de Sangue",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Cheiro de Sangue",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Cheiro de Sangue",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Atravessar",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Atravessar",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Atravessar",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Agravar Ferimentos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Agravar Ferimentos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Agravar Ferimento",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Suserano",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Suserano",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Soberano",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Poder Expansivo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Poder Expansivo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Poder Expansivo",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Vantagem do Peso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Vantagem do Peso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Vantagem do Peso",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Limite",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Limite",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Limite",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Leque de Lâminas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Leque de Lâminas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Leque de Lâminas",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Vetor de Doenças",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Vetor de Doenças",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Vetor de Doenças",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Tiro Arqueador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Tiro Arqueador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Tiro Arqueador",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Flechas Temperadas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Flechas Temperadas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Flechas Temperadas",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Fogo Lateral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Fogo Lateral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Fogo Lateral",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Força Explosiva",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Força Explosiva",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Força Explosiva",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Fusilada Oportunista",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Fusilada Oportunista",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Fusilada Oportunista",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mão da Tormenta",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mão da Tormenta",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mão da Tormenta",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Dominador do Campo de Batalha",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Dominador do Campo de Batalha",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Dominador do Campo de Batalha",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Maestria Marcial",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Maestria Marcial",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Maestria Marcial",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Golpeador Certeiro",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Golpeador Certeiro",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Golpeador Certeiro",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Execução Graciosa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Execução Graciosa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Execução Graciosa",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Infâmia Brutal",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Infâmia Brutal",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Infâmia Brutal",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Guerreiro Destemido",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Guerreiro Destemido",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Guerreiro Destemido",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Rítmo de Combate",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Rítmo de Combate",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Rítmo de Combate",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Bater e Correr",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Bater e Correr",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Bater e Correr",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Matador Insaciável",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Matador Insaciável",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Matador Insaciável",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Destruidor de Magos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Destruidor de Magos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Destruidor de Magos",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Movimentação Marcial",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Movimentação Marcial",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Movimentação Marcial",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Réplica Mortal",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Réplica Mortal",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Réplica Mortal",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Rápido e Mortal",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Rápido e Mortal",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Rápido e Mortal",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Castigue os Fracos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Castigue os Fracos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Castigue os Fracos",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Golpeador Pesado",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Golpeador Pesado",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Golpeador Pesado",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Perícia Marcial",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Perícia Marcial",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Perícia Marcial",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Calamitoso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Calamitoso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Calamitoso",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas adicionadas é Devastador",
+     "modelo": "{0} das Habilidades Passivas adicionadas é Devastador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Devastador",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Abastecer a Luta",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Abastecer a Luta",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Abastecer a Luta",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas adicionadas é Leve a Destruição",
+     "modelo": "{0} das Habilidades Passivas adicionadas é Leve a Destruição",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Liderar a Destruição",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Alimente a Fúria",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Alimente a Fúria",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Alimente a Fúria",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Cersidor de Selos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Cersidor de Selos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Cersidor de Selos",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Parede Conjurada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Parede Conjurada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Parede Conjurada",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Heroísmo Arcano",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Heroísmo Arcano",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Heroísmo Arcano",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Conjurador Praticante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Conjurador Praticante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Conjurador Praticante",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Projeção de Fardo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Projeção de Fardo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Projeção de Fardo",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Taumaturgo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Taumaturgo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Taumaturgo",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Adrenalina da Essência",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Adrenalina da Essência",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Adrenalina da Essência",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Exaurir Psiquê",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Exaurir Psiquê",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Exaurir a Psique",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sádico",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sádico",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sadista",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Elementos Corrosivos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Elementos Corrosivos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Elementos Corrosivos",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Lição de Doryani",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Lição de Doryani",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Lição de Doryani",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Demonstração Desorientadora",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Demonstração Desorientadora",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Demonstração Desorientadora",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Coração Prismático",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Coração Prismático",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Coração Prismático",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Destruição Espalhada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Destruição Espalhada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Destruição Espalhada",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mestre do Fogo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mestre do Fogo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mestre do Fogo",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Restos Esfumaçados",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Restos Esfumaçados",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Restos Esfumaçados",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Cremador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Cremador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Cremador",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Tormenta de Neve",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Tormenta de Neve",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Tormenta de Neve",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Bebedor de Tormentas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Bebedor de Tormentas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Bebedor de Tormentas",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Paralisia",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Paralisia",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Paralisia",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Super Carga",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Super Carga",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Super Carga",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Neve Coberta",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Neve Coberta",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Neve Coberta",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Completamente Frio",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Completamente Frio",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Completamente Frio",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Matador Sangue Frio",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Matador Sangue Frio",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Matador Sangue Frio",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Toque de Crueldade",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Toque de Crueldade",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Toque da Crueldade",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mal Inabalável",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mal Inabalável",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mal Inabalável",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Presentes Inefáveis",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Presentes Inefáveis",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Dons Inefáveis",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Ideação Sombria",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Ideação Sombria",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Ideação Sombria",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Graça Profana",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Graça Profana",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Graça Profana",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mortalha Estranha",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mortalha Estranha",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mortalha Estranha",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Renovação",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Renovação",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Renovação",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Demolir e Pilhar",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Demolir e Pilhar",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Demolir e Pilhar",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Garras Pútrida",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Garras Pútrida",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Garras Pútridas",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Chamado da Carnificina",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Chamado da Carnificina",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Chamado da Carnificina",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Atrofia Esqueletal",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Atrofia Esqueletal",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Atrofia Esqueletal",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Cadáveres Monstruosos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Cadáveres Monstruosos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Cadáveres Monstruosos",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mordida Perigosa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mordida Perigosa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mordida Perigosa",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Vínculo Primordial",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Vínculo Primordial",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Vínculo Primordial",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Contragolpe",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Contragolpe",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Contragolpe",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Lenha na Fogueira",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Lenha na Fogueira",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Lenha na Fogueira",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Queimado Vivo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Queimado Vivo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Queimado Vivo",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Brilhante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Brilhante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Brilhante",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Envolta em Chamas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Envolta em Chamas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Envolto em Chamas",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Cores Vivas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Cores Vivas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Cores Vivas",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Fender",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Fender",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Fender",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Feridas Desorientadoras",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Feridas Desorientadoras",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Feridas Desorientadoras",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Ferimento Composto",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Ferimento Composto",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Ferida Composta",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Magias Sépticas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Magias Sépticas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Magias Sépticas",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Baixa Tolerância",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Baixa Tolerância",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Baixa Tolerância",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Tormento Contínuo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Tormento Contínuo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Tormento Contínuo",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sofrimento Eterno",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sofrimento Eterno",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sofrimento Eterno",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Inspiração Ancestral",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Inspiração Ancestral",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Inspiração Ancestral (Eldritch Inspiration)",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Aflição Desperdiçada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Aflição Desperdiçada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Aflição Desperdiçada",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Hemorragia",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Hemorragia",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Hemorragia",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Fluxo da Vida",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Fluxo da Vida",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Fluxo da Vida",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Terapia de Exposição",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Terapia de Exposição",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Terapia de Exposição",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Pintando com a Morte",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Pintando com a Morte",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Pintando com a Morte",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Revigoração Vil",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Revigoração Vil",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Revigoração Vil",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Círculo do Esquecimento",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Círculo do Esquecimento",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Círculo do Esquecimento",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Produzido para Potência",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Produzido para Potência",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Produzido para Potência",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Aflição Surpreendente",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Aflição Surpreendente",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Aflição Surpreendente",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Condução Gélida",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Condução Gélida",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Condução Gélida",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Opressão Inspirada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Opressão Inspirada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Opressão Inspirada",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Presença Resfriante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Presença Resfriante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Presença Resfriante",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Calafrio Profundo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Calafrio Profundo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Calafrio Profundo",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Congelamento Explosivo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Congelamento Explosivo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Congelamento Explosivo",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Tempestade de Raios",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Tempestade de Raios",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Trovoada",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Calvagando a Tormenta",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Calvagando a Tormenta",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Calvagando a Tormenta",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Super Eletrização",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Super Eletrização",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Super Eletrização",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionais é Olho Malígno",
+     "modelo": "{0} das Habilidades Passivas Adicionais é Olho Malígno",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Olho Perverso",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionais é Olho Malígno",
+     "modelo": "{0} das Habilidades Passivas Adicionais é Olho Malígno",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Olho Perverso",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Palavras Proibidas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Palavras Proibidas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Palavras Proibidas",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Rancor de Doedre",
+     "modelo": "{0} das Passivas Adicionadas é Rancor de Doedre",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Despeito de Doedre",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Criador de Vítimas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Criador de Vítimas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Criador de Vítimas",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mestre do Medo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mestre do Medo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mestre do Medo",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Desejo Mortal",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Desejo Mortal",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Desejo Mortal",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Heráldica",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Heráldica",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Heráldica",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Finalizador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Finalizador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Finalizador",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Líder do Culto",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Líder do Culto",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Líder do Culto",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Emissário Maximizado",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Emissário Maximizado",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Emissário Maximizado",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Mensageiro Sombrio",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Mensageiro Sombrio",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Mensageiro Sombrio",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Agente da Destruição",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Agente da Destruição",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Agente da Destruição",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Impressões Duradouras",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Impressões Duradouras",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Impressões Duradouras",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Profecia Auto-Cumprida",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Profecia Auto-Cumprida",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Profecia Auto-Cumprida",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Presságios Revigorantes",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Presságios Revigorantes",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Presságios Revigorantes",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Agonia Pura",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Agonia Pura",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Pura Agonia",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Discípulos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Discípulos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Discípulos",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Marcha Horrenda",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Marcha Horrenda",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Marcha Horrenda",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas adicionadas é Renascimento Abençoado",
+     "modelo": "{0} das Habilidades Passivas adicionadas é Renascimento Abençoado",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Renascimento Abençoado",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Vida da Morte",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Vida da Morte",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Vida da Morte",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Demônios Famintos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Demônios Famintos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Demônios Famintos",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Guarda-Costas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Guarda-Costas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Guarda-Costas",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Acompanhamento",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Acompanhamento",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Acompanhamento",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Simplificado",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Simplificado",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Simplificado",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Raios Barulhentos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Raios Barulhentos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Raios Barulhentos",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Olho por Olho",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Olho por Olho",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Olho por Olho",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Repetidor",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Repetidor",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Repetidor",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Aerodinâmica",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Aerodinâmica",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Aerodinâmica",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Reduzir",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Reduzir",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Reduzir",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Runas Perseguidoras",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Runas Perseguidoras",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Runas Perseguidoras",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Notável",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Notável",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Notável",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Lealdade Rúnica",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Lealdade Rúnica",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Runa da Lealdade",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Conquista Sagrada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Conquista Sagrada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Conquista Sagrada",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Grande Plano",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Grande Plano",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Grande Plano",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Preparar e Esquecer",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Preparar e Esquecer",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Preparar e Esquecer",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sabotagem Perita",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sabotagem Perita",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sabotagem Perita",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Tática de Guerrilha",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Tática de Guerrilha",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Táticas de Guerra",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Dispensabilidade",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Dispensabilidade",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Dispensabilidade",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Pirotecnias Arcanas",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Pirotecnias Arcanas",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Pirotecnias Arcanas",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sabotagem Surpresa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sabotagem Surpresa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sabotagem Surpresa",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Manipulação Cuidadosa",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Manipulação Cuidadosa",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Manipulação Cuidadosa",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Pico de Vigor",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Pico de Vigor",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Pico de Vigor",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Feto",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Feto",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Feto",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Banquete de Carne",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Banquete de Carne",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Banquete de Carne",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sensação Sublime",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sensação Sublime",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sensação Sublime",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Vitalidade Explosiva",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Vitalidade Explosiva",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Vitalidade Explosiva",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Paz Entre o Caos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Paz Entre o Caos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Paz Entre o Caos",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Adrenalina",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Adrenalina",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Adrenalina",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Parede de Músculos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Parede de Músculos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Parede de Músculos",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Atenção",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Atenção",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Atenção",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Inspiração Líquida",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Inspiração Líquida",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Inspiração Líquida",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Abertura",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Abertura",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Abertura",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Ideias Desafiadoras",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Ideias Desafiadoras",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Ideias Desafiadoras",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Clareza do Propósito",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Clareza do Propósito",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Clareza do Propósito",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Ideia Cintilante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Ideia Cintilante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Ideia Cintilante",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Saúde Holística",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Saúde Holística",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Saúde Holística",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Gênio",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Gênio",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Gênio",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Improvisador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Improvisador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Improvisador",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Estudante Teimoso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Estudante Teimoso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Estudante Teimoso",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Saboreie o Momento",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Saboreie o Momento",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Saboreie o Momento",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Energia do Nada",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Energia do Nada",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Energia do Nada",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Moldador da Vontade",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Moldador da Vontade",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Moldador da Vontade",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Maleabilidade",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Maleabilidade",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Maleabilidade",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Conservação de Energia",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Conservação de Energia",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Conservação de Energia",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Coração de Ferro",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Coração de Ferro",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Coração de Ferro",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Carapaça Prismática",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Carapaça Prismática",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Carapaça Prismática",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Militarismo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Militarismo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Militarismo",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Segunda Pele",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Segunda Pele",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Segunda Pele",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Caçador de Dragões",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Caçador de Dragões",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Caçador de Dragões",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Composição Duradoura",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Composição Duradoura",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Composição Duradoura",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Dança Prismática",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Dança Prismática",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Dança Prismática",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Vigor Natural",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Vigor Natural",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Vigor Natural",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Intocável",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Intocável",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Intocável",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sombra Instável",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sombra Instável",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sombra Instável",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Preparação",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Preparação",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Preparação",
+     "nivel": 1
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Miséria Eterna",
+     "modelo": "{0} Habilidade Passiva Adicionada é Miséria Eterna",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Miséria Eterna",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sentinela Flexível",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sentinela Flexível",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sentinela Flexível",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Guardião Perigoso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Guardião Perigoso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Guardião Perigoso",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Proteção Mística",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Proteção Mística",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Proteção Mística",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Reforço do Hábito",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Reforço do Hábito",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Reforço da Hábito",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Caçador de Magos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Caçador de Magos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Caçador de Magos",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Matador de Motins",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Matador de Motins",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Matador de Motins",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Um com o Escudo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Um com o Escudo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Um com o Escudo",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Trapezista",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Trapezista",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Trapezista",
+     "nivel": 75
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Forma Elegante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Forma Elegante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Forma Elegante",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Movimentos de Arremesso",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Movimentos de Arremesso",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Movimentos de Arremesso",
+     "nivel": 1
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Convocador da Nevasca",
+     "modelo": "{0} Habilidade Passiva Adicionada é Convocador da Nevasca",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Convocador da Nevasca",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas adicionadas é Marca do Derretido",
+     "modelo": "{0} das Habilidades Passivas adicionadas é Marca do Derretido",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Marca do Derretido",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sintonia do Fogo",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sintonia do Fogo",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sintonia do Fogo",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Puro Poder",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Puro Poder",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Puro Poder",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Ferreiro",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Ferreiro",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Ferreiro",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Não-Inflamável",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Não-Inflamável",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Não-Inflamável",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Gatuno Invernal",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Gatuno Invernal",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Gatuno Invernal",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Hibernador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Hibernador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Hibernador",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Astúcia Pura",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Astúcia Pura",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Astúcia Pura",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Alquimista",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Alquimista",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Alquimista",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Anti-Congelante",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Anti-Congelante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Anti-Congelante",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Feitiçaria",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Feitiçaria",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Feitiçaria",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Capacitador",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Capacitador",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Capacitor",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Aptidão Pura",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Aptidão Pura",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Aptidão Pura",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Sábio",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Sábio",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Sábio",
+     "nivel": 1
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Insulado",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Insulado",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Insulado",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Nascido do Caos",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Nascido do Caos",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Nascido do Caos",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Antidoto",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Antidoto",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Antídoto",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Resistênte a Podridão",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Resistênte a Podridão",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Resistente a Podridão",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Abençoado",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Abençoado",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Abençoado",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Habilidades Passivas Adicionadas é Estudante da Decadência",
+     "modelo": "{0} das Habilidades Passivas Adicionadas é Estudante da Decadência",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Estudante da Decadência",
+     "nivel": 50
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Aspecto Mortificante",
+     "modelo": "{0} das Passivas Adicionadas é Aspecto Mortificante",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Aspecto Mortificante",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Aspecto Frenético",
+     "modelo": "{0} das Passivas Adicionadas é Aspecto Frenético",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Aspecto Frenético",
+     "nivel": 68
+    },
+    {
+     "texto": "1 das Passivas Adicionadas é Instrospecção",
+     "modelo": "{0} das Passivas Adicionadas é Instrospecção",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Introspecção",
+     "nivel": 68
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Auto-Controle",
+     "modelo": "{0} Habilidade Passiva Adicionada é Auto-Controle",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Auto-Controle",
+     "nivel": 50
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Intransigente",
+     "modelo": "{0} Habilidade Passiva Adicionada é Intransigente",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Intransigente",
+     "nivel": 50
+    },
+    {
+     "texto": "1 Habilidade Passiva Adicionada é Forma Sublime",
+     "modelo": "{0} Habilidade Passiva Adicionada é Forma Sublime",
+     "faixas": [
+      [
+       1,
+       1
+      ]
+     ],
+     "notavel": "Forma Sublime",
+     "nivel": 50
+    }
+   ]
   },
   "Forbidden_Flame": {
    "classe": "Jewels",

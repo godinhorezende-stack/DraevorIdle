@@ -84,7 +84,9 @@ export function poderFantasmalNoNivel(nivel) {
 const PALAVRA_DO_TIPO = { sentinela: /sentinela|sentinel/i, zumbi: /zumbi|zombie/i, espectro: /espectro|spectre/i, golem: /golem/i, esqueleto: /esqueleto|skeleton/i, totem: /totem/i,
   espirito: /espírito furioso|raging spirit/i, fantasma: /fantasma|phantasm/i, reliquia: /relíquia|relic/i, sagrado: /espírito sagrado|holy/i, arma: /arma animada|animate/i, aranha: /aranha|spider/i,
   // (ciclo 7) os clones da Flecha Ilusória / Flecha Espelhada ("Duração do Arqueiro Ilusório aumentada").
-  arqueiro: /arqueir|clone|mirror arrow|blink arrow|flecha (?:ilusória|espelhada)/i, balista: /balista|ballista/i, qualquer: /./ };
+  arqueiro: /arqueir|clone|mirror arrow|blink arrow|flecha (?:ilusória|espelhada)/i, balista: /balista|ballista/i,
+  // (lote 80, o Mensageiro Solitário: "Lacaios de Habilidades de Arautos" — a Sentinela da Pureza, o Rastejador Agonizante)
+  arauto: /herald|arauto/i, qualquer: /./ };
 
 // ---- a força de base por nível (a mediana dos monstros comuns da campanha) ----
 // PREGUIÇOSA (calculada no primeiro uso e guardada): calcular na carga do módulo lia `CAMPANHA` enquanto `monstros.mjs` ainda carregava,

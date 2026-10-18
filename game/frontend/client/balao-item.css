@@ -264,6 +264,8 @@
 .poe-sep { height: 1px; margin: 0 12px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cor) 50%, #000), transparent); }
 .poe-mod { display: flex; justify-content: center; gap: 8px; padding: 1px 10px; text-align: center; color: #8888ff; }
 .poe-mod.imp { color: #9db9ff; }
+/* (lote 78) o encantamento (a Ramificadora), na cor do encantamento do PoE */
+.poe-mod.enc { color: #b8daf2; }
 .poe-mod.uni { color: #c8a26a; }
 .poe-mod i { font: 10.5px var(--eng-mono); color: #5d6475; align-self: center; white-space: nowrap; }
 .poe-balao > :last-child { padding-bottom: 8px; }

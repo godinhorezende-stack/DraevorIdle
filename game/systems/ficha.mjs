@@ -277,6 +277,10 @@ function calcularCombate(estado, extrasDoPoe = null) {
   const armaFinal = baseDaArma ? ArmaMod.statsDaArma(baseDaArma, { qualidade: pecaDaArma?.qualidade, locais: locaisDaArma(pecaDaArma) }) : null;
   // A arma da mão secundária (PoE, duas armas): só a velocidade dela importa aqui (o golpe alterna, cada um no tempo da sua arma).
   const armaSecundariaFinal = armaSecundaria ? ArmaMod.statsDaArma(ArmaMod.baseDaArma(armaSecundaria), { locais: locaisDaArma(estado.equipment?.shield) }) : null;
+  // (lote 80, a Técnica da Palma Oca) "Você conta como em Dupla Empunhadura enquanto não estiver Sobrecarregado": sem arma, sem nada na secundária e sem
+  // luvas, os dois punhos são as duas mãos — o bônus da Dupla Empunhadura (+15% de bloqueio, 10% mais velocidade) e o golpe alternando (o PoB:
+  // `DualWielding` e o desarmado na segunda mão)
+  const palmaOca = itensPoeLigado() && !w && !estado.equipment?.shield && !estado.equipment?.gloves && Number(af.conta_duas_armas) > 0;
   const armaAlteraODano = !!armaFinal && !w?.wand && (armaFinal.qualidade > 0 || armaFinal.locais.addMin > 0 || armaFinal.locais.addMax > 0 || armaFinal.locais.pctDano !== 0);
   const [armaMin, armaMax] = armaAlteraODano ? [armaFinal.danoMin, armaFinal.danoMax] : [faixaMin, faixaMax];
   const ataque = calcAtaque((armaAlteraODano ? (armaMin + armaMax) / 2 : (w?.attack ?? 0)) + Math.round((jMin + jMax) / 2) + (daMunicao?.attack ?? 0));
@@ -386,7 +390,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
   const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) : 1;
   const defesas = defesasDaFicha(estado, af, doAtributo, espStat);
   // (ciclo 7: o bloqueio calculado antes da ficha — o Combatente Versátil lê o EXCEDENTE dele para o bloqueio mágico)
-  const bloqueioDoGolpe = comDuasArmas(bloqueioDaFicha(estado, escudo, w, shielding, af), armaSecundaria, af);
+  const bloqueioDoGolpe = comDuasArmas(bloqueioDaFicha(estado, escudo, w, shielding, af), armaSecundaria || palmaOca, af);
   const ficha = {
     // STR/DEX/INT (total, e o que veio da vocação+level — a ficha mostra os dois).
     atributos: { str: principais.str, dex: principais.dex, int: principais.int, daVocacao: principais.daVocacao },
@@ -450,7 +454,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
           const [oMin, oMax] = faixaDoCampo(estado.equipment?.shield, 'attack');
           return { duasArmas: true, ataqueSecundarioMin: calcAtaque(oMin + jMin, addMin), ataqueSecundarioMax: calcAtaque(oMax + jMax, addMax), armaSecundaria: armaSecundaria.name ?? null };
         })()
-      : {}),
+      : palmaOca ? { duasArmas: true, ataqueSecundarioMin: ataqueMin, ataqueSecundarioMax: ataqueMax, armaSecundaria: null } : {}),
     ...faixaDeArmadura(estado, af, espStat('armour')),
     // As defesas novas: Evasion (esquiva do golpe do bicho) e Energy Shield (barra antes da vida).
     evasion: defesas.evasion,
@@ -501,7 +505,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
     // (PoE: o APS da base do catálogo × a Velocidade de Ataque LOCAL da peça; com duas armas, a média dos tempos das duas — `intervaloBaseDoGolpe`.)
-    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria ? 1 / (1 + (BONUS_DE_DUAS_ARMAS.velocidadeMais - 1) * dobroDasDuasArmas(af, 'velocidade')) : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal, af) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (1 / fatorDeVelocidadeMais(af)) * (armaSecundaria || palmaOca ? 1 / (1 + (BONUS_DE_DUAS_ARMAS.velocidadeMais - 1) * dobroDasDuasArmas(af, 'velocidade')) : 1) * (intervaloBaseDoGolpe(armaFinal, armaSecundariaFinal ?? (palmaOca ? { aps: {} } : null), af) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + conjuracaoNoAtaque(af) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([
