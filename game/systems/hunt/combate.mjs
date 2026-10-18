@@ -80,7 +80,17 @@ import * as Protecao from '../protecao.mjs';
 export function processarMortes(estado, personagem, eventos) {
   const hunt = estado.hunt;
   if (!hunt) return;
-  for (const m of [...hunt.monstros]) {
+  morrerOsMortos(estado, personagem, eventos, [...hunt.monstros]);
+  // (lote 81, a explosão do Arauto Glacial em cadeia: quem morreu nas mortes desta volta — o vizinho Estilhaçado — morre agora, ainda Congelado)
+  for (let volta = 0; volta < 20; volta++) {
+    const novos = hunt.monstros.filter((m) => !m.dummy && m.hp <= 0 && !m.recompensado);
+    if (!novos.length) break;
+    morrerOsMortos(estado, personagem, eventos, novos);
+  }
+}
+function morrerOsMortos(estado, personagem, eventos, lista) {
+  const hunt = estado.hunt;
+  for (const m of lista) {
     if (m.dummy) {
       m.hp = m.maxHp; // o boneco do pátio não morre
       continue;
@@ -852,8 +862,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (ModsPoe.ativo(alvo.estados?.chocado, hunt.clock ?? 0)) { hunt.poeEletrizadosMortos = [...(hunt.poeEletrizadosMortos ?? []), hunt.clock ?? 0].slice(-20); Ficha.invalidar(estado); }
     // ("Inimigos mortos por você são Eletrizados": antes dos eventos "ao Matar" — "Inimigos Eletrizados que você Matar Explodem" vale.)
     if (ModsPoe.valor(f, 'mortos_eletrizados') > 0) (alvo.estados ??= {}).chocado = { ate: (hunt.clock ?? 0) + 2000, pct: Math.max(alvo.estados?.chocado?.pct ?? 0, 15) };
+    // (lote 81) o Arauto Trovejante: matar um Eletrizado (também o que a linha acima Eletriza — dono: "Abre também") abre a tempestade
+    if (ModsPoe.ativo(alvo.estados?.chocado, hunt.clock ?? 0)) Acoes.abrirTempestade(estado, hunt, hunt.clock ?? 0);
     // (o "ao Matar Corpo a Corpo", o "ao Matar com Ataque": as tags do golpe fatal)
     ModsPoe.evento(estado, hunt, 'matar', f, { alvo, eventos, personagem, tags: QuemFeriu.tagsDoAbate(alvo) });
+    // (lote 81) o Arauto das Cinzas: o excesso de dano do golpe fatal (um acerto seu) queima os vizinhos do morto
+    Acoes.queimaduraDoArautoDasCinzas(estado, hunt, alvo, alvo.poeExcedente ?? (QuemFeriu.tagsDoAbate(alvo).includes('acerto') ? Math.max(0, -alvo.hp) : 0), eventos);
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
     // (a keystone Fúria — o Rampage: o abate soma no contador; "Recebe uma Carga de Frenesi a cada N Mortes com Fúria")

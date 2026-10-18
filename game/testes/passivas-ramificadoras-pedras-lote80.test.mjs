@@ -53,14 +53,15 @@ function comPedra(slug, { vocacao = 'knight' } = {}) {
 const ficha = (e) => { Ficha.invalidar(e); return Ficha.combate(e); };
 const af = (e, k) => Number(ficha(e).afPoe?.[k]) || 0;
 
-test('as LINHAS das 7 pedras: todas com efeito, menos as 2 dos acertos dos Arautos (o lote deles vem depois)', { skip: SEM }, () => {
+test('as LINHAS das 7 pedras: todas com efeito (lote 81: as 2 dos acertos dos Arautos também)', { skip: SEM }, () => {
   const pedras = Object.values(cat().ramificadoras.pedras).filter((p) => p.en !== 'Pitfighter');
   const sem = [];
   for (const p of pedras) for (const l of p.linhas.flatMap((x) => x.split('\n'))) {
     const t = traduzirLinha(l);
     if (!['novo', 'equivalente', 'aproximado'].includes(t.estado) || !t.efeitos.length) sem.push(l);
   }
-  assert.deepEqual(sem.sort(), ['100% mais Dano com Acertos de Habilidades de Arauto', '50% mais Dano Degenerativo com Habilidades de Arautos']);
+  // (dono, 18/10, lote 81: "Pode trocar" — os acertos dos Arautos existem; antes as 2 linhas do Mensageiro ficavam de fora)
+  assert.deepEqual(sem, []);
 });
 
 test('o DISCÍPULO DE KITAVA: a cada segundo consome o cadáver mais perto (a até 6 casas) e recupera 5% de Vida e de Mana; sem consumir, 10% mais dano sofrido', { skip: SEM }, () => {

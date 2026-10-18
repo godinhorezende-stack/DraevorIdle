@@ -69,7 +69,7 @@ function temEfeito(h) {
   const buff = s.buff;
   return !!(
     Object.keys(s.dano).length || s.dot.length || h.ataque || Object.keys(s.adicional).length ||
-    Object.keys(buff.adicional).length || buff.maisDano || buff.velAtaque || buff.velConj || buff.velMov ||
+    Object.keys(buff.adicional).length || Object.keys(buff.adicionalAtaque ?? {}).length || Object.keys(buff.adicionalMagia ?? {}).length || buff.maisDano || buff.velAtaque || buff.velConj || buff.velMov ||
     Object.keys(buff.resist).length || buff.armadura || buff.evasao || buff.regen || buff.menosDanoRecebido ||
     Object.keys(s.maldicao.resist).length || s.maldicao.danoRecebido || s.maldicao.lentidao || s.maldicao.menosDano ||
     buff.extra.length || buff.critico || buff.escudo || buff.regenMana || buff.absorve || buff.imuneAfeccoes ||

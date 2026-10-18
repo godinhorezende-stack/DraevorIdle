@@ -60,7 +60,7 @@ export function statsVazios() {
     danoRecebidoAcerto: 0,
     maldicao: { resist: {}, danoRecebido: 0, lentidao: 0, menosDano: 0, textos: [] },
     buff: {
-      adicional: {}, extra: [], maisDano: 0, velAtaque: 0, velConj: 0, velMov: 0, critico: 0, resist: {},
+      adicional: {}, adicionalAtaque: {}, adicionalMagia: {}, extra: [], maisDano: 0, velAtaque: 0, velConj: 0, velMov: 0, critico: 0, resist: {},
       armadura: 0, evasao: 0, escudo: 0, regen: 0, regenMana: 0, menosDanoRecebido: 0, absorve: 0, imuneAfeccoes: false, textos: [],
       // (lote 75, o Arauto da Agonia: "Buff concede X% de chance de Envenenar ao Acertar" e "Buff concede X% mais Dano com Veneno")
       chanceVeneno: 0, maisVeneno: 0,
@@ -181,6 +181,9 @@ export const REGRAS = [
   [r(`Amaldiçoad`), (s, m) => (s.maldicao.textos.push(m.input), false)],
 
   // ---------------- buffs / auras ----------------
+  // (lote 81) os Arautos Glacial e Trovejante: o dano adicional do buff só nos ATAQUES e só nas MAGIAS (antes nenhuma das duas casava — o buff não dava nada)
+  [r(`Buff concede (?:de )?${N} a ${N} de Dano (?:de Ataque de ${EL}|de ${EL} com Ataques) Adicional`), (s, m) => (s.buff.adicionalAtaque[el(m[3] || m[4])] = [num(m[1]), num(m[2])])],
+  [r(`Buff concede (?:de )?${N} a ${N} de Dano (?:Mágico de ${EL}|de ${EL} Mágico)(?: Adicional)?`), (s, m) => (s.buff.adicionalMagia[el(m[3] || m[4])] = [num(m[1]), num(m[2])])],
   [r(`(?:Você e aliados próximos causam|Aura concede|Buff concede|Concede) ${N} a ${N} de Dano (?:de |De )?${EL} adicional`), (s, m) => (s.buff.adicional[el(m[3])] = [num(m[1]), num(m[2])])],
   [r(`(?:recebem|Buff concede|concede) ${N} % (?:do seu |de )?Dano Físico como Dano (?:Extra de ${EL}|de ${EL} Extra)`), (s, m) => s.buff.extra.push({ para: el(m[2] || m[3]), pct: num(m[1]) })],
   [r(`(?:Você e aliados próxim\\w+ causam|Concede) ${N} % mais Dano(?: Mágico)?(?: de ${EL})?`), (s, m) => (s.buff.maisDano += num(m[1]))],

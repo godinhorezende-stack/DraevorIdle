@@ -682,6 +682,183 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
   return total;
 }
 
+/*
+ * ---- (lote 81) os ACERTOS dos ARAUTOS (dono: "As duas coisas" — o Mensageiro Solitário pede; como o PoE/PoB) ----
+ * A explosão do Arauto Glacial (o inimigo que você Estilhaça explode) e — lote 82 — a tempestade do Trovejante são ACERTOS da gema do Arauto:
+ * o dano no nível dela (`GemasPoe.danoNoNivel`), com a ficha do golpe pelas TAGS da gema SEM "magia" (o PoB: `baseFlags` sem `spell` — "Este
+ * dano não é afetado por modificadores de dano mágico"; o "adicionado às magias" também não entra), os suportes ligados a ela (o aumentado e o
+ * "mais"), o crítico só pelo crítico-base fixo ("+X% de Chance de Golpe Crítico de Habilidades Arauto" — a gema não tem crítico), a resistência,
+ * os eventos "ao acertar" e as afecções. A queima do Arauto das Cinzas é DANO DEGENERATIVO (não acerto): `queimaduraDoArautoDasCinzas`.
+ */
+const ARAUTO_GLACIAL = 'poe-gema:Herald_of_Ice';
+const ARAUTO_DAS_CINZAS = 'poe-gema:Herald_of_Ash';
+/** O buff do Arauto `id` está ligado? */
+const arautoLigado = (hunt, id) => { const b = hunt?.buffs?.[id]; return !!b && b.tipo === 'poe-arauto' && b.ate > (hunt.clock ?? 0); };
+/** As tags dos acertos (e da queima) do Arauto: as da gema, sem "magia" (+ `extra`). */
+const tagsDoArauto = (entry, extra = []) => [...new Set([...tagsPoeDaSkill(entry).filter((t) => t !== 'magia' && t !== 'naoCanalizar'), 'arauto', ...extra])];
+/**
+ * Um ACERTO do Arauto `id` no bicho `m`: `bruto` (o dano no nível, antes dos aumentos) do `elemento`. `semEletrizar`: a tempestade "Não Pode
+ * aplicar Eletrizar". Devolve o dano dado.
+ */
+export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null } = {}) {
+  const entry = POR_ID.get(id);
+  if (!entry || !m || !(m.hp > 0) || m.dummy || !(bruto > 0)) return 0;
+  const agora = hunt.clock ?? 0;
+  const fichaBase = Ficha.combate(estado);
+  const t = tags ?? tagsDoArauto(entry);
+  const ef = Gemas.efeitoNaSkill(estado, id);
+  const f = ModsPoe.fichaDoGolpe(fichaBase, t, { alvo: m, estado });
+  const doSuporte = (1 + (ef?.danoPct ?? 0) / 100) * (ef?.fatorDeDano ?? 1);
+  const comAumento = bruto * Math.max(0, 1 + (f.danoDoElemento?.[elemento] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, elemento) * doSuporte;
+  // o crítico: a gema não tem — só o "+X% de Chance de Golpe Crítico" fixo das tags, × os "aumentados"
+  const porTag = ModsPoe.somaPorTags(fichaBase, t);
+  const nunca = ModsPoe.valor(f, 'nunca_critico') > 0;
+  // (+ o crítico dos suportes ligados à gema — como nas habilidades: a chance e o multiplicador somados no fim)
+  const chance = Math.min(f.critTeto ?? 1, Math.max(0, ((porTag.crit_chance ?? 0) / 100) * (1 + ((fichaBase.critInc ?? 0) + (porTag.crit_chance_inc ?? 0)) / 100) + (ef?.critChance ?? 0) / 100));
+  const crit = !nunca && (ModsPoe.valor(f, 'critico_sempre') > 0 || (chance > 0 && ModsPoe.sorteado(chance, ModsPoe.valor(f, 'critico_sortudo'), ModsPoe.valor(f, 'critico_azarado'), rng, ModsPoe.valor(f, 'sorte_tres_jogadas') > 0)));
+  // (o "mais Dano com Acertos" — `mais_dano@arauto`, o Mensageiro Solitário — está em `fatorDasCargas`: só no acerto, não nas afecções)
+  // (+ a Eletrização do alvo: o dano a mais dela, como nos outros acertos)
+  const dano = Math.round(resistido(hunt, m, elemento, comAumento * (f.fatorDasCargas ?? 1) * AfeccoesPoe.fatorDeEletrizacao(m, agora), f) * (crit ? (f.critMultiplier ?? 1.5) + (ef?.critDano ?? 0) / 100 : 1));
+  if (!(dano > 0)) return 0;
+  m.hp -= dano;
+  QuemFeriu.carimbar(m, QuemFeriu.VOCE, t);
+  eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: dano, foe: true, crit, spell: entry.name, alvo: m.name, color: COR_DO_ELEMENTO[elemento] ?? '#ffffff', ...(fonte ? { fonte } : {}) });
+  ModsPoe.aoAcertar(estado, hunt, m, f, { dano, fisico: 0, fogo: elemento === 'fire' ? dano : 0, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: [elemento], habilidade: id });
+  if (f.afeccoes) {
+    const afeccoes = semEletrizar ? { ...f.afeccoes, naoPode: { ...(f.afeccoes.naoPode ?? {}), eletrizacao: true } } : f.afeccoes;
+    const postos = AfeccoesPoe.aoAcertar(m, [{ elemento, dano: comAumento }], { afeccoes, crit: crit && !f.sobrecargaElemental, ataque: false, agora, rng, salaDeBoss: !!hunt.isBoss, aoPor: ModsPoe.refletorDeAfeccoes(hunt, f) });
+    for (const st of postos) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: st });
+    ModsPoe.aoPorAfeccoes(estado, hunt, m, f, postos, { eventos, personagem });
+  }
+  return dano;
+}
+/**
+ * (lote 81) A EXPLOSÃO do Arauto Glacial: o inimigo que você Estilhaça (morto Congelado — ou pelo golpe que o congelaria: dono, "Golpe fatal
+ * também") explode em Gelo nos vizinhos, a 1,2 m (+0,1 m por 1% de qualidade — o PoB: raio 12 unidades) × a Área; cada um rola o seu acerto. Os
+ * que morrem Congelados explodem também (a cadeia — `combate.processarMortes` repete a volta das mortes).
+ */
+export function explosaoDoArautoGlacial(estado, hunt, morto, eventos = [], rng = Math.random, personagem = null) {
+  if (!itensPoeLigado() || !hunt || !morto || hunt.pvp || !arautoLigado(hunt, ARAUTO_GLACIAL)) return 0;
+  const entry = POR_ID.get(ARAUTO_GLACIAL);
+  const ef = Gemas.efeitoNaSkill(estado, ARAUTO_GLACIAL);
+  const nivel = ef?.nivel ?? 1;
+  const d = GemasPoe.danoNoNivel('Herald_of_Ice', nivel);
+  if (!(d.max > 0)) return 0;
+  const fichaBase = Ficha.combate(estado);
+  const tags = tagsDoArauto(entry);
+  const porTag = ModsPoe.somaPorTags(fichaBase, tags);
+  const raioM = 1.2 + 0.01 * (ef?.qualidade ?? 0);
+  const base = Math.max(1, Math.round(raioM / 2));
+  const raio = base + ModsPoe.casasPelaArea(base, ModsPoe.fatorDaArea(ModsPoe.valor(fichaBase, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(fichaBase, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0), rng);
+  eventos.push({ t: 'explosao', uid: morto.uid, x: morto.x, y: morto.y, raio, fonte: 'arauto-glacial', color: COR_DO_ELEMENTO.ice ?? '#7fd0ff' });
+  let total = 0;
+  for (const m of [...(hunt.monstros ?? [])]) {
+    if (m === morto || !(m.hp > 0) || m.dummy || (m.z ?? 0) !== (morto.z ?? 0) || Math.max(Math.abs(m.x - morto.x), Math.abs(m.y - morto.y)) > raio) continue;
+    total += acertoDoArauto(estado, hunt, ARAUTO_GLACIAL, m, d.min + rng() * (d.max - d.min), 'ice', { tags, eventos, rng, fonte: 'arauto-glacial', personagem });
+  }
+  return total;
+}
+/*
+ * (lote 81) A TEMPESTADE do Arauto Trovejante (o PoB: `Skills/act_int.lua`): ao matar um inimigo Eletrizado (e, com o Segredo da Tormenta, ao
+ * Eletrizar) com o Arauto ligado, uma tempestade em volta de você por 6 s × a Duração (a nova renova); a cada 0,25 s ÷ (1 + a qualidade + "com
+ * Frequência aumentada") um raio cai num inimigo ao acaso a até 3,2 m (2 casas × a Área): o dano do nível (Raio), um acerto que "Não Pode aplicar
+ * Eletrizar". Com "Sofre N de Dano de Raio quando o Arauto Trovejante Acertar um Inimigo", cada raio tira N × a sua resistência a Raio.
+ */
+const ARAUTO_TROVEJANTE = 'poe-gema:Herald_of_Thunder';
+const TEMPESTADE = Object.freeze({ duracaoMs: 6000, intervaloMs: 250, raioM: 3.2, porTique: 40 });
+export function abrirTempestade(estado, hunt, agora = hunt?.clock ?? 0) {
+  if (!itensPoeLigado() || !hunt || hunt.pvp || !arautoLigado(hunt, ARAUTO_TROVEJANTE)) return false;
+  const entry = POR_ID.get(ARAUTO_TROVEJANTE);
+  const ef = Gemas.efeitoNaSkill(estado, ARAUTO_TROVEJANTE);
+  const ate = agora + Math.round(TEMPESTADE.duracaoMs * fatorDeDuracao(estado, entry, ef));
+  const t = hunt.poeTempestade;
+  hunt.poeTempestade = t && t.ate > agora ? { ...t, ate: Math.max(t.ate, ate) } : { ate, prox: agora };
+  return true;
+}
+/** O tique da tempestade (`cacadas.tique`): os raios do tempo que passou. */
+export function tiqueDaTempestade(estado, hunt, agora = hunt?.clock ?? 0, rng = Math.random, personagem = null) {
+  const eventos = [];
+  if (!itensPoeLigado() || !hunt) return eventos;
+  // (o Segredo da Tormenta: o Eletrizar de agora — `mods-poe.aoPorAfeccoes` marca)
+  if (hunt.poeEletrizouParaTempestade != null) { abrirTempestade(estado, hunt, hunt.poeEletrizouParaTempestade); delete hunt.poeEletrizouParaTempestade; }
+  const t = hunt.poeTempestade;
+  if (!t) return eventos;
+  if (t.ate <= agora && t.prox >= t.ate) { delete hunt.poeTempestade; return eventos; }
+  if (!arautoLigado(hunt, ARAUTO_TROVEJANTE)) { delete hunt.poeTempestade; return eventos; }
+  const entry = POR_ID.get(ARAUTO_TROVEJANTE);
+  const ef = Gemas.efeitoNaSkill(estado, ARAUTO_TROVEJANTE);
+  const ficha = Ficha.combate(estado);
+  const intervalo = TEMPESTADE.intervaloMs / (1 + ((ef?.qualidade ?? 0) + ModsPoe.valor(ficha, 'arauto_tempestade_freq_inc')) / 100);
+  const porTag = ModsPoe.somaPorTags(ficha, tagsDoArauto(entry));
+  const base = Math.max(1, Math.round(TEMPESTADE.raioM / 2));
+  const raio = base + ModsPoe.casasPelaArea(base, ModsPoe.fatorDaArea(ModsPoe.valor(ficha, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(ficha, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0), rng);
+  const d = GemasPoe.danoNoNivel('Herald_of_Thunder', ef?.nivel ?? 1);
+  const emVoce = ModsPoe.valor(ficha, 'arauto_trovao_dano_em_voce');
+  const tags = tagsDoArauto(entry);
+  let n = 0;
+  while (t.prox <= agora && t.prox < t.ate && n < TEMPESTADE.porTique) {
+    n++;
+    t.prox += intervalo;
+    const perto = hunt.pos ? (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && (m.z ?? hunt.z ?? 0) === (hunt.z ?? 0) && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= raio) : [];
+    if (!perto.length || !(d.max > 0)) continue;
+    const m = perto[Math.floor(rng() * perto.length)];
+    eventos.push({ t: 'fx', id: 11, x: m.x, y: m.y });
+    const dado = acertoDoArauto(estado, hunt, ARAUTO_TROVEJANTE, m, d.min + rng() * (d.max - d.min), 'energy', { tags, eventos, rng, semEletrizar: true, fonte: 'arauto-trovejante', personagem });
+    if (dado > 0 && emVoce > 0) {
+      // (a sua resistência a Raio, como o golpe de Raio de um monstro — o StormSecretSelfDamage do PoB)
+      const v = Math.round(emVoce * ModsPoe.fatorDaResistenciaRecebida(ficha, 'energy'));
+      // (pelo caminho de todo dano em você: o Escudo de Energia, a árvore, a vida)
+      if (v > 0) Poderes.aplicarNoJogador({ estado, hunt, bicho: null, dano: v, elemento: 'energy', eventos, ficha, temEscudo: false, base: { uid: 'player', quem: personagem?.nome ?? estado.name ?? null, x: hunt.pos.x, y: hunt.pos.y } });
+    }
+  }
+  if (t.prox >= t.ate && t.ate <= agora) delete hunt.poeTempestade;
+  return eventos;
+}
+
+/** (lote 81) Os números da queima do Arauto das Cinzas no nível (o PoB): o % do excesso por segundo (+0,25 por 1% de qualidade), o "mais" dela, 4 s, 1 m. */
+export function arautoDasCinzasNoNivel(nivel = 1, qualidade = 0) {
+  const linhas = GemasPoe.textosDaGema('Herald_of_Ash', nivel)?.linhas ?? [];
+  const pct = Number(/([\d.]+) ?% do Dano Excedente/.exec(linhas.join('\n'))?.[1]) || 25;
+  const mais = Number(/([\d.]+) ?% mais Dano Incendiário/.exec(linhas.join('\n'))?.[1]) || 0;
+  return { pctPorS: pct + 0.25 * qualidade, maisPct: mais, duracaoMs: 4000, raioM: 1 };
+}
+/**
+ * (lote 81) A QUEIMA do Arauto das Cinzas: ao matar com um acerto (o excesso de dano do golpe fatal — `mods-poe.aoAcertar` guarda), os vizinhos do
+ * morto (1 m × a Área) queimam com X% do excesso por segundo × o "mais" do nível, por 4 s × a Duração. É dano degenerativo de Fogo (o
+ * `degenFogo`, não o Incêndio): o aumentado geral, de Fogo, Elemental, o "Dano Degenerativo aumentado" (também o de Arauto), o "Dano Incendiário
+ * aumentado", os multiplicadores e o "mais Dano Degenerativo com Habilidades de Arautos" (o Mensageiro Solitário — `dotMais`); nada "com Acertos".
+ * Uma por inimigo (a mais forte renova).
+ */
+export function queimaduraDoArautoDasCinzas(estado, hunt, morto, excedente, eventos = []) {
+  if (!itensPoeLigado() || !hunt || !morto || hunt.pvp || !(excedente > 0) || !arautoLigado(hunt, ARAUTO_DAS_CINZAS)) return 0;
+  const entry = POR_ID.get(ARAUTO_DAS_CINZAS);
+  const ef = Gemas.efeitoNaSkill(estado, ARAUTO_DAS_CINZAS);
+  const n = arautoDasCinzasNoNivel(ef?.nivel ?? 1, ef?.qualidade ?? 0);
+  const fichaBase = Ficha.combate(estado);
+  const tags = tagsDoArauto(entry, ['fogo', 'dot']);
+  const f = ModsPoe.fichaDoGolpe(fichaBase, tags, { estado });
+  const a = f.afeccoes ?? AfeccoesPoe.daSoma(f.afPoe ?? {});
+  const durMs = Math.round(n.duracaoMs * fatorDeDuracao(estado, entry, ef));
+  const inc = (f.danoDoElemento?.fire ?? 0) + (a.danoAumentado ?? 0) + (a.danoIncendio ?? 0);
+  const multi = (a.multiplicador ?? 0) + (a.multiplicadorFogo ?? 0);
+  const doSuporte = (1 + (ef?.danoPct ?? 0) / 100) * (ef?.fatorDeDano ?? 1) / Math.max(1e-9, ef?.fatorSoAcerto ?? 1) * Math.max(0, 1 + (Number(ef?.maisQueimaduraPct) || 0) / 100);
+  const total = excedente * (n.pctPorS / 100) * (1 + n.maisPct / 100) * (durMs / 1000) * Math.max(0, 1 + inc / 100) * (1 + multi / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100) * doSuporte;
+  if (!(total > 0)) return 0;
+  const porTag = ModsPoe.somaPorTags(fichaBase, tags);
+  const base = Math.max(1, Math.round(n.raioM / 2));
+  const raio = base + ModsPoe.casasPelaArea(base, ModsPoe.fatorDaArea(ModsPoe.valor(fichaBase, 'area_inc') + (porTag.area_inc ?? 0) + (ef?.areaIncPct ?? 0), ModsPoe.valor(fichaBase, 'area_mais') + (porTag.area_mais ?? 0), ef?.areaMaisPct ?? 0));
+  const agora = hunt.clock ?? 0;
+  let n0 = 0;
+  for (const m of hunt.monstros ?? []) {
+    if (m === morto || !(m.hp > 0) || m.dummy || (m.z ?? 0) !== (morto.z ?? 0) || Math.max(Math.abs(m.x - morto.x), Math.abs(m.y - morto.y)) > raio) continue;
+    const posto = Dot.aplicar(m, { tipo: 'degenFogo', total, duracaoMs: durMs, chave: 'Herald_of_Ash', origem: { fonte: 'gema', habilidade: ARAUTO_DAS_CINZAS } }, agora);
+    if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto });
+    n0++;
+  }
+  if (n0) eventos.push({ t: 'fx', id: 37, x: morto.x, y: morto.y });
+  return total;
+}
+
 /**
  * ERGUER ARANHAS (Raise Spiders — a Presa de Arakaali, o único e o nó do Reliquarian): ao matar (a chance da linha; recarga de 2 s), duas
  * aranhas espectrais de cada cadáver perto (a até 4 casas — o cadáver é consumido), até 20, por 30 s; imunes a dano, atacam corpo a corpo e
@@ -1040,7 +1217,9 @@ const comRobos = (estado) => itensPoeLigado() && Number(Ficha.combate(estado).af
  * (lote 51, o Calafrio da Corrupção — dono: "Traduzir para a recarga") "X% de chance de ganhar uma Alma Vaal adicional por Inimigo
  * Estilhaçado": na chance, a recarga de cada habilidade Vaal na barra anda UMA alma — o total da recarga ÷ as "Almas por Utilização" da gema.
  */
-ModsPoe.definirAoEstilhacar((estado, hunt, ficha, rng) => {
+ModsPoe.definirAoEstilhacar((estado, hunt, ficha, rng, ctx = {}) => {
+  // (lote 81) o Arauto Glacial: o Estilhaçado explode
+  if (ctx.alvo) explosaoDoArautoGlacial(estado, hunt, ctx.alvo, ctx.eventos ?? [], rng, ctx.personagem ?? null);
   const chance = ModsPoe.valor(ficha, 'alma_vaal_ao_estilhacar');
   if (!(chance > 0) || !(rng() * 100 < chance)) return;
   const agora = hunt.clock ?? 0;

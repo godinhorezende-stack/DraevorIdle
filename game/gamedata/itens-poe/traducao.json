@@ -5302,6 +5302,94 @@
       "_lote80": "18/10 — lote 80: a pedra Paciência da Natureza (Afinidade Natural)"
     },
     {
+      "padrao": "^\\{(\\d+)\\}% mais Dano com Acertos de Habilidades de Arauto$",
+      "efeitos": [
+        {
+          "stat": "mais_dano@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos (dono: \"As duas coisas\") — as 2 linhas do Mensageiro Solitário"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano Degenerativo com Habilidades de Arautos?$",
+      "efeitos": [
+        {
+          "stat": "dano_dot_mais@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos (dono: \"As duas coisas\") — as 2 linhas do Mensageiro Solitário"
+    },
+    {
+      "padrao": "^Arauto Trovejante também cria uma tempestade quando você Eletrizar um Inimi?go$",
+      "efeitos": [
+        {
+          "stat": "arauto_tempestade_ao_eletrizar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos — o Segredo da Tormenta e o Círculo da Ambição (\"Inimgo\": o texto do poedb)"
+    },
+    {
+      "padrao": "^Tempest(?:est)?ades do Arauto Trovejante Acertam Inimigos com Frequência aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "arauto_tempestade_freq_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos — o Segredo da Tormenta e o Círculo da Ambição (\"Tempestestades\": o texto do poedb)"
+    },
+    {
+      "padrao": "^Sofre \\{(\\d+)\\} de Dano de Raio quando o Arauto Trovejante Acertar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "arauto_trovao_dano_em_voce",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos — o Segredo da Tormenta e o Círculo da Ambição"
+    },
+    {
+      "padrao": "^Dano de Fogo enquanto afetado por Arauto Flamejante aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg@afetadoPor:arauto-flamejante",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos — o Segredo da Tormenta e o Círculo da Ambição"
+    },
+    {
+      "padrao": "^Dano de Gelo enquanto afetado por Arauto Glacial aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ice_dmg@afetadoPor:arauto-glacial",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos — o Segredo da Tormenta e o Círculo da Ambição"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Gelo máxima enquanto afetado por Arauto Glacial$",
+      "efeitos": [
+        {
+          "stat": "ice_res_max@afetadoPor:arauto-glacial",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote81": "18/10 — lote 81: os acertos dos Arautos — o Segredo da Tormenta e o Círculo da Ambição"
+    },
+    {
       "padrao": "^Você só pode ter um Arauto$",
       "efeitos": [
         {

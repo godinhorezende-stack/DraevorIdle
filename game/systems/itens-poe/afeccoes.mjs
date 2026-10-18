@@ -164,13 +164,35 @@ export function fatorDeEletrizacao(alvo, agora) {
   return s && s.ate > agora ? 1 + s.pct / 100 : 1;
 }
 
+/** (lote 81) O golpe fatal que congelaria: marca o Congelamento no morto (a mesma conta do Congelamento do acerto — a chance ou o crítico, e o limiar). */
+function congelarNoGolpeFatal(bicho, partes, { afeccoes, crit, agora, rng, salaDeBoss = false }) {
+  const a = afeccoes ?? daSoma();
+  if (a.naoPode?.congelamento || (a.semAfeccaoSemCritico && !crit)) return;
+  // (quem o jogo nunca congela vivo — o chefe, a resistência a controle de 100% — também não fica Congelado no golpe fatal: `Estados.aplicar`)
+  if (Estados.ehChefe(bicho, salaDeBoss) || (Number(bicho.resistControle) || 0) >= 100) return;
+  // (o Gelo que conta, como no acerto: o que "pode Congelar", sem o que "não pode" e sem os elementais do Sofrimento)
+  const conta = [...new Set(['ice', ...(a.pode?.congelamento ?? [])])].filter((el) => !(a.naoPodeEl?.congelamento ?? []).includes(el) && !(a.semElementais && ['fire', 'ice', 'energy'].includes(el)));
+  const gelo = partes.filter((p) => conta.includes(p.elemento)).reduce((t, p) => t + (Number(p.dano) || 0), 0);
+  if (!(gelo > 0)) return;
+  const chance = (a.chance?.congelamento ?? 0) + (crit ? a.chanceCritico?.congelamento ?? 0 : 0);
+  if (!((crit && !a.semInerente) || (chance > 0 && rng() * 100 < chance))) return;
+  const ms = msDoCongelamento(gelo * (1 + (a.congelaComoMais ?? 0) / 100), bicho.maxHp ?? 1, (a.duracaoCongelamento ?? 0) + (a.duracao ?? 0) + geadasNo(bicho, agora) * GEADA.duracaoCongelamentoPct);
+  if (ms > 0) (bicho.estados ??= {}).congelado = { ate: agora + ms };
+}
+
 /**
  * Depois de um acerto do jogador. `partes`: `[{ elemento, dano }]` (o dano de cada tipo no acerto, antes da resistência); `crit`: foi
  * crítico; `ataque`: é ataque (golpe da arma, habilidade de ataque) — as chances "com Ataques" só valem nele. `afeccoes`: o de `daSoma`
  * (a ficha guarda). Devolve os nomes dos estados postos (o evento na tela). Sem o sistema do PoE, não faz nada.
  */
 export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, aoPor = null } = {}) {
-  if (!ligado() || !bicho || bicho.hp <= 0 || bicho.dummy) return [];
+  if (!ligado() || !bicho || bicho.dummy) return [];
+  // (lote 81 — dono: "Golpe fatal também") o golpe que MATA e congelaria: o morto conta como Congelado (o PoE Estilhaça — a explosão do Arauto
+  // Glacial, as Almas Vaal…); nada mais se aplica a um morto
+  if (bicho.hp <= 0) {
+    congelarNoGolpeFatal(bicho, partes, { afeccoes, crit, agora, rng, salaDeBoss });
+    return [];
+  }
   const a = afeccoes ?? daSoma();
   // "Golpes não Críticos não infligem Afecções" (a Agonia Perfeita).
   if (a.semAfeccaoSemCritico && !crit) return [];

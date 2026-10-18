@@ -8030,6 +8030,24 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/condicoes-poe.fatorDaEscala 'vinhas' (lote 80)"
+    },
+    "arauto_tempestade_ao_eletrizar": {
+      "nome": "Arauto Trovejante cria tempestade ao Eletrizar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDaTempestade (lote 81)"
+    },
+    "arauto_tempestade_freq_inc": {
+      "nome": "Frequência das Tempestades do Arauto Trovejante (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDaTempestade (lote 81)"
+    },
+    "arauto_trovao_dano_em_voce": {
+      "nome": "Dano de Raio sofrido quando o Arauto Trovejante acerta",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDaTempestade (lote 81)"
     }
   }
 }

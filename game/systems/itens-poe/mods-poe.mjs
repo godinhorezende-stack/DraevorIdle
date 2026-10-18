@@ -45,6 +45,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // "X% do Dano Excedente é Drenado como Vida" (o Apetite Insaciável do Carrasco): o acerto que MATOU — a vida que faltava ao monstro era
   // menos que o dano — drena o que sobrou ("Dano Excedente é qualquer Dano de um Acerto que exceda a Vida restante do Inimigo").
   const excedente = alvo.hp <= 0 && alvo.hp + dano > 0 ? Math.min(dano, -alvo.hp) : 0;
+  // (lote 81) o excesso do golpe fatal fica no morto (a queima do Arauto das Cinzas — `combate.matarMonstro`)
+  if (excedente > 0) alvo.poeExcedente = excedente;
   if (excedente > 0 && v('roubo_excedente') > 0) drenoDaFicha?.(estado, { vida: (excedente * v('roubo_excedente')) / 100 }, ficha, eventos, personagem?.nome ?? null, hunt?.pos ?? null);
   if (crit) {
     marcar(hunt, 'critico', agora);
@@ -302,6 +304,8 @@ export function empalamentoComSangramento(alvo, ficha, sangrou) {
 }
 export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos = null, personagem = null } = {}) {
   if (!ligado() || !postos?.length) return;
+  // (lote 81, o Segredo da Tormenta: "Arauto Trovejante também cria uma tempestade quando você Eletrizar um Inimigo" — `acoes.tiqueDaTempestade` abre)
+  if (hunt && postos.includes('eletrizado') && valor(ficha, 'arauto_tempestade_ao_eletrizar') > 0) hunt.poeEletrizouParaTempestade = hunt.clock ?? 0;
   for (const p of new Set(postos)) {
     const [ev, rec] = EVENTO_DA_AFECCAO[p] ?? [];
     if (!ev) continue;
@@ -837,7 +841,7 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   while (ultimos.length && (ultimos[0] < agora - 20000 || ultimos.length > 60)) ultimos.shift();
   if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) {
     marcar(hunt, 'estilhacou', agora);
-    aoEstilhacar?.(estado, hunt, ficha, ctx.rng ?? Math.random);
+    aoEstilhacar?.(estado, hunt, ficha, ctx.rng ?? Math.random, { alvo: ctx.alvo, eventos: ctx.eventos, personagem: ctx.personagem });
   }
   // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto; lote 31: o
   // do lacaio e o do totem são os eventos deles — "quando você ou um Aliado próximo Matar")

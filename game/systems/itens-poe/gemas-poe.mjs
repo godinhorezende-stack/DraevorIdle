@@ -94,6 +94,9 @@ export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l);
 /** (lote 75) As linhas da VIRULÊNCIA do Arauto da Agonia (`itens-poe/virulencia.mjs` e o Rastejador — `lacaios-poe.oQueInvoca`). */
 const LINHA_DA_VIRULENCIA = /Virulência|Rastejador/i;
 export const ehLinhaDaVirulencia = (l) => LINHA_DA_VIRULENCIA.test(l);
+/** (lote 81) As linhas dos ACERTOS e da QUEIMA dos Arautos que o jogo faz (`acoes.explosaoDoArautoGlacial`, `queimaduraDoArautoDasCinzas`). */
+const LINHAS_DO_ARAUTO = { Herald_of_Ice: /O raio Base é de|Dano não pode ser Refletido|^Causa \d/, Herald_of_Ash: /Dano Excedente|mais Dano Incendiário/, Herald_of_Thunder: /Tempestade Acerta um Inimigo|Cria uma tempestade quando|^Causa \d|Não Pode aplicar Eletrizar|Duração base é de/ };
+export const ehLinhaDoArauto = (slug, l) => !!LINHAS_DO_ARAUTO[slug]?.test(l);
 
 const acaoPorId = (id) => ACTION_CATALOG.spells.find((e) => e.id === id) ?? ACTION_CATALOG.runes?.find((e) => e.id === id) ?? null;
 
@@ -384,6 +387,15 @@ export function buffNoNivel(slug, nivel) {
     af[`added_${e}_dmg_min`] = (af[`added_${e}_dmg_min`] ?? 0) + Math.round(a);
     af[`added_${e}_dmg_max`] = (af[`added_${e}_dmg_max`] ?? 0) + Math.round(z);
   }
+  // (lote 81, os Arautos Glacial e Trovejante) o adicional só nos ataques (`added_*`) e só nas magias (`spell_added_*` — `ficha.danoSomadoMagia`)
+  for (const [chave, prefixo] of [['adicionalAtaque', 'added'], ['adicionalMagia', 'spell_added']]) {
+    for (const [el, [a, z]] of Object.entries(b[chave] ?? {})) {
+      const e = AF_DO_ELEMENTO[el];
+      if (!e || e === 'phys') continue;
+      af[`${prefixo}_${e}_dmg_min`] = (af[`${prefixo}_${e}_dmg_min`] ?? 0) + Math.round(a);
+      af[`${prefixo}_${e}_dmg_max`] = (af[`${prefixo}_${e}_dmg_max`] ?? 0) + Math.round(z);
+    }
+  }
   for (const [el, v] of Object.entries(b.resist ?? {})) {
     const e = AF_DO_ELEMENTO[el];
     if (e === 'phys') af.phys_res = (af.phys_res ?? 0) + v;
@@ -468,6 +480,7 @@ function avaliarNoJogo(h, formato) {
     motivos.push(...b.motivos);
     if (!b.efeitos.length && !Object.keys(b.af).length) motivos.push('nenhum efeito do buff tem equivalente no jogo');
     // (lote 75 — dono, 17/10: "No máximo, como o PoB")
+    if (h.slug === 'Herald_of_Ash') motivos.push('a queima do excesso de dano é a mesma em todos os vizinhos do morto (as condições de cada alvo não entram)');
     if (h.slug === 'Herald_of_Agony') motivos.push('a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados', 'o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)');
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
@@ -481,7 +494,7 @@ function avaliarNoJogo(h, formato) {
     if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -622,7 +635,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l))),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }
