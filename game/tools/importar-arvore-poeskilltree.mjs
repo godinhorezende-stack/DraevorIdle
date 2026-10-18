@@ -18,6 +18,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { coordsDasRamificadoras } from './sprites-ramificadoras.mjs';
 
 const ORIGEM = process.env.POESKILLTREE ?? '/home/deploy/scrapling/saida/poeskilltree/3.25.0';
 const POEDB = process.env.POEDB_ARVORE ?? '/home/deploy/scrapling/saida/arvore/arvore-poedb-3.29-pt.json';
@@ -208,6 +209,10 @@ if (erros.length) {
   for (const [id, c] of Object.entries(nos)) if (typeof c === 'string' && !coords.normalActive?.[c] && !coords.notableActive?.[c] && !coords.keystoneActive?.[c] && !avulsos[c]) delete nos[id];
   console.warn(`ícones avulsos que falharam: ${erros.join(', ')}`);
 }
+
+// (lote 78) os ícones dos nós das Ramificadoras e a moldura do encaixe de expansão (nas mesmas folhas — `tools/sprites-ramificadoras.mjs`)
+const faltouNasRamificadoras = coordsDasRamificadoras({ st, zoom, ramificadoras: JSON.parse(readFileSync(new URL('../gamedata/itens-poe/ramificadoras.json', import.meta.url), 'utf8')), coords, tipos });
+if (faltouNasRamificadoras.length) relatorio.semIcone.push(...faltouNasRamificadoras.map((x) => `ramificadora: ${x}`));
 
 const saida = {
   _nota: `Os ícones e as molduras dos nós da árvore de passivas do PoE, raspados do poeskilltree.com (${versao}, zoom ${zoom}) por tools/importar-arvore-poeskilltree.mjs. "folhas": as folhas de sprites em arvore-sprites/ (servidas em /api/jogo/poe/icone/arvore/); "tipos": a folha de cada tipo de sprite; "coords": [x, y, l, a] de cada ícone usado (a chave é o caminho do PoE sem "Art/2DArt/SkillIcons/passives/" e ".png") e das molduras; "nos": o ícone de cada nó (a maestria: [sem ligação, ligada, escolhida]); "joias": os encaixes de joia (só a moldura); "avulsos": os ícones fora das folhas (nós posteriores à ${versao}, do CDN do poedb); "grupos": [x, y, fundo, meio] de cada grupo com fundo (a posição da árvore do poedb, a do jogo; meio = a metade de cima, repetida girada embaixo); "classes": o medalhão (center<classe>) e a ilustração grande de cada classe (classes/<atributo>.webp, do CDN do poedb: o canto de cima à esquerda em x, y e o tamanho l × a, em unidades da árvore); "ascendencias": o fundo redondo de cada ascendência (Classes<Ascendência>, centrado no início dela) e o tipo de sprite (as folhas delas e as molduras Ascendancy* são as da 3.29, do CDN da GGG).`,

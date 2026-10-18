@@ -13,7 +13,7 @@
 //   - os EFEITOS: a pequena concede o encantamento e os "também concedem" da joia, com o "Efeito aumentado" das pequenas (o PoB: o valor ×
 //     o efeito, truncado); o notável, os efeitos dele (a árvore 3.29 do poedb). As linhas pelo mesmo tradutor da árvore.
 import { traduzirLinha } from '../itens-poe/arvore.mjs';
-import { encantamentoDa } from '../itens-poe/ramificadoras.mjs';
+import { encantamentoDa, definirEstadosDaPeca } from '../itens-poe/ramificadoras.mjs';
 import { definirRamificadoras } from './arvore.mjs';
 import { catalogo } from '../itens-poe/catalogo.mjs';
 
@@ -171,6 +171,42 @@ export function montar({ dados, arvore, encaixe, poe, id = ID_BASE, joiaNoEncaix
   }
   return saida;
 }
+
+/** Do pior para o melhor: a linha da peça leva o pior estado das linhas do nó que ela dá (as notas e os lembretes não contam). */
+const PIOR = { registrado: 5, inerte: 4, parcial: 3, aproximado: 2, novo: 1, equivalente: 0 };
+// (a linha que "não se aplica ao jogo" — o balão da árvore marca "–" — só conta se o nó não tiver outra)
+const naoSeAplica = (t) => t.estado === 'inerte' && /^não se aplica ao jogo:/i.test(t.nota ?? '');
+const pior = (traduzidas) => {
+  const validas = traduzidas.filter((t) => t.estado in PIOR);
+  const comEfeito = validas.filter((t) => !naoSeAplica(t));
+  return (comEfeito.length ? comEfeito : validas).sort((a, b) => PIOR[b.estado] - PIOR[a.estado])[0] ?? null;
+};
+const ENCANTAMENTO = /^Habilidades Passivas Adicionadas concedem /;
+/**
+ * (lote 78) Os ESTADOS das linhas da peça `poe` (na ordem da tradução: implícitos, prefixos, sufixos, modificadores) pelas linhas dos nós que
+ * ela cria: "Adiciona N", "N são Encaixes de Joia" e o "Efeito aumentado" das pequenas montam os nós (✓); o encantamento e o "também
+ * concedem", o estado da linha na pequena; o "1 das … é <Notável>", o pior das linhas do notável. A nota vai com o estado (o porquê no balão).
+ */
+export function estadosDaPeca(dados, poe, estados = [], notas = []) {
+  if (!leituraDaJoia(dados, poe)) return null;
+  const linhas = [...(poe.implicitos ?? []), ...(poe.prefixos ?? []), ...(poe.sufixos ?? []), ...(poe.modificadores ?? [])];
+  if (linhas.length !== estados.length) return null;
+  const novos = [...estados];
+  const novasNotas = linhas.map((_, i) => notas?.[i] ?? null);
+  linhas.forEach((m, i) => {
+    const modelo = m.modelo ?? '';
+    let t = null;
+    if (NOS.test(modelo) || ENCAIXES.test(modelo) || EFEITO.test(modelo)) t = { estado: 'equivalente', nota: null };
+    else if (m.encantamento) t = pior([traduzirLinha(String(m.texto ?? modelo).replace(ENCANTAMENTO, ''))]);
+    else if (m.notavel && dados.notaveis[m.notavel]) t = pior(dados.notaveis[m.notavel].linhas.map(traduzirLinha));
+    else if (TAMBEM.test(modelo)) t = pior([traduzirLinha(escrever(TAMBEM.exec(modelo)[1], m.valores))]);
+    if (!t) return;
+    novos[i] = t.estado;
+    novasNotas[i] = t.estado === 'inerte' ? t.nota ?? null : null;
+  });
+  return { estados: novos, notas: novasNotas };
+}
+definirEstadosDaPeca((poe, estados, notas) => estadosDaPeca(catalogo()?.ramificadoras ?? null, poe, estados, notas));
 
 // (lote 64) a árvore do personagem monta os nós das Ramificadoras encaixadas por aqui (`passivas/arvore.grafoDe`)
 definirRamificadoras({ montar, dados: () => catalogo()?.ramificadoras ?? null });

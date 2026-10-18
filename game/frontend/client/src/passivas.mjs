@@ -468,6 +468,8 @@ function montar(body) {
     notable: ['NotableFrameUnallocated', 'NotableFrameCanAllocate', 'NotableFrameAllocated'],
     keystone: ['KeystoneFrameUnallocated', 'KeystoneFrameCanAllocate', 'KeystoneFrameAllocated'],
     joia: ['JewelFrameUnallocated', 'JewelFrameCanAllocate', 'JewelFrameAllocated'],
+    // (lote 78) o encaixe de EXPANSÃO (o Grande da borda e os que as Ramificadoras criam) tem a moldura própria do PoE
+    expansao: ['JewelSocketAltNormal', 'JewelSocketAltCanAllocate', 'JewelSocketAltActive'],
   };
   const TIPO_DO_ICONE = { small: 'normal', notable: 'notable', keystone: 'keystone' };
   const TIPOS_DA_MAESTRIA = ['mastery', 'masteryConnected', 'masteryActiveSelected'];
@@ -490,7 +492,7 @@ function montar(body) {
       const c = s.coords[tipo]?.[arte[passo]];
       return Boolean(c) && recorte(t, s.tipos[tipo], c, p, (r * 3.3) / c[2]);
     }
-    const moldura = joia ? MOLDURA.joia : MOLDURA[n.tipo];
+    const moldura = joia ? (n.expansao && s.coords.frame?.[MOLDURA.expansao[passo]] ? MOLDURA.expansao : MOLDURA.joia) : MOLDURA[n.tipo];
     const cm = moldura && s.coords.frame?.[moldura[passo]];
     if (!cm || !folha(s.tipos.frame)) return false;
     // A moldura um pouco maior que o nó; o ícone na proporção do PoE dentro dela.
@@ -531,14 +533,15 @@ function montar(body) {
   function desenharArteDoPoe(n, p, r, estado, noCaminho) {
     const s = spritesDaArvore();
     if (!s) return false;
-    const arte = s.nos[n.id];
-    const joia = !arte && s.joias.has(n.id);
+    // (lote 78) o nó da Ramificadora traz a chave do ícone (`n.arte`); o encaixe interno dela é encaixe de joia
+    const arte = s.nos[n.id] ?? n.arte;
+    const joia = !arte && (s.joias.has(n.id) || !!n.encaixeDeJoia);
     if (!arte && !joia) return false;
     const passo = estado === 'alocado' ? 2 : estado === 'disponivel' || noCaminho ? 1 : 0;
     if (cam.zoom * 1.8 > ESCALA_MINIMA) return arteDoNo(g, s, n, arte, joia, passo, p, r);
     const dpr = window.devicePixelRatio || 1;
     const lado = Math.ceil(r * 3.4);
-    const chave = `${n.tipo}|${arte}|${passo}|${lado}|${dpr}`;
+    const chave = `${n.tipo}|${arte}|${n.expansao ? 'x' : ''}|${passo}|${lado}|${dpr}`;
     let pronta = prontas.get(chave);
     if (!pronta) {
       pronta = document.createElement('canvas');

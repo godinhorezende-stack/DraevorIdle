@@ -10,6 +10,7 @@ import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
 import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 import * as Jogo from '../systems/itens-poe/jogo.mjs';
+import { estadosDaRamificadora } from '../systems/itens-poe/ramificadoras.mjs';
 import * as Telas from './itens-poe-telas.mjs';
 import * as Pendencias from './itens-poe-pendencias.mjs';
 import * as AbasPoedb from './itens-poe-abas.mjs';
@@ -175,7 +176,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (rota === 'gerar') {
     const pecas = pecasDe(cat, q);
     // Cada peça vem com a TRADUÇÃO para os atributos do Draevor (o que somaria na ficha) e o estado de cada mod.
-    return json(res, 200, { pecas: pecas.map((p) => (p.erro ? p : { ...p, traducao: Traduzir.traduzirPeca(p) })) }), true;
+    return json(res, 200, { pecas: pecas.map((p) => (p.erro ? p : { ...p, traducao: comEstadosDaRamificadora(p, Traduzir.traduzirPeca(p)) })) }), true;
   }
   // (10/10) A aba Mapas (endgame): os modificadores dos mapas por raridade (Normal, Mágico, Raro, Único), cada efeito validado no caminho do jogo.
   if (rota === 'mapas-endgame') return json(res, 200, MapasValidacao.validarTudo()), true;
@@ -314,4 +315,10 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
     return f ? json(res, 200, { ok: true, ficha: f }) : json(res, 404, { ok: false }), true;
   }
   return json(res, 404, { ok: false }), true;
+}
+
+/** (lote 78) A Ramificadora: o estado de cada linha é o das linhas dos nós que ela cria — o mesmo do jogo (`itens-poe/jogo.pecaDoJogo`). */
+function comEstadosDaRamificadora(p, t) {
+  const r = estadosDaRamificadora(p, t.linhas.map((l) => l.estado), []);
+  return r ? { ...t, linhas: t.linhas.map((l, i) => ({ ...l, estado: r.estados[i] ?? l.estado })) } : t;
 }

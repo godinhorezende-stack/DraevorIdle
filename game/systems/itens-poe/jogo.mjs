@@ -17,6 +17,7 @@ import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as SocketsPoe from './sockets.mjs';
 import * as Frascos from './frascos.mjs';
 import * as Mapas from './mapas.mjs';
+import { estadosDaRamificadora } from './ramificadoras.mjs';
 
 export const PRIMEIRO_ID = 7_000_000;
 
@@ -313,6 +314,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
       ...(gerada.ramificadora ? { ramificadora: gerada.ramificadora } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [],
       estados: t.linhas.map((l) => l.estado), notas: notasDe(t), af, tv: VERSAO_DA_TRADUCAO,
+      // (lote 78) a Ramificadora: o estado de cada linha é o das linhas dos nós que ela cria (`estadosDaRamificadora`)
+      ...(gerada.ramificadora ? estadosDaRamificadora(gerada, t.linhas.map((l) => l.estado), notasDe(t)) ?? {} : {}),
     },
   };
 }
@@ -407,7 +410,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // não se interrompe no atordoamento, as propagações restantes dos Projéteis, o Empalamento com Sangramento)
 // (62 — 17/10, lote 74: as Ramificadoras — o Reduzir, com a gema Convocar Runas que passa a existir no jogo)
 // (63 — 17/10, lote 75: as Ramificadoras — a Pura Agonia, com o Arauto da Agonia e a Virulência)
-export const VERSAO_DA_TRADUCAO = 63;
+// (64 — 18/10, lote 78: as linhas da Ramificadora com o estado das linhas dos nós que ela cria, não mais "registrado")
+export const VERSAO_DA_TRADUCAO = 64;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -490,6 +494,9 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   // A versão da tradução com que `af`/`estados` foram feitos (a entrada no jogo refaz as peças de versões antigas — `refazerPecasAntigas`).
   p.tv = VERSAO_DA_TRADUCAO;
   p.estados = t.linhas.map((l) => l.estado);
+  // (lote 78) a Ramificadora: os estados pelos nós que ela cria
+  const daRamificadora = estadosDaRamificadora(p, p.estados, p.notas);
+  if (daRamificadora) Object.assign(p, daRamificadora);
   return peca;
 }
 
