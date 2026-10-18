@@ -569,7 +569,9 @@ const indiceDaRaridadePoe = (p) => Math.max(0, RARIDADES_POE.indexOf(p?.poe?.rar
 const modsExplicitos = (p) => [...(p?.poe?.prefixos ?? []), ...(p?.poe?.sufixos ?? [])];
 /** O melhor tier (o menor número) entre os mods explícitos; null sem mods com tier. */
 export function melhorTierPoe(p) {
-  const tiers = modsExplicitos(p).map((m) => Number(m.tier)).filter((n) => n > 0);
+  // (lote 82) o mod da Ramificadora tem um tier só (T1 no PoE): sem número, conta como T1
+  const semTier = p?.poe?.ramificadora ? 1 : 0;
+  const tiers = modsExplicitos(p).map((m) => Number(m.tier ?? semTier)).filter((n) => n > 0);
   return tiers.length ? Math.min(...tiers) : null;
 }
 /** Os sockets da peça e se há um grupo LIGADO com as três cores (R, G e B — o Cromático do PoE). */
