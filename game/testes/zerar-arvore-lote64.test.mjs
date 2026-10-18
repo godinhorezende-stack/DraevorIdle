@@ -2,7 +2,7 @@
 // Grande da borda, os nós dela existem para o personagem: o caminho, alocar (1 ponto cada), os efeitos somados, o encaixe interno que recebe a
 // joia menor (que monta os nós dela a partir dele) e a tela recebe os nós (`vista().ramificadoras`). As regras do PoE (o PoB:
 // `IsItemValidForSlot`): a Ramificadora só num encaixe de expansão do tamanho dela ou maior; a joia comum em todos. Tirar a joia devolve os
-// pontos dela (e a joia menor volta à mochila). As linhas da peça não somam no personagem (valem pelos nós). E ela ainda não cai.
+// pontos dela (e a joia menor volta à mochila). As linhas da peça não somam no personagem (valem pelos nós). E ela ainda não cai (lote 82: cai, nos mapas — Item Level 68 para cima).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -50,7 +50,7 @@ const encaixar = (e, no, joia) => {
   return Joias.encaixar(e, { no, pilha: e.inventory.length - 1, id: joia.id });
 };
 
-test('o CATÁLOGO: as 3 Ramificadoras com ids fixos (7.800.021–023), joia, sem slot; ainda NÃO caem (nem a Única)', { skip: SEM }, () => {
+test('o CATÁLOGO: as 3 Ramificadoras com ids fixos (7.800.021–023), joia, sem slot; (lote 82) caem do Item Level 68 para cima', { skip: SEM }, () => {
   ['Large', 'Medium', 'Small'].forEach((t, i) => {
     const id = J.idDaBase(`Jewels/${t}_Cluster_Jewel`);
     assert.equal(id, 7_800_021 + i);
@@ -58,8 +58,10 @@ test('o CATÁLOGO: as 3 Ramificadoras com ids fixos (7.800.021–023), joia, sem
   });
   const cat = Catalogo.catalogo();
   const base = cat.classes.Jewels.bases.find((b) => b.id === 'Jewels/Large_Cluster_Jewel');
-  for (const r of ['normal', 'magico', 'raro', 'unico']) assert.equal(J.podeCairComo(cat.classes.Jewels, base, r), false, r);
-  assert.equal(J.pecaSorteada(80, semeado(3), Catalogo.REGRAS, 0, 'Jewels/Large_Cluster_Jewel'), null);
+  // (dono, 18/10, lote 82: "Só nos mapas" e "Pode ajustar" — as Ramificadoras caem, do Item Level 68 para cima; antes, "ainda não caem")
+  for (const r of ['normal', 'magico', 'raro', 'unico']) assert.equal(J.podeCairComo(cat.classes.Jewels, base, r), true, r);
+  assert.equal(J.pecaSorteada(80, semeado(3), Catalogo.REGRAS, 0, 'Jewels/Large_Cluster_Jewel')?.poe?.base, 'Jewels/Large_Cluster_Jewel');
+  assert.equal(J.pecaSorteada(60, semeado(3), Catalogo.REGRAS, 0, 'Jewels/Large_Cluster_Jewel'), null, 'abaixo do Item Level 68, não');
 });
 
 test('ENCAIXADA na borda: os nós dela existem para o personagem — o caminho, alocar (1 ponto cada) e os efeitos somados', { skip: SEM }, () => {
