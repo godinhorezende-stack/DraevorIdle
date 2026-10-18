@@ -132,7 +132,15 @@ function bolaDeFogo(suportes = []) {
   Afixos.sincronizarMaximos(e);
   e.actions = Array(Acoes.SLOTS).fill(null);
   e.actions[0] = { id: G.doSlug('Fireball').acao, enabled: true, minMana: 0, conditions: [] };
-  assert.ok(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok);
+  // (dono, 18/10: "Semear o entrar" — a raridade e os mods do monstro são sorteados ao entrar; sem a semente, o Incêndio variava — 3/10 falhas)
+  const sorteio = Math.random;
+  let semente = 12345;
+  Math.random = () => ((semente = (semente * 16807) % 2147483647) / 2147483647);
+  try {
+    assert.ok(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok);
+  } finally {
+    Math.random = sorteio;
+  }
   e.hunt.clock = 100_000;
   e.mana = e.maxMana = 1e6;
   e.maxHp = e.hp = 1e6;

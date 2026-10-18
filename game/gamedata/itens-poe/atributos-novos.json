@@ -8030,6 +8030,30 @@
       "unidade": "%",
       "combate": true,
       "efeito": "itens-poe/afeccoes.aoAcertar (o buff do Arauto da Agonia) (lote 75)"
+    },
+    "so_um_arauto": {
+      "nome": "Só um Arauto (Mensageiro Solitário)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.disparar / desligarAurasForaDaBarra (lote 80)"
+    },
+    "efeito_buff_arauto_mais": {
+      "nome": "Mais Efeito dos Buffs de Arautos em você (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "gemas-poe.adds (lote 80)"
+    },
+    "auras_desabilitadas": {
+      "nome": "Suas Habilidades de Aura são Desabilitadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.auraPermitida (lote 80)"
+    },
+    "vinhas_constringentes_por_s": {
+      "nome": "Vinhas Constringentes por segundo parado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaEscala 'vinhas' (lote 80)"
     }
   }
 }

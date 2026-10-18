@@ -1143,9 +1143,12 @@ function aplicarAcao(estado, hunt, ev, ficha, ctx) {
       marcar(hunt, 'consumiuCadaver', agora);
       ((hunt.poeUsosRecentes ??= {}).cadaver ??= []).push(agora);
       evento(estado, hunt, 'consumirCadaver', ficha, { agora, eventos });
-      const recurso = ev.param === 'es' ? 'es' : ev.param === 'mana' ? 'mana' : 'hp';
-      const max = recurso === 'es' ? esMax : recurso === 'mana' ? estado.maxMana ?? 0 : estado.maxHp ?? 0;
-      curar(recurso, max, (max * v) / 100);
+      // (lote 80, o Discípulo de Kitava: `vidaMana` — um cadáver só recupera Vida e Mana)
+      const recursos = ev.param === 'vidaMana' ? ['hp', 'mana'] : [ev.param === 'es' ? 'es' : ev.param === 'mana' ? 'mana' : 'hp'];
+      for (const recurso of recursos) {
+        const max = recurso === 'es' ? esMax : recurso === 'mana' ? estado.maxMana ?? 0 : estado.maxHp ?? 0;
+        curar(recurso, max, (max * v) / 100);
+      }
       return;
     }
     // `vidaDaRegen:<por>` = N: recupera N de Vida por cada `<por>` de Vida Regenerada por segundo ("A cada 4 segundos, Recupere 1 de vida por

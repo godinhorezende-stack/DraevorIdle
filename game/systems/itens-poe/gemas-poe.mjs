@@ -1189,7 +1189,9 @@ export function adds(estado) {
     const menosPorArauto = tipo === 'poe-aura' && dono === estado ? doEquipamento(dono, 'aura_em_voce_menos_por_arauto') : 0;
     const arautos = menosPorArauto > 0 ? Object.values(hunt.buffs ?? {}).filter((x) => x?.tipo === 'poe-arauto' && x.ate > agora).length : 0;
     const porArauto = arautos > 0 ? Math.min(doEquipamento(dono, 'aura_em_voce_menos_por_arauto_max') || Infinity, menosPorArauto * arautos) : 0;
-    return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte + (Number(b?.efeitoAuraPct) || 0) - porArauto) / 100) * mais;
+    // (lote 80, o Mensageiro Solitário: "50% mais Efeito dos Buffs de Arautos em você" — multiplica)
+    const maisArauto = tipo === 'poe-arauto' && dono === estado ? 1 + doEquipamento(dono, 'efeito_buff_arauto_mais') / 100 : 1;
+    return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte + (Number(b?.efeitoAuraPct) || 0) - porArauto) / 100) * mais * maisArauto;
   };
   // (lote G14: a aura "que não afeta você" — a Generosidade — não entra na sua soma; nos companheiros, sim)
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }

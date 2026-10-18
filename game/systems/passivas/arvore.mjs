@@ -1090,6 +1090,9 @@ function noParaCliente(n) {
     classe: n.classe ?? null,
     conexoes: n.conexoes ?? [],
     ...(n.ramificadora ? { ramificadora: n.ramificadora } : {}),
+    // (lote 78) o ícone do nó da Ramificadora nas folhas da árvore (a chave de `arvore-sprites.json` — `tools/sprites-ramificadoras.mjs`): o id
+    // dele não é da árvore, então a tela não o acha por id
+    ...(n.ramificadora && n.icone ? { arte: String(n.icone).replace(/^Art\/2DArt\/SkillIcons\/passives\//, '').replace(/\.png$/i, '') } : {}),
     ...(n.encaixeInterno ? { encaixeInterno: true } : {}),
     // (lote 77) o encaixe de EXPANSÃO: o tamanho (2 Grande, 1 Médio, 0 Pequeno — a tela só oferece a Ramificadora que cabe) e o proxy dele; o
     // PROXY: o centro do grupo dele (a tela esconde o fundo do grupo sem a joia e, com ela, desenha o do tamanho da joia ali — como o PoB)

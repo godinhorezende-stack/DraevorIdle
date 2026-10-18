@@ -124,7 +124,7 @@ export function comMagnitudeNosImplicitos({ implicitos = [], modificadores = [] 
  * a linha `substitui` sai: no lugar dela entram os implícitos sorteados. `manter`: o modelo que a peça já tinha fica (a peça de antes da
  * regra, no Orbe Divino, não perde a linha).
  */
-export function modificadoresDoUnico(u, rng, manter = null) {
+export function modificadoresDoUnico(u, rng, manter = null, nivel = Infinity) {
   const s = u.implicitosSorteados;
   const sai = (m) => s && m.tipo === 'implicit' && m.modelo === s.substitui && !manter?.has(m.modelo);
   const ls = u.linhasSorteadas;
@@ -140,11 +140,21 @@ export function modificadoresDoUnico(u, rng, manter = null) {
     const n = ls?.substitui?.[m.modelo];
     if (!n) return [{ tipo: m.tipo, ...rolarTexto(m, rng) }];
     // (lote 57: a marcação com o pool próprio — `pools[marca]`: o Limitado pelo Destino, as linhas do seu número de itens)
-    const pool = ls.pools?.[m.modelo] ?? ls.linhas;
+    // (lote 79: a linha com o nível do mod — o Megalomaníaco — só sai com o Item Level da peça)
+    const pool = (ls.pools?.[m.modelo] ?? ls.linhas).filter((l) => !(l.nivel > nivel));
     // (lote 55, J31) a linha de marcação ("[Two random aura modifiers]") vira N linhas do pool da única (`linhas-sorteadas.json`), sem repetir e com
     // a mesma chance; o Orbe Divino (`manter` — os modelos da peça) sorteia de novo só os valores das que ela já tem.
-    const ja = manter ? pool.filter((l) => manter.has(l.modelo)) : [];
-    return (ja.length ? ja.slice(0, n) : linhasDoPool(pool, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
+    // (lote 79: com as linhas sorteadas da peça — `manter.mods` —, cada uma casa com UMA linha do pool pelo modelo e pelo notável: o Megalomaníaco
+    // tem modelos repetidos — os dois Olho Perverso, as duas "Inspiração Ancestral" — e o Divino não troca nem repete o notável)
+    const daPeca = manter?.mods?.filter((x) => x.sorteada) ?? [];
+    const usadas = new Set();
+    for (const x of daPeca) {
+      const i = pool.findIndex((l, k) => !usadas.has(k) && l.modelo === x.modelo && (l.notavel ?? null) === (x.notavel ?? null));
+      if (i >= 0) usadas.add(i);
+    }
+    const ja = daPeca.length ? [...usadas].map((i) => pool[i]) : manter ? pool.filter((l) => manter.has(l.modelo)) : [];
+    // (lote 79: a linha do Megalomaníaco leva o notável — os nós da joia saem dele)
+    return (ja.length ? ja.slice(0, n) : linhasDoPool(pool, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng), ...(l.notavel ? { notavel: l.notavel } : {}) }));
   });
 }
 const escaparRe = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -299,7 +309,8 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
   };
   if (R.fixos) {
     const lista = classe.unicos.filter((u) => u.base === base.nome);
-    const u = unico ? lista.find((x) => x.slug === unico) : lista[Math.floor(rng() * lista.length)];
+    // (lote 79: o cadastro do único também — a variante certa entre as de mesmo slug, como as 4 da Vozes)
+    const u = unico && typeof unico === 'object' ? unico : unico ? lista.find((x) => x.slug === unico) : lista[Math.floor(rng() * lista.length)];
     if (!u) return { erro: `nenhum único com a base ${base.nome}` };
     // O implícito do ÚNICO é o da página dele (poedb: a linha `implicitMod`), e não o da base SOMADO a ele: com os dois, a Vergôntea dava
     // Dano Mágico 8–12% duas vezes (achado da auditoria dos únicos, 11/10). Único sem implícito próprio fica com o da base.
@@ -307,9 +318,12 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     // Síntese): a linha dele sai e entram os sorteados. E a magnitude do único nos implícitos (Olhos ×2, Corda ×3, Nebulis +60–120%).
     const proprios = u.modificadores.some((m) => m.tipo === 'implicit');
     const s = u.implicitosSorteados;
-    const modificadores = comLiderDaAtemporal(u.slug, modificadoresDoUnico(u, rng), rng);
-    const implicitos = s ? implicitosDoUnico(s, nivel, rng) : proprios ? [] : peca.implicitos;
-    return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), nome: u.nome, unico: u.slug };
+    const modificadores = comLiderDaAtemporal(u.slug, modificadoresDoUnico(u, rng, null, nivel), rng);
+    // (lote 79) a RAMIFICADORA ÚNICA: as linhas dela substituem as da base ("Adiciona N", os encaixes, a marcação do encantamento) — os nós
+    // saem das linhas do único (`passivas/ramificadoras.leituraDaJoia`)
+    const ramificadora = Ramificadoras.tamanhoDaBase(base.id) ? Ramificadoras.ramificadoraDoUnico(base.id) : null;
+    const implicitos = s ? implicitosDoUnico(s, nivel, rng) : proprios || ramificadora ? [] : peca.implicitos;
+    return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), ...(ramificadora ? { ramificadora } : {}), nome: u.nome, unico: u.slug };
   }
   const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
   // (lote 61) a RAMIFICADORA: o encantamento e os mods pelos pesos do PoE (`itens-poe/ramificadoras.mjs` — o catálogo traz os dados)

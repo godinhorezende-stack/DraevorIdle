@@ -62,6 +62,37 @@ const doPoedb = fuga.abas.find((x) => x.id === 'Notável').cards.flatMap((c) => 
 const foraDaArvore = doPoedb.filter((n) => !pedras.has(n));
 unicos.Impossible_Escape = { classe: 'Jewels', fonte: fuga.fonte, nomeSorteado: { marca: 'Passive Skill', nomes: doPoedb.filter((n) => pedras.has(n)), ...(foraDaArvore.length ? { foraDaArvore } : {}) } };
 console.log(`Impossible_Escape: ${unicos.Impossible_Escape.nomeSorteado.nomes.length} pedras fundamentais (fora da árvore: ${foraDaArvore.join(', ') || 'nenhuma'})`);
+// (lote 79) o MEGALOMANÍACO: "[Three random notable modifiers]" vira 3 dos 287 mods da aba "Megalomaniac Mods" do poedb ("All non-unique notables from
+// any size cluster jewels have a chance to roll" — todos com peso 1000, cada um com o nível do mod). Cada linha leva o notável (a chave de
+// `ramificadoras.json` — os nós saem dele) e o nível: pelo texto do mod da Ramificadora, pelo nome, ou pelo apelido (o poedb traduziu alguns
+// nomes de outro jeito no mod do Megalomaníaco); as duas "Inspiração Ancestral" pelo nível (68: a Ancestral, 50: a Eldritch).
+const RAMIFICADORAS = JSON.parse(readFileSync(new URL('../gamedata/itens-poe/ramificadoras.json', import.meta.url), 'utf8'));
+const APELIDOS = {
+  'Presença Rancorosa': 'Presença Malévola', 'Presença Eletrizante': 'Presença Elétrica', 'Caminho Casto': 'Caminho Virtuoso', 'Explore a Fraqueza': 'Explorar a Fraqueza',
+  'Espíritos Aprisionados': 'Espíritos Aprisionadores', 'Mistura Cravada': 'Composto Tonificado', 'Agravar Ferimentos': 'Agravar Ferimento', 'Suserano': 'Soberano',
+  'Leve a Destruição': 'Liderar a Destruição', 'Exaurir Psiquê': 'Exaurir a Psique', 'Sádico': 'Sadista', 'Toque de Crueldade': 'Toque da Crueldade',
+  'Presentes Inefáveis': 'Dons Inefáveis', 'Garras Pútrida': 'Garras Pútridas', 'Envolta em Chamas': 'Envolto em Chamas', 'Ferimento Composto': 'Ferida Composta',
+  'Tempestade de Raios': 'Trovoada', 'Olho Malígno': 'Olho Perverso', 'Rancor de Doedre': 'Despeito de Doedre', 'Agonia Pura': 'Pura Agonia',
+  'Lealdade Rúnica': 'Runa da Lealdade', 'Tática de Guerrilha': 'Táticas de Guerra', 'Reforço do Hábito': 'Reforço da Hábito', 'Capacitador': 'Capacitor', 'Instrospecção': 'Introspecção',
+};
+{
+  const mega = JSON.parse(readFileSync(`${PASTA}/Megalomaniac.json`, 'utf8'));
+  const tabela = mega.abas.find((x) => x.id === 'MegalomaniacMods')?.cards.flatMap((c) => c.tabelas ?? []).flatMap((t) => t.linhas ?? []) ?? [];
+  const porMod = new Map(RAMIFICADORAS.mods.filter((m) => m.notavel).map((m) => [String(m.modelo).replace('{0}', '1'), m.notavel]));
+  // (sem acento nem maiúscula: "Quebra-crânios" × "Quebra-Crânios")
+  const norm = (x) => String(x ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const porNome = new Map(Object.keys(RAMIFICADORAS.notaveis).map((k) => [norm(k), k]));
+  const linhas = tabela.map(([, texto, , nivel]) => {
+    const t = String(texto).trim();
+    const nome = / é (.+)$/.exec(t)?.[1];
+    const inspiracao = nome === 'Inspiração Ancestral' ? (Number(nivel) >= 68 ? 'Inspiração Ancestral' : 'Inspiração Ancestral (Eldritch Inspiration)') : null;
+    const notavel = inspiracao ?? porMod.get(t) ?? porNome.get(norm(nome)) ?? porNome.get(norm(APELIDOS[nome]));
+    if (!notavel) throw new Error(`Megalomaníaco: o notável de "${t}" não está em ramificadoras.json`);
+    return { ...noFormatoDoCatalogo(t), notavel, nivel: Number(nivel) || 1 };
+  });
+  unicos.Megalomaniac = { classe: 'Jewels', substitui: { '[Three random notable modifiers]': 3 }, fonte: mega.fonte, linhas };
+  console.log(`Megalomaniac: ${linhas.length} linhas, ${new Set(linhas.map((l) => l.notavel)).size} notáveis`);
+}
 const notaveis = ARVORE.nos.filter((n) => n.ascendencia && n.tipo === 'notable').map((n) => n.nome);
 for (const slug of ['Forbidden_Flame', 'Forbidden_Flesh']) unicos[slug] = { classe: 'Jewels', fonte: `https://poedb.tw/pt/${slug}`, nomeSorteado: { marca: 'Passive Skill', nomes: notaveis } };
 console.log(`Forbidden_Flame / Forbidden_Flesh: ${notaveis.length} notáveis de ascendência`);
