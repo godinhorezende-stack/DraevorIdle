@@ -3659,6 +3659,28 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^A cada segundo, Consome um Cadáver próximo para Recuperar \\{(\\d+)\\}% de Vida e Mana$",
+      "efeitos": [
+        {
+          "stat": "periodico:1:consumirCadaver:vidaMana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Discípulo de Kitava (Ensinamentos de Kitava)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano sofrido se você não Consumiu um Cadáver Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_mais@naoConsumiuCadaverRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Discípulo de Kitava (Ensinamentos de Kitava)"
+    },
+    {
       "padrao": "^A cada \\{(\\d+)\\} segundos,\\s*Recupere \\{(\\d+)\\} de vida por cada \\{(\\d+)\\} Vida Recuperada por segundo da Regeneração$",
       "efeitos": [
         {
@@ -5243,6 +5265,89 @@
       ],
       "_nova": true,
       "_ciclo7": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Vinhas Constringentes a cada segundo enquanto parado$",
+      "efeitos": [
+        {
+          "stat": "vinhas_constringentes_por_s",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "como o PoB: 2 Vinhas por segundo inteiro parado (o \"parado\" do jogo: sem trocar de casa há mais de 0,6 s), até 10; ao andar, voltam a 0",
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Paciência da Natureza (Afinidade Natural)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado por Vinha Constringente$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado%vinhas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Paciência da Natureza (Afinidade Natural)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Dano sofrido por Vinha Constringente\\.?$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_mais%vinhas",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Paciência da Natureza (Afinidade Natural)"
+    },
+    {
+      "padrao": "^Você só pode ter um Arauto$",
+      "efeitos": [
+        {
+          "stat": "so_um_arauto",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o 2º Arauto não liga (o já ligado fica) e, alocando com dois ligados, o mais novo desliga — como a Visão Sublime faz com as auras; o Arauto da Pureza (no jogo, lacaio) conta pelas Sentinelas em campo, mas não é desligado pelo tique",
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Mensageiro Solitário (Visões Calamitosas); dono: \"As duas coisas\" — as 4 linhas agora, os acertos dos Arautos num lote próprio"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Efeito dos Buffs de Arautos em você$",
+      "efeitos": [
+        {
+          "stat": "efeito_buff_arauto_mais",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "multiplica os atributos dos buffs dos Arautos; o Arauto da Pureza não é buff no jogo (é lacaio)",
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Mensageiro Solitário (Visões Calamitosas); dono: \"As duas coisas\" — as 4 linhas agora, os acertos dos Arautos num lote próprio"
+    },
+    {
+      "padrao": "^Lacaios de Habilidades de Arautos causam \\{(\\d+)\\}% mais Dano$",
+      "efeitos": [
+        {
+          "stat": "lacaio_mais_dano:arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Mensageiro Solitário (Visões Calamitosas); dono: \"As duas coisas\" — as 4 linhas agora, os acertos dos Arautos num lote próprio"
+    },
+    {
+      "padrao": "^Suas Habilidades de Aura são Desabilitadas$",
+      "efeitos": [
+        {
+          "stat": "auras_desabilitadas",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Mensageiro Solitário (Visões Calamitosas); dono: \"As duas coisas\" — as 4 linhas agora, os acertos dos Arautos num lote próprio"
     },
     {
       "padrao": "^Habilidades de Vïnculo têm Efeito do Buff aumentado em \\{(\\d+)\\}% se você se Vinculou a um alvo Recentemente$",
@@ -14188,6 +14293,96 @@
       "_nova": true
     },
     {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais e máximo de Resistências Elementais enquanto afetado por uma Habilidade de Guarda não Vaal$",
+      "efeitos": [
+        {
+          "stat": "fire_res@afetadoPorGuardaNaoVaal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res@afetadoPorGuardaNaoVaal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res@afetadoPorGuardaNaoVaal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "fire_res_max@afetadoPorGuardaNaoVaal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max@afetadoPorGuardaNaoVaal",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max@afetadoPorGuardaNaoVaal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Astúcia do Veterano (A Linha de Frente)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional enquanto afetado por uma Habilidade de Guarda não Vaal$",
+      "efeitos": [
+        {
+          "stat": "phys_res@afetadoPorGuardaNaoVaal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Astúcia do Veterano (A Linha de Frente)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Dano sofrido se um Buff de Guarda não Vaal terminou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dano_recebido_mais@guardaNaoVaalTerminouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Buff de Guarda termina só pela duração (a absorção da guarda ainda não existe no jogo)",
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Astúcia do Veterano (A Linha de Frente)"
+    },
+    {
+      "padrao": "^Você conta como em Dupla Empunhadura enquanto não estiver Sobrecarregado$",
+      "efeitos": [
+        {
+          "stat": "conta_duas_armas@naoSobrecarregado",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Técnica da Palma Oca (Aquele Sem Nada)"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% mais Veloci(?:d)?ade de Ataque enquanto não estiver Sobrecarregado$",
+      "efeitos": [
+        {
+          "stat": "atk_speed_mais@naoSobrecarregado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Técnica da Palma Oca (Aquele Sem Nada) — aceita o \"Velociade\" do poedb"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico de Ataque por cada \\{(\\d+)\\} de Destreza enquanto não estiver Sobrecarregado$",
+      "efeitos": [
+        {
+          "stat": "phys_add%atr:dex:{V3}@naoSobrecarregado",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no PoE (o PoB), só nas Habilidades Corpo a Corpo; aqui no Dano Físico adicional de todos os ataques — sem arma, quase todo ataque é corpo a corpo",
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: a pedra Técnica da Palma Oca (Aquele Sem Nada)"
+    },
+    {
       "padrao": "^Segredos do Sofrimento$",
       "efeitos": [
         {
@@ -14196,6 +14391,49 @@
         }
       ],
       "_nova": true
+    },
+    {
+      "padrao": "^Golpes Críticos infligem Escaldante, Fragilidade e Exaurido$",
+      "efeitos": [
+        {
+          "stat": "keystone_sofrimento",
+          "valor": "1"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o Escaldante, a Fragilidade e o Exaurido com a intensidade fixa (10 / 6 / 10, por 4 s); no PoE ela vem do dano do acerto",
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: as pedras Segredos do Sofrimento (A Interrogação) e Cineticismo (O Cerco)"
+    },
+    {
+      "padrao": "^Projéteis de Ataques sempre infligem Sangramento e Mutilação, e Empurram Inimigos$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed@ataque+projetil",
+          "valor": "100"
+        },
+        {
+          "stat": "chance_mutilar@ataque+projetil",
+          "valor": "100"
+        },
+        {
+          "stat": "chance_empurrar@ataque+projetil",
+          "valor": "100"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: as pedras Segredos do Sofrimento (A Interrogação) e Cineticismo (O Cerco)"
+    },
+    {
+      "padrao": "^Projéteis não podem Perfurar, Difundir ou Ricochetear$",
+      "efeitos": [
+        {
+          "stat": "projeteis_param",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "_lote80": "18/10 — lote 80: as pedras Segredos do Sofrimento (A Interrogação) e Cineticismo (O Cerco)"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de aumento do Raio de Iluminação$",
@@ -18079,7 +18317,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "não há cadáveres no jogo (o monstro some ao morrer)",
+      "nota": "mecânica de cadáver que o jogo ainda não tem (o jogo guarda os últimos mortos — `hunt.cadaveres` —, consome um e cria os de Profanar e Desenterrar; o resto, não)",
       "_nova": true,
       "_unico": true
     },
@@ -24398,7 +24636,7 @@
       "_unico": true
     },
     {
-      "padrao": "^Não Pode Incendiar, Resfriar, Congelar ou Eletrizar$",
+      "padrao": "^Não [Pp]ode Incendiar, Resfriar, Congelar ou Eletrizar$",
       "efeitos": [
         {
           "stat": "nao_pode:incendio",
@@ -24418,7 +24656,8 @@
         }
       ],
       "_nova": true,
-      "_unico": true
+      "_unico": true,
+      "_lote80": "18/10 — lote 80: as pedras Segredos do Sofrimento (A Interrogação) e Cineticismo (O Cerco) — \"pode\" minúsculo, como na pedra"
     },
     {
       "padrao": "^Sempre Congela, Eletriza e Incendeia$",

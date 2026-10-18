@@ -32,7 +32,8 @@ const linhasDa = (poe) => [...poe.implicitos, ...poe.prefixos, ...poe.sufixos, .
 const COM_EFEITO = new Set(['equivalente', 'aproximado', 'novo']);
 
 test('a PEÇA: cada linha da Ramificadora com o estado das linhas dos nós — nenhuma "registrado"; a versão da tradução sobe para 64', { skip: SEM }, () => {
-  assert.equal(J.VERSAO_DA_TRADUCAO, 64);
+  // (dono, 18/10, lote 80: "Ajustar" — a versão sobe a cada lote de regras; esta peça precisa de pelo menos a 64)
+  assert.ok(J.VERSAO_DA_TRADUCAO >= 64);
   let notaveis = 0;
   let encantamentos = 0;
   for (const t of ['Large', 'Medium', 'Small']) {
@@ -69,7 +70,7 @@ test('a peça ANTIGA (versão 63, as linhas "registrado") é refeita na entrada 
   e.inventory = [peca];
   assert.ok(J.refazerPecasAntigas(e) >= 1);
   assert.deepEqual(e.inventory[0].poe.estados, certos);
-  assert.equal(e.inventory[0].poe.tv, 64);
+  assert.equal(e.inventory[0].poe.tv, J.VERSAO_DA_TRADUCAO);
 });
 
 test('os ÍCONES: os notáveis, as pequenas, as pedras e a moldura do encaixe de expansão nas folhas da árvore; o nó da joia traz a chave', { skip: SEM }, () => {

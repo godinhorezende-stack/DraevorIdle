@@ -221,9 +221,9 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
   'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'parado',
-  'maoSecundariaVazia', 'desarmado', 'naoVidaBaixa', 'naoAcertadoRecente', 'bloqueouRecente', 'naoBloqueouRecente', 'atordoouRecente',
+  'maoSecundariaVazia', 'desarmado', 'naoSobrecarregado', 'naoVidaBaixa', 'naoAcertadoRecente', 'bloqueouRecente', 'naoBloqueouRecente', 'atordoouRecente',
   'congelouRecente', 'incendiouRecente', 'eletrizouRecente', 'usouMovimentoRecente', 'usouVaalRecente', 'clamouRecente', 'acertouRecente',
-  'ganhouPoderRecente', 'naoGanhouPoderRecente', 'naoGanhouFrenesiRecente', 'naoPerdeuPoderRecente', 'consumiuCadaverRecente',
+  'ganhouPoderRecente', 'naoGanhouPoderRecente', 'naoGanhouFrenesiRecente', 'naoPerdeuPoderRecente', 'consumiuCadaverRecente', 'naoConsumiuCadaverRecente',
   'gastouManaRecente', 'usouHabilidadeRecente', 'mudouPosturaRecente', 'recargaEsIniciouRecente', 'naoCritRecente', 'naoCriticouRecente',
   'naoMatouRecente2', 'usouRubiRecente', 'usouSafiraRecente', 'usouTopazioRecente', 'usouAmetistaRecente', 'naoConjurouAvancoRecente', 'conjurouAvancoRecente',
   'detonouMinaRecente', 'naoDetonouMinaRecente', 'usouFogoRecente', 'acertouUnicoRecente',
@@ -266,7 +266,7 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (lote G) a Postura (Sangue / Areia — a gema Sangue e Areia), com um Estandarte (a aura de Estandarte ligada).
   'posturaSangue', 'posturaAreia', 'estandarteAtivo',
   // (lote 65, as Ramificadoras) afetado por um Arauto (ao menos uma gema de Arauto ligada)
-  'afetadoPorArauto',
+  'afetadoPorArauto', 'afetadoPorGuardaNaoVaal', 'guardaNaoVaalTerminouRecente',
   // (lote 66) "enquanto portando um(a) X ou Y" — a arma em QUALQUER das mãos (as condições `comX` são da mão principal): Garra ou Adaga, Machado
   // ou Espada, Maça, Cetro ou Cajado
   'comGarraOuAdaga', 'comMachadoOuEspada', 'comMacaCetroOuCajado',
@@ -462,6 +462,8 @@ export function condicoesDe(estado, total = null, principais = null) {
   if (estado?.es > 0 && estado.esCheio) v.add('escudoCheio');
   if (!arma) v.add('desarmado');
   if (!estado?.equipment?.shield) v.add('maoSecundariaVazia');
+  // (lote 80, a Técnica da Palma Oca) "não Sobrecarregado": sem Luvas e sem item na Mão Principal ou Secundária (o lembrete do PoE; o PoB)
+  if (!arma && !estado?.equipment?.shield && !estado?.equipment?.gloves) v.add('naoSobrecarregado');
   if (h) {
     const dots = h.efeitosDoJogador?.dots ?? [];
     const temDot = (...t) => dots.some((d) => t.includes(d.tipo) && d.falta > 0);
@@ -492,6 +494,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (!recente(r.ganhouPoder, agora)) v.add('naoGanhouPoderRecente');
     if (!recente(r.ganhouFrenesi, agora)) v.add('naoGanhouFrenesiRecente');
     if (!recente(r.perdeuPoder, agora)) v.add('naoPerdeuPoderRecente');
+    // (lote 80, o Discípulo de Kitava: "10% mais Dano sofrido se você não Consumiu um Cadáver Recentemente")
+    if (!recente(r.consumiuCadaver, agora)) v.add('naoConsumiuCadaverRecente');
     if (!recente(r.usouAvanco, agora)) v.add('naoConjurouAvancoRecente');
     if (!recente(r.acertadoAtaque, agora)) v.add('naoAcertadoAtaqueRecente');
     // (lote D) "enquanto Conjurando": usou uma Magia há pouco (o tempo de uma conjuração); Fortificado: com alguma Fortificação.
@@ -507,6 +511,11 @@ export function condicoesDe(estado, total = null, principais = null) {
     v.add(posturaDe(h, agora) === 'areia' ? 'posturaAreia' : 'posturaSangue');
     if (estandarteAtivo(h, agora)) v.add('estandarteAtivo');
     if (Object.values(h.buffs ?? {}).some((b) => b && b.ate > agora && b.tipo === 'poe-arauto')) v.add('afetadoPorArauto');
+    // (lote 80, a Astúcia do Veterano) "enquanto afetado por uma Habilidade de Guarda não Vaal" e "se um Buff de Guarda não Vaal terminou
+    // Recentemente" (o que expirou há até 4 s — ou o que voltou, pela marca `guardaNaoVaalTerminou`)
+    const guardas = Object.values(h.buffs ?? {}).filter((b) => b?.guarda && !b.vaal);
+    if (guardas.some((b) => b.ate > agora)) v.add('afetadoPorGuardaNaoVaal');
+    if (guardas.some((b) => b.ate <= agora && recente(b.ate, agora))) v.add('guardaNaoVaalTerminouRecente');
     if (recente(r['usou:mina'], agora) || recente(r['usou:armadilha'], agora)) v.add('plantouRecente');
     if (!recente(r.detonouMina, agora)) v.add('naoDetonouMinaRecente');
     // A PRESENÇA: quem está vivo a até `RAIO_DA_PRESENCA` casas — o Único (ou o chefe), o Raro, e o chefe pináculo da sala (o "Chefe Final do
@@ -521,14 +530,16 @@ export function condicoesDe(estado, total = null, principais = null) {
       if (raros >= 2) v.add('doisRarosPerto');
       if (h.bossPinaculo && perto.some((m) => m.boss || m.raridade === 'boss')) v.add('chefeFinalNaPresenca');
     }
-  } else v.add('parado').add('naoAcertadoAtaqueRecente').add('semFrasco').add('naoDetonouMinaRecente').add('naoAcertadoRecente').add('naoBloqueouRecente').add('naoGanhouPoderRecente').add('naoGanhouFrenesiRecente').add('naoPerdeuPoderRecente').add('naoConjurouAvancoRecente').add('naoCritRecente').add('naoArdendo').add('semAfeccaoElemental');
+  } else v.add('parado').add('naoAcertadoAtaqueRecente').add('semFrasco').add('naoDetonouMinaRecente').add('naoAcertadoRecente').add('naoBloqueouRecente').add('naoGanhouPoderRecente').add('naoGanhouFrenesiRecente').add('naoPerdeuPoderRecente').add('naoConsumiuCadaverRecente').add('naoConjurouAvancoRecente').add('naoCritRecente').add('naoArdendo').add('semAfeccaoElemental');
+  // (lote 80, a Palma Oca) "Você conta como em Dupla Empunhadura enquanto …" da ÁRVORE (`conta_duas_armas@<cond>`): as peças já contam acima
+  if (!v.has('duasArmas') && Object.entries(total ?? {}).some(([k, x]) => k.startsWith('conta_duas_armas@') && Number(x) > 0 && partir(k).conds.every((c) => vale(v, c)))) v.add('duasArmas');
   return v;
 }
 /** Os acontecimentos "recentes" (o que `marcar` grava) → a condição. */
 const RECENTES = {
   bloqueou: 'bloqueouRecente', atordoou: 'atordoouRecente', congelou: 'congelouRecente', incendiou: 'incendiouRecente', eletrizou: 'eletrizouRecente',
   usouMovimento: 'usouMovimentoRecente', usouVaal: 'usouVaalRecente', clamou: 'clamouRecente', acertou: 'acertouRecente', ganhouPoder: 'ganhouPoderRecente',
-  consumiuCadaver: 'consumiuCadaverRecente', gastouMana: 'gastouManaRecente', usouHabilidade: 'usouHabilidadeRecente', recargaEs: 'recargaEsIniciouRecente',
+  consumiuCadaver: 'consumiuCadaverRecente', guardaNaoVaalTerminou: 'guardaNaoVaalTerminouRecente', gastouMana: 'gastouManaRecente', usouHabilidade: 'usouHabilidadeRecente', recargaEs: 'recargaEsIniciouRecente',
   usouRubi: 'usouRubiRecente', usouSafira: 'usouSafiraRecente', usouTopazio: 'usouTopazioRecente', usouAmetista: 'usouAmetistaRecente', usouAvanco: 'conjurouAvancoRecente',
   atordoado: 'atordoadoRecente', atordoadoConjurando: 'atordoadoConjurandoRecente', acertadoAtaque: 'acertadoAtaqueRecente', estilhacou: 'estilhacouRecente',
   infligiuExposicao: 'exposicaoRecente', empalou: 'empalouRecente', mudouPostura: 'mudouPosturaRecente',
@@ -904,6 +915,10 @@ export const ESCALAS_DA_FICHA = /^(precisao|armadura|evasao|esMax|bloqueio|bloqu
  * `vidaMax:N`, `manaMax:N`, `encaixe:R` (sockets vermelhos no equipamento), `encaixeVazio:G`, `itemCorrompido`, `itemNaoCorrompido`,
  * `itemUnico`, `lacaio` (vivos), `lacaio:zumbi`, `venenoEmVoce`, `afeccaoEmVoce`, `atributoMenor:N`, `atributos:N`, `mana:N`.
  */
+/** Os segundos inteiros parado (sem trocar de casa há mais de `MOVENDO_MS`; desde que entrou, se ainda não andou). */
+const segundosParado = (h, agora) => { const r = h?.poeRecente ?? {}; return r.moveu != null && agora - r.moveu <= MOVENDO_MS ? 0 : Math.floor((agora - (r.moveu ?? h?.poeEntrou ?? agora)) / 1000); };
+/** (lote 80) O teto das Vinhas Constringentes (o PoB). */
+const VINHAS_MAXIMO = 10;
 export function fatorDaEscala(estado, total, principais, escala) {
   const [tipo, a, b] = escala.split(':');
   const h = estado?.hunt;
@@ -975,7 +990,10 @@ export function fatorDaEscala(estado, total, principais, escala) {
     // (lote 32, P042) "para cada segundo que você for afetado por um Buff de Clamor": os segundos SEGUIDOS sob algum (`acoes` grava o começo,
     // `hunt.poeSobClamorDesde`, quando o Clamor sai sem nenhum outro ativo); sem buff de Clamor em você, 0.
     case 'afetadoPorClamor': { const d = h?.poeSobClamorDesde; return d != null && sobBuffDeClamor(h, agora) ? Math.floor((agora - d) / 1000) : 0; }
-    case 'paradoS': { const r = h?.poeRecente ?? {}; return r.moveu != null && agora - r.moveu <= MOVENDO_MS ? 0 : Math.floor((agora - (r.moveu ?? h?.poeEntrou ?? agora)) / 1000); }
+    case 'paradoS': return segundosParado(h, agora);
+    // (lote 80, a Paciência da Natureza) "por Vinha Constringente": 2 por segundo parado ("Ganha 2 Vinhas Constringentes a cada segundo enquanto
+    // parado" — `vinhas_constringentes_por_s`), até 10 — o PoB (`Multiplier:GraspingVinesCount`, limitTotal 10); ao andar, voltam a 0
+    case 'vinhas': return Math.min(VINHAS_MAXIMO, (Number(total?.vinhas_constringentes_por_s) || 0) * segundosParado(h, agora));
     // (lote F) "por Habilidade Passiva de Maestria Alocada" (`maestrias`) e "para cada tipo diferente de Maestria Alocada" (`tiposDeMaestria`).
     case 'maestrias': return leitorDeMaestrias?.(estado, null) ?? 0;
     case 'tiposDeMaestria': return leitorDeMaestrias?.(estado, '*') ?? 0;
@@ -1936,7 +1954,7 @@ export function definirAcaoPeloNome(fn) { acaoPeloNome = fn; }
 const DINAMICOS = /^(sempre|efeito_buff|concede|suporte_local|suporte_peitoral|keystone|aura_unica|fuga_impossivel|proibida_chama|proibida_carne):[\w-]+$/;
 /** As FAMÍLIAS de atributo com parâmetro que o código monta pelo nome (o parâmetro tem de ser um dos que ele conhece). */
 const ELS_P = '(physical|fire|ice|energy|chaos)';
-const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|qualquer)';
+const TIPOS_DE_LACAIO = '(sentinela|zumbi|espectro|golem|esqueleto|totem|espirito|fantasma|reliquia|sagrado|arma|aranha|arqueiro|balista|arauto|qualquer)';
 const PARAMETRICOS = [
   new RegExp(`^pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento):${ELS_P}$`), // itens-poe/afeccoes.daSoma
   new RegExp(`^nao_pode:(incendio|congelamento|resfriamento|eletrizacao|veneno|sangramento)(:${ELS_P})?$`), // itens-poe/afeccoes.daSoma
@@ -1966,7 +1984,7 @@ const PARAMETRICOS = [
   new RegExp(`^sem_dano:(${ELS_P.slice(1, -1)}|elemental|naocaos|naoelemental|naofisico)$`), new RegExp(`^so_dano:${ELS_P}$`), // transformarPartes
   // (ciclo 7, lote D) mods-poe.aoSerAtordoado ("por 1 segundo por cada 100ms de Duração do Atordoamento") e os periódicos (mods-poe.aurasProximas).
   /^adrenalina_por_atordoamento:\d+$/, /^defender_armadura:\d+$/, /^phys_extra_aleatorio_chance:\d+$/,
-  /^periodico:\d+(?:\.\d+)?(?:d\d+(?:\.\d+)?)?:(regenPct:(hp|mana|es):\d+(?:\.\d+)?|vidaPct|manaPct|esPct|fortificacao|atordoarProximos|furia|removerAfeccao(:elementais)?|proximos:[a-zA-Z]+(:\d+)?|buff:[a-zA-Z]+|consumirCadaver:(hp|mana|es)|vidaDaRegen:\d+(?:\.\d+)?|carga:(poder|frenesi|tolerancia)|removerAfeccao:todas|stat:[a-z_]+:\d+(?:\.\d+)?|frasco|congelarProximos:\d+(?:\.\d+)?|regenDaDefesa:(hp|es):(evasao|armadura|armaduraEvasao):\d+(?:\.\d+)?|soloSagrado:\d+(?:\.\d+)?|mortalha:\d+)$/,
+  /^periodico:\d+(?:\.\d+)?(?:d\d+(?:\.\d+)?)?:(regenPct:(hp|mana|es):\d+(?:\.\d+)?|vidaPct|manaPct|esPct|fortificacao|atordoarProximos|furia|removerAfeccao(:elementais)?|proximos:[a-zA-Z]+(:\d+)?|buff:[a-zA-Z]+|consumirCadaver:(hp|mana|es|vidaMana)|vidaDaRegen:\d+(?:\.\d+)?|carga:(poder|frenesi|tolerancia)|removerAfeccao:todas|stat:[a-z_]+:\d+(?:\.\d+)?|frasco|congelarProximos:\d+(?:\.\d+)?|regenDaDefesa:(hp|es):(evasao|armadura|armaduraEvasao):\d+(?:\.\d+)?|soloSagrado:\d+(?:\.\d+)?|mortalha:\d+)$/,
   /^clamor_impele_chance:\d+$/, // acoes (o Clamor Impele N a mais, com chance)
   /^mais_dano_presenca:\d+$/, // condicoes-poe.fichaDoGolpe (o tempo na Presença)
   /^mina_(fragiliza|enfraquece):\d+$/, // mods-poe.aoAcertar (o alvo da Mina)
@@ -1998,7 +2016,7 @@ export function dinamicoValido(stat) {
   return DINAMICOS.test(stat) || PARAMETRICOS.some((re) => re.test(stat));
 }
 /** A escala é conhecida? */
-export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
+export const escalaValida = (e0) => { const e = String(e0 ?? '').replace(/~-?\d+(?:\.\d+)?$/, ''); return !e || /^(nivel|atr|atributoMenor|atributos|carga|cargaMax|furia|vidaMax|manaMax|encaixe|encaixeLocal|gemaLocal|encaixeVazioLocal|encaixeVazio|vidaReservada|manaReservada|manaNaoReservada|gemasNaPeca|cadaveresPerto|magiasRecentes|vidaOuManaMenor|manaGastaRecente|inimigosEnvenenados|resfriamentoNoAlvo|eletrizacaoNoAlvo|itemCorrompido|itemNaoCorrompido|itemUnico|joiasAbissais|joiaUnica|devocao|itemMagico|maldicoesEmVoce|abissalLocal|lacaio|venenoEmVoce|afeccaoEmVoce|mana|matouRecente|inimigosPerto|aurasAtivas|arautosAtivos|armas|rampage|eletrizadosMortosRecente|distintas|fortificacao|fortificacaoAcima|esFaltando|usos|maestrias|tiposDeMaestria|menorEntre|paradoS|vinhas|desdeUsou|afetadoPorClamor|valor|valorDoEstandarte|forcaDosVentos|stat)(:|$)/.test(e) || ESCALAS_DA_FICHA.test(e); };
 
 /** Os números base do PoE dos efeitos de acerto. */
 export const NO_ACERTO = {
@@ -2396,6 +2414,11 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   }
 }
 
+/**
+ * (lote 80) Os projéteis a mais do golpe básico de longe: os adicionais + a perfuração — sem a perfuração com "Projéteis param ao colidir" /
+ * "não podem Perfurar" (`projeteis_param`: o Cineticismo, o único) — antes o golpe básico perfurava assim mesmo.
+ */
+export const projeteisDoGolpeBasico = (f) => valor(f, 'extra_projectiles') + (valor(f, 'projeteis_param') > 0 ? 0 : valor(f, 'perfurar'));
 /**
  * Os alvos dos projéteis a MAIS / da perfuração de um golpe de longe: os `n` bichos vivos mais perto do `alvo` (sem ele), a até `alcance`
  * casas do personagem.

@@ -1619,7 +1619,7 @@ export function round(estado, personagem) {
       // Perfuram N Alvos adicionais"): cada um acerta OUTRO bicho (os mais perto do alvo, ao alcance), com o golpe inteiro.
       if (itensPoeLigado() && categoriaDaArma(arma) === 'distancia') {
         const fichaDoTiro = ModsPoe.fichaDoGolpe(fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, 'distancia'), { estado });
-        for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, ModsPoe.valor(fichaDoTiro, 'extra_projectiles') + ModsPoe.valor(fichaDoTiro, 'perfurar'), alcanceDaArma(arma, estado))) {
+        for (const outro of ModsPoe.alvosDosProjeteisExtras(hunt, alvo, ModsPoe.projeteisDoGolpeBasico(fichaDoTiro), alcanceDaArma(arma, estado))) {
           if (outro.hp > 0) golpear(false, outro);
         }
       }

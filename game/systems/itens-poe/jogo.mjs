@@ -411,7 +411,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (62 — 17/10, lote 74: as Ramificadoras — o Reduzir, com a gema Convocar Runas que passa a existir no jogo)
 // (63 — 17/10, lote 75: as Ramificadoras — a Pura Agonia, com o Arauto da Agonia e a Virulência)
 // (64 — 18/10, lote 78: as linhas da Ramificadora com o estado das linhas dos nós que ela cria, não mais "registrado")
-export const VERSAO_DA_TRADUCAO = 64;
+// (65 — 18/10, lote 80: as pedras fundamentais das Ramificadoras únicas — regras novas que também casam linhas de peças: "Não pode Incendiar…", a
+// nota dos cadáveres)
+export const VERSAO_DA_TRADUCAO = 65;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
