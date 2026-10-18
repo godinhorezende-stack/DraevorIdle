@@ -413,7 +413,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (64 — 18/10, lote 78: as linhas da Ramificadora com o estado das linhas dos nós que ela cria, não mais "registrado")
 // (65 — 18/10, lote 80: as pedras fundamentais das Ramificadoras únicas — regras novas que também casam linhas de peças: "Não pode Incendiar…", a
 // nota dos cadáveres)
-export const VERSAO_DA_TRADUCAO = 65;
+// (66 — 18/10, lote 81: os acertos dos Arautos — as linhas do Mensageiro, do Segredo da Tormenta e do Círculo da Ambição)
+export const VERSAO_DA_TRADUCAO = 66;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

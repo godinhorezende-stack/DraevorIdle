@@ -80,7 +80,17 @@ import * as Protecao from '../protecao.mjs';
 export function processarMortes(estado, personagem, eventos) {
   const hunt = estado.hunt;
   if (!hunt) return;
-  for (const m of [...hunt.monstros]) {
+  morrerOsMortos(estado, personagem, eventos, [...hunt.monstros]);
+  // (lote 81, a explosão do Arauto Glacial em cadeia: quem morreu nas mortes desta volta — o vizinho Estilhaçado — morre agora, ainda Congelado)
+  for (let volta = 0; volta < 20; volta++) {
+    const novos = hunt.monstros.filter((m) => !m.dummy && m.hp <= 0 && !m.recompensado);
+    if (!novos.length) break;
+    morrerOsMortos(estado, personagem, eventos, novos);
+  }
+}
+function morrerOsMortos(estado, personagem, eventos, lista) {
+  const hunt = estado.hunt;
+  for (const m of lista) {
     if (m.dummy) {
       m.hp = m.maxHp; // o boneco do pátio não morre
       continue;
@@ -96,7 +106,8 @@ export function processarMortes(estado, personagem, eventos) {
       const empalado = (m.estados?.empalado ?? []).filter((x) => x.ate > (hunt.clock ?? 0) && x.acertos > 0);
       const doAco = empalado.length ? { empalado, ...(m.estados?.empalarBloqueadoAte ? { empalarBloqueadoAte: m.estados.empalarBloqueadoAte } : {}) } : {};
       // (14/10: os 10 mortos mais recentes; os cadáveres CRIADOS — Profanar, Desenterrar — têm o teto deles, `Acoes.criarCadaveres`)
-      const lista = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, ...doAco }];
+      // (17/10, lote G12: + a Vida Máxima do morto — a explosão dos cadáveres do PoE é "X% da Vida Máxima do Cadáver")
+      const lista = [...(hunt.cadaveres ?? []), { key: m.key, nome: m.name, look: m.look, lookItem: m.lookItem ?? 0, colors: m.colors ?? null, x: m.x, y: m.y, maxHp: m.maxHp ?? 0, ...doAco }];
       const mortos = lista.filter((c) => !c.criadoPor);
       const sai = new Set(mortos.slice(0, Math.max(0, mortos.length - 10)));
       hunt.cadaveres = lista.filter((c) => !sai.has(c));
@@ -852,8 +863,20 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (ModsPoe.ativo(alvo.estados?.chocado, hunt.clock ?? 0)) { hunt.poeEletrizadosMortos = [...(hunt.poeEletrizadosMortos ?? []), hunt.clock ?? 0].slice(-20); Ficha.invalidar(estado); }
     // ("Inimigos mortos por você são Eletrizados": antes dos eventos "ao Matar" — "Inimigos Eletrizados que você Matar Explodem" vale.)
     if (ModsPoe.valor(f, 'mortos_eletrizados') > 0) (alvo.estados ??= {}).chocado = { ate: (hunt.clock ?? 0) + 2000, pct: Math.max(alvo.estados?.chocado?.pct ?? 0, 15) };
+    // (lote 81) o Arauto Trovejante: matar um Eletrizado (também o que a linha acima Eletriza — dono: "Abre também") abre a tempestade
+    if (ModsPoe.ativo(alvo.estados?.chocado, hunt.clock ?? 0)) Acoes.abrirTempestade(estado, hunt, hunt.clock ?? 0);
     // (o "ao Matar Corpo a Corpo", o "ao Matar com Ataque": as tags do golpe fatal)
     ModsPoe.evento(estado, hunt, 'matar', f, { alvo, eventos, personagem, tags: QuemFeriu.tagsDoAbate(alvo) });
+    // (lote 81) o Arauto das Cinzas: o excesso de dano do golpe fatal (um acerto seu) queima os vizinhos do morto
+    Acoes.queimaduraDoArautoDasCinzas(estado, hunt, alvo, alvo.poeExcedente ?? (QuemFeriu.tagsDoAbate(alvo).includes('acerto') ? Math.max(0, -alvo.hp) : 0), eventos);
+    // (17/10, lote G6) o abate do amaldiçoado pela sua MARCA: as cargas ("uma chance de 100% de concederem uma Carga de Poder quando mortos"), a
+    // Vida e a Mana ("concedem 600 de Vida quando Mortos") — `contra.morte` da maldição do bicho
+    for (const m of Object.values(alvo.maldicoes ?? {})) {
+      if (!m?.contra?.morte || !(m.ate > (hunt.clock ?? 0))) continue;
+      const mo = m.contra.morte;
+      for (const tipo of ['tolerancia', 'frenesi', 'poder']) if (mo[`carga:${tipo}`] > 0 && Math.random() * 100 < mo[`carga:${tipo}`] && CargasPoe.ganhar(estado, tipo, f.afPoe)) Ficha.invalidar(estado);
+      if ((mo.vida || mo.mana) && estado.hp > 0) Ficha.curar(estado, Math.round(mo.vida ?? 0), Math.round(mo.mana ?? 0), eventos, personagem?.nome, hunt.pos);
+    }
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
     // (a keystone Fúria — o Rampage: o abate soma no contador; "Recebe uma Carga de Frenesi a cada N Mortes com Fúria")
@@ -1178,7 +1201,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const fisicoProtegido = somaFisica ? protegido : R.danoRecebido(protegido, armorDoPersonagem(estado));
   // (PoE: "X% mais Dano de Ataque sofrido se você foi Acertado por um Ataque Recentemente" — o golpe do monstro é o ataque dele.)
   // (lote 30, P029: + "Sofre X% menos Dano de Acertos" — `menos_dano_acertos`, só nos acertos)
-  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100);
+  // (17/10, lote G15: + a Canalização Infundida — "Enquanto Canalizando uma Habilidade Suportada, sofra X% menos Dano dos Acertos")
+  const fatorFinal = Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * Math.max(0, 1 + ModsPoe.valor(ficha, 'dano_ataque_recebido_mais') / 100) * Math.max(0, 1 - ModsPoe.valor(ficha, 'menos_dano_acertos') / 100) * Math.max(0, 1 - Acoes.menosDanoDaCanalizacao(estado, hunt) / 100);
   let final = Math.round((fisicoProtegido + doutrosTipos) * fatorFinal);
   const danoDoAcerto = final;
   // (lote 32, P046 — o Berserker: "Ganha X% da vida não reservada faltante ANTES de ser atingido … para cada Desafio")
@@ -1217,6 +1241,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   // PoE: o "acertado/dano recentemente", o Reflexo aos agressores corpo a corpo, a recuperação do dano sofrido e o congelar quem acerta.
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, final), corpoACorpo: true, tipo: 'physical', eventos });
+  // (17/10, lote G15) "Conjurar ao ser Atordoado" e "Conjurar ao Morrer"
+  Acoes.depoisDeSerAcertado(estado, hunt, personagem, eventos);
   // ("ao sofrer um Golpe Crítico": "Ganha até o máximo de Cargas de Tolerância ao sofrer um Golpe Crítico".)
   if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
   registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
@@ -1487,6 +1513,8 @@ export function round(estado, personagem) {
         // (PoE: o golpe Impelido por um Clamor gasta um — a tag `impelido` já está na ficha deste golpe.)
         if (!segundo && hunt.impelidos?.n > 0) hunt.impelidos.n--;
         const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
+        // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
+        if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
         if (Defesa.errou(ficha, hunt, alvo)) {
           Treino.treinar(estado, pericia);

@@ -50,7 +50,9 @@ const grade = () => {
   return vivos;
 };
 
-test('a ÁREA: a Nova de Gelo do criomante pega o losango de 5 casas em volta dele; com +100% de Área de Efeito nas peças dele, a forma esticada até 7', { skip: SEM }, () => {
+// (17/10, lote G2 — o dono: "Aplicar raio do PoE") a Nova de Gelo tem o raio do PoE (2,6 a 3 m = 1,3 a 1,5 casa: no sorteio 0,5, o losango de
+// 1 casa — `Acoes.formaNoRaioDoPoe`), não as 5 casas da magia-molde.
+test('a ÁREA: a Nova de Gelo do criomante pega o losango do raio do PoE em volta dele; com +300% de Área de Efeito nas peças dele, o raio dobra', { skip: SEM }, () => {
   const e = dono();
   const { merc, l } = mercenario(e, 'criomante', 1);
   assert.equal(l.habilidades[1].gema, 'Ice_Nova');
@@ -58,19 +60,19 @@ test('a ÁREA: a Nova de Gelo do criomante pega o losango de 5 casas em volta de
   const alvo = vivos.find((b) => b.x === 12 && b.y === 10);
   const dentro = (r) => vivos.filter((b) => b !== alvo && Math.abs(b.x - 10) + Math.abs(b.y - 10) <= r).length;
   const r = Acoes.alvosDoGolpeDoMercenario(e, l, alvo, vivos, () => 0.5);
-  assert.equal(r.golpes.length, dentro(5));
+  assert.equal(r.golpes.length, dentro(1));
   assert.ok(r.golpes.every((g) => g.tipo === 'area'));
   assert.equal(r.eventos[0].t, 'area');
-  // um amuleto com +100% de Área de Efeito NELE: 5 × (√2 − 1) = 2,07 → a forma esticada até 7 casas (no sorteio 0,5 — `Areas.escalarForma`)
+  // um amuleto com +300% de Área de Efeito NELE: × √4 = o raio 2 (1 × (2 − 1) = 1 casa inteira, sem sorteio — `Areas.escalarForma`)
   const amuleto = peca('Amulets/Coral_Amulet');
-  amuleto.poe.af = { ...amuleto.poe.af, area_inc: 100 };
+  amuleto.poe.af = { ...amuleto.poe.af, area_inc: 300 };
   merc.equipment.neck = amuleto;
   merc.v = 1;
   const r2 = Acoes.alvosDoGolpeDoMercenario(e, l, alvo, vivos, () => 0.5);
-  const forma = Acoes.POR_ID_PUBLICO(GemasPoe.doSlug('Ice_Nova').acao).forma;
-  const esticada = Areas.dentro(Areas.daForma(Areas.escalarForma(forma, 7), { x: 10, y: 10 }), vivos).filter((b) => b !== alvo).length;
+  const forma = Areas.escalarForma(Acoes.POR_ID_PUBLICO(GemasPoe.doSlug('Ice_Nova').acao).forma, 1);
+  const esticada = Areas.dentro(Areas.daForma(Areas.escalarForma(forma, 2), { x: 10, y: 10 }), vivos).filter((b) => b !== alvo).length;
   assert.equal(r2.golpes.length, esticada);
-  assert.ok(esticada > dentro(5));
+  assert.ok(esticada > dentro(1));
 });
 
 test('os PROJÉTEIS: a Flecha Dividida do arqueiro dispara os projéteis da gema, cada um num inimigo', { skip: SEM }, () => {
@@ -165,8 +167,9 @@ test('P060 — a AURA do arquétipo vale em você enquanto ele vive (a ficha e o
   const base = M.auraDoMercenario(M.ativo(e2), {});
   assert.ok(Math.abs(a2.af.added_energy_dmg_max - base.af.added_energy_dmg_max * 1.5) < 1e-9);
   Acoes.tiqueDoMercenario(e2, e2.hunt, Date.now());
-  const dano = base.efeitos.find((x) => x.efeito === 'dano').pct;
-  assert.ok(Math.abs(Reforcos.bonus(e2.hunt, 'dano', []) - dano * 1.5) < 1e-9);
+  // (dono, 18/10 — lote G18b: a Ira é só a parte de Raio das magias — `mais_dano_raio@magia` —, não o "dano" geral de antes; o nó multiplica o mesmo
+  // ×1,5)
+  assert.ok(base.af['mais_dano_raio@magia'] > 0 && Math.abs(a2.af['mais_dano_raio@magia'] - base.af['mais_dano_raio@magia'] * 1.5) < 1e-9, `${a2.af['mais_dano_raio@magia']} / ${base.af['mais_dano_raio@magia']}`);
   // vale NELE também: o golpe dele com a Ira a +50% (o nó) é maior que com a Ira a +0%
   const merc2 = M.ativo(e2);
   const com = Acoes.fichaDoMercenario(e2, merc2, { mercenario: 1, mercenario_auras_inc: 50 }).habilidades[0].dano.max;

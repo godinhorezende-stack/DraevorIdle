@@ -29,35 +29,40 @@ if (!SEM) J.iniciar(ITEM_CATALOG);
 const ef = (slug, nivel = 20, q = 0) => S.efeitoNoNivel(slug, nivel, q).efeito;
 
 test('a LEITURA dos suportes: o "mais" e o "aumentado" de UMA afecção, a chance e a duração das afecções', { skip: SEM }, () => {
-  assert.deepEqual([ef('Chance_to_Bleed_Support').sangramentoChance, ef('Chance_to_Bleed_Support').maisSangramentoPct], [25, 29]);
-  assert.equal(ef('Chance_to_Bleed_Support', 20, 20).aumSangramentoPct, 10, 'a qualidade: só no Sangramento');
-  assert.equal(ef('Chance_to_Poison_Support').venenoChance, 40);
-  assert.equal(ef('Chance_to_Poison_Support', 20, 20).aumVenenoPct, 10);
+  // (merge com o lote G17, com o aval do dono, 18/10: uma regra só para as duas leituras — as chaves do G17; os valores são os mesmos. A chance vai
+  // às afecções do PoE pelo atributo local do uso, `af:chance_*`; o "aumentado" de uma afecção, `af:<afecção>_dmg_inc`; o "Dano Incendiário", o
+  // "mais" do Fogo degenerativo, `maisDotFogoPct`; o "de Afecções", `maisAfeccaoPct`; o "só no acerto", `maisDanoAcertoPct`)
+  assert.deepEqual([ef('Chance_to_Bleed_Support')['af:chance_bleed'], ef('Chance_to_Bleed_Support').maisSangramentoPct], [25, 29]);
+  assert.equal(ef('Chance_to_Bleed_Support', 20, 20)['af:bleed_dmg_inc'], 10, 'a qualidade: só no Sangramento');
+  assert.equal(ef('Chance_to_Poison_Support')['af:chance_poison'], 40);
+  assert.equal(ef('Chance_to_Poison_Support', 20, 20)['af:poison_dmg_inc'], 10);
   assert.equal(ef('Chance_to_Poison_Support', 20, 20).danoPct ?? 0, 0, 'não é mais o dano de tudo');
   assert.equal(ef('Vile_Toxins_Support').maisVenenoPct, 19);
-  assert.equal(ef('Burning_Damage_Support').maisQueimaduraPct, 34, '"Dano Incendiário": o Incêndio e o Fogo contínuo da gema');
+  assert.equal(ef('Burning_Damage_Support').maisDotFogoPct, 34, '"Dano Incendiário": o Incêndio e o Fogo contínuo da gema');
   assert.equal(ef('Burning_Damage_Support').maisDanoPct ?? 0, 0, '"mais Dano Incendiário" não é o dano de tudo');
   assert.equal(ef('Ignite_Proliferation_Support').maisIncendioPct, 24, '"com Incêndio": só o Incêndio');
-  // o "menos Dano com Acertos" das Afecções Mortais vale só no acerto (`maisSoAcertoPct`): as afecções não perdem os 80%
-  assert.deepEqual([ef('Deadly_Ailments_Support').maisAfeccoesPct, ef('Deadly_Ailments_Support').maisDanoPct, ef('Deadly_Ailments_Support').maisSoAcertoPct], [44, -80, -80]);
+  // o "menos Dano com Acertos" das Afecções Mortais vale só no acerto (`maisDanoAcertoPct`): as afecções não perdem os 80%
+  assert.deepEqual([ef('Deadly_Ailments_Support').maisAfeccaoPct, ef('Deadly_Ailments_Support').maisDanoAcertoPct, ef('Deadly_Ailments_Support').maisDanoPct ?? 0], [44, -80, 0]);
   const mpd = S.efeitoNoNivel('Melee_Physical_Damage_Support', 20, 0, { tags: ['poe:Ataque', 'poe:Corpo a Corpo'] }).efeito;
-  assert.deepEqual([mpd.maisSangramentoPct, mpd.maisVenenoPct, mpd.maisDanoPct, mpd.maisSoAcertoPct], [49, 49, 49, 49], 'o "Físico Corpo a Corpo": só no acerto; o Sangramento/Veneno pela linha deles');
+  assert.deepEqual([mpd.maisSangramentoPct, mpd.maisVenenoPct, mpd.maisDanoAcertoPct, mpd.maisDanoPct ?? 0], [49, 49, 49, 0], 'o "Físico Corpo a Corpo": só no acerto; o Sangramento/Veneno pela linha deles');
   assert.equal(ef('Lethal_Dose_Support', 15).maisVenenoPct, -2, 'a Dose Letal: menos só no Veneno');
-  assert.equal(ef('Unbound_Ailments_Support', 20, 20).duracaoAfeccoesPct, 64);
-  assert.equal(ef('Combustion_Support').igniteChance, 25);
+  assert.equal(ef('Unbound_Ailments_Support', 20, 20)['af:ailment_duration'], 64);
+  assert.equal(ef('Combustion_Support')['af:chance_ignite'], 25);
   for (const s of ['Chance_to_Bleed_Support', 'Vile_Toxins_Support', 'Deadly_Ailments_Support', 'Burning_Damage_Support', 'Melee_Physical_Damage_Support', 'Unbound_Ailments_Support', 'Ignite_Proliferation_Support']) {
     for (const k of ['ignitePct', 'venenoPct', 'sangramentoPct']) assert.equal(ef(s)[k], undefined, `${s}: ${k} do dano contínuo antigo`);
   }
 });
 
-test('o "mais" de cada afecção: o da afecção × o de "de Afecções"', { skip: SEM }, () => {
-  const m = Acoes.maisDasAfeccoesDoSuporte({ maisIncendioPct: 34, maisAfeccoesPct: 44 });
-  assert.ok(Math.abs(m.incendio - (1.34 * 1.44 - 1) * 100) < 1e-9);
-  assert.ok(Math.abs(Acoes.maisDasAfeccoesDoSuporte({ maisQueimaduraPct: 34, maisIncendioPct: 24 }).incendio - (1.34 * 1.24 - 1) * 100) < 1e-9, 'o Incendiário × o com Incêndio');
-  assert.ok(Math.abs(m.veneno - 44) < 1e-9);
-  assert.ok(Math.abs(m.sangramento - 44) < 1e-9);
-  assert.equal(Acoes.maisDasAfeccoesDoSuporte({}), null);
-  assert.deepEqual(Acoes.aumDasAfeccoesDoSuporte({ aumVenenoPct: 10 }), { incendio: 0, veneno: 10, sangramento: 0 });
+test('o "mais" de cada afecção: o da afecção × o de "de Afecções" (merge com o lote G17: os fatores das afecções do acerto, `fatoresDoDano`)', { skip: SEM }, () => {
+  const incendio = (fatoresDoDano) => {
+    const bicho = { uid: 1, hp: 1e9, maxHp: 1e9, estados: {}, dots: [] };
+    AfeccoesPoe.aoAcertar(bicho, [{ elemento: 'fire', dano: 1000 }], { afeccoes: AfeccoesPoe.daSoma({ chance_ignite: 100 }), agora: 1000, rng: () => 0, fatoresDoDano });
+    return (bicho.dots ?? []).filter((x) => x.tipo === 'queimadura').reduce((n, x) => n + x.falta, 0);
+  };
+  const sem = incendio(null);
+  assert.ok(sem > 0);
+  assert.ok(Math.abs(incendio({ todas: 1.44, incendio: 1.34 }) / sem - 1.34 * 1.44) < 1e-6, 'o Incêndio × o de Afecções');
+  assert.ok(Math.abs(incendio({ veneno: 1.5, sangramento: 1.5 }) / sem - 1) < 1e-9, 'o de outra afecção não vale');
 });
 
 test('nas afecções do PoE: o "mais" e o "aumentado" do suporte só na afecção dele; a duração', { skip: SEM }, () => {
@@ -96,7 +101,7 @@ test('de ponta a ponta: a gema ligada ao Chance de Envenenar põe o Veneno do Po
   e.mana = e.maxMana = 1e6;
   e.maxHp = e.hp = 1e6;
   P.garantir(e);
-  assert.ok((GS.efeitoNaSkill(e, e.actions[0].id).venenoChance ?? 0) >= 40, 'o suporte está ligado');
+  assert.ok((GS.efeitoNaSkill(e, e.actions[0].id)['af:chance_poison'] ?? 0) >= 40, 'o suporte está ligado');
   const [b] = e.hunt.monstros;
   Object.assign(b, { x: e.hunt.pos.x + 2, y: e.hunt.pos.y, hp: 1e9, maxHp: 1e9, dots: [] });
   const original = Math.random;

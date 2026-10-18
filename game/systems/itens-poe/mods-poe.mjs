@@ -16,9 +16,14 @@ export * from './condicoes-poe.mjs';
  * Empalar (e solta os empalamentos do alvo), a Fúria e o Escudo de Energia por acerto. `ficha`: a do golpe (`fichaDoGolpe`, com as tags).
  * `dano`: o total do acerto; `fisico`: a parte Física. Devolve `{ atordoou, extra }` — `extra`: o dano dos empalamentos soltos (já tirado).
  */
-export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fogo = 0, crit = false, eventos = null, agora = hunt?.clock ?? 0, rng = Math.random, mover = null, elementos = [], personagem = null, habilidade = 'golpe' } = {}) {
+export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fogo = 0, crit = false, eventos = null, agora = hunt?.clock ?? 0, rng = Math.random, mover = null, elementos = [], personagem = null, habilidade = 'golpe', deTotem = false } = {}) {
   const saida = { atordoou: false, extra: 0 };
   if (!ligado() || !alvo || alvo.dummy || !ficha?.afPoe) return saida;
+  // (18/10, lote G20a) `deTotem`: o acerto do TOTEM usando a sua habilidade (`acoes.usarComoTotem`). O que ele faz no INIMIGO vale (o atordoamento, o
+  // Mutilar, o Cegar, o Empurrar, o Empalar, a Exposição, o Golpe de Misericórdia — a skill do totem é a sua, com os seus modificadores); o que daria
+  // algo a VOCÊ não (o dreno do excedente, a Fortificação, a Convergência, o Valor, a Fúria, o escudo no acerto, os "Acertou/Criticou/Empalou
+  // Recentemente" e os eventos "ao Acertar" — o PoB só marca HitRecently quando a habilidade não é de totem: CalcPerform.lua:264).
+  const seu = !deTotem;
   // (ciclo 7, lote D) O que o golpe FEZ entra nas tags dele: o Crítico (`X@critico`) e, depois do sorteio do atordoamento, o Atordoou
   // (`X@golpeAtordoou`) — "Acertos Críticos possuem Golpe de Misericórdia", "Acertos Corpo a Corpo que Atordoam têm X% de chance de Fortificar".
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
@@ -34,19 +39,21 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   }
   // (14/10, o Guardian: a Chama Santificada no acerto corpo a corpo — o Marechal da Divindade; o Raro ou Único acertado é ocasião da Relíquia
   // Elemental — a Cruzada Implacável)
-  if (tags.has('corpo')) porChamaSantificada(hunt, alvo, ficha.afPoe, agora);
+  if (seu && tags.has('corpo')) porChamaSantificada(hunt, alvo, ficha.afPoe, agora);
   if (['raro', 'unico'].includes(alvo.raridade ?? alvo.raridadePoe) || alvo.boss) notarParaReliquia(estado, hunt, agora);
   // (12/10, as Tinturas: os acertos de ATAQUE desde o último tique — "quando você Acertar um Inimigo com uma Arma Corpo a Corpo";
   // `frascos.tique` → `tinturas.tique`, que confere a arma)
-  if (hunt && tags.has('ataque')) hunt.tinturaAcertos = (hunt.tinturaAcertos ?? 0) + 1;
+  if (seu && hunt && tags.has('ataque')) hunt.tinturaAcertos = (hunt.tinturaAcertos ?? 0) + 1;
   const salaDeBoss = !!hunt?.isBoss;
   const ev = (estado2) => eventos?.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: estado2 });
   const sorte = (pct) => pct > 0 && rng() * 100 < pct;
   // "X% do Dano Excedente é Drenado como Vida" (o Apetite Insaciável do Carrasco): o acerto que MATOU — a vida que faltava ao monstro era
   // menos que o dano — drena o que sobrou ("Dano Excedente é qualquer Dano de um Acerto que exceda a Vida restante do Inimigo").
   const excedente = alvo.hp <= 0 && alvo.hp + dano > 0 ? Math.min(dano, -alvo.hp) : 0;
-  if (excedente > 0 && v('roubo_excedente') > 0) drenoDaFicha?.(estado, { vida: (excedente * v('roubo_excedente')) / 100 }, ficha, eventos, personagem?.nome ?? null, hunt?.pos ?? null);
-  if (crit) {
+  // (lote 81) o excesso do golpe fatal fica no morto (a queima do Arauto das Cinzas — `combate.matarMonstro`)
+  if (excedente > 0) alvo.poeExcedente = excedente;
+  if (seu && excedente > 0 && v('roubo_excedente') > 0) drenoDaFicha?.(estado, { vida: (excedente * v('roubo_excedente')) / 100 }, ficha, eventos, personagem?.nome ?? null, hunt?.pos ?? null);
+  if (crit && seu) {
     marcar(hunt, 'critico', agora);
     // (a Sobrecarga Elemental: o crítico DESTA habilidade — `habilidade`, o id da ação; o golpe básico é `golpe`)
     marcarCriticoDaHabilidade(hunt, habilidade, agora);
@@ -85,19 +92,19 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // (lote D) A FORTIFICAÇÃO ("Acertos Corpo a Corpo Fortificam", "X% de chance de Fortificar"): pelo tamanho do acerto — vale também no
   // acerto que matou (`condicoes-poe.ganharFortificacao`).
   const fortificar = (chance) => {
-    if (!hunt || !sorte(chance)) return;
+    if (!hunt || !seu || !sorte(chance)) return;
     const pct = alvo.maxHp > 0 ? (100 * Math.max(0, dano)) / alvo.maxHp : 1;
     ganharFortificacao(hunt, Math.max(1, Math.floor(pct)) * Math.max(0, 1 + v('fortificacao_ganho_inc') / 100), ficha.afPoe, agora);
   };
   fortificar(v('chance_fortificar'));
   // (11/10, o Elementalista) "Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada N segundos" (4 s — o lembrete).
   const convCada = v('convergencia_cada_s');
-  if (convCada > 0 && hunt && (alvo.raridade === 'unico' || alvo.boss) && agora - (hunt.poeConvergenciaEm ?? -Infinity) >= convCada * 1000) {
+  if (seu && convCada > 0 && hunt && (alvo.raridade === 'unico' || alvo.boss) && agora - (hunt.poeConvergenciaEm ?? -Infinity) >= convCada * 1000) {
     hunt.poeConvergenciaEm = agora;
     ganharBuff(hunt, 'convergencia', 4, agora);
   }
   // (lote G) O VALOR (com um Estandarte ligado): o acerto corpo a corpo que mata, ou num Raro ou Único — `ganharValor` (uma vez a cada 0,5 s).
-  if (tags.has('corpo') && (alvo.hp <= 0 || /raro|unico/.test(alvo.raridade ?? '') || alvo.boss)) ganharValor(hunt, 1, ficha.afPoe, agora);
+  if (seu && tags.has('corpo') && (alvo.hp <= 0 || /raro|unico/.test(alvo.raridade ?? '') || alvo.boss)) ganharValor(hunt, 1, ficha.afPoe, agora);
   if (alvo.hp <= 0) return saida;
   // ATORDOAMENTO (o do PoE: pelo tamanho do acerto em relação à vida do alvo).
   // (+ "Acertos Atordoam como se causassem X% mais Dano de Fogo Corpo a Corpo": a parte de FOGO do acerto corpo a corpo — `fogo`, depois da
@@ -111,6 +118,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     if (rng() * 100 < v('chance_dobrar_atordoamento')) dur *= 2;
     if (Estados.atordoar(alvo, Math.round(dur), agora, salaDeBoss)) {
       saida.atordoou = true;
+      // (17/10, lote G6) "Inimigos Amaldiçoados concedem N de Fúria quando Atordoados" (a Marca do Senhor da Guerra — `contra.atordoar` da maldição)
+      if (seu) for (const m of Object.values(alvo.maldicoes ?? {})) if (m?.contra?.atordoar?.furia > 0 && m.ate > agora) ganharFuria(hunt, m.contra.atordoar.furia, agora);
       ev('atordoado');
       fichaR = { ...fichaR, tagsDoGolpe: [...(fichaR.tagsDoGolpe ?? []), 'golpeAtordoou'] };
       // ("Acertos Corpo a Corpo que Atordoam têm X% de chance de Fortificar": só a parte que depende de ter atordoado.)
@@ -165,7 +174,7 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   if (sorte(v('chance_empurrar')) && typeof mover === 'function' && mover(alvo)) {
     ev('empurrado');
     // ("X% de chance de ganhar uma Carga de Poder se Empurrar um Inimigo com Dano Corpo a Corpo": o evento `empurrar`, com as tags do golpe.)
-    evento(estado, hunt, 'empurrar', ficha, { alvo, eventos, personagem, agora, tags: [...tags] });
+    if (seu) evento(estado, hunt, 'empurrar', ficha, { alvo, eventos, personagem, agora, tags: [...tags] });
     // (11/10) "Distância do Empurrão aumentada em X%": cada 100% é uma casa a mais; o resto, a chance de mais uma.
     const aMais = Math.max(0, v('distancia_empurrao'));
     const casas = Math.floor(aMais / 100) + (rng() * 100 < aMais % 100 ? 1 : 0);
@@ -187,7 +196,7 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     const ainda = (e.exposicao?.[el] ?? 0) > agora;
     e.exposicao = { ...(e.exposicao ?? {}), [el]: agora + 4000 };
     e.exposicaoPct = { ...(e.exposicaoPct ?? {}), [el]: ainda ? Math.max(e.exposicaoPct?.[el] ?? 10, pct) : pct };
-    marcar(hunt, 'infligiuExposicao', agora);
+    if (seu) marcar(hunt, 'infligiuExposicao', agora);
   }
   // O EMPALAMENTO: o efeito (+ "em Inimigos não Empalados"), os acertos ("duram por N Acerto adicional"), a duração, os "N Empalamentos
   // adicionais" e o espalhar ("também Empalam outros Inimigos próximos deles" — O Empalador), com o "Por N segundos … não podem ser Empalados
@@ -209,7 +218,7 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
       if (m === alvo) em.empalamentoDoAcerto = { novos, efeitoInc };
       if (lista.length > NO_ACERTO.empalar.maximo) lista.splice(0, lista.length - NO_ACERTO.empalar.maximo);
       if (v('empalar_bloqueio_s') > 0) em.empalarBloqueadoAte = agora + v('empalar_bloqueio_s') * 1000;
-      marcar(hunt, 'empalou', agora);
+      if (seu) marcar(hunt, 'empalou', agora);
       return true;
     };
     if (empalar(alvo)) ev('empalado');
@@ -250,10 +259,10 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // A Fúria ("Ganhe N de Fúria com Acertos Corpo a Corpo").
   // ("X% de chance de que se você fosse ganhar Fúria ao Acertar, você ganha até o seu máximo de fúria ao invés".)
   const furia = v('furia_por_acerto');
-  if (furia > 0) ganharFuria(hunt, sorte(v('furia_max_ao_acertar_chance')) ? 9999 : furia, agora);
+  if (seu && furia > 0) ganharFuria(hunt, sorte(v('furia_max_ao_acertar_chance')) ? 9999 : furia, agora);
   // Escudo de Energia por acerto ("Ganha N de Escudo de Energia por Inimigo Acertado com Ataques").
   const es = tags.has('ataque') ? v('es_on_hit') : 0;
-  if (es > 0 && estado) estado.es = Math.min(Math.max(0, Math.round(ficha.energyShield ?? 0)), (estado.es ?? 0) + es);
+  if (seu && es > 0 && estado) estado.es = Math.min(Math.max(0, Math.round(ficha.energyShield ?? 0)), (estado.es ?? 0) + es);
   // GOLPE DE MISERICÓRDIA (Culling Strike): o alvo com 10% da vida ou menos (5% se Raro ou Único) morre. Com condição: "Acertos Críticos
   // possuem Golpe de Misericórdia", "contra Inimigos Amaldiçoados/Incendiados/Congelados", "Ataques com Arcos têm Golpe Abatedor".
   // (as tags `critico` e `golpeAtordoou` já estão em `fichaR`: "Acertos Críticos possuem…", "Acertos que Atordoarem os Inimigos possuem…")
@@ -264,9 +273,10 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     if (alvo.hp <= alvo.maxHp * limiar) {
       alvo.hp = 0;
       eventos?.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: 'misericordia' });
-      evento(estado, hunt, 'golpeDeMisericordia', ficha, { alvo, eventos, personagem, agora });
+      if (seu) evento(estado, hunt, 'golpeDeMisericordia', ficha, { alvo, eventos, personagem, agora });
     }
   }
+  if (!seu) return saida;
   // Os EVENTOS dos únicos: no acerto, no crítico e ao atordoar (com o alvo e as tags do golpe).
   marcar(hunt, 'acertou', agora);
   // ("se você Acertou um Inimigo Único Recentemente")
@@ -300,9 +310,14 @@ export function empalamentoComSangramento(alvo, ficha, sangrou) {
   const fator = (1 + (doAcerto.efeitoInc + comSangue) / 100) / Math.max(0.01, 1 + doAcerto.efeitoInc / 100);
   for (const x of doAcerto.novos) x.valor *= fator;
 }
-export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos = null, personagem = null } = {}) {
+export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos = null, personagem = null, deTotem = false } = {}) {
   if (!ligado() || !postos?.length) return;
-  for (const p of new Set(postos)) {
+  // (lote 81, o Segredo da Tormenta: "Arauto Trovejante também cria uma tempestade quando você Eletrizar um Inimigo" — `acoes.tiqueDaTempestade` abre;
+  // a Eletrização do totem não é sua)
+  if (hunt && !deTotem && postos.includes('eletrizado') && valor(ficha, 'arauto_tempestade_ao_eletrizar') > 0) hunt.poeEletrizouParaTempestade = hunt.clock ?? 0;
+  // (lote G20a: a afecção que o TOTEM pôs — o espalhar e a lentidão da Eletrização valem no inimigo; os "Incendiou/Congelou Recentemente", os eventos, o
+  // reflexo e a vida ao incendiar são seus)
+  for (const p of deTotem ? [] : new Set(postos)) {
     const [ev, rec] = EVENTO_DA_AFECCAO[p] ?? [];
     if (!ev) continue;
     if (rec) marcar(hunt, rec);
@@ -312,18 +327,18 @@ export function aoPorAfeccoes(estado, hunt, alvo, ficha, postos = [], { eventos 
   // com o mesmo dano e o tempo que falta; o Congelamento, pelo tempo dele — aproximado: a Eletrização e o Resfriamento não voltam.)
   const agoraR = hunt?.clock ?? 0;
   const refleteTudo = valor(ficha, 'afeccoes_elementais_refletidas') > 0;
-  if (alvo && (refleteTudo || valor(ficha, 'incendio_refletido') > 0) && new Set(postos).has('queimando')) {
+  if (!deTotem && alvo && (refleteTudo || valor(ficha, 'incendio_refletido') > 0) && new Set(postos).has('queimando')) {
     const d = (alvo.dots ?? []).filter((x) => x.tipo === 'queimadura' && x.falta > 0).sort((x, y) => y.ate - x.ate)[0];
     if (d) dotNoJogador(hunt, { tipo: 'queimadura', total: d.falta, duracaoMs: Math.max(500, d.ate - agoraR), origem: { fonte: 'reflexo' } }, agoraR);
   }
-  if (alvo && refleteTudo && new Set(postos).has('congelado') && alvo.estados?.congelado?.ate > agoraR) {
+  if (!deTotem && alvo && refleteTudo && new Set(postos).has('congelado') && alvo.estados?.congelado?.ate > agoraR) {
     const c = (hunt.controle ??= {});
     if (!((c.imuneAte ?? 0) > agoraR) && !(Number(ficha?.afPoe?.imune_congelamento) > 0)) c.congelado = { ate: Math.max(c.congelado?.ate ?? 0, alvo.estados.congelado.ate) };
   }
   // "Recupera X% de Vida ao Incendiar um Inimigo não Incendiado" (`afeccoes.aoAcertar` marca o alvo que não queimava).
   if (alvo?.estados?.incendiadoNovo) {
     delete alvo.estados.incendiadoNovo;
-    evento(estado, hunt, 'incendiarNovo', ficha, { alvo, eventos, personagem });
+    if (!deTotem) evento(estado, hunt, 'incendiarNovo', ficha, { alvo, eventos, personagem });
   }
   // "Eletrizações infligidas por você se espalham para outros Inimigos dentro de N metros" (1 casa = 2 m): a mesma Eletrização nos de perto.
   // ("Velocidade de Movimento dos Inimigos Eletrizados por você reduzida em X%": a Eletrização posta também deixa Lento.)
@@ -837,7 +852,7 @@ export function evento(estado, hunt, nome, ficha, ctx = {}) {
   while (ultimos.length && (ultimos[0] < agora - 20000 || ultimos.length > 60)) ultimos.shift();
   if (nome === 'matar' && ctx.alvo?.estados?.congelado?.ate > agora) {
     marcar(hunt, 'estilhacou', agora);
-    aoEstilhacar?.(estado, hunt, ficha, ctx.rng ?? Math.random);
+    aoEstilhacar?.(estado, hunt, ficha, ctx.rng ?? Math.random, { alvo: ctx.alvo, eventos: ctx.eventos, personagem: ctx.personagem });
   }
   // (14/10, a Cruzada Implacável: o abate — seu ou do seu lacaio — é ocasião da Relíquia Elemental, sua e dos companheiros perto; lote 31: o
   // do lacaio e o do totem são os eventos deles — "quando você ou um Aliado próximo Matar")

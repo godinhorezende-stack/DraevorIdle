@@ -285,7 +285,7 @@ export function registrarSuporte({ itemId, suporte, requer = [], algum = [], exc
   const indicePoe = CompatSuportes.indiceDoSuporte(suporte.slug);
   const def = {
     itemId, tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, levelMinimo,
-    suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho, ...(indicePoe != null ? { indicePoe } : {}) },
+    suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho, ...(indicePoe != null ? { indicePoe } : {}), ...(CompatSuportes.ADICIONA_TIPOS[suporte.slug] ? { adiciona: CompatSuportes.ADICIONA_TIPOS[suporte.slug] } : {}) },
     poe: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, en: suporte.en, suporte: true },
     poeXp: tabelaDeXpDoPoe(suporte),
   };
@@ -508,7 +508,7 @@ export function sortearSoquetes(meta, raridade, rng = Math.random) {
 
 // Os grupos ligados e a compatibilidade por tag: a MESMA regra que a tela usa (engine/sockets-de-gema.mjs).
 export { gruposLigados, grupoDoSocket, compativel } from '../../engine/sockets-de-gema.mjs';
-import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
+import { gruposLigados, compativel, compativelNoGrupo } from '../../engine/sockets-de-gema.mjs';
 import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from '../itens-poe/so-itens-do-poe.mjs';
 
 // + as luvas, que no PoE têm slot próprio (e sockets).
@@ -574,7 +574,8 @@ export function skillsAtivas(estado) {
           def: x.def,
           supports: unicas(
             supports
-              .filter((sp) => compativel(sp.def.suporte, x.def.tags))
+              // (17/10, lote G3: + o tipo que outro suporte do grupo acrescenta — `compativelNoGrupo`)
+              .filter((sp) => compativelNoGrupo(sp.def.suporte, x.def.tags, supports.map((o) => o.def.suporte)))
               .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def, sp.i); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
           ),
           onde: { slot, indice: x.i },
@@ -678,10 +679,14 @@ export function gruposComGatilho(estado) {
       for (const x of noGrupo.filter((y) => y.def.tipo === 'support' && y.def.suporte?.gatilho)) {
         const gat = typeof x.def.suporte.gatilho === 'function' ? x.def.suporte.gatilho(x.g.nivel + bonus) : x.def.suporte.gatilho;
         const ativas = noGrupo.filter((y) => y.def.tipo === 'ativa');
+        // (17/10, lote G15) Conjurar enquanto Canaliza: quem DISPARA é a habilidade de Canalização do grupo (ataque ou magia); as ativadas são as
+        // magias que não canalizam
+        const canal = gat?.quando === 'canalizar';
+        const canaliza = (y) => y.def.tags?.includes('poe:Canalização');
         saida.push({
           chave: `${slot}:${x.i}`, nome: x.def.nome, nivel: x.g.nivel + bonus, gatilho: gat,
-          ataques: ativas.filter((y) => y.def.tags?.includes('poe:Ataque')).map((y) => y.def.acao),
-          magias: ativas.filter((y) => y.def.tags?.includes('poe:Magia') && !y.def.tags?.includes('poe:Ataque') && compativel(x.def.suporte, y.def.tags)).map((y) => y.def.acao),
+          ataques: (canal ? ativas.filter(canaliza) : ativas.filter((y) => y.def.tags?.includes('poe:Ataque'))).map((y) => y.def.acao),
+          magias: ativas.filter((y) => y.def.tags?.includes('poe:Magia') && !y.def.tags?.includes('poe:Ataque') && !(canal && canaliza(y)) && compativel(x.def.suporte, y.def.tags)).map((y) => y.def.acao),
         });
       }
     }
@@ -728,8 +733,8 @@ export const temSkill = (estado, acao) => skillsAtivas(estado).has(acao);
 // (+ os da Blasfêmia, que não escalam com a gema de suporte: a reserva sobreposta, a maldição em aura e o efeito dela.)
 const CONTAGENS = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra', 'reservaSobreposta', 'maldicaoEmAura', 'efeitoMaldicaoPct']);
 const MULTIPLICATIVOS = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct']);
-/** (lote 76) O "X% mais Dano" de uma afecção dos suportes do PoE (`suportes-poe`): multiplica entre suportes, como no PoE. */
-const MAIS_DE_AFECCAO = new Set(['maisIncendioPct', 'maisQueimaduraPct', 'maisVenenoPct', 'maisSangramentoPct', 'maisAfeccoesPct']);
+// (lote G17) os "mais/menos" do acerto só e das afecções só (em % — multiplicam entre os suportes, como o `maisDanoPct`)
+const MAIS_DA_AFECCAO = new Set(['maisDanoAcertoPct', 'maisDanoMagicoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', 'maisDotFogoPct', 'maisDotFisicoPct', 'maisDotCaosPct', 'maisDotGeloPct', 'maisDotRaioPct']);
 export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   const a = ativas.get(acao);
   if (!a) return null;
@@ -761,14 +766,18 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
       else if (k === 'custoPct') e.custoPct = ((1 + e.custoPct / 100) * (1 + valor / 100) - 1) * 100;
       // O "X% mais/menos Dano" dos suportes do PoE MULTIPLICA (como no PoE), por cima do fator da gema.
       else if (k === 'maisDanoPct') e.fatorDeDano *= Math.max(0, 1 + valor / 100);
+      // (17/10, lote G17) o "mais/menos Dano com Acertos" multiplica o acerto (o fator da gema) e fica à parte (`maisDanoAcertoPct`) para a afecção
+      // que o acerto põe sair sem ele; o "mais Dano de Afecções" e o de cada afecção multiplicam só a afecção (`AfeccoesPoe.aoAcertar`).
+      else if (MAIS_DA_AFECCAO.has(k)) {
+        e[k] = ((1 + (e[k] ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
+        if (k === 'maisDanoAcertoPct') e.fatorDeDano *= Math.max(0, 1 + valor / 100);
+      }
+      // (lote G20b) os suportes que viram totem: o tipo (1 o totem, 2 a balista), a duração, os totens por uso e a Balista Focada — o maior, não a soma
+      else if (k === 'viraTotem' || k === 'totemDuracaoMs' || k === 'totensPorUso' || k === 'balistaFocada' || k === 'ativacaoM') e[k] = Math.max(e[k] ?? 0, valor);
       // O tempo de uso dos suportes do PoE também multiplica (40% mais velocidade e 20% menos são ×1/1,4 × ×1/0,8).
       else if (k === 'castTimePct' && doPoe) e.castTimePct = ((1 + (e.castTimePct ?? 0) / 100) * (1 + valor / 100) - 1) * 100;
       // (lote 36) O "X% mais/menos Efeito em Área" dos suportes do PoE também multiplica (o "aumentado", `areaIncPct`, soma).
       else if (k === 'areaMaisPct') e.areaMaisPct = ((1 + (e.areaMaisPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
-      // (lote 76) o "X% mais Dano com Incêndio / Veneno / Sangramento / de Afecções" também multiplica
-      else if (MAIS_DE_AFECCAO.has(k)) e[k] = ((1 + (e[k] ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
-      // (lote 76) o "mais" que vale SÓ no acerto (já está no `fatorDeDano`): o fator dele, para a base das afecções o tirar (`acoes`)
-      else if (k === 'maisSoAcertoPct') e.fatorSoAcerto = (e.fatorSoAcerto ?? 1) * Math.max(0, 1 + valor / 100);
       else e[k] = (e[k] ?? 0) + valor;
     }
     e.supports.push(sp.def.nome);

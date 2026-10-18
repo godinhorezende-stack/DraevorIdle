@@ -2149,6 +2149,14 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado()) { Acoes.tiqueDasEgides(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDosRobos(estado, hunt, agora); }
   // (14/10, o Reliquarian) as Aranhas Espectrais (os abates pendentes) e o Grande Emissário das Direções; (o Luminary) o mercenário
   if (itensPoeLigado()) { Acoes.tiqueDasAranhas(estado, hunt, agora); Acoes.tiqueDoEmissario(estado, hunt, hunt.clock ?? 0); Acoes.tiqueDoMercenario(estado, hunt, agora); }
+  // (17/10, lote G15) Conjurar enquanto Canaliza: as magias do grupo da habilidade canalizada agora
+  if (itensPoeLigado() && hunt.canalizacao) Acoes.tiqueDaCanalizacao(estado, hunt, personagem, eventos);
+  // (lote 81 — unificado com o lote G9) a tempestade do Arauto Trovejante (`Acoes.tiqueDaTempestade`; a explosão do Glacial e a queima do Flamejante
+  // saem na morte — `combate`): os eventos vão para a tela com os da caçada e quem morreu nos raios morre agora
+  if (itensPoeLigado() && (hunt.poeTempestade || hunt.poeEletrizouParaTempestade != null)) {
+    const doArauto = Acoes.tiqueDaTempestade(estado, hunt, hunt.clock ?? 0, Math.random, personagem);
+    if (doArauto.length) { eventos.push(...doArauto); processarMortes(estado, personagem, eventos); }
+  }
   // (lote 41, P032) as suas ÁREAS FRIAS: quem está dentro fica Resfriado (`resfriarNasAreasFrias`)
   if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt);
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
@@ -2490,40 +2498,21 @@ ModsPoe.definirReducaoFisica((hunt, alvo, valor) => resistido(hunt, alvo, 'physi
 // modificadores de dano do personagem (a ficha vazia: nem penetração, nem "mais"/"aumentado").
 ModsPoe.definirDanoDaExplosao((hunt, alvo, tipo, valor) => resistido(hunt, alvo, tipo, valor, {}));
 export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
-  const eventos = [];
-  const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
-  const conta = entry ? Acoes.danoMostrado(estado, entry) : l.dano;
+  const daBarra = Acoes.POR_ID_PUBLICO?.(l.acao);
+  // (o uso do totem: a habilidade com a tag Totem — "Velocidade de Conjuração/Ataque do Totem" vale na que um suporte tornou totem)
+  const entry = daBarra?.poeGema ? { ...daBarra, poeGema: { ...daBarra.poeGema, doTotem: true } } : daBarra;
   // (O totem não fica lento com o dono: a lentidão do personagem não entra no tempo do golpe dele.)
-  const uso = entry ? Acoes.temposDaGemaPoe(estado, entry, undefined, undefined, { doJogador: false }).uso : l.intervaloMs;
+  // (lote G20a: + a velocidade DOS TOTENS — "Ataques utilizados por Totens têm X% de Velocidade de Ataque aumentada", "Magias Conjuradas por Totens
+  // têm X% de Velocidade de Conjuração aumentada" — `l.velAtaquePct`, de `LacaiosPoe.oQueInvoca`)
+  const uso = entry ? Acoes.temposDaGemaPoe(estado, entry, undefined, undefined, { doJogador: false, velExtraPct: l.velAtaquePct ?? 0 }).uso : l.intervaloMs;
   // (+ a lentidão que os Elites/Chefes põem no totem — `LacaiosPoe.fatorDeLentidao`.)
   l.proximoGolpe = agora + Math.max(400, Math.round(uso * LacaiosPoe.fatorDeLentidao(l, agora)));
   l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
-  const tipo = entry?.element ?? l.elemento ?? 'physical';
-  // (+ "X% do Dano causado pelos seus Totens é Drenado como Vida para você" — de todo dano, `totem_roubo_vida`.)
-  const drenoDoTotem = (tipo === 'physical' && entry?.poeGema?.ataque ? ModsPoe.valor(ficha, 'totem_roubo_vida_fisico') : 0) + ModsPoe.valor(ficha, 'totem_roubo_vida');
-  // O golpe do totem em UM bicho com `pct`% (o principal 100%; os projéteis a mais e os saltos, o % deles).
-  const golpear = (b, pct) => {
-    const dano = Math.max(1, Math.round(resistido(hunt, b, tipo, ((conta.min + Math.random() * Math.max(0, conta.max - conta.min)) * pct) / 100, ficha)));
-    b.hp -= dano;
-    QuemFeriu.carimbar(b, QuemFeriu.TOTEM); // (lote 31, S001: o totem)
-    if (drenoDoTotem > 0) Ficha.drenarPoe(estado, { vida: (dano * drenoDoTotem) / 100 }, ficha, eventos, personagem?.nome, hunt.pos);
-    eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: b.uid, x: b.x, y: b.y, sk: l.acao });
-    eventos.push({ t: 'dmg', uid: b.uid, x: b.x, y: b.y, v: dano, foe: true, lacaio: true, alvo: b.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
-  };
-  if (entry?.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y, sk: l.acao });
-  golpear(alvo, 100);
-  // (dono, 11/10: "faça os totens e lacaios também") Os PROJÉTEIS do totem — a base da gema, os suportes ligados nela e as peças — pelo
-  // mesmo motor do disparo do personagem: todos saem (os que erram também), e os a mais e os saltos acertam como lá.
-  const r = Acoes.projeteisDoTotem(estado, entry, { origem: { x: l.x, y: l.y }, alvo, vivos: hunt.monstros.filter((m) => m.hp > 0 && !m.dummy) });
-  if (r) {
-    if (entry.projetil) for (const p of r.emitidos.slice(1)) eventos.push({ t: 'shot', id: entry.projetil, x: p.de.x, y: p.de.y, tx: p.para.x, ty: p.para.y, sk: l.acao });
-    for (const g of r.golpes) {
-      if (g.bicho.hp <= 0) continue;
-      if (g.tipo !== 'explosao' && g.tipo !== 'projetil' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: g.de.x, y: g.de.y, tx: g.bicho.x, ty: g.bicho.y, sk: l.acao });
-      golpear(g.bicho, g.pct);
-    }
-  }
-  return eventos;
+  // (18/10, lote G20a) o golpe é o SEU uso da gema, do lugar do totem (`Acoes.usarComoTotem`): o crítico, a área, as afecções, as linhas da gema e os
+  // suportes, como no PoE; os acertos são do totem (o abate, o dreno dos seus Totens). Antes era o dano do balão no alvo, sem crítico, área nem
+  // afecções.
+  // (ninguém na área dele — `SEM_BICHO_NA_AREA`: o uso sai vazio, sem acerto; o tempo dele passa igual)
+  return (entry ? Acoes.usarComoTotem(estado, hunt, personagem, l, alvo) : null) ?? [];
 }
 
 /**
@@ -2556,7 +2545,7 @@ export function recuperarDoMercenario(l, agora) {
   if (cura > 0) l.hp = Math.min(l.maxHp, l.hp + cura);
 }
 
-function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
+export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   const eventos = [];
   const ficha = Ficha.combate(estado);
   // (PoE, 13/10) as SUAS auras "Você e Aliados" nos seus lacaios (no PoE, "Aliados" inclui os lacaios): o dano, o bloqueio, as resistências,
@@ -2672,11 +2661,19 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (l.recoup?.length) recuperarDoMercenario(l, agora);
     if (l.tipo === 'totem') {
       if (l.x === hunt.pos.x && l.y === hunt.pos.y) passoDoFamiliar(hunt, grade, l, agora, hunt.pos, { pararEm: (d) => d >= 1 });
+      // (lote G20a) o totem SEM golpe (o Chamariz, o Devorador, os Rejuvenescedores, o Vínculo Abrasador): não acerta ninguém — antes "acertava" por
+      // no mínimo 1 (`GemasPoe.totemSemGolpe`)
+      if (GemasPoe.totemSemGolpe(l.gema)) continue;
       if (!R.jaPode(agora, l.proximoGolpe) || Protecao.imune(hunt)) continue;
+      // (lote G20b) a BALISTA FOCADA: só ataca depois de um projétil de ataque SEU desde o último ataque dela (`hunt.poeProjetilDeAtaqueEm`)
+      if (l.focada && !((hunt.poeProjetilDeAtaqueEm ?? -Infinity) > (l.ultimoUsoEm ?? -Infinity))) continue;
+      // (lote G20b) o totem ANCESTRAL (o do Devastador) só usa a habilidade com você perto dele (`l.ativacao` casas)
+      if (l.ativacao != null && Math.max(Math.abs(l.x - hunt.pos.x), Math.abs(l.y - hunt.pos.y)) > l.ativacao) continue;
       let alvo = null;
       for (const m of hunt.monstros) if (m.hp > 0 && !m.dummy && distancia(m, l) <= l.alcanceDeAtaque && (!alvo || distancia(m, l) < distancia(alvo, l))) alvo = m;
       if (!alvo) continue;
       eventos.push(...golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora));
+      if (l.focada) l.ultimoUsoEm = hunt.clock ?? 0;
       continue;
     }
     // (lote 44, P066) os Robôs Ativadores "seguem você e correm até os inimigos" (o PoE): até o alvo do familiar, na folga do combate — as suas

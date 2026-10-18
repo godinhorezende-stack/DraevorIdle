@@ -49,7 +49,9 @@ test('os números do PoE pelo nível da gema: dano, custo, eficácia de ataque, 
 
 test('aura e maldição viram reforço: os efeitos e os atributos do nível ficam no buff (dano adicionado, marca de vulnerável)', { skip: SEM }, () => {
   const ira = G.buffNoNivel('Wrath', 10);
-  assert.ok(ira.af.added_energy_dmg_max > 0 && ira.efeitos.some((x) => x.efeito === 'dano'));
+  // (dono, 17/10 — lote G18b: o "mais Dano Mágico de Raio" da Ira é só a parte de Raio das magias, como no PoB — `mais_dano_raio@magia` —, não o
+  // "dano" geral de antes, que valia em toda habilidade)
+  assert.ok(ira.af.added_energy_dmg_max > 0 && ira.af['mais_dano_raio@magia'] > 0 && !ira.efeitos.some((x) => x.efeito === 'dano'));
   const mordida = G.buffNoNivel('Frostbite', 10);
   assert.deepEqual(mordida.efeitos[0].tipos, ['ice']);
   assert.ok(mordida.efeitos[0].efeito === 'marcaVulneravel' && mordida.efeitos[0].pct > 0);
@@ -208,7 +210,8 @@ test('os 262 suportes do PoE viram gemas de suporte, com o status no jogo e a co
   assert.ok(st.funciona > 40 && st.parcial > 100, JSON.stringify(st));
   assert.equal(SP.doSlug('Cast_On_Critical_Strike_Support').status, 'funciona');
   assert.equal(SP.doSlug('Minion_Damage_Support')?.status, 'funciona', 'o suporte de dano de lacaio vale nos lacaios');
-  assert.equal(SP.doSlug('Trap_Support')?.status ?? 'nao', 'nao', 'armadilha ainda não existe no jogo');
+  // (17/10, lote G3 — o dono: "Inverter para funciona") o Suporte de Armadilha transforma a habilidade em Armadilha (`armas-plantadas.mjs`)
+  assert.equal(SP.doSlug('Trap_Support')?.status, 'funciona', 'vira Armadilha (lote G3)');
   const def = (s) => GS.defDaGema(SP.doSlug(s).itemId);
   assert.deepEqual(def('Cast_On_Critical_Strike_Support').suporte.requer, ['poe:Magia'], 'o gatilho restringe só a magia que ativa');
   assert.ok(def('Faster_Projectiles_Support')?.suporte.requer.includes('poe:Projétil') ?? true);
@@ -226,7 +229,8 @@ test('o efeito do suporte no nível: "mais/menos" multiplica, custo, velocidade,
   const magia = { tags: ['poe:Magia', 'poe:Projétil', 'poe:Fogo'] };
   const gmp = SP.efeitoNoNivel('Greater_Multiple_Projectiles_Support', 10, 0, magia).efeito;
   assert.equal(gmp.alvosExtras, 4);
-  assert.ok(gmp.maisDanoPct < 0 && gmp.custoPct === 50);
+  // (dono, 17/10 — lote G17: o "menos Dano de Projétil" fica só no acerto, como no PoB — `maisDanoAcertoPct`; a afecção sai sem ele)
+  assert.ok(gmp.maisDanoAcertoPct < 0 && gmp.custoPct === 50);
   // (C — dono, 09/10, correção 3 da auditoria da velocidade: o "aumentada" do suporte SOMA com a velocidade da ficha — vai em
   // `velConjuracaoPct`, não mais no tempo de uso `castTimePct`, que fica só para o "mais/menos".)
   const fc = SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, magia).efeito;

@@ -469,8 +469,10 @@ test('REPETIÇÃO FINAL: "Repetição Final das Magias têm Efeito em Área aume
     for (; d < 12; d++) { Object.assign(fora, { x: o.h.pos.x + d, y: o.h.pos.y }); const a = fora.hp; comSorte(0.5, () => usar(o, 5000)); if (fora.hp === a) break; fora.hp = a; }
     return { d, o, fora };
   };
-  const sem = longe({});
-  const com_ = cacada({ classe: 'Witch', base: 'Wands/Driftwood_Wand', gema: 'Ice_Nova', suportes: ['Spell_Echo_Support'], monstros: 2, af: { repeticao_final_area: valor } });
+  // (17/10, lote G2 — o dono: "Aplicar raio do PoE": a Nova tem o raio do PoE, 1,4 casa — no sorteio 0,5, 1 casa; +100% de área nas duas
+  // cenas, para a fração da última repetição — 1 × (√(2 + X%) − 1) — passar da sorte 0,5 que a das outras, 1 × (√2 − 1) = 0,41, não passa)
+  const sem = longe({ area_inc: 100 });
+  const com_ = cacada({ classe: 'Witch', base: 'Wands/Driftwood_Wand', gema: 'Ice_Nova', suportes: ['Spell_Echo_Support'], monstros: 2, af: { area_inc: 100, repeticao_final_area: valor } });
   Object.assign(com_.h.monstros[1], { x: com_.h.pos.x + sem.d, y: com_.h.pos.y });
   const antes = com_.h.monstros[1].hp;
   comSorte(0.5, () => usar(com_, 0));

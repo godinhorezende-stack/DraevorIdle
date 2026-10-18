@@ -181,10 +181,12 @@ test('na CAÇADA: o ativo sai e alterna as gemas; deixado, sai sem morrer; morto
   assert.ok(l, 'saiu');
   assert.equal(l.nome, merc.nome);
   assert.equal(l.alcanceDeAtaque, 7, 'a Flecha Dividida alcança 7 casas');
-  const a = l.dano;
   Acoes.depoisDoGolpeDoMercenario(l);
   assert.equal(l.habilidade, 1);
-  assert.notDeepEqual(l.dano, a, 'a Flecha Relampejante');
+  // (dono, 17/10 — lote G17: confere a habilidade que entrou, não o dano arredondado; com os Projéteis Viciosos do PoE — 49% mais no acerto — a
+  // Flecha Dividida e a Relampejante do mercenário de nível 40 sem arma dão as duas 4–10)
+  assert.equal(l.habilidades[l.habilidade].gema, 'Lightning_Arrow', 'a Flecha Relampejante');
+  assert.equal(l.dano, l.habilidades[1].dano, 'com o dano dela');
   // deixado: sai sem contar como morte
   M.comando(e, { action: 'deixar' }, af(e));
   Acoes.tiqueDoMercenario(e, h, t + 250);

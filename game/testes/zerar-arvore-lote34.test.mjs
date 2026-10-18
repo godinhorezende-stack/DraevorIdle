@@ -69,9 +69,13 @@ test('P008 — a Velocidade dos Clamores encurta o tempo de uso do Clamor; a Vel
   const entry = Acoes.POR_ID_PUBLICO(gema.acao);
   const uso = (af) => { const e = personagem(af); return Acoes.temposDaGemaPoe(e, entry, { nivel: 10 }, ficha(e), { doJogador: false }).conjuracaoMs; };
   const base = uso({});
-  assert.equal(base, GemasPoe.temposNoNivel('Enduring_Cry', 10).conjuracaoMs, 'os 0,8 s da gema');
+  // (17/10, lote G2 — o dono: "Corrigir e ajustar o P008") os 0,8 s da gema ÷ (1 + a "Velocidade de Clamor aumentada em X%" DA GEMA — 18% no
+  // nível 10; antes o compilador a lia como recuperação da recarga)
+  const t = GemasPoe.temposNoNivel('Enduring_Cry', 10);
+  assert.equal(t.velClamor, 18);
+  assert.equal(base, Math.round(t.conjuracaoMs / (1 + t.velClamor / 100)), 'os 0,8 s da gema ÷ 1,18');
   assert.equal(uso({ cast_speed: 100 }), base, 'a conjuração não acelera o Clamor');
-  assert.equal(uso({ velocidade_clamor: 100 }), Math.round(base / 2), '+100% de Velocidade dos Clamores: a metade');
+  assert.equal(uso({ velocidade_clamor: 100 }), Math.round(t.conjuracaoMs / (1 + (100 + t.velClamor) / 100)), '+100% de Velocidade dos Clamores soma com os 18% da gema');
   // (uma magia continua pela conjuração)
   const magia = GemasPoe.doSlug('Fireball');
   if (magia) {

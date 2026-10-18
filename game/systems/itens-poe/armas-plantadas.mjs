@@ -24,11 +24,20 @@ const MOVENDO_MS = 600;
 const v = (ficha, k) => Number(ficha?.afPoe?.[k]) || 0;
 const distancia = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
-/** A gema planta? (o arquétipo dela: `armadilha` ou `mina`), só no modo PoE. Devolve o tipo ou null. */
-export const tipoDaGema = (entry) => (ligado() && ['armadilha', 'mina'].includes(entry?.poeGema?.arquetipo) ? entry.poeGema.arquetipo : null);
+/**
+ * A gema planta? (o arquétipo dela: `armadilha` ou `mina`), só no modo PoE. Devolve o tipo ou null. (17/10, lote G3: + `efeito` — o SUPORTE
+ * que transforma a habilidade em Armadilha ou Mina: o Suporte de Armadilha, "Armadilha dura 4 segundo"; as Minas de Explosão em Cadeia, de
+ * Alto Impacto e Locus, "Mina dura 5 segundos" — `efeito.plantaArmadilha`/`plantaMina`, de `suportes-poe.mjs`.)
+ */
+export function tipoDaGema(entry, efeito = null) {
+  if (!ligado() || !entry?.poeGema) return null;
+  if (efeito?.plantaArmadilha > 0) return 'armadilha';
+  if (efeito?.plantaMina > 0) return 'mina';
+  return ['armadilha', 'mina'].includes(entry.poeGema.arquetipo) ? entry.poeGema.arquetipo : null;
+}
 
-/** Quantas do tipo cabem plantadas de uma vez. */
-export const maximo = (ficha, tipo) => PADRAO[tipo].maximo + v(ficha, tipo === 'armadilha' ? 'max_armadilhas' : 'max_minas');
+/** Quantas do tipo cabem plantadas de uma vez (+ `extra`: o "podem ter até N Armadilhas adicionais armadas de uma vez" do suporte). */
+export const maximo = (ficha, tipo, extra = 0) => PADRAO[tipo].maximo + v(ficha, tipo === 'armadilha' ? 'max_armadilhas' : 'max_minas') + Math.max(0, Math.round(Number(extra) || 0));
 
 /** A duração (ms) da Armadilha/Mina: a da gema (`baseS`, "Armadilha/Mina dura N segundos") × "Duração da Mina/Armadilha aumentada". */
 export function duracaoMs(ficha, tipo, baseS = null) {
@@ -49,16 +58,23 @@ export function detonacaoDaGema(linhas = []) {
  * Quantas armadilhas a mais este arremesso joga: as de sempre ("Habilidades que Arremessam Armadilhas arremessam até N Armadilhas adicionais")
  * e, na chance, as do "X% de chance de arremessar até N Armadilhas adicionais" (o "até" do PoE: as N, em volta do lugar).
  */
-export function extrasDoArremesso(ficha, tipo, rng = Math.random) {
+export function extrasDoArremesso(ficha, tipo, rng = Math.random, efeito = null) {
+  // (17/10, lote G3) o SUPORTE: "arremessam até N Armadilhas/Minas adicionais" (Armadilhas Múltiplas/Agrupadas, Locus) e as faixas de chance da
+  // Montagem Ágil ("X% de chance de arremessar até 1/2/3 Armadilhas ou Minas adicionais" — a maior faixa que acertar o sorteio vale), nos dois
+  // tipos; as das peças e da árvore seguem só nas Armadilhas.
+  const doSuporte = Math.max(0, Math.round(Number(tipo === 'armadilha' ? efeito?.armadilhasExtras : efeito?.minasExtras) || 0));
+  let faixa = 0;
+  const faixas = Object.entries(efeito ?? {}).filter(([k, x]) => k.startsWith('arremessoChance:') && x > 0).map(([k, x]) => [Number(k.slice('arremessoChance:'.length)) || 0, x]).sort((a, b) => b[0] - a[0]);
+  for (const [n, chance] of faixas) if (rng() * 100 < chance) { faixa = n; break; }
   // (lote 71, a Dispensabilidade: "X% de chance de Arremessar até N Armadilha ou Mina adicional" — vale nas duas)
   const chanceDasDuas = v(ficha, 'plantadas_extras_chance');
   const nDasDuas = Math.max(0, Math.round(v(ficha, 'plantadas_extras_n')));
   const dasDuas = chanceDasDuas > 0 && nDasDuas > 0 && rng() * 100 < chanceDasDuas ? nDasDuas : 0;
-  if (tipo !== 'armadilha') return tipo === 'mina' ? dasDuas : 0;
+  if (tipo !== 'armadilha') return doSuporte + faixa + (tipo === 'mina' ? dasDuas : 0);
   const sempre = Math.max(0, Math.round(v(ficha, 'armadilhas_extras')));
   const chance = v(ficha, 'armadilhas_extras_chance');
   const n = Math.max(0, Math.round(v(ficha, 'armadilhas_extras_n')));
-  return sempre + (chance > 0 && n > 0 && rng() * 100 < chance ? n : 0) + dasDuas;
+  return sempre + doSuporte + faixa + (chance > 0 && n > 0 && rng() * 100 < chance ? n : 0) + dasDuas;
 }
 
 /** As casas das armadilhas a mais, em volta do lugar mirado (a casa do lugar fica com a primeira). */
@@ -74,10 +90,10 @@ export function casasDoArremesso(x, y, n) {
 }
 
 /** Planta uma Armadilha/Mina. Passou do limite: a mais velha do tipo sai. Devolve a plantada. */
-export function plantar(hunt, ficha, { tipo, acao, slot, x, y, z = hunt?.z ?? 0, duracaoMs: dur, detonacaoMs = null, agora = hunt?.clock ?? 0 }) {
+export function plantar(hunt, ficha, { tipo, acao, slot, x, y, z = hunt?.z ?? 0, duracaoMs: dur, detonacaoMs = null, agora = hunt?.clock ?? 0, maximoExtra = 0 }) {
   const lista = (hunt.plantadas ?? []).filter((p) => p.ate > agora);
   const doTipo = lista.filter((p) => p.tipo === tipo);
-  while (doTipo.length >= maximo(ficha, tipo)) lista.splice(lista.indexOf(doTipo.shift()), 1);
+  while (doTipo.length >= maximo(ficha, tipo, maximoExtra)) lista.splice(lista.indexOf(doTipo.shift()), 1);
   hunt.plantadasN = (hunt.plantadasN ?? 0) + 1;
   const p = { id: `${tipo}-${hunt.plantadasN}`, tipo, acao, slot, x, y, z, desde: agora, ate: agora + dur, ...(tipo === 'mina' ? { detonacaoMs: detonacaoMs ?? PADRAO.mina.detonacaoMs } : {}) };
   lista.push(p);
@@ -168,6 +184,8 @@ export function minasQueDetonam(hunt, ficha, agora = hunt?.clock ?? 0) {
     let t = Math.max(agora, ...minas.filter((p) => p.detonaEm != null).map((p) => p.detonaEm));
     fora.sort((a, b) => a.desde - b.desde).forEach((p, i) => {
       const anteriores = naSequencia + i;
+      // (17/10, lote G3: as Minas anteriores na Sequência de Detonação — a Explosão em Cadeia, "X% mais Dano para cada Mina anterior")
+      p.anteriores = anteriores;
       if (anteriores > 0) t += Math.round((p.detonacaoMs ?? M.detonacaoMs) / velocidade / (1 + (M.maisPorAnteriorPct * anteriores) / 100));
       p.detonaEm = t;
     });

@@ -140,11 +140,15 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
 
 
   const pctDe = (k) => efeito[k] || 100;
+  // (17/10, lote G18) o Chicote da Naja: "X% mais Dano com Acertos e Afecções por Ricochete restante" — cada impacto do projétil × (1 + X% × os
+  // ricochetes que ainda faltam; o PoB: PerStat ChainRemaining)
+  const porRestante = Number(efeito.pctPorRicocheteRestante) || 0;
+  const doRestante = (n) => (porRestante ? 1 + (porRestante * Math.max(0, n ?? 0)) / 100 : 1);
   /** Um projétil: sai de `de` com `pct`% e acerta `primeiro`; daí segue as supports. */
   const voar = (projetil, primeiro, tipo, direto = false) => {
     const p = { acertados: new Set(), ida: [], perfurados: 0, ricocheteou: 0, ...projetil };
     let atual = primeiro;
-    let pct = p.pct;
+    let pct = p.pct * doRestante(p.encadear);
     let de = p.de;
     let reta = casasDaReta(p.de, primeiro, alcance + 2);
     let tipoAtual = tipo;
@@ -164,7 +168,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
           p.perfurar--;
           p.perfurados++;
           atual = proximo;
-          pct = (p.pct * pctDe('danoDaPerfuracaoPct')) / 100;
+          pct = ((p.pct * pctDe('danoDaPerfuracaoPct')) / 100) * doRestante(p.encadear);
           tipoAtual = 'perfuracao';
           continue;
         }
@@ -191,7 +195,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
           p.ricocheteou++;
           reta = casasDaReta(atual, proximo, alcance + 2);
           atual = proximo;
-          pct = (p.pct * pctDe('danoDoEncadeamentoPct')) / 100;
+          pct = ((p.pct * pctDe('danoDoEncadeamentoPct')) / 100) * doRestante(p.encadear);
           tipoAtual = 'encadeamento';
           continue;
         }
@@ -200,7 +204,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     }
     // Returning: na volta, acerta de novo cada um que pegou na ida — uma vez cada, do último ao primeiro.
     if (p.volta) {
-      const pctDaVolta = (p.pct * pctDe('danoDoRetornoPct')) / 100;
+      const pctDaVolta = ((p.pct * pctDe('danoDoRetornoPct')) / 100) * doRestante(p.encadear);
       for (const b of [...p.ida].reverse()) if (!impacto(b, pctDaVolta, b, 'retorno', false, { atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0) })) return;
     }
   };

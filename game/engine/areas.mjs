@@ -62,8 +62,16 @@ export function escalarForma(forma, raioNovo) {
   const tem = new Set(f.map(([dx, dy]) => `${dx},${dy}`));
   const s = (raioNovo + 0.5) / (r + 0.5);
   const arredondar = (v) => Math.sign(v) * Math.round(Math.abs(v)) || 0;
+  // (17/10, lote G16) A forma que SAI de quem usa — o cone, a onda: sem a casa do centro — começa colada nele: a casa que cairia no centro vale
+  // pela vizinha na direção dela. Sem isto, esticar o cone de 1 casa para 4 deixava a fileira da frente vazia (o Golpe de Escudo Glacial, de
+  // 8 m, não pegava o monstro colado à frente); assim o cone abre: 3 casas coladas, a largura toda nas de trás.
+  const semCentro = !tem.has('0,0');
+  const original = (dx, dy) => {
+    const q = [arredondar(dx / s), arredondar(dy / s)];
+    return semCentro && !q[0] && !q[1] && (dx || dy) ? [Math.sign(dx), Math.sign(dy)] : q;
+  };
   const saida = [];
-  for (let dy = -raioNovo; dy <= raioNovo; dy++) for (let dx = -raioNovo; dx <= raioNovo; dx++) if (tem.has(`${arredondar(dx / s)},${arredondar(dy / s)}`)) saida.push([dx, dy]);
+  for (let dy = -raioNovo; dy <= raioNovo; dy++) for (let dx = -raioNovo; dx <= raioNovo; dx++) if (tem.has(original(dx, dy).join(','))) saida.push([dx, dy]);
   return saida;
 }
 

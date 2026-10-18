@@ -5085,6 +5085,24 @@
       "combate": true,
       "efeito": "condicoes-poe.fatorDoDanoRecebido"
     },
+    "dano_fire_recebido_mais": {
+      "nome": "Mais Dano de Fogo recebido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano recebido daquele tipo (`condicoes-poe.fatorDoDanoRecebido`, lote 30; registrado no lote G18b — o Chamado Imortal)"
+    },
+    "dano_ice_recebido_mais": {
+      "nome": "Mais Dano de Gelo recebido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano recebido daquele tipo (`condicoes-poe.fatorDoDanoRecebido`, lote 30; registrado no lote G18b — o Chamado Imortal)"
+    },
+    "dano_energy_recebido_mais": {
+      "nome": "Mais Dano de Raio recebido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano recebido daquele tipo (`condicoes-poe.fatorDoDanoRecebido`, lote 30; registrado no lote G18b — o Chamado Imortal)"
+    },
     "dano_chaos_recebido_mais": {
       "nome": "Dano de Caos sofrido (mais/menos)",
       "unidade": "%",
@@ -7161,6 +7179,12 @@
       "combate": true,
       "efeito": "Causticar/Fragilizar/Exaurir que você inflige (`condicoes-poe.fatorNaoDano`, lote 33)"
     },
+    "mais_dano_acerto": {
+      "nome": "Mais Dano só com Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o fator do acerto da gema, fora das afecções e do degenerativo (`acoes.contaDoDano`, lote G18 — o Fogo Justo)"
+    },
     "mais_dano_proximidade": {
       "nome": "Mais Dano Corpo a Corpo pela proximidade",
       "unidade": "%",
@@ -8030,6 +8054,24 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/condicoes-poe.fatorDaEscala 'vinhas' (lote 80)"
+    },
+    "arauto_tempestade_ao_eletrizar": {
+      "nome": "Arauto Trovejante cria tempestade ao Eletrizar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDaTempestade (lote 81)"
+    },
+    "arauto_tempestade_freq_inc": {
+      "nome": "Frequência das Tempestades do Arauto Trovejante (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.tiqueDaTempestade (lote 81)"
+    },
+    "arauto_trovao_dano_em_voce": {
+      "nome": "Dano de Raio sofrido quando o Arauto Trovejante acerta",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.tiqueDaTempestade (lote 81)"
     }
   }
 }

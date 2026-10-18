@@ -319,6 +319,8 @@ export const TAGS_DE_GOLPE = new Set([
   'ataqueLento', 'alvoComEscudo', 'alvoSemDreno',
   // (lote G) a gema de Postura; o ataque Impelido por um Clamor (`hunt.impelidos`).
   'postura', 'impelido',
+  // (17/10, lote G18) o terceiro uso SEGUIDO da mesma gema (o Martelo Glacial: "Cada terceiro golpe sucessivo …" — `hunt.poeTerceiroGolpe`)
+  'terceiroGolpe',
   // (15/10, lote 31) o abate por um ACERTO (o golpe fatal não foi dano contínuo — `quem-feriu.tagsDoAbate`); o inimigo Provocado pelo seu
   // CLAMOR (`Reforcos.provocar` — `provocadoAte`); o morto na área do seu Estandarte plantado (`pertoDoEstandarte`).
   'acerto', 'alvoProvocadoClamor', 'alvoPertoDoEstandarte',
@@ -1545,11 +1547,24 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     if ((ficha.intervaloDoGolpeMs ?? 0) > 1000) t.add('ataqueLento');
     // ("Clamores não podem Impelir Habilidades de Deslocamento": a de Movimento não leva nem gasta o Impelir.)
     const semNoDeslocamento = t.has('movimento') && Number(ficha.afPoe.clamor_nao_impele_movimento) > 0;
-    if (!semNoDeslocamento && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) t.add('impelido');
+    // (lote G20a: o ataque do totem não é Impelido — no PoE, só os seus)
+    if (!semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) t.add('impelido');
+    if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');
   }
   const s = somaPorTags(ficha, [...t]);
+  // (17/10, lote G6) o que as suas MARCAS/maldições no alvo dão a este golpe ("Acertos contra Inimigos Amaldiçoados ganham…", "…Dreno de Vida
+  // quando Acertados por Ataques" — `contra.golpe` da maldição do bicho, × o efeito dela; `@ataque`: só nos ataques)
+  const contraOAlvo = {};
+  for (const m of Object.values(alvo?.maldicoes ?? {})) {
+    if (!m?.contra || !(m.ate > agora)) continue;
+    for (const [k, v] of Object.entries(m.contra.golpe ?? {})) {
+      const { stat, conds } = partir(k);
+      if (conds.every((c) => t.has(c))) contraOAlvo[stat] = (contraOAlvo[stat] ?? 0) + v * (m.contra.fator ?? 1);
+    }
+  }
+  for (const [k, v] of Object.entries(contraOAlvo)) s[k] = (s[k] ?? 0) + v;
   // (lote F) A DISTÂNCIA até o alvo, em casas (1 = colado): os projéteis que ganham ou perdem dano conforme viajam — "Projéteis causam Dano
   // aumentado em 40% aos alvos no início de seu movimento, reduzido para 0%" (`projetil_perto_dmg_inc`), "até 30% mais Dano aos alvos no
   // início" (`projetil_perto_mais`), "ganham Dano ao viajar adiante, até 30% mais" (`projetil_longe_mais`), "Flechas ganham Chance de Golpe
@@ -1578,12 +1593,14 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const arcano = t.has('ataque') ? (Number(ficha.afPoe.poder_arcano) || 0) + (s.poder_arcano ?? 0) : 0;
   const doArcano = arcano > 0 ? (((ficha.danoDeMagiaDoPoe ?? 0) + (s.spell_dmg ?? 0)) * arcano) / 100 : 0;
   const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe + doArcano;
-  // (lote 57: + o Solo Profano — "Acertos contra inimigos em Solo Profano têm chance de golpe crítico aumentada em 100%")
-  const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0) + (t.has('alvoNoSoloProfano') ? SOLO_PROFANO.critIncPct : 0);
+  // (lote G13: + a aura de crítico das Minas da gema no alvo — `minaCritico`; lote 57: + o Solo Profano — "Acertos contra inimigos em Solo Profano têm
+  // chance de golpe crítico aumentada em 100%")
+  const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0) + (alvo && ativo(alvo.estados?.minaCritico, agora) ? alvo.estados.minaCritico.pct ?? 0 : 0) + (t.has('alvoNoSoloProfano') ? SOLO_PROFANO.critIncPct : 0);
   const critMult = s.crit_dmg ?? 0;
   const pen = s.elem_pen ?? 0;
   // (13/10: + o "mais Dano Degenerativo" com condição — `dano_dot_mais@magia`, "Mais X% de dano degenerativo com habilidades mágicas")
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|congelamento_como)/.test(k));
+  // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
@@ -1625,6 +1642,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (o que a escala do ALVO deu — `valor` soma, para quem lê pela ficha do golpe: a conversão das partes, os eventos…)
   if (Object.keys(doAlvo).length) f.extrasDoAlvo = doAlvo;
   else delete f.extrasDoAlvo;
+  // (lote G6: o da Marca também, para quem lê pelo `valor` — a Vida/Mana por acerto do `aoAcertar`)
+  if (Object.keys(contraOAlvo).length) f.extrasDoAlvo = { ...(f.extrasDoAlvo ?? {}), ...Object.fromEntries(Object.entries(contraOAlvo).map(([k, v]) => [k, v + (Number(f.extrasDoAlvo?.[k]) || 0)])) };
   // ("Adiciona X a Y de Dano de Caos para cada Maldição no Inimigo" — nos ataques e nas magias: × as maldições no alvo agora.)
   const porMaldicao = [Number(ficha.afPoe.added_chaos_por_maldicao_min) || 0, Number(ficha.afPoe.added_chaos_por_maldicao_max) || 0];
   const maldicoes = (porMaldicao[0] || porMaldicao[1]) && alvo ? maldicoesNoAlvo(alvo, agora) : 0;
@@ -1742,6 +1761,38 @@ export function tagsDoAlvo(alvo, agora) {
   return t;
 }
 const somarSobre = (base, s) => Object.fromEntries(Object.entries(s).map(([k, v]) => [k, (base[k] ?? 0) + v]));
+
+/**
+ * (17/10, lote G7) O ALVO no golpe das GEMAS: a ficha da habilidade é montada sem alvo (`acoes.contaDoDano`), então o que depende DELE — os
+ * condicionais da soma com tag de alvo ("Chance de Crítico aumentada em X% contra Inimigos Eletrizados" = `crit_chance_inc@alvoEletrizado`, "X%
+ * mais Dano contra Inimigos em Vida Cheia", os da árvore e das peças), as escalas do alvo (o Resfriamento/a Eletrização nele) e o que as suas
+ * Marcas no alvo dão (`contra.golpe`) — não entrava nos acertos das gemas (só no golpe básico, que monta a ficha com o alvo). Devolve `{ s, tags }`:
+ * a SOMA a mais deste alvo (só o que depende dele) e as tags do golpe com as do alvo. O resto (a distância, a proximidade) já é alvo a alvo.
+ */
+export function golpeNoAlvo(ficha, alvo, agora) {
+  if (!ligado() || !alvo || !ficha) return null;
+  const doAlvo = new Set(tagsDoAlvo(alvo, agora));
+  if (alvo.maxHp > 0 && alvo.hp <= VIDA_BAIXA * alvo.maxHp) doAlvo.add('alvoVidaBaixa');
+  else if (alvo.maxHp > 0) doAlvo.add('alvoNaoVidaBaixa');
+  const t = new Set([...(ficha.tagsDoGolpe ?? []), ...doAlvo]);
+  const s = {};
+  for (const x of ficha.porTag ?? []) if (x.tags.some((tag) => doAlvo.has(tag)) && x.tags.every((tag) => t.has(tag))) s[x.stat] = (s[x.stat] ?? 0) + x.valor;
+  for (const x of escaladosPeloAlvo(ficha.afPoe)) {
+    if (!x.tags.every((c) => t.has(c))) continue;
+    const m = fatorDoAlvo(alvo, agora, x.escala);
+    if (m) s[x.stat] = (s[x.stat] ?? 0) + comTeto(x.valor, m, x.teto);
+  }
+  // (lote G13: a aura de crítico das Minas da gema — "Cada Mina aplica Chance de Golpe Crítico aumentada em X% contra Inimigos próximos")
+  if (ativo(alvo.estados?.minaCritico, agora)) s.crit_chance_inc = (s.crit_chance_inc ?? 0) + (alvo.estados.minaCritico.pct ?? 0);
+  for (const m of Object.values(alvo.maldicoes ?? {})) {
+    if (!m?.contra || !(m.ate > agora)) continue;
+    for (const [k, v] of Object.entries(m.contra.golpe ?? {})) {
+      const { stat, conds } = partir(k);
+      if (conds.every((c) => t.has(c))) s[stat] = (s[stat] ?? 0) + v * (m.contra.fator ?? 1);
+    }
+  }
+  return Object.keys(s).length ? { s, tags: [...t] } : { s, tags: [...t], vazio: true };
+}
 
 /** O elemento de uma tag (`'fogo'` → `'fire'`). */
 export const elementoDaTag = (tag) => ELEMENTO_DA_TAG[tag] ?? null;
