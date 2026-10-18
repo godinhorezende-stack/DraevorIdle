@@ -380,6 +380,10 @@ export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, 
     eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: parte, foe: false, lacaio: true, color: '#ff8a8a' });
   };
   desviar(Number(af.dano_no_totem_pct) || 0, (x) => x.tipo === 'totem');
+  // (18/10, lote G20c, o Totem Rejuvenescedor Vaal: "40% do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo" —
+  // você dentro da aura dele)
+  const vaal = hunt?.pos ? (hunt.lacaios ?? []).find((x) => x.hp > 0 && x.auraDoTotem?.absorvePct > 0 && Math.max(Math.abs(x.x - hunt.pos.x), Math.abs(x.y - hunt.pos.y)) <= x.auraDoTotem.raio) : null;
+  if (vaal) desviar(vaal.auraDoTotem.absorvePct, (x) => x === vaal);
   desviar(Number(af.dano_nos_espectros_pct) || 0, (x) => !!x.espectro);
   // (14/10, a Cruzada Radiante: "X% do Dano dos Acertos é sofrido na vida do seu Sentinela do Resplendor antes da sua")
   desviar(Number(af.sentinela_absorve) || 0, (x) => !!x.sentinela);

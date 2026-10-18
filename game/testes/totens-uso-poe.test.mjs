@@ -169,17 +169,19 @@ test('G20a: o totem SEM golpe (o Chamariz, o Devorador, os Rejuvenescedores, o V
   for (const s of ['Decoy_Totem', 'Devouring_Totem', 'Rejuvenation_Totem', 'Vaal_Rejuvenation_Totem', 'Searing_Bond', 'Searing_Bond_of_Detonation']) assert.equal(G.totemSemGolpe(s), true, s);
   for (const s of ['Shockwave_Totem', 'Siege_Ballista', 'Ancestral_Warchief', 'Holy_Flame_Totem']) assert.equal(G.totemSemGolpe(s), false, s);
   const chamariz = G.doSlug('Decoy_Totem').motivosNoJogo;
-  assert.ok(chamariz.includes('efeito não simulado: Totens Convocados por esta Habilidade não podem Evadir'), chamariz.join(' | '));
+  // (lote G20c, com o aval do dono: o "não podem Evadir" e a regeneração do Rejuvenescedor foram feitos — `totens-especificos-poe.test.mjs`; a
+  // provocação do Chamariz segue não feita)
+  assert.ok(chamariz.some((m) => /o totem provoca os monstros em volta/.test(m)), chamariz.join(' | '));
   assert.ok(!chamariz.some((m) => /Totem dura|Vida do Totem|mais Vida de Totens|Invoca um Totem/.test(m)), 'as linhas do totem são feitas');
-  assert.ok(G.doSlug('Rejuvenation_Totem').motivosNoJogo.includes('efeito não simulado: 317.5 de Vida Regenerada por segundo'));
+  assert.ok(!G.doSlug('Rejuvenation_Totem').motivosNoJogo.some((m) => /Vida Regenerada/.test(m)), 'a aura do Rejuvenescedor: feita no G20c');
   assert.ok(G.doSlug('Searing_Bond').motivosNoJogo.includes('efeito não simulado: Causa 4430.6 de Dano de Fogo Base por segundo'));
 });
 
 test('G20a: o status honesto — o Sísmico "funciona"; o que o totem não faz vai nos motivos (o buff do Chefe, o "mais Velocidade de Projétil", o alcance)', { skip: SEM }, () => {
   assert.equal(G.doSlug('Shockwave_Totem').statusNoJogo, 'funciona', G.doSlug('Shockwave_Totem').motivosNoJogo.join(' | '));
+  // (lote G20c, com o aval do dono: o buff do Chefe Guerreiro Ativo foi feito — `totens-especificos-poe.test.mjs`)
   const chefe = G.doSlug('Ancestral_Warchief').motivosNoJogo;
-  assert.ok(chefe.includes('efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo'), chefe.join(' | '));
-  assert.ok(!chefe.some((m) => /o totem fica parado|Velocidade de Posicionamento/.test(m)));
+  assert.ok(!chefe.some((m) => /o totem fica parado|Velocidade de Posicionamento|enquanto o Totem estiver Ativo/.test(m)), chefe.join(' | '));
   assert.ok(G.doSlug('Holy_Flame_Totem_of_Ire').motivosNoJogo.includes('efeito não simulado: 128 % mais Velocidade de Projétil'));
   // (a chave do compilador sem leitor: o alcance corpo a corpo da gema não ia a lugar nenhum — a Lâmina Gélida também)
   assert.ok(G.doSlug('Frost_Blades').motivosNoJogo.includes('efeito não simulado: +2.1 metros ao Alcance de Golpes Corpo a Corpo'), G.doSlug('Frost_Blades').motivosNoJogo.join(' | '));

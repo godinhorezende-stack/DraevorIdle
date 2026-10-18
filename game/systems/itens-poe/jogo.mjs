@@ -80,10 +80,12 @@ export const JOIAS = Object.freeze({
   'Jewels/Large_Cluster_Jewel': 7_800_021, 'Jewels/Medium_Cluster_Jewel': 7_800_022, 'Jewels/Small_Cluster_Jewel': 7_800_023,
 });
 /**
- * (lote 64) As Ramificadoras ainda NÃO CAEM (dono, 17/10: "Servidor, linhas, tela, únicas" — a joia entra no drop no último passo, com a
- * tela e as únicas): ficam no catálogo (encaixar, testar), fora do drop e do baú.
+ * (lote 64) As Ramificadoras entraram no drop no último passo (dono, 17/10: "Servidor, linhas, tela, únicas"). (lote 82 — dono, 18/10: "Só nos
+ * mapas") No PoE elas caem do Delirium e do Simulacro, que o jogo não tem: caem no loot comum do Item Level `RAMIFICADORAS_ILVL_MINIMO` para cima
+ * (o endgame; os notáveis delas pedem ilvl 50/68/75) — as Normais, Mágicas e Raras pelo gerador delas (sem pool), e as Únicas. Fora do baú.
  */
-export const RAMIFICADORAS_NO_DROP = false;
+export const RAMIFICADORAS_NO_DROP = true;
+export const RAMIFICADORAS_ILVL_MINIMO = 68;
 export const ehRamificadora = (base) => /^Jewels\/(?:Large|Medium|Small)_Cluster_Jewel$/.test(base?.id ?? base ?? '');
 export const SO_UNICAS = new Set(['Jewels/Prismatic_Jewel', 'Jewels/Timeless_Jewel']);
 export const registro = () => REG;
@@ -414,7 +416,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (65 — 18/10, lote 80: as pedras fundamentais das Ramificadoras únicas — regras novas que também casam linhas de peças: "Não pode Incendiar…", a
 // nota dos cadáveres)
 // (66 — 18/10, lote 81: os acertos dos Arautos — as linhas do Mensageiro, do Segredo da Tormenta e do Círculo da Ambição)
-export const VERSAO_DA_TRADUCAO = 66;
+// (67 — 18/10, lote 83: a área das maldições — "Efeito em Área de Habilidades de Maldição", o notável Palavras Proibidas do Megalomaníaco)
+export const VERSAO_DA_TRADUCAO = 67;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -607,7 +610,7 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
     if (FRASCOS.includes(classe) || classe === Mapas.CLASSE || JOIAS[baseId]) continue;
     const b = cat.classes[classe]?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > 1 || b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
-    if (!podeCairComo(cat.classes[classe], b, 'normal')) continue;
+    if (!podeCairComo(cat.classes[classe], b, 'normal') || ehRamificadora(b)) continue;
     candidatas.push(baseId);
   }
   if (!candidatas.length) return null;
@@ -625,7 +628,11 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
  * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
  */
 // (lote 27) A Joia Prismática só cai Única (o PoE não tem Prismática Normal, Mágica nem Rara; a coleção traz o pool genérico das joias nela).
-export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
+export const podeCairComo = (classe, base, raridade) => (RAMIFICADORAS_NO_DROP || !ehRamificadora(base)) && (!SO_UNICAS.has(base?.id) || raridade === 'unico') && (!!base?.pool || ehRamificadora(base) || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome)));
+/** (lote 82) A vaga das Ramificadoras no sorteio das bases (`pecaSorteada`). */
+const RAMIFICADORA_NO_SORTEIO = Symbol('ramificadora');
+/** (lote 82) A Ramificadora só cai do Item Level mínimo dela para cima (dono: "Só nos mapas"). */
+export const caiNoNivel = (base, ilvl) => !ehRamificadora(base) || ilvl >= RAMIFICADORAS_ILVL_MINIMO;
 
 export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null) {
   const cat = Catalogo.catalogo();
@@ -650,7 +657,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     if (!b) return null;
     // (O MAPA ÚNICO está em todas as bases de mapa — `catalogo.mjs` —: o Único sorteado num drop de mapa sai no tier dele.)
     if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) raridade = 'raro';
-    if (!podeCairComo(c, b, raridade)) return null;
+    if (!podeCairComo(c, b, raridade) || !caiNoNivel(b, ilvl)) return null;
     const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
     return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: baseFixa, raridade: r, ilvl, rng }), regras, rng), rng, regras);
   }
@@ -659,6 +666,8 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   const janela = raridade === 'unico' ? 0 : Math.max(0, Number(D.janelaDaBase) || 0);
   const tetoDoRequisito = ilvl + janela;
   const porClasse = new Map();
+  // (lote 82 — dono: "As 3 valem uma base") as três Ramificadoras juntas ocupam UMA vaga no sorteio das bases; o tamanho sai por igual
+  const ramificadoras = [];
   for (const baseId of REG.porBase.keys()) {
     const [classe] = baseId.split('/');
     // (O MAPA não cai como loot comum: só pelas regras de drop dos mapas — `itens-poe/mapas.mjs`.)
@@ -671,7 +680,8 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     // não: no PoE ela é a arma que a habilidade Lâmina de Energia cria.
     if (b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
     if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) continue;
-    if (!podeCairComo(c, b, raridade)) continue;
+    if (!podeCairComo(c, b, raridade) || !caiNoNivel(b, ilvl)) continue;
+    if (ehRamificadora(b)) { ramificadoras.push(baseId); continue; }
     if (!porClasse.has(classe)) porClasse.set(classe, []);
     porClasse.get(classe).push([baseId, req]);
   }
@@ -683,8 +693,10 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     const maior = Math.max(...lista.map(([, req]) => req));
     for (const [id, req] of lista) if (req === maior) candidatas.push(id);
   }
+  if (ramificadoras.length) candidatas.push(RAMIFICADORA_NO_SORTEIO);
   if (!candidatas.length) return null;
-  const base = candidatas[Math.floor(rng() * candidatas.length)];
+  const sorteada = candidatas[Math.floor(rng() * candidatas.length)];
+  const base = sorteada === RAMIFICADORA_NO_SORTEIO ? ramificadoras[Math.floor(rng() * ramificadoras.length)] : sorteada;
   // Frasco não é Raro no PoE (só Normal, Mágico e Único): o Raro sorteado vira Mágico.
   const r = raridade === 'raro' && FRASCOS.includes(base.split('/')[0]) ? 'magico' : raridade;
   return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: r, ilvl, rng }), regras, rng), rng, regras);

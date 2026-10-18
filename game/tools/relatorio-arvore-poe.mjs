@@ -319,7 +319,45 @@ const GRUPOS_DE_JOIA = [
   ['Atemporais', (u) => u.base === 'Joia Atemporal'],
   ['Ramificadoras', (u) => /Ramificadora/.test(u.base ?? '')],
 ];
-const loteDa = (slug, grupo) => (grupo === 'Atemporais' ? 'Atemporais (as tabelas do PoB, com a autorização do download)' : grupo === 'Ramificadoras' ? 'Ramificadoras (raspar os encantamentos e notáveis no poedb)' : LOTE_PREVISTO.find(([re]) => re.test(slug))?.[1] ?? 'lote 30 — as outras linhas dos únicos de joia');
+const loteDa = (slug, grupo) => (grupo === 'Atemporais' ? 'Atemporais (as tabelas do PoB, com a autorização do download)' : grupo === 'Ramificadoras' ? 'Ramificadoras únicas (os nós que a joia cria — lotes 79 e 80)' : LOTE_PREVISTO.find(([re]) => re.test(slug))?.[1] ?? 'lote 30 — as outras linhas dos únicos de joia');
+
+/**
+ * (lotes 79–80) O estado de uma linha `m` da Ramificadora única `u` como o balão a mostra: a peça gerada da única (o tamanho, a chave da
+ * pedra fundamental) com só aquela linha, pelos estados dos nós (`itens-poe/ramificadoras.estadosDaRamificadora`). A marcação dos notáveis
+ * sorteados (o Megalomaníaco) vale pelo pool: cada notável, pelas linhas dele. `{ sem: [texto], lembrete, pool?, efeito?, inertes?, nota? }`.
+ */
+export async function leitorDaRamificadoraUnica(cat, Catalogo, T) {
+  const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
+  const { estadosDaRamificadora } = await import('../systems/itens-poe/ramificadoras.mjs');
+  await import('../systems/passivas/ramificadoras.mjs');
+  const pecas = new Map();
+  const pecaDa = (u) => {
+    if (!pecas.has(u.slug)) {
+      const base = cat.classes.Jewels.bases.find((b) => b.nome === u.base);
+      let x = 1;
+      const rng = () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
+      pecas.set(u.slug, base ? gerarPeca({ catalogo: cat, regras: Catalogo.REGRAS, base: base.id, raridade: 'unico', ilvl: 84, rng, unico: u.slug }) : null);
+    }
+    return pecas.get(u.slug);
+  };
+  const COM = ['equivalente', 'novo', 'aproximado'];
+  const estados = (u, linhas) => {
+    const peca = pecaDa(u);
+    const mods = linhas.map((l) => ({ ...l, valores: l.valores ?? (l.faixas ?? []).map((f) => f[0]), texto: l.texto }));
+    const comuns = mods.map((l) => T.traduzirMod({ modelo: l.modelo, valores: l.valores }));
+    const r = peca && estadosDaRamificadora({ ...peca, implicitos: [], prefixos: [], sufixos: [], modificadores: mods }, comuns.map((t) => t.estado), comuns.map((t) => t.partes.find((p) => p.nota)?.nota ?? null));
+    return mods.map((l, i) => ({ texto: l.texto, estado: r?.estados[i] ?? comuns[i].estado, nota: r?.notas[i] ?? comuns[i].partes.find((p) => p.nota)?.nota ?? null }));
+  };
+  const naoSeAplica = (e) => e.estado === 'lembrete' || (e.estado === 'inerte' && /^não se aplica/i.test(e.nota ?? ''));
+  return (u, m) => {
+    if (u.linhasSorteadas?.substitui?.[m.modelo]) {
+      const pool = estados(u, u.linhasSorteadas.linhas ?? []);
+      return { pool: pool.length, efeito: pool.filter((e) => COM.includes(e.estado)).length, inertes: pool.filter(naoSeAplica).map((e) => e.nota ?? 'sem nota'), sem: pool.filter((e) => !COM.includes(e.estado) && !naoSeAplica(e)).map((e) => e.texto), lembrete: false };
+    }
+    const [e] = estados(u, [m]);
+    return COM.includes(e.estado) ? { sem: [], lembrete: false } : naoSeAplica(e) ? { sem: [], lembrete: true } : { sem: [e.texto], lembrete: false, nota: e.nota ?? '' };
+  };
+}
 
 /** (lote 55) O pool das linhas sorteadas da única: `{ total, efeito, inertes: [nota], sem: [modelo] }`. */
 function poolDasSorteadas(T, u, doImplicito = false) {
@@ -345,6 +383,7 @@ async function secaoDasJoias() {
   await iniciarJogoDoPoe();
   const cat = Catalogo.catalogo();
   if (!cat?.classes?.Jewels) return [];
+  const estadoDaRamificadora = await leitorDaRamificadoraUnica(cat, Catalogo, T);
   const md = ['## As joias dos encaixes da árvore (lotes 27 a 29)', ''];
   md.push('- **Encaixes**: os 21 da árvore (15 Básicos e os 6 Grandes da borda); os Médios e Pequenos são das Ramificadoras. Raio na árvore como no PoE/PoB: Pequeno 960, Médio 1440, Grande 1800 (o Fio de Esperança em anéis).');
   md.push('- **Joias que caem**: Carmesim, Viridiana e Cobalto (Normal, Mágica, Rara e Única), a Prismática (só Única) e os 4 Olhos Abissais (nos encaixes da árvore e nos Encaixes Abissais das peças).');
@@ -355,7 +394,14 @@ async function secaoDasJoias() {
   }
   // (lote 55, J31) os POOLS das linhas sorteadas: quantas linhas de cada um têm efeito (as inertes, com o porquê)
   const sorteadas = [];
-  for (const u of cat.classes.Jewels.unicos ?? []) if (u.linhasSorteadas && !sorteadas.some((x) => x.slug === u.slug)) sorteadas.push({ slug: u.slug, nome: u.nome, ...poolDasSorteadas(T, u) });
+  // (lote 83: a Ramificadora única — o Megalomaníaco — pelo leitor do balão: cada notável do pool, pelas linhas dele)
+  const doPool = (u) => {
+    const marcacao = /Ramificadora/.test(u.base ?? '') ? Object.keys(u.linhasSorteadas.substitui ?? {})[0] : null;
+    if (!marcacao) return poolDasSorteadas(T, u);
+    const r = estadoDaRamificadora(u, { modelo: marcacao });
+    return { total: r.pool, efeito: r.efeito, inertes: r.inertes, sem: r.sem };
+  };
+  for (const u of cat.classes.Jewels.unicos ?? []) if (u.linhasSorteadas && !sorteadas.some((x) => x.slug === u.slug)) sorteadas.push({ slug: u.slug, nome: u.nome, ...doPool(u) });
   if (sorteadas.length) md.push(`- **Linhas sorteadas** (o pool de cada única no poedb — \`linhas-sorteadas.json\`): ${sorteadas.map((x) => `${escapar(x.nome)} ${x.efeito}/${x.total} com efeito${x.inertes.length ? ` (${x.inertes.length} não se aplicam: ${[...new Set(x.inertes)].map(escapar).join('; ')})` : ''}`).join(' · ')}.`);
   md.push('', '| Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
   const faltam = [];
@@ -371,6 +417,15 @@ async function secaoDasJoias() {
           // efeito quando nenhuma linha do pool fica sem regra (as inertes do pool têm o porquê no balão).
           // (lote 56: + os IMPLÍCITOS sorteados — a Doutrina Racional, os de Síntese da base: `implicitosSorteados.grupos`)
           const doImplicito = u.implicitosSorteados?.substitui === m.modelo;
+          // (lotes 79–80) a Ramificadora ÚNICA vale pelos nós que cria — o estado de cada linha é o do balão (`estadosDaRamificadora`)
+          if (grupo === 'Ramificadoras') {
+            const r = estadoDaRamificadora(u, m);
+            conta.total++;
+            if (r.sem.length) { conta.sem++; faltam.push({ grupo, unica: u.nome, slug: u.slug, texto: m.texto, nota: r.pool ? `${r.sem.length} das ${r.pool} linhas do pool sem efeito` : r.nota ?? '' }); }
+            else if (r.lembrete) conta.lembrete++;
+            else conta.efeito++;
+            continue;
+          }
           if (u.linhasSorteadas?.substitui?.[m.modelo] || doImplicito) {
             const pool = poolDasSorteadas(T, u, doImplicito);
             conta.total++;
@@ -432,7 +487,9 @@ export async function linhasDasRamificadoras(cat) {
   // (lote 65) só o que PODE SAIR na peça: o mod com algum peso fora dos encantamentos descontinuados (`old_do_not_use_…`) e o notável de
   // algum encantamento de hoje
   const saiNaPeca = (m) => Object.entries(m.pesos ?? {}).some(([k, v]) => v > 0 && !/^old_do_not_use/.test(k));
-  const notaveisDeHoje = new Set(Object.values(D.tamanhos).flatMap((T) => T.encantamentos.flatMap((e) => e.notaveis.map((n) => n.nome))));
+  // (lote 83: + os que só o Megalomaníaco sorteia — os 4 dos encantamentos descontinuados que ficaram no pool dele)
+  const doPoolDasUnicas = (cat?.classes?.Jewels?.unicos ?? []).flatMap((u) => (u.linhasSorteadas?.linhas ?? []).map((l) => l.notavel)).filter(Boolean);
+  const notaveisDeHoje = new Set([...Object.values(D.tamanhos).flatMap((T) => T.encantamentos.flatMap((e) => e.notaveis.map((n) => n.nome))), ...doPoolDasUnicas]);
   for (const m of D.mods) {
     if (!saiNaPeca(m)) continue;
     const x = TAMBEM.exec(m.texto ?? '');
@@ -447,7 +504,7 @@ async function secaoDasRamificadoras(cat) {
   const { grupos, sem } = await linhasDasRamificadoras(cat);
   if (!grupos.notavel.total) return [];
   const md = ['', '### As linhas dos nós das Ramificadoras (lote 63)', ''];
-  md.push('A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados).', '');
+  md.push('A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados — fora os notáveis que o Megalomaníaco ainda sorteia).', '');
   md.push('| Linhas | Total | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |', '|---|---:|---:|---:|---:|');
   for (const [k, nome] of [['encantamento', 'Encantamentos (as pequenas)'], ['tambem', '"Também concedem" (as pequenas)'], ['notavel', 'Notáveis']]) {
     const g = grupos[k];

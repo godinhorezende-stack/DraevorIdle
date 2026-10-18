@@ -635,6 +635,8 @@ test('"Inimigos Amaldiçoados Mortos por você são destruídos" (o nó real): o
   const h = e.hunt;
   ligar(e, h, 'Flammability', h.clock ?? 0);
   const [amaldicoado, comum] = h.monstros;
+  // (lote 83, com o aval do dono: a maldição pega em ÁREA — o outro fica longe, fora do raio, ao amaldiçoar)
+  Object.assign(comum, { x: 30, y: 30 });
   Reforcos.marcar(h, amaldicoado, h.clock ?? 0);
   assert.ok(Reforcos.regrasDasMaldicoes(amaldicoado, h.clock ?? 0).destruir);
   Object.assign(amaldicoado, { x: 3, y: 3 });

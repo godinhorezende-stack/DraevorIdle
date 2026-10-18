@@ -1383,8 +1383,11 @@ function amaldicoouAgora(estado, hunt, bicho, ficha, agora, eventos, personagem,
   const m = Reforcos.marcar(hunt, bicho, agora);
   // (lote G20a: o acerto do totem amaldiçoa — a skill é a sua —, mas os "quando você Amaldiçoar" não são seus)
   if (doTotem) return;
-  if (m.amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: bicho, eventos, personagem });
-  if (m.semMaldicaoNaoAura) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicaoNaoAura', ficha, { alvo: bicho, eventos, personagem });
+  // (lote 83: + os vizinhos que a área da maldição amaldiçoou — cada um é um inimigo que você amaldiçoou)
+  for (const x of [{ ...m, bicho }, ...(m.espalhou ?? [])]) {
+    if (x.amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: x.bicho, eventos, personagem });
+    if (x.semMaldicaoNaoAura) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicaoNaoAura', ficha, { alvo: x.bicho, eventos, personagem });
+  }
 }
 
 /** O dano que a skill causa agora, por acerto (sem crítico nem resistência): o que o balão mostra. */
@@ -2010,12 +2013,23 @@ export function efeitosDaMaldicao(efeitos, efeitoDaGema, estado = null, entry = 
   // Precisão reduzida em X%", "sofre Dano aumentado em X%", "Inimigos próximos do seu Inimigo Marcado são Cegados" e "Sua Marca se transfere
   // para outro Inimigo quando o Inimigo Marcado morrer" — `Reforcos.marcar` guarda na Marca; `condicoes-poe` lê no monstro.
   const daMarca = marca ? Object.fromEntries([['semRegen', 'marcado_sem_regen'], ['semCritico', 'marcado_sem_critico'], ['precisaoMenos', 'marcado_precisao_menos'], ['danoSofrido', 'marcado_dano_sofrido'], ['cegaProximos', 'marcado_cega_proximos'], ['transfere', 'marca_transfere']].map(([k, a]) => [k, valorPoe(f, a)]).filter(([, v]) => v)) : {};
+  // (lote 83) a ÁREA da maldição em casas (a Marca é de um alvo só): os metros da gema no nível ÷ 2 × √ da "Área de Efeito aumentada/mais" — a
+  // geral, a das Maldições ("Efeito em Área de Habilidades de Maldição aumentado" — `area_inc@maldicao`), a da gema e a dos suportes (a da Blasfêmia);
+  // `Reforcos.marcar` amaldiçoa os vizinhos a até esse raio
+  const slugDaGema = entry.poeGema.slug;
+  const nivelDaGema = efeitoDaGema?.nivel ?? 1;
+  const qualidadeDaGema = efeitoDaGema?.qualidade ?? 0;
+  const areaDaGema = marca ? null : GemasPoe.areaNoNivel(slugDaGema, nivelDaGema, qualidadeDaGema);
+  const raioM = areaDaGema ? areaDaGema.raioM ?? GemasPoe.compilada(slugDaGema, nivelDaGema, qualidadeDaGema)?.stats?.raioFinal ?? null : null;
+  // (a Blasfêmia: a maldição em aura também conta como Habilidade Aura — "Efeito em Área de Habilidades de Aura" — e a área da própria Blasfêmia)
+  const porTag = raioM ? ModsPoe.somaPorTags(f, [...tagsPoeDaSkill(entry), ...(efeitoDaGema?.maldicaoEmAura ? ['aura'] : [])]) : null;
+  const raioCasas = raioM ? (raioM / 2) * Math.sqrt(ModsPoe.fatorDaArea(valorPoe(f, 'area_inc') + (porTag.area_inc ?? 0) + (areaDaGema.areaIncPct ?? 0) + (Number(efeitoDaGema?.areaIncPct) || 0) + (Number(efeitoDaGema?.areaMaldicaoPct) || 0), valorPoe(f, 'area_mais') + (porTag.area_mais ?? 0), Number(efeitoDaGema?.areaMaisPct) || 0)) : 0;
   return [...saida, {
     efeito: 'maldicaoRegras', limite: marca ? 1 : 1 + Math.max(0, valorPoe(f, 'maldicoes_adicionais')), nome: GemasPoe.doSlug(entry.poeGema.slug)?.gema?.nome ?? null,
     ...(marca ? { marca: true } : {}), ...(ehFeitico ? { feitico: true } : {}), ...(valorPoe(f, 'feitico_afeta_aprova') > 0 || valorPoe(f, `feitico_afeta_aprova:${entry.poeGema.slug}`) > 0 ? { afetaAProva: true } : {}),
     ...(expirou.length ? { expirou } : {}), ...(desacelera ? { desacelera } : {}), ...(regenMenos ? { regenMenos } : {}), ...(lentoApos ? { lentoApos } : {}), ...(danoApos ? { danoApos } : {}),
     ...(valorPoe(f, 'amaldicoado_sem_recarga_es') > 0 ? { semRecargaEs: true } : {}), ...(valorPoe(f, 'amaldicoado_destruido') > 0 ? { destruir: true } : {}),
-    ...(Object.keys(daMarca).length ? { daMarca } : {}),
+    ...(Object.keys(daMarca).length ? { daMarca } : {}), ...(raioCasas > 0 ? { raioCasas } : {}),
   }];
 }
 
@@ -2264,6 +2278,8 @@ export function reconvocarGolens(estado, hunt, agora) {
  * o da arma + o "+X metros ao Alcance de Golpes Corpo a Corpo" das peças e da própria gema (o Protetor: +1,8 m) —, 1 + ⌊metros / 2⌋ casas (a regra do
  * lote 35); antes eram 6 casas. O resto, o da habilidade (no mínimo 3 casas; sem alcance, 6).
  */
+/** (lote G20c) Um raio em metros em casas (1 casa = 2 m): a parte inteira e a fração como chance de mais uma — a conversão das áreas. */
+const casasDoRaio = (metros, rng = Math.random) => Math.floor(metros / 2) + (rng() < (metros / 2) % 1 ? 1 : 0);
 function alcanceDoTotem(entry, estado) {
   if (!tagsPoeDaSkill(entry).includes('corpo')) return Math.max(3, entry.range || 6);
   const ef = estado ? Gemas.efeitoNaSkill(estado, entry.id) : null;
@@ -2325,7 +2341,11 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       ...(focada ? { focada: true } : {}),
       // (lote G20b) o totem ANCESTRAL do Devastador: a distância de ativação em casas (7 m = 3 casas e meia: a metade é a chance de mais uma, sorteada ao
       // pôr — a mesma conversão das áreas)
-      ...(q.tipo === 'totem' && efeito?.ativacaoM > 0 ? { ativacao: Math.floor(efeito.ativacaoM / 2) + (Math.random() < (efeito.ativacaoM / 2) % 1 ? 1 : 0) } : {}),
+      ...(q.tipo === 'totem' && (efeito?.ativacaoM ?? q.efeitosDoTotem?.ativacaoM) > 0 ? { ativacao: casasDoRaio(efeito?.ativacaoM ?? q.efeitosDoTotem.ativacaoM) } : {}),
+      // (lote G20c) os efeitos próprios do totem (`LacaiosPoe.efeitosDoTotem`): o buff do ancestral Ativo, a aura do Rejuvenescedor, o Devorador
+      ...(q.efeitosDoTotem?.buffAtivo ? { buffAtivo: q.efeitosDoTotem.buffAtivo } : {}),
+      ...(q.efeitosDoTotem?.auraDoTotem ? { auraDoTotem: { af: q.efeitosDoTotem.auraDoTotem.af, raio: casasDoRaio(q.efeitosDoTotem.auraDoTotem.raioM), absorvePct: q.efeitosDoTotem.auraDoTotem.absorvePct } } : {}),
+      ...(q.efeitosDoTotem?.devorador ? { devorador: q.efeitosDoTotem.devorador } : {}),
     };
     // O ESPECTRO (Erguer Espectro do PoE): ergue o ÚLTIMO CADÁVER da caçada (o tipo do bicho que morreu por último e que tem magias),
     // ou, sem cadáver, um bicho da área. Fica com o desenho e o nome dele e usa as MAGIAS dele (`cacadas.tiqueDosLacaios`).
@@ -2343,6 +2363,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     // (ciclo 7) os mods da árvore no lacaio recém-invocado: o Escudo de Energia ("ganham X% da Vida Máxima como Escudo de Energia").
     LacaiosPoe.aplicarNoLacaio(l);
     hunt.lacaios.push(l);
+    // (lote G20c) o Solo Sagrado do Flamejante Sagrado em volta dele, enquanto ele viver (`dono`), com a imunidade a maldições
+    if (q.efeitosDoTotem?.soloSagradoM) (hunt.solosSagrados ??= []).push({ x: l.x, y: l.y, raio: Math.max(1, casasDoRaio(q.efeitosDoTotem.soloSagradoM)), ate: l.ate ?? Infinity, dono: l.uid, imuneMaldicao: true });
     eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
     if (fichaDoTotem) eventos.push(...aoConvocarTotem(estado, hunt, l, fichaDoTotem, agora));
   }

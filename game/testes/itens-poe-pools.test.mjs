@@ -45,8 +45,14 @@ test('drop de verdade: nenhum Raro sem mod, nenhuma base sem pool fora do Único
     if (!p?.poe) continue;
     const [classe] = p.poe.base.split('/');
     const base = cat.classes[classe].bases.find((b) => b.id === p.poe.base);
-    if (!base.pool) assert.equal(p.poe.raridade, 'unico', `${p.poe.base} caiu ${p.poe.raridade}`);
+    // (dono, 18/10, lote 82: "Pode ajustar" — a Ramificadora cai sem pool: o gerador dela, com os mods dela, até 2 Prefixos e 2 Sufixos como no PoE)
+    const ramificadora = Jogo.ehRamificadora(base);
+    if (!base.pool && !ramificadora) assert.equal(p.poe.raridade, 'unico', `${p.poe.base} caiu ${p.poe.raridade}`);
     if (p.poe.raridade !== 'raro') continue;
+    if (ramificadora) {
+      assert.ok(p.poe.prefixos.length <= 2 && p.poe.sufixos.length <= 2, `${p.poe.base}: ${p.poe.prefixos.length}+${p.poe.sufixos.length}`);
+      continue;
+    }
     raros++;
     const n = p.poe.prefixos.length + p.poe.sufixos.length;
     const mudaOLimite = (base.implicitos ?? []).some((l) => /Modificador(es)? (Prefixo|Sufixo) permitidos?/.test(l.texto ?? ''));
@@ -77,7 +83,8 @@ test('o drop comum usa SÓ o pool normal (como na campanha do PoE): nenhum mod d
   const rng = rngDe(11);
   for (let i = 0; i < 5_000; i++) {
     const p = Jogo.pecaSorteada([20, 70][i % 2], rng, undefined, 800);
-    if (!p?.poe || !['magico', 'raro'].includes(p.poe.raridade)) continue;
+    // (dono, 18/10, lote 82: a Ramificadora não tem pool — os mods dela são os do PoE para ela, `itens-poe/ramificadoras.mjs`)
+    if (!p?.poe || !['magico', 'raro'].includes(p.poe.raridade) || Jogo.ehRamificadora(p.poe.base)) continue;
     const [classe] = p.poe.base.split('/');
     const pagina = cat.classes[classe].paginas[cat.classes[classe].bases.find((b) => b.id === p.poe.base).pool];
     const familias = new Set([...pagina.prefixos, ...pagina.sufixos].map((g) => g.familia));

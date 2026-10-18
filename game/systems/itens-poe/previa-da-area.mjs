@@ -38,8 +38,8 @@ function categorias(ilvl) {
     const c = cat.classes[classe];
     const b = c?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > ilvl) continue;
-    // (lote 64) as Ramificadoras ainda não caem
-    if (!Jogo.RAMIFICADORAS_NO_DROP && Jogo.ehRamificadora(baseId)) continue;
+    // (lote 64) as Ramificadoras: (lote 82) só do Item Level mínimo delas para cima — dono: "Só nos mapas"
+    if ((!Jogo.RAMIFICADORAS_NO_DROP && Jogo.ehRamificadora(baseId)) || !Jogo.caiNoNivel(baseId, ilvl)) continue;
     const nome = CATEGORIA_DO_GRUPO[c.grupo] ?? c.grupo;
     const atual = porCategoria.get(nome) ?? { categoria: nome, bases: 0, exemplos: [] };
     atual.bases++;

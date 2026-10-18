@@ -73,27 +73,26 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-18, a partir de `gam
 - **Joias que caem**: Carmesim, Viridiana e Cobalto (Normal, Mágica, Rara e Única), a Prismática (só Única) e os 4 Olhos Abissais (nos encaixes da árvore e nos Encaixes Abissais das peças).
 - **Mods das joias Carmesim/Viridiana/Cobalto/Prismática** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
 - **Mods das joias Abissais** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
-- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; os solos (ardente, sagrado, fúngico…) não existem no jogo) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito · Fé Militante 15/16 com efeito (1 não se aplicam: não se aplica ao jogo: o golpe dos lacaios não erra (não rola a Precisão contra a Evasão do monstro)) · Megalomaníaco 0/287 com efeito (6 não se aplicam: a Proteção (Ward) não existe no jogo; linha de Retaliação sem regra própria no jogo (as habilidades de Retaliação existem desde 11/10: a janela depois do bloqueio ou do Acerto Selvagem); esta variação da reserva ainda não tem efeito no jogo; mecânica de cadáver que o jogo ainda não tem (o jogo guarda os últimos mortos — `hunt.cadaveres` —, consome um e cria os de Profanar e Desenterrar; o resto, não)).
+- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; os solos (ardente, sagrado, fúngico…) não existem no jogo) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito · Fé Militante 15/16 com efeito (1 não se aplicam: não se aplica ao jogo: o golpe dos lacaios não erra (não rola a Precisão contra a Evasão do monstro)) · Megalomaníaco 287/287 com efeito.
 
 | Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |
 |---|---:|---:|---:|---:|
 | Carmesim, Viridiana, Cobalto e Prismática (94) | 238 | 195 | 43 | 0 |
 | Abissais (os 4 Olhos) (4) | 11 | 9 | 2 | 0 |
 | Atemporais (6) | 19 | 8 | 11 | 0 |
-| Ramificadoras (12) | 24 | 0 | 6 | 18 |
+| Ramificadoras (12) | 24 | 18 | 6 | 0 |
 
 ### As linhas dos nós das Ramificadoras (lote 63)
 
-A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados).
+A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados — fora os notáveis que o Megalomaníaco ainda sorteia).
 
 | Linhas | Total | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 668 | 3 | 0 |
+| Notáveis | 676 | 673 | 3 | 0 |
 
 ### O que ainda não funciona nas joias únicas, pelo lote previsto
 
 | Lote | Única — linha |
 |---|---|
-| Ramificadoras (raspar os encantamentos e notáveis no poedb) (18) | Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 7 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 5 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 3 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 1 Pequenas Habilidades Passivas que não concedem nada<br>Megalomaníaco — Adiciona 4 Habilidades Passivas<br>Megalomaníaco — Pequenas Habilidades Passivas Adicionadas não conedem Nada<br>Megalomaníaco — [Three random notable modifiers] _(281 das 287 linhas do pool sem efeito)_<br>Aquele Sem Nada — Adiciona Técnica da Palma Oca<br>Ensinamentos de Kitava — Adiciona Discípulo de Kitava<br>A Interrogação — Adiciona Segredos do Sofrimento<br>Visões Calamitosas — Adiciona Mensageiro<br>Afinidade Natural — Adiciona Paciência da Natureza<br>O Cerco — Adiciona Cineticismo<br>A Linha de Frente — Adiciona Astúcia do Veterano |

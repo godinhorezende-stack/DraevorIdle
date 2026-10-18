@@ -2973,7 +2973,8 @@ const COR_DA_RARIDADE_POE = { normal: '#c8c8c8', magico: '#8888ff', raro: '#ffff
 const NOME_DA_RARIDADE_POE = { normal: 'Normal', magico: 'Mágico', raro: 'Raro', unico: 'Único' };
 const RARIDADES_POE = ['normal', 'magico', 'raro', 'unico'];
 /** As classes que caem no jogo, com o nome do PoE em português (a mesma lista do balão). */
-const CLASSES_DO_FILTRO_POE = Object.entries(CATEGORIA_POE).filter(([k]) => !['Trinkets', 'Jewels', 'Abyss_Jewels', 'Fishing_Rods', 'Tinctures'].includes(k));
+// (lote 82: + as Joias e as Joias Abissais — caem desde o lote 27, e as Ramificadoras nos mapas: "Joias: sempre pegar")
+const CLASSES_DO_FILTRO_POE = Object.entries(CATEGORIA_POE).filter(([k]) => !['Trinkets', 'Fishing_Rods', 'Tinctures'].includes(k));
 function secoesPoe() {
   const s = ctx.state.character?.settings ?? {};
   const n = (k, max, padrao = 0) => Math.max(0, Math.min(max, Math.round(Number(s[k] ?? padrao)) || 0));

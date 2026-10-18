@@ -87,7 +87,19 @@ function usar({ e, b }, slug) {
   for (let i = 0; i < 6; i++) { e.hunt.clock += 400; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
   // (lote G20a, com o aval do dono: o TOTEM — o seu uso o coloca; o dano é o do totem usando a habilidade, uma vez, no alvo)
   if (G.doSlug(slug).arquetipo === 'totem') for (const l of (e.hunt.lacaios ?? []).filter((x) => x.tipo === 'totem' && x.hp > 0)) ev.push(...Cacadas.golpeDoTotem(e, e.hunt, l, b, Ficha.combate(e), PERSONAGEM, e.hunt.clock));
-  const dano = ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + (x.v ?? 0), 0) + (b.dots?.length ? 1 : 0);
+  // (lote G20c, com o aval do dono: o totem SEM golpe é conferido pelo efeito dele — a aura do Rejuvenescedor na sua soma, perto dele; o Devorador
+  // consumindo o cadáver e o dreno vindo para você, ferido)
+  let efeitoDoTotem = false;
+  for (const l of (e.hunt.lacaios ?? []).filter((x) => x.tipo === 'totem' && x.hp > 0)) {
+    if (l.auraDoTotem && (G.adds(e)?.life_regen ?? 0) > 0) efeitoDoTotem = true;
+    if (l.devorador) {
+      e.hp = e.maxHp - 1000;
+      e.hunt.roubos = [];
+      Cacadas.devorarCadaver(e, e.hunt, l, Ficha.combate(e), PERSONAGEM, e.hunt.clock);
+      if (e.hunt.roubos.some((r) => r.recurso === 'vida' && r.restante > 0)) efeitoDoTotem = true;
+    }
+  }
+  const dano = ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + (x.v ?? 0), 0) + (b.dots?.length ? 1 : 0) + (efeitoDoTotem ? 1 : 0);
   return { ok: true, dano, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length };
 }
 

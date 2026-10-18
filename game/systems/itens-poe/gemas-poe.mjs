@@ -97,7 +97,10 @@ export function feiticeiroNoNivel(nivel = 1) {
  * caminho do seu uso (`Acoes.usarComoTotem`).
  */
 const LINHA_DO_TOTEM = /^Totem dura [\d.]+ segundos?$|^Invoca um Totem(?: de Balista)? que usa esta habilidade$|^\+[\d.]+ ao número máximo de Totens(?: Balista)? Convocados$|Vida do Totem aumentada em [\d.]+ ?%$|^[\d.]+ ?% mais Vida de Totens$|^Velocidade de Posicionamento de Totem aumentada em [\d.]+ ?%$|^\+[\d.]+ metros? ao Alcance de Golpes Corpo a Corpo$/i;
-export const ehLinhaDoTotem = (l) => LINHA_DO_TOTEM.test(l);
+// (lote G20c: + os efeitos próprios dos totens — `LacaiosPoe.efeitosDoTotem`; aqui a regex, porque o módulo dos lacaios importa este. O "não podem
+// Evadir" do Chamariz: o totem do jogo não tem evasão — os modificadores de lacaio não valem nele, lote G20a)
+const LINHA_DO_EFEITO_DO_TOTEM = /^Distância de Ativação aumentada em|enquanto o Totem estiver Ativo$|de Vida Regenerada por segundo$|^[\d.]+ ?% menos Área de Efeito$|é sofrido na Vida do Totem antes do alvo$|^Solo Sagrado concede Imunidade a Maldições|^Área do Solo Sagrado aumentada em|por Totem máximo$|para si a cada cadáver consumido$|^Totens Convocados por esta Habilidade não podem Evadir$/i;
+export const ehLinhaDoTotem = (l) => LINHA_DO_TOTEM.test(l) || LINHA_DO_EFEITO_DO_TOTEM.test(l);
 /**
  * (lote G20a) O totem que NÃO ACERTA ninguém: no PoE o Chamariz, o Devorador e os Rejuvenescedores não causam dano (`base_deal_no_damage` —
  * act_str.lua:2444, 2689, 9358) e o Vínculo Abrasador causa o dano no FEIXE entre os totens e você, não num acerto. O efeito próprio de cada um ainda
@@ -1227,6 +1230,20 @@ export function adds(estado) {
   const naoGolens = vivos.filter((l) => !l.golem && l.tipo === 'lacaio').length;
   // (09/10) × o "Efeitos de Buffs concedidos pelos seus Golens aumentados" (`efeito_buff_gema:golem`) e o de UM golem ("Golens de Chamas":
   // `efeito_buff_gema:convocar-golem-flamejante`).
+  // (18/10, lote G20c) os TOTENS com efeito em você enquanto você está perto deles: o buff do ancestral ATIVO (`l.buffAtivo`, com você a até
+  // `l.ativacao` casas) e a aura do Rejuvenescedor (`l.auraDoTotem`, no raio dela, × o Efeito de Aura). Não somam entre totens: o maior de cada
+  // atributo (a wiki no poedb: "Melee damage buff does not stack when multiple totems are summoned").
+  const dosTotens = {};
+  const pertoDe = (l, r) => !!hunt.pos && r != null && Math.max(Math.abs(l.x - hunt.pos.x), Math.abs(l.y - hunt.pos.y)) <= r;
+  for (const l of vivos) {
+    if (l.tipo !== 'totem') continue;
+    if (l.buffAtivo && pertoDe(l, l.ativacao ?? Infinity)) for (const [k, v] of Object.entries(l.buffAtivo)) dosTotens[k] = Math.max(dosTotens[k] ?? 0, v);
+    if (l.auraDoTotem && pertoDe(l, l.auraDoTotem.raio)) {
+      const f = efeitoDe('poe-aura', `${PREFIXO}${l.gema}`);
+      for (const [k, v] of Object.entries(l.auraDoTotem.af)) dosTotens[k] = Math.max(dosTotens[k] ?? 0, v * f);
+    }
+  }
+  for (const [k, v] of Object.entries(dosTotens)) total[k] = (total[k] ?? 0) + v;
   for (const l of vivos) {
     const nomeDaGema = l.golem ? REGISTRO.get(l.gema)?.gema?.nome : null;
     const f = l.golem ? 1 + (doEquipamento(estado, 'efeito_buff_gema:golem') + (nomeDaGema ? doEquipamento(estado, `efeito_buff_gema:${slugDoNome(nomeDaGema)}`) : 0)) / 100 : 1;

@@ -8,42 +8,42 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 64 |
+| implementada e testada | 72 |
 | implementada, sem teste próprio | 50 |
 | limitação do modelo idle | 11 |
-| parcial | 426 |
+| parcial | 418 |
 | sem efeito | 11 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 27 |
+| implementada e testada | 31 |
 | implementada, sem teste próprio | 19 |
 | limitação do modelo idle | 6 |
-| parcial | 158 |
+| parcial | 154 |
 
 ### Gemas de suporte (262)
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 55 |
-| implementada, sem teste próprio | 53 |
+| implementada e testada | 58 |
+| implementada, sem teste próprio | 50 |
 | parcial | 148 |
 | sem efeito | 6 |
 
 ### Variantes
 
-- Vaal (52): parcial 46 · implementada e testada 1 · implementada, sem teste próprio 5
+- Vaal (52): parcial 44 · implementada e testada 3 · implementada, sem teste próprio 5
 - Alternativas (198): parcial 159 · implementada, sem teste próprio 27 · implementada e testada 8 · limitação do modelo idle 2 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 989 linhas distintas (219 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 966 linhas distintas (216 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 178/562 ativas, 68/262 suportes.
+- Testes que citam a gema: 186/562 ativas, 73/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -52,7 +52,7 @@ Só os ataques:
 |---|---|
 | 21 | o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área |
 | 16 | nenhum efeito do buff tem equivalente no jogo |
-| 14 | sem dano direto: nenhum efeito no combate |
+| 13 | sem dano direto: nenhum efeito no combate |
 | 12 | Lacaios têm Recuperação da Recarga aumentada em # % |
 | 9 | Efeito do Buff aumentado em # % |
 | 8 | Velocidade de Projéteis aumentada em # % |
@@ -112,13 +112,11 @@ Só os ataques:
 | 2 | # % mais Dano com Acertos se o Inimigo estiver Enfeitiçado |
 | 2 | # % mais Dano com Afecções se o Inimigo estiver Enfeitiçado |
 | 2 | # % mais Dano com Sangramento enquanto na Postura de Sangue |
-| 2 | # % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo |
 | 2 | # % mais Efeito de Resfriamento |
 | 2 | # % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas |
 | 2 | # % menos Dano em Área |
 | 2 | # a # de Dano de Fogo adicionado contra Inimigos Queimando |
 | 2 | # de largura do Efeito em Área |
-| 2 | # de Vida Regenerada por segundo |
 | 2 | # Estágios Máximos |
 | 2 | # segundos entre o aparecimento de seções da Parede |
 | 2 | #% de Qualidade das Gemas de Habilidade Suportadas |
@@ -255,7 +253,6 @@ Só os ataques:
 | 2 | Sentinelas Ascendidos causam # % mais Dano |
 | 2 | Sentinelas Ascendidos sofrem # % menos Dano |
 | 2 | Só aplica Feitiços de Gemas de Habilidades Maldição que exigem Nível # ou menor |
-| 2 | Solo Sagrado concede Imunidade a Maldições para você e Aliados |
 | 2 | Taxa de Acerto aumentada em +# % por cada lâmina |
 | 2 | Tem # chamas |
 | 2 | Tempestade Furiosa Acerta com # % mais Frequência |
@@ -289,7 +286,6 @@ Só os ataques:
 | 1 | # % de chance de receber uma Carga de Frenesi ao Acertar |
 | 1 | # % de chance do Relâmpago acertar o Marcador ao Conjurar |
 | 1 | # % de chancer de causar Sangramento enquanto na Postura de Sangue |
-| 1 | # % do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo |
 | 1 | # % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade |
 | 1 | # % do Dano de Raio Convertido em Dano de Caos |
 | 1 | # % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera não possuir Afeções # % do Dano Físico é Convertido para Dano de Raio enquanto a Esfera estiver Eletrizada ou Exaurida # % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera etiver Congelada ou Enfraquecida |
@@ -310,7 +306,6 @@ Só os ataques:
 | 1 | # % mais Dano de Projétil |
 | 1 | # % mais Dano em Área |
 | 1 | # % mais Dano Físico Corpo a Corpo |
-| 1 | # % mais Dano Incendiário sofrido |
 | 1 | # % mais Dano Mágico por estágio |
 | 1 | # % mais Dano na Postura de Sangue |
 | 1 | # % mais Dano por Carga de Tolerância removida |
@@ -324,10 +319,8 @@ Só os ataques:
 | 1 | # % mais Duração do Veneno |
 | 1 | # % mais Frequência de Projéteis enquanto Canalizando |
 | 1 | # % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido |
-| 1 | # % mais Velocidade de Ataque enquanto o Totem estiver Ativo |
 | 1 | # % mais Velocidade de Ataque por cada Estágio |
 | 1 | # % mais Velocidade de Conjuração |
-| 1 | # % menos Área de Efeito |
 | 1 | # % menos Dano de Afecções |
 | 1 | # % menos Dano Físico sofrido por Carga de Tolerância removida |
 | 1 | # % menos Dano Sofrido enquanto Canalizando |
@@ -335,7 +328,6 @@ Só os ataques:
 | 1 | # % menos velocidade de lançar armadilhas com arma de duas mãos |
 | 1 | # % menos Velocidade de Movimento |
 | 1 | # % menos Velocidade de Movimento por Estágio |
-| 1 | # de Virulência Máxima |
 | 1 | # do Nível das Gemas de Habilidade de Caos Suportadas |
 | 1 | # metros ao raio do Solo Sagrado |
 | 1 | # metros de raio |
@@ -364,7 +356,6 @@ Só os ataques:
 | 1 | +# cascatas por carga de poder removida |
 | 1 | +# de largura por cada # % de Mana Máxima Não Reservada possuída |
 | 1 | +# de Relâmpagos Concentrados máximos |
-| 1 | +# de Virulência Máxima |
 | 1 | +# Estágios Máximos |
 | 1 | +# metro ao Alcance de Golpes Corpo a Corpo |
 | 1 | +# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade |
@@ -409,7 +400,6 @@ Só os ataques:
 | 1 | Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos |
 | 1 | Aplica feixes aos +# Inimigos próximos |
 | 1 | Após atacar, os totens desaparecem |
-| 1 | Área do Solo Sagrado aumentada em # % |
 | 1 | Armadilha dura +# segundo Gira |
 | 1 | Arqueiro Ilusório dura # segundos |
 | 1 | Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque |
@@ -445,8 +435,6 @@ Só os ataques:
 | 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
 | 1 | Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas |
 | 1 | Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas |
-| 1 | Buff concede # % de chance de Envenenar ao Acertar |
-| 1 | Buff concede # % mais Dano com Veneno |
 | 1 | Buff concede # % mais Dano Físico |
 | 1 | Buff concede # de Regeneração de Escudo de Energia por segundo |
 | 1 | Buff concede # de Regeneração de Mana por segundo |
@@ -519,7 +507,6 @@ Só os ataques:
 | 1 | Concede +# ao máximo de Cargas de Sangue |
 | 1 | Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico |
 | 1 | Concede até o máximo de Cargas de Sangue |
-| 1 | Concede Virulência ao Envenenar um Inimigo |
 | 1 | Consome # Carga de # Frasco de Vida, se possível, por Projétil Disparado |
 | 1 | Consome # Cargas de # Frasco de Vida, se possível, por Projétil Disparado |
 | 1 | Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por # segundo por Carga consumida |
@@ -542,7 +529,6 @@ Só os ataques:
 | 1 | Cria +# fendas |
 | 1 | Cria +# Pilar de Cinzas |
 | 1 | Dano abrasador aplicado pela detonação causa + # % de dano por totem detonado |
-| 1 | Dano ardente base é igual a # % adicional do Dano Excedente |
 | 1 | Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até # de dano antes de explodir |
 | 1 | Dano de Caos com Acertos é Resistido pela maior Resistência ao invés |
 | 1 | Dano de Caos com Acertos é Resistido pela Resistência mais baixa |
@@ -574,11 +560,8 @@ Só os ataques:
 | 1 | Dispara tentáculos em até # Alvo |
 | 1 | Dispara tentáculos em até # Alvos |
 | 1 | Dispara um Carregamento de Flechas no ar Projéteis Disparam de onde a Flecha com o Carregamento cair |
-| 1 | Distância de Ativação aumentada em # % |
 | 1 | Distância de Deslocamento aumentada em # % |
 | 1 | Distância de Deslocamento aumentada em % |
-| 1 | Drena # de Mana para si a cada cadáver consumido |
-| 1 | Drena # de Vida para si a cada cadáver consumido |
 | 1 | Duração aumentada em # % por Estágio |
 | 1 | Duração Base do Debuff é de # segundos |
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
@@ -675,7 +658,6 @@ Só os ataques:
 | 1 | Ganhe um Estágio no início de cada ataque par Máximo de # Estágios |
 | 1 | Ganhe uma Carga de Poder quando um Inimigo Morrer enquanto na Área dessa Habilidade A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área dessa Habilidade |
 | 1 | Gasta # % da Mana atual |
-| 1 | Gasta # % do Custo da Runa |
 | 1 | Gelo se quebra após você sofrer # Acertos Danificadores ou a Duração expirar |
 | 1 | Gira # vez |
 | 1 | Gira # vezes |
@@ -964,8 +946,6 @@ Só os ataques:
 | 1 | Raios Acertam Inimigos a cada # segundos |
 | 1 | Raios causam # % menos Dano |
 | 1 | Raridade de Itens Derrubados por Inimigos Mortos por Habilidades Suportadas aumentada em #% |
-| 1 | Rastejador Agonizante causa Dano Físico aumentado em # % por Virulência possuida por você |
-| 1 | Rastejador Agonizante possui # % de aumento da Velocidade de Ataque por Virulência possuída por você |
 | 1 | Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único |
 | 1 | Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas |
 | 1 | Recuperação da Recarga aumentada em # % se usado enquanto um Inimigo Único estiver em sua Presença |
@@ -980,7 +960,6 @@ Só os ataques:
 | 1 | Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos |
 | 1 | Resistência à Raio de Inimigos Próximos é Ignorada por Acertos |
 | 1 | Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas |
-| 1 | Runas recebem Alcance de Vínculo aumentado em # % |
 | 1 | Sacrifica # % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos |
 | 1 | Sacrifica # % do seu total de Escudo de Energia e Vida Causa # % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo |
 | 1 | Sacrifica +# % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos |
@@ -1015,7 +994,6 @@ Só os ataques:
 | 1 | Terceiro Estágio causa # % menos Dano |
 | 1 | Tormenta Furiosa tem +# metros ao raio por cada # de Fúria sacrificada |
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
-| 1 | Totens Convocados por esta Habilidade não podem Evadir |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo |
 | 1 | Um a cada # Projéteis disparados permanece no solo como Lâmina Persistente |
@@ -1027,7 +1005,6 @@ Só os ataques:
 | 1 | Utiliza o Tempo de Ataque da Arma Secundária |
 | 1 | Velocidade de Ataque aumentada em # % caso tenha mudado de Postura Recentemente |
 | 1 | Velocidade de Ataque aumentada em # % por Carga de Frenesi |
-| 1 | Velocidade de Ataque aumentada em # % por Totem máximo |
 | 1 | Velocidade de Recuperação da Recarga aumentada em # % para cada Inimigo Normal ou Mágico na Área Velocidade de Recuperação da Recarga aumentada em # % para cada Inimigo Raro ou Único na Área |
 | 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
 | 1 | Você e Aliados não-Lacaios Próximos têm # % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando # segundos |
@@ -1064,11 +1041,6 @@ Só os ataques:
 - **Ancestral_Cry** (Clamor Ancestral) — parcial
   - efeito não simulado: Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar
   - efeito não simulado: Golpes Impelidos focam em 2 Inimigos adicionais
-- **Ancestral_Protector** (Protetor Ancestral) — parcial
-  - efeito não simulado: 20 % mais Velocidade de Ataque enquanto o Totem estiver Ativo
-- **Ancestral_Warchief** (Chefe Guerreiro Ancestral) — parcial
-  - efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo
-  - efeito não simulado: Distância de Ativação aumentada em 30 %
 - **Animate_Guardian** (Animar Guardião) — parcial
   - efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -1245,10 +1217,6 @@ Só os ataques:
   - efeito não simulado: 15 % mais Dano por Trauma, até 200 %
   - efeito não simulado: Pulso tem Efeito em Área aumentado em 15 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %
   - efeito não simulado: 5 % mais Dano por Trauma, até 200 %
-- **Brand_Recall** (Convocar Runas) — parcial
-  - sem dano direto: nenhum efeito no combate
-  - efeito não simulado: Gasta 20 % do Custo da Runa
-  - efeito não simulado: Runas recebem Alcance de Vínculo aumentado em 101 %
 - **Burning_Arrow_of_Vigour** (Flecha Ardente do Vigor) — parcial
   - efeito não simulado: Causa Dano de Fogo Adicional igual a 32 % da Vida Máxima
 - **Chain_Hook** (Corrente com Gancho) — parcial
@@ -1357,7 +1325,6 @@ Só os ataques:
   - _idle:_ o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
 - **Decoy_Totem** (Totem Chamariz) — parcial
   - efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)
-  - efeito não simulado: Totens Convocados por esta Habilidade não podem Evadir
 - **Defiance_Banner** (Estandarte Desafiador) — parcial
   - efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados
 - **Despair** (Desespero) — parcial
@@ -1370,9 +1337,6 @@ Só os ataques:
   - sem dano direto: nenhum efeito no combate
   - efeito não simulado: Primeira Mina é Detonada Instantaneamente Minas recebem 10 % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação
   - efeito não simulado: Minas tem Velocidade de Detonação aumentada em 20 %
-- **Devouring_Totem** (Totem Devorador) — parcial
-  - efeito não simulado: Drena 299 de Vida para si a cada cadáver consumido
-  - efeito não simulado: Drena 59 de Mana para si a cada cadáver consumido
 - **Discharge** (Descarga) — parcial
   - efeito não simulado: 15 % mais Área de Efeito por Carga removida
   - efeito não simulado: 10 % de chance de causar Dano sem remover Cargas
@@ -1657,17 +1621,10 @@ Só os ataques:
 - **Ground_Slam_of_Earthshaking** (Impacto Sísmico do Tremor) — parcial
   - efeito não simulado: Ângulo aumentado em 100 %
 - **Herald_of_Agony** (Arauto Agonizante) — parcial
-  - efeito não simulado: Buff concede 20 % de chance de Envenenar ao Acertar
-  - efeito não simulado: Concede Virulência ao Envenenar um Inimigo
-  - efeito não simulado: Buff concede 10 % mais Dano com Veneno
-  - efeito não simulado: 40 de Virulência Máxima
-  - efeito não simulado: Rastejador Agonizante possui 4 % de aumento da Velocidade de Ataque por Virulência possuída por você
-  - efeito não simulado: Rastejador Agonizante causa Dano Físico aumentado em 9 % por Virulência possuida por você
-  - efeito não simulado: +5 de Virulência Máxima
-  - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
+  - a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados
+  - o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)
 - **Herald_of_Ash** (Arauto Flamejante) — parcial
-  - efeito não simulado: 38 % mais Dano Incendiário sofrido
-  - efeito não simulado: Dano ardente base é igual a 5 % adicional do Dano Excedente
+  - a queima do excesso de dano é a mesma em todos os vizinhos do morto (as condições de cada alvo não entram)
 - **Herald_of_Purity** (Arauto da Pureza) — parcial
   - efeito não simulado: Convoca um Sentinela da Pureza quando você Matar um Inimigo
   - efeito não simulado: 20 % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único
@@ -1696,12 +1653,9 @@ Só os ataques:
 - **Hexblast_of_Havoc** (Feitiço Explosivo da Devastação) — parcial
   - nenhum efeito do buff tem equivalente no jogo
 - **Holy_Flame_Totem** (Totem Flamejante Sagrado) — parcial
-  - efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
 - **Holy_Flame_Totem_of_Ire** (Totem Flamejante Sagrado da Ira) — parcial
   - efeito não simulado: 128 % mais Velocidade de Projétil
-  - efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados
-  - efeito não simulado: Área do Solo Sagrado aumentada em 40 %
 - **Holy_Hammers** (Martelos Sagrados) — parcial
   - efeito não simulado: O primeiro martelo de cada cascata causa + 100 % de dano
   - efeito não simulado: Martelos Sagrados se acumulam em cascata até 2 vezes
@@ -2030,8 +1984,6 @@ Só os ataques:
   - efeito não simulado: 4 Estágios Máximos
   - efeito não simulado: Converte 100 % do Dano Físico para um Elemento aleatório
   - efeito não simulado: + 2 do máximo de Estágios
-- **Rejuvenation_Totem** (Totem Rejuvenescedor) — parcial
-  - efeito não simulado: 317.5 de Vida Regenerada por segundo
 - **Righteous_Fire** (Círculo Ardente) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Causa 70 % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo
@@ -2109,8 +2061,6 @@ Só os ataques:
 - **Shrapnel_Ballista_of_Steel** (Balista de Cerco do Aço) — parcial
   - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
-- **Siege_Ballista** (Balista de Cerco) — parcial
-  - efeito não simulado: Velocidade de Ataque aumentada em 5 % por Totem máximo
 - **Siege_Ballista_of_Trarthus** (Balista de Cerco de Trarthus) — parcial
   - efeito não simulado: Alcance do Posicionamento de Totens aumentado em 300 %
   - efeito não simulado: Invoca 1 Totens de Balista em círculo que usam esta habilidade
@@ -2377,8 +2327,6 @@ Só os ataques:
   - efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano
   - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Vaal_Ancestral_Warchief** (Chefe Guerreiro Ancestral Vaal) — parcial
-  - efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo
 - **Vaal_Animate_Weapon** (Animar Arma Vaal) — parcial
   - efeito não simulado: Anima até 10 Armas
   - efeito não simulado: +2 ao Máximo de Armas Animadas
@@ -2497,10 +2445,6 @@ Só os ataques:
 - **Vaal_Reave** (Devastar Vaal) — parcial
   - efeito não simulado: + 4 do máximo de Estágios
   - efeito não simulado: + 2 do máximo de Estágios
-- **Vaal_Rejuvenation_Totem** (Totem Rejuvenecedor Vaal) — parcial
-  - efeito não simulado: 30 % menos Área de Efeito
-  - efeito não simulado: 317.5 de Vida Regenerada por segundo
-  - efeito não simulado: 40 % do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo
 - **Vaal_Righteous_Fire** (Círculo Ardente Vaal) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo
@@ -3144,4 +3088,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Static, Barrage_Support, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Chance_to_Poison_Support, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow_of_Energy, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Icicle_Mine_of_Fanning, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike, Lightning_Strike_of_Arcing, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, More_Duration_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Unbound_Ailments_Support, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Haste, Vaal_Lightning_Strike, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Static, Barrage_Support, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow_of_Energy, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Icicle_Mine_of_Fanning, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike, Lightning_Strike_of_Arcing, Mana_Leech_Support, Minion_Life_Support, More_Duration_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Haste, Vaal_Lightning_Strike, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus
