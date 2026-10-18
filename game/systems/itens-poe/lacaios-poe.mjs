@@ -159,6 +159,41 @@ const singular = (t) => String(t).trim().split(/\s+/).map((p) => (/ões$|ãos$/i
  */
 const VIDA_DO_TOTEM_MAIS = /^(?:Decoy_Totem|Devouring_Totem|Rejuvenation_Totem|Vaal_Rejuvenation_Totem|Holy_Flame_Totem)/;
 export const multDaVidaDoTotem = (slug) => (VIDA_DO_TOTEM_MAIS.test(String(slug ?? '')) ? 1.2 : 1);
+/**
+ * (18/10, lote G20c) Os EFEITOS PRÓPRIOS do totem, das linhas do nível e da qualidade (`oQueInvoca` → `Acoes.invocarLacaios` → o tique e
+ * `GemasPoe.adds`):
+ * - o ANCESTRAL (o Chefe Guerreiro, o Protetor): a distância de ativação — o totem só ataca, e o buff só vale, com você a até 80 unidades (8 m) do
+ *   Chefe e 85 (8,5 m) do Protetor (a wiki no poedb: "Activation: The totem is active as long as the player remains within a 80/85 unit radius";
+ *   a Vaal, a do Chefe), × a "Distância de Ativação aumentada" da qualidade —, e o buff ATIVO ("X% mais Dano Corpo a Corpo / Velocidade de Ataque
+ *   enquanto o Totem estiver Ativo": seu; não soma entre totens — "Melee damage buff does not stack when multiple totems are summoned");
+ * - o REJUVENESCEDOR: a aura de "N de Vida Regenerada por segundo" num raio de 40 unidades (4 m — act_str.lua:9343), × √ do "menos Área de Efeito"
+ *   (a Vaal), com o Efeito de Aura (a wiki); a Vaal: "40% do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes";
+ * - o FLAMEJANTE SAGRADO: o Solo Sagrado em volta do totem (16 unidades, 1,6 m — act_str.lua:5869; × √ da "Área do Solo Sagrado aumentada" da
+ *   Ira), com a imunidade a maldições ("Solo Sagrado concede Imunidade a Maldições para você e Aliados");
+ * - a BALISTA DE CERCO: "Velocidade de Ataque aumentada em X% por Totem máximo" (a qualidade — act_dex.lua:13962);
+ * - o DEVORADOR: "Drena N de Vida / de Mana para si a cada cadáver consumido" (lifeLeechPerUse/manaLeechPerUse — act_str.lua:2667).
+ */
+function efeitosDoTotem(slug, linhas) {
+  const achar = (re) => linhas.reduce((n, l) => n + (Number(re.exec(l)?.[1]) || 0), 0);
+  const r = {};
+  const ativacaoBase = /^Ancestral_Protector/.test(slug) ? 8.5 : /^(?:Vaal_)?Ancestral_Warchief/.test(slug) ? 8 : 0;
+  if (ativacaoBase) r.ativacaoM = ativacaoBase * (1 + achar(/^Distância de Ativação aumentada em ([\d.]+) ?%$/i) / 100);
+  const maisCorpo = achar(/^([\d.]+) ?% mais Dano Corpo a Corpo enquanto o Totem estiver Ativo$/i);
+  const maisVel = achar(/^([\d.]+) ?% mais Velocidade de Ataque enquanto o Totem estiver Ativo$/i);
+  if (maisCorpo || maisVel) r.buffAtivo = { ...(maisCorpo ? { 'mais_dano@corpo': maisCorpo } : {}), ...(maisVel ? { atk_speed_mais: maisVel } : {}) };
+  const regen = /^(?:Vaal_)?Rejuvenation_Totem/.test(slug) ? achar(/^([\d.]+) de Vida Regenerada por segundo$/i) : 0;
+  if (regen) {
+    const menosArea = achar(/^([\d.]+) ?% menos Área de Efeito$/i);
+    r.auraDoTotem = { af: { life_regen: regen }, raioM: 4 * Math.sqrt(Math.max(0, 1 - menosArea / 100)), absorvePct: achar(/^([\d.]+) ?% do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo$/i) };
+  }
+  if (linhas.some((l) => /^Solo Sagrado concede Imunidade a Maldições para você e Aliados$/i.test(l))) r.soloSagradoM = 1.6 * Math.sqrt(1 + achar(/^Área do Solo Sagrado aumentada em ([\d.]+) ?%$/i) / 100);
+  const porMaximo = achar(/^Velocidade de Ataque aumentada em ([\d.]+) ?% por Totem máximo$/i);
+  if (porMaximo) r.velPorMaximo = porMaximo;
+  const vida = achar(/^Drena ([\d.]+) de Vida para si a cada cadáver consumido$/i);
+  const mana = achar(/^Drena ([\d.]+) de Mana para si a cada cadáver consumido$/i);
+  if (vida || mana) r.devorador = { vida, mana };
+  return r;
+}
 export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // `af`: a soma do DONO (`ficha.afPoe`) — os mods do PoE dos lacaios e totens (vida, dano, velocidade, dano somado, máximos…).
   const m0 = (k) => Number(af?.[k]) || 0;
@@ -243,6 +278,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   }
   // "Número máximo de Zumbis Erguidos reduzido em X%" (o % do máximo).
   maximo = Math.max(1, Math.round(maximo * (1 + porTipo('max_lacaio_pct') / 100)));
+  // (lote G20c) os efeitos próprios do totem (a gema de totem; o totem de um suporte não tem) e a velocidade por totem máximo da Balista de Cerco
+  const doTotem = totem && !doSuporte ? efeitosDoTotem(slug, [...t.linhas, ...GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)]) : {};
   // As OFERENDAS (Osso, Carne, Espírito) e a CONVOCAÇÃO não invocam: dão bônus aos lacaios em campo / chamam todos para perto.
   const en = r.gema.en ?? '';
   if (/Offering/i.test(en)) return { tipo: 'oferenda', nome: t.nome, duracaoMs: duracao ?? 4000, bonus: bonusDaOferenda(t.linhas) };
@@ -293,6 +330,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   if (!totem || r.ataque) velAtaquePct += porTipo('lacaio_vel_ataque');
   // (ciclo 7, lote F) "Magias Conjuradas por Totens têm X% de Velocidade de Conjuração aumentada" (o totem de uma gema de Magia).
   if (totem && (r.gema?.tags ?? []).includes('Magia')) velAtaquePct += m0('totem_vel_magia');
+  if (doTotem.velPorMaximo) velAtaquePct += doTotem.velPorMaximo * Math.max(1, maximo);
   const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, elemento);
   // (lote 44: o tempo de ataque do PoB já é o do tipo — o "rápido" do Espírito Furioso não multiplica de novo)
   if (pob?.tempo) delete estilo.rapido;
@@ -362,6 +400,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
         ...(PALAVRA_DO_TIPO.espectro.test(texto) && m0('espectro_devorador_chance') > 0 ? { devoradorDeAlmas: [m0('espectro_devorador_chance'), m0('espectro_devorador_s') || 20] } : {}) },
     } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
+    ...(totem ? { efeitosDoTotem: doTotem } : {}),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento,
     // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema

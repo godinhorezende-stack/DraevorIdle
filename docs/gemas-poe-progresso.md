@@ -241,6 +241,18 @@ Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMai
 - O Devastador: o totem ancestral só usa a habilidade com você a até 7 m (o PoB: `ancestor_totem_parent_activiation_range` 70). Fica não feito o "Área de Efeito aumentada perto do totem" da descrição: o valor não está nos dados do PoB.
 - Teste: `totens-suportes-poe.test.mjs` (6).
 
+### G20c — os totens específicos (18/10)
+
+- **Os ancestrais:** o Chefe Guerreiro e o Protetor só atacam, e o buff deles só vale em você, com você a até 8 m e 8,5 m (a wiki no poedb salvo: "active as long as the player remains within a 80/85 unit radius"; a Vaal usa a do Chefe). A qualidade do Chefe soma "Distância de Ativação aumentada em 30%" (10,4 m). O buff Ativo ("18% mais Dano Corpo a Corpo", "20% mais Velocidade de Ataque") entra na sua ficha sem somar entre totens ("does not stack when multiple totems are summoned").
+- **O Rejuvenescedor:** aura de "317,5 de Vida Regenerada por segundo" num raio de 4 m (act_str.lua:9343), com o Efeito de Aura (a wiki). Não soma entre totens. A Vaal tem 30% menos área e leva 40% do dano dos acertos em você antes (o desvio para o totem que já existia).
+- **O Flamejante Sagrado:** o Solo Sagrado em volta do totem (1,6 m — act_str.lua:5869; a Ira com +40% de área na qualidade), que some com ele e dá imunidade a maldições a quem está em cima.
+- **A Balista de Cerco:** "+5% de Velocidade de Ataque por Totem máximo" da qualidade (4 totens → +20%).
+- **O Devorador:** com você ferido (ou sem mana cheia), a cada uso ele consome o cadáver mais perto, a até 3 casas, e o dreno de 299 de Vida e 59 de Mana vem para você. O raio do consumo não está no PoB; usei o alcance-base do totem, 60 unidades = 6 m (decisão a confirmar com o dono).
+- O "não podem Evadir" do Chamariz: o totem do jogo não tem evasão (os mods de lacaio não valem nele desde o G20a).
+- Fica para o G20d: o Vínculo Abrasador (o feixe e a Detonação), a Artilharia em linha/cruz/foco, o Trarthus e a provocação do Chamariz (pede a IA dos monstros ir atrás do totem).
+- Relatório: ativas implementadas 122 (72 testadas), parcial 418 (−7).
+- Testes: `totens-especificos-poe.test.mjs` (5). Com o aval do dono: duas asserções do G20a atualizadas (as linhas feitas saíram dos motivos) e o teste geral do G16 confere os totens sem golpe pelo efeito deles.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
@@ -255,6 +267,6 @@ Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMai
 
 ## Próximo passo exato
 
-1. G20c — os totens específicos: os ancestrais (a ativação pela wiki no poedb salvo: o Chefe Guerreiro 80 u = 8 m, o Protetor 85 u = 8,5 m; o buff "enquanto o Totem estiver Ativo", que não soma entre totens), a aura do Rejuvenescedor, o Solo Sagrado do Flamejante, o feixe do Vínculo Abrasador e a Detonação, a Artilharia em linha/cruz/foco, a provocação do Chamariz, o Devorador, o Trarthus, a velocidade por totem máximo da Balista de Cerco.
+1. G20d — os totens que faltam: o Vínculo Abrasador, a Artilharia, o Trarthus e a provocação do Chamariz. (G20c feito: os ancestrais (a ativação pela wiki no poedb salvo: o Chefe Guerreiro 80 u = 8 m, o Protetor 85 u = 8,5 m; o buff "enquanto o Totem estiver Ativo", que não soma entre totens), a aura do Rejuvenescedor, o Solo Sagrado do Flamejante, o feixe do Vínculo Abrasador e a Detonação, a Artilharia em linha/cruz/foco, a provocação do Chamariz, o Devorador, o Trarthus, a velocidade por totem máximo da Balista de Cerco.
 2. Depois, pelos planos do workflow `g19-familias-desenho`: lacaios, buffs sem equivalente, a cauda dos suportes e a das ativas (com a velocidade de projétil como família própria).
 3. G19 — as afecções pela conta do PoB (ver o fim do G17).
