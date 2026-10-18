@@ -4,11 +4,14 @@
 // (`acoes.tiqueDoArautoDaAgonia`). O máximo: os "40 de Virulência Máxima" da gema + a qualidade ("+(0—5) de Virulência Máxima": 0,25 por 1%,
 // o qualityStats do PoB) + o "+N de Virulência Máxima" (a Pura Agonia das Ramificadoras — `virulencia_max`). Não escala com o Efeito do Buff
 // (no PoB, "unscalable").
-import { textosDaGema, PREFIXO } from './gemas-poe.mjs';
+import { textosDaGema } from './gemas-poe.mjs';
 import { RECENTE_MS } from './condicoes-poe.mjs';
 
 export const SLUG = 'Herald_of_Agony';
-export const ID = `${PREFIXO}${SLUG}`;
+// (o id da ação: `GemasPoe.PREFIXO` + o slug — escrito aqui, e não lido de lá na carga: o `gemas-poe.mjs` está no meio de um ciclo de imports
+// (gemas-poe → linhas-das-gemas → … → lacaios-poe → aqui) e o PREFIXO ainda não existe quando este módulo carrega; o prefixo é estável — os ids
+// salvos dependem dele)
+export const ID = `poe-gema:${SLUG}`;
 /** A Virulência Máxima a mais por 1% de qualidade (o PoB: `maximum_virulence_stacks` 0,25). */
 export const POR_QUALIDADE = 0.25;
 /** A base da gema quando o texto não traz a linha ("40 de Virulência Máxima"). */

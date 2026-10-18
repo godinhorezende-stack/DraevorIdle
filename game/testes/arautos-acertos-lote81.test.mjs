@@ -69,8 +69,9 @@ function comArauto(slug, af = {}) {
 const fixo = (f) => { const o = Math.random; Math.random = () => 0.5; try { return f(); } finally { Math.random = o; } };
 
 test('os BUFFS do Glacial e do Trovejante dão o dano adicional (ataques e magias) — antes nada', { skip: SEM }, () => {
-  assert.deepEqual(G.buffNoNivel('Herald_of_Ice', 20).af, { added_ice_dmg_min: 38, added_ice_dmg_max: 56, spell_added_ice_dmg_min: 38, spell_added_ice_dmg_max: 56 });
-  assert.deepEqual(G.buffNoNivel('Herald_of_Thunder', 20).af, { added_energy_dmg_min: 19, added_energy_dmg_max: 76, spell_added_energy_dmg_min: 19, spell_added_energy_dmg_max: 76 });
+  const dano = (af, el) => [af[`added_${el}_dmg_min`], af[`added_${el}_dmg_max`], af[`spell_added_${el}_dmg_min`], af[`spell_added_${el}_dmg_max`]];
+  assert.deepEqual(dano(G.buffNoNivel('Herald_of_Ice', 20).af, 'ice'), [38, 56, 38, 56]);
+  assert.deepEqual(dano(G.buffNoNivel('Herald_of_Thunder', 20).af, 'energy'), [19, 76, 19, 76]);
   assert.equal(G.REGISTRO.get('Herald_of_Ice').statusNoJogo, 'funciona');
 });
 
@@ -156,6 +157,12 @@ test('a QUEIMA do Arauto das Cinzas: 25% do excesso por segundo × 1,38 (nível 
   assert.equal(r.emB, 0);
   assert.equal(queimar({}, 0).emA, 0);
   assert.equal(queimar({}, 200, QuemFeriu.LACAIO).emA, 0);
+  // o abate por MAGIA também (o PoB e o texto atual do PoE: "if you kill an enemy")
+  const { e: em, morto: mm, a: am } = comArauto('Herald_of_Ash');
+  mm.poeExcedente = 200;
+  QuemFeriu.carimbar(mm, QuemFeriu.VOCE, ['magia', 'fogo', 'acerto']);
+  Combate.processarMortes(em, PERSONAGEM, []);
+  assert.ok((am.dots ?? []).some((d) => d.chave === 'Herald_of_Ash'));
   // é degenerativo: o "mais Degenerativo com Arautos" (o Mensageiro) multiplica; o "mais com Acertos", não; o Dano Mágico, não
   const base = r.emA;
   assert.ok(Math.abs(queimar({ 'dano_dot_mais@arauto': 50 }).emA / base - 1.5) < 0.01);

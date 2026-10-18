@@ -103,7 +103,8 @@ test('maldições: o LIMITE é 1 — vale a lançada por último (sem trocar a c
   const b2 = bicho();
   Reforcos.marcar(h2, b2, 1000);
   assert.equal(Object.keys(b2.maldicoes).length, 2, 'as duas maldições no monstro');
-  assert.ok(Reforcos.forcaDoBicho(b2, 1000) < 1 && Reforcos.vulnerabilidade(b2, 'fire', 1000) > 1, 'e as duas valem');
+  // (dono, 17/10 — lote G18b: a Vulnerabilidade é só o dano Físico sofrido, como no PoB)
+  assert.ok(Reforcos.forcaDoBicho(b2, 1000) < 1 && Reforcos.vulnerabilidade(b2, 'physical', 1000) > 1, 'e as duas valem');
 });
 
 test('"Suas Maldições têm Efeito aumentado em X% se Y% da Duração da Maldição expirou" (a maestria real): a vulnerabilidade sobe na razão exata depois de Y%', { skip: SEM }, () => {

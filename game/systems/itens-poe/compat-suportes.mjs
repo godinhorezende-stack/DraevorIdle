@@ -11,3 +11,20 @@ const INDICE = new Map(DADOS.suportes.map((s, i) => [s, i]));
 export const indiceDoSuporte = (slug) => INDICE.get(slug) ?? null;
 /** A marca da gema ativa (`poe-sup:<bits>`), ou null se nenhum suporte a suporta pela lista. */
 export const tagDaAtiva = (slug) => (DADOS.ativas[slug] ? `poe-sup:${DADOS.ativas[slug]}` : null);
+
+/**
+ * (17/10, lote G3) Os suportes que ACRESCENTAM UM TIPO à habilidade suportada, como no PoE ("added types"): o Suporte de Armadilha a torna
+ * Armadilha, os de Mina (Explosão em Cadeia, Alto Impacto, Locus) a tornam Mina. No mesmo grupo ligado, os suportes que exigem esse tipo (as
+ * Armadilhas Múltiplas, a Montagem Ágil, o Dano de Armadilha e Mina…) passam a suportar a habilidade — `engine/sockets-de-gema.compativelNoGrupo`.
+ */
+export const ADICIONA_TIPOS = Object.freeze({
+  Trap_Support: ['poe:Armadilha'],
+  Blastchain_Mine_Support: ['poe:Mina'],
+  'High-Impact_Mine_Support': ['poe:Mina'],
+  Locus_Mine_Support: ['poe:Mina'],
+  // (18/10, lote G20b) os que viram totem tornam a habilidade Totem (addSkillTypes SummonsTotem — sup_str.lua:5040): os Totens Múltiplos, a Balista
+  // Focada e a Chuva Ardente passam a ligar nela
+  Spell_Totem_Support: ['poe:Totem'],
+  Ballista_Totem_Support: ['poe:Totem'],
+  Earthbreaker_Support: ['poe:Totem'],
+});

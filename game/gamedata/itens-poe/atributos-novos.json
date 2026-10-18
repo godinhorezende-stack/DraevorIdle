@@ -5085,6 +5085,24 @@
       "combate": true,
       "efeito": "condicoes-poe.fatorDoDanoRecebido"
     },
+    "dano_fire_recebido_mais": {
+      "nome": "Mais Dano de Fogo recebido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano recebido daquele tipo (`condicoes-poe.fatorDoDanoRecebido`, lote 30; registrado no lote G18b — o Chamado Imortal)"
+    },
+    "dano_ice_recebido_mais": {
+      "nome": "Mais Dano de Gelo recebido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano recebido daquele tipo (`condicoes-poe.fatorDoDanoRecebido`, lote 30; registrado no lote G18b — o Chamado Imortal)"
+    },
+    "dano_energy_recebido_mais": {
+      "nome": "Mais Dano de Raio recebido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano recebido daquele tipo (`condicoes-poe.fatorDoDanoRecebido`, lote 30; registrado no lote G18b — o Chamado Imortal)"
+    },
     "dano_chaos_recebido_mais": {
       "nome": "Dano de Caos sofrido (mais/menos)",
       "unidade": "%",
@@ -7160,6 +7178,12 @@
       "unidade": "%",
       "combate": true,
       "efeito": "Causticar/Fragilizar/Exaurir que você inflige (`condicoes-poe.fatorNaoDano`, lote 33)"
+    },
+    "mais_dano_acerto": {
+      "nome": "Mais Dano só com Acertos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o fator do acerto da gema, fora das afecções e do degenerativo (`acoes.contaDoDano`, lote G18 — o Fogo Justo)"
     },
     "mais_dano_proximidade": {
       "nome": "Mais Dano Corpo a Corpo pela proximidade",

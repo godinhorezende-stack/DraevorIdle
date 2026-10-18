@@ -173,9 +173,10 @@ function espinhos(estado, hunt, personagem, m, eventos) {
  * O mob `m` levou `dano` do `tipo`: buffs que empilham e o reflexo. `corpoACorpo`: o acerto foi um ataque corpo a corpo seu (os espinhos).
  * (PoE: o reflexo também passa pelo "Evita X% do dano refletido" — `monstros-no-jogador.fatorDoReflexo`; fora do PoE, 1.)
  */
-export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, { corpoACorpo = false } = {}) {
+export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, { corpoACorpo = false, doTotem = false } = {}) {
   if (!m || !(dano > 0)) return;
-  if (corpoACorpo && m.espinhos && ehRaro(m) && estado.hp > 0 && itensPoeLigado()) espinhos(estado, hunt, personagem, m, eventos);
+  // (lote G20a: `doTotem` — o acerto do totem: os espinhos e o reflexo iriam nele, não em você; o jogo ainda não fere o totem por eles)
+  if (corpoACorpo && !doTotem && m.espinhos && ehRaro(m) && estado.hp > 0 && itensPoeLigado()) espinhos(estado, hunt, personagem, m, eventos);
   if (!m.mods?.length) return;
   const agora = relogio(hunt);
   for (const mec of Raridade.mecanicasDe(m)) {
@@ -184,7 +185,7 @@ export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, 
     if (mec.efeito === 'carga') m.acertadoEm = agora;
     else if (mec.efeito === 'buff') {
       Buffs.por(m, { chave: `${mec.modificador}:dano`, ate: agora + (mec.duracaoMs ?? 5000), acumulaAte: mec.acumulaAte, danoPct: mec.danoPct ?? 0, resist: mec.resist }, agora);
-    } else if (mec.efeito === 'refletir' && (mec.tipos ?? []).includes(tipo) && estado.hp > 0) {
+    } else if (mec.efeito === 'refletir' && !doTotem && (mec.tipos ?? []).includes(tipo) && estado.hp > 0) {
       const fator = NoJogador.fatorDoReflexo(Ficha.combate(estado), tipo);
       if (fator > 0) ferirJogador(estado, hunt, personagem, m, ((dano * (mec.pct ?? 10)) / 100) * fator, tipo, eventos, 'Reflexo');
     }

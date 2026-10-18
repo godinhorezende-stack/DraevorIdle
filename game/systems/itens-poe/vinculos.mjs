@@ -28,10 +28,13 @@ export function daGema(linhas = []) {
   const ef = {};
   const naoFeitas = [];
   let duracaoMs = 8000;
+  // (17/10, lote G18b: a qualidade — "+1.5 segundos à duração base" — soma na duração base)
+  let extraMs = 0;
   for (const l0 of linhas) {
     const l = String(l0);
     let m;
     if ((m = /^Duração base é de (\d+(?:[.,]\d+)?) segundos?/i.exec(l))) duracaoMs = Math.round(num(m[1]) * 1000);
+    else if ((m = /^\+(\d+(?:[.,]\d+)?) segundos? à duração base$/i.exec(l))) extraMs += Math.round(num(m[1]) * 1000);
     else if ((m = /^Alvo Vinculado ganha (\d+(?:[.,]\d+)?) a (\d+(?:[.,]\d+)?) de Dano de Fogo Adicional/i.exec(l))) { ef.fogoMin = num(m[1]); ef.fogoMax = num(m[2]); }
     else if ((m = /^Alvo Vinculado ganha Dano de Fogo Adicional igual a (\d+(?:[.,]\d+)?) ?% da sua Vida Máxima/i.exec(l))) ef.fogoVidaPct = num(m[1]);
     else if ((m = /^Alvo do Vínculo Recupera (\d+(?:[.,]\d+)?) de Vida ao Bloquear/i.exec(l))) ef.vidaAoBloquear = num(m[1]);
@@ -45,7 +48,7 @@ export function daGema(linhas = []) {
     else if (/^Vínculos se quebram se o alvo deixar o alcance/i.test(l)) { /* a regra geral (`tique`) */ }
     else naoFeitas.push(l);
   }
-  return { duracaoMs, efeitos: ef, naoFeitas };
+  return { duracaoMs: duracaoMs + extraMs, efeitos: ef, naoFeitas };
 }
 
 /** Os Vínculos que você mantém agora. */

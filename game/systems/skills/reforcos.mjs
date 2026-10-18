@@ -114,7 +114,7 @@ export function amaldicoar(bicho, id, efeitosPoe, { agora = Date.now(), dur = 60
   const efeitos = [];
   for (const e of efeitosPoe ?? []) {
     if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct, tipos: e.tipos });
-    if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct });
+    if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct, ...(e.pctRaro != null ? { pctRaro: e.pctRaro } : {}) });
   }
   if (!efeitos.length) return false;
   const maldicoes = (bicho.maldicoes ??= {});
@@ -185,10 +185,12 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       let dur = 0;
       for (const e of def.efeitos ?? []) {
         if (e.efeito === 'marcaVulneravel') efeitos.push({ tipo: 'vulneravel', pct: e.pct * fator, tipos: e.tipos });
-        if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator });
+        if (e.efeito === 'marcaEnfraquece') efeitos.push({ tipo: 'enfraquecido', pct: e.pct * fator, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * fator } : {}) });
         if (/^marca/.test(e.efeito)) dur = Math.max(dur, e.durMarca ?? 0);
       }
-      if (!efeitos.length && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
+      // (17/10, lote G6: + o que a Marca dá aos acertos CONTRA o amaldiçoado e ao abate dele — `maldicaoContra`, de `GemasPoe.buffNoNivel`)
+      const contra = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoContra');
+      if (!efeitos.length && !contra && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
       const regras = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoRegras') ?? {};
       // À PROVA DE MALDIÇÕES (o "Infeitiçável" do PoE): o Feitiço não pega — a Marca, sim; e o "Seus Feitiços podem afetar Inimigos a Prova
       // de Maldições" (a Ocultista) passa.
@@ -214,7 +216,8 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
         ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
         // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
-        ...(regras.daMarca ? { daMarca: regras.daMarca } : {}) };
+        ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),
+        ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
       amaldicoou = true;
       if (!emAura) naoAura = true;
       // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
@@ -228,8 +231,14 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
     // (13/10, a Pândega: a marca de uma AURA — o Orgulho — nos inimigos × (1 + "Efeito de Auras Não-Maldição nos Inimigos"), a foto do tique.)
     const nosInimigos = def.tipo === 'poe-aura' ? 1 + (Number(hunt?.poeAuraNosInimigosPct) || 0) / 100 : 1;
     for (const e of def.efeitos ?? []) {
-      if (e.efeito === 'marcaVulneravel') (bicho.marcas ??= {}).vulneravel = { ate: agora + e.durMarca, pct: e.pct * fator * nosInimigos, tipos: e.tipos };
-      if (e.efeito === 'marcaEnfraquece') (bicho.marcas ??= {}).enfraquecido = { ate: agora + e.durMarca, pct: e.pct * fator * nosInimigos };
+      if (e.efeito === 'marcaVulneravel') {
+        // (17/10, lote G18b: o Orgulho sobe do mínimo ao máximo enquanto o inimigo fica na aura — `desde`: a primeira marca sem interrupção)
+        const ant = bicho.marcas?.vulneravel;
+        const desde = ant && ant.ate > agora && ant.desde != null ? ant.desde : agora;
+        const pct = e.pctMax != null && e.rampaMs > 0 ? Math.min(e.pctMax, e.pct + ((e.pctMax - e.pct) * (agora - desde)) / e.rampaMs) : e.pct;
+        (bicho.marcas ??= {}).vulneravel = { ate: agora + e.durMarca, pct: pct * fator * nosInimigos, tipos: e.tipos, desde };
+      }
+      if (e.efeito === 'marcaEnfraquece') (bicho.marcas ??= {}).enfraquecido = { ate: agora + e.durMarca, pct: e.pct * fator * nosInimigos, ...(e.pctRaro != null ? { pctRaro: e.pctRaro * fator * nosInimigos } : {}) };
     }
   }
   // (13/10) `semMaldicaoNaoAura`: amaldiçoou um inimigo sem maldição com uma que não é aura ("Inimigos Não Amaldiçoados que você inflija
@@ -251,10 +260,13 @@ export function vulnerabilidade(bicho, tipo, agora) {
 
 /** A força do bicho (o `forca` da Arena) × a marca de enfraquecido (e as maldições que enfraquecem). */
 export function forcaDoBicho(bicho, agora) {
+  // (17/10, lote G18b: o Enfraquecer no Raro, no Único e no chefe — o valor menor, `pctRaro`, como no PoB)
+  const raro = /raro|unico/.test(bicho?.raridade ?? bicho?.raridadePoe ?? '') || !!bicho?.boss || !!bicho?.chefe;
+  const pctDe = (x) => (raro && x.pctRaro != null ? x.pctRaro : x.pct);
   const m = bicho?.marcas?.enfraquecido;
-  let f = m && m.ate > agora ? 1 - m.pct / 100 : 1;
+  let f = m && m.ate > agora ? 1 - pctDe(m) / 100 : 1;
   const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
-  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (e.pct * fatorDoExpirou(c, agora) * profano) / 100);
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (pctDe(e) * fatorDoExpirou(c, agora) * profano) / 100);
   // × o buff de dano das mecânicas do mob (Enfurecido, Vingativo — `mobs/buffs.mjs`).
   return (bicho?.forca ?? 1) * f * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
 }
