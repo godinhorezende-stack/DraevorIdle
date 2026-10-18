@@ -173,12 +173,14 @@ export function treinoDeOutraPericia(estado, hunt, tags) {
 
 /**
  * Marca o bicho atingido com as auras ligadas (vulnerável, enfraquecido) — elas valem por `durMarca`; a MALDIÇÃO do PoE amaldiçoa (acima).
- * Devolve `{ amaldicoouSemMaldicao }`: o monstro não tinha maldição e passou a ter (o evento "ao Amaldiçoar um Inimigo sem Maldições").
+ * Devolve `{ amaldicoouSemMaldicao }`: o monstro não tinha maldição e passou a ter (o evento "ao Amaldiçoar um Inimigo sem Maldições"); `espalhou`
+ * (só quando houve): os vizinhos que a área da maldição amaldiçoou (lote 83), com os mesmos dois avisos de cada um.
  */
 export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
   const tinha = amaldicoado(bicho, agora);
   let amaldicoou = false;
   let naoAura = false;
+  const vizinhos = new Map();
   for (const { id, def, fator, lancado, emAura } of ativos(hunt, agora)) {
     if (ehMaldicao(def)) {
       const efeitos = [];
@@ -192,39 +194,63 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       const contra = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoContra');
       if (!efeitos.length && !contra && !(def.efeitos ?? []).some((e) => e.efeito === 'maldicaoRegras')) continue;
       const regras = (def.efeitos ?? []).find((e) => e.efeito === 'maldicaoRegras') ?? {};
-      // À PROVA DE MALDIÇÕES (o "Infeitiçável" do PoE): o Feitiço não pega — a Marca, sim; e o "Seus Feitiços podem afetar Inimigos a Prova
-      // de Maldições" (a Ocultista) passa.
-      if (bicho.aProvaDeMaldicoes && regras.feitico && !regras.afetaAProva) continue;
-      const maldicoes = (bicho.maldicoes ??= {});
-      for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) delete maldicoes[k];
-      // já amaldiçoado por ESTA: a maldição corre a duração dela (não renova a cada acerto — o "expirou X%" e a duração valem)
-      if (maldicoes[id]) continue;
-      // o LIMITE: a nova tira a lançada há mais tempo DO MESMO GRUPO (as Marcas têm o limite delas, à parte) — se ela mesma foi lançada
-      // depois; senão espera (duas maldições ligadas com limite 1: vale a lançada por último, sem trocar a cada acerto)
-      const limite = Math.max(1, regras.limite ?? 1);
-      const marca = !!regras.marca;
-      const doGrupo = () => Object.entries(maldicoes).filter(([, m]) => !!m.marca === marca).sort((a, b) => (a[1].lancada ?? 0) - (b[1].lancada ?? 0));
-      let cabe = true;
-      while (doGrupo().length >= limite) {
-        const [velha, m] = doGrupo()[0];
-        if ((m.lancada ?? 0) >= lancado) { cabe = false; break; }
-        delete maldicoes[velha];
+      const amaldicoarCom = (bicho) => {
+        // À PROVA DE MALDIÇÕES (o "Infeitiçável" do PoE): o Feitiço não pega — a Marca, sim; e o "Seus Feitiços podem afetar Inimigos a Prova
+        // de Maldições" (a Ocultista) passa.
+        if (bicho.aProvaDeMaldicoes && regras.feitico && !regras.afetaAProva) return false;
+        const maldicoes = (bicho.maldicoes ??= {});
+        for (const [k, m] of Object.entries(maldicoes)) if (!(m?.ate > agora)) delete maldicoes[k];
+        // já amaldiçoado por ESTA: a maldição corre a duração dela (não renova a cada acerto — o "expirou X%" e a duração valem)
+        if (maldicoes[id]) return false;
+        // o LIMITE: a nova tira a lançada há mais tempo DO MESMO GRUPO (as Marcas têm o limite delas, à parte) — se ela mesma foi lançada
+        // depois; senão espera (duas maldições ligadas com limite 1: vale a lançada por último, sem trocar a cada acerto)
+        const limite = Math.max(1, regras.limite ?? 1);
+        const marca = !!regras.marca;
+        const doGrupo = () => Object.entries(maldicoes).filter(([, m]) => !!m.marca === marca).sort((a, b) => (a[1].lancada ?? 0) - (b[1].lancada ?? 0));
+        let cabe = true;
+        while (doGrupo().length >= limite) {
+          const [velha, m] = doGrupo()[0];
+          if ((m.lancada ?? 0) >= lancado) { cabe = false; break; }
+          delete maldicoes[velha];
+        }
+        if (!cabe) return false;
+        dur ||= 6000;
+        // (lote 52: `aura` — a posta pela aura, a Blasfêmia; a Desgraça das Bruxas só conta o Feitiço não-aura)
+        maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
+          ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
+          // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
+          ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),
+          ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
+        // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
+        if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
+          const af = afDaMaldicaoNoJogador(efeitos);
+          // (lote 30: "Debuffs em você expiram X% mais rápido" — o fator do personagem, carimbado no tique: `condicoes-poe.tique`)
+          if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + Math.round(dur * (hunt.poeFatorDosDebuffs ?? 1)), nome: regras.nome ?? 'Maldição refletida', af };
+        }
+        return true;
+      };
+      // (lote 83) a ÁREA da maldição (o PoE: o Feitiço amaldiçoa todos no raio; a aura de maldição — a Blasfêmia —, os inimigos em volta de você):
+      // pega também nos vizinhos a até o raio (`acoes.efeitosDaMaldicao` → `regras.raioCasas`: os metros da gema ÷ 2 × √ da "Área de Efeito
+      // aumentada" — a geral, a das Maldições e a da Blasfêmia —; a fração, a chance de uma casa a mais), esteja o atingido amaldiçoado, à prova
+      // ou no limite ou não; na aura, o atingido só se estiver no raio em volta de você. A Marca é de um alvo só.
+      const casas = !regras.marca ? Number(regras.raioCasas) || 0 : 0;
+      const centro = casas > 0 ? (emAura && hunt?.pos ? { x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0 } : { x: bicho.x, y: bicho.y, z: bicho.z ?? hunt?.z ?? 0 }) : null;
+      const raio = centro ? Math.trunc(casas) + (Math.random() < casas % 1 ? 1 : 0) : 0;
+      const noRaio = (m) => (m.z ?? hunt?.z ?? 0) === centro.z && Math.max(Math.abs(m.x - centro.x), Math.abs(m.y - centro.y)) <= raio;
+      if ((!centro || !emAura || noRaio(bicho)) && amaldicoarCom(bicho)) {
+        amaldicoou = true;
+        if (!emAura) naoAura = true;
       }
-      if (!cabe) continue;
-      dur ||= 6000;
-      // (lote 52: `aura` — a posta pela aura, a Blasfêmia; a Desgraça das Bruxas só conta o Feitiço não-aura)
-      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
-        ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
-        // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
-        ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),
-        ...(contra ? { contra: { golpe: contra.golpe ?? {}, morte: contra.morte ?? {}, atordoar: contra.atordoar ?? {}, fator } } : {}) };
-      amaldicoou = true;
-      if (!emAura) naoAura = true;
-      // "100% de chance de Refletir Feitiços": o Feitiço posto nele volta para VOCÊ (os mesmos efeitos, pela duração dele — `afDaMaldicaoNoJogador`).
-      if (regras.feitico && bicho.refleteFeiticos > 0 && Math.random() * 100 < bicho.refleteFeiticos) {
-        const af = afDaMaldicaoNoJogador(efeitos);
-        // (lote 30: "Debuffs em você expiram X% mais rápido" — o fator do personagem, carimbado no tique: `condicoes-poe.tique`)
-        if (Object.keys(af).length) (hunt.maldicoesNoJogador ??= {})[`refletida:${id}`] = { ate: agora + Math.round(dur * (hunt.poeFatorDosDebuffs ?? 1)), nome: regras.nome ?? 'Maldição refletida', af };
+      if (centro) {
+        for (const m of hunt?.monstros ?? []) {
+          if (m === bicho || !(m.hp > 0) || m.dummy || !noRaio(m)) continue;
+          // (o "tinha maldição" de cada vizinho é o de antes de TODAS as maldições deste acerto, como o do atingido)
+          if (!vizinhos.has(m)) vizinhos.set(m, { tinha: amaldicoado(m, agora), pegou: false, naoAura: false });
+          if (!amaldicoarCom(m)) continue;
+          const v = vizinhos.get(m);
+          v.pegou = true;
+          if (!emAura) v.naoAura = true;
+        }
       }
       continue;
     }
@@ -245,7 +271,9 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
   // Maldições não Auras são Cegados" — a Maestria de Maldições).
   // (lote 32: uma maldição pegou agora — "em inimigos que você Amaldiçoar", as Forças Profanadas: o gancho `aoAmaldicoar`)
   if (amaldicoou) aoAmaldicoar?.(hunt, bicho, agora);
-  return { amaldicoouSemMaldicao: amaldicoou && !tinha, semMaldicaoNaoAura: naoAura && !tinha };
+  const espalhou = [...vizinhos].filter(([, v]) => v.pegou).map(([m, v]) => ({ bicho: m, amaldicoouSemMaldicao: !v.tinha, semMaldicaoNaoAura: v.naoAura && !v.tinha }));
+  for (const x of espalhou) aoAmaldicoar?.(hunt, x.bicho, agora);
+  return { amaldicoouSemMaldicao: amaldicoou && !tinha, semMaldicaoNaoAura: naoAura && !tinha, ...(espalhou.length ? { espalhou } : {}) };
 }
 
 /** Quanto a marca de vulnerável (e as maldições) aumentam o dano do `tipo` neste bicho (1 = nada). */

@@ -1481,6 +1481,18 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^Efeito em Área de Habilidades de Maldição aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a maldição pega no acerto e também nos inimigos a até o raio dela — em volta do atingido (o Feitiço) ou de você (a aura de maldição, a Blasfêmia); a Marca é de um alvo só (`skills/reforcos.marcar`)",
+      "_nova": true,
+      "_lote83": "18/10 — lote 83 (dono: \"Área como no PoE\" — Palavras Proibidas, notável do Megalomaníaco)"
+    },
+    {
       "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
