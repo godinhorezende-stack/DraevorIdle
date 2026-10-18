@@ -21,6 +21,8 @@ const TAG_DO_TAMANHO = { Large: 'expansion_jewel_large', Medium: 'expansion_jewe
 const MARCACAO = 'Habilidades Passivas Adicionadas concedem #';
 
 export const tamanhoDaBase = (base) => TAMANHOS[base] ?? null;
+/** (lote 79) A Ramificadora ÚNICA (a Vozes, o Megalomaníaco, as Pequenas da pedra fundamental): o tamanho, sem encantamento — as linhas do único montam os nós. */
+export const ramificadoraDoUnico = (base) => (TAMANHOS[base] ? { tamanho: TAMANHOS[base], encantamento: null, tag: null, unico: true } : null);
 const cacheDosMods = new WeakMap();
 const modsPorId = (dados) => {
   let m = cacheDosMods.get(dados);

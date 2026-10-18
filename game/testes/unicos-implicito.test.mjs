@@ -55,6 +55,10 @@ test('nenhum único com implícito próprio leva o da base; o único sem implíc
           assert.ok(g.implicitos.length >= 1, u.slug);
           assert.ok(g.implicitos.every((i) => i.origem === s.origem && !daBase.has(i.modelo)), u.slug);
         } else assert.deepEqual(g.implicitos, [], u.slug);
+      } else if (/_Cluster_Jewel$/.test(base.id)) {
+        // (dono, 18/10, lote 79: "Ajustar o teste") a Ramificadora ÚNICA: as linhas dela substituem as da base ("Adiciona N", os encaixes, o
+        // encantamento), como no PoE e no PoB — sai sem implícito
+        assert.deepEqual(g.implicitos, [], u.slug);
       } else {
         sem++;
         assert.equal(g.implicitos.length, base.implicitos.length, u.slug);

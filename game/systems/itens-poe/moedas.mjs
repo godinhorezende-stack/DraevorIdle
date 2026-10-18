@@ -147,8 +147,16 @@ function rerolarValores(p, m, rng, tier = null) {
   Object.assign(m, { modelo: novo.modelo, valores: novo.valores, texto: novo.texto, ...(tier ? { tier: tier.tier, nome: tier.nome, ilvl: tier.ilvl } : {}) });
   return true;
 }
-/** O cadastro do único da peça (os mods com as faixas). */
-const cadastroDoUnico = (p) => CAT()?.classes?.[p.classe]?.unicos?.find((u) => u.slug === p.unico) ?? null;
+/**
+ * O cadastro do único da peça (os mods com as faixas). (lote 79) Entre as VARIANTES de mesmo slug (as 4 da Vozes, as da Grande Espectro…), a
+ * que mais casa com as linhas da peça — o modelo e o valor dentro da faixa —, e não sempre a primeira.
+ */
+function cadastroDoUnico(p) {
+  const lista = (CAT()?.classes?.[p.classe]?.unicos ?? []).filter((u) => u.slug === p.unico);
+  if (lista.length < 2) return lista[0] ?? null;
+  const casa = (u) => (p.modificadores ?? []).filter((m) => u.modificadores.some((x) => x.modelo === m.modelo && (x.faixas ?? []).every((f, i) => !(Number(m.valores?.[i]) < f[0] || Number(m.valores?.[i]) > f[1])))).length;
+  return lista.reduce((melhor, u) => (casa(u) > casa(melhor) ? u : melhor), lista[0]);
+}
 /** A qualidade a mais (Amolador, Sucata, Bolha): +5 na normal, +2 na mágica, +1 na rara/única, até 20%. */
 function subirQualidade(p) {
   const q = Number(p.qualidade) || 0;
@@ -163,9 +171,12 @@ function virarUnico(p, rng, mesmaClasse = false) {
   if (!unicos.length) return null;
   const u = sortear(unicos, rng);
   const base = mesmaClasse ? CAT().classes[p.classe].bases.find((b) => b.nome === u.base) : null;
-  const gerada = Gerar.gerarPeca({ catalogo: CAT(), regras: R(), base: base?.id ?? p.base, raridade: 'unico', ilvl: p.ilvl, rng, unico: u.slug });
+  const gerada = Gerar.gerarPeca({ catalogo: CAT(), regras: R(), base: base?.id ?? p.base, raridade: 'unico', ilvl: p.ilvl, rng, unico: u });
   if (gerada.erro) return null;
   Object.assign(p, { base: gerada.base, nome: gerada.nome, unico: gerada.unico, raridade: 'unico', atributos: gerada.atributos, implicitos: gerada.implicitos, prefixos: [], sufixos: [], modificadores: gerada.modificadores });
+  // (lote 79) a Ramificadora que vira única deixa o encantamento de antes: fica a da única (ou nenhuma)
+  if (gerada.ramificadora) p.ramificadora = gerada.ramificadora;
+  else delete p.ramificadora;
   return gerada.nome;
 }
 
@@ -228,7 +239,7 @@ const divino = ({ p, rng }) => {
     if (!u) return erro('O cadastro deste único não está no catálogo.');
     // (A linha que a regra do único troca — o "[One to three…]" do Nebulis — não volta; a peça de antes da regra fica com a dela. E a
     // magnitude nova do Nebulis — 60–120% — vale nos implícitos.)
-    p.modificadores = Gerar.modificadoresDoUnico(u, rng, new Set((p.modificadores ?? []).map((m) => m.modelo)));
+    p.modificadores = Gerar.modificadoresDoUnico(u, rng, Object.assign(new Set((p.modificadores ?? []).map((m) => m.modelo)), { mods: p.modificadores ?? [] }));
     Object.assign(p, Gerar.comMagnitudeNosImplicitos(p));
     return { ok: true, notice: `${p.nome}: os valores foram sorteados de novo.` };
   }

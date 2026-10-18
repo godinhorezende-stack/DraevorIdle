@@ -36,6 +36,43 @@ const NOS = /^Adiciona \{0\} Habilidades Passivas$/;
 const ENCAIXES = /^\{0\} das Habilidades Passivas adicionadas são Encaixes de Joia$/;
 const TAMBEM = /^(?:Pequenas )?Habilidades Passivas [Aa]dicionadas também concedem: (.+)$/;
 const EFEITO = /^Pequenas Habilidades Passivas adicionadas possuem Efeito aumentado em \{0\}%$/;
+// (lote 79) as linhas das RAMIFICADORAS ÚNICAS (o PoB: `clusterJewelSocketCountOverride`, `clusterJewelNothingnessCount`,
+// `clusterJewelSmallsAreNothingness`, `clusterJewelKeystone`) — o português do poedb, com o "conedem" dele
+const ENCAIXES_DO_UNICO = /^Adiciona \{0\} Habilidades Passivas de Encaixe de Joia$/;
+const NADA_DO_UNICO = /^Adiciona \{0\} Pequenas Habilidades Passivas que não concedem nada$/;
+const PEQUENAS_SEM_NADA = /^Pequenas Habilidades Passivas Adicionadas não cone?dem Nada$/i;
+const ADICIONA = /^Adiciona (.+)$/;
+const LEMBRETE = /^\(.*\)$/;
+/** A pequena que não concede nada (o "Nothingness" do PoB, com o ícone vazio). */
+const NADA = Object.freeze({ id: null, nome: 'Nada', en: 'Nothingness', linhas: [], icone: 'Art/2DArt/SkillIcons/passives/MasteryBlank.png' });
+/** A única Pequena → a pedra fundamental dela (o `en` de `ramificadoras.json`: o português da linha "Adiciona Mensageiro" não é o nome da pedra). */
+const PEDRA_DO_UNICO = Object.freeze({
+  One_With_Nothing: 'Hollow Palm Technique', Kitavas_Teachings: 'Disciple of Kitava', The_Interrogation: 'Secrets of Suffering', Calamitous_Visions: 'Lone Messenger',
+  Natural_Affinity: "Nature's Patience", The_Siege: 'Kineticism', The_Front_Line: "Veteran's Awareness",
+});
+/** As linhas da pedra fundamental (uma por linha: o poedb junta com "\n"). */
+const linhasDaPedra = (pedra) => (pedra?.linhas ?? []).flatMap((l) => String(l).split('\n')).filter(Boolean);
+/**
+ * (lote 79) A leitura da Ramificadora ÚNICA: a pedra fundamental (a Pequena — 1 nó, como o PoB), ou os encaixes, os notáveis e as pequenas que
+ * não concedem nada (a Vozes: 3 encaixes + N; o Megalomaníaco: 4 nós com os 3 notáveis sorteados).
+ */
+function leituraDoUnico(dados, poe) {
+  const T = dados?.tamanhos?.[poe.ramificadora.tamanho];
+  if (!T) return null;
+  const mods = poe.modificadores ?? [];
+  const valor = (re) => Number(mods.find((m) => re.test(m.modelo ?? ''))?.valores?.[0]) || 0;
+  const base = { tamanho: poe.ramificadora.tamanho, molde: T, encantamento: NADA, tambem: [], efeitoPct: 0 };
+  const en = PEDRA_DO_UNICO[poe.unico];
+  if (en) {
+    const pedra = Object.values(dados.pedras ?? {}).find((x) => x.en === en);
+    if (!pedra) return null;
+    const linha = mods.find((m) => ADICIONA.test(m.texto ?? '') && !/\{\d\}/.test(m.modelo ?? ''));
+    return { ...base, nos: 1, encaixes: 0, notaveis: [], pedra: { ...pedra, nome: ADICIONA.exec(linha?.texto ?? '')?.[1] ?? pedra.en } };
+  }
+  const encaixes = valor(ENCAIXES_DO_UNICO);
+  const notaveis = mods.filter((m) => m.notavel && dados.notaveis[m.notavel]).map((m) => m.notavel);
+  return { ...base, nos: valor(NOS) || encaixes + notaveis.length + valor(NADA_DO_UNICO), encaixes, notaveis, nada: true };
+}
 const escrever = (modelo, valores) => String(modelo).replace(/\{(\d+)\}/g, (_, i) => String(valores?.[Number(i)] ?? '?'));
 
 /**
@@ -43,6 +80,7 @@ const escrever = (modelo, valores) => String(modelo).replace(/\{(\d+)\}/g, (_, i
  * `dados.notaveis`), as linhas a mais das pequenas e o efeito delas (%). null se não é uma Ramificadora gerada.
  */
 export function leituraDaJoia(dados, poe) {
+  if (poe?.ramificadora?.unico) return leituraDoUnico(dados, poe);
   const enc = encantamentoDa(dados, poe);
   const T = dados?.tamanhos?.[poe?.ramificadora?.tamanho];
   if (!enc || !T) return null;
@@ -92,6 +130,13 @@ export function montar({ dados, arvore, encaixe, poe, id = ID_BASE, joiaNoEncaix
   const idDoNo = id + (T.indice << 4);
   const proxy = arvore.porId.get(String(exp.proxy));
   if (!proxy?.proxy) return null;
+  // (lote 79) a PEDRA FUNDAMENTAL da única Pequena: 1 nó, no centro do grupo do proxy (a órbita 0), ligado ao encaixe — o PoB
+  if (j.pedra) {
+    const centro = { x: Math.round(proxy.proxy.grupo.x * 100) / 100, y: Math.round(proxy.proxy.grupo.y * 100) / 100 };
+    const no = noComLinhas({ id: String(idDoNo), nome: j.pedra.nome, nomeEn: j.pedra.en, tipo: 'keystone', ...centro, ...(j.pedra.icone ? { icone: j.pedra.icone } : {}), ramificadora: { encaixe: encaixe.id, indice: 0, tamanho: j.tamanho } }, linhasDaPedra(j.pedra));
+    no.conexoes = [encaixe.id];
+    return { encaixe: encaixe.id, entrada: no.id, nos: [no] };
+  }
   const indices = new Map();
   // 1º os ENCAIXES (o encaixe interno do grupo do proxy, pelo índice dele)
   const encaixeDoGrupo = (indice) => proxy.proxy.encaixes.find((e) => e.indice === indice)?.id ?? null;
@@ -188,7 +233,8 @@ const ENCANTAMENTO = /^Habilidades Passivas Adicionadas concedem /;
  * concedem", o estado da linha na pequena; o "1 das … é <Notável>", o pior das linhas do notável. A nota vai com o estado (o porquê no balão).
  */
 export function estadosDaPeca(dados, poe, estados = [], notas = []) {
-  if (!leituraDaJoia(dados, poe)) return null;
+  const leitura = leituraDaJoia(dados, poe);
+  if (!leitura) return null;
   const linhas = [...(poe.implicitos ?? []), ...(poe.prefixos ?? []), ...(poe.sufixos ?? []), ...(poe.modificadores ?? [])];
   if (linhas.length !== estados.length) return null;
   const novos = [...estados];
@@ -196,7 +242,10 @@ export function estadosDaPeca(dados, poe, estados = [], notas = []) {
   linhas.forEach((m, i) => {
     const modelo = m.modelo ?? '';
     let t = null;
-    if (NOS.test(modelo) || ENCAIXES.test(modelo) || EFEITO.test(modelo)) t = { estado: 'equivalente', nota: null };
+    if ([NOS, ENCAIXES, EFEITO, ENCAIXES_DO_UNICO, NADA_DO_UNICO, PEQUENAS_SEM_NADA].some((re) => re.test(modelo))) t = { estado: 'equivalente', nota: null };
+    // (lote 79) o lembrete do PoE ("(Habilidades Passivas Adicionadas nunca são consideradas…)") e a pedra fundamental da única
+    else if (LEMBRETE.test(m.texto ?? modelo)) t = { estado: 'lembrete', nota: null };
+    else if (leitura.pedra && ADICIONA.test(m.texto ?? '')) t = pior(linhasDaPedra(leitura.pedra).map(traduzirLinha));
     else if (m.encantamento) t = pior([traduzirLinha(String(m.texto ?? modelo).replace(ENCANTAMENTO, ''))]);
     else if (m.notavel && dados.notaveis[m.notavel]) t = pior(dados.notaveis[m.notavel].linhas.map(traduzirLinha));
     else if (TAMBEM.test(modelo)) t = pior([traduzirLinha(escrever(TAMBEM.exec(modelo)[1], m.valores))]);
