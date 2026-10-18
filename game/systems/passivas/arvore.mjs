@@ -596,6 +596,19 @@ export function joiasAtivas(estado) {
   return lista;
 }
 
+/**
+ * (lote 77) As joias cujo RAIO vale: as dos encaixes da árvore. O encaixe que uma Ramificadora cria não tem raio — no PoB o nó dele é novo, sem
+ * `nodesInRadius`, e a joia de raio ali não alcança nada (`CalcSetup`: `nodes = node.nodesInRadius and … or { }`) — então a joia nele vale só
+ * pelas linhas dela: sem o raio, sem os nós liberados pelo raio, sem a conquista da Atemporal e sem o Raio Grande do Chieftain (o Talento Puro e
+ * a Fuga Impossível, que não usam o raio do encaixe, valem).
+ */
+export function joiasComRaio(estado) {
+  const ativas = joiasAtivas(estado);
+  if (!ativas.length) return ativas;
+  const { internos } = grafoDe(estado);
+  return internos.size ? ativas.filter((j) => !internos.has(j.no.id)) : ativas;
+}
+
 // (lote 28) as joias da árvore para as condições do PoE ("por Joia Abissal afetando você").
 definirLeitorDeJoias((estado) => joiasAtivas(estado).map((j) => j.peca));
 
@@ -753,6 +766,8 @@ function conectaAoInicio(estado, meus, classe) {
 function raiosDasJoias(estado, alocados) {
   const ativas = joiasAtivas(estado);
   if (!ativas.length) return null;
+  // (lote 77) a joia do encaixe que a Ramificadora cria não tem raio (`joiasComRaio`) — mas o que não é raio dela vale (o Talento Puro)
+  const comRaio = new Set(joiasComRaio(estado).map((j) => j.no.id));
   // (o Chieftain: as joias NÃO ÚNICAS ganham o Raio Grande)
   let transforma = 0;
   let forca = 0;
@@ -770,11 +785,12 @@ function raiosDasJoias(estado, alocados) {
   for (const { no: s, peca } of ativas) {
     const af = peca.poe?.af ?? {};
     const raios = [];
-    const r = raioDaJoia(peca);
+    const temRaio = comRaio.has(s.id);
+    const r = temRaio ? raioDaJoia(peca) : null;
     // (lote 48) a Atemporal: as passivas do raio são Conquistadas (`conquista` — `itens-poe/atemporais.mjs`)
     const conquista = CONQUISTA?.daPeca(peca) ?? null;
     if (r) raios.push({ r, af, chieftain: null, ...(conquista ? { conquista } : {}) });
-    if ((transforma > 0 || forca > 0) && peca.poe?.raridade !== 'unico') raios.push({ r: { min: 0, max: RAIOS_DE_JOIA.grande }, af: {}, chieftain: { transforma: transforma > 0, forca } });
+    if (temRaio && (transforma > 0 || forca > 0) && peca.poe?.raridade !== 'unico') raios.push({ r: { min: 0, max: RAIOS_DE_JOIA.grande }, af: {}, chieftain: { transforma: transforma > 0, forca } });
     for (const x of raios) {
       const nos = passivasNoRaio(s, x.r);
       for (const no of nos) if (meus.has(no.id)) (porNo.get(no.id) ?? porNo.set(no.id, []).get(no.id)).push(x);
@@ -861,10 +877,12 @@ function efeitosNoRaio(no, efs, joias) {
  */
 export function liberadosPorJoias(estado, semEncaixes = null) {
   const lista = new Map();
+  // (lote 77) o raio do ENCAIXE não vale no que a Ramificadora cria (`joiasComRaio`); o da Fuga Impossível é em volta da pedra fundamental — vale
+  const comRaio = new Set(joiasComRaio(estado).map((j) => j.no.id));
   for (const { no: s, peca } of joiasAtivas(estado)) {
     if (semEncaixes?.has(s.id)) continue;
     const r = raioDaJoia(peca);
-    if (r && v0(peca.poe?.af, 'raio_aloca_sem_conexao') > 0) for (const n of passivasNoRaio(s, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+    if (r && comRaio.has(s.id) && v0(peca.poe?.af, 'raio_aloca_sem_conexao') > 0) for (const n of passivasNoRaio(s, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
     // (lote 56, a Fuga Impossível: "Habilidades passivas ao alcance de <Pedra Fundamental> podem ser atribuídas sem estarem conectadas à sua
     // árvore") — o raio da joia em volta da PEDRA FUNDAMENTAL sorteada, não do encaixe (`fuga_impossivel:<pedra>`)
     for (const [k, v] of Object.entries(peca.poe?.af ?? {})) {
@@ -999,9 +1017,10 @@ export function vista(estado, emCacada = false) {
     // (lote 29) os nós que as joias deixam alocar sem ligação → o encaixe de cada um (a tela: o caminho e o "sem este nó").
     ...(passivas.joias ? (() => { const l = liberadosPorJoias(estado); return l.size ? { liberados: Object.fromEntries(l) } : {}; })() : {}),
     // (lote 29) o raio de cada joia encaixada (`{ min, max }`: o anel do Fio de Esperança tem o de dentro) — a tela desenha.
-    ...(passivas.joias ? (() => { const r = Object.fromEntries(joiasAtivas(estado).map((j) => [j.no.id, raioDaJoia(j.peca)]).filter(([, x]) => x)); return Object.keys(r).length ? { raios: r } : {}; })() : {}),
+    ...(passivas.joias ? (() => { const r = Object.fromEntries(joiasComRaio(estado).map((j) => [j.no.id, raioDaJoia(j.peca)]).filter(([, x]) => x)); return Object.keys(r).length ? { raios: r } : {}; })() : {}),
     // (lote 64) os nós que as Ramificadoras encaixadas criam (no formato da árvore da tela) e a entrada de cada encaixe da borda
-    ...(() => { const g = grafoDe(estado); return g.extras.size ? { ramificadoras: { nos: [...g.extras.values()].map((n) => { const c = noParaCliente(n); delete c.soDaRamificadora; return c; }), encaixes: Object.fromEntries([...g.porEncaixe.keys()].map((id) => [id, g.porId.get(id)?.conexoes ?? []])) } } : {}; })(),
+    // (lote 77: o encaixe interno vai como encaixe de joia — a tela mostra a joia nele e o quadro de pôr e tirar)
+    ...(() => { const g = grafoDe(estado); return g.extras.size ? { ramificadoras: { nos: [...g.extras.values()].map(noDaRamificadoraParaCliente), encaixes: Object.fromEntries([...g.porEncaixe.keys()].map((id) => [id, g.porId.get(id)?.conexoes ?? []])) } } : {}; })(),
     // (lote 48) as passivas CONQUISTADAS pelas Atemporais encaixadas (as do raio, alocadas ou não): o balão mostra as linhas da conquista
     ...(passivas.joias && CONQUISTA ? (() => { const c = conquistasParaATela(estado); return Object.keys(c).length ? { conquistas: c } : {}; })() : {}),
   };
@@ -1010,7 +1029,7 @@ const CONQUISTADORES = { vaal: 'pelos Vaal', karui: 'pelos Karui', maraketh: 'pe
 /** (lote 48) `{ nó: { nome, linhas, estados, substitui, por } }` dos nós no raio das Atemporais encaixadas (a primeira que alcança vale). */
 function conquistasParaATela(estado) {
   const saida = {};
-  for (const { no: s, peca } of joiasAtivas(estado)) {
+  for (const { no: s, peca } of joiasComRaio(estado)) {
     const c = CONQUISTA.daPeca(peca);
     const r = c ? raioDaJoia(peca) : null;
     if (!r) continue;
@@ -1022,6 +1041,14 @@ function conquistasParaATela(estado) {
     }
   }
   return saida;
+}
+
+/** (lote 64) Um nó que a Ramificadora cria, para a tela: existe (sem a marca de "só com a joia"); o encaixe interno é encaixe de joia (lote 77). */
+function noDaRamificadoraParaCliente(n) {
+  const c = noParaCliente(n);
+  delete c.soDaRamificadora;
+  if (n.encaixeInterno) c.encaixeDeJoia = true;
+  return c;
 }
 
 /** O nó para a tela (sem o que é só do servidor). (lote 64: + os das Ramificadoras — a posição, o encaixe e o índice na joia.) */
@@ -1064,6 +1091,10 @@ function noParaCliente(n) {
     conexoes: n.conexoes ?? [],
     ...(n.ramificadora ? { ramificadora: n.ramificadora } : {}),
     ...(n.encaixeInterno ? { encaixeInterno: true } : {}),
+    // (lote 77) o encaixe de EXPANSÃO: o tamanho (2 Grande, 1 Médio, 0 Pequeno — a tela só oferece a Ramificadora que cabe) e o proxy dele; o
+    // PROXY: o centro do grupo dele (a tela esconde o fundo do grupo sem a joia e, com ela, desenha o do tamanho da joia ali — como o PoB)
+    ...(n.expansao ? { expansao: { tamanho: n.expansao.tamanho, ...(n.expansao.proxy != null ? { proxy: String(n.expansao.proxy) } : {}) } } : {}),
+    ...(n.placeholder && n.proxy?.grupo ? { grupoDoProxy: [Math.round(n.proxy.grupo.x), Math.round(n.proxy.grupo.y)] } : {}),
   };
 }
 
