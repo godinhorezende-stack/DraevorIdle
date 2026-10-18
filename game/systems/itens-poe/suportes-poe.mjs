@@ -98,6 +98,13 @@ const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
  * conta como feita. Linha sem regra nenhuma vai para `naoFeitas`.
  */
 const ELEMENTO_DO_TEXTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', 'físico': 'physical', fisico: 'physical', caos: 'chaos' };
+/**
+ * (lote 76) O "mais/menos Dano" que no PoE vale SÓ no ACERTO: "com Acertos" (sem "e Afecções") e o "Corpo a Corpo" (no PoB o Sangramento/Veneno
+ * do golpe corpo a corpo tem a flag MeleeHit, não Melee). Vai no dano do acerto (`maisDanoPct`) e é tirado da base das afecções e do
+ * degenerativo da gema (`maisSoAcertoPct` → `fatorSoAcerto` — `skills/gemas.efeitoNaSkill`, `acoes`).
+ */
+const SO_NO_ACERTO = /Dano com Acertos(?! e Afecções)|Corpo a Corpo/i;
+const comSoNoAcerto = (linha, v) => ({ maisDanoPct: v, ...(SO_NO_ACERTO.test(linha) ? { maisSoAcertoPct: v } : {}) });
 const REGRAS = [
   // O custo (a propriedade "Multiplicador de Custo & Reserva: 120%").
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
@@ -157,15 +164,23 @@ const REGRAS = [
   [new RegExp(`têm ${N}% de Vida máxima de Lacaios aumentada`, 'i'), (m) => ({ lacaioVidaPct: num(m[1]) })],
   [new RegExp(`\\+${N} (?:ao|de) número máximo de Totens`, 'i'), (m) => ({ totensExtras: num(m[1]) })],
   // Dano: "mais/menos" multiplica (como no PoE); "aumentado/reduzido" soma.
-  [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { maisDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) } : null)],
+  [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| com Veneno| Incendiário| Propagado| enquanto Morto| com Acertos e Afecções contra)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? comSoNoAcerto(t, (m[2] === 'mais' ? 1 : -1) * num(m[1])) : null)],
+  // (lote 76, a Dose Letal: "Habilidades reforçadas causam -X% de dano com venenos" — o MENOS do PoE só no Veneno)
+  [new RegExp(`causam? ([+-])${N}% de dano com venenos?`, 'i'), (m) => ({ maisVenenoPct: (m[1] === '-' ? -1 : 1) * num(m[2]) })],
   [new RegExp(`causam? ([+-])${N}% de dano`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { maisDanoPct: (m[1] === '-' ? -1 : 1) * num(m[2]) } : null)],
   [new RegExp(`Magias Suportadas têm ${N}% mais Dano Mágico`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { maisDanoPct: num(m[1]) } : null)],
   [new RegExp(`causam? ${N}% de Dano (?:de )?(\\S+)? ?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
+  // (lote 76) o "Dano aumentado com <afecção>" (a qualidade dos suportes de Veneno e Sangramento): só naquela afecção (antes: em todo o dano)
+  [new RegExp(`causam Dano aumentado em ${N}% com Veneno`, 'i'), (m) => ({ aumVenenoPct: num(m[1]) })],
+  [new RegExp(`causam Dano aumentado em ${N}% com Sangramento`, 'i'), (m) => ({ aumSangramentoPct: num(m[1]) })],
+  [new RegExp(`causam Dano aumentado em ${N}% com Incêndio`, 'i'), (m) => ({ aumIncendioPct: num(m[1]) })],
+  // (lote 76) "Duração de Afecções infligidas com Habilidades Suportadas aumentada em X%" (Afecções Desenfreadas, Superaquecimento…)
+  [new RegExp(`Duração de Afecções infligidas com Habilidades Suportadas aumentada em ${N}%`, 'i'), (m) => ({ duracaoAfeccoesPct: num(m[1]) })],
   [new RegExp(`causam Dano aumentado em ${N}%`, 'i'), (m) => ({ danoPct: num(m[1]) })],
   [new RegExp(`Dano [^%]*?aumentado em ${N}%`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`${N}% de Dano [^%]*?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
-  [new RegExp(`causam ${N}% mais Dano com Acertos`, 'i'), (m) => ({ maisDanoPct: num(m[1]) })],
-  [new RegExp(`causam ${N}% menos Dano com Acertos`, 'i'), (m) => ({ maisDanoPct: -num(m[1]) })],
+  [new RegExp(`causam ${N}% mais Dano com Acertos`, 'i'), (m, t) => comSoNoAcerto(t, num(m[1]))],
+  [new RegExp(`causam ${N}% menos Dano com Acertos`, 'i'), (m, t) => comSoNoAcerto(t, -num(m[1]))],
   [new RegExp(`ganham ${N}% de Dano (\\S+) como Dano Extra de`, 'i'), (m, t, a) => (temTag(a, m[2]) ? { danoPct: num(m[1]) } : null)],
   [/não causam Dano Elemental/i, (m, t, a) => (['Fogo', 'Gelo', 'Raio'].some((x) => temTag(a, x)) ? { maisDanoPct: -100 } : null)],
   [/não causam Dano de Caos/i, (m, t, a) => (temTag(a, 'Caos') ? { maisDanoPct: -100 } : null)],
@@ -220,7 +235,16 @@ const REGRAS = [
   [new RegExp(`têm ${N}% de chance de causar Sangramento`, 'i'), (m) => ({ sangramentoChance: num(m[1]) })],
   [/^Causa Sangramento$/i, () => ({ sangramentoChance: 100 })],
   [new RegExp(`têm ${N}% de chance de Congelar`, 'i'), (m) => ({ congelarChance: num(m[1]) })],
-  [new RegExp(`causam ${N}% mais Dano (?:com )?(?:Incendiário|com Incêndio|com Sangramento|de Afecções)`, 'i'), (m) => ({ ignitePct: num(m[1]), venenoPct: num(m[1]), sangramentoPct: num(m[1]) })],
+  // (lote 76 — dono, 17/10: "Corrigir num lote próprio aqui") o "X% mais Dano" de UMA afecção (ou de todas: "de Afecções") — o MORE do PoE
+  // naquela afecção (`acoes` → `itens-poe/afeccoes.aoAcertar`, `maisDoSuporte`), não no dano do acerto. (Antes: um % do dano contínuo antigo
+  // para as três; o "com Veneno" e o "Incendiário" caíam no "mais Dano" de tudo.)
+  [new RegExp(`causam ${N}% mais Dano com Sangramento e Veneno causados por Acertos Corpo a Corpo`, 'i'), (m) => ({ maisSangramentoPct: num(m[1]), maisVenenoPct: num(m[1]) })],
+  // ("Dano Incendiário" é todo o Fogo contínuo — o Incêndio e o degenerativo de Fogo da gema; "com Incêndio", só o Incêndio)
+  [new RegExp(`causam ${N}% mais Dano Incendiário$`, 'i'), (m) => ({ maisQueimaduraPct: num(m[1]) })],
+  [new RegExp(`causam ${N}% mais Dano com Incêndio$`, 'i'), (m) => ({ maisIncendioPct: num(m[1]) })],
+  [new RegExp(`causam ${N}% mais Dano com Sangramento$`, 'i'), (m) => ({ maisSangramentoPct: num(m[1]) })],
+  [new RegExp(`causam ${N}% mais Dano com Veneno$`, 'i'), (m) => ({ maisVenenoPct: num(m[1]) })],
+  [new RegExp(`causam ${N}% mais Dano de Afecções$`, 'i'), (m) => ({ maisAfeccoesPct: num(m[1]) })],
   // Duração, recarga, drenagem.
   [new RegExp(`têm ${N}% (mais|menos) Duração`, 'i'), (m) => ({ duracaoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Duração (?:de Habilidade )?aumentada em ${N}%`, 'i'), (m) => ({ duracaoPct: num(m[1]) })],

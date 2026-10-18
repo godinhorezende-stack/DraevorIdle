@@ -728,6 +728,8 @@ export const temSkill = (estado, acao) => skillsAtivas(estado).has(acao);
 // (+ os da Blasfêmia, que não escalam com a gema de suporte: a reserva sobreposta, a maldição em aura e o efeito dela.)
 const CONTAGENS = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra', 'reservaSobreposta', 'maldicaoEmAura', 'efeitoMaldicaoPct']);
 const MULTIPLICATIVOS = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct']);
+/** (lote 76) O "X% mais Dano" de uma afecção dos suportes do PoE (`suportes-poe`): multiplica entre suportes, como no PoE. */
+const MAIS_DE_AFECCAO = new Set(['maisIncendioPct', 'maisQueimaduraPct', 'maisVenenoPct', 'maisSangramentoPct', 'maisAfeccoesPct']);
 export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   const a = ativas.get(acao);
   if (!a) return null;
@@ -763,6 +765,10 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
       else if (k === 'castTimePct' && doPoe) e.castTimePct = ((1 + (e.castTimePct ?? 0) / 100) * (1 + valor / 100) - 1) * 100;
       // (lote 36) O "X% mais/menos Efeito em Área" dos suportes do PoE também multiplica (o "aumentado", `areaIncPct`, soma).
       else if (k === 'areaMaisPct') e.areaMaisPct = ((1 + (e.areaMaisPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
+      // (lote 76) o "X% mais Dano com Incêndio / Veneno / Sangramento / de Afecções" também multiplica
+      else if (MAIS_DE_AFECCAO.has(k)) e[k] = ((1 + (e[k] ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
+      // (lote 76) o "mais" que vale SÓ no acerto (já está no `fatorDeDano`): o fator dele, para a base das afecções o tirar (`acoes`)
+      else if (k === 'maisSoAcertoPct') e.fatorSoAcerto = (e.fatorSoAcerto ?? 1) * Math.max(0, 1 + valor / 100);
       else e[k] = (e[k] ?? 0) + valor;
     }
     e.supports.push(sp.def.nome);
