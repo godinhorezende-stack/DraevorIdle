@@ -402,6 +402,13 @@ export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, 
     if ((estado.hp ?? 0) < resta) estado.hp = resta;
     v = estado.hp - resta;
   }
+  // (lote 51, a Dissolução da Carne) "a Vida que seria perdida ao sofrer Dano é, ao invés, Reservada até que você não sofra mais Dano na Vida por
+  // 2 segundos" — `ModsPoe.tiqueDaDissolucao` devolve.
+  if (v > 0 && Number(af.dissolucao_reserva_s) > 0 && estado.hunt) {
+    const r = (estado.hunt.dissolucao ??= { reservado: 0 });
+    r.reservado += Math.min(v, estado.hp ?? 0);
+    r.ultimo = estado.hunt.clock ?? 0;
+  }
   return v;
 }
 

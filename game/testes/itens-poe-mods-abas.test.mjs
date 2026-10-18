@@ -96,9 +96,10 @@ test('as traduções novas: cada texto vira o atributo que o motor lê (e a gema
     assert.ok(['equivalente', 'aproximado', 'novo'].includes(r.estado), `${texto}: ${r.estado} ${r.nota ?? ''}`);
     assert.equal(r.efeitos[0].stat, stat, texto);
   }
+  // (dono, 16/10 — lote 55: "Manter o apelido") a Punição do texto é a gema que o jogo chama de Castigo (no PoE, Punishment): a maldição vale.
   const punicao = traduzirParte('Efeito da Maldição Punição aumentado em {0}%', [20]);
-  assert.equal(punicao.estado, 'inerte');
-  assert.match(punicao.nota, /Punição/);
+  assert.ok(['equivalente', 'aproximado', 'novo'].includes(punicao.estado), punicao.estado);
+  assert.equal(punicao.efeitos[0].stat, 'efeito_maldicao_gema:castigo');
 });
 
 test('no acerto: Intimidar e Inervar pela duração do mod, e a Exposição com o valor do mod (a mais forte vale)', { skip: SEM }, () => {

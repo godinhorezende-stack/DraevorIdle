@@ -9,6 +9,8 @@
 //   4. o implícito e os atributos da base (ex.: armadura 19–27) também são sorteados nas faixas deles.
 // O Único não sorteia mods: são os fixos do cadastro dele, com os valores sorteados nas faixas.
 
+import * as Ramificadoras from './ramificadoras.mjs';
+
 /** Sorteio pelo peso numa lista de `[item, peso]`. */
 function porPeso(lista, rng) {
   const total = lista.reduce((n, [, p]) => n + p, 0);
@@ -125,7 +127,33 @@ export function comMagnitudeNosImplicitos({ implicitos = [], modificadores = [] 
 export function modificadoresDoUnico(u, rng, manter = null) {
   const s = u.implicitosSorteados;
   const sai = (m) => s && m.tipo === 'implicit' && m.modelo === s.substitui && !manter?.has(m.modelo);
-  return u.modificadores.filter((m) => !sai(m)).map((m) => ({ tipo: m.tipo, ...rolarTexto(m, rng) }));
+  const ls = u.linhasSorteadas;
+  const ns = u.nomeSorteado;
+  return u.modificadores.filter((m) => !sai(m)).flatMap((m) => {
+    // (lote 56) o NOME sorteado: a marcação "Passive Skill" vira a pedra fundamental / o notável (o Orbe Divino mantém o que a peça tem)
+    if (ns?.nomes?.length && m.modelo.includes(ns.marca)) {
+      const molde = new RegExp(`^${escaparRe(m.modelo).replace(escaparRe(ns.marca), '(.+)')}$`);
+      const ja = manter ? [...manter].map((x) => molde.exec(x)).find(Boolean) : null;
+      const nome = ja ? ja[1] : ns.nomes[Math.floor(rng() * ns.nomes.length)];
+      return [{ tipo: m.tipo, ...rolarTexto({ ...m, modelo: m.modelo.replace(ns.marca, nome) }, rng) }];
+    }
+    const n = ls?.substitui?.[m.modelo];
+    if (!n) return [{ tipo: m.tipo, ...rolarTexto(m, rng) }];
+    // (lote 57: a marcação com o pool próprio — `pools[marca]`: o Limitado pelo Destino, as linhas do seu número de itens)
+    const pool = ls.pools?.[m.modelo] ?? ls.linhas;
+    // (lote 55, J31) a linha de marcação ("[Two random aura modifiers]") vira N linhas do pool da única (`linhas-sorteadas.json`), sem repetir e com
+    // a mesma chance; o Orbe Divino (`manter` — os modelos da peça) sorteia de novo só os valores das que ela já tem.
+    const ja = manter ? pool.filter((l) => manter.has(l.modelo)) : [];
+    return (ja.length ? ja.slice(0, n) : linhasDoPool(pool, n, rng)).map((l) => ({ tipo: m.tipo, sorteada: true, ...rolarTexto(l, rng) }));
+  });
+}
+const escaparRe = (x) => String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** (lote 55) N linhas distintas do pool, com a mesma chance. */
+export function linhasDoPool(linhas, n, rng) {
+  const resto = [...linhas];
+  const saida = [];
+  while (saida.length < n && resto.length) saida.push(resto.splice(Math.floor(rng() * resto.length), 1)[0]);
+  return saida;
 }
 /**
  * Os implícitos da REGRA do único (`implicitosSorteados`: `{ quantidade: [mín, máx], grupos, pesoIgual, corrompido, origem }`): a
@@ -189,6 +217,17 @@ export function regrasDaBase(implicitos = []) {
     }
   }
   return r;
+}
+/**
+ * (lote 62 — dono, 17/10: "2+2 em todas") As VAGAS de cada lado (`{ prefixo, sufixo }`) na raridade `R`, com as regras da base (`rb`, os
+ * implícitos): a JOIA (Carmesim, Viridiana, Cobalto, Abissais, Ramificadoras) tem no máximo 2 Prefixos e 2 Sufixos, como no PoE (o PoB:
+ * `affixLimit` 4 para "Jewel"); antes ela seguia a regra geral da Rara (até 3 + 3). O drop, as moedas e a Forja usam esta conta.
+ */
+const CLASSES_DE_JOIA = new Set(['Jewels', 'Abyss_Jewels']);
+export const MAXIMO_DA_JOIA = 2;
+export function vagasDaPeca(R, rb, classe) {
+  const teto = CLASSES_DE_JOIA.has(classe) ? MAXIMO_DA_JOIA : Infinity;
+  return { prefixo: Math.max(0, Math.min(teto, (R?.maxPrefixos ?? 0) + (rb?.prefixos ?? 0))), sufixo: Math.max(0, Math.min(teto, (R?.maxSufixos ?? 0) + (rb?.sufixos ?? 0))) };
 }
 /** O tier pode sair nesta base? (o "só dano de um tipo" e o "sem Conjuração"). A Forja (`itens-poe/forja.mjs`) usa a mesma regra. */
 export const permitidoNaBase = (c, regras) => {
@@ -273,13 +312,15 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), nome: u.nome, unico: u.slug };
   }
   const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
+  // (lote 61) a RAMIFICADORA: o encantamento e os mods pelos pesos do PoE (`itens-poe/ramificadoras.mjs` — o catálogo traz os dados)
+  if (Ramificadoras.tamanhoDaBase(base.id)) return Ramificadoras.gerarRamificadora({ dados: catalogo.ramificadoras, peca, R, quantos, rng });
   if (!quantos) return peca;
   const pool = poolDa(classe, base);
   if (!pool) return { ...peca, aviso: 'a coleção não tem pool de mods para esta base: saiu sem mods' };
   const todos = elegiveis(pool, nivel);
   // As regras da BASE (os implícitos): vagas a mais/a menos, magnitude dos valores, só um tipo de dano, sem Conjuração.
   const rb = regrasDaBase(peca.implicitos);
-  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos) };
+  const max = vagasDaPeca(R, rb, classe.id);
   const usadas = new Set();
   for (let i = 0; i < quantos; i++) {
     const vagas = ['prefixo', 'sufixo'].filter((l) => peca[`${l}s`].length < max[l]);
@@ -305,13 +346,15 @@ export { porPeso, rolarTexto };
  * vaga na raridade (`lados` restringe). Devolve `{ lado, mod }` (o mod no formato da peça) ou null (sem vaga / pool esgotado).
  */
 export function sortearUmMod({ catalogo, regras, poe, rng = Math.random, lados = ['prefixo', 'sufixo'] }) {
+  // (lote 61) a Ramificadora sorteia pelos pesos do PoE (o encantamento e os notáveis que ela já tem mudam os pesos)
+  if (poe?.ramificadora) return Ramificadoras.sortearUmMod({ dados: catalogo?.ramificadoras, poe, R: regras?.raridades?.[poe.raridade], rng, lados });
   const achado = acharBase(catalogo, poe.base);
   if (!achado) return null;
   const pool = poolDa(achado.classe, achado.base);
   if (!pool) return null;
   const R = regras?.raridades?.[poe.raridade] ?? {};
   const rb = regrasDaBase(poe.implicitos);
-  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos) };
+  const max = vagasDaPeca(R, rb, achado.classe.id);
   const usadas = new Set([...(poe.prefixos ?? []), ...(poe.sufixos ?? [])].map((m) => m.familia));
   const todos = elegiveis(pool, Math.max(1, Number(poe.ilvl) || 1));
   const vagas = lados.filter((l) => (poe[`${l}s`] ?? []).length < max[l]);
@@ -332,7 +375,7 @@ export function sortearDoPool({ pagina, poe, regras, origem, rng = Math.random, 
   if (!pagina) return null;
   const R = regras?.raridades?.[poe.raridade] ?? {};
   const rb = regrasDaBase(poe.implicitos);
-  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos), implicito: Infinity };
+  const max = { ...vagasDaPeca(R, rb, poe.classe), implicito: Infinity };
   const usadas = new Set([...(poe.prefixos ?? []), ...(poe.sufixos ?? [])].map((m) => m.familia));
   const ilvl = Math.max(1, Number(poe.ilvl) || 1);
   const candidatos = [];
@@ -353,6 +396,7 @@ export function sortearDoPool({ pagina, poe, regras, origem, rng = Math.random, 
 
 /** O tier do pool de onde o mod saiu (as faixas dele) — `{ tier, tiers }` (todos os tiers da família, do pool da base) — ou null. */
 export function tierDoMod(catalogo, poe, mod) {
+  if (poe?.ramificadora) return Ramificadoras.tierDoMod(catalogo?.ramificadoras, mod);
   const achado = acharBase(catalogo, poe.base);
   const pool = achado && poolDa(achado.classe, achado.base);
   for (const lado of ['prefixos', 'sufixos']) {

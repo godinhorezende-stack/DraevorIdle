@@ -6147,15 +6147,25 @@
    "tipo": "mod",
    "familia": "MonsterModGroundEffect",
    "linhas": [
-    "Shocked Ground on Death"
+    "Deixa Solo Eletrizado ao Morrer"
    ],
    "nivel": 10,
    "pesoMagico": 0,
    "pesoRaro": 2500,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
-   "total": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoMorrer",
+     "efeito": "solo",
+     "solo": "eletrizado",
+     "duracaoMs": 6000,
+     "raioMetros": 1.6,
+     "danoRecebidoPct": 20
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
    "statsPoe": []
   },
   {
@@ -6165,15 +6175,25 @@
    "tipo": "mod",
    "familia": "MonsterModGroundEffect",
    "linhas": [
-    "Burning Ground on Death"
+    "Deixa Solo Ardente ao Morrer"
    ],
    "nivel": 10,
    "pesoMagico": 0,
    "pesoRaro": 2500,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
-   "total": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoMorrer",
+     "efeito": "solo",
+     "solo": "ardente",
+     "duracaoMs": 6000,
+     "raioMetros": 1.6,
+     "dpsPctDoGolpe": 62.5
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
    "statsPoe": []
   },
   {
@@ -6183,15 +6203,25 @@
    "tipo": "mod",
    "familia": "MonsterModGroundEffect",
    "linhas": [
-    "Burning Ground on Death"
+    "Deixa Solo Ardente ao Morrer"
    ],
    "nivel": 10,
    "pesoMagico": 0,
    "pesoRaro": 0,
    "stats": {},
-   "estado": "registrado",
-   "valem": 0,
-   "total": 0,
+   "mecanicas": [
+    {
+     "gatilho": "aoMorrer",
+     "efeito": "solo",
+     "solo": "ardente",
+     "duracaoMs": 6000,
+     "raioMetros": 1.6,
+     "dpsPctDoGolpe": 62.5
+    }
+   ],
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
    "statsPoe": []
   },
   {

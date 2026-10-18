@@ -66,11 +66,15 @@ export function extrasDoArremesso(ficha, tipo, rng = Math.random, efeito = null)
   let faixa = 0;
   const faixas = Object.entries(efeito ?? {}).filter(([k, x]) => k.startsWith('arremessoChance:') && x > 0).map(([k, x]) => [Number(k.slice('arremessoChance:'.length)) || 0, x]).sort((a, b) => b[0] - a[0]);
   for (const [n, chance] of faixas) if (rng() * 100 < chance) { faixa = n; break; }
-  if (tipo !== 'armadilha') return doSuporte + faixa;
+  // (lote 71, a Dispensabilidade: "X% de chance de Arremessar até N Armadilha ou Mina adicional" — vale nas duas)
+  const chanceDasDuas = v(ficha, 'plantadas_extras_chance');
+  const nDasDuas = Math.max(0, Math.round(v(ficha, 'plantadas_extras_n')));
+  const dasDuas = chanceDasDuas > 0 && nDasDuas > 0 && rng() * 100 < chanceDasDuas ? nDasDuas : 0;
+  if (tipo !== 'armadilha') return doSuporte + faixa + (tipo === 'mina' ? dasDuas : 0);
   const sempre = Math.max(0, Math.round(v(ficha, 'armadilhas_extras')));
   const chance = v(ficha, 'armadilhas_extras_chance');
   const n = Math.max(0, Math.round(v(ficha, 'armadilhas_extras_n')));
-  return sempre + doSuporte + faixa + (chance > 0 && n > 0 && rng() * 100 < chance ? n : 0);
+  return sempre + doSuporte + faixa + (chance > 0 && n > 0 && rng() * 100 < chance ? n : 0) + dasDuas;
 }
 
 /** As casas das armadilhas a mais, em volta do lugar mirado (a casa do lugar fica com a primeira). */

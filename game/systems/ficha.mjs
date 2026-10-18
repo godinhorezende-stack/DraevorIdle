@@ -485,7 +485,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // (PoE, 12/10: "Sua Velocidade de Movimento é igual a maior Velocidade de Movimento entre os Jogadores Vinculados" — `velocidade_igual_vinculado`.)
     // (lote 32, P049: "Velocidade de Movimento não pode ser modificada para abaixo do valor base" — a ficha não fica abaixo da base; a lentidão em
     // você, no passo — `cacadas.razaoDeVelocidade`)
-    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.max(itensPoeLigado() && af.movimento_minimo_base > 0 ? R.baseSpeed(estado.level ?? 1) : 0, Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af))),
+    speed: itensPoeLigado() && af.velocidade_igual_vinculado > 0 ? Math.round(af.velocidade_igual_vinculado) : itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.max(itensPoeLigado() && af.movimento_minimo_base > 0 ? R.baseSpeed(estado.level ?? 1) : 0, Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) * (itensPoeLigado() ? Math.max(0, 1 + (af.move_speed_mais ?? 0) / 100) : 1) + soma((it) => it.speed)) * fatorDeAcao(af))),
     // O alcance a mais dos golpes corpo a corpo, em casas (lote 35 — P001/P033, a decisão do dono "Medir em metros", 1 casa = 2 m): o alcance
     // de verdade é o da ARMA (`alcance_metros` da base, 1 a 1,4 m) + os "+X metros ao Alcance de Golpes Corpo a Corpo"; o vizinho colado está
     // sempre ao alcance (as casas encostam) e cada casa a mais pede 2 m (o vão de uma casa). Antes só os metros a mais contavam, sem a arma.
@@ -537,7 +537,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // Cast Speed (intervalo global entre magias), Cooldown Recovery (recarga de cada magia), Skill Cost Reduction.
     // + a identidade da wand na mão (`armas/poder.json`: conjura mais rápido).
     castSpeed: comAcao((af.cast_speed ?? 0) + espStat('castSpeed') + PoderDaArma.castSpeedDaIdentidade(estado), af),
-    recuperacaoDeRecarga: af.cooldown_recovery ?? 0,
+    // (lote 57, o Limitado pelo Destino: + "Mais X% de taxa de recuperação do tempo de recarga" — `cooldown_recovery_mais`, que multiplica)
+    recuperacaoDeRecarga: itensPoeLigado() && af.cooldown_recovery_mais ? ((1 + (af.cooldown_recovery ?? 0) / 100) * (1 + af.cooldown_recovery_mais / 100) - 1) * 100 : af.cooldown_recovery ?? 0,
     // Damage vs Boss / vs Elite / vs Monsters (não-boss), em %.
     danoContra: { boss: af.dmg_vs_boss ?? 0, elite: af.dmg_vs_elite ?? 0, monstros: af.dmg_vs_monsters ?? 0 },
     // Utilidade: Gold Find, Loot Rate e Experience (%).
@@ -940,6 +941,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const crit = primeira || segunda;
   const bifurcado = mesmaRolagem ? !!mesmaRolagem.bifurcado : bifurca && primeira && segunda;
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
+  // (lote 71, Pontos de Pressão) "Seus Golpes Críticos têm chance de X% de causar Dano Dobrado": a chance no crítico, uma vez por golpe (as
+  // outras partes do mesmo golpe usam a mesma rolagem); o golpe que já saiu Dobrado/Triplicado não dobra de novo (`danoDobradoNoGolpe`).
+  const dobraNoCritico = crit && itensPoeLigado() && !ficha.danoDobradoNoGolpe && (mesmaRolagem ? !!mesmaRolagem.dobraNoCritico : Math.random() * 100 < ModsPoe.valor(ficha, 'critico_chance_dano_dobrado'));
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
@@ -948,9 +952,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // ("Golpes Críticos não causam Dano", "Golpes não-críticos causam N% menos Dano": `mais_dano_critico` / `mais_dano_nao_critico`, o golpe inteiro.)
   const doTipoDeGolpe = Math.max(0, 1 + ModsPoe.valor(ficha, crit ? 'mais_dano_critico' : 'mais_dano_nao_critico') / 100);
   const multiplicador = ficha.critMultiplier + doCharm.dano / 100;
-  const dano = Math.round(base * doTipoDeGolpe * (crit ? (bifurcado ? 1 + 2 * (multiplicador - 1) : multiplicador) : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
+  const dano = Math.round(base * doTipoDeGolpe * (crit ? (bifurcado ? 1 + 2 * (multiplicador - 1) : multiplicador) : 1) * (dobraNoCritico ? 2 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
-  return { dano, crit, onslaught, chance: chanceDeCritico, ...(bifurcado ? { bifurcado } : {}) };
+  return { dano, crit, onslaught, chance: chanceDeCritico, ...(bifurcado ? { bifurcado } : {}), ...(dobraNoCritico ? { dobraNoCritico } : {}) };
 }
 
 /**

@@ -7430,6 +7430,606 @@
       "unidade": "",
       "combate": true,
       "efeito": "\"Limitado a: 1 Histórico\": só uma joia Histórica (as Atemporais) nos encaixes da árvore — `passivas/joias.encaixar` (lote 48)"
+    },
+    "primordial": {
+      "nome": "Primordial",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o item Primordial: conta para \"caso você tenha N Itens Primordiais Encaixados ou Equipados\" (a Pedra Anima — `condicoes-poe`, `primordiaisMin`; lote 49)"
+    },
+    "crit_recebido_inc": {
+      "nome": "Chance de Crítico dos Acertos contra você aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o crítico dos monstros em você (`condicoes-poe.criticoDoBicho`; a Defesa Imprudente — lote 50)"
+    },
+    "chance_ser_afetado": {
+      "nome": "Chance de ser Congelado, Eletrizado e Incendiado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o acerto elemental do monstro que não é crítico aplica a afecção do elemento na chance (`mobs/mecanicas.aoAcertarJogador`; a Réplica: Defesa Imprudente — lote 50)"
+    },
+    "totem_projeteis_extra": {
+      "nome": "Totens atiram Projéteis adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "os projéteis a mais no tiro do totem (`acoes.projeteisDoTotem`; a Chuva de Farpas — lote 50)"
+    },
+    "maldicoes_extra_em_voce": {
+      "nome": "Maldições adicionais que podem ser aplicadas a você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o limite de maldições em você (1, como no PoE) + este (`condicoes-poe.amaldicoarJogador`; o Auto-Flagelo — lote 50)"
+    },
+    "vaal_almas_de_volta_chance": {
+      "nome": "Chance das Vaal ganharem as Almas de volta (sem recarga)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a Vaal usada não entra em recarga, na chance (`acoes.disparar`; o Reino de Atziri — lote 51)"
+    },
+    "alma_vaal_ao_estilhacar": {
+      "nome": "Chance de Alma Vaal a mais por Inimigo Estilhaçado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a recarga das Vaal na barra anda uma alma (`acoes`, `ModsPoe.definirAoEstilhacar`; o Calafrio da Corrupção — lote 51)"
+    },
+    "lacaios_agressivos": {
+      "nome": "Lacaios Convocados são Agressivos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a busca de alvo dos lacaios 3 casas mais longe (`cacadas.alvoDoFamiliar`; o Poder Primordial — lote 51)"
+    },
+    "dissolucao_reserva_s": {
+      "nome": "Dissolução da Carne: a Vida perdida fica Reservada (segundos sem dano)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o dano na Vida vira Vida Reservada, que volta depois de N s sem dano na Vida (`arvore.danoRecebido`, `condicoes-poe.tiqueDaDissolucao`; lote 51)"
+    },
+    "raio_aprendizado_notaveis": {
+      "nome": "Joia (raio): o Aprendizado Inspirado — os Notáveis alocados no raio que ele pede",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias: com os notáveis, `aprendizado_inspirado_n`/`_s` (lote 51)"
+    },
+    "raio_aprendizado_n": {
+      "nome": "Joia (raio): o Aprendizado Inspirado — quantos modificadores do Raro você recebe",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mods-poe.aprenderDoRaro` (lote 51)"
+    },
+    "raio_aprendizado_s": {
+      "nome": "Joia (raio): o Aprendizado Inspirado — por quantos segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `mods-poe.aprenderDoRaro` (lote 51)"
+    },
+    "incendio_duracao_todas": {
+      "nome": "Modificadores de Duração de Incêndio em você valem para Todas as Afecções Elementais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a `duracao_incendio_propria` soma no Congelamento, Resfriamento e Eletrização em você (`afixos.soma`; a Canção das Chamas — lote 52)"
+    },
+    "evitar_eletrizacao_todas": {
+      "nome": "Modificadores de Chance de Evitar ser Eletrizado valem para Todas as Afecções Elementais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o `evitar_eletrizacao` soma no Evitar Incêndio, Congelamento e Resfriamento (`afixos.soma`; a Mortalha da Tormenta — lote 52)"
+    },
+    "supressao_no_evitar_afeccoes": {
+      "nome": "A Supressão de Dano Mágico também vale na Chance de Evitar Afecções Elementais (em %)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "X% da `spell_suppression` no `avoid_elem_ailments` (`afixos.soma`; a Visão Ancestral — lote 52)"
+    },
+    "imune_maldicao_ao_matar_amaldicoado": {
+      "nome": "Imune a Maldições pelo resto do Feitiço não-aura do inimigo Amaldiçoado que você matar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "`hunt.imunidadesPoe.maldicao` (`mods-poe.desgracaDasBruxas`; a Desgraça das Bruxas — lote 52)"
+    },
+    "golem_dano_por_tipo": {
+      "nome": "Dano do Golem aumentado por Tipo de Golem convocado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os tipos de Golem vivos × X% no golpe do Golem (`LacaiosPoe.golpeDoLacaio`; a Harmonia Primordial — lote 52)"
+    },
+    "talento_puro_marauder": {
+      "nome": "Talento Puro: Marauder — Habilidades Corpo a Corpo com Área aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início do Marauder (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_duelist": {
+      "nome": "Talento Puro: Duelista — Dano de Ataque Drenado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Duelista (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_ranger": {
+      "nome": "Talento Puro: Caçadora — Velocidade de Movimento aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Caçadora (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_shadow": {
+      "nome": "Talento Puro: Sombra — Chance de Acerto Crítico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Sombra (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_witch": {
+      "nome": "Talento Puro: Bruxa — Mana Máxima regenerada por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Bruxa (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_templar": {
+      "nome": "Talento Puro: Templário — Penetração de Resistências Elementais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início do Templário (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "talento_puro_scion": {
+      "nome": "Talento Puro: Herdeira — Todos os Atributos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "com a árvore ligada ao início da Herdeira (`passivas/arvore.raiosDasJoias`; lote 52)"
+    },
+    "efeito_joias_magicas_corrompidas": {
+      "nome": "Efeito das Joias Mágicas Corrompidas nos encaixes da árvore aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "as mágicas corrompidas da árvore × (1 + X%) (`afixos.somaDeItens`; O Adornado — lote 52)"
+    },
+    "reflete_sangramento": {
+      "nome": "Sangramentos que você infligir são Refletidos para você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o mesmo Sangramento também em você (`ModsPoe.refletorDeAfeccoes` → `dotNoJogador`; a Regra de Ouro — lote 53)"
+    },
+    "reflete_veneno_ate": {
+      "nome": "Envenenamento infligido por você é Refletido a você abaixo de N Envenenamentos em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o mesmo Veneno também em você enquanto você tiver menos de N (`ModsPoe.refletorDeAfeccoes`; a Regra de Ouro — lote 53)"
+    },
+    "esqueleto_caos_pct_es_escudo": {
+      "nome": "Esqueletos: Dano de Caos Adicional igual a X% do Escudo de Energia do Escudo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o dano somado dos Esqueletos (`afixos.soma` → `lacaio_somado_*:esqueleto`; a Revolta dos Mortos — lote 53)"
+    },
+    "crit_inc_magia_por_intensidade": {
+      "nome": "Chance de Golpe Crítico das Magias aumentada por Intensidade",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "o \"aumentado\" de crítico da magia × a Intensidade dela agora (`acoes.comCriticoDaIntensidade`; o Modo Alfa / Nadir — lote 53)"
+    },
+    "intensidade_ganho_n": {
+      "nome": "Magias que ganharam Intensidade Recentemente ganham N de Intensidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Alfa — lote 53)"
+    },
+    "intensidade_ganho_s": {
+      "nome": "… a cada N segundos (o ganho do Modo Alfa)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Alfa — lote 53)"
+    },
+    "intensidade_perda_n": {
+      "nome": "Magias que ganharam Intensidade Recentemente perdem N de Intensidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Nadir — lote 53)"
+    },
+    "intensidade_perda_s": {
+      "nome": "… a cada N segundos (a perda do Modo Nadir)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "`acoes.intensidadeAgora` (o Modo Nadir — lote 53)"
+    },
+    "crit_base_golpe": {
+      "nome": "Chance de Golpe Crítico BASE a mais do golpe (com a condição do golpe)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma à base do crítico do golpe antes do \"aumentado\" (`condicoes-poe.fichaDoGolpe`; a Fúria Fulminante nos ataques com escudo — lote 54)"
+    },
+    "raio_fome_int": {
+      "nome": "Joia (raio): a Fome Eterna — a Inteligência alocada no raio que ela pede",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `espectro_devorador_chance`/`_s` (lote 54)"
+    },
+    "raio_fome_chance": {
+      "nome": "Joia (raio): a Fome Eterna — a chance do Espectro ganhar o Devorador de Almas ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `LacaiosPoe.aoMatarDoLacaio` (lote 54)"
+    },
+    "raio_fome_s": {
+      "nome": "Joia (raio): a Fome Eterna — a duração do Devorador de Almas",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "passivas/arvore.raiosDasJoias → `LacaiosPoe.aoMatarDoLacaio` (lote 54)"
+    },
+    "imune_vulnerabilidade": {
+      "nome": "Imune a Vulnerabilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_enfraquecer": {
+      "nome": "Imune a Debilitar (o Enfraquecer dos monstros)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_flamabilidade": {
+      "nome": "Imune a Flamabilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_congelabilidade": {
+      "nome": "Imune a Congelabilidade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_condutividade": {
+      "nome": "Imune a Condutividade",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_fraqueza_elemental": {
+      "nome": "Imune a Fraqueza Elemental",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_desespero": {
+      "nome": "Imune a Desespero",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a maldição dos monstros não pega (`condicoes-poe.amaldicoarJogador` e a soma das maldições em você; o Olho do Vigia — lote 55)"
+    },
+    "imune_exposicao": {
+      "nome": "Imune a Exposição",
+      "unidade": "",
+      "combate": true,
+      "efeito": "a Exposição dos monstros não pega (`monstros-no-jogador.expor`; o Equilíbrio do Terror — lote 55)"
+    },
+    "pen_critico": {
+      "nome": "Acertos Críticos Penetram X% das Resistências Elementais",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "a penetração a mais no golpe crítico (`acoes`, `hunt/combate` — como o `pen_nao_critico`; o Olho do Vigia — lote 55)"
+    },
+    "chance_evadir": {
+      "nome": "+X% de chance de Evadir Acertos de Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma à chance da Evasão, no teto de 95% (`personagem/defesa.esquivou`; o Olho do Vigia — lote 55)"
+    },
+    "joia_efeito_por_passiva_ate_inicio": {
+      "nome": "Este Encaixe de Joia tem efeito aumentado por Passiva Alocada entre ele e o início da classe",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "os mods da joia × (1 + X% × as passivas — `Passivas.passivasAteOInicio`; `afixos.somaDeItens`; a Personalidade Dividida — lote 55)"
+    },
+    "solo_profano_perdura_s": {
+      "nome": "Efeitos do Solo Profano criados por você Perduram por N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "o inimigo que sai do seu Solo Profano continua marcado N s (`mods-poe`, `condicoes-poe.SOLO_PROFANO`; a Doutrina Racional — lote 57)"
+    },
+    "mana_more": {
+      "nome": "X% mais Mana Máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a mana inteira, como o `life_more` (`afixos`) (o Limitado pelo Destino — lote 57)"
+    },
+    "str_mais": {
+      "nome": "X% mais Força",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a Força à parte do aumentado (`personagem/atributos.principais`) (o Limitado pelo Destino — lote 57)"
+    },
+    "dex_mais": {
+      "nome": "X% mais Destreza",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a Destreza à parte do aumentado (`personagem/atributos.principais`) (o Limitado pelo Destino — lote 57)"
+    },
+    "int_mais": {
+      "nome": "X% mais Inteligência",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a Inteligência à parte do aumentado (`personagem/atributos.principais`) (o Limitado pelo Destino — lote 57)"
+    },
+    "move_speed_mais": {
+      "nome": "X% mais Velocidade de Movimento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a velocidade (`ficha.speed`) (o Limitado pelo Destino — lote 57)"
+    },
+    "cooldown_recovery_mais": {
+      "nome": "X% mais Taxa de Recuperação da Recarga",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica a recuperação da recarga (`ficha.recuperacaoDeRecarga`) (o Limitado pelo Destino — lote 57)"
+    },
+    "dot_dmg_inc_caos": {
+      "nome": "Dano de Caos Degenerativo aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.daSoma — o Veneno/Sangramento e o degenerativo das gemas do elemento (lote 65)"
+    },
+    "dot_dmg_inc_fisico": {
+      "nome": "Dano Físico Degenerativo aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.daSoma — o Veneno/Sangramento e o degenerativo das gemas do elemento (lote 65)"
+    },
+    "dot_dmg_inc_gelo": {
+      "nome": "Dano Degenerativo de Gelo aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.daSoma — o Veneno/Sangramento e o degenerativo das gemas do elemento (lote 65)"
+    },
+    "exposicao_chance_fogo": {
+      "nome": "Chance de aplicar Exposição a Fogo ao Acertar (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar — a Exposição padrão (−10%) (lote 67)"
+    },
+    "exposicao_chance_gelo": {
+      "nome": "Chance de aplicar Exposição a Gelo ao Acertar (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar — a Exposição padrão (−10%) (lote 67)"
+    },
+    "exposicao_chance_raio": {
+      "nome": "Chance de aplicar Exposição a Raio ao Acertar (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar — a Exposição padrão (−10%) (lote 67)"
+    },
+    "totem_res_caos": {
+      "nome": "Totens: Resistência a Caos (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe — a resistência do totem (lote 67)"
+    },
+    "totem_regen_pct": {
+      "nome": "Totens: Regeneração de Vida (% por segundo)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe — a regeneração do totem (lote 67)"
+    },
+    "minion_chance_empurrar": {
+      "nome": "Lacaios: chance de Empurrar com Ataques (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_dano_dobrado_vida_cheia": {
+      "nome": "Lacaios: chance de Dano Dobrado em Vida Cheia (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_dano_incendiados": {
+      "nome": "Lacaios: Dano com Acertos e Afecções contra Incendiados aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_move_recente": {
+      "nome": "Lacaios criados Recentemente: Velocidade de Movimento aumentada (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_vel_recente": {
+      "nome": "Lacaios criados Recentemente: Velocidades de Ataque e Conjuração aumentadas (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "minion_invulneravel_recente": {
+      "nome": "Lacaios criados Recentemente não podem sofrer Dano",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca e o golpe/dano do lacaio (lote 69)"
+    },
+    "res_menos_fogo_incendiado": {
+      "nome": "Inimigos Incendiados por você: −% de Resistência a Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes + condicoes-poe.resMenosDasAfeccoes (lote 69)"
+    },
+    "envenenados_sem_regen": {
+      "nome": "Inimigos Envenenados por você não podem Regenerar Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes + skills/estados (a regeneração do monstro) (lote 69)"
+    },
+    "imune_solo_ardente": {
+      "nome": "Inafetado por Solo Ardente",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) / acoes (o totem) (lote 70)"
+    },
+    "imune_solo_eletrizado": {
+      "nome": "Inafetado por Solo Eletrizado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) / acoes (o totem) (lote 70)"
+    },
+    "totem_alcance_posicionamento": {
+      "nome": "Alcance do Posicionamento de Totens aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mobs/mecanicas (os solos dos monstros) / acoes (o totem) (lote 70)"
+    },
+    "totem_desacelera_ao_convocar": {
+      "nome": "Totens Desaceleram Inimigos próximos deles quando Convocados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (a Lentidão ao Convocar um Totem) (lote 70)"
+    },
+    "provocados_clamor_intimidados": {
+      "nome": "Inimigos Provocados por seus Clamores são Intimidados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 71)"
+    },
+    "amaldicoados_inervados": {
+      "nome": "Inimigos Amaldiçoados por você são Enervados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.fatorRecebidoPeloBicho (lote 71)"
+    },
+    "incendiados_mortos_destruidos": {
+      "nome": "Inimigos Incendiados Mortos por seus Acertos são destruídos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate.processarMortes (lote 71)"
+    },
+    "critico_chance_dano_dobrado": {
+      "nome": "Seus Golpes Críticos têm chance de causar Dano Dobrado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.rolarCritico (lote 71)"
+    },
+    "plantadas_extras_chance": {
+      "nome": "Chance de Arremessar Armadilha ou Mina adicional (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas.extrasDoArremesso (lote 71)"
+    },
+    "plantadas_extras_n": {
+      "nome": "Armadilhas ou Minas adicionais na chance",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/armas-plantadas.extrasDoArremesso (lote 71)"
+    },
+    "canalizar_remove_maldicao_s": {
+      "nome": "Remove uma Maldição após Canalizar por N segundos",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "condicoes-poe.tique (lote 72)"
+    },
+    "chaos_res_contra_degen": {
+      "nome": "Resistência a Caos contra Dano Degenerativo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mobs/mecanicas (o dano contínuo em você) (lote 72)"
+    },
+    "amaldicoados_esconjuro_apos_pct": {
+      "nome": "Inimigos Amaldiçoados por você têm Esconjuro depois de X% da Duração da Maldição",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.esconjurado (lote 72)"
+    },
+    "aura_em_voce_menos_por_arauto": {
+      "nome": "Efeito das suas Auras em você reduzido por Arauto (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "gemas-poe.adds (lote 72)"
+    },
+    "aura_em_voce_menos_por_arauto_max": {
+      "nome": "Efeito das suas Auras em você reduzido por Arauto, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "gemas-poe.adds (lote 72)"
+    },
+    "clamor_chama_santificada": {
+      "nome": "Seus Clamores infligem Chama Santificada",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o Clamor do PoE) (lote 72)"
+    },
+    "selo_frequencia_inc": {
+      "nome": "Frequência de ganho de Selo aumentada (Liberar) (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (os Selos) (lote 73)"
+    },
+    "runa_solta_alcance_por_s": {
+      "nome": "Alcance do Vínculo de Runas aumentado por segundo enquanto solta (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas.alcanceDaSolta (lote 73)"
+    },
+    "runa_solta_alcance_max": {
+      "nome": "Alcance do Vínculo de Runas aumentado enquanto solta, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/runas-vinculadas.alcanceDaSolta (lote 73)"
+    },
+    "runa_adicional_chance": {
+      "nome": "Chance de criar uma Runa adicional (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.conjurarRuna (lote 73)"
+    },
+    "caos_ignora_interrupcao": {
+      "nome": "Habilidades de Caos ignoram interrupções de Atordoamentos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cacadas (a conjuração no atordoamento) (lote 73)"
+    },
+    "proj_inc_por_ricochete_restante": {
+      "nome": "Dano de Projéteis aumentado por propagação restante (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (fatorDoProjetil) (lote 73)"
+    },
+    "proj_inc_por_ricochete_restante_max": {
+      "nome": "Dano de Projéteis aumentado por propagação restante, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (fatorDoProjetil) (lote 73)"
+    },
+    "efeito_empalamento_com_sangramento": {
+      "nome": "Efeito dos Empalamentos de Acertos que também Sangram aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoPorAfeccoes (lote 73)"
+    },
+    "convocar_runas_alcance": {
+      "nome": "Alcance do Vínculo das Runas convocadas aumentado (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.convocarRunas (lote 74)"
+    },
+    "convocar_runas_recarga_por_runa": {
+      "nome": "Recuperação da Recarga da Convocar Runas por Runa em campo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe (lote 74)"
+    },
+    "convocar_runas_recarga_max": {
+      "nome": "Recuperação da Recarga da Convocar Runas por Runa, máximo (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe (lote 74)"
+    },
+    "virulencia_max": {
+      "nome": "Virulência Máxima (Arauto da Agonia)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/virulencia.maxima (lote 75)"
+    },
+    "veneno_mais_final": {
+      "nome": "Dano com Veneno, mais (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (o buff do Arauto da Agonia) (lote 75)"
     }
   }
 }

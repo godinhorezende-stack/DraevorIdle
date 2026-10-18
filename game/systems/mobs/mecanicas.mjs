@@ -112,6 +112,7 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
         ferirJogador(estado, hunt, personagem, m, (m.maxHp * (mec.danoPctDaVida ?? 5)) / 100, mec.elemento ?? 'fire', eventos, 'Explosão');
       }
     } else if (mec.efeito === 'gerar') gerar(hunt, m, mec, eventos);
+    else if (mec.efeito === 'solo') criarSolo(hunt, m, mec, agora, eventos);
   }
   for (const o of hunt.monstros) {
     if (o === m || o.hp <= 0) continue;
@@ -119,6 +120,33 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
       if (mec.gatilho !== 'aliadoMorreu' || distancia(o, m) > (mec.raio ?? 4)) continue;
       Buffs.por(o, { chave: `${mec.modificador}:aliado`, ate: agora + (mec.duracaoMs ?? 5000), danoPct: mec.danoPct ?? 0, velocidadeDeAtaquePct: mec.velocidadeDeAtaquePct ?? 0 }, agora);
       eventos.push({ t: 'fx', id: 14, uid: o.uid, x: o.x, y: o.y });
+    }
+  }
+}
+
+/**
+ * (lote 70 — dono, 17/10: "Implementar os 2 solos") O SOLO que o monstro deixa ao morrer ("Solo Ardente ao Morrer", "Solo Eletrizado ao Morrer"
+ * — os mods do Raro do PoE): na casa dele, com o raio em metros (1 casa = 2 m, ao menos 1 — o poedb: raio 16 = 1,6 m), pela duração (6 s). O
+ * ARDENTE queima quem está nele: 62,5% do golpe máximo do monstro por segundo (o poedb: "3750% do dano máximo por minuto"), de Fogo — não é
+ * Incêndio; o ELETRIZADO Eletriza (`monstros-no-jogador.eletrizarPeloSolo`). "Inafetado por Solo Ardente/Eletrizado" (`imune_solo_<tipo>`).
+ */
+function criarSolo(hunt, m, mec, agora, eventos) {
+  const raio = Math.max(1, Math.round((mec.raioMetros ?? 1.6) / 2));
+  const golpe = (Poderes.golpeMaximoDoBicho(m) ?? 0) * (m.forca ?? 1);
+  (hunt.solosDosMonstros ??= []).push({ tipo: mec.solo, x: m.x, y: m.y, z: hunt.z ?? 0, raio, ate: agora + (mec.duracaoMs ?? 6000), proximo: agora, ...(mec.solo === 'ardente' ? { dps: (golpe * (mec.dpsPctDoGolpe ?? 62.5)) / 100 } : {}), ...(mec.solo === 'eletrizado' ? { pct: mec.danoRecebidoPct ?? 20 } : {}), de: m });
+  eventos.push({ t: 'area', id: 6, x: m.x, y: m.y, casas: Areas.paraTela(Areas.quadrado(m, raio), m) });
+}
+/** (lote 70) Os solos dos monstros a cada tique: o que vale em você agora (e os que acabaram saem). */
+function tiqueDosSolos(estado, hunt, personagem, eventos, agora, ficha) {
+  if (!hunt.solosDosMonstros?.length) return;
+  hunt.solosDosMonstros = hunt.solosDosMonstros.filter((s) => s.ate > agora);
+  for (const s of hunt.solosDosMonstros) {
+    if (s.z !== (hunt.z ?? 0) || !hunt.pos || distancia(hunt.pos, s) > s.raio || estado.hp <= 0) continue;
+    if (Number(ficha?.afPoe?.[`imune_solo_${s.tipo}`]) > 0) continue;
+    if (s.tipo === 'eletrizado') NoJogador.eletrizarPeloSolo(hunt, ficha, s.pct, agora);
+    else if (s.tipo === 'ardente' && s.dps > 0 && agora >= s.proximo) {
+      s.proximo = agora + 1000;
+      ferirJogador(estado, hunt, personagem, s.de, s.dps, 'fire', eventos, 'Solo Ardente');
     }
   }
 }
@@ -280,17 +308,24 @@ export function aoAcertarJogador(estado, hunt, personagem, m, { dano = 0, bruto 
     else if (mec.efeito === 'carga' && ganharCarga(m, mec.carga, agora, ficha)) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: `carga:${mec.carga}` });
   }
   // (+ 12/10: "Inimigos em seus Feixes de Vínculo não podem aplicar Afecções Elementais" — `Vinculos.noFeixe`.)
-  if (critico && estado.hp > 0 && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0) && !Vinculos.noFeixe(hunt, m)) {
+  // (lote 50, a Réplica: Defesa Imprudente: "+X% de chance de ser Congelado, Eletrizado e Incendiado" — `chance_ser_afetado`: o acerto que não
+  // é crítico também aplica a afecção do elemento dele, na chance; o crítico segue inerente, sem sortear de novo.)
+  const inerente = critico && !(Number(ficha.afPoe?.critico_recebido_sem_afeccao) > 0);
+  const chanceExtra = Number(ficha.afPoe?.chance_ser_afetado) || 0;
+  if ((inerente || chanceExtra > 0) && estado.hp > 0 && !Vinculos.noFeixe(hunt, m)) {
     const N = NoJogador.NUMEROS;
     const vidaMax = Math.max(1, estado.maxHp ?? 0);
-    if ((brutas.fire ?? 0) > 0) {
+    const pega = () => inerente || rng() * 100 < chanceExtra;
+    if ((brutas.fire ?? 0) > 0 && pega()) {
       const posto = ModsPoe.dotNoJogador(hunt, { tipo: 'queimadura', total: (brutas.fire * N.incendio.pctDoFogo) / 100, duracaoMs: N.incendio.duracaoMs, origem }, agora, rng);
       if (posto) naTela(posto);
     }
     const msGelo = NoJogador.msDoCongelamento(partes.ice ?? 0, vidaMax);
-    if (msGelo > 0 && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
-    const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
-    if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    if (msGelo > 0 && pega() && Controle.congelar(hunt, ficha, msGelo, agora, rng)) naTela('congelado');
+    if ((partes.energy ?? 0) > 0 && pega()) {
+      const eletrizou = NoJogador.eletrizar(hunt, ficha, partes.energy ?? 0, vidaMax, { agora, rng });
+      if (eletrizou > 0) { naTela('eletrizado', { pct: eletrizou }); mudou = true; }
+    }
   }
   if (mudou) Ficha.invalidar(estado);
 }
@@ -326,6 +361,7 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
 export function tique(estado, hunt, personagem, eventos) {
   const agora = relogio(hunt);
   const fichaDoJogador = ModsPoe.fichaDa?.(hunt) ?? null;
+  tiqueDosSolos(estado, hunt, personagem, eventos, agora, fichaDoJogador);
   for (const m of hunt.monstros) {
     // (PoE, 12/10) A vida que o monstro drenou de você volta ao longo do tempo.
     if (m.drenoPoe && m.hp > 0) tiqueDoDreno(m, agora);
@@ -380,10 +416,21 @@ export function tique(estado, hunt, personagem, eventos) {
     return m && m.estados?.lento?.ate > agora && Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y)) <= 3 ? Math.max(0, 1 - lentoMenos / 100) : 1;
   };
   const andando = (tipo) => (afPoe && tipo === 'sangramento' && !(Number(afPoe.sangrar_andando_sem_extra) > 0) && agora - (hunt.poeRecente?.moveu ?? -Infinity) <= Dot.MOVIMENTO.janelaMs ? Dot.MOVIMENTO.fator : 1);
+  // (lote 72, a Terapia de Exposição) "+X% de Resistência a Caos contra Dano Degenerativo": no dano contínuo de Caos, a resistência a Caos + X,
+  // até o máximo dela (a do golpe: `protection.chaos`, já no máximo).
+  const resCaosDegen = Number(afPoe?.chaos_res_contra_degen) || 0;
+  const doCaosDegen = (el) => {
+    if (el !== 'chaos' || !(resCaosDegen > 0)) return 1;
+    const f = Ficha.combate(estado);
+    const res = Math.min(100, f.protection?.chaos ?? 0);
+    if (res >= 100) return 1;
+    const comX = Math.min(Ficha.maximoDaResistencia(f.afPoe, 'chaos'), res + resCaosDegen);
+    return Math.max(0, 1 - comX / 100) / (1 - res / 100);
+  };
   Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome, tipo) => {
     if (inafetado(tipo)) return 0;
     const el = doTipo(tipo, elemento);
-    const quanto = Math.round(valor * menosDegen * andando(tipo) * doLento(origem));
+    const quanto = Math.round(valor * menosDegen * andando(tipo) * doLento(origem) * doCaosDegen(el));
     if (cura(el)) { if (!ModsPoe.vidaSoPeloDreno(afPoe)) estado.hp = Math.min(estado.maxHp ?? 0, (estado.hp ?? 0) + quanto); return 0; }
     return ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, quanto, el, eventos, nome);
   }, () => estado.hp > 0);

@@ -71,6 +71,9 @@ export const APELIDOS_DE_GEMA = Object.freeze({
   'Efeito em Área Aumentado': 'Área de Efeito Aumentada', 'Dano de Caos Adicionado': 'Dano Adicional de Caos', 'Gelo para Fogo': 'Gelo a Fogo',
   'Rajada Maior': 'Grande Rajada', 'Eco Mágico Maior': 'Eco Mágico Maior (Reforço)', Contaminar: 'Profanar',
   'Erguer Zumbi': 'Evocar Zumbi', 'Erguer Espectro': 'Evocar Espectro',
+  // (lote 55, o Equilíbrio do Terror: a Punição do texto é o Castigo da gema)
+  'Punição': 'Castigo',
+  'Pureza Elemental': 'Pureza Elementar',
 });
 const slugDaGema = (nome) => slugDoNome(APELIDOS_DE_GEMA[nome] ?? nome);
 
@@ -98,7 +101,8 @@ export function traduzirParte(parte, valores, opcoes = {}) {
     // diz ('equivalente'/'aproximado'), ou 'novo'.
     const soDoDraevor = efeitos.every((e) => FICHAS[e.stat]);
     // A gema nomeada não está na coleção do jogo: o mod não tem como agir (o balão explica).
-    if (r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDaGema(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
+    // (lote 56: `nomeLivre` — o nome não é de gema: a pedra fundamental da Fuga Impossível, o notável da Chama/Carne Proibida)
+    if (!r.nomeLivre && r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDaGema(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
     const estado = !efeitos.every(temEfeito) ? 'registrado' : soDoDraevor ? r.estado ?? 'equivalente' : r._nova && r.estado && r.estado !== 'novo' ? r.estado : 'novo';
     return { estado, efeitos, nota: r.nota ?? null, regra: r.i };
   }
@@ -113,6 +117,17 @@ export function traduzirParte(parte, valores, opcoes = {}) {
       if (['equivalente', 'aproximado', 'novo'].includes(base.estado) && efeitos.every(temEfeito) && (!doGolpe || base.efeitos.every((e) => DO_GOLPE.test(partir(e.stat).stat)))) {
         return { estado: 'novo', efeitos, nota: base.nota ?? null, regra: base.regra, condicao: c.cond };
       }
+    }
+  }
+  // (lote 58, a Fé Militante) a ESCALA da Devoção no texto: "<efeito> por cada N de Devoção" / "por N Devoções" — o efeito pelas regras de sempre,
+  // com `%devocao:N` (a Devoção total da ficha — `condicoes-poe.fatorDaEscala`).
+  if (!opcoes?.semEscala) {
+    const d = /^(.+?),? por (?:cada )?\{(\d+)\} (?:de )?Devoç(?:ão|ões)$/.exec(String(parte).trim());
+    if (d) {
+      const n = Number(valores[Number(d[2])]) || 10;
+      const base = traduzirParte(d[1], valores, { ...opcoes, semEscala: true });
+      const efeitos = base.efeitos.map((e) => ({ ...e, stat: comEscala(e.stat, `devocao:${n}`) }));
+      if (['equivalente', 'aproximado', 'novo'].includes(base.estado) && efeitos.every(temEfeito)) return { estado: 'novo', efeitos, nota: base.nota ?? null, regra: base.regra };
     }
   }
   // "{n}% de aumento do X" / "{n}% de redução da X" (o poedb em português escreve das duas formas): a forma das regras ("X aumentado em
@@ -184,6 +199,8 @@ const SUFIXOS_DE_CONDICAO = [
   [/^(.+?),? (?:(?:quando|enquanto) (?:estiver )?)?(?:na|com a) [Mm]ão [Pp]rincipal$/, 'naMaoPrincipal'],
   [/^(.+?),? (?:(?:quando|enquanto) (?:estiver )?)?(?:na|com a) [Mm]ão [Ss]ecundária$/, 'naMaoSecundaria'],
 ];
+/** (lote 57) A influência pelo nome do texto (o Limitado pelo Destino) → a de `poe.influencias` (os Exaltados — `moedas.INFLUENCIAS`). */
+const INFLUENCIA_DO_TEXTO = { 'ancião': 'elder', criador: 'shaper', 'senhor da guerra': 'warlord', 'caçador': 'hunter', redentora: 'redeemer', cruzado: 'crusader' };
 const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? enquanto (?:carregando|empunhando|empunhar|segurando) (?:um|uma) (Cajado|Arco|Varinha|Adaga|Garra|Espada|Machado|Maça|Cetro)$/, (m) => ARMA[m[2]]],
   [/^(.+?),? (?:enquanto|quando) (?:você )?(?:estiver )?(?:no máximo de|com o Máximo de) Cargas de (Tolerância|Frenesi|Poder)$/, (m) => `cargasMax:${CARGA[m[2]]}`],
@@ -192,6 +209,15 @@ const SUFIXOS_COM_PARAMETRO = [
   [/^(.+?),? caso você tenha ao menos \{(\d+)\} de Escudo de Energia Máximo$/, (m, valores) => `escudoMin:${Number(valores[Number(m[2])]) || 0}`],
   // (lote 48, as Atemporais: a Fé Militante) "enquanto/se você tiver pelo menos N de Devoção" — a soma da Devoção (`devocao`)
   [/^(.+?),? (?:enquanto|se) você tiver pelo menos \{(\d+)\} de Devoção$/, (m, valores) => `devocaoMin:${Number(valores[Number(m[2])]) || 0}`],
+  // (lote 57, o Limitado pelo Destino) "se N Itens do Ancião estiverem equipados" / "se tiver N itens do Criador equipados" (`itensInfluencia:<inf>:<N>`)
+  [/^(.+?),? se (?:tiver )?\{(\d+)\} itens d[aoe]s? (ancião|criador|senhor d[ae] guerra|caçador|redentora|cruzado) (?:estiverem )?equipados$/i, (m, valores) => `itensInfluencia:${INFLUENCIA_DO_TEXTO[m[3].toLowerCase().replace(/senhor d[ae] guerra/, 'senhor da guerra')]}:${Number(valores[Number(m[2])]) || 0}`],
+  // (lote 56, a Doutrina Racional) "se a Força / Destreza / Inteligência for seu maior Atributo" (`maiorAtributo:<atr>`)
+  [/^(.+?),? se a (Força|Destreza|Inteligência) for seu maior Atributo$/, (m) => `maiorAtributo:${{ Força: 'str', Destreza: 'dex', Inteligência: 'int' }[m[2]]}`],
+  // (lote 55, o Olho do Vigia) "enquanto afetado por <Aura>" / "enquanto sob efeito de <Aura>": a aura da gema ligada (`afetadoPor:<o nome>`);
+  // só com o nome de uma gema que o jogo tem.
+  [/^(.+?),? enquanto ?(?:(?:a ?f?etad[oa]s?|sob (?:o )?efeito) (?:por|de)|(?:estiver )?usando) (.+)$/, (m) => { const s = slugDaGema(m[2].trim()); return gemaConhecida(s) !== false ? `afetadoPor:${s}` : null; }],
+  // (lote 55, o Equilíbrio do Terror) "se você conjurou <Maldição> nos últimos N segundos": o uso da gema (`nosUltimos:N:usou:gema:<o nome>`).
+  [/^(.+?),? se (?:você )?conjur(?:ou|ar) (.+?) nos últimos \{(\d+)\} segundos$/, (m, valores) => { const s = slugDaGema(m[2].trim()); return gemaConhecida(s) !== false ? `nosUltimos:${Number(valores[Number(m[3])]) || 0}:usou:gema:${s}` : null; }],
 ];
 /** Os atributos que o GOLPE resolve com as tags do alvo (`fichaDoGolpe`): dano aumentado, crítico, penetração, dano por elemento, "mais dano". */
 const DO_GOLPE = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|elem_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|life_leech|mana_leech)$/;
@@ -202,6 +228,8 @@ export function condicaoDoTexto(parte, valores = []) {
   for (const [re, f] of SUFIXOS_COM_PARAMETRO) { const m = re.exec(parte); if (m) { const cond = f(m, valores); if (cond) return { efeito: m[1], cond }; } }
   return null;
 }
+/** (lote 58) O atributo com uma escala: `stat@cond` → `stat%escala@cond` (a escala vem antes da condição — `partir`). */
+const comEscala = (stat, escala) => { const i = String(stat).indexOf('@'); return i < 0 ? `${stat}%${escala}` : `${stat.slice(0, i)}%${escala}${stat.slice(i)}`; };
 /** O atributo com mais uma condição: `stat@a` → `stat@a+cond`. */
 const comCondicao = (stat, cond) => (String(stat).includes('@') ? `${stat}+${cond}` : `${stat}@${cond}`);
 
@@ -210,11 +238,12 @@ function temEfeito(e) {
   const { stat, escala, conds } = partir(e.stat);
   if (!(FICHAS[stat] || NOVOS[stat]?.combate || dinamicoValido(stat))) return false;
   if (!escalaValida(escala)) return false;
-  // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo`)
+  // (+ `alvoVenenos:N` — "contra Inimigos Afetados por ao menos N Venenos": `condicoes-poe.tagsDoAlvo`; lote 72: `alvoDefinhadosAte:N` — "se
+  // houver N ou menos Debuffs de Definhar no Inimigo", no evento: `mods-poe.evento`)
   // (+ `gema:<nome>` — a gema pelo nome, no nível das gemas: `skills/gemas.extrasDaGemaPoe`)
   // (+ `critico` — só no golpe crítico, para os atributos que o acerto lê assim: `SO_NO_CRITICO`; `golpeAtordoou`, o mesmo — `SO_AO_ATORDOAR`)
   const soNoAcerto = { critico: SO_NO_CRITICO, golpeAtordoou: SO_AO_ATORDOAR };
-  return conds.every((c) => (soNoAcerto[c] ? soNoAcerto[c].has(stat) : ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^gema:[\w-]+$/.test(c)));
+  return conds.every((c) => (soNoAcerto[c] ? soNoAcerto[c].has(stat) : ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c] || /^alvo(Menos)?Venenos:\d+$/.test(c) || /^alvoDefinhadosAte:\d+$/.test(c) || /^gema:[\w-]+$/.test(c)));
 }
 
 /** O atributo (do personagem) tem efeito no combate? — a mesma conta do balão (`temEfeito`), para quem valida de fora (os mapas). */

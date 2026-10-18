@@ -11,6 +11,7 @@
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { readFileSync } from 'node:fs';
 import { CONFIG as CONFIG_DAS_GEMAS } from './gemas.mjs';
+import { SOLO_PROFANO, noSoloProfano } from '../itens-poe/condicoes-poe.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/gemas/reforcos.json', import.meta.url), 'utf8'));
 
@@ -211,7 +212,8 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
       }
       if (!cabe) continue;
       dur ||= 6000;
-      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
+      // (lote 52: `aura` — a posta pela aura, a Blasfêmia; a Desgraça das Bruxas só conta o Feitiço não-aura)
+      maldicoes[id] = { ate: agora + dur, desde: agora, lancada: lancado, dur, efeitos, ...(marca ? { marca: true } : {}), ...(emAura ? { aura: true } : {}), ...(regras.expirou?.length ? { expirou: regras.expirou } : {}), ...(regras.desacelera ? { desacelera: regras.desacelera } : {}), ...(regras.lentoApos ? { lentoApos: regras.lentoApos } : {}), ...(regras.danoApos ? { danoApos: regras.danoApos } : {}),
         ...(regras.regenMenos ? { regenMenos: regras.regenMenos } : {}), ...(regras.semRecargaEs ? { semRecargaEs: true } : {}), ...(regras.destruir ? { destruir: true } : {}),
         // (ciclo 7) as regras da árvore no Inimigo Marcado (`acoes.efeitosDaMaldicao` → `daMarca`)
         ...(regras.daMarca ? { daMarca: regras.daMarca } : {}),
@@ -250,7 +252,9 @@ export function marcar(hunt, bicho, agora = hunt?.clock ?? Date.now()) {
 export function vulnerabilidade(bicho, tipo, agora) {
   const m = bicho?.marcas?.vulneravel;
   let f = m && m.ate > agora && m.tipos.includes(tipo) ? 1 + m.pct / 100 : 1;
-  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora)) / 100;
+  // (lote 57: + o Solo Profano — "maldições têm efeito aumentado em 10% sobre eles")
+  const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'vulneravel' && e.tipos.includes(tipo)) f *= 1 + (e.pct * fatorDoExpirou(c, agora) * profano) / 100;
   return f;
 }
 
@@ -261,7 +265,8 @@ export function forcaDoBicho(bicho, agora) {
   const pctDe = (x) => (raro && x.pctRaro != null ? x.pctRaro : x.pct);
   const m = bicho?.marcas?.enfraquecido;
   let f = m && m.ate > agora ? 1 - pctDe(m) / 100 : 1;
-  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (pctDe(e) * fatorDoExpirou(c, agora)) / 100);
+  const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
+  for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (pctDe(e) * fatorDoExpirou(c, agora) * profano) / 100);
   // × o buff de dano das mecânicas do mob (Enfurecido, Vingativo — `mobs/buffs.mjs`).
   return (bicho?.forca ?? 1) * f * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
 }

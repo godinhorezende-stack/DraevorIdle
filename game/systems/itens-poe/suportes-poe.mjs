@@ -316,6 +316,8 @@ const REGRAS = [
   [new RegExp(`^(?!Repetições|Explosão)[^%]*?causam? ([+-])${N}% de dano(?![^%]*por estágio)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[1] === '-' ? -1 : 1) * num(m[2])) : null)],
   [new RegExp(`Magias Suportadas têm ${N}% mais Dano Mágico`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { maisDanoAcertoPct: num(m[1]), maisDanoMagicoPct: num(m[1]) } : null)],
   [new RegExp(`causam? ${N}% de Dano (?:de )?(\\S+)? ?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
+  // (lote 76) o "Dano aumentado com Incêndio" da qualidade: só no Incêndio (o de Veneno e o de Sangramento, no bloco do lote G17, acima)
+  [new RegExp(`causam Dano aumentado em ${N}% com Incêndio`, 'i'), (m) => ({ 'af:ignite_dmg_inc': num(m[1]) })],
   [new RegExp(`causam Dano aumentado em ${N}%`, 'i'), (m) => ({ danoPct: num(m[1]) })],
   [new RegExp(`Dano [^%]*?aumentado em ${N}%`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`${N}% de Dano [^%]*?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],

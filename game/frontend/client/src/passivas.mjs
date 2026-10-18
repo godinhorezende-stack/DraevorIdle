@@ -16,6 +16,7 @@
  */
 import { tipFor } from './tooltip.mjs';
 import { itemCanvas } from './sprites.mjs';
+import * as Grafo from './passivas-grafo.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -84,9 +85,7 @@ function efeitosDoNo(n) {
 }
 
 /** Os grupos com um notável entre estes ids (a maestria do grupo abre com ele). */
-function gruposComNotavel(a, ids) {
-  return new Set([...ids].map((id) => a.porId.get(id)).filter((n) => n?.tipo === 'notable' && n.grupo != null).map((n) => n.grupo));
-}
+const gruposComNotavel = (a, ids) => Grafo.gruposComNotavel(a, ids);
 
 /** As opções de maestria já escolhidas em maestrias do MESMO tipo (o mesmo nome), fora esta. */
 function opcoesUsadas(n) {
@@ -135,109 +134,40 @@ const semAcento = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, ''
 
 // ------------------------------------------------------------ a árvore local
 
-/** A árvore que veio do servidor, com o mapa por id e as arestas (uma vez). */
-function preparar(a) {
-  const porId = new Map(a.nos.map((n) => [n.id, n]));
-  const arestas = [];
-  for (const n of a.nos) for (const c of n.conexoes) if (n.id < c) arestas.push([n, porId.get(c)]);
-  for (const n of a.nos) n.busca = semAcento(`${n.nome} ${n.nomeEn ?? ''} ${n.descricao ?? ''} ${(n.textos ?? n.efeitos.map(textoDoEfeito)).join(' ')} ${n.tags.join(' ')}`);
-  return { ...a, porId, arestas };
-}
+/** O texto de busca de um nó (nome, nome em inglês, descrição, linhas e tags, sem acento). */
+const buscaDoNo = (n) => semAcento(`${n.nome} ${n.nomeEn ?? ''} ${n.descricao ?? ''} ${(n.textos ?? (n.efeitos ?? []).map(textoDoEfeito)).join(' ')} ${(n.tags ?? []).join(' ')}`);
 
-const arvore = () => ctx.state.passivasArvore ?? null;
 const vista = () => ctx.state.passivas ?? ctx.state.character?.passivas ?? null;
+/**
+ * A árvore do PERSONAGEM (lote 77): a que veio do servidor (uma vez por sessão — `passivas-grafo.prepararArvore`) com os nós das Joias
+ * Ramificadoras encaixadas (`vista().ramificadoras`). É por ela que a tela desenha, acha o caminho, conta e busca.
+ */
+const arvore = () => Grafo.arvoreDoPersonagem(ctx.state.passivasArvore ?? null, vista());
 const meus = () => new Set(vista()?.alocados ?? []);
-/** Os inícios de outras classes que estes nós liberam ("Caminho do Marauder" da Ascendente: `inicio_extra:<classe>`) — a regra do servidor. */
-function iniciosExtras(ids) {
-  const a = arvore();
-  const extras = new Set();
-  for (const id of ids) for (const ef of a?.porId.get(id)?.efeitos ?? []) {
-    const m = /^inicio_extra:(\w+)$/.exec(ef.add ?? '');
-    if (m && ef.valor > 0 && a.inicios?.[m[1]]) extras.add(a.inicios[m[1]]);
-  }
-  return extras;
-}
-
-/** (lote 29) Os nós que as joias deixam alocar sem ligação ("podem ser atribuídas sem estarem conectadas à sua árvore") → o encaixe de cada um. */
-const liberados = () => vista()?.liberados ?? {};
 
 /** O menor caminho de nós não alocados até `id` — o mesmo que o servidor aceita. */
-function caminhoAte(id) {
-  const a = arvore();
-  const mine = meus();
-  if (!a?.porId.has(id)) return null;
-  if (mine.has(id)) return [];
-  // (lote 29) o nó liberado por uma joia entra sozinho; o caminho pode começar num liberado (ele entra no caminho)
-  const livres = Object.keys(liberados()).filter((x) => !mine.has(x));
-  if (livres.includes(id)) return [id];
-  const veioDe = new Map();
-  const fila = [...mine, ...[...iniciosExtras(mine)].filter((x) => !mine.has(x))];
-  for (const x of fila) veioDe.set(x, null);
-  const origens = new Set(fila);
-  for (const x of livres) if (!veioDe.has(x)) { veioDe.set(x, null); fila.push(x); }
-  for (let i = 0; i < fila.length; i++) {
-    for (const c of a.porId.get(fila[i])?.conexoes ?? []) {
-      if (veioDe.has(c) || a.porId.get(c)?.tipo === 'start') continue;
-      veioDe.set(c, fila[i]);
-      if (c === id) {
-        const caminho = [];
-        for (let x = c; x && !origens.has(x); x = veioDe.get(x)) caminho.unshift(x);
-        return caminho;
-      }
-      fila.push(c);
-    }
-  }
-  return null;
-}
+const caminhoAte = (id) => Grafo.caminhoAte(arvore(), vista(), id);
 
 /**
  * Os nós alocados que FICAM sem `id` — tirando também os que perderiam o caminho
  * até o início (a mesma regra do servidor: `Passivas.ilhadosSemEles`).
  */
-function ficamSem(id) {
-  const a = arvore();
-  const v = vista();
-  const resto = new Set((v?.alocados ?? []).filter((x) => x !== id));
-  // (+ os inícios extras dos nós que FICAM: tirar o "Caminho" ilha o que só se ligava por ele)
-  // (lote 29: + os nós liberados por uma joia cujo encaixe fica)
-  const inicios = [v?.inicio, v?.inicioAscendencia, ...iniciosExtras(resto), ...Object.entries(liberados()).filter(([n, s]) => s !== id && resto.has(n)).map(([n]) => n)].filter(Boolean);
-  const ligados = new Set(inicios);
-  const fila = [...inicios];
-  while (fila.length) {
-    for (const c of a.porId.get(fila.pop())?.conexoes ?? []) {
-      if (resto.has(c) && !ligados.has(c)) {
-        ligados.add(c);
-        fila.push(c);
-      }
-    }
-  }
-  // A maestria fica enquanto houver um notável ligado no grupo dela.
-  const grupos = gruposComNotavel(a, ligados);
-  return [...resto].filter((x) => ligados.has(x) || (a.porId.get(x)?.tipo === 'mastery' && grupos.has(a.porId.get(x).grupo)));
-}
+const ficamSem = (id) => Grafo.ficamSem(arvore(), vista(), id);
 
 /**
  * Árvore do PoE: os nós de ASCENDÊNCIA que aparecem — só os da escolhida; antes da escolha, os das 3 ascendências da classe (para ver o
- * que cada uma dá). Nó que não é de ascendência aparece sempre.
+ * que cada uma dá). Nó que não é de ascendência aparece sempre. (lote 77: menos o que só existe com a Joia Ramificadora — o proxy e o
+ * encaixe interno sem a joia —, que o PoE não mostra.)
  */
 function visivelNaArvore(n) {
+  if (Grafo.escondido(n)) return false;
   if (!n.ascendencia) return true;
   const v = vista();
   return v?.ascendencia ? n.ascendencia === v.ascendencia : (v?.ascendencias ?? []).some((a) => a.slug === n.ascendencia);
 }
 
-/** O estado de um nó para a tela: alocado | disponivel | caminho | bloqueado. */
-function estadoDoNo(n) {
-  const mine = meus();
-  if (mine.has(n.id)) return 'alocado';
-  if (n.tipo === 'start') return 'bloqueado';
-  // A maestria abre com um notável alocado no grupo dela.
-  if (n.tipo === 'mastery') return gruposComNotavel(arvore(), mine).has(n.grupo) ? 'disponivel' : 'bloqueado';
-  // A opção de escolha de uma ascendência: uma por pai (a irmã escolhida bloqueia as outras).
-  if (n.opcaoDe != null && [...mine].some((x) => x !== n.id && arvore()?.porId.get(x)?.opcaoDe === n.opcaoDe)) return 'bloqueado';
-  const extras = iniciosExtras(mine);
-  return n.conexoes.some((c) => mine.has(c) || extras.has(c)) || liberados()[n.id] ? 'disponivel' : 'bloqueado';
-}
+/** O estado de um nó para a tela: alocado | disponivel | bloqueado. */
+const estadoDoNo = (n) => Grafo.estadoDoNo(arvore(), vista(), n);
 
 // ------------------------------------------------------------------- abrir
 
@@ -251,7 +181,7 @@ export function openPassivas() {
 
 /** Resposta do servidor (`{t:'passivas'}`), chamada pelo main. */
 export function aoReceberPassivas(msg) {
-  if (msg.arvore) ctx.state.passivasArvore = preparar(msg.arvore);
+  if (msg.arvore) ctx.state.passivasArvore = Grafo.prepararArvore(msg.arvore, buscaDoNo);
   if (msg.view) {
     ctx.state.passivas = msg.view;
     if (ctx.state.character) ctx.state.character.passivas = msg.view;
@@ -377,6 +307,8 @@ function montar(body) {
   let termo = '';
   let achadosLista = [];
   let achadoAtual = -1;
+  // (lote 77) tirar ou trocar a Joia Ramificadora à espera do "Confirmar": `{ no, pedido }`
+  let confirmaJoia = null;
   let sujo = true;
   let quadro = 0;
   let largura = 0;
@@ -385,7 +317,17 @@ function montar(body) {
   const t = {
     plano: null,
     atualizar() {
-      if (!arvore()) return;
+      const a = arvore();
+      if (!a) return;
+      // (lote 77) a árvore do personagem muda com a Joia Ramificadora encaixada ou retirada: o nó escolhido, o do mouse e os achados da
+      // busca passam a ser os da árvore de agora (o que sumiu com a joia sai da seleção)
+      if (selecionado) {
+        const n = a.porId.get(selecionado.id);
+        selecionado = n && visivelNaArvore(n) ? n : null;
+      }
+      if (sobre) sobre = a.porId.get(sobre.id) ?? null;
+      if (confirmaJoia && !Grafo.soltarJoia(a, vista(), confirmaJoia.no)) confirmaJoia = null;
+      if (termo.length >= 2) buscar();
       carregando.hidden = true;
       if (!cam.centrado) centrar();
       desenharBarra();
@@ -627,7 +569,9 @@ function montar(body) {
     }
     const img = folha(s.tipos.groupBackground);
     const k = cam.zoom / s.zoom;
-    if (img) for (const [x, y, fundo, meio] of s.grupos) {
+    // (lote 77) o fundo do grupo de um PROXY só com a Joia Ramificadora — e, com ela, o do tamanho da joia no centro do grupo (como o PoB)
+    const grupos = img ? [...s.grupos.filter(([x, y]) => !a.gruposDeProxy?.has(`${x},${y}`)), ...(a.ativas ?? []).map((j) => [j.x, j.y, j.fundo, j.meio])] : [];
+    for (const [x, y, fundo, meio] of grupos) {
       const c = s.coords.groupBackground[fundo];
       if (!c) continue;
       const w = c[2] * k;
@@ -840,8 +784,9 @@ function montar(body) {
       aro(p, r, vivo ? CORES.ouroVivo : perto ? CORES.disponivel : notavel ? '#a88a4c' : n.tipo === 'mastery' ? '#6f5c99' : CORES.bronze, notavel || n.tipo === 'mastery' ? 3 : 2);
       if (notavel) aro(p, r * 0.78, vivo ? '#8a6a30' : CORES.bronzeEscuro, 1.4);
     }
-    // A passiva de ascendência: a arte do PoE dentro da moldura, no lugar do emblema colorido.
-    const arte = n.icone ? imagemDoNo(n.icone) : null;
+    // A passiva de ascendência: a arte do PoE dentro da moldura, no lugar do emblema colorido. (lote 77: o `icone` dos nós da Ramificadora é
+    // o caminho do PoE da árvore — não está na pasta das ascendências)
+    const arte = n.icone && !n.ramificadora ? imagemDoNo(n.icone) : null;
     if (arte) return void imagemNoDisco(arte, p, r * (n.tipo === 'notable' ? 0.74 : 0.8), vivo ? 1 : apagado ? 0.45 : 0.85);
     // O emblema: a cor do tema, com um miolo mais claro.
     const re = r * (n.tipo === 'small' ? 0.48 : 0.5);
@@ -943,7 +888,8 @@ function montar(body) {
 
     // (lote 27) O RAIO GRANDE do encaixe de joia escolhido (o do Chieftain: 1500 unidades da árvore).
     // (lote 29: o raio da joia encaixada — `vista.raios`, o anel do Fio de Esperança com o de dentro —; sem ele, o Raio Grande)
-    const raioDoEncaixe = selecionado?.encaixeDeJoia ? vista()?.raios?.[selecionado.id] ?? (a.raiosDeJoia?.grande ? { min: 0, max: a.raiosDeJoia.grande } : null) : null;
+    // (lote 77: o encaixe que a Ramificadora cria não tem raio, nem a Ramificadora — como no PoE)
+    const raioDoEncaixe = selecionado?.encaixeDeJoia && !selecionado.encaixeInterno && !vista()?.joias?.[selecionado.id]?.poe?.ramificadora ? vista()?.raios?.[selecionado.id] ?? (a.raiosDeJoia?.grande ? { min: 0, max: a.raiosDeJoia.grande } : null) : null;
     if (raioDoEncaixe) {
       const p = paraTela(selecionado);
       g.beginPath();
@@ -1076,6 +1022,7 @@ function montar(body) {
     if (arrasto && !arrasto.moveu && toques.size === 0) {
       selecionado = noEm(p.x, p.y);
       t.plano = null;
+      confirmaJoia = null;
       desenharInfo();
       pedir();
     }
@@ -1112,11 +1059,16 @@ function montar(body) {
   };
 
   // ---- busca ----
+  /** Os nós com o termo (lote 77: os da árvore do personagem, sem os que só existem com a Joia Ramificadora). */
+  function buscar() {
+    achadosLista = termo.length >= 2 ? (arvore()?.nos ?? []).filter((n) => visivelNaArvore(n) && n.busca?.includes(termo)) : [];
+    achadoAtual = Math.min(achadoAtual, achadosLista.length - 1);
+    achados.textContent = termo.length >= 2 ? `${achadosLista.length} nó${achadosLista.length === 1 ? '' : 's'}` : '';
+  }
   busca.oninput = () => {
     termo = semAcento(busca.value.trim());
-    achadosLista = termo.length >= 2 ? (arvore()?.nos ?? []).filter((n) => n.busca.includes(termo)) : [];
     achadoAtual = -1;
-    achados.textContent = termo.length >= 2 ? `${achadosLista.length} nó${achadosLista.length === 1 ? '' : 's'}` : '';
+    buscar();
     pedir();
   };
   busca.onkeydown = (e) => {
@@ -1124,6 +1076,7 @@ function montar(body) {
     e.preventDefault();
     achadoAtual = (achadoAtual + 1) % achadosLista.length;
     selecionado = achadosLista[achadoAtual];
+    confirmaJoia = null;
     irPara(selecionado);
     desenharInfo();
   };
@@ -1203,9 +1156,11 @@ function montar(body) {
     const linhas = [];
     if (n.tipo !== 'start') linhas.push(`Custo: ${n.custo} ponto${n.custo === 1 ? '' : 's'}${n.ascendencia ? ' de ascendência' : ''}`);
     if (n.ascendencia) linhas.push(`Ascendência: ${arvore()?.ascendencias?.[n.ascendencia]?.nome ?? n.ascendencia}`);
+    // (lote 77) o nó que a Joia Ramificadora criou: de que joia ele é
+    if (n.ramificadora) linhas.push(`Da joia: ${vista()?.joias?.[n.ramificadora.encaixe]?.poe?.nome || 'Joia Ramificadora'}`);
     if (n.levelMinimo) linhas.push(`Requer level ${n.levelMinimo}${lv < n.levelMinimo ? ' (você não tem)' : ''}`);
-    let rotuloEstado = { alocado: 'Alocado', disponivel: 'Disponível', bloqueado: n.tipo === 'start' ? 'Início de outra classe' : 'Bloqueado — sem ligação com um nó seu' }[estado];
-    if (estado === 'bloqueado' && n.tipo !== 'start') {
+    let rotuloEstado = { alocado: 'Alocado', disponivel: 'Disponível', bloqueado: n.tipo === 'start' ? 'Início de outra classe' : n.soDaRamificadora ? 'Só com uma Joia Ramificadora encaixada' : 'Bloqueado — sem ligação com um nó seu' }[estado];
+    if (estado === 'bloqueado' && n.tipo !== 'start' && !n.soDaRamificadora) {
       const c = caminhoAte(n.id);
       if (c?.length) {
         linhas.push(`Caminho: ${c.length} nós · ${c.reduce((s2, id) => s2 + (arvore().porId.get(id)?.custo ?? 0), 0)} pontos`);
@@ -1270,6 +1225,7 @@ function montar(body) {
   }
   respecTudo.onclick = () => {
     selecionado = null;
+    confirmaJoia = null;
     t.plano = null;
     ctx.send({ t: 'passivas', action: 'planoRespec', tudo: true });
     desenharInfo();
@@ -1439,6 +1395,9 @@ function montar(body) {
   /*
    * (15/10, lote 27) O ENCAIXE DE JOIA escolhido: a joia que está nele (o ícone, com o balão da peça) e as joias da mochila para pôr — só
    * no encaixe alocado (o servidor confere; a que sai volta para a mochila).
+   * (lote 77) Também o encaixe que uma Joia Ramificadora cria. A mochila mostra só as joias que CABEM (a Ramificadora num encaixe de expansão
+   * do tamanho dela ou maior — as outras viram uma linha com o porquê), e tirar ou trocar uma Ramificadora pede confirmação antes: os nós dela
+   * saem da árvore (os pontos voltam), o preço quando há um encaixe ou pedra fundamental alocado nela, e as joias de dentro voltam para a mochila.
    */
   function quadroDaJoia(n, estado) {
     const caixa = el('div', 'pas-joia');
@@ -1451,28 +1410,88 @@ function montar(body) {
       if (i != null) linha.dataset.pilha = i;
       return linha;
     };
-    const atual = vista()?.joias?.[n.id];
+    const a = arvore();
+    const v = vista();
+    const atual = v?.joias?.[n.id];
+    const soltar = atual ? Grafo.soltarJoia(a, v, n.id) : null;
+    // (com nó alocado ou joia dentro, a Ramificadora só sai depois do "Confirmar")
+    const enviar = (pedido) => {
+      if (soltar && (soltar.sai.length || soltar.menores.length)) {
+        confirmaJoia = { no: n.id, pedido };
+        desenharInfo();
+      } else ctx.send(pedido);
+    };
+    if (confirmaJoia?.no === n.id && soltar) {
+      caixa.append(confirmacaoDaJoia(soltar));
+      return caixa;
+    }
     caixa.append(el('b', null, atual ? 'Joia no encaixe' : 'Encaixe vazio'));
     if (atual) {
       const linha = peca(atual);
+      if (atual.poe?.ramificadora) {
+        const k = Grafo.nosDaJoia(a, n.id).length;
+        linha.append(el('span', 'pas-joia-nos', `${k} nó${k === 1 ? '' : 's'} na árvore`));
+      }
       const tirar = el('button', 'ghost', 'Retirar');
-      tirar.onclick = () => ctx.send({ t: 'passivas', action: 'retirarJoia', no: n.id });
+      tirar.onclick = () => enviar({ t: 'passivas', action: 'retirarJoia', no: n.id });
       linha.append(tirar);
       caixa.append(linha);
     }
+    const doEncaixe = Grafo.textoDoEncaixe(n);
+    if (doEncaixe) caixa.append(el('p', 'pas-dica', doEncaixe));
     if (estado !== 'alocado') {
       caixa.append(el('p', 'pas-aviso', 'Aloque o encaixe para pôr uma joia.'));
       return caixa;
     }
     const mochila = (ctx.state.character?.inventory ?? []).map((p, i) => [p, i]).filter(([p]) => ctx.state.items?.[p?.id]?.joia);
-    caixa.append(el('p', 'pas-dica', mochila.length ? (atual ? 'Trocar pela joia da mochila (a de agora volta para ela):' : 'Pôr uma joia da mochila:') : 'Nenhuma joia na mochila. As Joias Carmesim, Viridiana e Cobalto caem dos monstros.'));
-    for (const [p, i] of mochila) {
+    const cabem = mochila.filter(([p]) => !Grafo.porqueNaoCabe(n, p));
+    caixa.append(el('p', 'pas-dica', cabem.length ? (atual ? 'Trocar pela joia da mochila (a de agora volta para ela):' : 'Pôr uma joia da mochila:') : mochila.length ? 'Nenhuma joia da mochila cabe neste encaixe.' : 'Nenhuma joia na mochila. As Joias Carmesim, Viridiana e Cobalto caem dos monstros.'));
+    for (const [p, i] of cabem) {
       const linha = peca(p, i);
       const por = el('button', 'primary', atual ? 'Trocar' : 'Encaixar');
-      por.onclick = () => ctx.send({ t: 'passivas', action: 'encaixarJoia', no: n.id, pilha: i, id: p.id });
+      por.onclick = () => enviar({ t: 'passivas', action: 'encaixarJoia', no: n.id, pilha: i, id: p.id });
       linha.append(por);
       caixa.append(linha);
     }
+    // as que não cabem: quantas e por quê (o texto do servidor)
+    const fora = new Map();
+    for (const [p] of mochila) {
+      const porque = Grafo.porqueNaoCabe(n, p);
+      if (porque) fora.set(porque, (fora.get(porque) ?? 0) + 1);
+    }
+    for (const [porque, k] of fora) caixa.append(el('p', 'pas-aviso', `${k === 1 ? '1 Joia Ramificadora da mochila não cabe aqui' : `${k} Joias Ramificadoras da mochila não cabem aqui`}: ${porque}`));
+    return caixa;
+  }
+  /** (lote 77) "Retirar/Trocar a Joia Ramificadora?" — o que sai, o preço e as joias que voltam; Confirmar manda o pedido guardado. */
+  function confirmacaoDaJoia(soltar) {
+    const caixa = el('div', 'pas-confirma');
+    const { pedido } = confirmaJoia;
+    const k = soltar.sai.length;
+    caixa.append(el('b', null, pedido.action === 'retirarJoia' ? 'Retirar a Joia Ramificadora?' : 'Trocar a Joia Ramificadora?'));
+    caixa.append(el('p', null, k ? `${k === 1 ? 'O nó alocado nela sai' : `Os ${k} nós alocados nela saem`} da árvore (${k === 1 ? 'o ponto volta' : `os ${k} pontos voltam`}).` : 'Nenhum nó dela está alocado.'));
+    if (k) {
+      const nomes = soltar.sai.slice(0, 8).map((id) => arvore()?.porId.get(id)?.nome ?? id);
+      caixa.append(el('p', null, nomes.join(', ') + (k > 8 ? ` e mais ${k - 8}` : '')));
+    }
+    const m = soltar.menores.length;
+    if (m) caixa.append(el('p', null, `${m === 1 ? 'A joia de dentro dela volta' : `As ${m} joias de dentro dela voltam`} para a mochila.`));
+    caixa.append(el('p', 'pas-preco', soltar.preco ? `Custa ${soltar.preco.toLocaleString('pt-BR')} de ouro (bolso + banco): um encaixe ou pedra fundamental alocado nela.` : 'Grátis.'));
+    const sim = el('button', 'danger', 'Confirmar');
+    const nao = el('button', 'ghost', 'Cancelar');
+    sim.disabled = !!soltar.preco && (ctx.state.character?.gold ?? 0) + (ctx.state.character?.bank ?? 0) < soltar.preco;
+    if (sim.disabled) sim.title = 'Falta ouro';
+    sim.onclick = () => {
+      ctx.send(pedido);
+      confirmaJoia = null;
+      desenharInfo();
+    };
+    nao.onclick = () => {
+      confirmaJoia = null;
+      desenharInfo();
+    };
+    const linha = el('div', 'pas-botoes');
+    linha.append(sim, nao);
+    caixa.append(linha);
     return caixa;
   }
 

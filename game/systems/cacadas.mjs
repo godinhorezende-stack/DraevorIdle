@@ -2025,7 +2025,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   // Congelado ou atordoado (controle de boss/elite): a conjuração em andamento se perde, e o jogador não age até acabar.
   // (Na Safe Zone, também: o jogador não ataca dali.)
   const livre = Controle.podeAgir(hunt) && !naZonaSegura;
-  if (!livre) hunt.conjurando = null;
+  // (lote 73, o Mal Inabalável: a conjuração de Caos segue no atordoamento — `Acoes.conjuracaoSegueNoAtordoamento`)
+  if (!livre && !(!naZonaSegura && Acoes.conjuracaoSegueNoAtordoamento(estado, hunt))) hunt.conjurando = null;
   // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
   eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
   // No manual, o alvo CLICADO (vivo) é atacado com o golpe básico mesmo com o "Ataque automático" desligado (dono, 07/10: "no manual,
@@ -2159,6 +2160,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt);
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
+  // (lote 75) o Arauto da Agonia: o Rastejador vem ao Envenenar e some sem Virulência (`Acoes.tiqueDoArautoDaAgonia`)
+  if (itensPoeLigado()) eventos.push(...Acoes.tiqueDoArautoDaAgonia(estado, hunt, hunt.clock ?? 0));
   // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
   if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 
@@ -2190,7 +2193,9 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`, ...(hunt.lacaios ?? []).filter((l) => l !== f && l.hp > 0).map((l) => `${l.x},${l.y}`)]);
   const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
   // (PoE: "Lacaios têm X% da Velocidade de Movimento aumentada" — a fração vira a chance de um passo a mais no tique.)
-  const passos = (d > longe ? 2 : 1) + (f.poe?.movimentoPct > 0 && Math.random() * 100 < f.poe.movimentoPct ? 1 : 0);
+  // (lote 69: + o "Lacaios Criados Recentemente têm Velocidade de Movimento aumentada" — `LacaiosPoe.movimentoDoLacaio`)
+  const movimentoPct = LacaiosPoe.movimentoDoLacaio(f, hunt.clock ?? 0);
+  const passos = (d > longe ? 2 : 1) + (movimentoPct > 0 && Math.random() * 100 < movimentoPct ? 1 : 0);
   let deu = 0;
   for (let k = 0; k < passos; k++) {
     let destino;
@@ -2223,6 +2228,9 @@ const andarFamiliar = (hunt, grade, f, agora) => passoDoFamiliar(hunt, grade, f,
 
 /** Quanto além de `perto` o familiar se afasta do dono para combater (o limite de perseguição): passou disso, volta a seguir. */
 const FOLGA_DO_COMBATE = 5;
+/** (lote 51, dono: "Raio maior, registrado") "Lacaios Convocados são Agressivos": procuram alvo (e se afastam de você) 3 casas mais longe. */
+export const CASAS_DO_AGRESSIVO = 3;
+const folgaDe = (f) => FOLGA_DO_COMBATE + (f?.poe?.agressivo ? CASAS_DO_AGRESSIVO : 0);
 /** Depois de largar um alvo por falta de rota ou de coleira, quanto tempo ele não volta a tentar o mesmo. */
 const ESQUECE_ALVO_MS = 3000;
 
@@ -2238,9 +2246,9 @@ function esquecerAlvo(f, alvo, agora) {
   f.esquecidos = novo;
 }
 
-function alvoDoFamiliar(hunt, f, agora) {
+export function alvoDoFamiliar(hunt, f, agora) {
   if (hunt.lurando) return null;
-  const raio = f.perto + FOLGA_DO_COMBATE;
+  const raio = f.perto + folgaDe(f);
   const ok = (m) => m && m.hp > 0 && distancia(m, hunt.pos) <= raio && !((f.esquecidos?.[m.uid] ?? 0) > agora);
   const doDono = alvoAtual(hunt);
   if (ok(doDono)) return doDono;
@@ -2393,6 +2401,8 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
   if (sorte(p.chances.cinzas)) { ModsPoe.porNoAlvo(alvo, 'cinzas', agora + 4000); ev('cinzas'); }
   if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
   if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs, deLacaio: true }; ev('provocado'); }
+  // (lote 69) "Lacaios têm X% de chance de Empurrar Inimigos ao Acertar com Ataques" (o empurrão do jogo: para longe de você)
+  if (!ctx.magia && sorte(p.chances.empurrar) && ModsPoe.empurrar(hunt, alvo)) ev('empurrado');
   if (sorte(p.chances.desacelerar)) {
     const ate = agora + ModsPoe.NO_ACERTO.desacelerar.duracaoMs;
     e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, ate), pct: Math.max(e.lento.pct, 30) } : { ate, pct: 30 };
@@ -2461,7 +2471,7 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
     if (p.elemento === 'physical') fisico += v;
     else outros += v * (1 - Math.min(teto, res(p.elemento)) / 100);
   }
-  const { dano, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico, outros, magia: true, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0) }) : { dano: fisico + outros, bloqueou: false };
+  const { dano, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico, outros, magia: true, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), agora: hunt?.clock ?? null }) : { dano: fisico + outros, bloqueou: false };
   if (bloqueou) {
     l.bloqueouEm = relogio;
     eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true });
@@ -2605,7 +2615,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (lote 32, P028: + o bloqueio de Magia da Oferenda Óssea)
       // (lote 43, P040: + a precisão do bicho contra a evasão do lacaio)
       const precisao = AtributosDoMob.precisaoDe(b, l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
-      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao, agora }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
       if (evadiu) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', esquiva: true }); continue; }
       if (bloqueou) l.bloqueouEm = agora;
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); continue; }
@@ -2703,7 +2713,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       andarFamiliar(hunt, grade, l, agora);
       continue;
     }
-    if (distancia(l, hunt.pos) > l.perto + FOLGA_DO_COMBATE + 1) {
+    if (distancia(l, hunt.pos) > l.perto + folgaDe(l) + 1) {
       esquecerAlvo(l, alvo, agora);
       andarFamiliar(hunt, grade, l, agora);
       continue;
@@ -2740,7 +2750,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const critico = vinculo ? { chance: vinculo.critPct > 0 ? vinculo.critPct : critico0.chance, mult: critico0.mult + vinculo.critMult / 100 } : critico0;
       const crit = Math.random() * 100 < critico.chance;
       // (ciclo 7) o dano dobrado, ignorar a Redução de Dano Físico, a penetração no amaldiçoado e o Caos extra do Poder Profano.
-      const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora);
+      const doGolpe = LacaiosPoe.golpeDoLacaio(l, b, ficha, tipo, agora, Math.random, hunt.lacaios);
       // (o dano "aumentado" das suas auras de aliado soma ao do lacaio — `danoIncPct`, o da invocação —; o "mais" multiplica)
       const doAliado = aliado ? ((1 + ((l.poe?.danoIncPct ?? 0) + aliado.danoIncPct) / 100) / (1 + (l.poe?.danoIncPct ?? 0) / 100)) * Math.max(0, 1 + aliado.maisDanoPct / 100) : 1;
       const bruto = ((l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? critico.mult : 1) * doGolpe.fator * doAliado * pct) / 100;

@@ -20,6 +20,7 @@ const Ficha = await import('../systems/ficha.mjs');
 const Afixos = await import('../systems/afixos.mjs');
 const Registro = await import('../systems/combate/registro.mjs');
 const Areas = await import('../engine/areas.mjs');
+const Runas = await import('../systems/itens-poe/runas-vinculadas.mjs');
 
 /** As armas tentadas (a primeira que a gema aceita): a varinha, o arco, a espada com escudo, a maça de duas mãos, a adaga, o cajado. */
 const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/Rusted_Sword', 'Shields/Splintered_Tower_Shield'], ['Two_Hand_Maces/Driftwood_Maul'], ['Daggers/Sai'], ['Staves/Gnarled_Branch']];
@@ -60,6 +61,12 @@ function montar(slug, [arma, escudo], suportes = []) {
   const retaliacao = G.gatilhoDeRetaliacao(slug);
   if (retaliacao) e.hunt.retaliacao = { [retaliacao]: { ate: Infinity, usados: [] } };
   if (G.doSlug(slug).arquetipo === 'vinculo') (e.hunt.lacaios ??= []).push({ uid: 'aliado', nome: 'Aliado', mercenario: true, hp: 1000, maxHp: 1000, x: e.hunt.pos.x - 1, y: e.hunt.pos.y });
+  // (merge com o lote 74, com o aval do dono: a Convocar Runas ativa as SUAS Runas vinculadas — uma Marca da Tempestade encaixada e a Runa dela
+  // vinculada no alvo; o dano é o da Runa ativada)
+  if (slug === 'Brand_Recall') {
+    const f = Ficha.combate(e);
+    Runas.vincular(e.hunt, f, Runas.conjurar(e.hunt, f, { acao: G.doSlug('Storm_Brand').acao, slot: null, x: b.x, y: b.y, props: Runas.daGema([]), agora: e.hunt.clock, custo: { valor: 1, em: 'mana' } }), e.hunt.clock, { preferido: b });
+  }
   return { e, b };
 }
 /** Usa a gema (conjuração, armadilha/mina/gêiser pelo tique) e devolve `{ ok, dano, buff, erro }`. */
@@ -96,7 +103,7 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
     let feito = null;
     const erros = [];
     for (const armas of ARMAS) {
-      const m = montar(slug, armas);
+      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : []);
       if (!m) continue;
       let u;
       try { u = usar(m, slug); } catch (err) { u = { ok: false, erro: `exceção: ${err.message}` }; }

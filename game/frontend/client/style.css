@@ -27649,6 +27649,9 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .pas-joia-nome.raridade-magico { color: #8888ff; }
 .pas-joia-nome.raridade-raro { color: #ffff77; }
 .pas-joia-nome.raridade-unico { color: #af6025; }
+/* (lote 77) a Joia Ramificadora no encaixe: quantos nós ela cria na árvore, entre o nome e o botão */
+.pas-joia-linha:has(.pas-joia-nos) { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.pas-joia-nos { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* O TOTAL DA ÁRVORE: a soma dos nós alocados, por grupo, e "agora → depois" com um nó escolhido. */
 .pas-total { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
 .pas-info > .pas-total:first-child { margin-top: 0; padding-top: 0; border-top: 0; }

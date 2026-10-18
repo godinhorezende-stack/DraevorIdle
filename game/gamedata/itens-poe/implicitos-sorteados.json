@@ -373,6 +373,21 @@
     "https://poedb.tw/pt/Nebulis — \"[One to three random synthesis implicit modifiers]\"; Community Wiki: \"Nebulis drops with between one and three of the following synthesised implicit modifiers, replacing the ordinary implicit modifier: Sceptre Mods\""
    ],
    "nota": "No pool de síntese todos os pesos são 0 (o implícito sintetizado não sai por peso no PoE) e a fonte não dá a chance de 1, 2 ou 3: a quantidade, a família e o tier saem com a MESMA chance (dono, 11/10)."
+  },
+  "Rational_Doctrine": {
+   "classe": "Jewels",
+   "nome": "Doutrina Racional",
+   "substitui": "[One to three random synthesis implicit modifiers]",
+   "pool": "synthesis",
+   "quantidade": [
+    1,
+    3
+   ],
+   "pesoIgual": true,
+   "fontes": [
+    "https://poedb.tw/pt/Rational_Doctrine — \"[One to three random synthesis implicit modifiers]\" (o implícito da peça: os de síntese da Joia Cobalto — gamedata/itens-poe/pools/synthesis.json, Jewels/Cobalt_Jewel)"
+   ],
+   "nota": "Como o Nebulis (dono, 11/10): no pool de síntese os pesos são 0 e a fonte não dá a chance de 1, 2 ou 3 — a quantidade, a família e o tier saem com a MESMA chance (lote 56)."
   }
  }
 }

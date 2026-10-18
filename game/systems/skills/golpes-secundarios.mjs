@@ -154,7 +154,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     let tipoAtual = tipo;
     let eDireto = direto;
     while (atual) {
-      if (!impacto(atual, pct, de, tipoAtual, eDireto, { atravessados: p.perfurados, ricochetes: p.ricocheteou })) return;
+      if (!impacto(atual, pct, de, tipoAtual, eDireto, { atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0) })) return;
       p.acertados.add(atual);
       p.ida.push(atual);
       eDireto = false;
@@ -205,7 +205,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     // Returning: na volta, acerta de novo cada um que pegou na ida — uma vez cada, do último ao primeiro.
     if (p.volta) {
       const pctDaVolta = ((p.pct * pctDe('danoDoRetornoPct')) / 100) * doRestante(p.encadear);
-      for (const b of [...p.ida].reverse()) if (!impacto(b, pctDaVolta, b, 'retorno', false, { atravessados: p.perfurados, ricochetes: p.ricocheteou })) return;
+      for (const b of [...p.ida].reverse()) if (!impacto(b, pctDaVolta, b, 'retorno', false, { atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0) })) return;
     }
   };
 

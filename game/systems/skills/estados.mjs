@@ -215,7 +215,9 @@ export function tique(hunt, eventos, agora) {
       const desacelerado = ativo(m.estados?.desacelerado, agora) ? Math.max(0, 1 - (m.estados.desacelerado.regenMenosPct ?? 0) / 100) : 1;
       // (+ ciclo 7, lote E: "Inimigos Próximos têm Regeneração de Vida reduzida em X%" — a aura do personagem, `mods-poe.aurasProximas`.)
       const daAura = ativo(m.estados?.regenMenosAura, agora) ? Math.max(0, 1 - (m.estados.regenMenosAura.pct ?? 0) / 100) : 1;
-      const fator = desacelerado * daAura * Math.max(0, 1 - (maldicoes?.regenMenos ?? 0) / 100);
+      // (lote 69: "Inimigos Envenenados por você não podem Regenerar Vida" — enquanto o veneno dura)
+      const envenenado = m.estados?.semRegenEnvenenado && (m.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0);
+      const fator = envenenado ? 0 : desacelerado * daAura * Math.max(0, 1 - (maldicoes?.regenMenos ?? 0) / 100);
       const ganho = Math.max(fator > 0 ? 1 : 0, Math.round((vidaMax * m.regen * fator) / 100));
       // (com escudo, a regeneração é da VIDA: não passa da vida máxima, e o escudo fica como está)
       m.hp = es ? Math.min(vidaMax, vidaAgora + ganho) + es.atual : Math.min(m.maxHp, m.hp + ganho);

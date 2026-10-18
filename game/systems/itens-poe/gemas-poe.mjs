@@ -64,7 +64,9 @@ const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconh
  * (14/10, a árvore principal) As gemas com comportamento próprio, que o classificador da arena não conhece: o INFESTADOR (Plague Bearer —
  * `acoes.tiqueDaPraga`) e o FEITICEIRO (Spellslinger — a reserva em `reserva.pedida`, o gatilho em `acoes.ativarGatilhos`).
  */
-const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro' };
+// (lote 75 — dono, 17/10: "No máximo, como o PoB") o Arauto da Agonia é um ARAUTO (o buff com reserva; o Rastejador vem ao Envenenar — `acoes.
+// tiqueDoArautoDaAgonia`): o classificador vê o tipo Minion antes de Herald. (O Arauto da Pureza fica como lacaio.)
+const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto' };
 /**
  * O INFESTADOR do PoE (RePoE, `corrosive_shroud_*`): o Valor Máximo da Praga por nível (`MAX_DA_PRAGA[n]`, do 1 ao 40), 40% do Dano Esperado
  * de cada Veneno infligido enquanto Incubando, 20% menos Dano com Veneno enquanto Incubando (fora do máximo), Infestando 12% do Valor do início
@@ -112,6 +114,9 @@ export const totemSemGolpe = (slug) => TOTEM_SEM_GOLPE.test(String(slug ?? ''));
 /** Lacaios e totens (`itens-poe/lacaios-poe.mjs`): as linhas que o jogo faz. (Aqui, e não lá: o módulo dos lacaios importa este.) */
 const LINHA_DE_LACAIO = /^Máximo de |^\+\d+ ao número máximo de Totens|^Convoca \d+ |^Duração base é de|^Totem dura|Lacaios? têm .*mais Vida|Lacaios? causam? .*(mais|menos) Dano|são de Nível|Invoca um Totem que usa|^Golens (aumentam|concedem)|mais Velocidade de Ataque|sempre Golpes Críticos|Multiplicador de Acerto Crítico|Dano Físico adicional|infligir Sangramento|Velocidade de Ataque dos Lacaios|Chance de Golpe Crítico aumentada|Multiplicador de Golpe Crítico|Chance de Bloquear o Dano de Ataques|Vida Regenerada por Segundo|Regenera .*da Vida por segundo|Aura dos Robôs/i;
 export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l);
+/** (lote 75) As linhas da VIRULÊNCIA do Arauto da Agonia (`itens-poe/virulencia.mjs` e o Rastejador — `lacaios-poe.oQueInvoca`). */
+const LINHA_DA_VIRULENCIA = /Virulência|Rastejador/i;
+export const ehLinhaDaVirulencia = (l) => LINHA_DA_VIRULENCIA.test(l);
 
 const acaoPorId = (id) => ACTION_CATALOG.spells.find((e) => e.id === id) ?? ACTION_CATALOG.runes?.find((e) => e.id === id) ?? null;
 
@@ -818,6 +823,9 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   if (b.regen) af.life_regen = (af.life_regen ?? 0) + Math.round(b.regen);
   if (b.regenMana) af.mana_regen = (af.mana_regen ?? 0) + Math.round(b.regenMana);
   if (b.menosDanoRecebido) af.dmg_reduction = (af.dmg_reduction ?? 0) + b.menosDanoRecebido;
+  // (lote 75, o Arauto da Agonia) a chance de Envenenar em todos os acertos e o "mais" do Veneno, enquanto o buff está ligado
+  if (b.chanceVeneno) af.chance_poison = (af.chance_poison ?? 0) + b.chanceVeneno;
+  if (b.maisVeneno) af.veneno_mais_final = (af.veneno_mais_final ?? 0) + b.maisVeneno;
   if (b.absorve) motivos.push('a absorção de dano da guarda ainda não existe no jogo');
   if (b.imuneAfeccoes) motivos.push('a imunidade a afecções ainda não existe no jogo');
   // (14/10) "Você e aliados próximos recebem X% de Dano Físico como Dano Extra de Gelo" (o Ódio): o Físico como Extra do elemento — antes não
@@ -875,6 +883,9 @@ function avaliarNoJogo(h, formato) {
   // (14/10) O Infestador sai sozinho (o jogo usa as habilidades sozinho); o Feiticeiro liga reservando e ativa as magias ligadas.
   if (h.arquetipo === 'praga') return { status: 'parcial', motivos: ['sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)'] };
   if (h.arquetipo === 'feiticeiro') return { status: 'funciona', motivos: [] };
+  // (lote 74 — dono, 17/10: "Implementar a gema") a Convocar Runas: traz as suas Runas, Ativa as vinculadas pagando 20% do custo de cada uma e dá o
+  // Alcance de Vínculo da gema até se vincularem de novo (`acoes.convocarRunas`).
+  if (h.slug === 'Brand_Recall') return { status: 'funciona', motivos: [] };
   // LACAIOS (`lacaios-poe.mjs`): invocam de verdade, com o máximo, a duração e os bônus da gema; o que ainda é simplificado vai nos motivos.
   if (h.arquetipo === 'lacaio') {
     const motivos = ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
@@ -908,6 +919,8 @@ function avaliarNoJogo(h, formato) {
     // (lote G9: o do Gelo, do Trovão e das Cinzas já existe — `Acoes.aoMatarComArautos`/`tiqueDosArautos`)
     if (h.arquetipo === 'arauto' && !ARAUTOS_AO_MATAR.has(h.slug) && (Object.keys(st.dano ?? {}).length || (st.dot ?? []).length)) motivos.push('o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff');
     if (!b.efeitos.length && !Object.keys(b.af).length) motivos.push('nenhum efeito do buff tem equivalente no jogo');
+    // (lote 75 — dono, 17/10: "No máximo, como o PoB")
+    if (h.slug === 'Herald_of_Agony') motivos.push('a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados', 'o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)');
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
@@ -924,7 +937,7 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -939,12 +952,14 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
   const vinculo = h.arquetipo === 'vinculo';
   // (14/10: o Feiticeiro liga como as auras — reserva e fica ligado; o Infestador, sem alvo)
   const buff = BUFF.has(h.arquetipo) || vinculo || h.arquetipo === 'feiticeiro';
+  const convocaRunas = g.slug === 'Brand_Recall';
   const tagsArea = (g.tags ?? []).some((t) => /Área/i.test(t));
   let moldeId;
   if (buff) moldeId = 'spell-blood-rage';
   else if (h.arquetipo === 'praga') moldeId = 'spell-haste';
   // O lacaio só invoca (o visual é o do estilo da gema): o molde sem alvo. O totem usa o molde da skill que ele vai usar (o projétil, a área).
-  else if (h.arquetipo === 'lacaio') moldeId = 'spell-haste';
+  // (lote 74: a Convocar Runas também — no PoE ela sai em você, sem alvo nem área: `acoes.convocarRunas`)
+  else if (h.arquetipo === 'lacaio' || convocaRunas) moldeId = 'spell-haste';
   else if (h.arquetipo === 'corpo_a_corpo') moldeId = tagsArea ? 'spell-front-sweep' : 'spell-brutal-strike';
   else if (h.arquetipo === 'movimento') moldeId = h.ataque || Object.keys(h.stats.dano ?? {}).length ? 'spell-ethereal-barrage' : 'spell-haste';
   else moldeId = MOLDES[formato]?.[visual] ?? MOLDES.projetil[visual] ?? 'spell-brutal-strike';
@@ -979,7 +994,7 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     kind: 'spell',
     vocations: null,
     // Lacaio e totem são de SUPORTE na barra (invocam; quem bate é o invocado).
-    papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
+    papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) || convocaRunas ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
     group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
     poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}) },
@@ -1067,7 +1082,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l))),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l))),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }
@@ -1169,7 +1184,12 @@ export function adds(estado) {
     const reservaPct = porReserva > 0 && (dono?.maxMana ?? 0) > 0 ? (100 * Math.ceil((b.reserva.pct ? (dono.maxMana * b.reserva.pct) / 100 : b.reserva.fixo ?? 0) * (b.reserva.fator ?? 1))) / dono.maxMana : 0;
     const mais = (1 + Math.max(0, Number(b?.estandarte?.efeitoMais) || 0) / 100) * (porReserva > 0 ? 1 + Math.floor(reservaPct / porReserva) / 100 : 1);
     // (17/10, lote G14: + o "Efeito das Auras aumentado" do suporte ligado à aura — `b.efeitoAuraPct`)
-    return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte + (Number(b?.efeitoAuraPct) || 0)) / 100) * mais;
+    // (lote 72, o Emissário do Propósito) "Auras das suas Habilidades têm Efeito reduzido em X% em você para cada Arauto te afetando, até Y%":
+    // só as suas auras, em você.
+    const menosPorArauto = tipo === 'poe-aura' && dono === estado ? doEquipamento(dono, 'aura_em_voce_menos_por_arauto') : 0;
+    const arautos = menosPorArauto > 0 ? Object.values(hunt.buffs ?? {}).filter((x) => x?.tipo === 'poe-arauto' && x.ate > agora).length : 0;
+    const porArauto = arautos > 0 ? Math.min(doEquipamento(dono, 'aura_em_voce_menos_por_arauto_max') || Infinity, menosPorArauto * arautos) : 0;
+    return (1 + (doEquipamento(dono, `efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`) + doEquipamento(dono, 'efeito_buff_gema:todos') + (daGema ? doEquipamento(dono, daGema) : 0) + porTag + estandarte + (Number(b?.efeitoAuraPct) || 0) - porArauto) / 100) * mais;
   };
   // (lote G14: a aura "que não afeta você" — a Generosidade — não entra na sua soma; nos companheiros, sim)
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora && !b.soAliados) { const f = efeitoDe(b.tipo, id, estado, b); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }

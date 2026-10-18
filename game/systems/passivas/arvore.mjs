@@ -24,7 +24,7 @@ import { readFileSync } from 'node:fs';
 import * as Keystones from './keystones.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
-import { definirLeitorDeMaestrias, definirLeitorDeJoias } from '../itens-poe/condicoes-poe.mjs';
+import { definirLeitorDeMaestrias, definirLeitorDeJoias, slugDoNome } from '../itens-poe/condicoes-poe.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -125,6 +125,7 @@ export function usarArvore(nova) {
   ARVORE = nova.porId ? nova : preparar(nova);
   CACHE = new WeakMap();
   NO_RAIO.clear();
+  PEDRAS = null;
   return antes;
 }
 
@@ -143,7 +144,7 @@ export const inicioDe = (estado) => ARVORE.inicios[classeDe(estado)];
 export function iniciosExtras(estado, ids = estado?.passivas?.alocados ?? []) {
   const extras = [];
   for (const id of ids) {
-    const no = ARVORE.porId.get(id);
+    const no = noDe(estado, id);
     if (!no) continue;
     for (const ef of efeitosDoNo(no, estado.passivas)) {
       const m = /^inicio_extra:(\w+)$/.exec(ef.add ?? '');
@@ -211,8 +212,9 @@ export function garantir(estado) {
   const inicio = inicioDe(estado);
   // A ascendência escolhida (árvore do PoE): o início dela fica alocado; nós de outra ascendência saem.
   const inicioAsc = inicioDaAscendencia(estado);
+  // (lote 64: na árvore do PERSONAGEM — os nós das Ramificadoras encaixadas também existem)
   let limpos = [inicio, ...(inicioAsc ? [inicioAsc] : []), ...[...new Set(p.alocados)].filter((id) => {
-    const no = ARVORE.porId.get(id);
+    const no = noDe(estado, id);
     return no && no.tipo !== 'start' && (!no.ascendencia || no.ascendencia === p.ascendencia);
   })];
   /*
@@ -225,7 +227,7 @@ export function garantir(estado) {
   if ((p.versaoDaArvore ?? 1) !== ARVORE.versao) {
     const antes = new Set(p.alocados);
     const liberados = p.joias ? [...liberadosPorJoias(estado).keys()] : [];
-    const ligados = alcancaveis(ARVORE.porId, new Set([...limpos, ...iniciosExtras(estado, limpos)]), [inicio, ...(inicioAsc ? [inicioAsc] : []), ...iniciosExtras(estado, limpos), ...liberados.filter((x) => limpos.includes(x))]);
+    const ligados = alcancaveis(grafoDe(estado).porId, new Set([...limpos, ...iniciosExtras(estado, limpos)]), [inicio, ...(inicioAsc ? [inicioAsc] : []), ...iniciosExtras(estado, limpos), ...liberados.filter((x) => limpos.includes(x))]);
     const grupos = gruposComNotavel([...ligados]);
     limpos = limpos.filter((id) => ligados.has(id) || (ARVORE.porId.get(id)?.tipo === 'mastery' && grupos.has(ARVORE.porId.get(id).grupo)));
     const sairam = [...antes].filter((id) => id !== inicio && !limpos.includes(id) && ARVORE.porId.get(id)?.tipo !== 'start').length;
@@ -239,7 +241,16 @@ export function garantir(estado) {
   // A opção de maestria só fica enquanto a maestria está alocada (respec, troca de árvore).
   if (p.maestrias) for (const id of Object.keys(p.maestrias)) if (!p.alocados.includes(id)) delete p.maestrias[id];
   // (lote 27) A joia de um encaixe que não está mais alocado volta para a mochila.
-  if (p.joias) devolverJoiasSoltas(estado, p);
+  // (lote 64) e os nós da Ramificadora que saiu somem da alocação (os pontos voltam, como no PoE) — o que pode soltar o encaixe interno de
+  // dentro dela e a joia menor nele: até ficar estável.
+  for (let volta = 0; p.joias && volta < 6; volta++) {
+    const antes = p.joiasVersao ?? 0;
+    devolverJoiasSoltas(estado, p);
+    if ((p.joiasVersao ?? 0) === antes) break;
+    const g = grafoDe(estado);
+    const ficam = p.alocados.filter((id) => g.porId.has(id));
+    if (ficam.length !== p.alocados.length) p.alocados.splice(0, p.alocados.length, ...ficam);
+  }
   return { passivas: p, migrou, arvoreMudou };
 }
 
@@ -248,7 +259,7 @@ export function pontos(estado) {
   // (+ os nós que concedem pontos de passiva — "Concede 1 Ponto de Habilidade Passiva", na Ascendente: `pontos_passiva`.)
   const total = pontosDoLevel(estado.level) + Math.max(0, Math.round(efeitos(estado).adds?.pontos_passiva ?? 0));
   // Os nós de ascendência gastam os pontos de ASCENDÊNCIA (`pontosDeAscendencia`), não estes.
-  const usados = passivas.alocados.reduce((s, id) => (ARVORE.porId.get(id)?.ascendencia ? s : s + custoDe(ARVORE.porId.get(id))), 0);
+  const usados = passivas.alocados.reduce((s, id) => (noDe(estado, id)?.ascendencia ? s : s + custoDe(noDe(estado, id))), 0);
   // `deficit`: pontos gastos A MAIS do que o personagem tem (um personagem antigo que caiu de level na morte, antes da regra do PoE; um nó
   // que concedia pontos e saiu). Não se aloca nada enquanto houver déficit; a tela mostra (auditoria da árvore, 09/10).
   return { total, usados, livres: Math.max(0, total - usados), ...(usados > total ? { deficit: usados - total } : {}) };
@@ -259,7 +270,7 @@ function pontosSe(estado, ficam) {
   let concedidos = 0;
   let usados = 0;
   for (const id of ficam) {
-    const no = ARVORE.porId.get(id);
+    const no = noDe(estado, id);
     if (!no) continue;
     if (!no.ascendencia) usados += custoDe(no);
     for (const ef of efeitosDoNo(no, estado.passivas)) if (ef.add === 'pontos_passiva') concedidos += ef.valor;
@@ -281,7 +292,7 @@ export function pontosDeAscendencia(estado) {
   if (!ARVORE.ascendencias) return { total: 0, usados: 0, livres: 0 };
   const { passivas } = garantir(estado);
   const total = Math.min(MAXIMO_DE_PONTOS_DE_ASCENDENCIA, 2 * atosVencidos(estado));
-  const usados = passivas.alocados.reduce((s, id) => (ARVORE.porId.get(id)?.ascendencia ? s + custoDe(ARVORE.porId.get(id)) : s), 0);
+  const usados = passivas.alocados.reduce((s, id) => (noDe(estado, id)?.ascendencia ? s + custoDe(noDe(estado, id)) : s), 0);
   return { total, usados, livres: Math.max(0, total - usados) };
 }
 
@@ -308,12 +319,15 @@ const erro = (motivo, texto) => ({ ok: false, motivo, erro: texto });
 
 /** Pode alocar este nó agora? `{ok}` ou `{ok:false, motivo, erro}`. */
 export function podeAlocar(estado, id, opcao = null) {
-  const no = ARVORE.porId.get(id);
-  if (!no) return erro('NAO_EXISTE', 'Esse nó não existe.');
   const { passivas } = garantir(estado);
+  const no = noDe(estado, id);
+  if (!no) return erro('NAO_EXISTE', 'Esse nó não existe.');
   const meus = new Set(passivas.alocados);
   if (meus.has(id)) return erro('JA_ALOCADO', 'Você já tem esse nó.');
   if (no.tipo === 'start') return erro('INICIO', 'O início de outra classe não se aloca.');
+  // (lote 60, as Ramificadoras) o PROXY e o encaixe interno (Pequeno, Médio) só existem com uma Joia Ramificadora encaixada — como no PoE
+  // (lote 64: o encaixe interno de uma Ramificadora encaixada existe — `grafoDe`)
+  if (soDaRamificadora(no) && !grafoDe(estado).internos.has(id)) return erro('RAMIFICADORA', 'Esse nó só existe com uma Joia Ramificadora encaixada.');
   if (no.tipo === 'mastery') return podeAlocarMaestria(estado, no, opcao, meus);
   const extras = new Set(iniciosExtras(estado));
   // (lote 29) o nó no raio de uma joia "pode ser atribuída sem estar conectada à sua árvore" (o Salto Intuitivo, o Fio de Esperança)
@@ -340,8 +354,9 @@ export function podeAlocar(estado, id, opcao = null) {
  * tela. `[]` se já é seu; `null` se não há caminho (nó de início de outra classe).
  */
 export function caminhoAte(estado, id) {
-  if (!ARVORE.porId.has(id)) return null;
   const { passivas } = garantir(estado);
+  const g = grafoDe(estado);
+  if (!g.porId.has(id)) return null;
   const meus = new Set(passivas.alocados);
   if (meus.has(id)) return [];
   // (lote 29) os nós liberados pelas joias ("sem estar conectada à sua árvore"): o caminho pode começar neles (eles entram no caminho).
@@ -354,8 +369,8 @@ export function caminhoAte(estado, id) {
   for (const x of liberados) if (!veioDe.has(x)) { veioDe.set(x, null); fila.push(x); }
   for (let i = 0; i < fila.length; i++) {
     const atual = fila[i];
-    for (const c of ARVORE.porId.get(atual)?.conexoes ?? []) {
-      if (veioDe.has(c) || ARVORE.porId.get(c)?.tipo === 'start') continue;
+    for (const c of g.porId.get(atual)?.conexoes ?? []) {
+      if (veioDe.has(c) || g.porId.get(c)?.tipo === 'start' || (soDaRamificadora(g.porId.get(c)) && !g.internos.has(c))) continue;
       veioDe.set(c, atual);
       if (c === id) {
         const caminho = [];
@@ -372,7 +387,7 @@ export function alocar(estado, id, opcao = null) {
   const pode = podeAlocar(estado, id, opcao);
   if (!pode.ok) return pode;
   estado.passivas.alocados.push(id);
-  if (ARVORE.porId.get(id)?.tipo === 'mastery') (estado.passivas.maestrias ??= {})[id] = String(opcao);
+  if (noDe(estado, id)?.tipo === 'mastery') (estado.passivas.maestrias ??= {})[id] = String(opcao);
   return { ok: true, mudou: true };
 }
 
@@ -409,7 +424,7 @@ export function ilhadosSemEles(estado, ids, semJoiaEm = []) {
   // (lote 29) os nós liberados pelas joias que ficam (o encaixe alocado e a joia nele — `semJoiaEm`: as joias que saem) são raízes.
   const liberados = [...liberadosPorJoias(estado, new Set([...tirar, ...semJoiaEm])).keys()].filter((x) => fica.has(x));
   const raizes = [...raizesDe(estado, [...fica]), ...liberados];
-  const ligados = alcancaveis(ARVORE.porId, new Set([...fica, ...raizes]), raizes);
+  const ligados = alcancaveis(grafoDe(estado).porId, new Set([...fica, ...raizes]), raizes);
   // A maestria fica enquanto houver um notável LIGADO no grupo dela.
   const grupos = gruposComNotavel([...ligados]);
   return [...fica].filter((x) => (ARVORE.porId.get(x)?.tipo === 'mastery' ? !grupos.has(ARVORE.porId.get(x).grupo) : !ligados.has(x)));
@@ -493,6 +508,8 @@ export function respec(estado, pedido, emCacada = false) {
  */
 const ENCAIXES_DE_JOIA = new Set(['Basic Jewel Socket', 'Large Jewel Socket']);
 export const ehEncaixeDeJoia = (no) => !!no && !no.ascendencia && ENCAIXES_DE_JOIA.has(no.nomeEn);
+/** (lote 60) O nó que só existe com uma Joia Ramificadora: o proxy de posicionamento e o encaixe de expansão interno (Pequeno, Médio). */
+export const soDaRamificadora = (no) => !!no && (!!no.placeholder || (no.expansao != null && no.expansao.tamanho < 2));
 /**
  * Os raios das joias do PoE nas unidades da árvore (as mesmas de `x`/`y`): desde a 3.16, com a árvore espaçada, 20% maiores que o número do
  * item ("Raio: Grande (1500)" → 1800) — como no Path of Building (dono, 15/10: "Como no PoE/PoB"). `aneis`: os anéis do Fio de Esperança
@@ -507,6 +524,63 @@ const JOIAS_UNICAS = (() => {
     return {};
   }
 })();
+/*
+ * ---- (lote 64) As RAMIFICADORAS na árvore do PERSONAGEM ----
+ * Quem monta os nós da joia é `passivas/ramificadoras.mjs` (o `BuildSubgraph` do PoB), que se REGISTRA aqui — sem import de volta: o
+ * tradutor da árvore importa as fichas, que importam esta árvore. A árvore do personagem (`grafoDe`) é a do jogo + os nós que as Ramificadoras
+ * encaixadas criam: a joia num encaixe Grande da borda (alocado — o encaixe só aceita joia alocado) e, nos encaixes internos dela, as joias
+ * menores. É por ela que se aloca, se acha o caminho, se tira, se conta o ponto e se soma; o raio das outras joias não a vê ("Habilidades
+ * Passivas Adicionadas nunca são consideradas como estando no Raio por outras Joias" — `passivasNoRaio` só olha os nós da árvore).
+ */
+let RAMIFICADORAS = null;
+let GRAFOS = new WeakMap();
+/** `{ montar, dados }` (`passivas/ramificadoras.mjs`). */
+export function definirRamificadoras(r) { RAMIFICADORAS = r; GRAFOS = new WeakMap(); }
+/** O tamanho da Ramificadora → o índice (o encaixe de expansão aceita a joia de índice até o tamanho dele). */
+export const INDICE_DO_TAMANHO = Object.freeze({ Small: 0, Medium: 1, Large: 2 });
+/** A árvore do personagem: `{ porId, extras, internos, porEncaixe }` (sem Ramificadora encaixada, a do jogo). Em cache pela versão das joias. */
+let GRAFO_DA_ARVORE = null;
+/** A árvore do jogo como árvore do personagem (sem Ramificadora) — uma só por árvore. */
+const grafoDaArvore = () => (GRAFO_DA_ARVORE?.arvore === ARVORE ? GRAFO_DA_ARVORE : (GRAFO_DA_ARVORE = { arvore: ARVORE, porId: ARVORE.porId, extras: new Map(), internos: new Set(), porEncaixe: new Map() }));
+export function grafoDe(estado) {
+  const p = estado?.passivas;
+  if (!RAMIFICADORAS || ARVORE.id !== 'poe' || !p?.joias) return grafoDaArvore();
+  const chave = p.joiasVersao ?? 0;
+  const guardado = GRAFOS.get(p);
+  if (guardado && guardado.chave === chave && guardado.arvore === ARVORE) return guardado.grafo;
+  if (!Object.values(p.joias).some((j) => j?.poe?.ramificadora)) {
+    GRAFOS.set(p, { chave, arvore: ARVORE, grafo: grafoDaArvore() });
+    return grafoDaArvore();
+  }
+  const extras = new Map();
+  const entradas = new Map();
+  const dados = RAMIFICADORAS.dados();
+  for (const [id, peca] of Object.entries(p.joias)) {
+    const no = ARVORE.porId.get(id);
+    if (!peca?.poe?.ramificadora || no?.expansao?.tamanho !== 2) continue;
+    const r = RAMIFICADORAS.montar({ dados, arvore: ARVORE, encaixe: no, poe: peca.poe, joiaNoEncaixe: (x) => p.joias[x] ?? null });
+    if (!r) continue;
+    for (const n of r.nos) extras.set(n.id, n);
+    entradas.set(id, r.entrada);
+  }
+  const porId = extras.size ? new Map(ARVORE.porId) : ARVORE.porId;
+  for (const [id, n] of extras) porId.set(id, n);
+  for (const [id, entrada] of entradas) { const no = ARVORE.porId.get(id); porId.set(id, { ...no, conexoes: [...(no.conexoes ?? []), entrada] }); }
+  const internos = new Set([...extras.values()].filter((n) => n.encaixeInterno).map((n) => n.id));
+  // os nós de cada encaixe (o da borda e os internos): os dele e os das joias menores dentro dele
+  const porEncaixe = new Map();
+  const deDentro = (encaixe) => [...extras.values()].filter((n) => n.ramificadora.encaixe === encaixe).flatMap((n) => [n.id, ...(n.encaixeInterno ? deDentro(n.id) : [])]);
+  for (const id of [...entradas.keys(), ...internos]) porEncaixe.set(id, deDentro(id));
+  const novo = { arvore: ARVORE, porId, extras, internos, porEncaixe };
+  GRAFOS.set(p, { chave, arvore: ARVORE, grafo: novo });
+  return novo;
+}
+/** O nó `id` na árvore do personagem. */
+const noDe = (estado, id) => grafoDe(estado).porId.get(id);
+/** O encaixe de joia do personagem: os da árvore e os internos das Ramificadoras encaixadas. */
+export const ehEncaixeDoPersonagem = (estado, no) => !!no && (ehEncaixeDeJoia(no) || grafoDe(estado).internos.has(no.id));
+/** Os nós que a Ramificadora do encaixe `id` cria (com os das joias menores dentro dela). */
+export const nosDaRamificadora = (estado, id) => grafoDe(estado).porEncaixe.get(String(id)) ?? [];
 export const dadosDaJoiaUnica = (peca) => (peca?.poe?.raridade === 'unico' ? JOIAS_UNICAS[peca.poe.unico] ?? null : null);
 
 /** As joias que valem: `[{ no, peca }]` — encaixe da árvore do PoE, alocado e com joia. */
@@ -516,10 +590,23 @@ export function joiasAtivas(estado) {
   const meus = new Set(estado.passivas.alocados ?? []);
   const lista = [];
   for (const [id, peca] of Object.entries(joias)) {
-    const no = ARVORE.porId.get(id);
-    if (peca && meus.has(id) && ehEncaixeDeJoia(no)) lista.push({ no, peca });
+    const no = noDe(estado, id);
+    if (peca && meus.has(id) && ehEncaixeDoPersonagem(estado, no)) lista.push({ no, peca });
   }
   return lista;
+}
+
+/**
+ * (lote 77) As joias cujo RAIO vale: as dos encaixes da árvore. O encaixe que uma Ramificadora cria não tem raio — no PoB o nó dele é novo, sem
+ * `nodesInRadius`, e a joia de raio ali não alcança nada (`CalcSetup`: `nodes = node.nodesInRadius and … or { }`) — então a joia nele vale só
+ * pelas linhas dela: sem o raio, sem os nós liberados pelo raio, sem a conquista da Atemporal e sem o Raio Grande do Chieftain (o Talento Puro e
+ * a Fuga Impossível, que não usam o raio do encaixe, valem).
+ */
+export function joiasComRaio(estado) {
+  const ativas = joiasAtivas(estado);
+  if (!ativas.length) return ativas;
+  const { internos } = grafoDe(estado);
+  return internos.size ? ativas.filter((j) => !internos.has(j.no.id)) : ativas;
 }
 
 // (lote 28) as joias da árvore para as condições do PoE ("por Joia Abissal afetando você").
@@ -530,7 +617,7 @@ function devolverJoiasSoltas(estado, p) {
   if (ARVORE.id !== 'poe') return;
   const meus = new Set(p.alocados);
   for (const [id, peca] of Object.entries(p.joias)) {
-    if (meus.has(id) && ehEncaixeDeJoia(ARVORE.porId.get(id))) continue;
+    if (meus.has(id) && ehEncaixeDoPersonagem(estado, noDe(estado, id))) continue;
     if (peca) (estado.inventory ??= []).push({ ...peca, count: 1 });
     delete p.joias[id];
     p.joiasVersao = (p.joiasVersao ?? 0) + 1;
@@ -635,17 +722,57 @@ const DA_RESISTENCIA = { 'raio_res_fogo_tolerancia': ['fire_res', 'carga_toleran
 const atributoDoNo = (no, passivas, atr) => efeitosDoNo(no, passivas).reduce((n, ef) => n + (ef.add === atr ? ef.valor : 0), 0);
 
 /**
+ * (lote 55, a Personalidade Dividida: "Este Encaixe de Joia tem efeito aumentado em 25% por Habilidade Passiva Alocada entre ele e o ponto de
+ * início da sua Classe" — "Sempre conta o caminho mais curto possível") Quantas passivas alocadas há entre o encaixe e o início da sua classe:
+ * como o PoB (`PassiveSpec:SetNodeDistanceToClassStart`), a busca em largura do encaixe pelas passivas ALOCADAS (sem passar por Maestria nem por
+ * outro início), até um vizinho ser o início — a distância menos 1. 0 sem caminho.
+ */
+export function passivasAteOInicio(estado, idDoEncaixe) {
+  const inicio = inicioDe(estado);
+  const meus = new Set(estado?.passivas?.alocados ?? []);
+  if (!inicio || !meus.has(idDoEncaixe)) return 0;
+  const dist = new Map([[idDoEncaixe, 0]]);
+  const fila = [idDoEncaixe];
+  for (let i = 0; i < fila.length; i++) {
+    const no = noDe(estado, fila[i]);
+    const d = dist.get(fila[i]) + 1;
+    for (const c of no?.conexoes ?? []) {
+      if (c === inicio) return d - 1;
+      const outro = noDe(estado, c);
+      if (!meus.has(c) || dist.has(c) || !outro || outro.tipo === 'start' || outro.ascendencia || no.tipo === 'mastery') continue;
+      dist.set(c, d);
+      fila.push(c);
+    }
+  }
+  return 0;
+}
+/** (lote 52) O Talento Puro: a linha de cada classe → a classe e os atributos que ela dá (os mesmos das linhas comuns do PoE). */
+const TALENTO_PURO = {
+  'talento_puro_marauder': ['Marauder', ['area_inc@corpo']], 'talento_puro_duelist': ['Duelist', ['life_leech']], 'talento_puro_ranger': ['Ranger', ['move_speed']],
+  'talento_puro_shadow': ['Shadow', ['crit_chance']], 'talento_puro_witch': ['Witch', ['mana_regen_max_pct']], 'talento_puro_templar': ['Templar', ['elem_pen']],
+  'talento_puro_scion': ['Scion', ['str', 'dex', 'int']],
+};
+/** A árvore alocada (`meus`) se conecta ao início de `classe`? O da sua classe, sempre; o de outra, com uma passiva sua encostada nele. */
+function conectaAoInicio(estado, meus, classe) {
+  if (classeDe(estado) === classe) return true;
+  const id = ARVORE.inicios[classe];
+  const no = id ? ARVORE.porId.get(id) : null;
+  return !!no && (meus.has(id) || (no.conexoes ?? []).some((c) => meus.has(c)));
+}
+/**
  * O que as joias fazem nos nós do raio delas: `{ porNo: Map(id → [joia]), extras: {add: valor}, chieftain }` — `porNo` (os alocados) e os
  * `extras` (o que vem por joia, não por nó: as Temperadas, as pequenas não alocadas do Instindo Sobrenatural). Null sem joia com raio.
  */
 function raiosDasJoias(estado, alocados) {
   const ativas = joiasAtivas(estado);
   if (!ativas.length) return null;
+  // (lote 77) a joia do encaixe que a Ramificadora cria não tem raio (`joiasComRaio`) — mas o que não é raio dela vale (o Talento Puro)
+  const comRaio = new Set(joiasComRaio(estado).map((j) => j.no.id));
   // (o Chieftain: as joias NÃO ÚNICAS ganham o Raio Grande)
   let transforma = 0;
   let forca = 0;
   for (const id of alocados) {
-    for (const ef of efeitosDoNo(ARVORE.porId.get(id) ?? {}, estado.passivas)) {
+    for (const ef of efeitosDoNo(noDe(estado, id) ?? {}, estado.passivas)) {
       if (ef.add === 'joia_transforma_fogo') transforma += ef.valor;
       else if (ef.add === 'joia_forca_no_raio') forca += ef.valor;
     }
@@ -658,11 +785,12 @@ function raiosDasJoias(estado, alocados) {
   for (const { no: s, peca } of ativas) {
     const af = peca.poe?.af ?? {};
     const raios = [];
-    const r = raioDaJoia(peca);
+    const temRaio = comRaio.has(s.id);
+    const r = temRaio ? raioDaJoia(peca) : null;
     // (lote 48) a Atemporal: as passivas do raio são Conquistadas (`conquista` — `itens-poe/atemporais.mjs`)
     const conquista = CONQUISTA?.daPeca(peca) ?? null;
     if (r) raios.push({ r, af, chieftain: null, ...(conquista ? { conquista } : {}) });
-    if ((transforma > 0 || forca > 0) && peca.poe?.raridade !== 'unico') raios.push({ r: { min: 0, max: RAIOS_DE_JOIA.grande }, af: {}, chieftain: { transforma: transforma > 0, forca } });
+    if (temRaio && (transforma > 0 || forca > 0) && peca.poe?.raridade !== 'unico') raios.push({ r: { min: 0, max: RAIOS_DE_JOIA.grande }, af: {}, chieftain: { transforma: transforma > 0, forca } });
     for (const x of raios) {
       const nos = passivasNoRaio(s, x.r);
       for (const no of nos) if (meus.has(no.id)) (porNo.get(no.id) ?? porNo.set(no.id, []).get(no.id)).push(x);
@@ -675,7 +803,24 @@ function raiosDasJoias(estado, alocados) {
       }
       // o Instindo Sobrenatural: "Concede todos os bônus das Pequenas Habilidades Passivas Não Alocadas no Raio"
       if (v0(x.af, 'raio_pequenos_livres_concedem') > 0) for (const n of nos) if (!meus.has(n.id) && ehPequena(n)) for (const ef of efeitosDoNo(n, estado.passivas)) if (ef.add) somar(ef.add, ef.valor); else if (ef.stat || ef.tag) daJoia.push(ef);
+      // (lote 51) o Aprendizado Inspirado: "Com 4 Notáveis Alocados no Raio, Ao Matar um monstro Raro, você recebe 1 de seus Modificadores
+      // por 20 segundos" — com os notáveis no raio, o abate do Raro dá o modificador (`mods-poe.aprenderDoRaro`)
+      const pede = v0(x.af, 'raio_aprendizado_notaveis');
+      if (pede > 0 && nos.filter((n) => meus.has(n.id) && n.tipo === 'notable').length >= pede) {
+        somar('aprendizado_inspirado_n', v0(x.af, 'raio_aprendizado_n') || 1);
+        extras.aprendizado_inspirado_s = Math.max(extras.aprendizado_inspirado_s ?? 0, v0(x.af, 'raio_aprendizado_s'));
+      }
+      // (lote 54) a Fome Eterna: "Com ao menos 40 de Inteligência no Raio, Espectros Erguidos tem 50% de chance de ganhar Devorador de Almas por
+      // 20 segundos ao Matar" — a Inteligência das passivas ALOCADAS no raio (`LacaiosPoe.oQueInvoca` → `aoMatarDoLacaio`)
+      const inteligencia = v0(x.af, 'raio_fome_int');
+      if (inteligencia > 0 && nos.filter((n) => meus.has(n.id)).reduce((t, n) => t + atributoDoNo(n, estado.passivas, 'int'), 0) >= inteligencia) {
+        somar('espectro_devorador_chance', v0(x.af, 'raio_fome_chance'));
+        extras.espectro_devorador_s = Math.max(extras.espectro_devorador_s ?? 0, v0(x.af, 'raio_fome_s'));
+      }
     }
+    // (lote 52) o TALENTO PURO: "Enquanto sua Árvore Passiva se conectar com a de outra classe, receba: …" — o bônus de cada classe cujo início a
+    // árvore alcança (o da sua classe sempre; o de outra, com uma passiva sua encostada nele). Sem raio: vale de qualquer encaixe.
+    for (const [k, [classe, destinos]] of Object.entries(TALENTO_PURO)) if (v0(af, k) && conectaAoInicio(estado, meus, classe)) for (const d of destinos) somar(d, v0(af, k));
   }
   return { porNo, extras, daJoia };
 }
@@ -732,12 +877,43 @@ function efeitosNoRaio(no, efs, joias) {
  */
 export function liberadosPorJoias(estado, semEncaixes = null) {
   const lista = new Map();
+  // (lote 77) o raio do ENCAIXE não vale no que a Ramificadora cria (`joiasComRaio`); o da Fuga Impossível é em volta da pedra fundamental — vale
+  const comRaio = new Set(joiasComRaio(estado).map((j) => j.no.id));
   for (const { no: s, peca } of joiasAtivas(estado)) {
-    if (semEncaixes?.has(s.id) || !(v0(peca.poe?.af, 'raio_aloca_sem_conexao') > 0)) continue;
+    if (semEncaixes?.has(s.id)) continue;
     const r = raioDaJoia(peca);
-    if (r) for (const n of passivasNoRaio(s, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+    if (r && comRaio.has(s.id) && v0(peca.poe?.af, 'raio_aloca_sem_conexao') > 0) for (const n of passivasNoRaio(s, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+    // (lote 56, a Fuga Impossível: "Habilidades passivas ao alcance de <Pedra Fundamental> podem ser atribuídas sem estarem conectadas à sua
+    // árvore") — o raio da joia em volta da PEDRA FUNDAMENTAL sorteada, não do encaixe (`fuga_impossivel:<pedra>`)
+    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) {
+      const pedra = r && v > 0 && k.startsWith('fuga_impossivel:') ? PEDRA_PELO_SLUG().get(k.slice('fuga_impossivel:'.length)) : null;
+      if (pedra) for (const n of passivasNoRaio(pedra, r)) if (!lista.has(n.id)) lista.set(n.id, s.id);
+    }
   }
   return lista;
+}
+/** (lote 56) As pedras fundamentais da árvore pelo nome (`slugDoNome` — a chave da Fuga Impossível). */
+let PEDRAS = null;
+const PEDRA_PELO_SLUG = () => (PEDRAS ??= new Map(ARVORE.nos.filter((n) => n.tipo === 'keystone' && !n.ascendencia).map((n) => [slugDoNome(n.nome), n])));
+/**
+ * (lote 56) A CHAMA PROIBIDA e a CARNE PROIBIDA: "Aloca <Notável> se você possuir o modificador correspondente na Carne/Chama Proibida" — com as
+ * duas encaixadas e o MESMO notável de ascendência nelas, ele vale como alocado; no PoE as joias pedem a classe do notável — aqui, o notável de uma
+ * ascendência da sua classe (de qualquer uma dela, como no PoE). Os ids dos notáveis (fora os já alocados).
+ */
+export function alocadosPelasProibidas(estado) {
+  const chama = new Set();
+  const carne = new Set();
+  for (const { peca } of joiasAtivas(estado)) {
+    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) {
+      if (!(v > 0)) continue;
+      if (k.startsWith('proibida_chama:')) chama.add(k.slice('proibida_chama:'.length));
+      if (k.startsWith('proibida_carne:')) carne.add(k.slice('proibida_carne:'.length));
+    }
+  }
+  if (!chama.size || !carne.size) return [];
+  const classe = classeDe(estado);
+  const meus = new Set(estado?.passivas?.alocados ?? []);
+  return ARVORE.nos.filter((n) => n.ascendencia && n.tipo === 'notable' && ARVORE.ascendencias?.[n.ascendencia]?.classe === classe && !meus.has(n.id) && chama.has(slugDoNome(n.nome)) && carne.has(slugDoNome(n.nome))).map((n) => n.id);
 }
 
 // --------------------------------------------------------------- os efeitos
@@ -773,8 +949,9 @@ export function efeitos(estado) {
     if (ef.tag) { r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano; fonte(ef.tag, 'Joia (raio)', ef.dano); }
     else if (ef.stat) { r.stats[ef.stat] = (r.stats[ef.stat] ?? 0) + ef.pct; fonte(ef.stat, 'Joia (raio)', ef.pct); }
   }
-  for (const id of alocados) {
-    const no = ARVORE.porId.get(id);
+  // (lote 56) + os notáveis de ascendência que a Chama e a Carne Proibida alocam
+  for (const id of [...alocados, ...alocadosPelasProibidas(estado)]) {
+    const no = noDe(estado, id);
     if (!no) continue;
     if (no.dominio) r.dominios[no.dominio] = (r.dominios[no.dominio] ?? 0) + 1;
     const doRaio = raios?.porNo.get(id);
@@ -840,7 +1017,10 @@ export function vista(estado, emCacada = false) {
     // (lote 29) os nós que as joias deixam alocar sem ligação → o encaixe de cada um (a tela: o caminho e o "sem este nó").
     ...(passivas.joias ? (() => { const l = liberadosPorJoias(estado); return l.size ? { liberados: Object.fromEntries(l) } : {}; })() : {}),
     // (lote 29) o raio de cada joia encaixada (`{ min, max }`: o anel do Fio de Esperança tem o de dentro) — a tela desenha.
-    ...(passivas.joias ? (() => { const r = Object.fromEntries(joiasAtivas(estado).map((j) => [j.no.id, raioDaJoia(j.peca)]).filter(([, x]) => x)); return Object.keys(r).length ? { raios: r } : {}; })() : {}),
+    ...(passivas.joias ? (() => { const r = Object.fromEntries(joiasComRaio(estado).map((j) => [j.no.id, raioDaJoia(j.peca)]).filter(([, x]) => x)); return Object.keys(r).length ? { raios: r } : {}; })() : {}),
+    // (lote 64) os nós que as Ramificadoras encaixadas criam (no formato da árvore da tela) e a entrada de cada encaixe da borda
+    // (lote 77: o encaixe interno vai como encaixe de joia — a tela mostra a joia nele e o quadro de pôr e tirar)
+    ...(() => { const g = grafoDe(estado); return g.extras.size ? { ramificadoras: { nos: [...g.extras.values()].map(noDaRamificadoraParaCliente), encaixes: Object.fromEntries([...g.porEncaixe.keys()].map((id) => [id, g.porId.get(id)?.conexoes ?? []])) } } : {}; })(),
     // (lote 48) as passivas CONQUISTADAS pelas Atemporais encaixadas (as do raio, alocadas ou não): o balão mostra as linhas da conquista
     ...(passivas.joias && CONQUISTA ? (() => { const c = conquistasParaATela(estado); return Object.keys(c).length ? { conquistas: c } : {}; })() : {}),
   };
@@ -849,7 +1029,7 @@ const CONQUISTADORES = { vaal: 'pelos Vaal', karui: 'pelos Karui', maraketh: 'pe
 /** (lote 48) `{ nó: { nome, linhas, estados, substitui, por } }` dos nós no raio das Atemporais encaixadas (a primeira que alcança vale). */
 function conquistasParaATela(estado) {
   const saida = {};
-  for (const { no: s, peca } of joiasAtivas(estado)) {
+  for (const { no: s, peca } of joiasComRaio(estado)) {
     const c = CONQUISTA.daPeca(peca);
     const r = c ? raioDaJoia(peca) : null;
     if (!r) continue;
@@ -863,6 +1043,61 @@ function conquistasParaATela(estado) {
   return saida;
 }
 
+/** (lote 64) Um nó que a Ramificadora cria, para a tela: existe (sem a marca de "só com a joia"); o encaixe interno é encaixe de joia (lote 77). */
+function noDaRamificadoraParaCliente(n) {
+  const c = noParaCliente(n);
+  delete c.soDaRamificadora;
+  if (n.encaixeInterno) c.encaixeDeJoia = true;
+  return c;
+}
+
+/** O nó para a tela (sem o que é só do servidor). (lote 64: + os das Ramificadoras — a posição, o encaixe e o índice na joia.) */
+function noParaCliente(n) {
+  return {
+    id: n.id,
+    nome: n.nome,
+    tipo: n.tipo,
+    x: n.x,
+    y: n.y,
+    custo: custoDe(n),
+    levelMinimo: n.levelMinimo ?? 0,
+    efeitos: n.efeitos ?? [],
+    // Árvore do PoE: os textos originais de cada linha e o estado da tradução (o balão mostra como no PoE).
+    ...(n.textos ? { textos: n.textos, estados: n.estados ?? [] } : {}),
+    // (ciclo 7) o porquê de cada linha sem efeito igual ("não se aplica ao jogo: …", a diferença do aproximado) — o balão mostra.
+    ...(n.notas ? { notas: n.notas } : {}),
+    ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
+    // (lote 27) o encaixe de joia que aceita joia (os das Ramificadoras, não).
+    ...(ehEncaixeDeJoia(n) ? { encaixeDeJoia: true } : {}),
+    // (lote 60) o proxy e o encaixe interno das Ramificadoras: só com a joia encaixada (a tela não os oferece).
+    ...(soDaRamificadora(n) ? { soDaRamificadora: true } : {}),
+    ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
+    // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
+    ...(n.icone ? { icone: n.icone } : {}),
+    ...(n.grupo != null ? { grupo: n.grupo } : {}),
+    // A opção de escolha de uma ascendência (o nó-pai deixa escolher uma, sem gastar ponto).
+    ...(n.opcaoDe != null ? { opcaoDe: n.opcaoDe } : {}),
+    // A keystone do PoE aproximada: a diferença para o PoE (o balão mostra).
+    ...(n.keystone?.nota ? { notaDoDraevor: n.keystone.nota } : {}),
+    ...(n.opcoes ? { opcoes: n.opcoes.map((o) => ({ id: o.id, textos: o.textos, estados: o.estados, ...(o.notas ? { notas: o.notas } : {}), efeitos: o.efeitos })) } : {}),
+    descricao: n.descricao ?? null,
+    // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).
+    flavor: n.flavor ?? null,
+    atributo: n.atributo ?? null,
+    orbita: n.orbita ?? null,
+    tags: n.tags ?? [],
+    cluster: n.cluster,
+    classe: n.classe ?? null,
+    conexoes: n.conexoes ?? [],
+    ...(n.ramificadora ? { ramificadora: n.ramificadora } : {}),
+    ...(n.encaixeInterno ? { encaixeInterno: true } : {}),
+    // (lote 77) o encaixe de EXPANSÃO: o tamanho (2 Grande, 1 Médio, 0 Pequeno — a tela só oferece a Ramificadora que cabe) e o proxy dele; o
+    // PROXY: o centro do grupo dele (a tela esconde o fundo do grupo sem a joia e, com ela, desenha o do tamanho da joia ali — como o PoB)
+    ...(n.expansao ? { expansao: { tamanho: n.expansao.tamanho, ...(n.expansao.proxy != null ? { proxy: String(n.expansao.proxy) } : {}) } } : {}),
+    ...(n.placeholder && n.proxy?.grupo ? { grupoDoProxy: [Math.round(n.proxy.grupo.x), Math.round(n.proxy.grupo.y)] } : {}),
+  };
+}
+
 /** A árvore para a tela: nós (sem o que é só do servidor) e clusters. */
 export function arvoreParaCliente() {
   return {
@@ -872,41 +1107,7 @@ export function arvoreParaCliente() {
     inicios: ARVORE.inicios,
     clusters: ARVORE.clusters,
     custo: CONFIG.custo,
-    nos: ARVORE.nos.map((n) => ({
-      id: n.id,
-      nome: n.nome,
-      tipo: n.tipo,
-      x: n.x,
-      y: n.y,
-      custo: custoDe(n),
-      levelMinimo: n.levelMinimo ?? 0,
-      efeitos: n.efeitos ?? [],
-      // Árvore do PoE: os textos originais de cada linha e o estado da tradução (o balão mostra como no PoE).
-      ...(n.textos ? { textos: n.textos, estados: n.estados ?? [] } : {}),
-      // (ciclo 7) o porquê de cada linha sem efeito igual ("não se aplica ao jogo: …", a diferença do aproximado) — o balão mostra.
-      ...(n.notas ? { notas: n.notas } : {}),
-      ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
-      // (lote 27) o encaixe de joia que aceita joia (os das Ramificadoras, não).
-      ...(ehEncaixeDeJoia(n) ? { encaixeDeJoia: true } : {}),
-      ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
-      // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
-      ...(n.icone ? { icone: n.icone } : {}),
-      ...(n.grupo != null ? { grupo: n.grupo } : {}),
-      // A opção de escolha de uma ascendência (o nó-pai deixa escolher uma, sem gastar ponto).
-      ...(n.opcaoDe != null ? { opcaoDe: n.opcaoDe } : {}),
-      // A keystone do PoE aproximada: a diferença para o PoE (o balão mostra).
-      ...(n.keystone?.nota ? { notaDoDraevor: n.keystone.nota } : {}),
-      ...(n.opcoes ? { opcoes: n.opcoes.map((o) => ({ id: o.id, textos: o.textos, estados: o.estados, ...(o.notas ? { notas: o.notas } : {}), efeitos: o.efeitos })) } : {}),
-      descricao: n.descricao ?? null,
-      // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).
-      flavor: n.flavor ?? null,
-      atributo: n.atributo ?? null,
-      orbita: n.orbita ?? null,
-      tags: n.tags ?? [],
-      cluster: n.cluster,
-      classe: n.classe ?? null,
-      conexoes: n.conexoes ?? [],
-    })),
+    nos: ARVORE.nos.map(noParaCliente),
   };
 }
 

@@ -45,9 +45,15 @@ async function bruxaCom(gemas, af = {}) {
   P.garantir(e);
   return e;
 }
-/** Um bicho da caçada, parado em (dx, dy) de você, com muita vida; os outros longe. */
+/**
+ * Um bicho da caçada, parado em (dx, dy) de você, com muita vida; os outros longe. (17/10, dono: "Alvo sem mods no teste") o alvo é um bicho
+ * NORMAL, sem mods de monstro — o teste mede o plantio e a ativação, não a defesa dele: o Mágico com "Resistência Física" (+50%) levava a
+ * Armadilha Explosiva de nível 1 (5 de dano físico) ao teto de 90% de redução, e o dano saía 0 (~2% das sementes).
+ */
 function bichoEm(e, dx, dy) {
-  const [b, ...outros] = e.hunt.monstros;
+  const b = e.hunt.monstros.find((m) => (m.raridade ?? 'normal') === 'normal' && !m.mods?.length);
+  assert.ok(b, 'há um bicho Normal na caçada');
+  const outros = e.hunt.monstros.filter((m) => m !== b);
   for (const o of outros) Object.assign(o, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
   Object.assign(b, { x: e.hunt.pos.x + dx, y: e.hunt.pos.y + dy, hp: 1e9, maxHp: 1e9 });
   return b;
