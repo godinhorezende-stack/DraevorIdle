@@ -2497,6 +2497,29 @@ ModsPoe.definirReducaoFisica((hunt, alvo, valor) => resistido(hunt, alvo, 'physi
 // (lote 31, P044) A EXPLOSÃO do morto nos vizinhos: a defesa de cada um (a armadura no físico, a resistência do tipo, os estados dele) — sem os
 // modificadores de dano do personagem (a ficha vazia: nem penetração, nem "mais"/"aumentado").
 ModsPoe.definirDanoDaExplosao((hunt, alvo, tipo, valor) => resistido(hunt, alvo, tipo, valor, {}));
+/**
+ * (18/10, lote G20c) O DEVORADOR do PoE ("Summons a totem that can consume nearby corpses. If you are hurt, it will destroy a corpse to leech life
+ * to you" — act_str.lua:2662): com a sua vida (ou a mana) abaixo do máximo, o cadáver da caçada mais perto do totem, a até 3 casas (o raio do
+ * consumo não está no PoB: o alcance-base do totem, 60 unidades = 6 m), some e o dreno ("Drena N de Vida / de Mana a cada cadáver consumido")
+ * vem para você pelo dreno do PoE (`Ficha.drenarPoe` — a taxa e o "Pacto Vaal" valem, como diz a wiki). Um cadáver por uso (1 s).
+ */
+export const RAIO_DO_DEVORADOR = 3;
+export function devorarCadaver(estado, hunt, l, ficha, personagem, agora) {
+  const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
+  const uso = entry ? Acoes.temposDaGemaPoe(estado, { ...entry, poeGema: { ...entry.poeGema, doTotem: true } }, undefined, undefined, { doJogador: false, velExtraPct: l.velAtaquePct ?? 0 }).uso : 1000;
+  l.proximoGolpe = agora + Math.max(400, Math.round(uso * LacaiosPoe.fatorDeLentidao(l, agora)));
+  const ferido = (estado.hp ?? 0) < (estado.maxHp ?? 0) || (estado.mana ?? 0) < (estado.maxMana ?? 0);
+  if (!ferido) return [];
+  const z = hunt.z ?? 0;
+  const perto = (hunt.cadaveres ?? []).filter((c) => (c.z == null || c.z === z) && Math.max(Math.abs(c.x - l.x), Math.abs(c.y - l.y)) <= RAIO_DO_DEVORADOR)
+    .sort((a, b) => Math.max(Math.abs(a.x - l.x), Math.abs(a.y - l.y)) - Math.max(Math.abs(b.x - l.x), Math.abs(b.y - l.y)));
+  const c = perto[0];
+  if (!c) return [];
+  hunt.cadaveres = hunt.cadaveres.filter((x) => x !== c);
+  const eventos = [{ t: 'fx', id: entry?.efeito ?? 10, x: c.x, y: c.y, sk: l.acao }];
+  Ficha.drenarPoe(estado, { vida: l.devorador.vida ?? 0, mana: l.devorador.mana ?? 0 }, ficha, eventos, personagem?.nome, hunt.pos);
+  return eventos;
+}
 export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
   const daBarra = Acoes.POR_ID_PUBLICO?.(l.acao);
   // (o uso do totem: a habilidade com a tag Totem — "Velocidade de Conjuração/Ataque do Totem" vale na que um suporte tornou totem)
@@ -2663,6 +2686,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (l.x === hunt.pos.x && l.y === hunt.pos.y) passoDoFamiliar(hunt, grade, l, agora, hunt.pos, { pararEm: (d) => d >= 1 });
       // (lote G20a) o totem SEM golpe (o Chamariz, o Devorador, os Rejuvenescedores, o Vínculo Abrasador): não acerta ninguém — antes "acertava" por
       // no mínimo 1 (`GemasPoe.totemSemGolpe`)
+      // (lote G20c) o DEVORADOR: a cada uso dele (1 s), se você está ferido (ou sem mana cheia), consome o cadáver mais perto dele e o dreno vem
+      // para você (`devorarCadaver`)
+      if (l.devorador && R.jaPode(agora, l.proximoGolpe) && !Protecao.imune(hunt)) eventos.push(...devorarCadaver(estado, hunt, l, ficha, personagem, agora));
       if (GemasPoe.totemSemGolpe(l.gema)) continue;
       if (!R.jaPode(agora, l.proximoGolpe) || Protecao.imune(hunt)) continue;
       // (lote G20b) a BALISTA FOCADA: só ataca depois de um projétil de ataque SEU desde o último ataque dela (`hunt.poeProjetilDeAtaqueEm`)
@@ -2843,6 +2869,10 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   hunt.lacaios = vivos.filter((l) => l.hp > 0);
   // (ciclo 7) "Lacaios Recuperam X% de Vida na Morte de Lacaios".
   if (lacaioMorreu) LacaiosPoe.naMorteDeUmLacaio(hunt.lacaios);
+  // (lote G20c) os totens que valem em você agora (o ancestral Ativo, a aura do Rejuvenescedor ao alcance — `GemasPoe.adds`): mudou, a ficha muda
+  const pertoDe = (l, r) => r != null && Math.max(Math.abs(l.x - hunt.pos.x), Math.abs(l.y - hunt.pos.y)) <= r;
+  const totensEmVoce = hunt.lacaios.filter((l) => l.tipo === 'totem' && ((l.buffAtivo && pertoDe(l, l.ativacao ?? Infinity)) || (l.auraDoTotem && pertoDe(l, l.auraDoTotem.raio)))).map((l) => l.uid).join(',');
+  if (totensEmVoce !== (hunt.poeTotensEmVoce ?? '')) { hunt.poeTotensEmVoce = totensEmVoce; hunt.lacaiosMudaramAFicha = true; }
   // Um golem nasceu ou morreu (os bônus dele ao dono): a ficha é refeita.
   if (hunt.lacaiosMudaramAFicha || hunt.lacaios.filter((l) => l.afDono || l.porLacaioFisico).length !== antes) {
     hunt.lacaiosMudaramAFicha = false;

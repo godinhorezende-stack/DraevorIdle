@@ -2264,6 +2264,8 @@ export function reconvocarGolens(estado, hunt, agora) {
  * o da arma + o "+X metros ao Alcance de Golpes Corpo a Corpo" das peças e da própria gema (o Protetor: +1,8 m) —, 1 + ⌊metros / 2⌋ casas (a regra do
  * lote 35); antes eram 6 casas. O resto, o da habilidade (no mínimo 3 casas; sem alcance, 6).
  */
+/** (lote G20c) Um raio em metros em casas (1 casa = 2 m): a parte inteira e a fração como chance de mais uma — a conversão das áreas. */
+const casasDoRaio = (metros, rng = Math.random) => Math.floor(metros / 2) + (rng() < (metros / 2) % 1 ? 1 : 0);
 function alcanceDoTotem(entry, estado) {
   if (!tagsPoeDaSkill(entry).includes('corpo')) return Math.max(3, entry.range || 6);
   const ef = estado ? Gemas.efeitoNaSkill(estado, entry.id) : null;
@@ -2325,7 +2327,11 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
       ...(focada ? { focada: true } : {}),
       // (lote G20b) o totem ANCESTRAL do Devastador: a distância de ativação em casas (7 m = 3 casas e meia: a metade é a chance de mais uma, sorteada ao
       // pôr — a mesma conversão das áreas)
-      ...(q.tipo === 'totem' && efeito?.ativacaoM > 0 ? { ativacao: Math.floor(efeito.ativacaoM / 2) + (Math.random() < (efeito.ativacaoM / 2) % 1 ? 1 : 0) } : {}),
+      ...(q.tipo === 'totem' && (efeito?.ativacaoM ?? q.efeitosDoTotem?.ativacaoM) > 0 ? { ativacao: casasDoRaio(efeito?.ativacaoM ?? q.efeitosDoTotem.ativacaoM) } : {}),
+      // (lote G20c) os efeitos próprios do totem (`LacaiosPoe.efeitosDoTotem`): o buff do ancestral Ativo, a aura do Rejuvenescedor, o Devorador
+      ...(q.efeitosDoTotem?.buffAtivo ? { buffAtivo: q.efeitosDoTotem.buffAtivo } : {}),
+      ...(q.efeitosDoTotem?.auraDoTotem ? { auraDoTotem: { af: q.efeitosDoTotem.auraDoTotem.af, raio: casasDoRaio(q.efeitosDoTotem.auraDoTotem.raioM), absorvePct: q.efeitosDoTotem.auraDoTotem.absorvePct } } : {}),
+      ...(q.efeitosDoTotem?.devorador ? { devorador: q.efeitosDoTotem.devorador } : {}),
     };
     // O ESPECTRO (Erguer Espectro do PoE): ergue o ÚLTIMO CADÁVER da caçada (o tipo do bicho que morreu por último e que tem magias),
     // ou, sem cadáver, um bicho da área. Fica com o desenho e o nome dele e usa as MAGIAS dele (`cacadas.tiqueDosLacaios`).
@@ -2343,6 +2349,8 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     // (ciclo 7) os mods da árvore no lacaio recém-invocado: o Escudo de Energia ("ganham X% da Vida Máxima como Escudo de Energia").
     LacaiosPoe.aplicarNoLacaio(l);
     hunt.lacaios.push(l);
+    // (lote G20c) o Solo Sagrado do Flamejante Sagrado em volta dele, enquanto ele viver (`dono`), com a imunidade a maldições
+    if (q.efeitosDoTotem?.soloSagradoM) (hunt.solosSagrados ??= []).push({ x: l.x, y: l.y, raio: Math.max(1, casasDoRaio(q.efeitosDoTotem.soloSagradoM)), ate: l.ate ?? Infinity, dono: l.uid, imuneMaldicao: true });
     eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
     if (fichaDoTotem) eventos.push(...aoConvocarTotem(estado, hunt, l, fichaDoTotem, agora));
   }

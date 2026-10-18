@@ -2,31 +2,31 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 426,
-   "implementada e testada": 64,
+   "parcial": 418,
+   "implementada e testada": 72,
    "implementada, sem teste próprio": 50,
    "sem efeito": 11,
    "limitação do modelo idle": 11
   },
   "ataques": {
    "total": 210,
-   "parcial": 158,
-   "implementada e testada": 27,
+   "parcial": 154,
+   "implementada e testada": 31,
    "implementada, sem teste próprio": 19,
    "limitação do modelo idle": 6
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 55,
+   "implementada e testada": 58,
    "parcial": 148,
-   "implementada, sem teste próprio": 53,
+   "implementada, sem teste próprio": 50,
    "sem efeito": 6
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 46,
-    "implementada e testada": 1,
+    "parcial": 44,
+    "implementada e testada": 3,
     "implementada, sem teste próprio": 5
    },
    "alternativas": {
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 989,
-   "emDuasOuMais": 219
+   "linhasDistintas": 966,
+   "emDuasOuMais": 216
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,8 +61,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 178,
-   "suportesCitados": 68,
+   "ativasCitadas": 186,
+   "suportesCitados": 73,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -416,10 +416,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 20 % mais Velocidade de Ataque enquanto o Totem estiver Ativo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -462,8 +460,7 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)",
-    "efeito não simulado: Totens Convocados por esta Habilidade não podem Evadir"
+    "efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)"
    ],
    "idle": [],
    "outros": [],
@@ -476,11 +473,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Drena 299 de Vida para si a cada cadáver consumido",
-    "efeito não simulado: Drena 59 de Mana para si a cada cadáver consumido"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -494,7 +488,6 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados",
     "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
    ],
    "idle": [],
@@ -510,9 +503,7 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 128 % mais Velocidade de Projétil",
-    "efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados",
-    "efeito não simulado: Área do Solo Sagrado aumentada em 40 %"
+    "efeito não simulado: 128 % mais Velocidade de Projétil"
    ],
    "idle": [],
    "outros": [],
@@ -540,10 +531,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 317.5 de Vida Regenerada por segundo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -574,12 +563,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 30 % menos Área de Efeito",
-    "efeito não simulado: 317.5 de Vida Regenerada por segundo",
-    "efeito não simulado: 40 % do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1187,12 +1172,11 @@
    "ataque": false,
    "arquetipo": "arauto",
    "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 38 % mais Dano Incendiário sofrido",
-    "efeito não simulado: Dano ardente base é igual a 5 % adicional do Dano Excedente"
-   ],
+   "ausentes": [],
    "idle": [],
-   "outros": [],
+   "outros": [
+    "a queima do excesso de dano é a mesma em todos os vizinhos do morto (as condições de cada alvo não entram)"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -1536,11 +1520,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo",
-    "efeito não simulado: Distância de Ativação aumentada em 30 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2009,10 +1990,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3722,10 +3701,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Ataque aumentada em 5 % por Totem máximo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4153,21 +4130,14 @@
    "nome": "Arauto Agonizante",
    "variante": "alternativa",
    "ataque": false,
-   "arquetipo": "lacaio",
+   "arquetipo": "arauto",
    "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Buff concede 20 % de chance de Envenenar ao Acertar",
-    "efeito não simulado: Concede Virulência ao Envenenar um Inimigo",
-    "efeito não simulado: Buff concede 10 % mais Dano com Veneno",
-    "efeito não simulado: 40 de Virulência Máxima",
-    "efeito não simulado: Rastejador Agonizante possui 4 % de aumento da Velocidade de Ataque por Virulência possuída por você",
-    "efeito não simulado: Rastejador Agonizante causa Dano Físico aumentado em 9 % por Virulência possuida por você",
-    "efeito não simulado: +5 de Virulência Máxima"
+   "ausentes": [],
+   "idle": [],
+   "outros": [
+    "a Virulência fica no máximo (40 + a qualidade + a \"Virulência Máxima\") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados",
+    "o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)"
    ],
-   "idle": [
-    "o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro"
-   ],
-   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -7033,12 +7003,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Gasta 20 % do Custo da Runa",
-    "efeito não simulado: Runas recebem Alcance de Vínculo aumentado em 101 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -9235,7 +9201,7 @@
   {
    "slug": "Melee_Physical_Damage_Support",
    "nome": "Dano Físico Corpo a Corpo",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9801,7 +9767,7 @@
   {
    "slug": "Chance_to_Poison_Support",
    "nome": "Chance de Envenenar",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -10725,7 +10691,7 @@
   {
    "slug": "Unbound_Ailments_Support",
    "nome": "Afecções Libertas",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -11696,7 +11662,6 @@
     "Ambush",
     "Arcanist_Brand",
     "Bodyswap",
-    "Brand_Recall",
     "Conversion_Trap",
     "Dash",
     "Detonate_Dead_of_Scavenging",
@@ -12212,13 +12177,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo",
-   "gemas": [
-    "Ancestral_Warchief",
-    "Vaal_Ancestral_Warchief"
-   ]
-  },
-  {
    "linha": "# % mais Efeito de Resfriamento",
    "gemas": [
     "Cold_Snap",
@@ -12251,13 +12209,6 @@
    "gemas": [
     "Flame_Surge",
     "Flame_Surge_of_Combusting"
-   ]
-  },
-  {
-   "linha": "# de Vida Regenerada por segundo",
-   "gemas": [
-    "Rejuvenation_Totem",
-    "Vaal_Rejuvenation_Totem"
    ]
   },
   {
@@ -13213,13 +13164,6 @@
    ]
   },
   {
-   "linha": "Solo Sagrado concede Imunidade a Maldições para você e Aliados",
-   "gemas": [
-    "Holy_Flame_Totem",
-    "Holy_Flame_Totem_of_Ire"
-   ]
-  },
-  {
    "linha": "Taxa de Acerto aumentada em +# % por cada lâmina",
    "gemas": [
     "Blade_Vortex",
@@ -13431,12 +13375,6 @@
    ]
   },
   {
-   "linha": "# % do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo",
-   "gemas": [
-    "Vaal_Rejuvenation_Totem"
-   ]
-  },
-  {
    "linha": "# % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade",
    "gemas": [
     "Arcane_Cloak"
@@ -13557,12 +13495,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano Incendiário sofrido",
-   "gemas": [
-    "Herald_of_Ash"
-   ]
-  },
-  {
    "linha": "# % mais Dano Mágico por estágio",
    "gemas": [
     "Vaal_Flameblast"
@@ -13641,12 +13573,6 @@
    ]
   },
   {
-   "linha": "# % mais Velocidade de Ataque enquanto o Totem estiver Ativo",
-   "gemas": [
-    "Ancestral_Protector"
-   ]
-  },
-  {
    "linha": "# % mais Velocidade de Ataque por cada Estágio",
    "gemas": [
     "Double_Strike_of_Momentum"
@@ -13656,12 +13582,6 @@
    "linha": "# % mais Velocidade de Conjuração",
    "gemas": [
     "Shock_Nova_of_Procession"
-   ]
-  },
-  {
-   "linha": "# % menos Área de Efeito",
-   "gemas": [
-    "Vaal_Rejuvenation_Totem"
    ]
   },
   {
@@ -13704,12 +13624,6 @@
    "linha": "# % menos Velocidade de Movimento por Estágio",
    "gemas": [
     "Cyclone_of_Tumult"
-   ]
-  },
-  {
-   "linha": "# de Virulência Máxima",
-   "gemas": [
-    "Herald_of_Agony"
    ]
   },
   {
@@ -13878,12 +13792,6 @@
    "linha": "+# de Relâmpagos Concentrados máximos",
    "gemas": [
     "Static_Strike_of_Gathering_Lightning"
-   ]
-  },
-  {
-   "linha": "+# de Virulência Máxima",
-   "gemas": [
-    "Herald_of_Agony"
    ]
   },
   {
@@ -14151,12 +14059,6 @@
    ]
   },
   {
-   "linha": "Área do Solo Sagrado aumentada em # %",
-   "gemas": [
-    "Holy_Flame_Totem_of_Ire"
-   ]
-  },
-  {
    "linha": "Armadilha dura +# segundo Gira",
    "gemas": [
     "Blade_Trap"
@@ -14364,18 +14266,6 @@
    "linha": "Bônus de dano da Força também é aplicado à todo Dano Mágico para Magias Suportadas",
    "gemas": [
     "Iron_Will_Support"
-   ]
-  },
-  {
-   "linha": "Buff concede # % de chance de Envenenar ao Acertar",
-   "gemas": [
-    "Herald_of_Agony"
-   ]
-  },
-  {
-   "linha": "Buff concede # % mais Dano com Veneno",
-   "gemas": [
-    "Herald_of_Agony"
    ]
   },
   {
@@ -14811,12 +14701,6 @@
    ]
   },
   {
-   "linha": "Concede Virulência ao Envenenar um Inimigo",
-   "gemas": [
-    "Herald_of_Agony"
-   ]
-  },
-  {
    "linha": "Consome # Carga de # Frasco de Vida, se possível, por Projétil Disparado",
    "gemas": [
     "Poisonous_Concoction"
@@ -14946,12 +14830,6 @@
    "linha": "Dano abrasador aplicado pela detonação causa + # % de dano por totem detonado",
    "gemas": [
     "Searing_Bond_of_Detonation"
-   ]
-  },
-  {
-   "linha": "Dano ardente base é igual a # % adicional do Dano Excedente",
-   "gemas": [
-    "Herald_of_Ash"
    ]
   },
   {
@@ -15141,12 +15019,6 @@
    ]
   },
   {
-   "linha": "Distância de Ativação aumentada em # %",
-   "gemas": [
-    "Ancestral_Warchief"
-   ]
-  },
-  {
    "linha": "Distância de Deslocamento aumentada em # %",
    "gemas": [
     "Dash"
@@ -15156,18 +15028,6 @@
    "linha": "Distância de Deslocamento aumentada em %",
    "gemas": [
     "Dash"
-   ]
-  },
-  {
-   "linha": "Drena # de Mana para si a cada cadáver consumido",
-   "gemas": [
-    "Devouring_Totem"
-   ]
-  },
-  {
-   "linha": "Drena # de Vida para si a cada cadáver consumido",
-   "gemas": [
-    "Devouring_Totem"
    ]
   },
   {
@@ -15744,12 +15604,6 @@
    "linha": "Gasta # % da Mana atual",
    "gemas": [
     "Arcane_Cloak"
-   ]
-  },
-  {
-   "linha": "Gasta # % do Custo da Runa",
-   "gemas": [
-    "Brand_Recall"
    ]
   },
   {
@@ -17481,18 +17335,6 @@
    ]
   },
   {
-   "linha": "Rastejador Agonizante causa Dano Físico aumentado em # % por Virulência possuida por você",
-   "gemas": [
-    "Herald_of_Agony"
-   ]
-  },
-  {
-   "linha": "Rastejador Agonizante possui # % de aumento da Velocidade de Ataque por Virulência possuída por você",
-   "gemas": [
-    "Herald_of_Agony"
-   ]
-  },
-  {
    "linha": "Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Vaal_Power_Siphon"
@@ -17574,12 +17416,6 @@
    "linha": "Robôs Rastejantes concedem # % mais Dano de Armadilhas e Minas",
    "gemas": [
     "Summon_Skitterbots"
-   ]
-  },
-  {
-   "linha": "Runas recebem Alcance de Vínculo aumentado em # %",
-   "gemas": [
-    "Brand_Recall"
    ]
   },
   {
@@ -17787,12 +17623,6 @@
    ]
   },
   {
-   "linha": "Totens Convocados por esta Habilidade não podem Evadir",
-   "gemas": [
-    "Decoy_Totem"
-   ]
-  },
-  {
    "linha": "Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo",
    "gemas": [
     "Flamewood_Support"
@@ -17856,12 +17686,6 @@
    "linha": "Velocidade de Ataque aumentada em # % por Carga de Frenesi",
    "gemas": [
     "Flicker_Strike"
-   ]
-  },
-  {
-   "linha": "Velocidade de Ataque aumentada em # % por Totem máximo",
-   "gemas": [
-    "Siege_Ballista"
    ]
   },
   {

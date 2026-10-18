@@ -30,10 +30,17 @@ const MOVENDO_MS = 600;
  * por N segundos" (`solo_sagrado_perdura_s`): vale até N s depois de sair.
  */
 export const SOLO_SAGRADO = { regenPct: 6, raio: 1, maximo: 5 };
+/** (lote G20c: o Solo Sagrado de um TOTEM — `dono` — só vale enquanto ele vive) */
+const soloValendo = (h, s, agora) => s.ate > agora && (!s.dono || (h.lacaios ?? []).some((l) => l.uid === s.dono && l.hp > 0));
 export function noSoloSagrado(h, agora = h?.clock ?? 0) {
   const p = h?.pos;
-  const sobre = !!p && (h.solosSagrados ?? []).some((s) => s.ate > agora && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio);
+  const sobre = !!p && (h.solosSagrados ?? []).some((s) => soloValendo(h, s, agora) && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio);
   return sobre || (h?.poeSoloAte ?? 0) > agora;
+}
+/** (lote G20c) Sobre o Solo Sagrado do Totem Flamejante Sagrado: "concede Imunidade a Maldições para você e Aliados". */
+export function soloImuneAMaldicoes(h, agora = h?.clock ?? 0) {
+  const p = h?.pos;
+  return !!p && (h.solosSagrados ?? []).some((s) => s.imuneMaldicao && soloValendo(h, s, agora) && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio);
 }
 export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0) {
   if (!h?.pos || !(segundos > 0)) return;
@@ -1352,6 +1359,8 @@ export function addsDasMaldicoesNoJogador(estado, total) {
   if (!ligado()) return null;
   const h = estado?.hunt;
   const agora = h?.clock ?? 0;
+  // (lote G20c: sobre o Solo Sagrado do Totem Flamejante Sagrado, nenhuma maldição pega em você)
+  if (soloImuneAMaldicoes(h, agora)) return null;
   // (+ as do MAPA do endgame em que você está — "Jogadores são Amaldiçoados com Vulnerabilidade": valem o mapa inteiro.)
   const ativas = [...Object.values(h?.maldicoesNoJogador ?? {}).filter((m) => m && m.ate > agora), ...maldicoesDoMapa(estado).map((id) => MALDICOES_DOS_MONSTROS[id]).filter(Boolean)];
   // (+ lote 52: a imunidade por tempo da Desgraça das Bruxas)
