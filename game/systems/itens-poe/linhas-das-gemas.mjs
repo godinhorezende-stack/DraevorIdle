@@ -26,6 +26,16 @@ const REGRAS = [
   // do Resfriamento, a duração do Congelamento), e a Duração das afecções de Gelo (o Congelamento e o Resfriamento)
   [new RegExp(`^(Eletriza|Resfria|Congela) Inimigos como se causasse ${N} ?% mais Dano$`, 'i'), (m) => ({ [{ eletriza: 'eletrizacao_como_mais', resfria: 'resfriamento_como_mais', congela: 'congelamento_como_mais' }[m[1].toLowerCase()]]: num(m[2]) })],
   [new RegExp(`^Congela inimigos causando ${N} ?% mais Dano$`, 'i'), (m) => ({ congelamento_como_mais: num(m[1]) })],
+  // (lote G18b: o Golpe de Misericórdia da gema — mata no acerto com 10% de vida, 5% no Raro/Único — `ModsPoe.aoAcertar`)
+  [/^Golpe de Misericórdia$/i, () => ({ culling: 1 })],
+  // (o "+N % à Chance de Crítico" das Concocções: pontos na chance base)
+  [new RegExp(`^\\+${N} ?% à Chance de Crítico$`, 'i'), (m) => ({ crit_chance: num(m[1]) })],
+  // (o Golpe Duplo: o dano dobrado contra quem sangra)
+  [new RegExp(`^${N} ?% de chance de causar Dano Dobrado (?:à|a|aos?) Inimigos Sangrando$`, 'i'), (m) => ({ 'chance_dano_dobrado@alvoSangrando': num(m[1]) })],
+  // (o atordoamento da gema que o tradutor não conhece: a duração, a chance de dobrar, a duração no inimigo em Vida Cheia)
+  [new RegExp(`^Duração do Atordoamento em inimigos aumentada em ${N} ?%$`, 'i'), (m) => ({ stun_duration: num(m[1]) })],
+  [new RegExp(`^${N} ?% de chance de dobrar a Duração de Atordoamentos$`, 'i'), (m) => ({ chance_dobrar_atordoamento: num(m[1]) })],
+  [new RegExp(`^Duração de Atordoamentos em Inimigos com Vida Cheia aumentada em ${N} ?%$`, 'i'), (m) => ({ 'stun_duration@alvoVidaCheia': num(m[1]) })],
   // (o Martelo Glacial: o terceiro golpe seguido — a tag `terceiroGolpe` do golpe)
   [new RegExp(`^Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado ${N} ?% mais Dano$`, 'i'), (m) => ({ 'congelamento_como_mais@terceiroGolpe': num(m[1]) })],
   [/^Cada terceiro golpe sucessivo é um Golpe Crítico$/i, () => ({ 'crit_chance@terceiroGolpe': 100 })],
@@ -63,7 +73,7 @@ const REGRAS = [
  * `acoes.temposDaGemaPoe`). Um atributo fora daqui (o máximo de zumbis, a resistência dos lacaios…) vale na ficha do PERSONAGEM, não num
  * uso: a linha local com ele segue "efeito não simulado" até alguém o ler no uso — o balão não promete o que o golpe não faz.
  */
-const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+)$/;
+const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+)$/;
 const lidoNoUso = (k) => LIDOS_NO_USO.test(partir(k).stat) && atributoTemEfeito(k);
 
 /** Os atributos de UMA linha (com os números do nível): `{ stat: valor }`, ou null se nenhuma regra tem efeito no uso da gema. */
@@ -137,6 +147,17 @@ export function fichaComAsLinhas(estado, ficha, af, marca) {
  */
 const EL_DO_BUFF = { Gelo: 'ice', Fogo: 'fire', Raio: 'energy', Caos: 'chaos', Físico: 'physical' };
 const BUFF_PROPRIO = [
+  // (17/10, lote G18b) o "menos Dano sofrido" de um tipo (o Chamado Imortal; o "por Carga removida" fica não feito) e o da Armadura Ártica (parado)
+  [new RegExp(`^${N} ?% menos Dano (Físico|Elemental) sofrido$`, 'i'), (m) => (m[2].toLowerCase() === 'físico' ? { dano_physical_recebido_mais: -num(m[1]) } : { dano_fire_recebido_mais: -num(m[1]), dano_ice_recebido_mais: -num(m[1]), dano_energy_recebido_mais: -num(m[1]) })],
+  [new RegExp(`^Buff concede ${N} ?% menos Dano (Físico|de Fogo) sofrido de Acertos enquanto parado$`, 'i'), (m) => ({ [m[2].toLowerCase() === 'físico' ? 'dano_physical_recebido_mais@parado' : 'dano_fire_recebido_mais@parado']: -num(m[1]) })],
+  // (17/10, lote G18b) as auras com a flag do PoB: a Malevolência — "mais Dano Degenerativo" (ModFlag.Dot: as afecções de dano e o degenerativo,
+  // `dano_dot_mais`); a Ira — "mais Dano Mágico de Raio" (só a parte de Raio das magias); o Zelotismo — "mais Dano Mágico" (só o acerto das magias,
+  // como o Fogo Justo); a Precisão e o Zelotismo — a Chance de Crítico AUMENTADA (antes, pontos absolutos: +58 pontos na Precisão)
+  [new RegExp(`^Você e (?:seus )?aliados próxim\\S* causam ${N} ?% mais Dano Degenerativo$`, 'i'), (m) => ({ dano_dot_mais: num(m[1]) })],
+  [new RegExp(`^Você e (?:seus )?aliados próxim\\S* causam ${N} ?% mais Dano Mágico de (Raio|Fogo|Gelo|Caos)$`, 'i'), (m) => ({ [`${{ raio: 'mais_dano_raio', fogo: 'mais_dano_fogo', gelo: 'mais_dano_gelo', caos: 'mais_dano_caos' }[m[2].toLowerCase()]}@magia`]: num(m[1]) })],
+  [new RegExp(`^Você e (?:seus )?aliados próxim\\S* causam ${N} ?% mais Dano Mágico$`, 'i'), (m) => ({ 'mais_dano_acerto@magia': num(m[1]) })],
+  [new RegExp(`^Você e (?:seus )?aliados próxim\\S* recebem ${N} ?% de aumento da Chance de Acerto Crítico$`, 'i'), (m) => ({ crit_chance_inc: num(m[1]) })],
+  [new RegExp(`^Você e (?:seus )?aliados próxim\\S* tem Chance de Acerto Crítico com Magias aumentado em ${N} ?%$`, 'i'), (m) => ({ 'crit_chance_inc@magia': num(m[1]) })],
   [new RegExp(`^Buff concede (?:de )?${N} a ${N} de Dano (?:de Ataque de (Gelo|Fogo|Raio|Caos|Físico)|de (Gelo|Fogo|Raio|Caos|Físico) com Ataques) Adicional$`, 'i'), (m) => { const e = EL_DO_BUFF[m[3] ?? m[4]]; return { [`added_${e}_dmg_min`]: num(m[1]), [`added_${e}_dmg_max`]: num(m[2]) }; }],
   [new RegExp(`^Buff concede (?:de )?${N} a ${N} de Dano (?:Mágico de (Gelo|Fogo|Raio|Caos|Físico) Adicional|de (Gelo|Fogo|Raio|Caos|Físico) Mágico)$`, 'i'), (m) => { const e = EL_DO_BUFF[m[3] ?? m[4]]; return { [`spell_added_${e}_dmg_min`]: num(m[1]), [`spell_added_${e}_dmg_max`]: num(m[2]) }; }],
   // (as auras: "Você e aliados próximos ganham 49 % mais Armadura", "… 4 % de Resistência máxima a Fogo adicional", "… são Imunes à Incêndio")

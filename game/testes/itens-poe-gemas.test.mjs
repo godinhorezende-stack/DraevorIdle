@@ -49,7 +49,9 @@ test('os números do PoE pelo nível da gema: dano, custo, eficácia de ataque, 
 
 test('aura e maldição viram reforço: os efeitos e os atributos do nível ficam no buff (dano adicionado, marca de vulnerável)', { skip: SEM }, () => {
   const ira = G.buffNoNivel('Wrath', 10);
-  assert.ok(ira.af.added_energy_dmg_max > 0 && ira.efeitos.some((x) => x.efeito === 'dano'));
+  // (dono, 17/10 — lote G18b: o "mais Dano Mágico de Raio" da Ira é só a parte de Raio das magias, como no PoB — `mais_dano_raio@magia` —, não o
+  // "dano" geral de antes, que valia em toda habilidade)
+  assert.ok(ira.af.added_energy_dmg_max > 0 && ira.af['mais_dano_raio@magia'] > 0 && !ira.efeitos.some((x) => x.efeito === 'dano'));
   const mordida = G.buffNoNivel('Frostbite', 10);
   assert.deepEqual(mordida.efeitos[0].tipos, ['ice']);
   assert.ok(mordida.efeitos[0].efeito === 'marcaVulneravel' && mordida.efeitos[0].pct > 0);

@@ -167,8 +167,9 @@ test('P060 — a AURA do arquétipo vale em você enquanto ele vive (a ficha e o
   const base = M.auraDoMercenario(M.ativo(e2), {});
   assert.ok(Math.abs(a2.af.added_energy_dmg_max - base.af.added_energy_dmg_max * 1.5) < 1e-9);
   Acoes.tiqueDoMercenario(e2, e2.hunt, Date.now());
-  const dano = base.efeitos.find((x) => x.efeito === 'dano').pct;
-  assert.ok(Math.abs(Reforcos.bonus(e2.hunt, 'dano', []) - dano * 1.5) < 1e-9);
+  // (dono, 18/10 — lote G18b: a Ira é só a parte de Raio das magias — `mais_dano_raio@magia` —, não o "dano" geral de antes; o nó multiplica o mesmo
+  // ×1,5)
+  assert.ok(base.af['mais_dano_raio@magia'] > 0 && Math.abs(a2.af['mais_dano_raio@magia'] - base.af['mais_dano_raio@magia'] * 1.5) < 1e-9, `${a2.af['mais_dano_raio@magia']} / ${base.af['mais_dano_raio@magia']}`);
   // vale NELE também: o golpe dele com a Ira a +50% (o nó) é maior que com a Ira a +0%
   const merc2 = M.ativo(e2);
   const com = Acoes.fichaDoMercenario(e2, merc2, { mercenario: 1, mercenario_auras_inc: 50 }).habilidades[0].dano.max;

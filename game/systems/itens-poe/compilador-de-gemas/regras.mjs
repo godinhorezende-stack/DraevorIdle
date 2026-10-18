@@ -58,13 +58,15 @@ export function statsVazios() {
     // (17/10, lote G18) o "mais/menos" só das afecções da própria gema (lido no `acertar` — `GemasPoe.maisNasAfeccoesDaGema`)
     maisAfeccaoPct: 0,
     maisSangramentoPct: 0,
+    maisIncendioPct: 0,
+    maisVenenoPct: 0,
     cull: false,
     sempreAtordoa: false,
     estagios: null,
     raioPorEstagio: 0,
     lentidaoAcerto: 0,
     danoRecebidoAcerto: 0,
-    maldicao: { resist: {}, danoRecebido: 0, lentidao: 0, menosDano: 0, textos: [] },
+    maldicao: { resist: {}, danoRecebido: 0, danoRecebidoTipo: {}, lentidao: 0, menosDano: 0, textos: [] },
     buff: {
       adicional: {}, extra: [], maisDano: 0, velAtaque: 0, velConj: 0, velMov: 0, critico: 0, resist: {},
       armadura: 0, evasao: 0, escudo: 0, regen: 0, regenMana: 0, menosDanoRecebido: 0, absorve: 0, imuneAfeccoes: false, textos: [],
@@ -98,12 +100,17 @@ export const REGRAS = [
   [r(`^Cada quinto Ataque dispara ${N} Projéteis adicionais$`), (s, m) => (s.quintoProjeteis = num(m[1]))],
   [r(`^Projéteis causam \\+?${N} % (mais|menos) Dano com Acertos e Afecções$`), (s, m) => (s.maisProjetilPct += num(m[1]) * sinal(m[2]))],
   [r(`^Causa até \\+?${N} % mais Dano com Acertos aos alvos próximos$`), (s, m) => (s.maisPertoPct += num(m[1]))],
-  [r(`^\\+${N} % à Chance de Crítico`), (s, m) => (s.critico += num(m[1]))],
+  // (17/10, lote G18b: "+6 % à Chance de Crítico" das Concocções é linha local — `crit_chance`, pontos base; antes `critico`, que ninguém lia)
+  [r(`^\\+${N} % à Chance de Crítico`), () => false],
   // (17/10, lote G18: o "mais/menos" só das afecções de dano — o Punho Esmagador, a Descarga… — e o só do Sangramento — a Punctura, a Laceração…;
   // o da qualidade, "+20 % mais dano com sangramento", soma no mesmo, como no PoE. Antes iam a `afeccaoMais`, que ninguém lia.)
   [r(`^${N} % (mais|menos) Dano (?:de|com) Afecções$`), (s, m) => (s.maisAfeccaoPct += num(m[1]) * sinal(m[2]))],
   [r(`^\\+?${N} % (mais|menos) Dano com Sangramento$`), (s, m) => (s.maisSangramentoPct += num(m[1]) * sinal(m[2]))],
-  [r(`Golpe de Misericórdia`), (s) => (s.cull = true)],
+  // (lote G18b: o "mais Dano com Incêndio/Veneno" da gema — a Flecha Ardente, o Golpe da Víbora da Mamba — só naquela afecção)
+  [r(`^\\+?${N} % (mais|menos) Dano com Incêndio$`), (s, m) => (s.maisIncendioPct += num(m[1]) * sinal(m[2]))],
+  [r(`^\\+?${N} % (mais|menos) Dano com (?:Veneno|Envenenamentos)$`), (s, m) => (s.maisVenenoPct += num(m[1]) * sinal(m[2]))],
+  // (17/10, lote G18b: o Golpe de Misericórdia é linha local — `culling`, lido no acerto; antes `cull`, que ninguém lia)
+  [r(`Golpe de Misericórdia`), () => false],
   // (17/10, lote G18) o "por cada Ricochete restante" é feito por `GemasPoe.alvosNoNivel` (`pctPorRestante`) → `Acoes.atacar`; o "por estágio"
   // pelos estágios de canalização (`GemasPoe.estagiosDaGema`) — a linha vai para `naoImplementadas` e o status a tira só onde há estágios (antes
   // ia a `danoPorEstagio`, que ninguém lia: a Ira Divina, o Snipe e a Rajada Vaal pareciam feitos)
@@ -111,6 +118,10 @@ export const REGRAS = [
   [r(`${N} % mais Dano(?: Mágico| com Acertos e Afecções| com Afecções| com Acertos)? por (?:estágio|Estágio)`), () => false],
 
   // ---------------- afecções no acerto ----------------
+  // (17/10, lote G18b: a chance contra o AMALDIÇOADO é da maldição no alvo — `CONTRA` em gemas-poe —, não do acerto da maldição; a do BUFF ("Buff
+  // concede X% de chance de …" — o Arauto da Agonia, o Campo Galvânico) é de quem tem o buff: as duas vão a `naoImplementadas`)
+  [r(`^Acertos(?: de Ataques)? contra Inimigos Amaldiçoados`), () => false],
+  [r(`^Buff concede .*% de chance de`), () => false],
   [r(`${N} % de chance de Congelar, Eletrizar e Incendiar`), (s, m) => (s.chances.congelar = s.chances.eletrizar = s.chances.incendiar = num(m[1]))],
   [r(`${N} % de chance de Incendiar`), (s, m) => (s.chances.incendiar = num(m[1]))],
   [r(`${N} % de chance de Congelar`), (s, m) => (s.chances.congelar = num(m[1]))],
@@ -129,13 +140,17 @@ export const REGRAS = [
   [r(`Efeito de (?:Eletrização|Afecções de Gelo) aumentado em ${N}`), () => false],
   [r(`Duração de Afecções de Gelo aumentada em ${N}`), () => false],
   [r(`Acertos que Causam Dano sempre Atordoam`), (s) => (s.sempreAtordoa = true)],
-  [r(`Atordoamento`), (s) => s.flags.add("atordoa")],
-  [r(`^Velocidade de Movimento reduzida em ${N} %`), (s, m) => (s.lentidaoAcerto = num(m[1]))],
-  [r(`Inimigos possuem ${N} % menos Velocidade de Movimento`), (s, m) => (s.lentidaoAcerto = num(m[1]))],
-  [r(`Trava o inimigo no lugar`), (s) => (s.lentidaoAcerto = 100)],
-  [r(`Dano de ${EL} sofrido aumentado em ${N}`), (s, m) => (s.danoRecebidoAcerto = num(m[2]))],
-  [r(`Definhado dura ${N} segundos`), (s, m) => (s.duracao2 = num(m[1]))],
-  [r(`Inimigos recebem ${N} % de aumento de Dano dos Acertos de Minas ou Armadilhas`), (s, m) => (s.maldicao.danoRecebido += num(m[1]))],
+  // (17/10, lote G18b: as linhas de atordoamento da gema — o ponto, a duração, a chance de dobrar — são linhas LOCAIS (`linhas-das-gemas`,
+  // `enemy_stun_threshold_red`/`stun_duration`/`chance_dobrar_atordoamento`); antes iam a uma `flag` que ninguém lia)
+  [r(`Atordoamento`), () => false],
+  // (17/10, lote G18b: a lentidão de movimento nos monstros, o Definhado do Definhar e o "dano das Minas ou Armadilhas" da Armadilha de Urso não
+  // existem no jogo — a linha fica não feita; antes iam a chaves que ninguém lia e pareciam feitas)
+  [r(`^Velocidade de Movimento reduzida em ${N} %`), () => false],
+  [r(`Inimigos possuem ${N} % menos Velocidade de Movimento`), () => false],
+  [r(`Trava o inimigo no lugar`), () => false],
+  [r(`Dano de ${EL} sofrido aumentado em ${N}`), () => false],
+  [r(`Definhado dura ${N} segundos`), () => false],
+  [r(`Inimigos recebem ${N} % de aumento de Dano dos Acertos de Minas ou Armadilhas`), () => false],
 
   // ---------------- área / duração ----------------
   [r(`O raio Base é de ${N} metros?`), (s, m) => (s.raio = num(m[1]))],
@@ -167,8 +182,10 @@ export const REGRAS = [
   [r(`Tempo Base de Detonação de Mina é de ${N}`), (s, m) => (s.detonacao = num(m[1]))],
 
   // ---------------- projéteis / alvos ----------------
-  [r(`^Dispara ${N} Projéteis adicionais`), (s, m) => (s.projeteisExtra += num(m[1]))],
-  [r(`Dispara ${N} (?:projéteis|Flechas|Projéteis)`), (s, m) => (s.projeteis = num(m[1]))],
+  // (lote G18b: com âncora — a espiral, os secundários do Tiro Tornado, o "primeiro e último disparo" da Saraivada e os esporos não são isto: ficam
+  // não feitos; os adicionais e a base os lê `GemasPoe.alvosNoNivel`)
+  [r(`^Dispara ${N} Projéteis adicionais$`), (s, m) => (s.projeteisExtra += num(m[1]))],
+  [r(`^Dispara ${N} (?:projéteis|Flechas|Projéteis)$`), (s, m) => (s.projeteis = num(m[1]))],
   [r(`Dispara Projéteis em um círculo`), (s) => (s.circulo = true)],
   [r(`Projéteis Perfuram todos Alvos`), (s) => (s.perfura = 99)],
   [r(`Perfura ${N} alvos? adiciona`), (s, m) => (s.perfura += num(m[1]))],
@@ -197,24 +214,31 @@ export const REGRAS = [
   // ---------------- maldições / debuffs em inimigos ----------------
   [r(`Inimigos Amaldiçoados (?:possuem|têm|tem) ${N} % (?:de|em) Resistência a ${EL}`), (s, m) => (s.maldicao.resist[el(m[2])] = num(m[1]))],
   [r(`Inimigos Amaldiçoados (?:possuem|têm|tem) ${N} % (?:de|em|a todas as) Resistências? Elementa`), (s, m) => TODOS.forEach((e) => (s.maldicao.resist[e] = num(m[1])))],
-  [r(`Inimigos Amaldiçoados (?:recebem|sofrem) ${N} % (?:de aumento de |mais )?Dano`), (s, m) => (s.maldicao.danoRecebido += num(m[1]))],
+  // (17/10, lote G18b: o dano sofrido de um TIPO — a Vulnerabilidade: só o Físico, como no PoB — vira a marca daquele tipo; sem tipo, de todos)
+  [r(`Inimigos Amaldiçoados (?:recebem|sofrem) ${N} % (?:de aumento de |mais )?Dano(?: (Físico)| de ${EL})?`), (s, m) => { const t = m[2] ? 'fisico' : m[3] ? el(m[3]) : null; if (t) s.maldicao.danoRecebidoTipo[t] = (s.maldicao.danoRecebidoTipo[t] ?? 0) + num(m[1]); else s.maldicao.danoRecebido += num(m[1]); }],
   [r(`Inimigos (?:Normais e Mágicos )?Amaldiçoados (?:têm|tem|possuem) ${N} % menos Velocidade de Ação`), (s, m) => (s.maldicao.lentidao = Math.max(s.maldicao.lentidao, num(m[1])))],
-  [r(`Inimigos Raros e Únicos Amaldiçoados (?:têm|tem) ${N} % menos`), () => {}],
+  // (lote G18b: o Enfraquecer — o Raro e o Único levam o valor menor, o PoB: RareOrUnique; o das Correntes Temporais (a lentidão) fica não feito)
+  [r(`Inimigos Raros e Únicos Amaldiçoados (?:têm|tem) ${N} % menos`), (s, m) => { if (!/Dano/i.test(m.input)) return false; s.maldicao.menosDanoRaro = num(m[1]); }],
   [r(`Inimigos (?:Normais e Mágicos )?Amaldiçoados causam ${N} % menos Dano`), (s, m) => (s.maldicao.menosDano = num(m[1]))],
   [r(`Inimigos Amaldiçoados (?:têm|possuem) Velocidade de (?:Ação|Movimento) reduzida em ${N}`), (s, m) => (s.maldicao.lentidao = num(m[1]))],
-  [r(`Inimigos Próximos sofrem ao menos ${N} % mais Dano Físico`), (s, m) => (s.maldicao.danoRecebido += num(m[1]))],
-  [r(`Aura faz com que os Inimigos sofram até ${N} % mais Dano`), (s, m) => (s.maldicao.danoRecebido += num(m[1]))],
+  // (lote G18b: o Orgulho — só o Físico, do mínimo ao máximo pelo tempo na aura (`rampa`, `Reforcos.marcar`); a Carne e Pedra na Postura de
+  // Sangue — a postura do buff é a de Areia: fica não feita)
+  [r(`Inimigos Próximos sofrem ao menos ${N} % mais Dano Físico(?:, até um máximo de ${N} %, na medida em que permanecem na Aura por ${N} segundos?)?`), (s, m) => { s.maldicao.danoRecebidoTipo.fisico = (s.maldicao.danoRecebidoTipo.fisico ?? 0) + num(m[1]); if (m[2]) s.maldicao.rampa = { max: num(m[2]), ms: Math.round(num(m[3]) * 1000) }; }],
+  [r(`Aura faz com que os Inimigos sofram até ${N} % mais Dano`), () => false],
   [r(`Inimigos (?:próximos )?(?:na Aura )?(?:têm|possuem|tem) ${N} % (?:de|em) Resistência a ${EL}`), (s, m) => (s.maldicao.resist[el(m[2])] = num(m[1]))],
   [r(`Amaldiçoad`), (s, m) => (s.maldicao.textos.push(m.input), false)],
 
   // ---------------- buffs / auras ----------------
   [r(`(?:Você e aliados próximos causam|Aura concede|Buff concede|Concede) ${N} a ${N} de Dano (?:de |De )?${EL} adicional`), (s, m) => (s.buff.adicional[el(m[3])] = [num(m[1]), num(m[2])])],
   [r(`(?:recebem|Buff concede|concede) ${N} % (?:do seu |de )?Dano Físico como Dano (?:Extra de ${EL}|de ${EL} Extra)`), (s, m) => s.buff.extra.push({ para: el(m[2] || m[3]), pct: num(m[1]) })],
-  [r(`(?:Você e aliados próxim\\w+ causam|Concede) ${N} % mais Dano(?: Mágico)?(?: de ${EL})?`), (s, m) => (s.buff.maisDano += num(m[1]))],
+  // (17/10, lote G18b: só o "mais Dano" puro do buff — o "Mágico" (a Ira, o Zelotismo: só as magias), o "Degenerativo" (a Malevolência: só o
+  // degenerativo) e o "Buff concede … mais Dano com …" (os arautos) são linhas de buff com a flag certa — `linhas-das-gemas.BUFF_PROPRIO`)
+  [r(`^(?:Você e aliados próxim\\w+ causam|Concede) ${N} % mais Dano(?: de ${EL})?$`), (s, m) => (s.buff.maisDano += num(m[1]))],
   [r(`(?:recebem|Buff concede) ${N} % de aumento de Velocidade de Ataque`), (s, m) => (s.buff.velAtaque += num(m[1]))],
   [r(`(?:recebem|Buff concede) ${N} % de aumento de Velocidade de Conjuração`), (s, m) => (s.buff.velConj += num(m[1]))],
   [r(`(?:recebem ${N} % de aumento de Velocidade de Movimento|Velocidade de Movimento aumentada em ${N})`), (s, m) => (s.buff.velMov += num(m[1] || m[2]))],
-  [r(`(?:recebem ${N} % de aumento da Chance de Acerto Crítico|Chance de Acerto Crítico(?: com Magias)? aumentad[oa] em ${N})`), (s, m) => (s.buff.critico += num(m[1] || m[2]))],
+  // (17/10, lote G18b: a Chance de Acerto Crítico "aumentada" é AUMENTADO, não pontos — a Precisão dava +58 pontos —: linha de buff/local, `crit_chance_inc`)
+  [r(`(?:recebem ${N} % de aumento da Chance de Acerto Crítico|Chance de Acerto Crítico(?: com Magias)? aumentad[oa] em ${N})`), () => false],
   [r(`ganham \\+?${N} % (?:em todas Resistências Elementais|de Resistência a todos os Elementos)`), (s, m) => TODOS.forEach((e) => (s.buff.resist[e] = num(m[1])))],
   [r(`ganham ${N} % de Resistência a ${EL} adicional`), (s, m) => (s.buff.resist[el(m[2])] = num(m[1]))],
   [r(`ganham ${N} % de Resistência máxima`), () => false],
@@ -224,8 +248,10 @@ export const REGRAS = [
   [r(`Regeneram ${N} de Vida por segundo`), (s, m) => (s.buff.regen += num(m[1]))],
   [r(`^${N} de Vida Regenerada por segundo`), (s, m) => (s.buff.regen += num(m[1]))],
   [r(`regeneram ${N} de Mana por segundo`), (s, m) => (s.buff.regenMana += num(m[1]))],
-  [r(`${N} % menos Dano ${EL}? ?(?:Elemental )?sofrido`), (s, m) => (s.buff.menosDanoRecebido += num(m[1]))],
-  [r(`(?:Buff concede|Buff faz com que você sofra até) ${N} % menos Dano`), (s, m) => (s.buff.menosDanoRecebido += num(m[1]))],
+  // (17/10, lote G18b: o "menos Dano sofrido" é de um TIPO — o Chamado Imortal: Físico e Elemental; a Armadura Ártica: Físico e Fogo, parado —
+  // e o Caos nunca: linhas de buff (`dano_<tipo>_recebido_mais`); antes `menosDanoRecebido` reduzia todo dano, de todo tipo)
+  [r(`${N} % menos Dano ${EL}? ?(?:Elemental )?sofrido`), () => false],
+  [r(`(?:Buff concede|Buff faz com que você sofra até) ${N} % menos Dano`), () => false],
   [r(`${N} % do Dano de Acertos é tirado do Buff`), (s, m) => (s.buff.absorve = num(m[1]))],
   [r(`Imunes a todas as Afecções Elementais`), (s) => (s.buff.imuneAfeccoes = true)],
   [r(`^(?:Você e aliados próxim|Buff concede|Aura concede|Estandarte)`), (s, m) => (s.buff.textos.push(m.input), false)],

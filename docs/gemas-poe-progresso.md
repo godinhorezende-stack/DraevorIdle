@@ -159,7 +159,7 @@ Referência: o PoB recalcula o dano-base de cada afecção de dano com um `dotCf
 - Números: Projéteis Viciosos de 147% mais no acerto para 49% no acerto + 49% no Caos degenerativo + 49% no Físico degenerativo; Fortificar de 38% para 19% no acerto + 19% nas afecções corpo a corpo. Suportes "funciona" 97 → 104 (o Sobre-esforço desce a parcial); testados 42 → 51.
 - Teste: `afeccoes-acerto-poe.test.mjs` (10), medido no jogo: Bola de Fogo + Afecções Mortais (acerto ×0,2, Incêndio ×1,44); Dano Incendiário (acerto igual, Incêndio ×1,34); Sangramento do PoE; Flecha Cáustica (degenerativo igual com as Afecções Mortais, ×1,49 com os Projéteis Viciosos); Golpe Múltiplo (×0,8, ×1,22, ×1,44); Volatilidade; Toxinas Vis; Foco Elemental; Sadismo.
 
-### G18a — as linhas das ativas que o compilador lia e ninguém usava (17/10)
+### G18a — as linhas das ativas que o compilador lia e ninguém usava (17/10, commit dbfdb10e; push no PR)
 
 Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMais`, `danoPorEstagio`, `danoPorRicochete` e `afeccaoDuracao`, que nenhum código lia. A linha contava como "aplicada" e sumia do status (cerca de 40 ativas, umas 25 como "funciona"). Um workflow de desenho (5 analistas, um por família, mais um crítico, todos pelo PoB) deu 79 itens. Este lote faz três famílias.
 - **Afecções da gema:**
@@ -191,6 +191,35 @@ Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMai
 - Teste: `ativas-linhas-lidas-poe.test.mjs` (16), medido no jogo: Punho Esmagador (Sangramento por acerto ×0,4), Punctura (a qualidade soma), Tiro Gélido (a força do Resfriamento pelo Gelo × 2,95), Golpe no Chão (perto ×1,49), Golpe Vulcânico (projéteis ×0,4) e Zênite (o quinto ×2,8 e 5 projéteis a mais), Fogo Justo (acerto ×1,39, Incêndio igual), Incinerar (onda final: acerto ×6, Incêndio ×3,5, sempre Incendeia), Rajada de Chamas (Incêndio por acerto 7 ÷ 17,5), Chicote da Naja, explosão do Detonar Mortos da Limpeza, terceiro golpe do Martelo Glacial.
 - Pendente do G18 (os planos estão no workflow `g18-ativas-desenho`): a tabela do Fogo Justo Vaal (19% e 3 m no PoE; os dados copiam a do comum) e a do Impacto Sísmico Vaal (só 2 níveis); a Ira Divina (zaps e o dado da afecção do poedb), o Snipe, a Rajada Vaal e a Maré Invernal; o raio por estágio da Rajada (a partir do 2º); depois o G18b e o G18c.
 
+### G18b — o status com a qualidade, as maldições, as auras e as chaves do compilador sem leitor (18/10)
+
+- **O status das ativas passa a ser avaliado com a qualidade 20.** As linhas da qualidade que o jogo não faz entram nos motivos, como as do nível; no lacaio, as da qualidade não se escondem atrás do filtro das do nível. São 40 ativas de "funciona" para "parcial", cada uma com a linha que falta: é o status honesto.
+- **O raio da qualidade:** "O raio Base é de 0,3 metros" da qualidade SOMA no do nível (o mesmo stat no PoB). Antes o compilador o tomava pelo raio, e a Bola de Fogo com qualidade 20 ficava com 0,3 m em vez de 2,1.
+- **A qualidade lida:**
+  - as chances da gema (o Golpe Selvagem: 20% de Congelar, Eletrizar e Incendiar); o "Não Pode aplicar Eletrizar" vira o "não pode" (antes, −1 na chance);
+  - o "contra o Inimigo Vinculado" das Marcas;
+  - a duração base dos Vínculos;
+  - o "mais Dano com Incêndio/Veneno" da gema (a Flecha Ardente, o Golpe da Víbora da Mamba);
+  - o Dano Dobrado contra quem sangra (o Golpe Duplo).
+- **As maldições contra o amaldiçoado** (`CONTRA`): as chances de Incendiar/Eletrizar/Congelar (Inflamabilidade, Condutividade, Queimadura de Gelo), o Sangramento dos ataques (Vulnerabilidade), a duração das afecções da qualidade e o dobrar o atordoamento (Marca do Comandante). O acerto da gema soma nas afecções o que o alvo dá (`extrasDoAlvo`).
+- **A Vulnerabilidade e o Orgulho só no Físico** (antes, todo tipo), com o aval do dono para o teste. O Orgulho sobe de 19% a 39% em 4 s na aura. O Enfraquecer é menor no Raro, no Único e no chefe (18% contra 29%).
+- **As auras pela flag do PoB:**
+  - Malevolência: só no degenerativo (`dano_dot_mais`);
+  - Ira: só o Raio das magias (`mais_dano_raio@magia`; o teste antigo ajustado com o aval do dono);
+  - Zelotismo: só o acerto das magias;
+  - Precisão e Zelotismo: a Chance de Crítico AUMENTADA (antes +58 pontos absolutos na Precisão).
+- **O dano sofrido de um tipo:** o Chamado Imortal (35% menos Físico, 34% menos Elemental, o Caos nunca; antes 84% menos em tudo) e a Armadura Ártica (Físico e Fogo, parado).
+- **As chaves do compilador sem leitor:**
+  - o Golpe de Misericórdia (`culling`);
+  - as linhas de atordoamento (o ponto, a duração, o dobrar);
+  - o crítico das Concocções (`crit_chance`);
+  - o tempo de ataque extra (o Salto Esmagador, a Cutilada Vaal);
+  - os vizinhos da Flecha Relampejante (até N a 1 casa).
+  - A lentidão de movimento nos monstros, o Definhado do Definhar, a Armadilha de Urso, a espiral e os secundários dos projéteis ficam não feitos. O "Buff concede … chance" (o Arauto da Agonia, o Campo Galvânico) também, até o buff do dono existir.
+- A qualidade da Armadilha de Torre Elétrica ("Golpeia +1 Área adicional") passou a valer: o SYSTEM pegou a linha como não feita depois do status com qualidade.
+- O dano mostrado (o balão e a ficha do mercenário, `danoMostrado`) leva o "X% mais Dano de <tipo>" (a Ira) pela fração de cada parte. No acerto ele já entrava (`fatorRecebidoPeloBicho`), mas o balão o deixava de fora.
+- Teste: `ativas-status-qualidade-poe.test.mjs` (12). Com o aval do dono: `itens-poe-gemas.test.mjs` (a Ira), `passivas-poe-maldicoes-dreno.test.mjs` (a Vulnerabilidade no Físico) e `zerar-arvore-lote39.test.mjs` (o ×1,5 da aura do mercenário conferido no `mais_dano_raio@magia`).
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
@@ -205,7 +234,6 @@ Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMai
 
 ## Próximo passo exato
 
-1. Commitar G18a (FULL por exceção) e fazer o push no PR.
-2. **G18b** (planos do workflow `g18-ativas-desenho`, analistas "statusQualidade" e "critico"): o status das ativas com qualidade 20 (as linhas de qualidade não feitas no status); as chances do Golpe Selvagem pela qualidade (`afeccoesComAGema` com qualidade); as maldições (Vulnerabilidade, Inflamabilidade, Condutividade, Queimadura de Gelo: as chances contra o amaldiçoado em `CONTRA`, e a duração na qualidade); os arautos (Agonia: chance de Envenenar e "mais Dano com Veneno"; Pureza); a Cutilada Vaal; as auras (Malevolência "mais Dano Degenerativo" → `dano_dot_mais`, Ira e Zelotismo "mais Dano Mágico", Precisão e Zelotismo crítico); o Campo Galvânico; o Golpe de Misericórdia; as linhas de atordoamento; as chaves do compilador que o crítico achou sem leitor (regras 112, 147–149, 153, 179, 204/205, 215, o `cull`).
-3. **G18c** — os lacaios (o "mais Dano" dos suportes de lacaio à parte do "aumentado"; o Ceifador; os Golens do Caos e da Carniça).
-4. **G19** — as afecções pela conta do PoB (ver o fim do G17).
+1. Commitar G18b (FULL por exceção) e fazer o push no PR.
+2. Os próximos lotes pelos planos do workflow `g19-familias-desenho` (totens, lacaios, buffs sem equivalente, a cauda dos suportes e a das ativas), até zerar os parciais: cada linha feita como no PoE ou classificada, com a justificativa, como limitação do idle.
+3. G19 — as afecções pela conta do PoB (ver o fim do G17).
