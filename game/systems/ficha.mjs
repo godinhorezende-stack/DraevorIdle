@@ -117,6 +117,8 @@ export const forcaNoGolpe = (ficha, tags = []) => tags.includes('melee') || (Num
 export function invalidar(estado) {
   if (estado) CACHE.delete(estado);
 }
+/** (lote G20a) A ficha guardada agora, sem calcular (null se não há) — o uso do totem confere se ela foi refeita com a posição trocada. */
+export const fichaGuardada = (estado) => (estado ? CACHE.get(estado) ?? null : null);
 
 export function combate(estado) {
   const guardada = CACHE.get(estado);

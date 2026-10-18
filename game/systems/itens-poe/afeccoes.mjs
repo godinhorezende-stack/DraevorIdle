@@ -162,7 +162,7 @@ export function fatorDeEletrizacao(alvo, agora) {
  * crítico; `ataque`: é ataque (golpe da arma, habilidade de ataque) — as chances "com Ataques" só valem nele. `afeccoes`: o de `daSoma`
  * (a ficha guarda). Devolve os nomes dos estados postos (o evento na tela). Sem o sistema do PoE, não faz nada.
  */
-export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, fatoresDoDano = null } = {}) {
+export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = false, agora = 0, rng = Math.random, salaDeBoss = false, praga = null, fatoresDoDano = null, fonte = 'poe' } = {}) {
   if (!ligado() || !bicho || bicho.hp <= 0 || bicho.dummy) return [];
   const a = afeccoes ?? daSoma();
   // "Golpes não Críticos não infligem Afecções" (a Agonia Perfeita).
@@ -201,7 +201,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     if (a.duracaoDanoMais) duracaoMs = Math.round(duracaoMs * Math.max(0, 1 + a.duracaoDanoMais / 100));
     const total = ultimoTotal = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + (a.danoComAfeccoes ?? 0) + aumentado + mutilado) / 100) * Math.max(0, 1 + mais / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0) + (tipo === 'sangramento' ? a.sangramentoMaisRapido ?? 0 : 0) + (tipo === 'venenoPoe' ? a.venenoMaisRapido ?? 0 : 0)) / 100)));
-    const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
+    // (lote G20a: `fonte` — a do totem é dele: o abate pelo pulso é `matarTotem`, `combate/dot`)
+    const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte }, ...(chave != null ? { chave } : {}), agravado, semMovimento }, agora);
     if (estado) postos.push(estado);
     return estado;
   };

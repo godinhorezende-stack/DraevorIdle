@@ -1498,6 +1498,8 @@ export function round(estado, personagem) {
         // (PoE: o golpe Impelido por um Clamor gasta um — a tag `impelido` já está na ficha deste golpe.)
         if (!segundo && hunt.impelidos?.n > 0) hunt.impelidos.n--;
         const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
+        // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
+        if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;
         // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
         if (Defesa.errou(ficha, hunt, alvo)) {
           Treino.treinar(estado, pericia);

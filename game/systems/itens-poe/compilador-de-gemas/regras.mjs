@@ -192,8 +192,10 @@ export const REGRAS = [
   [r(`Ricocheteia \\+${N} Vezes`), (s, m) => (s.ricochetes = num(m[1]))],
   [r(`Acerta até ${N} inimigos adicionais`), (s, m) => (s.alvosAdicionais = num(m[1]))],
   [r(`Projéteis se Partem na direção de ${N} alvos`), (s, m) => (s.alvosAdicionais = num(m[1]))],
-  [r(`${N} % mais Velocidade de Projétil`), (s, m) => (s.velProjetilMais = num(m[1]))],
-  [r(`^\\+${N} metros ao Alcance de Golpes Corpo a Corpo`), (s, m) => (s.alcanceExtra = num(m[1]))],
+  // (18/10, lote G20a: sem leitor no jogo — `velProjetilMais` e `alcanceExtra` não iam a lugar nenhum e a linha contava como feita; agora fica não feita:
+  // o projétil do jogo acerta no tique, e o alcance corpo a corpo da gema ainda não entra no do golpe)
+  [r(`${N} % mais Velocidade de Projétil`), () => false],
+  [r(`^\\+${N} metros ao Alcance de Golpes Corpo a Corpo`), () => false],
   [r(`(?:Cria ${N} fissuras|Golpeia ${N} Áreas|Onda causa Dano em ${N} Áreas|^${N} Rajadas)`), (s, m) => (s.repeticoes = num(m[1] || m[2] || m[3] || m[4]))],
   [r(`^Máximo de ${N} `), (s, m) => (s.maximo = num(m[1]))],
   [r(`^Máximno de ${N} `), (s, m) => (s.maximo = num(m[1]))],
@@ -257,6 +259,12 @@ export const REGRAS = [
   [r(`^(?:Você e aliados próxim|Buff concede|Aura concede|Estandarte)`), (s, m) => (s.buff.textos.push(m.input), false)],
 
   // ---------------- tempo ----------------
+  // (18/10, lote G20a) o TOTEM: a "Velocidade de Posicionamento de Totem aumentada" da gema (os ancestrais — o tempo de colocar,
+  // `Acoes.temposDaGemaPoe`), a "Vida do Totem aumentada" (as linhas "Habilidades Suportadas têm…" da própria gema) e o "mais Vida de Totens" da
+  // qualidade (`LacaiosPoe.oQueInvoca`)
+  [r(`^Velocidade de Posicionamento de Totem aumentada em ${N}`), (s, m) => (s.velPosicionamento = (s.velPosicionamento ?? 0) + num(m[1]))],
+  [r(`Vida do Totem aumentada em ${N}`), (s, m) => (s.totemVidaInc = (s.totemVidaInc ?? 0) + num(m[1]))],
+  [r(`^${N} % mais Vida de Totens$`), (s, m) => (s.totemVidaMais = (s.totemVidaMais ?? 0) + num(m[1]))],
   [r(`Velocidade de Recarga aumentada em ${N}`), (s, m) => (s.velRecarga += num(m[1]))],
   // (17/10, lote G2) a "Velocidade de Clamor aumentada" dos clamores encurta o TEMPO DE USO do clamor (Warcry Speed), não a recarga — antes
   // virava recuperação da recarga (o Clamor Resistente nível 20 saía com 5,8 s de recarga no lugar dos 8 s do PoE)
@@ -273,7 +281,7 @@ export const INFORMATIVO = [
   /^Modificadores /i, /^Aumentos e Reduções/i, /Almas/i, /^Pode usar Itens que exigem/i,
   /desta Habilidade não pode ser modificada/i, /A Recarga desta Habilidade não é recuperada/i,
   /^Habilidades Suportadas/i, /Armadilhas não são Ativadas no fim/i, /Lacaios não podem Provocar/i,
-  /Velocidade de Posicionamento de Totem/i, /Quando em Dupla Empunhadura/i, /^Não pode ser Evadido/i,
+  /Quando em Dupla Empunhadura/i, /^Não pode ser Evadido/i,
   /Modificadores do número de Projéteis/i, /Modificadores à quantidade de Projéteis/i,
   /Dispara Projéteis em sequência/i, /Coloque em um encaixe/i, /contra Jogadores/i,
 ];

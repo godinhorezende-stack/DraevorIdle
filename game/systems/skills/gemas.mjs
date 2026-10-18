@@ -767,6 +767,8 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
         e[k] = ((1 + (e[k] ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
         if (k === 'maisDanoAcertoPct') e.fatorDeDano *= Math.max(0, 1 + valor / 100);
       }
+      // (lote G20b) os suportes que viram totem: o tipo (1 o totem, 2 a balista), a duração, os totens por uso e a Balista Focada — o maior, não a soma
+      else if (k === 'viraTotem' || k === 'totemDuracaoMs' || k === 'totensPorUso' || k === 'balistaFocada' || k === 'ativacaoM') e[k] = Math.max(e[k] ?? 0, valor);
       // O tempo de uso dos suportes do PoE também multiplica (40% mais velocidade e 20% menos são ×1/1,4 × ×1/0,8).
       else if (k === 'castTimePct' && doPoe) e.castTimePct = ((1 + (e.castTimePct ?? 0) / 100) * (1 + valor / 100) - 1) * 100;
       // (lote 36) O "X% mais/menos Efeito em Área" dos suportes do PoE também multiplica (o "aumentado", `areaIncPct`, soma).

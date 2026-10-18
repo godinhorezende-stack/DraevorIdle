@@ -2,23 +2,23 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 422,
-   "implementada e testada": 63,
-   "implementada, sem teste próprio": 51,
-   "limitação do modelo idle": 15,
-   "sem efeito": 11
+   "parcial": 426,
+   "implementada e testada": 64,
+   "implementada, sem teste próprio": 50,
+   "sem efeito": 11,
+   "limitação do modelo idle": 11
   },
   "ataques": {
    "total": 210,
-   "parcial": 156,
+   "parcial": 158,
    "implementada e testada": 27,
    "implementada, sem teste próprio": 19,
-   "limitação do modelo idle": 8
+   "limitação do modelo idle": 6
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 51,
-   "parcial": 152,
+   "implementada e testada": 55,
+   "parcial": 148,
    "implementada, sem teste próprio": 53,
    "sem efeito": 6
   },
@@ -32,9 +32,9 @@
    "alternativas": {
     "total": 198,
     "parcial": 159,
-    "implementada, sem teste próprio": 28,
-    "implementada e testada": 6,
-    "limitação do modelo idle": 3,
+    "implementada, sem teste próprio": 27,
+    "implementada e testada": 8,
+    "limitação do modelo idle": 2,
     "sem efeito": 2
    }
   },
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 988,
-   "emDuasOuMais": 217
+   "linhasDistintas": 989,
+   "emDuasOuMais": 219
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,8 +61,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 167,
-   "suportesCitados": 63,
+   "ativasCitadas": 178,
+   "suportesCitados": 68,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -416,11 +416,11 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "limitação do modelo idle",
-   "ausentes": [],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: 20 % mais Velocidade de Ataque enquanto o Totem estiver Ativo"
    ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -462,12 +462,10 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Totens Convocados por esta Habilidade não podem Evadir",
-    "efeito não simulado: 20 % mais Vida de Totens"
+    "efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)",
+    "efeito não simulado: Totens Convocados por esta Habilidade não podem Evadir"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -481,12 +479,9 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Drena 299 de Vida para si a cada cadáver consumido",
-    "efeito não simulado: Drena 59 de Mana para si a cada cadáver consumido",
-    "efeito não simulado: 20 % mais Vida de Totens"
+    "efeito não simulado: Drena 59 de Mana para si a cada cadáver consumido"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -502,9 +497,7 @@
     "efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados",
     "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -517,12 +510,11 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: 128 % mais Velocidade de Projétil",
     "efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados",
     "efeito não simulado: Área do Solo Sagrado aumentada em 40 %"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -550,11 +542,9 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 20 % mais Vida de Totens"
+    "efeito não simulado: 317.5 de Vida Regenerada por segundo"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -586,12 +576,11 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 40 % do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo",
-    "efeito não simulado: 20 % mais Vida de Totens"
+    "efeito não simulado: 30 % menos Área de Efeito",
+    "efeito não simulado: 317.5 de Vida Regenerada por segundo",
+    "efeito não simulado: 40 % do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -911,11 +900,11 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "limitação do modelo idle",
-   "ausentes": [],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: Causa 4430.6 de Dano de Fogo Base por segundo"
    ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -928,13 +917,14 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: Causa 2977.7 de Dano de Fogo Base por segundo",
+    "efeito não simulado: Duração base é de 4 segundos",
+    "efeito não simulado: O raio Base é de 2.7 metros",
     "efeito não simulado: +1 à quantidade máxima de totens invocados por carga de poder máxima",
     "efeito não simulado: Dano abrasador aplicado pela detonação causa + 30 % de dano por totem detonado",
     "efeito não simulado: Dano abrasador aplicado pela detonação causa + 10 % de dano por totem detonado"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -1549,12 +1539,9 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo",
-    "efeito não simulado: +1 metro ao Alcance de Golpes Corpo a Corpo",
     "efeito não simulado: Distância de Ativação aumentada em 30 %"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -1961,13 +1948,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 25 % de chance de Empurrar Inimigos ao acertar"
-   ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -1978,11 +1961,9 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "limitação do modelo idle",
+   "estado": "implementada e testada",
    "ausentes": [],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -2030,12 +2011,9 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo",
-    "efeito não simulado: Dano do Totem aumentado em 20 %"
+    "efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -2441,8 +2419,10 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada e testada",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: 20 % mais Velocidade de Projétil"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2531,8 +2511,10 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada e testada",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: +2.1 metros ao Alcance de Golpes Corpo a Corpo"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2546,6 +2528,7 @@
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: +5 metros ao Alcance de Golpes Corpo a Corpo",
     "efeito não simulado: +1 metro ao Alcance de Golpes Corpo a Corpo"
    ],
    "idle": [],
@@ -3019,11 +3002,10 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
     "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3036,11 +3018,10 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
     "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3745,9 +3726,7 @@
    "ausentes": [
     "efeito não simulado: Velocidade de Ataque aumentada em 5 % por Totem máximo"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3758,14 +3737,9 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis podem Difundir 1 Vezs adicionais",
-    "efeito não simulado: Projéteis têm 40 % de chance de receber um Projétil adicional quando Difundindo"
-   ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3783,9 +3757,7 @@
     "efeito não simulado: Após atacar, os totens desaparecem",
     "efeito não simulado: 20 % mais Dano de Projétil"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -4402,11 +4374,11 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "totem",
-   "estado": "limitação do modelo idle",
-   "ausentes": [],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)"
    ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -4419,11 +4391,10 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)",
     "efeito não simulado: Flechas caem em duas linhas perpendiculares"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -4436,11 +4407,10 @@
    "arquetipo": "totem",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)",
     "efeito não simulado: Dispara até 5 Flechas em alvos diferentes"
    ],
-   "idle": [
-    "o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -4970,7 +4940,8 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano"
+    "efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano",
+    "efeito não simulado: 20 % mais Velocidade de Projétil"
    ],
    "idle": [],
    "outros": [],
@@ -4986,7 +4957,8 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano",
-    "efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados"
+    "efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados",
+    "efeito não simulado: 20 % mais Velocidade de Projétil"
    ],
    "idle": [],
    "outros": [],
@@ -6543,6 +6515,7 @@
    "ausentes": [
     "efeito não simulado: Segunda forma possui um aumento de 600 % de Chance de Crítico",
     "efeito não simulado: A Segunda forma possui +49 % ao Multiplicador de Acerto Crítico",
+    "efeito não simulado: A Segunda forma possui 300 % mais Velocidade de Projétil",
     "efeito não simulado: A Segunda forma possui +40 % ao Multiplicador de Acerto Crítico"
    ],
    "idle": [],
@@ -6558,6 +6531,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: A Segunda forma possui 300 % mais Velocidade de Projétil",
     "efeito não simulado: Projéteis podem se Dividir ao acertar o terreno"
    ],
    "idle": [],
@@ -7712,8 +7686,10 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
-   "ausentes": [],
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: 100 % mais Velocidade de Projétil"
+   ],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7942,6 +7918,7 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Dispara 12 Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina",
+    "efeito não simulado: 50 % mais Velocidade de Projétil",
     "efeito não simulado: Projéteis ganham até +15 % mais Dano até se dissiparem"
    ],
    "idle": [],
@@ -9090,12 +9067,8 @@
   {
    "slug": "Ballista_Totem_Support",
    "nome": "Totem Balista",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades suportadas invocam um Totem de Balista que usa tal habilidade",
-    "não simulado: Totem dura 8 segundos",
-    "não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9104,9 +9077,7 @@
    "nome": "Devastador",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades suportadas invocam um Totem que usa tal habilidade",
-    "não simulado: Totem dura 12 segundos",
-    "não simulado: Habilidades Suportadas têm 50% mais Velocidade de Posicionamento de Totens"
+    "não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)"
    ],
    "outros": [],
    "icone": true
@@ -9119,8 +9090,7 @@
     "não simulado: Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo",
     "não simulado: Causa Dano de Fogo base igual a 137% da Vida Máxima dos Totens",
     "não simulado: Totens com esta Habilidade a Ativam quando Acertados por um Inimigo",
-    "não simulado: Totens das Habilidades Suportadas ganham a Habilidade\\nVingança Flamejante e a Ativa quando Acertado por um Inimigo",
-    "não simulado: Habilidades Suportadas têm Vida do Totem aumentada em 10%"
+    "não simulado: Totens das Habilidades Suportadas ganham a Habilidade\\nVingança Flamejante e a Ativa quando Acertado por um Inimigo"
    ],
    "outros": [],
    "icone": true
@@ -9174,12 +9144,8 @@
   {
    "slug": "Spell_Totem_Support",
    "nome": "Totem de Magia",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades suportadas invocam um Totem que usa tal habilidade",
-    "não simulado: Totem dura 8 segundos",
-    "não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9554,11 +9520,8 @@
   {
    "slug": "Multiple_Totems_Support",
    "nome": "Totens Múltiplos",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas Convocam dois Totens ao invés de um",
-    "não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10160,11 +10123,8 @@
   {
    "slug": "Focused_Ballista_Support",
    "nome": "Balista Focada",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque",
-    "não simulado: Habilidades Suportadas têm 68% mais Velocidade de Posicionamento de Totens"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -11817,6 +11777,17 @@
    ]
   },
   {
+   "linha": "# % mais Velocidade de Projétil",
+   "gemas": [
+    "Ball_Lightning_of_Orbiting",
+    "Ethereal_Knives",
+    "Eye_of_Winter_of_Transience",
+    "Holy_Flame_Totem_of_Ire",
+    "Spectral_Shield_Throw_of_Shattering",
+    "Spectral_Shield_Throw_of_Trarthus"
+   ]
+  },
+  {
    "linha": "as repetições do golpe não existem: no jogo é um",
    "gemas": [
     "Bladefall",
@@ -11847,16 +11818,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm #% mais Velocidade de Posicionamento de Totens",
-   "gemas": [
-    "Ballista_Totem_Support",
-    "Earthbreaker_Support",
-    "Focused_Ballista_Support",
-    "Multiple_Totems_Support",
-    "Spell_Totem_Support"
-   ]
-  },
-  {
    "linha": "Velocidade de Movimento reduzida em # %",
    "gemas": [
     "Blight",
@@ -11864,15 +11825,6 @@
     "Blight_of_Contagion",
     "Vaal_Blight",
     "Wither"
-   ]
-  },
-  {
-   "linha": "# % mais Vida de Totens",
-   "gemas": [
-    "Decoy_Totem",
-    "Devouring_Totem",
-    "Rejuvenation_Totem",
-    "Vaal_Rejuvenation_Totem"
    ]
   },
   {
@@ -12000,6 +11952,14 @@
     "Cyclone",
     "Cyclone_of_Tumult",
     "Vaal_Cyclone"
+   ]
+  },
+  {
+   "linha": "as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo)",
+   "gemas": [
+    "Artillery_Ballista",
+    "Artillery_Ballista_of_Cross_Strafe",
+    "Artillery_Ballista_of_Focus_Fire"
    ]
   },
   {
@@ -12144,14 +12104,6 @@
     "Ice_Crash",
     "Ice_Trap",
     "Vaal_Cold_Snap"
-   ]
-  },
-  {
-   "linha": "Totem dura # segundos",
-   "gemas": [
-    "Ballista_Totem_Support",
-    "Earthbreaker_Support",
-    "Spell_Totem_Support"
    ]
   },
   {
@@ -12302,6 +12254,13 @@
    ]
   },
   {
+   "linha": "# de Vida Regenerada por segundo",
+   "gemas": [
+    "Rejuvenation_Totem",
+    "Vaal_Rejuvenation_Totem"
+   ]
+  },
+  {
    "linha": "# Estágios Máximos",
    "gemas": [
     "Reave",
@@ -12358,9 +12317,9 @@
    ]
   },
   {
-   "linha": "+# metro ao Alcance de Golpes Corpo a Corpo",
+   "linha": "+# metros ao Alcance de Golpes Corpo a Corpo",
    "gemas": [
-    "Ancestral_Warchief",
+    "Frost_Blades",
     "Frost_Blades_of_Katabasis"
    ]
   },
@@ -12390,6 +12349,13 @@
    "gemas": [
     "Charged_Dash",
     "Charged_Dash_of_Projection"
+   ]
+  },
+  {
+   "linha": "A Segunda forma possui # % mais Velocidade de Projétil",
+   "gemas": [
+    "Ice_Spear",
+    "Ice_Spear_of_Splitting"
    ]
   },
   {
@@ -12425,6 +12391,13 @@
    "gemas": [
     "Siphoning_Trap",
     "Siphoning_Trap_of_Pain"
+   ]
+  },
+  {
+   "linha": "as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)",
+   "gemas": [
+    "Shrapnel_Ballista",
+    "Shrapnel_Ballista_of_Steel"
    ]
   },
   {
@@ -12523,6 +12496,13 @@
    "gemas": [
     "Explosive_Concoction",
     "Explosive_Concoction_of_Destruction"
+   ]
+  },
+  {
+   "linha": "Causa # de Dano de Fogo Base por segundo",
+   "gemas": [
+    "Searing_Bond",
+    "Searing_Bond_of_Detonation"
    ]
   },
   {
@@ -12894,13 +12874,6 @@
    "gemas": [
     "Arrow_Nova_Support",
     "Awakened_Arrow_Nova_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades suportadas invocam um Totem que usa tal habilidade",
-   "gemas": [
-    "Earthbreaker_Support",
-    "Spell_Totem_Support"
    ]
   },
   {
@@ -13416,12 +13389,6 @@
    ]
   },
   {
-   "linha": "# % de chance de Empurrar Inimigos ao acertar",
-   "gemas": [
-    "Shockwave_Totem"
-   ]
-  },
-  {
    "linha": "# % de chance de ganhar uma Carga de Frenesi quando um Inimigo Morrer enquanto na Área dessa Habilidade",
    "gemas": [
     "Cold_Snap"
@@ -13674,6 +13641,12 @@
    ]
   },
   {
+   "linha": "# % mais Velocidade de Ataque enquanto o Totem estiver Ativo",
+   "gemas": [
+    "Ancestral_Protector"
+   ]
+  },
+  {
    "linha": "# % mais Velocidade de Ataque por cada Estágio",
    "gemas": [
     "Double_Strike_of_Momentum"
@@ -13683,6 +13656,12 @@
    "linha": "# % mais Velocidade de Conjuração",
    "gemas": [
     "Shock_Nova_of_Procession"
+   ]
+  },
+  {
+   "linha": "# % menos Área de Efeito",
+   "gemas": [
+    "Vaal_Rejuvenation_Totem"
    ]
   },
   {
@@ -13911,6 +13890,12 @@
    "linha": "+# Estágios Máximos",
    "gemas": [
     "Winter_Orb"
+   ]
+  },
+  {
+   "linha": "+# metro ao Alcance de Golpes Corpo a Corpo",
+   "gemas": [
+    "Frost_Blades_of_Katabasis"
    ]
   },
   {
@@ -14994,12 +14979,6 @@
    ]
   },
   {
-   "linha": "Dano do Totem aumentado em # %",
-   "gemas": [
-    "Vaal_Ancestral_Warchief"
-   ]
-  },
-  {
    "linha": "Dano e Resfriamentos Perduram por uma Duração Base de # segundos",
    "gemas": [
     "Frigid_Bond_Support"
@@ -15207,6 +15186,12 @@
    "linha": "Duração Base do Frenesi Faminto é de # segundos",
    "gemas": [
     "Feeding_Frenzy_Support"
+   ]
+  },
+  {
+   "linha": "Duração base é de # segundos",
+   "gemas": [
+    "Searing_Bond_of_Detonation"
    ]
   },
   {
@@ -16110,12 +16095,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas Convocam dois Totens ao invés de um",
-   "gemas": [
-    "Multiple_Totems_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas Custam +# de Mana",
    "gemas": [
     "Divine_Blessing_Support"
@@ -16155,12 +16134,6 @@
    "linha": "Habilidades Suportadas infligem Subjugado por # segundos ao Bloquear",
    "gemas": [
     "Block_Chance_Reduction_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades suportadas invocam um Totem de Balista que usa tal habilidade",
-   "gemas": [
-    "Ballista_Totem_Support"
    ]
   },
   {
@@ -16431,12 +16404,6 @@
    "linha": "Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em #%",
    "gemas": [
     "Second_Wind_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm Vida do Totem aumentada em #%",
-   "gemas": [
-    "Flamewood_Support"
    ]
   },
   {
@@ -17124,6 +17091,18 @@
    ]
   },
   {
+   "linha": "O raio Base é de # metros",
+   "gemas": [
+    "Searing_Bond_of_Detonation"
+   ]
+  },
+  {
+   "linha": "o totem provoca os monstros em volta a atacá-lo (act_str.lua:##)",
+   "gemas": [
+    "Decoy_Totem"
+   ]
+  },
+  {
    "linha": "Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar",
    "gemas": [
     "Hiveborn_Support"
@@ -17211,6 +17190,12 @@
    "linha": "Perca Vida e Escudo de Energia igual a # % do Dano do Debuff",
    "gemas": [
     "Essence_Drain_of_Desperation"
+   ]
+  },
+  {
+   "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
+   "gemas": [
+    "Earthbreaker_Support"
    ]
   },
   {
@@ -17322,12 +17307,6 @@
    ]
   },
   {
-   "linha": "Projéteis podem Difundir # Vezs adicionais",
-   "gemas": [
-    "Siege_Ballista_of_Splintering"
-   ]
-  },
-  {
    "linha": "Projéteis podem Ricochetear ao atingir o solo Projéteis Ricocheteiam para direções aleatórias",
    "gemas": [
     "Poisonous_Concoction_of_Bouncing"
@@ -17373,12 +17352,6 @@
    "linha": "Projéteis Ricocheteiam ao colidirem com o terreno",
    "gemas": [
     "Lightning_Trap_of_Sparking"
-   ]
-  },
-  {
-   "linha": "Projéteis têm # % de chance de receber um Projétil adicional quando Difundindo",
-   "gemas": [
-    "Siege_Ballista_of_Splintering"
    ]
   },
   {
@@ -17805,12 +17778,6 @@
    "linha": "Tormenta Furiosa tem +# metros ao raio por cada # de Fúria sacrificada",
    "gemas": [
     "Rage_Vortex"
-   ]
-  },
-  {
-   "linha": "Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque",
-   "gemas": [
-    "Focused_Ballista_Support"
    ]
   },
   {

@@ -24,7 +24,7 @@ await G.iniciar({ registrarGema: () => {}, registrarReforco: () => {} });
 SP.iniciar({ registrarSuporte: () => {} });
 
 // Os textos de limitação do idle (documentados no próprio status; não são "efeito não simulado").
-const LIMITACAO_IDLE = [/^o totem fica parado/, /^o lacaio ataca do jeito do tipo dele/, /^o deslocamento \(salto, investida, teleporte\) não existe/, /^sai sozinha, na barra/];
+const LIMITACAO_IDLE = [/^o lacaio ataca do jeito do tipo dele/, /^o deslocamento \(salto, investida, teleporte\) não existe/, /^sai sozinha, na barra/];
 const ehAusencia = (m) => /^(efeito )?não simulado: /.test(m) || /ainda não (existe|se aplica)|não existem?:|não existe no jogo|nenhum efeito/.test(m);
 
 // Os testes que citam cada slug (o nome do arquivo de teste e a linha não importam: só "há um teste que usa a gema").

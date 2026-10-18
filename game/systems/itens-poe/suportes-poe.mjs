@@ -245,6 +245,19 @@ const REGRAS = [
   [new RegExp(`têm ${N}% (mais|menos) Vida de Lacaio`, 'i'), (m) => ({ lacaioVidaPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`têm ${N}% de Vida máxima de Lacaios aumentada`, 'i'), (m) => ({ lacaioVidaPct: num(m[1]) })],
   [new RegExp(`\\+${N} (?:ao|de) número máximo de Totens`, 'i'), (m) => ({ totensExtras: num(m[1]) })],
+  // (18/10, lote G20b) os suportes que VIRAM TOTEM (o Totem de Magia, o Totem Balista, o Devastador — sup_str.lua:4513, 5034; other.lua:1468): o seu uso
+  // da habilidade suportada COLOCA um totem que a usa sozinho (`Acoes.dispararSemMarcar` → `invocarLacaios`; o totem usa pelo caminho do seu uso,
+  // `Acoes.usarComoTotem`); "Totem dura N segundos" é a duração dele; os Totens Múltiplos põem dois por uso (summon_2_totems — sup_str.lua:3905); a
+  // Balista Focada só ataca quando você dispara um projétil de ataque
+  [/^Habilidades suportadas invocam um Totem( de Balista)? que usa tal habilidade$/i, (m) => ({ viraTotem: m[1] ? 2 : 1 })],
+  [new RegExp(`^Totem dura ${N} segundos?$`, 'i'), (m) => ({ totemDuracaoMs: Math.round(num(m[1]) * 1000) })],
+  [/^Habilidades Suportadas Convocam dois Totens ao invés de um$/i, () => ({ totensPorUso: 2 })],
+  [/^Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque$/i, () => ({ balistaFocada: 1 })],
+  // (18/10, lote G20a) os suportes de totem: "têm N% mais Velocidade de Posicionamento de Totens" — no PoB é AUMENTADA (summon_totem_cast_speed_+%,
+  // sup_str.lua:5056/4540/3898, other.lua:1500, sup_dex.lua:1942; o "mais" do texto em português é da tradução): soma com a das peças e a da gema no
+  // tempo de COLOCAR o totem (`Acoes.temposDaGemaPoe`) — e "têm Vida do Totem aumentada em N%" (`LacaiosPoe.oQueInvoca`)
+  [new RegExp(`têm ${N}% (mais|menos) Velocidade de Posicionamento de Totens`, 'i'), (m) => ({ velPosicionamentoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`têm Vida do Totem aumentada em ${N}%`, 'i'), (m) => ({ totemVidaPct: num(m[1]) })],
   // (17/10, lote G17) O dano SÓ DO ACERTO e o SÓ DAS AFECÇÕES (antes da regra geral de "mais/menos Dano", que os pegava): o "X% menos Dano com
   // Acertos" das Afecções Mortais e do Encadear não diminui o Incêndio/Sangramento/Veneno que o acerto põe; o "mais Dano de Afecções" e o de cada
   // uma (Sangramento, Incêndio, Veneno) multiplicam só a afecção — `Gemas.efeitoNaSkill` (multiplicam entre si) e `AfeccoesPoe.aoAcertar`.
@@ -436,6 +449,9 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   }
   // (lote 44, P064) o nível do Suporte: Convocar Fantasma — o Poder Fantasmal de cada Fantasma é o desse nível (a tabela do PoB)
   if (efeito.fantasmaAoMatarPct > 0 || efeito.fantasmaRaroPct > 0) efeito.fantasmaNivel = nivel;
+  // (18/10, lote G20b) o DEVASTADOR: "um totem ancestral que usa a habilidade por você ENQUANTO VOCÊ ESTIVER PERTO dele" (a descrição; sem linha) — a
+  // distância de ativação é a do PoB, `ancestor_totem_parent_activiation_range` 70 = 7 m (other.lua:1499)
+  if (slug === 'Earthbreaker_Support' && efeito.viraTotem) efeito.ativacaoM = 7;
   return { efeito, naoFeitas };
 }
 
@@ -462,8 +478,15 @@ function avaliar(s) {
   const { efeito, naoFeitas } = efeitoNoNivel(s.slug, nivel, 20, { tags: [...['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico', 'Duração', 'Aura', 'Golpe'].map((x) => `poe:${x}`)] });
   const fez = Object.keys(efeito).length || gatilhoDe(s, textosDoNivel(s, nivel));
   if (!fez) return { status: 'nao', motivos: ['nenhuma linha do suporte tem efeito no jogo ainda', ...naoFeitas.slice(0, 3).map((l) => `não simulado: ${l}`)] };
-  return naoFeitas.length ? { status: 'parcial', motivos: naoFeitas.map((l) => `não simulado: ${l}`) } : { status: 'funciona', motivos: [] };
+  // (lote G20b) o que a DESCRIÇÃO do suporte diz e não tem linha nem número nos dados
+  const daDescricao = DESCRICAO_NAO_FEITA[s.slug] ?? [];
+  const motivos = [...naoFeitas.map((l) => `não simulado: ${l}`), ...daDescricao];
+  return motivos.length ? { status: 'parcial', motivos } : { status: 'funciona', motivos: [] };
 }
+/** (lote G20b) O que a descrição do suporte diz e o jogo ainda não faz — sem linha (o status não a vê) nem número nos dados do PoB. */
+const DESCRICAO_NAO_FEITA = {
+  Earthbreaker_Support: ['não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)'],
+};
 
 function idsDosSuportes(slugs) {
   const atual = existsSync(ARQ_IDS) ? JSON.parse(readFileSync(ARQ_IDS, 'utf8')) : { _nota: 'Ids estáveis dos itens das gemas de SUPORTE do PoE (itens-poe/suportes-poe.mjs). Só cresce: um suporte novo ganha o próximo id; nunca reaproveitar.', ids: {} };

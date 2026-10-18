@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 63 |
-| implementada, sem teste próprio | 51 |
-| limitação do modelo idle | 15 |
-| parcial | 422 |
+| implementada e testada | 64 |
+| implementada, sem teste próprio | 50 |
+| limitação do modelo idle | 11 |
+| parcial | 426 |
 | sem efeito | 11 |
 
 Só os ataques:
@@ -20,30 +20,30 @@ Só os ataques:
 |---|---|
 | implementada e testada | 27 |
 | implementada, sem teste próprio | 19 |
-| limitação do modelo idle | 8 |
-| parcial | 156 |
+| limitação do modelo idle | 6 |
+| parcial | 158 |
 
 ### Gemas de suporte (262)
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 51 |
+| implementada e testada | 55 |
 | implementada, sem teste próprio | 53 |
-| parcial | 152 |
+| parcial | 148 |
 | sem efeito | 6 |
 
 ### Variantes
 
 - Vaal (52): parcial 46 · implementada e testada 1 · implementada, sem teste próprio 5
-- Alternativas (198): parcial 159 · implementada, sem teste próprio 28 · implementada e testada 6 · limitação do modelo idle 3 · sem efeito 2
+- Alternativas (198): parcial 159 · implementada, sem teste próprio 27 · implementada e testada 8 · limitação do modelo idle 2 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 988 linhas distintas (217 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 989 linhas distintas (219 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 167/562 ativas, 63/262 suportes.
+- Testes que citam a gema: 178/562 ativas, 68/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -58,12 +58,11 @@ Só os ataques:
 | 8 | Velocidade de Projéteis aumentada em # % |
 | 7 | Projéteis que Atravessaram causam # % mais Dano |
 | 6 | # % de Chance de uma Armadilha ser Ativada uma vez adicional |
+| 6 | # % mais Velocidade de Projétil |
 | 5 | as repetições do golpe não existem: no jogo é um |
 | 5 | Duração do Efeito de Habilidades aumentada em # % |
 | 5 | Efeito em Área de Habilidades Maldição Suportadas aumentado em #% |
-| 5 | Habilidades Suportadas têm #% mais Velocidade de Posicionamento de Totens |
 | 5 | Velocidade de Movimento reduzida em # % |
-| 4 | # % mais Vida de Totens |
 | 4 | +# ao Máximo de Armas Animadas |
 | 4 | +# ao Máximo de Esqueletos Convocados |
 | 4 | Debuff pode ter até # camadas de Dano |
@@ -79,6 +78,7 @@ Só os ataques:
 | 3 | Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte |
 | 3 | Ângulo do Efeito em Área aumentado em # % |
 | 3 | Área de Efeito aumentada em # % por cada # metro de Alcance de Golpe Corpo a Corpo adicional |
+| 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
 | 3 | Cada Flecha pode disparar # Feixes |
 | 3 | Causa +# % mais Dano por Carga Sangrenta |
 | 3 | Cria # Estaca |
@@ -97,7 +97,6 @@ Só os ataques:
 | 3 | Projéteis podem se Dividir sem acertar um alvo |
 | 3 | Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # % |
 | 3 | Raio Base terciário igual a # metros |
-| 3 | Totem dura # segundos |
 | 2 | # % de chance de causar Dano sem remover Cargas |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
 | 2 | # % de chance de detonar um cadáver adicional |
@@ -119,6 +118,7 @@ Só os ataques:
 | 2 | # % menos Dano em Área |
 | 2 | # a # de Dano de Fogo adicionado contra Inimigos Queimando |
 | 2 | # de largura do Efeito em Área |
+| 2 | # de Vida Regenerada por segundo |
 | 2 | # Estágios Máximos |
 | 2 | # segundos entre o aparecimento de seções da Parede |
 | 2 | #% de Qualidade das Gemas de Habilidade Suportadas |
@@ -127,16 +127,18 @@ Só os ataques:
 | 2 | +# ao Máximo de Zumbis Evocados |
 | 2 | +# ao número Máximo de Tempestades de Lâminas por vez |
 | 2 | +# fissura |
-| 2 | +# metro ao Alcance de Golpes Corpo a Corpo |
+| 2 | +# metros ao Alcance de Golpes Corpo a Corpo |
 | 2 | +# metros ao raio do Solo Sagrado |
 | 2 | +# metros de raio por inimigo próximo, até +# metro |
 | 2 | +# Rajada |
 | 2 | A Ilusão se move com # % da sua Velocidade de Movimento |
+| 2 | A Segunda forma possui # % mais Velocidade de Projétil |
 | 2 | Abalo Secundário causa # % mais Dano com Acertos e Afecções |
 | 2 | Abalo Secundário causa +# % mais Dano com Acertos e Afecções |
 | 2 | Acertos aós o primeiro em cada Inimigo causam # % menos Dano |
 | 2 | Acertos da onda final causam # % de dano por estágio |
 | 2 | Aplica feixes aos # Inimigos próximos |
+| 2 | as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente) |
 | 2 | Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo |
 | 2 | Buff Concede # % de chance de Eletrizar inimigos |
 | 2 | Buff concede +# % de chance de Eletrizar inimigos |
@@ -151,6 +153,7 @@ Só os ataques:
 | 2 | Causa # a # de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas |
 | 2 | Causa # a # de Dano de Raio |
 | 2 | Causa # a # de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas |
+| 2 | Causa # de Dano de Fogo Base por segundo |
 | 2 | Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente |
 | 2 | Causa # rajadas |
 | 2 | Causa + # % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento |
@@ -204,7 +207,6 @@ Só os ataques:
 | 2 | Habilidades Suportadas Disparam Projéteis em um círculo |
 | 2 | Habilidades Suportadas disparam uma Flecha Carregada no ar Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair |
 | 2 | Habilidades Suportadas disparam uma Flecha Carregada no ar\nProjéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair |
-| 2 | Habilidades suportadas invocam um Totem que usa tal habilidade |
 | 2 | Habilidades Suportadas sempre disparam ao menos # Projétil |
 | 2 | Habilidades Suportadas só podem ser usadas com Arcos |
 | 2 | Habilidades Suportadas também disparam Projéteis de até # pontos de cada lado seu |
@@ -280,7 +282,6 @@ Só os ataques:
 | 1 | # % de chance de Cegar inimigos ao acertá-los |
 | 1 | # % de chance de convocar um Lacaio extra |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
-| 1 | # % de chance de Empurrar Inimigos ao acertar |
 | 1 | # % de chance de ganhar uma Carga de Frenesi quando um Inimigo Morrer enquanto na Área dessa Habilidade |
 | 1 | # % de chance de ganhar uma Ruína adicional ao usar |
 | 1 | # % de Chance de ramificação da Fissura |
@@ -323,8 +324,10 @@ Só os ataques:
 | 1 | # % mais Duração do Veneno |
 | 1 | # % mais Frequência de Projéteis enquanto Canalizando |
 | 1 | # % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido |
+| 1 | # % mais Velocidade de Ataque enquanto o Totem estiver Ativo |
 | 1 | # % mais Velocidade de Ataque por cada Estágio |
 | 1 | # % mais Velocidade de Conjuração |
+| 1 | # % menos Área de Efeito |
 | 1 | # % menos Dano de Afecções |
 | 1 | # % menos Dano Físico sofrido por Carga de Tolerância removida |
 | 1 | # % menos Dano Sofrido enquanto Canalizando |
@@ -363,6 +366,7 @@ Só os ataques:
 | 1 | +# de Relâmpagos Concentrados máximos |
 | 1 | +# de Virulência Máxima |
 | 1 | +# Estágios Máximos |
+| 1 | +# metro ao Alcance de Golpes Corpo a Corpo |
 | 1 | +# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade |
 | 1 | +# metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +# metros |
 | 1 | +# metros ao raio do Pulso por Energia |
@@ -543,7 +547,6 @@ Só os ataques:
 | 1 | Dano de Caos com Acertos é Resistido pela maior Resistência ao invés |
 | 1 | Dano de Caos com Acertos é Resistido pela Resistência mais baixa |
 | 1 | Dano de Caos sofrido aumentado em # % |
-| 1 | Dano do Totem aumentado em # % |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de # segundos |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
 | 1 | Dano Elemental das Habilidades Suportadas não pode ser Refletido |
@@ -579,6 +582,7 @@ Só os ataques:
 | 1 | Duração aumentada em # % por Estágio |
 | 1 | Duração Base do Debuff é de # segundos |
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
+| 1 | Duração base é de # segundos |
 | 1 | Duração do Buff é atualizada após você gastar um total de # de Vida |
 | 1 | Durante a Duração Secundária, Reflete # % do Dano Sofrido aos Inimigos |
 | 1 | Efeito da Cegueira aumentado em # % |
@@ -729,7 +733,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas Causam Dano e Resfriam Inimigos entre você e Alvos Vinculados |
 | 1 | Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento |
 | 1 | Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\nÍmpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento |
-| 1 | Habilidades Suportadas Convocam dois Totens ao invés de um |
 | 1 | Habilidades Suportadas Custam +# de Mana |
 | 1 | Habilidades Suportadas disparam #% menos Projéteis |
 | 1 | Habilidades Suportadas Eletrizam Inimigos como se causassem #% mais Dano |
@@ -737,7 +740,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas ganham Dano de Raio Adicional igual a #% da Mana Máxima não Reservada |
 | 1 | Habilidades Suportadas infligem Podridão ao Acertar, causando # de Dano de Caos por segundo durante # segundos |
 | 1 | Habilidades Suportadas infligem Subjugado por # segundos ao Bloquear |
-| 1 | Habilidades suportadas invocam um Totem de Balista que usa tal habilidade |
 | 1 | Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada |
 | 1 | Habilidades Suportadas não tem Reserva |
 | 1 | Habilidades Suportadas penetram #% da Resistência Elemental enquanto cada Ressonância estiver em ao menos # |
@@ -783,7 +785,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas têm Efeito da Mutilação aumentado em #% |
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
 | 1 | Habilidades Suportadas têm Velocidade de Recuperação da Recarga reduzida em #% |
-| 1 | Habilidades Suportadas têm Vida do Totem aumentada em #% |
 | 1 | Ignora Atordoamentos enquanto Usando Habilidades Suportadas |
 | 1 | Impactos têm # % mais Efeito em Área |
 | 1 | Impele os próximos # Ataques de Golpe Corpo a Corpo que você executar |
@@ -898,6 +899,8 @@ Só os ataques:
 | 1 | O primeiro e último disparo da sequência dispara # Projéteis adicionais simultâneos |
 | 1 | O primeiro martelo de cada cascata causa + # % de dano |
 | 1 | O raio base da Saraivada é de # metros |
+| 1 | O raio Base é de # metros |
+| 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
 | 1 | Onda Central tem # % mais Área de Efeito |
 | 1 | Onda de Choque causa # % mais Dano |
@@ -913,6 +916,7 @@ Só os ataques:
 | 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
 | 1 | Perca todo o Traumatismo ao atingir # Traumatismos |
 | 1 | Perca Vida e Escudo de Energia igual a # % do Dano do Debuff |
+| 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
 | 1 | Pode aglomerar até # usos |
 | 1 | Pode explor de até # Projéteis de Disparo Congelante |
 | 1 | Pode se expandir de até # Projéteis de Disparo Congelante |
@@ -931,7 +935,6 @@ Só os ataques:
 | 1 | Projéteis deixam Solo Eletrizado |
 | 1 | Projéteis mudam de direção # vezes Projéteis podem Acertar alvos cada vez que mudam de direção |
 | 1 | Projéteis Perfuram todos Alvos |
-| 1 | Projéteis podem Difundir # Vezs adicionais |
 | 1 | Projéteis podem Ricochetear ao atingir o solo Projéteis Ricocheteiam para direções aleatórias |
 | 1 | Projéteis podem se Dividir ao acertar o terreno |
 | 1 | Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de # alvos adicionais |
@@ -940,7 +943,6 @@ Só os ataques:
 | 1 | Projéteis Retornando Atravessam todos os Alvos |
 | 1 | Projéteis Retornando causam # % menos Dano com Acertos e Afecções |
 | 1 | Projéteis Ricocheteiam ao colidirem com o terreno |
-| 1 | Projéteis têm # % de chance de receber um Projétil adicional quando Difundindo |
 | 1 | Pulsa a cada # enquanto Congelada, Eletrizada, Enfraquecida ou Exaurida |
 | 1 | Pulsos causam # % mais Dano com Afecções por Energia após a primeira |
 | 1 | Pulsos causam # % mais Dano com Dano com Acertos por Energia após a primeira |
@@ -1012,7 +1014,6 @@ Só os ataques:
 | 1 | Tempestades têm +#% de área de efeito por estágio |
 | 1 | Terceiro Estágio causa # % menos Dano |
 | 1 | Tormenta Furiosa tem +# metros ao raio por cada # de Fúria sacrificada |
-| 1 | Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque |
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
 | 1 | Totens Convocados por esta Habilidade não podem Evadir |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo |
@@ -1063,13 +1064,11 @@ Só os ataques:
 - **Ancestral_Cry** (Clamor Ancestral) — parcial
   - efeito não simulado: Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar
   - efeito não simulado: Golpes Impelidos focam em 2 Inimigos adicionais
-- **Ancestral_Protector** (Protetor Ancestral) — limitação do modelo idle
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
+- **Ancestral_Protector** (Protetor Ancestral) — parcial
+  - efeito não simulado: 20 % mais Velocidade de Ataque enquanto o Totem estiver Ativo
 - **Ancestral_Warchief** (Chefe Guerreiro Ancestral) — parcial
   - efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo
-  - efeito não simulado: +1 metro ao Alcance de Golpes Corpo a Corpo
   - efeito não simulado: Distância de Ativação aumentada em 30 %
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Animate_Guardian** (Animar Guardião) — parcial
   - efeito não simulado: Velocidade de Movimento dos Lacaios aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
@@ -1098,18 +1097,20 @@ Só os ataques:
   - sem dano direto: nenhum efeito no combate
 - **Armageddon_Brand_of_Volatility** (Runa do Armagedom da Volatilidade) — parcial
   - efeito não simulado: Não pode ser Convocada
-- **Artillery_Ballista** (Balista de Artilharia) — limitação do modelo idle
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
+- **Artillery_Ballista** (Balista de Artilharia) — parcial
+  - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
 - **Artillery_Ballista_of_Cross_Strafe** (Balista de Artilharia do Fogo Cruzado) — parcial
+  - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
   - efeito não simulado: Flechas caem em duas linhas perpendiculares
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Artillery_Ballista_of_Focus_Fire** (Balista de Artilharia do Fogo Concentrado) — parcial
+  - efeito não simulado: as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)
   - efeito não simulado: Dispara até 5 Flechas em alvos diferentes
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Assassins_Mark** (Marca do Assassino) — parcial
   - efeito não simulado: Inimigos Amaldiçoados têm 5 % de chance de concederem uma Carga de Poder quando Acertados
 - **Automation** (Automação) — sem efeito
   - a gema não tem comportamento de combate reconhecido
+- **Ball_Lightning_of_Orbiting** (Esfera Trovejante da Órbita) — parcial
+  - efeito não simulado: 100 % mais Velocidade de Projétil
 - **Bane** (Banir) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: 42 % mais Dano por Maldição aplicada
@@ -1355,9 +1356,8 @@ Só os ataques:
   - efeito não simulado: Distância de Deslocamento aumentada em %
   - _idle:_ o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área
 - **Decoy_Totem** (Totem Chamariz) — parcial
+  - efeito não simulado: o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)
   - efeito não simulado: Totens Convocados por esta Habilidade não podem Evadir
-  - efeito não simulado: 20 % mais Vida de Totens
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Defiance_Banner** (Estandarte Desafiador) — parcial
   - efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados
 - **Despair** (Desespero) — parcial
@@ -1373,8 +1373,6 @@ Só os ataques:
 - **Devouring_Totem** (Totem Devorador) — parcial
   - efeito não simulado: Drena 299 de Vida para si a cada cadáver consumido
   - efeito não simulado: Drena 59 de Mana para si a cada cadáver consumido
-  - efeito não simulado: 20 % mais Vida de Totens
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Discharge** (Descarga) — parcial
   - efeito não simulado: 15 % mais Área de Efeito por Carga removida
   - efeito não simulado: 10 % de chance de causar Dano sem remover Cargas
@@ -1462,6 +1460,8 @@ Só os ataques:
 - **Essence_Drain_of_Wickedness** (Dreno de Essência da Maldade) — parcial
   - efeito não simulado: Regenera 1 % do Dano do Debuff como Vida
   - efeito não simulado: Regenera +0.5 % do Dano do Debuff como Vida
+- **Ethereal_Knives** (Facas Etéreas) — parcial
+  - efeito não simulado: 20 % mais Velocidade de Projétil
 - **Ethereal_Knives_of_Lingering_Blades** (Facas Etéreas das Lâminas Persistentes) — parcial
   - efeito não simulado: Um a cada 1 Projéteis disparados permanece no solo como Lâmina Persistente
 - **Eviscerate** (Eviscerar) — parcial
@@ -1510,6 +1510,7 @@ Só os ataques:
   - efeito não simulado: Projéteis ganham até +20 % mais Dano até se dissiparem
 - **Eye_of_Winter_of_Transience** (Olho Invernal da Transitoriedade) — parcial
   - efeito não simulado: Dispara 12 Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina
+  - efeito não simulado: 50 % mais Velocidade de Projétil
   - efeito não simulado: Projéteis ganham até +15 % mais Dano até se dissiparem
 - **Fire_Trap** (Armadilha Flamejante) — parcial
   - efeito não simulado: 286 a 429 de Dano de Fogo adicionado contra Inimigos Queimando
@@ -1591,7 +1592,10 @@ Só os ataques:
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
 - **Frenzy_of_Onslaught** (Frenesi da Agressividade) — parcial
   - efeito não simulado: Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por 1 segundo por Carga consumida
+- **Frost_Blades** (Lâminas Gélidas) — parcial
+  - efeito não simulado: +2.1 metros ao Alcance de Golpes Corpo a Corpo
 - **Frost_Blades_of_Katabasis** (Lâminas Gélidas da Catábase) — parcial
+  - efeito não simulado: +5 metros ao Alcance de Golpes Corpo a Corpo
   - efeito não simulado: +1 metro ao Alcance de Golpes Corpo a Corpo
 - **Frost_Bomb** (Bomba Congelante) — parcial
   - efeito não simulado: Regeneração de Vida reduzida em 75 %
@@ -1694,11 +1698,10 @@ Só os ataques:
 - **Holy_Flame_Totem** (Totem Flamejante Sagrado) — parcial
   - efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Holy_Flame_Totem_of_Ire** (Totem Flamejante Sagrado da Ira) — parcial
+  - efeito não simulado: 128 % mais Velocidade de Projétil
   - efeito não simulado: Solo Sagrado concede Imunidade a Maldições para você e Aliados
   - efeito não simulado: Área do Solo Sagrado aumentada em 40 %
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Holy_Hammers** (Martelos Sagrados) — parcial
   - efeito não simulado: O primeiro martelo de cada cascata causa + 100 % de dano
   - efeito não simulado: Martelos Sagrados se acumulam em cascata até 2 vezes
@@ -1745,8 +1748,10 @@ Só os ataques:
 - **Ice_Spear** (Lança Gélida) — parcial
   - efeito não simulado: Segunda forma possui um aumento de 600 % de Chance de Crítico
   - efeito não simulado: A Segunda forma possui +49 % ao Multiplicador de Acerto Crítico
+  - efeito não simulado: A Segunda forma possui 300 % mais Velocidade de Projétil
   - efeito não simulado: A Segunda forma possui +40 % ao Multiplicador de Acerto Crítico
 - **Ice_Spear_of_Splitting** (Lança de Gelo da Divisão) — parcial
+  - efeito não simulado: A Segunda forma possui 300 % mais Velocidade de Projétil
   - efeito não simulado: Projéteis podem se Dividir ao acertar o terreno
 - **Ice_Trap** (Armadilha Glacial) — parcial
   - efeito não simulado: Raio Base terciário igual a 0.6 metros
@@ -2026,8 +2031,7 @@ Só os ataques:
   - efeito não simulado: Converte 100 % do Dano Físico para um Elemento aleatório
   - efeito não simulado: + 2 do máximo de Estágios
 - **Rejuvenation_Totem** (Totem Rejuvenescedor) — parcial
-  - efeito não simulado: 20 % mais Vida de Totens
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
+  - efeito não simulado: 317.5 de Vida Regenerada por segundo
 - **Righteous_Fire** (Círculo Ardente) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Causa 70 % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo
@@ -2060,13 +2064,15 @@ Só os ataques:
   - efeito não simulado: Cada Esporo dispara 4 Flechas de Espinho
   - efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano
   - efeito não simulado: Cada Esporo dispara +1 Flecha de Espinho
-- **Searing_Bond** (Vínculo Cauterizador) — limitação do modelo idle
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
+- **Searing_Bond** (Vínculo Cauterizador) — parcial
+  - efeito não simulado: Causa 4430.6 de Dano de Fogo Base por segundo
 - **Searing_Bond_of_Detonation** (Elo Calcinante da Detonação) — parcial
+  - efeito não simulado: Causa 2977.7 de Dano de Fogo Base por segundo
+  - efeito não simulado: Duração base é de 4 segundos
+  - efeito não simulado: O raio Base é de 2.7 metros
   - efeito não simulado: +1 à quantidade máxima de totens invocados por carga de poder máxima
   - efeito não simulado: Dano abrasador aplicado pela detonação causa + 30 % de dano por totem detonado
   - efeito não simulado: Dano abrasador aplicado pela detonação causa + 10 % de dano por totem detonado
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Seismic_Cry** (Clamor Sísmico) — parcial
   - efeito não simulado: 200 % de aumento da Distância do Empurrão
   - efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área
@@ -2097,30 +2103,19 @@ Só os ataques:
 - **Shock_Nova_of_Procession** (Nova Elétrica da Procissão) — parcial
   - efeito não simulado: Repete 2 vezes
   - efeito não simulado: 10 % mais Velocidade de Conjuração
-- **Shockwave_Totem** (Totem Sísmico) — parcial
-  - efeito não simulado: 25 % de chance de Empurrar Inimigos ao acertar
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
-- **Shockwave_Totem_of_Authority** (Totem Sísmico da Autoridade) — limitação do modelo idle
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Shrapnel_Ballista** (Balista Estilhaçante) — parcial
+  - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Shrapnel_Ballista_of_Steel** (Balista de Cerco do Aço) — parcial
+  - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Siege_Ballista** (Balista de Cerco) — parcial
   - efeito não simulado: Velocidade de Ataque aumentada em 5 % por Totem máximo
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
-- **Siege_Ballista_of_Splintering** (Balista de Cerco do Despedaçamento) — parcial
-  - efeito não simulado: Projéteis podem Difundir 1 Vezs adicionais
-  - efeito não simulado: Projéteis têm 40 % de chance de receber um Projétil adicional quando Difundindo
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Siege_Ballista_of_Trarthus** (Balista de Cerco de Trarthus) — parcial
   - efeito não simulado: Alcance do Posicionamento de Totens aumentado em 300 %
   - efeito não simulado: Invoca 1 Totens de Balista em círculo que usam esta habilidade
   - efeito não simulado: Após atacar, os totens desaparecem
   - efeito não simulado: 20 % mais Dano de Projétil
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Sigil_of_Power** (Emblema do Poder) — sem efeito
   - a gema não tem comportamento de combate reconhecido
 - **Siphoning_Trap** (Armadilha Sifão de Gelo) — parcial
@@ -2176,9 +2171,11 @@ Só os ataques:
   - efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano
 - **Spectral_Shield_Throw_of_Shattering** (Arremesso de Escudo Espectral do Despedaçamento) — parcial
   - efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano
+  - efeito não simulado: 20 % mais Velocidade de Projétil
 - **Spectral_Shield_Throw_of_Trarthus** (Arremesso de Escudo Espectral de Trarthus) — parcial
   - efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano
   - efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados
+  - efeito não simulado: 20 % mais Velocidade de Projétil
 - **Spectral_Throw** (Arremesso Espectral) — parcial
   - efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano
 - **Spectral_Throw_of_Materialising** (Arremesso Espectral da Materialização) — parcial
@@ -2382,8 +2379,6 @@ Só os ataques:
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Vaal_Ancestral_Warchief** (Chefe Guerreiro Ancestral Vaal) — parcial
   - efeito não simulado: 18 % mais Dano Corpo a Corpo enquanto o Totem estiver Ativo
-  - efeito não simulado: Dano do Totem aumentado em 20 %
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Vaal_Animate_Weapon** (Animar Arma Vaal) — parcial
   - efeito não simulado: Anima até 10 Armas
   - efeito não simulado: +2 ao Máximo de Armas Animadas
@@ -2503,9 +2498,9 @@ Só os ataques:
   - efeito não simulado: + 4 do máximo de Estágios
   - efeito não simulado: + 2 do máximo de Estágios
 - **Vaal_Rejuvenation_Totem** (Totem Rejuvenecedor Vaal) — parcial
+  - efeito não simulado: 30 % menos Área de Efeito
+  - efeito não simulado: 317.5 de Vida Regenerada por segundo
   - efeito não simulado: 40 % do Dano de Acertos contra alvos afetados pela Aura é sofrido na Vida do Totem antes do alvo
-  - efeito não simulado: 20 % mais Vida de Totens
-  - _idle:_ o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)
 - **Vaal_Righteous_Fire** (Círculo Ardente Vaal) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo
@@ -2679,10 +2674,6 @@ Só os ataques:
   - não simulado: Repetição Final das Habilidades Suportadas tem 20% de chance de causar Dano Dobrado
 - **Awakened_Void_Manipulation_Support** (Suporte Desperto: Manipulação do Vácuo) — parcial
   - não simulado: 1 do Nível das Gemas de Habilidade de Caos Suportadas
-- **Ballista_Totem_Support** (Totem Balista) — parcial
-  - não simulado: Habilidades suportadas invocam um Totem de Balista que usa tal habilidade
-  - não simulado: Totem dura 8 segundos
-  - não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens
 - **Behead_Support** (Decapitar) — parcial
   - não simulado: Habilidades Suportadas têm +0.3 metros ao Alcance de Golpes Corpo a Corpo
   - não simulado: Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por 20 segundos
@@ -2783,9 +2774,7 @@ Só os ataques:
 - **Divine_Sentinel_Support** (Sentinela Divina (Reforço)) — sem efeito
   - esses lacaios especiais ainda não existem no jogo
 - **Earthbreaker_Support** (Devastador) — parcial
-  - não simulado: Habilidades suportadas invocam um Totem que usa tal habilidade
-  - não simulado: Totem dura 12 segundos
-  - não simulado: Habilidades Suportadas têm 50% mais Velocidade de Posicionamento de Totens
+  - não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)
 - **Eclipse_Support** (Eclipse (Reforço)) — parcial
   - não simulado: +38% de Qualidade das Gemas de Habilidade Suportadas
 - **Efficacy_Support** (Eficácia) — parcial
@@ -2841,10 +2830,6 @@ Só os ataques:
   - não simulado: Causa Dano de Fogo base igual a 137% da Vida Máxima dos Totens
   - não simulado: Totens com esta Habilidade a Ativam quando Acertados por um Inimigo
   - não simulado: Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo
-  - não simulado: Habilidades Suportadas têm Vida do Totem aumentada em 10%
-- **Focused_Ballista_Support** (Balista Focada) — parcial
-  - não simulado: Totens Balista das Habilidades Suportadas só Atacam quando você disparar um Projétil de Ataque
-  - não simulado: Habilidades Suportadas têm 68% mais Velocidade de Posicionamento de Totens
 - **Fortify_Support** (Fortificar) — parcial
   - não simulado: Habilidades Suportadas têm Duração da Fortificação aumentada em 20%
 - **Foulgrasp_Support** (Constrição Pérfida (Reforço)) — parcial
@@ -3028,9 +3013,6 @@ Só os ataques:
   - não simulado: Arqueiro Ilusório utiliza Habilidades Suportadas com 60% menos Velocidade de Ataque
   - não simulado: Arqueiro Ilusório dura 4 segundos
   - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
-- **Multiple_Totems_Support** (Totens Múltiplos) — parcial
-  - não simulado: Habilidades Suportadas Convocam dois Totens ao invés de um
-  - não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens
 - **Multiple_Traps_Support** (Múltiplas Armadilhas) — parcial
   - não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%
 - **Overcharge_Support** (Sobrecarga) — parcial
@@ -3107,10 +3089,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm 30% menos Velocidade de Projétil
 - **Spell_Cascade_Support** (Cascata Mágica) — parcial
   - não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo
-- **Spell_Totem_Support** (Totem de Magia) — parcial
-  - não simulado: Habilidades suportadas invocam um Totem que usa tal habilidade
-  - não simulado: Totem dura 8 segundos
-  - não simulado: Habilidades Suportadas têm 10% mais Velocidade de Posicionamento de Totens
 - **Spellblade_Support** (Lâmina Mágica) — parcial
   - não simulado: Habilidades Suportadas têm Dano Mágico Adicional igual a 135% doDano das Armas Corpo a Corpo de Uma Mão Equipadas Se duas Armas forem Equipadas, cada uma contribuindo com 60% da quantidade de Dano Adicional
 - **Swiftbrand_Support** (Runa Repentina) — parcial
@@ -3166,4 +3144,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Chance_to_Poison_Support, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow_of_Energy, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Icicle_Mine_of_Fanning, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike, Lightning_Strike_of_Arcing, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, More_Duration_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Unbound_Ailments_Support, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Haste, Vaal_Lightning_Strike, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus
+Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Autoexertion, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning, Ball_Lightning_of_Static, Barrage_Support, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Chance_to_Poison_Support, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow_of_Energy, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Ice_Nova_of_Deep_Freeze, Icicle_Mine_of_Fanning, Immolate_Support, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike, Lightning_Strike_of_Arcing, Mana_Leech_Support, Melee_Physical_Damage_Support, Minion_Life_Support, More_Duration_Support, Pact_of_Ghorr, Pact_of_Lycia, Point_Blank_Support, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Unbound_Ailments_Support, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Haste, Vaal_Lightning_Strike, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus

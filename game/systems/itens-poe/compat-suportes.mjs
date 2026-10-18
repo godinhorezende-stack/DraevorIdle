@@ -22,4 +22,9 @@ export const ADICIONA_TIPOS = Object.freeze({
   Blastchain_Mine_Support: ['poe:Mina'],
   'High-Impact_Mine_Support': ['poe:Mina'],
   Locus_Mine_Support: ['poe:Mina'],
+  // (18/10, lote G20b) os que viram totem tornam a habilidade Totem (addSkillTypes SummonsTotem — sup_str.lua:5040): os Totens Múltiplos, a Balista
+  // Focada e a Chuva Ardente passam a ligar nela
+  Spell_Totem_Support: ['poe:Totem'],
+  Ballista_Totem_Support: ['poe:Totem'],
+  Earthbreaker_Support: ['poe:Totem'],
 });

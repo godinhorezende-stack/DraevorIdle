@@ -89,6 +89,26 @@ export function feiticeiroNoNivel(nivel = 1) {
     recargaMs: Math.round(FEITICEIRO.recargaMs / (1 + recuperacao / 100)),
   };
 }
+/**
+ * (18/10, lote G20a) O TOTEM: as linhas que o sistema do totem consome (`LacaiosPoe.oQueInvoca`, `Acoes.temposDaGemaPoe`) — a duração, o "Invoca um
+ * Totem", o máximo, a vida, a velocidade de posicionamento e o alcance corpo a corpo do totem ancestral (`Acoes.alcanceDoTotem`). As do uso valem pelo
+ * caminho do seu uso (`Acoes.usarComoTotem`).
+ */
+const LINHA_DO_TOTEM = /^Totem dura [\d.]+ segundos?$|^Invoca um Totem(?: de Balista)? que usa esta habilidade$|^\+[\d.]+ ao número máximo de Totens(?: Balista)? Convocados$|Vida do Totem aumentada em [\d.]+ ?%$|^[\d.]+ ?% mais Vida de Totens$|^Velocidade de Posicionamento de Totem aumentada em [\d.]+ ?%$|^\+[\d.]+ metros? ao Alcance de Golpes Corpo a Corpo$/i;
+export const ehLinhaDoTotem = (l) => LINHA_DO_TOTEM.test(l);
+/**
+ * (lote G20a) O totem que NÃO ACERTA ninguém: no PoE o Chamariz, o Devorador e os Rejuvenescedores não causam dano (`base_deal_no_damage` —
+ * act_str.lua:2444, 2689, 9358) e o Vínculo Abrasador causa o dano no FEIXE entre os totens e você, não num acerto. O efeito próprio de cada um ainda
+ * não existe: as linhas vão nos motivos.
+ */
+/** (lote G20a) A mecânica do totem que está só na descrição do PoE (act_str/act_dex.lua), sem linha nos dados. */
+const DESCRICAO_DO_TOTEM = [
+  [/^Artillery_Ballista/, 'as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:751-769; no jogo ainda são projéteis no alvo)'],
+  [/^Decoy_Totem/, 'o totem provoca os monstros em volta a atacá-lo (act_str.lua:2416-2432)'],
+  [/^Shrapnel_Ballista/, 'as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)'],
+];
+const TOTEM_SEM_GOLPE = /^(?:Decoy_Totem|Devouring_Totem|Rejuvenation_Totem|Vaal_Rejuvenation_Totem|Searing_Bond)/;
+export const totemSemGolpe = (slug) => TOTEM_SEM_GOLPE.test(String(slug ?? ''));
 /** Lacaios e totens (`itens-poe/lacaios-poe.mjs`): as linhas que o jogo faz. (Aqui, e não lá: o módulo dos lacaios importa este.) */
 const LINHA_DE_LACAIO = /^Máximo de |^\+\d+ ao número máximo de Totens|^Convoca \d+ |^Duração base é de|^Totem dura|Lacaios? têm .*mais Vida|Lacaios? causam? .*(mais|menos) Dano|são de Nível|Invoca um Totem que usa|^Golens (aumentam|concedem)|mais Velocidade de Ataque|sempre Golpes Críticos|Multiplicador de Acerto Crítico|Dano Físico adicional|infligir Sangramento|Velocidade de Ataque dos Lacaios|Chance de Golpe Crítico aumentada|Multiplicador de Golpe Crítico|Chance de Bloquear o Dano de Ataques|Vida Regenerada por Segundo|Regenera .*da Vida por segundo|Aura dos Robôs/i;
 export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l);
@@ -148,7 +168,8 @@ export function compilada(slug, nivel = 1, qualidade = 0) {
 export function temposNoNivel(slug, nivel = 1, qualidade = 0) {
   // (17/10, lote G2: + a qualidade — "Velocidade de Recarga aumentada em X%" da qualidade encurta a recarga)
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
-  return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100, velClamor: st.velClamor ?? 0, tempoExtraMs: Math.round((st.tempoAtaqueExtra ?? 0) * 1000) };
+  // (18/10, lote G20a: + a "Velocidade de Posicionamento de Totem aumentada" da gema — os ancestrais —, no tempo de COLOCAR o totem)
+  return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100, velClamor: st.velClamor ?? 0, tempoExtraMs: Math.round((st.tempoAtaqueExtra ?? 0) * 1000), velPosicionamentoPct: st.velPosicionamento ?? 0 };
 }
 
 /**
@@ -175,6 +196,10 @@ const REGRAS_DE_ALVOS = [
   // (12/10) O Aço Violento: "Projéteis se Partem na direção de N alvos" (o compilador lia o número, mas nada o usava: a divisão não saía).
   [/^Projéteis se Partem na direção de (\d+) alvos$/i, (m, a) => { a.divide += Number(m[1]); }],
   [/^Projéteis se Difundem$/i, (m, a) => { a.bifurcar = Math.max(a.bifurcar, 2); }],
+  // (18/10, lote G20a) a Balista de Cerco Fragmentadora: os filhos da difusão difundem de novo e a chance de 1 filho a mais (a da qualidade —
+  // act_dex.lua:14056-14061)
+  [/^Projéteis podem Difundir (\d+) Vez\w* adicionais$/i, (m, a) => { a.difundirDeNovo = (a.difundirDeNovo ?? 0) + Number(m[1]); }],
+  [/^Projéteis têm ([\d.]+) ?% de chance de receber um Projétil adicional quando Difundindo$/i, (m, a) => { a.difusaoExtraChance = (a.difusaoExtraChance ?? 0) + Number(m[1]); }],
   // (17/10, lote G18b) a Flecha Relampejante: "Acerta até N inimigos adicionais próximos ao alvo" (a 1,8 m — 1 casa — de cada atingido)
   [/^Acerta até (\d+(?:\.\d+)?) inimigos adicionais próximos ao alvo$/i, (m, a) => { a.proximos = (a.proximos ?? 0) + Math.floor(Number(m[1])); }],
 ];
@@ -850,16 +875,23 @@ function avaliarNoJogo(h, formato) {
   // (14/10) O Infestador sai sozinho (o jogo usa as habilidades sozinho); o Feiticeiro liga reservando e ativa as magias ligadas.
   if (h.arquetipo === 'praga') return { status: 'parcial', motivos: ['sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)'] };
   if (h.arquetipo === 'feiticeiro') return { status: 'funciona', motivos: [] };
-  // LACAIOS e TOTENS (`lacaios-poe.mjs`): invocam de verdade, com o máximo, a duração e os bônus da gema; o que ainda é simplificado vai nos motivos.
-  if (h.arquetipo === 'lacaio' || h.arquetipo === 'totem') {
-    const motivos = h.arquetipo === 'totem'
-      ? ['o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)']
-      : ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
+  // LACAIOS (`lacaios-poe.mjs`): invocam de verdade, com o máximo, a duração e os bônus da gema; o que ainda é simplificado vai nos motivos.
+  if (h.arquetipo === 'lacaio') {
+    const motivos = ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
     for (const l of h.linhas?.naoImplementadas ?? []) if ((!ehLinhaDeLacaio(l) || daQualidade.has(l)) && !ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l)) motivos.push(`efeito não simulado: ${l}`);
     // (17/10, lote G18: o "mais/menos Dano de Afecções" que o compilador lê vale no ACERTO da gema; a de lacaio não acerta — a Troca de Corpos do
     // Sacrifício —, então a linha fica não feita)
     for (const l of h.linhas?.aplicadas ?? []) if (/% (?:mais|menos) Dano (?:de|com) (?:Afecções|Sangramento)$/i.test(l)) motivos.push(`efeito não simulado: ${l}`);
     return { status: 'parcial', motivos };
+  }
+  // (18/10, lote G20a) o TOTEM: invoca (o máximo, a duração, a vida pelo PoB e o tempo de posicionamento — `LacaiosPoe.oQueInvoca`,
+  // `Acoes.temposDaGemaPoe`) e usa a habilidade da gema pelo caminho do SEU uso (`Acoes.usarComoTotem`) — as linhas do uso contam como numa gema de
+  // uso (abaixo). O totem sem golpe ainda não tem o efeito dele: toda linha que não é do totem vai nos motivos.
+  // (a mecânica que está só na DESCRIÇÃO do totem, sem linha — o status não a vê)
+  if (h.arquetipo === 'totem') for (const [re, m] of DESCRICAO_DO_TOTEM) if (re.test(h.slug)) motivos.push(`efeito não simulado: ${m}`);
+  if (h.arquetipo === 'totem' && totemSemGolpe(h.slug)) {
+    for (const l of [...(h.linhas?.aplicadas ?? []), ...(h.linhas?.naoImplementadas ?? [])]) if (!ehLinhaDoTotem(l)) motivos.push(`efeito não simulado: ${l}`);
+    return { status: motivos.length ? 'parcial' : 'funciona', motivos };
   }
   // (12/10) O VÍNCULO (`itens-poe/vinculos.mjs`): foca um aliado; as linhas que o jogo ainda não faz vão nos motivos.
   if (h.arquetipo === 'vinculo') {
@@ -892,12 +924,13 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !(ARAUTOS_AO_MATAR.has(h.slug) && ehLinhaDoArauto(l)) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
-/** (17/10) A gema é um USO com golpe (as linhas locais valem nos acertos dela — `linhasLocaisNoNivel`): não é buff, lacaio nem totem. */
-const ehUso = (h) => !BUFF.has(h.arquetipo) && !['lacaio', 'totem', 'vinculo', 'praga', 'feiticeiro'].includes(h.arquetipo);
+/** (17/10) A gema é um USO com golpe (as linhas locais valem nos acertos dela — `linhasLocaisNoNivel`): não é buff nem lacaio. (lote G20a: o totem é —
+ * ele usa a habilidade pelo caminho do seu uso, `Acoes.usarComoTotem`.) */
+const ehUso = (h) => !BUFF.has(h.arquetipo) && !['lacaio', 'vinculo', 'praga', 'feiticeiro'].includes(h.arquetipo);
 
 /** A magia do catálogo de ações da gema (o molde + os números do PoE no nível 1). */
 function acaoDaGema(g, h, itemId, formato, elemento) {

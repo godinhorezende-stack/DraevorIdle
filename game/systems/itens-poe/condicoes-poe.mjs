@@ -1427,7 +1427,8 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     if ((ficha.intervaloDoGolpeMs ?? 0) > 1000) t.add('ataqueLento');
     // ("Clamores não podem Impelir Habilidades de Deslocamento": a de Movimento não leva nem gasta o Impelir.)
     const semNoDeslocamento = t.has('movimento') && Number(ficha.afPoe.clamor_nao_impele_movimento) > 0;
-    if (!semNoDeslocamento && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) t.add('impelido');
+    // (lote G20a: o ataque do totem não é Impelido — no PoE, só os seus)
+    if (!semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) t.add('impelido');
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');
