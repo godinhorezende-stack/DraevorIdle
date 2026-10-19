@@ -178,7 +178,11 @@ test('A1 (D2): "para longe" é guardado no slot e faz o Avanço fugir do bicho c
 
 test('A1: o Piscar Gélido bate e deixa a área fria nas duas pontas; a recarga cai pelos inimigos na área', { skip: SEM }, async () => {
   const m = await montar(['Frostblink'], 4);
-  const { r } = usar(m.e, 0, m.b);
+  // (com o aval do dono, 19/10: a Piscada vai 2,9 casas — 3 com 90%, 2 com 10% —; o sorteio da fração travado, para ela pousar colada no alvo)
+  const sorteio = Math.random;
+  Math.random = () => 0.01;
+  let r;
+  try { ({ r } = usar(m.e, 0, m.b)); } finally { Math.random = sorteio; }
   assert.ok(r.ok, r.erro);
   assert.ok(cheb(m.e.hunt.pos, m.de) >= 2, 'teleportou');
   const frias = m.e.hunt.areasFrias ?? [];
@@ -190,7 +194,8 @@ test('A1: o Piscar Gélido bate e deixa a área fria nas duas pontas; a recarga 
   assert.equal(m.e.hunt.cooldowns[entry.id].total, Math.round(base / 1.19), `${m.e.hunt.cooldowns[entry.id].total} × ${base}`);
   const r2 = await montar(['Frostblink'], 4);
   r2.b.raridade = 'elite';
-  assert.ok(usar(r2.e, 0, r2.b).r.ok);
+  Math.random = () => 0.01;
+  try { assert.ok(usar(r2.e, 0, r2.b).r.ok); } finally { Math.random = sorteio; }
   assert.equal(r2.e.hunt.cooldowns[entry.id].total, Math.round(base / 1.99));
 });
 
