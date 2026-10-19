@@ -221,16 +221,17 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
    * (lote 42, P053 — dono: "Fazer todos") "Projéteis têm X% de chance de conseguirem Ricochetear ao colidirem com o terreno": o projétil que não
    * acerta ninguém voa até o alcance; se no caminho há TERRENO (uma casa que não se anda — a grade do andar, `andavel`), ele bate ali e, na
    * chance, ricocheteia — salta para o inimigo vivo mais perto do ponto da batida, até a distância do ricochete (o dano do encadeamento).
+   * (lote 84, dono: "Seguir o PoE") a batida no terreno É um ricochete: só com ricochete sobrando ("chance to be able to Chain"), e gasta um.
    */
   const naParede = (para, pct) => {
-    if (!andavel || !(efeito.ricocheteTerrenoChance > 0)) return;
+    if (!andavel || !(efeito.ricocheteTerrenoChance > 0) || !((efeito.encadear || 0) >= 1)) return;
     const reta = casasDaReta(origem, para, alcance);
     const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
     if (i < 0 || !(rng() * 100 < efeito.ricocheteTerrenoChance)) return;
     const ponto = i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: origem.x, y: origem.y };
     const salto = (efeito.ricochetePoe ? cfg.ricochetePoe?.projetil ?? 3 : cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
     const [b] = maisPerto(vivosNoInicio, ponto, Math.floor(salto) + (rng() < salto % 1 ? 1 : 0), 1, new Set());
-    if (b) voar({ ...base(), de: ponto, pct: (pct * pctDe('danoDoEncadeamentoPct')) / 100, ricocheteou: 1 }, b, 'encadeamento');
+    if (b) voar({ ...base(), encadear: (efeito.encadear || 0) - 1, de: ponto, pct: (pct * pctDe('danoDoEncadeamentoPct')) / 100, ricocheteou: 1 }, b, 'encadeamento');
   };
   /**
    * (lote 42, P067 — dono: "Fazer todos") "Projéteis são disparados em direções aleatórias": TODOS os projéteis — o principal também (o

@@ -57,7 +57,10 @@ test('drop de verdade: nenhum Raro sem mod, nenhuma base sem pool fora do Único
     const n = p.poe.prefixos.length + p.poe.sufixos.length;
     const mudaOLimite = (base.implicitos ?? []).some((l) => /Modificador(es)? (Prefixo|Sufixo) permitidos?/.test(l.texto ?? ''));
     assert.ok(n > 0, `${p.poe.base} raro sem mod`);
-    if (!mudaOLimite) assert.ok(n >= 4 && n <= 6, `${p.poe.base}: ${n} mods`);
+    // (lote 85, com o aval do dono — "3 ou 4, 58/42": a joia Rara sai com 3 ou 4 mods, como no PoE 1)
+    const joia = classe === 'Jewels' || classe === 'Abyss_Jewels';
+    if (joia) assert.ok(n >= 3 && n <= 4, `${p.poe.base}: ${n} mods`);
+    else if (!mudaOLimite) assert.ok(n >= 4 && n <= 6, `${p.poe.base}: ${n} mods`);
   }
   assert.ok(raros > 300, `${raros} raros`);
 });

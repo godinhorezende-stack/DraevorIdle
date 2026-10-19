@@ -116,7 +116,10 @@ export function esperaDaRecarga(ficha) {
   return Math.round(base / Math.max(0.1, 1 + (ficha?.esInicioPct ?? 0) / 100));
 }
 
-/** Recarga do Energy Shield (`ms` de tempo de jogo): depois da espera, `RECARGA_POR_SEGUNDO` da barra por segundo (× "Recarga aumentada"). */
+/** A fração do escudo recarregada por segundo: a do Draevor (`RECARGA_POR_SEGUNDO`, 20%) ou, com o PoE, a do PoE 1 (`RECARGA_POR_SEGUNDO_POE`, 33%). */
+export const recargaPorSegundo = () => (itensPoeLigado() ? ES.RECARGA_POR_SEGUNDO_POE ?? ES.RECARGA_POR_SEGUNDO : ES.RECARGA_POR_SEGUNDO) ?? 0;
+
+/** Recarga do Energy Shield (`ms` de tempo de jogo): depois da espera, `recargaPorSegundo()` da barra por segundo (× "Recarga aumentada"). */
 export function recarregar(estado, ficha, ms) {
   const max = Math.max(0, Math.round(ficha.energyShield ?? 0));
   if (!(max > 0)) {
@@ -140,7 +143,7 @@ export function recarregar(estado, ficha, ms) {
   if (!(resto > 0) || (naVida ? (estado.hp ?? 0) >= (estado.maxHp ?? 0) || !((estado.hp ?? 0) > 0) : atual >= max)) return;
   // ("X% menos Recarga do Escudo de Energia" — Bateria Anciã 50%, Proteção Perversa 40%: multiplica a recarga.)
   const menos = Math.max(0, 1 - v('es_recarga_menos') / 100);
-  estado.esResto = (estado.esResto ?? 0) + (max * ES.RECARGA_POR_SEGUNDO * (1 + (ficha.esRecargaPct ?? 0) / 100) * menos * resto) / 1000;
+  estado.esResto = (estado.esResto ?? 0) + (max * recargaPorSegundo() * (1 + (ficha.esRecargaPct ?? 0) / 100) * menos * resto) / 1000;
   if (naVida) {
     const ganhoNaVida = Math.floor(estado.esResto);
     estado.esResto -= ganhoNaVida;

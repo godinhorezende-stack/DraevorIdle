@@ -405,5 +405,37 @@
       "id": "conduite",
       "estado": "equivalente"
     }
+  },
+  "_nomes": "(lote 84, dono 19/10: \"Corrigir os 26\") os NOMES de nós em que a tradução oficial pt-BR (a do poedb) contradiz o próprio efeito, está incompleta ou tem erro de digitação — pelo id; o resto dos nomes é o do PoE pt-BR. Usa o nome que o PoE pt-BR já dá a outro nó com o mesmo nome em inglês, quando há.",
+  "nomes": {
+    "31973": "Efeito de Maldições",
+    "40126": "Efeito de Maldições",
+    "17412": "Vida de Lacaios",
+    "9971": "Regeneração de Vida, Dano de Fogo",
+    "63965": "Dano e Mana",
+    "5622": "Multiplicador de Crítico e Precisão em Dupla Empunhadura",
+    "25209": "Multiplicador de Crítico e Precisão em Dupla Empunhadura",
+    "62879": "Velocidade de Habilidades de Retaliação e Bloqueio Mágico com Escudos",
+    "3424": "Dano com Adagas e Velocidade de Movimento",
+    "30251": "Dano com Machados",
+    "4300": "Dano e Velocidade de Posicionamento de Totens",
+    "4977": "Chance e Multiplicador de Crítico com Cajados",
+    "24229": "Chance de Crítico de Cajado",
+    "265": "Chance de Crítico com Garras",
+    "17833": "Multiplicador de Dano com Sangramento",
+    "33435": "Domínio Sagrado",
+    "5875": "Velocidade de Conjuração e Crítico de Magias",
+    "12189": "Velocidade de Conjuração e Crítico de Magias",
+    "47312": "Dano Elemental e Resistências",
+    "55866": "Dano Elemental e Resistências",
+    "16743": "Dano Mágico em Dupla Empunhadura e Velocidade de Movimento",
+    "34560": "Dano Mágico em Dupla Empunhadura e Velocidade de Movimento",
+    "30170": "Decaimento Lento da Fúria e Armadura",
+    "36226": "Dano de Gelo e Chance de Congelar",
+    "22852": "Dano de Projétil, Velocidade de Ataque",
+    "19098": "Dano de Raio com Varinhas",
+    "64612": "Dano de Raio com Varinhas",
+    "30926": "Dano Elemental da Varinha e Penetração",
+    "54043": "Dano Elemental da Varinha e Penetração"
   }
 }

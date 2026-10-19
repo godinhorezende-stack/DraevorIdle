@@ -51,6 +51,14 @@ export function lacaios(texto) {
     if (armadura) x.armadura = armadura;
     if (evasao) x.evasao = evasao;
     if (imune) x.imune = true;
+    // (lote 87, dono 19/10: a parte B — a precisão e o atordoamento dos lacaios) o multiplicador da precisão (`accuracy` × a tabela de precisão de
+    // monstro do nível: `tabelas.precisao`), o "Limiar de Atordoamento aumentado" (`StunThreshold` INC — o Zumbi, +30%) e o "não pode ser
+    // Atordoado" (`StunImmune` — os Robôs)
+    const precisao = num(corpo, 'accuracy');
+    const limiar = /mod\("StunThreshold", "INC", (-?[\d.]+)/.exec(corpo);
+    if (precisao != null) x.precisao = precisao;
+    if (limiar) x.limiarAtordoamentoPct = Number(limiar[1]);
+    if (/mod\("StunImmune", "FLAG", 1/.test(corpo)) x.imuneAtordoamento = true;
     saida[id] = x;
   }
   return saida;
@@ -98,6 +106,8 @@ export function importar(pasta = FONTE_PADRAO) {
     tabelas: {
       vida: tabela(misc, 'monsterAllyLifeTable'), dano: tabela(misc, 'monsterAllyDamageTable'),
       armadura: tabela(misc, 'monsterArmourTable'), evasao: tabela(misc, 'monsterEvasionTable'),
+      // (lote 87) a precisão de monstro por nível (`monsterAccuracyTable`) — × o `precisao` do lacaio
+      precisao: tabela(misc, 'monsterAccuracyTable'),
     },
     lacaios: todos,
     habilidades: habilidades(readFileSync(join(pasta, 'Skills', 'minion.lua'), 'utf8'), usadas),

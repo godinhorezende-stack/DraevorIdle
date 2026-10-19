@@ -569,7 +569,7 @@ test('"Amaldiçoa" (o mod do PoE): o golpe do monstro põe a Fraqueza Elemental 
   assert.equal(amaldicoar(meio, 'fraquezaElemental').protection.fire, mAntes - 10, 'metade do efeito');
 });
 
-test('o ESCUDO DE ENERGIA do monstro (mod do PoE): fica por cima da vida, sai primeiro e recarrega 20%/s depois de 2 s sem dano; "Inimigos Amaldiçoados por você não podem Recuperar Escudo de Energia" e "têm Regeneração de Vida reduzida em 50%" (o nó real)', { skip: SEM }, () => {
+test('o ESCUDO DE ENERGIA do monstro (mod do PoE): fica por cima da vida, sai primeiro e recarrega 33%/s depois de 2 s sem dano (lote 84, com o aval do dono: o PoB); "Inimigos Amaldiçoados por você não podem Recuperar Escudo de Energia" e "têm Regeneração de Vida reduzida em 50%" (o nó real)', { skip: SEM }, () => {
   const m = monstro(['MonsterModEnergyShieldAura']);
   const es = (x) => Estados.escudoDoMonstro(x);
   assert.equal(es(m).max, 400);
@@ -584,9 +584,9 @@ test('o ESCUDO DE ENERGIA do monstro (mod do PoE): fica por cima da vida, sai pr
   Estados.tique(hunt, [], 3400);
   assert.equal(es(m).atual, 0, 'antes dos 2 s: nada');
   Estados.tique(hunt, [], 4500);
-  assert.equal(es(m).atual, 80, '1 s de recarga: 20% de 400');
-  assert.equal(m.hp, 880);
-  // (a sobra da recarga não se acumula: quase cheio, enche; o golpe seguinte recomeça do zero — 20%/s, nem um ponto a mais)
+  assert.equal(es(m).atual, 132, '1 s de recarga: 33% de 400');
+  assert.equal(m.hp, 932);
+  // (a sobra da recarga não se acumula: quase cheio, enche; o golpe seguinte recomeça do zero — 33%/s, nem um ponto a mais)
   const q = monstro(['MonsterModEnergyShieldAura']);
   const hq = { monstros: [q] };
   q.hp -= 10;
@@ -598,7 +598,7 @@ test('o ESCUDO DE ENERGIA do monstro (mod do PoE): fica por cima da vida, sai pr
   Estados.tique(hq, [], 4250);
   Estados.tique(hq, [], 6250);
   Estados.tique(hq, [], 7250);
-  assert.equal(es(q).atual, 280, '1 s de recarga depois do golpe: 200 + 80');
+  assert.equal(es(q).atual, 332, '1 s de recarga depois do golpe: 200 + 132');
   // o monstro que também REGENERA (3%/s da vida): a vida sobe, o escudo não
   const r = monstro(['MonsterModEnergyShieldAura', 'MonsterModLifeRegeneration']);
   const hr = { monstros: [r] };
