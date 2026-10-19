@@ -16,7 +16,7 @@ import { CATALOGO } from '../dados.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
 import * as Controle from '../combate/controle.mjs';
-import { slugDoNome, fatorDaArea, casasPelaArea, almasDoLacaio, DEVORADOR_DE_ALMAS, sorteado } from './condicoes-poe.mjs';
+import { slugDoNome, fatorDaArea, casasPelaArea, almasDoLacaio, DEVORADOR_DE_ALMAS, sorteado, criticoDoBicho } from './condicoes-poe.mjs';
 import { PARAMETROS } from '../combate/formulas.mjs';
 import { chanceDeEsquiva } from '../personagem/atributos.mjs';
 import { readFileSync } from 'node:fs';
@@ -47,6 +47,21 @@ export const lacaioDoPob = (slug) => LACAIO_DO_POB.find(([re]) => re.test(slug ?
  * fração da vida; a armadura e a evasão, as tabelas de monstro × o multiplicador. `dano`/`tempo` nulos: o lacaio usa uma ARMA (a Arma Animada,
  * o Guardião Animado, o Armamento Sagrado; o clone das Flechas, a sua) — o jogo segue com o golpe de monstro do nível.
  */
+/**
+ * (lote 87, a revisão) O golpe do lacaio é MAGIA (para o erro — `lacaioPodeErrar`)? A 1ª habilidade da lista do PoB que não seja o 'Melee' (a
+ * principal, se houver — `HABILIDADE_PRINCIPAL`) é magia: o Golem de Chamas, o de Raios. Pela HABILIDADE PRINCIPAL no PoE (dono, 19/10: "Pela
+ * habilidade principal no PoE"): o Fantasma (o projétil mágico) e o Juiz da Absolvição (a magia Absolvição) são MAGIA; o Golem de Caos (o golpe
+ * corpo a corpo; a Tempestade de Areia e a Cascata saem à parte) é ATAQUE.
+ * (Só a classificação: o multiplicador e a velocidade do golpe seguem a `HABILIDADE_PRINCIPAL`.)
+ */
+const MAGIA_NO_POE = new Set(['SummonedPhantasm', 'AbsolutionTemplarJudge']);
+const ATAQUE_NO_POE = new Set(['SummonedChaosGolem']);
+function golpeDeMagiaDoPob(id, p) {
+  if (MAGIA_NO_POE.has(id)) return true;
+  if (ATAQUE_NO_POE.has(id)) return false;
+  const principal = HABILIDADE_PRINCIPAL[id] ?? (p.habilidades ?? []).find((h) => h !== 'Melee');
+  return !!POB.habilidades[principal]?.magia;
+}
 export function forcaDoPob(id, n) {
   const p = POB.lacaios[id];
   if (!p) return null;
@@ -59,6 +74,13 @@ export function forcaDoPob(id, n) {
     tempo: p.tempo > 0 ? p.tempo / Math.max(0.1, 1 + (h.velPct ?? 0) / 100) : null, es: p.es ? vida * p.es : 0,
     armadura: p.armadura ? POB.tabelas.armadura[i] * p.armadura : 0, evasao: p.evasao ? POB.tabelas.evasao[i] * p.evasao : 0,
     res: { fire: 0, ice: 0, energy: 0, chaos: 0, ...(p.res ?? {}) }, imune: !!p.imune,
+    // (lote 87, dono 19/10: a parte B, "Todos os lacaios (PoE)") a PRECISÃO: o jogo segue o PoE — o golpe de ataque do lacaio pode errar (decisão
+    // do dono) —, com a tabela de precisão de monstro do nível × o `accuracy` do lacaio que o PoB guarda (o PoB mesmo não a usa: sem a flag
+    // MinionAccuracyEqualsAccuracy, o lacaio dele sempre acerta); o golpe de MAGIA (nunca erra); o "Limiar de Atordoamento aumentado" (o Zumbi,
+    // +30%) e o "não pode ser Atordoado" (os Robôs)
+    precisao: POB.tabelas.precisao[Math.min(POB.tabelas.precisao.length, i + 1) - 1] * (p.precisao ?? 1),
+    golpeDeMagia: golpeDeMagiaDoPob(id, p),
+    limiarAtordoamentoPct: p.limiarAtordoamentoPct ?? 0, imuneAtordoamento: !!p.imuneAtordoamento,
   };
 }
 /**
@@ -76,6 +98,9 @@ export function poeDeBase(f) {
     seBloqueou: { armadura: 0, penFogo: 0, fogo: [0, 0], sortudo: 0, bloqueio: 0, bloqueioMagico: 0, critMult: 0, trespassar: 0 },
     naoBloqueou: { bloqueio: 0, critInc: 0, noMaximo: 0, magiaNoMaximo: 0 }, bloqueioSortudo: 0, bloqueioMax: 0, bloqueioMagicoMax: 0, fatorDoDano: 1,
     aoMatar: { poderProfano: [0, 4], agressividade: [0, 4] },
+    // (lote 87) a precisão, o atordoamento e o crítico recebido de base (do PoB — `forcaDoPob`)
+    precisaoBase: f?.precisao ?? null, precisaoFixa: 0, precisaoInc: 0, golpeDeMagia: !!f?.golpeDeMagia, limiarAtordoamentoPct: f?.limiarAtordoamentoPct ?? 0,
+    imuneAtordoamento: !!f?.imuneAtordoamento, recBloqueio: 0, recAtordoamento: 0, critRecebidoRed: 0,
   };
 }
 /** O PODER FANTASMAL de cada Fantasma pelo nível do Suporte: Convocar Fantasma (o PoB — `[mín, máx]` de Dano Físico Mágico Adicional). */
@@ -406,6 +431,13 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // (lote 86) o "aumentado" e o "mais" do dano do lacaio que a invocação já pôs no `dano` (golpe ÷ a força de base): o Fogo adicional "se
       // Bloqueou Recentemente" é escalado por ele no golpe (`cacadas`), como o resto do golpe
       fatorDoDano: f.dano > 0 ? golpe / f.dano : 1,
+      // (lote 87, dono 19/10: a parte B, "Todos os lacaios (PoE)") a PRECISÃO do golpe de ataque (a do PoB — a tabela × o `accuracy` —, + "Lacaios
+      // tem +N de Precisão" e o do escudo da Égide; × o aumentado), o golpe de magia (nunca erra), o atordoamento (o limiar do PoB, imune, a
+      // recuperação de atordoamento e de bloqueio) e o "Dano Extra recebido de Acertos Críticos reduzido" — `precisaoDoLacaio`,
+      // `controleNoLacaio`, `criticoNoLacaio`
+      precisaoBase: pob?.precisao ?? null, precisaoFixa: mn('minion_precisao'), precisaoInc: mn('minion_precisao_inc'), golpeDeMagia: !!pob?.golpeDeMagia,
+      limiarAtordoamentoPct: pob?.limiarAtordoamentoPct ?? 0, imuneAtordoamento: !!pob?.imuneAtordoamento,
+      recBloqueio: mn('minion_block_recovery'), recAtordoamento: mn('minion_stun_recovery'), critRecebidoRed: mn('minion_crit_dmg_taken_red'),
       // (lote 43, P040: as defesas do escudo da Égide Necromântica — a armadura, a evasão, o escudo de energia fixo, a supressão de magia)
       // (lote 44: + a armadura, a evasão e o escudo de energia de base do lacaio no PoB)
       // (lote 49: + "Golens têm +X de Armadura" — `lacaio_armadura:<tipo>`)
@@ -515,18 +547,84 @@ export const movimentoDoLacaio = (l, agora) => (l?.poe?.movimentoPct ?? 0) + (l?
  * e o peso da lentidão de cada classe, a lentidão e a duração do jogador). "A Velocidade de Ação dos Totens não pode ser modificada para abaixo
  * do valor base": o totem não fica lento (`poe.semLentidao`). Devolve true se pôs.
  */
-export function controleNoLacaio(l, bicho, hunt, agora, rng = Math.random) {
+export function controleNoLacaio(l, bicho, hunt, agora, rng = Math.random, { parede = agora } = {}) {
   if (!l || l.poe?.semLentidao) return false;
-  // (lote 43, P040: o "chance de evitar Afecções Elementais" do escudo da Égide Necromântica — a lentidão do Resfriamento)
-  if (l.poe?.evitarAfeccoes > 0 && rng() * 100 < l.poe.evitarAfeccoes) return false;
   const classe = Controle.classeDoMob(bicho, !!hunt?.isBoss);
   const cfg = classe ? Controle.CONFIG.mobs[classe] : null;
-  const pesos = cfg?.efeitos ?? {};
-  const total = Object.values(pesos).reduce((n, p) => n + p, 0);
-  if (!(pesos.lento > 0) || !(rng() * 100 < (cfg.chance * pesos.lento) / total)) return false;
-  const ate = agora + Controle.CONFIG.jogador.duracaoMs.lento;
-  l.lento = { ate: Math.max(l.lento?.ate ?? 0, ate), pct: Math.min(Controle.CONFIG.jogador.lentidaoMaxima, cfg.lentidaoPct ?? 30) };
-  return true;
+  if (!cfg) return false;
+  // (lote 87, dono 19/10: o modelo do jogo para você — `Controle.tentar`: UMA chance por classe — Elite 6%, Chefe 10% — e o efeito sorteado pelos
+  // pesos; antes só a lentidão, na chance × o peso dela: a mesma chance de ficar lento)
+  const sorte = rng() * 100;
+  const efeito = sortearControle(cfg.efeitos ?? {}, rng);
+  // (lote 43, P040: o "chance de evitar Afecções Elementais" do escudo da Égide Necromântica — a lentidão do Resfriamento; lote 87: e o Congelamento)
+  if ((efeito === 'lento' || efeito === 'congelado') && l.poe?.evitarAfeccoes > 0 && rng() * 100 < l.poe.evitarAfeccoes) return false;
+  if (efeito === 'lento') {
+    if (!(sorte < cfg.chance)) return false;
+    // (a revisão do lote 87: a lentidão no relógio do TIQUE dos lacaios — `parede`, o que `fatorDeLentidao` lê no tique; a magia do monstro chega
+    // com o da caçada no `agora`)
+    const ate = parede + Controle.CONFIG.jogador.duracaoMs.lento;
+    l.lento = { ate: Math.max(l.lento?.ate ?? 0, ate), pct: Math.min(Controle.CONFIG.jogador.lentidaoMaxima, cfg.lentidaoPct ?? 30) };
+    return true;
+  }
+  // (lote 87, dono 19/10: a parte B) o ATORDOAMENTO e o CONGELADO do Chefe no lacaio: ele não anda nem ataca (`lacaioPreso`) por 1,5 s (o
+  // atordoamento ÷ (1 + a Recuperação de Atordoamento dele)) e fica 3 s imune aos dois depois — como você. O totem não é atordoado nem congelado
+  // (fica fora: dono); os Robôs são imunes ao atordoamento (`StunImmune` do PoB); o "Limiar de Atordoamento aumentado" do PoB (o Zumbi, +30%) ×
+  // 1/(1 + X%) na chance. No relógio da CAÇADA (`hunt.clock`). Devolve o nome do efeito ('atordoado'/'congelado'; a lentidão: true).
+  if (efeito !== 'atordoado' && efeito !== 'congelado') return false;
+  if (l.tipo === 'totem' || ehTotem(l) || (efeito === 'atordoado' && l.poe?.imuneAtordoamento)) return false;
+  const p = l.poe ?? {};
+  const fator = efeito === 'atordoado' ? 1 / (1 + Math.max(0, p.limiarAtordoamentoPct ?? 0) / 100) : 1;
+  if (!(sorte < cfg.chance * fator)) return false;
+  const relogio = hunt?.clock ?? agora;
+  if (lacaioPreso(l, relogio, { semTrava: true }) || relogio < (l.imuneControleAte ?? 0)) return false;
+  const ms = Math.round(Controle.CONFIG.jogador.duracaoMs[efeito] / (efeito === 'atordoado' ? Math.max(0.1, 1 + (p.recAtordoamento ?? 0) / 100) : 1));
+  l[efeito] = { ate: relogio + ms, desde: relogio, ms };
+  l.imuneControleAte = relogio + ms + Controle.CONFIG.jogador.imunidadeMs;
+  return efeito;
+}
+/** O efeito sorteado pelos pesos (o mesmo sorteio de `combate/controle.mjs`). */
+function sortearControle(pesos, rng) {
+  const entradas = Object.entries(pesos);
+  let sorte = rng() * entradas.reduce((n, [, p]) => n + p, 0);
+  for (const [nome, p] of entradas) if ((sorte -= p) < 0) return nome;
+  return entradas[0]?.[0] ?? null;
+}
+/**
+ * (lote 87, dono 19/10) O lacaio está PRESO agora (atordoado, congelado, ou na trava do bloqueio — `travarLacaioNoBloqueio`)? Não anda nem ataca
+ * (`cacadas.tiqueDosLacaios`). `relogio`: o da caçada. `semTrava`: só o atordoado e o congelado.
+ */
+export const lacaioPreso = (l, relogio, { semTrava = false } = {}) => relogio != null && ((l?.atordoado?.ate ?? 0) > relogio || (l?.congelado?.ate ?? 0) > relogio || (!semTrava && (l?.travadoAte ?? 0) > relogio));
+/**
+ * (lote 87, dono 19/10) A RECUPERAÇÃO DE BLOQUEIO no lacaio, como em você (`Controle.travarNoBloqueio`): bloquear trava a próxima ação por 0,35 s
+ * ÷ (1 + a "Recuperação de Bloqueio" + a "Recuperação de Atordoamentos e Bloqueios" dele). `relogio`: o da caçada. Devolve os ms.
+ */
+export function travarLacaioNoBloqueio(l, relogio) {
+  if (!l || relogio == null) return 0;
+  const ms = Math.round(Controle.BLOQUEIO_TRAVA_MS / Math.max(0.1, 1 + ((l.poe?.recBloqueio ?? 0) + (l.poe?.recAtordoamento ?? 0)) / 100));
+  l.travadoAte = Math.max(l.travadoAte ?? 0, relogio + ms);
+  return ms;
+}
+/**
+ * (lote 87, dono 19/10: D2/D3) A PRECISÃO do golpe de ataque do lacaio: a base (a do PoB — `precisaoBase`; sem ela, o Espectro e os outros: a
+ * tabela de precisão de monstro do nível × 1) + a fixa ("Lacaios tem +N de Precisão", o escudo da Égide) × (1 + o aumentado).
+ */
+export function precisaoDoLacaio(l) {
+  const p = l?.poe ?? {};
+  const t = POB.tabelas.precisao;
+  const base = p.precisaoBase ?? t[Math.max(1, Math.min(t.length, Math.round(l?.nivel ?? 1) || 1)) - 1];
+  return Math.max(0, (base + (p.precisaoFixa ?? 0)) * Math.max(0, 1 + (p.precisaoInc ?? 0) / 100));
+}
+/** (lote 87, D3) O golpe do lacaio pode ERRAR? Não: a magia (o estilo do mago, a habilidade principal do PoB), o mercenário, o totem. */
+export const lacaioPodeErrar = (l, magia = false) => !!l?.poe && !magia && !l.poe.golpeDeMagia && !l.mercenario && l.tipo !== 'totem' && !ehTotem(l);
+/**
+ * (lote 87, dono 19/10: B3) O CRÍTICO do monstro no lacaio (o golpe e a magia), como em você (`ModsPoe.criticoDoBicho`): a chance do monstro
+ * (`base`: `AtributosDoMob.critico` — o "Afiado" e a espécie) × os estados dele (Cego…), e o dano extra × (1 − o "Dano Extra recebido de Acertos
+ * Críticos reduzido" do lacaio — o escudo da Égide). `{ critico, fator }`.
+ */
+export function criticoNoLacaio(l, base, bicho, relogio, rng = Math.random) {
+  const c = criticoDoBicho(base, bicho, { afPoe: { crit_dmg_taken_red: l?.poe?.critRecebidoRed ?? 0 } }, relogio, rng);
+  if (c) return c;
+  return base?.chance > 0 && rng() < base.chance ? { critico: true, fator: base.fator } : { critico: false, fator: 1 };
 }
 /** Quanto o lacaio LENTO demora a mais no golpe (1 = normal). */
 export const fatorDeLentidao = (l, agora) => (l?.lento?.ate > agora && !l.poe?.semLentidao ? 1 / (1 - l.lento.pct / 100) : 1);

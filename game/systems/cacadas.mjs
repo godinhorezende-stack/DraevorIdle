@@ -2440,6 +2440,19 @@ export function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo, ctx = {}) {
  */
 const RES_DO_ELEMENTO = { fire: 'resFogo', ice: 'resGelo', energy: 'resRaio' };
 export const resDoLacaio = (l, elemento, aliado = null) => (l?.poe?.res ?? 0) + (Number(l?.poe?.[RES_DO_ELEMENTO[elemento]]) || 0) + (aliado?.res ?? 0);
+/**
+ * (lote 87, dono 19/10: B1 — D2/D3) O golpe de ATAQUE do lacaio ERROU `alvo`? A precisão dele (`LacaiosPoe.precisaoDoLacaio`: a do PoB — a tabela
+ * de precisão de monstro × o `accuracy`; o Espectro e os sem PoB, × 1) contra a evasão do bicho, pela fórmula do jogo (a sua:
+ * `Atributos.chanceDeAcerto`, entre 5% e 95%); contra evasão 0, sempre acerta. Não erra: a magia (`magia` — o estilo do mago; a habilidade
+ * principal de magia do PoB, o Golem de Chamas), o mercenário, o totem, o boneco de treino, e fora do modo PoE.
+ */
+export function lacaioErrou(hunt, l, alvo, magia = false, rng = Math.random) {
+  if (!itensPoeLigado() || !alvo || alvo.dummy || !LacaiosPoe.lacaioPodeErrar(l, magia)) return false;
+  const level = Atributos.levelDoBicho(hunt, alvo);
+  const evasao = AtributosDoMob.evasaoDe(alvo, level);
+  if (!(evasao > 0)) return false;
+  return !(rng() < Atributos.chanceDeAcerto(LacaiosPoe.precisaoDoLacaio(l), level, evasao));
+}
 export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo = null, doAliado = 0, { hunt = null, bicho = null, agora = null } = {}) {
   // (PoE, 12/10: o Vínculo Protetor no lacaio — a Chance de Bloquear do lacaio é igual à sua, e "Recupera N de Vida ao Bloquear")
   // (13/10: + o bloqueio das suas auras "Você e Aliados" — `doAliado`)
@@ -2471,6 +2484,9 @@ export function lacaioBloqueia(l, oferenda, eventos, rng = Math.random, vinculo 
  */
 export function aoBloquearDoLacaio(hunt, l, bicho, eventos, agora, rng = Math.random, { magia = false } = {}) {
   l.bloqueouEm = agora;
+  // (lote 87, dono 19/10: B2) a RECUPERAÇÃO DE BLOQUEIO do lacaio: o bloqueio trava a próxima ação dele — 0,35 s ÷ (1 + a recuperação de
+  // bloqueio + a de atordoamento), como em você (`LacaiosPoe.travarLacaioNoBloqueio`); nos três bloqueios (o de ataque, o mágico do tique, o da magia)
+  if (itensPoeLigado() && l.poe) LacaiosPoe.travarLacaioNoBloqueio(l, agora);
   const ab = l.poe?.aoBloquear;
   if (!ab || !itensPoeLigado()) return;
   if (bicho && (ab.causticar > 0 || ab.enfraquecer > 0 || ab.exaurir > 0)) {
@@ -2542,6 +2558,10 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
     if (p.elemento === 'physical') fisico += v;
     else outros += v * (1 - Math.min(teto(p.elemento), res(p.elemento)) / 100);
   }
+  // (lote 87, dono 19/10: B3) o CRÍTICO da magia do monstro no lacaio (a chance da magia/da espécie, × os estados do monstro; o dano extra ×
+  // (1 − o "Dano Extra recebido de Acertos Críticos reduzido" do lacaio) — `LacaiosPoe.criticoNoLacaio`)
+  const critDoBicho = l.poe ? LacaiosPoe.criticoNoLacaio(l, AtributosDoMob.critico(bicho, a), bicho, relogio) : null;
+  if (critDoBicho?.critico) { fisico *= critDoBicho.fator; outros *= critDoBicho.fator; }
   const { dano, bloqueou } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico, outros, magia: true, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), agora: hunt?.clock ?? null, relogio }) : { dano: fisico + outros, bloqueou: false };
   if (bloqueou) {
     eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true });
@@ -2556,9 +2576,13 @@ export function magiaNoLacaio({ estado, hunt, bicho, l, a, eventos, agora, ficha
   if (!(sofrido > 0)) return 0;
   const d = Math.max(1, Math.round(sofrido));
   l.hp -= d;
-  eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: bicho.name, color: '#ff8a8a' });
+  eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: bicho.name, color: '#ff8a8a', ...(critDoBicho?.critico ? { critico: true } : {}) });
   const recupera = l.mercenario && l.hp > 0 && l.hp < (estado.hp ?? 0) ? Number(ficha.afPoe?.mercenario_recupera_pct) || 0 : 0;
   if (recupera > 0) (l.recoup ??= []).push({ porMs: (d * recupera) / 100 / ModsPoe.RECUPERACAO_MS, ate: relogio + ModsPoe.RECUPERACAO_MS });
+  // (lote 87, dono 19/10: B2) a magia do Elite/Chefe também pode deixar o lacaio lento, atordoá-lo ou congelá-lo — como a sua em você
+  // (a revisão do lote 87: a lentidão no relógio do tique dos lacaios — `hunt.agoraDosLacaios`, o que `fatorDeLentidao` lê; o atordoado, no da caçada)
+  const controle = l.hp > 0 && itensPoeLigado() ? LacaiosPoe.controleNoLacaio(l, bicho, hunt, agora, Math.random, { parede: hunt.agoraDosLacaios ?? agora }) : false;
+  if (controle) eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: controle === true ? 'lento' : controle });
   return d;
 }
 Poderes.definirMagiaNoLacaio(magiaNoLacaio);
@@ -2658,6 +2682,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   // (lote 86, dono 19/10: o relógio da CAÇADA — o do bloqueio do lacaio, `l.bloqueouEm`, e dos estados que ele põe nos bichos; o `agora` do tique é
   // o de parede)
   const relogio = hunt.clock ?? agora;
+  // (a revisão do lote 87) o relógio deste tique (o `agora` dos lacaios: a lentidão, o próximo golpe) — a magia do monstro no lacaio
+  // (`magiaNoLacaio`, que recebe o da caçada) põe a lentidão nele
+  hunt.agoraDosLacaios = agora;
   for (const l of hunt.lacaios) {
     const aliado = l.mercenario ? aliadoDoMercenario : aliadoBase;
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
@@ -2715,7 +2742,11 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (lote 32, P028: + o bloqueio de Magia da Oferenda Óssea)
       // (lote 43, P040: + a precisão do bicho contra a evasão do lacaio)
       const precisao = AtributosDoMob.precisaoDe(b, l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
-      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe, outros: extras * fatorDoGolpe, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao, agora, relogio }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
+      // (lote 87, dono 19/10: B3) o CRÍTICO do golpe do monstro no lacaio, como em você (`LacaiosPoe.criticoNoLacaio`: o "Afiado", a espécie, os
+      // estados do monstro; o dano extra × (1 − o "Dano Extra recebido de Acertos Críticos reduzido" do lacaio))
+      const critDoBicho = l.poe ? LacaiosPoe.criticoNoLacaio(l, AtributosDoMob.critico(b), b, relogio) : null;
+      const fatorDoCritico = critDoBicho?.critico ? critDoBicho.fator : 1;
+      const { dano: noLacaio, bloqueou, evadiu } = l.poe ? LacaiosPoe.danoNoLacaio(l, { fisico: golpeDoBicho * 0.5 * fatorDoGolpe * fatorDoCritico, outros: extras * fatorDoGolpe * fatorDoCritico, magia, bloqueioMagicoExtra: (aliado?.bloqueioMagico ?? 0) + (oferenda?.bloqueioMagicoPct ?? 0), precisao, agora, relogio }) : { dano: (golpeDoBicho * 0.5 + extras) * fatorDoGolpe, bloqueou: false };
       if (evadiu) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', esquiva: true }); continue; }
       // (lote 86: o bloqueio mágico — os efeitos "ao Bloquear" do escudo da Égide; marca o `bloqueouEm`)
       if (bloqueou) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#7f9fff', bloqueado: true }); aoBloquearDoLacaio(hunt, l, b, eventos, relogio, Math.random, { magia: true }); continue; }
@@ -2728,7 +2759,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (!(sofrido > 0)) continue;
       const d = Math.max(1, Math.round(sofrido));
       l.hp -= d;
-      eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
+      eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a', ...(critDoBicho?.critico ? { critico: true } : {}) });
       // (lote 43, P040: "Reflete N de Dano Físico a Atacantes Corpo a Corpo" do escudo da Égide Necromântica — no bicho que bateu no lacaio)
       if (l.poe?.reflexoFisico > 0 && b.hp > 0) {
         const r = Math.max(1, Math.round(resistido(hunt, b, 'physical', l.poe.reflexoFisico, ficha)));
@@ -2741,7 +2772,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       const recupera = l.mercenario && l.hp > 0 && l.hp < (estado.hp ?? 0) ? Number(ficha.afPoe?.mercenario_recupera_pct) || 0 : 0;
       if (recupera > 0) (l.recoup ??= []).push({ porMs: (d * recupera) / 100 / ModsPoe.RECUPERACAO_MS, ate: agora + ModsPoe.RECUPERACAO_MS });
       // (PoE: o golpe de um Elite/Chefe pode deixar o lacaio/totem LENTO, como faz com você — `LacaiosPoe.controleNoLacaio`.)
-      if (itensPoeLigado() && LacaiosPoe.controleNoLacaio(l, b, hunt, agora)) eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: 'lento' });
+      // (lote 87, dono 19/10: B2 — + o atordoamento e o congelado do Chefe: o nome do efeito volta)
+      const controle = itensPoeLigado() ? LacaiosPoe.controleNoLacaio(l, b, hunt, agora) : false;
+      if (controle) eventos.push({ t: 'estado', uid: l.uid, x: l.x, y: l.y, estado: controle === true ? 'lento' : controle });
     }
     // (ciclo 7) a Instabilidade do Lacaio: em Vida Baixa ele explode em Fogo nos bichos colados e morre.
     const explosao = l.poe ? LacaiosPoe.explosaoDoLacaio(l, hunt.monstros) : null;
@@ -2778,6 +2811,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (l.focada) l.ultimoUsoEm = hunt.clock ?? 0;
       continue;
     }
+    // (lote 87, dono 19/10: B2) o lacaio ATORDOADO, CONGELADO ou na trava do bloqueio não anda nem ataca (`LacaiosPoe.lacaioPreso`, o relógio da
+    // caçada); o totem fica fora (o ramo de cima)
+    if (itensPoeLigado() && LacaiosPoe.lacaioPreso(l, relogio)) continue;
     // (lote 44, P066) os Robôs Ativadores "seguem você e correm até os inimigos" (o PoE): até o alvo do familiar, na folga do combate — as suas
     // Magias Ativadas saem do lugar deles (`Acoes.doLugarDoRobo`).
     if (l.robo && !Protecao.imune(hunt)) {
@@ -2845,8 +2881,17 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     const IMPACTO = { fire: 16, ice: 44, energy: 176, chaos: 17, physical: 10 };
     if (partes.every((x) => resistenciaEfetivaDe(hunt, alvo, x.tipo, ficha) >= 100)) continue;
     // O golpe do lacaio em UM bicho, com `pct`% (o principal 100%; os projéteis a mais e os saltos, o % deles).
+    let errouOPrincipal = false;
     const golpear = (b, pct) => {
       if (partes.every((x) => resistenciaEfetivaDe(hunt, b, x.tipo, ficha) >= 100)) return;
+      // (lote 87, dono 19/10: B1) o golpe de ATAQUE do lacaio pode ERRAR: a precisão dele contra a evasão do bicho, pela mesma fórmula da sua
+      // (`lacaioErrou`); o evento de erro é o seu
+      if (lacaioErrou(hunt, l, b, est.magia)) {
+        eventos.push({ t: 'block', uid: b.uid, x: b.x, y: b.y, color: '#999999', esquiva: true, errou: true, lacaio: true });
+        // (a revisão do lote 87: o golpe PRINCIPAL que erra não conta acerto nem solta o golpe em área)
+        if (b === alvo && pct === 100) errouOPrincipal = true;
+        return;
+      }
       // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito; ciclo 7: os da árvore).
       // (lote 86: + o crítico do escudo da Égide "se (não) Bloqueou Recentemente" — pelo relógio da caçada)
       const critico0 = LacaiosPoe.criticoDoLacaio(l, oferenda, hunt.clock ?? agora);
@@ -2933,8 +2978,9 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     // (16/10, lote 37) o mercenário alterna as gemas do arquétipo, uma a cada golpe.
     if (l.mercenario) Acoes.depoisDoGolpeDoMercenario(l);
     // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
-    l.acertos = (l.acertos ?? 0) + 1;
-    if (est.area && l.acertos % est.area.cada === 0) {
+    // (a revisão do lote 87: o golpe principal que errou não conta — `errouOPrincipal`)
+    if (!errouOPrincipal) l.acertos = (l.acertos ?? 0) + 1;
+    if (!errouOPrincipal && est.area && l.acertos % est.area.cada === 0) {
       // (ciclo 7) "Lacaios têm Efeito em Área aumentado em X%": o raio (lote 36: 1 casa × √(1 + X%), a fração como chance).
       const raioDaArea = LacaiosPoe.raioDaAreaDoLacaio(l);
       eventos.push({ t: 'explosao', id: est.area.efeito, x: alvo.x, y: alvo.y, lado: 1 + 2 * raioDaArea });

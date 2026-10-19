@@ -3345,6 +3345,11 @@
       "combate": true,
       "efeito": "o teto da resistência do lacaio no tique dos lacaios (`cacadas.tiqueDosLacaios` com `itens-poe/lacaios-poe`)"
     },
+    "minion_precisao": {
+      "nome": "Lacaios: Precisão",
+      "combate": true,
+      "efeito": "(lote 87) a Precisão do golpe de ataque dos lacaios contra a Evasão do monstro (`itens-poe/lacaios-poe.precisaoDoLacaio`, `cacadas.tiqueDosLacaios`)"
+    },
     "minion_recuperacao": {
       "nome": "Lacaios: Recuperação de Vida",
       "unidade": "%",

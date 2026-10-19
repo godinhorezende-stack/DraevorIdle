@@ -320,6 +320,11 @@ const DO_ESCUDO_PARA_O_LACAIO = {
   bloqueio_causticar: 'minion_bloqueio_causticar', bloqueio_enfraquecer: 'minion_bloqueio_enfraquecer', bloqueio_exaurir: 'minion_bloqueio_exaurir',
   // (+ "Chance de Bloquear é Sortuda" sem condição — o Svalinn — e o "+X% à Chance máxima de Bloquear" de ataque e de magia: o teto do lacaio)
   bloqueio_sortudo: 'minion_bloqueio_sortudo', block_max: 'minion_block_max', spell_block_max: 'minion_spell_block_max',
+  // (lote 87, dono 19/10: a parte B) a precisão (o golpe de ataque do lacaio pode errar — `LacaiosPoe.precisaoDoLacaio`), a recuperação de
+  // atordoamento e de bloqueio (`controleNoLacaio`, `travarLacaioNoBloqueio`) e o "Dano Extra recebido de Acertos Críticos reduzido"
+  // (`criticoNoLacaio`)
+  accuracy: 'minion_precisao', accuracy_inc: 'minion_precisao_inc', stun_recovery: 'minion_stun_recovery', block_recovery: 'minion_block_recovery',
+  crit_dmg_taken_red: 'minion_crit_dmg_taken_red',
 };
 /**
  * (lote 86, dono 19/10) A chave do escudo que vai ao lacaio fora da tabela: os EVENTOS de bloqueio (`ev:bloquear:*`, `ev:bloquearAtaque:*`,

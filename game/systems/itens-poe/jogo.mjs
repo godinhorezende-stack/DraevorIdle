@@ -419,7 +419,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (67 — 18/10, lote 83: a área das maldições — "Efeito em Área de Habilidades de Maldição", o notável Palavras Proibidas do Megalomaníaco)
 // (68 — 19/10, lote 84: as notas do Empurrão — exceção —, do Emissário e dos altares)
 // (69 — 19/10, lote 86: a Égide Necromântica, parte A)
-export const VERSAO_DA_TRADUCAO = 69;
+// (70 — 19/10, lote 87: a Égide Necromântica, parte B — precisão, atordoamento e crítico nos lacaios)
+export const VERSAO_DA_TRADUCAO = 70;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
