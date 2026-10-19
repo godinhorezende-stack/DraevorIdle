@@ -115,13 +115,15 @@ test('P053 — o TERRENO: o projétil que erra e bate numa casa que não se anda
   const tiro = (efeito, chao = andavel) => Secundarios.resolver({ efeito: { projeteisBase: 1, alvosExtras: 1, ...efeito }, tags: ['projectile', 'single', 'hit'], origem: { x: 10, y: 10 }, alvo, atingidos: [alvo], vivos: [alvo, perto], alcance: 3, rng: () => 0.01, andavel: chao });
   // o extra sai e erra (ninguém no alcance dele), bate na parede em x = 12 (o ponto da batida, (11, 10)) e ricocheteia no inimigo mais perto
   // de lá — o alvo, a 1 casa (no PoE o ricochete só não volta em quem o MESMO projétil já acertou)
-  const ricochetes = (r) => r.golpes.filter((g) => g.tipo === 'encadeamento');
-  const com = tiro({ ricocheteTerrenoChance: 100, ricochetePoe: true });
+  // (lote 84, com o aval do dono: só os saltos que saem da BATIDA — com 1 ricochete, o principal também ricocheteia do alvo por conta própria)
+  const ricochetes = (r) => r.golpes.filter((g) => g.tipo === 'encadeamento' && g.de?.x === 11 && g.de?.y === 10);
+  // (lote 84, com o aval do dono — "Seguir o PoE": a batida é um ricochete, só com ricochete sobrando; o tiro leva 1)
+  const com = tiro({ ricocheteTerrenoChance: 100, ricochetePoe: true, encadear: 1 });
   assert.equal(ricochetes(com).length, 1, JSON.stringify(com.emitidos.map((p) => p.para)));
   assert.deepEqual([ricochetes(com)[0].bicho.uid, ricochetes(com)[0].de], ['alvo', { x: 11, y: 10 }]);
-  assert.equal(ricochetes(tiro({ ricocheteTerrenoChance: 0, ricochetePoe: true })).length, 0, 'sem a chance, não');
+  assert.equal(ricochetes(tiro({ ricocheteTerrenoChance: 0, ricochetePoe: true, encadear: 1 })).length, 0, "sem a chance, não");
   // sem parede no caminho (o campo aberto): não bate, não ricocheteia
   const aberto = new Set();
   for (let x = -20; x <= 40; x++) for (let y = -20; y <= 40; y++) aberto.add(`${x},${y}`);
-  assert.equal(ricochetes(tiro({ ricocheteTerrenoChance: 100, ricochetePoe: true }, aberto)).length, 0, 'sem terreno, não');
+  assert.equal(ricochetes(tiro({ ricocheteTerrenoChance: 100, ricochetePoe: true, encadear: 1 }, aberto)).length, 0, 'sem terreno, não');
 });

@@ -43,7 +43,17 @@ test('matar bicho com loot de moeda (Troll, troll-cave): o ouro sobe no carregad
 test('caçada offline projetada (além dos 30 min simulados): o ouro projetado também vai para o carregado', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 600 });
   e.hp = e.maxHp = 1e12; // não morre durante a simulação
-  assert.ok(Cacadas.entrar(e, { huntId: huntDoPoe('werelions-1'), mode: 'auto', strategy: 'nearest' }).ok);
+  // (dono, 19/10: "Semear o entrar" — a raridade e os mods do monstro são sorteados ao entrar; em ~1% das vezes o mais perto nascia Raro com
+  // Escudo de Energia que recarrega entre os golpes, ou Mágico com o dreno de 100%, e o personagem de teste ficava nele os 30 min sem abater — a
+  // regra do PoE, não o que este teste mede. Só a entrada; o resto com o dado de verdade.)
+  const sorteio = Math.random;
+  let semente = 12345;
+  Math.random = () => ((semente = (semente * 16807) % 2147483647) / 2147483647);
+  try {
+    assert.ok(Cacadas.entrar(e, { huntId: huntDoPoe('werelions-1'), mode: 'auto', strategy: 'nearest' }).ok);
+  } finally {
+    Math.random = sorteio;
+  }
   e.hunt.offlineDesde = Date.now() - 2 * HORA; // bem além dos 30 min simulados tique a tique -> aciona `projetar`
   const bancoAntes = e.bank;
   const ausencia = Cacadas.simularAusencia(e, PERSONAGEM, Date.now());

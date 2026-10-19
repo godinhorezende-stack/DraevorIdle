@@ -126,7 +126,14 @@ test('P019 — a MAGIA do monstro vai no lacaio mais perto dele que você; o blo
   l.hp = 1000;
   l.poe.bloqueioMagico = 100;
   const ev2 = [];
-  Poderes.lancar(e, h, PERSONAGEM, bicho, ev2, h.clock + 10000, ficha, false);
+  // (lote 86, com o aval do dono — "Teto 75% e ajustar o teste": o bloqueio do lacaio para no teto do PoE, 75%; o sorteio abaixo dele)
+  const sorteio = Math.random;
+  Math.random = () => 0.1;
+  try {
+    Poderes.lancar(e, h, PERSONAGEM, bicho, ev2, h.clock + 10000, ficha, false);
+  } finally {
+    Math.random = sorteio;
+  }
   assert.equal(l.hp, 1000);
   assert.ok(ev2.some((x) => x.t === 'block' && x.uid === 'l1'), 'bloqueou a magia');
   // o lacaio mais longe do mago que você (do outro lado, a 6 casas dele; você a 4): a magia vai em você

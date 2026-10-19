@@ -126,8 +126,8 @@ export function fatorDeLentidao(m, agora) {
  * A barra do monstro (`hp`/`maxHp`) é vida + escudo, e o escudo fica POR CIMA. Quem tira vida do monstro (golpe, magia, lacaio, dano
  * contínuo) só mexe no `hp`; a conta de quanto saiu do escudo é feita aqui, a cada tique, pelo que o `hp` caiu desde o último (`m.esPoe =
  * { fracao, atual, ultimoHp, ultimoDano }` — o máximo é a `fracao` da barra; a vida é o `hp` menos o escudo). O escudo RECARREGA como o do
- * jogador no PoE: depois de 2 s sem dano (÷ "Início da Recarga X% mais rápido" — `atrasoMenosPct`), 20% do máximo por segundo
- * (`gamedata/atributos-principais.json`).
+ * jogador no PoE: depois de 2 s sem dano (÷ "Início da Recarga X% mais rápido" — `atrasoMenosPct`), 33% do máximo por segundo
+ * (`RECARGA_POR_SEGUNDO_POE` de `gamedata/atributos-principais.json` — o PoB; lote 84).
  */
 /** O escudo do monstro agora: `{ max, atual, vida, vidaMax }` (null sem escudo). */
 export function escudoDoMonstro(m) {
@@ -162,7 +162,7 @@ function recarregarEscudo(m, agora, bloqueada) {
   const espera = (cfg.ATRASO_MS_POE ?? 2000) / Math.max(0.1, 1 + (es.atrasoMenosPct ?? 0) / 100);
   if (es.ultimoDano != null && agora - es.ultimoDano < espera) return;
   const ms = Math.max(0, agora - Math.max(desde, es.ultimoDano != null ? es.ultimoDano + espera : desde));
-  es.resto = (es.resto ?? 0) + (max * (cfg.RECARGA_POR_SEGUNDO ?? 0.2) * ms) / 1000;
+  es.resto = (es.resto ?? 0) + (max * (cfg.RECARGA_POR_SEGUNDO_POE ?? cfg.RECARGA_POR_SEGUNDO ?? 0.33) * ms) / 1000;
   const ganho = Math.min(Math.floor(es.resto), max - es.atual);
   if (!(ganho > 0)) return;
   es.resto = es.atual + ganho >= max ? 0 : es.resto - ganho;

@@ -1,11 +1,11 @@
 # Árvore de passivas do PoE — o que falta e o que é parcial
 
-Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-18, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
+Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-19, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
 
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1379, novo 4619, aproximado (parcial) 5.
+- ✓ Com efeito: **6003** — equivalente 1379, novo 4622, aproximado (parcial) 2.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -62,10 +62,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-18, a partir de `gam
 
 | Linhas | A diferença | Exemplos (nó — texto) |
 |---:|---|---|
-| 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
-| 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
-| 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
-| 1 | os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico e a recarga do escudo; o que o lacaio do jogo não tem — mana, atributos, precisão (ele não erra), atordoamento e recuperação de bloqueio, o crítico dos monstros nele, o máximo de UMA resistência, os efeitos ao bloquear — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
+| 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); os 6 s são a RECARGA do Convocar (o PoB e o poedb — 19/10: a página da habilidade e a da única; nenhuma fonte publica a frequência, a duração do buff nem a chance de "todos") | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
+| 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência (o PoB 3.29, CalcPerform.lua: só os +30% dos Maiores, sem as Novas nem os Esqueletos — conferido em 19/10); o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
 
 ## As joias dos encaixes da árvore (lotes 27 a 29)
 
@@ -73,27 +71,26 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-18, a partir de `gam
 - **Joias que caem**: Carmesim, Viridiana e Cobalto (Normal, Mágica, Rara e Única), a Prismática (só Única) e os 4 Olhos Abissais (nos encaixes da árvore e nos Encaixes Abissais das peças).
 - **Mods das joias Carmesim/Viridiana/Cobalto/Prismática** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
 - **Mods das joias Abissais** (prefixos e sufixos, pelo peso de sorteio): 100% com efeito.
-- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; os solos (ardente, sagrado, fúngico…) não existem no jogo) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito · Fé Militante 15/16 com efeito (1 não se aplicam: não se aplica ao jogo: o golpe dos lacaios não erra (não rola a Precisão contra a Evasão do monstro)) · Megalomaníaco 0/287 com efeito (6 não se aplicam: a Proteção (Ward) não existe no jogo; linha de Retaliação sem regra própria no jogo (as habilidades de Retaliação existem desde 11/10: a janela depois do bloqueio ou do Acerto Selvagem); esta variação da reserva ainda não tem efeito no jogo; mecânica de cadáver que o jogo ainda não tem (o jogo guarda os últimos mortos — `hunt.cadaveres` —, consome um e cria os de Profanar e Desenterrar; o resto, não)).
+- **Linhas sorteadas** (o pool de cada única no poedb — `linhas-sorteadas.json`): Personalidade Dividida 9/9 com efeito · O Equilíbrio do Terror 18/18 com efeito · Olho do Vigia 79/87 com efeito (8 não se aplicam: as Fendas e os Grilhões Temporais não existem no jogo; os solos (ardente, sagrado, fúngico…) não existem no jogo) · Visão Sublime 17/17 com efeito · Limitado pelo Destino 54/54 com efeito · Fé Militante 16/16 com efeito · Megalomaníaco 287/287 com efeito.
 
 | Únicas | Linhas | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |
 |---|---:|---:|---:|---:|
 | Carmesim, Viridiana, Cobalto e Prismática (94) | 238 | 195 | 43 | 0 |
 | Abissais (os 4 Olhos) (4) | 11 | 9 | 2 | 0 |
 | Atemporais (6) | 19 | 8 | 11 | 0 |
-| Ramificadoras (12) | 24 | 0 | 6 | 18 |
+| Ramificadoras (12) | 24 | 18 | 6 | 0 |
 
 ### As linhas dos nós das Ramificadoras (lote 63)
 
-A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados).
+A joia gerada cria os nós dela na árvore: as pequenas concedem o encantamento e os "também concedem" da peça; os notáveis, os efeitos deles (a árvore 3.29 do poedb). As linhas pelo tradutor da árvore. Só o que pode sair na peça (sem os mods e notáveis dos encantamentos descontinuados — fora os notáveis que o Megalomaníaco ainda sorteia).
 
 | Linhas | Total | ✓ Com efeito | – Lembrete / não se aplica | ✗ Sem efeito |
 |---|---:|---:|---:|---:|
 | Encantamentos (as pequenas) | 56 | 56 | 0 | 0 |
 | "Também concedem" (as pequenas) | 154 | 154 | 0 | 0 |
-| Notáveis | 671 | 668 | 3 | 0 |
+| Notáveis | 676 | 673 | 3 | 0 |
 
 ### O que ainda não funciona nas joias únicas, pelo lote previsto
 
 | Lote | Única — linha |
 |---|---|
-| Ramificadoras (raspar os encantamentos e notáveis no poedb) (18) | Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 7 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 5 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 3 Pequenas Habilidades Passivas que não concedem nada<br>Vozes — Adiciona 3 Habilidades Passivas de Encaixe de Joia<br>Vozes — Adiciona 1 Pequenas Habilidades Passivas que não concedem nada<br>Megalomaníaco — Adiciona 4 Habilidades Passivas<br>Megalomaníaco — Pequenas Habilidades Passivas Adicionadas não conedem Nada<br>Megalomaníaco — [Three random notable modifiers] _(281 das 287 linhas do pool sem efeito)_<br>Aquele Sem Nada — Adiciona Técnica da Palma Oca<br>Ensinamentos de Kitava — Adiciona Discípulo de Kitava<br>A Interrogação — Adiciona Segredos do Sofrimento<br>Visões Calamitosas — Adiciona Mensageiro<br>Afinidade Natural — Adiciona Paciência da Natureza<br>O Cerco — Adiciona Cineticismo<br>A Linha de Frente — Adiciona Astúcia do Veterano |

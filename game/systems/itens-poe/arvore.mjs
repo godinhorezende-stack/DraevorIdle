@@ -21,6 +21,8 @@ export function caminhoDoIconeDeAscendencia(url) {
 }
 
 export const REGRAS_DA_ARVORE = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao-arvore.json', import.meta.url), 'utf8'));
+/** (lote 84) O nome do nó: o do PoE pt-BR, salvo os corrigidos pelo id (`traducao-arvore.json` → `nomes`). */
+const nomeDoNo = (id, nome) => REGRAS_DA_ARVORE.nomes?.[String(id)] ?? nome;
 const PROPRIAS = compilar({ ...TABELA, regras: REGRAS_DA_ARVORE.regras });
 /**
  * As chaves que a árvore aceita num `add`: as dos itens — também com CONDIÇÃO ("…enquanto em Empunhadura Dupla": `crit_chance_inc@ataque+duasArmas`),
@@ -157,7 +159,7 @@ export function converterAscendencias(lista, textos = null, escolhas = null) {
       for (const t of traduzidas) estados[t.estado]++;
       nos.push({
         id: String(n.id),
-        nome: inicio ? `Ascendência: ${a.nome_pt}` : n.nome,
+        nome: inicio ? `Ascendência: ${a.nome_pt}` : nomeDoNo(n.id, n.nome),
         ...(n.nome_en ? { nomeEn: n.nome_en } : {}),
         tipo: inicio ? 'start' : n.molde === 'notable' ? 'notable' : 'small',
         x: n.x,
@@ -223,7 +225,7 @@ export function converterArvore(poe, completa = null, textos = null) {
     const grupo = daCompleta.get(n.id)?.grupo;
     nos.push({
       id: String(n.id),
-      nome: classe ? `Início: ${classe}` : n.nome,
+      nome: classe ? `Início: ${classe}` : nomeDoNo(n.id, n.nome),
       ...(n.nome_en ? { nomeEn: n.nome_en } : {}),
       tipo,
       x: n.x,
@@ -259,7 +261,7 @@ export function converterArvore(poe, completa = null, textos = null) {
     });
     nos.push({
       id: String(m.id),
-      nome: m.nome,
+      nome: nomeDoNo(m.id, m.nome),
       ...(nomeEn.get(m.id) ? { nomeEn: nomeEn.get(m.id) } : {}),
       tipo: 'mastery',
       x: m.x,

@@ -12,7 +12,7 @@ import * as Atributos from './atributos.mjs';
 import * as Especializacoes from './especializacoes.mjs';
 import * as Passivas from '../passivas/arvore.mjs';
 import * as ClassesPoe from '../itens-poe/classes.mjs';
-import { esperaDaRecarga } from './defesa.mjs';
+import { esperaDaRecarga, recargaPorSegundo } from './defesa.mjs';
 import { nomeDaHunt } from '../hunt/terreno.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
 import { MANA_REGEN_BASE_POE, LEECH_POE, tetoDoRouboPct, APS_DESARMADO_POE } from '../ficha.mjs';
@@ -107,7 +107,7 @@ export function montar(estado, ficha, extras = {}) {
     ...fonte('Só na base do Peitoral (aumentado)', total.es_pct_peitoral, { pct: true }),
   ];
   const esMax = Math.round(ficha.energyShield ?? 0);
-  const esRecarga = esMax * (ES.RECARGA_POR_SEGUNDO ?? 0) * (1 + (ficha.esRecargaPct ?? 0) / 100);
+  const esRecarga = esMax * recargaPorSegundo() * (1 + (ficha.esRecargaPct ?? 0) / 100);
 
   // ---- resistências: a final (limitada) e a sem limite (o PoE mostra as duas)
   const teto = ficha.limites?.resistenciaDoJogador ?? 75;
@@ -203,7 +203,7 @@ export function montar(estado, ficha, extras = {}) {
     { id: 'es', titulo: 'Escudo de Energia', linhas: [
       linha('Escudo de Energia máximo', num(esMax), { fontes: es, destaque: true }),
       linha('Escudo de Energia máximo aumentado', pct(esPct), { fontes: es.filter((f) => f.pct) }),
-      linha('Recarga por segundo', num(esRecarga, 1), { dica: `${pct((ES.RECARGA_POR_SEGUNDO ?? 0) * 100, 0)} do máximo por segundo${ficha.esRecargaPct ? `, +${pct(ficha.esRecargaPct, 0)}` : ''}` }),
+      linha('Recarga por segundo', num(esRecarga, 1), { dica: `${pct(recargaPorSegundo() * 100, 0)} do máximo por segundo${ficha.esRecargaPct ? `, +${pct(ficha.esRecargaPct, 0)}` : ''}` }),
       linha('A recarga começa depois de', `${num(esperaDaRecarga(ficha) / 1000, 2)} s`, { dica: 'sem levar dano' }),
     ] },
     { id: 'mana', titulo: 'Mana', linhas: [

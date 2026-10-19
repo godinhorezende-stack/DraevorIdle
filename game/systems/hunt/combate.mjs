@@ -1639,7 +1639,9 @@ export function round(estado, personagem) {
         // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
         if (!segundo) Charms.aoAcertar(estado, hunt, alvo, eventos);
         // As auras ligadas marcam o bicho atingido (vulnerável, enfraquecido); a maldição do PoE amaldiçoa ("ao Amaldiçoar um Inimigo sem Maldições").
-        if (Reforcos.marcar(hunt, alvo).amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo, eventos, personagem });
+        // (lote 83: + os vizinhos que a área da maldição amaldiçoou)
+        const marcou = Reforcos.marcar(hunt, alvo);
+        for (const x of [{ ...marcou, bicho: alvo }, ...(marcou.espalhou ?? [])]) if (x.amaldicoouSemMaldicao) ModsPoe.evento(estado, hunt, 'amaldicoarSemMaldicao', ficha, { alvo: x.bicho, eventos, personagem });
         return true;
       };
       if (!golpear(false)) return { eventos, bateu };

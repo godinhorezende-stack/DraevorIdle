@@ -414,9 +414,10 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE",
+      "nota": "as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência (o PoB 3.29, CalcPerform.lua: só os +30% dos Maiores, sem as Novas nem os Esqueletos — conferido em 19/10); o resto dos 13 altares, igual ao PoE",
       "_nova": true,
-      "_lote16": "14/10 — os altares do PoE (lote 16)"
+      "_lote16": "14/10 — os altares do PoE (lote 16)",
+      "_lote84": "19/10 — lote 84 (P070: conferido no PoB, dono: \"Baixar 2 arquivos do PoB\")"
     },
     {
       "padrao": "^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
@@ -485,9 +486,10 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); os 6 s são a RECARGA do Convocar (o PoB e o poedb — 19/10: a página da habilidade e a da única; nenhuma fonte publica a frequência, a duração do buff nem a chance de \"todos\")",
       "_nova": true,
-      "_lote21": "14/10 — o Reliquarian (lote 21)"
+      "_lote21": "14/10 — o Reliquarian (lote 21)",
+      "_lote84": "19/10 — lote 84 (P062: a nota pela busca no poedb, dono: \"Buscar no poedb\")"
     },
     {
       "padrao": "^Cada Fantasma Convocado concede a Você Poder Fantasmal$",
@@ -558,12 +560,13 @@
           "valor": "1"
         }
       ],
-      "estado": "aproximado",
-      "nota": "os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico e a recarga do escudo; o que o lacaio do jogo não tem — mana, atributos, precisão (ele não erra), atordoamento e recuperação de bloqueio, o crítico dos monstros nele, o máximo de UMA resistência, os efeitos ao bloquear — sai de você sem ir a ninguém",
+      "nota": "os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, o máximo de cada uma (Fogo, Gelo, Raio e Caos), a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico, a recarga do escudo, o \"máximo\" do bloqueio (o teto do bloqueio do lacaio: 75% + ele, até 90%, como no PoE — vale para todo lacaio), o bloqueio Sortudo (o Svalinn), os efeitos ao Bloquear (Causticar, Enfraquecer, Exaurir, Intimidar, a vida, o reflexo, a recarga do escudo, o escudo de energia pela armadura) e os \"se Bloqueou Recentemente\" (a armadura, a penetração e o Fogo adicional, o bloqueio de ataque e de magia, o multiplicador de crítico, o bloqueio Sortudo) e os \"se não Bloqueou Recentemente\" (o bloqueio no máximo, o bloqueio, o crítico) — no lacaio, pelos 4 s do bloqueio dele; o Trespassar \"se Bloqueou Recentemente\" chega ao lacaio mas não faz nada (o Trespassar do jogo não tem efeito, nem em você), e outro \"se (não) Bloqueou Recentemente\" que não seja esses também não; o \"+N ao Nível de todas as Gemas\" do escudo também deixa de ser seu (só o das gemas encaixadas nele fica); e (lote 87) a precisão (o golpe de ataque do lacaio pode errar), a recuperação de atordoamento e de bloqueio e o \"Dano Extra recebido de Acertos Críticos reduzido\" (o crítico dos monstros no lacaio). Dos bônus de mana, atributos, precisão e atordoamento, só a mana e os atributos não fazem nada no lacaio (no PoE também não)",
       "_nova": true,
       "_ciclo7": true,
       "_lote10": "13/10 — os lacaios (lote 10)",
-      "_lote43": "16/10 — lote 43 (P040: as defesas e os outros bônus do escudo nos lacaios, \"Fazer todos\")"
+      "_lote43": "16/10 — lote 43 (P040: as defesas e os outros bônus do escudo nos lacaios, \"Fazer todos\")",
+      "_lote86": "19/10 — lote 86 (a Égide Necromântica, parte A: o máximo de uma resistência, os efeitos ao bloquear, o se Bloqueou Recentemente, as gemas do escudo)",
+      "_lote87": "19/10 — lote 87 (a Égide Necromântica, parte B: a precisão, o atordoamento e o crítico recebido nos lacaios — a linha deixa de ser aproximada)"
     },
     {
       "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em \\{(\\d+)\\}% nos Inimigos$",
@@ -1481,6 +1484,18 @@
       "_ciclo7": true
     },
     {
+      "padrao": "^Efeito em Área de Habilidades de Maldição aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "nota": "a maldição pega no acerto e também nos inimigos a até o raio dela — em volta do atingido (o Feitiço) ou de você (a aura de maldição, a Blasfêmia); a Marca é de um alvo só (`skills/reforcos.marcar`)",
+      "_nova": true,
+      "_lote83": "18/10 — lote 83 (dono: \"Área como no PoE\" — Palavras Proibidas, notável do Megalomaníaco)"
+    },
+    {
       "padrao": "^Habilidades de Aura Não Maldições têm Duração aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
@@ -1639,10 +1654,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "cada 100% é uma casa a mais; o resto, a chance de mais uma",
+      "nota": "exceção do dono (19/10: \"Base de 1 casa, exceção\"): o empurrão do jogo anda 1 casa (2 m) — o PoE 1 não publica a distância base em metros (a wiki dá \"4 unidades\", que não são metros; o PoB não calcula a distância) —; × (1 + X%): cada 100% é uma casa a mais, o resto, a chance de mais uma",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote84": "19/10 — lote 84 (P020: a base de 1 casa registrada como exceção)"
     },
     {
       "padrao": "^Habilidades de Retaliação causam Dano aumentado em \\{(\\d+)\\}%$",
@@ -40996,17 +41011,17 @@
       "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
     },
     {
-      "padrao": "^Lacaios tem \\+\\{(\\d+)\\} de Precisão(?: por cada \\{(\\d+)\\} de Devoção)?$",
+      "padrao": "^Lacaios tem \\+\\{(\\d+)\\} de Precisão$",
       "efeitos": [
         {
-          "stat": "lembrete",
-          "valor": "1"
+          "stat": "minion_precisao",
+          "valor": "{1}"
         }
       ],
-      "estado": "inerte",
-      "nota": "não se aplica ao jogo: o golpe dos lacaios não erra (não rola a Precisão contra a Evasão do monstro)",
+      "nota": "a Precisão do golpe de ataque dos lacaios (o \"por cada N de Devoção\" pela Devoção total — a escala do lote 58)",
       "_nova": true,
-      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)"
+      "_lote58": "16/10 — lote 58 (Atemporais: a Fé Militante — os mods de devoção sorteados)",
+      "_lote87": "19/10 — lote 87 (a parte B: o golpe dos lacaios pode errar)"
     },
     {
       "padrao": "^Velocidade de Ataque e Conjuração dos Lacaios aumentadas em \\{(\\d+)\\}%$",

@@ -282,6 +282,22 @@ export function atoDoChefeNaFase(huntId) {
 const slugDoMonstro = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 /** O bicho morto é o monstro do objetivo? (a chave do bestiário, ou o slug do monstro do PoE — `poe-<slug>-<nível>`) */
 export const ehOMonstro = (key, alvo) => !!alvo && (key === alvo || String(key ?? '').startsWith(`poe-${slugDoMonstro(alvo)}-`));
+/*
+ * Os chefes que só aparecem DEPOIS de outros da mesma área: no Núcleo em Putrefação (Ato 9) um por vez — Doedre, Shavronne, Maligaro (a ordem
+ * em que se chega a eles da entrada) e a Trindade Depravada por último (dono, 19/10: os quatro nasciam juntos, ~11 milhões de vida e o dano de
+ * quatro chefes ao mesmo tempo; depois, "nerfe um pouco essas fases": a Doedre e a Shavronne nasciam coladas e batiam juntas). O chefe fica
+ * guardado na instância e entra quando os de antes morrem (`Instancia.liberarReserva`).
+ */
+export const CHEFES_EM_SEQUENCIA = {
+  'Shavronne,_Unbound': ['Doedre,_Darksoul'],
+  'Maligaro,_The_Broken': ['Shavronne,_Unbound'],
+  The_Depraved_Trinity: ['Doedre,_Darksoul', 'Shavronne,_Unbound', 'Maligaro,_The_Broken'],
+};
+/** Os monstros que têm de morrer antes do bicho `key` aparecer (slugs do PoE), ou null. */
+export function chefesAntesDe(key) {
+  for (const [chefe, antes] of Object.entries(CHEFES_EM_SEQUENCIA)) if (ehOMonstro(key, chefe)) return antes;
+  return null;
+}
 const nomeDoMonstro = (alvo) => String(alvo ?? '').replace(/_/g, ' ');
 /** O objetivo em texto (aviso e painel). */
 export function objetivoEmTexto(conc) {

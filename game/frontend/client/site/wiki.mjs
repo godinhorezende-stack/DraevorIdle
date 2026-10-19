@@ -272,7 +272,7 @@ function desenharItensPoe(corpo, d) {
       nomeColorido(r),
       r.fixos ? '—' : String(r.maxPrefixos ?? 0),
       r.fixos ? '—' : String(r.maxSufixos ?? 0),
-      r.fixos ? 'Modificadores fixos do próprio Único' : r.quantidade.length ? r.quantidade.map((q) => `${q.quantos} (${pct(q.chance * 100)})`).join(' · ') : 'nenhum',
+      r.fixos ? 'Modificadores fixos do próprio Único' : r.quantidade.length ? `${r.quantidade.map((q) => `${q.quantos} (${pct(q.chance * 100)})`).join(' · ')}${r.quantidadeJoia?.length ? ` — nas Joias (as Abissais e as Ramificadoras também; até 2 prefixos e 2 sufixos): ${r.quantidadeJoia.map((q) => `${q.quantos} (${pct(q.chance * 100)})`).join(' · ')}` : ''}` : 'nenhum',
     ]),
     { numericas: [1, 2], rotulo: 'Raridades do PoE' },
   ));

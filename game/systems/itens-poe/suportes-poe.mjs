@@ -353,6 +353,8 @@ const REGRAS = [
   // Área (lote 36, P002 — "Toda área em metros"): o "mais/menos" (multiplica entre os suportes) e o "aumentado" (soma com o das peças) em %;
   // o raio da forma cresce × √ no uso (`acoes`, `ModsPoe.casasPelaArea`). Antes, ±1 casa a cada ~25%.
   [new RegExp(`têm ${N}% (mais|menos) Efeito em Área`, 'i'), (m) => ({ areaMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // (lote 83) a da Blasfêmia: "Efeito em Área de Habilidades Maldição Suportadas aumentado em X%" — o raio da maldição (`acoes.efeitosDaMaldicao`)
+  [new RegExp(`Efeito em Área de Habilidades (?:de )?Maldição Suportadas aumentad[oa] em ${N}%`, 'i'), (m) => ({ areaMaldicaoPct: num(m[1]) })],
   [new RegExp(`(?:Área de Efeito|Efeito em Área) aumentad[oa] em ${N}%`, 'i'), (m, t) => (/Maldição|Clamor|Lacaio/i.test(t) ? null : { areaIncPct: num(m[1]) })],
   // Crítico.
   [new RegExp(`têm \\+${N}% (?:de|ao) Multiplicador de (?:Dano de )?Acertos? Críticos?`, 'i'), (m) => ({ critDano: num(m[1]) })],

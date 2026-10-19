@@ -402,14 +402,19 @@ export function extrasDaGemaPoe(estado, peca, def, indice = null) {
   }, 0);
   let nivel = somar(peca?.poe?.af, 'gem_level_local');
   let qualidade = somar(peca?.poe?.af, 'gem_quality_local');
+  // (+ o da árvore: "+N ao Nível de todas as Gemas de Habilidade Maldição" — `gem_level@maldicao` nas passivas alocadas)
+  const daArvore = estado && leitorDaArvore ? leitorDaArvore(estado) ?? {} : {};
+  // (lote 86, dono 19/10: a Égide Necromântica — "Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você": o "+N ao Nível de
+  // todas as Gemas de …" do ESCUDO não é seu, como no PoB — CalcSetup, só os mods das gemas encaixadas nele ficam; o `gem_level_local` das gemas
+  // encaixadas NO escudo segue valendo. A mesma conta de `afixos.ehEgideComEscudo`, sem importar afixos: fecharia um ciclo de imports.)
+  const escudo = estado?.equipment?.shield;
+  const egide = escudo?.poe?.classe === 'Shields' && (Number(daArvore.egide_necromantica) > 0 || Object.values(estado?.equipment ?? {}).some((p) => Number(p?.poe?.af?.egide_necromantica) > 0));
   for (const p of Object.values(estado?.equipment ?? {})) {
-    if (!p?.poe?.af) continue;
+    if (!p?.poe?.af || (egide && p === escudo)) continue;
     const condicionais = Object.fromEntries(Object.entries(p.poe.af).filter(([k]) => ModsPoe.ehCondicional(k)));
     nivel += somar(condicionais, 'gem_level');
     qualidade += somar(condicionais, 'gem_quality');
   }
-  // (+ o da árvore: "+N ao Nível de todas as Gemas de Habilidade Maldição" — `gem_level@maldicao` nas passivas alocadas)
-  const daArvore = estado && leitorDaArvore ? leitorDaArvore(estado) ?? {} : {};
   nivel += somar(Object.fromEntries(Object.entries(daArvore).filter(([k]) => ModsPoe.ehCondicional(k))), 'gem_level');
   // (11/10) A peça onde a gema está: "Gemas Encaixadas têm Eficácia da Reserva aumentada em X%" (`eficiencia_reserva_local`, com a tag da
   // gema — `@maldicao`) e "Gemas Encaixadas Custam e Reservam Vida ao invés de Mana" (`custo_vida_local`).

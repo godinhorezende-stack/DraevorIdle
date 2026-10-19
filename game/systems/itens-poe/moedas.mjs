@@ -120,15 +120,15 @@ function mudarDegrau(p, m, passo, rng) {
   Object.assign(m, { nome: alvo.tier.nome, tier: alvo.tier.tier, ilvl: alvo.tier.ilvl, valores: novo.valores, texto: novo.texto, degrau: alvo.degrau });
   return true;
 }
-/** Quantos mods pela raridade (`regras.raridades.<r>.quantidade`). */
-const quantosPela = (raridade, rng) => Number(Gerar.porPeso(Object.entries(R().raridades[raridade]?.quantidade ?? { 0: 1 }), rng)) || 0;
+/** Quantos mods pela raridade (`regras.raridades.<r>.quantidade`; a joia Rara, a `quantidadeJoia` — `Gerar.quantidadeDa`). */
+const quantosPela = (raridade, rng, classe = null) => Number(Gerar.porPeso(Object.entries(Gerar.quantidadeDa(R().raridades[raridade], classe)), rng)) || 0;
 /** Refaz os mods (mantém os TALHADOS — o Orbe Talhador). */
 function refazerMods(p, raridade, rng) {
   const ficam = (lado) => (p[lado] ?? []).filter((m) => m.talhado);
   p.raridade = raridade;
   p.prefixos = ficam('prefixos');
   p.sufixos = ficam('sufixos');
-  const alvo = Math.max(quantosPela(raridade, rng), mods(p).length);
+  const alvo = Math.max(quantosPela(raridade, rng, p.classe), mods(p).length);
   for (let i = mods(p).length; i < alvo; i++) if (!porMod(p, rng)) break;
   if (raridade === 'magico') p.nome = [p.prefixos[0]?.nome, nomeDaBase(p), p.sufixos[0]?.nome].filter(Boolean).join(' ');
   else p.nome = nomeDaBase(p);
@@ -212,7 +212,11 @@ const alquimia = ({ p, rng }) => so(p.raridade === 'normal', 'A Orbe da Alquimia
 const caos = ({ p, rng }) => so(p.raridade === 'raro', 'O Orbe do Caos só vale em peça Rara.') ?? (refazerMods(p, 'raro', rng), { ok: true, notice: `${p.nome}: modificadores novos.` });
 const exaltar = ({ p, rng }) => {
   if (p.raridade !== 'raro') return erro('Só vale em peça Rara.');
-  if (!porMod(p, rng)) return erro('A peça Rara já tem todos os modificadores (3 prefixos e 3 sufixos).');
+  if (!porMod(p, rng)) {
+    // (lote 85: as vagas da peça — a joia enche com 2 + 2)
+    const v = Gerar.vagasDaPeca(R().raridades.raro, Gerar.regrasDaBase(p.implicitos ?? []), p.classe);
+    return erro(`A peça Rara já tem todos os modificadores (${v.prefixo} prefixos e ${v.sufixo} sufixos).`);
+  }
   return { ok: true, notice: `${p.nome}: ganhou um modificador.` };
 };
 const expurgar = ({ p }) => {

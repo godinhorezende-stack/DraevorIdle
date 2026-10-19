@@ -416,7 +416,11 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (65 — 18/10, lote 80: as pedras fundamentais das Ramificadoras únicas — regras novas que também casam linhas de peças: "Não pode Incendiar…", a
 // nota dos cadáveres)
 // (66 — 18/10, lote 81: os acertos dos Arautos — as linhas do Mensageiro, do Segredo da Tormenta e do Círculo da Ambição)
-export const VERSAO_DA_TRADUCAO = 66;
+// (67 — 18/10, lote 83: a área das maldições — "Efeito em Área de Habilidades de Maldição", o notável Palavras Proibidas do Megalomaníaco)
+// (68 — 19/10, lote 84: as notas do Empurrão — exceção —, do Emissário e dos altares)
+// (69 — 19/10, lote 86: a Égide Necromântica, parte A)
+// (70 — 19/10, lote 87: a Égide Necromântica, parte B — precisão, atordoamento e crítico nos lacaios)
+export const VERSAO_DA_TRADUCAO = 70;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
