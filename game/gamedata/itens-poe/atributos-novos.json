@@ -231,7 +231,7 @@
       "nome": "Recarga do Escudo de Energia aumentada",
       "unidade": "%",
       "combate": true,
-      "efeito": "personagem/defesa.recarregar: multiplica os 20% do escudo por segundo da recarga"
+      "efeito": "personagem/defesa.recarregar: multiplica os 33% do escudo por segundo da recarga (RECARGA_POR_SEGUNDO_POE, o PoB)"
     },
     "es_recharge_start": {
       "nome": "Início da Recarga do Escudo de Energia mais rápido",

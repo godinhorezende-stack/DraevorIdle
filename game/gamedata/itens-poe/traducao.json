@@ -414,9 +414,10 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE",
+      "nota": "as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência (o PoB 3.29, CalcPerform.lua: só os +30% dos Maiores, sem as Novas nem os Esqueletos — conferido em 19/10); o resto dos 13 altares, igual ao PoE",
       "_nova": true,
-      "_lote16": "14/10 — os altares do PoE (lote 16)"
+      "_lote16": "14/10 — os altares do PoE (lote 16)",
+      "_lote84": "19/10 — lote 84 (P070: conferido no PoB, dono: \"Baixar 2 arquivos do PoB\")"
     },
     {
       "padrao": "^Você tem o bônus do Altar Impenetrável, se não estiver sob o efeito de frascos$",
@@ -485,9 +486,10 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff",
+      "nota": "a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); os 6 s são a RECARGA do Convocar (o PoB e o poedb — 19/10: a página da habilidade e a da única; nenhuma fonte publica a frequência, a duração do buff nem a chance de \"todos\")",
       "_nova": true,
-      "_lote21": "14/10 — o Reliquarian (lote 21)"
+      "_lote21": "14/10 — o Reliquarian (lote 21)",
+      "_lote84": "19/10 — lote 84 (P062: a nota pela busca no poedb, dono: \"Buscar no poedb\")"
     },
     {
       "padrao": "^Cada Fantasma Convocado concede a Você Poder Fantasmal$",
@@ -1651,10 +1653,10 @@
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "cada 100% é uma casa a mais; o resto, a chance de mais uma",
+      "nota": "exceção do dono (19/10: \"Base de 1 casa, exceção\"): o empurrão do jogo anda 1 casa (2 m) — o PoE 1 não publica a distância base em metros (a wiki dá \"4 unidades\", que não são metros; o PoB não calcula a distância) —; × (1 + X%): cada 100% é uma casa a mais, o resto, a chance de mais uma",
       "_nova": true,
-      "_ciclo7": true
+      "_ciclo7": true,
+      "_lote84": "19/10 — lote 84 (P020: a base de 1 casa registrada como exceção)"
     },
     {
       "padrao": "^Habilidades de Retaliação causam Dano aumentado em \\{(\\d+)\\}%$",

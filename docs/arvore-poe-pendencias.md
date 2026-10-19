@@ -1,11 +1,11 @@
 # Árvore de passivas do PoE — o que falta e o que é parcial
 
-Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-18, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
+Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-19, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
 
 ## Resumo
 
 - Linhas: **6801** (nós, ascendências e opções das maestrias).
-- ✓ Com efeito: **6003** — equivalente 1379, novo 4619, aproximado (parcial) 5.
+- ✓ Com efeito: **6003** — equivalente 1379, novo 4621, aproximado (parcial) 3.
 - ✗ Sem efeito: **0** — na árvore principal 0, nas ascendências 0; sem regra de efeito (registrado) 0; habilidade/mecânica que falta no jogo 0; **0 estão nos blocos que o dono mandou implementar (12/10)**.
 - – Não se aplica ao jogo: 33. Lembretes do PoE (entre parênteses, sem marca): 765.
 
@@ -62,9 +62,8 @@ Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-18, a partir de `gam
 
 | Linhas | A diferença | Exemplos (nó — texto) |
 |---:|---|---|
-| 2 | cada 100% é uma casa a mais; o resto, a chance de mais uma | Distância do Empurrão (nó) — Distância do Empurrão aumentada em 25% |
-| 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); o PoE não publica a frequência nem a duração do buff | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
-| 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência; o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
+| 1 | a habilidade sai sozinha (o jogo usa as habilidades sozinho): o Emissário imortal segue você e, a cada 6 s, lança em você um buff de 6 s com um ao acaso — +2 Projéteis, +2 Ricochetes, Perfuram +2 alvos, ou Difundem e Difundem de novo — ou todos (1 em 5); os 6 s são a RECARGA do Convocar (o PoB e o poedb — 19/10: a página da habilidade e a da única; nenhuma fonte publica a frequência, a duração do buff nem a chance de "todos") | A Divindade Despedaçada (asc. Reliquarian) — Concede a Habilidade Convocar Grande Emissário das Direções |
+| 1 | as Novas e os Esqueletos dos altares Maiores saem como as gemas Nova Glacial, Nova Elétrica e Convocar Esqueleto nível 20, a cada 2 s (4 s os Esqueletos) — o PoE não publica o dano nem a frequência (o PoB 3.29, CalcPerform.lua: só os +30% dos Maiores, sem as Novas nem os Esqueletos — conferido em 19/10); o resto dos 13 altares, igual ao PoE | Harmonia do Propósito (asc. Guardian) — Ganha um buff de altar aleatório a cada 10 segundos |
 | 1 | os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico e a recarga do escudo; o que o lacaio do jogo não tem — mana, atributos, precisão (ele não erra), atordoamento e recuperação de bloqueio, o crítico dos monstros nele, o máximo de UMA resistência, os efeitos ao bloquear — sai de você sem ir a ninguém | Égide Necromântica (keystone) — Todos os bônus do Escudo equipado se aplicam aos seus Lacaios e não a você |
 
 ## As joias dos encaixes da árvore (lotes 27 a 29)

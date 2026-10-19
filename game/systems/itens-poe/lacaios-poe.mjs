@@ -593,11 +593,15 @@ export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = M
 }
 /** O teto da resistência elemental do lacaio (75 + "X% de máximo de todas as Resistências Elementais"). */
 export const tetoDaResDoLacaio = (l) => Math.min(90, 75 + (l?.poe?.resMax ?? 0));
-/** O escudo do lacaio recarrega (20%/s, depois de 2 s sem dano — a regra do escudo dos monstros do PoE). `ms`: o tique. */
+/**
+ * O escudo do lacaio recarrega (33%/s, depois de 2 s sem dano — a regra do escudo do PoE; lote 84, dono: "33% como o PoB" — o
+ * `RECARGA_POR_SEGUNDO_POE` de atributos-principais.json). `ms`: o tique.
+ */
+const RECARGA_DO_ESCUDO_POE = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8')).energyShield?.RECARGA_POR_SEGUNDO_POE ?? 0.33;
 export function recarregarEscudoDoLacaio(l, ms) {
   if (!(l?.maxEs > 0)) return;
   if ((l.esEspera ?? 0) > 0) { l.esEspera -= ms; return; }
-  l.es = Math.min(l.maxEs, (l.es ?? 0) + (l.maxEs * 0.2 * ms) / 1000);
+  l.es = Math.min(l.maxEs, (l.es ?? 0) + (l.maxEs * RECARGA_DO_ESCUDO_POE * ms) / 1000);
 }
 /**
  * A INSTABILIDADE DO LACAIO (a keystone): o lacaio em Vida Baixa (metade ou menos) explode — X% da vida máxima dele como Dano de Fogo nos
