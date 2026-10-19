@@ -295,6 +295,10 @@ export function forcaDoBicho(bicho, agora) {
   let f = m && m.ate > agora ? 1 - pctDe(m) / 100 : 1;
   const profano = noSoloProfano(bicho, agora) ? 1 + SOLO_PROFANO.efeitoMaldicaoPct / 100 : 1;
   for (const c of maldicoesAtivas(bicho, agora)) for (const e of c.efeitos) if (e.tipo === 'enfraquecido') f *= Math.max(0, 1 - (pctDe(e) * fatorDoExpirou(c, agora) * profano) / 100);
+  // (lote A2, dono 19/10) o Emblema do Poder: "Inimigos na Área causam X% menos Dano enquanto no máximo de Estágios" (`GemasA2.menosDanoDoEmblema`,
+  // marcado no bicho pelo tique — `bicho.estados.emblema`)
+  const em = bicho?.estados?.emblema;
+  if (em && em.ate > agora && em.pct > 0) f *= Math.max(0, 1 - em.pct / 100);
   // × o buff de dano das mecânicas do mob (Enfurecido, Vingativo — `mobs/buffs.mjs`).
   return (bicho?.forca ?? 1) * f * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
 }

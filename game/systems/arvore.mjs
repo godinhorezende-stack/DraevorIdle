@@ -28,6 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as R from './regras.mjs';
 import * as Areas from '../engine/areas.mjs';
+import * as GemasA2 from './itens-poe/gemas-a2.mjs';
 import * as Passivas from './passivas/arvore.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'arvore');
@@ -398,6 +399,10 @@ export function danoRecebido(estado, final, eventos, pos, quem, { ficha = null, 
     v -= segura;
     eventos.push({ t: 'dmg', uid: 'player', quem, x: pos.x, y: pos.y, v: segura, foe: false, color: '#4fc3ff' });
   }
+  // (lote A2, dono 19/10) o Sangue Petrificado: da Vida que o acerto tiraria abaixo da metade, parte é impedida e parte se perde em 1 s
+  // (revisão do A2: antes do "Não cai nunca" — o golpe que o Sangue já segura não o gasta)
+  // (`GemasA2.impedirNoSangue`)
+  if (v > 0 && hunt?.buffs) v = GemasA2.impedirNoSangue(estado, hunt, v, agora);
   // Não cai nunca: o golpe que mataria deixa com 10% da vida, uma vez a cada 120s.
   if (v >= (estado.hp ?? 0) && hunt && tem(estado, 'naoCaiNunca') && agora >= (hunt.arvoreNaoCaiAte ?? 0)) {
     hunt.arvoreNaoCaiAte = agora + 120_000;

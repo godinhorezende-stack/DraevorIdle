@@ -737,6 +737,8 @@ function porComMods(fazer, nome, e, ate, agora, ficha, rng) {
   const menos = Math.abs(Math.min(0, valor(ficha, 'res_definhados')));
   if (menos > 0) e.resMenosDefinhado = Math.max(e.resMenosDefinhado ?? 0, menos);
 }
+/** (lote A1) Põe o estado no alvo com os mods do personagem (`porComMods`) — o Definhar do Passo Definhante (`acoes.passoDefinhante`). */
+export const porNoAlvoComMods = (alvo, nome, ate, agora, ficha, rng = Math.random) => (ESTADOS_NO_ALVO[nome] ? porComMods(ESTADOS_NO_ALVO[nome], nome, (alvo.estados ??= {}), ate, agora, ficha, rng) : undefined);
 // (lote 31, P044) O dano da EXPLOSÃO em cada vizinho, pela defesa dele (`hunt/resistencia.resistido`): quem registra é a caçada (o ciclo de imports).
 // eslint-disable-next-line no-var
 var danoDaExplosao;

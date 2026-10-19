@@ -10,7 +10,9 @@
 //   - "implementada e testada": status `funciona` e algum teste cita a gema;  "implementada, sem teste próprio": `funciona`, nenhum teste a cita;
 //   - "parcial": falta alguma linha ("efeito não simulado" / "não simulado") ou mecânica;
 //   - "limitação do modelo idle": parcial SÓ por limitações documentadas do idle (o totem parado, o lacaio com a força do PoB, o deslocamento…);
-//   - "sem efeito": status `nao`;  "dados ausentes": a gema não tem linhas/tabela no catálogo.
+//   - "sem efeito": status `nao`;  "dados ausentes": a gema não tem linhas/tabela no catálogo;
+//   - (lote A2, dono 19/10: "o estado não se aplica, com nota, como na árvore") "não se aplica": a gema não tem como existir no jogo (`naoSeAplica`
+//     no registro, com a nota do porquê — o Portal: a caçada já tem a saída e os portais do mapa são os da morte).
 import { readFileSync, readdirSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
@@ -49,24 +51,30 @@ for (const [slug, r] of G.REGISTRO) {
   const motivos = r.motivosNoJogo ?? [];
   const ausentes = motivos.filter(ehAusencia);
   const idle = motivos.filter((m) => LIMITACAO_IDLE.some((re) => re.test(m)));
-  const outros = motivos.filter((m) => !ausentes.includes(m) && !idle.includes(m));
+  // (revisão do A2: a nota do "não se aplica" vai à parte — não é um motivo pendente)
+  const outros = r.naoSeAplica ? [] : motivos.filter((m) => !ausentes.includes(m) && !idle.includes(m));
   const semDados = !(g.mods?.length || g.linhas?.length);
   let estado;
   if (semDados) estado = 'dados ausentes';
+  else if (r.naoSeAplica) estado = 'não se aplica';
   else if (r.statusNoJogo === 'nao') estado = 'sem efeito';
   else if (r.statusNoJogo === 'funciona') estado = citada(slug) ? 'implementada e testada' : 'implementada, sem teste próprio';
   else if (!ausentes.length && !outros.length && idle.length) estado = 'limitação do modelo idle';
   else estado = 'parcial';
   ativas.push({
-    slug, nome: g.nome, variante: /^Vaal_/.test(slug) ? 'vaal' : /_of_[A-Za-z]+$/.test(slug) ? 'alternativa' : 'normal', ataque: !!r.ataque,
-    arquetipo: r.arquetipo, estado, ausentes, idle, outros, icone: icone('icones-gemas', slug).ok, iconeHabilidade: !!JSON.parse(readFileSync(new URL('gamedata/itens-poe/icones-habilidades.json', RAIZ), 'utf8')).icones[slug],
+    // (lote A2, dono 19/10 — achado A1: "alternativa" só quando a BASE existe — a Parede de Força, o Emblema do Poder, os Arautos e as Purezas
+    // terminam em "_of_X" e não são variantes de nada; revisão: o sufixo pode ter várias palavras — "_of_the_Cloud", "_of_Prismatic_Clones")
+    slug, nome: g.nome, variante: /^Vaal_/.test(slug) ? 'vaal' : /_of_/.test(slug) && G.REGISTRO.has(slug.replace(/_of_.+$/, '')) ? 'alternativa' : 'normal', ataque: !!r.ataque,
+    arquetipo: r.arquetipo, estado, ausentes, idle, outros, ...(r.naoSeAplica ? { nota: r.naoSeAplica } : {}),
+    // (lote A3, dono 19/10) as LINHAS que não se aplicam (só a trajetória do projétil), com a nota — a gema segue pelo resto
+    ...(r.linhasNaoSeAplicam?.length ? { linhasNaoSeAplicam: r.linhasNaoSeAplicam } : {}), icone: icone('icones-gemas', slug).ok, iconeHabilidade: !!JSON.parse(readFileSync(new URL('gamedata/itens-poe/icones-habilidades.json', RAIZ), 'utf8')).icones[slug],
   });
 }
 const suportes = [];
 for (const [slug, r] of SP.REGISTRO) {
   const ausentes = (r.motivos ?? []).filter(ehAusencia);
-  const estado = r.status === 'nao' ? 'sem efeito' : r.status === 'funciona' ? (citada(slug) ? 'implementada e testada' : 'implementada, sem teste próprio') : 'parcial';
-  suportes.push({ slug, nome: r.suporte.nome, estado, ausentes, outros: (r.motivos ?? []).filter((m) => !ausentes.includes(m)), icone: icone('icones-suportes', slug).ok });
+  const estado = r.naoSeAplica ? 'não se aplica' : r.status === 'nao' ? 'sem efeito' : r.status === 'funciona' ? (citada(slug) ? 'implementada e testada' : 'implementada, sem teste próprio') : 'parcial';
+  suportes.push({ slug, nome: r.suporte.nome, estado, ausentes, outros: (r.motivos ?? []).filter((m) => !ausentes.includes(m)), icone: icone('icones-suportes', slug).ok, ...(r.naoSeAplica ? { nota: r.naoSeAplica } : {}) });
 }
 
 // O CATÁLOGO DO POEDB (as listas Skill_Gems e Support_Gems em pt, do cache do Scrapling — ver a memória "scrapling-poedb"): cada gema e o
@@ -119,7 +127,7 @@ if (process.argv.includes('--resumo')) {
   process.exit(0);
 }
 
-const ORDEM = ['implementada e testada', 'implementada, sem teste próprio', 'limitação do modelo idle', 'parcial', 'sem efeito', 'dados ausentes'];
+const ORDEM = ['implementada e testada', 'implementada, sem teste próprio', 'limitação do modelo idle', 'parcial', 'não se aplica', 'sem efeito', 'dados ausentes'];
 const tabela = (t) => ORDEM.filter((e) => t[e]).map((e) => `| ${e} | ${t[e]} |`).join('\n');
 let md = `# Gemas do PoE: estado da implementação\n\nGerado por \`ITENS_POE=1 node tools/relatorio-gemas-poe.mjs\` a partir do código (status no jogo de \`itens-poe/gemas-poe.mjs\` e \`itens-poe/suportes-poe.mjs\`), dos ícones em \`gamedata/itens-poe/\`, da compatibilidade (\`suportes-compat.json\`) e dos testes que citam cada gema. Nada é classificado à mão. **"Testada" quer dizer que algum teste cita a gema** — não que todas as linhas dela tenham teste.\n\n`;
 md += `## Totais\n\n### Gemas de habilidade (${totais.ativas.total}; ataques: ${totais.ataques.total})\n\n| Estado | Gemas | \n|---|---|\n${tabela(totais.ativas)}\n\nSó os ataques:\n\n| Estado | Gemas |\n|---|---|\n${tabela(totais.ataques)}\n\n`;
@@ -128,10 +136,16 @@ md += `### Variantes\n\n- Vaal (${totais.variantes.vaal.total}): ${linha(Object.
 md += `### Compatibilidade, efeitos compartilhados, imagens, testes\n\n- Compatibilidade: ${totais.compatibilidade.ativasComRegra} ativas e ${totais.compatibilidade.suportesComRegra} suportes com regra; ${totais.compatibilidade.pares} pares compatíveis; sem regra: ${totais.compatibilidade.ativasSemRegra} ativas, ${totais.compatibilidade.suportesSemRegra} suportes${ativasSemRegra.length ? ` (${ativasSemRegra.join(', ')})` : ''}${suportesSemRegra.length ? ` (${suportesSemRegra.join(', ')})` : ''}.\n- Efeitos compartilhados faltando: ${totais.efeitosCompartilhados.linhasDistintas} linhas distintas (${totais.efeitosCompartilhados.emDuasOuMais} em duas ou mais gemas).\n- Imagens: ${totais.imagens.ativasComIcone}/${totais.ativas.total} ativas com ícone da gema, ${totais.imagens.ativasComIconeDeHabilidade}/${totais.ativas.total} com ícone da habilidade, ${totais.imagens.suportesComIcone}/${totais.suportes.total} suportes; ${totais.imagens.repetidosSuspeitos} desenhos repetidos entre gemas de bases diferentes.\n- Catálogo do poedb (Skill_Gems + Support_Gems, pt): ${catalogo ? `${catalogo.poedb} gemas; faltam no jogo: ${catalogo.faltamNoJogo.join(', ') || 'nenhuma'}; só no jogo: ${catalogo.soNoJogo.join(', ') || 'nenhuma'}` : 'cache ausente'}.\n- Testes que citam a gema: ${totais.testes.ativasCitadas}/${totais.ativas.total} ativas, ${totais.testes.suportesCitados}/${totais.suportes.total} suportes.\n- Teste geral (\`testes/${totais.testes.testeGeral}\`): toda ativa \`funciona\` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte \`funciona\` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. \"Sem teste próprio\" quer dizer que só esse teste geral cobre a gema.\n\n`;
 if (iconesRepetidos.length) md += `#### Ícones repetidos (bases diferentes)\n\n${iconesRepetidos.map((l) => `- ${l.join(', ')}`).join('\n')}\n\n`;
 md += `## Linhas que faltam (por quantidade de gemas)\n\n| Gemas | Linha |\n|---|---|\n${linhasFaltando.map((x) => `| ${x.gemas.length} | ${x.linha.replace(/\|/g, '\\|')} |`).join('\n')}\n\n`;
-const secao = (titulo, l) => `## ${titulo}\n\n${l.map((x) => `- **${x.slug}** (${x.nome}) — ${x.estado}${[...x.ausentes, ...(x.outros ?? []), ...(x.idle ?? [])].length ? `\n${[...x.ausentes, ...(x.outros ?? []), ...(x.idle ?? []).map((m) => `_idle:_ ${m}`)].map((m) => `  - ${m}`).join('\n')}` : ''}`).join('\n')}\n\n`;
-const naoFeitas = (l) => l.filter((x) => !x.estado.startsWith('implementada')).sort((a, b) => a.slug.localeCompare(b.slug));
+const secao = (titulo, l) => `## ${titulo}\n\n${l.map((x) => `- **${x.slug}** (${x.nome}) — ${x.estado}${x.nota ? ` (${x.nota})` : ''}${[...x.ausentes, ...(x.outros ?? []), ...(x.idle ?? [])].length ? `\n${[...x.ausentes, ...(x.outros ?? []), ...(x.idle ?? []).map((m) => `_idle:_ ${m}`)].map((m) => `  - ${m}`).join('\n')}` : ''}`).join('\n')}\n\n`;
+const naoFeitas = (l) => l.filter((x) => !x.estado.startsWith('implementada') && x.estado !== 'não se aplica').sort((a, b) => a.slug.localeCompare(b.slug));
 md += secao('Gemas de habilidade pendentes', naoFeitas(ativas));
 md += secao('Gemas de suporte pendentes', naoFeitas(suportes));
+// (lote A2) as que não se aplicam ao jogo, com a nota
+const naoSeAplicam = [...ativas, ...suportes].filter((x) => x.estado === 'não se aplica');
+if (naoSeAplicam.length) md += secao('Não se aplicam ao jogo', naoSeAplicam);
+// (lote A3) as linhas que não se aplicam, gema a gema
+const comLinhasQueNaoSeAplicam = ativas.filter((x) => x.linhasNaoSeAplicam?.length);
+if (comLinhasQueNaoSeAplicam.length) md += `## Linhas que não se aplicam ao jogo\n\n${comLinhasQueNaoSeAplicam.map((x) => `- **${x.slug}** (${x.nome}) — ${x.estado}\n${x.linhasNaoSeAplicam.map((n) => `  - ${n}`).join('\n')}`).join('\n')}\n\n`;
 md += `## Implementadas sem teste próprio\n\n${[...ativas, ...suportes].filter((x) => x.estado === 'implementada, sem teste próprio').map((x) => x.slug).sort().join(', ') || '—'}\n`;
 
 writeFileSync(new URL('../docs/gemas-poe-implementacao.md', RAIZ), md);

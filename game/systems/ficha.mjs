@@ -120,15 +120,33 @@ export function invalidar(estado) {
 /** (lote G20a) A ficha guardada agora, sem calcular (null se não há) — o uso do totem confere se ela foi refeita com a posição trocada. */
 export const fichaGuardada = (estado) => (estado ? CACHE.get(estado) ?? null : null);
 
+/**
+ * (lote A2, revisão: "a Lâmina de Energia como no PoE") Quem troca a arma da ficha pela LÂMINA DE ENERGIA enquanto o buff dela está ligado
+ * (`acoes.mjs` registra — `Acoes.laminaNaFicha`): `{ estado, raio(es) }` — o estado com a arma virtual (a base Lâmina de Energia, sem os mods, com os
+ * encaixes da espada) e o Raio do golpe pelo Escudo de Energia da ficha. null sem ela.
+ */
+// (`var`: o `acoes.mjs` registra no meio do ciclo de imports, antes desta linha rodar — como os `definir*` de `mods-poe`)
+// eslint-disable-next-line no-var
+var laminaNaFicha;
+export function definirLaminaNaFicha(fn) { laminaNaFicha = fn; }
 export function combate(estado) {
   const guardada = CACHE.get(estado);
   if (guardada) return guardada;
-  let valor = calcularCombate(estado);
+  // (lote A2: com a Lâmina de Energia, a ficha é a da arma virtual — a velocidade e o crítico da base, sem os mods da espada —, e o Raio do golpe
+  // entra como o dano adicionado aos ataques, pelo ES da própria ficha: uma passada para o ES, outra com o Raio)
+  const lamina = itensPoeLigado() ? laminaNaFicha?.(estado) ?? null : null;
+  const daFicha = lamina?.estado ?? estado;
+  let doRaio = null;
+  if (lamina) {
+    const [min, max] = lamina.raio(calcularCombate(daFicha).energyShield ?? 0);
+    doRaio = { added_energy_dmg_min: min, added_energy_dmg_max: max };
+  }
+  let valor = calcularCombate(daFicha, doRaio);
   // PoE: a SEGUNDA PASSADA — os "por X" que dependem da própria ficha ("a cada 10 de Precisão", "por 100 de Armadura", "por % de Chance de
   // Bloquear"…): somam e a ficha é refeita uma vez com eles (`condicoes-poe.escalasDaFicha`).
   if (itensPoeLigado() && valor.afPoe) {
-    const extras = ModsPoe.escalasDaFicha(estado, valor.afPoe, valor);
-    if (extras) valor = calcularCombate(estado, extras);
+    const extras = ModsPoe.escalasDaFicha(daFicha, valor.afPoe, valor);
+    if (extras) valor = calcularCombate(daFicha, doRaio ? somarExtras(extras, doRaio) : extras);
   }
   CACHE.set(estado, valor);
   return valor;
@@ -575,7 +593,8 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // (+ "Chance de Bloquear o Dano Mágico é dobrada" — `spell_block_dobrado`; "Você está no Máximo de Chance de Bloquear Dano Mágico se você
     // não Bloqueou Recentemente" — `bloqueio_magia_no_maximo`, com a condição já resolvida na soma.)
     // (+ o Combatente Versátil: "+2% de Chance de Bloqueio Mágico para cada 1% de Chance de Bloqueio do Dano de Ataques Excedente".)
-    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal(af.bloqueio_magia_no_maximo > 0 ? Infinity : ((af.spell_block ?? 0) / 100) * (af.spell_block_dobrado > 0 ? 2 : 1) + (Number(af.bloqueio_magico_por_excedente) > 0 ? Number(af.bloqueio_magico_por_excedente) * (bloqueioDoGolpe.bloqueioExcedente ?? 0) : 0), 'magia', ((af.spell_block_max ?? 0) + (itensPoeLigado() ? Number(af.max_spell_block) || 0 : 0)) / 100),
+    // (lote A2: × o "mais Chance de Bloquear … e mágico" — o Cajado Impregnado de Mana, `SpellBlockChance MORE`)
+    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal(af.bloqueio_magia_no_maximo > 0 ? Infinity : (((af.spell_block ?? 0) / 100) * (af.spell_block_dobrado > 0 ? 2 : 1) + (Number(af.bloqueio_magico_por_excedente) > 0 ? Number(af.bloqueio_magico_por_excedente) * (bloqueioDoGolpe.bloqueioExcedente ?? 0) : 0)) * (itensPoeLigado() ? Math.max(0, 1 + (Number(af.bloqueio_mais) || 0) / 100) : 1), 'magia', ((af.spell_block_max ?? 0) + (itensPoeLigado() ? Number(af.max_spell_block) || 0 : 0)) / 100),
     // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
     armaEquipada: armaEquipadaDaFicha(estado),
     // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".
@@ -894,7 +913,9 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const mais = (k) => Math.max(0, 1 + (itensPoeLigado() ? Number(af[k]) || 0 : 0) / 100);
   // (lote H) O Agnóstico: "Remove todo Escudo Mágico" — sem Escudo de Energia.
   const semEscudo = itensPoeLigado() && Number(af.sem_escudo_energia) > 0;
-  return { armour: Math.round((armour + armourDaPeca) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round(energyShield + esDaPeca) };
+  // (lote A2, dono 19/10: + o "mais/menos Escudo de Energia Máximo" — a Lâmina de Energia: "Buff concede 50% menos Escudo de Energia Máximo", o PoB
+  // `EnergyShield MORE`)
+  return { armour: Math.round((armour + armourDaPeca) * mais('armour_mais')), evasion: Math.round((evasion + evasionDaPeca) * mais('evasion_mais')), energyShield: semEscudo ? 0 : Math.round((energyShield + esDaPeca) * mais('es_mais')) };
 }
 
 /** Os totais da vida do personagem (monstros, ouro, mortes, tempo caçando). */
@@ -988,7 +1009,9 @@ function bloqueioDaFicha(estado, escudo, w, shielding, af = {}) {
   // (o teto: + "+X% à Chance máxima de Bloquear o Dano de Ataques" — `tetoDoBloqueio`.)
   const teto = tetoDoBloqueio(af);
   // ("Você está na Chance Máxima de Bloquear o Dano de Ataques caso não tenha Bloqueado Recentemente" — `bloqueio_no_maximo`: o teto.)
-  const bruto = (d) => R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0);
+  // (lote A2: × o "mais Chance de Bloquear" — o Cajado Impregnado de Mana, o PoB `BlockChance MORE`)
+  const maisBloqueio = itensPoeLigado() ? Math.max(0, 1 + (Number(af.bloqueio_mais) || 0) / 100) : 1;
+  const bruto = (d) => (R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0)) * maisBloqueio;
   // (PoE, 12/10: o Vínculo Protetor — "Chance de Bloquear o Dano de Ataques do alvo Vinculado é igual a sua", e o teto também.)
   const igual = itensPoeLigado() ? (Number(af.bloqueio_igual_pct) || 0) / 100 : 0;
   const com = (d) => (igual > 0 ? Math.min(Math.max(teto, (Number(af.bloqueio_teto_igual_pct) || 0) / 100), igual) : af.bloqueio_no_maximo > 0 ? teto : Math.min(teto, bruto(d)));

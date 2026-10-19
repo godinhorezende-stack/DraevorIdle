@@ -73,6 +73,7 @@ import * as ModsPoe from './itens-poe/mods-poe.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as GemasA2 from './itens-poe/gemas-a2.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Poderes from './poderes.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
@@ -2114,8 +2115,15 @@ export function tique(estado, personagem, agora = Date.now()) {
   // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).
   const regrasDasCargas = Ficha.combate(estado).cargas;
   if (regrasDasCargas && CargasPoe.tique(estado, regrasDasCargas)) Ficha.invalidar(estado);
+  // (lote A2, dono 19/10) as gemas do lote A2 no tempo (`Acoes.tiqueDasGemasA2`: o Berserk, o Sangue Petrificado, a Fenda Temporal, o Escudo
+  // Gélido, a Automação); e o teto do Sangue Petrificado — a Vida que subiu sem frasco para em Vida Baixa (antes dos frascos, que passam por cima)
+  if (itensPoeLigado()) {
+    Acoes.tiqueDasGemasA2(estado, hunt, personagem, eventos, hunt.clock ?? 0);
+    GemasA2.tetoDoSangue(estado, hunt);
+  }
   // Os frascos do PoE no cinto: a recuperação de vida/mana, o fim dos de Utilidade e o uso automático (a ficha é refeita se o efeito mudou).
   if (FrascosPoe.tique(estado, eventos, personagem?.nome)) Ficha.invalidar(estado);
+  if (itensPoeLigado()) GemasA2.fimDoTiqueDoSangue(estado, hunt);
   // Um buff de gema do PoE (com atributos) venceu: a ficha é refeita.
   if (GemasPoe.tique(estado)) Ficha.invalidar(estado);
   // (14/10) Os ALTARES do PoE mudaram (ganhou um, outro venceu): a ficha e a vida máxima são refeitas (o Massivo dá Vida); e as gemas que os
@@ -2643,9 +2651,11 @@ export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0) {
   if (!hunt.areasFrias.length) return;
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || m.dummy || !ModsPoe.naAreaFria(hunt, m, agora)) continue;
+    // (lote A2: a área com o Resfriamento próprio — o Escudo Gélido — vale o dela)
+    const efeito = ModsPoe.efeitoDaAreaFria(hunt, m, agora) || ModsPoe.AREAS_FRIAS.efeitoPct;
     const l = m.estados?.lento;
-    if (l && l.ate - agora > 1000 && l.pct >= ModsPoe.AREAS_FRIAS.efeitoPct) continue;
-    Estados.aplicar(m, { lentidaoPct: ModsPoe.AREAS_FRIAS.efeitoPct }, 1, agora, Math.random, !!hunt.isBoss);
+    if (l && l.ate - agora > 1000 && l.pct >= efeito) continue;
+    Estados.aplicar(m, { lentidaoPct: efeito }, 1, agora, Math.random, !!hunt.isBoss);
   }
 }
 
@@ -2798,6 +2808,11 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (lote G20c) o DEVORADOR: a cada uso dele (1 s), se você está ferido (ou sem mana cheia), consome o cadáver mais perto dele e o dreno vem
       // para você (`devorarCadaver`)
       if (l.devorador && R.jaPode(agora, l.proximoGolpe) && !Protecao.imune(hunt)) eventos.push(...devorarCadaver(estado, hunt, l, ficha, personagem, agora));
+      // (lote G20d) o VÍNCULO ABRASADOR: o feixe a você e aos outros totens dele, a cada `FEIXE_MS` (`Acoes.feixeDoVinculo`)
+      if (/^Searing_Bond/.test(l.gema ?? '') && R.jaPode(agora, l.proximoGolpe) && !Protecao.imune(hunt)) {
+        l.proximoGolpe = agora + Acoes.FEIXE_MS;
+        eventos.push(...Acoes.feixeDoVinculo(estado, hunt, l, hunt.clock ?? 0));
+      }
       if (GemasPoe.totemSemGolpe(l.gema)) continue;
       if (!R.jaPode(agora, l.proximoGolpe) || Protecao.imune(hunt)) continue;
       // (lote G20b) a BALISTA FOCADA: só ataca depois de um projétil de ataque SEU desde o último ataque dela (`hunt.poeProjetilDeAtaqueEm`)
@@ -3229,7 +3244,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     z: hunt.z,
     ...(mandarMapa ? { map: gradeDaHunt(hd).mapa } : {}),
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).
-    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
+    // (lote A1: + o contador `teleporte` — o salto e o teleporte das gemas de movimento, `Acoes.moverNoDeslocamento`: a tela põe o boneco na casa nova)
+    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
     monsters: hunt.monstros.map((m) => ({
       uid: m.uid,
       x: m.x,
@@ -3242,6 +3258,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       hp: m.hp,
       maxHp: m.maxHp,
       moveMs: m.moveMs ?? passoDoBicho(m),
+      // (revisão do A1: o bicho levado pela Vaal do Teleporte — a tela o põe na casa nova)
+      ...(m.teleportes ? { teleporte: m.teleportes } : {}),
       // O level do mob (ao lado do nome) e a raridade + os modificadores (a cor do nome e a linha de baixo).
       nivel: Atributos.levelDoBicho(hunt, m),
       ...Raridade.paraCliente(m),

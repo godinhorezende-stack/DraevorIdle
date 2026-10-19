@@ -121,18 +121,20 @@ export const projeteisDoBonus = (hunt, ficha, agora = hunt?.clock ?? 0) => ((hun
 /**
  * Os PROJÉTEIS do uso com `gastos` fragmentos: o "X% mais Projéteis por Fragmento de Aço consumido" (sobre o total — base + adicionais —, até
  * o "Consome até N" da gema, como o Path of Building limita), o "Se não tiver Fragmentos de Aço, só Dispara 1 Projétil" (sem os adicionais) e o
- * "Projéteis contam como se já tivessem se Partido" (sem a divisão). Devolve `{ projeteisBase, alvosExtras }`.
+ * "Projéteis contam como se já tivessem se Partido" (sem a divisão). Devolve `{ projeteisBase, alvosExtras, divisao }`.
  */
+// (lote A3, dono 19/10 — D5: a divisão não é mais projétil a mais saindo de você — é o `divisao` do `Secundarios.resolver`, do alvo atingido —: o
+// "contam como se já tivessem se Partido" a zera, e ela volta aqui junto)
 export function projeteisNoUso(d, gastos, { base = 1, extras = 0, divisao = 0 } = {}) {
-  if (!d) return { projeteisBase: base, alvosExtras: extras };
-  if (!gastos && d.semFragmentoUmProjetil) return { projeteisBase: 1, alvosExtras: 0 };
-  let e = extras;
-  if (!gastos && d.semFragmentoSemDivisao) e = Math.max(0, e - divisao);
+  if (!d) return { projeteisBase: base, alvosExtras: extras, divisao };
+  if (!gastos && d.semFragmentoUmProjetil) return { projeteisBase: 1, alvosExtras: 0, divisao };
+  const e = extras;
+  const div = !gastos && d.semFragmentoSemDivisao ? 0 : divisao;
   if (gastos && d.maisProjeteisPct > 0) {
     const total = Math.round((base + e) * (1 + (d.maisProjeteisPct * Math.min(gastos, d.consome)) / 100));
-    return { projeteisBase: Math.max(1, total - e), alvosExtras: e };
+    return { projeteisBase: Math.max(1, total - e), alvosExtras: e, divisao: div };
   }
-  return { projeteisBase: base, alvosExtras: e };
+  return { projeteisBase: base, alvosExtras: e, divisao: div };
 }
 
 /**

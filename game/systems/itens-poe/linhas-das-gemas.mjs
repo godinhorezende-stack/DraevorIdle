@@ -147,6 +147,10 @@ export function fichaComAsLinhas(estado, ficha, af, marca) {
  */
 const EL_DO_BUFF = { Gelo: 'ice', Fogo: 'fire', Raio: 'energy', Caos: 'chaos', Físico: 'physical' };
 const BUFF_PROPRIO = [
+  // (lote A1, dono 19/10 — D7) a Corrida de Fase Antiga como buff: a Furtividade (o raio em que os bichos notam você —
+  // `ModsPoe.percepcaoComFurtividade`). (Revisão do A1: o "X% mais Dano Físico Corpo a Corpo" NÃO vale no buff inteiro — no PoE, usar uma
+  // habilidade troca o efeito pelo segundo buff, de 0,2 s, que dá esse dano; o jogo não tem a troca: fica "efeito não simulado".)
+  [new RegExp(`^Buff concede Furtividade aumentada em ${N} ?%$`, 'i'), (m) => ({ furtividade: num(m[1]) })],
   // (17/10, lote G18b) o "menos Dano sofrido" de um tipo (o Chamado Imortal; o "por Carga removida" fica não feito) e o da Armadura Ártica (parado)
   [new RegExp(`^${N} ?% menos Dano (Físico|Elemental) sofrido$`, 'i'), (m) => (m[2].toLowerCase() === 'físico' ? { dano_physical_recebido_mais: -num(m[1]) } : { dano_fire_recebido_mais: -num(m[1]), dano_ice_recebido_mais: -num(m[1]), dano_energy_recebido_mais: -num(m[1]) })],
   [new RegExp(`^Buff concede ${N} ?% menos Dano (Físico|de Fogo) sofrido de Acertos enquanto parado$`, 'i'), (m) => ({ [m[2].toLowerCase() === 'físico' ? 'dano_physical_recebido_mais@parado' : 'dano_fire_recebido_mais@parado']: -num(m[1]) })],

@@ -303,6 +303,8 @@ function resumoDasCondicoes(conditions) {
     let t;
     if (condition.kind === 'boss') t = condition.op === 'nao' ? 'fora de boss' : 'em boss';
     else if (condition.kind === 'perto') t = `bichos ${comparacao(condition, 'gte')}`;
+    // (lote A2, dono 19/10: a condição "Fúria ≥ N" — o Berserk)
+    else if (condition.kind === 'furia') t = `Fúria ${comparacao(condition, 'gte')}`;
     else if (condition.kind !== 'nome') {
       const quem = condition.who === 'target' ? 'alvo' : 'você';
       t = `${quem} ${condition.stat === 'mana' ? 'mana' : 'vida'} ${comparacao(condition, 'lte', condition.percent ? '%' : '')}`;
@@ -1418,6 +1420,8 @@ function openEditor(slot) {
           tirarQuando: (action.tirarQuando ?? []).map((condition) => ({ ...condition })),
           // No exana vita: esperar o utamo vita poder voltar. Ver `ehMagiaDeTirarEscudo`.
           soComUtamoPronto: action.soComUtamoPronto === true,
+          // (lote A1) a gema de movimento: para o alvo (padrão) ou para longe (fugir — junto das condições do slot)
+          direcao: action.direcao === 'longe' ? 'longe' : 'alvo',
         }
       : {
           id: null,
@@ -1438,6 +1442,7 @@ function openEditor(slot) {
           conditions: [],
           tirarQuando: [],
           soComUtamoPronto: false,
+          direcao: 'alvo',
         },
   };
 
@@ -2432,6 +2437,29 @@ export function renderEditor() {
   }
 
   /*
+   * ---- (lote A1, dono 19/10 — D2) A DIREÇÃO da gema de movimento ----
+   * "Para o alvo" (o padrão): o salto/teleporte vai atrás do alvo. "Para longe": ele foge do bicho que colou — só quando as condições do slot
+   * batem (ex.: "Você · Vida · menor ou igual a · 40%"); sem esta opção, nunca foge. Serve também para quem usa arma de longe: o bicho colou e
+   * ele pula para a distância da barra. A regra mora no servidor (`acoes.planoDoDeslocamento`).
+   */
+  if (entry?.poeGema?.fuga) {
+    detail.append(el('h3', null, 'Direção'));
+    const direcao = document.createElement('select');
+    for (const [id, label] of Object.entries({ alvo: 'Para o alvo', longe: 'Para longe (fugir do bicho que colou)' })) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = label;
+      direcao.append(option);
+    }
+    direcao.value = editing.draft.direcao === 'longe' ? 'longe' : 'alvo';
+    direcao.onchange = () => (editing.draft.direcao = direcao.value);
+    const linha = el('label', 'field');
+    linha.append(el('span', null, 'Para onde'), direcao);
+    detail.append(linha);
+    detail.append(el('p', 'shop-note dica', 'Para longe só sai com um bicho colado em você (na Distância da barra ou menos) e com as condições do slot batendo — ex.: “Você · Vida · menor ou igual a · 40%”.'));
+  }
+
+  /*
    * ---- No exana vita: "só tirar se o utamo vita já pode voltar" ----
    *
    * Report do Garibas: "remover magic shield apenas se cooldown do utamo vita
@@ -2910,7 +2938,7 @@ function conditionRowSemSentido(condition, index, lista = editing.draft.conditio
    */
   const tipo = () =>
     select(
-      { stat: 'Vida/Mana', nome: 'Criatura', perto: 'Bichos por perto', boss: 'Boss' },
+      { stat: 'Vida/Mana', nome: 'Criatura', perto: 'Bichos por perto', boss: 'Boss', furia: 'Fúria' },
       condition.kind ?? 'stat',
       (value) => {
         condition.kind = value;
@@ -2919,6 +2947,10 @@ function conditionRowSemSentido(condition, index, lista = editing.draft.conditio
           condition.names ??= [];
         } else if (value === 'boss') {
           condition.op = 'sim';
+        } else if (value === 'furia') {
+          // (lote A2) "Fúria ≥ 5": o mínimo do Berserk
+          condition.op = 'gte';
+          condition.value = 5;
         } else if (value === 'perto') {
           /*
            * "Pelo menos 1" é o que quase todo mundo quer da primeira vez: ela
@@ -2977,6 +3009,36 @@ function conditionRowSemSentido(condition, index, lista = editing.draft.conditio
     row.append(menos, quantos, mais);
     if (condition.op === 'entre') row.append(el('span', 'condition-unidade', 'e'), segundoNumero(condition, 25));
     row.append(el('span', 'condition-unidade', 'criaturas'), fora);
+    return row;
+  }
+
+  /*
+   * ---- A linha da Fúria (lote A2, dono 19/10) ----
+   * "Fúria ≥ N" (o Berserk entra com a Fúria que o slot pedir; sem a condição, o automático espera a Fúria no máximo): tipo, comparação e o
+   * número, de 0 a 100 — o servidor confere (`acoes.sanearCondicao`).
+   */
+  if (condition.kind === 'furia') {
+    const row = el('div', 'condition');
+    row.append(tipo());
+    row.append(comparadorDaLinha(condition, { gte: 'pelo menos', gt: 'mais que', eq: 'exatamente', lte: 'no máximo', lt: 'menos que', entre: 'entre' }, 'gte', select));
+    const quanto = document.createElement('input');
+    quanto.type = 'number';
+    quanto.min = '0';
+    quanto.max = '100';
+    quanto.step = '1';
+    quanto.value = String(condition.value ?? 5);
+    quanto.oninput = () => {
+      const n = Math.round(Number(quanto.value));
+      condition.value = Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 5;
+    };
+    const fora = el('button', 'danger step', '✕');
+    fora.onclick = () => {
+      lista.splice(index, 1);
+      renderEditor();
+    };
+    row.append(quanto);
+    if (condition.op === 'entre') row.append(el('span', 'condition-unidade', 'e'), segundoNumero(condition, 100));
+    row.append(el('span', 'condition-unidade', 'de Fúria'), fora);
     return row;
   }
 

@@ -60,6 +60,7 @@ function colocar(e, slot = 0) {
 }
 const Arvore = await import('../systems/arvore.mjs');
 const CP = await import('../systems/itens-poe/condicoes-poe.mjs');
+const totens = (e) => (e.hunt.lacaios ?? []).filter((l) => l.tipo === 'totem' && l.hp > 0);
 const longeDe = (e, l, n) => Object.assign(e.hunt.pos, { x: l.x + n, y: l.y });
 
 test('G20c: o Chefe Guerreiro — ativação de 8 m (4 casas; 10,4 m com a qualidade 20), o buff "18% mais Dano Corpo a Corpo" só com você perto, e não soma entre totens', { skip: SEM }, async () => {
@@ -143,4 +144,42 @@ test('G20c: o status — o Chefe Guerreiro, o Protetor, o Chefe Vaal, os Rejuven
   for (const s of ['Ancestral_Warchief', 'Ancestral_Protector', 'Vaal_Ancestral_Warchief', 'Rejuvenation_Totem', 'Vaal_Rejuvenation_Totem', 'Devouring_Totem', 'Siege_Ballista']) assert.equal(G.doSlug(s).statusNoJogo, 'funciona', `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
   assert.ok(G.doSlug('Decoy_Totem').motivosNoJogo.some((m) => /provoca/.test(m)));
   assert.ok(!G.doSlug('Decoy_Totem').motivosNoJogo.some((m) => /não podem Evadir/.test(m)));
+});
+
+test('G20d: o Vínculo Abrasador — o feixe do totem a você queima quem está na reta e perto das pontas; uma queima só por inimigo', { skip: SEM }, async () => {
+  const { e, ms } = await montar('Wands/Driftwood_Wand', [['Searing_Bond']]);
+  const l = colocar(e);
+  Object.assign(l, { x: e.hunt.pos.x + 6, y: e.hunt.pos.y });
+  const [naReta, longe, naPonta] = ms;
+  Object.assign(naReta, { x: e.hunt.pos.x + 3, y: e.hunt.pos.y });
+  Object.assign(longe, { x: e.hunt.pos.x + 3, y: e.hunt.pos.y + 3 });
+  Object.assign(naPonta, { x: e.hunt.pos.x - 1, y: e.hunt.pos.y + 1 });
+  Acoes.feixeDoVinculo(e, e.hunt, l, e.hunt.clock);
+  const queima = (m) => (m.dots ?? []).filter((d) => d.tipo === G.DEGEN_DO_ELEMENTO.fire && d.falta > 0);
+  assert.equal(queima(naReta).length, 1, 'na reta entre o totem e você');
+  assert.equal(queima(naPonta).length, 1, 'perto da ponta (você)');
+  assert.equal(queima(longe).length, 0, 'fora do feixe');
+  assert.equal(queima(naReta)[0].ate - e.hunt.clock, Acoes.FEIXE_MS);
+  // um segundo totem: o feixe dele também passa no bicho da reta — a queima é uma só (a chave da gema)
+  e.hunt.lacaios.push({ ...l, uid: 'outro', x: e.hunt.pos.x + 3, y: e.hunt.pos.y - 3 });
+  Acoes.feixeDoVinculo(e, e.hunt, l, e.hunt.clock);
+  assert.equal(queima(naReta).length, 1);
+  assert.equal(G.doSlug('Searing_Bond').statusNoJogo, 'funciona', G.doSlug('Searing_Bond').motivosNoJogo.join(' | '));
+});
+
+test('G20d: o Vínculo da Detonação — o máximo é 1 + as Cargas de Poder máximas (3 → 4); o 4º detona todos e queima em volta por 4 s', { skip: SEM }, async () => {
+  assert.equal(LacaiosPoe.oQueInvoca('Searing_Bond_of_Detonation', 20, null, {}).maximo, 4);
+  assert.equal(LacaiosPoe.oQueInvoca('Searing_Bond_of_Detonation', 20, null, { max_poder: 1 }).maximo, 5);
+  const { e, ms } = await montar('Wands/Driftwood_Wand', [['Searing_Bond_of_Detonation']]);
+  for (let i = 0; i < 3; i++) { e.hunt.cooldowns = {}; colocar(e); e.hunt.clock += 2000; }
+  assert.equal(totens(e).length, 3);
+  const b = Object.assign(ms[0], { x: e.hunt.pos.x + 1, y: e.hunt.pos.y });
+  e.hunt.cooldowns = {};
+  const r = sorte(0.5, () => Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true }));
+  assert.ok(r.ok, r.erro);
+  if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; sorte(0.5, () => Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM)); }
+  assert.equal(totens(e).length, 0, 'os totens detonaram');
+  const d = (b.dots ?? []).find((x) => x.tipo === G.DEGEN_DO_ELEMENTO.fire);
+  assert.ok(d && d.ate - e.hunt.clock >= 4000, JSON.stringify(b.dots));
+  assert.equal(G.doSlug('Searing_Bond_of_Detonation').statusNoJogo, 'funciona', G.doSlug('Searing_Bond_of_Detonation').motivosNoJogo.join(' | '));
 });

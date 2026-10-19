@@ -174,7 +174,7 @@ test('G20a: o totem SEM golpe (o Chamariz, o Devorador, os Rejuvenescedores, o V
   assert.ok(chamariz.some((m) => /o totem provoca os monstros em volta/.test(m)), chamariz.join(' | '));
   assert.ok(!chamariz.some((m) => /Totem dura|Vida do Totem|mais Vida de Totens|Invoca um Totem/.test(m)), 'as linhas do totem são feitas');
   assert.ok(!G.doSlug('Rejuvenation_Totem').motivosNoJogo.some((m) => /Vida Regenerada/.test(m)), 'a aura do Rejuvenescedor: feita no G20c');
-  assert.ok(G.doSlug('Searing_Bond').motivosNoJogo.includes('efeito não simulado: Causa 4430.6 de Dano de Fogo Base por segundo'));
+  assert.ok(!G.doSlug('Searing_Bond').motivosNoJogo.some((m) => /Dano de Fogo Base por segundo/.test(m)), 'o feixe do Vínculo: feito no G20d (com o aval do dono)');
 });
 
 test('G20a: o status honesto — o Sísmico "funciona"; o que o totem não faz vai nos motivos (o buff do Chefe, o "mais Velocidade de Projétil", o alcance)', { skip: SEM }, () => {

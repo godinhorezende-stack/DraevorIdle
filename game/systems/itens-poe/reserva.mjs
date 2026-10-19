@@ -15,7 +15,7 @@
 //              "Postura", para as gemas com a tag Postura.
 //   FEITICEIRO (14/10): a reserva dele é a soma das das magias que ele suporta — 20% da mana cada (RePoE) —, com a eficácia delas (a geral, a
 //              de mana e "Eficácia da Reserva de Mana das Habilidades Suportadas por Feiticeiro" — `eficiencia_reserva_feiticeiro`).
-import { compilada, doSlug, FEITICEIRO } from './gemas-poe.mjs';
+import { compilada, doSlug, FEITICEIRO, daGemaA2 } from './gemas-poe.mjs';
 /** A maldição vira aura (a Blasfêmia ligada a ela). */
 export const ehMaldicaoEmAura = (entry, efeitoDaGema) => !!efeitoDaGema?.maldicaoEmAura && entry?.poeGema?.arquetipo === 'maldicao';
 import * as ModsPoe from './condicoes-poe.mjs';
@@ -109,6 +109,10 @@ export function pedida(estado, entry, efeitoDaGema, ficha, emVida = false) {
   const arautoFixo = entry.poeGema.arquetipo === 'arauto' ? ModsPoe.valor(ficha, 'reserva_arauto_fixa') : 0;
   if (arautoFixo > 0) base = { pct: arautoFixo };
   const recurso = emVida ? 'vida' : 'mana';
+  // (lote A2, dono 19/10) o Cajado Impregnado de Mana: "Reserva de mana desta habilidade é sempre 30%" — da Mana, sem modificador (o PoB:
+  // `ManaReservationPercentForced`)
+  const fixa = daGemaA2(entry.poeGema.slug, nivel).a2?.reservaFixaPct;
+  if (fixa > 0) { const r = { recurso: 'mana', pct: fixa, fator: 1 }; return { ...r, valor: valor(estado, r) }; }
   const r = { recurso, ...base, fator: fator(ficha, efeitoDaGema, recurso, entry.poeGema.arquetipo, compilada(entry.poeGema.slug, nivel)?.tipos ?? null, entry.poeGema.slug) };
   return { ...r, valor: valor(estado, r) };
 }

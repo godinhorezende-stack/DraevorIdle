@@ -58,9 +58,24 @@ const substituir = (cab, celula, doNivel1 = null) => {
   return cab.includes('#') ? cab.replace(/#/g, () => v[Math.min(i++, v.length - 1)]) : cab.replace(NUM, (o) => (i < v.length ? v[i++] : o));
 };
 
+/**
+ * (lote A2, dono 19/10: "Gemas Excepcionais: o nível máximo é 3, como no poedb — Nível (1—3)") O nível MÁXIMO do suporte: o da propriedade "Nível:
+ * (1—N)" nas Excepcionais (a tabela delas vem com 15 linhas — os níveis acima do 3 não existem no PoE); nos outros, as linhas da tabela.
+ */
+export const ehExcepcional = (s) => !!s?.tags?.includes('Excepcional');
+export function nivelMaximoDe(s) {
+  const linhas = s?.linhas?.length || 1;
+  if (!ehExcepcional(s)) return linhas;
+  const m = (s.props ?? []).map((p) => /^Nível: \((\d+)\s*—\s*(\d+)\)/.exec(p)).find(Boolean);
+  return m ? Math.max(1, Math.min(linhas, Number(m[2]))) : linhas;
+}
 /** As linhas do suporte no nível (e as da qualidade): os números DESTE nível. */
 export function textosDoNivel(s, nivel = 1, qualidade = 0) {
+  // (revisão do A2: o máximo 3 das Excepcionais é o nível da GEMA — o XP e a avaliação; os bônus de nível das peças, "+N ao nível das gemas de
+  // suporte", somam acima dele como no PoE: o nível efetivo lê as linhas da tabela até o fim dela)
+  const max = nivelMaximoDe(s);
   const n = Math.max(1, Math.min(nivel | 0 || 1, s.linhas.length || 1));
+  const passos = ehExcepcional(s) ? Math.max(1, max - 1) : 19;
   const linha = linhaDoNivel(s, n);
   // (17/10, lote G3: várias colunas com o MESMO molde — a Montagem Ágil, "X% de chance de arremessar até 2 / até 3 Armadilhas ou Minas
   // adicionais" — ficam numa lista, e cada mod escolhe a coluna cujo cabeçalho tem os números FIXOS dele (os que não são faixa: o "2", o "3");
@@ -79,10 +94,11 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
   for (const m of [...s.mods, ...(s.implicitos ?? []).filter((t) => !/^Mana:/.test(t))]) {
     const col = colunaDe(m);
     if (col) col.valor !== undefined && col.valor !== '' && add(substituir(col.cab, col.valor, col.doNivel1));
-    else add(m.includes('—') ? interpolar(m, (n - 1) / 19) : m);
+    // (lote A2: a faixa "(a—b)" do poedb vai do nível 1 ao 20 — ou ao máximo das Excepcionais, o 3)
+    else add(m.includes('—') ? interpolar(m, (n - 1) / passos) : m);
   }
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
-  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map((p) => interpolar(p, (n - 1) / 19)) };
+  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map((p) => interpolar(p, (n - 1) / passos)) };
 }
 
 // ---------------------------------------------------------------- as linhas → os efeitos do motor
@@ -115,6 +131,9 @@ const maisDe = (texto, v) => ({ [chaveDoMais(texto)]: v, ...(/Dano Mágico|de da
 const MAIS_DOT_DO_TIPO = { caos: 'maisDotCaosPct', 'físico': 'maisDotFisicoPct', gelo: 'maisDotGeloPct', fogo: 'maisDotFogoPct', raio: 'maisDotRaioPct' };
 /** Os "mais/menos" em % que MULTIPLICAM (duas linhas do mesmo suporte na mesma chave: ×, não +). */
 const MAIS_MULTIPLICA = new Set(['maisDanoPct', 'maisDanoAcertoPct', 'maisDanoMagicoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', ...Object.values(MAIS_DOT_DO_TIPO)]);
+// (lote A3, dono 19/10) as chaves que são uma flag ou um teto (o poedb repete a linha com "\n" no meio — o Localizar, a Nova de Flechas): a maior
+// das linhas, não a soma
+const O_MAIOR = new Set(['intensidadeMax', 'intensidadeMenosProjetil', 'doPontoDoAlvo', 'emCirculo', 'soArco', 'origensLaterais', 'projeteisMinimo', 'voltaAtravessa', 'retornar']);
 /** Velocidade X% mais/aumentada → o % do TEMPO de uso (o motor: `castTimePct`). */
 const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
 
@@ -124,6 +143,16 @@ const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
  */
 const ELEMENTO_DO_TEXTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', 'físico': 'physical', fisico: 'physical', caos: 'chaos' };
 const REGRAS = [
+  // (lote A2, dono 19/10) os suportes "sem efeito" do PoE: a Raridade de Itens do abate (`combate.raridadeDoDrop`), a chance de os monstros FUGIREM
+  // (2 s — `Acoes.fugir`), o Pacifismo (o ataque não mata — `Acoes.acertoDosSuportesA2`) e a Redução de Chance de Bloqueio (os pontos a menos, o
+  // "reduzido" da qualidade e o Subjugado — `AtributosDoMob.bloqueou`, `subjugar`)
+  [new RegExp(`Raridade de Itens Derrubados por Inimigos Mortos por Habilidades Suportadas aumentada em ${N}%`, 'i'), (m) => ({ raridadeAoMatarPct: num(m[1]) })],
+  [new RegExp(`têm \\+?${N}% de chance de fazer os monstros fugirem ao atingir`, 'i'), (m) => ({ chanceFugirPct: num(m[1]) })],
+  [/^Ataques de habilidades reforçadas não podem matar inimigos$/i, () => ({ naoMata: 1 })],
+  [new RegExp(`^Inimigos possuem -?${N}% de chance de Bloquear o Dano de Ataques e Magias das Habilidades Suportadas`, 'i'), (m) => ({ bloqueioInimigoMenos: num(m[1]) })],
+  [new RegExp(`^Habilidades Suportadas infligem Subjugado por ${N} segundos? ao Bloquear`, 'i'), (m) => ({ subjugadoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Subjugado aplica -?${N}% à chance de Bloquear`, 'i'), (m) => ({ subjugadoPct: num(m[1]) })],
+  [new RegExp(`^Habilidades Suportadas têm ${N}% de Chance de Bloqueio Inimigo reduzid[ao]`, 'i'), (m) => ({ bloqueioInimigoReduzidoPct: num(m[1]) })],
   // O custo (a propriedade "Multiplicador de Custo & Reserva: 120%").
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
   [/não Custam nada/i, () => ({ custoPct: -100 })],
@@ -311,6 +340,38 @@ const REGRAS = [
   [new RegExp(`têm ${N}% de chance de Envenenar`, 'i'), (m) => ({ 'af:chance_poison': num(m[1]) })],
   [new RegExp(`têm ${N}% de chance de causar Sangramento`, 'i'), (m) => ({ 'af:chance_bleed': num(m[1]) })],
   [/^Causa Sangramento$/i, () => ({ 'af:chance_bleed': 100 })],
+  // (lote A3, dono 19/10) os PROJÉTEIS dos suportes, antes das regras gerais de dano (que pegavam o começo de algumas):
+  // - o Ponto Cego (D9): "Os Acertos de Ataques … causam até 30% mais Dano aos alvos no início de seu movimento, causando menos Dano … na medida em
+  //   que o projétil viaja adiante" é a flag PointBlank do PoB (ModParser.lua:2305) — a rampa do Queima-Roupa (`condicoes-poe.DISTANCIA_DO_PROJETIL`),
+  //   sem somar com a keystone. Antes a regra geral do "até X% mais Dano" dava 30% mais a qualquer distância;
+  [/^Os Acertos de Ataques das Habilidades Suportadas causam até [\d.,]+% mais Dano aos alvos no início de seu movimento/i, () => ({ 'af:queima_roupa': 1 })],
+  // - o Atravessar (erro 1): "Projéteis de Habilidades Suportadas Atravessam N Alvos adicionais" (o jogo procurava "Perfuram N Inimigos");
+  [new RegExp(`Atravessam ${N} Alvos adiciona`, 'i'), (m) => ({ perfurar: num(m[1]) })],
+  // - o Retorno (F4): volta a você, "X% menos Dano com Acertos e Afecções enquanto Retornam" (o % da volta) e "Atravessam todos os Alvos enquanto
+  //   Retornando" (D4: a reta da volta acerta todos os vivos no caminho — `Secundarios.resolver`);
+  [/Projéteis de Habilidades Suportadas Retornam a você$/i, () => ({ retornar: 1 })],
+  [new RegExp(`causam ${N}% menos Dano com Acertos e Afecções enquanto Retornam`, 'i'), (m) => ({ danoDoRetornoPct: Math.max(0, 100 - num(m[1])) })],
+  [/Atravessam todos os Alvos enquanto Retornando$/i, () => ({ voltaAtravessa: 1 })],
+  // - a Velocidade de Projétil (F1, D1): o "aumentada" é o atributo local do uso (soma com o das peças e o da gema); o "mais/menos" multiplica
+  //   (`Acoes.velocidadeDoProjetil`);
+  [new RegExp(`têm ${N}% de Velocidade de Projétil aumentada`, 'i'), (m) => ({ 'af:projectile_speed': num(m[1]) })],
+  [new RegExp(`têm ${N}% (mais|menos) Velocidade de Projétil`, 'i'), (m) => ({ velProjetilMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // - a Difusão Maior/Desperta (F5): "podem Difundir N Vezes adicionais" (os filhos difundem de novo) e "X% de chance de ganhar um Projétil
+  //   adicional ao Difundirem" — somam com os das peças e da gema (`Acoes.comOsAlvosDaGema`);
+  [new RegExp(`podem Difundir ${N} Vez\\w* adicionais`, 'i'), (m) => ({ bifurcarDeNovo: num(m[1]) })],
+  [new RegExp(`têm ${N}% de chance de ganhar um Projétil adicional ao Difundirem`, 'i'), (m) => ({ bifurcarExtraChance: num(m[1]) })],
+  // - a quantidade e a emissão (F7): a Saraivada ("também disparam Projéteis de até N pontos de cada lado seu" — D7: origens laterais na
+  //   perpendicular), a Nova de Flechas (o círculo a partir do ponto do alvo — D7 — e "só podem ser usadas com Arcos"), o Localizar (a Intensidade:
+  //   um projétil a menos e X% mais Dano com Acertos por Intensidade, o PoB: sup_int.lua:5510) e a Mina Locus ("X% menos Projéteis"), com o
+  //   "sempre disparam ao menos N Projétil" dos dois
+  [new RegExp(`também disparam Projéteis de até ${N} pontos de cada lado seu`, 'i'), (m) => ({ origensLaterais: num(m[1]) })],
+  [/Disparam Projéteis em um círculo$/i, () => ({ emCirculo: 1 })],
+  [/disparam uma Flecha Carregada no ar(?:\s|\\n)+Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair/i, () => ({ doPontoDoAlvo: 1 })],
+  [/só podem ser usadas com Arcos$/i, () => ({ soArco: 1 })],
+  [new RegExp(`ganham Intensidade quando você as Conjurar, máximo de ${N}(?:\\s|\\\\n)+Habilidades Suportadas disparam um Projétil a menos por Intensidade`, 'i'), (m) => ({ intensidadeMax: num(m[1]), intensidadeMenosProjetil: 1 })],
+  [new RegExp(`causam ${N}% mais Dano com Acertos por Intensidade`, 'i'), (m) => ({ intensidadeMaisProjetilPct: num(m[1]) })],
+  [new RegExp(`sempre disparam ao menos ${N} Projétil`, 'i'), (m) => ({ projeteisMinimo: num(m[1]) })],
+  [new RegExp(`disparam ${N}% menos Projéteis`, 'i'), (m) => ({ menosProjeteisPct: num(m[1]) })],
   // Dano: "mais/menos" multiplica (como no PoE); "aumentado/reduzido" soma.
   [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra| com Acertos por|[^%]* por cada |[^%]* enquanto Retornam)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[2] === 'mais' ? 1 : -1) * num(m[1])) : null)],
   [new RegExp(`^(?!Repetições|Explosão)[^%]*?causam? ([+-])${N}% de dano(?![^%]*por estágio)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[1] === '-' ? -1 : 1) * num(m[2])) : null)],
@@ -390,6 +451,9 @@ const REGRAS = [
   // Repetições (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora.
   [new RegExp(`Repetem ${N} vez(?:es)? adiciona`, 'i'), (m) => ({ repeticoes: num(m[1]) })],
   [/Repetição (?:de|das) Habilidades Suportadas causa/i, () => ({})],
+  // (lote A4, dono 19/10) o Eco Desperto: "Repetição Final das Habilidades Suportadas tem X% de chance de causar Dano Dobrado" — sorteado na última
+  // repetição do uso (`Acoes.dispararSemMarcar`: o `dobroNaFinal`, que não dobra o golpe que já saiu Dobrado)
+  [new RegExp(`^Repetição Final das Habilidades Suportadas tem ${N}% de chance de causar Dano Dobrado$`, 'i'), (m) => ({ repeticaoFinalDobroPct: num(m[1]) })],
   // As propriedades que não mexem no efeito (o nível, o raio informativo, a recarga do gatilho — tratada no gatilho).
   [/^Nível:|^Recarga:|^Tempo de Uso:|^CooldownTime:|^Eficácia do Dano Adicionado:|^Dano de Ataque: .* de base|^Tempo de Conjuração:|^Chance de Crítico:|^Velocidade de Projétil:/, () => ({})],
   [/Experiência aumentada|requerem uma quantidade de Dano sofrido reduzid/i, () => ({})],
@@ -417,10 +481,8 @@ function gatilhoDe(s, textos) {
 }
 
 /** O que o jogo não tem (o suporte inteiro não age): totens, armadilhas, minas, lacaios, marcas, clamores, estandartes. */
-const SEM_SISTEMA = [
-  // ("Mina" como palavra: o "mina" de "Lâmina Noturna" travava o suporte — 11/10)
-  [/Sentinela|torres de osso/i, 'esses lacaios especiais ainda não existem no jogo'],
-];
+// (lote A2, dono 19/10: a Sentinela Divina — as sentinelas existem desde os lacaios — e a Torre Óssea — `Acoes.torresOsseas` — saíram daqui)
+const SEM_SISTEMA = [];
 
 /** A linha do suporte sem o "Habilidades Suportadas têm"/"com Habilidades Suportadas" (o modificador como a gema o escreveria). */
 function linhaSemSuportadas(l) {
@@ -430,6 +492,61 @@ function linhaSemSuportadas(l) {
     .replace(/ das Habilidades Suportadas/i, '');
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
+/**
+ * (lote A2, dono 19/10) As linhas da TORRE ÓSSEA (Bonespire, Excepcional: "Clamores reforçados ativam Tomar a Carne ao usar" — o poedb) e da
+ * SENTINELA DIVINA. A Torre Óssea: `torresOsseas` (o Clamor suportado as ergue — `Acoes.torresOsseas`), `torres` (quantas), `torresMax`,
+ * `torresMs` (a duração), `torresRaioM` (o raio da explosão), `torresAlcanceM` (o raio em que nascem em volta de você), `torresDanoPct` (o "Dano de
+ * Ataque: X% de base"), `torresSangramentoMaisPct` e `torresRecargaMs`. A Sentinela Divina: `areaLacaioPct` e `auraTemplaria` (`Acoes.invocarLacaios`).
+ */
+const PROPRIAS_A2 = {
+  Bonespire_Support: [
+    [/^Clamores reforçados ativam Tomar a Carne ao usar$/i, (m, e) => { e.torresOsseas = 1; }],
+    [new RegExp(`^Cria \\+?${N} torres de osso$`, 'i'), (m, e) => { e.torres = (e.torres ?? 0) + Math.floor(num(m[1])); }],
+    [new RegExp(`^Máximo de ${N} torres de osso$`, 'i'), (m, e) => { e.torresMax = num(m[1]); }],
+    [new RegExp(`^Duração base é de ${N} segundos?$`, 'i'), (m, e) => { e.torresMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.torresRaioM = num(m[1]); }],
+    [new RegExp(`^Raio de alcance secundário base é de ${N} metros?$`, 'i'), (m, e) => { e.torresAlcanceM = num(m[1]); }],
+    [new RegExp(`^${N}% mais Dano com Sangramento$`, 'i'), (m, e) => { e.torresSangramentoMaisPct = num(m[1]); }],
+    [/^Causa Sangramento$/i, (m, e) => { e.torresSangram = 1; }],
+    [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.torresDanoPct = num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.torresRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
+  ],
+  // (lote A4, dono 19/10) as Excepcionais da ONDA DE CHOQUE DO VAZIO e da TORMENTA DO VAZIO: a habilidade que o suporte concede tem os números dela (a
+  // recarga, o "Dano de Ataque: X% de base", o raio, a duração, a qualidade dela — o "Dano … aumentado" sem "Habilidades Suportadas"), que as regras
+  // gerais leriam como da suportada. A onda: `ondaDoVazio`, `ondaRaioM`, `ondaRepeticoes`, `ondaRepeticaoMaisPct`, `ondaRecargaMs`, `ondaDanoPct`,
+  // `ondaIncPct`, `soMachadoMacaCetroCajado` (`Acoes.ondaDoVazio`). A tormenta: `tormentaDoVazio`, `tormentaMinM`, `tormentaMs`, `tormentaRaioM`,
+  // `tormentasMax`, `tormentaEstagioMs`, `tormentaEstagiosMax`, `tormentaAreaPorEstagioPct`, `tormentaDanoPorEstagioPct`, `tormentaRecargaMs`,
+  // `tormentaDanoPct`, `tormentaIncPct` (`Acoes.tiqueDasTormentas`).
+  Void_Shockwave_Support: [
+    [/^Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo$/i, (m, e) => { e.ondaDoVazio = 1; }],
+    [/^Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados$/i, (m, e) => { e.soMachadoMacaCetroCajado = 1; }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.ondaRaioM = num(m[1]); }],
+    [new RegExp(`^Onda de choque se repete de até ${N} inimigos na área$`, 'i'), (m, e) => { e.ondaRepeticoes = Math.floor(num(m[1])); }],
+    [new RegExp(`^Repetições da onda de choque causam ${N}% de dano com ataques e afecções$`, 'i'), (m, e) => { e.ondaRepeticaoMaisPct = num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.ondaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.ondaDanoPct = num(m[1]); }],
+    [new RegExp(`^Dano Corpo a Corpo aumentado em ${N}%$`, 'i'), (m, e) => { e.ondaIncPct = (e.ondaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
+  ],
+  Voidstorm_Support: [
+    [new RegExp(`^Habilidades reforçadas ativam Tormenta do Vazio ao atingir o chão(?:\\\\n|\\s)+Tormentas do Vazio não podem ser ativadas a menos de ${N} metros de você$`, 'i'), (m, e) => { e.tormentaDoVazio = 1; e.tormentaMinM = num(m[1]); }],
+    [new RegExp(`^Duração base é de ${N} segundos?$`, 'i'), (m, e) => { e.tormentaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.tormentaRaioM = num(m[1]); }],
+    [new RegExp(`^Máximo de ${N} tempestades$`, 'i'), (m, e) => { e.tormentasMax = Math.floor(num(m[1])); }],
+    [new RegExp(`^Tempestades ganham um estágio por ${N} segundos?, até ${N}$`, 'i'), (m, e) => { e.tormentaEstagioMs = Math.round(num(m[1]) * 1000); e.tormentaEstagiosMax = Math.floor(num(m[2])); }],
+    [new RegExp(`^Tempestades têm \\+${N}% de área de efeito por estágio$`, 'i'), (m, e) => { e.tormentaAreaPorEstagioPct = num(m[1]); }],
+    [new RegExp(`^Explosão causa \\+${N}% de dano com ataques e afecções por estágio$`, 'i'), (m, e) => { e.tormentaDanoPorEstagioPct = num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.tormentaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.tormentaDanoPct = num(m[1]); }],
+    [new RegExp(`^Dano em Área aumentado em ${N}%$`, 'i'), (m, e) => { e.tormentaIncPct = (e.tormentaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
+  ],
+  Divine_Sentinel_Support: [
+    [new RegExp(`^Lacaios de habilidades reforçadas têm a área de efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.areaLacaioPct = (e.areaLacaioPct ?? 0) + num(m[1]); }],
+    [/^Sentinelas invocadas de habilidades reforçadas têm uma aura templária$/i, (m, e) => { e.auraTemplaria = 1; }],
+  ],
+};
 /** O efeito do suporte no nível, para esta ativa: `{ efeito, naoFeitas }`. */
 export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const s = POR_SLUG.get(slug);
@@ -437,7 +554,14 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const t = textosDoNivel(s, nivel, qualidade);
   const efeito = {};
   const naoFeitas = [];
+  // (lote A2) as linhas próprias da Torre Óssea e da Sentinela Divina (`PROPRIAS_A2`): a habilidade concedida pela Torre Óssea — Tomar a Carne — tem
+  // os números dela (a duração, os raios, as torres), que as regras gerais leriam como do Clamor suportado
+  const proprias = PROPRIAS_A2[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
+    if (proprias) {
+      const p = proprias.find(([re]) => re.test(linha));
+      if (p) { p[1](linha.match(p[0]), efeito); continue; }
+    }
     const regra = REGRAS.find(([re]) => re.test(linha));
     if (!regra) {
       // (17/10, lote G3) sem regra própria: a linha como modificador LOCAL do uso suportado ("Habilidades Suportadas têm 30% de chance de Mutilar
@@ -449,7 +573,7 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
       continue;
     }
     const r = regra[1](linha.match(regra[0]), linha, ativa);
-    for (const [k, v] of Object.entries(r ?? {})) efeito[k] = MAIS_MULTIPLICA.has(k) && efeito[k] != null ? ((1 + efeito[k] / 100) * (1 + v / 100) - 1) * 100 : (efeito[k] ?? 0) + v;
+    for (const [k, v] of Object.entries(r ?? {})) efeito[k] = O_MAIOR.has(k) ? Math.max(efeito[k] ?? 0, v) : MAIS_MULTIPLICA.has(k) && efeito[k] != null ? ((1 + efeito[k] / 100) * (1 + v / 100) - 1) * 100 : (efeito[k] ?? 0) + v;
   }
   // (lote 44, P064) o nível do Suporte: Convocar Fantasma — o Poder Fantasmal de cada Fantasma é o desse nível (a tabela do PoB)
   if (efeito.fantasmaAoMatarPct > 0 || efeito.fantasmaRaroPct > 0) efeito.fantasmaNivel = nivel;
@@ -478,7 +602,8 @@ function avaliar(s) {
   const tudo = [s.tags.join(' '), ...s.mods, ...(s.implicitos ?? [])].join(' ').replace(MOMENTUM_CANALIZANDO, '');
   const sem = SEM_SISTEMA.find(([re]) => re.test(tudo));
   if (sem) return { status: 'nao', motivos: [sem[1]] };
-  const nivel = Math.min(20, s.linhas.length || 1);
+  // (lote A2: no nível máximo dele — o 3 das Excepcionais, antes o 15 das linhas da tabela)
+  const nivel = Math.min(20, nivelMaximoDe(s));
   const { efeito, naoFeitas } = efeitoNoNivel(s.slug, nivel, 20, { tags: [...['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico', 'Duração', 'Aura', 'Golpe'].map((x) => `poe:${x}`)] });
   const fez = Object.keys(efeito).length || gatilhoDe(s, textosDoNivel(s, nivel));
   if (!fez) return { status: 'nao', motivos: ['nenhuma linha do suporte tem efeito no jogo ainda', ...naoFeitas.slice(0, 3).map((l) => `não simulado: ${l}`)] };
@@ -489,6 +614,12 @@ function avaliar(s) {
 }
 /** (lote G20b) O que a descrição do suporte diz e o jogo ainda não faz — sem linha (o status não a vê) nem número nos dados do PoB. */
 const DESCRICAO_NAO_FEITA = {
+  // (lote A2) a Torre Óssea: a explosão é o físico MÉDIO da sua arma × o "Dano de Ataque: X% de base" da Tomar a Carne, pelo acerto das habilidades sem
+  // golpe — os modificadores do golpe da arma (o crítico dela, os locais) não entram
+  Bonespire_Support: ['não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros'],
+  // (lote A4, dono 19/10) as Excepcionais do Vazio: o acerto da onda e da tempestade é o das habilidades sem golpe (como a Torre Óssea)
+  Void_Shockwave_Support: ['não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)'],
+  Voidstorm_Support: ['não simulado: a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada'],
   Earthbreaker_Support: ['não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)'],
 };
 

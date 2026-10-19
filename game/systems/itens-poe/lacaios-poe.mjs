@@ -19,6 +19,7 @@ import * as Controle from '../combate/controle.mjs';
 import { slugDoNome, fatorDaArea, casasPelaArea, almasDoLacaio, DEVORADOR_DE_ALMAS, sorteado, criticoDoBicho } from './condicoes-poe.mjs';
 import { PARAMETROS } from '../combate/formulas.mjs';
 import { chanceDeEsquiva } from '../personagem/atributos.mjs';
+import * as CargasPoe from './cargas.mjs';
 import { readFileSync } from 'node:fs';
 
 const BESTIARY = CATALOGO.bestiary;
@@ -319,6 +320,10 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     if (m0('max_totem_mesmo_tipo') > 0) maximo = Math.min(maximo, m0('max_totem_mesmo_tipo'));
   }
   // "Número máximo de Zumbis Erguidos reduzido em X%" (o % do máximo).
+  // (lote G20d) o Vínculo Abrasador da Detonação: "+1 à quantidade máxima de totens invocados por carga de poder máxima" (o máximo de Cargas de
+  // Poder — `CargasPoe.maximo`; act_str.lua:9593) e a detonação ao chegar ao máximo
+  const porPoder = totem ? t.linhas.reduce((n, l) => n + (Number(/^\+([\d.]+) à quantidade máxima de totens invocados por carga de poder máxima$/i.exec(l)?.[1]) || 0), 0) : 0;
+  if (porPoder) maximo += porPoder * CargasPoe.maximo(af ?? {}, 'poder');
   maximo = Math.max(1, Math.round(maximo * (1 + porTipo('max_lacaio_pct') / 100)));
   // (lote G20c) os efeitos próprios do totem (a gema de totem; o totem de um suporte não tem) e a velocidade por totem máximo da Balista de Cerco
   const doTotem = totem && !doSuporte ? efeitosDoTotem(slug, [...t.linhas, ...GemasPoe.linhasDaQualidadeDe(slug, efeito?.qualidade ?? 0)]) : {};
@@ -464,6 +469,7 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
     ...(totem ? { efeitosDoTotem: doTotem } : {}),
+    ...(porPoder ? { detonaNoMaximo: true } : {}),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * (1 - spread))), max: Math.max(1, Math.round(golpe * (1 + spread))) }, intervaloMs: Math.round(f.tempo * 1000), elemento,
     // (lote 44: o lacaio que no PoE não pode sofrer dano — os Robôs Rastejantes, o Armamento Sagrado; lote 75: + o tipo da gema

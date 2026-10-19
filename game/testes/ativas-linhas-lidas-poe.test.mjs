@@ -85,7 +85,8 @@ test('G18a: as linhas das ativas vão a chaves que o jogo lê (nenhuma chave mor
   assert.deepEqual(G.maisPertoNoNivel('Ground_Slam', 20), { pct: 49, rampa: 'perto' });
   assert.deepEqual(G.projeteisDaGema('Molten_Strike_of_the_Zenith', 20), { pct: -60, quintoPct: 600, quintoProjeteis: 5 });
   // (as gemas cujos estágios não existem no jogo ficam parciais, com a linha não feita — antes pareciam feitas)
-  for (const s of ['Snipe', 'Divine_Ire', 'Vaal_Flameblast']) assert.ok(G.doSlug(s).motivosNoJogo.some((m) => /por Estágio|por estágio/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
+  // (lote A4, com o aval do dono: o Atirar, a Ira Divina e a Rajada de Chamas Vaal saíram da lista — os estágios delas foram feitos)
+  for (const s of []) assert.ok(G.doSlug(s).motivosNoJogo.some((m) => /por Estágio|por estágio/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
   // (a Troca de Corpos do Sacrifício não acerta: o "menos Dano de Afecções" dela fica não feito)
   assert.ok(G.doSlug('Bodyswap_of_Sacrifice').motivosNoJogo.some((m) => /menos Dano de Afecções/.test(m)));
 });
