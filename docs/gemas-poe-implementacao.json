@@ -2,8 +2,8 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 418,
-   "implementada e testada": 72,
+   "parcial": 416,
+   "implementada e testada": 74,
    "implementada, sem teste próprio": 50,
    "sem efeito": 11,
    "limitação do modelo idle": 11
@@ -31,9 +31,9 @@
    },
    "alternativas": {
     "total": 198,
-    "parcial": 159,
+    "parcial": 158,
     "implementada, sem teste próprio": 27,
-    "implementada e testada": 8,
+    "implementada e testada": 9,
     "limitação do modelo idle": 2,
     "sem efeito": 2
    }
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 966,
-   "emDuasOuMais": 216
+   "linhasDistintas": 961,
+   "emDuasOuMais": 215
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -885,10 +885,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa 4430.6 de Dano de Fogo Base por segundo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -900,15 +898,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "totem",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa 2977.7 de Dano de Fogo Base por segundo",
-    "efeito não simulado: Duração base é de 4 segundos",
-    "efeito não simulado: O raio Base é de 2.7 metros",
-    "efeito não simulado: +1 à quantidade máxima de totens invocados por carga de poder máxima",
-    "efeito não simulado: Dano abrasador aplicado pela detonação causa + 30 % de dano por totem detonado",
-    "efeito não simulado: Dano abrasador aplicado pela detonação causa + 10 % de dano por totem detonado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -12450,13 +12441,6 @@
    ]
   },
   {
-   "linha": "Causa # de Dano de Fogo Base por segundo",
-   "gemas": [
-    "Searing_Bond",
-    "Searing_Bond_of_Detonation"
-   ]
-  },
-  {
    "linha": "Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente",
    "gemas": [
     "Explosive_Trap",
@@ -13765,12 +13749,6 @@
    ]
   },
   {
-   "linha": "+# à quantidade máxima de totens invocados por carga de poder máxima",
-   "gemas": [
-    "Searing_Bond_of_Detonation"
-   ]
-  },
-  {
    "linha": "+# ao número máximo de Zumbis",
    "gemas": [
     "Raise_Zombie_of_Falling"
@@ -14827,12 +14805,6 @@
    ]
   },
   {
-   "linha": "Dano abrasador aplicado pela detonação causa + # % de dano por totem detonado",
-   "gemas": [
-    "Searing_Bond_of_Detonation"
-   ]
-  },
-  {
    "linha": "Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até # de dano antes de explodir",
    "gemas": [
     "Somatic_Shell"
@@ -15046,12 +15018,6 @@
    "linha": "Duração Base do Frenesi Faminto é de # segundos",
    "gemas": [
     "Feeding_Frenzy_Support"
-   ]
-  },
-  {
-   "linha": "Duração base é de # segundos",
-   "gemas": [
-    "Searing_Bond_of_Detonation"
    ]
   },
   {
@@ -16942,12 +16908,6 @@
    "linha": "O raio base da Saraivada é de # metros",
    "gemas": [
     "Bladefall_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "O raio Base é de # metros",
-   "gemas": [
-    "Searing_Bond_of_Detonation"
    ]
   },
   {

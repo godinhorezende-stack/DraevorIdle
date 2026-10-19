@@ -2798,6 +2798,11 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (lote G20c) o DEVORADOR: a cada uso dele (1 s), se você está ferido (ou sem mana cheia), consome o cadáver mais perto dele e o dreno vem
       // para você (`devorarCadaver`)
       if (l.devorador && R.jaPode(agora, l.proximoGolpe) && !Protecao.imune(hunt)) eventos.push(...devorarCadaver(estado, hunt, l, ficha, personagem, agora));
+      // (lote G20d) o VÍNCULO ABRASADOR: o feixe a você e aos outros totens dele, a cada `FEIXE_MS` (`Acoes.feixeDoVinculo`)
+      if (/^Searing_Bond/.test(l.gema ?? '') && R.jaPode(agora, l.proximoGolpe) && !Protecao.imune(hunt)) {
+        l.proximoGolpe = agora + Acoes.FEIXE_MS;
+        eventos.push(...Acoes.feixeDoVinculo(estado, hunt, l, hunt.clock ?? 0));
+      }
       if (GemasPoe.totemSemGolpe(l.gema)) continue;
       if (!R.jaPode(agora, l.proximoGolpe) || Protecao.imune(hunt)) continue;
       // (lote G20b) a BALISTA FOCADA: só ataca depois de um projétil de ataque SEU desde o último ataque dela (`hunt.poeProjetilDeAtaqueEm`)
