@@ -561,11 +561,12 @@
         }
       ],
       "estado": "aproximado",
-      "nota": "os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico e a recarga do escudo; o que o lacaio do jogo não tem — mana, atributos, precisão (ele não erra), atordoamento e recuperação de bloqueio, o crítico dos monstros nele, o máximo de UMA resistência, os efeitos ao bloquear — sai de você sem ir a ninguém",
+      "nota": "os bônus do escudo vão para os lacaios — o bloqueio (e o aumentado), as resistências, o máximo de cada uma (Fogo, Gelo, Raio e Caos), a vida (% e fixa), as DEFESAS da base (armadura, evasão e escudo de energia, com os do próprio escudo), a supressão, a redução física, o dano (o mágico no que conjura, o do elemento), as velocidades, o crítico, a regeneração, o movimento, o dreno, o evitar afecções, o reflexo físico, a recarga do escudo, o \"máximo\" do bloqueio (o teto do bloqueio do lacaio: 75% + ele, até 90%, como no PoE — vale para todo lacaio), o bloqueio Sortudo (o Svalinn), os efeitos ao Bloquear (Causticar, Enfraquecer, Exaurir, Intimidar, a vida, o reflexo, a recarga do escudo, o escudo de energia pela armadura) e os \"se Bloqueou Recentemente\" (a armadura, a penetração e o Fogo adicional, o bloqueio de ataque e de magia, o multiplicador de crítico, o bloqueio Sortudo) e os \"se não Bloqueou Recentemente\" (o bloqueio no máximo, o bloqueio, o crítico) — no lacaio, pelos 4 s do bloqueio dele; o Trespassar \"se Bloqueou Recentemente\" chega ao lacaio mas não faz nada (o Trespassar do jogo não tem efeito, nem em você), e outro \"se (não) Bloqueou Recentemente\" que não seja esses também não; o \"+N ao Nível de todas as Gemas\" do escudo também deixa de ser seu (só o das gemas encaixadas nele fica); o que sai de você sem ir a ninguém — mana, atributos, precisão, atordoamento e recuperação de bloqueio, o crítico dos monstros nele: mana e atributos não fazem nada no lacaio (no PoE também não); precisão, atordoamento e o crítico recebido entram no lote 87",
       "_nova": true,
       "_ciclo7": true,
       "_lote10": "13/10 — os lacaios (lote 10)",
-      "_lote43": "16/10 — lote 43 (P040: as defesas e os outros bônus do escudo nos lacaios, \"Fazer todos\")"
+      "_lote43": "16/10 — lote 43 (P040: as defesas e os outros bônus do escudo nos lacaios, \"Fazer todos\")",
+      "_lote86": "19/10 — lote 86 (a Égide Necromântica, parte A: o máximo de uma resistência, os efeitos ao bloquear, o se Bloqueou Recentemente, as gemas do escudo)"
     },
     {
       "padrao": "^Efeito de Auras Não-Maldição de suas Habilidades aumentado em \\{(\\d+)\\}% nos Inimigos$",

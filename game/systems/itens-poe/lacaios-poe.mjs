@@ -16,7 +16,8 @@ import { CATALOGO } from '../dados.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
 import * as Controle from '../combate/controle.mjs';
-import { slugDoNome, fatorDaArea, casasPelaArea, almasDoLacaio, DEVORADOR_DE_ALMAS } from './condicoes-poe.mjs';
+import { slugDoNome, fatorDaArea, casasPelaArea, almasDoLacaio, DEVORADOR_DE_ALMAS, sorteado } from './condicoes-poe.mjs';
+import { PARAMETROS } from '../combate/formulas.mjs';
 import { chanceDeEsquiva } from '../personagem/atributos.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -70,6 +71,10 @@ export function poeDeBase(f) {
     danoRecebidoPct: 0, regenPct: 0, regen: 0, roubo: 0, movimentoPct: 0, dotMulti: 0, degenPct: 0, bloqueio: 0,
     chances: { cegar: 0, provocar: 0, desacelerar: 0, envenenar: 0, incendiar: 0, definhar: 0, cinzas: 0, empalar: 0 },
     armadura: f?.armadura ?? 0, evasao: f?.evasao ?? 0, esFixo: f?.es ?? 0, reducaoFisica: 0, bloqueioMagico: 0, resMax: 0, esDaVidaPct: 0,
+    // (lote 86) a Égide Necromântica: o máximo de uma resistência, os efeitos ao bloquear e o "se Bloqueou Recentemente" — zerados
+    resMaxEl: { fire: 0, ice: 0, energy: 0 }, resMaxCaos: 0, aoBloquear: { causticar: 0, enfraquecer: 0, exaurir: 0, eventos: [] },
+    seBloqueou: { armadura: 0, penFogo: 0, fogo: [0, 0], sortudo: 0, bloqueio: 0, bloqueioMagico: 0, critMult: 0, trespassar: 0 },
+    naoBloqueou: { bloqueio: 0, critInc: 0, noMaximo: 0, magiaNoMaximo: 0 }, bloqueioSortudo: 0, bloqueioMax: 0, bloqueioMagicoMax: 0, fatorDoDano: 1,
     aoMatar: { poderProfano: [0, 4], agressividade: [0, 4] },
   };
 }
@@ -193,6 +198,18 @@ function efeitosDoTotem(slug, linhas) {
   const mana = achar(/^Drena ([\d.]+) de Mana para si a cada cadáver consumido$/i);
   if (vida || mana) r.devorador = { vida, mana };
   return r;
+}
+/**
+ * (lote 86, dono 19/10) Os EVENTOS de bloqueio que o escudo da Égide Necromântica dá ao lacaio (`minion_ev:bloquear[Ataque|Magia]:<ação>[:<param>]`
+ * — `afixos.passarOEscudoAosLacaios`): `[{ evento, acao, param, valor }]`.
+ */
+function eventosDeBloqueioDoLacaio(af) {
+  const saida = [];
+  for (const [k, v] of Object.entries(af ?? {})) {
+    const m = /^minion_ev:(bloquear(?:Ataque|Magia)?):([^:]+)(?::(.*))?$/.exec(k);
+    if (m && typeof v === 'number' && v) saida.push({ evento: m[1], acao: m[2], param: m[3] ?? '', valor: v });
+  }
+  return saida;
 }
 export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   // `af`: a soma do DONO (`ficha.afPoe`) — os mods do PoE dos lacaios e totens (vida, dano, velocidade, dano somado, máximos…).
@@ -375,6 +392,20 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
       // lacaio, o dreno para o dono — `aplicarNoLacaio`, `golpeDoLacaio`, `danoNoLacaio`, `aoMatarDoLacaio`.
       critInc: mn('minion_crit_inc') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? mn('minion_crit_magico') : 0), critMult: mn('minion_crit_mult'), areaPct: mn('minion_area'), recargaPct: mn('minion_cdr') + porTipo('lacaio_cdr'),
       bloqueioMagico: mn('minion_spell_block'), reducaoFisica: mn('minion_phys_red') + (totem ? m0('totem_phys_red') : 0), esDaVidaPct: mn('minion_es_da_vida'), resMax: mn('minion_res_max'),
+      // (lote 86, dono 19/10: a Égide Necromântica, parte A) o máximo de UMA resistência (o do escudo — `tetoDaResDoLacaio`); os efeitos AO
+      // BLOQUEAR do escudo (Causticar/Enfraquecer/Exaurir e os eventos `ev:bloquear*` — `cacadas.aoBloquearDoLacaio`) e o "se Bloqueou
+      // Recentemente" (a armadura — `danoNoLacaio`; a penetração e o Fogo adicional — `golpeDoLacaio`; o bloqueio Sortudo — `cacadas`)
+      resMaxEl: { fire: mn('minion_fire_res_max'), ice: mn('minion_ice_res_max'), energy: mn('minion_energy_res_max') }, resMaxCaos: mn('minion_chaos_res_max'),
+      aoBloquear: { causticar: mn('minion_bloqueio_causticar'), enfraquecer: mn('minion_bloqueio_enfraquecer'), exaurir: mn('minion_bloqueio_exaurir'), eventos: totem ? [] : eventosDeBloqueioDoLacaio(af) },
+      // (+ a correção do lote 86: o bloqueio de ataque e o de magia, o multiplicador de crítico e o Trespassar "se Bloqueou Recentemente"; o "se NÃO
+      // Bloqueou Recentemente" — o bloqueio, o crítico, o bloqueio no máximo; o bloqueio Sortudo sem condição, o Svalinn; o teto do bloqueio)
+      seBloqueou: { armadura: mn('minion_se_bloqueou:armor_flat'), penFogo: mn('minion_se_bloqueou:fire_pen'), fogo: [mn('minion_se_bloqueou:added_fire_dmg_min'), mn('minion_se_bloqueou:added_fire_dmg_max')], sortudo: mn('minion_se_bloqueou:bloqueio_sortudo'),
+        bloqueio: mn('minion_se_bloqueou:block'), bloqueioMagico: mn('minion_se_bloqueou:spell_block'), critMult: mn('minion_se_bloqueou:crit_dmg'), trespassar: mn('minion_se_bloqueou:sempre:trespassar') },
+      naoBloqueou: { bloqueio: mn('minion_nao_bloqueou:block'), critInc: mn('minion_nao_bloqueou:crit_chance_inc'), noMaximo: mn('minion_nao_bloqueou:bloqueio_no_maximo'), magiaNoMaximo: mn('minion_nao_bloqueou:bloqueio_magia_no_maximo') },
+      bloqueioSortudo: mn('minion_bloqueio_sortudo'), bloqueioMax: mn('minion_block_max'), bloqueioMagicoMax: mn('minion_spell_block_max'),
+      // (lote 86) o "aumentado" e o "mais" do dano do lacaio que a invocação já pôs no `dano` (golpe ÷ a força de base): o Fogo adicional "se
+      // Bloqueou Recentemente" é escalado por ele no golpe (`cacadas`), como o resto do golpe
+      fatorDoDano: f.dano > 0 ? golpe / f.dano : 1,
       // (lote 43, P040: as defesas do escudo da Égide Necromântica — a armadura, a evasão, o escudo de energia fixo, a supressão de magia)
       // (lote 44: + a armadura, a evasão e o escudo de energia de base do lacaio no PoB)
       // (lote 49: + "Golens têm +X de Armadura" — `lacaio_armadura:<tipo>`)
@@ -500,18 +531,24 @@ export function controleNoLacaio(l, bicho, hunt, agora, rng = Math.random) {
 /** Quanto o lacaio LENTO demora a mais no golpe (1 = normal). */
 export const fatorDeLentidao = (l, agora) => (l?.lento?.ate > agora && !l.poe?.semLentidao ? 1 / (1 - l.lento.pct / 100) : 1);
 /** A chance de crítico (%) e o multiplicador do golpe do lacaio, com os da árvore ("Lacaios têm Chance de Acerto Crítico aumentada", "+X% de Multiplicador"). */
-export function criticoDoLacaio(l, oferenda = null) {
+export function criticoDoLacaio(l, oferenda = null, relogio = null) {
   const p = l?.poe ?? {};
+  // (lote 86, dono 19/10: a Égide Necromântica — "+X% de Multiplicador de Crítico se você Bloqueou Recentemente" e "X% de Chance de Crítico
+  // aumentada se você não Bloqueou Recentemente" do escudo; `relogio`: o da caçada — sem ele, nenhum dos dois)
+  const recente = relogio != null && lacaioBloqueouRecente(l, relogio);
+  const critInc = relogio != null && !recente ? p.naoBloqueou?.critInc ?? 0 : 0;
+  const critMult = recente ? p.seBloqueou?.critMult ?? 0 : 0;
   // (a "Chance de Crítico dos Lacaios aumentada" sobre a BASE — `critChanceBase`, a chance sem ela; `critChance` já a traz: `oQueInvoca`)
-  const chance = Math.min(100, (l?.critChanceBase ?? l?.critChance ?? 5) * (1 + ((oferenda?.critInc ?? 0) + (p.critInc ?? 0)) / 100));
-  const mult = (l?.critMult ?? 1.5) + ((oferenda?.critMult ?? 0) + (p.critMult ?? 0)) / 100;
+  const chance = Math.min(100, (l?.critChanceBase ?? l?.critChance ?? 5) * (1 + ((oferenda?.critInc ?? 0) + (p.critInc ?? 0) + critInc) / 100));
+  const mult = (l?.critMult ?? 1.5) + ((oferenda?.critMult ?? 0) + (p.critMult ?? 0) + critMult) / 100;
   return { chance, mult };
 }
 /**
  * O golpe do lacaio no `alvo` com os mods do dono: o fator (dano dobrado), a ficha para a resistência (ignora a Redução de Dano Físico,
- * penetra as resistências elementais do amaldiçoado) e o Caos extra do Poder Profano. `{ fator, ficha, caosExtra }`.
+ * penetra as resistências elementais do amaldiçoado) e o Caos extra do Poder Profano; (lote 86) o Fogo adicional "se Bloqueou Recentemente".
+ * `{ fator, ficha, caosExtra, fogoExtra }` (`fogoExtra`: o sorteado, sem escala — quem chama escala como o golpe). `relogio`: o da caçada (`hunt.clock`).
  */
-export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.random, lacaios = null) {
+export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.random, lacaios = null, relogio = agora) {
   const p = l?.poe ?? {};
   let ficha = fichaDoDono;
   if (tipo === 'physical' && p.ignoraReducaoFisica > 0 && rng() * 100 < p.ignoraReducaoFisica) ficha = { ...ficha, ignoraReducaoFisica: true };
@@ -520,6 +557,16 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
     const pen = ficha?.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
     ficha = { ...ficha, penetracao: { ...pen, elemental: Math.min(100, (pen.elemental ?? 0) + p.penAmaldicoados) } };
   }
+  // (lote 86, dono 19/10: a Égide Necromântica) "Dano Penetra X% de Resistência a Fogo se você Bloqueou Recentemente" do escudo — o lacaio que
+  // bloqueou nos últimos 4 s, na parte de Fogo; e o "Adiciona X a Y de Dano de Fogo se você Bloqueou Recentemente" (`fogoExtra`, quem chama resiste)
+  // (o "Recentemente" pelo relógio da CAÇADA — `relogio`, o mesmo do `l.bloqueouEm`)
+  const recente = lacaioBloqueouRecente(l, relogio);
+  if (recente && p.seBloqueou?.penFogo > 0) {
+    const pen = ficha?.penetracao ?? { fisica: 0, elemental: 0, porElemento: {} };
+    ficha = { ...ficha, penetracao: { ...pen, porElemento: { ...(pen.porElemento ?? {}), fire: Math.min(100, (pen.porElemento?.fire ?? 0) + p.seBloqueou.penFogo) } } };
+  }
+  const [fMin, fMax] = recente ? p.seBloqueou?.fogo ?? [0, 0] : [0, 0];
+  const fogoExtra = fMax > 0 ? fMin + rng() * Math.max(0, fMax - fMin) : 0;
   // Os "aumentados" de agora, somados aos outros aumentos do lacaio (`danoIncPct`, o da invocação): (lote 50) o do convocado há pouco; (lote 52,
   // a Harmonia Primordial) o do Golem × os TIPOS de Golem vivos (as gemas diferentes — ele mesmo conta).
   const recentePct = p.danoRecentePct > 0 && agora - (l.desde ?? -Infinity) <= (p.danoRecenteMs || 0) ? p.danoRecentePct : 0;
@@ -532,7 +579,7 @@ export function golpeDoLacaio(l, alvo, fichaDoDono, tipo, agora, rng = Math.rand
   const dobrado = (p.danoDobrado ?? 0) + (l.hp >= l.maxHp ? p.danoDobradoVidaCheia ?? 0 : 0);
   const fator = (dobrado > 0 && rng() * 100 < dobrado ? 2 : 1) * aumentado * contraIncendiado;
   const caosExtra = tipo === 'physical' && buffDoLacaio(l, 'poderProfano', agora) ? 1 : 0;
-  return { fator, ficha, caosExtra };
+  return { fator, ficha, caosExtra, fogoExtra };
 }
 /** A área do golpe em área do lacaio, em casas de raio: 1 × √(1 + o "Efeito em Área" dele), a fração como chance — como a das gemas (lote 36). */
 export function raioDaAreaDoLacaio(l, rng = Math.random) {
@@ -567,18 +614,22 @@ export function curarLacaio(l, quanto) {
  * da sua — `chanceDeEsquiva`, contra a `precisao` do bicho); a SUPRESSÃO de magia (50% menos dano); a ARMADURA no físico (armadura ÷ (armadura +
  * 5 × o físico), somada à redução física adicional, no teto de 90%); e o escudo. `{ dano, bloqueou, evadiu }`.
  */
-export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = Math.random, bloqueioMagicoExtra = 0, precisao = 0, agora = null } = {}) {
+export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = Math.random, bloqueioMagicoExtra = 0, precisao = 0, agora = null, relogio = agora } = {}) {
   const p = l?.poe ?? {};
   // (lote 69) "Lacaios criados Recentemente não podem sofrer Dano"
   if (p.invulneravelRecente > 0 && agora != null && criadoRecentemente(l, agora)) return { dano: 0, bloqueou: false };
   // (13/10: + o bloqueio mágico das auras "Você e Aliados" do dono — `bloqueioMagicoExtra`)
-  const bloqueioMagico = (p.bloqueioMagico ?? 0) + bloqueioMagicoExtra;
-  if (magia && bloqueioMagico > 0 && rng() * 100 < bloqueioMagico) {
+  // (lote 86, dono 19/10: a Égide Necromântica — o do escudo "se Bloqueou Recentemente", no teto; "no máximo se não Bloqueou Recentemente";
+  // Sortudo (o Svalinn, ou "se Bloqueou Recentemente"): rola duas vezes. `relogio`: o da caçada, o do `l.bloqueouEm`.)
+  const bloqueioMagico = chanceDeBloquearDoLacaio(l, (p.bloqueioMagico ?? 0) + bloqueioMagicoExtra, { magia: true, relogio });
+  if (magia && bloqueioMagico > 0 && sorteado(bloqueioMagico / 100, bloqueioSortudoDoLacaio(l, relogio) ? 1 : 0, 0, rng)) {
     if (p.vidaAoBloquear > 0) curarLacaio(l, (l.maxHp * p.vidaAoBloquear) / 100);
     return { dano: 0, bloqueou: true };
   }
   if (!magia && p.evasao > 0 && precisao > 0 && rng() < chanceDeEsquiva(p.evasao, l.nivel ?? 1, precisao)) return { dano: 0, bloqueou: false, evadiu: true };
-  const daArmadura = p.armadura > 0 && fisico > 0 ? (100 * p.armadura) / (p.armadura + 5 * fisico) : 0;
+  // (lote 86, dono 19/10: a Égide Necromântica — "+X de Armadura se você Bloqueou Recentemente" do escudo, no lacaio que bloqueou nos últimos 4 s)
+  const armadura = armaduraDoLacaio(l, relogio);
+  const daArmadura = armadura > 0 && fisico > 0 ? (100 * armadura) / (armadura + 5 * fisico) : 0;
   const red = Math.min(90, Math.max(0, (p.reducaoFisica ?? 0) + daArmadura));
   let dano = fisico * (1 - red / 100) + outros;
   if (magia && p.supressao > 0 && rng() * 100 < p.supressao) dano *= 0.5;
@@ -591,8 +642,40 @@ export function danoNoLacaio(l, { fisico = 0, outros = 0, magia = false, rng = M
   l.esEspera = Math.round(2000 / Math.max(0.1, 1 + (p.esRecargaInicio ?? 0) / 100));
   return { dano, bloqueou: false };
 }
-/** O teto da resistência elemental do lacaio (75 + "X% de máximo de todas as Resistências Elementais"). */
-export const tetoDaResDoLacaio = (l) => Math.min(90, 75 + (l?.poe?.resMax ?? 0));
+/**
+ * O teto da resistência do lacaio a `elemento` (`fire`/`ice`/`energy`/`chaos`): o elemental, 75 + "X% de máximo de todas as Resistências
+ * Elementais" + (lote 86, dono 19/10: a Égide Necromântica) o máximo daquele elemento do escudo (`resMaxEl`); o de Caos, 75 + o máximo de Caos
+ * (`resMaxCaos`) — (lote 86: antes o Caos subia com o "todas as Elementais", e no PoE não sobe). No teto de 90. (Sem `elemento`: o de Fogo.)
+ */
+export function tetoDaResDoLacaio(l, elemento = 'fire') {
+  const p = l?.poe ?? {};
+  if (elemento === 'chaos') return Math.min(90, 75 + (p.resMaxCaos ?? 0));
+  return Math.min(90, 75 + (p.resMax ?? 0) + (p.resMaxEl?.[elemento] ?? 0));
+}
+/**
+ * (lote 86, dono 19/10) O lacaio Bloqueou Recentemente (nos últimos 4 s — `l.bloqueouEm`)? `relogio`: o da CAÇADA (`hunt.clock` — o mesmo dos
+ * estados nos bichos e do seu "Recentemente"); o `l.bloqueouEm` é gravado nele.
+ */
+export const lacaioBloqueouRecente = (l, relogio) => relogio != null && relogio - (l?.bloqueouEm ?? -Infinity) <= LACAIO_RECENTE_MS;
+/** (lote 86) A armadura do lacaio agora: a dele + o "+X de Armadura se você Bloqueou Recentemente" do escudo da Égide. */
+export const armaduraDoLacaio = (l, relogio) => (l?.poe?.armadura ?? 0) + (l?.poe?.seBloqueou?.armadura > 0 && lacaioBloqueouRecente(l, relogio) ? l.poe.seBloqueou.armadura : 0);
+/** (lote 86) O bloqueio do lacaio é Sortudo? O "Chance de Bloquear é Sortuda" do escudo (o Svalinn) sempre; o "se você Bloqueou Recentemente", nos 4 s. */
+export const bloqueioSortudoDoLacaio = (l, relogio) => l?.poe?.bloqueioSortudo > 0 || (l?.poe?.seBloqueou?.sortudo > 0 && lacaioBloqueouRecente(l, relogio));
+/**
+ * (lote 86, dono 19/10: a Égide Necromântica, "TODO bônus do escudo vale no lacaio") A chance de bloquear do lacaio (%), de ataque ou de
+ * `magia`, a partir da `base` (o que quem chama já somou: o dele, a Oferenda, as suas auras e o aumentado): + o do escudo "se Bloqueou
+ * Recentemente" / "se não Bloqueou Recentemente"; "Você está na Chance Máxima de Bloquear … caso não tenha Bloqueado Recentemente": o TETO do
+ * PoE (os 75% de `combate/formulas.json` — como o seu — + o "+X% à Chance máxima de Bloquear" do escudo, até os 90% do PoE). Todo lacaio
+ * para no teto (dono, 19/10: "Teto 75% e ajustar o teste" — antes o lacaio não tinha teto).
+ */
+export function chanceDeBloquearDoLacaio(l, base, { magia = false, relogio = null } = {}) {
+  const p = l?.poe ?? {};
+  const recente = lacaioBloqueouRecente(l, relogio);
+  const teto = Math.min(90, 100 * (magia ? PARAMETROS.bloqueio.limiteDaMagia : PARAMETROS.bloqueio.limiteDoGolpe) + ((magia ? p.bloqueioMagicoMax : p.bloqueioMax) ?? 0));
+  if (relogio != null && !recente && (magia ? p.naoBloqueou?.magiaNoMaximo : p.naoBloqueou?.noMaximo) > 0) return teto;
+  const extra = recente ? (magia ? p.seBloqueou?.bloqueioMagico : p.seBloqueou?.bloqueio) ?? 0 : relogio != null && !magia ? p.naoBloqueou?.bloqueio ?? 0 : 0;
+  return Math.max(0, Math.min(teto, base + extra));
+}
 /**
  * O escudo do lacaio recarrega (33%/s, depois de 2 s sem dano — a regra do escudo do PoE; lote 84, dono: "33% como o PoB" — o
  * `RECARGA_POR_SEGUNDO_POE` de atributos-principais.json). `ms`: o tique.

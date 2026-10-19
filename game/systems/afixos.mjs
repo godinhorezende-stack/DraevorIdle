@@ -314,7 +314,32 @@ const DO_ESCUDO_PARA_O_LACAIO = {
   block_inc: 'minion_block_inc', spell_dmg: 'minion_dano_magico', spell_crit_chance_inc: 'minion_crit_magico', fire_dmg: 'minion_dano_fire',
   ice_dmg: 'minion_dano_ice', energy_dmg: 'minion_dano_energy', avoid_elem_ailments: 'minion_evitar_afeccoes', reflect_phys_melee: 'minion_reflexo_fisico',
   es_recharge_start: 'minion_es_recarga_inicio',
+  // (lote 86, dono 19/10: "Fazer tudo do PoE") o máximo de UMA resistência — a de Fogo, Gelo, Raio ou Caos — no lacaio (o "máximo de todas as
+  // Elementais" do escudo já chega como as três: `LacaiosPoe.tetoDaResDoLacaio`), e os efeitos "ao Bloquear" (Causticar, Enfraquecer, Exaurir)
+  fire_res_max: 'minion_fire_res_max', ice_res_max: 'minion_ice_res_max', energy_res_max: 'minion_energy_res_max', chaos_res_max: 'minion_chaos_res_max',
+  bloqueio_causticar: 'minion_bloqueio_causticar', bloqueio_enfraquecer: 'minion_bloqueio_enfraquecer', bloqueio_exaurir: 'minion_bloqueio_exaurir',
+  // (+ "Chance de Bloquear é Sortuda" sem condição — o Svalinn — e o "+X% à Chance máxima de Bloquear" de ataque e de magia: o teto do lacaio)
+  bloqueio_sortudo: 'minion_bloqueio_sortudo', block_max: 'minion_block_max', spell_block_max: 'minion_spell_block_max',
 };
+/**
+ * (lote 86, dono 19/10) A chave do escudo que vai ao lacaio fora da tabela: os EVENTOS de bloqueio (`ev:bloquear:*`, `ev:bloquearAtaque:*`,
+ * `ev:bloquearMagia:*` → `minion_ev:…` — com o prefixo, o `eventosDa` do dono não os pega; o "com Escudo" vale: o escudo está lá; outra condição,
+ * não vai), o "se Bloqueou Recentemente" (`X@bloqueouRecente` → `minion_se_bloqueou:X`, sem o `@`: senão valeria quando VOCÊ bloqueia) e o "se
+ * não Bloqueou Recentemente" (`X@naoBloqueouRecente` → `minion_nao_bloqueou:X`) —
+ * `LacaiosPoe.oQueInvoca` (`aoBloquear`, `seBloqueou`). `null`: não vai.
+ */
+function chaveDoEscudoNoLacaio(k) {
+  if (DO_ESCUDO_PARA_O_LACAIO[k]) return DO_ESCUDO_PARA_O_LACAIO[k];
+  if (/^ev:bloquear(?:Ataque|Magia)?:/.test(k)) {
+    const semEscudo = k.replace(/@comEscudo$/, '');
+    return semEscudo.includes('@') ? null : `minion_${semEscudo}`;
+  }
+  const m = /^([^@%]+)@bloqueouRecente$/.exec(k);
+  if (m) return `minion_se_bloqueou:${m[1]}`;
+  // (+ o "se você NÃO Bloqueou Recentemente" — `X@naoBloqueouRecente` → `minion_nao_bloqueou:X`: o bloqueio no máximo, o bloqueio, o crítico)
+  const n = /^([^@%]+)@naoBloqueouRecente$/.exec(k);
+  return n ? `minion_nao_bloqueou:${n[1]}` : null;
+}
 export const ehEgideComEscudo = (estado, total) => itensPoeLigado() && Number(total?.egide_necromantica) > 0 && estado?.equipment?.shield?.poe?.classe === 'Shields';
 
 /**
@@ -340,7 +365,7 @@ function passarOEscudoAosLacaios(estado, total) {
   const doEscudo = somarPeca({}, estado, 'shield', escudo);
   for (const [k, v] of Object.entries(doEscudo)) {
     total[k] = (total[k] ?? 0) - v;
-    const doLacaio = DO_ESCUDO_PARA_O_LACAIO[k];
+    const doLacaio = chaveDoEscudoNoLacaio(k);
     if (doLacaio) total[doLacaio] = (total[doLacaio] ?? 0) + v;
   }
   // (lote 43, P040 — dono, 16/10: "Fazer todos") as DEFESAS do escudo nos lacaios: a da base dele (a armadura, a evasão e o escudo de energia —
