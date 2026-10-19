@@ -128,6 +128,10 @@ export const REGRAS = [
   // concede X% de chance de …" — o Arauto da Agonia, o Campo Galvânico) é de quem tem o buff: as duas vão a `naoImplementadas`)
   [r(`^Acertos(?: de Ataques)? contra Inimigos Amaldiçoados`), () => false],
   [r(`^Buff concede .*% de chance de`), () => false],
+  // (lote A3, dono 19/10) a linha do Pulso Congelante ("Projéteis perdem Dano continuamente … até 50% menos … 25% de chance de Congelar, que é
+  // perdida …") é a RAMPA do PoB — o dano e o congelamento pela distância (`GemasPoe.alvosNoNivel`, o `rampaMaisPct`/`rampaCongelar`); antes casava
+  // com a regra do "% de chance de Congelar" abaixo: o congelamento ficava fixo em 25% e a queda do dano nunca valia
+  [r(`^Projéteis perdem Dano continuamente`), () => false],
   [r(`${N} % de chance de Congelar, Eletrizar e Incendiar`), (s, m) => (s.chances.congelar = s.chances.eletrizar = s.chances.incendiar = num(m[1]))],
   [r(`${N} % de chance de Incendiar`), (s, m) => (s.chances.incendiar = num(m[1]))],
   [r(`${N} % de chance de Congelar`), (s, m) => (s.chances.congelar = num(m[1]))],
@@ -291,7 +295,9 @@ export const REGRAS = [
 // Vaal, itens, escudos). Não são "efeitos da gema" no combate — ficam como informativo
 // e não derrubam o status.
 export const INFORMATIVO = [
-  /^Modificadores /i, /^Aumentos e Reduções/i, /Almas/i, /^Pode usar Itens que exigem/i,
+  // (revisão do A3) a Flecha Galvânica: "Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade" (o PoB:
+  // arrowSpeedAppliesToAreaOfEffect) não é informativa — o jogo não a faz (o impacto do projétil não tem área): fica não feita
+  /^Modificadores /i, /^Aumentos e Reduções(?! a Velocidade de Projéteis também se aplicam ao Efeito em Área)/i, /Almas/i, /^Pode usar Itens que exigem/i,
   /desta Habilidade não pode ser modificada/i, /A Recarga desta Habilidade não é recuperada/i,
   /^Habilidades Suportadas/i, /Armadilhas não são Ativadas no fim/i, /Lacaios não podem Provocar/i,
   /Quando em Dupla Empunhadura/i, /^Não pode ser Evadido/i,

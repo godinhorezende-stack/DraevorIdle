@@ -277,6 +277,17 @@ const linhasDaQualidade = (g, q) => (g?.qualidade ?? []).flatMap(partirQualidade
  * A gema compilada no nível (cache): os números do PoE (`compilarHabilidade` da arena do dono). (17/10, lote G2: + a QUALIDADE, 0–20 — as
  * linhas dela entram com as do nível: "+0.4 metros de raio", "+2 segundos à duração base", "Dispara +1 projétil"…)
  */
+/**
+ * (revisão do A3, dono 19/10: "Siga o PoB") A Vaal Flecha Relampejante veio do poedb com a tabela de níveis da Flecha Relampejante comum: o dano base
+ * (149,5% → 177,1%) e a coluna "Dispara N Projéteis adicionais". No PoB (act_dex.lua:10568) ela tem só as 5 flechas (base_number_of_arrows) e o
+ * baseMultiplier 0,713 → 0,983 por nível — os de cá.
+ */
+const CORRECAO_DO_POB = {
+  Vaal_Lightning_Arrow: {
+    efetividade: [0.713, 0.726, 0.737, 0.749, 0.76, 0.772, 0.782, 0.792, 0.803, 0.813, 0.822, 0.831, 0.841, 0.85, 0.858, 0.866, 0.874, 0.882, 0.89, 0.897, 0.904, 0.911, 0.918, 0.925, 0.931, 0.937, 0.943, 0.949, 0.954, 0.96, 0.963, 0.965, 0.967, 0.969, 0.972, 0.974, 0.976, 0.979, 0.981, 0.983],
+    semProjeteisAdicionais: true,
+  },
+};
 export function compilada(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   if (!g || !COMPILADOR) return null;
@@ -285,7 +296,9 @@ export function compilada(slug, nivel = 1, qualidade = 0) {
   const k = `${slug}@${n}@${q}`;
   if (!CACHE.has(k)) {
     const h = COMPILADOR.compilarHabilidade(g, n, q > 0 ? linhasDaQualidade(g, q / 20) : []);
-    CACHE.set(k, h && ARQUETIPO_PROPRIO[slug] ? { ...h, arquetipo: ARQUETIPO_PROPRIO[slug] } : h);
+    const c = CORRECAO_DO_POB[slug];
+    const h2 = h && c?.efetividade ? { ...h, stats: { ...h.stats, efetividade: c.efetividade[Math.min(c.efetividade.length, n) - 1] } } : h;
+    CACHE.set(k, h2 && ARQUETIPO_PROPRIO[slug] ? { ...h2, arquetipo: ARQUETIPO_PROPRIO[slug] } : h2);
   }
   return CACHE.get(k);
 }
@@ -319,14 +332,68 @@ const REGRAS_DE_ALVOS = [
   // (11/10) A quantidade BASE ("Dispara 15 projéteis", "Dispara 9 Flechas") e "Dispara Projéteis em sequência" (todos podem ir no alvo):
   // a emissão de `skills/golpes-secundarios.resolver`.
   // (só aparecem na gema que os declara)
-  [/^Dispara (\d+) (?:projéteis|flechas)$/i, (m, a) => { a.base = Math.max(a.base ?? 0, Number(m[1])); }],
+  // (lote A3, dono 19/10: + o singular — o Pulso Congelante chega como "Dispara 5 projétil" no nível 20; o PoB dá base_number_of_projectiles 5)
+  [/^Dispara (\d+) (?:projéteis|projétil|flechas)$/i, (m, a) => { a.base = Math.max(a.base ?? 0, Number(m[1])); }],
   [/^Dispara Projéteis em sequência$/i, (m, a) => { a.sequencia = true; }],
   [/^Dispara (?:um|1) Projétil adicional$/i, (m, a) => { a.projeteis += 1; }],
   // (17/10, lote G2) a qualidade escreve os adicionais com "+": "Dispara +2 projéteis", "Dispara +1 Flecha" (a fração arredonda para baixo)
   [/^Dispara \+(\d+(?:\.\d+)?) (?:projéteis|projétil|Flechas?)$/i, (m, a) => { a.projeteis += Math.floor(Number(m[1])); }],
-  [/se divide em direção a (\d+) alvos adiciona/i, (m, a) => { a.divide += Number(m[1]); }],
+  // (lote A3, dono 19/10: + o "+" da qualidade — "O feixe se divide em direção a +2 alvos adicionais")
+  [/se divide em direção a \+?(\d+) alvos adiciona/i, (m, a) => { a.divide += Number(m[1]); }],
   // (12/10) O Aço Violento: "Projéteis se Partem na direção de N alvos" (o compilador lia o número, mas nada o usava: a divisão não saía).
-  [/^Projéteis se Partem na direção de (\d+) alvos$/i, (m, a) => { a.divide += Number(m[1]); }],
+  // (lote A3, dono 19/10 — D5: a DIVISÃO como no PoE — o projétil se divide a partir do alvo atingido em N projéteis para os mais próximos
+  // (`Secundarios.resolver`); antes eram N projéteis a mais saindo de você. O `divide` segue com os dois — o do feixe e o do projétil —, e
+  // `partir` é só o do projétil, que não vira projétil a mais.)
+  [/^Projéteis se Partem na direção de (\d+) alvos$/i, (m, a) => { a.divide += Number(m[1]); a.partir = (a.partir ?? 0) + Number(m[1]); }],
+  // (lote A3, D5) "Modificadores do número de Projéteis ao invés são aplicados ao número de alvos para os quais os Projéteis focam sua Divisão":
+  // os projéteis a mais (da gema, dos suportes, das peças) viram alvos da divisão (`Acoes.comOsAlvosDaGema`)
+  [/^Modificadores do número de Projéteis ao invés são aplicados ao número de alvos para os quais os Projéteis focam sua Divisão$/i, (m, a) => { a.extrasNaDivisao = true; }],
+  [/^Projéteis podem se Dividir sem acertar um alvo$/i, (m, a) => { a.partirSemAcertar = true; }],
+  [/^Projéteis podem se Dividir ao acertar o terreno$/i, (m, a) => { a.partirNoTerreno = true; }],
+  // ("Projéteis não podem se Partir" — a Explosão Cinética do Agrupamento, a Vaal Flecha Relampejante: o CannotSplit do PoB)
+  [/^Projéteis não podem se Partir$/i, (m, a) => { a.semPartir = true; }],
+  // (lote A3 — F1, D1) a VELOCIDADE DE PROJÉTIL da gema: o "aumentada" soma com a das peças e a dos suportes; o "mais" multiplica. Vale no tiro
+  // da tela, nas rampas do Pulso Congelante e do Olho Invernal (× o ProjectileSpeedMod do PoB) e no "dano com Arcos" (só o "aumentada")
+  [/^Velocidade de Projéteis aumentada em ([\d.]+) ?%$/i, (m, a) => { a.velInc = (a.velInc ?? 0) + Number(m[1]); }],
+  [/^([\d.]+) ?% mais Velocidade de Projétil$/i, (m, a) => { a.velMais = (a.velMais ?? 1) * (1 + Number(m[1]) / 100); }],
+  // (lote A3 — F3) "Projéteis que Atravessaram causam X% mais Dano" (o PoB: projectile_damage_+%_final_if_pierced_enemy) — o acerto do projétil
+  // que já atravessou alguém (`Acoes.disparar`, o `fatorDoProjetil`)
+  [/^Projéteis que Atravessaram causam ([\d.]+) ?% mais Dano$/i, (m, a) => { a.atravessouMaisPct = (a.atravessouMaisPct ?? 0) + Number(m[1]); }],
+  // (lote A3 — F4) o RETORNO da gema (o Giro Venenoso): volta a você; "Projéteis Retornando causam X% menos Dano com Acertos e Afecções" (o % da
+  // volta) e "Projéteis Retornando Atravessam todos os Alvos" (dono, D4: a reta da volta acerta todos os vivos no caminho)
+  [/^Projéteis Retornam a você$/i, (m, a) => { a.retornar = 1; }],
+  [/^Projéteis Retornando causam ([\d.]+) ?% menos Dano com Acertos e Afecções$/i, (m, a) => { a.danoDoRetornoPct = Math.max(0, 100 - Number(m[1])); }],
+  [/^Projéteis Retornando Atravessam todos os Alvos$/i, (m, a) => { a.voltaAtravessa = true; }],
+  // (lote A3 — F2, D2) as RAMPAS DE DISTÂNCIA do PoB (DistanceRamp, × o ProjectileSpeedMod): o Pulso Congelante — 50% menos Dano de 0 a 60
+  // unidades, e os 25% de Congelar que caem a 0 em 15 unidades (act_int.lua:7687-7688) —; o Olho Invernal — até X% mais Dano de 0 a 60 unidades
+  // (act_int.lua:5519; a da qualidade soma). A distância em unidades é a do lote 33: as casas × 20 (o colado, 20).
+  [/^Projéteis perdem Dano continuamente, causando até ([\d.]+) ?% menos Dano por vez que se dissiparem Projéteis têm ([\d.]+) ?% de chance de Congelar, que é perdida no primeiro quarto da luta$/i,
+    (m, a) => { a.rampaMaisPct = (a.rampaMaisPct ?? 0) - Number(m[1]); a.rampaCongelar = Number(m[2]); }],
+  [/^Projéteis ganham Dano continuamente, até ([\d.]+) ?% mais Dano até se dissiparem$/i, (m, a) => { a.rampaMaisPct = (a.rampaMaisPct ?? 0) + Number(m[1]); }],
+  [/^Projéteis ganham até \+([\d.]+) ?% mais Dano até se dissiparem$/i, (m, a) => { a.rampaMaisPct = (a.rampaMaisPct ?? 0) + Number(m[1]); }],
+  // (lote A3 — F6) "Dispara Projéteis em direções aleatórias" (a Vaal Faísca: o ramo das direções aleatórias, lote 42)
+  [/^Dispara Projéteis em direções aleatórias$/i, (m, a) => { a.direcoesAleatorias = true; }],
+  // (lote A3 — F6, D6) a Hélice Espectral: "Rebate até N vezes" (cada rebatida é um ricochete no terreno, 100%) e os projéteis a mais viram
+  // rebatidas; a Vaal Flecha Relampejante: "mudam de direção N vezes … podem Acertar alvos cada vez" — N acertos a mais nos mais perto, a 3 casas
+  // (os Difundir/Ricochetear a mais também viram mudanças de direção)
+  [/^Rebate até (\d+) vezes Modificadores ao número de Projéteis se aplicam ao número de Rebatidas$/i, (m, a) => { a.rebatidas = (a.rebatidas ?? 0) + Number(m[1]); a.extrasNasRebatidas = true; a.rebatidasNoTerreno = true; }],
+  [/^Projéteis mudam de direção (\d+) vezes Projéteis podem Acertar alvos cada vez que mudam de direção$/i, (m, a) => { a.rebatidas = (a.rebatidas ?? 0) + Number(m[1]); a.ricochetesNasRebatidas = true; }],
+  // (lote A3 — F6, D6) o Magma Rolante e o Vaal Golpe Fundido: "Projéteis podem Ricochetear ao atingir o solo / não mudam de direção" — cada
+  // ricochete é um salto no solo: uma área a cada 3 casas, na mesma reta (o raio do PoB do Magma: 1,4 + 0,4 m ≈ 1 casa)
+  [/^Projéteis podem Ricochetear ao atingir o solo Projéteis não mudam de direção ao Ricochetear$/i, (m, a) => { a.saltoNoSolo = true; }],
+  // (lote A3 — F7) a quantidade e a emissão: "O primeiro e último disparo da sequência dispara N Projéteis adicionais simultâneos" (a Saraivada:
+  // 2 × N a mais — os simultâneos vão nos outros bichos, a sequência no alvo); "Dispara Projéteis extras em até N Inimigos ao redor" (o Rito
+  // Proibido: um projétil a mais em cada inimigo em volta, até N — só os que existem); "Dispara Projéteis em cada inimigo Próximo" (a Vaal Sifão
+  // de Poder: um em cada um no alcance); "Projéteis causam +X% (mais) dano por projétil disparado anteriormente em sequência" (a Fuzilaria
+  // Cinética: o k-ésimo projétil do uso, × (1 + X·k/100))
+  // (revisão do A3: os simultâneos à parte — `simultaneos`, em leque para os outros inimigos; não são projéteis da sequência)
+  [/^O primeiro e último disparo da sequência dispara (\d+) Projéteis adicionais simultâneos$/i, (m, a) => { a.simultaneos = (a.simultaneos ?? 0) + Number(m[1]); }],
+  [/^Dispara Projéteis extras em até \+?(\d+) Inimigos ao redor$/i, (m, a) => { a.aoRedor = (a.aoRedor ?? 0) + Number(m[1]); }],
+  [/^Dispara Projéteis em cada inimigo Próximo$/i, (m, a) => { a.aoRedor = Math.max(a.aoRedor ?? 0, 99); }],
+  [/^Projéteis causam \+ ?([\d.]+) ?% (?:mais )?dano por projétil disparado anteriormente em sequência$/i, (m, a) => { a.porProjetilAnteriorPct = (a.porProjetilAnteriorPct ?? 0) + Number(m[1]); a.extrasNoAlvo = true; }],
+  // (revisão do A3) o Raio Cinético: "Modificadores que fariam com que projéteis se Difundissem fazem com que eles mudem de direção vezes
+  // adicionais ao invés" — e a mudança de direção não se aplica (`LINHAS_QUE_NAO_SE_APLICAM`): a Difusão não vale nesta gema
+  [/^Modificadores que fariam com que projéteis se Difundissem fazem com que eles mudem de direção vezes adicionais ao invés$/i, (m, a) => { a.semDifundir = true; }],
   [/^Projéteis se Difundem$/i, (m, a) => { a.bifurcar = Math.max(a.bifurcar, 2); }],
   // (18/10, lote G20a) a Balista de Cerco Fragmentadora: os filhos da difusão difundem de novo e a chance de 1 filho a mais (a da qualidade —
   // act_dex.lua:14056-14061)
@@ -404,8 +471,41 @@ export function cadaveresDaGema(slug, nivel = 1) {
   };
 }
 
+/**
+ * (lote A3, dono 19/10 — D3) O que o projétil do Arremesso Espectral e da Hélice Espectral faz e está só no PoB e na DESCRIÇÃO (sem linha):
+ * o Arremesso "voa e depois retorna a você … causando dano aos inimigos em seu caminho" e tem PierceChance 100 (act_dex.lua:14603) — atravessa
+ * todos, na ida e na volta —; o da Materialização "só acerta e causa dano enquanto retorna" (a ida não acerta ninguém); a Hélice "causa dano aos
+ * inimigos em seu caminho" — atravessa todos (o retorno não está na descrição dela). Sem isso, o "Projéteis que Atravessaram causam X% mais
+ * Dano" da qualidade não faria nada.
+ */
+const DESCRICAO_DO_PROJETIL = [
+  [/^(?:Vaal_)?Spectral_Throw(?:_of_Trarthus)?$/, { perfurar: 99, retornar: 1, voltaAtravessa: true }],
+  [/^Spectral_Throw_of_Materialising$/, { perfurar: 99, retornar: 1, voltaAtravessa: true, soNaVolta: true }],
+  [/^Spectral_Helix(?:_of_Trarthus)?$/, { perfurar: 99 }],
+];
+/**
+ * (lote A3, dono 19/10 — D1, D6) As linhas de projétil que NÃO SE APLICAM ao jogo (só a trajetória — o projétil do jogo acerta no tique, e o PoB
+ * não as usa na conta): saem dos motivos e ficam como nota (`linhasQueNaoSeAplicam`, o relatório as mostra).
+ */
+const LINHAS_QUE_NAO_SE_APLICAM = [
+  [/^A Segunda forma possui [\d.]+ ?% mais Velocidade de Projétil$/i, 'não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
+  [/^Desaceleração do Projétil reduzida em [\d.]+ ?%$/i, 'não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta'],
+  [/^Projéteis mudam de direção \d+ vezes$/i, 'não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança'],
+];
+/**
+ * (lote A3, dono 19/10) O que o projétil da gema faz só no PoB, sem linha (o status não o vê): a Vaal Faísca lança 100 projéteis em espiral por 3 s
+ * (base_number_of_projectiles_in_spiral_nova, act_int.lua:16994) — as direções aleatórias valem, mas a espiral é do lote A3b (F8).
+ */
+const PROJETIL_SEM_LINHA = {
+  Vaal_Spark: ['os 100 projéteis em espiral por 3 segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias'],
+};
+export const ehLinhaQueNaoSeAplica = (l) => LINHAS_QUE_NAO_SE_APLICAM.some(([re]) => re.test(String(l)));
+/** (lote A3) As notas das linhas da gema que não se aplicam (sem repetição). */
+export const linhasQueNaoSeAplicam = (linhas = []) => [...new Set(linhas.map((l) => LINHAS_QUE_NAO_SE_APLICAM.find(([re]) => re.test(String(l)))?.[1]).filter(Boolean))];
+// (lote A3: a velocidade de projétil de uma gema de TOTEM não conta como feita aqui — o tiro do totem é do ramo do totem, de outra sessão)
+const VELOCIDADE_DA_GEMA = /^Velocidade de Projéteis aumentada em|^[\d.]+ ?% mais Velocidade de Projétil$/i;
 /** As linhas da gema que o jogo agora faz (saem de "não simulado"). */
-export const ehLinhaDeAlvos = (linha) => REGRAS_DE_ALVOS.some(([re]) => re.test(linha));
+export const ehLinhaDeAlvos = (linha, arquetipo = null) => !(arquetipo === 'totem' && VELOCIDADE_DA_GEMA.test(linha)) && REGRAS_DE_ALVOS.some(([re]) => re.test(linha));
 const ALVOS = new Map();
 export function alvosNoNivel(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
@@ -416,7 +516,9 @@ export function alvosNoNivel(slug, nivel = 1, qualidade = 0) {
   const a = { saltos: 0, pctPorRestante: 0, perfurar: 0, projeteis: 0, bifurcar: 0, divide: 0 };
   // (17/10, lote G2: + as linhas da qualidade — "Dispara +1 projétil", "Ricocheteia +1 Vezes")
   const linhas = g && COMPILADOR?.textosDoNivel ? [...COMPILADOR.textosDoNivel(g, n), ...(q > 0 ? linhasDaQualidade(g, q / 20) : [])] : [];
-  for (const linha of linhas) for (const [re, fazer] of REGRAS_DE_ALVOS) { const m = linha.match(re); if (m) fazer(m, a); }
+  for (const linha of linhas) for (const [re, fazer] of REGRAS_DE_ALVOS) { if (CORRECAO_DO_POB[slug]?.semProjeteisAdicionais && /^Dispara \d+ Projéteis adicionais$/i.test(linha)) continue; const m = linha.match(re); if (m) fazer(m, a); }
+  // (lote A3 — D3: o que está só na descrição e no PoB do projétil)
+  for (const [re, d] of DESCRICAO_DO_PROJETIL) if (re.test(slug)) { Object.assign(a, d); a.perfurar = Math.max(a.perfurar, d.perfurar ?? 0); }
   ALVOS.set(k, a);
   return a;
 }
@@ -1106,6 +1208,8 @@ function avaliarNoJogo(h, formato) {
     if (h.arquetipo === 'movimento' && !DESLOCAMENTO[h.slug]) motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
     // (lote A1, dono 19/10: o que fica para depois — a mecânica está só na descrição da gema, sem linha)
     for (const m of DESCRICAO_DO_MOVIMENTO[h.slug] ?? []) motivos.push(`efeito não simulado: ${m}`);
+    // (lote A3: o que o projétil da gema faz só no PoB, sem linha — fica para o lote A3b)
+    for (const m of PROJETIL_SEM_LINHA[h.slug] ?? []) motivos.push(`efeito não simulado: ${m}`);
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
     // (09/10) O dano degenerativo da gema se aplica no acerto (`acoes`: `degenerativoNoNivel`); o "% da Vida por segundo" do Fogo Justo, ainda não.
     if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
@@ -1121,7 +1225,8 @@ function avaliarNoJogo(h, formato) {
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  // (lote A3: + as linhas de projétil que não se aplicam — `LINHAS_QUE_NAO_SE_APLICAM`, que vão como nota)
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**
@@ -1280,7 +1385,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }
@@ -1316,7 +1421,9 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     const { status, motivos } = NAO_SE_APLICA[g.slug] ? { status: 'nao', motivos: [NAO_SE_APLICA[g.slug]] } : avaliarNoJogo({ ...hq, slug: g.slug, nivel: nivelRef, qualidade: 20 }, formato);
     if (status === 'nao') entry.poeGema.bloqueio = motivos[0];
     ACTION_CATALOG.spells.push(entry);
-    REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g, ...(NAO_SE_APLICA[g.slug] ? { naoSeAplica: NAO_SE_APLICA[g.slug] } : {}) });
+    REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g,
+      // (lote A3) as notas das linhas que não se aplicam
+      ...(linhasQueNaoSeAplicam(hq.linhas?.naoImplementadas).length && !NAO_SE_APLICA[g.slug] ? { linhasNaoSeAplicam: linhasQueNaoSeAplicam(hq.linhas.naoImplementadas) } : {}), ...(NAO_SE_APLICA[g.slug] ? { naoSeAplica: NAO_SE_APLICA[g.slug] } : {}) });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
     registrarGema?.({ itemId, entry, gema: g, tabelaDeXp: gemaDaTabelaDeXp(g), categoria: entry.poeGema.buff || entry.poeGema.vinculo ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
     if (entry.poeGema.buff) registrarReforco?.(entry.id, { dur: buffNoNivel(g.slug, 1).dur, tipo: `poe-${h.arquetipo}`, efeitos: [] });

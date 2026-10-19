@@ -1521,9 +1521,11 @@ export function maisPelaProximidade(ficha, tags, alvo, estado) {
   if (!v) return 1;
   return Math.max(0, 1 + (v * proximidadeCorpoACorpo(unidadesAte(alvo, estado?.hunt?.pos))) / 100);
 }
-function pelaDistancia(ficha, tags, alvo, estado) {
+function pelaDistancia(ficha, tags, alvo, estado, s = null) {
   const longe = Number(ficha.afPoe.tiro_distante) > 0;
-  const perto = Number(ficha.afPoe.queima_roupa) > 0;
+  // (lote A3, dono 19/10 — D9: + a do USO — o suporte Ponto Cego, `af:queima_roupa` na ficha do uso, a flag PointBlank do PoB: a mesma rampa, sem somar
+  // com a keystone)
+  const perto = Number(ficha.afPoe.queima_roupa) > 0 || Number(s?.queima_roupa) > 0;
   if ((!longe && !perto) || !tags.has('projetil') || !tags.has('ataque') || !alvo || !estado?.hunt?.pos) return 1;
   const d = Math.max(Math.abs(alvo.x - estado.hunt.pos.x), Math.abs(alvo.y - estado.hunt.pos.y)) * DISTANCIA_DO_PROJETIL.unidadesPorCasa;
   return (longe ? interpolar(DISTANCIA_DO_PROJETIL.tiroDistante, d) : 1) * (perto ? interpolar(DISTANCIA_DO_PROJETIL.queimaRoupa, d) : 1);
@@ -1535,7 +1537,7 @@ function pelaDistancia(ficha, tags, alvo, estado) {
  * movimento, reduzido para 0%", o Tiro Longo) e o "mais" ("até 30% mais Dano aos alvos no início", "ganham Dano ao viajar adiante, até 30%
  * mais", e as keystones Tiro Distante / Queima-Roupa). Do colado (tudo do "perto") a 6 casas (tudo do "longe").
  */
-export function projetilNoAlvo(ficha, tags, alvo, estado) {
+export function projetilNoAlvo(ficha, tags, alvo, estado, uso = null) {
   const t = new Set(tags ?? []);
   const pos = estado?.hunt?.pos;
   if (!ligado() || !ficha?.afPoe || !t.has('projetil') || !alvo || !pos) return { incPct: 0, mais: 1 };
@@ -1547,8 +1549,26 @@ export function projetilNoAlvo(ficha, tags, alvo, estado) {
   const de = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   return {
     incPct: de('projetil_perto_dmg_inc') * noInicio + de('projetil_longe_inc') * viajando,
-    mais: Math.max(0, 1 + (de('projetil_perto_mais') * noInicio + de('projetil_longe_mais') * viajando) / 100) * pelaDistancia(ficha, t, alvo, estado),
+    mais: Math.max(0, 1 + (de('projetil_perto_mais') * noInicio + de('projetil_longe_mais') * viajando) / 100) * pelaDistancia(ficha, t, alvo, estado, s) * rampaDoUso(uso, u),
   };
+}
+/**
+ * (lote A3, dono 19/10 — F2, D2: "a rampa do Pulso segue o PoB") A RAMPA DE DISTÂNCIA da gema (DistanceRamp do PoB, × o ProjectileSpeedMod do uso):
+ * "X% mais/menos Dano" de 0 até 60 unidades × o mod — o Pulso Congelante (−50%, act_int.lua:7687) e o Olho Invernal (+200%, act_int.lua:5519).
+ * `uso`: `{ rampaMaisPct, modVel }`; `u`: a distância em unidades (as casas × 20 — o colado, 20). Sem rampa, 1.
+ */
+export function rampaDoUso(uso, u) {
+  const pct = Number(uso?.rampaMaisPct) || 0;
+  if (!pct || u == null) return 1;
+  const ate = 60 * Math.max(0.05, Number(uso.modVel) || 1);
+  return Math.max(0, 1 + (pct * Math.min(1, Math.max(0, u / ate))) / 100);
+}
+/** (lote A3, F2) A chance de Congelar da rampa do Pulso Congelante: X% em 0 unidades, caindo a 0 em 15 × o ProjectileSpeedMod (act_int.lua:7688). */
+export function congelarDaRampa(uso, u) {
+  const pct = Number(uso?.rampaCongelar) || 0;
+  if (!pct || u == null) return 0;
+  const ate = 15 * Math.max(0.05, Number(uso.modVel) || 1);
+  return pct * Math.max(0, 1 - u / ate);
 }
 
 export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng = Math.random } = {}) {

@@ -11,6 +11,18 @@
 // Só geometria: devolve QUEM leva o golpe e com quantos % dele; o `disparar`
 // (acoes.mjs) é quem calcula o dano (crítico, resistência, marcas), um acerto por vez.
 // Os efeitos se combinam em cadeia — ver `resolver`.
+//
+// (lote A3 — EXCEÇÕES DO DONO, 19/10: as escolhas sem fonte do lote, aceitas pelo dono)
+//   1. a Hélice Espectral só atravessa (a descrição: "causando dano aos inimigos em seu caminho") — não retorna;
+//   2. o salto no solo (o Magma Rolante, o Vaal Golpe Fundido) é o quadrado de 1 casa de raio (o PoB: 1,4 + 0,4 m ≈ 1 casa);
+//   3. os projéteis da divisão têm o dano inteiro, buscam alvo no alcance da habilidade a partir do ponto atingido e os que sobram saem em leque
+//      de π/8;
+//   4. as origens laterais da Saraivada (Volley) ficam a 1 casa por ponto, alternando os lados;
+//   5. na Nova de Flechas o principal é o que cai no alvo, e os outros não acertam um bicho já acertado no uso (projéteis simultâneos do PoE);
+//   6. a Fuzilaria Cinética: o "+8% dano" é "mais", somado aos +4% da qualidade (12% por projétil anterior);
+//   7. a Mina Locus arredonda o "30% menos Projéteis" para baixo;
+//   8. as rebatidas não contam como Ricochete para os modificadores "por Ricochete";
+//   9. na volta que atravessa, cada bicho leva o golpe uma vez.
 import { CONFIG } from './gemas.mjs';
 import * as Areas from '../../engine/areas.mjs';
 
@@ -144,6 +156,32 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   // ricochetes que ainda faltam; o PoB: PerStat ChainRemaining)
   const porRestante = Number(efeito.pctPorRicocheteRestante) || 0;
   const doRestante = (n) => (porRestante ? 1 + (porRestante * Math.max(0, n ?? 0)) / 100 : 1);
+  // (lote A3, dono 19/10) o salto do ricochete (a gema do PoE: 3 casas — `ricochetePoe`), o mesmo nas rebatidas e na divisão no terreno
+  const distanciaDoSalto = () => {
+    const salto = (efeito.ricochetePoe ? cfg.ricochetePoe?.projetil ?? 3 : cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
+    return Math.floor(salto) + (rng() < salto % 1 ? 1 : 0);
+  };
+  // (lote A3) o PONTO a `alcance` casas de `de`, no ângulo `a` (os projéteis que erram, a divisão sem alvo, o círculo, as origens laterais)
+  const noAngulo = (de, a, dist = alcance) => ({ x: Math.round(de.x + Math.cos(a) * dist), y: Math.round(de.y + Math.sin(a) * dist) });
+  const anguloDe = (de, para) => (para.x === de.x && para.y === de.y ? anguloDoRumo : Math.atan2(para.y - de.y, para.x - de.x));
+  /** O primeiro bicho vivo na reta de `de` a `fim` (até `alcance` casas), fora de `fora`. */
+  const primeiroNaReta = (de, fim, fora) => casasDaReta(de, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0 && !fora.has(b)) ?? null;
+  /**
+   * (lote A3, dono 19/10 — D5: "o projétil se divide a partir do alvo atingido em N projéteis para os mais próximos", como no PoE) A DIVISÃO: de
+   * `ponto`, `n` projéteis inteiros para os `n` bichos vivos mais perto dele (no alcance da habilidade), fora dos que o projétil já acertou; os que
+   * sobram sem bicho saem em leque e erram (a emissão não diminui com quem não está lá — dono, 11/10). Um projétil se divide uma vez; os filhos não
+   * se dividem de novo.
+   */
+  const dividir = (p, ponto, pct) => {
+    const n = Math.max(0, Math.round(p.dividir || 0));
+    p.dividir = 0;
+    if (!n) return;
+    const de = { x: ponto.x, y: ponto.y };
+    const alvos = maisPerto(vivosNoInicio, de, alcance, n, p.acertados);
+    for (const b of alvos) voar({ de, pct, perfurar: p.perfurar, bifurcar: p.bifurcar, deNovo: p.deNovo, encadear: p.encadear, volta: false, dividir: 0, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'divisao');
+    const rumoDaDivisao = anguloDe(origem, de);
+    for (let k = alvos.length; k < n; k++) emitidos.push({ de, para: noAngulo(de, rumoDaDivisao + (k - (n - 1) / 2) * (Math.PI / 8)), bicho: null, tipo: 'divisao' });
+  };
   /** Um projétil: sai de `de` com `pct`% e acerta `primeiro`; daí segue as supports. */
   const voar = (projetil, primeiro, tipo, direto = false) => {
     const p = { acertados: new Set(), ida: [], perfurados: 0, ricocheteou: 0, ...projetil };
@@ -153,12 +191,22 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     let reta = casasDaReta(p.de, primeiro, alcance + 2);
     let tipoAtual = tipo;
     let eDireto = direto;
+    let ultimo = primeiro;
+    // (revisão do A3) o projétil que se DIFUNDIU acaba ali: não rebate nem retorna (os filhos seguem)
+    let difundiu = false;
+    const atravessaTodos = (p.perfurar ?? 0) >= 99;
+    // (lote A3: + `ordem` — o índice do projétil no uso, para o "por projétil disparado anteriormente em sequência")
+    const meta = () => ({ atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0), ordem: p.ordem ?? 0 });
     while (atual) {
-      if (!impacto(atual, pct, de, tipoAtual, eDireto, { atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0) })) return;
+      // (lote A3, D3: o Arremesso Espectral da Materialização "só acerta e causa dano enquanto retorna" — a ida só marca quem está no caminho)
+      if (!p.soNaVolta && !impacto(atual, pct, de, tipoAtual, eDireto, meta())) return;
       p.acertados.add(atual);
       p.ida.push(atual);
+      ultimo = atual;
       eDireto = false;
       de = atual;
+      // (lote A3, D5) a DIVISÃO no primeiro acerto (o projétil segue o caminho dele)
+      if (p.dividir > 0) dividir(p, atual, p.pct);
       // Pierce: o próximo bicho na MESMA reta, adiante deste.
       if (p.perfurar > 0) {
         const daqui = reta.findIndex((c) => c.x === atual.x && c.y === atual.y);
@@ -166,7 +214,8 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
         const proximo = adiante.map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && !p.acertados.has(b));
         if (proximo) {
           p.perfurar--;
-          p.perfurados++;
+          // (revisão do A3: na Materialização a ida não acerta — não atravessa ninguém; a contagem é a da volta)
+          if (!p.soNaVolta) p.perfurados++;
           atual = proximo;
           pct = ((p.pct * pctDe('danoDaPerfuracaoPct')) / 100) * doRestante(p.encadear);
           tipoAtual = 'perfuracao';
@@ -174,13 +223,42 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
         }
       }
       // Fork: se divide em N (uma vez por projétil); os filhos seguem sozinhos e este acaba.
-      if (p.bifurcar > 0) {
+      // (revisão do A3: com perfurar ≥ 99 — "atravessa todos" — não difunde: no PoE o atravessar tem prioridade)
+      if (p.bifurcar > 0 && !atravessaTodos) {
         const pctDoFilho = (p.pct * pctDe('danoDaBifurcacaoPct')) / 100;
         // (13/10) "Projéteis têm X% de chance de receber um Projétil adicional quando Difundindo": um filho a mais. Os filhos levam o que o
         // projétil já atravessou e ricocheteou.
         const filhos = p.bifurcar + (efeito.bifurcarExtraChance > 0 && rng() * 100 < efeito.bifurcarExtraChance ? 1 : 0);
         for (const b of maisPerto(vivosNoInicio, atual, cfg.distanciaDaBifurcacao ?? 4, filhos, p.acertados)) {
-          voar({ de: atual, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: (p.deNovo ?? 0) > 0 ? 2 : 0, deNovo: Math.max(0, (p.deNovo ?? 0) - 1), encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou }, b, 'bifurcacao');
+          voar({ de: atual, pct: pctDoFilho, perfurar: p.perfurar, bifurcar: (p.deNovo ?? 0) > 0 ? 2 : 0, deNovo: Math.max(0, (p.deNovo ?? 0) - 1), encadear: p.encadear, volta: false, acertados: new Set(p.acertados), perfurados: p.perfurados, ricocheteou: p.ricocheteou, ordem: p.ordem }, b, 'bifurcacao');
+        }
+        difundiu = true;
+        break;
+      }
+      /*
+       * (lote A3, dono 19/10 — D6) o SALTO NO SOLO (o Magma Rolante, o Vaal Golpe Fundido: "Projéteis podem Ricochetear ao atingir o solo / não
+       * mudam de direção ao Ricochetear"): cada ricochete é uma área a cada 3 casas, na MESMA reta do projétil — o quadrado de `raioDoSaltoNoSolo`
+       * casas (1: o raio do PoB do Magma, 1,4 + 0,4 m) em volta do ponto, pegando todos dentro (cada salto é um acerto à parte, como no PoE).
+       */
+      if (p.encadear > 0 && efeito.saltoNoSolo) {
+        const dx = atual.x - p.de.x;
+        const dy = atual.y - p.de.y;
+        const passos = Math.max(Math.abs(dx), Math.abs(dy)) || 1;
+        // (revisão do A3: o rumo principal só quando o projétil não tem rumo próprio — dx e dy zero; um eixo zero é uma reta naquele eixo)
+        const parado = !dx && !dy;
+        const ux = parado ? Math.cos(anguloDoRumo) : dx / passos;
+        const uy = parado ? Math.sin(anguloDoRumo) : dy / passos;
+        const raioDoSalto = Math.max(0, Math.round(cfg.raioDoSaltoNoSolo ?? 1));
+        for (let i = 1; p.encadear > 0; i++) {
+          p.encadear--;
+          p.ricocheteou++;
+          const centro = { x: Math.round(atual.x + ux * 3 * i), y: Math.round(atual.y + uy * 3 * i) };
+          explosoes.push({ ...centro, lado: 2 * raioDoSalto + 1 });
+          const pctDoSalto = ((p.pct * pctDe('danoDoEncadeamentoPct')) / 100) * doRestante(p.encadear);
+          for (const c of Areas.quadrado(centro, raioDoSalto)) {
+            const b = porCasa.get(Areas.chave(c));
+            if (b && b.hp > 0 && !impacto(b, pctDoSalto, centro, 'encadeamento', false, meta())) return;
+          }
         }
         break;
       }
@@ -188,8 +266,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       if (p.encadear > 0) {
         // (14/10: × o "Alcance do Ricochete aumentado", a fração como chance; lote 40: a gema do PoE salta 6 m — 3 casas —, o do PoE 2, pela
         // decisão do dono — `ricochetePoe`)
-        const salto = (efeito.ricochetePoe ? cfg.ricochetePoe?.projetil ?? 3 : cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
-        const [proximo] = maisPerto(vivosNoInicio, atual, Math.floor(salto) + (rng() < salto % 1 ? 1 : 0), 1, p.acertados);
+        const [proximo] = maisPerto(vivosNoInicio, atual, distanciaDoSalto(), 1, p.acertados);
         if (proximo) {
           p.encadear--;
           p.ricocheteou++;
@@ -202,36 +279,94 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       }
       break;
     }
+    if (difundiu) return;
+    /*
+     * (lote A3, dono 19/10 — D6) as REBATIDAS, com o dano inteiro do projétil (não é Ricochete: não conta para os "por Ricochete"):
+     * - a Vaal Flecha Relampejante ("mudam de direção N vezes … podem Acertar alvos cada vez"): do último acerto, salta para o bicho vivo mais perto
+     *   que o projétil ainda não acertou, a até a distância do ricochete (3 casas); sem bicho perto, as que sobram se perdem;
+     * - a Hélice Espectral ("Rebate até N vezes" — revisão do A3, a decisão do dono: "ricochete no terreno, 100%"; a descrição: "quicando caso
+     *   colida com paredes"): só rebate em PAREDE — segue a reta do último acerto até o terreno (a grade do andar, `andavel`) e, batendo, salta
+     *   para o bicho vivo mais perto da batida (a distância do ricochete); a reta seguinte é a da batida até ele. Sem parede, não rebate.
+     */
+    if (p.rebatidas > 0 && !p.soNaVolta) {
+      let ponto = ultimo;
+      let vindoDe = p.de;
+      for (let r = p.rebatidas; r > 0; r--) {
+        let de = ponto;
+        if (efeito.rebatidasNoTerreno) {
+          const adiante = { x: ponto.x + (ponto.x - vindoDe.x), y: ponto.y + (ponto.y - vindoDe.y) };
+          const parede = adiante.x === ponto.x && adiante.y === ponto.y ? null : terrenoNaReta(ponto, adiante);
+          if (!parede) break;
+          de = parede;
+        }
+        const [b] = maisPerto(vivosNoInicio, de, distanciaDoSalto(), 1, p.acertados);
+        if (!b) break;
+        vindoDe = de;
+        if (!impacto(b, p.pct, de, 'rebatida', false, meta())) return;
+        p.acertados.add(b);
+        p.ida.push(b);
+        ponto = b;
+        ultimo = b;
+      }
+    }
     // Returning: na volta, acerta de novo cada um que pegou na ida — uma vez cada, do último ao primeiro.
+    // (lote A3, dono 19/10 — D4: "o retorno que Atravessa todos os Alvos acerta todos os vivos no caminho de volta, com o % da volta" — a reta do
+    // último acerto até quem lançou, `voltaAtravessa`, além dos da ida)
     if (p.volta) {
       const pctDaVolta = ((p.pct * pctDe('danoDoRetornoPct')) / 100) * doRestante(p.encadear);
-      for (const b of [...p.ida].reverse()) if (!impacto(b, pctDaVolta, b, 'retorno', false, { atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0) })) return;
+      const naVolta = [...p.ida].reverse();
+      if (efeito.voltaAtravessa && ultimo) {
+        const ja = new Set(naVolta);
+        for (const c of casasDaReta(ultimo, origem, cheb(ultimo, origem))) {
+          const b = porCasa.get(`${c.x},${c.y}`);
+          if (b && b.hp > 0 && !ja.has(b)) { ja.add(b); naVolta.push(b); }
+        }
+      }
+      // (revisão do A3: na Materialização — a ida não acertou ninguém — os atravessados contam os da própria volta: 0 no primeiro, 1 no segundo…)
+      let naVoltaAtravessados = 0;
+      for (const b of naVolta) {
+        const m = p.soNaVolta ? { ...meta(), atravessados: naVoltaAtravessados++ } : meta();
+        if (!impacto(b, pctDaVolta, b, 'retorno', false, m)) return;
+      }
     }
   };
 
   // (14/10: `deNovo` — "Difundem e Difundem de novo": os filhos difundem outra vez, em 2)
   // (14/10, por projétil: "N% de chance de Retornarem a você" — a volta. O "Ricochetear ao colidirem com o terreno" é a batida de verdade desde o
   // lote 42 — `naParede`.)
+  // (lote A3: + a divisão, as rebatidas e o "só na volta")
+  let ordens = 0;
   const base = () => ({
     perfurar: efeito.perfurar || 0, bifurcar: efeito.bifurcar || 0, deNovo: efeito.bifurcar > 0 ? efeito.bifurcarDeNovo || 0 : 0,
     encadear: efeito.encadear || 0,
     volta: efeito.retornar > 0 || (efeito.retornarChance > 0 && rng() * 100 < efeito.retornarChance),
+    dividir: efeito.divisao || 0, rebatidas: efeito.rebatidas || 0, soNaVolta: !!efeito.soNaVolta, ordem: ordens++,
   });
+  /** (lote A3) Onde a reta de `de` a `para` bate no TERRENO (a casa antes da que não se anda), ou null. */
+  const terrenoNaReta = (de, para) => {
+    if (!andavel) return null;
+    const reta = casasDaReta(de, para, alcance);
+    const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
+    return i < 0 ? null : i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: de.x, y: de.y };
+  };
   /**
    * (lote 42, P053 — dono: "Fazer todos") "Projéteis têm X% de chance de conseguirem Ricochetear ao colidirem com o terreno": o projétil que não
    * acerta ninguém voa até o alcance; se no caminho há TERRENO (uma casa que não se anda — a grade do andar, `andavel`), ele bate ali e, na
    * chance, ricocheteia — salta para o inimigo vivo mais perto do ponto da batida, até a distância do ricochete (o dano do encadeamento).
    * (lote 84, dono: "Seguir o PoE") a batida no terreno É um ricochete: só com ricochete sobrando ("chance to be able to Chain"), e gasta um.
+   * (lote A3, dono 19/10 — D5) o projétil que erra também se DIVIDE: "podem se Dividir ao acertar o terreno" (na batida) e "podem se Dividir sem
+   * acertar um alvo" (no fim do voo, se não bateu antes).
    */
-  const naParede = (para, pct) => {
-    if (!andavel || !(efeito.ricocheteTerrenoChance > 0) || !((efeito.encadear || 0) >= 1)) return;
-    const reta = casasDaReta(origem, para, alcance);
-    const i = reta.findIndex((c) => !andavel.has(`${c.x},${c.y}`));
-    if (i < 0 || !(rng() * 100 < efeito.ricocheteTerrenoChance)) return;
-    const ponto = i > 0 ? { x: reta[i - 1].x, y: reta[i - 1].y } : { x: origem.x, y: origem.y };
-    const salto = (efeito.ricochetePoe ? cfg.ricochetePoe?.projetil ?? 3 : cfg.distanciaDoEncadeamento ?? 4) * Math.max(0, 1 + (Number(efeito.alcanceRicochetePct) || 0) / 100);
-    const [b] = maisPerto(vivosNoInicio, ponto, Math.floor(salto) + (rng() < salto % 1 ? 1 : 0), 1, new Set());
-    if (b) voar({ ...base(), encadear: (efeito.encadear || 0) - 1, de: ponto, pct: (pct * pctDe('danoDoEncadeamentoPct')) / 100, ricocheteou: 1 }, b, 'encadeamento');
+  const naParede = (para, pct, de = origem) => {
+    const parede = terrenoNaReta(de, para);
+    if ((efeito.divisao || 0) > 0 && (efeito.dividirNoTerreno || efeito.dividirSemAcertar)) {
+      const ponto = parede && efeito.dividirNoTerreno ? parede : efeito.dividirSemAcertar ? (parede ?? para) : null;
+      if (ponto) dividir({ dividir: efeito.divisao, acertados: new Set(), perfurar: efeito.perfurar || 0, bifurcar: 0, deNovo: 0, encadear: efeito.encadear || 0, perfurados: 0, ricocheteou: 0, ordem: 0 }, ponto, pct);
+    }
+    if (!parede || !(efeito.ricocheteTerrenoChance > 0) || !((efeito.encadear || 0) >= 1)) return;
+    if (!(rng() * 100 < efeito.ricocheteTerrenoChance)) return;
+    const [b] = maisPerto(vivosNoInicio, parede, distanciaDoSalto(), 1, new Set());
+    if (b) voar({ ...base(), encadear: (efeito.encadear || 0) - 1, de: parede, pct: (pct * pctDe('danoDoEncadeamentoPct')) / 100, ricocheteou: 1 }, b, 'encadeamento');
   };
   /**
    * (lote 42, P067 — dono: "Fazer todos") "Projéteis são disparados em direções aleatórias": TODOS os projéteis — o principal também (o
@@ -241,8 +376,8 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   if (efeito.direcoesAleatorias && deProjetil) {
     for (let k = 0; k < total; k++) {
       const angulo = rng() * 2 * Math.PI;
-      const fim = { x: Math.round(origem.x + Math.cos(angulo) * alcance), y: Math.round(origem.y + Math.sin(angulo) * alcance) };
-      const bicho = casasDaReta(origem, fim, alcance).map((c) => porCasa.get(`${c.x},${c.y}`)).find((b) => b && b.hp > 0) ?? null;
+      const fim = noAngulo(origem, angulo);
+      const bicho = primeiroNaReta(origem, fim, new Set());
       const pct = k ? pctDe('danoDosExtrasPct') : 100;
       emitidos.push({ de: { x: origem.x, y: origem.y }, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
       if (bicho) voar({ ...base(), de: origem, pct }, bicho, 'projetil');
@@ -265,11 +400,74 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   voar({ ...base(), de: origem, pct: 100 }, alvo, 'direto', true);
   // Outros golpes principais da skill (a cadeia da própria magia): impactos.
   for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);
+  const fora = new Set([alvo, ...atingidos]);
+  /*
+   * (lote A3, dono 19/10 — F7) "Dispara Projéteis extras em até N Inimigos ao redor" (o Rito Proibido) e "Dispara Projéteis em cada inimigo
+   * Próximo" (a Vaal Sifão de Poder): um projétil inteiro em cada inimigo vivo no alcance, os mais perto de você, até N — só os que existem.
+   */
+  if (efeito.aoRedor > 0) {
+    for (const b of maisPerto(vivosNoInicio, origem, alcance, Math.round(efeito.aoRedor), fora)) {
+      fora.add(b);
+      emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: b.x, y: b.y }, bicho: b, tipo: 'projetil' });
+      voar({ ...base(), de: origem, pct: 100 }, b, 'projetil');
+    }
+  }
+  /*
+   * (revisão do A3) a Saraivada de Projéteis (Barrage_of_Volley_Fire): "O primeiro e último disparo da sequência dispara N Projéteis adicionais
+   * simultâneos" — os N do primeiro e os N do último saem em LEQUE para os OUTROS inimigos (os mais perto de você, sem repetir o alvo nem entre
+   * si); os que não acham bicho saem e erram. No PoB a linha não entra no ProjectileCount (act_dex.lua:1129): num alvo único ficam os 4 da sequência.
+   */
+  if (efeito.simultaneos > 0) {
+    const n = 2 * Math.round(efeito.simultaneos);
+    const com = maisPerto(vivosNoInicio, origem, alcance, n, fora);
+    for (const b of com) {
+      fora.add(b);
+      emitidos.push({ de: { x: origem.x, y: origem.y }, para: { x: b.x, y: b.y }, bicho: b, tipo: 'projetil' });
+      voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil');
+    }
+    for (let k = com.length; k < n; k++) emitidos.push({ de: { x: origem.x, y: origem.y }, para: noAngulo(origem, anguloDoRumo + (k - (n - 1) / 2) * (Math.PI / 8)), bicho: null, tipo: 'projetil' });
+  }
+  const extras = total - 1;
+  /*
+   * (lote A3, dono 19/10 — D7) a GEOMETRIA da emissão:
+   * - a Nova de Flechas e a Nuvem ("disparam uma Flecha Carregada no ar … Disparam de onde a Flecha Carregada cair" + "Disparam Projéteis em um
+   *   círculo"): os outros projéteis saem do PONTO DO ALVO, em círculo (os ângulos 2πk/N), cada um em linha reta até o alcance — acerta o primeiro
+   *   vivo do caminho que nenhum outro projétil do uso acertou; o principal é o que cai no alvo. Só o círculo (sem a Flecha Carregada): de você;
+   * - a Saraivada ("também disparam Projéteis de até N pontos de cada lado seu"): cada projétil a mais sai de um ponto ao LADO de você, na
+   *   perpendicular do rumo — um de cada lado, alternando, a 1, 2… casas, até N — e voa paralelo ao principal, acertando o primeiro vivo da reta.
+   */
+  if (extras > 0 && efeito.emCirculo) {
+    const centro = efeito.doPontoDoAlvo ? { x: alvo.x, y: alvo.y } : { x: origem.x, y: origem.y };
+    const a0 = anguloDe(origem, alvo);
+    for (let k = 1; k <= extras; k++) {
+      const fim = noAngulo(centro, a0 + (2 * Math.PI * k) / total);
+      const bicho = primeiroNaReta(centro, fim, fora);
+      emitidos.push({ de: centro, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
+      if (bicho) { fora.add(bicho); voar({ ...base(), de: centro, pct: pctDe('danoDosExtrasPct') }, bicho, 'projetil'); }
+      else naParede(fim, pctDe('danoDosExtrasPct'), centro);
+    }
+    return r;
+  }
+  if (extras > 0 && efeito.origensLaterais > 0) {
+    const n = Math.max(1, Math.round(efeito.origensLaterais));
+    const a0 = anguloDe(origem, alvo);
+    const px = -Math.sin(a0);
+    const py = Math.cos(a0);
+    for (let k = 1; k <= extras; k++) {
+      const j = Math.min(n, Math.ceil(k / 2));
+      const lado = k % 2 ? 1 : -1;
+      const de = { x: Math.round(origem.x + px * j * lado), y: Math.round(origem.y + py * j * lado) };
+      const fim = noAngulo(de, a0);
+      const bicho = primeiroNaReta(de, fim, fora);
+      emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'projetil' });
+      if (bicho) { fora.add(bicho); voar({ ...base(), de, pct: pctDe('danoDosExtrasPct') }, bicho, 'projetil'); }
+      else naParede(fim, pctDe('danoDosExtrasPct'), de);
+    }
+    return r;
+  }
   // Os extras (o total menos o principal): os bichos mais perto de quem lança (fora o alvo), cada um um projétil inteiro; os que sobram
   // sem bicho saem e erram — ou, "em sequência", vão no alvo.
-  const extras = total - 1;
   if (extras > 0) {
-    const fora = new Set([alvo, ...atingidos]);
     // (14/10) "Barragens de Projéteis não se propagam": a barragem (em sequência) vai toda no alvo; "Projéteis são disparados em direções
     // aleatórias": os extras vão em bichos sorteados no alcance (não nos mais perto)
     const todosNoAlvo = efeito.sequencia && efeito.semPropagar;
@@ -278,7 +476,9 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     const comBicho = todosNoAlvo ? [] : efeito.direcoesAleatorias ? sorteados() : maisPerto(vivosNoInicio, origem, alcance, extras, fora);
     comBicho.forEach((b, i) => { emitir(b, 'projetil', i + 1); voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, b, 'projetil'); });
     for (let k = comBicho.length + 1; k <= extras; k++) {
-      if (efeito.sequencia && alvo.hp > 0) {
+      // (revisão do A3: + a Fuzilaria Cinética — `extrasNoAlvo`: "tentarão atingir inimigos diferentes", mas os que não acham outro vão no alvo,
+      // cada um com a sua ordem, como o PoB conta — ProjectileCount, act_int.lua:11016)
+      if ((efeito.sequencia || efeito.extrasNoAlvo) && alvo.hp > 0) {
         emitir(alvo, 'projetil', k);
         voar({ ...base(), de: origem, pct: pctDe('danoDosExtrasPct') }, alvo, 'projetil');
       } else {

@@ -800,6 +800,8 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
       else if (k === 'castTimePct' && doPoe) e.castTimePct = ((1 + (e.castTimePct ?? 0) / 100) * (1 + valor / 100) - 1) * 100;
       // (lote 36) O "X% mais/menos Efeito em Área" dos suportes do PoE também multiplica (o "aumentado", `areaIncPct`, soma).
       else if (k === 'areaMaisPct') e.areaMaisPct = ((1 + (e.areaMaisPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
+      // (lote A3, dono 19/10) o "X% mais/menos Velocidade de Projétil" dos suportes também multiplica (`Acoes.velocidadeDoProjetil`)
+      else if (k === 'velProjetilMaisPct') e.velProjetilMaisPct = ((1 + (e.velProjetilMaisPct ?? 0) / 100) * Math.max(0, 1 + valor / 100) - 1) * 100;
       else e[k] = (e[k] ?? 0) + valor;
     }
     e.supports.push(sp.def.nome);

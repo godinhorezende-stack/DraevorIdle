@@ -2,37 +2,37 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 410,
-   "implementada e testada": 91,
-   "implementada, sem teste próprio": 49,
+   "parcial": 389,
+   "implementada e testada": 107,
+   "implementada, sem teste próprio": 54,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "parcial": 150,
-   "implementada e testada": 35,
-   "implementada, sem teste próprio": 19,
+   "parcial": 136,
+   "implementada e testada": 46,
+   "implementada, sem teste próprio": 22,
    "limitação do modelo idle": 6
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 64,
-   "parcial": 147,
-   "implementada, sem teste próprio": 51
+   "implementada e testada": 74,
+   "parcial": 136,
+   "implementada, sem teste próprio": 52
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 43,
-    "implementada e testada": 4,
-    "implementada, sem teste próprio": 5
+    "parcial": 41,
+    "implementada e testada": 5,
+    "implementada, sem teste próprio": 6
    },
    "alternativas": {
     "total": 209,
-    "parcial": 169,
-    "implementada, sem teste próprio": 23,
-    "implementada e testada": 10,
+    "parcial": 158,
+    "implementada, sem teste próprio": 27,
+    "implementada e testada": 17,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 943,
-   "emDuasOuMais": 206
+   "linhasDistintas": 903,
+   "emDuasOuMais": 184
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,8 +59,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 205,
-   "suportesCitados": 79,
+   "ativasCitadas": 225,
+   "suportesCitados": 89,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -381,10 +381,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis podem Ricochetear ao atingir o solo Projéteis não mudam de direção ao Ricochetear"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2362,10 +2360,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 20 % mais Velocidade de Projétil"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2487,7 +2483,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
+    "efeito não simulado: Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade"
    ],
    "idle": [],
    "outros": [],
@@ -2513,10 +2509,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2558,10 +2552,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2573,13 +2565,13 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Desaceleração do Projétil reduzida em 30 %",
-    "efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Desaceleração do Projétil reduzida\" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -2589,10 +2581,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "armadilha",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2617,10 +2607,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis podem se Dividir sem acertar um alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2632,10 +2620,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis podem se Dividir sem acertar um alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2647,10 +2633,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis podem se Dividir sem acertar um alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2720,8 +2704,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara 8 Projéteis em cada uma das duas espirais espelhadas",
-    "efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano"
+    "efeito não simulado: Dispara 8 Projéteis em cada uma das duas espirais espelhadas"
    ],
    "idle": [],
    "outros": [],
@@ -3247,11 +3230,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: O primeiro e último disparo da sequência dispara 6 Projéteis adicionais simultâneos",
-    "efeito não simulado: O primeiro e último disparo da sequência dispara 4 Projéteis adicionais simultâneos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3685,9 +3665,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Rebate até 3 vezes Modificadores ao número de Projéteis se aplicam ao número de Rebatidas",
-    "efeito não simulado: Gira por 4.25 rotações",
-    "efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano"
+    "efeito não simulado: Gira por 4.25 rotações"
    ],
    "idle": [],
    "outros": [],
@@ -3703,10 +3681,8 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas",
-    "efeito não simulado: Rebate até 3 vezes Modificadores ao número de Projéteis se aplicam ao número de Rebatidas",
     "efeito não simulado: Gira por 4.25 rotações",
-    "efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos",
-    "efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano"
+    "efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos"
    ],
    "idle": [],
    "outros": [],
@@ -3781,11 +3757,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis mudam de direção 9 vezes Projéteis podem Acertar alvos cada vez que mudam de direção",
-    "efeito não simulado: Projéteis não podem se Partir"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3860,9 +3833,6 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Projéteis Retornam a você",
-    "efeito não simulado: Projéteis Retornando causam 75 % menos Dano com Acertos e Afecções",
-    "efeito não simulado: Projéteis Retornando Atravessam todos os Alvos",
     "efeito não simulado: 40 % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias",
     "efeito não simulado: Máximo de +10 Projéteis capturados"
    ],
@@ -4848,8 +4818,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano",
-    "efeito não simulado: 20 % mais Velocidade de Projétil"
+    "efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano"
    ],
    "idle": [],
    "outros": [],
@@ -4865,8 +4834,7 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano",
-    "efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados",
-    "efeito não simulado: 20 % mais Velocidade de Projétil"
+    "efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados"
    ],
    "idle": [],
    "outros": [],
@@ -4945,8 +4913,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara 3 Projéteis secundários",
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
+    "efeito não simulado: Dispara 3 Projéteis secundários"
    ],
    "idle": [],
    "outros": [],
@@ -5277,11 +5244,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 5 projétil",
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5293,10 +5257,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis que Atravessaram causam 20 % mais Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5308,12 +5270,13 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis mudam de direção 8 vezes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Projéteis mudam de direção N vezes\" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -5323,13 +5286,13 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis mudam de direção 3 vezes",
-    "efeito não simulado: Projéteis mudam de direção 1 vezes"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Projéteis mudam de direção N vezes\" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -5476,10 +5439,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis podem Ricochetear ao atingir o solo Projéteis não mudam de direção ao Ricochetear"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5579,7 +5540,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara Projéteis em direções aleatórias"
+    "efeito não simulado: os 100 projéteis em espiral por 3 segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias"
    ],
    "idle": [],
    "outros": [],
@@ -5783,8 +5744,7 @@
    "ausentes": [
     "efeito não simulado: Golpeia a cada 0.5 segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe",
     "efeito não simulado: Feixes se dividem em direção a alvos dentro de um raio base de 3.5 metros",
-    "efeito não simulado: Orbes desaparecem após 29 Golpes",
-    "efeito não simulado: O feixe se divide em direção a +2 alvos adicionais"
+    "efeito não simulado: Orbes desaparecem após 29 Golpes"
    ],
    "idle": [],
    "outros": [],
@@ -5801,8 +5761,7 @@
    "ausentes": [
     "efeito não simulado: Golpeia a cada 0.5 segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe",
     "efeito não simulado: Feixes se dividem em direção a alvos dentro de um raio base de 3.8 metros",
-    "efeito não simulado: Orbes desaparecem após 14 Golpes",
-    "efeito não simulado: O feixe se divide em direção a +2 alvos adicionais"
+    "efeito não simulado: Orbes desaparecem após 14 Golpes"
    ],
    "idle": [],
    "outros": [],
@@ -6140,10 +6099,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: O feixe se divide em direção a +2 alvos adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6380,11 +6337,13 @@
    "ausentes": [
     "efeito não simulado: Segunda forma possui um aumento de 600 % de Chance de Crítico",
     "efeito não simulado: A Segunda forma possui +49 % ao Multiplicador de Acerto Crítico",
-    "efeito não simulado: A Segunda forma possui 300 % mais Velocidade de Projétil",
     "efeito não simulado: A Segunda forma possui +40 % ao Multiplicador de Acerto Crítico"
    ],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"A Segunda forma possui X% mais Velocidade de Projétil\" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -6394,13 +6353,13 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: A Segunda forma possui 300 % mais Velocidade de Projétil",
-    "efeito não simulado: Projéteis podem se Dividir ao acertar o terreno"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"A Segunda forma possui X% mais Velocidade de Projétil\" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -6496,11 +6455,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis causam + 8 % dano por projétil disparado anteriormente em sequência",
-    "efeito não simulado: Projéteis causam +4 % mais dano por projétil disparado anteriormente em sequência"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6512,10 +6468,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis causam + 16 % dano por projétil disparado anteriormente em sequência"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6799,7 +6753,6 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara Projéteis em cada inimigo Próximo",
     "efeito não simulado: Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único"
    ],
    "idle": [],
@@ -6965,9 +6918,7 @@
    "ausentes": [
     "efeito não simulado: Causa 5 % do seu máximo de Escudo de Energia como Dano de Caos base",
     "efeito não simulado: Causa 14 % do seu máximo de Vida como Dano de Caos base",
-    "efeito não simulado: Sofre 40 % da Vida Máxima e 25 % do Escudo de Energia Máximo como Dano de Caos",
-    "efeito não simulado: Dispara Projéteis extras em até 7 Inimigos ao redor",
-    "efeito não simulado: Dispara Projéteis extras em até +2 Inimigos ao redor"
+    "efeito não simulado: Sofre 40 % da Vida Máxima e 25 % do Escudo de Energia Máximo como Dano de Caos"
    ],
    "idle": [],
    "outros": [],
@@ -6983,9 +6934,7 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Causa 20 % do seu máximo de Escudo de Energia como Dano de Caos base",
-    "efeito não simulado: Sofre 50 % do Escudo de Energia Máximo como Dano de Caos",
-    "efeito não simulado: Dispara Projéteis extras em até 7 Inimigos ao redor",
-    "efeito não simulado: Dispara Projéteis extras em até +2 Inimigos ao redor"
+    "efeito não simulado: Sofre 50 % do Escudo de Energia Máximo como Dano de Caos"
    ],
    "idle": [],
    "outros": [],
@@ -7541,10 +7490,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 100 % mais Velocidade de Projétil"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7739,7 +7686,6 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Dispara 8 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar",
-    "efeito não simulado: Projéteis ganham Dano continuamente, até 200 % mais Dano até se dissiparem",
     "efeito não simulado: Dispara +2 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar"
    ],
    "idle": [],
@@ -7755,9 +7701,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara 16 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar",
-    "efeito não simulado: Projéteis ganham Dano continuamente, até 100 % mais Dano até se dissiparem",
-    "efeito não simulado: Projéteis ganham até +20 % mais Dano até se dissiparem"
+    "efeito não simulado: Dispara 16 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar"
    ],
    "idle": [],
    "outros": [],
@@ -7772,9 +7716,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Dispara 12 Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina",
-    "efeito não simulado: 50 % mais Velocidade de Projétil",
-    "efeito não simulado: Projéteis ganham até +15 % mais Dano até se dissiparem"
+    "efeito não simulado: Dispara 12 Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina"
    ],
    "idle": [],
    "outros": [],
@@ -7983,7 +7925,6 @@
    "ausentes": [
     "efeito não simulado: Explosão Cinética cria 3 explosões adicionais",
     "efeito não simulado: Causa Dano Físico Adicional igual a 15 % da Mana Máxima",
-    "efeito não simulado: Projéteis não podem se Partir",
     "efeito não simulado: Explosão Cinética cria 1 explosões adicionais"
    ],
    "idle": [],
@@ -8279,8 +8220,7 @@
    "arquetipo": "projetil",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 4 % do Dano Mágico Drenado como Escudo de Energia",
-    "efeito não simulado: Velocidade de Projéteis aumentada em 40 %"
+    "efeito não simulado: 4 % do Dano Mágico Drenado como Escudo de Energia"
    ],
    "idle": [],
    "outros": [],
@@ -9683,10 +9623,8 @@
   {
    "slug": "Pierce_Support",
    "nome": "Atravessar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Projéteis de Habilidades Suportadas Atravessam 4 Alvos adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9701,10 +9639,8 @@
   {
    "slug": "Volley_Support",
    "nome": "Rajada",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas também disparam Projéteis de até 2 pontos de cada lado seu"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9730,13 +9666,8 @@
   {
    "slug": "Arrow_Nova_Support",
    "nome": "Nova de Flechas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas disparam uma Flecha Carregada no ar Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair",
-    "não simulado: Habilidades Suportadas Disparam Projéteis em um círculo",
-    "não simulado: Habilidades Suportadas só podem ser usadas com Arcos",
-    "não simulado: Habilidades Suportadas disparam uma Flecha Carregada no ar\\nProjéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9780,8 +9711,6 @@
    "nome": "Mina Local",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas sempre disparam ao menos 1 Projétil",
-    "não simulado: Habilidades Suportadas disparam 30% menos Projéteis",
     "não simulado: Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida",
     "não simulado: Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de 3 metros de você",
     "não simulado: Minas usando Habilidades Suportadas sempre focam na sua localização",
@@ -9879,7 +9808,7 @@
   {
    "slug": "Point_Blank_Support",
    "nome": "Queima-Roupa",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -9943,11 +9872,8 @@
   {
    "slug": "Faster_Projectiles_Support",
    "nome": "Projéteis Rápidos",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 69% de Velocidade de Projétil aumentada",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Projétil aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9962,7 +9888,7 @@
   {
    "slug": "Fork_Support",
    "nome": "Difundir",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "outros": [],
    "icone": true
@@ -10022,10 +9948,8 @@
   {
    "slug": "Slower_Projectiles_Support",
    "nome": "Projéteis Lentos",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 30% menos Velocidade de Projétil"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10104,10 +10028,8 @@
   {
    "slug": "Greater_Volley_Support",
    "nome": "Grande Rajada",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas também disparam Projéteis de até 4 pontos de cada lado seu"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10126,13 +10048,8 @@
   {
    "slug": "Returning_Projectiles_Support",
    "nome": "Projéteis Retornados",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Projéteis de Habilidades Suportadas Retornam a você",
-    "não simulado: Projéteis de Habilidades Suportadas causam 66% menos Dano com Acertos e Afecções enquanto Retornam",
-    "não simulado: Projéteis de Habilidades Suportadas Atravessam todos os Alvos enquanto Retornando",
-    "não simulado: Habilidades Suportadas têm 10% de Velocidade de Projétil aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10179,13 +10096,8 @@
   {
    "slug": "Awakened_Arrow_Nova_Support",
    "nome": "Suporte Desperto: Nova de Flechas",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas disparam uma Flecha Carregada no ar Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair",
-    "não simulado: Habilidades Suportadas Disparam Projéteis em um círculo",
-    "não simulado: Habilidades Suportadas só podem ser usadas com Arcos",
-    "não simulado: Habilidades Suportadas disparam uma Flecha Carregada no ar\\nProjéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10238,10 +10150,8 @@
   {
    "slug": "Awakened_Fork_Support",
    "nome": "Suporte Desperto: Difundir",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Projéteis das Habilidades Suportadas podem Difundir 1 Vezes adicionais"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10325,11 +10235,8 @@
   {
    "slug": "Greater_Fork_Support",
    "nome": "Ramificação Maior (Reforço)",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Projéteis das Habilidades Suportadas podem Difundir 1 Vezes adicionais",
-    "não simulado: Projéteis de Habilidades Suportadas têm 50% de chance de ganhar um Projétil adicional ao Difundirem"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10913,13 +10820,8 @@
   {
    "slug": "Pinpoint_Support",
    "nome": "Localizar",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Magias Suportadas ganham Intensidade quando você as Conjurar, máximo de 3 Habilidades Suportadas disparam um Projétil a menos por Intensidade",
-    "não simulado: Projéteis das Habilidades Suportadas causam 20% mais Dano com Acertos por Intensidade",
-    "não simulado: Habilidades Suportadas sempre disparam ao menos 1 Projétil",
-    "não simulado: Magias Suportadas ganham Intensidade quando você as Conjurar, máximo de 3\\nHabilidades Suportadas disparam um Projétil a menos por Intensidade"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -11519,31 +11421,6 @@
    ]
   },
   {
-   "linha": "Velocidade de Projéteis aumentada em # %",
-   "gemas": [
-    "Freezing_Pulse",
-    "Galvanic_Arrow",
-    "Galvanic_Arrow_of_Surging",
-    "Holy_Flame_Totem",
-    "Shrapnel_Ballista",
-    "Shrapnel_Ballista_of_Steel",
-    "Soulrend_of_Reaping",
-    "Tornado_Shot"
-   ]
-  },
-  {
-   "linha": "Projéteis que Atravessaram causam # % mais Dano",
-   "gemas": [
-    "Frostbolt",
-    "Spectral_Helix",
-    "Spectral_Helix_of_Trarthus",
-    "Spectral_Throw",
-    "Spectral_Throw_of_Materialising",
-    "Spectral_Throw_of_Trarthus",
-    "Vaal_Spectral_Throw"
-   ]
-  },
-  {
    "linha": "# % de Chance de uma Armadilha ser Ativada uma vez adicional",
    "gemas": [
     "Fire_Trap_of_Blasting",
@@ -11552,17 +11429,6 @@
     "Lightning_Spire_Trap_of_Zapping",
     "Lightning_Trap",
     "Lightning_Trap_of_Sparking"
-   ]
-  },
-  {
-   "linha": "# % mais Velocidade de Projétil",
-   "gemas": [
-    "Ball_Lightning_of_Orbiting",
-    "Ethereal_Knives",
-    "Eye_of_Winter_of_Transience",
-    "Holy_Flame_Totem_of_Ire",
-    "Spectral_Shield_Throw_of_Shattering",
-    "Spectral_Shield_Throw_of_Trarthus"
    ]
   },
   {
@@ -11819,14 +11685,6 @@
    ]
   },
   {
-   "linha": "O feixe se divide em direção a +# alvos adicionais",
-   "gemas": [
-    "Arc_of_Surging",
-    "Orb_of_Storms",
-    "Orb_of_Storms_of_Squalls"
-   ]
-  },
-  {
    "linha": "Parede terá # metros",
    "gemas": [
     "Flame_Wall",
@@ -11843,14 +11701,6 @@
    ]
   },
   {
-   "linha": "Projéteis podem se Dividir sem acertar um alvo",
-   "gemas": [
-    "Split_Arrow_of_Splitting",
-    "Splitting_Steel",
-    "Splitting_Steel_of_Ammunition"
-   ]
-  },
-  {
    "linha": "Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # %",
    "gemas": [
     "Boneshatter",
@@ -11864,6 +11714,14 @@
     "Ice_Crash",
     "Ice_Trap",
     "Vaal_Cold_Snap"
+   ]
+  },
+  {
+   "linha": "Velocidade de Projéteis aumentada em # %",
+   "gemas": [
+    "Holy_Flame_Totem",
+    "Shrapnel_Ballista",
+    "Shrapnel_Ballista_of_Steel"
    ]
   },
   {
@@ -12095,13 +11953,6 @@
    "gemas": [
     "Charged_Dash",
     "Charged_Dash_of_Projection"
-   ]
-  },
-  {
-   "linha": "A Segunda forma possui # % mais Velocidade de Projétil",
-   "gemas": [
-    "Ice_Spear",
-    "Ice_Spear_of_Splitting"
    ]
   },
   {
@@ -12378,20 +12229,6 @@
    ]
   },
   {
-   "linha": "Dispara Projéteis extras em até # Inimigos ao redor",
-   "gemas": [
-    "Forbidden_Rite",
-    "Forbidden_Rite_of_Soul_Sacrifice"
-   ]
-  },
-  {
-   "linha": "Dispara Projéteis extras em até +# Inimigos ao redor",
-   "gemas": [
-    "Forbidden_Rite",
-    "Forbidden_Rite_of_Soul_Sacrifice"
-   ]
-  },
-  {
    "linha": "Dispara um feixe a cada # segundos",
    "gemas": [
     "Galvanic_Field",
@@ -12560,55 +12397,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas Disparam Projéteis em um círculo",
-   "gemas": [
-    "Arrow_Nova_Support",
-    "Awakened_Arrow_Nova_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas disparam uma Flecha Carregada no ar Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair",
-   "gemas": [
-    "Arrow_Nova_Support",
-    "Awakened_Arrow_Nova_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas disparam uma Flecha Carregada no ar\\nProjéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair",
-   "gemas": [
-    "Arrow_Nova_Support",
-    "Awakened_Arrow_Nova_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas sempre disparam ao menos # Projétil",
-   "gemas": [
-    "Locus_Mine_Support",
-    "Pinpoint_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas só podem ser usadas com Arcos",
-   "gemas": [
-    "Arrow_Nova_Support",
-    "Awakened_Arrow_Nova_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas também disparam Projéteis de até # pontos de cada lado seu",
-   "gemas": [
-    "Greater_Volley_Support",
-    "Volley_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Velocidade de Projétil aumentada",
-   "gemas": [
-    "Faster_Projectiles_Support",
-    "Returning_Projectiles_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #%",
    "gemas": [
     "Cluster_Traps_Support",
@@ -12763,59 +12551,10 @@
    ]
   },
   {
-   "linha": "Projéteis causam + # % dano por projétil disparado anteriormente em sequência",
-   "gemas": [
-    "Kinetic_Fusillade",
-    "Kinetic_Fusillade_of_Detonation"
-   ]
-  },
-  {
-   "linha": "Projéteis das Habilidades Suportadas podem Difundir # Vezes adicionais",
-   "gemas": [
-    "Awakened_Fork_Support",
-    "Greater_Fork_Support"
-   ]
-  },
-  {
    "linha": "Projéteis de Espinhos causam # % menos Dano",
    "gemas": [
     "Scourge_Arrow",
     "Scourge_Arrow_of_Menace"
-   ]
-  },
-  {
-   "linha": "Projéteis ganham até +# % mais Dano até se dissiparem",
-   "gemas": [
-    "Eye_of_Winter_of_Finality",
-    "Eye_of_Winter_of_Transience"
-   ]
-  },
-  {
-   "linha": "Projéteis ganham Dano continuamente, até # % mais Dano até se dissiparem",
-   "gemas": [
-    "Eye_of_Winter",
-    "Eye_of_Winter_of_Finality"
-   ]
-  },
-  {
-   "linha": "Projéteis mudam de direção # vezes",
-   "gemas": [
-    "Kinetic_Bolt",
-    "Kinetic_Bolt_of_Fragmentation"
-   ]
-  },
-  {
-   "linha": "Projéteis não podem se Partir",
-   "gemas": [
-    "Kinetic_Blast_of_Clustering",
-    "Vaal_Lightning_Arrow"
-   ]
-  },
-  {
-   "linha": "Projéteis podem Ricochetear ao atingir o solo Projéteis não mudam de direção ao Ricochetear",
-   "gemas": [
-    "Rolling_Magma",
-    "Vaal_Molten_Strike"
    ]
   },
   {
@@ -12844,13 +12583,6 @@
    "gemas": [
     "Explosive_Trap",
     "Explosive_Trap_of_Shrapnel"
-   ]
-  },
-  {
-   "linha": "Rebate até # vezes Modificadores ao número de Projéteis se aplicam ao número de Rebatidas",
-   "gemas": [
-    "Spectral_Helix",
-    "Spectral_Helix_of_Trarthus"
    ]
   },
   {
@@ -13322,6 +13054,12 @@
    "linha": "# % mais Velocidade de Conjuração",
    "gemas": [
     "Shock_Nova_of_Procession"
+   ]
+  },
+  {
+   "linha": "# % mais Velocidade de Projétil",
+   "gemas": [
+    "Holy_Flame_Totem_of_Ire"
    ]
   },
   {
@@ -14015,6 +13753,12 @@
    ]
   },
   {
+   "linha": "Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade",
+   "gemas": [
+    "Galvanic_Arrow"
+   ]
+  },
+  {
    "linha": "Aura faz com que Castigo ataque +# alvos com relâmpagos",
    "gemas": [
     "Vaal_Smite"
@@ -14657,12 +14401,6 @@
    ]
   },
   {
-   "linha": "Desaceleração do Projétil reduzida em # %",
-   "gemas": [
-    "Spectral_Throw_of_Materialising"
-   ]
-  },
-  {
    "linha": "Detonação da Mina é Instantânea",
    "gemas": [
     "Smoke_Mine"
@@ -14705,12 +14443,6 @@
    ]
   },
   {
-   "linha": "Dispara # projétil",
-   "gemas": [
-    "Freezing_Pulse"
-   ]
-  },
-  {
    "linha": "Dispara # sequências de flechas adicionais",
    "gemas": [
     "Vaal_Rain_of_Arrows"
@@ -14738,18 +14470,6 @@
    "linha": "Dispara Projéteis a cada # segundos",
    "gemas": [
     "Cremation_of_the_Volcano"
-   ]
-  },
-  {
-   "linha": "Dispara Projéteis em cada inimigo Próximo",
-   "gemas": [
-    "Vaal_Power_Siphon"
-   ]
-  },
-  {
-   "linha": "Dispara Projéteis em direções aleatórias",
-   "gemas": [
-    "Vaal_Spark"
    ]
   },
   {
@@ -15683,12 +15403,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas disparam #% menos Projéteis",
-   "gemas": [
-    "Locus_Mine_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas Eletrizam Inimigos como se causassem #% mais Dano",
    "gemas": [
     "Overcharge_Support"
@@ -15896,12 +15610,6 @@
    "linha": "Habilidades Suportadas têm #% mais frequência de Ativação",
    "gemas": [
     "Swiftbrand_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% menos Velocidade de Projétil",
-   "gemas": [
-    "Slower_Projectiles_Support"
    ]
   },
   {
@@ -16427,18 +16135,6 @@
    ]
   },
   {
-   "linha": "Magias Suportadas ganham Intensidade quando você as Conjurar, máximo de # Habilidades Suportadas disparam um Projétil a menos por Intensidade",
-   "gemas": [
-    "Pinpoint_Support"
-   ]
-  },
-  {
-   "linha": "Magias Suportadas ganham Intensidade quando você as Conjurar, máximo de #\\nHabilidades Suportadas disparam um Projétil a menos por Intensidade",
-   "gemas": [
-    "Pinpoint_Support"
-   ]
-  },
-  {
    "linha": "Magias Suportadas Sacrificam #% da sua Vida atual quando Conjuradas para ganhar Dano de Caos adicional igual a #% da Vida Sacrificada",
    "gemas": [
     "Sacrifice_Support"
@@ -16619,12 +16315,6 @@
    ]
   },
   {
-   "linha": "O primeiro e último disparo da sequência dispara # Projéteis adicionais simultâneos",
-   "gemas": [
-    "Barrage_of_Volley_Fire"
-   ]
-  },
-  {
    "linha": "O primeiro martelo de cada cascata causa + # % de dano",
    "gemas": [
     "Holy_Hammers"
@@ -16694,6 +16384,12 @@
    "linha": "Ondas adicionais serão criadas a partir dos aliados dentro de um raio base de # metros do primeiro inimigo atingido",
    "gemas": [
     "Shield_of_Light"
+   ]
+  },
+  {
+   "linha": "os # projéteis em espiral por # segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias",
+   "gemas": [
+    "Vaal_Spark"
    ]
   },
   {
@@ -16793,57 +16489,9 @@
    ]
   },
   {
-   "linha": "Projéteis causam +# % mais dano por projétil disparado anteriormente em sequência",
-   "gemas": [
-    "Kinetic_Fusillade"
-   ]
-  },
-  {
-   "linha": "Projéteis das Habilidades Suportadas causam #% mais Dano com Acertos por Intensidade",
-   "gemas": [
-    "Pinpoint_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis de Habilidades Suportadas Atravessam # Alvos adicionais",
-   "gemas": [
-    "Pierce_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis de Habilidades Suportadas Atravessam todos os Alvos enquanto Retornando",
-   "gemas": [
-    "Returning_Projectiles_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis de Habilidades Suportadas causam #% menos Dano com Acertos e Afecções enquanto Retornam",
-   "gemas": [
-    "Returning_Projectiles_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis de Habilidades Suportadas Retornam a você",
-   "gemas": [
-    "Returning_Projectiles_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis de Habilidades Suportadas têm #% de chance de ganhar um Projétil adicional ao Difundirem",
-   "gemas": [
-    "Greater_Fork_Support"
-   ]
-  },
-  {
    "linha": "Projéteis deixam Solo Eletrizado",
    "gemas": [
     "Vaal_Lightning_Trap"
-   ]
-  },
-  {
-   "linha": "Projéteis mudam de direção # vezes Projéteis podem Acertar alvos cada vez que mudam de direção",
-   "gemas": [
-    "Vaal_Lightning_Arrow"
    ]
   },
   {
@@ -16859,12 +16507,6 @@
    ]
   },
   {
-   "linha": "Projéteis podem se Dividir ao acertar o terreno",
-   "gemas": [
-    "Ice_Spear_of_Splitting"
-   ]
-  },
-  {
    "linha": "Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de # alvos adicionais",
    "gemas": [
     "Snipers_Mark"
@@ -16874,24 +16516,6 @@
    "linha": "Projéteis que passam pela parede causam # a # de Dano de Fogo Adicional",
    "gemas": [
     "Flame_Wall"
-   ]
-  },
-  {
-   "linha": "Projéteis Retornam a você",
-   "gemas": [
-    "Venom_Gyre"
-   ]
-  },
-  {
-   "linha": "Projéteis Retornando Atravessam todos os Alvos",
-   "gemas": [
-    "Venom_Gyre"
-   ]
-  },
-  {
-   "linha": "Projéteis Retornando causam # % menos Dano com Acertos e Afecções",
-   "gemas": [
-    "Venom_Gyre"
    ]
   },
   {

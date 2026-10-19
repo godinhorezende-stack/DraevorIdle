@@ -131,6 +131,9 @@ const maisDe = (texto, v) => ({ [chaveDoMais(texto)]: v, ...(/Dano Mágico|de da
 const MAIS_DOT_DO_TIPO = { caos: 'maisDotCaosPct', 'físico': 'maisDotFisicoPct', gelo: 'maisDotGeloPct', fogo: 'maisDotFogoPct', raio: 'maisDotRaioPct' };
 /** Os "mais/menos" em % que MULTIPLICAM (duas linhas do mesmo suporte na mesma chave: ×, não +). */
 const MAIS_MULTIPLICA = new Set(['maisDanoPct', 'maisDanoAcertoPct', 'maisDanoMagicoPct', 'maisAfeccaoPct', 'maisIncendioPct', 'maisSangramentoPct', 'maisVenenoPct', 'maisDotPct', ...Object.values(MAIS_DOT_DO_TIPO)]);
+// (lote A3, dono 19/10) as chaves que são uma flag ou um teto (o poedb repete a linha com "\n" no meio — o Localizar, a Nova de Flechas): a maior
+// das linhas, não a soma
+const O_MAIOR = new Set(['intensidadeMax', 'intensidadeMenosProjetil', 'doPontoDoAlvo', 'emCirculo', 'soArco', 'origensLaterais', 'projeteisMinimo', 'voltaAtravessa', 'retornar']);
 /** Velocidade X% mais/aumentada → o % do TEMPO de uso (o motor: `castTimePct`). */
 const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
 
@@ -337,6 +340,38 @@ const REGRAS = [
   [new RegExp(`têm ${N}% de chance de Envenenar`, 'i'), (m) => ({ 'af:chance_poison': num(m[1]) })],
   [new RegExp(`têm ${N}% de chance de causar Sangramento`, 'i'), (m) => ({ 'af:chance_bleed': num(m[1]) })],
   [/^Causa Sangramento$/i, () => ({ 'af:chance_bleed': 100 })],
+  // (lote A3, dono 19/10) os PROJÉTEIS dos suportes, antes das regras gerais de dano (que pegavam o começo de algumas):
+  // - o Ponto Cego (D9): "Os Acertos de Ataques … causam até 30% mais Dano aos alvos no início de seu movimento, causando menos Dano … na medida em
+  //   que o projétil viaja adiante" é a flag PointBlank do PoB (ModParser.lua:2305) — a rampa do Queima-Roupa (`condicoes-poe.DISTANCIA_DO_PROJETIL`),
+  //   sem somar com a keystone. Antes a regra geral do "até X% mais Dano" dava 30% mais a qualquer distância;
+  [/^Os Acertos de Ataques das Habilidades Suportadas causam até [\d.,]+% mais Dano aos alvos no início de seu movimento/i, () => ({ 'af:queima_roupa': 1 })],
+  // - o Atravessar (erro 1): "Projéteis de Habilidades Suportadas Atravessam N Alvos adicionais" (o jogo procurava "Perfuram N Inimigos");
+  [new RegExp(`Atravessam ${N} Alvos adiciona`, 'i'), (m) => ({ perfurar: num(m[1]) })],
+  // - o Retorno (F4): volta a você, "X% menos Dano com Acertos e Afecções enquanto Retornam" (o % da volta) e "Atravessam todos os Alvos enquanto
+  //   Retornando" (D4: a reta da volta acerta todos os vivos no caminho — `Secundarios.resolver`);
+  [/Projéteis de Habilidades Suportadas Retornam a você$/i, () => ({ retornar: 1 })],
+  [new RegExp(`causam ${N}% menos Dano com Acertos e Afecções enquanto Retornam`, 'i'), (m) => ({ danoDoRetornoPct: Math.max(0, 100 - num(m[1])) })],
+  [/Atravessam todos os Alvos enquanto Retornando$/i, () => ({ voltaAtravessa: 1 })],
+  // - a Velocidade de Projétil (F1, D1): o "aumentada" é o atributo local do uso (soma com o das peças e o da gema); o "mais/menos" multiplica
+  //   (`Acoes.velocidadeDoProjetil`);
+  [new RegExp(`têm ${N}% de Velocidade de Projétil aumentada`, 'i'), (m) => ({ 'af:projectile_speed': num(m[1]) })],
+  [new RegExp(`têm ${N}% (mais|menos) Velocidade de Projétil`, 'i'), (m) => ({ velProjetilMaisPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  // - a Difusão Maior/Desperta (F5): "podem Difundir N Vezes adicionais" (os filhos difundem de novo) e "X% de chance de ganhar um Projétil
+  //   adicional ao Difundirem" — somam com os das peças e da gema (`Acoes.comOsAlvosDaGema`);
+  [new RegExp(`podem Difundir ${N} Vez\\w* adicionais`, 'i'), (m) => ({ bifurcarDeNovo: num(m[1]) })],
+  [new RegExp(`têm ${N}% de chance de ganhar um Projétil adicional ao Difundirem`, 'i'), (m) => ({ bifurcarExtraChance: num(m[1]) })],
+  // - a quantidade e a emissão (F7): a Saraivada ("também disparam Projéteis de até N pontos de cada lado seu" — D7: origens laterais na
+  //   perpendicular), a Nova de Flechas (o círculo a partir do ponto do alvo — D7 — e "só podem ser usadas com Arcos"), o Localizar (a Intensidade:
+  //   um projétil a menos e X% mais Dano com Acertos por Intensidade, o PoB: sup_int.lua:5510) e a Mina Locus ("X% menos Projéteis"), com o
+  //   "sempre disparam ao menos N Projétil" dos dois
+  [new RegExp(`também disparam Projéteis de até ${N} pontos de cada lado seu`, 'i'), (m) => ({ origensLaterais: num(m[1]) })],
+  [/Disparam Projéteis em um círculo$/i, () => ({ emCirculo: 1 })],
+  [/disparam uma Flecha Carregada no ar(?:\s|\\n)+Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair/i, () => ({ doPontoDoAlvo: 1 })],
+  [/só podem ser usadas com Arcos$/i, () => ({ soArco: 1 })],
+  [new RegExp(`ganham Intensidade quando você as Conjurar, máximo de ${N}(?:\\s|\\\\n)+Habilidades Suportadas disparam um Projétil a menos por Intensidade`, 'i'), (m) => ({ intensidadeMax: num(m[1]), intensidadeMenosProjetil: 1 })],
+  [new RegExp(`causam ${N}% mais Dano com Acertos por Intensidade`, 'i'), (m) => ({ intensidadeMaisProjetilPct: num(m[1]) })],
+  [new RegExp(`sempre disparam ao menos ${N} Projétil`, 'i'), (m) => ({ projeteisMinimo: num(m[1]) })],
+  [new RegExp(`disparam ${N}% menos Projéteis`, 'i'), (m) => ({ menosProjeteisPct: num(m[1]) })],
   // Dano: "mais/menos" multiplica (como no PoE); "aumentado/reduzido" soma.
   [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra| com Acertos por|[^%]* por cada |[^%]* enquanto Retornam)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[2] === 'mais' ? 1 : -1) * num(m[1])) : null)],
   [new RegExp(`^(?!Repetições|Explosão)[^%]*?causam? ([+-])${N}% de dano(?![^%]*por estágio)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[1] === '-' ? -1 : 1) * num(m[2])) : null)],
@@ -505,7 +540,7 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
       continue;
     }
     const r = regra[1](linha.match(regra[0]), linha, ativa);
-    for (const [k, v] of Object.entries(r ?? {})) efeito[k] = MAIS_MULTIPLICA.has(k) && efeito[k] != null ? ((1 + efeito[k] / 100) * (1 + v / 100) - 1) * 100 : (efeito[k] ?? 0) + v;
+    for (const [k, v] of Object.entries(r ?? {})) efeito[k] = O_MAIOR.has(k) ? Math.max(efeito[k] ?? 0, v) : MAIS_MULTIPLICA.has(k) && efeito[k] != null ? ((1 + efeito[k] / 100) * (1 + v / 100) - 1) * 100 : (efeito[k] ?? 0) + v;
   }
   // (lote 44, P064) o nível do Suporte: Convocar Fantasma — o Poder Fantasmal de cada Fantasma é o desse nível (a tabela do PoB)
   if (efeito.fantasmaAoMatarPct > 0 || efeito.fantasmaRaroPct > 0) efeito.fantasmaNivel = nivel;

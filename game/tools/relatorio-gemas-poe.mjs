@@ -65,7 +65,9 @@ for (const [slug, r] of G.REGISTRO) {
     // (lote A2, dono 19/10 — achado A1: "alternativa" só quando a BASE existe — a Parede de Força, o Emblema do Poder, os Arautos e as Purezas
     // terminam em "_of_X" e não são variantes de nada; revisão: o sufixo pode ter várias palavras — "_of_the_Cloud", "_of_Prismatic_Clones")
     slug, nome: g.nome, variante: /^Vaal_/.test(slug) ? 'vaal' : /_of_/.test(slug) && G.REGISTRO.has(slug.replace(/_of_.+$/, '')) ? 'alternativa' : 'normal', ataque: !!r.ataque,
-    arquetipo: r.arquetipo, estado, ausentes, idle, outros, ...(r.naoSeAplica ? { nota: r.naoSeAplica } : {}), icone: icone('icones-gemas', slug).ok, iconeHabilidade: !!JSON.parse(readFileSync(new URL('gamedata/itens-poe/icones-habilidades.json', RAIZ), 'utf8')).icones[slug],
+    arquetipo: r.arquetipo, estado, ausentes, idle, outros, ...(r.naoSeAplica ? { nota: r.naoSeAplica } : {}),
+    // (lote A3, dono 19/10) as LINHAS que não se aplicam (só a trajetória do projétil), com a nota — a gema segue pelo resto
+    ...(r.linhasNaoSeAplicam?.length ? { linhasNaoSeAplicam: r.linhasNaoSeAplicam } : {}), icone: icone('icones-gemas', slug).ok, iconeHabilidade: !!JSON.parse(readFileSync(new URL('gamedata/itens-poe/icones-habilidades.json', RAIZ), 'utf8')).icones[slug],
   });
 }
 const suportes = [];
@@ -141,6 +143,9 @@ md += secao('Gemas de suporte pendentes', naoFeitas(suportes));
 // (lote A2) as que não se aplicam ao jogo, com a nota
 const naoSeAplicam = [...ativas, ...suportes].filter((x) => x.estado === 'não se aplica');
 if (naoSeAplicam.length) md += secao('Não se aplicam ao jogo', naoSeAplicam);
+// (lote A3) as linhas que não se aplicam, gema a gema
+const comLinhasQueNaoSeAplicam = ativas.filter((x) => x.linhasNaoSeAplicam?.length);
+if (comLinhasQueNaoSeAplicam.length) md += `## Linhas que não se aplicam ao jogo\n\n${comLinhasQueNaoSeAplicam.map((x) => `- **${x.slug}** (${x.nome}) — ${x.estado}\n${x.linhasNaoSeAplicam.map((n) => `  - ${n}`).join('\n')}`).join('\n')}\n\n`;
 md += `## Implementadas sem teste próprio\n\n${[...ativas, ...suportes].filter((x) => x.estado === 'implementada, sem teste próprio').map((x) => x.slug).sort().join(', ') || '—'}\n`;
 
 writeFileSync(new URL('../docs/gemas-poe-implementacao.md', RAIZ), md);
