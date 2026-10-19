@@ -16,6 +16,19 @@ const MOVIMENTO = /teleport|dash|backflip|emerge|jump(?!slam)|leapback|charge(?!
 const IMPACTO = /slam|leap|mortar|upheaval|flood|smash|quake|nova|stomp|groundpound|eruption|explo|burst|pound|cleave|whirl|spin/i;
 const INVOCACAO = /summon|animate|spawn|minion|raise|totem|statue/i;
 const FEIXE = /laser|lance|beam|ray|tendril|lightningsoul/i;
+// As habilidades que batem o dano do poedb como está, sem o fator: a Bomba Viva do General Adus (Ato 9, Refinaria) — com o fator ia a
+// 5.571–6.809 de Raio, o maior golpe da campanha, e matava com um golpe no nível 83 (dono, 19/10: "com o dano do poedb, só nele").
+const DANO_DO_POEDB = new Set(['LivingBombLightningAdus']);
+// Os monstros únicos cujas habilidades TODAS batem o dano do poedb × um fator (sem o fator das magias do Único): os do Núcleo em Putrefação
+// (Ato 9). Com o fator as magias de Raio da Shavronne (1.367–1.663 com 32% de Raio) matavam em ~20 s a build do Ato 9 sem a resistência
+// reposta (dono, 19/10: "nerfe um pouco essas fases para não ficar impossível de passar, mas também não pode ficar fácil com build fraca").
+// ×0,85 pela simulação da build fraca (nível 79, 2.800 de vida, 32% de Raio): no dano do poedb (×1) morria 10 de 10; em ×0,85 passa 7 de 8,
+// quase sempre no limite; em ×0,7 passava 5 de 5 com folga (fácil demais).
+const NUCLEO = 0.85;
+const DANO_DO_POEDB_POR_MONSTRO = {
+  'Doedre,_Darksoul': NUCLEO, 'Shavronne,_Unbound': NUCLEO, 'Maligaro,_The_Broken': NUCLEO, The_Depraved_Trinity: NUCLEO,
+  Doedres_Torment: NUCLEO, Eye_Hatchery: NUCLEO, Stygian_Revenant: NUCLEO, Maligaros_Muse: NUCLEO,
+};
 
 /** O fator de dano das habilidades: o golpe corpo a corpo do chefe ÷ o "Ataque Padrão" dele no poedb (1 sem ataque padrão). */
 export function fatorDeDano(monstro) {
@@ -25,14 +38,14 @@ export function fatorDeDano(monstro) {
 }
 
 /** Uma habilidade convertida: `{ tipo: 'magia'|'area'|'invocar', ... }` ou null (fica de fora). */
-export function converter(h, fator = 1) {
+export function converter(h, fator = 1, { fatorDoPoedb = null } = {}) {
   const nome = `${h.interno ?? ''} ${h.nome ?? ''}`;
   if (/^Ataque Padrão$/i.test(h.nome ?? '') || h.interno === 'Melee') return null;
   const tags = (h.tags ?? []).map((t) => t.toLowerCase());
   if (INVOCACAO.test(nome) && !h.dano) return { tipo: 'invocar', nome: h.nome ?? h.interno, intervaloMs: Math.max(8000, (h.recarga ?? 12) * 1000) };
   if (!h.dano || (MOVIMENTO.test(nome) && !IMPACTO.test(nome))) return null;
   const magia = tags.includes('spell') || !!h.elemento;
-  const f = magia ? fator / 0.67 : fator; // as magias não levam o "33% menos dano de ataque" do Único
+  const f = fatorDoPoedb ?? (DANO_DO_POEDB.has(h.interno) ? 1 : magia ? fator / 0.67 : fator); // as magias não levam o "33% menos dano de ataque" do Único
   const min = Math.max(1, Math.round(h.dano.min * f));
   const max = Math.max(min, Math.round(h.dano.max * f));
   const elemento = ELEMENTOS.has(h.elemento) ? h.elemento : 'physical';
@@ -46,10 +59,11 @@ export function converter(h, fator = 1) {
 /** As habilidades convertidas de um chefe (até `maximo`, sem repetir o mesmo dano/elemento). */
 export function convertidas(monstro, maximo = 6) {
   const fator = fatorDeDano(monstro);
+  const fatorDoPoedb = DANO_DO_POEDB_POR_MONSTRO[monstro.slug] ?? null;
   const vistas = new Set();
   const lista = [];
   for (const h of monstro.habilidades ?? []) {
-    const c = converter(h, fator);
+    const c = converter(h, fator, { fatorDoPoedb });
     if (!c) continue;
     const chave = `${c.tipo}:${c.elemento ?? ''}:${c.min ?? ''}:${c.max ?? ''}`;
     if (vistas.has(chave)) continue;
