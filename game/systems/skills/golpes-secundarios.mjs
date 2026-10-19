@@ -23,6 +23,13 @@
 //   7. a Mina Locus arredonda o "30% menos Projéteis" para baixo;
 //   8. as rebatidas não contam como Ricochete para os modificadores "por Ricochete";
 //   9. na volta que atravessa, cada bicho leva o golpe uma vez.
+//
+// (lote A3c, dono 19/10: "Fazer como o PoE") a ÁREA NO IMPACTO dos projéteis com raio-base no PoB (`areaNoImpacto` — a Bola de Fogo, o Magma
+// Rolante, o Aço Divisor, a Fuzilaria Cinética…): todo impacto do projétil que acerta (o principal e os extras, a perfuração, a divisão, a difusão,
+// o ricochete, a rebatida e o retorno) é um acerto em ÁREA — quem está no quadrado do raio em volta do atingido leva um acerto com o mesmo % do
+// projétil; o atingido leva um só (o do projétil É o da área); o mesmo bicho não leva duas vezes do MESMO projétil na ida (quem a área pegou sai
+// dos alvos dele: não é atravessado nem ricocheteado depois), e a volta é outra passada (acerta de novo, como o retorno do PoE). Os saltos no solo
+// do Magma (exceção 2) já são áreas: não somam outra.
 import { CONFIG } from './gemas.mjs';
 import * as Areas from '../../engine/areas.mjs';
 
@@ -82,7 +89,7 @@ function maisPerto(vivos, ponto, distancia, n, fora) {
  * leque). Na gema que "Dispara Projéteis em sequência" (`sequencia`, a Barragem) os que sobram vão no alvo, como no PoE. Sem alvo nenhum
  * (0 bichos), os projéteis saem todos e erram. A emissão não diminui com quem erra nem com quem morre no meio.
  */
-export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null }) {
+export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, alcance, area = false, rumo = null, rng = Math.random, andavel = null, areaNoImpacto = null }) {
   const golpes = [];
   const explosoes = [];
   const emitidos = [];
@@ -100,6 +107,33 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   const pctsDaExplosao = t.has('hit') ? [efeito.explosaoPct, efeito.segundaExplosaoPct].filter((p) => p > 0) : [];
   let impactos = 0;
   let nExplosoes = 0;
+  // (lote A3c) a área no impacto: o raio em casas (já sorteado no uso — `Acoes.disparar`) e o teto de áreas por uso
+  const raioNoImpacto = areaNoImpacto && t.has('projectile') && !area ? Math.max(0, Math.round(Number(areaNoImpacto.raio) || 0)) : null;
+  const maxAreas = cfg.limites?.areasNoImpactoPorUso ?? 60;
+  let nAreas = 0;
+  /**
+   * (lote A3c) A ÁREA do impacto do projétil `p` em `centro` (o bicho atingido): os vivos do andar dele no quadrado do raio, fora o próprio e os
+   * que este projétil já acertou nesta passada (`ja`: os alvos da ida, ou os da volta); cada um leva um acerto com o % do impacto e o que o
+   * projétil já fez (`meta`). `tipo`: o do impacto (o golpe da área sai como 'impacto', com `doImpacto` = ele; o direto, null).
+   */
+  const areaDoImpacto = (centro, pct, tipo, meta, ja) => {
+    if (raioNoImpacto == null || !ja) return;
+    if (areaNoImpacto.soNosExtras && tipo === 'direto') return;
+    if (nAreas >= maxAreas) {
+      r.cortado = true;
+      return;
+    }
+    nAreas++;
+    const ponto = { x: centro.x, y: centro.y };
+    explosoes.push({ ...ponto, lado: 2 * raioNoImpacto + 1, impacto: true });
+    const z = centro.z ?? 0;
+    for (const c of Areas.quadrado(ponto, raioNoImpacto)) {
+      const b = porCasa.get(Areas.chave(c));
+      if (!b || b === centro || !(b.hp > 0) || (b.z ?? 0) !== z || ja.has(b)) continue;
+      ja.add(b);
+      golpes.push({ bicho: b, pct, de: ponto, tipo: 'impacto', doImpacto: tipo === 'direto' ? null : tipo, ...(meta ?? {}) });
+    }
+  };
 
   const explodir = (centro, pctDoImpacto) => {
     for (const pctDaExplosao of pctsDaExplosao) {
@@ -123,7 +157,8 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
    * antes deste acerto — `atravessados` (os inimigos que ele Perfurou) e `ricochetes` (as vezes que Ricocheteou): "Projéteis causam Dano
    * aumentado para cada Inimigo Atravessado / para cada vez que Ricochetearam" (`acoes`).
    */
-  const impacto = (bicho, pct, de, tipo, direto, meta = null) => {
+  // (lote A3c: + `ja` — os que este projétil já acertou na passada; com ele, o impacto é em área — `areaDoImpacto`)
+  const impacto = (bicho, pct, de, tipo, direto, meta = null, ja = null) => {
     if (!direto) {
       if (impactos >= maxImpactos) {
         r.cortado = true;
@@ -133,6 +168,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       golpes.push({ bicho, pct, de, tipo, ...(meta ?? {}) });
     }
     explodir(bicho, pct);
+    areaDoImpacto(bicho, pct, tipo, meta, ja);
     return true;
   };
 
@@ -199,7 +235,8 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     const meta = () => ({ atravessados: p.perfurados, ricochetes: p.ricocheteou, restantes: Math.max(0, p.encadear ?? 0), ordem: p.ordem ?? 0 });
     while (atual) {
       // (lote A3, D3: o Arremesso Espectral da Materialização "só acerta e causa dano enquanto retorna" — a ida só marca quem está no caminho)
-      if (!p.soNaVolta && !impacto(atual, pct, de, tipoAtual, eDireto, meta())) return;
+      // (lote A3c: o impacto em área — os que ela pega entram nos acertados deste projétil)
+      if (!p.soNaVolta && !impacto(atual, pct, de, tipoAtual, eDireto, meta(), p.acertados)) return;
       p.acertados.add(atual);
       p.ida.push(atual);
       ultimo = atual;
@@ -302,7 +339,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
         const [b] = maisPerto(vivosNoInicio, de, distanciaDoSalto(), 1, p.acertados);
         if (!b) break;
         vindoDe = de;
-        if (!impacto(b, p.pct, de, 'rebatida', false, meta())) return;
+        if (!impacto(b, p.pct, de, 'rebatida', false, meta(), p.acertados)) return;
         p.acertados.add(b);
         p.ida.push(b);
         ponto = b;
@@ -324,9 +361,13 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       }
       // (revisão do A3: na Materialização — a ida não acertou ninguém — os atravessados contam os da própria volta: 0 no primeiro, 1 no segundo…)
       let naVoltaAtravessados = 0;
+      // (lote A3c: a volta é outra passada — a área no impacto de cada retorno; quem uma área da volta já pegou não leva o retorno de novo)
+      const daVolta = raioNoImpacto == null ? null : new Set();
       for (const b of naVolta) {
+        if (daVolta?.has(b)) continue;
+        daVolta?.add(b);
         const m = p.soNaVolta ? { ...meta(), atravessados: naVoltaAtravessados++ } : meta();
-        if (!impacto(b, pctDaVolta, b, 'retorno', false, m)) return;
+        if (!impacto(b, pctDaVolta, b, 'retorno', false, m, daVolta)) return;
       }
     }
   };

@@ -384,6 +384,9 @@ test('os gatilhos das peças: a magia encaixada na arma sai quando você ataca, 
     GS.encaixar(e, { de: 0, slot: 'weapon', indice: 0 });
     Ficha.invalidar(e); Afixos.sincronizarMaximos(e); e.mana = e.maxMana = 99999;
     Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' });
+    // (lote A3c, com o aval do dono: os bichos imortais — a área no impacto da Bola de Fogo mata o vizinho do alvo, e o gatilho seguinte ficava sem
+    // alvo ao alcance; a regra conferida é a mesma)
+    for (const m of e.hunt.monstros) Object.assign(m, { hp: 1e12, maxHp: 1e12 });
     const bicho = e.hunt.monstros.find((b) => b.hp > 0);
     e.hunt.pos = { ...e.hunt.pos, x: bicho.x + 1, y: bicho.y };
     return { e, bicho };

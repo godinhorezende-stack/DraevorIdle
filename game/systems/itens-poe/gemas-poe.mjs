@@ -621,6 +621,61 @@ export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   return { raioM, areaIncPct: st.areaInc ?? 0 };
 }
 
+/*
+ * (lote A3c, dono 19/10: "Fazer como o PoE") A ÁREA NO IMPACTO dos projéteis: as gemas cujo projétil o PoB marca com raio no impacto (a explosão
+ * da Bola de Fogo, o orbe do Magma Rolante, o "dano em área ao se dividir" do Aço Divisor, a Fuzilaria Cinética…). `pob`: o raio-base em metros do
+ * PoB quando o poedb não o publica no raio da gema (ou publica outro — a Flecha Cáustica: o do chão, 2 m; o da explosão é o
+ * caustic_arrow_explode_on_hit, 1,2 m); sem `pob`, o "O raio Base é de N metros" da gema. `soNosExtras`: o golpe direto é o corpo a corpo e só as
+ * bolas (os projéteis) caem em área — o Golpe Vulcânico (o PoB: "Melee Hit" area = false, "Magma Balls" area = true).
+ * Fora (o PoB dá o raio a outra coisa): a Bola de Raios e a Geada Rastejante (a área em volta do projétil que voa), a Drenagem de Essência e o
+ * Dilacerar Almas (a área do debuff/do caminho), a Flecha Explosiva (o fusível), a Explosão Cinética (as explosões no raio secundário — linhas à
+ * parte), o Trovão Estrondoso (explode no fim da duração), a Concha Somática (a concha), a Chuva Cinética (a chuva), o cone do Tiro Gélido, da
+ * Flecha Galvânica e do Aço Estraçalhador, os "alvos próximos" da Flecha Relampejante e o Golpe Selvagem (a explosão do golpe corpo a corpo).
+ *
+ * (lote A3c — EXCEÇÕES DO DONO, 19/10: as escolhas sem fonte do lote, aceitas pelo dono)
+ *   1. a área é o quadrado do raio (Chebyshev), como a explosão e o salto no solo — não um círculo;
+ *   2. o raio é sorteado uma vez por uso (metros × √ do fator da área ÷ 2, a fração como a chance de uma casa), não a cada impacto;
+ *   3. com o raio de 0 casa, só o atingido (o desenho da área, 1×1, sai assim mesmo);
+ *   4. quem a área pegou entra nos alvos já acertados do projétil na ida: a perfuração, o ricochete, a rebatida e os filhos da divisão e da difusão
+ *      não o acertam depois;
+ *   5. no retorno, a área acerta de novo os vizinhos, uma vez; quem uma área da volta já pegou não leva o retorno direto de novo;
+ *   6. o Aço Violento (Splitting Steel) explode só nos impactos que acertam (as divisões que erram não explodem no fim do voo, como diz o PoB);
+ *   7. no Golpe Vulcânico o golpe direto (o corpo a corpo) não tem área — só as bolas, que no jogo são os projéteis extras;
+ *   8. o teto de 60 áreas no impacto por uso (`limites.areasNoImpactoPorUso`); passou, corta;
+ *   9. a área pega os bonecos de treino como as outras áreas de gema (`Areas.dentro`), sem checagem própria de zona segura (os bichos não ficam
+ *      nelas, e o ataque numa zona segura já é barrado);
+ *  10. o tiro do totem (o Totem de Magia, a Balista — pelo `usarComoTotem` → `dispararSemMarcar`) e o golpe do mercenário explodem igual ao seu
+ *      (revisão do A3c; o mercenário: dono, "Sim, igual").
+ */
+const AREA_NO_IMPACTO = Object.freeze({
+  Fireball: {}, Vaal_Fireball: {}, // act_int.lua:5788, 5872 — Projectile | Explosion
+  Rolling_Magma: { pob: 1.4 }, // act_int.lua:13278 — radius 14 (+ active_skill_base_radius_+)
+  Blazing_Salvo: { pob: 1.6 }, // act_int.lua:1834 — radius 16, "dealing area damage on impact"
+  Forbidden_Rite: { pob: 0.8 }, Forbidden_Rite_of_Soul_Sacrifice: { pob: 0.8 }, // act_int.lua:7462, 7609 — projectile_behaviour_only_explode
+  Kinetic_Fusillade: {}, Kinetic_Fusillade_of_Detonation: {}, // act_int.lua:10990, 11208 — "dealing area damage on impact"
+  Splitting_Steel: {}, Splitting_Steel_of_Ammunition: {}, // act_dex.lua:15527, 15607 — "dealing area damage when it splits"
+  Vaal_Burning_Arrow: { pob: 1.6 }, // act_dex.lua:3559 — radius 16, vaal_burning_arrow_explode_on_hit
+  Caustic_Arrow: { pob: 1.2 }, Caustic_Arrow_of_Poison: { pob: 1.2 }, // act_dex.lua:3656, 3740 — caustic_arrow_explode_on_hit_base_area_of_effect_radius 12
+  Elemental_Hit_of_the_Spectrum: {}, // act_dex.lua:6212 — "AoE Explosion"
+  Poisonous_Concoction: {}, Poisonous_Concoction_of_Bouncing: {}, Explosive_Concoction: {}, Explosive_Concoction_of_Destruction: {}, // projectile_behaviour_only_explode
+  Molten_Strike: { pob: 0.9, soNosExtras: true }, Molten_Strike_of_the_Zenith: { pob: 0.9, soNosExtras: true }, Vaal_Molten_Strike: { pob: 0.9, soNosExtras: true }, // act_str.lua:7833, 8041, 8157
+});
+export const temAreaNoImpacto = (slug) => Object.hasOwn(AREA_NO_IMPACTO, slug);
+export const GEMAS_COM_AREA_NO_IMPACTO = Object.freeze(Object.keys(AREA_NO_IMPACTO));
+/**
+ * (lote A3c) O raio da área no impacto do projétil da gema, no nível e na qualidade: `{ raioM, soNosExtras }` — o raio-base (o do PoB ou o da gema)
+ * + os "+X metros de raio" da gema, × √ do "X% mais Área de Efeito" dela (a conta de `areaNoNivel`) —, ou null (a gema não explode no impacto).
+ */
+export function areaNoImpacto(slug, nivel = 1, qualidade = 0) {
+  const def = AREA_NO_IMPACTO[slug];
+  if (!def) return null;
+  const st = compilada(slug, nivel, qualidade)?.stats;
+  const base = def.pob ?? st?.raio ?? null;
+  if (base == null) return null;
+  const raioM = Math.max(0, (base + (st?.raioBonus ?? 0)) * Math.sqrt(Math.max(0.2, 1 + (st?.areaMais ?? 0) / 100)));
+  return { raioM, soNosExtras: !!def.soNosExtras };
+}
+
 /**
  * (17/10, lote G4) As GEMAS DE ESCUDO do PoE (Golpe de Escudo, Investida com Escudo, Arremesso Espectral de Escudo, Escudo da Luz, Explosão Divina,
  * Golpe de Escudo Glacial…): o ataque usa o ESCUDO como a arma da mão secundária — "X a Y de Dano Físico Base como a Mão Secundária" (ou de

@@ -1188,8 +1188,23 @@ export function alvosDoGolpeDoMercenario(estado, l, alvo, vivos, rng = Math.rand
   }
   const tags = Tags.tagsDaAcao(entry);
   if (!tags.includes('projectile')) return null;
-  const r = Secundarios.resolver({ efeito, tags, origem, alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, rng });
-  return { golpes: r.golpes, eventos: [], emitidos: r.emitidos, explosoes: r.explosoes };
+  // (lote A3c, dono 19/10: "Sim, igual") + a área no impacto do projétil da gema dele, com o mesmo raio do seu (`areaNoImpactoDoUso`); o golpe da
+  // área vai como 'area' (a caçada não desenha um voo para ele), com `impacto: true` e o `doImpacto`
+  const r = Secundarios.resolver({ efeito, tags, origem, alvo, atingidos: [alvo], vivos, alcance: entry.range || ALCANCE_PADRAO, rng, areaNoImpacto: areaNoImpactoDoUso(entry, efeito, 0, rng) });
+  return { golpes: r.golpes.map((g) => (g.tipo === 'impacto' ? { ...g, tipo: 'area', impacto: true } : g)), eventos: [], emitidos: r.emitidos, explosoes: r.explosoes };
+}
+/**
+ * (lote A3c, dono 19/10: "Fazer como o PoE") A ÁREA NO IMPACTO do projétil da gema com raio-base no PoB (`GemasPoe.areaNoImpacto`) neste uso:
+ * `{ raio, soNosExtras }` — o raio em casas = os metros × √ da Área de Efeito do uso (a da gema, dos suportes e das peças — o "aumentado" e o
+ * "mais", como a forma das áreas do uso; a "menos" da Intensidade) ÷ 2, a fração como a chance de uma casa a mais —, ou null. O seu disparo (e o
+ * do totem, que passa por ele) e o golpe do mercenário (dono, 19/10: "Sim, igual").
+ */
+export function areaNoImpactoDoUso(entry, efeito, intensidade = 0, rng = Math.random) {
+  if (!itensPoeLigado() || !entry?.poeGema) return null;
+  const a = GemasPoe.areaNoImpacto(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
+  if (!a) return null;
+  const fator = ModsPoe.fatorDaArea(efeito?.areaIncPct ?? 0, efeito?.areaMaisPct ?? 0, intensidade > 0 ? -intensidade * (efeito?.intensidadeMenosAreaPct ?? 0) : 0);
+  return { raio: casasDoRaio(a.raioM * Math.sqrt(fator), rng), soNosExtras: a.soNosExtras };
 }
 /** Depois de cada golpe do mercenário: a próxima gema do arquétipo (ele alterna as habilidades). */
 export function depoisDoGolpeDoMercenario(l) {
@@ -4323,7 +4338,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const fichaNoAlvo = noAlvo?.ficha ?? ficha;
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
-      const fator = (semDanoProprio ? 0 : 1) * (dobroNaFinal ? 2 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * maisDaInvestida * doProjetilDaGema(fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      // (lote A3c: o acerto da área no impacto tem o dano do projétil que a causou — `golpe.doImpacto`, a fonte do impacto)
+      const fator = (semDanoProprio ? 0 : 1) * (dobroNaFinal ? 2 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * maisDaInvestida * doProjetilDaGema(golpe?.tipo === 'impacto' ? golpe.doImpacto : fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
       // (17/10, lote G17) o que no PoB vale SÓ NO ACERTO e o jogo põe no `fator`: o "mais/menos Dano com Acertos" e os de Mágico/Projétil/Corpo a
@@ -4635,6 +4651,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const ang = GemasA4.anguloNoUso(GemasPoe.anguloDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0));
       return Areas.abrirForma(Areas.escalarForma(GemasA4.CONE_DO_TIRO_GELIDO.forma, r), 1 + ang / 100);
     })() : null;
+    // (lote A3c, dono 19/10: "Fazer como o PoE") a ÁREA NO IMPACTO do projétil da gema com raio-base no PoB — `areaNoImpactoDoUso`, sorteada uma
+    // vez no uso. (revisão do A3c: também no Totem de Magia e na Balista — no PoE o projétil lançado pelo totem explode igual)
+    const areaNoImpacto = !casas ? areaNoImpactoDoUso(entry, efeitoDaGema, intensidade) : null;
     const atacar = (segundo) => {
       // (lote G10: o uso que só CARREGA estágios — a Rajada de Chamas, a Flecha Flagelante antes do máximo — não acerta ninguém)
       // (lote A4, dono 19/10: o uso de carga da Ira Divina acerta os inimigos perto — `zapsDaIra`)
@@ -4684,6 +4703,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         area: !!casas,
         // (lote 42, P053: o terreno do andar — o projétil que erra pode bater nele e ricochetear)
         andavel: ModsPoe.gradeDoCombate(hunt)?.andavel ?? null,
+        // (lote A3c) a área no impacto do projétil
+        areaNoImpacto,
       });
       // A EMISSÃO na tela: cada projétil do total da skill sai de quem lança (o principal já saiu, acima) — o que acerta e o que erra,
       // mesmo que o bicho dele morra antes. (Nas direções aleatórias, todos — o principal não saiu no alvo.)
@@ -4693,7 +4714,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       for (const s of golpes) {
         if (s.bicho.hp <= 0) continue;
         // (o 1º voo de cada projétil já foi desenhado na emissão; aqui, os saltos: perfuração, bifurcação, encadeamento, retorno)
-        if (s.tipo !== 'explosao' && s.tipo !== 'projetil' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
+        // (lote A3c: o acerto da área no impacto não é um voo)
+        if (s.tipo !== 'explosao' && s.tipo !== 'projetil' && s.tipo !== 'impacto' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y, ...(velDoTiro !== 1 ? { vel: velDoTiro } : {}) });
         acertar(s.bicho, s.pct, s.tipo, s);
       }
       // (lote A4, dono 19/10: D7) o CONE do Tiro Gélido: em cada impacto da flecha (o alvo direto e os dos projéteis — a perfuração, a difusão…), o
