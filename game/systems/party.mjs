@@ -795,7 +795,9 @@ export function extrasDoRetrato(s) {
       const e = o.estado;
       const v = olhar(e);
       // A vida e a MANA dele (o nameplate desenha as duas barras — dono, 08/10: "a vida dele e sua mana").
-      return { uid: `aliado:${nomeDe(o)}`, name: nomeDe(o), x: e.hunt.pos.x, y: e.hunt.pos.y, dir: e.hunt.pos.dir ?? 2, look: v.type, colors: v, mount: 0, addons: v.addons, hp: e.hp, maxHp: e.maxHp, mana: Math.floor(e.mana ?? 0), maxMana: e.maxMana, level: e.level, moveMs: 250 };
+      return { uid: `aliado:${nomeDe(o)}`, name: nomeDe(o), x: e.hunt.pos.x, y: e.hunt.pos.y, dir: e.hunt.pos.dir ?? 2, look: v.type, colors: v, mount: 0, addons: v.addons, hp: e.hp, maxHp: e.maxHp, mana: Math.floor(e.mana ?? 0), maxMana: e.maxMana, level: e.level, moveMs: 250,
+        // (revisão do A1: o salto/teleporte das gemas de movimento do aliado — a sua tela o põe na casa nova, sem o desenho do caminho)
+        ...(e.hunt.teleportes ? { teleporte: e.hunt.teleportes } : {}) };
     }),
     summonsDoGrupo: outros
       .filter((o) => o.estado.hunt.summon)

@@ -2,38 +2,38 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 416,
-   "implementada e testada": 74,
+   "parcial": 407,
+   "implementada e testada": 83,
    "implementada, sem teste próprio": 50,
    "sem efeito": 11,
    "limitação do modelo idle": 11
   },
   "ataques": {
    "total": 210,
-   "parcial": 154,
-   "implementada e testada": 31,
+   "parcial": 150,
+   "implementada e testada": 35,
    "implementada, sem teste próprio": 19,
    "limitação do modelo idle": 6
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 58,
-   "parcial": 148,
-   "implementada, sem teste próprio": 50,
+   "implementada e testada": 59,
+   "parcial": 146,
+   "implementada, sem teste próprio": 51,
    "sem efeito": 6
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 44,
-    "implementada e testada": 3,
+    "parcial": 43,
+    "implementada e testada": 4,
     "implementada, sem teste próprio": 5
    },
    "alternativas": {
     "total": 198,
-    "parcial": 158,
+    "parcial": 157,
     "implementada, sem teste próprio": 27,
-    "implementada e testada": 9,
+    "implementada e testada": 10,
     "limitação do modelo idle": 2,
     "sem efeito": 2
    }
@@ -46,8 +46,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 961,
-   "emDuasOuMais": 215
+   "linhasDistintas": 947,
+   "emDuasOuMais": 209
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,7 +61,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 186,
+   "ativasCitadas": 196,
    "suportesCitados": 73,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -546,13 +546,9 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "efeito não simulado: Redução do Ponto de Atordoamento aumentada em 75 % em inimigos na distância Máxima da investida",
-    "efeito não simulado: 100 % mais Dano com Acertos na Distância Máxima da Investida"
+    "efeito não simulado: Redução do Ponto de Atordoamento aumentada em 75 % em inimigos na distância Máxima da investida"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -637,13 +633,9 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -654,13 +646,9 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -717,12 +705,9 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
     "efeito não simulado: +0.1 metro ao Raio por 5 de Fúria"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -1646,13 +1631,9 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -1665,11 +1646,9 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
+    "efeito não simulado: a recarga pode ser pulada gastando uma Carga de Tolerância"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -2881,16 +2860,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Distância de Deslocamento aumentada em 57 %",
-    "efeito não simulado: Distância de Deslocamento aumentada em %"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3100,14 +3072,12 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
+    "efeito não simulado: a recarga pode ser pulada gastando uma Carga de Frenesi",
     "efeito não simulado: Velocidade de Ataque aumentada em 10 % por Carga de Frenesi",
     "efeito não simulado: 15 % de chance de receber uma Carga de Frenesi ao Acertar",
     "efeito não simulado: 10 % de chance de receber uma Carga de Frenesi ao Acertar"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3120,14 +3090,12 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
+    "efeito não simulado: a recarga pode ser pulada gastando uma Carga de Poder",
     "efeito não simulado: 30 % de chance de ganhar uma Carga de Poder em Acertos Críticos",
     "efeito não simulado: Chance de Crítico aumentada em 50 % por Carga de Poder",
     "efeito não simulado: 20 % de chance de ganhar uma Carga de Poder em Acertos Críticos"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3231,11 +3199,9 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
+    "efeito não simulado: as 25 repetições do teleporte e do ataque, com os ferimentos e o dano total no fim (no jogo é um golpe)"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3246,13 +3212,9 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -3262,21 +3224,12 @@
    "nome": "Passo Definhante",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "movimento",
+   "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Definhado dura 3 segundos",
-    "efeito não simulado: Não pode ser Conjurado ou Ativado enquanto Elusivo Concede Elusivo",
-    "efeito não simulado: Efeito do Elusivo desta Habilidade aumentado em 38 %",
-    "efeito não simulado: Inflige 6 Debuffs de Definhamento adicionais na primeira vez que cada Inimigo entrar na Área",
-    "efeito não simulado: Buff concede Trespassar",
-    "efeito não simulado: Inflige +2 Debuffs de Definhamento adicionais na primeira vez que cada Inimigo entrar na Área"
+    "efeito não simulado: Buff concede Trespassar"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -5092,17 +5045,13 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "sem dano direto: nenhum efeito no combate",
     "efeito não simulado: Buff é removido para Impelir o próximo Ataque Corpo a Corpo que você executar Ataques Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades",
     "efeito não simulado: Ataques Impelidos têm +25 % de Chance de Golpe Crítico",
     "efeito não simulado: Ataques Impelidos têm +138 % de Multiplicador de Dano Crítico",
     "efeito não simulado: Duração da penalidade base é de 3 segundos",
     "efeito não simulado: Ataques Impelidos têm +10 % de Chance de Golpe Crítico"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -5129,19 +5078,14 @@
    "nome": "Passo Etéreo",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "movimento",
+   "arquetipo": "guarda",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "sem dano direto: nenhum efeito no combate",
     "efeito não simulado: 30 % mais Dano Físico Corpo a Corpo",
     "efeito não simulado: 100 % de aumento da Duração da Habilidade por Carga de Frenesi removida",
-    "efeito não simulado: Buff concede Furtividade aumentada em 100 %",
     "efeito não simulado: Buff concede Trespassar"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -5811,18 +5755,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "efeito não simulado: Velocidade de Recuperação da Recarga aumentada em 19 % para cada Inimigo Normal ou Mágico na Área Velocidade de Recuperação da Recarga aumentada em 99 % para cada Inimigo Raro ou Único na Área",
-    "efeito não simulado: Distância de Deslocamento máxima aumentada em 38 %",
-    "efeito não simulado: CooldownTime",
-    "efeito não simulado: Distância de Deslocamento máxima aumentada em %",
-    "efeito não simulado: Distância de Deslocamento máxima aumentada em 10 %"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -5835,16 +5770,13 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
     "efeito não simulado: Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada",
     "efeito não simulado: Não pode infligir Resfriamento",
     "efeito não simulado: 15 % mais Dano com Acertos por cada 5 % de Efeito do Resfriamento no Inimigo",
     "efeito não simulado: Remove Resfriamentos após Causar Dano",
     "efeito não simulado: 4 % mais Dano com Acertos por cada 5 % de Efeito do Resfriamento no Inimigo"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -6010,13 +5942,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -6029,16 +5957,9 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "efeito não simulado: Repete 1 vezes",
-    "efeito não simulado: Inverte a direção ao Repetir",
-    "efeito não simulado: Distância de Deslocamento máxima aumentada em 19 %",
-    "efeito não simulado: Distância de Deslocamento máxima aumentada em %",
     "efeito não simulado: 20 % de chance de Causticar Inimigos"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -6051,13 +5972,9 @@
    "arquetipo": "movimento",
    "estado": "parcial",
    "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "efeito não simulado: Pode aglomerar até 50 usos",
-    "efeito não simulado: Duração reduzida em 49 %"
+    "efeito não simulado: Pode aglomerar até 50 usos"
    ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -6169,14 +6086,9 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "efeito não simulado: Duração reduzida em 49 %"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -8839,17 +8751,9 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Recuperação da Recarga aumentada em 200 % se usado enquanto um Inimigo Único estiver em sua Presença",
-    "efeito não simulado: Qualidade não tem efeito",
-    "efeito não simulado: Qualidade não tem efeito"
-   ],
-   "idle": [
-    "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -10893,11 +10797,8 @@
   {
    "slug": "Blasphemy_Support",
    "nome": "Blasfêmia",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 76%",
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 20%"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10914,8 +10815,7 @@
    "nome": "Solo Maldito",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 34 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito",
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 10%"
+    "não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 34 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito"
    ],
    "outros": [],
    "icone": true
@@ -11241,11 +11141,8 @@
   {
    "slug": "Awakened_Blasphemy_Support",
    "nome": "Suporte Desperto: Blasfêmia",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 104%",
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 20%"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -11384,9 +11281,7 @@
    "nome": "Blasfêmia Sobrenatural (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 122%",
-    "não simulado: Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de 5 segundos",
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 20%"
+    "não simulado: Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de 5 segundos"
    ],
    "outros": [],
    "icone": true
@@ -11500,8 +11395,7 @@
     "não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 27 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito",
     "não simulado: Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada 0.7 segundo",
     "não simulado: Causa 7124 a 10687 de Dano de Caos",
-    "não simulado: Inflige Definhando por 2 segundos ao Acertar",
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas aumentado em 10%"
+    "não simulado: Inflige Definhando por 2 segundos ao Acertar"
    ],
    "outros": [],
    "icone": true
@@ -11601,32 +11495,6 @@
  ],
  "linhasFaltando": [
   {
-   "linha": "o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área",
-   "gemas": [
-    "Ambush",
-    "Chain_Hook",
-    "Consecrated_Path",
-    "Consecrated_Path_of_Endurance",
-    "Dash",
-    "Flame_Dash",
-    "Flame_Dash_of_Return",
-    "Flicker_Strike",
-    "Flicker_Strike_of_Power",
-    "Frostblink",
-    "Frostblink_of_Wintry_Blast",
-    "Leap_Slam",
-    "Leap_Slam_of_Groundbreaking",
-    "Lightning_Warp",
-    "Old_Phase_Run",
-    "Quickstep",
-    "Shield_Charge",
-    "Vaal_Flicker_Strike",
-    "Vaal_Lightning_Warp",
-    "Whirling_Blades",
-    "Withering_Step"
-   ]
-  },
-  {
    "linha": "nenhum efeito do buff tem equivalente no jogo",
    "gemas": [
     "Alchemists_Mark",
@@ -11645,24 +11513,6 @@
     "Temporal_Chains",
     "Vaal_Righteous_Fire",
     "War_Banner"
-   ]
-  },
-  {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Ambush",
-    "Arcanist_Brand",
-    "Bodyswap",
-    "Conversion_Trap",
-    "Dash",
-    "Detonate_Dead_of_Scavenging",
-    "Detonate_Mines",
-    "Old_Phase_Run",
-    "Pact_of_Beidat",
-    "Quickstep",
-    "Smoke_Mine",
-    "Wither",
-    "Withering_Step"
    ]
   },
   {
@@ -11694,6 +11544,19 @@
     "Summon_Lightning_Golem",
     "Summon_Stone_Golem",
     "Summon_Stone_Golem_of_Safeguarding"
+   ]
+  },
+  {
+   "linha": "sem dano direto: nenhum efeito no combate",
+   "gemas": [
+    "Arcanist_Brand",
+    "Bodyswap",
+    "Conversion_Trap",
+    "Detonate_Dead_of_Scavenging",
+    "Detonate_Mines",
+    "Pact_of_Beidat",
+    "Smoke_Mine",
+    "Wither"
    ]
   },
   {
@@ -11761,16 +11624,6 @@
     "Vaal_Arctic_Armour",
     "Vaal_Immortal_Call",
     "Vaal_Molten_Shell"
-   ]
-  },
-  {
-   "linha": "Efeito em Área de Habilidades Maldição Suportadas aumentado em #%",
-   "gemas": [
-    "Awakened_Blasphemy_Support",
-    "Blasphemy_Support",
-    "Cursed_Ground_Support",
-    "Eldritch_Blasphemy_Support",
-    "Hextoad_Support"
    ]
   },
   {
@@ -11940,14 +11793,6 @@
     "Perforate",
     "Perforate_of_Bloodshed",
     "Perforate_of_Duality"
-   ]
-  },
-  {
-   "linha": "Definhado dura # segundos",
-   "gemas": [
-    "Wither",
-    "Withering_Step",
-    "Withering_Touch_Support"
    ]
   },
   {
@@ -12546,6 +12391,13 @@
    ]
   },
   {
+   "linha": "Definhado dura # segundos",
+   "gemas": [
+    "Wither",
+    "Withering_Touch_Support"
+   ]
+  },
+  {
    "linha": "Dispara # Fragmentos de Projéteis em uma Espiral quando o Projétil terminar",
    "gemas": [
     "Eye_of_Winter",
@@ -12588,20 +12440,6 @@
    ]
   },
   {
-   "linha": "Distância de Deslocamento máxima aumentada em # %",
-   "gemas": [
-    "Flame_Dash_of_Return",
-    "Frostblink"
-   ]
-  },
-  {
-   "linha": "Distância de Deslocamento máxima aumentada em %",
-   "gemas": [
-    "Flame_Dash_of_Return",
-    "Frostblink"
-   ]
-  },
-  {
    "linha": "Duração de Maldições aumentada em # %",
    "gemas": [
     "Enfeeble",
@@ -12613,13 +12451,6 @@
    "gemas": [
     "Immortal_Call",
     "Vaal_Immortal_Call"
-   ]
-  },
-  {
-   "linha": "Duração reduzida em # %",
-   "gemas": [
-    "Lightning_Warp",
-    "Vaal_Lightning_Warp"
    ]
   },
   {
@@ -13120,13 +12951,6 @@
    ]
   },
   {
-   "linha": "Repete # vezes",
-   "gemas": [
-    "Flame_Dash_of_Return",
-    "Shock_Nova_of_Procession"
-   ]
-  },
-  {
    "linha": "Sentinelas Ascendidos causam # % mais Dano",
    "gemas": [
     "Vaal_Absolution",
@@ -13434,12 +13258,6 @@
    "linha": "# % mais Dano com Acertos e Afecções se usar sua Vida",
    "gemas": [
     "Dark_Bargain"
-   ]
-  },
-  {
-   "linha": "# % mais Dano com Acertos na Distância Máxima da Investida",
-   "gemas": [
-    "Shield_Charge"
    ]
   },
   {
@@ -13869,6 +13687,24 @@
    ]
   },
   {
+   "linha": "a recarga pode ser pulada gastando uma Carga de Frenesi",
+   "gemas": [
+    "Flicker_Strike"
+   ]
+  },
+  {
+   "linha": "a recarga pode ser pulada gastando uma Carga de Poder",
+   "gemas": [
+    "Flicker_Strike_of_Power"
+   ]
+  },
+  {
+   "linha": "a recarga pode ser pulada gastando uma Carga de Tolerância",
+   "gemas": [
+    "Consecrated_Path_of_Endurance"
+   ]
+  },
+  {
    "linha": "A Segunda forma possui +# % ao Multiplicador de Acerto Crítico",
    "gemas": [
     "Ice_Spear"
@@ -14052,6 +13888,12 @@
    "linha": "Arqueiro Ilusório utiliza Habilidades Suportadas com #% menos Velocidade de Ataque",
    "gemas": [
     "Mirage_Archer_Support"
+   ]
+  },
+  {
+   "linha": "as # repetições do teleporte e do ataque, com os ferimentos e o dano total no fim (no jogo é um golpe)",
+   "gemas": [
+    "Vaal_Flicker_Strike"
    ]
   },
   {
@@ -14280,12 +14122,6 @@
    "linha": "Buff concede Dano de Raio Adicional igual a # % da Mana Gasta pelo efeito desta Habilidade",
    "gemas": [
     "Arcane_Cloak"
-   ]
-  },
-  {
-   "linha": "Buff concede Furtividade aumentada em # %",
-   "gemas": [
-    "Old_Phase_Run"
    ]
   },
   {
@@ -14745,12 +14581,6 @@
    ]
   },
   {
-   "linha": "CooldownTime",
-   "gemas": [
-    "Frostblink"
-   ]
-  },
-  {
    "linha": "Cria # Estacas adicionais se você mudou de Postura Recentemente",
    "gemas": [
     "Perforate_of_Duality"
@@ -14991,18 +14821,6 @@
    ]
   },
   {
-   "linha": "Distância de Deslocamento aumentada em # %",
-   "gemas": [
-    "Dash"
-   ]
-  },
-  {
-   "linha": "Distância de Deslocamento aumentada em %",
-   "gemas": [
-    "Dash"
-   ]
-  },
-  {
    "linha": "Duração aumentada em # % por Estágio",
    "gemas": [
     "Winter_Orb"
@@ -15072,12 +14890,6 @@
    "linha": "Efeito do Debuff aumentado em # %",
    "gemas": [
     "Ensnaring_Arrow"
-   ]
-  },
-  {
-   "linha": "Efeito do Elusivo desta Habilidade aumentado em # %",
-   "gemas": [
-    "Withering_Step"
    ]
   },
   {
@@ -16269,18 +16081,6 @@
    ]
   },
   {
-   "linha": "Inflige # Debuffs de Definhamento adicionais na primeira vez que cada Inimigo entrar na Área",
-   "gemas": [
-    "Withering_Step"
-   ]
-  },
-  {
-   "linha": "Inflige +# Debuffs de Definhamento adicionais na primeira vez que cada Inimigo entrar na Área",
-   "gemas": [
-    "Withering_Step"
-   ]
-  },
-  {
    "linha": "Inflige Definhando por # segundos ao Acertar",
    "gemas": [
     "Hextoad_Support"
@@ -16422,12 +16222,6 @@
    "linha": "Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em #%",
    "gemas": [
     "Hallow_Support"
-   ]
-  },
-  {
-   "linha": "Inverte a direção ao Repetir",
-   "gemas": [
-    "Flame_Dash_of_Return"
    ]
   },
   {
@@ -16869,12 +16663,6 @@
    ]
   },
   {
-   "linha": "Não pode ser Conjurado ou Ativado enquanto Elusivo Concede Elusivo",
-   "gemas": [
-    "Withering_Step"
-   ]
-  },
-  {
    "linha": "Não pode ser Convocada",
    "gemas": [
     "Armageddon_Brand_of_Volatility"
@@ -17199,12 +16987,6 @@
    ]
   },
   {
-   "linha": "Qualidade não tem efeito",
-   "gemas": [
-    "Quickstep"
-   ]
-  },
-  {
    "linha": "Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados",
    "gemas": [
     "Mirage_Archer_Support"
@@ -17307,12 +17089,6 @@
    ]
   },
   {
-   "linha": "Recuperação da Recarga aumentada em # % se usado enquanto um Inimigo Único estiver em sua Presença",
-   "gemas": [
-    "Quickstep"
-   ]
-  },
-  {
    "linha": "Redução do Ponto de Atordoamento aumentada em # % em inimigos na distância Máxima da investida",
    "gemas": [
     "Shield_Charge"
@@ -17334,6 +17110,12 @@
    "linha": "Remove Resfriamentos após Causar Dano",
    "gemas": [
     "Frostblink_of_Wintry_Blast"
+   ]
+  },
+  {
+   "linha": "Repete # vezes",
+   "gemas": [
+    "Shock_Nova_of_Procession"
    ]
   },
   {
@@ -17646,12 +17428,6 @@
    "linha": "Velocidade de Ataque aumentada em # % por Carga de Frenesi",
    "gemas": [
     "Flicker_Strike"
-   ]
-  },
-  {
-   "linha": "Velocidade de Recuperação da Recarga aumentada em # % para cada Inimigo Normal ou Mágico na Área Velocidade de Recuperação da Recarga aumentada em # % para cada Inimigo Raro ou Único na Área",
-   "gemas": [
-    "Frostblink"
    ]
   },
   {

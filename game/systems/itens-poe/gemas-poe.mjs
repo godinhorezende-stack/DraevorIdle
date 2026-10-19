@@ -23,6 +23,7 @@ import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
 import { ehLinhaLocalDaGema, atributosDasLinhas, atributosDoBuff, ehLinhaDoBuff } from './linhas-das-gemas.mjs';
 import { ACTION_CATALOG } from '../dados.mjs';
+import { DESLOCAMENTO, deslocamentoDasLinhas, ehLinhaDoDeslocamento } from './deslocamento.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -66,7 +67,9 @@ const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconh
  */
 // (lote 75 — dono, 17/10: "No máximo, como o PoB") o Arauto da Agonia é um ARAUTO (o buff com reserva; o Rastejador vem ao Envenenar — `acoes.
 // tiqueDoArautoDaAgonia`): o classificador vê o tipo Minion antes de Herald. (O Arauto da Pureza fica como lacaio.)
-const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto' };
+// (lote A1, dono 19/10 — D7) a Corrida de Fase Antiga e o Passo Definhante NÃO deslocam no PoE: são BUFFS (a descrição não fala em teleporte) — a
+// guarda, com o que o jogo já tem (a velocidade de movimento, o Elusivo, o Definhar de quem está na área)
+const ARQUETIPO_PROPRIO = { Plague_Bearer: 'praga', Spellslinger: 'feiticeiro', Herald_of_Agony: 'arauto', Old_Phase_Run: 'guarda', Withering_Step: 'guarda' };
 /**
  * O INFESTADOR do PoE (RePoE, `corrosive_shroud_*`): o Valor Máximo da Praga por nível (`MAX_DA_PRAGA[n]`, do 1 ao 40), 40% do Dano Esperado
  * de cada Veneno infligido enquanto Incubando, 20% menos Dano com Veneno enquanto Incubando (fora do máximo), Infestando 12% do Valor do início
@@ -180,7 +183,9 @@ export function temposNoNivel(slug, nivel = 1, qualidade = 0) {
   // (17/10, lote G2: + a qualidade — "Velocidade de Recarga aumentada em X%" da qualidade encurta a recarga)
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
   // (18/10, lote G20a: + a "Velocidade de Posicionamento de Totem aumentada" da gema — os ancestrais —, no tempo de COLOCAR o totem)
-  return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100, velClamor: st.velClamor ?? 0, tempoExtraMs: Math.round((st.tempoAtaqueExtra ?? 0) * 1000), velPosicionamentoPct: st.velPosicionamento ?? 0 };
+  // (lote A1: + a recuperação condicional do Passo Rápido — `Acoes.temposDaGemaPoe` a aplica no uso, pela presença)
+  return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100, velClamor: st.velClamor ?? 0, tempoExtraMs: Math.round((st.tempoAtaqueExtra ?? 0) * 1000), velPosicionamentoPct: st.velPosicionamento ?? 0,
+    ...(st.velRecargaSemInimigos ? { recargaSemInimigosPct: st.velRecargaSemInimigos } : {}), ...(st.recuperacaoComUnico ? { recargaComUnicoPct: st.recuperacaoComUnico } : {}) };
 }
 
 /**
@@ -214,6 +219,26 @@ const REGRAS_DE_ALVOS = [
   // (17/10, lote G18b) a Flecha Relampejante: "Acerta até N inimigos adicionais próximos ao alvo" (a 1,8 m — 1 casa — de cada atingido)
   [/^Acerta até (\d+(?:\.\d+)?) inimigos adicionais próximos ao alvo$/i, (m, a) => { a.proximos = (a.proximos ?? 0) + Math.floor(Number(m[1])); }],
 ];
+/**
+ * (lote A1, dono 19/10) O DESLOCAMENTO da gema de movimento no nível e na qualidade (`itens-poe/deslocamento.mjs`): `{ modo, maxM, danoEm, … }`
+ * ou null (a gema não desloca). As linhas da gema entram: a "Distância de Deslocamento (máxima) aumentada", o atraso do Teleporte Relampejante.
+ */
+const DESLOCAMENTOS = new Map();
+/** (lote A1, dono 19/10: "fica para depois") A mecânica das gemas de movimento que está só na DESCRIÇÃO — o status não a vê por linha. */
+const DESCRICAO_DO_MOVIMENTO = {
+  Flicker_Strike: ['a recarga pode ser pulada gastando uma Carga de Frenesi'],
+  Flicker_Strike_of_Power: ['a recarga pode ser pulada gastando uma Carga de Poder'],
+  Consecrated_Path_of_Endurance: ['a recarga pode ser pulada gastando uma Carga de Tolerância'],
+  Vaal_Flicker_Strike: ['as 25 repetições do teleporte e do ataque, com os ferimentos e o dano total no fim (no jogo é um golpe)'],
+};
+/** (lote A1 — D7) As linhas do Passo Definhante que o jogo faz (`Acoes.passoDefinhante`): o Elusivo e o Definhar de quem está na área. */
+const LINHAS_DO_PASSO_DEFINHANTE = /^Definhado dura [\d.]+ segundos?$|^Não pode ser Conjurado ou Ativado enquanto Elusivo Concede Elusivo$|^Efeito do Elusivo desta Habilidade aumentado em [\d.]+ ?%$|^Inflige \+?[\d.]+ Debuffs de Definhamento adicionais na primeira vez que cada Inimigo entrar na Área$/i;
+export function deslocamentoDaGema(slug, nivel = 1, qualidade = 0) {
+  if (!DESLOCAMENTO[slug]) return null;
+  const k = `${slug}@${nivel | 0}@${qualidade | 0}`;
+  if (!DESLOCAMENTOS.has(k)) DESLOCAMENTOS.set(k, deslocamentoDasLinhas(slug, [...textosDaGema(slug, nivel).linhas, ...linhasDaQualidadeDe(slug, qualidade)]));
+  return DESLOCAMENTOS.get(k);
+}
 /** As linhas da gema no nível (os números DESTE nível), e o "RequerNível" dele — para quem lê a gema fora daqui (os lacaios). */
 export function textosDaGema(slug, nivel = 1) {
   const g = POR_SLUG.get(slug);
@@ -741,7 +766,8 @@ export function afeccoesComAGema(afeccoes, slug, nivel, qualidade = 0) {
  * (17/10, lote G18a) As colunas MAL ROTULADAS dos dados (o poedb): a tabela do Martelo Glacial Vaal traz o cabeçalho "Cada terceiro golpe sucessivo
  * Congela…" para os números do "Congela inimigos causando X% mais Dano" dele (o PoB: só `freeze_as_though_dealt_damage_+%`) — a linha some.
  */
-const COLUNAS_MAL_ROTULADAS = { Vaal_Glacial_Hammer: /^Cada terceiro golpe sucessivo Congela/i };
+// (lote A1: o cabeçalho "CooldownTime" do Piscar Gélido — a recarga já vem da tabela, `temposNoNivel`)
+const COLUNAS_MAL_ROTULADAS = { Vaal_Glacial_Hammer: /^Cada terceiro golpe sucessivo Congela/i, Frostblink: /^CooldownTime$/ };
 const ehColunaMalRotulada = (slug, l) => !!COLUNAS_MAL_ROTULADAS[slug]?.test(l);
 /** (lote G18a) A gema cujo degenerativo leva os modificadores de Dano Mágico (o `dotIsSpell` do PoB): o "mais Dano Mágico" vale no DoT dela. */
 export const dotEhMagico = (slug) => textosDaGema(slug, 1).linhas.some((l) => /Modificadores de Dano Mágico aplicam-se ao Dano Degenerativo/i.test(l));
@@ -933,12 +959,15 @@ function avaliarNoJogo(h, formato) {
     // ainda faz só o buff — o dano "Causa X a Y" que o compilador lê não vai a lugar nenhum
     // (lote G9 → lote 81: o do Gelo, do Trovão e das Cinzas existe — `Acoes.explosaoDoArautoGlacial`, `tiqueDaTempestade`, `queimaduraDoArautoDasCinzas`)
     if (h.arquetipo === 'arauto' && !LINHAS_DO_ARAUTO[h.slug] && (Object.keys(st.dano ?? {}).length || (st.dot ?? []).length)) motivos.push('o efeito do Arauto ao matar (a explosão, a tempestade, o fogo) ainda não existe no jogo: só o buff');
-    if (!b.efeitos.length && !Object.keys(b.af).length) motivos.push('nenhum efeito do buff tem equivalente no jogo');
+    if (!b.efeitos.length && !Object.keys(b.af).length && h.slug !== 'Withering_Step') motivos.push('nenhum efeito do buff tem equivalente no jogo');
     // (lote 75 — dono, 17/10: "No máximo, como o PoB")
     if (h.slug === 'Herald_of_Ash') motivos.push('a queima do excesso de dano é a mesma em todos os vizinhos do morto (as condições de cada alvo não entram)');
     if (h.slug === 'Herald_of_Agony') motivos.push('a Virulência fica no máximo (40 + a qualidade + a "Virulência Máxima") enquanto o Arauto está ligado e você Envenenou com ele há até 4 s, como o PoB: o ganho por Veneno e a perda com o tempo do PoE não são simulados', 'o Rastejador ataca como um lacaio de perto do jogo (o Morteiro e o Espinho da Cauda do PoE não são simulados)');
   } else {
-    if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
+    // (lote A1, dono 19/10: o deslocamento existe — `deslocamentoDaGema`, `Acoes.planoDoDeslocamento`; só a gema de movimento sem os dados dele fica)
+    if (h.arquetipo === 'movimento' && !DESLOCAMENTO[h.slug]) motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
+    // (lote A1, dono 19/10: o que fica para depois — a mecânica está só na descrição da gema, sem linha)
+    for (const m of DESCRICAO_DO_MOVIMENTO[h.slug] ?? []) motivos.push(`efeito não simulado: ${m}`);
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
     // (09/10) O dano degenerativo da gema se aplica no acerto (`acoes`: `degenerativoNoNivel`); o "% da Vida por segundo" do Fogo Justo, ainda não.
     if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
@@ -949,11 +978,12 @@ function avaliarNoJogo(h, formato) {
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k] && !CHANCE_NO_ACERTO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     // (lote G12: as gemas de cadáver que o jogo faz — `cadaverDaGema`)
     if (st.cadaver && !cadaverDaGema(h.slug, h.nivel)) motivos.push('o uso de cadáveres não existe no jogo');
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length) motivos.push('sem dano direto: nenhum efeito no combate');
+    // (lote A1: a gema de movimento sem dano — o Avanço, o Passo Rápido, a Emboscada — tem o efeito dela: o deslocamento)
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug]) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l))) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l))) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -1013,7 +1043,9 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) || convocaRunas ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
     group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
-    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}) },
+    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}),
+      // (lote A1: a gema que DESLOCA — o "Configurar ação" mostra a opção "direção", e a de fuga a aceita)
+      ...(DESLOCAMENTO[g.slug] ? { desloca: true, ...(DESLOCAMENTO[g.slug].fuga ? { fuga: true } : {}) } : {}) },
   };
   delete entry.blocked;
   return entry;

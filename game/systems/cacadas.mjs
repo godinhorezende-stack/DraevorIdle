@@ -3234,7 +3234,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     z: hunt.z,
     ...(mandarMapa ? { map: gradeDaHunt(hd).mapa } : {}),
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).
-    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
+    // (lote A1: + o contador `teleporte` — o salto e o teleporte das gemas de movimento, `Acoes.moverNoDeslocamento`: a tela põe o boneco na casa nova)
+    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(hunt.teleportes ? { teleporte: hunt.teleportes } : {}), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
     monsters: hunt.monstros.map((m) => ({
       uid: m.uid,
       x: m.x,
@@ -3247,6 +3248,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       hp: m.hp,
       maxHp: m.maxHp,
       moveMs: m.moveMs ?? passoDoBicho(m),
+      // (revisão do A1: o bicho levado pela Vaal do Teleporte — a tela o põe na casa nova)
+      ...(m.teleportes ? { teleporte: m.teleportes } : {}),
       // O level do mob (ao lado do nome) e a raridade + os modificadores (a cor do nome e a linha de baixo).
       nivel: Atributos.levelDoBicho(hunt, m),
       ...Raridade.paraCliente(m),

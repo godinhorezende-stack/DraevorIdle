@@ -274,6 +274,10 @@ export const REGRAS = [
   [r(`^Velocidade de Posicionamento de Totem aumentada em ${N}`), (s, m) => (s.velPosicionamento = (s.velPosicionamento ?? 0) + num(m[1]))],
   [r(`Vida do Totem aumentada em ${N}`), (s, m) => (s.totemVidaInc = (s.totemVidaInc ?? 0) + num(m[1]))],
   [r(`^${N} % mais Vida de Totens$`), (s, m) => (s.totemVidaMais = (s.totemVidaMais ?? 0) + num(m[1]))],
+  // (lote A1, dono 19/10) o Passo Rápido: o +200% só nas condições do PoE ("se não houver inimigos em sua presença"; "se usado enquanto um Inimigo
+  // Único estiver em sua Presença") — no uso, `Acoes.temposDaGemaPoe`; antes valia sempre (a recarga de 10 s saía 3,3 s)
+  [r(`^Velocidade de recarga aumentada em ${N} % se não houver inimigos em sua presença`), (s, m) => (s.velRecargaSemInimigos = (s.velRecargaSemInimigos ?? 0) + num(m[1]))],
+  [r(`^Recuperação da Recarga aumentada em ${N} % se usado enquanto um Inimigo Único estiver em sua Presença`), (s, m) => (s.recuperacaoComUnico = (s.recuperacaoComUnico ?? 0) + num(m[1]))],
   [r(`Velocidade de Recarga aumentada em ${N}`), (s, m) => (s.velRecarga += num(m[1]))],
   // (17/10, lote G2) a "Velocidade de Clamor aumentada" dos clamores encurta o TEMPO DE USO do clamor (Warcry Speed), não a recarga — antes
   // virava recuperação da recarga (o Clamor Resistente nível 20 saía com 5,8 s de recarga no lugar dos 8 s do PoE)
@@ -293,6 +297,8 @@ export const INFORMATIVO = [
   /Quando em Dupla Empunhadura/i, /^Não pode ser Evadido/i,
   /Modificadores do número de Projéteis/i, /Modificadores à quantidade de Projéteis/i,
   /Dispara Projéteis em sequência/i, /Coloque em um encaixe/i, /contra Jogadores/i,
+  // (lote A1: "Qualidade não tem efeito" — o Passo Rápido — é verdade no jogo: a gema não tem linha de qualidade)
+  /^Qualidade não tem efeito$/i,
 ];
 
 export function interpretar(linhas, stats = statsVazios()) {

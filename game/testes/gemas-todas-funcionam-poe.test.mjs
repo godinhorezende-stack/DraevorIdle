@@ -71,6 +71,9 @@ function montar(slug, [arma, escudo], suportes = []) {
 }
 /** Usa a gema (conjuração, armadilha/mina/gêiser pelo tique) e devolve `{ ok, dano, buff, erro }`. */
 function usar({ e, b }, slug) {
+  // (lote A1, com o aval do dono: a gema de MOVIMENTO pode ter como efeito o deslocamento — o personagem mudou de casa, ou o contador de teleportes
+  // andou, no Avanço Flamejante de Retorno que volta para onde começou)
+  const de = { x: e.hunt.pos.x, y: e.hunt.pos.y, teleportes: e.hunt.teleportes ?? 0 };
   // (a que CARREGA — a Rajada de Chamas — só explode no último estágio: usa até lá)
   const estagios = G.estagiosDaGema(slug, 20);
   const vezes = estagios?.modo === 'carrega' ? estagios.max : 1;
@@ -102,7 +105,8 @@ function usar({ e, b }, slug) {
     }
   }
   const dano = ev.filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe).reduce((t, x) => t + (x.v ?? 0), 0) + (b.dots?.length ? 1 : 0) + (efeitoDoTotem ? 1 : 0);
-  return { ok: true, dano, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length };
+  const deslocou = e.hunt.pos.x !== de.x || e.hunt.pos.y !== de.y || (e.hunt.teleportes ?? 0) > de.teleportes;
+  return { ok: true, dano, buff: !!e.hunt.buffs?.[G.doSlug(slug).acao] || !!e.hunt.vinculos?.length, deslocou };
 }
 
 test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano, ou o buff ligado)', { skip: SEM, timeout: 600_000 }, async () => {
@@ -122,7 +126,10 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       let u;
       try { u = usar(m, slug); } catch (err) { u = { ok: false, erro: `exceção: ${err.message}` }; }
       if (!u.ok) { erros.push(`${armas[0]}: ${u.erro}`); continue; }
-      if (buff ? u.buff : u.dano > 0) { feito = armas[0]; break; }
+      // (lote A1, com o aval do dono: no arquétipo `movimento`, "deslocou" é o efeito só da gema SEM dano — o Avanço, o Passo Rápido; a que tem
+      // dano segue exigindo o acerto)
+      const semDano = !r.ataque && !Object.keys(G.compilada(slug, 20)?.stats?.dano ?? {}).length && !(G.compilada(slug, 20)?.stats?.dot ?? []).length;
+      if (buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou)) { feito = armas[0]; break; }
       erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);

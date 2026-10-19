@@ -1418,6 +1418,8 @@ function openEditor(slot) {
           tirarQuando: (action.tirarQuando ?? []).map((condition) => ({ ...condition })),
           // No exana vita: esperar o utamo vita poder voltar. Ver `ehMagiaDeTirarEscudo`.
           soComUtamoPronto: action.soComUtamoPronto === true,
+          // (lote A1) a gema de movimento: para o alvo (padrão) ou para longe (fugir — junto das condições do slot)
+          direcao: action.direcao === 'longe' ? 'longe' : 'alvo',
         }
       : {
           id: null,
@@ -1438,6 +1440,7 @@ function openEditor(slot) {
           conditions: [],
           tirarQuando: [],
           soComUtamoPronto: false,
+          direcao: 'alvo',
         },
   };
 
@@ -2429,6 +2432,29 @@ export function renderEditor() {
       renderEditor();
     };
     detail.append(maisUma);
+  }
+
+  /*
+   * ---- (lote A1, dono 19/10 — D2) A DIREÇÃO da gema de movimento ----
+   * "Para o alvo" (o padrão): o salto/teleporte vai atrás do alvo. "Para longe": ele foge do bicho que colou — só quando as condições do slot
+   * batem (ex.: "Você · Vida · menor ou igual a · 40%"); sem esta opção, nunca foge. Serve também para quem usa arma de longe: o bicho colou e
+   * ele pula para a distância da barra. A regra mora no servidor (`acoes.planoDoDeslocamento`).
+   */
+  if (entry?.poeGema?.fuga) {
+    detail.append(el('h3', null, 'Direção'));
+    const direcao = document.createElement('select');
+    for (const [id, label] of Object.entries({ alvo: 'Para o alvo', longe: 'Para longe (fugir do bicho que colou)' })) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = label;
+      direcao.append(option);
+    }
+    direcao.value = editing.draft.direcao === 'longe' ? 'longe' : 'alvo';
+    direcao.onchange = () => (editing.draft.direcao = direcao.value);
+    const linha = el('label', 'field');
+    linha.append(el('span', null, 'Para onde'), direcao);
+    detail.append(linha);
+    detail.append(el('p', 'shop-note dica', 'Para longe só sai com um bicho colado em você (na Distância da barra ou menos) e com as condições do slot batendo — ex.: “Você · Vida · menor ou igual a · 40%”.'));
   }
 
   /*

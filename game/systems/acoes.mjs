@@ -31,7 +31,7 @@ import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
-import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
+import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG, CHARACTER_TEMPLATE, CATALOGO } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
@@ -64,6 +64,13 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as Protecao from './protecao.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import { daSala } from './hunt/instancia.mjs';
+// (lote A1, dono 19/10: o DESLOCAMENTO das gemas de movimento — a grade do jogador, os aliados na casa e o Solo Sagrado da chegada)
+import * as Deslocamento from './itens-poe/deslocamento.mjs';
+import { gradeDaHunt, huntOuMapaCustom } from './hunt/terreno.mjs';
+import { andarDaGrade } from './hunt/andares.mjs';
+import { aliadosPorCasa } from './hunt/aliados.mjs';
+import { casaLivrePerto } from './hunt/caminho.mjs';
+import { criarSoloSagrado } from './itens-poe/condicoes-poe.mjs';
 import * as Encontros from './encontros/estado.mjs';
 
 // A BARRA DO PoE (dono, 07/10: "frascos 1 a 5 e mais 8 que podem ser ataques, auras, suporte e etc"): com o PoE ligado a barra tem
@@ -1469,6 +1476,8 @@ function saltosDaCadeia(alvo, vivos, { targets = 1, distance = 1 } = {}) {
 const ALCANCE_PADRAO = 7;
 // O efeito na tela da explosão das supports (Explosion, Impact) quando a skill não tem o dela (o `explosionhit` do client).
 const EFEITO_DA_EXPLOSAO = 6;
+// (lote A1) o efeito na tela nas duas pontas do deslocamento (o `teleporte` dos estilos das gemas — `itens-poe/estilos-das-gemas.mjs`)
+const EFEITO_DO_TELEPORTE = 11;
 const distanciaChebyshev = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /*
@@ -1716,6 +1725,8 @@ function configDoSlot(v) {
     // Utamo vita: quando o escudo sai sozinho (`tirarEscudoSePreciso`). Exana vita: só com o utamo pronto.
     tirarQuando: condicoes(v.tirarQuando),
     soComUtamoPronto: v.soComUtamoPronto === true,
+    // (lote A1, dono 19/10 — D2) a gema de movimento "para longe" (fugir, com as condições do slot); sem isto, ela vai atrás do alvo e nunca foge
+    ...(v.direcao === 'longe' ? { direcao: 'longe' } : {}),
   };
 }
 
@@ -2565,6 +2576,142 @@ export function formaNoRaioDoPoe(entry, efeito, rng = Math.random, { hunt = null
   r = Math.max(r, minimo);
   return r === Areas.raioDaForma(entry.forma) ? entry : { ...entry, forma: Areas.escalarForma(entry.forma, r) };
 }
+/*
+ * ---- (lote A1, dono 19/10) O DESLOCAMENTO das gemas de movimento do PoE ----
+ * O salto, a investida e o teleporte (`itens-poe/deslocamento.mjs`: a distância, onde o dano cai, o chão). `planoDoDeslocamento` escolhe a casa
+ * de destino ANTES de gastar nada (D1: o ataque salta até o alvo fora do alcance corpo a corpo; a viagem cobre distância até o alvo a pelo menos
+ * a distância do salto; D2: "para longe" só com a opção do slot; D4: pela grade do jogador — sem atravessar parede, sem pousar em zona segura nem
+ * em casa ocupada). O `dispararSemMarcar` move o personagem (`moverNoDeslocamento`) depois de pagar o custo, e o dano cai onde a gema manda.
+ */
+/** A grade do JOGADOR no andar dele, sem as zonas seguras (a do combate, que o tique põe; fora do tique — o teste, o clique —, a do mapa). */
+function gradeDoJogador(hunt) {
+  const g = ModsPoe.gradeDoCombate(hunt);
+  if (g?.andavel) return g;
+  try {
+    return hunt?.huntId ? Protecao.gradeDosBichos(andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z)) : null;
+  } catch {
+    return null;
+  }
+}
+/**
+ * O PLANO do deslocamento deste uso: `{ ok, de, para, caminho, casas, max, semMover?, fuga?, atrasoMs, maisDanoPct }` ou `{ ok: false, erro,
+ * motivo }` (o uso não sai). `fixo`: o destino guardado no começo da conjuração (`hunt.conjurando.deslocamento`) — o atraso do Teleporte já foi
+ * esperado até ele; só muda se a casa ficou ocupada.
+ */
+export function planoDoDeslocamento(estado, hunt, entry, action, alvo, desloc, { manual = false, vivos = null, fixo = null, rng = Math.random } = {}) {
+  if (!hunt?.pos || !desloc) return { ok: false, erro: 'Sem deslocamento.', motivo: 'SEM_DESLOCAMENTO' };
+  const ficha = Ficha.combate(estado);
+  const grade = gradeDoJogador(hunt);
+  const andavel = grade?.andavel ? (x, y) => grade.andavel.has(`${x},${y}`) : null;
+  const bichos = (vivos ?? hunt.monstros ?? []).filter((b) => b.hp > 0);
+  const aliados = aliadosPorCasa(hunt);
+  const ocupada = (x, y) => bichos.some((b) => b.x === x && b.y === y) || (hunt.lacaios ?? []).some((l) => l.hp > 0 && l.x === x && l.y === y) || aliados.has(`${x},${y}`) || (hunt.summon && hunt.summon.x === x && hunt.summon.y === y);
+  const direcao = action?.direcao === 'longe' && desloc.fuga ? 'longe' : 'alvo';
+  const de = { x: hunt.pos.x, y: hunt.pos.y };
+  const max = Deslocamento.casasDosMetros(desloc.maxM, rng);
+  let r;
+  // (revisão do A1: o destino guardado só vale no MESMO andar e da MESMA casa de onde a conjuração começou; senão a escolha é refeita)
+  if (fixo && ((fixo.z ?? 0) !== (hunt.z ?? 0) || (fixo.de && (fixo.de.x !== de.x || fixo.de.y !== de.y)))) fixo = { manual: !!fixo.manual };
+  if (fixo?.para && (fixo.para.x !== de.x || fixo.para.y !== de.y) && (!andavel || andavel(fixo.para.x, fixo.para.y)) && !ocupada(fixo.para.x, fixo.para.y)) {
+    r = { para: { ...fixo.para }, caminho: Deslocamento.reta(de, fixo.para), casas: distanciaChebyshev(de, fixo.para), ...(fixo.fuga ? { fuga: true } : {}) };
+  } else if (fixo?.semMover) {
+    r = { para: de, caminho: [], casas: 0, semMover: true };
+  } else {
+    // (a VIAGEM automática só anda atrás do alvo da caçada: juntando bichos, seguindo alguém da party ou no passo do jogador, não)
+    if (!manual && !fixo?.manual && desloc.modo === 'viagem' && direcao === 'alvo' && (hunt.lurando || hunt.guia || hunt.reagrupar || hunt.modo === 'online')) return { ok: false, erro: 'O passo segue outro rumo agora.', motivo: 'SEM_DESLOCAMENTO' };
+    r = Deslocamento.escolherDestino({
+      pos: de, alvo: alvo?.hp > 0 ? alvo : null, max, modo: desloc.modo, direcao, andavel, ocupada, alcanceCorpo: 1 + (ficha.alcanceCorpoExtra ?? 0),
+      querDistancia: Math.max(1, Number(hunt.distancia) || 1), vivos: bichos.filter((b) => !b.dummy), manual: manual || !!fixo?.manual, dir: hunt.pos.dir ?? 2,
+      paraNoBicho: !!desloc.paraNoBicho, fuga: !!desloc.fuga,
+    });
+    if (r.erro) return { ok: false, erro: r.erro, motivo: r.motivo };
+  }
+  // (a party: quem segue alguém não salta para fora da coleira dele)
+  if (hunt.guia?.pos && !r.semMover && desloc.modo !== 'inimigos' && distanciaChebyshev(r.para, hunt.guia.pos) > hunt.guia.coleira && distanciaChebyshev(r.para, hunt.guia.pos) > distanciaChebyshev(de, hunt.guia.pos)) {
+    return { ok: false, erro: 'Longe demais de quem você segue.', motivo: 'COLEIRA' };
+  }
+  // O ATRASO do Teleporte Relampejante (dono, 19/10): a distância ÷ a velocidade de movimento × (1 − a redução da gema) — no jogo, um passo
+  // (`R.PASSO_MS`) por casa na velocidade-base; ele entra na conjuração (`dispararSemMarcar`) e o teleporte sai no tique em que ela termina.
+  const velocidade = Math.min(2, Math.max(0.25, (ficha.speed ?? R.baseSpeed(estado.level ?? 1)) / Math.max(1, R.baseSpeed(estado.level ?? 1))));
+  const atrasoMs = desloc.atraso && !r.semMover ? Math.round(((r.casas * R.PASSO_MS) / velocidade) * (1 - (desloc.atrasoMenosPct ?? 0) / 100)) : 0;
+  // A Investida com Escudo: "100% mais Dano com Acertos na Distância Máxima da Investida", proporcional às casas percorridas (dono, 19/10)
+  const maisDanoPct = desloc.maisNaDistanciaMaximaPct && !r.semMover && max > 0 ? desloc.maisNaDistanciaMaximaPct * Math.min(1, r.casas / max) : 0;
+  return { ok: true, de, ...r, max, direcao, atrasoMs, maisDanoPct };
+}
+/** (revisão do A1) O chefe que a Vaal do Teleporte não leva: o critério de chefe do jogo (o `ehChefe` da barra — `cacadas`) + o chefe do mapa. */
+const ehChefeQueNaoTeleporta = (m, hunt) => !!(m.isBoss || m.boss || m.chefe || m.chefeDoMapa || m.raridade === 'boss' || m.raridade === 'unico' || CATALOGO.bestiary?.[m.key]?.boss || CATALOGO.bestiary?.[m.key]?.poe?.unico);
+/** (lote A1) A gema de ILUSÃO do PoE (a tag "Ilusão" — Blink): a recarga é compartilhada entre elas. */
+const ehIlusao = (entry) => !!entry?.poeGema && (GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tags ?? []).includes('Ilusão');
+/** Move o personagem para `para` (o salto, o teleporte): o passo de agora não vale mais (a perseguição, o recuo, o vigia de progresso). */
+function moverNoDeslocamento(hunt, para, agora = hunt?.clock ?? 0) {
+  if (!hunt?.pos || !para) return;
+  hunt.pos.x = para.x;
+  hunt.pos.y = para.y;
+  hunt.casaAnterior = null;
+  hunt.progresso = null;
+  hunt.perseguicao = null;
+  hunt.recuo = null;
+  ModsPoe.perderMomentum(hunt);
+  ModsPoe.marcar(hunt, 'moveu', agora);
+  // (o contador que o cliente olha para desenhar o teleporte — `cacadas.snapshotDaHunt`, `map.mjs`)
+  hunt.teleportes = (hunt.teleportes ?? 0) + 1;
+}
+/**
+ * (lote A1) O SOLO ARDENTE do Avanço Flamejante (dono, 19/10: "nas casas do rastro, 4 s, com o dps da gema"): `hunt.solosDoJogador = [{ casas,
+ * z, ate, acao, chave, partes: [{ tipo, porSegundo }] }]`; a cada tique, quem está numa casa dele queima — o degenerativo da gema, renovado por
+ * meio segundo (uma queima da gema por inimigo, como o feixe). O dano por segundo é o do uso (a conta dos suportes, no instante do uso).
+ */
+export function tiqueDosSolosDoJogador(hunt, eventos = [], agora = hunt?.clock ?? 0) {
+  if (!hunt?.solosDoJogador?.length) return eventos;
+  for (const s of hunt.solosDoJogador) {
+    // (revisão do A1: o solo paga o dps EXATO pelo tempo que o bicho ficou nele — antes, o degenerativo de meio segundo reaplicado a cada tique
+    // pagava só 62,5%. O tempo deste tique: do último até agora, sem passar do fim do solo; a fração que não fecha 1 de dano fica para o próximo.)
+    const fim = Math.min(agora, s.ate);
+    const dt = Math.max(0, fim - (s.ultimo ?? fim));
+    s.ultimo = fim;
+    if (!(dt > 0) || (s.z ?? 0) !== (hunt.z ?? 0)) continue;
+    const casas = new Set(s.casas);
+    for (const m of hunt.monstros ?? []) {
+      if (!(m.hp > 0) || m.dummy || !casas.has(`${m.x},${m.y}`)) continue;
+      for (const p of s.partes) {
+        const resto = (s.resto ??= {});
+        const k = `${m.uid}|${p.elemento}`;
+        const bruto = (resto[k] ?? 0) + (p.porSegundo * dt) / 1000;
+        const parte = Math.floor(bruto);
+        resto[k] = bruto - parte;
+        if (parte < 1) continue;
+        const v = resistido(hunt, m, p.elemento, parte);
+        m.hp -= v;
+        QuemFeriu.carimbar(m, QuemFeriu.VOCE);
+        eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: COR_DO_ELEMENTO[p.elemento] ?? '#ff9000', dot: p.tipo, queimando: true });
+        registrarGolpe(() => ({ origem: 'solo', habilidade: s.acao, tipo: p.elemento, alvo: m.name, danoAntesDaResistencia: parte, danoFinal: v, vidaRestante: Math.max(0, m.hp) }));
+      }
+    }
+  }
+  hunt.solosDoJogador = hunt.solosDoJogador.filter((s) => s.ate > agora);
+  return eventos;
+}
+/**
+ * (lote A1, dono 19/10 — D7) O PASSO DEFINHANTE é um buff: concede o Elusivo (com o "Efeito do Elusivo desta Habilidade aumentado") — não sai com
+ * o Elusivo ligado — e quem está na área dele ganha os Definhamentos (1 + os "adicionais na primeira vez que cada Inimigo entrar na Área"), pela
+ * duração do Definhado da gema. A área não acompanha você: conta quem está nela no uso.
+ */
+function passoDefinhante(estado, hunt, entry, efeitoDaGema, agora) {
+  const linhas = [...GemasPoe.textosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1).linhas, ...GemasPoe.linhasDaQualidadeDe(entry.poeGema.slug, efeitoDaGema?.qualidade ?? 0)];
+  const soma = (re) => linhas.reduce((n, l) => n + (Number(re.exec(String(l).replace(/(\d)%/g, '$1 %'))?.[1]) || 0), 0);
+  const efeitoExtra = soma(/^Efeito do Elusivo desta Habilidade aumentado em ([\d.]+) ?%$/i);
+  const adicionais = soma(/^Inflige \+?([\d.]+) Debuffs de Definhamento adicionais/i);
+  const segundos = soma(/^Definhado dura ([\d.]+) segundos?$/i) || 2;
+  ModsPoe.ganharBuff(hunt, 'elusivo', 1, agora, { efeitoExtra });
+  const raioM = GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 2.6;
+  const raio = Deslocamento.casasDosMetros(raioM);
+  const ficha = Ficha.combate(estado);
+  for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy || distanciaChebyshev(hunt.pos, m) > raio) continue;
+    for (let i = 0; i < 1 + Math.floor(adicionais); i++) ModsPoe.porNoAlvoComMods(m, 'definhado', agora + Math.round(segundos * 1000), agora, ficha);
+  }
+}
+
 /**
  * (17/10, lote G10) O ESTÁGIO de canalização deste uso: `{ estagio, liberar, soCarrega, maisPct, critMaisPct, raioExtraM, est }` ou null. A
  * habilidade canalizada usada de novo em seguida (a mesma, até o fim do uso anterior + um tique — `hunt.canalizacao`) ganha 1 estágio, até o
@@ -2772,7 +2919,7 @@ function velocidadeCondicional(estado, efeito) {
 }
 /** A gema instantânea (sem tempo de uso: 0 de conjuração, ou "Utilizar Habilidades Suportadas é Instantâneo") ocupa um tique. */
 const USO_DA_INSTANTANEA_MS = 250;
-export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), fichaDoPersonagem = Ficha.combate(estado), { doJogador = true, velExtraPct = 0 } = {}) {
+export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), fichaDoPersonagem = Ficha.combate(estado), { doJogador = true, velExtraPct = 0, recuperacaoExtraPct = 0 } = {}) {
   // (17/10: + as linhas locais da gema — "X% mais Velocidade de Ataque por Carga de Frenesi" — `comAsLinhasDaGema`)
   const ficha = comAsLinhasDaGema(estado, fichaDoPersonagem, entry, efeitoDaGema);
   const t = GemasPoe.temposNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
@@ -2829,7 +2976,16 @@ export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkil
   const clamorSemRecarga = entry.poeGema.arquetipo === 'clamor' && (t.conjuracaoMs ?? 0) > 0 && ModsPoe.valor(ficha, 'clamor_sem_recarga') > 0;
   // (17/10, lote G3: + "Velocidade de Recarga por armar Armadilhas aumentada" das Armadilhas Avançadas, só na habilidade que planta Armadilha)
   const doArremesso = plantaTipo === 'armadilha' ? efeitoDaGema?.recuperacaoArmadilhaPct ?? 0 : 0;
-  const recarga = recargaBase > 0 && !clamorSemRecarga ? Math.round((recargaBase / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0) + daGemaNomeada + doArremesso) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
+  // (lote A1, dono 19/10) o Passo Rápido: "+200% se não houver inimigos em sua presença" / "se usado enquanto um Inimigo Único estiver em sua
+  // Presença" — a presença no uso (`RAIO_DA_PRESENCA`); fora da caçada, a recarga-base (10 s). + a do Piscar Gélido por inimigo na área
+  // (`recuperacaoExtraPct`, do uso).
+  let condicional = recuperacaoExtraPct;
+  if ((t.recargaSemInimigosPct || t.recargaComUnicoPct) && doJogador && estado?.hunt?.pos) {
+    const naPresenca = (estado.hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && distanciaChebyshev(m, estado.hunt.pos) <= ModsPoe.RAIO_DA_PRESENCA);
+    if (!naPresenca.length) condicional += t.recargaSemInimigosPct ?? 0;
+    else if (naPresenca.some((m) => m.boss || m.raridade === 'unico' || m.raridade === 'boss')) condicional += t.recargaComUnicoPct ?? 0;
+  }
+  const recarga = recargaBase > 0 && !clamorSemRecarga ? Math.round((recargaBase / Math.max(0.1, 1 + ((ficha.recuperacaoDeRecarga ?? 0) + (porTag.cooldown_recovery ?? 0) + daGemaNomeada + doArremesso + condicional) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
   // (O piso de 250 ms é só da INSTANTÂNEA, um tique; o resto vai até `R.INTERVALO_MINIMO_DA_ACAO_MS` — mais de uma ação cabe num tique.)
   // (18/10, lote G20a) COLOCAR O TOTEM: o SEU uso da gema de totem leva o tempo de posicionamento do PoE — 0,6 s, ou 0,5 s na Balista
   // (CalcSetup.lua:58-59) — ÷ (1 + a "Velocidade de Posicionamento do Totem aumentada": a das peças e da árvore, a da gema e a dos suportes — no PoB
@@ -3090,8 +3246,17 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const papel = entry.papeis[0];
   const ataque = papel === 'attack';
   const vivos = hunt.monstros.filter((b) => b.hp > 0);
-  const x = hunt.pos.x;
-  const y = hunt.pos.y;
+  // (lote A1, dono 19/10) o DESLOCAMENTO da gema de movimento (`planoDoDeslocamento`): para onde ela leva, antes de gastar nada; sem destino, não
+  // sai (o alvo longe demais do salto, ou perto demais para a viagem). Não vale no ativado por gatilho, na plantada nem no totem.
+  const desloc = itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem ? GemasPoe.deslocamentoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  const plano = desloc ? planoDoDeslocamento(estado, hunt, entry, action, alvo, desloc, { manual, vivos, fixo: concluir ? hunt.conjurando?.deslocamento ?? null : null }) : null;
+  if (plano && !plano.ok) return plano;
+  // (as pontas do dano: a casa onde a área do uso cai primeiro e a segunda — o Piscar Gélido e o Teleporte nas duas pontas; o de Retorno no destino
+  // e de volta na origem; a Vaal do Teleporte em você e onde os bichos param)
+  const pontas = plano && !plano.semMover && desloc.danoEm === 'origem_e_chegada' ? (desloc.modo === 'ida_e_volta' ? [plano.para, plano.de] : [plano.de, plano.para]) : null;
+  // (o personagem: na casa de onde a gema bate — a chegada; nas duas pontas, a primeira)
+  const x = pontas ? pontas[0].x : plano && !plano.semMover ? plano.para.x : hunt.pos.x;
+  const y = pontas ? pontas[0].y : plano && !plano.semMover ? plano.para.y : hunt.pos.y;
   // (17/10, lote G12) as gemas de CADÁVER (`GemasPoe.cadaverDaGema`): o(s) cadáver(es) deste uso — o mais perto do alvo, ao alcance (os da Vaal:
   // todos em volta dele; os Mortos Voláteis: até N) — e a área da gema centrada nele (os Mortos Voláteis: no inimigo mais perto do cadáver, onde o
   // orbe vai). Sem cadáver, não sai. `cadaveresDoUso` explodem depois da faixa (`explodirCadaveres`).
@@ -3139,9 +3304,28 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   let virarPara = null;
   // (PoE, 12/10) A gema que PLANTA (Armadilha, Mina): o uso joga a armadilha/mina no lugar mirado; a habilidade sai quando ela ativa.
   const tipoPlantado = Plantadas.tipoDaGema(entry, efeitoDaGema);
+  // (lote A1) a SEGUNDA PONTA do deslocamento (as casas da área lá) e quem ele acertou nas duas (a recarga do Piscar Gélido conta os da área)
+  let segundaPonta = null;
+  const doDeslocamento = new Set();
   if (ataque) {
     const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro;
-    if (doTotem) {
+    if (plano) {
+      // (lote A1, dono 19/10) ONDE o dano do deslocamento cai (`Deslocamento.DESLOCAMENTO[slug].danoEm`): a área centrada no alvo (o salto mira o
+      // ponto do inimigo — você fica colado nele), só o alvo (o Golpe Cintilante), o percurso (as Lâminas Giratórias; a Investida, com a área do
+      // fim), onde pousa, ou as duas pontas. Sem raio publicado na gema, o da tabela (`raioM`, `raioDoFimM`).
+      const alvoVivo = alvo?.hp > 0 ? alvo : null;
+      const dano = desloc.danoEm;
+      const raioDaTabela = dano === 'caminho_e_alvo' ? desloc.raioDoFimM : GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM == null ? desloc.raioM : null;
+      if (raioDaTabela != null && entry.forma) entry = { ...entry, forma: Areas.escalarForma(entry.forma, Deslocamento.casasDosMetros(raioDaTabela)) };
+      const noAlvo = ['no_alvo', 'caminho_e_alvo'].includes(dano) && alvoVivo && !plano.fuga;
+      const centro = pontas ? pontas[0] : noAlvo ? alvoVivo : ['no_alvo', 'caminho_e_alvo', 'chegada', 'origem_e_chegada'].includes(dano) ? plano.para : null;
+      if (dano === 'alvo') atingidos = alvoVivo ? [alvoVivo] : [];
+      else if (dano === 'caminho') casas = [...plano.caminho, ...(alvoVivo && !plano.fuga ? [{ x: alvoVivo.x, y: alvoVivo.y }] : [])];
+      else if (centro && entry.forma && dano !== 'nenhum') {
+        casas = casasDaForma(entry, centro.x, centro.y);
+        formaNoUso = { x: centro.x, y: centro.y, dir: null };
+      }
+    } else if (doTotem) {
       // (lote G20a) o TOTEM (`hunt.pos` é a casa dele — `usarComoTotem`), que já escolheu o alvo ao alcance (`cacadas.tiqueDosLacaios`): a área no
       // alvo (a de mirar no chão), virada para ele (a direcional: o lado com mais bichos, começando pelo do alvo, como no seu uso) ou em volta do
       // totem; a de alvo único, no alvo (com a cadeia da gema).
@@ -3227,8 +3411,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       };
       casas = areaNoUso();
     }
+    // (lote A1) a Investida com Escudo acerta também quem está no percurso; a segunda ponta é a mesma área, transladada
+    if (plano && casas && desloc.danoEm === 'caminho_e_alvo') casas = [...casas, ...plano.caminho];
+    if (pontas && casas) segundaPonta = casas.map((c) => ({ x: c.x - pontas[0].x + pontas[1].x, y: c.y - pontas[0].y + pontas[1].y }));
     // Quem está nas casas da área: por índice de casa (sem varrer área × bichos).
     if (casas) atingidos = Areas.dentro(casas, vivos);
+    if (plano) for (const b of atingidos) doDeslocamento.add(b);
     // (17/10, lote G11) a SEQUÊNCIA DE ÁREAS da Ruptura: as N áreas em linha à frente (o raio cresce a cada área), cada uma acertando quem está
     // nela (a mesma criatura pode levar de mais de uma área), e as Ondas de Choque dos primeiros M acertados de cada área — `golpesDaSequencia`
     const seq = itensPoeLigado() && entry.poeGema && formaNoUso ? GemasPoe.sequenciaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
@@ -3260,7 +3448,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (a Armadilha/Mina: o raio sorteado vale só para esta ativação)
   if (plantada) consumirRaioDoPoe(hunt, entry);
   // (lote G10: o uso que só carrega estágios — a Rajada de Chamas antes do máximo — sai sem ninguém na área, como no PoE)
-  if (ataque && !plantada && !estagioDoUso?.soCarrega && !semGolpeDireto) {
+  // (lote A1) a VIAGEM e a FUGA saem sem bicho na área (o deslocamento é o efeito): o raio sorteado vale só para este uso
+  if (ataque && plano && (desloc.modo === 'viagem' || plano.fuga)) consumirRaioDoPoe(hunt, entry);
+  else if (ataque && !plantada && !estagioDoUso?.soCarrega && !semGolpeDireto) {
     // (O próprio alvo sempre conta: a magia de 7 sqm no bicho a 6 não some da faixa.)
     const n = casas ? atingidos.length : new Set([...atingidos, ...vivos.filter((b) => distanciaChebyshev(hunt.pos, b) <= RAIO_DA_FAIXA)]).size;
     if (n < Math.max(1, Number(action.minTargets) || 1)) {
@@ -3269,7 +3459,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (action.maxTargets > 0 && n > action.maxTargets) return { ok: false, erro: 'Criaturas demais para o máximo do slot.', motivo: 'CRIATURAS_DEMAIS' };
     // (17/10, lote G2) o uso sai: o raio sorteado da gema vale só para ele (`formaNoRaioDoPoe`)
     consumirRaioDoPoe(hunt, entry);
-  } else if (!entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
+  } else if (!plano && !entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
     // Suporte/velocidade (haste, buffs): só com bicho por perto, senão era mana jogada fora sem parar.
     return { ok: false, erro: 'Nenhum bicho por perto.', motivo: 'SEM_BICHO_POR_PERTO' };
   }
@@ -3281,6 +3471,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (entry.poeGema && (GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tags ?? []).includes('Magia') && ModsPoe.valor(Ficha.combate(estado), 'magias_desabilitadas') > 0) {
     return { ok: false, erro: 'Suas magias estão desabilitadas (um item equipado).', motivo: 'MAGIAS_DESABILITADAS' };
   }
+  // (lote A1) o Passo Definhante: "Não pode ser Conjurado ou Ativado enquanto Elusivo"
+  if (entry.poeGema?.slug === 'Withering_Step' && ModsPoe.buffAtivo(estado, 'elusivo')) return { ok: false, erro: 'Não sai enquanto você está Elusivo.', motivo: 'ELUSIVO' };
   // Suporte: não relança enquanto o efeito dele ainda está ligado.
   const buff = BUFFS[entry.id];
   if (buff && !R.jaPode(agora, hunt.buffs?.[entry.id]?.ate)) return { ok: false, erro: 'Ainda está ativo.', motivo: 'EFEITO_ATIVO' };
@@ -3365,12 +3557,17 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (!concluir && !gatilho && Gemas.ehSkillDeGema(entry)) {
     // A gema do PoE conjura pela conta dos tempos dela (`temposDaGemaPoe`: os suportes, a velocidade por tag e a lentidão do personagem) — a
     // magia sai quando o relógio comum libera, nem antes nem depois.
-    const castMs = entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema).conjuracaoMs : Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed);
+    // (lote A1: + o ATRASO do Teleporte Relampejante — `planoDoDeslocamento`: o personagem espera parado, como no PoE, e o teleporte sai no fim)
+    const castMs = (entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema).conjuracaoMs : Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed)) + (plano?.atrasoMs ?? 0);
     if (castMs > 0) {
       // Conjurando, já olha para onde a skill vai sair.
       virarParaOAlvo(hunt, mira && entry.miraNoChao ? mira : alvo);
       // Skill que não é de ataque (invocação, aura, buff) não depende do alvo: ele morrer no meio não cancela a conjuração.
-      hunt.conjurando = { slot, id: entry.id, alvo: !ataque || (mira && entry.miraNoChao) ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}) };
+      // (revisão do A1: o Teleporte e a Vaal dele, com o destino já escolhido, saem mesmo se o alvo morrer na espera — a conjuração não guarda o alvo)
+      const semAlvoNaEspera = !!plano && ['viagem', 'inimigos'].includes(desloc.modo);
+      hunt.conjurando = { slot, id: entry.id, alvo: !ataque || (mira && entry.miraNoChao) || semAlvoNaEspera ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}),
+        // (lote A1: o destino do deslocamento escolhido agora — no fim da conjuração ele vale, salvo a casa ocupada)
+        ...(plano ? { deslocamento: { para: plano.para, de: plano.de, z: hunt.z ?? 0, ...(plano.semMover ? { semMover: true } : {}), ...(plano.fuga ? { fuga: true } : {}), ...(manual ? { manual: true } : {}) } } : {}) };
       // O global começa AQUI (a conjuração corre dentro dele); se ela for cancelada, volta o de antes.
       if (deAtaque) {
         hunt.conjurando.globalAntes = hunt.ultimoAtaqueEm ?? null;
@@ -3433,6 +3630,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
 
   const eventos = [];
+  // (lote A1, dono 19/10) o DESLOCAMENTO: pagou e vai sair — o personagem vai para o destino (o de Retorno vai e volta: termina onde começou; a Vaal
+  // do Teleporte não move você, e sim os bichos — abaixo, entre as duas pontas)
+  if (plano && !plano.semMover && desloc.modo !== 'inimigos') {
+    eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: plano.de.x, y: plano.de.y });
+    moverNoDeslocamento(hunt, plano.para, inicio);
+    if (desloc.modo === 'ida_e_volta') moverNoDeslocamento(hunt, plano.de, inicio);
+    eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+  }
   // (PoE, 12/10) A gema de Aço gasta os Fragmentos de Aço agora (pagou o custo e vai sair): os projéteis deste uso e a Proteção de Aço.
   const doAco = doTotem ? fragmentosNoUso(estado, hunt, entry, efeitoDaGema, agora, { doTotem: true }) : plantada ? null : fragmentosNoUso(estado, hunt, entry, efeitoDaGema, agora);
   // Vira para ONDE a skill vai (dono, 06/10: "o boneco vira para onde lança a magia?"): a onda/feixe já escolheu o lado (`virarPara`);
@@ -3481,6 +3686,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         ...(reserva ? { reserva: { recurso: reserva.recurso, ...(reserva.pct ? { pct: reserva.pct } : { fixo: reserva.fixo }), fator: reserva.fator } } : {}) }
       : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     if (doPoe) Ficha.invalidar(estado);
+    // (lote A1, dono 19/10 — D7) o Passo Definhante: o Elusivo e o Definhar de quem está na área (`passoDefinhante`)
+    if (entry.poeGema?.slug === 'Withering_Step' && itensPoeLigado()) passoDefinhante(estado, hunt, entry, efeitoDaGema, agora);
     // (lote 75) ligar o Arauto da Agonia é usar uma habilidade de Lacaio (a gema tem o tipo Minion — o Rastejador vem depois, ao Envenenar)
     if (entry.poeGema && (GemasPoe.doSlug(entry.poeGema.slug)?.gema?.tipos ?? []).includes('Minion')) ModsPoe.marcar(hunt, 'usouLacaio');
     // A parte reservada sai da mana (ou da vida) atual na hora.
@@ -3592,6 +3799,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const parte = pertoDaGema.rampa === 'proximidade' ? ModsPoe.proximidadeCorpoACorpo(ModsPoe.unidadesAte(bicho, { x, y })) : Math.max(Math.abs(bicho.x - x), Math.abs(bicho.y - y)) <= 2 ? 1 : 0;
       return 1 + (pertoDaGema.pct * parte) / 100;
     };
+    // (lote A1, dono 19/10) a Investida com Escudo: "100% mais Dano com Acertos na Distância Máxima da Investida", pelas casas percorridas (só no acerto)
+    const maisDaInvestida = 1 + (plano?.maisDanoPct ?? 0) / 100;
     const projDaGema = entry.poeGema ? GemasPoe.projeteisDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     let quinto = false;
     if (projDaGema?.quintoPct > 0 && !gatilho && !plantada) {
@@ -3725,13 +3934,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const fichaNoAlvo = noAlvo?.ficha ?? ficha;
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
-      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * doProjetilDaGema(fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const fator = (semDanoProprio ? 0 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * maisDaInvestida * doProjetilDaGema(fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
       // (17/10, lote G17) o que no PoB vale SÓ NO ACERTO e o jogo põe no `fator`: o "mais/menos Dano com Acertos" e os de Mágico/Projétil/Corpo a
       // Corpo/Ataque/Área dos suportes, o "mais Dano Corpo a Corpo" do Golpe Impiedoso, a Intensidade (Área com Acertos), o Aço, a Proximidade (o
       // Impacto), o Toxinas Vis e a Runa contra o vinculado ("com Acertos") — a afecção de dano sai sem eles (`fatoresDoDano`)
-      const soNoAcerto = Math.max(1e-9, (1 + (efeitoDaGema?.maisDanoAcertoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * maisDaIntensidade * fatorDoAco(bicho) * fatorDaProximidade(bicho) * porVeneno(bicho) * contraSangrando(bicho) * porRepeticao() * fatorDoPerto(bicho) * (pct0 ? pct / pct0 : 1));
+      const soNoAcerto = Math.max(1e-9, (1 + (efeitoDaGema?.maisDanoAcertoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * maisDaIntensidade * fatorDoAco(bicho) * fatorDaProximidade(bicho) * porVeneno(bicho) * contraSangrando(bicho) * porRepeticao() * fatorDoPerto(bicho) * maisDaInvestida * (pct0 ? pct / pct0 : 1));
       const rolarParte = (p) => (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora) * (noAlvo ? noAlvo.fatorEl(p.elemento, p.mult) : 1);
       // (o Sabotador: "Dano com Acertos é Azarado" — rola duas vezes e fica o menor; com o Sortudo junto, os dois se anulam)
       const azarado = ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0;
@@ -3905,7 +4114,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // Degenerativo (o geral e o do elemento), o "Dano Degenerativo aumentado", o aumentado do elemento e os suportes da gema (`fatorDaGema`).
       // A resistência do alvo vale em cada pulso; não rola crítico. Uma instância por gema: a mesma habilidade não acumula com ela mesma.
       // (O Vínculo Ancestral: sem dano por si só — `semDanoProprio`.)
-      if (entry.poeGema && !semDanoProprio) {
+      // (lote A1: o do Avanço Flamejante não vem no acerto — é o do SOLO ARDENTE do rastro, `tiqueDosSolosDoJogador`)
+      if (entry.poeGema && !semDanoProprio && desloc?.solo !== 'ardente') {
         const dg = GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
         const dotMagico = !!dg?.partes?.length && GemasPoe.dotEhMagico(entry.poeGema.slug);
         for (const p of dg?.partes ?? []) {
@@ -4049,6 +4259,36 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (17/10, lote G12) os CADÁVERES deste uso explodem (e a Cremação deixa os gêiseres) — `explodirCadaveres`
     if (cadaveresDoUso?.length) eventos.push(...explodirCadaveres(estado, hunt, entry, efeitoDaGema, doCadaver, cadaveresDoUso, ficha, agora));
     atacar(false);
+    // (revisão do A1) o Salto Impactante EMPURRA quem acertou na queda (o PoB: `leap_slam_always_knockback_within_range`) — o Empurrão do jogo
+    if (plano && desloc.empurra) for (const m of doDeslocamento) if (m.hp > 0) ModsPoe.empurrar(hunt, m);
+    // (lote A1, dono 19/10) a SEGUNDA PONTA do deslocamento: a mesma área na outra ponta, um acerto a mais (como no PoE, quem está nas duas leva os
+    // dois). A Vaal do Teleporte (D6) leva antes os bichos que você acertou para lá — os que cabem nas casas livres em volta do destino.
+    if (segundaPonta) {
+      if (desloc.modo === 'inimigos') {
+        // (revisão do A1: nenhum chefe vai — o critério de chefe do jogo; e o bicho só para numa casa a que se chega a pé do destino, em até 2
+        // passos, na grade sem as zonas seguras, fora da casa de gente: você, aliado da party, lacaio, familiar)
+        const grade = gradeDoJogador(hunt);
+        const andavel = grade?.andavel ? (cx, cy) => grade.andavel.has(`${cx},${cy}`) : null;
+        const aliados = aliadosPorCasa(hunt);
+        const ocupada = (c) => hunt.monstros.some((m) => m.hp > 0 && m.x === c.x && m.y === c.y) || (hunt.pos.x === c.x && hunt.pos.y === c.y) || aliados.has(`${c.x},${c.y}`)
+          || (hunt.lacaios ?? []).some((l) => l.hp > 0 && l.x === c.x && l.y === c.y) || (hunt.summon && hunt.summon.x === c.x && hunt.summon.y === c.y);
+        const lugares = [...Deslocamento.alcancaveis(pontas[1], 2, andavel)].map(([k, n]) => { const [cx, cy] = k.split(',').map(Number); return { x: cx, y: cy, n }; }).sort((a, b) => a.n - b.n);
+        for (const m of atingidos) {
+          if (!(m.hp > 0) || m.dummy || ehChefeQueNaoTeleporta(m, hunt)) continue;
+          const c = lugares.find((l) => !ocupada(l));
+          if (!c) continue;
+          m.x = c.x;
+          m.y = c.y;
+          m.andouEm = hunt.clock ?? 0;
+          // (o contador do teleporte do bicho — a tela o põe na casa nova, sem o desenho do caminho: `cacadas.snapshotDaHunt`)
+          m.teleportes = (m.teleportes ?? 0) + 1;
+        }
+      }
+      atingidos = Areas.dentro(segundaPonta, vivos.filter((b) => b.hp > 0));
+      for (const b of atingidos) doDeslocamento.add(b);
+      if (entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x: pontas[1].x, y: pontas[1].y, casas: Areas.paraTela(segundaPonta, pontas[1]) });
+      if (atingidos.length) atacar(true);
+    }
     // (lote 46, o Punho de Guerra: a Maximização vale só neste primeiro ataque — a próxima, daqui a N s)
     if (maximizado) { noMaximizado = false; (hunt.poeMaximizadoAte ??= {})[entry.id] = (hunt.clock ?? 0) + efeitoDaGema.maximizadoMs; }
     // REPETIÇÕES dos suportes do PoE (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora, nos vivos (sem gastar de novo).
@@ -4098,10 +4338,24 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // Vórtice): no chão — no alvo, ou onde a forma caiu —, pela duração da gema (`ModsPoe.criarAreaFria`).
     const fria = entry.poeGema ? ModsPoe.AREAS_FRIAS.porGema[entry.poeGema.slug] : null;
     if (fria) {
-      const c = fria.noAlvo && alvo ? alvo : formaNoUso ?? hunt.pos;
+      // (lote A1, dono 19/10: o Piscar Gélido deixa a área fria nas DUAS pontas do teleporte)
       const segundos = (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 4) * fatorDeDuracao(estado, entry, efeitoDaGema);
-      ModsPoe.criarAreaFria(hunt, { x: c.x, y: c.y, raioM: fria.raioM, segundos });
+      for (const c of pontas ?? [fria.noAlvo && alvo ? alvo : formaNoUso ?? hunt.pos]) ModsPoe.criarAreaFria(hunt, { x: c.x, y: c.y, raioM: fria.raioM, segundos });
     }
+    // (lote A1, dono 19/10) o CHÃO do deslocamento: o Solo Ardente do Avanço Flamejante nas casas do rastro (4 s, o dps da gema com a conta deste
+    // uso — `tiqueDosSolosDoJogador`) e o Solo Sagrado do Caminho Consagrado na chegada (a duração da gema).
+    if (plano && desloc.solo === 'ardente' && !semDanoProprio) {
+      const dg = GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
+      if (dg) {
+        const conta = { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha, dotMagico: GemasPoe.dotEhMagico(entry.poeGema.slug) };
+        const partes = dg.partes.map((p) => ({ tipo: GemasPoe.DEGEN_DO_ELEMENTO[p.elemento], elemento: p.elemento, porSegundo: totalDoDegenerativo(p, 1000, conta) }));
+        const rastro = [...new Set([plano.de, ...plano.caminho].map((c) => `${c.x},${c.y}`))];
+        (hunt.solosDoJogador ??= []).push({ casas: rastro, z: hunt.z ?? 0, ate: agora + Math.round(dg.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema)), acao: entry.id, chave: entry.poeGema.slug, partes, ultimo: agora });
+        hunt.solosDoJogador = hunt.solosDoJogador.slice(-8);
+        tiqueDosSolosDoJogador(hunt, eventos, agora);
+      }
+    }
+    if (plano && desloc.solo === 'sagrado') criarSoloSagrado(hunt, (GemasPoe.compilada(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)?.stats?.duracao ?? 4) * fatorDeDuracao(estado, entry, efeitoDaGema), agora);
     // (lote G20a) o acerto do TOTEM não é seu: o dreno da ficha e o dos suportes não vêm para você (CalcPerform.lua:264); vale o "X% do Dano causado
     // pelos seus Totens é Drenado como Vida para você" (todo o dano) e o "X% do Dano Físico de Ataques causado pelos seus Totens" (o físico do ataque)
     if (doTotem) {
@@ -4144,7 +4398,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // "Cooldown Recovery" (add): a recarga própria anda mais rápido.
   const fichaDaRecarga = Ficha.combate(estado);
   // + o Cooldown Recovery da gema (support).
-  const tempoPoe = entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema, fichaDaRecarga) : null;
+  // (lote A1) o Piscar Gélido: "Velocidade de Recuperação da Recarga aumentada em X% para cada Inimigo Normal ou Mágico na Área / Y% para cada
+  // Raro ou Único" — quem as duas pontas acertaram
+  const porInimigo = desloc?.recargaPorInimigo ? [...doDeslocamento].reduce((n, b) => n + (b.boss || ['raro', 'elite', 'unico', 'boss'].includes(b.raridade) ? desloc.recargaPorInimigo.raro : desloc.recargaPorInimigo.normal), 0) : 0;
+  const tempoPoe = entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema, fichaDaRecarga, { recuperacaoExtraPct: porInimigo }) : null;
   const recarga = tempoPoe ? tempoPoe.recarga : Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
   // Tudo a partir do instante LÓGICO (`inicio`), não do tique em que saiu. (A Armadilha/Mina plantada que ativa não mexe na recarga: ela
   // foi do arremesso.)
@@ -4243,6 +4500,27 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     hunt.cargasPoe[action.id] = fila;
     cds[action.id] = fila.length >= tempoPoe.cargas ? { ate: fila[0], total: recarga } : { ate: inicio, total: 0 };
   }
+  // (lote A1, dono 19/10) a recarga das ILUSÕES (o Avanço, o Avanço Flamejante, o Piscar Gélido, o Passo Rápido, o Passo Definhante) é
+  // COMPARTILHADA, como no PoE ("Compartilha recarga com outras Habilidades de Ilusão"): usar uma põe as outras da barra na recarga dela.
+  // (revisão do A1, sem assimetria: cada uso gasta UM uso de cada Ilusão da barra, pela recarga dela — a de 1 uso trava pela recarga dela; o
+  // Avanço Flamejante de 3 usos perde um, que volta pela recarga dele, como no uso próprio. Exceção aceita pelo dono: o PoE não diz como a
+  // recarga compartilhada conta os usos.)
+  if (!plantada && !gatilho && recarga > 0 && entry.poeGema && ehIlusao(entry)) {
+    for (const a of estado.actions ?? []) {
+      const outra = a?.id && a.id !== action.id ? POR_ID.get(a.id) : null;
+      if (!ehIlusao(outra)) continue;
+      const t2 = temposDaGemaPoe(estado, outra, Gemas.efeitoNaSkill(estado, outra.id), fichaDaRecarga);
+      if (!(t2.recarga > 0)) continue;
+      if (t2.cargas > 1) {
+        const fila = ((hunt.cargasPoe ??= {})[a.id] ?? []).filter((t) => t > inicio);
+        fila.push(Math.max(inicio, fila.at(-1) ?? inicio) + t2.recarga);
+        hunt.cargasPoe[a.id] = fila;
+        cds[a.id] = fila.length >= t2.cargas ? { ate: fila[0], total: t2.recarga } : { ate: Math.max(inicio, cds[a.id]?.ate ?? inicio), total: 0 };
+      } else if (!((cds[a.id]?.ate ?? -Infinity) >= inicio + t2.recarga)) cds[a.id] = { ate: inicio + t2.recarga, total: t2.recarga };
+    }
+  }
+  // (revisão do A1) o Passo Definhante: "A Recarga desta Habilidade não é recuperada durante seu efeito" — a recarga começa quando o Elusivo dele acaba
+  if (!plantada && !gatilho && entry.poeGema?.slug === 'Withering_Step' && recarga > 0 && (hunt.poeBuffs?.elusivo ?? 0) > inicio) cds[action.id] = { ate: hunt.poeBuffs.elusivo + recarga, total: recarga };
   // O familiar: o slot mostra a espera dele (17 min no nível 0, 2 min no 100).
   if (entry.summon) cds[action.id] = { ate: inicio + Summon.recarga(estado), total: Summon.recarga(estado) };
   if (!gatilho && (entry.kind === 'spell' || grupoDeAtaque)) {
@@ -4587,6 +4865,8 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
   // (lote G12: os gêiseres da Cremação, no mesmo tique)
   if (itensPoeLigado() && hunt?.poeGeiseres?.length) tiqueDosGeiseres(estado, hunt, personagem, eventos, agora);
+  // (lote A1: o Solo Ardente do Avanço Flamejante, no mesmo tique)
+  if (itensPoeLigado() && hunt?.solosDoJogador?.length) tiqueDosSolosDoJogador(hunt, eventos, agora);
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
   const ficha = Ficha.combate(estado);
   for (const { p, alvo } of [...Plantadas.armadilhasQueAtivam(hunt, ficha, agora), ...Plantadas.minasQueDetonam(hunt, ficha, agora)]) {
