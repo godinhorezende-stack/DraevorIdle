@@ -77,14 +77,17 @@ export const AREAS_FRIAS = Object.freeze({
     Frost_Blades_of_Katabasis: { raioM: 2, noAlvo: true },
   }),
 });
-export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0 }) {
+// (lote A2: + `efeitoPct` — a área com o Resfriamento próprio: o Escudo Gélido, com o "Efeito de Afecções de Gelo aumentado" da qualidade dele)
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
   const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora);
-  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000) });
+  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000), ...(efeitoPct > 0 ? { efeitoPct } : {}) });
   h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
 }
 /** O bicho está numa das suas áreas frias agora? */
 export const naAreaFria = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
+/** (lote A2) O Resfriamento da área fria em que o bicho está (o maior delas): o de sempre, ou o próprio da área. */
+export const efeitoDaAreaFria = (h, b, agora = h?.clock ?? 0) => Math.max(0, ...(h?.areasFrias ?? []).filter((a) => a.ate > agora && !!b && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio).map((a) => a.efeitoPct ?? AREAS_FRIAS.efeitoPct));
 /** (lote G) A POSTURA: a da Areia enquanto o buff da gema Sangue e Areia está ligado; senão a de Sangue (o lembrete: "Você está automaticamente em Postura de Sangue"). */
 export const posturaDe = (h, agora = h?.clock ?? 0) => (Object.entries(h?.buffs ?? {}).some(([id, b]) => b && b.ate > agora && /Blood_and_Sand/.test(id)) ? 'areia' : 'sangue');
 /**
@@ -887,6 +890,9 @@ export function buffsDoCliente(estado) {
   if (h.infusaoEspiritual?.n > 0) saida.push({ icone: null, nome: 'Infusão Espiritual', resta: 0, tipo: 'infusaoEspiritual', contador: h.infusaoEspiritual.n, dica: `Infusão Espiritual: ${h.infusaoEspiritual.n} de ${INFUSAO.maximo} (por acúmulo: 15% de início mais rápido da Recarga do Escudo, Magias Canalizadas 5% mais Dano e 10% mais Custo)` });
   // (14/10) o Infestador: Incubando ou Infestando, com o Valor da Praga
   if (h.praga) saida.push({ icone: null, nome: h.praga.modo === 'infestando' ? 'Infestando' : 'Incubando', resta: 0, tipo: 'praga', contador: Math.round(h.praga.valor), dica: `Valor da Praga: ${Math.round(h.praga.valor)} de ${Math.round(h.praga.max ?? 0)} (o Infestador — ${h.praga.modo === 'infestando' ? 'Infestando: Caos nos inimigos a até 2 casas até o Valor acabar' : 'Incubando: 40% do dano de cada Veneno seu; no máximo, Infesta sozinho'})` });
+  // (revisão do A2: a Fúria de agora no HUD — a condição "Fúria ≥ N" do slot, o Berserk)
+  const furia = furiaAtual(estado);
+  if (furia > 0) saida.push({ icone: null, nome: 'Fúria', resta: 0, tipo: 'furia', contador: furia, dica: `Fúria: ${furia} de ${maximoDeFuria(fichaDa(h)?.afPoe)} (1% mais Dano de Ataque por ponto; perde ${FURIA.perdaPorS} por segundo depois de ${FURIA.esperaMs / 1000} s sem ganhar Fúria nem ser Acertado)` });
   if (h.furiaLiberta?.n > 0) saida.push({ icone: null, nome: 'Fúria Liberta', resta: 0, tipo: 'furiaLiberta', contador: h.furiaLiberta.n, dica: `Fúria Liberta: ${h.furiaLiberta.n} de ${FURIA_LIBERTA.maximo} (com ${FURIA_LIBERTA.maximo}, o Avatar Liberto deixa Liberto por ${FURIA_LIBERTA.libertoS} s)` });
   return saida;
 }
@@ -1322,7 +1328,8 @@ export const MALDICOES_DOS_MONSTROS = {
 };
 export const DURACAO_DA_MALDICAO_DO_MONSTRO_MS = 6000;
 /** (lote 55, o Olho do Vigia) "Imune a <Maldição>": a imunidade a cada maldição que os monstros põem em você (pelo nome dela). */
-const IMUNE_A_MALDICAO = { 'Fraqueza Elemental': 'imune_fraqueza_elemental', Vulnerabilidade: 'imune_vulnerabilidade', Enfraquecer: 'imune_enfraquecer', Flamabilidade: 'imune_flamabilidade', Congelabilidade: 'imune_congelabilidade', Condutividade: 'imune_condutividade', Desespero: 'imune_desespero' };
+// (lote A2: + os Grilhões Temporais — a Fenda Temporal: "Buff te torna Inafetável por Grilhões Temporais")
+const IMUNE_A_MALDICAO = { 'Fraqueza Elemental': 'imune_fraqueza_elemental', Vulnerabilidade: 'imune_vulnerabilidade', Enfraquecer: 'imune_enfraquecer', Flamabilidade: 'imune_flamabilidade', Congelabilidade: 'imune_congelabilidade', Condutividade: 'imune_condutividade', Desespero: 'imune_desespero', 'Grilhões Temporais': 'imune_grilhoes_temporais' };
 const imuneAMaldicao = (af, nome) => Number(af?.[IMUNE_A_MALDICAO[nome]]) > 0;
 /**
  * (lote 30, P017) "Debuffs em você expiram X% mais rápido": o tempo deles corre (1 + X%) vezes mais depressa — a duração ÷ (1 + X%), em TODO
@@ -1589,10 +1596,12 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   if ((t.has('alvoRaro') || t.has('alvoUnico')) && alvo?.estados?.presencaMs > 0) {
     for (const [k, x] of Object.entries(ficha.afPoe)) if (k.startsWith('mais_dano_presenca:') && x > 0) daPresenca += Math.min(Number(k.slice('mais_dano_presenca:'.length)) || 0, (x * alvo.estados.presencaMs) / 1000);
   }
-  // A Fúria do PoE: +1% de Dano de Ataque aumentado por Fúria ("Fúria concede Dano Mágico ao invés": nas magias).
+  // A Fúria do PoE ("Fúria concede Dano Mágico ao invés": nas magias).
+  // (lote A2, dono 19/10: "A Fúria segue o PoB" — CalcPerform.lua:886-895: o Efeito da Fúria é floor(Fúria × (1 + "Efeito da Fúria aumentado")) e
+  // cada ponto dá 1% de Dano MAIS — `Damage MORE` com a flag do Ataque, ou da Magia —, não aumentado; multiplica no `fator`, abaixo)
   const furiaNaMagia = (Number(ficha.afPoe.furia_magica) || 0) > 0;
-  // (+ lote F: "Efeito da Fúria aumentado em X%")
-  const furia = (furiaNaMagia ? t.has('magia') : t.has('ataque')) ? furiaAtual(estado) * Math.max(0, 1 + (Number(ficha.afPoe.efeito_furia) || 0) / 100) : 0;
+  // (+ lote F: "Efeito da Fúria aumentado em X%"; lote A2: + o do Berserk — `efeito_furia` no buff dele)
+  const furia = (furiaNaMagia ? t.has('magia') : t.has('ataque')) ? efeitoDaFuria(estado, ficha.afPoe) : 0;
   // (O "Dano aumentado" sem condição já está em `danoDoElemento` da ficha; aqui só o condicional e a Fúria.)
   // (13/10: + o Tiro Longo — "Projéteis ganham Dano conforme viajam adiante, causando Dano aumentado em até X% com Acertos em alvos":
   // `projetil_longe_inc`, do colado a 6 casas)
@@ -1601,7 +1610,7 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // × o %, no "aumentado" do ataque)
   const arcano = t.has('ataque') ? (Number(ficha.afPoe.poder_arcano) || 0) + (s.poder_arcano ?? 0) : 0;
   const doArcano = arcano > 0 ? (((ficha.danoDeMagiaDoPoe ?? 0) + (s.spell_dmg ?? 0)) * arcano) / 100 : 0;
-  const danoGeral = (s.dmg_inc ?? 0) + furia + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe + doArcano;
+  const danoGeral = (s.dmg_inc ?? 0) + doProjetil('projetil_perto_dmg_inc') * perto + doProjetil('projetil_longe_inc') * longe + doArcano;
   // (lote G13: + a aura de crítico das Minas da gema no alvo — `minaCritico`; lote 57: + o Solo Profano — "Acertos contra inimigos em Solo Profano têm
   // chance de golpe crítico aumentada em 100%")
   const critInc = (s.crit_chance_inc ?? 0) + (t.has('arco') ? doProjetil('flecha_longe_crit_inc') * longe : 0) + (alvo && ativo(alvo.estados?.minaCritico, agora) ? alvo.estados.minaCritico.pct ?? 0 : 0) + (t.has('alvoNoSoloProfano') ? SOLO_PROFANO.critIncPct : 0);
@@ -1627,7 +1636,7 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   let maisArea = 1;
   if (t.has('area')) for (const [k, x] of Object.entries(ficha.afPoe)) if (k.startsWith('chance_mais_dano_area:') && x > 0 && rng() * 100 < x) maisArea *= 1 + (Number(k.slice('chance_mais_dano_area:'.length)) || 0) / 100;
   // (+ lote 33, P045: o Impacto — "até X% mais Dano Corpo a Corpo … baseado na proximidade", `maisPelaProximidade`)
-  const fator = (triplo ? 3 : dobro ? 2 : 1) * Math.max(0, 1 + mais / 100) * maisArea * maisDoCaminho * pelaDistancia(ficha, t, alvo, estado) * maisPelaProximidade(ficha, t, alvo, estado);
+  const fator = (triplo ? 3 : dobro ? 2 : 1) * Math.max(0, 1 + mais / 100) * (1 + furia / 100) * maisArea * maisDoCaminho * pelaDistancia(ficha, t, alvo, estado) * maisPelaProximidade(ficha, t, alvo, estado);
   if (fator !== 1) f.fatorDasCargas = (ficha.fatorDasCargas ?? 1) * fator;
   // (lote 30, P016/P076) o "X% mais Dano de <tipo>" com as condições deste golpe (o sem condição está na ficha) — `fatorRecebidoPeloBicho` o
   // aplica só na parte daquele tipo.
@@ -1808,12 +1817,20 @@ export const elementoDaTag = (tag) => ELEMENTO_DA_TAG[tag] ?? null;
 
 // ---------------------------------------------------------------- a Fúria
 
-/** Fúria do PoE: até 30; +1% de Dano de Ataque aumentado por Fúria; perde 1 a cada 0,5 s sem ganhar Fúria há 2 s. */
-export const FURIA = { maximo: 30, perdaMs: 500, esperaMs: 2000 };
+/**
+ * Fúria do PoE: até 30; 1% de Dano de Ataque MAIS por Fúria. (lote A2, dono 19/10: "A Fúria segue o PoB" — CalcPerform.lua:891-900: o dano é
+ * "mais", e a perda inerente é de 10 por segundo, depois de 2 s sem ganhar Fúria; antes, 1% aumentado e 1 a cada 0,5 s.) `perdaPorS`: a perda
+ * inerente; `perdaMs` (1000 / 10 = 100 ms por ponto) fica para quem lê o intervalo.
+ */
+export const FURIA = { maximo: 30, perdaPorS: 10, perdaMs: 100, esperaMs: 2000 };
 export function furiaAtual(estado) {
   const f = estado?.hunt?.furia;
-  return f ? Math.max(0, Math.min(FURIA.maximo, f.n | 0)) : 0;
+  // (lote A2: o teto é a Fúria máxima — `ganharFuria` corta no ganho e o `tiqueDaFuria` a cada tique, quando o máximo cai —, como o PoB:
+  // min(Fúria, máximo); antes, 30 fixo aqui, e o "+N ao Máximo de Fúria" do Clamor Vingativo não passava de 30)
+  return f ? Math.max(0, f.n | 0) : 0;
 }
+/** (lote A2) O EFEITO da Fúria agora (o PoB: floor(Fúria × (1 + "Efeito da Fúria aumentado" / 100))) — o % de dano MAIS. */
+export const efeitoDaFuria = (estado, af) => Math.floor(furiaAtual(estado) * Math.max(0, 1 + (Number(af?.efeito_furia) || 0) / 100));
 /** A Fúria máxima: 30 + "+N à Fúria máxima" (a árvore e as peças), × ½ com "Fúria máxima é reduzida à metade". */
 export const maximoDeFuria = (af) => Math.floor((FURIA.maximo + (Number(af?.furia_max) || 0)) * (Number(af?.furia_max_metade) > 0 ? 0.5 : 1));
 export function ganharFuria(hunt, n, agora = hunt?.clock ?? 0) {
@@ -1872,15 +1889,25 @@ function tiqueDoRampage(hunt, ficha, agora) {
  * enquanto NÃO a perde — 0 enquanto ela cai (a perda inerente começou: 2 s sem ganhar, + o "começa N segundos depois"; ou "Perde N de Fúria
  * por segundo", que tira sempre).
  */
+/**
+ * (revisão do A2) O começo da espera da perda inerente: o último GANHO de Fúria ou o último ACERTO recebido, o mais recente (o PoE 1: "se você não
+ * tiver sido Atingido nem ganhado Fúria nos últimos 2 segundos").
+ */
+const inicioDaEspera = (hunt, f) => Math.max(f.ganhou ?? -Infinity, hunt?.poeRecente?.acertado ?? -Infinity);
+/** (revisão do A2) O Berserk ligado (a Fúria cai o tempo todo enquanto ele dura — `GemasA2.tiqueDoBerserk`). */
+const berserkLigado = (hunt, agora) => (hunt?.buffs?.['poe-gema:Berserk']?.ate ?? -Infinity) > agora;
 export function furiaSemPerder(hunt, af, agora = hunt?.clock ?? 0) {
   const f = hunt?.furia;
-  if (!f || !(f.n > 0) || Number(af?.furia_perde_por_s) > 0) return 0;
-  if (agora - f.ganhou >= FURIA.esperaMs + 1000 * (Number(af?.furia_atraso_s) || 0)) return 0;
+  if (!f || !(f.n > 0) || Number(af?.furia_perde_por_s) > 0 || berserkLigado(hunt, agora)) return 0;
+  if (agora - inicioDaEspera(hunt, f) >= FURIA.esperaMs + 1000 * (Number(af?.furia_atraso_s) || 0)) return 0;
   return Math.min(maximoDeFuria(af), f.n | 0);
 }
 export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
   const f = hunt?.furia;
   if (!f || !(f.n > 0)) return;
+  // (revisão do A2: o teto é o máximo de AGORA — "+N ao Máximo de Fúria" que acabou, "Fúria máxima pela metade" — o PoB: min(Fúria, máximo))
+  const maximo = maximoDeFuria(fichaDa(hunt)?.afPoe);
+  if (fichaDa(hunt) && f.n > maximo) f.n = maximo;
   // ("Perde N de Fúria por segundo": a perda das peças, sempre — além da inerente.)
   const perdePorS = Number(fichaDa(hunt)?.afPoe?.furia_perde_por_s) || 0;
   if (perdePorS > 0) {
@@ -1889,9 +1916,13 @@ export function tiqueDaFuria(hunt, agora = hunt?.clock ?? 0) {
     if (!(f.n > 0)) return;
   } else delete f.perdaExtraEm;
   // (+ lote F: "Perda Inerente de Fúria começa N segundos depois")
-  if (agora - f.ganhou < FURIA.esperaMs + 1000 * (Number(fichaDa(hunt)?.afPoe?.furia_atraso_s) || 0)) { f.perdeu = agora; return; }
-  // ("Perda Inerente de Fúria é X% mais lenta" — a árvore.)
-  const perdaMs = FURIA.perdaMs * Math.max(0.1, 1 + (Number(fichaDa(hunt)?.afPoe?.furia_perda_lenta) || 0) / 100);
+  // (revisão do A2: desde o último ganho OU o último acerto recebido)
+  if (agora - inicioDaEspera(hunt, f) < FURIA.esperaMs + 1000 * (Number(fichaDa(hunt)?.afPoe?.furia_atraso_s) || 0)) { f.perdeu = agora; return; }
+  // ("Perda Inerente de Fúria é X% mais lenta / mais rápida" — a árvore.) (lote A2: o PoB — CalcPerform.lua:900 — 10 × (1 + InherentRageLoss INC):
+  // o "mais lenta" é o INC negativo — `furia_perda_lenta` positivo —, e "impede a perda inerente" a zera)
+  const porS = FURIA.perdaPorS * Math.max(0, 1 - (Number(fichaDa(hunt)?.afPoe?.furia_perda_lenta) || 0) / 100);
+  if (!(porS > 0)) { f.perdeu = agora; return; }
+  const perdaMs = 1000 / porS;
   while (f.n > 0 && agora - f.perdeu >= perdaMs) { f.n--; f.perdeu += perdaMs; }
 }
 

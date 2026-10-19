@@ -59,6 +59,7 @@ import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
 export const nivelDoDropPoe = (hunt, alvo) => BESTIARY[alvo?.key]?.poe?.nivel ?? hunt?.escala?.nivel ?? AtributosDoPersonagem.levelDoBicho(hunt, { ...alvo, levelExtra: 0 });
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import * as ModsPoe from '../itens-poe/mods-poe.mjs';
+import * as GemasA2 from '../itens-poe/gemas-a2.mjs';
 import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
@@ -220,7 +221,8 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
     return true;
   }
   // O bicho BLOQUEIA o tiro (só quem tem bloqueio configurado): sem dano. ("Monstros não podem Bloquear seus Ataques": não bloqueia.)
-  if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo)) {
+  // (lote A2: + o Subjugado no bicho — a Redução de Chance de Bloqueio)
+  if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, 1, { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0) })) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
     return true;
   }
@@ -879,6 +881,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     }
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
+    // (lote A2) a Fúria Sangrenta: matar renova a duração
+    Acoes.aoMatarA2(estado, hunt, hunt.clock ?? 0);
     // (a keystone Fúria — o Rampage: o abate soma no contador; "Recebe uma Carga de Frenesi a cada N Mortes com Fúria")
     if (ModsPoe.contarRampage(estado, hunt, f)) Ficha.invalidar(estado);
   }
@@ -1092,6 +1096,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
       Controle.travarNoBloqueio(hunt, bicho, ficha);
       // (e abre a janela da Retaliação — "Se Torna Utilizável … quando você Bloquear um Acerto")
       ModsPoe.abrirRetaliacao(hunt, 'bloquear', ficha.afPoe);
+      // (lote A2) o Cajado Impregnado de Mana: a Onda Arcana ao bloquear (uma vez por segundo)
+      Acoes.ondaArcana(estado, hunt, personagem, eventos, hunt.clock ?? 0);
     }
     ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
     // ("ao Bloquear o Dano de Ataques" / "ao Bloquear Dano Mágico": o evento de cada tipo de bloqueio.)
@@ -1217,6 +1223,11 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     const tomou = Math.min(final, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
     if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#c8a2ff' }); }
   }
+  // (lote A2) o Escudo Gélido: com você na área, a parte do acerto vai para a Vida do globo antes do Escudo de Energia e da Vida
+  if (final > 0 && hunt.a2?.escudoGelido) {
+    const tomou = GemasA2.absorverNoEscudoGelido(hunt, final, bicho, hunt.clock ?? 0);
+    if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#9fe0ff' }); }
+  }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — "30% do Dano de Acertos contra o alvo é sofrido no seu Escudo de Energia antes do
   // dele": essa parte sai do Escudo de quem vincula.)
   final = Vinculos.desviarParaOEscudo(estado, final);
@@ -1320,8 +1331,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     if ((estado.hp ?? 0) <= 0) break;
     // O boss único (`bosses-unicos/`) tem os comportamentos DELE além (ou no lugar) das magias do arquivo da criatura-base.
     if (bicho.dummy || bicho.hp <= 0 || !(bicho.boss || Poderes.temPoderes(bicho)) || distancia(hunt.pos, bicho) > ALCANCE_DAS_MAGIAS) continue;
-    // Congelado ou atordoado (supports Freeze/Stun): não lança.
-    if (!Estados.podeAgir(bicho, agora)) continue;
+    // Congelado ou atordoado (supports Freeze/Stun): não lança. (lote A2: fugindo — a Chance de Fugir, o Pacifismo — também não)
+    if (!Estados.podeAgir(bicho, agora) || Estados.fugindo(bicho, hunt.clock ?? 0)) continue;
     if (!ficha) {
       ficha = Ficha.combate(estado);
       escudo = Acoes.temBuff(hunt, 'shield');
@@ -1333,8 +1344,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     if (bicho.dummy || bicho.hp <= 0 || distancia(hunt.pos, bicho) > 1 || Poderes.semCorpoACorpo(bicho)) continue;
     if (estado.hp <= 0) break;
     if (!R.jaPode(agora, bicho.proximoGolpe)) continue;
-    // Congelado ou atordoado: não bate; lento: bate mais devagar (supports Freeze/Stun/Slow).
-    if (!Estados.podeAgir(bicho, agora)) continue;
+    // Congelado ou atordoado: não bate; lento: bate mais devagar (supports Freeze/Stun/Slow). (lote A2: fugindo, não bate)
+    if (!Estados.podeAgir(bicho, agora) || Estados.fugindo(bicho, hunt.clock ?? 0)) continue;
     // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
     // (+ o buff de velocidade de ataque das mecânicas: Enfurecido, Vingativo — `mobs/buffs.mjs`.)
     // O intervalo entre golpes (`mobs/atributos.mjs`): o base × a lentidão ÷ a velocidade (modificador × buffs), com limites configuráveis.
@@ -1430,7 +1441,8 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
 }
 
 /** A "Raridade de Itens encontrados aumentada" para o drop deste morto (PoE: com as condições dele — "por Inimigos Congelados/Eletrizados"). */
-export const raridadeDoDrop = (estado, alvo) => ModsPoe.valor(ModsPoe.fichaDoGolpe(Ficha.combate(estado), [], { alvo, estado }), 'item_rarity');
+// (lote A2: + a Raridade de Itens do suporte do golpe que matou — `alvo.poeRaridadeDoGolpe`, `Acoes.acertoDosSuportesA2`)
+export const raridadeDoDrop = (estado, alvo) => ModsPoe.valor(ModsPoe.fichaDoGolpe(Ficha.combate(estado), [], { alvo, estado }), 'item_rarity') + (Number(alvo?.poeRaridadeDoGolpe) || 0);
 
 /** Soma faixas por elemento (`{ fire: [a, b] }`). */
 const somarFaixas = (a = {}, b = {}) => {
@@ -1524,7 +1536,7 @@ export function round(estado, personagem) {
         }
         // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): o golpe não causa dano.
       // ("Chance de Inimigos Bloquearem Ataques com Espada reduzida em X%" — `inimigos_bloqueio_red@comEspada`.)
-      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100))) {
+      if (!(ModsPoe.valor(ficha, 'inimigos_nao_bloqueiam') > 0) && AtributosDoMob.bloqueou(alvo, Math.random, Math.max(0, 1 - ModsPoe.valor(ficha, 'inimigos_bloqueio_red') / 100), { menosPontos: AtributosDoMob.subjugadoPontos(alvo, hunt.clock ?? 0) })) {
         Treino.treinar(estado, pericia);
         eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
         return true;

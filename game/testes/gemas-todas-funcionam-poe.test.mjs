@@ -52,6 +52,10 @@ function montar(slug, [arma, escudo], suportes = []) {
   e.hunt.clock = 100_000;
   e.mana = e.maxMana = 1e7;
   e.maxHp = e.hp = 1e7;
+  // (lote A2, com o aval do dono: só a MONTAGEM das gemas novas — o Berserk precisa de 5 de Fúria para entrar; a Lâmina de Energia custa Escudo de
+  // Energia; o Cajado Impregnado de Mana usa o cajado, que já está na lista das armas)
+  if (slug === 'Berserk') e.hunt.furia = { n: 5, ganhou: e.hunt.clock, perdeu: e.hunt.clock };
+  if (slug === 'Energy_Blade') e.es = 1e7;
   const [b, ...resto] = e.hunt.monstros;
   for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
   Object.assign(b, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {} });

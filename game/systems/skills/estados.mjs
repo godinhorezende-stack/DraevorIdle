@@ -114,6 +114,8 @@ export function ativosDe(m, agora) {
 
 /** O bicho pode andar/atacar agora? (congelado e atordoado não). */
 export const podeAgir = (m, agora) => !ativo(m?.estados?.congelado, agora) && !ativo(m?.estados?.atordoado, agora);
+/** (lote A2) O bicho FUGINDO (a Chance de Fugir, o Pacifismo — `Acoes.fugir`): não ataca e se afasta de você (`hunt/monstros.moverMonstros`). */
+export const fugindo = (m, agora) => ativo(m?.estados?.fugindo, agora);
 
 /** Quanto o bicho LENTO demora a mais (1 = normal): passo e intervalo do golpe × isto. */
 export function fatorDeLentidao(m, agora) {

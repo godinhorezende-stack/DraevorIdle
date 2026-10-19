@@ -73,6 +73,7 @@ import * as ModsPoe from './itens-poe/mods-poe.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as GemasA2 from './itens-poe/gemas-a2.mjs';
 import * as Reserva from './itens-poe/reserva.mjs';
 import * as Poderes from './poderes.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
@@ -2114,8 +2115,15 @@ export function tique(estado, personagem, agora = Date.now()) {
   // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).
   const regrasDasCargas = Ficha.combate(estado).cargas;
   if (regrasDasCargas && CargasPoe.tique(estado, regrasDasCargas)) Ficha.invalidar(estado);
+  // (lote A2, dono 19/10) as gemas do lote A2 no tempo (`Acoes.tiqueDasGemasA2`: o Berserk, o Sangue Petrificado, a Fenda Temporal, o Escudo
+  // Gélido, a Automação); e o teto do Sangue Petrificado — a Vida que subiu sem frasco para em Vida Baixa (antes dos frascos, que passam por cima)
+  if (itensPoeLigado()) {
+    Acoes.tiqueDasGemasA2(estado, hunt, personagem, eventos, hunt.clock ?? 0);
+    GemasA2.tetoDoSangue(estado, hunt);
+  }
   // Os frascos do PoE no cinto: a recuperação de vida/mana, o fim dos de Utilidade e o uso automático (a ficha é refeita se o efeito mudou).
   if (FrascosPoe.tique(estado, eventos, personagem?.nome)) Ficha.invalidar(estado);
+  if (itensPoeLigado()) GemasA2.fimDoTiqueDoSangue(estado, hunt);
   // Um buff de gema do PoE (com atributos) venceu: a ficha é refeita.
   if (GemasPoe.tique(estado)) Ficha.invalidar(estado);
   // (14/10) Os ALTARES do PoE mudaram (ganhou um, outro venceu): a ficha e a vida máxima são refeitas (o Massivo dá Vida); e as gemas que os
@@ -2643,9 +2651,11 @@ export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0) {
   if (!hunt.areasFrias.length) return;
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || m.dummy || !ModsPoe.naAreaFria(hunt, m, agora)) continue;
+    // (lote A2: a área com o Resfriamento próprio — o Escudo Gélido — vale o dela)
+    const efeito = ModsPoe.efeitoDaAreaFria(hunt, m, agora) || ModsPoe.AREAS_FRIAS.efeitoPct;
     const l = m.estados?.lento;
-    if (l && l.ate - agora > 1000 && l.pct >= ModsPoe.AREAS_FRIAS.efeitoPct) continue;
-    Estados.aplicar(m, { lentidaoPct: ModsPoe.AREAS_FRIAS.efeitoPct }, 1, agora, Math.random, !!hunt.isBoss);
+    if (l && l.ate - agora > 1000 && l.pct >= efeito) continue;
+    Estados.aplicar(m, { lentidaoPct: efeito }, 1, agora, Math.random, !!hunt.isBoss);
   }
 }
 

@@ -36,6 +36,7 @@ import * as Defesa from './personagem/defesa.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as ModsPoe from './itens-poe/mods-poe.mjs';
+import * as GemasA2 from './itens-poe/gemas-a2.mjs';
 import * as Protecao from './protecao.mjs';
 import * as Plantadas from './itens-poe/armas-plantadas.mjs';
 import * as Vinculos from './itens-poe/vinculos.mjs';
@@ -374,6 +375,11 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     const porTipo = Object.fromEntries(Object.entries(partes).map(([el, v]) => [el, (Math.max(0, v) * dano) / somaDasPartes]));
     const tomou = Math.min(dano, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
     if (tomou > 0) { dano -= tomou; eventos.push({ t: 'dmg', ...base, v: tomou, color: '#c8a2ff' }); }
+  }
+  // (lote A2) o Escudo Gélido: com você na área, a parte do acerto vai para a Vida do globo antes do Escudo de Energia e da Vida
+  if (dano > 0 && hunt.a2?.escudoGelido) {
+    const tomou = GemasA2.absorverNoEscudoGelido(hunt, dano, bicho, hunt.clock ?? 0);
+    if (tomou > 0) { dano -= tomou; eventos.push({ t: 'dmg', ...base, v: tomou, color: '#9fe0ff' }); }
   }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — a parte do acerto no Escudo de Energia de quem vincula.)
   dano = Vinculos.desviarParaOEscudo(estado, dano);

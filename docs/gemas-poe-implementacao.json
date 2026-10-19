@@ -2,11 +2,11 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 407,
-   "implementada e testada": 83,
-   "implementada, sem teste próprio": 50,
-   "sem efeito": 11,
-   "limitação do modelo idle": 11
+   "parcial": 410,
+   "implementada e testada": 91,
+   "implementada, sem teste próprio": 49,
+   "limitação do modelo idle": 11,
+   "não se aplica": 1
   },
   "ataques": {
    "total": 210,
@@ -17,10 +17,9 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 59,
-   "parcial": 146,
-   "implementada, sem teste próprio": 51,
-   "sem efeito": 6
+   "implementada e testada": 64,
+   "parcial": 147,
+   "implementada, sem teste próprio": 51
   },
   "variantes": {
    "vaal": {
@@ -30,12 +29,11 @@
     "implementada, sem teste próprio": 5
    },
    "alternativas": {
-    "total": 198,
-    "parcial": 157,
-    "implementada, sem teste próprio": 27,
+    "total": 209,
+    "parcial": 169,
+    "implementada, sem teste próprio": 23,
     "implementada e testada": 10,
-    "limitação do modelo idle": 2,
-    "sem efeito": 2
+    "limitação do modelo idle": 7
    }
   },
   "compatibilidade": {
@@ -46,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 947,
-   "emDuasOuMais": 209
+   "linhasDistintas": 943,
+   "emDuasOuMais": 206
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -61,8 +59,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 196,
-   "suportesCitados": 73,
+   "ativasCitadas": 205,
+   "suportesCitados": 79,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -212,7 +210,7 @@
   {
    "slug": "Molten_Strike_of_the_Zenith",
    "nome": "Golpe Vulcânico de Zenith",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
    "estado": "implementada e testada",
@@ -286,7 +284,7 @@
   {
    "slug": "Shield_Crush_of_the_Chieftain",
    "nome": "Esmagar Escudos do Chefe Guerreiro",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
@@ -319,7 +317,7 @@
   {
    "slug": "Smite_of_Divine_Judgement",
    "nome": "Castigo do Julgamento Divino",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
@@ -910,7 +908,7 @@
   {
    "slug": "Static_Strike_of_Gathering_Lightning",
    "nome": "Golpe Estático de Relâmpagos Concentrados",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "ricochete",
    "estado": "parcial",
@@ -1144,7 +1142,7 @@
   {
    "slug": "Herald_of_Ash",
    "nome": "Arauto Flamejante",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
    "estado": "parcial",
@@ -1159,7 +1157,7 @@
   {
    "slug": "Herald_of_Purity",
    "nome": "Arauto da Pureza",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "lacaio",
    "estado": "parcial",
@@ -1216,7 +1214,7 @@
   {
    "slug": "Shield_of_Light",
    "nome": "Escudo de Luz",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
@@ -1294,7 +1292,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "clamor",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -1375,13 +1373,11 @@
    "nome": "Sangue Petrificado",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -1419,7 +1415,7 @@
   {
    "slug": "Purity_of_Fire",
    "nome": "Pureza Ardente",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
    "estado": "implementada e testada",
@@ -1593,7 +1589,7 @@
   {
    "slug": "Boneshatter_of_Complex_Trauma",
    "nome": "Quebra-Ossos do Traumatismo Complexo",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
@@ -2026,13 +2022,11 @@
    "nome": "Berserk",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -2141,7 +2135,7 @@
   {
    "slug": "Summon_Flame_Golem_of_the_Meteor",
    "nome": "Convocar Golem Flamejante do Meteoro",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
    "estado": "limitação do modelo idle",
@@ -2380,7 +2374,7 @@
   {
    "slug": "Ethereal_Knives_of_Lingering_Blades",
    "nome": "Facas Etéreas das Lâminas Persistentes",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -2395,7 +2389,7 @@
   {
    "slug": "Ethereal_Knives_of_the_Massacre",
    "nome": "Facas Etéreas do Massacre",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "implementada, sem teste próprio",
@@ -2753,7 +2747,7 @@
   {
    "slug": "Viper_Strike_of_the_Mamba",
    "nome": "Golpe da Víbora d Mamba",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
@@ -2788,7 +2782,7 @@
   {
    "slug": "Animate_Weapon_of_Self_Reflection",
    "nome": "Animar Arma da Auto-reflexão",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
    "estado": "parcial",
@@ -2805,7 +2799,7 @@
   {
    "slug": "Animate_Weapon_of_Ranged_Arms",
    "nome": "Animar Arma dos Braços Distantes",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
    "estado": "parcial",
@@ -2900,7 +2894,7 @@
   {
    "slug": "Detonate_Dead_of_Chain_Reaction",
    "nome": "Detonar Morto da Reação em Cadeia",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
    "estado": "implementada, sem teste próprio",
@@ -3037,7 +3031,7 @@
   {
    "slug": "Blink_Arrow_of_Bombarding_Clones",
    "nome": "Flecha Ilusória dos Clones Bombardeiros",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "lacaio",
    "estado": "limitação do modelo idle",
@@ -3052,7 +3046,7 @@
   {
    "slug": "Blink_Arrow_of_Prismatic_Clones",
    "nome": "Flecha Ilusória dos Clones Prismáticos",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "lacaio",
    "estado": "limitação do modelo idle",
@@ -3118,7 +3112,7 @@
   {
    "slug": "Mirror_Arrow_of_Bombarding_Clones",
    "nome": "Flecha Espelhada dos Clones Bombardeiros",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "lacaio",
    "estado": "limitação do modelo idle",
@@ -3133,7 +3127,7 @@
   {
    "slug": "Mirror_Arrow_of_Prismatic_Clones",
    "nome": "Flecha Espelhada dos Clones Prismáticos",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "lacaio",
    "estado": "limitação do modelo idle",
@@ -3250,7 +3244,7 @@
   {
    "slug": "Barrage_of_Volley_Fire",
    "nome": "Barragem da Saraivada de Tiros",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -3333,7 +3327,7 @@
   {
    "slug": "Blade_Vortex_of_the_Scythe",
    "nome": "Vórtice de Lâminas da Foice",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
    "estado": "parcial",
@@ -3363,7 +3357,7 @@
   {
    "slug": "Elemental_Hit_of_the_Spectrum",
    "nome": "Acerto Elemental do Espectro",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
    "estado": "implementada e testada",
@@ -3544,7 +3538,7 @@
   {
    "slug": "Rain_of_Arrows",
    "nome": "Chuva de Flechas",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
    "estado": "implementada, sem teste próprio",
@@ -3557,7 +3551,7 @@
   {
    "slug": "Rain_of_Arrows_of_Artillery",
    "nome": "Chuva de Flechas da Arilharia",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
    "estado": "implementada, sem teste próprio",
@@ -3570,7 +3564,7 @@
   {
    "slug": "Rain_of_Arrows_of_Saturation",
    "nome": "Chuva de Flechas da Saturação",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
    "estado": "implementada, sem teste próprio",
@@ -3969,7 +3963,7 @@
   {
    "slug": "Blade_Blast_of_Dagger_Detonation",
    "nome": "Explosão de Lâminas da Detonação da Adaga",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
    "estado": "parcial",
@@ -3986,13 +3980,13 @@
    "nome": "Fúria Sangrenta",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
-   "ausentes": [],
-   "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
+   "arquetipo": "guarda",
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: a perda de 4% da Vida e do Escudo de Energia por segundo é a perda por segundo do jogo — não mata (deixa 1 de Vida) e não passa pelos modificadores de dano degenerativo recebido; no PoE é Dano Físico degenerativo (PhysicalDegen)"
    ],
+   "idle": [],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -4072,7 +4066,7 @@
   {
    "slug": "Herald_of_Agony",
    "nome": "Arauto Agonizante",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
    "estado": "parcial",
@@ -4088,7 +4082,7 @@
   {
    "slug": "Herald_of_Ice",
    "nome": "Arauto Glacial",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
    "estado": "implementada e testada",
@@ -4208,7 +4202,7 @@
   {
    "slug": "Purity_of_Ice",
    "nome": "Pureza Glacial",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
    "estado": "implementada, sem teste próprio",
@@ -4300,7 +4294,7 @@
   {
    "slug": "Artillery_Ballista_of_Cross_Strafe",
    "nome": "Balista de Artilharia do Fogo Cruzado",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
    "estado": "parcial",
@@ -4316,7 +4310,7 @@
   {
    "slug": "Artillery_Ballista_of_Focus_Fire",
    "nome": "Balista de Artilharia do Fogo Concentrado",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "totem",
    "estado": "parcial",
@@ -4549,7 +4543,7 @@
   {
    "slug": "Cremation_of_the_Volcano",
    "nome": "Cremação do Vulcão",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "orbe",
    "estado": "parcial",
@@ -4899,7 +4893,7 @@
   {
    "slug": "Storm_Rain_of_the_Conduit",
    "nome": "Chuva Tempestuosa do Conduíte",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
    "estado": "parcial",
@@ -4916,7 +4910,7 @@
   {
    "slug": "Storm_Rain_of_the_Fence",
    "nome": "Chuva Tempestuosa da Barreira",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
    "estado": "parcial",
@@ -5160,13 +5154,11 @@
    "nome": "Fenda Temporal",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -5191,7 +5183,7 @@
   {
    "slug": "Tornado_of_Elemental_Turbulence",
    "nome": "Tornado da Turbulência Elemental",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "orbe",
    "estado": "parcial",
@@ -5509,7 +5501,7 @@
   {
    "slug": "Spark_of_the_Nova",
    "nome": "Faísca da Nova",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "implementada, sem teste próprio",
@@ -5765,7 +5757,7 @@
   {
    "slug": "Frostblink_of_Wintry_Blast",
    "nome": "Teleporte Gélido da Explosão Invernal",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "movimento",
    "estado": "parcial",
@@ -5784,7 +5776,7 @@
   {
    "slug": "Orb_of_Storms",
    "nome": "Orbe Trovejante",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "orbe",
    "estado": "parcial",
@@ -5802,7 +5794,7 @@
   {
    "slug": "Orb_of_Storms_of_Squalls",
    "nome": "Orbe Trovejante das Borrascas",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "orbe",
    "estado": "parcial",
@@ -6368,7 +6360,7 @@
   {
    "slug": "Ice_Nova_of_Deep_Freeze",
    "nome": "Nova Glacial do Congelamento Profundo",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
    "estado": "implementada, sem teste próprio",
@@ -6595,7 +6587,7 @@
   {
    "slug": "Power_Siphon_of_the_Archmage",
    "nome": "Sifão de Poder do Arquimago",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -6985,7 +6977,7 @@
   {
    "slug": "Forbidden_Rite_of_Soul_Sacrifice",
    "nome": "Ritual Proibido do Sacrifício D'alma",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -7041,7 +7033,7 @@
   {
    "slug": "Herald_of_Thunder",
    "nome": "Arauto Trovejante",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "arauto",
    "estado": "parcial",
@@ -7058,13 +7050,13 @@
    "nome": "Cajado Impregnado de Mana",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
-   "ausentes": [],
-   "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
+   "arquetipo": "guarda",
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: a Onda Arcana é um acerto só, no anel de 2 casas em volta de você — a duração de 0,35 s e a Eficácia de 450% do dano adicionado não entram"
    ],
+   "idle": [],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -7090,7 +7082,7 @@
   {
    "slug": "Righteous_Fire_of_Arcane_Devotion",
    "nome": "Círculo Ardente da Devoção Arcana",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "guarda",
    "estado": "parcial",
@@ -7179,22 +7171,20 @@
   {
    "slug": "Wall_of_Force",
    "nome": "Parede de Força",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
   {
    "slug": "Wave_of_Conviction",
    "nome": "Onda de Convicção",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
    "estado": "parcial",
@@ -7209,7 +7199,7 @@
   {
    "slug": "Wave_of_Conviction_of_Trarthus",
    "nome": "Onda de Convicção de Trarthus",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "nova",
    "estado": "implementada, sem teste próprio",
@@ -7224,13 +7214,11 @@
    "nome": "Automação",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -7330,13 +7318,11 @@
    "nome": "Lâmina de Energia",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -7398,7 +7384,7 @@
   {
    "slug": "Purity_of_Elements",
    "nome": "Pureza Elementar",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
    "estado": "parcial",
@@ -7413,7 +7399,7 @@
   {
    "slug": "Purity_of_Lightning",
    "nome": "Pureza Elétrica",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "aura",
    "estado": "implementada, sem teste próprio",
@@ -7713,7 +7699,7 @@
   {
    "slug": "Divine_Ire_of_Holy_Lightning",
    "nome": "Ira Divina do Relâmpago Sagrado",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
    "estado": "parcial",
@@ -7747,7 +7733,7 @@
   {
    "slug": "Eye_of_Winter",
    "nome": "Olho Invernal",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -7764,7 +7750,7 @@
   {
    "slug": "Eye_of_Winter_of_Finality",
    "nome": "Olho Invernal da Finalidade",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -7781,7 +7767,7 @@
   {
    "slug": "Eye_of_Winter_of_Transience",
    "nome": "Olho Invernal da Transitoriedade",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -7900,7 +7886,7 @@
   {
    "slug": "Glacial_Cascade_of_the_Fissure",
    "nome": "Cascata Glacial da Fissura",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
    "estado": "parcial",
@@ -8054,7 +8040,7 @@
   {
    "slug": "Lightning_Conduit_of_the_Heavens",
    "nome": "Condutor Elétrico dos Céus",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
    "estado": "parcial",
@@ -8304,7 +8290,7 @@
   {
    "slug": "Soulrend_of_the_Spiral",
    "nome": "Rasgalma da Espiral",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -8503,13 +8489,11 @@
    "nome": "Escudo Gélido",
    "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
+   "arquetipo": "guarda",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -8535,15 +8519,15 @@
   {
    "slug": "Sigil_of_Power",
    "nome": "Emblema do Poder",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
-   "arquetipo": "generico",
-   "estado": "sem efeito",
-   "ausentes": [],
-   "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
+   "arquetipo": "guarda",
+   "estado": "parcial",
+   "ausentes": [
+    "efeito não simulado: o Raio por estágio e o \"menos dano\" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff"
    ],
+   "idle": [],
+   "outros": [],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -8650,7 +8634,7 @@
   {
    "slug": "Summon_Chaos_Golem_of_the_Maelstr%C3%B6m",
    "nome": "Convocar Golem Caótico do Turbilhão",
-   "variante": "normal",
+   "variante": "alternativa",
    "ataque": false,
    "arquetipo": "lacaio",
    "estado": "parcial",
@@ -8781,12 +8765,11 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "generico",
-   "estado": "sem efeito",
+   "estado": "não se aplica",
    "ausentes": [],
    "idle": [],
-   "outros": [
-    "a gema não tem comportamento de combate reconhecido"
-   ],
+   "outros": [],
+   "nota": "não se aplica: a caçada já tem a saída para a cidade, e os 6 portais do mapa são gastos pela morte (mapa-aberto.mjs) — o portal do PoE não tem o que fazer no jogo",
    "icone": true,
    "iconeHabilidade": true
   },
@@ -8808,7 +8791,7 @@
   {
    "slug": "Pact_of_Beidat",
    "nome": "Pacto de Beidat",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "parcial",
@@ -8829,7 +8812,7 @@
   {
    "slug": "Pact_of_Ghorr",
    "nome": "Pacto de Ghorr",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
    "estado": "implementada, sem teste próprio",
@@ -8842,7 +8825,7 @@
   {
    "slug": "Pact_of_KTash",
    "nome": "Pacto de K'tash",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
    "estado": "parcial",
@@ -8859,7 +8842,7 @@
   {
    "slug": "Pact_of_Lycia",
    "nome": "Pacto de Lycia",
-   "variante": "alternativa",
+   "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
    "estado": "implementada, sem teste próprio",
@@ -9422,7 +9405,7 @@
    "nome": "Aniquilação (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham 67% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
+    "não simulado: Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham 35% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório",
     "não simulado: Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham +5% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório"
    ],
    "outros": [],
@@ -9532,7 +9515,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área",
-    "não simulado: Sangue Corrompido infligido por estandartes reforçados causam 82.3 de dano físico base por segundo por bravura consumida",
+    "não simulado: Sangue Corrompido infligido por estandartes reforçados causam 26.7 de dano físico base por segundo por bravura consumida",
     "não simulado: Sangue Corrompido infligido por estandartes reforçados tem uma duração base de 8 segundos"
    ],
    "outros": [],
@@ -9541,9 +9524,9 @@
   {
    "slug": "Bonespire_Support",
    "nome": "Torre Óssea (Reforço)",
-   "estado": "sem efeito",
+   "estado": "parcial",
    "ausentes": [
-    "esses lacaios especiais ainda não existem no jogo"
+    "não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros"
    ],
    "outros": [],
    "icone": true
@@ -9561,10 +9544,8 @@
   {
    "slug": "Divine_Sentinel_Support",
    "nome": "Sentinela Divina (Reforço)",
-   "estado": "sem efeito",
-   "ausentes": [
-    "esses lacaios especiais ainda não existem no jogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -9587,7 +9568,7 @@
    "nome": "Convocação Ancestral Maior (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 105% mais distânte"
+    "não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 40% mais distânte"
    ],
    "outros": [],
    "icone": true
@@ -9605,7 +9586,7 @@
    "nome": "Superaquecimento (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades reforçadas consomem toda a Fortificação ao usar, causando +14% de dano com afecções por 3 de Fortificação consumida"
+    "não simulado: Habilidades reforçadas consomem toda a Fortificação ao usar, causando +8% de dano com afecções por 3 de Fortificação consumida"
    ],
    "outros": [],
    "icone": true
@@ -9618,7 +9599,7 @@
     "não simulado: Habilidades reforçadas têm 50% de chance de ativar Chamado da Fogueira ao atingir inimigos incendiados corpo a corpo",
     "não simulado: 100% do Dano Físico Convertido para Dano de Fogo",
     "não simulado: Cobre Inimigos em Cinzas ao Acertar",
-    "não simulado: Cria 7 Pilares de Cinzas",
+    "não simulado: Cria 4 Pilares de Cinzas",
     "não simulado: Cria +1 Pilar de Cinzas"
    ],
    "outros": [],
@@ -9641,7 +9622,7 @@
    "nome": "Tentação Vaal (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando 925 de dano físico por segundo, em vez de aplicar impedimento de ganho de almas"
+    "não simulado: Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando 1300 de dano físico por segundo, em vez de aplicar impedimento de ganho de almas"
    ],
    "outros": [],
    "icone": true
@@ -9653,7 +9634,7 @@
    "ausentes": [
     "não simulado: Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo",
     "não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados",
-    "não simulado: Onda de choque se repete de até 10 inimigos na área",
+    "não simulado: Onda de choque se repete de até 4 inimigos na área",
     "não simulado: Repetições da onda de choque causam -50% de dano com ataques e afecções"
    ],
    "outros": [],
@@ -9672,7 +9653,7 @@
    "nome": "Melhorar",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: 72% de Qualidade das Gemas de Habilidade Suportadas"
+    "não simulado: 16% de Qualidade das Gemas de Habilidade Suportadas"
    ],
    "outros": [],
    "icone": true
@@ -9773,14 +9754,9 @@
   {
    "slug": "Chance_to_Flee_Support",
    "nome": "Chance de Fugir",
-   "estado": "sem efeito",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas têm 44% de chance de fazer os monstros fugirem ao atingir",
-    "não simulado: Habilidades reforçadas têm +20% de chance de fazer os monstros fugirem ao atingir"
-   ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "outros": [],
    "icone": true
   },
   {
@@ -9855,15 +9831,9 @@
   {
    "slug": "Block_Chance_Reduction_Support",
    "nome": "Redução de Chance de Bloqueio",
-   "estado": "sem efeito",
-   "ausentes": [
-    "não simulado: Subjugado aplica -5% à chance de Bloquear o Dano Mágico e de Ataques",
-    "não simulado: Habilidades Suportadas infligem Subjugado por 4 segundos ao Bloquear",
-    "não simulado: Inimigos possuem -20% de chance de Bloquear o Dano de Ataques e Magias das Habilidades Suportadas"
-   ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "outros": [],
    "icone": true
   },
   {
@@ -10260,7 +10230,7 @@
    "nome": "Suporte Desperto: Melhorar",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: 152% de Qualidade das Gemas de Habilidade Suportadas"
+    "não simulado: 24% de Qualidade das Gemas de Habilidade Suportadas"
    ],
    "outros": [],
    "icone": true
@@ -10325,7 +10295,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida antes de você, se eles forem seus únicos lacaios",
-    "não simulado: Lacaios de habilidades reforçadas sofrem -41% de dano, se eles forem seus únicos lacaios",
+    "não simulado: Lacaios de habilidades reforçadas sofrem -28% de dano, se eles forem seus únicos lacaios",
     "não simulado: Lacaios de habilidades reforçadas sofrem 15% do dano de ataque da própria vida\\nantes de você, se eles forem seus únicos lacaios"
    ],
    "outros": [],
@@ -10336,7 +10306,7 @@
    "nome": "Exterminar os Fracos (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Mata inimigos de raridade normal e mágica com 47% de vida ou menos quando atingidos por habilidades reforçadas",
+    "não simulado: Mata inimigos de raridade normal e mágica com 34% de vida ou menos quando atingidos por habilidades reforçadas",
     "não simulado: Recupera 2% de Vida quando Habilidades Suportadas Matam um Inimigo"
    ],
    "outros": [],
@@ -10358,7 +10328,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Projéteis das Habilidades Suportadas podem Difundir 1 Vezes adicionais",
-    "não simulado: Projéteis de Habilidades Suportadas têm 100% de chance de ganhar um Projétil adicional ao Difundirem"
+    "não simulado: Projéteis de Habilidades Suportadas têm 50% de chance de ganhar um Projétil adicional ao Difundirem"
    ],
    "outros": [],
    "icone": true
@@ -10388,7 +10358,7 @@
    "nome": "Maquinações (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades reforçadas ganham 14% do dano físico como dano de caos adicional por fundamental",
+    "não simulado: Habilidades reforçadas ganham 8% do dano físico como dano de caos adicional por fundamental",
     "não simulado: Habilidades reforçadas têm o custo aumentado em 10% por fundamental"
    ],
    "outros": [],
@@ -10397,15 +10367,9 @@
   {
    "slug": "Pacifism_Support",
    "nome": "Pacifismo (Reforço)",
-   "estado": "sem efeito",
-   "ausentes": [
-    "não simulado: Habilidades reforçadas têm 52% de chance de fazer os monstros fugirem ao atingir",
-    "não simulado: Ataques de habilidades reforçadas não podem matar inimigos",
-    "não simulado: Habilidades reforçadas têm +10% de chance de fazer os monstros fugirem ao atingir"
-   ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "outros": [],
    "icone": true
   },
   {
@@ -10414,8 +10378,8 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar 25 de Ressonância Profana dos outros tipos por segundo durante 2 segundos Perde 5 de Ressonância Profana por segundo para cada tipo que não ganhar",
-    "não simulado: Habilidades reforçadas têm 100% de chance de ignorar a resistência a dano de caos e elétrico do inimigo, se cada Ressonância Profana for de, no mínimo, 25",
-    "não simulado: Habilidades reforçadas têm 100% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, 25",
+    "não simulado: Habilidades reforçadas têm 90% de chance de ignorar a resistência a dano de caos e elétrico do inimigo, se cada Ressonância Profana for de, no mínimo, 25",
+    "não simulado: Habilidades reforçadas têm 90% de chance de ignorar a redução de dano físico do inimigo, se cada Ressonância Profana for de, no mínimo, 25",
     "não simulado: Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar 25 de Ressonância Profana dos outros tipos por segundo durante 2 segundos\\nPerde 5 de Ressonância Profana por segundo para cada tipo que não ganhar"
    ],
    "outros": [],
@@ -10919,14 +10883,9 @@
   {
    "slug": "Item_Rarity_Support",
    "nome": "Raridade de Itens",
-   "estado": "sem efeito",
-   "ausentes": [
-    "não simulado: Raridade de Itens Derrubados por Inimigos Mortos por Habilidades Suportadas aumentada em 59%",
-    "não simulado: Raridade de Itens Derrubados por Inimigos Mortos por Habilidades Suportadas aumentada em 10%"
-   ],
-   "outros": [
-    "nenhuma linha do suporte tem efeito no jogo ainda"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
+   "outros": [],
    "icone": true
   },
   {
@@ -11262,7 +11221,7 @@
    "nome": "Congregação (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: +64% para o número máximo de lacaios de habilidades reforçadas",
+    "não simulado: +38% para o número máximo de lacaios de habilidades reforçadas",
     "não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada"
    ],
    "outros": [],
@@ -11293,7 +11252,7 @@
    "ausentes": [
     "não simulado: Habilidades reforçadas podem conjurar 2 glifos adicionais",
     "não simulado: Glifos reforçados ativam Constrição Pérfida ao serem recuperados",
-    "não simulado: Causa 481 a 4331 de Dano de Raio",
+    "não simulado: Causa 165 a 1482 de Dano de Raio",
     "não simulado: Máximo de 30 mãos",
     "não simulado: Cria 2 mãos por glifo",
     "não simulado: Cria 2 mãos adicionais"
@@ -11306,7 +11265,7 @@
    "nome": "Mago do Gelo (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades reforçadas ganham dano de frio adicionado equivalente a 39% do mana máximo reservado",
+    "não simulado: Habilidades reforçadas ganham dano de frio adicionado equivalente a 26% do mana máximo reservado",
     "não simulado: Habilidades reforçadas ganham custo de mana base equivalente a 5% do mana máximo reservado"
    ],
    "outros": [],
@@ -11319,7 +11278,7 @@
    "ausentes": [
     "não simulado: Ganha 1 de Gula ao conjurar magias reforçadas",
     "não simulado: Ao atingir 10 de Gula, perde toda a Gula e ganha Regurgitação por 4 segundos",
-    "não simulado: Enquanto você tiver Regurgitação, as magias reforçadas disparam projéteis em círculo Enquanto você tiver Regurgitação, as magias reforçadas disparam 13 projéteis adicionais"
+    "não simulado: Enquanto você tiver Regurgitação, as magias reforçadas disparam projéteis em círculo Enquanto você tiver Regurgitação, as magias reforçadas disparam 7 projéteis adicionais"
    ],
    "outros": [],
    "icone": true
@@ -11329,8 +11288,8 @@
    "nome": "Devorar Maior (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 757 de Vida e 74 de Mana",
-    "não simulado: Consumir um cadáver com habilidades reforçadas tem 10.5% de chance de conceder uma alma por poder",
+    "não simulado: Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar 484 de Vida e 48 de Mana",
+    "não simulado: Consumir um cadáver com habilidades reforçadas tem 4% de chance de conceder uma alma por poder",
     "não simulado: Consumir um cadáver com habilidades reforçadas tem +1% de chance de conceder uma alma por poder"
    ],
    "outros": [],
@@ -11381,7 +11340,7 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços",
-    "não simulado: Efeito em Área de Habilidades Maldição Suportadas reduzido em 12%",
+    "não simulado: Efeito em Área de Habilidades Maldição Suportadas reduzido em 20%",
     "não simulado: Inimigos afetados por feitiços de habilidades de maldição reforçadas não podem causar golpes críticos"
    ],
    "outros": [],
@@ -11392,9 +11351,9 @@
    "nome": "Sapo Enfeitiçado (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 27 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito",
-    "não simulado: Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada 0.7 segundo",
-    "não simulado: Causa 7124 a 10687 de Dano de Caos",
+    "não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 14 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito",
+    "não simulado: Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada 0.8 segundo",
+    "não simulado: Causa 2504 a 3757 de Dano de Caos",
     "não simulado: Inflige Definhando por 2 segundos ao Acertar"
    ],
    "outros": [],
@@ -11407,7 +11366,7 @@
    "ausentes": [
     "não simulado: Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar",
     "não simulado: Máximo de 12 Nascido(s) da Colmeia",
-    "não simulado: Invoca 11 Nascido(s) da Colmeia",
+    "não simulado: Invoca 5 Nascido(s) da Colmeia",
     "não simulado: Lacaios têm 20% de chance de cobrir os inimigos de gelo ao atingir",
     "não simulado: Máximo de 2 Nascido(s) da Colmeia"
    ],
@@ -11419,7 +11378,7 @@
    "nome": "Inversão de Regras (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Ataques de habilidades reforçadas têm 60% de chance de considerar os valores de resistência elemental dos monstros inimigos como invertidos"
+    "não simulado: Ataques de habilidades reforçadas têm 41% de chance de considerar os valores de resistência elemental dos monstros inimigos como invertidos"
    ],
    "outros": [],
    "icone": true
@@ -11429,7 +11388,7 @@
    "nome": "Comunhão (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Magias reforçadas causam de 44 a 66 de dano físico adicionado para cada lacaio permanente"
+    "não simulado: Magias reforçadas causam de 20 a 30 de dano físico adicionado para cada lacaio permanente"
    ],
    "outros": [],
    "icone": true
@@ -11440,8 +11399,8 @@
    "estado": "parcial",
    "ausentes": [
     "não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após perder 6 de Intensidade com habilidades reforçadas",
-    "não simulado: Habilidades reforçadas têm +2.7% de chance de causar golpe crítico por Intensidade Sobrecarregada",
-    "não simulado: Habilidades reforçadas têm +82% de multiplicador de golpe crítico por Intensidade Sobrecarregada",
+    "não simulado: Habilidades reforçadas têm +1.4% de chance de causar golpe crítico por Intensidade Sobrecarregada",
+    "não simulado: Habilidades reforçadas têm +50% de multiplicador de golpe crítico por Intensidade Sobrecarregada",
     "não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após\\nperder 6 de Intensidade com habilidades reforçadas"
    ],
    "outros": [],
@@ -11472,8 +11431,8 @@
    "nome": "Coursing Current",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Efeito dos Resfriamentos infligidos por Habilidades Suportadas aumentado em 76%",
-    "não simulado: Efeito de eletrificações infligidos com habilidades reforçadas aumentado em 76%",
+    "não simulado: Efeito dos Resfriamentos infligidos por Habilidades Suportadas aumentado em 28%",
+    "não simulado: Efeito de eletrificações infligidos com habilidades reforçadas aumentado em 28%",
     "não simulado: Esfria inimigos quando eles são eletrificados por seus ataques, reduzindo a velocidade de ação com base no efeito de eletrificação",
     "não simulado: Eletrifica inimigos quando eles são esfriados por seus ataques, aumentando o dano sofrido com base no efeito de esfriamento",
     "não simulado: Eletrifica inimigos quando eles são esfriados por ataques de habilidades reforçadas, aumentando o dano sofrido com base no efeito de esfriamento",
@@ -11487,7 +11446,7 @@
    "nome": "Eclipse (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: +38% de Qualidade das Gemas de Habilidade Suportadas"
+    "não simulado: +12% de Qualidade das Gemas de Habilidade Suportadas"
    ],
    "outros": [],
    "icone": true
@@ -12475,13 +12434,6 @@
    ]
   },
   {
-   "linha": "esses lacaios especiais ainda não existem no jogo",
-   "gemas": [
-    "Bonespire_Support",
-    "Divine_Sentinel_Support"
-   ]
-  },
-  {
    "linha": "Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética",
    "gemas": [
     "Greater_Kinetic_Instability_Support",
@@ -12584,20 +12536,6 @@
    "gemas": [
     "Awakened_Spell_Cascade_Support",
     "Greater_Spell_Cascade_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm #% de chance de fazer os monstros fugirem ao atingir",
-   "gemas": [
-    "Chance_to_Flee_Support",
-    "Pacifism_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas têm +#% de chance de fazer os monstros fugirem ao atingir",
-   "gemas": [
-    "Chance_to_Flee_Support",
-    "Pacifism_Support"
    ]
   },
   {
@@ -13663,6 +13601,12 @@
    ]
   },
   {
+   "linha": "a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros",
+   "gemas": [
+    "Bonespire_Support"
+   ]
+  },
+  {
    "linha": "A Ilusão se move com um adicional de +# % da sua Velocidade de Movimento",
    "gemas": [
     "Charged_Dash"
@@ -13678,6 +13622,18 @@
    "linha": "a lentidão da maldição ainda não existe no jogo",
    "gemas": [
     "Temporal_Chains"
+   ]
+  },
+  {
+   "linha": "a Onda Arcana é um acerto só, no anel de # casas em volta de você — a duração de # s e a Eficácia de #% do dano adicionado não entram",
+   "gemas": [
+    "Mana-Infused_Staff"
+   ]
+  },
+  {
+   "linha": "a perda de #% da Vida e do Escudo de Energia por segundo é a perda por segundo do jogo — não mata (deixa # de Vida) e não passa pelos modificadores de dano degenerativo recebido; no PoE é Dano Físico degenerativo (PhysicalDegen)",
+   "gemas": [
+    "Blood_Rage"
    ]
   },
   {
@@ -13936,12 +13892,6 @@
    "linha": "Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos\\nPerde # de Ressonância Profana por segundo para cada tipo que não ganhar",
    "gemas": [
     "Unholy_Trinity_Support"
-   ]
-  },
-  {
-   "linha": "Ataques de habilidades reforçadas não podem matar inimigos",
-   "gemas": [
-    "Pacifism_Support"
    ]
   },
   {
@@ -15763,12 +15713,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas infligem Subjugado por # segundos ao Bloquear",
-   "gemas": [
-    "Block_Chance_Reduction_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada",
    "gemas": [
     "Guardians_Blessing_Support"
@@ -16180,12 +16124,6 @@
    "linha": "Inimigos possuem # % menos Velocidade de Movimento no início do Debuff",
    "gemas": [
     "Bear_Trap"
-   ]
-  },
-  {
-   "linha": "Inimigos possuem #% de chance de Bloquear o Dano de Ataques e Magias das Habilidades Suportadas",
-   "gemas": [
-    "Block_Chance_Reduction_Support"
    ]
   },
   {
@@ -16699,6 +16637,12 @@
    ]
   },
   {
+   "linha": "o Raio por estágio e o \"menos dano\" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff",
+   "gemas": [
+    "Sigil_of_Power"
+   ]
+  },
+  {
    "linha": "o totem provoca os monstros em volta a atacá-lo (act_str.lua:##)",
    "gemas": [
     "Decoy_Totem"
@@ -17071,12 +17015,6 @@
    ]
   },
   {
-   "linha": "Raridade de Itens Derrubados por Inimigos Mortos por Habilidades Suportadas aumentada em #%",
-   "gemas": [
-    "Item_Rarity_Support"
-   ]
-  },
-  {
    "linha": "Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Vaal_Power_Siphon"
@@ -17302,12 +17240,6 @@
    "linha": "Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você",
    "gemas": [
     "Eternal_Blessing_Support"
-   ]
-  },
-  {
-   "linha": "Subjugado aplica #% à chance de Bloquear o Dano Mágico e de Ataques",
-   "gemas": [
-    "Block_Chance_Reduction_Support"
    ]
   },
   {

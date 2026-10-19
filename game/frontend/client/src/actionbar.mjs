@@ -303,6 +303,8 @@ function resumoDasCondicoes(conditions) {
     let t;
     if (condition.kind === 'boss') t = condition.op === 'nao' ? 'fora de boss' : 'em boss';
     else if (condition.kind === 'perto') t = `bichos ${comparacao(condition, 'gte')}`;
+    // (lote A2, dono 19/10: a condição "Fúria ≥ N" — o Berserk)
+    else if (condition.kind === 'furia') t = `Fúria ${comparacao(condition, 'gte')}`;
     else if (condition.kind !== 'nome') {
       const quem = condition.who === 'target' ? 'alvo' : 'você';
       t = `${quem} ${condition.stat === 'mana' ? 'mana' : 'vida'} ${comparacao(condition, 'lte', condition.percent ? '%' : '')}`;
@@ -2936,7 +2938,7 @@ function conditionRowSemSentido(condition, index, lista = editing.draft.conditio
    */
   const tipo = () =>
     select(
-      { stat: 'Vida/Mana', nome: 'Criatura', perto: 'Bichos por perto', boss: 'Boss' },
+      { stat: 'Vida/Mana', nome: 'Criatura', perto: 'Bichos por perto', boss: 'Boss', furia: 'Fúria' },
       condition.kind ?? 'stat',
       (value) => {
         condition.kind = value;
@@ -2945,6 +2947,10 @@ function conditionRowSemSentido(condition, index, lista = editing.draft.conditio
           condition.names ??= [];
         } else if (value === 'boss') {
           condition.op = 'sim';
+        } else if (value === 'furia') {
+          // (lote A2) "Fúria ≥ 5": o mínimo do Berserk
+          condition.op = 'gte';
+          condition.value = 5;
         } else if (value === 'perto') {
           /*
            * "Pelo menos 1" é o que quase todo mundo quer da primeira vez: ela
@@ -3003,6 +3009,36 @@ function conditionRowSemSentido(condition, index, lista = editing.draft.conditio
     row.append(menos, quantos, mais);
     if (condition.op === 'entre') row.append(el('span', 'condition-unidade', 'e'), segundoNumero(condition, 25));
     row.append(el('span', 'condition-unidade', 'criaturas'), fora);
+    return row;
+  }
+
+  /*
+   * ---- A linha da Fúria (lote A2, dono 19/10) ----
+   * "Fúria ≥ N" (o Berserk entra com a Fúria que o slot pedir; sem a condição, o automático espera a Fúria no máximo): tipo, comparação e o
+   * número, de 0 a 100 — o servidor confere (`acoes.sanearCondicao`).
+   */
+  if (condition.kind === 'furia') {
+    const row = el('div', 'condition');
+    row.append(tipo());
+    row.append(comparadorDaLinha(condition, { gte: 'pelo menos', gt: 'mais que', eq: 'exatamente', lte: 'no máximo', lt: 'menos que', entre: 'entre' }, 'gte', select));
+    const quanto = document.createElement('input');
+    quanto.type = 'number';
+    quanto.min = '0';
+    quanto.max = '100';
+    quanto.step = '1';
+    quanto.value = String(condition.value ?? 5);
+    quanto.oninput = () => {
+      const n = Math.round(Number(quanto.value));
+      condition.value = Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 5;
+    };
+    const fora = el('button', 'danger step', '✕');
+    fora.onclick = () => {
+      lista.splice(index, 1);
+      renderEditor();
+    };
+    row.append(quanto);
+    if (condition.op === 'entre') row.append(el('span', 'condition-unidade', 'e'), segundoNumero(condition, 100));
+    row.append(el('span', 'condition-unidade', 'de Fúria'), fora);
     return row;
   }
 

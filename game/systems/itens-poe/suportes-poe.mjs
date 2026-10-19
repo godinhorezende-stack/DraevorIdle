@@ -58,9 +58,24 @@ const substituir = (cab, celula, doNivel1 = null) => {
   return cab.includes('#') ? cab.replace(/#/g, () => v[Math.min(i++, v.length - 1)]) : cab.replace(NUM, (o) => (i < v.length ? v[i++] : o));
 };
 
+/**
+ * (lote A2, dono 19/10: "Gemas Excepcionais: o nível máximo é 3, como no poedb — Nível (1—3)") O nível MÁXIMO do suporte: o da propriedade "Nível:
+ * (1—N)" nas Excepcionais (a tabela delas vem com 15 linhas — os níveis acima do 3 não existem no PoE); nos outros, as linhas da tabela.
+ */
+export const ehExcepcional = (s) => !!s?.tags?.includes('Excepcional');
+export function nivelMaximoDe(s) {
+  const linhas = s?.linhas?.length || 1;
+  if (!ehExcepcional(s)) return linhas;
+  const m = (s.props ?? []).map((p) => /^Nível: \((\d+)\s*—\s*(\d+)\)/.exec(p)).find(Boolean);
+  return m ? Math.max(1, Math.min(linhas, Number(m[2]))) : linhas;
+}
 /** As linhas do suporte no nível (e as da qualidade): os números DESTE nível. */
 export function textosDoNivel(s, nivel = 1, qualidade = 0) {
+  // (revisão do A2: o máximo 3 das Excepcionais é o nível da GEMA — o XP e a avaliação; os bônus de nível das peças, "+N ao nível das gemas de
+  // suporte", somam acima dele como no PoE: o nível efetivo lê as linhas da tabela até o fim dela)
+  const max = nivelMaximoDe(s);
   const n = Math.max(1, Math.min(nivel | 0 || 1, s.linhas.length || 1));
+  const passos = ehExcepcional(s) ? Math.max(1, max - 1) : 19;
   const linha = linhaDoNivel(s, n);
   // (17/10, lote G3: várias colunas com o MESMO molde — a Montagem Ágil, "X% de chance de arremessar até 2 / até 3 Armadilhas ou Minas
   // adicionais" — ficam numa lista, e cada mod escolhe a coluna cujo cabeçalho tem os números FIXOS dele (os que não são faixa: o "2", o "3");
@@ -79,10 +94,11 @@ export function textosDoNivel(s, nivel = 1, qualidade = 0) {
   for (const m of [...s.mods, ...(s.implicitos ?? []).filter((t) => !/^Mana:/.test(t))]) {
     const col = colunaDe(m);
     if (col) col.valor !== undefined && col.valor !== '' && add(substituir(col.cab, col.valor, col.doNivel1));
-    else add(m.includes('—') ? interpolar(m, (n - 1) / 19) : m);
+    // (lote A2: a faixa "(a—b)" do poedb vai do nível 1 ao 20 — ou ao máximo das Excepcionais, o 3)
+    else add(m.includes('—') ? interpolar(m, (n - 1) / passos) : m);
   }
   const q = Math.max(0, Math.min(20, qualidade || 0)) / 20;
-  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map((p) => interpolar(p, (n - 1) / 19)) };
+  return { mods: out, qualidade: (s.qualidade ?? []).map((t) => interpolar(t, q)), props: s.props.map((p) => interpolar(p, (n - 1) / passos)) };
 }
 
 // ---------------------------------------------------------------- as linhas → os efeitos do motor
@@ -124,6 +140,16 @@ const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
  */
 const ELEMENTO_DO_TEXTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', 'físico': 'physical', fisico: 'physical', caos: 'chaos' };
 const REGRAS = [
+  // (lote A2, dono 19/10) os suportes "sem efeito" do PoE: a Raridade de Itens do abate (`combate.raridadeDoDrop`), a chance de os monstros FUGIREM
+  // (2 s — `Acoes.fugir`), o Pacifismo (o ataque não mata — `Acoes.acertoDosSuportesA2`) e a Redução de Chance de Bloqueio (os pontos a menos, o
+  // "reduzido" da qualidade e o Subjugado — `AtributosDoMob.bloqueou`, `subjugar`)
+  [new RegExp(`Raridade de Itens Derrubados por Inimigos Mortos por Habilidades Suportadas aumentada em ${N}%`, 'i'), (m) => ({ raridadeAoMatarPct: num(m[1]) })],
+  [new RegExp(`têm \\+?${N}% de chance de fazer os monstros fugirem ao atingir`, 'i'), (m) => ({ chanceFugirPct: num(m[1]) })],
+  [/^Ataques de habilidades reforçadas não podem matar inimigos$/i, () => ({ naoMata: 1 })],
+  [new RegExp(`^Inimigos possuem -?${N}% de chance de Bloquear o Dano de Ataques e Magias das Habilidades Suportadas`, 'i'), (m) => ({ bloqueioInimigoMenos: num(m[1]) })],
+  [new RegExp(`^Habilidades Suportadas infligem Subjugado por ${N} segundos? ao Bloquear`, 'i'), (m) => ({ subjugadoMs: Math.round(num(m[1]) * 1000) })],
+  [new RegExp(`^Subjugado aplica -?${N}% à chance de Bloquear`, 'i'), (m) => ({ subjugadoPct: num(m[1]) })],
+  [new RegExp(`^Habilidades Suportadas têm ${N}% de Chance de Bloqueio Inimigo reduzid[ao]`, 'i'), (m) => ({ bloqueioInimigoReduzidoPct: num(m[1]) })],
   // O custo (a propriedade "Multiplicador de Custo & Reserva: 120%").
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
   [/não Custam nada/i, () => ({ custoPct: -100 })],
@@ -417,10 +443,8 @@ function gatilhoDe(s, textos) {
 }
 
 /** O que o jogo não tem (o suporte inteiro não age): totens, armadilhas, minas, lacaios, marcas, clamores, estandartes. */
-const SEM_SISTEMA = [
-  // ("Mina" como palavra: o "mina" de "Lâmina Noturna" travava o suporte — 11/10)
-  [/Sentinela|torres de osso/i, 'esses lacaios especiais ainda não existem no jogo'],
-];
+// (lote A2, dono 19/10: a Sentinela Divina — as sentinelas existem desde os lacaios — e a Torre Óssea — `Acoes.torresOsseas` — saíram daqui)
+const SEM_SISTEMA = [];
 
 /** A linha do suporte sem o "Habilidades Suportadas têm"/"com Habilidades Suportadas" (o modificador como a gema o escreveria). */
 function linhaSemSuportadas(l) {
@@ -430,6 +454,31 @@ function linhaSemSuportadas(l) {
     .replace(/ das Habilidades Suportadas/i, '');
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
+/**
+ * (lote A2, dono 19/10) As linhas da TORRE ÓSSEA (Bonespire, Excepcional: "Clamores reforçados ativam Tomar a Carne ao usar" — o poedb) e da
+ * SENTINELA DIVINA. A Torre Óssea: `torresOsseas` (o Clamor suportado as ergue — `Acoes.torresOsseas`), `torres` (quantas), `torresMax`,
+ * `torresMs` (a duração), `torresRaioM` (o raio da explosão), `torresAlcanceM` (o raio em que nascem em volta de você), `torresDanoPct` (o "Dano de
+ * Ataque: X% de base"), `torresSangramentoMaisPct` e `torresRecargaMs`. A Sentinela Divina: `areaLacaioPct` e `auraTemplaria` (`Acoes.invocarLacaios`).
+ */
+const PROPRIAS_A2 = {
+  Bonespire_Support: [
+    [/^Clamores reforçados ativam Tomar a Carne ao usar$/i, (m, e) => { e.torresOsseas = 1; }],
+    [new RegExp(`^Cria \\+?${N} torres de osso$`, 'i'), (m, e) => { e.torres = (e.torres ?? 0) + Math.floor(num(m[1])); }],
+    [new RegExp(`^Máximo de ${N} torres de osso$`, 'i'), (m, e) => { e.torresMax = num(m[1]); }],
+    [new RegExp(`^Duração base é de ${N} segundos?$`, 'i'), (m, e) => { e.torresMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.torresRaioM = num(m[1]); }],
+    [new RegExp(`^Raio de alcance secundário base é de ${N} metros?$`, 'i'), (m, e) => { e.torresAlcanceM = num(m[1]); }],
+    [new RegExp(`^${N}% mais Dano com Sangramento$`, 'i'), (m, e) => { e.torresSangramentoMaisPct = num(m[1]); }],
+    [/^Causa Sangramento$/i, (m, e) => { e.torresSangram = 1; }],
+    [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.torresDanoPct = num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.torresRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
+  ],
+  Divine_Sentinel_Support: [
+    [new RegExp(`^Lacaios de habilidades reforçadas têm a área de efeito aumentada em ${N}%$`, 'i'), (m, e) => { e.areaLacaioPct = (e.areaLacaioPct ?? 0) + num(m[1]); }],
+    [/^Sentinelas invocadas de habilidades reforçadas têm uma aura templária$/i, (m, e) => { e.auraTemplaria = 1; }],
+  ],
+};
 /** O efeito do suporte no nível, para esta ativa: `{ efeito, naoFeitas }`. */
 export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const s = POR_SLUG.get(slug);
@@ -437,7 +486,14 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
   const t = textosDoNivel(s, nivel, qualidade);
   const efeito = {};
   const naoFeitas = [];
+  // (lote A2) as linhas próprias da Torre Óssea e da Sentinela Divina (`PROPRIAS_A2`): a habilidade concedida pela Torre Óssea — Tomar a Carne — tem
+  // os números dela (a duração, os raios, as torres), que as regras gerais leriam como do Clamor suportado
+  const proprias = PROPRIAS_A2[slug];
   for (const linha of [...t.props, ...t.mods, ...t.qualidade]) {
+    if (proprias) {
+      const p = proprias.find(([re]) => re.test(linha));
+      if (p) { p[1](linha.match(p[0]), efeito); continue; }
+    }
     const regra = REGRAS.find(([re]) => re.test(linha));
     if (!regra) {
       // (17/10, lote G3) sem regra própria: a linha como modificador LOCAL do uso suportado ("Habilidades Suportadas têm 30% de chance de Mutilar
@@ -478,7 +534,8 @@ function avaliar(s) {
   const tudo = [s.tags.join(' '), ...s.mods, ...(s.implicitos ?? [])].join(' ').replace(MOMENTUM_CANALIZANDO, '');
   const sem = SEM_SISTEMA.find(([re]) => re.test(tudo));
   if (sem) return { status: 'nao', motivos: [sem[1]] };
-  const nivel = Math.min(20, s.linhas.length || 1);
+  // (lote A2: no nível máximo dele — o 3 das Excepcionais, antes o 15 das linhas da tabela)
+  const nivel = Math.min(20, nivelMaximoDe(s));
   const { efeito, naoFeitas } = efeitoNoNivel(s.slug, nivel, 20, { tags: [...['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Fogo', 'Gelo', 'Raio', 'Caos', 'Físico', 'Duração', 'Aura', 'Golpe'].map((x) => `poe:${x}`)] });
   const fez = Object.keys(efeito).length || gatilhoDe(s, textosDoNivel(s, nivel));
   if (!fez) return { status: 'nao', motivos: ['nenhuma linha do suporte tem efeito no jogo ainda', ...naoFeitas.slice(0, 3).map((l) => `não simulado: ${l}`)] };
@@ -489,6 +546,9 @@ function avaliar(s) {
 }
 /** (lote G20b) O que a descrição do suporte diz e o jogo ainda não faz — sem linha (o status não a vê) nem número nos dados do PoB. */
 const DESCRICAO_NAO_FEITA = {
+  // (lote A2) a Torre Óssea: a explosão é o físico MÉDIO da sua arma × o "Dano de Ataque: X% de base" da Tomar a Carne, pelo acerto das habilidades sem
+  // golpe — os modificadores do golpe da arma (o crítico dela, os locais) não entram
+  Bonespire_Support: ['não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros'],
   Earthbreaker_Support: ['não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)'],
 };
 

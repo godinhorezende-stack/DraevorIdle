@@ -286,7 +286,8 @@ export function registrarSuporte({ itemId, suporte, requer = [], algum = [], exc
   const def = {
     itemId, tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, levelMinimo,
     suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho, ...(indicePoe != null ? { indicePoe } : {}), ...(CompatSuportes.ADICIONA_TIPOS[suporte.slug] ? { adiciona: CompatSuportes.ADICIONA_TIPOS[suporte.slug] } : {}) },
-    poe: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, en: suporte.en, suporte: true },
+    // (lote A2: a Excepcional — a tag do poedb; o "+N ao nível de suportes não excepcionais" não vale nela, `extrasDaGemaPoe`)
+    poe: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, en: suporte.en, suporte: true, ...((suporte.tags ?? []).includes('Excepcional') ? { excepcional: true } : {}) },
     poeXp: tabelaDeXpDoPoe(suporte),
   };
   DEFS.set(itemId, def);
@@ -375,15 +376,19 @@ export function definirLeitorDaArvore(fn) { leitorDaArvore = fn; }
 // todas as Gemas Evocar Zumbi" é `gem_level@gema:evocar-zumbi`. Dono, 11/10: os únicos.)
 const ATRIBUTO_DA_COR = [[/verm/i, 'forca'], [/verd/i, 'destreza'], [/azul/i, 'inteligencia']];
 const ENCAIXE_DA_COR = { R: 'encaixeVermelho', G: 'encaixeVerde', B: 'encaixeAzul', W: 'encaixeBranco' };
-/** (lote 57) As gemas de suporte EXCEPCIONAIS do PoE: Maximizar, Aprimorar, Iluminar (e as Despertas) — a definição do suporte não traz a tag. */
+/**
+ * (lote 57) As gemas de suporte EXCEPCIONAIS do PoE: Maximizar, Aprimorar, Iluminar (e as Despertas) — a definição do suporte não traz a tag.
+ * (lote A2, dono 19/10: + todas as da tag "Excepcional" do poedb — o Pacifismo, a Torre Óssea, a Sentinela Divina: `def.poe.excepcional`)
+ */
 const EXCEPCIONAL = /(?:^|_)(?:Empower|Enhance|Enlighten)_Support$/;
+const ehExcepcional = (def) => !!def?.poe?.excepcional || EXCEPCIONAL.test(def?.poe?.slug ?? '');
 export function extrasDaGemaPoe(estado, peca, def, indice = null) {
   const cor = ATRIBUTO_DA_COR.find(([re]) => re.test(def?.poe?.cor ?? ''))?.[1];
   // (+ a cor do ENCAIXE em que a gema está: "Gemas Encaixadas nos Encaixes Vermelhos têm +N de Nível" — `gem_level_local@encaixeVermelho`.)
   const s = indice != null && peca ? soquetesDe(peca) : null;
   const doEncaixe = ENCAIXE_DA_COR[s?.cores?.[indice]];
   // (lote 57: + `naoExcepcional` — o suporte que não é Excepcional: "+1 ao nível de todas as gemas de suporte não excepcionais", o Limitado pelo Destino)
-  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !EXCEPCIONAL.test(def?.poe?.slug ?? '') ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade', ...(def?.tipo === 'support' && !ehExcepcional(def) ? ['naoExcepcional'] : []), ...(cor ? [cor] : []), ...(doEncaixe ? [doEncaixe] : []), ...(def?.nome ? [`gema:${ModsPoe.slugDoNome(def.nome)}`] : [])]);
   // A ESCALA (antes ignorada — "+1 ao Nível das Gemas de Habilidade Encaixadas por cada 25 Níveis do Jogador" dava sempre +1): o nível do
   // personagem, as gemas encaixadas na peça ("-1 … por Gema Encaixada") e as outras escalas do PoE; com o teto.
   const fator = (escala) => {
@@ -550,6 +555,15 @@ function unicas(supports) {
 const ehFeiticeiro = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Spellslinger';
 const FORA_DO_FEITICEIRO = ['poe:Ataque', 'poe:Aura', 'poe:Arauto', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Canalização', 'poe:Ativação', 'poe:Vínculo'];
 const magiaDoFeiticeiro = (def) => def?.tipo === 'ativa' && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !FORA_DO_FEITICEIRO.some((t) => def.tags.includes(t));
+/**
+ * (lote A2, dono 19/10: "a habilidade suportada sai sozinha a cada 0,6 s, ou pela recarga dela, se for maior") A AUTOMAÇÃO do PoE (PoB act_int.lua:
+ * 417-472): enquanto ela está ligada, as magias INSTANTÂNEAS do grupo dela, sem reserva, saem sozinhas (`acoes.ativarGatilhos`, `'automacao'` —
+ * o tique da caçada). Não suporta totem, mina, armadilha, Vaal nem as que reservam.
+ */
+const ehAutomacao = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Automation';
+// (revisão do A2: + a Ativação — o PoB exclui InbuiltTrigger e HasReservation: a Autoexerção, que o poedb trouxe sem a reserva)
+const FORA_DA_AUTOMACAO = ['poe:Ataque', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Vaal', 'poe:Aura', 'poe:Arauto', 'poe:Ativação'];
+const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !(def.castTime > 0) && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DA_AUTOMACAO.some((t) => def.tags.includes(t));
 
 export function skillsAtivas(estado) {
   const saida = new Map();
@@ -681,6 +695,9 @@ export function gruposComGatilho(estado) {
       // (14/10) o Feiticeiro: as magias ligadas saem no ataque de varinha — qualquer um, não só o do grupo —, com ele ligado (a reserva)
       const fei = noGrupo.find((y) => ehFeiticeiro(y.def));
       if (fei) saida.push({ chave: `${slot}:${fei.i}`, nome: fei.def.nome, nivel: fei.g.nivel + bonus, gatilho: { quando: 'ataqueDeVarinha' }, ataques: [], magias: noGrupo.filter((y) => magiaDoFeiticeiro(y.def)).map((y) => y.def.acao), feiticeiro: fei.def.acao });
+      // (lote A2) a Automação: as magias instantâneas do grupo saem sozinhas com ela ligada (o buff dela)
+      const auto = noGrupo.find((y) => ehAutomacao(y.def));
+      if (auto) saida.push({ chave: `${slot}:${auto.i}`, nome: auto.def.nome, nivel: auto.g.nivel + bonus, gatilho: { quando: 'automacao' }, ataques: [], magias: noGrupo.filter((y) => magiaDaAutomacao(y.def)).map((y) => y.def.acao), automacao: auto.def.acao });
       for (const x of noGrupo.filter((y) => y.def.tipo === 'support' && y.def.suporte?.gatilho)) {
         const gat = typeof x.def.suporte.gatilho === 'function' ? x.def.suporte.gatilho(x.g.nivel + bonus) : x.def.suporte.gatilho;
         const ativas = noGrupo.filter((y) => y.def.tipo === 'ativa');

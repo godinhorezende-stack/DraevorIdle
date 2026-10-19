@@ -61,11 +61,26 @@ export const bloqueioDe = (m) => limitar(((especieDe(m)?.bloqueio ?? 0) + (m?.bl
 /** A redução de dano do bicho (0–1), separada da armadura e da resistência. */
 export const reducaoDeDano = (m) => limitar(((especieDe(m)?.reducaoDeDano ?? 0) + (m?.reducaoDeDano ?? 0)), L.reducaoDeDanoMaxima) / 100;
 
-/** O bicho bloqueou este golpe? (`rng` para o teste; `fator`: o do atacante — PoE, "Chance de Inimigos Bloquearem … reduzida".) */
-export const bloqueou = (m, rng = Math.random, fator = 1) => {
-  const b = bloqueioDe(m) * fator;
+/**
+ * O bicho bloqueou este golpe? (`rng` para o teste; `fator`: o do atacante — PoE, "Chance de Inimigos Bloquearem … reduzida".) (lote A2, dono 19/10:
+ * + `menosPontos` — a Redução de Chance de Bloqueio do PoE, "Inimigos possuem -20% de chance de Bloquear", e o Subjugado no bicho: pontos de %.)
+ */
+export const bloqueou = (m, rng = Math.random, fator = 1, { menosPontos = 0 } = {}) => {
+  const b = Math.max(0, bloqueioDe(m) - (Number(menosPontos) || 0) / 100) * fator;
   return b > 0 && rng() < b;
 };
+/**
+ * (lote A2) O SUBJUGADO do PoE (a Redução de Chance de Bloqueio: "Habilidades Suportadas infligem Subjugado por 4 segundos ao Bloquear", "Subjugado
+ * aplica -5% à chance de Bloquear"): cada bloqueio do bicho contra a habilidade suportada põe um, com a duração dele; acumulam sem limite. `pontos`:
+ * a soma dos que valem agora.
+ */
+export function subjugar(m, ms, pct, agora) {
+  if (!m) return;
+  const lista = ((m.estados ??= {}).subjugado ?? []).filter((x) => x.ate > agora);
+  lista.push({ ate: agora + ms, pct });
+  m.estados.subjugado = lista;
+}
+export const subjugadoPontos = (m, agora) => (Array.isArray(m?.estados?.subjugado) ? m.estados.subjugado.filter((x) => x.ate > agora).reduce((t, x) => t + (Number(x.pct) || 0), 0) : 0);
 
 /**
  * A fração do golpe físico que a ARMADURA do bicho corta (0–1): armadura / (armadura + coeficiente × dano do golpe), no máximo o teto do

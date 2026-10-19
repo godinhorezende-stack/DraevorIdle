@@ -67,15 +67,18 @@ test('"Perda Inerente de Fúria é 10% mais lenta" (o nó real): no mesmo tempo,
   const no = noSo('furia_perda_lenta');
   assert.ok(no);
   const { e, ficha, alocar } = antesDo(no.id);
-  const perde = () => { e.hunt.furia = { n: 30, ganhou: 0, perdeu: 2000 }; ModsPoe.tiqueDaFuria(e.hunt, 2000 + 10_000); return 30 - e.hunt.furia.n; };
+  // (lote A2, com o aval do dono: a perda nova do PoB — 10 por segundo depois dos 2 s, × (1 − "mais lenta") — medida 2,5 s depois dos 2 s, numa janela
+  // em que a Fúria não acaba e o "10% mais lenta" aparece: 25 pontos sem o nó, ~22 com ele; a regra conferida é a mesma)
+  const perde = () => { e.hunt.furia = { n: 30, ganhou: 0, perdeu: 2000 }; ModsPoe.tiqueDaFuria(e.hunt, 2000 + 2500); return 30 - e.hunt.furia.n; };
   const lenta = () => Number(ficha().afPoe.furia_perda_lenta) || 0;
+  const esperado = () => Math.floor(2500 / (1000 / (ModsPoe.FURIA.perdaPorS * (1 - lenta() / 100))));
   const antes = perde();
-  assert.equal(antes, Math.floor(10_000 / (ModsPoe.FURIA.perdaMs * (1 + lenta() / 100))));
+  assert.equal(antes, esperado());
   alocar();
   const depois = perde();
   assert.ok(depois < antes, `${antes} → ${depois}`);
   // (o caminho até o nó pode ter outro igual: a conta é com a soma do dono)
-  assert.equal(depois, Math.floor(10_000 / (ModsPoe.FURIA.perdaMs * (1 + lenta() / 100))));
+  assert.equal(depois, esperado());
 });
 
 test('"Ganhe N de Fúria com Acertos Corpo a Corpo" (o nó real, só no corpo a corpo): o acerto corpo a corpo dá a Fúria; o de projétil não', { skip: SEM }, () => {

@@ -298,6 +298,7 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     }
     return destino;
   };
+  let aliadosDaFuga = null;
   for (const m of hunt.monstros) {
     if (m.dummy) continue; // o boneco não anda
     const d = distancia(hunt.pos, m);
@@ -305,6 +306,34 @@ export function moverMonstros(hunt, grade, agora, { semPerseguir = false, percep
     // longe (como no Tibia) — só além de `ALCANCE_DE_PERSEGUICAO`.
     if (d <= percepcao) m.perseguindo = true;
     else if (d > ALCANCE_DE_PERSEGUICAO) m.perseguindo = false;
+    // (lote A2, dono 19/10) o bicho FUGINDO (a Chance de Fugir, o Pacifismo — `Acoes.fugir`, 2 s): em vez de perseguir, dá o passo que mais o afasta
+    // de você (as casas andáveis em volta dele, sem outro bicho nem você — a exceção (6) do dono, `itens-poe/gemas-a2.mjs`)
+    if (Estados.fugindo(m, hunt.clock ?? agora)) {
+      if (!pronto(m) || !Estados.podeAgir(m, agora)) continue;
+      const perto = bfsDistancias(grade, m, 1);
+      // (revisão do A2: as regras do passo normal — sem pisar nos outros jogadores da sala, e a Paralisia no tempo do passo)
+      aliadosDaFuga ??= aliadosPorCasa(hunt);
+      let destino = null;
+      let melhor = d;
+      for (const [dx, dy] of VIZINHANCA_8) {
+        const v = { x: m.x + dx, y: m.y + dy };
+        if (perto.em(v.x, v.y) == null || (v.x === hunt.pos.x && v.y === hunt.pos.y) || aliadosDaFuga.has(`${v.x},${v.y}`) || (ocupada ? (ocupada.get(`${v.x},${v.y}`) ?? m) !== m : hunt.monstros.some((o) => o !== m && o.hp > 0 && o.x === v.x && o.y === v.y))) continue;
+        const dv = distancia(hunt.pos, v);
+        if (dv > melhor) { melhor = dv; destino = v; }
+      }
+      if (!destino) continue;
+      ocupada?.delete(`${m.x},${m.y}`);
+      ocupada?.set(`${destino.x},${destino.y}`, m);
+      const fx = Math.sign(destino.x - m.x);
+      const fy = Math.sign(destino.y - m.y);
+      m.x = destino.x;
+      m.y = destino.y;
+      m.dir = fy < 0 ? 0 : fy > 0 ? 2 : fx > 0 ? 1 : 3;
+      m.andouEm = hunt.clock ?? 0;
+      m.moveMs = passoDoBicho(m, fx !== 0 && fy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora) * Reforcos.fatorDeDesaceleracao(m, agora);
+      m.proximoPasso = agora + m.moveMs;
+      continue;
+    }
     if (d <= 1) {
       // Colado: fica parado, virado para o jogador.
       const ox = hunt.pos.x - m.x;
