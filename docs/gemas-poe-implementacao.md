@@ -8,10 +8,10 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 72 |
+| implementada e testada | 74 |
 | implementada, sem teste próprio | 50 |
 | limitação do modelo idle | 11 |
-| parcial | 418 |
+| parcial | 416 |
 | sem efeito | 11 |
 
 Só os ataques:
@@ -35,12 +35,12 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): parcial 44 · implementada e testada 3 · implementada, sem teste próprio 5
-- Alternativas (198): parcial 159 · implementada, sem teste próprio 27 · implementada e testada 8 · limitação do modelo idle 2 · sem efeito 2
+- Alternativas (198): parcial 158 · implementada, sem teste próprio 27 · implementada e testada 9 · limitação do modelo idle 2 · sem efeito 2
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 966 linhas distintas (216 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 961 linhas distintas (215 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 186/562 ativas, 73/262 suportes.
@@ -151,7 +151,6 @@ Só os ataques:
 | 2 | Causa # a # de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas |
 | 2 | Causa # a # de Dano de Raio |
 | 2 | Causa # a # de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas |
-| 2 | Causa # de Dano de Fogo Base por segundo |
 | 2 | Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente |
 | 2 | Causa # rajadas |
 | 2 | Causa + # % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento |
@@ -351,7 +350,6 @@ Só os ataques:
 | 1 | +# % mais Dano por Carga de Tolerância removida |
 | 1 | +# % mais Dano por Traumatismo |
 | 1 | +# % menos Dano em Área |
-| 1 | +# à quantidade máxima de totens invocados por carga de poder máxima |
 | 1 | +# ao número máximo de Zumbis |
 | 1 | +# cascatas por carga de poder removida |
 | 1 | +# de largura por cada # % de Mana Máxima Não Reservada possuída |
@@ -528,7 +526,6 @@ Só os ataques:
 | 1 | Cria +# Estacas |
 | 1 | Cria +# fendas |
 | 1 | Cria +# Pilar de Cinzas |
-| 1 | Dano abrasador aplicado pela detonação causa + # % de dano por totem detonado |
 | 1 | Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até # de dano antes de explodir |
 | 1 | Dano de Caos com Acertos é Resistido pela maior Resistência ao invés |
 | 1 | Dano de Caos com Acertos é Resistido pela Resistência mais baixa |
@@ -565,7 +562,6 @@ Só os ataques:
 | 1 | Duração aumentada em # % por Estágio |
 | 1 | Duração Base do Debuff é de # segundos |
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
-| 1 | Duração base é de # segundos |
 | 1 | Duração do Buff é atualizada após você gastar um total de # de Vida |
 | 1 | Durante a Duração Secundária, Reflete # % do Dano Sofrido aos Inimigos |
 | 1 | Efeito da Cegueira aumentado em # % |
@@ -881,7 +877,6 @@ Só os ataques:
 | 1 | O primeiro e último disparo da sequência dispara # Projéteis adicionais simultâneos |
 | 1 | O primeiro martelo de cada cascata causa + # % de dano |
 | 1 | O raio base da Saraivada é de # metros |
-| 1 | O raio Base é de # metros |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
 | 1 | Onda Central tem # % mais Área de Efeito |
@@ -2016,15 +2011,6 @@ Só os ataques:
   - efeito não simulado: Cada Esporo dispara 4 Flechas de Espinho
   - efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano
   - efeito não simulado: Cada Esporo dispara +1 Flecha de Espinho
-- **Searing_Bond** (Vínculo Cauterizador) — parcial
-  - efeito não simulado: Causa 4430.6 de Dano de Fogo Base por segundo
-- **Searing_Bond_of_Detonation** (Elo Calcinante da Detonação) — parcial
-  - efeito não simulado: Causa 2977.7 de Dano de Fogo Base por segundo
-  - efeito não simulado: Duração base é de 4 segundos
-  - efeito não simulado: O raio Base é de 2.7 metros
-  - efeito não simulado: +1 à quantidade máxima de totens invocados por carga de poder máxima
-  - efeito não simulado: Dano abrasador aplicado pela detonação causa + 30 % de dano por totem detonado
-  - efeito não simulado: Dano abrasador aplicado pela detonação causa + 10 % de dano por totem detonado
 - **Seismic_Cry** (Clamor Sísmico) — parcial
   - efeito não simulado: 200 % de aumento da Distância do Empurrão
   - efeito não simulado: Empurra e Interrompe Inimigos em uma pequena Área

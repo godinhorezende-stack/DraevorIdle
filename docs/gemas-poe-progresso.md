@@ -253,6 +253,14 @@ Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMai
 - Relatório: ativas implementadas 122 (72 testadas), parcial 418 (−7).
 - Testes: `totens-especificos-poe.test.mjs` (5). Com o aval do dono: duas asserções do G20a atualizadas (as linhas feitas saíram dos motivos) e o teste geral do G16 confere os totens sem golpe pelo efeito deles.
 
+### G20d — o Vínculo Abrasador (18/10)
+
+- **O feixe** (act_str.lua:9494): cada totem lança o feixe a você e a cada outro totem dele; quem está na reta (Bresenham) e nas 8 casas em volta de cada ponta ("perto das pontas" não tem número no PoB) sofre a queima da gema, renovada a cada 0,5 s. A queima usa a conta do uso: os suportes, o Dano Mágico (`spell_damage_modifiers_apply_to_skill_dot`) e o "mais" do degenerativo. É uma por inimigo (não soma entre feixes) e não é acerto (nada de "ao acertar").
+- **A Detonação** (act_str.lua:9570): o máximo é 1 + 1 por Carga de Poder máxima; ao chegar a ele, todos os totens da gema detonam e queimam no raio de cada um (2,7 m, × √ da Área de Efeito) pela duração da gema (4 s), com "+30% (+0,5 por % de qualidade) mais dano por totem detonado".
+- O cálculo do degenerativo virou uma função só (`totalDoDegenerativo`), usada pelo acerto da gema e pelo feixe.
+- Relatório: os dois Vínculos "funciona".
+- Testes: +2 em `totens-especificos-poe.test.mjs`. Com o aval do dono (o mesmo do G20c): uma asserção do G20a e o teste geral do G16 confere o feixe.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
@@ -267,6 +275,6 @@ Achado da revisão do G17: o compilador gravava em `stats.maisDano`, `afeccaoMai
 
 ## Próximo passo exato
 
-1. G20d — os totens que faltam: o Vínculo Abrasador, a Artilharia, o Trarthus e a provocação do Chamariz. (G20c feito: os ancestrais (a ativação pela wiki no poedb salvo: o Chefe Guerreiro 80 u = 8 m, o Protetor 85 u = 8,5 m; o buff "enquanto o Totem estiver Ativo", que não soma entre totens), a aura do Rejuvenescedor, o Solo Sagrado do Flamejante, o feixe do Vínculo Abrasador e a Detonação, a Artilharia em linha/cruz/foco, a provocação do Chamariz, o Devorador, o Trarthus, a velocidade por totem máximo da Balista de Cerco.
+1. G20e — os totens que faltam: a Artilharia (linha, cruz, foco), o Trarthus e a provocação do Chamariz (a IA dos monstros). (G20c feito: os ancestrais (a ativação pela wiki no poedb salvo: o Chefe Guerreiro 80 u = 8 m, o Protetor 85 u = 8,5 m; o buff "enquanto o Totem estiver Ativo", que não soma entre totens), a aura do Rejuvenescedor, o Solo Sagrado do Flamejante, o feixe do Vínculo Abrasador e a Detonação, a Artilharia em linha/cruz/foco, a provocação do Chamariz, o Devorador, o Trarthus, a velocidade por totem máximo da Balista de Cerco.
 2. Depois, pelos planos do workflow `g19-familias-desenho`: lacaios, buffs sem equivalente, a cauda dos suportes e a das ativas (com a velocidade de projétil como família própria).
 3. G19 — as afecções pela conta do PoB (ver o fim do G17).

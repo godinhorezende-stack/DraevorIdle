@@ -99,7 +99,7 @@ export function feiticeiroNoNivel(nivel = 1) {
 const LINHA_DO_TOTEM = /^Totem dura [\d.]+ segundos?$|^Invoca um Totem(?: de Balista)? que usa esta habilidade$|^\+[\d.]+ ao número máximo de Totens(?: Balista)? Convocados$|Vida do Totem aumentada em [\d.]+ ?%$|^[\d.]+ ?% mais Vida de Totens$|^Velocidade de Posicionamento de Totem aumentada em [\d.]+ ?%$|^\+[\d.]+ metros? ao Alcance de Golpes Corpo a Corpo$/i;
 // (lote G20c: + os efeitos próprios dos totens — `LacaiosPoe.efeitosDoTotem`; aqui a regex, porque o módulo dos lacaios importa este. O "não podem
 // Evadir" do Chamariz: o totem do jogo não tem evasão — os modificadores de lacaio não valem nele, lote G20a)
-const LINHA_DO_EFEITO_DO_TOTEM = /^Distância de Ativação aumentada em|enquanto o Totem estiver Ativo$|de Vida Regenerada por segundo$|^[\d.]+ ?% menos Área de Efeito$|é sofrido na Vida do Totem antes do alvo$|^Solo Sagrado concede Imunidade a Maldições|^Área do Solo Sagrado aumentada em|por Totem máximo$|para si a cada cadáver consumido$|^Totens Convocados por esta Habilidade não podem Evadir$/i;
+const LINHA_DO_EFEITO_DO_TOTEM = /^Distância de Ativação aumentada em|enquanto o Totem estiver Ativo$|de Vida Regenerada por segundo$|^[\d.]+ ?% menos Área de Efeito$|é sofrido na Vida do Totem antes do alvo$|^Solo Sagrado concede Imunidade a Maldições|^Área do Solo Sagrado aumentada em|por Totem máximo$|para si a cada cadáver consumido$|^Totens Convocados por esta Habilidade não podem Evadir$|^\+[\d.]+ à quantidade máxima de totens invocados por carga de poder máxima$|^Dano abrasador aplicado pela detonação causa/i;
 export const ehLinhaDoTotem = (l) => LINHA_DO_TOTEM.test(l) || LINHA_DO_EFEITO_DO_TOTEM.test(l);
 /**
  * (lote G20a) O totem que NÃO ACERTA ninguém: no PoE o Chamariz, o Devorador e os Rejuvenescedores não causam dano (`base_deal_no_damage` —
@@ -913,7 +913,10 @@ function avaliarNoJogo(h, formato) {
   // (a mecânica que está só na DESCRIÇÃO do totem, sem linha — o status não a vê)
   if (h.arquetipo === 'totem') for (const [re, m] of DESCRICAO_DO_TOTEM) if (re.test(h.slug)) motivos.push(`efeito não simulado: ${m}`);
   if (h.arquetipo === 'totem' && totemSemGolpe(h.slug)) {
-    for (const l of [...(h.linhas?.aplicadas ?? []), ...(h.linhas?.naoImplementadas ?? [])]) if (!ehLinhaDoTotem(l)) motivos.push(`efeito não simulado: ${l}`);
+    // (lote G20d: o Vínculo Abrasador — o dano por segundo é o do feixe e o da Detonação; a duração e o raio, os da Detonação — `Acoes.feixeDoVinculo`,
+    // `Acoes.detonarVinculos`)
+    const doVinculo = (l) => /^Searing_Bond/.test(h.slug) && /^Causa [\d.]+ de Dano de Fogo Base por segundo$|^Duração base é de [\d.]+ segundos?$|^O raio Base é de [\d.]+ metros?$|^\+[\d.]+ metros de raio$/i.test(l);
+    for (const l of [...(h.linhas?.aplicadas ?? []), ...(h.linhas?.naoImplementadas ?? [])]) if (!ehLinhaDoTotem(l) && !doVinculo(l)) motivos.push(`efeito não simulado: ${l}`);
     return { status: motivos.length ? 'parcial' : 'funciona', motivos };
   }
   // (12/10) O VÍNCULO (`itens-poe/vinculos.mjs`): foca um aliado; as linhas que o jogo ainda não faz vão nos motivos.

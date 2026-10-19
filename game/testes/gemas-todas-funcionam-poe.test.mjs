@@ -88,10 +88,12 @@ function usar({ e, b }, slug) {
   // (lote G20a, com o aval do dono: o TOTEM — o seu uso o coloca; o dano é o do totem usando a habilidade, uma vez, no alvo)
   if (G.doSlug(slug).arquetipo === 'totem') for (const l of (e.hunt.lacaios ?? []).filter((x) => x.tipo === 'totem' && x.hp > 0)) ev.push(...Cacadas.golpeDoTotem(e, e.hunt, l, b, Ficha.combate(e), PERSONAGEM, e.hunt.clock));
   // (lote G20c, com o aval do dono: o totem SEM golpe é conferido pelo efeito dele — a aura do Rejuvenescedor na sua soma, perto dele; o Devorador
-  // consumindo o cadáver e o dreno vindo para você, ferido)
+  // consumindo o cadáver e o dreno vindo para você, ferido; o feixe do Vínculo Abrasador queimando o alvo)
   let efeitoDoTotem = false;
   for (const l of (e.hunt.lacaios ?? []).filter((x) => x.tipo === 'totem' && x.hp > 0)) {
     if (l.auraDoTotem && (G.adds(e)?.life_regen ?? 0) > 0) efeitoDoTotem = true;
+    // (lote G20d: o Vínculo Abrasador — o feixe queima o alvo perto de você, uma ponta dele)
+    if (/^Searing_Bond/.test(l.gema ?? '')) ev.push(...Acoes.feixeDoVinculo(e, e.hunt, l, e.hunt.clock));
     if (l.devorador) {
       e.hp = e.maxHp - 1000;
       e.hunt.roubos = [];

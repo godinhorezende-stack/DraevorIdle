@@ -2202,6 +2202,114 @@ export function virarParaOAlvo(hunt, para) {
   hunt.pos.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : dy > 0 ? 2 : 0;
 }
 
+/**
+ * O total do DANO DEGENERATIVO de uma parte `p` da gema (`{ elemento, dps }` — `GemasPoe.degenerativoNoNivel`) por `durMs`, com a conta do uso
+ * (`contaDoDano`: o fator da gema e os suportes, a ficha do golpe): o Multiplicador de Dano Degenerativo (o geral e o do elemento), o "Dano
+ * Degenerativo aumentado" (o geral, o do elemento — lote 65 — e o do elemento da ficha) e o "mais" do degenerativo. Sem o "mais/menos Dano com
+ * Acertos" do fator da gema (lote G17: o degenerativo não é acerto); na gema cujo degenerativo leva os modificadores de Dano Mágico (o
+ * `dotIsSpell` do PoB), o "mais Dano Mágico" dos suportes e da ficha volta (lote G18a). (Lote G20d: uma função só — o acerto e o feixe do Vínculo
+ * Abrasador.)
+ */
+function totalDoDegenerativo(p, durMs, { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha = 1, dotMagico = false }) {
+  const a = ficha.afeccoes ?? AfeccoesPoe.daSoma(ficha.afPoe ?? {});
+  const MULTI = { fire: a.multiplicadorFogo, ice: a.multiplicadorGelo, energy: a.multiplicadorRaio, chaos: a.multiplicadorCaos, physical: a.multiplicadorFisico };
+  const maisDoDot = Math.max(0, 1 + (efeitoDaGema?.maisDotPct ?? 0) / 100) * Math.max(0, 1 + (efeitoDaGema?.[MAIS_DOT_DO_ELEMENTO[p.elemento]] ?? 0) / 100);
+  const voltaMagico = dotMagico ? Math.max(0, 1 + (efeitoDaGema?.maisDanoMagicoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1) : 1;
+  return p.dps * (durMs / 1000) * (fatorDaGema / Math.max(1e-9, (1 + (efeitoDaGema?.maisDanoAcertoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1))) * voltaMagico * maisDoDot * (1 + ((a.multiplicador ?? 0) + (MULTI[p.elemento] ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (ficha.danoDoElemento?.[p.elemento] ?? 0) + (a.danoDegenDoElemento?.[p.elemento] ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
+}
+
+/**
+ * (18/10, lote G20d) O VÍNCULO ABRASADOR (act_str.lua:9494-9625): "Summons a totem that casts a beam of fire at you and each other totem you
+ * control, dealing burning damage to enemies caught in the beam. Enemies near either end of a beam also suffer burning damage." O feixe do totem
+ * `l` vai a você e a cada outro totem dele (as casas da reta, Bresenham) e queima quem está nas casas dele e nas 8 em volta de cada ponta (o "perto
+ * da ponta" não tem número no PoB: a casa vizinha). A queima é o degenerativo da gema por `FEIXE_MS`, renovado a cada tique dele, com a conta do
+ * uso (os suportes, o Dano Mágico — `spell_damage_modifiers_apply_to_skill_dot`); uma queima da gema por inimigo (a chave dela: não soma entre
+ * os feixes). Os acertos não são seus (`fonte: 'totem'`). Devolve os eventos.
+ */
+export const FEIXE_MS = 500;
+function dadosDoDegenerativoDoTotem(estado, l, maisPct = 0) {
+  const base = POR_ID.get(l.acao);
+  if (!base?.poeGema) return null;
+  const entry = { ...base, papeis: ['attack'], poeGema: { ...base.poeGema, lacaio: undefined, doTotem: true } };
+  const efeito = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado) ?? null;
+  const dg = GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
+  if (!dg) return null;
+  const { fatorDaGema, ficha, soAcertoDaFicha } = contaDoDano(estado, entry, efeito, Ficha.combate(estado), null, { maisDano: maisPct });
+  return { entry, dg, conta: { efeitoDaGema: efeito, ficha, fatorDaGema, soAcertoDaFicha, dotMagico: GemasPoe.dotEhMagico(entry.poeGema.slug) } };
+}
+const casasDaReta = (a, b) => {
+  const r = [];
+  let x = a.x;
+  let y = a.y;
+  const dx = Math.abs(b.x - a.x);
+  const dy = -Math.abs(b.y - a.y);
+  const sx = a.x < b.x ? 1 : -1;
+  const sy = a.y < b.y ? 1 : -1;
+  let err = dx + dy;
+  for (let i = 0; i < 200; i++) {
+    r.push(`${x},${y}`);
+    if (x === b.x && y === b.y) break;
+    const e2 = 2 * err;
+    if (e2 >= dy) { err += dy; x += sx; }
+    if (e2 <= dx) { err += dx; y += sy; }
+  }
+  return r;
+};
+function queimarCasas(hunt, casas, d, durMs, agora, eventos) {
+  for (const m of hunt.monstros ?? []) {
+    if (!(m.hp > 0) || m.dummy || !casas.has(`${m.x},${m.y}`)) continue;
+    for (const p of d.dg.partes) {
+      const posto = Dot.aplicar(m, { tipo: GemasPoe.DEGEN_DO_ELEMENTO[p.elemento], total: totalDoDegenerativo(p, durMs, d.conta), duracaoMs: durMs, chave: d.entry.poeGema.slug, origem: { fonte: 'totem', habilidade: d.entry.id } }, agora);
+      if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto });
+    }
+  }
+}
+export function feixeDoVinculo(estado, hunt, l, agora = hunt?.clock ?? 0) {
+  const d = dadosDoDegenerativoDoTotem(estado, l);
+  if (!d || !hunt?.pos) return [];
+  const pontas = [hunt.pos, ...(hunt.lacaios ?? []).filter((x) => x !== l && x.hp > 0 && x.tipo === 'totem' && x.gema === l.gema)];
+  const casas = new Set();
+  const emVolta = (c) => { for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) casas.add(`${c.x + dx},${c.y + dy}`); };
+  emVolta(l);
+  for (const p of pontas) {
+    for (const c of casasDaReta(l, p)) casas.add(c);
+    emVolta(p);
+  }
+  const eventos = [];
+  queimarCasas(hunt, casas, d, FEIXE_MS, agora, eventos);
+  return eventos;
+}
+/**
+ * (lote G20d) A DETONAÇÃO do Vínculo Abrasador da Detonação: "Reaching maximum active totem count will cause all totems from this skill to detonate,
+ * applying the same burning damage for a duration" — cada totem da gema some e queima os inimigos no raio dele (2,7 m no nível 20, × √ da Área de
+ * Efeito) pela duração da gema (4 s), com "+30% (+0,5 por % de qualidade) mais Dano Degenerativo por totem detonado" (MORE por TotemsSummoned —
+ * act_str.lua:9590-9611). Devolve os eventos.
+ */
+export function detonarVinculos(estado, hunt, slug, agora = hunt?.clock ?? 0, rng = Math.random) {
+  const totens = (hunt.lacaios ?? []).filter((x) => x.hp > 0 && x.tipo === 'totem' && x.gema === slug);
+  if (!totens.length) return [];
+  const ef = Gemas.efeitoNaSkill(estado, POR_ID.get(totens[0].acao)?.id);
+  const porTotem = [...GemasPoe.textosDaGema(slug, ef?.nivel ?? 1).linhas, ...GemasPoe.linhasDaQualidadeDe(slug, ef?.qualidade ?? 0)]
+    .reduce((n, x) => n + (Number(/^Dano abrasador aplicado pela detonação causa \+ ?([\d.]+) ?% de dano por totem detonado$/i.exec(x)?.[1]) || 0), 0);
+  const d = dadosDoDegenerativoDoTotem(estado, totens[0], porTotem * totens.length);
+  const eventos = [];
+  if (d) {
+    const area = GemasPoe.areaNoNivel(slug, ef?.nivel ?? 1, ef?.qualidade ?? 0);
+    const ficha = Ficha.combate(estado);
+    const raioM = (area.raioM ?? 2.7) * Math.sqrt(ModsPoe.fatorDaArea((area.areaIncPct ?? 0) + ModsPoe.valor(ficha, 'area_inc'), ModsPoe.valor(ficha, 'area_mais')));
+    const durMs = Math.round(d.dg.duracaoMs * fatorDeDuracao(estado, d.entry, d.conta.efeitoDaGema));
+    for (const t of totens) {
+      const r = Math.floor(raioM / 2) + (rng() < (raioM / 2) % 1 ? 1 : 0);
+      const casas = new Set();
+      for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) casas.add(`${t.x + dx},${t.y + dy}`);
+      queimarCasas(hunt, casas, d, durMs, agora, eventos);
+      eventos.push({ t: 'explosao', id: d.entry.efeito ?? 6, x: t.x, y: t.y, lado: 2 * r + 1, sk: d.entry.id });
+    }
+  }
+  for (const t of totens) t.hp = 0;
+  return eventos;
+}
+
 /** A entrada do catálogo de ações pelo id (o totem do PoE usa a skill da gema dele). */
 export const POR_ID_PUBLICO = (id) => POR_ID.get(id) ?? null;
 
@@ -2353,6 +2461,11 @@ function invocarLacaios(hunt, entry, efeito, alvo, estado = null, { semUso = fal
     if (q.efeitosDoTotem?.soloSagradoM) (hunt.solosSagrados ??= []).push({ x: l.x, y: l.y, raio: Math.max(1, casasDoRaio(q.efeitosDoTotem.soloSagradoM)), ate: l.ate ?? Infinity, dono: l.uid, imuneMaldicao: true });
     eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
     if (fichaDoTotem) eventos.push(...aoConvocarTotem(estado, hunt, l, fichaDoTotem, agora));
+  }
+  // (lote G20d) o Vínculo Abrasador da Detonação: no máximo de totens, todos detonam (`detonarVinculos`)
+  if (q.detonaNoMaximo && estado && hunt.lacaios.filter((l) => l.gema === slug && l.hp > 0).length >= q.maximo) {
+    eventos.push(...detonarVinculos(estado, hunt, slug, hunt.clock ?? 0));
+    return eventos;
   }
   // Passou do máximo da gema: os mais velhos saem.
   const desta = hunt.lacaios.filter((l) => l.gema === slug);
@@ -3781,17 +3894,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (entry.poeGema && !semDanoProprio) {
         const dg = GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
         const dotMagico = !!dg?.partes?.length && GemasPoe.dotEhMagico(entry.poeGema.slug);
-        const a = ficha.afeccoes ?? AfeccoesPoe.daSoma(ficha.afPoe ?? {});
-        const MULTI = { fire: a.multiplicadorFogo, ice: a.multiplicadorGelo, energy: a.multiplicadorRaio, chaos: a.multiplicadorCaos, physical: a.multiplicadorFisico };
         for (const p of dg?.partes ?? []) {
           const tipoDegen = GemasPoe.DEGEN_DO_ELEMENTO[p.elemento];
-          // (lote 65: + o "Dano Degenerativo aumentado" do elemento — "Dano de Caos Degenerativo aumentado")
-          // (lote G17: o degenerativo não é acerto — sem o "mais/menos Dano com Acertos" do fator da gema)
-          const maisDoDot = Math.max(0, 1 + (efeitoDaGema?.maisDotPct ?? 0) / 100) * Math.max(0, 1 + (efeitoDaGema?.[MAIS_DOT_DO_ELEMENTO[p.elemento]] ?? 0) / 100);
-          // (lote G18a: na gema cujo degenerativo leva os modificadores de Dano Mágico — o `dotIsSpell` do PoB —, o "mais Dano Mágico" dos suportes e da
-          // ficha (o Zelotismo) volta)
-          const voltaMagico = dotMagico ? Math.max(0, 1 + (efeitoDaGema?.maisDanoMagicoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1) : 1;
-          const total = p.dps * (dg.duracaoMs / 1000) * (fatorDaGema / Math.max(1e-9, (1 + (efeitoDaGema?.maisDanoAcertoPct ?? 0) / 100) * (soAcertoDaFicha ?? 1))) * voltaMagico * maisDoDot * (1 + ((a.multiplicador ?? 0) + (MULTI[p.elemento] ?? 0)) / 100) * (1 + ((a.danoAumentado ?? 0) + (ficha.danoDoElemento?.[p.elemento] ?? 0) + (a.danoDegenDoElemento?.[p.elemento] ?? 0)) / 100) * Math.max(0, 1 + (a.dotMais ?? 0) / 100);
+          const total = totalDoDegenerativo(p, dg.duracaoMs, { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha, dotMagico });
           const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: dg.duracaoMs, chave: entry.poeGema.slug, origem: { fonte: doTotem ? 'totem' : 'gema', habilidade: entry.id } }, agora);
           if (posto) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: posto });
         }
