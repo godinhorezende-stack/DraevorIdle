@@ -79,7 +79,8 @@ test('a PEÇA: o encantamento no lugar da marcação; os notáveis do encantamen
       const doEncantamento = new Set(enc.notaveis.map((n) => n.nome));
       for (const m of notaveis) assert.ok(doEncantamento.has(m.notavel), `${t}/${enc.id}: ${m.notavel} é do encantamento`);
       assert.equal(new Set(mods(p).map((m) => m.familia)).size, mods(p).length, 'um mod por grupo');
-      if (p.raridade === 'raro') assert.equal(mods(p).length, 4, 'a Rara: as 4 vagas da joia (as regras dão 4 a 6 mods)');
+      // (lote 85, com o aval do dono — "3 ou 4, 58/42": a joia Rara sai com 3 ou 4 mods, como no PoE 1)
+      if (p.raridade === 'raro') assert.ok([3, 4].includes(mods(p).length), `a Rara: 3 ou 4 mods (${mods(p).length})`);
     }
     assert.equal(maisNotaveis, maximo[t], `${t}: chega a ${maximo[t]} notáveis`);
     assert.equal(vistos.size, D.tamanhos[t].encantamentos.length, `${t}: todos os encantamentos saem`);

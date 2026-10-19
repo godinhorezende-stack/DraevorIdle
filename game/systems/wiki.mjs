@@ -107,7 +107,10 @@ export function itensPoe() {
     const r = R.raridades[id];
     const quantidade = Object.entries(r.quantidade ?? {}).map(([quantos, peso]) => ({ quantos: Number(quantos), peso: Number(peso) }));
     const soma = quantidade.reduce((a, q) => a + q.peso, 0) || 1;
-    return { id, nome: r.nome, cor: r.cor, maxPrefixos: r.maxPrefixos ?? null, maxSufixos: r.maxSufixos ?? null, fixos: !!r.fixos, quantidade: quantidade.map((q) => ({ quantos: q.quantos, chance: q.peso / soma })) };
+    // (lote 85: a JOIA Rara tem a tabela dela — 3 ou 4 mods, até 2 + 2)
+    const daJoia = Object.entries(r.quantidadeJoia ?? {}).map(([quantos, peso]) => ({ quantos: Number(quantos), peso: Number(peso) }));
+    const somaDaJoia = daJoia.reduce((a, q) => a + q.peso, 0) || 1;
+    return { id, nome: r.nome, cor: r.cor, maxPrefixos: r.maxPrefixos ?? null, maxSufixos: r.maxSufixos ?? null, fixos: !!r.fixos, quantidade: quantidade.map((q) => ({ quantos: q.quantos, chance: q.peso / soma })), ...(daJoia.length ? { quantidadeJoia: daJoia.map((q) => ({ quantos: q.quantos, chance: q.peso / somaDaJoia })) } : {}) };
   });
   const pesos = R.drop?.raridades ?? {};
   const somaDosPesos = ORDEM_POE.reduce((a, id) => a + (Number(pesos[id]) || 0), 0) || 1;

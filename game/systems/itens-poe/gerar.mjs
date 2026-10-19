@@ -235,6 +235,11 @@ export function regrasDaBase(implicitos = []) {
  */
 const CLASSES_DE_JOIA = new Set(['Jewels', 'Abyss_Jewels']);
 export const MAXIMO_DA_JOIA = 2;
+/**
+ * (lote 85 — dono, 19/10: "3 ou 4, 58/42") A tabela de QUANTOS mods na raridade `R` para a classe: a joia Rara tem a dela
+ * (`quantidadeJoia` — 3 ou 4, como no PoE 1); o resto, a `quantidade` da raridade. O drop e as moedas (Alquimia, Caos) usam esta.
+ */
+export const quantidadeDa = (R, classe) => (CLASSES_DE_JOIA.has(classe) && R?.quantidadeJoia ? R.quantidadeJoia : R?.quantidade) ?? { 0: 1 };
 export function vagasDaPeca(R, rb, classe) {
   const teto = CLASSES_DE_JOIA.has(classe) ? MAXIMO_DA_JOIA : Infinity;
   return { prefixo: Math.max(0, Math.min(teto, (R?.maxPrefixos ?? 0) + (rb?.prefixos ?? 0))), sufixo: Math.max(0, Math.min(teto, (R?.maxSufixos ?? 0) + (rb?.sufixos ?? 0))) };
@@ -325,7 +330,7 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     const implicitos = s ? implicitosDoUnico(s, nivel, rng) : proprios || ramificadora ? [] : peca.implicitos;
     return { ...peca, ...comMagnitudeNosImplicitos({ implicitos, modificadores }), ...(s?.corrompido ? { corrompido: true } : {}), ...(ramificadora ? { ramificadora } : {}), nome: u.nome, unico: u.slug };
   }
-  const quantos = Number(porPeso(Object.entries(R.quantidade ?? { 0: 1 }).map(([n, p]) => [n, p]), rng)) || 0;
+  const quantos = Number(porPeso(Object.entries(quantidadeDa(R, classe.id)).map(([n, p]) => [n, p]), rng)) || 0;
   // (lote 61) a RAMIFICADORA: o encantamento e os mods pelos pesos do PoE (`itens-poe/ramificadoras.mjs` — o catálogo traz os dados)
   if (Ramificadoras.tamanhoDaBase(base.id)) return Ramificadoras.gerarRamificadora({ dados: catalogo.ramificadoras, peca, R, quantos, rng });
   if (!quantos) return peca;

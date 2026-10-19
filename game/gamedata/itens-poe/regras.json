@@ -31,7 +31,12 @@
         "5": 15,
         "6": 5
       },
-      "_quantidade": "regra do dono (04/10), para o drop de monstro e as Orbes de Alquimia e do Caos: 4 mods ~80%, 5 mods ~15%, 6 mods ~5% (até 3 prefixos e 3 sufixos)."
+      "_quantidade": "regra do dono (04/10), para o drop de monstro e as Orbes de Alquimia e do Caos: 4 mods ~80%, 5 mods ~15%, 6 mods ~5% (até 3 prefixos e 3 sufixos).",
+      "quantidadeJoia": {
+        "3": 7,
+        "4": 5
+      },
+      "_quantidadeJoia": "dono (19/10, lote 85: \"3 ou 4, 58/42\"): a JOIA Rara (Carmesim, Viridiana, Cobalto, Abissais, Ramificadoras — o teto de 2 + 2) sai com 3 ou 4 mods, como no PoE 1; os pesos são os da comunidade (Craft of Exile: 7/12 e 5/12), a GGG não publica. No drop e nas Orbes de Alquimia e do Caos."
     },
     "unico": {
       "nome": "Único",

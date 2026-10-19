@@ -30,14 +30,18 @@ test('as VAGAS: a joia 2 + 2 na Rara (e 1 + 1 na Mágica); as outras peças segu
   assert.deepEqual(Gerar.vagasDaPeca(R.raro, Gerar.regrasDaBase([]), 'Rings'), { prefixo: 3, sufixo: 3 });
 });
 
-test('o DROP: a joia Rara sai com 4 mods (2 + 2) — antes, até 6 —; o anel Raro segue chegando a 5 e 6', { skip: SEM }, () => {
+// (lote 85, com o aval do dono — "3 ou 4, 58/42": a joia Rara sai com 3 ou 4 mods, como no PoE 1; antes, sempre 4)
+test('o DROP: a joia Rara sai com 3 ou 4 mods (até 2 + 2) — antes, até 6 —; o anel Raro segue chegando a 5 e 6', { skip: SEM }, () => {
   for (const base of JOIAS) {
+    const vistos = new Set();
     for (let s = 1; s <= 80; s++) {
       const p = gerar(base, 'raro', s);
       assert.equal(p.erro, undefined, `${base}: ${p.erro}`);
       assert.ok(p.prefixos.length <= 2 && p.sufixos.length <= 2, `${base}: ${p.prefixos.length} + ${p.sufixos.length}`);
-      assert.equal(p.prefixos.length + p.sufixos.length, 4, base);
+      assert.ok([3, 4].includes(p.prefixos.length + p.sufixos.length), `${base}: ${p.prefixos.length + p.sufixos.length}`);
+      vistos.add(p.prefixos.length + p.sufixos.length);
     }
+    assert.deepEqual([...vistos].sort(), [3, 4], `${base}: saem as duas`);
   }
   const anel = Array.from({ length: 120 }, (_, s) => gerar('Rings/Ruby_Ring', 'raro', s + 1));
   assert.ok(anel.some((p) => p.prefixos.length + p.sufixos.length > 4), 'o anel ainda chega a 5 ou 6 mods');
@@ -46,7 +50,11 @@ test('o DROP: a joia Rara sai com 4 mods (2 + 2) — antes, até 6 —; o anel R
 test('as MOEDAS: o Exaltado (o mod a mais) e o pool especial não passam de 2 + 2 na joia', { skip: SEM }, () => {
   const cat = Catalogo.catalogo();
   for (const base of ['Jewels/Crimson_Jewel', 'Abyss_Jewels/Murderous_Eye_Jewel']) {
-    const p = gerar(base, 'raro', 3);
+    // (lote 85, com o aval do dono: a joia Rara sai com 3 ou 4 — a primeira semente que dá uma joia CHEIA, 2 + 2)
+    let semente = 3;
+    while (gerar(base, 'raro', semente).prefixos.length + gerar(base, 'raro', semente).sufixos.length < 4) semente++;
+    const p = gerar(base, 'raro', semente);
+    assert.deepEqual([p.prefixos.length, p.sufixos.length], [2, 2], base);
     assert.equal(Gerar.sortearUmMod({ catalogo: cat, regras: Catalogo.REGRAS, poe: p, rng: semeado(9) }), null, `${base}: cheia`);
     // tirado um Sufixo, o mod a mais só pode ser Sufixo
     const umSufixo = { ...p, sufixos: p.sufixos.slice(0, 1) };
