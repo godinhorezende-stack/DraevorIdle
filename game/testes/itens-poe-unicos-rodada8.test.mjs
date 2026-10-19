@@ -441,7 +441,11 @@ test('"Ataques executados por você se repetem mais 1 vez": a Pancada sai duas v
         Object.assign(e, { hp: e.maxHp, mana: 1e6, maxMana: 1e6 });
         Cacadas.tique(e, PERSONAGEM, (t += 250));
       }
-      return Registro.ultimosGolpes(500).filter((g) => g.origem === 'gema').length;
+      // (lote A4, com o aval do dono: D1 — o uso com a repetição dá 2 golpes e dura o dobro do tempo de uso, como no PoE; os golpes no mesmo tempo
+      // ficam iguais)
+      const entry = Acoes.POR_ID_PUBLICO(e.actions[0].id);
+      const uso = Acoes.temposDaGemaPoe(e, entry, GS.efeitoNaSkill(e, e.actions[0].id)).uso;
+      return { golpes: Registro.ultimosGolpes(500).filter((g) => g.origem === 'gema').length, tempo: e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE]?.total, uso };
     } finally {
       Registro.limparRegistro();
       Registro.definirNivel(antes);
@@ -449,8 +453,11 @@ test('"Ataques executados por você se repetem mais 1 vez": a Pancada sai duas v
   };
   const uma = usos({});
   const duas = usos({ repeticoes_ataque_proprio: 1 });
-  assert.ok(uma >= 4, `${uma} golpes`);
-  assert.ok(duas >= uma * 1.8, `com a repetição, o dobro de golpes (${duas} × ${uma})`);
+  assert.ok(uma.golpes >= 4, `${uma.golpes} golpes`);
+  // (lote A4, com o aval do dono: cada uso, 2 golpes — o total é par — e o dobro do tempo de uso; sem a repetição, 1 tempo)
+  assert.equal(duas.golpes % 2, 0, `com a repetição, 2 golpes por uso (${duas.golpes})`);
+  assert.equal(duas.tempo, Math.round(2 * duas.uso), `o uso dura o dobro (${duas.tempo} × ${duas.uso})`);
+  assert.equal(uma.tempo, uma.uso);
 });
 
 test('trava contra regressão: as linhas de armas, armaduras e amuletos únicos que não funcionam não voltam a subir (rodada 8)', { skip: SEM }, () => {

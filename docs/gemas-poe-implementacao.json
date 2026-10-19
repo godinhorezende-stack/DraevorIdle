@@ -2,37 +2,37 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 389,
-   "implementada e testada": 107,
-   "implementada, sem teste próprio": 54,
+   "parcial": 358,
+   "implementada e testada": 135,
+   "implementada, sem teste próprio": 57,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "parcial": 136,
-   "implementada e testada": 46,
-   "implementada, sem teste próprio": 22,
+   "parcial": 118,
+   "implementada e testada": 63,
+   "implementada, sem teste próprio": 23,
    "limitação do modelo idle": 6
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 74,
-   "parcial": 136,
+   "implementada e testada": 75,
+   "parcial": 135,
    "implementada, sem teste próprio": 52
   },
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 41,
-    "implementada e testada": 5,
-    "implementada, sem teste próprio": 6
+    "parcial": 35,
+    "implementada e testada": 9,
+    "implementada, sem teste próprio": 8
    },
    "alternativas": {
     "total": 209,
-    "parcial": 158,
-    "implementada, sem teste próprio": 27,
-    "implementada e testada": 17,
+    "parcial": 145,
+    "implementada, sem teste próprio": 29,
+    "implementada e testada": 28,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 903,
-   "emDuasOuMais": 184
+   "linhasDistintas": 844,
+   "emDuasOuMais": 165
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,8 +59,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 225,
-   "suportesCitados": 89,
+   "ativasCitadas": 253,
+   "suportesCitados": 93,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -140,10 +140,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ângulo aumentado em 100 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -749,13 +747,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
-    "efeito não simulado: Estacas Despedaçadoras causam 30 % mais dano",
-    "efeito não simulado: Máximo de +3 Estacas Cria",
-    "efeito não simulado: +1 fissura"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -767,13 +760,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
-    "efeito não simulado: Estacas Despedaçadoras causam 30 % mais dano",
-    "efeito não simulado: Máximo de +3 Estacas Cria",
-    "efeito não simulado: +1 fissura"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1788,9 +1776,6 @@
    "arquetipo": "impacto",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Segundo Estágio causa 15 % menos Dano",
-    "efeito não simulado: Terceiro Estágio causa 30 % menos Dano",
-    "efeito não simulado: Raio Base terciário igual a 3.1 metros",
     "efeito não simulado: Receba 15 % do Dano Físico como Dano de Gelo Extra"
    ],
    "idle": [],
@@ -2315,12 +2300,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 10 % mais Velocidade de Ataque por cada Estágio",
-    "efeito não simulado: Ganhe um Estágio no início de cada ataque par Máximo de 10 Estágios",
-    "efeito não simulado: 4 % mais Velocidade de Ataque por cada Estágio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2522,10 +2503,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ângulo do Efeito em Área aumentado em 80 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2537,10 +2516,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ângulo do Efeito em Área aumentado em 80 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2687,10 +2664,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ângulo do Efeito em Área aumentado em 80 %"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3174,10 +3149,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: as 25 repetições do teleporte e do ataque, com os ferimentos e o dano total no fim (no jogo é um golpe)"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3388,7 +3361,6 @@
    "ausentes": [
     "efeito não simulado: 88 % mais Dano com Sangramento enquanto na Postura de Sangue",
     "efeito não simulado: 25 % de chancer de causar Sangramento enquanto na Postura de Sangue",
-    "efeito não simulado: Ângulo aumentada em 50 % enquanto na Postura da Areia",
     "efeito não simulado: Velocidade de Ataque aumentada em 20 % caso tenha mudado de Postura Recentemente"
    ],
    "idle": [],
@@ -3402,10 +3374,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ângulo aumentada em 50 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3521,7 +3491,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3560,11 +3530,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 4 Estágios Máximos",
-    "efeito não simulado: + 2 do máximo de Estágios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3578,9 +3545,7 @@
    "arquetipo": "corpo_a_corpo",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: 4 Estágios Máximos",
-    "efeito não simulado: Converte 100 % do Dano Físico para um Elemento aleatório",
-    "efeito não simulado: + 2 do máximo de Estágios"
+    "efeito não simulado: Converte 100 % do Dano Físico para um Elemento aleatório"
    ],
    "idle": [],
    "outros": [],
@@ -3800,11 +3765,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: + 4 do máximo de Estágios",
-    "efeito não simulado: + 2 do máximo de Estágios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4299,10 +4261,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Mais 20 % de dano quando em estágios máximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4314,10 +4274,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +40 % ao multiplicador de golpe crítico quando em estágios máximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4331,9 +4289,7 @@
    "arquetipo": "area",
    "estado": "parcial",
    "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
-    "efeito não simulado: Deixa uma Lâmina Persistente no solo para cada 1 Saraivadas",
-    "efeito não simulado: +1 Rajada"
+    "efeito não simulado: Deixa uma Lâmina Persistente no solo para cada 1 Saraivadas"
    ],
    "idle": [],
    "outros": [],
@@ -4346,13 +4302,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
-    "efeito não simulado: 10 % mais Dano por Rajada",
-    "efeito não simulado: 25 % de aumento da Chance de Acerto Crítico por Rajada",
-    "efeito não simulado: +1 Rajada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4366,7 +4317,6 @@
    "arquetipo": "area",
    "estado": "parcial",
    "ausentes": [
-    "as repetições do golpe não existem: no jogo é um",
     "efeito não simulado: Golpes Críticos não causam Dano extra",
     "efeito não simulado: Golpe Críticos infligem Empalamento"
    ],
@@ -4532,12 +4482,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional",
-    "efeito não simulado: 20 % menos Velocidade de Movimento",
-    "efeito não simulado: Área de Efeito aumentada em 5 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4549,11 +4495,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional",
-    "efeito não simulado: 10 % menos Velocidade de Movimento por Estágio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4732,13 +4675,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Máximo de 5 Estágios Deixa 1 Esporo por Estágio",
-    "efeito não simulado: Cada Esporo dispara 9 Flechas de Espinho",
-    "efeito não simulado: Projéteis de Espinhos causam 50 % menos Dano",
-    "efeito não simulado: Cada Esporo dispara +2 Flechas de Espinho"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4944,10 +4882,7 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Efeito da Cegueira aumentado em 68 %",
-    "efeito não simulado: 100 % de chance de Cegar inimigos ao acertá-los",
-    "efeito não simulado: 50 % menos Dano Sofrido enquanto Canalizando",
-    "efeito não simulado: Raio Base do Círculo é de 1 metro +0.5 metros ao Raio do Círculo por Estágio A Canalização é interrompida quando o Raio Total do Círculo atingir 9 metros",
-    "efeito não simulado: +5 % mais Dano com Acertos e Afecções por cada estágio"
+    "efeito não simulado: 100 % de chance de Cegar inimigos ao acertá-los"
    ],
    "idle": [],
    "outros": [],
@@ -4960,11 +4895,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Área de Efeito aumentada em 15 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional",
-    "efeito não simulado: Área de Efeito aumentada em 5 % por cada 0.1 metro de Alcance de Golpe Corpo a Corpo adicional"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5057,11 +4989,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: As Flechas desta Habilidade causam 1 % mais Dano com Afecções por Estágio",
-    "efeito não simulado: As Flechas desta Habilidade causam 1 % mais Dano com Acertos por Estágio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5336,7 +5265,6 @@
    "arquetipo": "canalizacao",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Ganhe +1 metro de raio por segundo enquanto Canalizando, máximo de +2 metros",
     "efeito não simulado: +10 % ao Máximo de Efeito da Eletrização"
    ],
    "idle": [],
@@ -6410,10 +6338,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6425,10 +6351,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6440,10 +6364,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 100 % de aumento do ângulo por estágio, até 300 %"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6561,13 +6483,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Debuff Incendiário pode ter no máximo 8 estágios",
-    "efeito não simulado: Estágios Adicionais do Debuff adicionam 80 % de Dano",
-    "efeito não simulado: Exposição a Fogo aplica -25 % de Resistência a Fogo",
-    "efeito não simulado: Exposição a Fogo aplica 0 % de Resistência a Fogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6579,12 +6496,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Debuff Incendiário pode ter no máximo 8 estágios",
-    "efeito não simulado: Estágios Adicionais do Debuff adicionam 10 % de Dano",
-    "efeito não simulado: Estágios Adicionais do Debuff adicionam +4 % de Dano"
-   ],
+   "estado": "implementada, sem teste próprio",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6718,11 +6631,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa explosões menores até 5 vezes em acertos inimigos",
-    "efeito não simulado: Efeito em Área reduzido em 15 % a cada repetição"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6799,13 +6709,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "marca",
-   "estado": "parcial",
-   "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: Debuff causa 20 % mais Dano por Estágio",
-    "efeito não simulado: Duração Base do Debuff é de 2 segundos",
-    "efeito não simulado: Debuff causa +5 % mais Dano por Estágio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7632,12 +7537,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano em 5 Inimigos próximos quando você ganha Estágios",
-    "efeito não simulado: Feixe causa 250 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 250 % mais Dano com Afecções por Estágio após o primeiro",
-    "efeito não simulado: Comprimento do raio aumentado em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7649,12 +7550,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano em 10 Inimigos próximos quando você ganha Estágios",
-    "efeito não simulado: Feixe causa 140 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 140 % mais Dano com Afecções por Estágio após o primeiro",
-    "efeito não simulado: Causa Dano em 4 Inimigos próximos quando você ganha Estágios"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7666,12 +7563,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Comprimento do raio aumentado em 19 %",
-    "efeito não simulado: Feixe causa 200 % mais Dano com Acertos por Estágio após o primeiro Feixe causa 200 % mais Dano com Afecções por Estágio após o primeiro",
-    "efeito não simulado: Comprimento do raio aumentado em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8174,7 +8067,6 @@
    "arquetipo": "nova",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Repete 2 vezes",
     "efeito não simulado: 10 % mais Velocidade de Conjuração"
    ],
    "idle": [],
@@ -8351,11 +8243,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 200 % mais Dano Mágico por estágio",
-    "efeito não simulado: 110 % mais Dano com Afecções por estágio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8397,15 +8286,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "os estágios de canalização não existem: no jogo é um uso por vez",
-    "efeito não simulado: Dispara projéteis a cada 1.2 segundos",
-    "efeito não simulado: Duração aumentada em 30 % por Estágio",
-    "efeito não simulado: 80 % mais Frequência de Projéteis enquanto Canalizando",
-    "efeito não simulado: 20 % de aumento da Frequência de Projéteis por Estágio",
-    "efeito não simulado: +2 Estágios Máximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -9572,10 +9454,7 @@
    "nome": "Onda de Choque do Vazio (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo",
-    "não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados",
-    "não simulado: Onda de choque se repete de até 4 inimigos na área",
-    "não simulado: Repetições da onda de choque causam -50% de dano com ataques e afecções"
+    "não simulado: a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)"
    ],
    "outros": [],
    "icone": true
@@ -10297,12 +10176,7 @@
    "nome": "Tormenta do Vazio (Reforço)",
    "estado": "parcial",
    "ausentes": [
-    "não simulado: Habilidades reforçadas ativam Tormenta do Vazio ao atingir o chão Tormentas do Vazio não podem ser ativadas a menos de 3 metros de você",
-    "não simulado: Máximo de 3 tempestades",
-    "não simulado: Tempestades ganham um estágio por 0.2 segundos, até 10",
-    "não simulado: Tempestades têm +15% de área de efeito por estágio",
-    "não simulado: Explosão causa +40% de dano com ataques e afecções por estágio",
-    "não simulado: Habilidades reforçadas ativam Tormenta do Vazio ao atingir o chão\\nTormentas do Vazio não podem ser ativadas a menos de 3 metros de você"
+    "não simulado: a explosão da tempestade usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada"
    ],
    "outros": [],
    "icone": true
@@ -11095,10 +10969,8 @@
   {
    "slug": "Awakened_Spell_Echo_Support",
    "nome": "Suporte Desperto: Eco Mágico",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Repetição Final das Habilidades Suportadas tem 20% de chance de causar Dano Dobrado"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -11432,16 +11304,6 @@
    ]
   },
   {
-   "linha": "as repetições do golpe não existem: no jogo é um",
-   "gemas": [
-    "Bladefall",
-    "Bladefall_of_Impaling",
-    "Bladefall_of_Volleys",
-    "Earthshatter",
-    "Earthshatter_of_Fragility"
-   ]
-  },
-  {
    "linha": "Duração do Efeito de Habilidades aumentada em # %",
    "gemas": [
     "Molten_Shell",
@@ -11525,27 +11387,11 @@
    ]
   },
   {
-   "linha": "# % de aumento do ângulo por estágio, até # %",
-   "gemas": [
-    "Incinerate",
-    "Incinerate_of_Expanse",
-    "Incinerate_of_Venting"
-   ]
-  },
-  {
    "linha": "# segundos adicionais de Duração Base por Cadáver extra consumido",
    "gemas": [
     "Bone_Offering",
     "Flesh_Offering",
     "Spirit_Offering"
-   ]
-  },
-  {
-   "linha": "+ # do máximo de Estágios",
-   "gemas": [
-    "Reave",
-    "Reave_of_Refraction",
-    "Vaal_Reave"
    ]
   },
   {
@@ -11570,22 +11416,6 @@
     "Ancestral_Call_Support",
     "Awakened_Ancestral_Call_Support",
     "Greater_Ancestral_Call_Support"
-   ]
-  },
-  {
-   "linha": "Ângulo do Efeito em Área aumentado em # %",
-   "gemas": [
-    "Ice_Shot",
-    "Ice_Shot_of_Penetration",
-    "Vaal_Ice_Shot"
-   ]
-  },
-  {
-   "linha": "Área de Efeito aumentada em # % por cada # metro de Alcance de Golpe Corpo a Corpo adicional",
-   "gemas": [
-    "Cyclone",
-    "Cyclone_of_Tumult",
-    "Vaal_Cyclone"
    ]
   },
   {
@@ -11629,22 +11459,6 @@
    ]
   },
   {
-   "linha": "Estacas Despedaçadoras causam # % mais dano",
-   "gemas": [
-    "Earthshatter",
-    "Earthshatter_of_Fragility",
-    "Earthshatter_of_Prominence"
-   ]
-  },
-  {
-   "linha": "Feixe causa # % mais Dano com Acertos por Estágio após o primeiro Feixe causa # % mais Dano com Afecções por Estágio após o primeiro",
-   "gemas": [
-    "Divine_Ire",
-    "Divine_Ire_of_Disintegration",
-    "Divine_Ire_of_Holy_Lightning"
-   ]
-  },
-  {
    "linha": "Flecha dispara Raios a cada # segundos",
    "gemas": [
     "Storm_Rain",
@@ -11658,14 +11472,6 @@
     "Blastchain_Mine_Support",
     "High-Impact_Mine_Support",
     "Locus_Mine_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados",
-   "gemas": [
-    "Fissure_Support",
-    "Trauma_Support",
-    "Void_Shockwave_Support"
    ]
   },
   {
@@ -11706,14 +11512,6 @@
     "Boneshatter",
     "Boneshatter_of_Carnage",
     "Boneshatter_of_Complex_Trauma"
-   ]
-  },
-  {
-   "linha": "Raio Base terciário igual a # metros",
-   "gemas": [
-    "Ice_Crash",
-    "Ice_Trap",
-    "Vaal_Cold_Snap"
    ]
   },
   {
@@ -11865,13 +11663,6 @@
    ]
   },
   {
-   "linha": "# Estágios Máximos",
-   "gemas": [
-    "Reave",
-    "Reave_of_Refraction"
-   ]
-  },
-  {
    "linha": "# segundos entre o aparecimento de seções da Parede",
    "gemas": [
     "Frost_Wall",
@@ -11914,13 +11705,6 @@
    ]
   },
   {
-   "linha": "+# fissura",
-   "gemas": [
-    "Earthshatter",
-    "Earthshatter_of_Fragility"
-   ]
-  },
-  {
    "linha": "+# metros ao Alcance de Golpes Corpo a Corpo",
    "gemas": [
     "Frost_Blades",
@@ -11939,13 +11723,6 @@
    "gemas": [
     "Cleave",
     "Vaal_Cleave"
-   ]
-  },
-  {
-   "linha": "+# Rajada",
-   "gemas": [
-    "Bladefall",
-    "Bladefall_of_Volleys"
    ]
   },
   {
@@ -12030,13 +11807,6 @@
    "gemas": [
     "Toxic_Rain",
     "Toxic_Rain_of_Sporeburst"
-   ]
-  },
-  {
-   "linha": "Cada Esporo dispara # Flechas de Espinho",
-   "gemas": [
-    "Scourge_Arrow",
-    "Scourge_Arrow_of_Menace"
    ]
   },
   {
@@ -12131,13 +11901,6 @@
    ]
   },
   {
-   "linha": "Causa Dano em # Inimigos próximos quando você ganha Estágios",
-   "gemas": [
-    "Divine_Ire",
-    "Divine_Ire_of_Holy_Lightning"
-   ]
-  },
-  {
    "linha": "Ceifador faz com que seus Lacaios Não-Ceifadores causem # % menos Dano",
    "gemas": [
     "Summon_Reaper",
@@ -12149,13 +11912,6 @@
    "gemas": [
     "Summon_Reaper",
     "Summon_Reaper_of_Eviscerating"
-   ]
-  },
-  {
-   "linha": "Comprimento do raio aumentado em # %",
-   "gemas": [
-    "Divine_Ire",
-    "Divine_Ire_of_Disintegration"
    ]
   },
   {
@@ -12177,13 +11933,6 @@
    "gemas": [
     "Poisonous_Concoction",
     "Poisonous_Concoction_of_Bouncing"
-   ]
-  },
-  {
-   "linha": "Debuff Incendiário pode ter no máximo # estágios",
-   "gemas": [
-    "Scorching_Ray",
-    "Scorching_Ray_of_Immolation"
    ]
   },
   {
@@ -12285,13 +12034,6 @@
    ]
   },
   {
-   "linha": "Estágios Adicionais do Debuff adicionam # % de Dano",
-   "gemas": [
-    "Scorching_Ray",
-    "Scorching_Ray_of_Immolation"
-   ]
-  },
-  {
    "linha": "Explosão Cinética cria # explosões adicionais",
    "gemas": [
     "Kinetic_Blast",
@@ -12383,17 +12125,17 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo",
-   "gemas": [
-    "Shockwave_Support",
-    "Void_Shockwave_Support"
-   ]
-  },
-  {
    "linha": "Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito",
    "gemas": [
     "Cursed_Ground_Support",
     "Hextoad_Support"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados",
+   "gemas": [
+    "Fissure_Support",
+    "Trauma_Support"
    ]
   },
   {
@@ -12481,13 +12223,6 @@
    ]
   },
   {
-   "linha": "Máximo de +# Estacas Cria",
-   "gemas": [
-    "Earthshatter",
-    "Earthshatter_of_Fragility"
-   ]
-  },
-  {
    "linha": "o uso de cadáveres não existe no jogo",
    "gemas": [
     "Bodyswap",
@@ -12513,13 +12248,6 @@
    "gemas": [
     "Storm_Burst",
     "Storm_Burst_of_Repulsion"
-   ]
-  },
-  {
-   "linha": "os estágios de canalização não existem: no jogo é um uso por vez",
-   "gemas": [
-    "Winter_Orb",
-    "Wintertide_Brand"
    ]
   },
   {
@@ -12551,13 +12279,6 @@
    ]
   },
   {
-   "linha": "Projéteis de Espinhos causam # % menos Dano",
-   "gemas": [
-    "Scourge_Arrow",
-    "Scourge_Arrow_of_Menace"
-   ]
-  },
-  {
    "linha": "Pulsa a cada # segundos",
    "gemas": [
     "Void_Sphere",
@@ -12583,6 +12304,13 @@
    "gemas": [
     "Explosive_Trap",
     "Explosive_Trap_of_Shrapnel"
+   ]
+  },
+  {
+   "linha": "Raio Base terciário igual a # metros",
+   "gemas": [
+    "Ice_Trap",
+    "Vaal_Cold_Snap"
    ]
   },
   {
@@ -12757,12 +12485,6 @@
    ]
   },
   {
-   "linha": "# % de aumento da Chance de Acerto Crítico por Rajada",
-   "gemas": [
-    "Bladefall_of_Volleys"
-   ]
-  },
-  {
    "linha": "# % de aumento da Distância do Empurrão",
    "gemas": [
     "Seismic_Cry"
@@ -12772,12 +12494,6 @@
    "linha": "# % de aumento da Duração da Habilidade por Carga de Frenesi removida",
    "gemas": [
     "Old_Phase_Run"
-   ]
-  },
-  {
-   "linha": "# % de aumento da Frequência de Projéteis por Estágio",
-   "gemas": [
-    "Winter_Orb"
    ]
   },
   {
@@ -12943,12 +12659,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano com Afecções por estágio",
-   "gemas": [
-    "Vaal_Flameblast"
-   ]
-  },
-  {
    "linha": "# % mais Dano de Projétil",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
@@ -12964,12 +12674,6 @@
    "linha": "# % mais Dano Físico Corpo a Corpo",
    "gemas": [
     "Old_Phase_Run"
-   ]
-  },
-  {
-   "linha": "# % mais Dano Mágico por estágio",
-   "gemas": [
-    "Vaal_Flameblast"
    ]
   },
   {
@@ -13003,12 +12707,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano por Rajada",
-   "gemas": [
-    "Bladefall_of_Volleys"
-   ]
-  },
-  {
    "linha": "# % mais Dano por Trauma, até # %",
    "gemas": [
     "Boneshatter_of_Complex_Trauma"
@@ -13033,21 +12731,9 @@
    ]
   },
   {
-   "linha": "# % mais Frequência de Projéteis enquanto Canalizando",
-   "gemas": [
-    "Winter_Orb"
-   ]
-  },
-  {
    "linha": "# % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido",
    "gemas": [
     "Elemental_Hit"
-   ]
-  },
-  {
-   "linha": "# % mais Velocidade de Ataque por cada Estágio",
-   "gemas": [
-    "Double_Strike_of_Momentum"
    ]
   },
   {
@@ -13075,12 +12761,6 @@
    ]
   },
   {
-   "linha": "# % menos Dano Sofrido enquanto Canalizando",
-   "gemas": [
-    "Vaal_Blade_Flurry"
-   ]
-  },
-  {
    "linha": "# % menos Velocidade de Arremesso de Armadilhas",
    "gemas": [
     "Explosive_Trap_of_Magnitude"
@@ -13090,18 +12770,6 @@
    "linha": "# % menos velocidade de lançar armadilhas com arma de duas mãos",
    "gemas": [
     "Spectral_Helix_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "# % menos Velocidade de Movimento",
-   "gemas": [
-    "Cyclone"
-   ]
-  },
-  {
-   "linha": "# % menos Velocidade de Movimento por Estágio",
-   "gemas": [
-    "Cyclone_of_Tumult"
    ]
   },
   {
@@ -13153,12 +12821,6 @@
    ]
   },
   {
-   "linha": "+# % ao multiplicador de golpe crítico quando em estágios máximos",
-   "gemas": [
-    "Blade_Flurry_of_Incision"
-   ]
-  },
-  {
    "linha": "+# % de Chance de ramificação da Fissura",
    "gemas": [
     "Tectonic_Slam"
@@ -13192,12 +12854,6 @@
    "linha": "+# % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento",
    "gemas": [
     "Voltaxic_Burst"
-   ]
-  },
-  {
-   "linha": "+# % mais Dano com Acertos e Afecções por cada estágio",
-   "gemas": [
-    "Vaal_Blade_Flurry"
    ]
   },
   {
@@ -13267,12 +12923,6 @@
    ]
   },
   {
-   "linha": "+# Estágios Máximos",
-   "gemas": [
-    "Winter_Orb"
-   ]
-  },
-  {
    "linha": "+# metro ao Alcance de Golpes Corpo a Corpo",
    "gemas": [
     "Frost_Blades_of_Katabasis"
@@ -13339,6 +12989,12 @@
    ]
   },
   {
+   "linha": "a explosão da tempestade usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada",
+   "gemas": [
+    "Voidstorm_Support"
+   ]
+  },
+  {
    "linha": "a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros",
    "gemas": [
     "Bonespire_Support"
@@ -13366,6 +13022,12 @@
    "linha": "a Onda Arcana é um acerto só, no anel de # casas em volta de você — a duração de # s e a Eficácia de #% do dano adicionado não entram",
    "gemas": [
     "Mana-Infused_Staff"
+   ]
+  },
+  {
+   "linha": "a onda usa o físico médio da arma × o \"Dano de Ataque: X% de base\" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)",
+   "gemas": [
+    "Void_Shockwave_Support"
    ]
   },
   {
@@ -13519,24 +13181,6 @@
    ]
   },
   {
-   "linha": "Ângulo aumentada em # %",
-   "gemas": [
-    "Lacerate_of_Butchering"
-   ]
-  },
-  {
-   "linha": "Ângulo aumentada em # % enquanto na Postura da Areia",
-   "gemas": [
-    "Lacerate"
-   ]
-  },
-  {
-   "linha": "Ângulo aumentado em # %",
-   "gemas": [
-    "Ground_Slam_of_Earthshaking"
-   ]
-  },
-  {
    "linha": "Ângulo da ramificação aumentado em # %",
    "gemas": [
     "Crackling_Lance_of_Branching"
@@ -13585,27 +13229,9 @@
    ]
   },
   {
-   "linha": "as # repetições do teleporte e do ataque, com os ferimentos e o dano total no fim (no jogo é um golpe)",
-   "gemas": [
-    "Vaal_Flicker_Strike"
-   ]
-  },
-  {
    "linha": "As flechas após a primeira caem em um raio base de # metros",
    "gemas": [
     "Conflagration"
-   ]
-  },
-  {
-   "linha": "As Flechas desta Habilidade causam # % mais Dano com Acertos por Estágio",
-   "gemas": [
-    "Snipe"
-   ]
-  },
-  {
-   "linha": "As Flechas desta Habilidade causam # % mais Dano com Afecções por Estágio",
-   "gemas": [
-    "Snipe"
    ]
   },
   {
@@ -13867,15 +13493,15 @@
    ]
   },
   {
-   "linha": "Cada Esporo dispara +# Flecha de Espinho",
+   "linha": "Cada Esporo dispara # Flechas de Espinho",
    "gemas": [
     "Scourge_Arrow_of_Menace"
    ]
   },
   {
-   "linha": "Cada Esporo dispara +# Flechas de Espinho",
+   "linha": "Cada Esporo dispara +# Flecha de Espinho",
    "gemas": [
-    "Scourge_Arrow"
+    "Scourge_Arrow_of_Menace"
    ]
   },
   {
@@ -14062,12 +13688,6 @@
    "linha": "Causa Dano nos Inimigos # vezes",
    "gemas": [
     "Swordstorm"
-   ]
-  },
-  {
-   "linha": "Causa explosões menores até # vezes em acertos inimigos",
-   "gemas": [
-    "Vaal_Ice_Nova"
    ]
   },
   {
@@ -14377,18 +13997,6 @@
    ]
   },
   {
-   "linha": "Debuff causa # % mais Dano por Estágio",
-   "gemas": [
-    "Wintertide_Brand"
-   ]
-  },
-  {
-   "linha": "Debuff causa +# % mais Dano por Estágio",
-   "gemas": [
-    "Wintertide_Brand"
-   ]
-  },
-  {
    "linha": "Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos",
    "gemas": [
     "Pestilent_Strike"
@@ -14461,12 +14069,6 @@
    ]
   },
   {
-   "linha": "Dispara projéteis a cada # segundos",
-   "gemas": [
-    "Winter_Orb"
-   ]
-  },
-  {
    "linha": "Dispara Projéteis a cada # segundos",
    "gemas": [
     "Cremation_of_the_Volcano"
@@ -14488,18 +14090,6 @@
    "linha": "Dispara um Carregamento de Flechas no ar Projéteis Disparam de onde a Flecha com o Carregamento cair",
    "gemas": [
     "Tornado_Shot_of_Cloudburst"
-   ]
-  },
-  {
-   "linha": "Duração aumentada em # % por Estágio",
-   "gemas": [
-    "Winter_Orb"
-   ]
-  },
-  {
-   "linha": "Duração Base do Debuff é de # segundos",
-   "gemas": [
-    "Wintertide_Brand"
    ]
   },
   {
@@ -14566,12 +14156,6 @@
    "linha": "Efeito em Área de Habilidades Maldição Suportadas reduzido em #%",
    "gemas": [
     "Hexpass_Support"
-   ]
-  },
-  {
-   "linha": "Efeito em Área reduzido em # % a cada repetição",
-   "gemas": [
-    "Vaal_Ice_Nova"
    ]
   },
   {
@@ -14725,15 +14309,15 @@
    ]
   },
   {
-   "linha": "Estacas Despedaçadoras causam +# % mais dano",
+   "linha": "Estacas Despedaçadoras causam # % mais dano",
    "gemas": [
     "Earthshatter_of_Prominence"
    ]
   },
   {
-   "linha": "Estágios Adicionais do Debuff adicionam +# % de Dano",
+   "linha": "Estacas Despedaçadoras causam +# % mais dano",
    "gemas": [
-    "Scorching_Ray_of_Immolation"
+    "Earthshatter_of_Prominence"
    ]
   },
   {
@@ -14821,12 +14405,6 @@
    ]
   },
   {
-   "linha": "Explosão causa +#% de dano com ataques e afecções por estágio",
-   "gemas": [
-    "Voidstorm_Support"
-   ]
-  },
-  {
    "linha": "Explosão Final causa + # % de dano",
    "gemas": [
     "Glacial_Cascade"
@@ -14854,12 +14432,6 @@
    "linha": "Explosões terão # a # de Dano de Fogo adicional",
    "gemas": [
     "Explosive_Arrow"
-   ]
-  },
-  {
-   "linha": "Exposição a Fogo aplica # % de Resistência a Fogo",
-   "gemas": [
-    "Scorching_Ray"
    ]
   },
   {
@@ -15028,18 +14600,6 @@
    "linha": "Ganha uma Ruína por uso Ao chegar a sete, sacrifica # % da sua vida e causa # % da vida sacrificada como dano de caos",
    "gemas": [
     "Dark_Bargain_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Ganhe +# metro de raio por segundo enquanto Canalizando, máximo de +# metros",
-   "gemas": [
-    "Lightning_Tendrils_of_Escalation"
-   ]
-  },
-  {
-   "linha": "Ganhe um Estágio no início de cada ataque par Máximo de # Estágios",
-   "gemas": [
-    "Double_Strike_of_Momentum"
    ]
   },
   {
@@ -15217,18 +14777,6 @@
    ]
   },
   {
-   "linha": "Habilidades reforçadas ativam Tormenta do Vazio ao atingir o chão Tormentas do Vazio não podem ser ativadas a menos de # metros de você",
-   "gemas": [
-    "Voidstorm_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades reforçadas ativam Tormenta do Vazio ao atingir o chão\\nTormentas do Vazio não podem ser ativadas a menos de # metros de você",
-   "gemas": [
-    "Voidstorm_Support"
-   ]
-  },
-  {
    "linha": "Habilidades reforçadas ativam uma fenda no impacto da pancada",
    "gemas": [
     "Fissure_Support"
@@ -15340,6 +14888,12 @@
    "linha": "Habilidades Suportadas Ativam Explosão Prismática ao Acertar",
    "gemas": [
     "Prismatic_Burst_Support"
+   ]
+  },
+  {
+   "linha": "Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo",
+   "gemas": [
+    "Shockwave_Support"
    ]
   },
   {
@@ -16153,12 +15707,6 @@
    ]
   },
   {
-   "linha": "Mais # % de dano quando em estágios máximos",
-   "gemas": [
-    "Blade_Flurry"
-   ]
-  },
-  {
    "linha": "Martelos Cadentes ocorrem a cada # segundos Aumentos e reduções na velocidade de ataque afetam a frequência com que esses martelos caem",
    "gemas": [
     "Holy_Sweep_of_Hammerfalls"
@@ -16183,12 +15731,6 @@
    ]
   },
   {
-   "linha": "Máximo de # Estágios Deixa # Esporo por Estágio",
-   "gemas": [
-    "Scourge_Arrow"
-   ]
-  },
-  {
    "linha": "Máximo de # Lacaios Relâmpagos Vivos",
    "gemas": [
     "Living_Lightning_Support"
@@ -16204,12 +15746,6 @@
    "linha": "Máximo de # Nascido(s) da Colmeia",
    "gemas": [
     "Hiveborn_Support"
-   ]
-  },
-  {
-   "linha": "Máximo de # tempestades",
-   "gemas": [
-    "Voidstorm_Support"
    ]
   },
   {
@@ -16369,12 +15905,6 @@
    ]
   },
   {
-   "linha": "Onda de choque se repete de até # inimigos na área",
-   "gemas": [
-    "Void_Shockwave_Support"
-   ]
-  },
-  {
    "linha": "Onda pode recomeçar até # vezes Áreas de onda ganham +# metros de raio para cada área anterior",
    "gemas": [
     "Sunder_of_Trarthus"
@@ -16489,6 +16019,12 @@
    ]
   },
   {
+   "linha": "Projéteis de Espinhos causam # % menos Dano",
+   "gemas": [
+    "Scourge_Arrow_of_Menace"
+   ]
+  },
+  {
    "linha": "Projéteis deixam Solo Eletrizado",
    "gemas": [
     "Vaal_Lightning_Trap"
@@ -16591,12 +16127,6 @@
    ]
   },
   {
-   "linha": "Raio Base do Círculo é de # metro +# metros ao Raio do Círculo por Estágio A Canalização é interrompida quando o Raio Total do Círculo atingir # metros",
-   "gemas": [
-    "Vaal_Blade_Flurry"
-   ]
-  },
-  {
    "linha": "Raio Base final do Solo Resfriado igual a # metros",
    "gemas": [
     "Cold_Snap"
@@ -16672,24 +16202,6 @@
    "linha": "Remove Resfriamentos após Causar Dano",
    "gemas": [
     "Frostblink_of_Wintry_Blast"
-   ]
-  },
-  {
-   "linha": "Repete # vezes",
-   "gemas": [
-    "Shock_Nova_of_Procession"
-   ]
-  },
-  {
-   "linha": "Repetição Final das Habilidades Suportadas tem #% de chance de causar Dano Dobrado",
-   "gemas": [
-    "Awakened_Spell_Echo_Support"
-   ]
-  },
-  {
-   "linha": "Repetições da onda de choque causam #% de dano com ataques e afecções",
-   "gemas": [
-    "Void_Shockwave_Support"
    ]
   },
   {
@@ -16795,12 +16307,6 @@
    ]
   },
   {
-   "linha": "Segundo Estágio causa # % menos Dano",
-   "gemas": [
-    "Ice_Crash"
-   ]
-  },
-  {
    "linha": "Só pode ser Acertado uma vez a cada # segundo",
    "gemas": [
     "Hydrosphere"
@@ -16888,24 +16394,6 @@
    "linha": "Tempestades Acertam Inimigos com Frequência aumentada em # %",
    "gemas": [
     "Herald_of_Thunder"
-   ]
-  },
-  {
-   "linha": "Tempestades ganham um estágio por # segundos, até #",
-   "gemas": [
-    "Voidstorm_Support"
-   ]
-  },
-  {
-   "linha": "Tempestades têm +#% de área de efeito por estágio",
-   "gemas": [
-    "Voidstorm_Support"
-   ]
-  },
-  {
-   "linha": "Terceiro Estágio causa # % menos Dano",
-   "gemas": [
-    "Ice_Crash"
    ]
   },
   {

@@ -563,6 +563,10 @@ const magiaDoFeiticeiro = (def) => def?.tipo === 'ativa' && !ehFeiticeiro(def) &
 const ehAutomacao = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Automation';
 // (revisão do A2: + a Ativação — o PoB exclui InbuiltTrigger e HasReservation: a Autoexerção, que o poedb trouxe sem a reserva)
 const FORA_DA_AUTOMACAO = ['poe:Ataque', 'poe:Armadilha', 'poe:Mina', 'poe:Totem', 'poe:Vaal', 'poe:Aura', 'poe:Arauto', 'poe:Ativação'];
+// (lote A4, dono 19/10: D10) o ATIRAR (Snipe): as gemas de ataque de arco ligadas a ele (não canalizadas) são as suportadas — "Release to trigger
+// one supported bow skill for each stage gained" (o PoB, act_dex.lua:17606): saem na liberação, uma por estágio (`Acoes.ativarGatilhos`, 'snipe')
+const ehAtirar = (def) => def?.tipo === 'ativa' && def.poe?.slug === 'Snipe';
+const suportadaDoAtirar = (def) => def?.tipo === 'ativa' && !ehAtirar(def) && !!def.tags?.includes('poe:Ataque') && !!def.tags?.includes('poe:Arco') && !def.tags?.includes('poe:Canalização');
 const magiaDaAutomacao = (def) => def?.tipo === 'ativa' && !ehAutomacao(def) && !ehFeiticeiro(def) && !!def.tags?.includes('poe:Magia') && !(def.castTime > 0) && !ACOES.get(def.acao)?.poeGema?.reserva && !FORA_DA_AUTOMACAO.some((t) => def.tags.includes(t));
 
 export function skillsAtivas(estado) {
@@ -698,6 +702,9 @@ export function gruposComGatilho(estado) {
       // (lote A2) a Automação: as magias instantâneas do grupo saem sozinhas com ela ligada (o buff dela)
       const auto = noGrupo.find((y) => ehAutomacao(y.def));
       if (auto) saida.push({ chave: `${slot}:${auto.i}`, nome: auto.def.nome, nivel: auto.g.nivel + bonus, gatilho: { quando: 'automacao' }, ataques: [], magias: noGrupo.filter((y) => magiaDaAutomacao(y.def)).map((y) => y.def.acao), automacao: auto.def.acao });
+      const atirar = noGrupo.find((y) => ehAtirar(y.def));
+      const doAtirar = atirar ? noGrupo.filter((y) => suportadaDoAtirar(y.def)).map((y) => y.def.acao) : [];
+      if (doAtirar.length) saida.push({ chave: `${slot}:${atirar.i}`, nome: atirar.def.nome, nivel: atirar.g.nivel + bonus, gatilho: { quando: 'snipe' }, ataques: [atirar.def.acao], magias: doAtirar, atirar: atirar.def.acao });
       for (const x of noGrupo.filter((y) => y.def.tipo === 'support' && y.def.suporte?.gatilho)) {
         const gat = typeof x.def.suporte.gatilho === 'function' ? x.def.suporte.gatilho(x.g.nivel + bonus) : x.def.suporte.gatilho;
         const ativas = noGrupo.filter((y) => y.def.tipo === 'ativa');

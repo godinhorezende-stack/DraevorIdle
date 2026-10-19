@@ -2435,8 +2435,9 @@ export function tique(estado, hunt, ficha, ms, agora = hunt?.clock ?? 0) {
   // (só as listas que alguma linha da ficha usa — `usosDaFicha`; as outras mudam a cada acerto e refariam a ficha à toa)
   const usados = usosDaFicha(ficha);
   const usos = usados.size ? Object.entries(hunt.poeUsosRecentes ?? {}).filter(([k]) => usados.has(k)).map(([k, l]) => `${k}:${[4000, 8000, 10000].map((j) => l.filter((t) => agora - t <= j).length).join('/')}`).join(',') : '';
-  // (+ lote 42: canalizando agora — o "enquanto canaliza" começa e acaba sem acontecimento)
-  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}|${Math.floor(efeitoDoElusivo(hunt, agora) / 10)}|${usos}|${canalizandoAgora(hunt, agora) ? 'c' : ''}`;
+  // (+ lote 42: canalizando agora — o "enquanto canaliza" começa e acaba sem acontecimento; lote A4: + qual gema e o estágio do tempo dela — o que
+  // a canalização dá a você, `GemasPoe.adds`)
+  const relogio = `${desdeOPasso <= MOVENDO_MS ? 'm' : Math.min(10, Math.floor(desdeOPasso / 1000))}|${sobClamor}|${valendo}|${Math.floor(efeitoDoElusivo(hunt, agora) / 10)}|${usos}|${canalizandoAgora(hunt, agora) ? `c:${hunt.canalizacao.acao ?? ''}:${hunt.canalizacao.estagioDaFicha ?? ''}` : ''}`;
   if (hunt.poeRelogioDaFicha !== undefined && hunt.poeRelogioDaFicha !== relogio) hunt.poeFichaMudou = true;
   hunt.poeRelogioDaFicha = relogio;
   if (hunt.recuperacoes?.length && (estado.hp ?? 0) > 0) {

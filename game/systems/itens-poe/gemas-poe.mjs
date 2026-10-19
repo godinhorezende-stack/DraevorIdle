@@ -25,6 +25,7 @@ import { ehLinhaLocalDaGema, atributosDasLinhas, atributosDoBuff, ehLinhaDoBuff 
 import { ACTION_CATALOG } from '../dados.mjs';
 import { DESLOCAMENTO, deslocamentoDasLinhas, ehLinhaDoDeslocamento } from './deslocamento.mjs';
 import * as GemasA2 from './gemas-a2.mjs';
+import * as GemasA4 from './gemas-a4.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -412,7 +413,7 @@ const DESCRICAO_DO_MOVIMENTO = {
   Flicker_Strike: ['a recarga pode ser pulada gastando uma Carga de Frenesi'],
   Flicker_Strike_of_Power: ['a recarga pode ser pulada gastando uma Carga de Poder'],
   Consecrated_Path_of_Endurance: ['a recarga pode ser pulada gastando uma Carga de Tolerância'],
-  Vaal_Flicker_Strike: ['as 25 repetições do teleporte e do ataque, com os ferimentos e o dano total no fim (no jogo é um golpe)'],
+  // (lote A4, dono 19/10: D3: os 25 golpes do Golpe Cintilante Vaal existem — `GemasA4.GOLPE_CINTILANTE_VAAL`, `Acoes.dispararSemMarcar`)
 };
 /** (lote A1 — D7) As linhas do Passo Definhante que o jogo faz (`Acoes.passoDefinhante`): o Elusivo e o Definhar de quem está na área. */
 const LINHAS_DO_PASSO_DEFINHANTE = /^Definhado dura [\d.]+ segundos?$|^Não pode ser Conjurado ou Ativado enquanto Elusivo Concede Elusivo$|^Efeito do Elusivo desta Habilidade aumentado em [\d.]+ ?%$|^Inflige \+?[\d.]+ Debuffs de Definhamento adicionais na primeira vez que cada Inimigo entrar na Área$/i;
@@ -609,10 +610,13 @@ export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
  * os "+X metros de raio" da gema, × √ do "X% mais Área de Efeito" dela —, ou null se o PoE não publica o raio; `areaIncPct` — a "Área de
  * Efeito aumentada em X%" da gema (soma com a das peças e dos suportes).
  */
+const RAIO_DO_POB = Object.freeze({ Vaal_Flameblast: 4.5 });
 export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   const st = compilada(slug, nivel, qualidade)?.stats;
   if (!st) return { raioM: null, areaIncPct: 0 };
-  const base = st.raio ?? st.raioProp ?? null;
+  // (lote A4, dono 19/10: D8: os dados divergentes seguem o PoB) a Rajada de Chamas Vaal: o raio de 4,5 m do PoB (radius 45, act_int.lua:7106) — o
+  // poedb diz 3,5
+  const base = RAIO_DO_POB[slug] ?? st.raio ?? st.raioProp ?? null;
   const raioM = base == null ? null : Math.max(0, (base + (st.raioBonus ?? 0)) * Math.sqrt(Math.max(0.2, 1 + (st.areaMais ?? 0) / 100)));
   return { raioM, areaIncPct: st.areaInc ?? 0 };
 }
@@ -747,7 +751,8 @@ function contraOAmaldicoado(linhas = []) {
  * O raio cresce "+X metros ao raio por estágio" (até o máximo da linha). O idle não solta o botão: a liberação no máximo é a abstração (a
  * canalização interrompida por outra habilidade perde os estágios, como a do PoE que não chegou a soltar).
  */
-const CARREGAM = /^(Flameblast|Scourge_Arrow)/;
+// (lote A4, dono 19/10: + a Rajada de Chamas Vaal, a Ira Divina, o Atirar e as Lâminas Velozes Vaal — só carregam até liberar)
+const CARREGAM = /^(Flameblast|Scourge_Arrow|Vaal_Flameblast|Divine_Ire|Snipe$|Vaal_Blade_Flurry)/;
 // (17/10, lote G18) o "mais" de cada estágio pela flag do PoB: "com Acertos e Afecções" (Hit|Ailment — o Incinerar, a Flecha Flagelante: `mais` e
 // `maisAmbos`), "Mágico" (só o acerto — a Rajada de Chamas, ModFlag.Hit: só `mais`) e "com Afecções" (só as afecções — `maisAfeccao`); a onda final
 // do Incinerar: o "com Acertos" (só o acerto), o "com Incêndio" (só o Incêndio) e o "sempre Incendeia". A qualidade entra (`linhasDaQualidade`).
@@ -764,19 +769,48 @@ const LINHAS_DE_ESTAGIO = [
   [/^A onda final causa \+?(\d+(?:\.\d+)?) ?% mais Dano com Incêndio$/i, (m, e) => { e.finalIncendio += Number(m[1]); }],
   [/^onda final sempre Incendeia$/i, (m, e) => { e.finalIncendeia = true; }],
 ];
-export const ehLinhaDeEstagio = (l) => LINHAS_DE_ESTAGIO.some(([re]) => re.test(l));
+// (lote A4, dono 19/10: + as linhas de estágio do lote A4 — `GemasA4.LINHAS_DE_ESTAGIO_A4`)
+export const ehLinhaDeEstagio = (l) => LINHAS_DE_ESTAGIO.some(([re]) => re.test(l)) || GemasA4.ehLinhaDeEstagioA4(l);
 const ESTAGIOS = new Map();
+/**
+ * (lote A4, dono 19/10) + o máximo que só o PoB publica (`GemasA4.MAX_DO_POB` — a Rajada de Chamas Vaal, a Ira Divina, o Atirar, as Lâminas Velozes
+ * Vaal, o Devastar — D6: 8) e os escritos de outro jeito (`GemasA4.LINHAS_DE_ESTAGIO_A4`: "4 Estágios Máximos", "+ 2 do máximo de Estágios", "+2
+ * Estágios Máximos"); os modos sem canalizar (`acerto` — o Devastar —, `usos` — o Golpe Duplo do Ímpeto: `GemasA4.modoSemCanalizar`); o "mais" no
+ * máximo (as Lâminas Velozes na qualidade), o "após o primeiro" da Ira Divina (o da afecção pelo PoB — D8), o raio por segundo das Gavinhas da
+ * Escalada e o raio "após o primeiro" da Rajada Vaal (VaalFlameblastStageAfterFirst).
+ */
 export function estagiosDaGema(slug, nivel = 1, qualidade = 0) {
   const h = compilada(slug, nivel, qualidade);
-  if (!h?.stats?.estagios) return null;
+  if (!h?.stats) return null;
   const q = Math.max(0, Math.min(20, Number(qualidade) || 0));
   const k = `${slug}@${h.nivel}@${q}`;
   if (ESTAGIOS.has(k)) return ESTAGIOS.get(k);
-  // (a qualidade soma frações — "+0.5 ao máximo de Estágios" —: no PoE os estágios são inteiros, arredondados para baixo)
-  const e = { max: Math.floor(h.stats.estagios), mais: 0, maisAmbos: 0, maisAfeccao: 0, critMais: 0, velMais: 0, raioM: h.stats.raioPorEstagio ?? 0, raioMaxM: null, final: 0, finalIncendio: 0, finalIncendeia: false, golpesFinais: /^Blade_Flurry/.test(slug), porMs: 0 };
-  for (const l of [...textosDaGema(slug, nivel).linhas, ...(q ? linhasDaQualidade(POR_SLUG.get(slug), q / 20) : [])]) for (const [re, f] of LINHAS_DE_ESTAGIO) { const m = re.exec(l); if (m) f(m, e); }
-  e.modo = e.porMs ? 'tempo' : CARREGAM.test(slug) ? 'carrega' : 'intensifica';
-  const r = e.mais || e.maisAfeccao || e.critMais || e.velMais || e.raioM || e.final || e.finalIncendio || e.finalIncendeia || e.golpesFinais ? e : null;
+  const e = { max: 0, mais: 0, maisAmbos: 0, maisAfeccao: 0, critMais: 0, velMais: 0, raioM: h.stats.raioPorEstagio ?? 0, raioMaxM: null, final: 0, finalIncendio: 0, finalIncendeia: false, golpesFinais: /^Blade_Flurry/.test(slug), porMs: 0,
+    maxEscrito: null, maxExtra: 0, maisNoMax: 0, critMultNoMax: 0, maisAcertoAposPrimeiro: 0, maisAfeccaoAposPrimeiro: 0, menosMovimentoPct: 0, cadaUsos: 0, areaMaisPorEstagioPct: 0, raioAposPrimeiro: slug === 'Vaal_Flameblast' };
+  for (const l of [...textosDaGema(slug, nivel).linhas, ...(q ? linhasDaQualidade(POR_SLUG.get(slug), q / 20) : [])]) {
+    for (const [re, f] of LINHAS_DE_ESTAGIO) { const m = re.exec(l); if (m) f(m, e); }
+    const t = String(l).replace(/(\d)%/g, '$1 %').replace(/\s+/g, ' ').trim();
+    for (const [re, f] of GemasA4.LINHAS_DE_ESTAGIO_A4) { const m = re.exec(t); if (m) f(m, e); }
+  }
+  // (o "50% mais Área de Efeito por cada estágio" do Devastar é um "mais" da área — o compilador o lia como metros de raio)
+  if (e.areaMaisPorEstagioPct) e.raioM = 0;
+  // (a Ira Divina: a afecção do PoB, não a do poedb)
+  if (GemasA4.IRA_DIVINA_AFECCAO_DO_POB[slug] != null && e.maisAcertoAposPrimeiro) e.maisAfeccaoAposPrimeiro = GemasA4.IRA_DIVINA_AFECCAO_DO_POB[slug];
+  // (o Atirar: a flecha própria com o "mais por Estágio do Tiro" — só o acerto e só a afecção — na liberação, como as suportadas)
+  const sn = GemasA4.snipeDasLinhas(slug, textosDaGema(slug, nivel).linhas);
+  if (sn) { e.mais += sn.maisAcertoPct; e.maisAfeccao += sn.maisAfeccaoPct; }
+  // (o Atirar: + 0,05 estágio por ponto de qualidade — snipe_max_stacks do PoB; o poedb não tem a linha)
+  const doPob = GemasA4.MAX_DO_POB[slug];
+  const base = h.stats.estagios ?? doPob ?? e.maxEscrito ?? 0;
+  e.max = Math.floor(base + e.maxExtra + (slug === 'Snipe' ? 0.05 * q : 0) + 1e-9);
+  e.modo = e.porMs ? 'tempo' : CARREGAM.test(slug) ? 'carrega' : GemasA4.modoSemCanalizar(slug) ?? 'intensifica';
+  // (revisão do A4: a Rajada Vaal explode a cada 3 estágios; o Devastar Vaal começa com 4)
+  e.explodeCada = GemasA4.EXPLODE_CADA[slug] ?? 0;
+  e.iniciais = GemasA4.ESTAGIOS_INICIAIS_DO_POB[slug] ?? 0;
+  // (a Maré Invernal: os estágios são do debuff no inimigo — `debuffDaGema`; o Orbe Invernal: do orbe — `orbeDaGema`)
+  const deOutro = !!GemasA4.debuffDasLinhas(slug, textosDaGema(slug, nivel).linhas) || /^Winter_Orb/.test(slug);
+  const tem = e.mais || e.maisAfeccao || e.critMais || e.velMais || e.raioM || e.final || e.finalIncendio || e.finalIncendeia || e.golpesFinais || e.maisNoMax || e.critMultNoMax || e.maisAcertoAposPrimeiro || e.areaMaisPorEstagioPct || e.menosMovimentoPct || ['carrega', 'acerto', 'usos'].includes(e.modo);
+  const r = e.max > 0 && tem && !deOutro ? e : null;
   ESTAGIOS.set(k, r);
   return r;
 }
@@ -790,14 +824,21 @@ export function estagiosDaGema(slug, nivel = 1, qualidade = 0) {
  */
 const LINHA_DA_SEQUENCIA = /^Onda causa Dano em \d+ Áreas$|^Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior(?: da onda)?$|^Onda causa Ondas de Choque de até \d+ Inimigos em cada Área$|^Ondas de Choque causam \d+ ?% menos Dano$|^Onda tem o delay entre Áreas reduzido em [\d.]+ ?%$|^Onda não pode parar antes de causar Dano em \d+ Áreas$/i;
 export const ehLinhaDaSequencia = (l) => LINHA_DA_SEQUENCIA.test(l);
+/**
+ * (lote A4, dono 19/10: R2) + as outras formas da sequência (`GemasA4.sequenciaDasLinhas`): a Chuva de Lâminas (`retangulo` — D4), a Colisão de
+ * Gelo (`concentrica`) e o Estilhaçar a Terra (`estrela`, com as estacas — D5). A da Ruptura é a `linha`.
+ */
 export function sequenciaDaGema(slug, nivel = 1, qualidade = 0) {
-  if (!/^Sunder/.test(slug)) return null;
+  if (!/^Sunder/.test(slug)) {
+    const a4 = /^(Bladefall|Ice_Crash|Earthshatter)/.test(slug) ? GemasA4.sequenciaDasLinhas(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)) : null;
+    return a4;
+  }
   const linhas = textosDaGema(slug, nivel).linhas;
   const achar = (re) => { for (const l of linhas) { const m = re.exec(l); if (m) return Number(m[1]); } return null; };
   const areas = achar(/^Onda causa Dano em (\d+) Áreas$/i);
   if (!areas) return null;
   return {
-    areas, raioM: areaNoNivel(slug, nivel, qualidade).raioM ?? 1.2, porAreaM: achar(/^Áreas de onda ganham \+([\d.]+) metros/i) ?? 0,
+    forma: 'linha', areas, raioM: areaNoNivel(slug, nivel, qualidade).raioM ?? 1.2, porAreaM: achar(/^Áreas de onda ganham \+([\d.]+) metros/i) ?? 0,
     choques: achar(/^Onda causa Ondas de Choque de até (\d+) Inimigos em cada Área$/i) ?? 0, choqueMenos: achar(/^Ondas de Choque causam (\d+) ?% menos Dano$/i) ?? 0,
   };
 }
@@ -818,6 +859,32 @@ export function torreDaGema(slug, nivel = 1, qualidade = 0) {
   if (!intervalo || !areas) return null;
   return { intervaloMs: Math.round(intervalo * 1000), duracaoMs: Math.round((compilada(slug, nivel, qualidade)?.stats?.duracao ?? 3.5) * 1000), areas, velocidadeDeArremesso: linhas.some((l) => /Frequência dos golpes/i.test(l)) };
 }
+
+/*
+ * ---- (lote A4, dono 19/10) os leitores no nível das gemas do lote A4 (`itens-poe/gemas-a4.mjs`: os dados e as contas) ----
+ */
+const comCache = (mapa, k, f) => { if (!mapa.has(k)) mapa.set(k, f()); return mapa.get(k); };
+const A4 = new Map();
+const linhasA4 = (slug, nivel, qualidade) => [textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)];
+/** (R1) A repetição própria da gema (`GemasA4.repeticoesDasLinhas`): a Procissão, a Nova de Gelo Vaal. */
+export const repeticoesDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `rep|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.repeticoesDasLinhas(slug, linhasA4(slug, nivel, qualidade).flat()));
+/** (D7) O ângulo da forma da gema (`GemasA4.anguloDasLinhas`). */
+export const anguloDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `ang|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.anguloDasLinhas(linhasA4(slug, nivel, qualidade).flat()));
+/** A Ira Divina (os toques ao ganhar estágio, a explosão e o feixe da liberação). */
+export const iraDivinaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `ira|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.iraDivinaDasLinhas(slug, ...linhasA4(slug, nivel, qualidade)));
+/** O círculo das Lâminas Velozes Vaal. */
+export const circuloDaGema = (slug, nivel = 1) => comCache(A4, `cir|${slug}@${nivel | 0}`, () => GemasA4.circuloDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** O "mais por Estágio do Tiro" do Atirar. */
+export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nivel | 0}`, () => GemasA4.snipeDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** Os esporos da Flecha Flagelante. */
+export const esporosDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `esp|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.esporosDasLinhas(slug, ...linhasA4(slug, nivel, qualidade)));
+/** O Orbe Invernal (o objeto no tempo). */
+export const orbeDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `orb|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.orbeDasLinhas(slug, ...linhasA4(slug, nivel, qualidade)));
+/** Os debuffs com estágios (a Maré Invernal, o Raio Abrasador). */
+export const debuffDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `deb|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.debuffDasLinhas(slug, ...linhasA4(slug, nivel, qualidade), qualidade));
+/** (C) A área do Ciclone por alcance ("X% por cada 0.1 metro de Alcance … adicional", o nível e a qualidade) e o "menos Velocidade de Movimento". */
+export const areaPorAlcanceDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `alc|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.areaPorAlcanceDasLinhas(linhasA4(slug, nivel, qualidade).flat()));
+export const menosMovimentoDaGema = (slug, nivel = 1) => comCache(A4, `mov|${slug}@${nivel | 0}`, () => GemasA4.menosMovimentoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
 
 /**
  * (17/10, lote G12) O USO DE CADÁVERES das gemas (os cadáveres da caçada — `hunt.cadaveres`, com a Vida Máxima do morto): a EXPLOSÃO ("Explosão
@@ -1214,9 +1281,11 @@ function avaliarNoJogo(h, formato) {
     // (09/10) O dano degenerativo da gema se aplica no acerto (`acoes`: `degenerativoNoNivel`); o "% da Vida por segundo" do Fogo Justo, ainda não.
     if (st.dotPctVida) motivos.push('o dano por % da Vida por segundo (Fogo Justo) ainda não se aplica');
     // (lote G10: os estágios que o jogo faz — `estagiosDaGema`; o resto segue)
-    if (st.estagios && !estagiosDaGema(h.slug, h.nivel, q)) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
+    // (lote A4, dono 19/10: + os estágios do Orbe Invernal — os do orbe — e os do debuff da Maré Invernal — os do inimigo)
+    if (st.estagios && !estagiosDaGema(h.slug, h.nivel, q) && !orbeDaGema(h.slug, h.nivel) && !debuffDaGema(h.slug, h.nivel, q)) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
     // (lote G11: a sequência de áreas da Ruptura existe — `sequenciaDaGema`)
-    if (st.repeticoes && !sequenciaDaGema(h.slug, h.nivel) && !torreDaGema(h.slug, h.nivel)) motivos.push('as repetições do golpe não existem: no jogo é um');
+    // (lote A4, dono 19/10: + a Chuva de Lâminas, a Colisão de Gelo e o Estilhaçar a Terra — `sequenciaDaGema`)
+    if (st.repeticoes && !sequenciaDaGema(h.slug, h.nivel, q) && !torreDaGema(h.slug, h.nivel)) motivos.push('as repetições do golpe não existem: no jogo é um');
     for (const [k, v] of Object.entries(st.chances ?? {})) if (v && !AFECCAO_NO_JOGO[k] && !CHANCE_NO_ACERTO[k]) motivos.push(`a chance de ${v}% de ${k} ainda não existe no jogo`);
     // (lote G12: as gemas de cadáver que o jogo faz — `cadaverDaGema`)
     if (st.cadaver && !cadaverDaGema(h.slug, h.nivel)) motivos.push('o uso de cadáveres não existe no jogo');
@@ -1226,7 +1295,7 @@ function avaliarNoJogo(h, formato) {
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
   // (lote A3: + as linhas de projétil que não se aplicam — `LINHAS_QUE_NAO_SE_APLICAM`, que vão como nota)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel) && ehLinhaDaSequencia(l)) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**
@@ -1467,9 +1536,28 @@ function doEquipamento(estado, chave) {
 
 /** (ciclo 7) As tags de gema que têm "Efeito do Buff" próprio na árvore (as que o arquétipo não separa). */
 const TAGS_DE_BUFF = { Vínculo: 'vinculo', Guarda: 'guarda' };
+/**
+ * (lote A4, dono 19/10) O que a gema CANALIZADA agora dá a você enquanto canaliza (o PoB: Condition ChannellingCyclone, GlobalEffect Buff): o "X% menos
+ * Velocidade de Movimento" do Ciclone (e o "por Estágio" do Ciclone do Tumulto — o estágio do tempo, `hunt.canalizacao.estagioDaFicha`) e o "50% menos
+ * Dano Sofrido enquanto Canalizando" das Lâminas Velozes Vaal. A ficha é refeita quando a canalização começa, acaba ou muda de estágio (o relógio da
+ * ficha — `ModsPoe.tique`).
+ */
+function addsDaCanalizacao(hunt) {
+  const c = hunt?.canalizacao;
+  if (!c || (hunt.clock ?? 0) > c.ate || !String(c.acao ?? '').startsWith(PREFIXO)) return null;
+  const slug = String(c.acao).slice(PREFIXO.length);
+  const nivel = c.nivel ?? 1;
+  const r = {};
+  const mov = menosMovimentoDaGema(slug, nivel) + (estagiosDaGema(slug, nivel)?.menosMovimentoPct ?? 0) * (c.estagioDaFicha ?? 0);
+  if (mov) r.move_speed_mais = -mov;
+  const menos = circuloDaGema(slug, nivel)?.menosDanoSofridoPct ?? 0;
+  if (menos) r.dano_recebido_mais = -menos;
+  return Object.keys(r).length ? r : null;
+}
 export function adds(estado) {
   const hunt = estado?.hunt;
-  if (!hunt?.buffs && !hunt?.lacaios?.length && !hunt?.partilha?.naSala?.length && !hunt?.a2) return null;
+  const daCanalizacao = addsDaCanalizacao(hunt);
+  if (!hunt?.buffs && !hunt?.lacaios?.length && !hunt?.partilha?.naSala?.length && !hunt?.a2) return daCanalizacao;
   const agora = hunt.clock ?? 0;
   const total = {};
   // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas — e o
@@ -1539,6 +1627,8 @@ export function adds(estado) {
   for (const [k, v] of Object.entries(dosTotens)) total[k] = (total[k] ?? 0) + v;
   // (lote A2) o Escudo Gélido, o Emblema do Poder e as auras templárias das sentinelas (`itens-poe/gemas-a2.mjs`)
   for (const [k, v] of Object.entries(GemasA2.adds(estado) ?? {})) total[k] = (total[k] ?? 0) + v;
+  // (lote A4, dono 19/10) o da canalização de agora (`addsDaCanalizacao`)
+  for (const [k, v] of Object.entries(daCanalizacao ?? {})) total[k] = (total[k] ?? 0) + v;
   for (const l of vivos) {
     const nomeDaGema = l.golem ? REGISTRO.get(l.gema)?.gema?.nome : null;
     const f = l.golem ? 1 + (doEquipamento(estado, 'efeito_buff_gema:golem') + (nomeDaGema ? doEquipamento(estado, `efeito_buff_gema:${slugDoNome(nomeDaGema)}`) : 0)) / 100 : 1;

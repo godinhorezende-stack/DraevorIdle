@@ -75,6 +75,44 @@ export function escalarForma(forma, raioNovo) {
   return saida;
 }
 
+/**
+ * (lote A4, dono 19/10: D7: "o ângulo atual da forma de cada gema vale 100%, e o 'Ângulo aumentado em X%' abre o cone, até 360°") A FORMA
+ * desenhada para o norte com o ÂNGULO × `fator` (1 = a mesma), no mesmo raio (Chebyshev). O meio-ângulo da forma é o maior `atan2(|dx|, −dy)` das
+ * casas dela; cada casa do quadrado do raio entra se o ângulo dela cabe em `min(180°, meio × fator)` e se o mesmo ponto com o ângulo ÷ `fator` (na
+ * mesma distância) cai na forma original — assim a varredura segue varredura e o cone segue cone, só mais aberto. A casa do centro fica como está.
+ */
+const AMOSTRAS = [[0, 0], [-0.3, -0.3], [0.3, -0.3], [-0.3, 0.3], [0.3, 0.3]];
+export function abrirForma(forma, fator = 1) {
+  const f = forma ?? [[0, 0]];
+  if (!(fator > 0) || Math.abs(fator - 1) < 1e-9) return f;
+  const fora = f.filter(([dx, dy]) => dx || dy);
+  if (!fora.length) return f;
+  const angulo = (dx, dy) => Math.atan2(dx, -dy);
+  // (a forma de uma casa de largura — a reta, o cone de raio 1 — tem o meio-ângulo de meia casa na ponta: senão não abriria)
+  const r0 = raioDaForma(f);
+  const meio = Math.max(Math.atan2(0.5, Math.max(1, r0)), ...fora.map(([dx, dy]) => Math.abs(angulo(dx, dy))));
+  const limite = Math.min(Math.PI, meio * fator) + 1e-9;
+  const r = r0;
+  const tem = new Set(f.map(([dx, dy]) => `${dx},${dy}`));
+  const arredondar = (v) => Math.sign(v) * Math.round(Math.abs(v)) || 0;
+  const saida = [];
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (!dx && !dy) { if (tem.has('0,0')) saida.push([0, 0]); continue; }
+    const a = angulo(dx, dy);
+    if (Math.abs(a) > limite) continue;
+    // (a casa vale por qualquer ponto dela — o meio e quatro perto dos cantos —, para o cone aberto não ficar com buracos do arredondamento)
+    const cai = AMOSTRAS.some(([ox, oy]) => {
+      const px = dx + ox;
+      const py = dy + oy;
+      const rho = Math.hypot(px, py);
+      const a0 = angulo(px, py) / fator;
+      return tem.has(`${arredondar(rho * Math.sin(a0))},${arredondar(-rho * Math.cos(a0))}`);
+    });
+    if (cai) saida.push([dx, dy]);
+  }
+  return saida.length ? saida : f;
+}
+
 /** As casas de uma reta de `de` na direção de `para`, até `alcance` casas de `de` (sem `de`). */
 export function reta(de, para, alcance) {
   const dx = para.x - de.x;

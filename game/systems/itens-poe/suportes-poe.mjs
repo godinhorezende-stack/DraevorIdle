@@ -451,6 +451,9 @@ const REGRAS = [
   // Repetições (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora.
   [new RegExp(`Repetem ${N} vez(?:es)? adiciona`, 'i'), (m) => ({ repeticoes: num(m[1]) })],
   [/Repetição (?:de|das) Habilidades Suportadas causa/i, () => ({})],
+  // (lote A4, dono 19/10) o Eco Desperto: "Repetição Final das Habilidades Suportadas tem X% de chance de causar Dano Dobrado" — sorteado na última
+  // repetição do uso (`Acoes.dispararSemMarcar`: o `dobroNaFinal`, que não dobra o golpe que já saiu Dobrado)
+  [new RegExp(`^Repetição Final das Habilidades Suportadas tem ${N}% de chance de causar Dano Dobrado$`, 'i'), (m) => ({ repeticaoFinalDobroPct: num(m[1]) })],
   // As propriedades que não mexem no efeito (o nível, o raio informativo, a recarga do gatilho — tratada no gatilho).
   [/^Nível:|^Recarga:|^Tempo de Uso:|^CooldownTime:|^Eficácia do Dano Adicionado:|^Dano de Ataque: .* de base|^Tempo de Conjuração:|^Chance de Crítico:|^Velocidade de Projétil:/, () => ({})],
   [/Experiência aumentada|requerem uma quantidade de Dano sofrido reduzid/i, () => ({})],
@@ -507,6 +510,36 @@ const PROPRIAS_A2 = {
     [/^Causa Sangramento$/i, (m, e) => { e.torresSangram = 1; }],
     [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.torresDanoPct = num(m[1]); }],
     [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.torresRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
+  ],
+  // (lote A4, dono 19/10) as Excepcionais da ONDA DE CHOQUE DO VAZIO e da TORMENTA DO VAZIO: a habilidade que o suporte concede tem os números dela (a
+  // recarga, o "Dano de Ataque: X% de base", o raio, a duração, a qualidade dela — o "Dano … aumentado" sem "Habilidades Suportadas"), que as regras
+  // gerais leriam como da suportada. A onda: `ondaDoVazio`, `ondaRaioM`, `ondaRepeticoes`, `ondaRepeticaoMaisPct`, `ondaRecargaMs`, `ondaDanoPct`,
+  // `ondaIncPct`, `soMachadoMacaCetroCajado` (`Acoes.ondaDoVazio`). A tormenta: `tormentaDoVazio`, `tormentaMinM`, `tormentaMs`, `tormentaRaioM`,
+  // `tormentasMax`, `tormentaEstagioMs`, `tormentaEstagiosMax`, `tormentaAreaPorEstagioPct`, `tormentaDanoPorEstagioPct`, `tormentaRecargaMs`,
+  // `tormentaDanoPct`, `tormentaIncPct` (`Acoes.tiqueDasTormentas`).
+  Void_Shockwave_Support: [
+    [/^Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo$/i, (m, e) => { e.ondaDoVazio = 1; }],
+    [/^Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados$/i, (m, e) => { e.soMachadoMacaCetroCajado = 1; }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.ondaRaioM = num(m[1]); }],
+    [new RegExp(`^Onda de choque se repete de até ${N} inimigos na área$`, 'i'), (m, e) => { e.ondaRepeticoes = Math.floor(num(m[1])); }],
+    [new RegExp(`^Repetições da onda de choque causam ${N}% de dano com ataques e afecções$`, 'i'), (m, e) => { e.ondaRepeticaoMaisPct = num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.ondaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.ondaDanoPct = num(m[1]); }],
+    [new RegExp(`^Dano Corpo a Corpo aumentado em ${N}%$`, 'i'), (m, e) => { e.ondaIncPct = (e.ondaIncPct ?? 0) + num(m[1]); }],
+    [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
+  ],
+  Voidstorm_Support: [
+    [new RegExp(`^Habilidades reforçadas ativam Tormenta do Vazio ao atingir o chão(?:\\\\n|\\s)+Tormentas do Vazio não podem ser ativadas a menos de ${N} metros de você$`, 'i'), (m, e) => { e.tormentaDoVazio = 1; e.tormentaMinM = num(m[1]); }],
+    [new RegExp(`^Duração base é de ${N} segundos?$`, 'i'), (m, e) => { e.tormentaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^O raio Base é de ${N} metros?$`, 'i'), (m, e) => { e.tormentaRaioM = num(m[1]); }],
+    [new RegExp(`^Máximo de ${N} tempestades$`, 'i'), (m, e) => { e.tormentasMax = Math.floor(num(m[1])); }],
+    [new RegExp(`^Tempestades ganham um estágio por ${N} segundos?, até ${N}$`, 'i'), (m, e) => { e.tormentaEstagioMs = Math.round(num(m[1]) * 1000); e.tormentaEstagiosMax = Math.floor(num(m[2])); }],
+    [new RegExp(`^Tempestades têm \\+${N}% de área de efeito por estágio$`, 'i'), (m, e) => { e.tormentaAreaPorEstagioPct = num(m[1]); }],
+    [new RegExp(`^Explosão causa \\+${N}% de dano com ataques e afecções por estágio$`, 'i'), (m, e) => { e.tormentaDanoPorEstagioPct = num(m[1]); }],
+    [new RegExp(`^Recarga: ${N} seg`, 'i'), (m, e) => { e.tormentaRecargaMs = Math.round(num(m[1]) * 1000); }],
+    [new RegExp(`^Dano de Ataque: ${N}% de base$`, 'i'), (m, e) => { e.tormentaDanoPct = num(m[1]); }],
+    [new RegExp(`^Dano em Área aumentado em ${N}%$`, 'i'), (m, e) => { e.tormentaIncPct = (e.tormentaIncPct ?? 0) + num(m[1]); }],
     [/^Tempo de Uso:|^Eficácia do Dano Adicionado:/i, () => {}],
   ],
   Divine_Sentinel_Support: [
@@ -584,6 +617,9 @@ const DESCRICAO_NAO_FEITA = {
   // (lote A2) a Torre Óssea: a explosão é o físico MÉDIO da sua arma × o "Dano de Ataque: X% de base" da Tomar a Carne, pelo acerto das habilidades sem
   // golpe — os modificadores do golpe da arma (o crítico dela, os locais) não entram
   Bonespire_Support: ['não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros'],
+  // (lote A4, dono 19/10) as Excepcionais do Vazio: o acerto da onda e da tempestade é o das habilidades sem golpe (como a Torre Óssea)
+  Void_Shockwave_Support: ['não simulado: a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma)'],
+  Voidstorm_Support: ['não simulado: a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada'],
   Earthbreaker_Support: ['não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)'],
 };
 
