@@ -588,6 +588,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
       todos.push(chefe);
     }
   }
+  // Os chefes que só aparecem depois de outros (a Trindade Depravada do Ato 9): guardados na instância (`Instancia.liberarReserva`).
+  const reserva = comInstancia && !mapa ? Instancia.separarReserva(todos, Campanha.chefesAntesDe, Campanha.ehOMonstro) : [];
   for (const p of comInstancia ? [] : posicoes) {
     const z = andarDe(p);
     if (!andaresDaRota.has(z)) continue;
@@ -616,9 +618,11 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala, mapa = n
   let instancia = null;
   if (comInstancia) {
     instancia = Instancia.novoRegistro(huntId, instanciaId);
-    for (const m of [...monstros, ...Object.values(outrosAndares).flat()]) instancia.objetivos.total += m.objetivo ?? 1;
+    if (reserva.length) instancia.reserva = reserva;
+    const daInstancia = [...monstros, ...Object.values(outrosAndares).flat(), ...reserva.map((r) => r.m)];
+    for (const m of daInstancia) instancia.objetivos.total += m.objetivo ?? 1;
     // O total por setor (o progresso do setor é a contagem dos vivos contra isto).
-    instancia.setores = Setores.contarSetores([...monstros, ...Object.values(outrosAndares).flat()]);
+    instancia.setores = Setores.contarSetores(daInstancia);
     // Os encontros do mapa (se houver): sorteados AGORA, uma vez, com a semente guardada na instância.
     const definicoes = encontrosDaHunt(huntId);
     if (definicoes.length) Encontros.criar(instancia, definicoes);
@@ -1131,6 +1135,13 @@ function soltarChefeDoAto(hunt, agora) {
   m.proximoPasso = agora + PORTAL_DO_CHEFE_FECHA_MS;
   (c.z === (hunt.z ?? 0) ? hunt.monstros : (hunt.outrosAndares[c.z] ??= [])).push(m);
   c.uid = m.uid;
+}
+/** O chefe guardado (`Instancia.liberarReserva`: a Trindade Depravada, depois dos três) sai de um portal, com o aviso na tela de quem está na sala. */
+function soltarReserva(estado, hunt) {
+  for (const m of Instancia.liberarReserva(hunt)) {
+    EventosDeEncontro.empurrar(hunt, [{ t: 'portal', x: m.x, y: m.y, ms: PORTAL_DO_CHEFE_ABRE_MS + PORTAL_DO_CHEFE_FECHA_MS, asset: 'fabrica-portal-do-chefe' }]);
+    for (const e of quemEstaNaSala(estado, hunt)) e.avisoDaHunt = `${e.avisoDaHunt ? `${e.avisoDaHunt} ` : ''}${m.name} aparece!`;
+  }
 }
 /**
  * O chefe do ato ainda vai sair do portal, ou saiu e não teve a morte paga: a instância espera. Zerado e ainda no mapa também segura — a
@@ -1702,6 +1713,7 @@ export function tique(estado, personagem, agora = Date.now()) {
         abrirPortalDoChefe(hunt, quemEstaNaSala(estado, hunt));
       }
       soltarChefeDoAto(hunt, agora);
+      soltarReserva(estado, hunt);
       if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt, personagem);
       // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal. Com o
       // chefe do ato saindo do portal (ou vivo), ela espera ele morrer.

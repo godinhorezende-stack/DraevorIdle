@@ -25,6 +25,8 @@ function naFase(huntId) {
   return e;
 }
 const bichos = (e) => [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares ?? {}).flat()];
+// (+ o chefe guardado na instância, que entra depois de outros — a Trindade Depravada do Ato 9, `Instancia.liberarReserva`; dono, 19/10.)
+const daInstancia = (e) => [...bichos(e), ...(e.hunt.instancia?.reserva ?? []).map((r) => r.m)];
 
 test('toda fase que conclui por um monstro (matar o chefe, item de missão) tem esse monstro na instância', { skip: SEM }, () => {
   let comAlvo = 0;
@@ -33,7 +35,7 @@ test('toda fase que conclui por um monstro (matar o chefe, item de missão) tem 
     if (!['matar-chefe', 'item-de-missao'].includes(c.tipo) || !c.monstro) continue;
     comAlvo++;
     const e = naFase(f.huntId);
-    assert.ok(bichos(e).some((m) => Campanha.ehOMonstro(m.key, c.monstro)), `Ato ${f.ato} ${f.nome}: ${c.nome ?? c.monstro} nasce`);
+    assert.ok(daInstancia(e).some((m) => Campanha.ehOMonstro(m.key, c.monstro)), `Ato ${f.ato} ${f.nome}: ${c.nome ?? c.monstro} nasce`);
   }
   assert.ok(comAlvo >= 30, `${comAlvo} fases com alvo`);
 });

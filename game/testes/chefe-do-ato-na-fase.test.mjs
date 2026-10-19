@@ -229,7 +229,14 @@ for (const ato of ATOS) {
     assert.equal(!!cartao.semPortal, !!Campanha.atoDoChefeNaFase(ultima()), cartao.comoAparece);
     assert.match(cartao.comoAparece, cartao.semPortal ? /vence o ato/ : conc().tipo === 'matar-chefe' ? /^Mate .+ um portal se abre/ : /^Limpe a fase .+ um portal se abre/);
     if (Campanha.atoDoChefeNaFase(ultima())) {
-      // A fase pede o próprio chefe do ato: ele nasce com a fase; o portal não abre (nem limpando).
+      // A fase pede o próprio chefe do ato: ele nasce com a fase; o portal não abre (nem limpando). (O que entra depois de outros — a Trindade
+      // Depravada do Ato 9, depois de Doedre, Shavronne e Maligaro; dono, 19/10 — entra quando os de antes morrem.)
+      const antes = Campanha.chefesAntesDe(conc().monstro) ?? [];
+      // (numa corrente — Doedre, Shavronne, Maligaro — um entra quando o anterior morre)
+      for (let volta = 0; antes.length && volta < antes.length && !vivos(e).some((m) => Campanha.ehOMonstro(m.key, conc().monstro)); volta++) {
+        for (const m of vivos(e)) if (antes.some((s) => Campanha.ehOMonstro(m.key, s))) m.hp = 0;
+        andar(e, 500, relogio);
+      }
       const chefe = vivos(e).find((m) => Campanha.ehOMonstro(m.key, conc().monstro));
       assert.ok(chefe, `Ato ${ato}: ${conc().nome} está na fase`);
       venceOAto(e, ato, chefe, relogio);

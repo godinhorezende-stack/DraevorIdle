@@ -235,7 +235,46 @@ export function pendentes(hunt) {
   let n = 0;
   // `opcional`: um boss de encontro opcional (e seus lacaios) não conta para o CLEAR — só o encontro em andamento o segura.
   for (const m of bichosDaSala(hunt)) if (m.hp > 0 && m.instancia === inst?.id && !m.opcional) n += m.objetivo ?? 1;
+  // O chefe guardado (ainda não apareceu) também falta.
+  for (const r of inst?.reserva ?? []) n += r.m.objetivo ?? 1;
   return n;
+}
+
+/*
+ * ---- Os chefes EM SEQUÊNCIA (o Núcleo em Putrefação: Doedre, Shavronne, Maligaro e a Trindade, um por vez — `Campanha.CHEFES_EM_SEQUENCIA`) ----
+ * O chefe não nasce com a instância: fica em `instancia.reserva` (`{ z, m, antes: [uid] }`, os uids de quem tem de morrer antes), conta na
+ * limpeza e entra no andar dele quando nenhum dos de antes está vivo.
+ */
+/** Tira de `todos` (`[{ z, m }]`) os chefes que esperam outros que também nasceram; devolve a reserva. `antesDe(key)`: os slugs de antes. */
+export function separarReserva(todos, antesDe, ehOMonstro) {
+  // (os de antes contam entre TODOS os que nasceram — numa corrente, o de antes também pode estar guardado)
+  const nascidos = [...todos];
+  const reserva = [];
+  for (let i = todos.length - 1; i >= 0; i--) {
+    const { z, m } = todos[i];
+    const slugs = antesDe(m.key);
+    const antes = slugs ? nascidos.filter((o) => o.m !== m && slugs.some((s) => ehOMonstro(o.m.key, s))).map((o) => o.m.uid) : [];
+    if (!antes.length) continue;
+    todos.splice(i, 1);
+    reserva.unshift({ z, m, antes });
+  }
+  return reserva;
+}
+/** Solta os chefes guardados cujos de antes já morreram (ou saíram da sala). Devolve os que entraram. */
+export function liberarReserva(hunt) {
+  const sala = salaDe(hunt);
+  const inst = sala?.instancia;
+  if (!inst?.reserva?.length || inst.status !== 'ativa') return [];
+  // (o guardado conta como vivo: o de depois dele na corrente espera ele aparecer e morrer)
+  const vivos = new Set([...bichosDaSala(hunt).filter((m) => m.hp > 0), ...inst.reserva.map((r) => r.m)].map((m) => m.uid));
+  const soltos = [];
+  inst.reserva = inst.reserva.filter((r) => {
+    if (r.antes.some((uid) => vivos.has(uid))) return true;
+    (r.z === (sala.z ?? 0) ? sala.monstros : ((sala.outrosAndares ??= {})[r.z] ??= [])).push(r.m);
+    soltos.push(r.m);
+    return false;
+  });
+  return soltos;
 }
 
 /** `{ total, concluidos, percentual }` da limpeza da instância (percentual 0–100). */
@@ -302,9 +341,11 @@ export function bichoMaisPerto(hunt, grade) {
  */
 export function tirarAoAcaso(hunt, n, rng = Math.random) {
   const inst = hunt.instancia;
-  const listas = [hunt.monstros, ...Object.values(hunt.outrosAndares ?? {})];
   let tirados = 0;
   while (tirados < n) {
+    // (o chefe guardado entra quando os de antes saem — `liberarReserva`)
+    liberarReserva(hunt);
+    const listas = [hunt.monstros, ...Object.values(hunt.outrosAndares ?? {})];
     const vivos = [];
     for (const l of listas) for (let i = 0; i < l.length; i++) if (l[i].hp > 0 && l[i].instancia === inst?.id) vivos.push([l, i]);
     if (!vivos.length) break;
@@ -312,6 +353,7 @@ export function tirarAoAcaso(hunt, n, rng = Math.random) {
     l.splice(i, 1);
     tirados++;
   }
+  liberarReserva(hunt);
   return tirados;
 }
 
