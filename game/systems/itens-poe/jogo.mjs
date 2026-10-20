@@ -420,7 +420,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (68 — 19/10, lote 84: as notas do Empurrão — exceção —, do Emissário e dos altares)
 // (69 — 19/10, lote 86: a Égide Necromântica, parte A)
 // (70 — 19/10, lote 87: a Égide Necromântica, parte B — precisão, atordoamento e crítico nos lacaios)
-export const VERSAO_DA_TRADUCAO = 70;
+// (71 — 20/10, lote A5c: "X% do Dano Físico de Acertos com essa Arma é Convertido para um Elemento Aleatório" e "Acertos com esta Arma ganham X% de Dano Físico
+// como Dano de Gelo ou Raio Extra" só nos ataques — `@ataque` —: são da arma e não valem nas magias)
+export const VERSAO_DA_TRADUCAO = 71;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

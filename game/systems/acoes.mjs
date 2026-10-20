@@ -484,7 +484,8 @@ export function afLocalDoUso(entry, efeito) {
 /** (17/10, lote G17) O "mais Dano <tipo> degenerativo" dos suportes pelo elemento da parte do degenerativo da gema. */
 const MAIS_DOT_DO_ELEMENTO = { fire: 'maisDotFogoPct', ice: 'maisDotGeloPct', energy: 'maisDotRaioPct', chaos: 'maisDotCaosPct', physical: 'maisDotFisicoPct' };
 
-function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null, { ativada = false, custaVida = false, maisDano = 0, critMais = 0 } = {}) {
+// (lote A5c: `elementoSorteado` — o elemento da conversão "em Fogo, Gelo ou Raio" já sorteado para o objeto do uso: o Tornado da Turbulência Elemental)
+function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado), armaDoUso = null, { ativada = false, custaVida = false, maisDano = 0, critMais = 0, elementoSorteado = null } = {}) {
   fichaBase = comAsLinhasDaGema(estado, fichaBase, entry, efeitoDaGema);
   // PoE: a ficha DESTA habilidade — os mods condicionais pelas tags dela ("Dano em Área", "Chance de Crítico com Habilidades de Fogo"…) e os
   // sorteios do uso (dano dobrado, ignorar a redução física) — `itens-poe/mods-poe.mjs`. Sem o PoE, a mesma ficha. (+ a habilidade ATIVADA por
@@ -552,6 +553,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
    */
   let porElemento = null;
   let semDanoNenhum = false;
+  // (lote A5c, dono 20/10: "regra do PoE, no motor inteiro") as ORIGENS de cada parte — o que veio do Físico (convertido ou "como Extra") e das conversões entre
+  // elementos guarda os tipos por onde passou (`ModsPoe.somarOrigem`); o `mult` da parte soma o "aumentado" de todos eles, abaixo
+  const origens = {};
   if (daGemaPoe) {
     porElemento = {};
     const somar = (el, [a, b], m = 1) => { if (!(a > 0 || b > 0)) return; const x = porElemento[el] ?? [0, 0]; porElemento[el] = [x[0] + a * m, x[1] + b * m]; };
@@ -571,31 +575,35 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
           if (n > 0) extras[x.elemento] = [(extras[x.elemento]?.[0] ?? 0) + x.min * n * ef, (extras[x.elemento]?.[1] ?? 0) + x.max * n * ef];
         }
       }
-      // PoE: o Físico da arma como Caos/Fogo extra, e o convertido para um elemento aleatório (sai do Físico).
-      const doFisico = (armaDoGolpe.elemento ?? 'physical') === 'physical' ? ModsPoe.extrasDoFisico(fichaBase, [armaDoGolpe.min, armaDoGolpe.max]) : { extras: {}, convertidoPct: 0 };
-      for (const [el, [a, b]] of Object.entries(doFisico.extras)) extras[el] = [(extras[el]?.[0] ?? 0) + a, (extras[el]?.[1] ?? 0) + b];
-      const fConv = 1 - doFisico.convertidoPct / 100;
-      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min * fConv, max: armaDoGolpe.max * fConv, elemento: armaDoGolpe.elemento ?? 'physical' }, extras))) somar(el, v);
+      // PoE: o Físico como Caos/Fogo extra e as conversões das outras fontes (`ModsPoe.extrasDoFisico`).
+      // (lote A5c, dono 20/10: a mesma ordem das magias — a conversão da GEMA primeiro, as das outras fontes só no Físico que sobrou, proporcionais se passarem
+      // dele, e o "como Extra" sobre o Físico de antes da conversão, todo o Físico do golpe; antes saíam da arma crua, sem a eficácia, e a gema convertia o resto)
+      const outras = (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto);
+      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min, max: armaDoGolpe.max, elemento: armaDoGolpe.elemento ?? 'physical' }, extras, Math.random, { outras, origens }))) somar(el, v);
     } else {
-      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe);
-      for (const [el, v] of Object.entries(daMagia)) somar(el, v);
+      // (lote A5c, dono 20/10: "corrigir como o PoE") o adicionado vai JUNTO com o dano da gema para `GemasPoe.partesDaMagia`, que converte o Físico de
+      // tudo — a conversão da gema, depois a das outras fontes (`ModsPoe.extrasDoFisico`, só no que a gema deixou) e o Físico como Extra —, como nos ataques
+      const adicionado = {};
+      const adicionar = (el, [a, b], m = 1) => { if (!(a > 0 || b > 0)) return; const x = adicionado[el] ?? [0, 0]; adicionado[el] = [x[0] + a * m, x[1] + b * m]; };
       // (lote 32, P071: o dano ADICIONADO às magias das peças e do Mago de Batalha — de todo tipo, não só dos elementos da magia ("Adiciona X a Y de
       // Dano de Fogo às Magias" vale numa magia de Gelo), × a eficácia do dano adicionado, como o dos suportes)
-      for (const [el, v] of Object.entries(fichaBase.danoSomadoMagia ?? {})) somar(el, v, eficacia);
-      for (const [el, v] of Object.entries(doSuporte)) somar(el, v, eficacia);
+      for (const [el, v] of Object.entries(fichaBase.danoSomadoMagia ?? {})) adicionar(el, v, eficacia);
+      for (const [el, v] of Object.entries(doSuporte)) adicionar(el, v, eficacia);
       // (14/10, o Feiticeiro: "Dano Mágico Adicional igual a X% do Dano da Varinha Equipada" — cada elemento da varinha, × a eficácia do dano
       // adicionado, como o dos suportes)
       if (efeitoDaGema?.feiticeiro) {
         const f = GemasPoe.feiticeiroNoNivel(efeitoDaGema.feiticeiro.nivel);
-        for (const [el, [a, b]] of Object.entries(fichaBase.danoDasVarinhas ?? {})) somar(el, [(a * f.pct) / 100, (b * f.pct) / 100], eficacia);
+        for (const [el, [a, b]] of Object.entries(fichaBase.danoDasVarinhas ?? {})) adicionar(el, [(a * f.pct) / 100, (b * f.pct) / 100], eficacia);
       }
       // (lote A5, dono 20/10 — D7) a Lâmina Mágica ("Dano Mágico Adicional igual a X% do Dano das Armas Corpo a Corpo de Uma Mão Equipadas", 60% de cada com
       // duas) e a Detonação da Adaga ("X% do dano da adaga equipada", 60% de cada com duas): o dano de cada arma que vale — a base com os locais e a qualidade, e
       // o elemental somado da própria peça —, × a eficácia do dano adicionado, como o do Feiticeiro
-      for (const [el, v] of Object.entries(danoDeArmaNaMagia(estado, entry, efeitoDaGema))) somar(el, v, eficacia);
+      for (const [el, v] of Object.entries(danoDeArmaNaMagia(estado, entry, efeitoDaGema))) adicionar(el, v, eficacia);
+      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto) });
+      for (const [el, v] of Object.entries(daMagia)) somar(el, v);
     }
     // PoE (únicos): as conversões entre elementos, os ganhos extras e a máscara de dano ("Não Causa Dano Elemental"…).
-    porElemento = ModsPoe.transformarPartes(fichaBase, porElemento);
+    porElemento = ModsPoe.transformarPartes(fichaBase, porElemento, origens);
     // (revisão do A5) "Habilidades Suportadas não causam Dano Elemental / de Caos" (a Manipulação do Vazio): sai só a parte daquele tipo; sem nada, o golpe não fere
     if (porElemento && (efeitoDaGema?.semDanoElemental || efeitoDaGema?.semDanoCaos)) {
       const tinha = Object.keys(porElemento).length;
@@ -670,17 +678,21 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const mult = (1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + doElemento + (daGema?.dano ?? 0) + treino + doReforco + afinidade) / 100) * sintonia;
   // O multiplicador de CADA elemento da gema do PoE: o mesmo `mult`, trocando o "aumentado" do elemento da skill pelo da parte.
   const doElementoDe = (el) => (ficha.danoDoElemento?.[el] ?? 0) - (el === 'physical' && !Ficha.forcaNoGolpe(ficha, tags) ? ficha.danoFisicoDaForca ?? 0 : 0);
-  if (partes) for (const p of partes) p.mult = mult + ((doElementoDe(p.elemento) - doElemento) / 100) * sintonia;
+  // (lote A5c, dono 20/10: "regra do PoE") a parte que passou por mais de um tipo (o Físico convertido em Gelo, o Fogo ganho como Caos…) soma o "aumentado" de
+  // todos eles, uma vez cada, e os "mais" dos tipos do caminho que não são o final (`ModsPoe.maisDaOrigem` — o do final entra no acerto); a faixa rola com o
+  // fator médio das origens dela (`ModsPoe.fatorPelasOrigens`). A penetração, a resistência e as afecções seguem o tipo final.
+  const multDosTipos = (tipos, final) => (mult + ((tipos.reduce((t, x) => t + doElementoDe(x), 0) - doElemento) / 100) * sintonia) * ModsPoe.maisDaOrigem(ficha, hunt, entry.id, tipos, final);
+  if (partes) for (const p of partes) p.mult = ModsPoe.fatorPelasOrigens(origens[p.elemento], p.elemento, (tipos) => multDosTipos(tipos.length ? tipos : [p.elemento], p.elemento));
   // (13/10, a Sobrecarga Elemental: "Habilidades que causaram um Golpe Crítico nos últimos 8 segundos causam 40% mais Dano Elemental" — a parte
   // de Fogo, Gelo e Raio desta habilidade, se ela critou há pouco; + 14/10, o "X% mais Dano Elemental" do Liberto: `ModsPoe.fatorDoDanoElemental`.)
-  if (partes) for (const p of partes) p.mult *= ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, p.elemento);
+  // (lote A5c: o "mais Dano Elemental" agora vai em `multDosTipos` — uma vez, pelo caminho da parte)
   // (`sobrecarga`, à parte do `mult` — que é a base do "aumentado" por projétil: o golpe sem partes e o balão multiplicam por ele)
   const sobrecarga = ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, entry.element);
   // "X% mais Dano por cada tipo de Afecção Elemental no Inimigo" (Acerto Elemental do Espectro).
   const porAfeccao = daGemaPoe ? GemasPoe.extrasDoAtaque(daGemaPoe.slug, nivelPoe, efeitoDaGema?.qualidade ?? 0).porAfeccao : 0;
   // (lote 31, P043: o multiplicador da parte Física e a eficácia do dano adicionado — o Físico adicional por Empalamento, alvo a alvo)
   const multFisico = (mult + ((doElementoDe('physical') - doElemento) / 100) * sintonia) * ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, 'physical');
-  return { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia, sintonia, multFisico, eficacia, soAcertoDaFicha };
+  return { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia, sintonia, multFisico, eficacia, soAcertoDaFicha, multDosTipos };
 }
 
 /**
@@ -4601,7 +4613,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       ...(emboscadaDoUso ? { crit_base_golpe: emboscadaDoUso.critPontos, crit_dmg: emboscadaDoUso.critMultPct } : {}), ...(atordoamentoDaInvestida ? { enemy_stun_threshold_red: atordoamentoDaInvestida } : {}),
     });
     const mao = maoDaGemaDeAtaque(entry, fichaDaGema, hunt);
-    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado, soAcertoDaFicha } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: ((1 + ((gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora)) / 100) * (1 + (estagioDoUso?.maisPct ?? 0) / 100) * (doCadaver?.modo === 'consumir' ? cadaveresDoUso.length : 1) - 1) * 100, critMais: estagioDoUso?.critMaisPct ?? 0 });
+    const { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta, sintonia, multFisico, eficacia: eficaciaDoAdicionado, soAcertoDaFicha, multDosTipos } = contaDoDano(estado, entry, efeitoDaGema, mao?.ficha ?? fichaDaGema, mao?.arma ?? null, { ativada: !!gatilho && !plantada, custaVida: pagaComVida || parteEmVida > 0, maisDano: ((1 + ((gatilho?.maisDano ?? 0) + maisDaPlantada(plantada, efeitoDaGema, agora)) / 100) * (1 + (estagioDoUso?.maisPct ?? 0) / 100) * (doCadaver?.modo === 'consumir' ? cadaveresDoUso.length : 1) - 1) * 100, critMais: estagioDoUso?.critMaisPct ?? 0, elementoSorteado: plantada?.elementoSorteado ?? null });
     // (17/10, lote G18) o "até X% mais Dano com Acertos aos alvos próximos" da gema (só no acerto; o perto do Curto Alcance — 2 casas — ou a rampa do
     // corpo a corpo do Esmagar com Escudo) e os projéteis SECUNDÁRIOS ("Projéteis causam X% mais/menos Dano com Acertos e Afecções" — o golpe
     // direto é o corpo a corpo do PoB; no acerto e na afecção), com o quinto ataque do Zênite (mais dano e 5 projéteis a mais)
@@ -4800,10 +4812,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (o Sabotador: "Dano com Acertos é Azarado" — rola duas vezes e fica o menor; com o Sortudo junto, os dois se anulam)
       const azarado = ModsPoe.valor(ficha, 'dano_acertos_azarado') > 0;
       // (lote 31: a Sorte e o Azar juntos se anulam — UM sorteio, como no PoE; antes, com os dois, ficava o Sortudo. Os mesmos sorteios de antes.)
-      // (lote A4, dono 19/10: D7: o cone do Tiro Gélido converte o resto do Físico em Gelo — a parte Física rola com o "aumentado" do Gelo)
-      const doGelo = golpe?.fisicoParaGelo ? partes?.find((q) => q.elemento === 'ice') : null;
+      // (lote A4, dono 19/10: D7: o cone do Tiro Gélido converte o resto do Físico em Gelo)
+      // (lote A5c, dono 20/10: "regra do PoE, no motor inteiro" — revoga a exceção 15: a parte convertida no cone rola com o "aumentado" do Físico E o do Gelo,
+      // `multDosTipos`; antes, só o do Gelo)
       const pedacos = partes ? partes.map((p0) => {
-        const p = golpe?.fisicoParaGelo && p0.elemento === 'physical' ? { ...p0, elemento: 'ice', mult: doGelo?.mult ?? p0.mult } : p0;
+        const p = golpe?.fisicoParaGelo && p0.elemento === 'physical' ? { ...p0, elemento: 'ice', mult: multDosTipos(['physical', 'ice'], 'ice') } : p0;
         const sempre = sorteDoGolpe.sempre.has(p.elemento);
         const soNaoCritico = !sempre && sorteDoGolpe.naoCritico.has(p.elemento);
         const r1 = rolarParte(p);
@@ -6583,7 +6596,10 @@ function criarObjetosDoUso(estado, hunt, entry, ef, { obj, alvo, mira, x, y, for
   const slug = entry.poeGema.slug;
   const nivel = ef?.nivel ?? 1;
   const q = ef?.qualidade ?? 0;
-  const base = { acao: entry.id, slug, el: entry.element ?? null, dono: doTotem ? 'totem' : 'voce', ...(doTotem && dono ? { donoPos: { x: dono.x, y: dono.y } } : {}) };
+  // (lote A5c, dono 20/10) a conversão "em Fogo, Gelo ou Raio" da gema (o Tornado da Turbulência Elemental — "Cria um Tornado de um elemento aleatório",
+  // o PoB): o elemento é sorteado UMA vez por objeto, ao criá-lo, e vale em todos os golpes dele (`golpeDoObjeto` → `contaDoDano`)
+  const sorteado = GemasPoe.conversaoDaMagia(slug, nivel).some((c) => c.para === 'aleatorio') ? ['fire', 'ice', 'energy'][Math.floor(Math.random() * 3)] : null;
+  const base = { acao: entry.id, slug, el: entry.element ?? null, dono: doTotem ? 'totem' : 'voce', ...(doTotem && dono ? { donoPos: { x: dono.x, y: dono.y } } : {}), ...(sorteado ? { elementoSorteado: sorteado } : {}) };
   const raioEmCasas = (m) => Math.max(0, casasDoRaio(m * Math.sqrt(ModsPoe.fatorDaArea(ef?.areaIncPct ?? 0, ef?.areaMaisPct ?? 0))));
   const rumo = (para) => (para && (para.x !== x || para.y !== y) ? Math.atan2(para.y - y, para.x - x) : RUMO_DA_DIRECAO[hunt.pos?.dir ?? 2] ?? 0);
   const fd = fatorDeDuracao(estado, entry, ef);
@@ -6758,7 +6774,7 @@ function moverObjeto(hunt, o, t) {
 }
 /** O golpe que sai do objeto: a habilidade da gema pelo caminho de sempre (`dispararSemMarcar` com a `plantada` de tipo `objeto`). */
 function golpeDoObjeto(estado, hunt, personagem, o, alvo, extra, eventos) {
-  const r = dispararSemMarcar(estado, hunt, personagem, null, alvo, { plantada: { tipo: 'objeto', acao: o.acao, x: o.x, y: o.y, z: o.z ?? hunt.z ?? 0, raio: o.raio ?? 0, objeto: o.id ?? null, doTotem: o.dono === 'totem', dono: o.donoPos ?? null, ...extra } });
+  const r = dispararSemMarcar(estado, hunt, personagem, null, alvo, { plantada: { tipo: 'objeto', acao: o.acao, x: o.x, y: o.y, z: o.z ?? hunt.z ?? 0, raio: o.raio ?? 0, objeto: o.id ?? null, doTotem: o.dono === 'totem', dono: o.donoPos ?? null, ...(o.elementoSorteado ? { elementoSorteado: o.elementoSorteado } : {}), ...extra } });
   if (!r?.ok) return false;
   // (o golpe do objeto do totem vai marcado como o dos lacaios — como o do próprio totem, `usarComoTotem`)
   if (o.dono === 'totem') for (const ev of r.eventos ?? []) if (ev.t === 'dmg' && ev.foe) ev.lacaio = true;

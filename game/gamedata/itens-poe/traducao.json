@@ -12077,7 +12077,7 @@
       "padrao": "^\\{(\\d+)\\}% do Dano Físico de Acertos com essa Arma é Convertido para um Elemento Aleatório$",
       "efeitos": [
         {
-          "stat": "phys_conv_random",
+          "stat": "phys_conv_random@ataque",
           "valor": "{1}"
         }
       ],
@@ -17180,13 +17180,13 @@
       "padrao": "^Acertos com esta Arma ganham \\{(\\d+)\\}% de Dano Físico como Dano de Gelo ou Raio Extra$",
       "efeitos": [
         {
-          "stat": "phys_as_extra_gelo_ou_raio",
+          "stat": "phys_as_extra_gelo_ou_raio@ataque",
           "valor": "{1}"
         }
       ],
       "_nova": true,
       "estado": "aproximado",
-      "nota": "em todo golpe (no PoE, só os desta arma).",
+      "nota": "em todo ataque (no PoE, só os desta arma); não vale nas magias (lote A5c).",
       "_de": "11/10 — únicos: armas, armaduras e amuletos (rodada 9)"
     },
     {

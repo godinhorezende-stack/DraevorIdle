@@ -1430,7 +1430,12 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
     const sortudo = (elemental && elementalSortudo) || (tipo === 'energy' && raioSortudo);
     const rolar = () => min + Math.random() * (max - min);
     const sorteio = sortudo === azarado ? rolar() : sortudo ? Math.max(rolar(), rolar()) : Math.min(rolar(), rolar());
-    const bruto = sorteio * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(ficha, hunt, 'golpe', tipo);
+    // (lote A5c, dono 20/10: "regra do PoE") a parte que veio de outro tipo (o Físico como Fogo extra, o Fogo convertido em Caos…) soma o "aumentado" de todos os
+    // tipos do caminho, uma vez cada, e os "mais" deles (`ModsPoe.maisDaOrigem`); sem origens, o do próprio tipo, como antes
+    // (o "aumentado" do Físico do golpe básico: o da parte Física dele, com a Força só no corpo a corpo — `incFisicoDaOrigem`)
+    const incDe = (t) => (t === 'physical' ? ficha.incFisicoDaOrigem ?? ficha.danoDoElemento?.physical ?? 0 : ficha.danoDoElemento?.[t] ?? 0);
+    const fatorDoTipo = (tipos) => (1 + ((tipos.length > 1 ? tipos.reduce((n, t) => n + incDe(t), 0) : ficha.danoDoElemento?.[tipo] ?? 0)) / 100) * ModsPoe.maisDaOrigem(ficha, hunt, 'golpe', tipos.length ? tipos : [tipo], tipo);
+    const bruto = sorteio * ModsPoe.fatorPelasOrigens(ficha.origensDoSomado?.[tipo], tipo, fatorDoTipo);
     const base = Math.max(1, Math.round(ignoraRes ? Math.max(resistido(hunt, alvo, tipo, bruto, f), bruto) : resistido(hunt, alvo, tipo, bruto, f)));
     const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
     alvo.hp -= dano;
@@ -1596,7 +1601,15 @@ export function round(estado, personagem) {
         // (No PoE o "Dano de <elemento> aumentado" só AUMENTA o dano daquele elemento: o golpe físico não ganha partes elementais por ele.)
         // (lote 31, P043: + o Físico adicional pelos Empalamentos no alvo — o Mestre do Metal)
         const doEmpalar = poe ? ModsPoe.fisicoPorEmpalamento(ficha, alvo, hunt.clock ?? 0) : null;
-        const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(somarFaixas(ficha.danoSomado, extrasDoFisico), doEmpalar ? { physical: doEmpalar } : {})) } : ficha;
+        // (lote A5c, dono 20/10: "regra do PoE, no motor inteiro") as origens das partes: o que veio do Físico (o "como Extra" e o convertido) soma também o
+        // "aumentado" e o "mais" do Físico (`danoSomadoDoPoe`), e as conversões entre elementos levam o caminho junto (`transformarPartes`)
+        const origensDasPartes = {};
+        if (poe) {
+          for (const [el, v] of Object.entries(ficha.danoSomado ?? {})) ModsPoe.somarOrigem(origensDasPartes, el, [], v);
+          for (const [el, v] of Object.entries(extrasDoFisico)) ModsPoe.somarOrigem(origensDasPartes, el, ['physical'], v);
+          if (doEmpalar) ModsPoe.somarOrigem(origensDasPartes, 'physical', [], doEmpalar);
+        }
+        const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(somarFaixas(ficha.danoSomado, extrasDoFisico), doEmpalar ? { physical: doEmpalar } : {}), origensDasPartes), origensDoSomado: origensDasPartes, incFisicoDaOrigem: fisicoDoGolpe } : ficha;
         const dosAtributos = [...(poe ? [] : elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught, dobraNoCritico })), ...danoSomadoDoPoe(estado, hunt, alvo, fichaDasPartes, { crit: critico, onslaught, dobraNoCritico })];
         // (14/10, a Rajada Vulcânica: o golpe básico corpo a corpo que acerta — `Acoes.rajadaVulcanica`)
         if (poe && !segundo && categoriaDaArma(arma) !== 'distancia') Acoes.rajadaVulcanica(estado, hunt, alvo, eventos);

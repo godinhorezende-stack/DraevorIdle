@@ -94,13 +94,11 @@ export function detonacaoDaAdagaDasLinhas(linhas = []) {
 // ---------------------------------------------------------------- o status
 
 /**
- * (revisão do A5, dono 20/10) O que a gema do lote ainda não faz por depender de outro lote: a Onda de Convicção põe a Exposição no elemento do maior dano, mas
- * a conversão do Físico das magias ("25 % do Dano Físico Convertido em Dano de Raio / para Dano de Fogo") ainda não entra nas partes do golpe — o dono aprovou
- * fazê-la como o PoE num lote próprio, logo depois deste; sozinha, a Onda causa só Físico e não põe a Exposição.
+ * (revisão do A5, dono 20/10) O que a gema do lote ainda não faz por depender de outro lote.
+ * (lote A5c, dono 20/10: a conversão do Físico das magias entrou nas partes do golpe — `GemasPoe.partesDaMagia` —; a Onda de Convicção sai de parcial: sozinha,
+ * ela causa Físico, Fogo e Raio e põe a Exposição no elemento do maior dano)
  */
-export const MOTIVOS_A5 = Object.freeze({
-  Wave_of_Conviction: ['efeito não simulado: a conversão do Físico das magias (lote próprio) — sem ela, a Onda causa só Físico e a Exposição do maior Dano sofrido não sai'],
-});
+export const MOTIVOS_A5 = Object.freeze({});
 
 /** A linha da gema é uma das que este lote faz com leitor próprio (sai de "efeito não simulado"). */
 export function ehLinhaA5(slug, l) {

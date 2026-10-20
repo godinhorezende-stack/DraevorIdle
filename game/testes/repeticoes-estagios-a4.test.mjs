@@ -508,6 +508,9 @@ test('A4: a Flecha Flagelante liberada deixa 1 esporo por estágio na linha até
   assert.deepEqual(G.esporosDaGema('Scourge_Arrow', 20), { porEstagio: 1, flechas: 9, menosPct: 50, raio: 2 });
   assert.equal(G.esporosDaGema('Scourge_Arrow', 20, 20).flechas, 11);
   const m = await montar('Bows/Crude_Bow', 'Scourge_Arrow', { onde: [[3, 0]] });
+  // (lote A5c, com o aval do dono: a armadura dos bichos em 0 — `armaduraPct` −100% —, para medir a proporção pura: a armadura corta o Físico de forma não
+  // linear pelo tamanho do golpe, e o espinho é menor que a flecha)
+  for (const x of m.e.hunt.monstros) x.armaduraPct = -100;
   const usos = seguidos(m, 5, 0.999);
   const lib = usos[4];
   const espinhos = lib.ev.filter((x) => x.t === 'dmg' && x.foe && x.fonte === 'espinho');

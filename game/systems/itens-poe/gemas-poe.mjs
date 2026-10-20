@@ -17,7 +17,7 @@
 // (pelas tags). Sem o PoE nada disto roda.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
-import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
+import { slugDoNome, partir, condicoesDe, vale, somarOrigem } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
@@ -547,36 +547,74 @@ export function danoNoNivel(slug, nivel) {
  * Devolve `{ elemento: [min, max] }` (no jogo: physical, fire, ice, energy, chaos).
  */
 const EL_DA_ARENA = { fisico: 'physical', fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos' };
-export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random) {
+/**
+ * (lote A5c, dono 20/10) A CONVERSÃO do Físico do golpe, a mesma nos ataques e nas magias (a ordem do PoE): a da GEMA (`conversoes`; `escolher` dá o elemento
+ * do "aleatorio"), depois as das OUTRAS fontes só no que a gema deixou e o "Físico como Extra" sobre o Físico de antes (`outras(fisico, tetoPct)`). Muda `p`
+ * no lugar; com `origens`, o que veio do Físico fica na origem `physical+<elemento>` (`somarOrigem`) — os modificadores dos dois tipos valem nele.
+ */
+function converterOFisico(p, origens, conversoes, outras, escolher) {
+  if (!p.physical || !(p.physical[0] > 0 || p.physical[1] > 0)) return;
+  const fis = [...p.physical];
+  const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, el, ['physical'], [a, b], m); };
+  let resta = 1;
+  for (const c of conversoes ?? []) {
+    const pct = Math.min(resta, Math.max(0, c.pct) / 100);
+    if (!(pct > 0)) continue;
+    somar(c.para === 'aleatorio' ? escolher() : EL_DA_ARENA[c.para] ?? 'physical', fis, pct);
+    resta -= pct;
+  }
+  if (outras) {
+    const o = outras([...fis], resta * 100);
+    for (const [el, v] of Object.entries(o?.extras ?? {})) somar(el, v);
+    resta = Math.max(0, resta - (o?.convertidoPct ?? 0) / 100);
+  }
+  p.physical = [fis[0] * resta, fis[1] * resta];
+  if (origens) origens.physical = { physical: [...p.physical] };
+}
+/** (lote A5c) Tira das `origens` as partes que saíram de `p`. */
+const podarOrigens = (p, origens) => { if (origens) for (const el of Object.keys(origens)) if (!p[el]) delete origens[el]; };
+// (lote A5c, dono 20/10: "a mesma ordem das magias") `outras(fisico, tetoPct)` — `ModsPoe.extrasDoFisico` com a ficha: as conversões das OUTRAS fontes só no
+// Físico que a gema deixou (proporcionais se passarem dele) e o "Físico como Extra" sobre o Físico de antes da conversão — todo o Físico do golpe (a arma × a
+// eficácia + o adicionado). Antes elas saíam da arma crua primeiro e a gema convertia o resto, multiplicando.
+export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null } = {}) {
   const st = compilada(slug, nivel)?.stats ?? {};
   const ef = st.efetividade ?? 1;
   const p = {};
-  const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; };
+  const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, el, [], [a, b], m); };
   // (17/10, lote G4: a "arma" pode ser de outro elemento — a base de Fogo/Gelo do escudo nas gemas de escudo transfiguradas, `escudoDaGema`)
   somar(arma.elemento ?? 'physical', [arma.min ?? 1, arma.max ?? 1], ef);
   for (const [el, v] of Object.entries(st.adicional ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v, ef);
   for (const [el, v] of Object.entries(extras)) if (v && (v[0] || v[1])) somar(el, v);
-  if (p.physical) {
-    const fis = p.physical;
-    let resta = 1;
-    for (const c of st.conversao ?? []) {
-      const pct = Math.min(resta, c.pct / 100);
-      somar(c.para === 'aleatorio' ? ['fire', 'ice', 'energy'][Math.floor(rng() * 3)] : EL_DA_ARENA[c.para] ?? 'physical', fis, pct);
-      resta -= pct;
-    }
-    p.physical = [fis[0] * resta, fis[1] * resta];
-  }
+  converterOFisico(p, origens, st.conversao, outras, () => ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]);
   const ex = extrasDoAtaque(slug, nivel);
   if (ex.soElemental) { delete p.physical; delete p.chaos; }
   // "Apenas Causa Dano do Elemento escolhido" (Acerto Elemental): cada uso sorteia fogo, gelo ou raio e só ele fica.
   if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
   for (const el of Object.keys(p)) if (!(p[el][1] > 0)) delete p[el];
+  podarOrigens(p, origens);
   return p;
 }
-/** O dano de uma MAGIA do PoE por elemento (`{ elemento: [min, max] }`): a Bola de Fogo é só fogo; o Golpe Cósmico, fogo + gelo... */
-export function partesDaMagia(slug, nivel) {
+/**
+ * O dano de uma MAGIA do PoE por elemento (`{ elemento: [min, max] }`): a Bola de Fogo é só fogo; o Golpe Cósmico, fogo + gelo...
+ *
+ * (lote A5c, dono 20/10: "corrigir como o PoE") + a CONVERSÃO do Físico da gema, como nos ataques (`partesDoAtaque`): antes ela era ignorada e cerca de 24
+ * magias (a Onda de Convicção, a Cascata Glacial, a Marca da Penitência, a Esfera do Vácuo…) batiam só Físico. A ordem do PoE:
+ *   1. o Físico do golpe é o da gema + o ADICIONADO (`extras`: `{ elemento: [min, max] }` — as peças, os suportes, o Feiticeiro, a Lâmina Mágica —, já × a
+ *      eficácia do dano adicionado): a conversão vale para todo ele;
+ *   2. a conversão da GEMA ("50 % do Dano Físico Convertido em Dano de Raio"; "em Fogo, Gelo ou Raio": `elementoSorteado`, ou o `rng` sorteia);
+ *   3. a das OUTRAS fontes (`outras(fisico, tetoPct)` — `ModsPoe.extrasDoFisico` com a ficha): só converte o que a gema deixou; e o "Físico como Extra"
+ *      dela, sobre o Físico de ANTES da conversão (no PoE o ganho como extra é calculado do dano antes de ele se converter).
+ * As conversões entre elementos e os ganhos de um elemento em outro vêm depois, em `ModsPoe.transformarPartes`.
+ */
+export const conversaoDaMagia = (slug, nivel) => compilada(slug, nivel)?.stats?.conversao ?? [];
+export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null } = {}) {
   const p = {};
-  for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; const x = p[k] ?? [0, 0]; p[k] = [x[0] + v[0], x[1] + v[1]]; }
+  const somar = (k, [a, b], m = 1) => { const x = p[k] ?? [0, 0]; p[k] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, k, [], [a, b], m); };
+  for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v);
+  for (const [el, v] of Object.entries(extras ?? {})) if (v && (v[0] || v[1])) somar(el, v);
+  converterOFisico(p, origens, conversaoDaMagia(slug, nivel), outras, () => (['fire', 'ice', 'energy'].includes(elementoSorteado) ? elementoSorteado : ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]));
+  for (const el of Object.keys(p)) if (!(p[el][0] > 0 || p[el][1] > 0)) delete p[el];
+  podarOrigens(p, origens);
   return p;
 }
 /**

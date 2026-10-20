@@ -2,9 +2,9 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 306,
-   "implementada e testada": 191,
-   "implementada, sem teste próprio": 53,
+   "parcial": 305,
+   "implementada e testada": 193,
+   "implementada, sem teste próprio": 52,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
@@ -44,7 +44,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 734,
+   "linhasDistintas": 733,
    "emDuasOuMais": 137
   },
   "imagens": {
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 293,
+   "ativasCitadas": 304,
    "suportesCitados": 117,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -6920,10 +6920,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: a conversão do Físico das magias (lote próprio) — sem ela, a Onda causa só Físico e a Exposição do maior Dano sofrido não sai"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6935,7 +6933,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -12485,12 +12483,6 @@
    "linha": "A área alvejada base mede # metros de comprimento",
    "gemas": [
     "Kinetic_Rain_of_Impact"
-   ]
-  },
-  {
-   "linha": "a conversão do Físico das magias (lote próprio) — sem ela, a Onda causa só Físico e a Exposição do maior Dano sofrido não sai",
-   "gemas": [
-    "Wave_of_Conviction"
    ]
   },
   {

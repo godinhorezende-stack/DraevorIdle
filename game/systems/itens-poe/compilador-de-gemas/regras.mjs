@@ -88,9 +88,11 @@ export const REGRAS = [
   // não o adicional fixo; antes o Golpe de Escudo somava os 3–8 a 5–12 a todo ataque, com ou sem escudo)
   [r(`^${N} a ${N} de Dano (?:de )?${EL} Adicional(?! por)`), (s, m) => (s.adicional[el(m[3])] = [num(m[1]), num(m[2])])],
   [r(`^${N} a ${N} de dano ${EL} adicionado$`), (s, m) => (s.adicional[el(m[3])] = [num(m[1]), num(m[2])])],
+  // (lote A5c, dono 20/10: "em Fogo, Gelo ou Raio" vem ANTES da conversão de um elemento — antes a de cima casava "Dano de Fogo" e o Tornado da
+  // Turbulência Elemental convertia sempre em Fogo; no PoB é um elemento aleatório por Tornado, act_dex.lua:18114)
+  [r(`${N} % de Dano Físico Convertido em Dano de Fogo, Gelo ou Raio`), (s, m) => s.conversao.push({ para: "aleatorio", pct: num(m[1]) })],
   [r(`${N} % (?:do|de) Dano Físico Convertido (?:em|para) Dano de ${EL}`), (s, m) => s.conversao.push({ para: el(m[2]), pct: num(m[1]) })],
   [r(`Converte[m]? ${N} % do Dano Físico (?:para|em) Dano de ${EL}`), (s, m) => s.conversao.push({ para: el(m[2]), pct: num(m[1]) })],
-  [r(`${N} % de Dano Físico Convertido em Dano de Fogo, Gelo ou Raio`), (s, m) => s.conversao.push({ para: "aleatorio", pct: num(m[1]) })],
   // (17/10, lote G18) o "mais Dano" das ativas: antes ia a `stats.maisDano`, que ninguém lia (as linhas sumiam do status como "aplicadas"):
   // - "Concede X% mais Dano Mágico" (o Fogo Justo) é linha de BUFF (`linhas-das-gemas`, `mais_dano_acerto@magia` — só no acerto das magias);
   // - "Causa X% mais Dano" (a coluna do Impacto Sísmico Vaal no nível 1 — não é do PoE 1) fica não feita;

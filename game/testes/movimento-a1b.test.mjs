@@ -124,6 +124,9 @@ test('A1b (I3): a miragem anda rumo ao alvo pela grade (1 casa = 2 m), contorna 
 
 test('A1b (I1/I4/I5): o estágio sobe a cada uso que a miragem anda; o pulso cai em volta dela nos usos 1 e 3; parada, libera — a onda final dá estágios × 75% e você teleporta sem "moveu"', { skip: SEM }, async () => {
   const { e, b } = await montar(['Charged_Dash'], 2);
+  // (lote A5c, com o aval do dono: a armadura do alvo em 0 — `armaduraPct` −100% —, para medir a proporção pura: a armadura corta o Físico de forma não linear
+  // pelo tamanho do golpe, e a parte convertida agora ganha também o "aumentado" do Físico)
+  b.armaduraPct = -100;
   let usos;
   const pcts = pctsEm(b, () => { usos = travado(0.5, () => Array.from({ length: 4 }, () => usar(e, 0, b, { manual: false }))); });
   assert.ok(usos.every((u) => u.r.ok), usos.map((u) => u.r.motivo).join());

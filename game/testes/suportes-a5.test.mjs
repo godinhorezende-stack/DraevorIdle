@@ -429,7 +429,8 @@ test('A5 no jogo: o Condutor Elétrico só acerta o Eletrizado, mais forte por c
 });
 
 test('A5 no jogo: a Onda de Convicção põe a Exposição no elemento do maior dano depois da resistência, depois do acerto (D8)', { skip: SEM }, async () => {
-  // (o Gelo e o Raio vêm dos suportes de dano adicionado: a conversão do Físico das magias ainda não entra nas partes do golpe — `GemasPoe.partesDaMagia`)
+  // (lote A5c, com o aval do dono: o Gelo e o Raio vêm dos suportes de dano adicionado e, agora, também da conversão do Físico da Onda — 25% em Raio e 25% em
+  // Fogo, `GemasPoe.partesDaMagia`; o Gelo dos suportes segue o maior com o Raio resistido)
   const usar = async (resist) => {
     const { e, b } = await montar(['Wave_of_Conviction', 'Added_Lightning_Damage_Support', 'Added_Cold_Damage_Support']);
     b.resist = resist;
@@ -441,8 +442,8 @@ test('A5 no jogo: a Onda de Convicção põe a Exposição no elemento do maior 
     assert.ok(r.ok, r.erro);
     return { pct: b.estados.exposicaoPct ?? {}, ate: b.estados.exposicao ?? {}, agora: e.hunt.clock };
   };
-  // (a gema segue parcial: o motivo é a conversão do Físico das magias, lote próprio)
-  assert.ok(G.REGISTRO.get('Wave_of_Conviction').motivosNoJogo.some((m) => /conversão do Físico das magias \(lote próprio\)/.test(m)));
+  // (lote A5c, com o aval do dono: a conversão do Físico das magias entrou — `GemasPoe.partesDaMagia` —, o motivo saiu e a gema não é mais parcial por ele)
+  assert.ok(!G.REGISTRO.get('Wave_of_Conviction').motivosNoJogo.some((m) => /conversão do Físico das magias/.test(m)));
   const raioResiste = await usar({ energy: 75 });
   assert.deepEqual(raioResiste.pct, { ice: 15 });
   assert.ok(raioResiste.ate.ice >= raioResiste.agora + 4000);

@@ -2221,7 +2221,9 @@ export const ignoraReducaoFisica = (ficha, rng = Math.random) => ligado() && rng
  * … é Convertido para um Elemento Aleatório". `fisico`: `[min, max]` (ou um número). Devolve `{ extras: { elemento: [min, max] },
  * convertidoPct }` — o convertido sai do Físico (quem chama tira) e entra no elemento sorteado.
  */
-export function extrasDoFisico(ficha, fisico, rng = Math.random) {
+// (lote A5c, dono 20/10: `teto` — o que a conversão da GEMA deixou do Físico, em %: no PoE a conversão da gema vem primeiro e as de outras fontes só
+// convertem o que sobrou; sem ele, 100, como antes)
+export function extrasDoFisico(ficha, fisico, rng = Math.random, teto = 100) {
   const [a, b] = Array.isArray(fisico) ? fisico : [fisico, fisico];
   const extras = {};
   const somar = (el, pct) => { if (pct > 0) { const x = extras[el] ?? [0, 0]; extras[el] = [x[0] + (a * pct) / 100, x[1] + (b * pct) / 100]; } };
@@ -2239,10 +2241,14 @@ export function extrasDoFisico(ficha, fisico, rng = Math.random) {
   // ("Acertos com esta Arma ganham X% de Dano Físico como Dano de Gelo ou Raio Extra": um dos dois, sorteado a cada golpe.)
   if (valor(ficha, 'phys_as_extra_gelo_ou_raio') > 0) somar(rng() < 0.5 ? 'ice' : 'energy', valor(ficha, 'phys_as_extra_gelo_ou_raio'));
   // As CONVERSÕES ("X% do Dano Físico Convertido em Dano de Fogo", e a de elemento aleatório): no máximo 100% do Físico, como no PoE.
+  // (lote A5c, dono 20/10: "modo PoE segue o PoE") passando do que há para converter (o `teto`), o PoE reduz TODAS PROPORCIONALMENTE — antes eram em
+  // sequência (o Fogo primeiro, o aleatório por último)
+  const pedidos = ['fire', 'ice', 'energy', 'chaos'].map((el) => [el, Math.max(0, valor(ficha, `phys_conv_${el}`))]);
+  if (valor(ficha, 'phys_conv_random') > 0) pedidos.push([['fire', 'ice', 'energy'][Math.floor(rng() * 3)], valor(ficha, 'phys_conv_random')]);
+  const total = pedidos.reduce((t, [, x]) => t + x, 0);
+  const escala = total > 0 ? Math.min(1, Math.max(0, teto) / total) : 0;
   let conv = 0;
-  const converter = (el, pct) => { const p = Math.max(0, Math.min(100 - conv, pct)); if (p > 0) { somar(el, p); conv += p; } };
-  for (const el of ['fire', 'ice', 'energy', 'chaos']) converter(el, valor(ficha, `phys_conv_${el}`));
-  if (valor(ficha, 'phys_conv_random') > 0) converter(['fire', 'ice', 'energy'][Math.floor(rng() * 3)], valor(ficha, 'phys_conv_random'));
+  for (const [el, x] of pedidos) { const p = x * escala; if (p > 0) { somar(el, p); conv += p; } }
   return { extras, convertidoPct: conv };
 }
 
@@ -2973,26 +2979,74 @@ export const caosAtravessaOEscudo = (ficha) => ligado() && !((Number(ficha?.afPo
 // ---------------------------------------------------------------- as PARTES do dano (conversões, ganhos extras, máscara)
 
 const ELS = ['physical', 'fire', 'ice', 'energy', 'chaos'];
+const ELEMENTAIS = ['fire', 'ice', 'energy'];
+/*
+ * (lote A5c, dono 20/10: "regra do PoE, no motor inteiro") As ORIGENS das partes: o dano CONVERTIDO (e o ganho "como Extra") recebe os modificadores de TODOS os
+ * tipos por onde passou, sem contar duas vezes — o Físico convertido em Gelo soma o "Dano Físico aumentado" e o "Dano de Gelo aumentado". `origens`:
+ * `{ elementoFinal: { 'physical+ice': [min, max], ice: [min, max] } }` — a chave são os tipos do caminho (na ordem de `ELS`); a penetração, a resistência e as
+ * afecções seguem o tipo FINAL (a parte continua no elemento final).
+ */
+export const chaveDosTipos = (tipos) => ELS.filter((t) => tipos.includes(t)).join('+');
+export const tiposDaChave = (k) => String(k).split('+').filter(Boolean);
+/** Soma `[a, b] × m` na origem `tipos` da parte `el`. */
+export function somarOrigem(origens, el, tipos, [a, b], m = 1) {
+  if (!origens || !(a > 0 || b > 0) || !(m > 0)) return;
+  const k = chaveDosTipos([...tipos, el]);
+  const o = (origens[el] ??= {});
+  const x = o[k] ?? [0, 0];
+  o[k] = [x[0] + a * m, x[1] + b * m];
+}
+/**
+ * (lote A5c) O fator médio da parte pelas origens dela: Σ (média da origem × `f(tipos)`) ÷ Σ médias. Sem origens, `f([final])` — o dano que só foi do
+ * próprio tipo. (A faixa da parte rola uma vez com esse fator; a média do golpe é a exata do PoE.)
+ */
+export function fatorPelasOrigens(subs, final, f) {
+  let soma = 0;
+  let peso = 0;
+  for (const [k, [a, b]] of Object.entries(subs ?? {})) {
+    const m = (a + b) / 2;
+    if (!(m > 0)) continue;
+    soma += m * f(tiposDaChave(k));
+    peso += m;
+  }
+  return peso > 0 ? soma / peso : f([final]);
+}
+/** (lote A5c) O "X% mais Dano de <tipo>" do golpe (a ficha do golpe; sem ela, o sem condição). */
+export const maisDoTipo = (ficha, t) => ficha?.maisDoElemento?.[t] ?? (Number(ficha?.afPoe?.[MAIS_DANO_DO_TIPO[t]]) || 0);
+/**
+ * (lote A5c) Os "mais" da origem que o acerto não põe: o "mais" de cada tipo do caminho que não é o final (o do final entra no acerto —
+ * `fatorRecebidoPeloBicho`) e o "mais Dano Elemental" (`fatorDoDanoElemental`) uma vez só, se algum tipo do caminho for elemental (o final, se for).
+ */
+export function maisDaOrigem(ficha, hunt, habilidade, tipos, final) {
+  let f = 1;
+  for (const t of tipos) if (t !== final) f *= Math.max(0, 1 + maisDoTipo(ficha, t) / 100);
+  const el = ELEMENTAIS.includes(final) ? final : tipos.find((t) => ELEMENTAIS.includes(t));
+  return f * (el ? fatorDoDanoElemental(ficha, hunt, habilidade, el) : 1);
+}
 /**
  * As partes de dano de um golpe (`{ elemento: [min, max] }`) com os mods do PoE dos únicos: as CONVERSÕES entre elementos ("X% do Dano de
  * Fogo Convertido em Dano de Caos", "Todo o Dano Elemental é Convertido para Dano de Caos"), os GANHOS extras ("Ganha X% de Dano Elemental
  * como Dano Extra de Caos", "X% do Dano de Gelo como Fogo extra") e a MÁSCARA ("Não Causa Dano Elemental", "Causa Somente Dano de Raio").
- * O Físico da arma já passou pelas conversões dele (`extrasDoFisico`). Devolve outro objeto.
+ * O Físico do golpe já passou pelas conversões dele (`extrasDoFisico`). Devolve outro objeto.
+ * (lote A5c: `origens` — as origens das partes, `somarOrigem` — andam junto: o que se converte ou se ganha leva o tipo novo na chave; muda no lugar)
  */
-export function transformarPartes(ficha, partes) {
+export function transformarPartes(ficha, partes, origens = null) {
   if (!ligado() || !ficha?.afPoe || !partes) return partes;
   const v = (k) => valor(ficha, k);
   const p = Object.fromEntries(ELS.map((el) => [el, [...(partes[el] ?? [0, 0])]]));
+  const o = origens ? Object.fromEntries(ELS.map((el) => [el, { ...(origens[el] ?? (p[el][0] > 0 || p[el][1] > 0 ? { [el]: [...p[el]] } : {})) }])) : null;
   const mover = (de, para, pct) => {
     const f = Math.max(0, Math.min(100, pct)) / 100;
     if (!f) return;
     for (const i of [0, 1]) { const x = p[de][i] * f; p[de][i] -= x; p[para][i] += x; }
+    if (o) for (const [k, [a, b]] of Object.entries(o[de])) { somarOrigem(o, para, tiposDaChave(k), [a, b], f); o[de][k] = [a * (1 - f), b * (1 - f)]; }
   };
   for (const de of ['fire', 'ice', 'energy']) {
     mover(de, 'chaos', v(`conv_${de}_chaos`) + v('conv_elemental_chaos'));
     for (const para of ['fire', 'ice', 'energy']) if (para !== de) mover(de, para, v(`conv_${de}_${para}`));
   }
   const antes = Object.fromEntries(ELS.map((el) => [el, [...p[el]]]));
+  const antesO = o ? Object.fromEntries(ELS.map((el) => [el, Object.fromEntries(Object.entries(o[el]).map(([k, x]) => [k, [...x]]))])) : null;
   // (+ o de UM elemento para Caos — "Receba X% do Dano de Fogo como Dano de Caos Extra".)
   const paraCaos = { fire: 'fire_as_extra_chaos', ice: 'ice_as_extra_chaos', energy: 'energy_as_extra_chaos' };
   for (const de of ['fire', 'ice', 'energy']) { ganharDe(antes, p, de, 'chaos', v('elem_as_extra_chaos') + v(paraCaos[de])); for (const para of ['fire', 'ice', 'energy']) if (para !== de) ganharDe(antes, p, de, para, v(`${de}_as_extra_${para}`)); }
@@ -3001,7 +3055,7 @@ export function transformarPartes(ficha, partes) {
   const so = ELS.find((el) => v(`so_dano:${el}`) > 0);
   for (const el of ELS) {
     const sem = v(`sem_dano:${el}`) > 0 || (v('sem_dano:elemental') > 0 && ['fire', 'ice', 'energy'].includes(el)) || (v('sem_dano:naocaos') > 0 && el !== 'chaos') || (so && el !== so) || (v('sem_dano:naoelemental') > 0 && !['fire', 'ice', 'energy'].includes(el)) || (v('sem_dano:naofisico') > 0 && el !== 'physical');
-    if (sem) p[el] = [0, 0];
+    if (sem) { p[el] = [0, 0]; if (o) o[el] = {}; }
   }
   // (a Tempestade Turbulenta: "-X% de dano elétrico mínimo", "+X% de dano elétrico máximo" — o mínimo e o máximo da parte de Raio.)
   const rMin = v('raio_min_mais');
@@ -3010,9 +3064,22 @@ export function transformarPartes(ficha, partes) {
     const a = p.energy[0] * Math.max(0, 1 + rMin / 100);
     const b = p.energy[1] * Math.max(0, 1 + rMax / 100);
     p.energy = [Math.min(a, b), Math.max(a, b)];
+    if (o) for (const k of Object.keys(o.energy)) o.energy[k] = [o.energy[k][0] * Math.max(0, 1 + rMin / 100), o.energy[k][1] * Math.max(0, 1 + rMax / 100)];
+  }
+  if (origens) {
+    for (const k of Object.keys(origens)) delete origens[k];
+    for (const el of ELS) {
+      const subs = Object.fromEntries(Object.entries(o[el]).filter(([, [a, b]]) => a > 0 || b > 0));
+      if (Object.keys(subs).length && (p[el][0] > 0 || p[el][1] > 0)) origens[el] = subs;
+    }
   }
   return Object.fromEntries(Object.entries(p).filter(([, [a, b]]) => a > 0 || b > 0));
-  function ganharDe(base, alvo, de, para, pct) { const f = pct / 100; if (f > 0) for (const i of [0, 1]) alvo[para][i] += base[de][i] * f; }
+  function ganharDe(base, alvo, de, para, pct) {
+    const f = pct / 100;
+    if (!(f > 0)) return;
+    for (const i of [0, 1]) alvo[para][i] += base[de][i] * f;
+    if (o) for (const [k, x] of Object.entries(antesO[de])) somarOrigem(o, para, tiposDaChave(k), x, f);
+  }
 }
 /** O Físico do golpe sai (a máscara) — "Não causa Dano Físico", "Causa Somente Dano de Raio"… */
 export function semFisico(ficha) {
