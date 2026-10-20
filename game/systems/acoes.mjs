@@ -4240,15 +4240,25 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const naCasa = (c) => todas.set(`${c.x},${c.y}`, c);
       const quem = (cs) => { const k = new Set(cs.map((c) => `${c.x},${c.y}`)); return vivos.filter((b) => b.hp > 0 && k.has(`${b.x},${b.y}`)); };
       if (seq.forma === 'linha') {
-        for (let i = 0; i < seq.areas; i++) {
-          const cx = x + ux * (i + 1);
-          const cy = y + uy * (i + 1);
+        // (lote C1, dono 20/10) a Ruptura de Trarthus: "Onda pode recomeçar até 3 vezes" — no fim de cada onda, se há um inimigo vivo onde a próxima chegaria (a até
+        // o comprimento da onda — as N áreas, N casas — do centro da última área), ela recomeça dali na direção dele (o mais perto), com o raio de volta ao início
+        // (o PoB: SunderWaveArea conta só dentro de uma onda)
+        const onda = (centros) => centros.forEach((c, i) => {
           const r = emCasas(seq.raioM + seq.porAreaM * i);
-          const naArea = vivos.filter((b) => b.hp > 0 && Math.max(Math.abs(b.x - cx), Math.abs(b.y - cy)) <= r);
+          const naArea = vivos.filter((b) => b.hp > 0 && Math.max(Math.abs(b.x - c.x), Math.abs(b.y - c.y)) <= r);
           for (const b of naArea) { golpesDaSequencia.push({ bicho: b, pct: 100 }); unicos.add(b); }
           for (const fonte of naArea.slice(0, seq.choques)) {
             for (const b of vivos) if (b !== fonte && b.hp > 0 && Math.max(Math.abs(b.x - fonte.x), Math.abs(b.y - fonte.y)) <= Math.max(1, r)) { golpesDaSequencia.push({ bicho: b, pct: 100 - seq.choqueMenos, choque: true }); unicos.add(b); }
           }
+        });
+        let centros = Array.from({ length: seq.areas }, (_, i) => ({ x: x + ux * (i + 1), y: y + uy * (i + 1) }));
+        onda(centros);
+        for (let k = 0; k < (seq.recomecos ?? 0); k++) {
+          const fim = centros.at(-1);
+          const prox = vivos.filter((b) => b.hp > 0 && distanciaChebyshev(fim, b) >= 1 && distanciaChebyshev(fim, b) <= seq.areas).sort((a, b) => distanciaChebyshev(fim, a) - distanciaChebyshev(fim, b))[0];
+          if (!prox) break;
+          centros = Areas.reta(fim, prox, seq.areas);
+          onda(centros);
         }
       } else if (seq.forma === 'retangulo') {
         // (lote A4, dono 19/10: D4) a CHUVA DE LÂMINAS: a rajada i a i+1 casas à frente de você, 1 casa de profundidade, a largura de (4,4 + 0,6 × i) m em casas (a

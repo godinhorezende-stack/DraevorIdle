@@ -939,7 +939,7 @@ export function estagiosDaGema(slug, nivel = 1, qualidade = 0) {
  * ou null. (O "delay entre Áreas" e o "não pode parar antes de N Áreas" são do tempo da onda e da interrupção pelo novo uso: o idle resolve a
  * onda inteira no uso — sem efeito aqui.)
  */
-const LINHA_DA_SEQUENCIA = /^Onda causa Dano em \d+ Áreas$|^Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior(?: da onda)?$|^Onda causa Ondas de Choque de até \d+ Inimigos em cada Área$|^Ondas de Choque causam \d+ ?% menos Dano$|^Onda tem o delay entre Áreas reduzido em [\d.]+ ?%$|^Onda não pode parar antes de causar Dano em \d+ Áreas$/i;
+const LINHA_DA_SEQUENCIA = /^Onda causa Dano em \d+ Áreas$|^Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior(?: da onda)?$|^Onda causa Ondas de Choque de até \d+ Inimigos em cada Área$|^Ondas de Choque causam \d+ ?% menos Dano$|^Onda tem o delay entre Áreas reduzido em [\d.]+ ?%$|^Onda não pode parar antes de causar Dano em \d+ Áreas$|^Onda pode recomeçar até \d+ vezes Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior$/i;
 export const ehLinhaDaSequencia = (l) => LINHA_DA_SEQUENCIA.test(l);
 /**
  * (lote A4, dono 19/10: R2) + as outras formas da sequência (`GemasA4.sequenciaDasLinhas`): a Chuva de Lâminas (`retangulo` — D4), a Colisão de
@@ -955,7 +955,10 @@ export function sequenciaDaGema(slug, nivel = 1, qualidade = 0) {
   const areas = achar(/^Onda causa Dano em (\d+) Áreas$/i);
   if (!areas) return null;
   return {
-    forma: 'linha', areas, raioM: areaNoNivel(slug, nivel, qualidade).raioM ?? 1.2, porAreaM: achar(/^Áreas de onda ganham \+([\d.]+) metros/i) ?? 0,
+    // (lote C1, dono 20/10: + a Ruptura de Trarthus — "Onda pode recomeçar até 3 vezes" (sunder_number_of_fake_chains 3, act_str.lua:12025), na mesma linha do "+0.1
+    // metros de raio para cada área anterior")
+    forma: 'linha', areas, raioM: areaNoNivel(slug, nivel, qualidade).raioM ?? 1.2, porAreaM: achar(/(?:^|\s)Áreas de onda ganham \+([\d.]+) metros/i) ?? 0,
+    recomecos: achar(/^Onda pode recomeçar até (\d+) vezes/i) ?? 0,
     choques: achar(/^Onda causa Ondas de Choque de até (\d+) Inimigos em cada Área$/i) ?? 0, choqueMenos: achar(/^Ondas de Choque causam (\d+) ?% menos Dano$/i) ?? 0,
   };
 }

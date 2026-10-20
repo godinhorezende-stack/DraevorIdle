@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 236 |
+| implementada e testada | 237 |
 | implementada, sem teste próprio | 52 |
 | limitação do modelo idle | 11 |
-| parcial | 262 |
+| parcial | 261 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 107 |
+| implementada e testada | 108 |
 | implementada, sem teste próprio | 23 |
 | limitação do modelo idle | 6 |
-| parcial | 74 |
+| parcial | 73 |
 
 ### Gemas de suporte (262)
 
@@ -34,15 +34,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 22 · parcial 23 · implementada, sem teste próprio 7
-- Alternativas (209): implementada e testada 72 · implementada, sem teste próprio 27 · parcial 103 · limitação do modelo idle 7
+- Alternativas (209): implementada e testada 73 · implementada, sem teste próprio 27 · parcial 102 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 681 linhas distintas (125 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 680 linhas distintas (125 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 326/562 ativas, 117/262 suportes.
+- Testes que citam a gema: 327/562 ativas, 117/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -644,7 +644,6 @@ Só os ataques:
 | 1 | Onda de Choque causa # % mais Dano |
 | 1 | Onda de Choque causa # % menos Dano |
 | 1 | Onda de Choque causa +# % mais Dano |
-| 1 | Onda pode recomeçar até # vezes Áreas de onda ganham +# metros de raio para cada área anterior |
 | 1 | Outros efeitos em inimigos Amaldiçoados expiram # % mais devagar |
 | 1 | Perca # de Fúria por segundo |
 | 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
@@ -1560,8 +1559,6 @@ Só os ataques:
   - efeito não simulado: Lacaios têm 50 % menos Vida Máxima
   - efeito não simulado: Efeito do Buff aumentado em 20 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Sunder_of_Trarthus** (Ruptura de Trarthus) — parcial
-  - efeito não simulado: Onda pode recomeçar até 3 vezes Áreas de onda ganham +0.1 metros de raio para cada área anterior
 - **Tectonic_Slam** (Impacto Tectônico) — parcial
   - efeito não simulado: 30 % de Chance de ramificação da Fissura
   - efeito não simulado: +5 % de chance de ramificar fissuras por Carga de Tolerância

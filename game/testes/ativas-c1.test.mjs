@@ -281,3 +281,27 @@ test('C1 (D1.5): a Pancada de Gelo da Cadência — o raio de 1,1 m na mão prin
   const a2 = uso(0.9);
   assert.deepEqual(daVez === 'secundaria' ? [a1, a2] : [a2, a1], [1, 0], 'a secundária pega a casa ao lado; a principal, não');
 });
+
+// ---------------------------------------------------------------- a Ruptura de Trarthus (dono, 20/10)
+
+test('C1 (dono 20/10): a Ruptura de Trarthus — 4 áreas, +0,1 m por área anterior, recomeça até 3 vezes; a comum não recomeça', { skip: SEM }, () => {
+  const s = G.sequenciaDaGema('Sunder_of_Trarthus', 20, 0);
+  assert.deepEqual([s.forma, s.areas, s.porAreaM, s.recomecos, s.choques, s.choqueMenos], ['linha', 4, 0.1, 3, 5, 40]);
+  assert.equal(G.sequenciaDaGema('Sunder', 20, 0).recomecos, 0);
+  assert.deepEqual(G.REGISTRO.get('Sunder_of_Trarthus').motivosNoJogo, []);
+});
+
+test('C1 (dono 20/10): a Ruptura de Trarthus no jogo — recomeça na direção do inimigo mais perto a até 4 casas (8 m) do fim da onda, até 3 vezes', { skip: SEM }, async () => {
+  const { e, b, resto } = await montar('Sunder_of_Trarthus', { arma: 'One_Hand_Axes/Rusted_Hatchet' });
+  // (o raio de 1,3 m = 0,65 casa, com a fração travada em 0,9: só a casa do centro — os choques não alcançam ninguém)
+  // a 1ª onda vai de (0,-1) a (0,-4), onde está o alvo (a 0 casa do fim, não conta); o 1º recomeço vai até o a 4 casas do fim, (4,-4); o 2º anda 4 casas na direção
+  // do mais perto, (4,-7), e para em (4,-8); o 3º volta para o mais perto dali, (4,-7), e anda até (4,-4) — pega os dois de novo; depois do 3º, para: o que está
+  // a 5 casas (4,-13) não é alcançado
+  por(e, b, 0, -4);
+  const r1 = por(e, resto[0], 4, -4);
+  const r2 = por(e, resto[1], 4, -7);
+  const longe = por(e, resto[2], 4, -13);
+  const r = usar(e, b, 0.9);
+  assert.ok(r.ok, r.erro);
+  assert.deepEqual([acertos(r, b), acertos(r, r1), acertos(r, r2), acertos(r, longe)], [1, 2, 2, 0]);
+});
