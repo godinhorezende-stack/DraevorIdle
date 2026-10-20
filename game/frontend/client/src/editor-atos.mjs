@@ -594,8 +594,8 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
   /** Os mobs da área em edição (uma cópia; "Salvar mobs da área" grava e vale na próxima entrada). */
   E.mobsEditando = {};
   // (lote A5d) a Evasão fica só de leitura: o combate usa a tabela do PoE × o multiplicador do tipo (`mobs/atributos.mjs`); o número do poedb fica de
-  // referência (o `limparMob` o preserva — o importador das defesas o usa para escolher a variante dos únicos).
-  const CAMPOS_DO_MOB = [['nivel', 'Nível', 1], ['vida', 'Vida', 1], ['escudoDeEnergia', 'Escudo de Energia', 1], ['dano', 'Golpe', 1], ['tempoAtaque', 'Tempo de ataque (s)', 0.01], ['armadura', 'Armadura', 1], ['evasao', 'Evasão (poedb, referência — o combate usa a tabela do PoE × multiplicador)', 1, true], ['experiencia', 'Experiência', 1]];
+  // referência (o `limparMob` o preserva — o importador das defesas o usa para escolher a variante dos únicos). (Lote A5e: a Armadura também.)
+  const CAMPOS_DO_MOB = [['nivel', 'Nível', 1], ['vida', 'Vida', 1], ['escudoDeEnergia', 'Escudo de Energia', 1], ['dano', 'Golpe', 1], ['tempoAtaque', 'Tempo de ataque (s)', 0.01], ['armadura', 'Armadura (poedb, referência — o combate usa a tabela do PoE × multiplicador)', 1, true], ['evasao', 'Evasão (poedb, referência — o combate usa a tabela do PoE × multiplicador)', 1, true], ['experiencia', 'Experiência', 1]];
   const RES = [['fire', 'Res. fogo'], ['ice', 'Res. gelo'], ['energy', 'Res. raio'], ['chaos', 'Res. caos']];
   const limparMob = (m) => ({ slug: m.slug, nome: m.nome, unico: !!m.unico, nivel: m.nivel, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, experiencia: m.experiencia, resistencias: { ...(m.resistencias ?? {}) }, ...(m.habilidades?.length ? { habilidades: m.habilidades } : {}) });
 

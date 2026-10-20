@@ -1,12 +1,14 @@
 // As ÁREAS dos mapas do endgame (T1–T16, dono 10/10 — só no jogo oficial). Cada tier é uma hunt virtual (`poe-mapa-<tier>`) montada como as
 // áreas da campanha do PoE (`campanha.mjs`): o TERRENO de uma hunt do Draevor (o apelido do mapa), os MONSTROS comuns de uma área da
 // campanha e um CHEFE (um monstro único da campanha) — todos LEVADOS AO NÍVEL DO MAPA (68–83) pelo crescimento por nível do PoE
-// (`mapas.json → instancia.crescimentoPorNivel`, medido nos próprios monstros da campanha). A peça que abre o mapa decide o resto, na
+// (`mapas.json → instancia.crescimentoPorNivel`, medido nos próprios monstros da campanha — vida, dano, exp e ES; a armadura e a evasão
+// saem da tabela do PoE no nível do mapa, lote A5e). A peça que abre o mapa decide o resto, na
 // entrada (`Cacadas.entrar` com `mapa`): os efeitos dos afixos nos monstros e no chefe (`aplicarEfeitos`), a raridade a mais, o tamanho
 // do grupo e quantos chefes.
 import { ligado } from './catalogo.mjs';
 import * as Mapas from './mapas.mjs';
 import * as Monstros from './monstros.mjs';
+import * as DefesaPoe from './defesa-poe.mjs';
 import { CATALOGO } from '../dados.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt } from '../hunt/terreno.mjs';
@@ -24,18 +26,23 @@ export function tierDaHunt(huntId) {
   return m && POR_TIER.has(Number(m[1])) ? Number(m[1]) : null;
 }
 
-const STATUS_QUE_CRESCEM = ['vida', 'dano', 'experiencia', 'armadura', 'evasao', 'escudoDeEnergia'];
+// (lote A5e) A armadura e a evasão NÃO crescem pela curva: no combate saem da tabela do PoE no nível × o multiplicador do tipo
+// (`itens-poe/defesa-poe.mjs`); aqui o número de referência do monstro no mapa fica o mesmo da conta (o `crescimentoPorNivel` delas saiu de `mapas.json`, dono 20/10).
+const STATUS_QUE_CRESCEM = ['vida', 'dano', 'experiencia', 'escudoDeEnergia'];
 /**
  * O monstro do PoE (status de `campanha-poe.json`, num nível da campanha) levado ao `nivel` do mapa: cada status × e^(crescimento × níveis
  * a mais) — o dano das habilidades junto (a proporção entre o golpe e as magias continua a mesma). Resistências e tempo de ataque não
- * mudam com o nível no PoE.
+ * mudam com o nível no PoE. A armadura e a evasão NÃO crescem pelo `crescimentoPorNivel`: são a tabela do PoE no nível do mapa × o multiplicador
+ * do tipo (lote A5e).
  */
 export function noNivel(m, nivel) {
   const d = Number(nivel) - Number(m.nivel);
-  if (!d) return m;
+  // (revisão do A5e) mesmo no nível da campanha (d = 0) a armadura e a evasão de referência viram as da tabela (abaixo): sem o atalho de antes.
   const fator = (campo) => Math.exp((Number(CONFIG.crescimentoPorNivel?.[campo]) || 0) * d);
   const saida = { ...m, nivel: Number(nivel) };
   for (const campo of STATUS_QUE_CRESCEM) if (Number(m[campo]) > 0) saida[campo] = Math.round(m[campo] * fator(campo));
+  saida.armadura = DefesaPoe.armaduraPoeDoSlug(m.slug, saida.nivel);
+  saida.evasao = DefesaPoe.defesaPoeDoSlug(m.slug, saida.nivel).evasao;
   if (m.habilidades?.length) {
     const fd = fator('dano');
     saida.habilidades = m.habilidades.map((h) => (h.dano ? { ...h, dano: { min: Math.round(h.dano.min * fd), max: Math.round(h.dano.max * fd) } } : h));

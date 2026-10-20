@@ -104,7 +104,8 @@ export function levelDoBicho(hunt, bicho) {
   // (lote A5d, dono 20/10) O monstro do PoE tem o nível dele (`itens-poe/monstros.mjs`: o da área; nos mapas, o do mapa — `mapas-areas.noNivel`):
   // é o nível da tabela de evasão e precisão do PoE (`mobs/atributos.mjs`). Vem antes do da fase (na campanha do PoE os dois são o nível da área;
   // fora dela — os mapas — não há fase, e antes saía a estimativa pela exp: o Hillock do nível 1 dava 39).
-  const doPoe = BESTIARIO?.[bicho?.key]?.poe?.nivel;
+  // (revisão do A5e: o `poe` do próprio monstro antes — o chefe de ato na arena tem a base de um desenho do Draevor)
+  const doPoe = bicho?.poe?.nivel ?? BESTIARIO?.[bicho?.key]?.poe?.nivel;
   if (doPoe) return Math.min(2000, Math.max(1, doPoe + extra));
   if (hunt?.escala?.nivel) return hunt.escala.nivel + extra;
   // A exp a mais da raridade (`expMult`) não sobe o level do mob — quem sobe é o `levelExtra`.

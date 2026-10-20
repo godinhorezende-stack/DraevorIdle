@@ -42,6 +42,8 @@ export function criarBossUnico(def, ponto, { escala = null, instanciaId = null, 
   if (def.usaEscalaDaFase && escala) aplicarEscala(m, escala);
   if (a.danoMult && a.danoMult !== 1) m.forca = (m.forca ?? 1) * a.danoMult;
   if (a.armadura != null) m.armor = a.armadura;
+  // (revisão do A5e) o chefe do PoE: o slug e o nível do poedb no próprio monstro (as defesas pela tabela do PoE — `mobs/atributos.poeDe`).
+  if (def.poe) m.poe = { ...def.poe };
   if (a.expMult && a.expMult !== 1) m.exp = Math.round(m.exp * a.expMult);
   if (a.resistencias && Object.keys(a.resistencias).length) m.resist = { ...a.resistencias };
   if (def.recompensas.loot.length) m.loot = def.recompensas.loot.map((d) => ({ id: d.id, name: ITEM_CATALOG[d.id]?.name, chance: d.chance / 100 }));

@@ -1708,6 +1708,6 @@ export function round(estado, personagem) {
 // (lote A5d: o monstro do PoE, no nível dele — `levelDoBicho`; a evasão dele vem da tabela do PoE pelo nível)
 ModsPoe.definirDefesasDoBicho((m) => {
   if (!m?.key) return null;
-  const nivel = BESTIARY[m.key]?.poe ? AtributosDoPersonagem.levelDoBicho(null, m) : m.level ?? 1;
+  const nivel = AtributosDoMob.poeDe(m) ? AtributosDoPersonagem.levelDoBicho(null, m) : m.level ?? 1;
   return { armadura: AtributosDoMob.armaduraDe(m, nivel), evasao: AtributosDoMob.evasaoDe(m, nivel) };
 });

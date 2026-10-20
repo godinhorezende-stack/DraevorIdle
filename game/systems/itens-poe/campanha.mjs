@@ -157,6 +157,9 @@ function registrarChefe(numero) {
       categoria: 'principal',
       base,
       nivel: chefe.nivel,
+      // (revisão do A5e) a identidade do PoE do chefe (o slug do poedb e o nível): a armadura, a evasão e a precisão na arena saem da tabela do
+      // PoE × o multiplicador do tipo (`mobs/atributos.mjs`), não do desenho do Draevor (`base`). `atributos.armadura`: a da campanha, referência.
+      poe: { slug: m.slug, nivel: chefe.nivel, unico: true },
       atributos: { vida: m.vida + (m.escudoDeEnergia ?? 0), expMult: Math.max(0.01, m.experiencia / Math.max(1, be?.exp ?? 1)), armadura: m.armadura ?? 0, resistencias: { ...m.resistencias } },
       melee: { min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervaloMs: Math.max(250, Math.round(m.tempoAtaque * 1000)), ...(Monstros.AJUSTES.ataques[m.slug]?.basico?.efeito ? { efeito: Monstros.AJUSTES.ataques[m.slug].basico.efeito } : {}) },
       usaPoderesDoBase: false,

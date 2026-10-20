@@ -2777,7 +2777,7 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       // (lote 32, P028: + o bloqueio de Magia da Oferenda Óssea)
       // (lote 43, P040: + a precisão do bicho contra a evasão do lacaio)
       // (lote A5d) o monstro do PoE: a precisão no nível DELE (a tabela do PoE); os do Draevor seguem pelo nível do lacaio, como estava
-      const precisao = AtributosDoMob.precisaoDe(b, BESTIARY[b.key]?.poe ? Atributos.levelDoBicho(hunt, b) : l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
+      const precisao = AtributosDoMob.precisaoDe(b, AtributosDoMob.poeDe(b) ? Atributos.levelDoBicho(hunt, b) : l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
       // (lote 87, dono 19/10: B3) o CRÍTICO do golpe do monstro no lacaio, como em você (`LacaiosPoe.criticoNoLacaio`: o "Afiado", a espécie, os
       // estados do monstro; o dano extra × (1 − o "Dano Extra recebido de Acertos Críticos reduzido" do lacaio))
       const critDoBicho = l.poe ? LacaiosPoe.criticoNoLacaio(l, AtributosDoMob.critico(b), b, relogio) : null;

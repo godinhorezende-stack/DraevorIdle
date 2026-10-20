@@ -12,6 +12,7 @@ import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import * as Jogo from './jogo.mjs';
 import { catalogo } from './catalogo.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
+import { armaduraPoeDoSlug, defesaPoeDoSlug } from './defesa-poe.mjs';
 
 const C = Monstros.CAMPANHA;
 const pct = (v) => Math.round(v * 10000) / 100; // fração → % com 2 casas
@@ -67,7 +68,9 @@ export function previaDaArea(id) {
       const key = Monstros.chaveDe(m);
       return {
         key, slug: m.slug, nome: m.nome, nivel: m.nivel, unico: !!m.unico,
-        vida: m.vida, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, escudoDeEnergia: m.escudoDeEnergia ?? 0,
+        vida: m.vida, dano: m.dano, tempoAtaque: m.tempoAtaque,
+        // (revisão do A5e) a armadura e a evasão do COMBATE (a tabela do PoE × o multiplicador do tipo); as da campanha ficam de referência
+        armadura: armaduraPoeDoSlug(m.slug, m.nivel), evasao: defesaPoeDoSlug(m.slug, m.nivel).evasao, armaduraPoedb: m.armadura ?? 0, evasaoPoedb: m.evasao ?? 0, escudoDeEnergia: m.escudoDeEnergia ?? 0,
         resistencias: m.resistencias ?? {}, experiencia: m.experiencia,
         habilidades: (m.habilidades ?? []).map((h) => h.nome),
         drops: DropsPorMonstro.tabelaDe(key).map((d) => ({ id: Number(d.id), nome: ITEM_CATALOG[d.id]?.name ?? `item ${d.id}`, chance: Number(d.chance), missao: !!d.missao })),

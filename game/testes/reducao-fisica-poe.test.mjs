@@ -12,6 +12,7 @@ import * as Afixos from '../systems/afixos.mjs';
 import * as Registro from '../systems/combate/registro.mjs';
 import { resistido } from '../systems/hunt/resistencia.mjs';
 import { criarMonstro, BESTIARY } from '../systems/hunt/monstros.mjs';
+import { tabelaPoe, armaduraDe } from '../systems/mobs/atributos.mjs';
 import { contraAtaque } from '../systems/hunt/combate.mjs';
 import { dispararMagia } from '../systems/poderes.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
@@ -34,15 +35,19 @@ test('a conta pura: armadura + adicional somam, teto de 90% (jogador e monstro),
 });
 
 // Um monstro do PoE de mentira, com a armadura que o teste quer (a armadura do PoE não passa pela curva do Draevor).
+// (Aval do dono, 20/10 — lote A5e: a armadura do monstro do PoE sai da tabela do poedb no nível × o multiplicador, não do `poe.armadura`; o
+// monstro de teste chega à armadura pedida pelo `armaduraPct` sobre a tabela do nível 60 — (armadura / 15178 − 1) × 100. Os esperados não mudam.)
 function comMonstroDoPoe(armadura, fn) {
   BESTIARY.__teste_reducao_fisica = { name: 'Teste', hp: 1, elements: {}, poe: { nivel: 60, armadura, evasao: 0 } };
-  try { return fn((physical) => ({ key: '__teste_reducao_fisica', uid: 1, hp: 1, maxHp: 1, resist: { physical } })); } finally { delete BESTIARY.__teste_reducao_fisica; }
+  const armaduraPct = (armadura / tabelaPoe('armadura', 60) - 1) * 100;
+  try { return fn((physical) => ({ key: '__teste_reducao_fisica', uid: 1, hp: 1, maxHp: 1, resist: { physical }, armaduraPct })); } finally { delete BESTIARY.__teste_reducao_fisica; }
 }
 const H = { clock: 0, escala: { nivel: 60 } };
 
 test('golpe do JOGADOR no monstro: armadura + redução física adicional do bicho SOMADAS no teto de 90%', { skip: soNoPoe }, () => {
   // 5.000 de armadura contra 1.000 = 50%; + 30% (Infundido com Aço) = 80%: passam 200 (antes, 1.000 × 0,5 × 0,7 = 350).
   comMonstroDoPoe(5000, (bicho) => {
+    assert.equal(Math.round(armaduraDe(bicho(30), 60)), 5000, 'a armadura do monstro de teste (aval 20/10)');
     assert.equal(resistido(H, bicho(30), 'physical', 1000, { penetracao: {} }), 200);
     // Overwhelm de 10%: depois do teto — 80 − 10 = 70%.
     assert.equal(resistido(H, bicho(30), 'physical', 1000, { penetracao: { fisica: 10 } }), 300);

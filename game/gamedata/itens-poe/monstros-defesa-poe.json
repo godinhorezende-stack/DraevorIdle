@@ -1,7 +1,8 @@
 {
- "_nota": "Lote A5d (dono, 20/10): a evasão e a precisão dos monstros do PoE = round(tabela[nível] × multiplicador do tipo), com os aumentos do monstro por cima. Tabelas: data.monsterEvasionTable / data.monsterAccuracyTable do Misc.lua do PoB (índice 0 = nível 1). Multiplicadores: o \"Monster Type Multiplier\" do tooltip do poedb. O geral (o dos MAPAS e de todo nível sem porNivel): a moda das variantes de nível 68+ (Base Stat = tabela no 68 ou no 83), senão a de todas. porNivel[N]: o da variante cuja Base Stat é a tabela no nível N da campanha, quando difere do geral (o motor usa o do poe.nivel). A armadura só fica registrada (não vale). Sem página: evasão × 1, precisão × a mediana (`padrao`). Gerado por tools/importar-defesa-monstros-poe.mjs.",
+ "_nota": "Lote A5d (dono, 20/10): a evasão e a precisão dos monstros do PoE = round(tabela[nível] × multiplicador do tipo), com os aumentos do monstro por cima. Lote A5e: a armadura também (o teto de L.armaduraMaxima por cima). Tabelas: data.monsterEvasionTable / data.monsterAccuracyTable do Misc.lua do PoB (índice 0 = nível 1); a de armadura é a do poedb (NÃO a monsterArmourTable do PoB): 1–90 da Base por nível do bestiário do poedb, conferida com as Base Stat dos tooltips; 91–100 extrapolados no log (origemDasTabelas.armadura). Multiplicadores: o \"Monster Type Multiplier\" do tooltip do poedb. O geral (o dos MAPAS e de todo nível sem porNivel): a moda das variantes de nível 68+ (Base Stat = tabela no 68 ou no 83), senão a de todas. porNivel[N]: o da variante cuja Base Stat é a tabela no nível N da campanha, quando difere do geral (o motor usa o do poe.nivel). `faltantes`: os slugs SEM PÁGINA no poedb — evasão × 1, precisão × a mediana (`padrao`); a armadura × a da campanha quando ela dá um multiplicador só (esses ficam também em `monstros`, só com `armadura` e `armaduraDaCampanha: true`), senão × 1. Gerado por tools/importar-defesa-monstros-poe.mjs.",
  "fonte": {
-  "tabelas": "Path of Building — src/Data/Misc.lua",
+  "tabelas": "Path of Building — src/Data/Misc.lua (evasão, precisão)",
+  "armadura": "poedb — Base por nível do bestiário (1–90) + Base Stat dos tooltips; 91–100 extrapolados (sem fonte na escala do poedb)",
   "multiplicadores": "poedb.tw/pt/<slug> (tooltips de Precisão, Evasão e Armadura)"
  },
  "tabelas": {
@@ -208,11 +209,225 @@
    910,
    945,
    980
+  ],
+  "armadura": [
+   16,
+   23,
+   30,
+   39,
+   48,
+   59,
+   71,
+   84,
+   99,
+   115,
+   133,
+   152,
+   174,
+   198,
+   225,
+   254,
+   286,
+   321,
+   360,
+   402,
+   449,
+   500,
+   556,
+   616,
+   683,
+   756,
+   835,
+   922,
+   1016,
+   1120,
+   1232,
+   1354,
+   1488,
+   1633,
+   1790,
+   1962,
+   2148,
+   2351,
+   2571,
+   2811,
+   3070,
+   3352,
+   3658,
+   3990,
+   4350,
+   4740,
+   5163,
+   5621,
+   6118,
+   6656,
+   7238,
+   7869,
+   8552,
+   9290,
+   10090,
+   10955,
+   11890,
+   12902,
+   13996,
+   15178,
+   16457,
+   17838,
+   19330,
+   20943,
+   22685,
+   24566,
+   26597,
+   28790,
+   31158,
+   33714,
+   36473,
+   39449,
+   42661,
+   46127,
+   49865,
+   53896,
+   58245,
+   62934,
+   67990,
+   73441,
+   79317,
+   85651,
+   92477,
+   99834,
+   107762,
+   116303,
+   125506,
+   135420,
+   146098,
+   157600,
+   169986,
+   183322,
+   197679,
+   213134,
+   229768,
+   247669,
+   266930,
+   287653,
+   309945,
+   333922
   ]
+ },
+ "origemDasTabelas": {
+  "armadura": {
+   "tooltips": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84
+   ],
+   "baseDoPoedb": [
+    1,
+    73,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90
+   ],
+   "extrapolados": [
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100
+   ],
+   "regra": "91–100: A(n) = round(A(n−1) × (g90 + (n − 90) × -0.0001368)), g90 = A(90)/A(89) = 1.07873"
+  }
  },
  "padrao": {
   "evasao": 1,
-  "precisao": 2
+  "precisao": 2,
+  "armadura": 1
  },
  "monstros": {
   "Abberath,_the_Cloven_One": {
@@ -403,7 +618,12 @@
   "Bear_Acolyte": {
    "precisao": 2,
    "evasao": 1,
-   "armadura": 1.25
+   "armadura": 1.25,
+   "porNivel": {
+    "53": {
+     "armadura": 1.5
+    }
+   }
   },
   "Bearded_Devil": {
    "precisao": 2,
@@ -523,7 +743,12 @@
   "Boar_Acolyte": {
    "precisao": 2,
    "evasao": 1.2,
-   "armadura": 1.75
+   "armadura": 1.75,
+   "porNivel": {
+    "53": {
+     "armadura": 1
+    }
+   }
   },
   "Boiling_Ambusher": {
    "precisao": 2,
@@ -593,7 +818,15 @@
   "Brittle_Archer": {
    "precisao": 2,
    "evasao": 1.1,
-   "armadura": 1.5
+   "armadura": 1.5,
+   "porNivel": {
+    "15": {
+     "armadura": 1
+    },
+    "51": {
+     "armadura": 1
+    }
+   }
   },
   "Brittle_Bandit": {
    "precisao": 2,
@@ -605,7 +838,8 @@
    "evasao": 1,
    "porNivel": {
     "51": {
-     "evasao": 1.1
+     "evasao": 1.1,
+     "armadura": 1
     }
    },
    "armadura": 1.25
@@ -1280,7 +1514,8 @@
    "evasao": 1.5,
    "porNivel": {
     "30": {
-     "evasao": 1
+     "evasao": 1,
+     "armadura": 1
     }
    },
    "armadura": 1.5
@@ -1443,7 +1678,12 @@
   "Guard_Captain": {
    "precisao": 2,
    "evasao": 1,
-   "armadura": 2
+   "armadura": 2,
+   "porNivel": {
+    "23": {
+     "armadura": 1.25
+    }
+   }
   },
   "Gut_Flayer": {
    "precisao": 2,
@@ -1604,14 +1844,19 @@
    "precisao": 2,
    "evasao": 1,
    "porNivel": {
+    "58": {
+     "armadura": 1
+    },
     "59": {
-     "evasao": 1.1
+     "evasao": 1.1,
+     "armadura": 1
     },
     "60": {
-     "evasao": 1.1
+     "evasao": 1.1,
+     "armadura": 1
     }
    },
-   "armadura": 1
+   "armadura": 2
   },
   "Infested_Ape": {
    "precisao": 2,
@@ -2288,10 +2533,11 @@
    "evasao": 1.45,
    "porNivel": {
     "45": {
-     "evasao": 1
+     "evasao": 1,
+     "armadura": 1
     }
    },
-   "armadura": 1
+   "armadura": 1.3
   },
   "Risen_Gladiator": {
    "precisao": 2,
@@ -2417,8 +2663,15 @@
    "precisao": 2,
    "evasao": 1.5,
    "porNivel": {
+    "2": {
+     "armadura": 1.5
+    },
+    "3": {
+     "armadura": 1.5
+    },
     "45": {
-     "evasao": 1
+     "evasao": 1,
+     "armadura": 1.5
     }
    },
    "armadura": 1
@@ -2481,7 +2734,18 @@
   "Shadow_Archer": {
    "precisao": 2,
    "evasao": 1.1,
-   "armadura": 1
+   "armadura": 1,
+   "porNivel": {
+    "15": {
+     "armadura": 1.25
+    },
+    "17": {
+     "armadura": 1.25
+    },
+    "21": {
+     "armadura": 1.25
+    }
+   }
   },
   "Shadow_Stalker": {
    "precisao": 2,
@@ -2856,7 +3120,12 @@
   "The_Dweller_of_the_Deep": {
    "precisao": 2,
    "evasao": 1,
-   "armadura": 1
+   "armadura": 1,
+   "porNivel": {
+    "6": {
+     "armadura": 1.25
+    }
+   }
   },
   "The_Faun": {
    "precisao": 2,
@@ -3297,6 +3566,10 @@
    "precisao": 2,
    "evasao": 1.5,
    "armadura": 1.5
+  },
+  "Grinning_Totem": {
+   "armadura": 2,
+   "armaduraDaCampanha": true
   }
  },
  "faltantes": [
@@ -3323,6 +3596,7 @@
   "Enraptured_Crab.evasao: 1.5/1",
   "Enraptured_Crab.evasao@19: 1.5/1",
   "Enraptured_Crab.armadura: 1/1.5",
+  "Enraptured_Crab.armadura@19: 1/1.5",
   "Flesh_Sculptor.evasao: 1/1.5",
   "Flesh_Sculptor.armadura: 1/1.5",
   "Gemling_Legionnaire.evasao: 1/1.5",
@@ -3348,13 +3622,24 @@
   "Savage_Crab.evasao: 1.5/1",
   "Savage_Crab.evasao@3: 1.5/1",
   "Savage_Crab.armadura: 1/1.5",
+  "Savage_Crab.armadura@3: 1/1.5",
   "Shadow_Archer.armadura: 1.25/1",
   "Snow_Wolf.evasao: 1.1/1.3",
   "Solaris,_Eternal_Sun.armadura: 2/1",
   "Stag_Acolyte.evasao: 1.1/1",
   "The_Animal_Pack.evasao: 1.8/1.4",
   "The_Dweller_of_the_Deep.armadura: 1/1.25",
+  "The_Dweller_of_the_Deep.armadura@6: 1/1.25",
   "Undying_Grappler.armadura: 1/1.25",
   "Vaal_Arsonist.armadura: 1.75/1.25"
- ]
+ ],
+ "conferenciaDaArmadura": {
+  "total": 1292,
+  "batem": 1291,
+  "exatas": 1291,
+  "naoBatem": [
+   "Vaal_Oversoul@23: campanha 924, tabela 556 × 1.5 = 834"
+  ],
+  "_nota": "A campanha divergia nestes (naoBatem); vale a do poedb — tabela × multiplicador (dono, 20/10). Ex.: o Vaal_Oversoul no 23 fica com 834 (556 × 1,5), não os 924 da campanha."
+ }
 }

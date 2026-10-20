@@ -51,10 +51,10 @@ function tabelaDeHabilidades(lista) {
       el('td', {}, h.elemento ? seloDoElemento(h.elemento) : h.dano ? seloDoElemento('physical') : '—'), el('td', { class: 'num' }, h.tempo ? `${h.tempo} s` : '—'), el('td', { class: 'num' }, h.recarga ? `${h.recarga} s` : '—'))))));
 }
 
-/** Os status do PoE de um monstro (vida, ES, dano, ritmo, defesas, exp) como métricas. (Lote A5d: a Evasão e a Precisão do combate — a tabela do PoE × o multiplicador.) */
+/** Os status do PoE de um monstro (vida, ES, dano, ritmo, defesas, exp) como métricas. (Lote A5d: a Evasão e a Precisão do combate — a tabela do PoE × o multiplicador; A5e: a Armadura também.) */
 const metricasDoMonstro = (m) => el('div', { class: 'eng-metricas' },
   metrica('Nível', m.nivel), metrica('Vida', num(m.vida)), m.escudoDeEnergia ? metrica('Escudo de Energia', num(m.escudoDeEnergia)) : null, metrica('Dano do golpe', num(m.dano)),
-  metrica('Tempo de ataque', `${Number(m.tempoAtaque).toFixed(2)} s`), metrica('Armadura', num(m.armadura)), metrica('Evasão', num(m.evasaoCombate ?? m.evasao)), m.precisaoCombate != null ? metrica('Precisão', num(m.precisaoCombate)) : null, metrica('Experiência', num(m.experiencia)));
+  metrica('Tempo de ataque', `${Number(m.tempoAtaque).toFixed(2)} s`), metrica('Armadura', num(m.armaduraCombate ?? m.armadura)), metrica('Evasão', num(m.evasaoCombate ?? m.evasao)), m.precisaoCombate != null ? metrica('Precisão', num(m.precisaoCombate)) : null, metrica('Experiência', num(m.experiencia)));
 
 // ================================================================ CAMPANHA
 
@@ -725,7 +725,7 @@ export function criarTelaDosMobsPoe({ raiz }) {
       el('h4', {}, `Status do PoE por área (${m.ocorrencias.length})`),
       el('div', { class: 'bib-tabela' }, el('table', {},
         el('thead', {}, el('tr', {}, ['Área', 'Nível', 'Vida', 'ES', 'Golpe', 'Tempo', 'Armadura', 'Evasão', 'Res. F/G/R/C', 'Exp'].map((h) => el('th', {}, h)))),
-        el('tbody', {}, m.ocorrencias.map((o) => el('tr', {}, el('td', {}, `${o.ato === 11 ? 'Ep.' : `A${o.ato}`} · ${o.areaNome}`), el('td', { class: 'num' }, o.nivel), el('td', { class: 'num' }, num(o.vida)), el('td', { class: 'num' }, num(o.escudoDeEnergia)), el('td', { class: 'num' }, num(o.dano)), el('td', { class: 'num' }, `${Number(o.tempoAtaque).toFixed(2)} s`), el('td', { class: 'num' }, num(o.armadura)), el('td', { class: 'num' }, num(o.evasao)), el('td', { class: 'num' }, ['fire', 'ice', 'energy', 'chaos'].map((e) => o.resistencias?.[e] ?? 0).join('/')), el('td', { class: 'num' }, num(o.experiencia))))))),
+        el('tbody', {}, m.ocorrencias.map((o) => el('tr', {}, el('td', {}, `${o.ato === 11 ? 'Ep.' : `A${o.ato}`} · ${o.areaNome}`), el('td', { class: 'num' }, o.nivel), el('td', { class: 'num' }, num(o.vida)), el('td', { class: 'num' }, num(o.escudoDeEnergia)), el('td', { class: 'num' }, num(o.dano)), el('td', { class: 'num' }, `${Number(o.tempoAtaque).toFixed(2)} s`), el('td', { class: 'num' }, num(o.armaduraCombate ?? o.armadura)), el('td', { class: 'num' }, num(o.evasaoCombate ?? o.evasao)), el('td', { class: 'num' }, ['fire', 'ice', 'energy', 'chaos'].map((e) => o.resistencias?.[e] ?? 0).join('/')), el('td', { class: 'num' }, num(o.experiencia))))))),
       el('p', { class: 'dica' }, 'Para mudar os status numa área: aba Acts → o ato → a área → Mobs da área.'));
     sec('drops',
       el('h4', {}, 'Drops'),
