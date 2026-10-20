@@ -410,7 +410,9 @@ export function comAsLinhasDaGema(estado, ficha, entry, efeito = undefined) {
   // (lote PR1, revisão: o dano ADICIONAL da própria gema igual a X% da Vida/Mana máxima é dano adicionado da gema — o PoB o multiplica pela Eficácia do Dano
   // Adicionado dela: o Sifão de Poder do Arquimago, damageEffectiveness 0,6 em todo nível (act_int.lua:14219); a Flecha Ardente do Vigor não tem — 1. A linha
   // continua com o número do poedb (`linhasLocaisNoNivel`); o × eficácia é do uso)
-  const efDaGema = GemasPoe.eficaciaNoNivel(entry.poeGema.slug, nivel);
+  // (revisão do lote da eficácia, 20/10: num ATAQUE o `contaDoDano` já multiplica todo o adicionado — o da gema também — pela eficácia; aqui só fora dos
+  // ataques, senão o Raio do Sifão do Arquimago saía × 0,6 × 0,6)
+  const efDaGema = entry.poeGema.ataque ? 1 : GemasPoe.eficaciaNoNivel(entry.poeGema.slug, nivel);
   if (efDaGema !== 1) {
     const chaves = Object.keys(daGema).filter((x) => /^added_\w+?_dmg_(?:min|max)%(?:vidaMax|manaMax):1$/.test(x));
     if (chaves.length) { daGema = { ...daGema }; for (const x of chaves) daGema[x] *= efDaGema; }
@@ -556,7 +558,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
     : ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
   // O dano ADICIONADO dos suportes do PoE ("têm 10 a 15 de Dano de Gelo adicional") × a eficácia do dano adicionado da gema.
   // (S002, lote 47: a eficácia da MAGIA é a do PoB por nível — `GemasPoe.eficaciaDoAdicionado`; antes, 1 em todas)
-  const eficacia = daGemaPoe ? (daGemaPoe.ataque ? 1 : GemasPoe.eficaciaDoAdicionado(daGemaPoe.slug, nivelPoe)) : 1;
+  // (dono, 20/10: "eficácia como no PoE" — no ATAQUE também: o PoB multiplica a arma pelo `baseMultiplier` e todo dano ADICIONADO — peças, passivas,
+  // auras, Arautos, suportes, Empalamento, Marca do Caçador — pelo `damageEffectiveness` (CalcOffence.lua, "Calculate base hit damage"); antes, × 1)
+  const eficacia = daGemaPoe ? GemasPoe.eficaciaDoAdicionado(daGemaPoe.slug, nivelPoe) : 1;
   const doSuporteMin = (efeitoDaGema?.somadoMin ?? 0) * eficacia;
   const doSuporteMax = (efeitoDaGema?.somadoMax ?? 0) * eficacia;
   /*
@@ -580,6 +584,14 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       const extras = { ...(fichaBase.danoSomado ?? {}) };
       if (golpeDaLamina && extras.energy) extras.energy = [Math.max(0, extras.energy[0] - golpeDaLamina.min), Math.max(0, extras.energy[1] - golpeDaLamina.max)];
       for (const [el, [a, b]] of Object.entries(doSuporte)) extras[el] = [(extras[el]?.[0] ?? 0) + a, (extras[el]?.[1] ?? 0) + b];
+      // (revisão do lote da eficácia, 20/10) a Lâmina de Energia e as gemas de escudo não usam a arma da ficha, que é onde está o Físico adicionado global ("Adiciona X a Y
+      // de Dano Físico em Ataques"): ele entra aqui, como o adicionado que é (no PoB vale em todo ataque, × o damageEffectiveness)
+      if ((golpeDaLamina || escudoDaGema?.base) && fichaBase.fisicoAdicionado) {
+        const [a, b] = fichaBase.fisicoAdicionado;
+        if (a > 0 || b > 0) extras.physical = [(extras.physical?.[0] ?? 0) + a, (extras.physical?.[1] ?? 0) + b];
+      }
+      // (dono, 20/10) o dano ADICIONADO ao ataque (o das peças/auras e o dos suportes) × a eficácia do dano adicionado da gema, como no PoE
+      for (const el of Object.keys(extras)) extras[el] = [extras[el][0] * eficacia, extras[el][1] * eficacia];
       // (lote G4) "X a Y de Dano Adicional por cada 15 de Armadura (ou Evasão) no Escudo": × as defesas do escudo vestido, × a eficácia do ataque
       // (o dano adicionado do ataque escala com o "Dano de Ataque X% de base", como a base)
       if (escudoDaGema?.porDefesa?.length) {
@@ -594,7 +606,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       // (lote A5c, dono 20/10: a mesma ordem das magias — a conversão da GEMA primeiro, as das outras fontes só no Físico que sobrou, proporcionais se passarem
       // dele, e o "como Extra" sobre o Físico de antes da conversão, todo o Físico do golpe; antes saíam da arma crua, sem a eficácia, e a gema convertia o resto)
       const outras = (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto);
-      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min, max: armaDoGolpe.max, elemento: armaDoGolpe.elemento ?? 'physical' }, extras, Math.random, { outras, origens, escolhido: elementoSorteado }))) somar(el, v);
+      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, { min: armaDoGolpe.min, max: armaDoGolpe.max, elemento: armaDoGolpe.elemento ?? 'physical' }, extras, Math.random, { outras, origens, escolhido: elementoSorteado, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) }))) somar(el, v);
     } else {
       // (lote A5c, dono 20/10: "corrigir como o PoE") o adicionado vai JUNTO com o dano da gema para `GemasPoe.partesDaMagia`, que converte o Físico de
       // tudo — a conversão da gema, depois a das outras fontes (`ModsPoe.extrasDoFisico`, só no que a gema deixou) e o Físico como Extra —, como nos ataques
@@ -615,7 +627,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       // o elemental somado da própria peça —, × a eficácia do dano adicionado, como o do Feiticeiro
       for (const [el, v] of Object.entries(danoDeArmaNaMagia(estado, entry, efeitoDaGema))) adicionar(el, v, eficacia);
       // (lote B1: + `basePor` — a Descarga, o dano base de cada elemento × as cargas do tipo dele; o adicionado não multiplica)
-      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto), basePor: efeitoDaGema?.danoBasePor ?? null });
+      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto), basePor: efeitoDaGema?.danoBasePor ?? null, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) });
       for (const [el, v] of Object.entries(daMagia)) somar(el, v);
     }
     // PoE (únicos): as conversões entre elementos, os ganhos extras e a máscara de dano ("Não Causa Dano Elemental"…).
@@ -828,9 +840,14 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
   hunt.poeRajadaAte = agora + RAJADA.recargaMs;
   const ficha = ModsPoe.fichaDoGolpe(fichaBase, ['ataque', 'projetil', 'area', 'fogo', 'fisico'], { alvo, estado });
   const media = ((ficha.ataqueMin ?? 0) + (ficha.ataqueMax ?? 0)) / 2;
-  const bruto = (media * danoPct) / 100;
-  const fogo = (bruto * RAJADA.conversaoFogoPct) / 100;
-  const fisico = bruto - fogo;
+  // (revisão do lote da eficácia, 20/10 — o PoB: TriggeredMoltenStrike, baseMultiplier = damageEffectiveness 1,7 → 2) o golpe da arma × o Dano de Ataque do nível e
+  // o dano ADICIONADO aos ataques (peças, auras, Arautos: `ficha.danoSomado`) × a mesma eficácia; os 60% do Físico (o da arma e o adicionado) em Fogo. Antes, só a arma
+  const ef = danoPct / 100;
+  const partes = { physical: media * ef };
+  for (const [el, [a, b]] of Object.entries(ficha.danoSomado ?? {})) partes[el] = (partes[el] ?? 0) + ((a + b) / 2) * ef;
+  const conv = (partes.physical * RAJADA.conversaoFogoPct) / 100;
+  partes.physical -= conv;
+  partes.fire = (partes.fire ?? 0) + conv;
   const aum = (el) => Math.max(0, 1 + (ficha.danoDoElemento?.[el] ?? 0) / 100) * (ficha.fatorDasCargas ?? 1);
   const perto = (hunt.monstros ?? []).filter((m) => m.hp > 0 && !m.dummy && Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) <= RAJADA.raio);
   // (lote 45) a área da queda: 1 casa em volta × √ da "Área de Efeito aumentada" e de cada "mais" (a geral e a das tags do golpe)
@@ -855,7 +872,7 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
         continue;
       }
       const crit = critou();
-      const v = Math.round((resistido(hunt, m, 'physical', fisico * aum('physical'), ficha) + resistido(hunt, m, 'fire', fogo * aum('fire'), ficha)) * (crit ? ficha.critMultiplier ?? 1.5 : 1));
+      const v = Math.round(Object.entries(partes).reduce((t, [el, d]) => t + (d > 0 ? resistido(hunt, m, el, d * aum(el), ficha) : 0), 0) * (crit ? ficha.critMultiplier ?? 1.5 : 1));
       if (!(v > 0)) continue;
       m.hp -= v;
       QuemFeriu.carimbar(m, QuemFeriu.VOCE, ['ataque', 'projetil', 'area', 'fogo', 'fisico']); // (lote 31, S001/P025)
@@ -878,13 +895,15 @@ const ARAUTO_GLACIAL = 'poe-gema:Herald_of_Ice';
 const ARAUTO_DAS_CINZAS = 'poe-gema:Herald_of_Ash';
 /** O buff do Arauto `id` está ligado? */
 const arautoLigado = (hunt, id) => { const b = hunt?.buffs?.[id]; return !!b && b.tipo === 'poe-arauto' && b.ate > (hunt.clock ?? 0); };
+/** (revisão do lote da eficácia, 20/10) O golpe da ARMA da ficha sem o Físico adicionado global (`ficha.fisicoAdicionado`, que o acerto de ataque leva à parte). */
+const armaSemAdicionado = (ficha) => { const d = ficha?.damage ?? { min: 1, max: 1 }; const [a, b] = ficha?.fisicoAdicionado ?? [0, 0]; return { min: Math.max(0, d.min - a), max: Math.max(0, d.max - b) }; };
 /** As tags dos acertos (e da queima) do Arauto: as da gema, sem "magia" (+ `extra`). */
 const tagsDoArauto = (entry, extra = []) => [...new Set([...tagsPoeDaSkill(entry).filter((t) => t !== 'magia' && t !== 'naoCanalizar'), 'arauto', ...extra])];
 /**
  * Um ACERTO do Arauto `id` no bicho `m`: `bruto` (o dano no nível, antes dos aumentos) do `elemento`. `semEletrizar`: a tempestade "Não Pode
  * aplicar Eletrizar". Devolve o dano dado.
  */
-export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false } = {}) {
+export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = null, eventos = [], rng = Math.random, semEletrizar = false, fonte = null, personagem = null, critBase = 0, afeccoesExtra = null, ataque = false, adicionado = null } = {}) {
   const entry = POR_ID.get(id);
   if (!entry || !m || !(m.hp > 0) || m.dummy || !(bruto > 0)) return 0;
   const agora = hunt.clock ?? 0;
@@ -903,7 +922,25 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
     }
   }
   const doSuporte = (1 + (ef?.danoPct ?? 0) / 100) * (ef?.fatorDeDano ?? 1);
-  const comAumento = bruto * Math.max(0, 1 + (f.danoDoElemento?.[elemento] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, elemento) * doSuporte;
+  /*
+   * (revisão do lote da eficácia, 20/10) o ACERTO DE ATAQUE daqui (a Onda de Choque e a Tormenta do Vazio, a explosão da Torre Óssea — `adicionado`: o "mais" do uso
+   * sobre o dano adicionado, sem o "Dano de Ataque X% de base"): como no `contaDoDano`, o golpe da arma (`bruto`, já × o X% de base) + o dano ADICIONADO aos ataques
+   * — o Físico global (`ficha.fisicoAdicionado`), o elemental das peças/auras/Arautos (`danoSomado`, com o do alvo) e o dos suportes (`somadoMin:<el>`) —, × a
+   * eficácia do dano adicionado (1: o PoB não tem a destas habilidades, `damageEffectiveness or 1`), as conversões entre tipos, e o "aumentado" de cada parte.
+   * Antes: só o Físico da arma (o adicionado elemental sumia; o Físico global saía × o X% de base)
+   */
+  let partes = null;
+  if (ataque && itensPoeLigado() && adicionado != null) {
+    const rolar = ([a, b]) => a + rng() * Math.max(0, b - a);
+    const p = { [elemento]: bruto };
+    const somar = (el, faixa) => { const v = rolar(faixa) * adicionado; if (v > 0) p[el] = (p[el] ?? 0) + v; };
+    if (fichaBase.fisicoAdicionado) somar('physical', fichaBase.fisicoAdicionado);
+    for (const [el, faixa] of Object.entries(f.danoSomado ?? {})) somar(el, faixa);
+    for (const k of Object.keys(ef ?? {})) { const x = /^somadoMin:(\w+)$/.exec(k); if (x) somar(x[1], [ef[k], ef[`somadoMax:${x[1]}`] ?? ef[k]]); }
+    const transformadas = ModsPoe.transformarPartes(f, Object.fromEntries(Object.entries(p).map(([el, v]) => [el, [v, v]])), null) ?? {};
+    partes = Object.entries(transformadas).map(([el, [v]]) => ({ el, v: v * Math.max(0, 1 + (f.danoDoElemento?.[el] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, el) * doSuporte })).filter((x) => x.v > 0);
+  }
+  const comAumento = partes ? partes.reduce((t, x) => t + x.v, 0) : bruto * Math.max(0, 1 + (f.danoDoElemento?.[elemento] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, elemento) * doSuporte;
   // o crítico: a gema não tem — só o "+X% de Chance de Golpe Crítico" fixo das tags, × os "aumentados"
   const porTag = ModsPoe.somaPorTags(fichaBase, t);
   const nunca = ModsPoe.valor(f, 'nunca_critico') > 0;
@@ -913,19 +950,22 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
   const crit = !nunca && (ModsPoe.valor(f, 'critico_sempre') > 0 || (chance > 0 && ModsPoe.sorteado(chance, ModsPoe.valor(f, 'critico_sortudo'), ModsPoe.valor(f, 'critico_azarado'), rng, ModsPoe.valor(f, 'sorte_tres_jogadas') > 0)));
   // (o "mais Dano com Acertos" — `mais_dano@arauto`, o Mensageiro Solitário — está em `fatorDasCargas`: só no acerto, não nas afecções)
   // (+ a Eletrização do alvo: o dano a mais dela, como nos outros acertos)
-  const dano = Math.round(resistido(hunt, m, elemento, comAumento * (f.fatorDasCargas ?? 1) * AfeccoesPoe.fatorDeEletrizacao(m, agora), f) * (crit ? (f.critMultiplier ?? 1.5) + (ef?.critDano ?? 0) / 100 : 1));
+  const fatorDoAcerto = (f.fatorDasCargas ?? 1) * AfeccoesPoe.fatorDeEletrizacao(m, agora);
+  const resistidoTotal = partes ? partes.reduce((t, x) => t + resistido(hunt, m, x.el, x.v * fatorDoAcerto, f), 0) : resistido(hunt, m, elemento, comAumento * fatorDoAcerto, f);
+  const dano = Math.round(resistidoTotal * (crit ? (f.critMultiplier ?? 1.5) + (ef?.critDano ?? 0) / 100 : 1));
   if (!(dano > 0)) return 0;
   m.hp -= dano;
   QuemFeriu.carimbar(m, QuemFeriu.VOCE, t);
   eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: dano, foe: true, crit, spell: entry.name, alvo: m.name, color: COR_DO_ELEMENTO[elemento] ?? '#ffffff', ...(fonte ? { fonte } : {}) });
-  ModsPoe.aoAcertar(estado, hunt, m, f, { dano, fisico: 0, fogo: elemento === 'fire' ? dano : 0, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: [elemento], habilidade: id });
+  const fracDe = (el) => (partes ? partes.filter((x) => x.el === el).reduce((t, x) => t + x.v, 0) / Math.max(1e-9, comAumento) : el === elemento ? 1 : 0);
+  ModsPoe.aoAcertar(estado, hunt, m, f, { dano, fisico: partes ? Math.round(dano * fracDe('physical')) : 0, fogo: Math.round(dano * fracDe('fire')), crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: partes ? partes.map((x) => x.el) : [elemento], habilidade: id });
   if (f.afeccoes) {
     const afeccoes0 = semEletrizar ? { ...f.afeccoes, naoPode: { ...(f.afeccoes.naoPode ?? {}), eletrizacao: true } } : f.afeccoes;
     // (lote A2: + as chances e o "mais" de afecção de quem acerta assim — a explosão das torres da Torre Óssea: "Causa Sangramento", "200% mais Dano com
     // Sangramento")
     const afeccoes = afeccoesExtra ? { ...afeccoes0, chance: { ...(afeccoes0.chance ?? {}), ...(afeccoesExtra.chance ?? {}) }, maisDoSuporte: { ...(afeccoes0.maisDoSuporte ?? {}), ...(afeccoesExtra.maisDoSuporte ?? {}) } } : afeccoes0;
     // (a afecção sem o "mais Dano com Acertos" dos suportes — o lote G17)
-    const postos = AfeccoesPoe.aoAcertar(m, [{ elemento, dano: comAumento / Math.max(1e-9, 1 + (ef?.maisDanoAcertoPct ?? 0) / 100) }], { afeccoes, crit: crit && !f.sobrecargaElemental, ataque, agora, rng, salaDeBoss: !!hunt.isBoss, aoPor: ModsPoe.refletorDeAfeccoes(hunt, f) });
+    const postos = AfeccoesPoe.aoAcertar(m, (partes ?? [{ el: elemento, v: comAumento }]).map((x) => ({ elemento: x.el, dano: x.v / Math.max(1e-9, 1 + (ef?.maisDanoAcertoPct ?? 0) / 100) })), { afeccoes, crit: crit && !f.sobrecargaElemental, ataque, agora, rng, salaDeBoss: !!hunt.isBoss, aoPor: ModsPoe.refletorDeAfeccoes(hunt, f) });
     for (const st of postos) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: st });
     ModsPoe.aoPorAfeccoes(estado, hunt, m, f, postos, { eventos, personagem });
   }
@@ -6763,7 +6803,7 @@ function ondaDoVazio(estado, hunt, entry, ef, centro, personagem, agora) {
   const eventos = [];
   if (!centro || agora < (hunt.poeOndaDoVazioAte ?? -Infinity)) return eventos;
   hunt.poeOndaDoVazioAte = agora + (ef.ondaRecargaMs ?? 500);
-  const arma = Ficha.combate(estado).damage ?? { min: 1, max: 1 };
+  const arma = armaSemAdicionado(Ficha.combate(estado));
   const tags = [...new Set([...tagsPoeDaSkill(entry), 'ataque', 'area', 'corpo', 'fisico'])];
   const onda = (c, pct) => {
     const r = Math.max(1, casasDoRaio(ef.ondaRaioM ?? 1.8));
@@ -6773,7 +6813,7 @@ function ondaDoVazio(estado, hunt, entry, ef, centro, personagem, agora) {
       if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (hunt.z ?? 0) || distanciaChebyshev(m, c) > r) continue;
       const bruto = ((arma.min + Math.random() * (arma.max - arma.min)) * (ef.ondaDanoPct ?? 100) * (1 + (ef.ondaIncPct ?? 0) / 100) * pct) / 10000;
       // (lote A5b: só quem foi acertado de fato — o errado não é centro de repetição)
-      if (acertoDoArauto(estado, hunt, entry.id, m, bruto, 'physical', { tags, eventos, fonte: 'onda-do-vazio', personagem, ataque: true }) !== null) acertados.push(m);
+      if (acertoDoArauto(estado, hunt, entry.id, m, bruto, 'physical', { tags, eventos, fonte: 'onda-do-vazio', personagem, ataque: true, adicionado: ((1 + (ef.ondaIncPct ?? 0) / 100) * pct) / 100 }) !== null) acertados.push(m);
     }
     return acertados;
   };
@@ -6801,7 +6841,7 @@ function porTormentaDoVazio(hunt, entry, ef, c, agora) {
  * afecções por estágio", em todos os do raio. As vencidas somem.
  */
 function tiqueDasTormentas(estado, hunt, personagem, eventos, agora) {
-  const arma = Ficha.combate(estado).damage ?? { min: 1, max: 1 };
+  const arma = armaSemAdicionado(Ficha.combate(estado));
   const ficam = [];
   for (const t of hunt.poeTormentas ?? []) {
     if (t.ate <= agora) continue;
@@ -6815,7 +6855,7 @@ function tiqueDasTormentas(estado, hunt, personagem, eventos, agora) {
     const tags = [...new Set([...(entry ? tagsPoeDaSkill(entry) : []), 'ataque', 'area', 'fisico'])];
     for (const m of dentro) {
       const bruto = ((arma.min + Math.random() * (arma.max - arma.min)) * t.danoPct * (1 + t.incPct / 100) * (1 + (t.danoPorEstagioPct * estagio) / 100)) / 100;
-      acertoDoArauto(estado, hunt, t.acao, m, bruto, 'physical', { tags, eventos, fonte: 'tormenta-do-vazio', personagem, ataque: true });
+      acertoDoArauto(estado, hunt, t.acao, m, bruto, 'physical', { tags, eventos, fonte: 'tormenta-do-vazio', personagem, ataque: true, adicionado: (1 + t.incPct / 100) * (1 + (t.danoPorEstagioPct * estagio) / 100) });
     }
   }
   hunt.poeTormentas = ficam;
@@ -7409,7 +7449,7 @@ function explodirTorres(estado, hunt, casas, personagem, agora) {
   if (!explodem.length) { if (hunt.a2) hunt.a2.torres = vivas; return eventos; }
   hunt.a2.torres = vivas.filter((t) => !explodem.includes(t));
   const ficha = Ficha.combate(estado);
-  const arma = ficha.damage ?? { min: 1, max: 1 };
+  const arma = armaSemAdicionado(ficha);
   for (const t of explodem) {
     const raio = Math.max(1, casasDoRaio(t.raioM));
     eventos.push({ t: 'explosao', uid: 'player', x: t.x, y: t.y, raio, fonte: 'torre-ossea', color: COR_DO_ELEMENTO.physical ?? '#d0d0d0' });
@@ -7417,7 +7457,7 @@ function explodirTorres(estado, hunt, casas, personagem, agora) {
       if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (t.z ?? 0) || Math.max(Math.abs(m.x - t.x), Math.abs(m.y - t.y)) > raio) continue;
       const bruto = ((arma.min + Math.random() * (arma.max - arma.min)) * t.danoPct) / 100;
       const tags = [...new Set([...tagsPoeDaSkill(POR_ID.get(t.acao) ?? {}), 'ataque', 'area', 'fisico'])];
-      acertoDoArauto(estado, hunt, t.acao, m, bruto, 'physical', { tags, eventos, fonte: 'torre-ossea', personagem, ataque: true, afeccoesExtra: { chance: t.sangram ? { sangramento: 100 } : {}, maisDoSuporte: t.sangramentoMaisPct ? { sangramento: t.sangramentoMaisPct } : {} } });
+      acertoDoArauto(estado, hunt, t.acao, m, bruto, 'physical', { tags, eventos, fonte: 'torre-ossea', personagem, ataque: true, adicionado: 1, afeccoesExtra: { chance: t.sangram ? { sangramento: 100 } : {}, maisDoSuporte: t.sangramentoMaisPct ? { sangramento: t.sangramentoMaisPct } : {} } });
     }
   }
   return eventos;

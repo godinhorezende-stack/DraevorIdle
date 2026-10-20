@@ -312,8 +312,11 @@ test('P043 — no golpe da GEMA (Golpe Pesado): o Físico adicional por Empalame
   // o "aumentado" do Físico que o personagem já tem (a Força, no corpo a corpo): o adicional sai × (1 + ele) e, com +100%, × (2 + ele) — como
   // a arma (o golpe da arma é pequeno: a razão dele, arredondada, não serve de régua)
   const inc = (ficha(personagem(add)).danoDoElemento?.physical ?? 0) / 100;
-  assert.ok(Math.abs((comA - semA) - 1500 * (1 + inc)) <= 1, `3 × 500 × ${1 + inc}: ${comA - semA}`);
-  assert.ok(Math.abs((comB - semB) - 1500 * (2 + inc)) <= 1, `3 × 500 × ${2 + inc}: ${comB - semB}`);
+  // (aval do dono, 20/10 — "eficácia como no PoE": o Físico adicional por Empalamento é dano ADICIONADO ao ataque, × a eficácia do dano adicionado do
+  // Golpe Pesado no nível 10 — a do PoB, `damageEffectiveness` 3,433 (`GemasPoe.eficaciaDoAdicionado`): 3 × 500 × 1,04 × 3,433 ≈ 5356; antes, × 1 = 1560)
+  const ef = GemasPoe.eficaciaDoAdicionado('Heavy_Strike', 10);
+  assert.ok(Math.abs((comA - semA) - 1500 * (1 + inc) * ef) <= 1, `3 × 500 × ${1 + inc} × ${ef}: ${comA - semA}`);
+  assert.ok(Math.abs((comB - semB) - 1500 * (2 + inc) * ef) <= 1, `3 × 500 × ${2 + inc} × ${ef}: ${comB - semB}`);
   assert.ok(Math.abs(semB / semA - (2 + inc) / (1 + inc)) < 0.05, 'a arma, na mesma proporção (com o arredondamento)');
 });
 

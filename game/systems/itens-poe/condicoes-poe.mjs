@@ -325,6 +325,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (lote 66) "enquanto portando um(a) X ou Y" — a arma em QUALQUER das mãos (as condições `comX` são da mão principal): Garra ou Adaga, Machado
   // ou Espada, Maça, Cetro ou Cajado
   'comGarraOuAdaga', 'comMachadoOuEspada', 'comMacaCetroOuCajado',
+  // (revisão do lote da eficácia, 20/10) "com Maças e Cetros" — no PoE o Cetro é Maça (o PoB: `Sceptre = { flag = "Mace" }`): a mão principal com um dos dois
+  'comMacaOuCetro',
   // (lote 67) Resfriou um inimigo recentemente; plantou uma Mina ou arremessou uma Armadilha recentemente
   'resfriouRecente', 'plantouRecente',
   // (lote 68) durante o efeito de um Frasco de VIDA
@@ -460,6 +462,7 @@ export function condicoesDe(estado, total = null, principais = null) {
   if (tem('comGarra', 'comAdaga')) v.add('comGarraOuAdaga');
   if (tem('comMachado', 'comEspada')) v.add('comMachadoOuEspada');
   if (tem('comMaca', 'comCetro', 'comCajado')) v.add('comMacaCetroOuCajado');
+  if (v.has('comMaca') || v.has('comCetro')) v.add('comMacaOuCetro');
   const h = estado?.hunt;
   const r = h?.poeRecente ?? {};
   const agora = h?.clock ?? 0;
@@ -3103,12 +3106,32 @@ export function transformarPartes(ficha, partes, origens = null) {
     for (const i of [0, 1]) { const x = p[de][i] * f; p[de][i] -= x; p[para][i] += x; }
     if (o) for (const [k, [a, b]] of Object.entries(o[de])) { somarOrigem(o, para, tiposDaChave(k), [a, b], f); o[de][k] = [a * (1 - f), b * (1 - f)]; }
   };
-  for (const de of ['fire', 'ice', 'energy']) {
-    mover(de, 'chaos', v(`conv_${de}_chaos`) + v('conv_elemental_chaos'));
-    for (const para of ['fire', 'ice', 'energy']) if (para !== de) mover(de, para, v(`conv_${de}_${para}`));
-  }
+  // (revisão do lote da eficácia, 20/10 — como o PoB, CalcOffence.lua `buildConversionTable`/`calcDamage`) o GANHO como extra de um tipo é sobre o dano dele
+  // ANTES de ele se converter (já com o que ele recebeu dos tipos anteriores): o `antes` de cada tipo é guardado logo antes de converter ele — antes, depois de
+  // todas as conversões (o Gelo em Fogo: 100 de Gelo, 50% convertido e 29% ganho davam 64,5 de Fogo; no PoB, 79). E a conversão da HABILIDADE (`conv_hab_<de>_<para>`:
+  // a do suporte — o Gelo em Fogo, 50%) vem primeiro; as das outras fontes ficam com o que sobrou, proporcionais se passarem dele (antes, uma depois da outra)
   const antes = Object.fromEntries(ELS.map((el) => [el, [...p[el]]]));
   const antesO = o ? Object.fromEntries(ELS.map((el) => [el, Object.fromEntries(Object.entries(o[el]).map(([k, x]) => [k, [...x]]))])) : null;
+  for (const de of ['fire', 'ice', 'energy']) {
+    antes[de] = [...p[de]];
+    if (o) antesO[de] = Object.fromEntries(Object.entries(o[de]).map(([k, x]) => [k, [...x]]));
+    const destinos = ['chaos', ...['fire', 'ice', 'energy'].filter((x) => x !== de)];
+    const daHab = destinos.map((para) => [para, Math.max(0, v(`conv_hab_${de}_${para}`))]);
+    const totalHab = daHab.reduce((t, [, x]) => t + x, 0);
+    const escalaHab = totalHab > 100 ? 100 / totalHab : 1;
+    const resta = Math.max(0, 100 - totalHab * escalaHab);
+    const globais = destinos.map((para) => [para, Math.max(0, para === 'chaos' ? v(`conv_${de}_chaos`) + v('conv_elemental_chaos') : v(`conv_${de}_${para}`))]);
+    const totalGlobal = globais.reduce((t, [, x]) => t + x, 0);
+    const escalaGlobal = totalGlobal > resta ? (totalGlobal > 0 ? resta / totalGlobal : 0) : 1;
+    // as frações sobre o dano de ANTES da conversão deste tipo (cada `mover` tira do que sobrou: a fração equivalente)
+    let sobra = 1;
+    for (const [para, pct] of [...daHab.map(([x, y]) => [x, y * escalaHab]), ...globais.map(([x, y]) => [x, y * escalaGlobal])]) {
+      const frac = pct / 100;
+      if (!(frac > 0) || !(sobra > 1e-12)) continue;
+      mover(de, para, (Math.min(frac, sobra) / sobra) * 100);
+      sobra -= Math.min(frac, sobra);
+    }
+  }
   // (+ o de UM elemento para Caos — "Receba X% do Dano de Fogo como Dano de Caos Extra".)
   const paraCaos = { fire: 'fire_as_extra_chaos', ice: 'ice_as_extra_chaos', energy: 'energy_as_extra_chaos' };
   for (const de of ['fire', 'ice', 'energy']) { ganharDe(antes, p, de, 'chaos', v('elem_as_extra_chaos') + v(paraCaos[de])); for (const para of ['fire', 'ice', 'energy']) if (para !== de) ganharDe(antes, p, de, para, v(`${de}_as_extra_${para}`)); }

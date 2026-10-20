@@ -298,8 +298,10 @@ function calcularCombate(estado, extrasDoPoe = null) {
   // "Dano adicional" (`phys_add`): soma ao ataque MÍNIMO o valor e ao MÁXIMO `proporcaoDoMaximo` vezes ele (T1 10–20 … T5 50–100). O `atk_flat`
   // (Attack, que não cai mais) segue valendo nas peças antigas: soma o mesmo número aos dois.
   const razaoDoMaximo = ItensConfig.ATRIBUTOS.phys_add?.proporcaoDoMaximo ?? 2;
-  const addMin = af.phys_add ?? 0;
-  const addMax = addMin * razaoDoMaximo;
+  // (PoE, dono 20/10) "Adiciona X a Y de Dano Físico em Ataques": +X no mínimo e +Y no máximo, como no PoE (`phys_add_min`/`phys_add_max` — antes a
+  // média em `phys_add`, com o máximo 2×: 10 a 20 somava 15 a 30). Sem as chaves (o clássico), nada muda.
+  const addMin = (af.phys_add ?? 0) + (Number(af.phys_add_min) || 0);
+  const addMax = (af.phys_add ?? 0) * razaoDoMaximo + (Number(af.phys_add_max) || 0);
   const calcAtaque = (a, adicional = (addMin + addMax) / 2) => Math.round((a ?? 0) + (af.atk_flat ?? 0) + adicional);
   // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
   const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
@@ -571,6 +573,9 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // nos ataques e nas magias, e vida/mana por abate e por acerto.
     danoDeMagiaDoPoe: af.spell_dmg ?? 0,
     // (+ o "X a Y de Dano de Raio de Ataques Adicional por cada N de Precisão" do PoE.)
+    // (revisão do lote da eficácia, 20/10) o Físico ADICIONADO global aos ataques (peças, passivas, buffs: `phys_add`, `phys_add_min/max`, `atk_flat`), à parte da
+    // arma: o golpe que não usa a arma da ficha (a Lâmina de Energia, as gemas de escudo) o leva como dano adicionado (`acoes.contaDoDano`)
+    fisicoAdicionado: [addMin + (af.atk_flat ?? 0), addMax + (af.atk_flat ?? 0)],
     danoSomado: comRaioPorPrecisao(somado('added_'), af, Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0) + (contaDaPrecisao?.localPrincipal ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100))), // (lote A5b: + a precisão local da arma)
     // As afecções do PoE (chances, multiplicadores, duração) — só com o sistema do PoE ligado (`itens-poe/afeccoes.mjs`).
     afeccoes: itensPoeLigado() ? AfeccoesPoe.daSoma(af) : null,

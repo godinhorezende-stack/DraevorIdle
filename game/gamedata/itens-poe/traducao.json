@@ -3340,11 +3340,7 @@
       "padrao": "^Esmaga Inimigos ao acertar com Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "chance_esmagar@comMaca",
-          "valor": "100"
-        },
-        {
-          "stat": "chance_esmagar@comCetro",
+          "stat": "chance_esmagar@comMacaOuCetro",
           "valor": "100"
         }
       ],
@@ -4826,11 +4822,7 @@
       "padrao": "^\\{(\\d+)\\}% mais Área de Efeito enquanto empunhando uma Maça ou Cetro$",
       "efeitos": [
         {
-          "stat": "area_mais@comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "area_mais@comCetro",
+          "stat": "area_mais@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -10664,7 +10656,7 @@
       "padrao": "^Dano com Maças e Cetros aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc@ataque+comMaca",
+          "stat": "dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -10674,7 +10666,7 @@
       "padrao": "^Velocidade de Ataque com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "atk_speed@comMaca",
+          "stat": "atk_speed@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -10684,7 +10676,7 @@
       "padrao": "^Chance de Crítico com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "crit_chance_inc@ataque+comMaca",
+          "stat": "crit_chance_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -10694,7 +10686,7 @@
       "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "crit_dmg@ataque+comMaca",
+          "stat": "crit_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -10864,7 +10856,7 @@
       "padrao": "^Velocidade de Ataque com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "atk_speed@comMaca",
+          "stat": "atk_speed@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -11239,8 +11231,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Arco$",
       "efeitos": [
         {
-          "stat": "phys_add@comArco",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comArco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comArco",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -11291,8 +11287,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Adaga$",
       "efeitos": [
         {
-          "stat": "phys_add@comAdaga",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comAdaga",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comAdaga",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -11343,8 +11343,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Garra$",
       "efeitos": [
         {
-          "stat": "phys_add@comGarra",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comGarra",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comGarra",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -11395,8 +11399,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Espada$",
       "efeitos": [
         {
-          "stat": "phys_add@comEspada",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comEspada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comEspada",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -11447,8 +11455,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Machado$",
       "efeitos": [
         {
-          "stat": "phys_add@comMachado",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comMachado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comMachado",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -11499,8 +11511,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques de Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "phys_add@comMaca",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comMacaOuCetro",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comMacaOuCetro",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -11509,11 +11525,11 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques de Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "added_fire_dmg_min@comMaca",
+          "stat": "added_fire_dmg_min@comMacaOuCetro",
           "valor": "{1}"
         },
         {
-          "stat": "added_fire_dmg_max@comMaca",
+          "stat": "added_fire_dmg_max@comMacaOuCetro",
           "valor": "{2}"
         }
       ],
@@ -11523,11 +11539,11 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques de Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "added_ice_dmg_min@comMaca",
+          "stat": "added_ice_dmg_min@comMacaOuCetro",
           "valor": "{1}"
         },
         {
-          "stat": "added_ice_dmg_max@comMaca",
+          "stat": "added_ice_dmg_max@comMacaOuCetro",
           "valor": "{2}"
         }
       ],
@@ -11537,11 +11553,11 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques de Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "added_energy_dmg_min@comMaca",
+          "stat": "added_energy_dmg_min@comMacaOuCetro",
           "valor": "{1}"
         },
         {
-          "stat": "added_energy_dmg_max@comMaca",
+          "stat": "added_energy_dmg_max@comMacaOuCetro",
           "valor": "{2}"
         }
       ],
@@ -11551,8 +11567,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Cajado$",
       "efeitos": [
         {
-          "stat": "phys_add@comCajado",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comCajado",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -11603,8 +11623,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Varinha$",
       "efeitos": [
         {
-          "stat": "phys_add@comVarinha",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min@comVarinha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max@comVarinha",
+          "valor": "{2}"
         }
       ],
       "_nova": true
@@ -14476,14 +14500,18 @@
       "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico de Ataque por cada \\{(\\d+)\\} de Destreza enquanto não estiver Sobrecarregado$",
       "efeitos": [
         {
-          "stat": "phys_add%atr:dex:{V3}@naoSobrecarregado",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min%atr:dex:{V3}@naoSobrecarregado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max%atr:dex:{V3}@naoSobrecarregado",
+          "valor": "{2}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no PoE (o PoB), só nas Habilidades Corpo a Corpo; aqui no Dano Físico adicional de todos os ataques — sem arma, quase todo ataque é corpo a corpo",
       "_nova": true,
-      "_lote80": "18/10 — lote 80: a pedra Técnica da Palma Oca (Aquele Sem Nada)"
+      "_lote80": "18/10 — lote 80: a pedra Técnica da Palma Oca (Aquele Sem Nada)",
+      "estado": "aproximado",
+      "nota": "no PoE (o PoB), só nas Habilidades Corpo a Corpo; aqui no Dano Físico adicional de todos os ataques — sem arma, quase todo ataque é corpo a corpo"
     },
     {
       "padrao": "^Segredos do Sofrimento$",
@@ -15130,15 +15158,50 @@
       ]
     },
     {
-      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico( em Ataques)?$",
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico em Ataques$",
       "efeitos": [
         {
-          "stat": "phys_add",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max",
+          "valor": "{2}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "o PoE soma uma faixa (mín–máx); o Draevor tem um número só ('Dano adicional'): entra a média."
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico em Ataques com esta Arma a cada \\{(\\d+)\\} Níveis do Jogador$",
+      "efeitos": [
+        {
+          "stat": "phys_add_min%nivel:{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max%nivel:{V3}",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true,
+      "_unico": "20/10 — A Caneta do Poeta: o Físico adicionado aos ataques a cada N níveis do personagem (o PoB: o multiplicador Level com o divisor N)"
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico$",
+      "efeitos": [
+        {
+          "stat": "phys_add_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "equivalente",
+      "_local": "20/10 (dono): na ARMA é LOCAL, como no PoE — +X/+Y na base da própria arma, com o % de Físico local e a qualidade dela (itens-poe/jogo.mjs, separarFisicoLocal); fora da arma, o adicionado global aos ataques",
+      "_nova": true
     },
     {
       "padrao": "^Armadura aumentada em \\{(\\d+)\\}%$",
@@ -21073,8 +21136,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico (?:aos |a |em )?Ataques (?:por|a) cada \\{(\\d+)\\} de Força$",
       "efeitos": [
         {
-          "stat": "phys_add%atr:str:{V3}",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min%atr:str:{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max%atr:str:{V3}",
+          "valor": "{2}"
         }
       ],
       "_nova": true,
@@ -21206,8 +21273,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico (?:aos |a |em )?Ataques (?:por|a) cada \\{(\\d+)\\} de Destreza$",
       "efeitos": [
         {
-          "stat": "phys_add%atr:dex:{V3}",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min%atr:dex:{V3}",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max%atr:dex:{V3}",
+          "valor": "{2}"
         }
       ],
       "_nova": true,
@@ -21417,8 +21488,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico a Ataques por Nível$",
       "efeitos": [
         {
-          "stat": "phys_add%nivel",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min%nivel",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max%nivel",
+          "valor": "{2}"
         }
       ],
       "_nova": true,
@@ -21849,8 +21924,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico (?:a Ataques )?por Carga de Tolerância$",
       "efeitos": [
         {
-          "stat": "phys_add%carga:tolerancia",
-          "valor": "media({1},{2})"
+          "stat": "phys_add_min%carga:tolerancia",
+          "valor": "{1}"
+        },
+        {
+          "stat": "phys_add_max%carga:tolerancia",
+          "valor": "{2}"
         }
       ],
       "_nova": true,
@@ -23172,8 +23251,12 @@
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico (?:aos Acertos |aos Ataques )?contra Inimigos Sangrando$",
       "efeitos": [
         {
-          "stat": "phys_add@alvoSangrando",
-          "valor": "media({1},{2})"
+          "stat": "added_physical_dmg_min@alvoSangrando",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_physical_dmg_max@alvoSangrando",
+          "valor": "{2}"
         }
       ],
       "_nova": true,
@@ -27953,11 +28036,7 @@
       "padrao": "^Dano Físico com Maças e Cetros aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "phys_dmg@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "phys_dmg@ataque+comCetro",
+          "stat": "phys_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -27968,11 +28047,7 @@
       "padrao": "^Ataques com Maças e Cetros causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "ailment_dmg_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "stat": "ailment_dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -27983,19 +28058,11 @@
       "padrao": "^Ataques com Maças e Cetros causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc@ataque+comMaca",
+          "stat": "dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         },
         {
-          "stat": "dmg_inc@ataque+comCetro",
-          "valor": "{1}"
-        },
-        {
-          "stat": "ailment_dmg_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "stat": "ailment_dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28006,11 +28073,7 @@
       "padrao": "^Ataques com Maças e Cetros causam Dano aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "dmg_inc@ataque+comCetro",
+          "stat": "dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28021,11 +28084,7 @@
       "padrao": "^Precisão com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "accuracy_inc@comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "accuracy_inc@comCetro",
+          "stat": "accuracy_inc@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28036,11 +28095,7 @@
       "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "crit_chance_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "crit_chance_inc@ataque+comCetro",
+          "stat": "crit_chance_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28051,11 +28106,7 @@
       "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "crit_dmg@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "crit_dmg@ataque+comCetro",
+          "stat": "crit_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28066,11 +28117,7 @@
       "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "dot_dmg_inc@comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "dot_dmg_inc@comCetro",
+          "stat": "dot_dmg_inc@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28081,11 +28128,7 @@
       "padrao": "^Dano Físico com Maças ou Cetros aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "phys_dmg@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "phys_dmg@ataque+comCetro",
+          "stat": "phys_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28096,11 +28139,7 @@
       "padrao": "^Ataques com Maças ou Cetros causam Dano com Afecções aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "ailment_dmg_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "stat": "ailment_dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28111,19 +28150,11 @@
       "padrao": "^Ataques com Maças ou Cetros causam Dano com Acertos e Afecções aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc@ataque+comMaca",
+          "stat": "dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         },
         {
-          "stat": "dmg_inc@ataque+comCetro",
-          "valor": "{1}"
-        },
-        {
-          "stat": "ailment_dmg_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "ailment_dmg_inc@ataque+comCetro",
+          "stat": "ailment_dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28134,11 +28165,7 @@
       "padrao": "^Ataques com Maças ou Cetros causam Dano aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "dmg_inc@ataque+comCetro",
+          "stat": "dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28149,11 +28176,7 @@
       "padrao": "^Dano com Maças ou Cetros aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "dmg_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "dmg_inc@ataque+comCetro",
+          "stat": "dmg_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28164,11 +28187,7 @@
       "padrao": "^Precisão com Maças ou Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "accuracy_inc@comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "accuracy_inc@comCetro",
+          "stat": "accuracy_inc@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28179,11 +28198,7 @@
       "padrao": "^Velocidade de Ataque com Maças ou Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "atk_speed@comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "atk_speed@comCetro",
+          "stat": "atk_speed@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28194,11 +28209,7 @@
       "padrao": "^Chance de (?:Golpe|Acerto) Crítico com Maças ou Cetros aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "crit_chance_inc@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "crit_chance_inc@ataque+comCetro",
+          "stat": "crit_chance_inc@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28209,11 +28220,7 @@
       "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de (?:Golpe |Acerto )?Crítico com Maças ou Cetros$",
       "efeitos": [
         {
-          "stat": "crit_dmg@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "crit_dmg@ataque+comCetro",
+          "stat": "crit_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -28224,11 +28231,7 @@
       "padrao": "^\\{(\\d+)\\}% de aumento do Dano Degenerativo com Maças ou Cetros$",
       "efeitos": [
         {
-          "stat": "dot_dmg_inc@comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "dot_dmg_inc@comCetro",
+          "stat": "dot_dmg_inc@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -30265,11 +30268,7 @@
       "padrao": "^Ponto de Atordoamento dos Inimigos reduzido em \\{(\\d+)\\}% com Maças e Cetros$",
       "efeitos": [
         {
-          "stat": "enemy_stun_threshold_red@comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "enemy_stun_threshold_red@comCetro",
+          "stat": "enemy_stun_threshold_red@comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -31245,27 +31244,15 @@
       "padrao": "^Dano Elemental com Maças e Cetros aumentado em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "fire_dmg@ataque+comMaca",
+          "stat": "fire_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         },
         {
-          "stat": "ice_dmg@ataque+comMaca",
+          "stat": "ice_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         },
         {
-          "stat": "energy_dmg@ataque+comMaca",
-          "valor": "{1}"
-        },
-        {
-          "stat": "fire_dmg@ataque+comCetro",
-          "valor": "{1}"
-        },
-        {
-          "stat": "ice_dmg@ataque+comCetro",
-          "valor": "{1}"
-        },
-        {
-          "stat": "energy_dmg@ataque+comCetro",
+          "stat": "energy_dmg@ataque+comMacaOuCetro",
           "valor": "{1}"
         }
       ],
@@ -33024,35 +33011,19 @@
       "padrao": "^Todo o Dano com Maças e Cetros infligem Resfriamento$",
       "efeitos": [
         {
-          "stat": "pode:resfriamento:physical@comMaca",
+          "stat": "pode:resfriamento:physical@comMacaOuCetro",
           "valor": "1"
         },
         {
-          "stat": "pode:resfriamento:fire@comMaca",
+          "stat": "pode:resfriamento:fire@comMacaOuCetro",
           "valor": "1"
         },
         {
-          "stat": "pode:resfriamento:energy@comMaca",
+          "stat": "pode:resfriamento:energy@comMacaOuCetro",
           "valor": "1"
         },
         {
-          "stat": "pode:resfriamento:chaos@comMaca",
-          "valor": "1"
-        },
-        {
-          "stat": "pode:resfriamento:physical@comCetro",
-          "valor": "1"
-        },
-        {
-          "stat": "pode:resfriamento:fire@comCetro",
-          "valor": "1"
-        },
-        {
-          "stat": "pode:resfriamento:energy@comCetro",
-          "valor": "1"
-        },
-        {
-          "stat": "pode:resfriamento:chaos@comCetro",
+          "stat": "pode:resfriamento:chaos@comMacaOuCetro",
           "valor": "1"
         }
       ],

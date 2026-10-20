@@ -72,16 +72,28 @@ const acertos = (r, b) => (r.eventos ?? []).filter((ev) => ev.t === 'dmg' && ev.
 
 // ---------------------------------------------------------------- PR1
 
-test('revisão PR1 (1): o Raio adicional do Sifão do Arquimago × a eficácia da gema (60%: damageEffectiveness 0,6 do PoB); a Flecha Ardente do Vigor, 1', { skip: SEM }, async () => {
+test('revisão PR1 (1): o Raio adicional do Sifão do Arquimago × a eficácia da gema (60%: damageEffectiveness 0,6 do PoB) UMA vez; a Flecha Ardente do Vigor, 1', { skip: SEM }, async () => {
+  // (aval do dono, 20/10 — revisão do lote da eficácia: o teste MEDE O GOLPE. O Raio do Sifão do Arquimago — 27% da Mana máxima na qualidade 20 — é dano adicionado
+  // da gema e entra × 0,6 uma vez só, no `contaDoDano`, igual a um anel com o mesmo dano adicionado; antes o teste olhava a ficha do uso, já × 0,6, e o golpe saía
+  // × 0,6 × 0,6)
   assert.deepEqual([G.eficaciaNoNivel('Power_Siphon_of_the_Archmage', 20), G.eficaciaNoNivel('Burning_Arrow_of_Vigour', 20)], [0.6, 1]);
+  assert.equal(G.eficaciaDoAdicionado('Power_Siphon_of_the_Archmage', 20), 0.6);
   const { e, entry } = await montar('Power_Siphon_of_the_Archmage', { qualidade: 20, arma: 'Wands/Driftwood_Wand' });
+  const media = () => { Ficha.invalidar(e); const d = Acoes.danoMostrado(e, entry); return (d.min + d.max) / 2; };
+  const manaDe = () => { Ficha.invalidar(e); return Ficha.combate(e).maxMana ?? e.maxMana; };
   e.maxMana = 10_000;
-  Ficha.invalidar(e);
-  const f = Acoes.comAsLinhasDaGema(e, Ficha.combate(e), entry);
-  const s = ModsPoe.somaPorTags(f, Acoes.tagsPoeDaSkill(entry));
-  const mana = Ficha.combate(e).maxMana ?? e.maxMana;
-  // (27% da Mana máxima na qualidade 20 × 0,6)
-  assert.ok(perto(s.added_energy_dmg_min, 0.27 * 0.6 * mana) && perto(s.added_energy_dmg_max, 0.27 * 0.6 * mana), `${s.added_energy_dmg_min} (Mana ${mana})`);
+  const m1 = manaDe();
+  const d1 = media();
+  e.maxMana = 60_000;
+  const m2 = manaDe();
+  const d2 = media();
+  assert.ok(m2 > m1, `${m1} → ${m2}`);
+  // o mesmo Raio adicionado (27% da diferença de Mana) num anel, com a Mana de antes
+  e.maxMana = 10_000;
+  const add = 0.27 * (m2 - m1);
+  e.equipment.ring = { id: 0, count: 1, af: [], poe: { af: { added_energy_dmg_min: add, added_energy_dmg_max: add } } };
+  const d3 = media();
+  assert.ok(Math.abs((d2 - d1) / (d3 - d1) - 1) < 0.01, `a gema ${d2 - d1} = o anel ${d3 - d1}`);
 });
 
 test('revisão PR1 (2): o escudo solta as estilhas também nos voos de direção aleatória', { skip: SEM }, () => {

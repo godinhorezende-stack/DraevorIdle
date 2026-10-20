@@ -212,10 +212,14 @@ function afDaBase(atributos, dosMods = {}) {
 }
 
 /** A defesa da BASE da peça (`peca.base`), cada uma × `fq` (a qualidade). O Apóstata ("…or Energy Shield (Hidden)"): sem o escudo da base. */
+// (revisão do lote da eficácia, 20/10 — dono: o Físico LOCAL da arma, como no PoE) o dano da arma = (a base + "Adiciona X a Y de Dano Físico" local) × (1 + o "Dano Físico
+// aumentado" local + a qualidade) — `phys_add_local_min/max` e `phys_dmg_local_arma`, separados por `separarFisicoLocal`; sem eles, a base × a qualidade, como antes
 function baseDaPeca(a, af, fq = 1) {
   const mult = ([x, y]) => [Math.round(x * fq), Math.round(y * fq)];
+  const local = Number(af.phys_dmg_local_arma) || 0;
+  const daArma = ([x, y]) => { const m = Math.max(0, fq + local / 100); return [Math.round((x + (Number(af.phys_add_local_min) || 0)) * m), Math.round((y + (Number(af.phys_add_local_max) || 0)) * m)]; };
   return {
-    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: af.arma_sem_fisico > 0 ? [0, 0] : mult([a.dano_fisico.min, a.dano_fisico.max]) } : {}),
+    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: af.arma_sem_fisico > 0 ? [0, 0] : daArma([a.dano_fisico.min, a.dano_fisico.max]) } : {}),
     ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
     ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
     ...(a.escudo_energia && !(Number(af.sem_es_da_base) > 0) ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
@@ -256,7 +260,33 @@ function separarLocal(classe, t, af, padrao, global, local) {
  * sua). Sai de `accuracy` (global) para `accuracy_local`, que a ficha soma na mão daquela arma (`contaDaPrecisao`, `fichaDaMao`).
  */
 const PRECISAO_LOCAL = /^\+\{\d+\} de Precisão$/;
+/*
+ * (revisão do lote da eficácia, 20/10 — dono) O FÍSICO LOCAL da arma (PoE): na ARMA, "Adiciona X a Y de Dano Físico" (sem "em Ataques") e "Dano Físico aumentado/reduzido
+ * em X%" sem condição são LOCAIS — entram na base da própria arma (`baseDaPeca`), só nos golpes dela (com duas armas, na mão dela). Saem de `phys_add_min/max` e
+ * `phys_dmg` (globais) para `phys_add_local_min/max` e `phys_dmg_local_arma`. Antes: o adicionado global (pela média, com o máximo 2×) e o aumentado global.
+ */
+const FISICO_LOCAL = /^Adiciona \{\d+\} a \{\d+\} de Dano Físico$/;
+const PCT_FISICO_LOCAL = /^Dano Físico (?:aumentado|reduzido) em \{\d+\}%$/;
+function separarFisicoLocal(classe, t, af) {
+  if (CLASSES_DO_JOGO[classe]?.slot !== 'weapon') return;
+  const soma = { phys_add_min: 0, phys_add_max: 0, phys_dmg: 0 };
+  const destino = { phys_add_min: 'phys_add_local_min', phys_add_max: 'phys_add_local_max', phys_dmg: 'phys_dmg_local_arma' };
+  for (const l of t.linhas) {
+    const locais = l.partes.filter((p) => (FISICO_LOCAL.test(p.parte) && p.efeitos.length === 2 && p.efeitos.every((e) => e.stat === 'phys_add_min' || e.stat === 'phys_add_max')) || (PCT_FISICO_LOCAL.test(p.parte) && p.efeitos.length === 1 && p.efeitos[0].stat === 'phys_dmg'));
+    for (const p of locais) for (const e of p.efeitos) soma[e.stat] += e.valor;
+    if (locais.length) for (const p of locais) p.estado = 'equivalente';
+    if (locais.length && locais.length === l.partes.length) l.estado = 'equivalente';
+  }
+  for (const [k, v] of Object.entries(soma)) {
+    if (!v) continue;
+    const resto = Math.round(((af[k] ?? 0) - v) * 100) / 100;
+    if (resto) af[k] = resto;
+    else delete af[k];
+    af[destino[k]] = Math.round(((af[destino[k]] ?? 0) + v) * 100) / 100;
+  }
+}
 function separarLocaisDaArma(classe, t, af) {
+  separarFisicoLocal(classe, t, af);
   separarLocal(classe, t, af, PRECISAO_LOCAL, 'accuracy', 'accuracy_local');
   separarLocal(classe, t, af, VELOCIDADE_LOCAL, 'atk_speed', 'atk_speed_local');
   separarLocal(classe, t, af, CRITICO_LOCAL, 'crit_chance_inc', 'crit_chance_local');
@@ -277,9 +307,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const t = traduzirPeca(gerada);
   const af = { ...t.af };
   // ("Sem Dano Físico": a arma única não tem o dano físico da base.)
+  // (20/10: os locais da arma antes da base — o Físico local entra nela)
+  separarLocaisDaArma(gerada.classe, t, af);
   const base = baseDaPeca(a, af);
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
-  separarLocaisDaArma(gerada.classe, t, af);
   const R = regras.raridades[gerada.raridade] ?? {};
   // Frasco: não dá atributo ao personagem (só enquanto o efeito dura, pelo cinto — `frascos.mjs`); o balão leva o resumo com os mods aplicados.
   if (FRASCOS.includes(gerada.classe)) {
@@ -429,7 +460,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (71 — 20/10, lote A5c: "X% do Dano Físico de Acertos com essa Arma é Convertido para um Elemento Aleatório" e "Acertos com esta Arma ganham X% de Dano Físico
 // como Dano de Gelo ou Raio Extra" só nos ataques — `@ataque` —: são da arma e não valem nas magias)
 // (72 — 20/10, lote A5b: a precisão "+X de Precisão" da arma é local — `accuracy_local`)
-export const VERSAO_DA_TRADUCAO = 72;
+// (73 — 20/10, dono: "Adiciona X a Y de Dano Físico em Ataques" (e as variantes por arma, por atributo, por carga) com +X no mínimo e +Y no máximo —
+// `phys_add_min`/`phys_add_max` —, como no PoE; antes a média em `phys_add`, com o máximo 2×)
+export const VERSAO_DA_TRADUCAO = 73;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 
@@ -502,11 +535,11 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   const af = { ...t.af };
   // (13/10: o "Sem Dano Físico" do único também aqui — antes, refazer a peça devolvia o dano físico da base — e o "sem Escudo de Energia"
   // d'O Apóstata: `baseDaPeca`, a mesma da peça nova.)
+  separarLocaisDaArma(p.classe, t, af);
   const base = baseDaPeca(a, af, fq);
   if (Object.keys(base).length) peca.base = base;
   else delete peca.base;
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
-  separarLocaisDaArma(p.classe, t, af);
   p.af = af;
   p.notas = notasDe(t);
   // A versão da tradução com que `af`/`estados` foram feitos (a entrada no jogo refaz as peças de versões antigas — `refazerPecasAntigas`).

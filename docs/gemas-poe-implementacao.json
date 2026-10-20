@@ -2,23 +2,23 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 240,
-   "implementada, sem teste próprio": 49,
+   "implementada e testada": 241,
+   "implementada, sem teste próprio": 48,
    "parcial": 261,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 111,
-   "implementada, sem teste próprio": 20,
+   "implementada e testada": 112,
+   "implementada, sem teste próprio": 19,
    "parcial": 73,
    "limitação do modelo idle": 6
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 100,
-   "parcial": 111,
+   "implementada e testada": 102,
+   "parcial": 109,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -44,7 +44,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 680,
+   "linhasDistintas": 677,
    "emDuasOuMais": 125
   },
   "imagens": {
@@ -59,8 +59,8 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 330,
-   "suportesCitados": 117,
+   "ativasCitadas": 331,
+   "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
  },
@@ -3333,7 +3333,7 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -8566,11 +8566,8 @@
   {
    "slug": "Cold_to_Fire_Support",
    "nome": "Gelo a Fogo",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas ganham 29% de Dano de Gelo como Dano Extra de Fogo",
-    "não simulado: Habilidades Suportadas têm 50% de Dano de Gelo Convertido para Dano de Fogo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -10148,10 +10145,8 @@
   {
    "slug": "Physical_to_Lightning_Support",
    "nome": "Físico para Raio",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm 50% de Dano Físico Convertido em Dano de Raio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -13868,12 +13863,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas ganham #% de Dano de Gelo como Dano Extra de Fogo",
-   "gemas": [
-    "Cold_to_Fire_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas ganham Dano de Raio Adicional igual a #% da Mana Máxima não Reservada",
    "gemas": [
     "Archmage_Support"
@@ -13973,18 +13962,6 @@
    "linha": "Habilidades Suportadas têm #% de chance de Intimidar Inimigos por # segundos ao Acertar",
    "gemas": [
     "Awakened_Melee_Physical_Damage_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Dano de Gelo Convertido para Dano de Fogo",
-   "gemas": [
-    "Cold_to_Fire_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm #% de Dano Físico Convertido em Dano de Raio",
-   "gemas": [
-    "Physical_to_Lightning_Support"
    ]
   },
   {

@@ -413,13 +413,34 @@ const REGRAS = [
   [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra| com Acertos por|[^%]* por cada |[^%]* enquanto Retornam)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[2] === 'mais' ? 1 : -1) * num(m[1])) : null)],
   [new RegExp(`^(?!Repetições|Explosão)[^%]*?causam? ([+-])${N}% de dano(?![^%]*por estágio)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? maisDe(t, (m[1] === '-' ? -1 : 1) * num(m[2])) : null)],
   [new RegExp(`Magias Suportadas têm ${N}% mais Dano Mágico`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { maisDanoAcertoPct: num(m[1]), maisDanoMagicoPct: num(m[1]) } : null)],
+  // (revisão do lote da eficácia, 20/10 — o PoB: `fire_damage_+%`, `cold_damage_+%`, `physical_damage_+%`… nos `qualityStats`) "causam X% de Dano de Fogo
+  // aumentado" é o aumentado DAQUELE TIPO, só na parte dele e sem depender de tag (`af:<tipo>_dmg` no uso, como as linhas locais); antes, `danoPct` no dano todo e só
+  // com a tag do tipo na gema
+  [new RegExp(`causam? ${N}% de Dano (de Fogo|de Gelo|de Raio|de Caos|Físico) aumentado$`, 'i'), (m) => ({ [`af:${{ 'de fogo': 'fire', 'de gelo': 'ice', 'de raio': 'energy', 'de caos': 'chaos', 'físico': 'phys' }[m[2].toLowerCase()]}_dmg`]: num(m[1]) })],
+  // (revisão do lote da eficácia, 20/10) a CONVERSÃO da habilidade dos suportes ("têm 50% de Dano Físico Convertido em Dano de Raio", "…de Gelo Convertido para Dano de
+  // Fogo"): a do Físico entra com a da gema (`acoes.contaDoDano` → `GemasPoe.partesDoAtaque`), a de um elemento antes das outras fontes (`ModsPoe.transformarPartes`)
+  [new RegExp(`têm ${N}% de Dano (?:de )?(\\S+) Convertido (?:em|para) Dano de (\\S+)`, 'i'), (m) => {
+    const de = ELEMENTO_DO_TEXTO[m[2].toLowerCase()];
+    const para = ELEMENTO_DO_TEXTO[m[3].toLowerCase()];
+    if (!de || !para || de === para || para === 'physical') return null;
+    return { [`af:conv_hab_${de}_${para}`]: num(m[1]) };
+  }],
   [new RegExp(`causam? ${N}% de Dano (?:de )?(\\S+)? ?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   // (lote 76) o "Dano aumentado com Incêndio" da qualidade: só no Incêndio (o de Veneno e o de Sangramento, no bloco do lote G17, acima)
   [new RegExp(`causam Dano aumentado em ${N}% com Incêndio`, 'i'), (m) => ({ 'af:ignite_dmg_inc': num(m[1]) })],
   [new RegExp(`causam Dano aumentado em ${N}%`, 'i'), (m) => ({ danoPct: num(m[1]) })],
   [new RegExp(`Dano [^%]*?aumentado em ${N}%`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`${N}% de Dano [^%]*?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
-  [new RegExp(`ganham ${N}% de Dano (\\S+) como Dano Extra de`, 'i'), (m, t, a) => (temTag(a, m[2]) ? { danoPct: num(m[1]) } : null)],
+  // (dono, 20/10) "ganham X% de Dano Físico como Dano Extra de Fogo" (o Dano Adicional de Fogo, o Excomungar, o Físico em Raio) e "…de Dano de Gelo como
+  // Dano Extra de Fogo" (o Gelo em Fogo): o GANHO COMO EXTRA do PoE, sobre o dano daquele tipo que o golpe tem de fato — `af:phys_as_extra_<el>` /
+  // `af:<de>_as_extra_<para>` no uso (`ModsPoe.extrasDoFisico`, `ModsPoe.transformarPartes`). Antes: "Dano aumentado" e só se a gema tinha a tag do tipo
+  // (o Cyclone, sem a tag Físico, não ganhava nada; o Gelo em Fogo, nunca)
+  [new RegExp(`ganham ${N}% de Dano (?:de )?(\\S+) como Dano Extra de (\\S+)`, 'i'), (m) => {
+    const de = ELEMENTO_DO_TEXTO[m[2].toLowerCase()];
+    const para = ELEMENTO_DO_TEXTO[m[3].toLowerCase()];
+    if (!de || !para || para === 'physical' || de === para) return null;
+    return { [`af:${de === 'physical' ? 'phys' : de}_as_extra_${para}`]: num(m[1]) };
+  }],
   // (revisão do A5: "não causam Dano Elemental" / "de Caos" — a Manipulação do Vazio — tira só a PARTE daquele tipo do golpe, não o dano todo — `Acoes.contaDoDano`;
   // antes um "−100% mais" zerava também o Caos)
   [/não causam Dano Elemental/i, () => ({ semDanoElemental: 1 })],

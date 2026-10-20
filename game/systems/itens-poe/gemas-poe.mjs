@@ -586,7 +586,9 @@ const podarOrigens = (p, origens) => { if (origens) for (const el of Object.keys
 // Físico que a gema deixou (proporcionais se passarem dele) e o "Físico como Extra" sobre o Físico de antes da conversão — todo o Físico do golpe (a arma × a
 // eficácia + o adicionado). Antes elas saíam da arma crua primeiro e a gema convertia o resto, multiplicando.
 // (lote C1, dono 20/10: `escolhido` — o elemento do Acerto Elemental já escolhido no uso, para o raio contra a afecção dele; fora dos presentes, o sorteio)
-export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null } = {}) {
+// (revisão do lote da eficácia, 20/10: `conversoesExtras` — a conversão do Físico dos SUPORTES, `[{ para: 'raio', pct }]`: a da habilidade, com a da gema; as outras
+// fontes ficam com o que sobrou)
+export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null, conversoesExtras = [] } = {}) {
   const st = compilada(slug, nivel)?.stats ?? {};
   const ef = st.efetividade ?? 1;
   const p = {};
@@ -595,7 +597,7 @@ export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = 
   somar(arma.elemento ?? 'physical', [arma.min ?? 1, arma.max ?? 1], ef);
   for (const [el, v] of Object.entries(st.adicional ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v, ef);
   for (const [el, v] of Object.entries(extras)) if (v && (v[0] || v[1])) somar(el, v);
-  converterOFisico(p, origens, st.conversao, outras, () => ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]);
+  converterOFisico(p, origens, [...(st.conversao ?? []), ...conversoesExtras], outras, () => ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]);
   const ex = extrasDoAtaque(slug, nivel);
   if (ex.soElemental) { delete p.physical; delete p.chaos; }
   // "Apenas Causa Dano do Elemento escolhido" (Acerto Elemental): cada uso sorteia fogo, gelo ou raio e só ele fica.
@@ -617,13 +619,16 @@ export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = 
  * As conversões entre elementos e os ganhos de um elemento em outro vêm depois, em `ModsPoe.transformarPartes`.
  */
 export const conversaoDaMagia = (slug, nivel) => compilada(slug, nivel)?.stats?.conversao ?? [];
+/** (revisão do lote da eficácia, 20/10) A conversão do Físico dos SUPORTES do uso (`af:conv_hab_physical_<el>` no efeito — o Físico em Raio): `[{ para, pct }]`. */
+const ARENA_DO_EL = Object.fromEntries(Object.entries(EL_DA_ARENA).map(([k, v]) => [v, k]));
+export const conversoesDosSuportes = (efeito) => Object.entries(efeito ?? {}).flatMap(([k, v]) => { const m = /^af:conv_hab_physical_(\w+)$/.exec(k); return m && v > 0 && ARENA_DO_EL[m[1]] ? [{ para: ARENA_DO_EL[m[1]], pct: v }] : []; });
 // (lote B1, dono 20/10: `basePor` — o multiplicador do dano BASE da gema por elemento, `{ energy: 2, … }`: a Descarga, "por Carga removida")
-export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null, basePor = null } = {}) {
+export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null, basePor = null, conversoesExtras = [] } = {}) {
   const p = {};
   const somar = (k, [a, b], m = 1) => { if (!m) return; const x = p[k] ?? [0, 0]; p[k] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, k, [], [a, b], m); };
   for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; somar(k, v, basePor ? Math.max(0, Number(basePor[k]) || 0) : 1); }
   for (const [el, v] of Object.entries(extras ?? {})) if (v && (v[0] || v[1])) somar(el, v);
-  converterOFisico(p, origens, conversaoDaMagia(slug, nivel), outras, () => (['fire', 'ice', 'energy'].includes(elementoSorteado) ? elementoSorteado : ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]));
+  converterOFisico(p, origens, [...conversaoDaMagia(slug, nivel), ...conversoesExtras], outras, () => (['fire', 'ice', 'energy'].includes(elementoSorteado) ? elementoSorteado : ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]));
   for (const el of Object.keys(p)) if (!(p[el][0] > 0 || p[el][1] > 0)) delete p[el];
   podarOrigens(p, origens);
   return p;
@@ -1213,11 +1218,15 @@ export const eficaciaNoNivel = (slug, nivel) => compilada(slug, nivel)?.stats?.e
  * (`gamedata/itens-poe/pob-eficacia.json` — `tools/importar-pob-eficacia.mjs`, o `damageEffectiveness` de cada nível; acima da tabela, o
  * último nível dela); sem a gema no PoB, a da tabela do poedb (`eficaciaNoNivel`). O dano adicionado às magias (peças, suportes, varinhas)
  * entra × isto.
+ * (dono, 20/10: "eficácia como no PoE") Num ATAQUE, a do PoB também (a tabela `ataques` do mesmo arquivo — o `damageEffectiveness` de cada nível; sem ele no nível,
+ * 1, o `or 1` do PoB): o dano ADICIONADO ao ataque (peças, passivas, auras, Arautos, suportes, Empalamento) entra × isto; a ARMA segue ×
+ * `eficaciaNoNivel` (o "Dano de Ataque X% de base" do poedb, o `baseMultiplier`) — no PoB, `CalcOffence.lua` "Calculate base hit damage".
  */
 let POB_EFICACIA = null;
 export function eficaciaDoAdicionado(slug, nivel = 1) {
-  POB_EFICACIA ??= JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-eficacia.json', import.meta.url), 'utf8')).gemas;
-  const t = POB_EFICACIA[POR_SLUG.get(slug)?.en ?? String(slug).replace(/_/g, ' ')];
+  POB_EFICACIA ??= JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-eficacia.json', import.meta.url), 'utf8'));
+  const ehAtaque = !!compilada(slug, nivel)?.ataque;
+  const t = (ehAtaque ? POB_EFICACIA.ataques ?? {} : POB_EFICACIA.gemas)[POR_SLUG.get(slug)?.en ?? String(slug).replace(/_/g, ' ')];
   if (!t) return eficaciaNoNivel(slug, nivel);
   const ks = Object.keys(t).map(Number).sort((a, b) => a - b);
   const k = ks.filter((x) => x <= Math.max(ks[0], Math.round(nivel) || 1)).at(-1) ?? ks[0];
@@ -1348,7 +1357,8 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   for (const [el, [a, z]] of Object.entries(b.adicional ?? {})) {
     const e = AF_DO_ELEMENTO[el];
     if (!e || e === 'phys') {
-      if (e === 'phys') af.phys_add = (af.phys_add ?? 0) + Math.round((a + z) / 2);
+      // (dono, 20/10: o Físico adicionado do buff com +X no mínimo e +Y no máximo, como no PoE — antes a média em `phys_add`, com o máximo 2×)
+      if (e === 'phys') { af.phys_add_min = (af.phys_add_min ?? 0) + Math.round(a); af.phys_add_max = (af.phys_add_max ?? 0) + Math.round(z); }
       continue;
     }
     af[`added_${e}_dmg_min`] = (af[`added_${e}_dmg_min`] ?? 0) + Math.round(a);

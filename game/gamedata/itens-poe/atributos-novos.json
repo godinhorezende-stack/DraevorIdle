@@ -8131,6 +8131,30 @@
       "unidade": "",
       "combate": true,
       "efeito": "itens-poe/afeccoes.aoAcertar (o Coursing Current — lote A5)"
+    },
+    "phys_add_min": {
+      "nome": "Dano Físico adicionado aos ataques (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "na faixa do golpe da arma, como o Dano adicional (phys_add) — +X no mínimo e +Y no máximo, como no PoE (dono, 20/10: antes, a média com o máximo 2×) — ficha.combate"
+    },
+    "phys_add_max": {
+      "nome": "Dano Físico adicionado aos ataques (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "na faixa do golpe da arma, como o Dano adicional (phys_add) — +X no mínimo e +Y no máximo, como no PoE (dono, 20/10: antes, a média com o máximo 2×) — ficha.combate"
+    },
+    "added_physical_dmg_min": {
+      "nome": "Dano Físico somado ao acerto (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Físico adicionado ao acerto num alvo (\"Adiciona X a Y de Dano Físico contra Inimigos Sangrando\", a Marca do Caçador): no golpe básico (condicoes-poe.fichaDoGolpe → danoSomado) e na gema (acoes, ajusteDoAlvo.somado, × a eficácia)"
+    },
+    "added_physical_dmg_max": {
+      "nome": "Dano Físico somado ao acerto (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "o Físico adicionado ao acerto num alvo (\"Adiciona X a Y de Dano Físico contra Inimigos Sangrando\", a Marca do Caçador): no golpe básico (condicoes-poe.fichaDoGolpe → danoSomado) e na gema (acoes, ajusteDoAlvo.somado, × a eficácia)"
     }
   }
 }
