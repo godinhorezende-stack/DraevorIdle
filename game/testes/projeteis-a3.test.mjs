@@ -387,13 +387,14 @@ test('revisão: o Raio Cinético não se difunde (a Difusão viraria mudança de
   assert.equal(vla.projeteis, 0, 'sem os "Projéteis adicionais" da tabela errada');
   assert.ok(Math.abs(G.eficaciaNoNivel('Vaal_Lightning_Arrow', 20) - 0.897) < 1e-9);
   assert.ok(Math.abs(G.eficaciaNoNivel('Vaal_Lightning_Arrow', 1) - 0.713) < 1e-9);
-  assert.equal(G.doSlug('Galvanic_Arrow').statusNoJogo, 'parcial');
-  assert.ok(G.doSlug('Galvanic_Arrow').motivosNoJogo.some((m) => /também se aplicam ao Efeito em Área/.test(m)));
+  // (lote PR1, dono 20/10 — aval: o cone da Galvânica existe, com a Velocidade de Projéteis na Área: ela fica completa)
+  assert.equal(G.doSlug('Galvanic_Arrow').statusNoJogo, 'funciona');
 });
 
 test('os triviais: a Vaal Faísca em direções aleatórias; o feixe com "+"; a Difusão Maior soma o "Difundir de novo" e a chance', { skip: SEM }, async () => {
   assert.ok(G.alvosNoNivel('Vaal_Spark', 20).direcoesAleatorias);
-  assert.equal(G.alvosNoNivel('Arc_of_Surging', 20, 20).divide, 9, '7 + 2 da qualidade');
+  // (lote B1, dono 20/10 — aval: a tabela do poedb dá 9 no nível 20, não os 7 da tabela copiada)
+  assert.equal(G.alvosNoNivel('Arc_of_Surging', 20, 20).divide, 11, '9 + 2 da qualidade');
   const { e } = await montar('Bows/Crude_Bow', 'Split_Arrow', ['Greater_Fork_Support'], [[1, 0]]);
   const entry = Acoes.POR_ID_PUBLICO(G.doSlug('Split_Arrow').acao);
   const doSuporte = GS.efeitoNaSkill(e, entry.id);
