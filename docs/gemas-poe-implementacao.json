@@ -44,7 +44,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 714,
+   "linhasDistintas": 713,
    "emDuasOuMais": 131
   },
   "imagens": {
@@ -397,7 +397,6 @@
     "efeito não simulado: Não pode ser Evadido",
     "efeito não simulado: Raio acerta 30 alvos dentro de 10 metros",
     "efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos",
-    "efeito não simulado: +20 % menos Dano em Área",
     "efeito não simulado: +10 % mais Dano em Área"
    ],
    "idle": [],
@@ -4331,8 +4330,8 @@
    "arquetipo": "chuva",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: As flechas após a primeira caem em um raio base de 6 metros",
-    "efeito não simulado: Raio de alcance base do impacto é de 7 metro",
+    "efeito não simulado: As flechas após a primeira caem em um raio base de 3 metros",
+    "efeito não simulado: Raio de alcance base do impacto é de 1 metro",
     "efeito não simulado: Explosão causa + 50 % de dano com ataques e afecções",
     "efeito não simulado: Duração da penalidade base é de 4 segundos",
     "efeito não simulado: Explosão causa + 30 % de dano com ataques e afecções"
@@ -6863,7 +6862,7 @@
    "ausentes": [
     "nenhum efeito do buff tem equivalente no jogo",
     "efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo",
-    "efeito não simulado: Concede 39 % mais Dano Mágico"
+    "efeito não simulado: Concede 19 % mais Dano Mágico"
    ],
    "idle": [],
    "outros": [],
@@ -12285,12 +12284,6 @@
    "linha": "+# % mais Dano por Traumatismo",
    "gemas": [
     "Boneshatter"
-   ]
-  },
-  {
-   "linha": "+# % menos Dano em Área",
-   "gemas": [
-    "Vaal_Smite"
    ]
   },
   {

@@ -89,7 +89,8 @@ export const AREAS_FRIAS = Object.freeze({
 // cada segundo com um inimigo nela, `cargasPorSegundoDasAreasFrias`)
 export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false, cresce = null, aoMorrer = null, porSegundo = null }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
-  const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora);
+  // (revisão do B1: a do Frenesi por segundo que acaba agora fica até pagar o último — `cargasPorSegundoDasAreasFrias`)
+  const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora || (a.porSegundo && a.proximaCarga <= a.ate));
   const durMs = Math.round(segundos * 1000);
   const doCrescer = cresce ? { ...cresce, inicio: agora, durMs } : null;
   lista.push({ x, y, raio: doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}),
@@ -112,7 +113,8 @@ export function cargasAoMorrerNaAreaFria(h, morto, agora = h?.clock ?? 0, rng = 
 export function cargasPorSegundoDasAreasFrias(h, agora = h?.clock ?? 0) {
   const ganhos = [];
   for (const a of h?.areasFrias ?? []) {
-    if (!a.porSegundo || !(a.ate > agora)) continue;
+    // (revisão do B1: a área que acabou neste tique ainda paga o segundo do fim — o laço vai até `ate`)
+    if (!a.porSegundo) continue;
     while (a.proximaCarga <= Math.min(agora, a.ate)) {
       if ((h.monstros ?? []).some((m) => m.hp > 0 && !m.dummy && naArea(a, m))) ganhos.push(a.porSegundo);
       a.proximaCarga += 1000;

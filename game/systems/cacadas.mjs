@@ -2672,10 +2672,8 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
  */
 // (lote B1, dono 20/10: + o raio que cresce do Estalo Gélido — `ModsPoe.atualizarAreasFrias` — e o Frenesi por segundo do Vaal, com `estado` — o dono das áreas)
 export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0, estado = null) {
-  hunt.areasFrias = (hunt.areasFrias ?? []).filter((a) => a.ate > agora);
-  if (!hunt.areasFrias.length) return;
-  ModsPoe.atualizarAreasFrias(hunt, agora);
-  if (estado) {
+  // (revisão do B1: o Frenesi por segundo do Vaal ANTES de tirar as vencidas — o segundo do fim, em `ate`, também paga)
+  if (estado && hunt.areasFrias?.length) {
     const ganhos = ModsPoe.cargasPorSegundoDasAreasFrias(hunt, agora);
     if (ganhos.length) {
       const af = Ficha.combate(estado).afPoe ?? {};
@@ -2684,6 +2682,9 @@ export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0, estado = n
       if (mudou) Ficha.invalidar(estado);
     }
   }
+  hunt.areasFrias = (hunt.areasFrias ?? []).filter((a) => a.ate > agora);
+  if (!hunt.areasFrias.length) return;
+  ModsPoe.atualizarAreasFrias(hunt, agora);
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || m.dummy || !ModsPoe.naAreaFria(hunt, m, agora)) continue;
     // (lote A2: a área com o Resfriamento próprio — o Escudo Gélido — vale o dela)

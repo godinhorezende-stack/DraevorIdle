@@ -3658,7 +3658,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote A1b, dono 19/10: D-a) a CARGA que pula a recarga: o Golpe Súbito (Frenesi), o do Poder (Poder), o Caminho Sagrado da Tolerância (Tolerância) — na
   // recarga e com a carga, a gema sempre gasta uma e sai (gasta quando o uso sai, abaixo); a recarga em curso não recomeça
   const cargaQuePula = itensPoeLigado() && entry.poeGema && !gatilho && !plantada ? GemasA1b.CARGA_QUE_PULA_A_RECARGA[entry.poeGema.slug] ?? null : null;
-  const pulaARecarga = !!cargaQuePula && !!cd && !R.liberou(agora, cd.ate) && (CargasPoe.ativas(estado)[cargaQuePula] ?? 0) > 0;
+  // (revisão do B1: o pulo é decidido no COMEÇO do uso e segue na conjuração — `hunt.conjurando.pulaARecarga` —: a carga que acaba no meio dos 0,8 s do Estalo Gélido
+  // não cancela o uso no fim)
+  const pulaARecarga = concluir && hunt.conjurando?.id === entry.id && hunt.conjurando?.pulaARecarga ? !!cargaQuePula : !!cargaQuePula && !!cd && !R.liberou(agora, cd.ate) && (CargasPoe.ativas(estado)[cargaQuePula] ?? 0) > 0;
   if (!plantada && !gatilho?.ignorarRecarga && !continuaCanal && !pulaARecarga && cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
   // (PoE, 11/10) A RETALIAÇÃO só se usa na janela: depois de bloquear um acerto (ou de um Acerto Selvagem) — `ModsPoe.abrirRetaliacao`. (lote A5, dono 20/10 —
   // D8: com a janela desta gema — o "X% maior" da Retaliação Experiente que a suporta)
@@ -3910,7 +3912,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (lote B1, dono 20/10) a DESCARGA (`GemasB1.usoDaDescarga`): as cargas de agora — o dano BASE de cada elemento × as do tipo dele (Raio × Poder, Fogo ×
   // Tolerância, Gelo × Frenesi), "X% mais Área de Efeito por Carga removida" (um "mais" só, X × o total); sem carga, não sai. As cargas saem depois do golpe
   // (`descargaDoUso.remover`), salvo a chance da qualidade de não remover; o totem e a plantada usam as SUAS cargas, como o PoB
-  const descargaDoUso = itensPoeLigado() && entry.poeGema && /^Discharge/.test(entry.poeGema.slug) ? GemasB1.usoDaDescarga(GemasPoe.descargaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0), CargasPoe.ativas(estado)) : null;
+  // (revisão do B1: só as cargas REMOVÍVEIS — acima do mínimo, o PoB: max(Cargas − CargasMin, 0), CalcPerform.lua:1023-1089 —, contadas no começo do uso: as
+  // que o golpe dá depois ficam, e as do mínimo também; tudo no mínimo, a gema não sai)
+  const removiveisDaDescarga = itensPoeLigado() && entry.poeGema && /^Discharge/.test(entry.poeGema.slug) ? (() => { const at = CargasPoe.ativas(estado); const fc = Ficha.combate(estado).cargas ?? {}; return Object.fromEntries(CargasPoe.TIPOS.map((t) => [t, Math.max(0, (at[t] ?? 0) - CargasPoe.minimo(fc, t))])); })() : null;
+  const descargaDoUso = removiveisDaDescarga ? GemasB1.usoDaDescarga(GemasPoe.descargaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0), removiveisDaDescarga) : null;
+  if (descargaDoUso) descargaDoUso.cargas = removiveisDaDescarga;
   if (itensPoeLigado() && entry.poeGema && /^Discharge/.test(entry.poeGema.slug) && !descargaDoUso) return { ok: false, erro: 'Sem cargas para descarregar.', motivo: 'SEM_CARGAS' };
   if (descargaDoUso && efeitoDaGema) {
     efeitoDaGema = { ...efeitoDaGema, danoBasePor: descargaDoUso.basePor, areaMaisPct: ((1 + (efeitoDaGema.areaMaisPct ?? 0) / 100) * (1 + descargaDoUso.areaMaisPct / 100) - 1) * 100 };
@@ -4134,8 +4140,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (seqDaChuva > 1) {
       const d = (c) => Math.max(Math.abs(c.x - formaNoUso.x), Math.abs(c.y - formaNoUso.y));
       const raio = casas.reduce((r, c) => Math.max(r, d(c)), 0);
-      aneisDaChuva = Array.from({ length: seqDaChuva }, () => []);
-      for (const c of casas) aneisDaChuva[GemasB1.anelDaCasa(d(c), raio, seqDaChuva)].push(c);
+      // (revisão do B1, dono 20/10: o raio que não comporta um anel por sequência — a flecha do PoE tem 1 m — repete a área inteira em cada sequência, só na tela;
+      // o golpe segue um por inimigo)
+      if (raio + 1 < seqDaChuva) aneisDaChuva = Array.from({ length: seqDaChuva }, () => casas);
+      else {
+        aneisDaChuva = Array.from({ length: seqDaChuva }, () => []);
+        for (const c of casas) aneisDaChuva[GemasB1.anelDaCasa(d(c), raio, seqDaChuva)].push(c);
+      }
     }
     // (lote A3b: D2) as outras novas dos Disparos Congelantes: a mesma área (com a Área de Efeito do uso), em cada um dos outros Disparos
     if (novasDosDisparos && casas && formaNoUso) novasDosDisparos.casas = novasDosDisparos.marcas.slice(1).map((c) => ({ c, cs: casas.map((q) => ({ x: q.x - formaNoUso.x + c.x, y: q.y - formaNoUso.y + c.y })) }));
@@ -4392,7 +4403,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // Skill que não é de ataque (invocação, aura, buff) não depende do alvo: ele morrer no meio não cancela a conjuração.
       // (revisão do A1: o Teleporte e a Vaal dele, com o destino já escolhido, saem mesmo se o alvo morrer na espera — a conjuração não guarda o alvo)
       const semAlvoNaEspera = !!plano && ['viagem', 'inimigos'].includes(desloc.modo);
-      hunt.conjurando = { slot, id: entry.id, alvo: !ataque || (mira && entry.miraNoChao) || semAlvoNaEspera ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}),
+      hunt.conjurando = { ...(pulaARecarga ? { pulaARecarga: true } : {}), slot, id: entry.id, alvo: !ataque || (mira && entry.miraNoChao) || semAlvoNaEspera ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}),
         // (lote A1b, dono 19/10: D-c) o fim só da conjuração (sem a espera do Teleporte): dali em diante, o Teleporte pode entrar na fila
         castFim: inicio + Math.max(0, castMs - (plano?.atrasoMs ?? 0)),
         // (lote A1: o destino do deslocamento escolhido agora — no fim da conjuração ele vale, salvo a casa ocupada)
@@ -4654,7 +4665,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote A3b: o pulso do objeto não desenha a área toda a cada golpe — o objeto e o raio dele estão na tela, `objetosParaCliente`; o efeito vai no acertado)
     if (casas && entry.efeito && plantada?.tipo === 'objeto') { if (alvo) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y }); }
     // (lote A1b: o uso da miragem que não pulsa não desenha área — a onda final tem o evento dela)
-    else if (casas && entry.efeito) { if (casas.length || !miragemDoUso) eventos.push({ t: 'area', id: entry.efeito, x, y, casas: Areas.paraTela(casas, { x, y }) }); }
+    // (revisão do B1: a Chuva de Flechas Vaal desenha só os anéis das sequências — `aneisDaChuva`)
+    else if (casas && entry.efeito) { if (!aneisDaChuva && (casas.length || !miragemDoUso)) eventos.push({ t: 'area', id: entry.efeito, x, y, casas: Areas.paraTela(casas, { x, y }) }); }
     else if (entry.efeito && !objetoDoUso?.semAcerto) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
     // A cadeia: o salto de um bicho para o outro (o projétil, se a magia tem) e o efeito em cada um.
     if (entry.cadeia) {
@@ -5574,7 +5586,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (aneisDaChuva && formaNoUso) aneisDaChuva.forEach((cs, k) => { if (cs.length) eventos.push({ t: 'area', id: entry.efeito ?? null, x: formaNoUso.x, y: formaNoUso.y, casas: Areas.paraTela(cs, formaNoUso), sk: entry.id, sequencia: k }); });
       if (objetoDoUso || laminasDoUso?.length || novasDosDisparos) {
         const conta = { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha, dotMagico: GemasPoe.dotEhMagico(entry.poeGema.slug) };
-        eventos.push(...criarObjetosDoUso(estado, hunt, entry, efeitoDaGema, { obj: objetoDoUso, alvo, mira, x, y, formaNoUso, emitidos: emitidosDoUso, laminas: laminasDoUso, novas: novasDosDisparos, velDoTiro, conta, doTotem, dono: doTotem ? plantada?.dono ?? null : null, agora }));
+        // (revisão do B1: a Invocar Tormenta é Multicastable — cada repetição do uso (o Eco de Magia, o Altar Ecoante) deixa o SEU marcador, no mesmo ponto, como no PoE)
+        const vezes = objetoDoUso?.tipo === 'tormenta' ? 1 + repeticoesDoUso(entry, efeitoDaGema, ficha, { gatilho, plantada }) : 1;
+        for (let k = 0; k < vezes; k++) eventos.push(...criarObjetosDoUso(estado, hunt, entry, efeitoDaGema, { obj: objetoDoUso, alvo, mira, x, y, formaNoUso, emitidos: emitidosDoUso, laminas: k ? null : laminasDoUso, novas: k ? null : novasDosDisparos, velDoTiro, conta, doTotem, dono: doTotem ? plantada?.dono ?? null : null, agora }));
       }
       if (deProjetil && !doTotem && emitidosDoUso.length && hunt.poeObjetos?.length) absorverNosTornados(hunt, emitidosDoUso, danoMedio, agora);
     }
@@ -5668,10 +5682,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (!plantada && !vaalDeGraca && !continuaCanal && !pulaARecarga) cds[action.id] = { ate: inicio + recarga, total: recarga };
   // (14/10, o Coveiro) Profanar e Desenterrar criam os cadáveres deles no alvo (`criarCadaveres`).
   if (entry.poeGema && GemasPoe.cadaveresDaGema(entry.poeGema.slug, 1)) criarCadaveres(estado, hunt, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, alvo ?? hunt.pos);
-  // (lote B1, dono 20/10) a Descarga remove TODAS as cargas depois do golpe (o dano já as contou), salvo a chance da qualidade
+  // (lote B1, dono 20/10) a Descarga remove as cargas que contou no começo (as removíveis) depois do golpe, salvo a chance da qualidade; as que o golpe deu ficam
   if (descargaDoUso?.remover) {
     let saiu = 0;
-    for (const t of CargasPoe.TIPOS) saiu += CargasPoe.gastar(estado, t, Infinity) || 0;
+    for (const t of CargasPoe.TIPOS) saiu += CargasPoe.gastar(estado, t, descargaDoUso.cargas?.[t] ?? 0) || 0;
     if (saiu) Ficha.invalidar(estado);
   }
   // PoE: os eventos "ao usar uma Habilidade" dos únicos (e os "recentemente": usou Movimento, Vaal, Clamor) — a ativada por gatilho não conta.
