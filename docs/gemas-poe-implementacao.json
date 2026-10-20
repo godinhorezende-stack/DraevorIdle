@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 241,
+   "implementada e testada": 252,
    "implementada, sem teste próprio": 48,
-   "parcial": 261,
+   "parcial": 250,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 112,
+   "implementada e testada": 121,
    "implementada, sem teste próprio": 19,
-   "parcial": 73,
+   "parcial": 64,
    "limitação do modelo idle": 6
   },
   "suportes": {
@@ -30,9 +30,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 75,
+    "implementada e testada": 82,
     "implementada, sem teste próprio": 25,
-    "parcial": 102,
+    "parcial": 95,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 677,
-   "emDuasOuMais": 125
+   "linhasDistintas": 650,
+   "emDuasOuMais": 119
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 331,
+   "ativasCitadas": 344,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -703,14 +703,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lança correntes em até 8 alvos ao alcance",
-    "efeito não simulado: Alvos acorrentados concedem 1 Fúria quando atingidos",
-    "efeito não simulado: Comprimento máximo da corrente: 6 metros",
-    "efeito não simulado: +0.1 metro ao Raio por 5 de Fúria",
-    "efeito não simulado: Lança correntes em até 3 alvos ao alcance"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -806,11 +800,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Debuffs causam 80 % de Dano por Carga",
-    "efeito não simulado: Debuffs causam +10 % de Dano por Carga"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1519,13 +1510,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ganha 6 Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre 194 de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura 6 segundos",
-    "efeito não simulado: 6 % mais Dano por Traumatismo",
-    "efeito não simulado: Pulso tem Efeito em Área aumentado em 15 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %",
-    "efeito não simulado: +1 % mais Dano por Traumatismo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1537,14 +1523,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Perca todo o Traumatismo ao atingir 10 Traumatismos",
-    "efeito não simulado: Ganha 6 Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre 582 de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura 6 segundos",
-    "efeito não simulado: 15 % mais Dano por Trauma, até 200 %",
-    "efeito não simulado: Pulso tem Efeito em Área aumentado em 15 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %",
-    "efeito não simulado: 5 % mais Dano por Trauma, até 200 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1556,11 +1536,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pulso tem Efeito em Área aumentado em 20 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %",
-    "efeito não simulado: Mais 20 % de dano contra inimigos atordoados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1696,12 +1673,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: O primeiro martelo de cada cascata causa + 100 % de dano",
-    "efeito não simulado: Martelos Sagrados se acumulam em cascata até 2 vezes",
-    "efeito não simulado: + 20 % de dano ao gastar uma carga de poder"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1713,13 +1686,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: ㅤ+ 15 % de dano por carga de poder removida",
-    "efeito não simulado: Martelos Sagrados se acumulam em cascata até 6 vezes",
-    "efeito não simulado: +1 cascatas por carga de poder removida",
-    "efeito não simulado: +5 % mais dano por carga de poder removida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1859,12 +1827,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 30 % de Chance de ramificação da Fissura",
-    "efeito não simulado: +5 % de chance de ramificar fissuras por Carga de Tolerância",
-    "efeito não simulado: +30 % de Chance de ramificação da Fissura"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1876,13 +1840,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % mais Dano por Carga de Tolerância removida",
-    "efeito não simulado: 10 % mais Área de Efeito por Carga de Tolerância removida",
-    "efeito não simulado: 10 % de chance de ramificação de fissuras por Carga de Tolerância removida",
-    "efeito não simulado: +5 % mais Dano por Carga de Tolerância removida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5067,10 +5026,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Libera um Pulso Mais Forte a cada 3 Pulsos Pulsos Mais Fortes sempre são Golpes Críticos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5082,12 +5039,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Libera um Pulso Mais Forte a cada 5 Pulsos Pulsos Mais Fortes sempre são Golpes Críticos",
-    "efeito não simulado: Pulsos Mais Fortes têm 150 % mais Área de Efeito",
-    "efeito não simulado: Pulsos Fortalecidos causam 500 % mais Dano com Acertos e Afecções"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11140,14 +11093,6 @@
    ]
   },
   {
-   "linha": "Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # %",
-   "gemas": [
-    "Boneshatter",
-    "Boneshatter_of_Carnage",
-    "Boneshatter_of_Complex_Trauma"
-   ]
-  },
-  {
    "linha": "Velocidade de Projéteis aumentada em # %",
    "gemas": [
     "Holy_Flame_Totem",
@@ -11457,20 +11402,6 @@
    ]
   },
   {
-   "linha": "Debuffs causam # % de Dano por Carga",
-   "gemas": [
-    "Infernal_Blow",
-    "Infernal_Blow_of_Immolation"
-   ]
-  },
-  {
-   "linha": "Debuffs causam +# % de Dano por Carga",
-   "gemas": [
-    "Infernal_Blow",
-    "Infernal_Blow_of_Immolation"
-   ]
-  },
-  {
    "linha": "Definhado dura # segundos",
    "gemas": [
     "Wither",
@@ -11545,13 +11476,6 @@
    "gemas": [
     "Vaal_Volcanic_Fissure",
     "Volcanic_Fissure_of_Snaking"
-   ]
-  },
-  {
-   "linha": "Ganha # Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura # segundos",
-   "gemas": [
-    "Boneshatter",
-    "Boneshatter_of_Complex_Trauma"
    ]
   },
   {
@@ -11653,24 +11577,10 @@
    ]
   },
   {
-   "linha": "Libera um Pulso Mais Forte a cada # Pulsos Pulsos Mais Fortes sempre são Golpes Críticos",
-   "gemas": [
-    "Lightning_Tendrils",
-    "Lightning_Tendrils_of_Eccentricity"
-   ]
-  },
-  {
    "linha": "Martelos causam - # % de dano",
    "gemas": [
     "Holy_Sweep",
     "Holy_Sweep_of_Hammerfalls"
-   ]
-  },
-  {
-   "linha": "Martelos Sagrados se acumulam em cascata até # vezes",
-   "gemas": [
-    "Holy_Hammers",
-    "Holy_Hammers_of_Spirals"
    ]
   },
   {
@@ -11883,18 +11793,6 @@
    ]
   },
   {
-   "linha": "# % de Chance de ramificação da Fissura",
-   "gemas": [
-    "Tectonic_Slam"
-   ]
-  },
-  {
-   "linha": "# % de chance de ramificação de fissuras por Carga de Tolerância removida",
-   "gemas": [
-    "Tectonic_Slam_of_Cataclysm"
-   ]
-  },
-  {
    "linha": "# % de chancer de causar Sangramento enquanto na Postura de Sangue",
    "gemas": [
     "Lacerate"
@@ -11922,12 +11820,6 @@
    "linha": "# % maior frequência de rajadas por # de mana máximo",
    "gemas": [
     "Bladefall_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "# % mais Área de Efeito por Carga de Tolerância removida",
-   "gemas": [
-    "Tectonic_Slam_of_Cataclysm"
    ]
   },
   {
@@ -11985,12 +11877,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano por Carga de Tolerância removida",
-   "gemas": [
-    "Tectonic_Slam_of_Cataclysm"
-   ]
-  },
-  {
    "linha": "# % mais dano por lâmina de Vórtice de Lâminas",
    "gemas": [
     "Blade_Blast_of_Unloading"
@@ -12000,18 +11886,6 @@
    "linha": "# % mais Dano por Maldição aplicada",
    "gemas": [
     "Bane"
-   ]
-  },
-  {
-   "linha": "# % mais Dano por Trauma, até # %",
-   "gemas": [
-    "Boneshatter_of_Complex_Trauma"
-   ]
-  },
-  {
-   "linha": "# % mais Dano por Traumatismo",
-   "gemas": [
-    "Boneshatter"
    ]
   },
   {
@@ -12087,24 +11961,6 @@
    ]
   },
   {
-   "linha": "+ # % de dano ao gastar uma carga de poder",
-   "gemas": [
-    "Holy_Hammers"
-   ]
-  },
-  {
-   "linha": "+# % de Chance de ramificação da Fissura",
-   "gemas": [
-    "Tectonic_Slam"
-   ]
-  },
-  {
-   "linha": "+# % de chance de ramificar fissuras por Carga de Tolerância",
-   "gemas": [
-    "Tectonic_Slam"
-   ]
-  },
-  {
    "linha": "+# % de Multiplicador de Dano Degenerativo com Incêndios se Cargas de um Frasco de Rubi foram consumidas",
    "gemas": [
     "Explosive_Concoction"
@@ -12141,33 +11997,9 @@
    ]
   },
   {
-   "linha": "+# % mais dano por carga de poder removida",
-   "gemas": [
-    "Holy_Hammers_of_Spirals"
-   ]
-  },
-  {
-   "linha": "+# % mais Dano por Carga de Tolerância removida",
-   "gemas": [
-    "Tectonic_Slam_of_Cataclysm"
-   ]
-  },
-  {
-   "linha": "+# % mais Dano por Traumatismo",
-   "gemas": [
-    "Boneshatter"
-   ]
-  },
-  {
    "linha": "+# ao número máximo de Zumbis",
    "gemas": [
     "Raise_Zombie_of_Falling"
-   ]
-  },
-  {
-   "linha": "+# cascatas por carga de poder removida",
-   "gemas": [
-    "Holy_Hammers_of_Spirals"
    ]
   },
   {
@@ -12180,12 +12012,6 @@
    "linha": "+# de Relâmpagos Concentrados máximos",
    "gemas": [
     "Static_Strike_of_Gathering_Lightning"
-   ]
-  },
-  {
-   "linha": "+# metro ao Raio por # de Fúria",
-   "gemas": [
-    "Chain_Hook_of_Trarthus"
    ]
   },
   {
@@ -12354,12 +12180,6 @@
    "linha": "Alcance do Posicionamento de Totens aumentado em # %",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Alvos acorrentados concedem # Fúria quando atingidos",
-   "gemas": [
-    "Chain_Hook_of_Trarthus"
    ]
   },
   {
@@ -12849,12 +12669,6 @@
    ]
   },
   {
-   "linha": "Comprimento máximo da corrente: # metros",
-   "gemas": [
-    "Chain_Hook_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Concede # % mais velocidade de conjuração",
    "gemas": [
     "Righteous_Fire_of_Arcane_Devotion"
@@ -13056,6 +12870,18 @@
    "linha": "Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos",
    "gemas": [
     "Pestilent_Strike"
+   ]
+  },
+  {
+   "linha": "Debuffs causam # % de Dano por Carga",
+   "gemas": [
+    "Infernal_Blow"
+   ]
+  },
+  {
+   "linha": "Debuffs causam +# % de Dano por Carga",
+   "gemas": [
+    "Infernal_Blow"
    ]
   },
   {
@@ -14427,12 +14253,6 @@
    ]
   },
   {
-   "linha": "Lança correntes em até # alvos ao alcance",
-   "gemas": [
-    "Chain_Hook_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Libera ondas a cada # segundos",
    "gemas": [
     "Seismic_Trap"
@@ -14460,12 +14280,6 @@
    "linha": "Magias Suportadas têm Recuperação da Recarga aumentada em #%",
    "gemas": [
     "Awakened_Cast_On_Critical_Strike_Support"
-   ]
-  },
-  {
-   "linha": "Mais # % de dano contra inimigos atordoados",
-   "gemas": [
-    "Boneshatter_of_Carnage"
    ]
   },
   {
@@ -14589,12 +14403,6 @@
    ]
   },
   {
-   "linha": "O primeiro martelo de cada cascata causa + # % de dano",
-   "gemas": [
-    "Holy_Hammers"
-   ]
-  },
-  {
    "linha": "O raio base da Saraivada é de # metros",
    "gemas": [
     "Bladefall_of_Trarthus"
@@ -14652,12 +14460,6 @@
    "linha": "Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas",
    "gemas": [
     "Inspiration_Support"
-   ]
-  },
-  {
-   "linha": "Perca todo o Traumatismo ao atingir # Traumatismos",
-   "gemas": [
-    "Boneshatter_of_Complex_Trauma"
    ]
   },
   {
@@ -14742,18 +14544,6 @@
    "linha": "Pulsos causam # % mais Dano com Dano com Acertos por Energia após a primeira",
    "gemas": [
     "Penance_Brand_of_Dissipation"
-   ]
-  },
-  {
-   "linha": "Pulsos Fortalecidos causam # % mais Dano com Acertos e Afecções",
-   "gemas": [
-    "Lightning_Tendrils_of_Eccentricity"
-   ]
-  },
-  {
-   "linha": "Pulsos Mais Fortes têm # % mais Área de Efeito",
-   "gemas": [
-    "Lightning_Tendrils_of_Eccentricity"
    ]
   },
   {
@@ -15138,12 +14928,6 @@
    "linha": "ㅤ+ # % de dano com ataques e afecções por Relâmpagos Concentrados",
    "gemas": [
     "Static_Strike_of_Gathering_Lightning"
-   ]
-  },
-  {
-   "linha": "ㅤ+ # % de dano por carga de poder removida",
-   "gemas": [
-    "Holy_Hammers_of_Spirals"
    ]
   }
  ],
