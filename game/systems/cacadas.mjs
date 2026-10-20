@@ -2202,7 +2202,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     if (doArauto.length) { eventos.push(...doArauto); processarMortes(estado, personagem, eventos); }
   }
   // (lote 41, P032) as suas ÁREAS FRIAS: quem está dentro fica Resfriado (`resfriarNasAreasFrias`)
-  if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt);
+  if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt, hunt.clock ?? 0, estado);
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // (lote 75) o Arauto da Agonia: o Rastejador vem ao Envenenar e some sem Virulência (`Acoes.tiqueDoArautoDaAgonia`)
@@ -2670,9 +2670,20 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
  * (10%), pelo caminho de sempre do Resfriamento (o chefe, o teto e a duração — `Estados.aplicar`); só renova o que está para acabar. As vencidas
  * saem.
  */
-export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0) {
+// (lote B1, dono 20/10: + o raio que cresce do Estalo Gélido — `ModsPoe.atualizarAreasFrias` — e o Frenesi por segundo do Vaal, com `estado` — o dono das áreas)
+export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0, estado = null) {
   hunt.areasFrias = (hunt.areasFrias ?? []).filter((a) => a.ate > agora);
   if (!hunt.areasFrias.length) return;
+  ModsPoe.atualizarAreasFrias(hunt, agora);
+  if (estado) {
+    const ganhos = ModsPoe.cargasPorSegundoDasAreasFrias(hunt, agora);
+    if (ganhos.length) {
+      const af = Ficha.combate(estado).afPoe ?? {};
+      let mudou = false;
+      for (const t of ganhos) mudou = CargasPoe.ganhar(estado, t, af) || mudou;
+      if (mudou) Ficha.invalidar(estado);
+    }
+  }
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || m.dummy || !ModsPoe.naAreaFria(hunt, m, agora)) continue;
     // (lote A2: a área com o Resfriamento próprio — o Escudo Gélido — vale o dela)

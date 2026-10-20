@@ -848,6 +848,11 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     const tags = QuemFeriu.tagsDoAbate(alvo);
     ModsPoe.evento(estado, hunt, 'inimigoMorrer', f, { alvo, eventos, personagem, tags: ModsPoe.pertoDoEstandarte(hunt, alvo) ? [...tags, 'alvoPertoDoEstandarte'] : tags });
     if (!QuemFeriu.abateSeu(alvo)) ModsPoe.evento(estado, hunt, QuemFeriu.eventoDoAbate(alvo), f, { alvo, eventos, personagem, tags });
+    // (lote B1, dono 20/10 — D-B1.6) o inimigo que morre no chão dos seus Estalos Gélidos (por quem for — "Enemies that die while in the area"): o Frenesi do comum
+    // (25%), o Poder do Vaal
+    let mudou = false;
+    for (const t of ModsPoe.cargasAoMorrerNaAreaFria(hunt, alvo, hunt.clock ?? 0)) mudou = CargasPoe.ganhar(estado, t, f.afPoe ?? {}) || mudou;
+    if (mudou) Ficha.invalidar(estado);
   }
   if (!itensPoeLigado() || QuemFeriu.abateSeu(alvo)) {
     const f = Ficha.combate(estado);

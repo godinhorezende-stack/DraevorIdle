@@ -37,7 +37,9 @@ const LINHA_DO_CONDUTOR = /^\+?([\d.]+) % mais Dano com Acertos por cada [15] ?%
 export function condutorDasLinhas(slug, linhas = [], daQualidade = []) {
   if (!/^Lightning_Conduit/.test(slug)) return null;
   // (revisão do A5: só a gema BASE tira a Eletrização — "então remove a Eletrização de tais inimigos" está só na descrição dela; a dos Céus Eletriza)
-  return { porCada5Pct: somar([...linhas, ...daQualidade], LINHA_DO_CONDUTOR), tiraEletrizacao: slug === 'Lightning_Conduit', soEletrizados: true, segurarEletrizacao: slug === 'Lightning_Conduit' };
+  // (lote B1, dono 20/10: só a BASE acerta só os Eletrizados — o PoB: "Lightning strikes all Shocked enemies around a targeted location", act_int.lua:12378; a dos Céus
+  // "strikes a number of enemies around a targeted location", sem Eletrização — o máximo de alvos, `GemasB1.maxAlvosDasLinhas`)
+  return { porCada5Pct: somar([...linhas, ...daQualidade], LINHA_DO_CONDUTOR), tiraEletrizacao: slug === 'Lightning_Conduit', soEletrizados: slug === 'Lightning_Conduit', segurarEletrizacao: slug === 'Lightning_Conduit' };
 }
 /** O "mais" contra o alvo com `eletrizadoPct` de Eletrização: 1 + X × floor(pct ÷ 5) / 100 (o PoB arredonda para baixo). */
 export const maisContraEletrizado = (d, eletrizadoPct) => 1 + ((d?.porCada5Pct ?? 0) * Math.floor(Math.max(0, Number(eletrizadoPct) || 0) / 5 + 1e-9)) / 100;

@@ -113,6 +113,12 @@ const REGRAS = [
   // "Não pode ser Evadido" das gemas Vaal, da Evisceração, do Punho Esmagador…: o acerto da gema de ataque não erra — `condicoes-poe.fichaDoGolpe`, `Defesa.errou`)
   [new RegExp(`^${N} ?% de Precisão aumentada$`, 'i'), (m) => ({ accuracy_inc: num(m[1]) })],
   [/^Não pode ser Evadido$/i, () => ({ nunca_erra: 1 })],
+  // (lote B1, dono 20/10) a Mutilação da Chuva de Flechas Vaal ("Mutila ao Acertar" — o PoB: global_maim_on_hit — e "150% de aumento do Efeito de Mutilação" —
+  // maim_effect_+%: a lentidão de 30% × 2,5 = 75%, `ModsPoe.aoAcertar`) e o "X% mais Velocidade de Conjuração" da qualidade da Nova Elétrica da Procissão (o PoB:
+  // active_skill_cast_speed_+%_final — multiplica o tempo de conjuração do uso, `Acoes.temposDaGemaPoe`)
+  [/^Mutila ao Acertar$/i, () => ({ chance_mutilar: 100 })],
+  [new RegExp(`^${N} ?% de aumento do Efeito de Mutilação$`, 'i'), (m) => ({ efeito_mutilacao: num(m[1]) })],
+  [new RegExp(`^${N} ?% mais Velocidade de Conjuração$`, 'i'), (m) => ({ cast_speed_mais: num(m[1]) })],
 ];
 
 /**
@@ -124,8 +130,9 @@ const REGRAS = [
  * o alcance corpo a corpo — o golpe da gema —, o "mais Dano só com Acertos", o máximo da Eletrização, a Exposição com chance e o −X% de Fogo dos Incendiados)
  * (lote A5b, dono 20/10: + a precisão — `accuracy`, `accuracy_inc` — e o "Não pode ser Evadido" — `nunca_erra` —: a ficha do golpe as lê, e a gema de ataque
  * rola o acerto por alvo com elas — `acoes.dispararSemMarcar`, `acertar`)
+ * (lote B1, dono 20/10: + o "mais Velocidade de Conjuração" — `cast_speed_mais`, `acoes.temposDaGemaPoe`; a Mutilação já entrava pelo `chance_…`/`efeito_…`)
  */
-const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+|es_leech|es_leech_magia|vida_leech_magia|fortificacao_[a-z_]+|critico_sem_dano_extra|culling_[a-z_]+|imune_reflexo_elemental|empalar_[a-z_]+|alcance_corpo_m|mais_dano_acerto|eletrizacao_maximo|exposicao_chance_(fogo|gelo|raio)|res_menos_fogo_incendiado|accuracy|accuracy_inc|nunca_erra)$/;
+const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+|es_leech|es_leech_magia|vida_leech_magia|fortificacao_[a-z_]+|critico_sem_dano_extra|culling_[a-z_]+|imune_reflexo_elemental|empalar_[a-z_]+|alcance_corpo_m|mais_dano_acerto|eletrizacao_maximo|exposicao_chance_(fogo|gelo|raio)|res_menos_fogo_incendiado|accuracy|accuracy_inc|nunca_erra|cast_speed_mais)$/;
 const lidoNoUso = (k) => LIDOS_NO_USO.test(partir(k).stat) && atributoTemEfeito(k);
 
 /** Os atributos de UMA linha (com os números do nível): `{ stat: valor }`, ou null se nenhuma regra tem efeito no uso da gema. */

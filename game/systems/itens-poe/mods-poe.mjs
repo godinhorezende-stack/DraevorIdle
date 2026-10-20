@@ -156,7 +156,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   };
   if (sorte(v('chance_mutilar'))) {
     e.mutilado = { ate: agora + NO_ACERTO.mutilar.duracaoMs };
-    lentidao(NO_ACERTO.mutilar.lentidaoPct, NO_ACERTO.mutilar.duracaoMs);
+    // (lote B1, dono 20/10: × o "X% de aumento do Efeito de Mutilação" — a Chuva de Flechas Vaal, 150%: 30% × 2,5 = 75%)
+    lentidao(NO_ACERTO.mutilar.lentidaoPct * Math.max(0, 1 + v('efeito_mutilacao') / 100), NO_ACERTO.mutilar.duracaoMs);
     ev('mutilado');
   }
   if (sorte(v('chance_cegar'))) {
