@@ -1249,6 +1249,8 @@ export function novaInstancia(estado, pronta = null) {
   // (revisão do A3b: a instância nova começa sem os objetos das gemas do PoE — no PoE a troca de área desfaz o chão, as lâminas e os capturados — nem a área fria
   // que andava com eles; os da party, abaixo)
   delete hunt.poeObjetos;
+  // (lote B2, dono 20/10 — D-B2.2: as Cargas Sangrentas zeram na troca de instância)
+  delete hunt.poeSangue;
   if (hunt.areasFrias) hunt.areasFrias = hunt.areasFrias.filter((a) => !a.obj);
   hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
   hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;

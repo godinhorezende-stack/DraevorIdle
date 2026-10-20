@@ -12,6 +12,8 @@ import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { readFileSync } from 'node:fs';
 import { CONFIG as CONFIG_DAS_GEMAS } from './gemas.mjs';
 import { SOLO_PROFANO, noSoloProfano } from '../itens-poe/condicoes-poe.mjs';
+// (lote B2, dono 20/10 — D-B2.1: o lento POR FONTE dos esporos da Chuva Tóxica, no passo do monstro)
+import { fatorDosLentosPorFonte } from '../itens-poe/gemas-b2.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../../gamedata/gemas/reforcos.json', import.meta.url), 'utf8'));
 
@@ -140,7 +142,8 @@ export function definirAoAmaldicoar(fn) { aoAmaldicoar = fn; }
 export function fatorDeDesaceleracao(bicho, agora) {
   // (+ "ficam Lentos se Y% da Duração da Maldição expirou": a lentidão vale depois daquela parte da duração.)
   const pct = Math.max(0, ...maldicoesAtivas(bicho, agora).map((m) => Math.max(m.desacelera ?? 0, m.lentoApos && agora - m.desde >= m.lentoApos.apos * m.dur ? m.lentoApos.pct : 0)));
-  return pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1;
+  // (lote B2, dono 20/10 — D-B2.1: × o lento por fonte — os esporos da Chuva Tóxica; fontes diferentes multiplicam, `GemasB2.fatorDosLentosPorFonte`)
+  return (pct > 0 ? 1 / Math.max(0.1, 1 - pct / 100) : 1) * fatorDosLentosPorFonte(bicho, agora);
 }
 
 /** Registra o reforço de uma gema de fora do catálogo (as do PoE — `itens-poe/gemas-poe.mjs`): `{ dur, tipo, efeitos }`. */

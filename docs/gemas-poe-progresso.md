@@ -429,6 +429,46 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - **Teste que segue quebrado pelo progresso, para o aval:** `itens-poe-gemas.test.mjs:36` exige `st.parcial > 300`; agora são 284 (273 parciais + 11 de limitação do idle).
 - Depois: parcial 287 → 273 nas ativas; 111 → 111 nos suportes.
 
+### B2 — contadores próprios, chão e espalhar (20/10, as recomendações do plano aceitas; D-B2.6: a Vida MÁXIMA)
+
+- **O plano tinha 19 gemas, todas ainda parciais.** Saíram 14 (`gemas-b2.mjs`, `acoes.mjs`). Ficam 5, cada uma só com a linha que espera o dono (abaixo).
+- **As Cargas Sangrentas** (D-B2.2, `hunt.poeSangue`): começam em 0, vão até 5 (Misc.lua: `maximum_blood_scythe_charges`) e não se perdem pelo tempo. Zeram na troca de instância (`Cacadas.novaInstancia`) e na caçada nova.
+  - o Ceifar e o da Carnificina ganham 1 quando o uso acerta e nenhum dos acertados morre. Perdem 1 quando morre, por quem for, um inimigo com o debuff de um Ceifar (`Acoes.aoMorrerB2`, chamado em `combate.matarMonstro`);
+  - cada carga dá 15% mais Dano (25% na Carnificina; +5% na qualidade 20), um "mais" só no acerto e no degenerativo (o PoB: Damage MORE × BloodCharge);
+  - cada carga dá 20% mais custo de Vida (LifeCost MORE): com 2 cargas, o custo × 1,4;
+  - o Ceifar Vaal dá +4 ao máximo pela duração secundária (8 s × a Duração) e enche até o máximo (9). Passados os 8 s, o máximo volta a 5 e o que passar cai.
+- **O Sangue Fervendo do Ceifar Vaal:** o degenerativo é o do chão (o PoB: `dotIsArea`), não o do acerto. O chão fica na área do uso pela duração (5 s × a Duração), com o dano por segundo da gema pela conta deste uso. Quem está nele fica marcado até o fim dele + 4 s ("Perduram por 4 segundos") e queima pelo tempo exato marcado, um chão só por inimigo (o mais forte). O raio-base é o do PoB, 2,3 m (radius 23).
+- **O Golpe Infernal** (D-B2.3): o acertado pelo golpe leva o debuff CARREGADO (+1 carga, até 6; a duração de 0,8 s × a Duração renova). O acertado pela explosão leva o DESCARREGADO.
+  - com 6 cargas, explode na hora: 66% × 6 = 396% do acerto (o PoB: o "mais" de (−100 + X) + X × (cargas − 1)), em volta dele, no raio da explosão (1,8 m × √ da Área);
+  - ao expirar (`Acoes.tiqueDasGemasB2`) ou na morte, explode com as cargas que tem, pelo golpe da gema (`golpeDoObjeto`, rolando a precisão como o PoB);
+  - o morto com qualquer um dos dois debuffs explode como cadáver: 6% da Vida máxima dele como Fogo, no raio da explosão (`explodirCadaveres`). Saiu o "o uso de cadáveres não existe no jogo".
+- **A Febre Corrompedora** (D-B2.4): o uso é o buff em você (6 s × a Duração; não acerta ninguém). Com ele, os SEUS acertos (as gemas e o golpe básico — `Acoes.aoAcertarB2`) põem o Sangue Corrompido. É o degenerativo da gema pela conta do uso, por 1,5 s × a Duração; cada acerto dá +1 estágio, até 10, e cada estágio depois do primeiro tem 100% mais (n × o dano de um). A Vida gasta (o custo de Vida das gemas, a parte em Vida, a Vida a mais e o Sacrifício da Barganha) renova a duração inteira a cada 205 (`Acoes.vidaGastaB2`); o que passa fica para o próximo.
+- **A Explosão Voltáxica:** "60% do Dano de Raio Convertido em Dano de Caos" é a conversão da habilidade (`af:conv_hab_energy_chaos` no uso, como a dos suportes). Cada uso espera 2,5 s × a Duração em você e solta em volta de onde você estiver (`hunt.poeObjetos`, tipo `voltaxica`), no raio do PoB (2,2 m + 0,3 m), com 1% mais (+1% na qualidade 20) por cada outra sua que ainda aguarda.
+- **A Barganha de Trarthus** (D-B2.6): uma Ruína por uso (+1 na chance da qualidade, 20% na 20). Na sétima, sacrifica 50% da Vida MÁXIMA (a Vida fica em no mínimo 1) e o Caos BASE do uso ganha 600% do sacrificado (`partesDaMagia` com `baseExtra`). As Ruínas zeram. O raio-base é o do PoB, 2,6 m (radius 26); antes, a nova do molde, de 85 casas. O uso do totem não conta (o PoB usa a vida do totem).
+- **O Vínculo de Mana:** o Raio adicionado de 44% (+10% na qualidade 20) da Mana Não Reservada que falta, já paga a deste uso, × a Eficácia do Dano Adicionado (o PoB: LightningMin/Max BASE no `skillModList`).
+- **O Contágio** (D-B2.5): o degenerativo dele espalha, com o dano que falta e a duração que resta, para os vivos no raio da área do uso em volta do afetado. O comum e o da Subsidência espalham na morte; o da Transferência, a cada acerto seu no afetado. Quem pega também espalha; um degenerativo da gema por inimigo (o mais forte fica).
+- **A Chuva Tóxica** (D-B2.1): cada flecha do uso deixa um esporo na área. Quem está nela anda 5% mais devagar por esporo vivo, até 30%, pela duração dos esporos × a Duração. É o lento POR FONTE (`m.estados.poeLentoPorFonte`, `GemasB2.fatorDosLentosPorFonte`, no `Reforcos.fatorDeDesaceleracao`): os esporos da mesma gema somam; fontes diferentes multiplicam. Só a Velocidade de Movimento.
+- **A Chama Purificadora:** o Solo Sagrado no local mirado, no raio do acerto inicial (1,8 m + 0,4 m) + 0,6 m (+0,3 m da qualidade 20; a das Revelações, +1,1 m), × √ da Área, por 4 s × a Duração (`criarSoloSagrado` com o lugar e o raio). Depois, a Onda de Choque (5 m × √ da Área) acerta quem está sobre um Solo Sagrado e não foi acertado no passe, com 25% menos (as Revelações: 150% mais, +30% da qualidade 20).
+- **A Tormenta Flamejante Vaal:** a tempestade do A3b-2 com 16 impactos, um a cada 0,5 s (`fire_storm_fireball_delay_ms` 500), na área de 2 m. Cada impacto tem 20% mais Área e deixa o Solo Ardente dele por 6 s × a Duração, com o degenerativo da gema; os solos não somam no bicho.
+- **O Chicote Ardente:** 88% mais com Acertos contra o Incendiado (+20% da qualidade 20), "Não pode Incendiar", e o "+9 de largura" soma 0,9 m ao raio-base (o PoB: AreaOfEffect BASE em unidades, CalcOffence.lua:360): 3 m → 3,9 m. O da Combustão também.
+- **Escolhas sem fonte, para o dono conferir:**
+  1. o Ceifar ganha a carga pelos acertados do primeiro passe do uso, e o seu uso só (o do totem e o da armadilha/mina, não);
+  2. o "aguardando" da Voltáxica conta as OUTRAS suas que esperam quando ela solta;
+  3. a Vida gasta da Febre que passa de 205 fica para o próximo;
+  4. a explosão adiada do Golpe Infernal rola a precisão, como o golpe (o PoB calcula a parte da explosão como acerto de ataque);
+  5. os esporos da Chuva Tóxica são as flechas do uso, todos em quem está na área (o PoB: o lento pelos esporos sobrepostos);
+  6. o Solo Sagrado da Chama Purificadora tem o raio do acerto inicial + o "+X metros";
+  7. a Ruína não expira (o PoB não dá duração) e só zera na sétima ou na caçada nova.
+- **Ficam para o dono (sem fonte):**
+  1. **a Explosão de Lâminas do Descarrego:** quantas explosões. O PoB faz N explosões com N lâminas (`dpsBaseMultiplier` × o estágio), cada uma com 5% × N mais dano e (100% + 1% por qualidade) × N mais Área; a descrição diz "causa dano em volta de você e detona cada lâmina, causando dano de novo" (1 + N). Sem lâmina, o PoB dá 0;
+  2. **a largura do Vínculo de Mana:** "+6 de largura por cada 25% de Mana Não Reservada". O PoB não publica o comprimento-base dos 4 retângulos (radiusSecondary 23 é a largura?);
+  3. **o raio da explosão do cadáver da Explosão Voltáxica** (10% da Vida como Raio): o PoB e o poedb não publicam; nem o "logo após" ("killed by this damage, or shortly after");
+  4. **o raio do Solo Ardente do Chicote Ardente** (os dois): "cria Solo Ardente sob eles", sem raio no PoB nem no poedb.
+- **O modelo de antes que segue (fora das linhas):** o golpe do Golpe Infernal acerta a área da gema (o jogo a trata como área); no PoB a parte "Melee Hit" é de alvo único (`MeleeSingleTarget`). O debuff carregado vai em todos que o golpe acerta.
+- Teste novo: `game/testes/ativas-b2.test.mjs` (17 casos, os sorteios travados).
+- **Teste que quebra pela regra do PoE (para o aval, sem editar):** `gemas-todas-funcionam-poe.test.mjs:162` (G16). A Febre Corrompedora agora é `funciona`, e o uso dela não causa dano: o dano é o Sangue Corrompido nos acertos de OUTRAS habilidades com o buff ligado. A montagem precisaria usar outra gema depois dela (como a Espiral Venenosa Vaal com as Lâminas Giratórias).
+- Depois: parcial 261 → 247 nas ativas (ataques 73 → 70); 109 → 109 nos suportes.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
