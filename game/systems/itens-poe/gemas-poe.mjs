@@ -1441,6 +1441,13 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
 }
 
 // ---- o STATUS NO JOGO ----
+/**
+ * (revisão do C1) A linha que o jogo FAZ (não é "efeito não simulado"): a mesma regra no status (`avaliarNoJogo`) e no balão (`fichaNoNivel` → `naoFeitas`), para
+ * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
+ */
+function ehLinhaFeita(h, l, q) {
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l));
+}
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
   const motivos = [];
@@ -1522,11 +1529,13 @@ function avaliarNoJogo(h, formato) {
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
   // (lote A3: + as linhas de projétil que não se aplicam — `LINHAS_QUE_NAO_SE_APLICAM`, que vão como nota)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaFeita(h, l, q)) motivos.push(`efeito não simulado: ${l}`);
   // (lote A3b, dono 19/10: o que o mecanismo dos objetos ainda simplifica — `GemasA3b.MOTIVOS_A3B`)
   for (const m of GemasA3b.MOTIVOS_A3B[h.slug] ?? []) motivos.push(m);
   // (revisão do A5: o que a mecânica do lote A5 ainda depende de outro lote — `GemasA5.MOTIVOS_A5`)
   for (const m of GemasA5.MOTIVOS_A5[h.slug] ?? []) motivos.push(m);
+  // (revisão do C1: o que a mecânica do lote C1 ainda não faz — `GemasC1.MOTIVOS_C1`)
+  for (const m of GemasC1.MOTIVOS_C1[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**
@@ -1605,6 +1614,8 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
       ...(h.stats.reserva ? { reserva: true } : {}) },
   };
   delete entry.blocked;
+  // (revisão do PR1) a Flecha Galvânica da Energia é um cone que sai de você: o alcance do uso é o do cone, não o da área no chão do molde
+  if (GemasPR1.temConeGalvanicoDeVoce(g.slug)) entry.range = GemasPR1.CONE_GALVANICO.alcanceDaEnergia;
   return entry;
 }
 
@@ -1688,7 +1699,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l) && !GemasA1b.ehLinhaA1b(slug, l) && !GemasA5.ehLinhaA5(slug, l) && !GemasB1.ehLinhaB1(slug, l) && !GemasPR1.ehLinhaPR1(slug, l) && !GemasC1.ehLinhaC1(slug, l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeLacaio(l) && !ehLinhaFeita({ ...h, slug, nivel: n }, l, q)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

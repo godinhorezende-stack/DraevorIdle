@@ -2,16 +2,16 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 237,
-   "implementada, sem teste próprio": 52,
+   "implementada e testada": 240,
+   "implementada, sem teste próprio": 49,
    "parcial": 261,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 108,
-   "implementada, sem teste próprio": 23,
+   "implementada e testada": 111,
+   "implementada, sem teste próprio": 20,
    "parcial": 73,
    "limitação do modelo idle": 6
   },
@@ -24,14 +24,14 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 22,
+    "implementada e testada": 23,
     "parcial": 23,
-    "implementada, sem teste próprio": 7
+    "implementada, sem teste próprio": 6
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 73,
-    "implementada, sem teste próprio": 27,
+    "implementada e testada": 75,
+    "implementada, sem teste próprio": 25,
     "parcial": 102,
     "limitação do modelo idle": 7
    }
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 327,
+   "ativasCitadas": 330,
    "suportesCitados": 117,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -2417,7 +2417,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "area",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -2430,7 +2430,7 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -3635,7 +3635,7 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],

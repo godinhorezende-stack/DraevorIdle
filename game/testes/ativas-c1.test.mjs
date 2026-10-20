@@ -251,7 +251,8 @@ test('C1 (D1.4): o Castigo do Julgamento Divino — o raio nos 3 inimigos mais p
   const r = usar(e, b);
   assert.ok(r.ok, r.erro);
   assert.equal(acertos(r, b), 1, 'o alvo do golpe só uma vez');
-  assert.equal(atras.filter((m) => acertos(r, m) === 1).length, 3);
+  // (aval do dono, 20/10: o raio causa dano em área — 2,1 m = 1 casa em volta de cada alvo dele; o 4º, colado no alvo do raio em (1, 2), leva o acerto da área, uma vez)
+  assert.equal(atras.filter((m) => acertos(r, m) === 1).length, 4);
 });
 
 // ---------------------------------------------------------------- o Estilhaçar a Terra da Proeminência

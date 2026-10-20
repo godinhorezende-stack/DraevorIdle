@@ -53,8 +53,8 @@ export function buffDaCutiladaVaalDasLinhas(slug, linhas = []) {
 }
 /** Quem o buff da Cutilada Vaal melhora: a Cutilada e as transfiguradas (o PoB: SkillName "Cleave", includeTransfigured). */
 export const melhoradaPelaCutiladaVaal = (slug) => /^Cleave(_of_.+)?$/.test(String(slug ?? ''));
-/** O alvo que dá o buff: Raro ou Único (o chefe conta como Único). */
-export const raroOuUnico = (b) => /raro|unico/.test(b?.raridade ?? b?.raridadePoe ?? '') || !!b?.boss || !!b?.chefe;
+/** O alvo que dá o buff: Raro ou Único (o chefe conta como Único) — o mesmo critério do Sifão (uma definição só, a do `gemas-pr1.mjs`). */
+export { raroOuUnico } from './gemas-pr1.mjs';
 
 // ---------------------------------------------------------------- o Acerto Elemental
 
@@ -129,7 +129,7 @@ const LINHA_ONDA_CENTRAL = /^Onda Central tem \+?([\d.]+) % mais Área de Efeito
 export const ondaCentralDasLinhas = (slug, linhas = [], daQualidade = []) => (slug === 'Shield_Crush_of_the_Chieftain' ? somar([...linhas, ...daQualidade], LINHA_ONDA_CENTRAL) : 0);
 /**
  * (D1.6) O cone com a ONDA CENTRAL: o terço do meio do ângulo (`Areas.abrirForma` × 1/3) esticado até `raioCentral` casas, somado ao cone inteiro (as casas que
- * os dois têm valem uma vez).
+ * os dois têm entram uma vez na forma; quem está nelas leva os dois acertos — `sobreposicaoDaOndaCentral`).
  */
 export function formaComOndaCentral(forma, raioCentral) {
   const r = Areas.raioDaForma(forma);
@@ -137,6 +137,23 @@ export function formaComOndaCentral(forma, raioCentral) {
   const m = new Map();
   for (const c of [...forma, ...centro]) m.set(`${c[0]},${c[1]}`, c);
   return [...m.values()];
+}
+
+/**
+ * (revisão do C1) As casas do mapa em que o cone e a Onda Central se SOBREPÕEM ("Inimigos podem ser acertados por duas das ondas sobrepostas" — o PoB, a parte
+ * "2 Overlapping Waves"), dentro das `casas` do uso: o cone (`cone`, a forma sem a onda) e a Onda Central (o terço do meio esticado até `rc`), na escala da Área de
+ * Efeito que o uso deu à forma unida (o raio das `casas` em volta de `centro` ÷ o da forma unida), giradas para `centro.dir`.
+ */
+export function sobreposicaoDaOndaCentral(cone, rc, casas, centro) {
+  const r = Areas.raioDaForma(cone);
+  const ru = Math.max(r, rc);
+  if (!(r > 0) || !(ru > 0) || !casas?.length) return [];
+  const rFinal = casas.reduce((m, c) => Math.max(m, Math.abs(c.x - centro.x), Math.abs(c.y - centro.y)), 0);
+  const s = rFinal / ru;
+  const doCone = Areas.daForma(Areas.escalarForma(cone, Math.max(1, Math.round(r * s))), centro, centro.dir ?? null);
+  const daOnda = new Set(Areas.daForma(Areas.escalarForma(Areas.abrirForma(cone, 1 / 3), Math.max(1, Math.round(ru * s))), centro, centro.dir ?? null).map((c) => `${c.x},${c.y}`));
+  const nas = new Set(casas.map((c) => `${c.x},${c.y}`));
+  return doCone.filter((c) => daOnda.has(`${c.x},${c.y}`) && nas.has(`${c.x},${c.y}`));
 }
 
 // ---------------------------------------------------------------- o Escudo de Luz
@@ -179,8 +196,21 @@ export function maosDasLinhas(slug, linhas = []) {
 
 // ---------------------------------------------------------------- o status
 
-/** "Este Ataque pode ser Impelido como se não fosse uma Habilidade Vaal": no jogo todo ataque pode ser Impelido pelo Clamor (`hunt.impelidos`). */
+/**
+ * "Este Ataque pode ser Impelido como se não fosse uma Habilidade Vaal" (o Impacto Sísmico Vaal): no PoE as Vaal não são Impelidas — menos esta (`NAO_IMPELIVEL`).
+ */
 const LINHA_IMPELIDO_VAAL = /^Este Ataque pode ser Impelido como se não fosse uma Habilidade Vaal$/i;
+/**
+ * (revisão do C1) As habilidades que NÃO podem ser Impelidas (nem pelo Clamor, nem pela Emboscada): as do PoB com `SkillType.NeverExertable` ou o stat
+ * `skill_cannot_be_exerted` (act_dex.lua / act_str.lua) — as Vaal de ataque corpo a corpo (o Impacto Sísmico Vaal não: a linha dele), a Tormenta de Espadas, a
+ * Evisceração e as outras Retaliações (o Golpe de Escudo Glacial, o Punho Esmagador, o Escudo de Luz). Elas não gastam nem recebem o Impelido
+ * (`Acoes.tagsPoeDaSkill` põe a tag `naoImpelivel`).
+ */
+export const NAO_IMPELIVEL = Object.freeze(new Set([
+  'Vaal_Blade_Flurry', 'Vaal_Cyclone', 'Vaal_Double_Strike', 'Vaal_Flicker_Strike', 'Vaal_Lightning_Strike', 'Vaal_Reave', 'Vaal_Cleave', 'Vaal_Earthquake',
+  'Vaal_Glacial_Hammer', 'Vaal_Molten_Strike', 'Vaal_Smite', 'Vaal_Volcanic_Fissure', 'Swordstorm', 'Eviscerate', 'Glacial_Shield_Swipe', 'Crushing_Fist', 'Shield_of_Light',
+]));
+export const naoImpelivel = (slug) => NAO_IMPELIVEL.has(String(slug ?? ''));
 
 /** As linhas que este lote faz com leitor próprio (saem de "efeito não simulado"). */
 export function ehLinhaC1(slug, l) {
@@ -200,3 +230,10 @@ export function ehLinhaC1(slug, l) {
   if (slug === 'Ice_Crash_of_Cadence' && (LINHA_RAIO_PRINCIPAL.test(t) || LINHA_RAIO_SECUNDARIA.test(t))) return true;
   return false;
 }
+
+/**
+ * (revisão do C1) O que a mecânica do lote ainda não faz — sem linha (o status não a vê) e sem fonte para o número. Uma gema sem nada aqui segue o PoE pelas linhas.
+ */
+export const MOTIVOS_C1 = Object.freeze({
+  // (dono 20/10: a Evisceração — quem está a 1 casa à frente leva as duas ondas; `Acoes`, `duasOndas`)
+});

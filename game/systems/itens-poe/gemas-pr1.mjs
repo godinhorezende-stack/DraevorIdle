@@ -92,7 +92,20 @@ export function rajadasDoEscudo(n, { porVez = TRARTHUS.porVez, intervaloMs = TRA
 const LINHA_DA_GALVANICA = /^Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade$/i;
 /** A gema tem o cone da Galvânica (o raio padrão do PoB, 2,8 m: radius 28). */
 export const temConeGalvanico = (slug) => slug === 'Galvanic_Arrow';
-export const CONE_GALVANICO = Object.freeze({ raioPadraoM: 2.8 });
+export const CONE_GALVANICO = Object.freeze({ raioPadraoM: 2.8, alcanceDaEnergia: 3 });
+/**
+ * (revisão do PR1) a Flecha Galvânica da ENERGIA: "Cria uma explosão de raio do seu Arco, sem disparar flechas, mas causando dano aos inimigos num cone à sua
+ * frente" (o PoB, GalvanicArrowAltX — act_dex.lua: radius 28 + 8 + o do nível + 0,2 por qualidade): o cone sai de você na direção do alvo (a forma do da
+ * Galvânica), no raio da gema × √ da Área de Efeito — ela não tem projétil, então a Velocidade de Projéteis não entra (o "additive_arrow_speed…" é só da base).
+ * O alcance do uso: as casas do cone (3, como a base), não o da área no chão do molde.
+ */
+export const temConeGalvanicoDeVoce = (slug) => slug === 'Galvanic_Arrow_of_Energy';
+/**
+ * (revisão do PR1) a Flecha Galvânica do SURTO: as 3 flechas que, se o voo para ao colidir com um alvo, "criam uma explosão de raio, causando dano aos inimigos
+ * num cone atrás do alvo" (o PoB, GalvanicArrowAltY — parts Arrow/Cone, radius 28): em cada impacto de flecha, o cone sai do acertado na direção do tiro, como o
+ * do Tiro Gélido (o acertado não leva o do próprio cone — a mesma exceção do Tiro Gélido).
+ */
+export const temConeAtrasDoAlvo = (slug) => slug === 'Galvanic_Arrow_of_Surging';
 /**
  * O raio (m) do cone: o da gema × √ do fator da Área do PoE — (1 + a Área aumentada + a Velocidade de Projéteis aumentada) × (1 + o "mais"), como
  * `ModsPoe.fatorDaArea`.

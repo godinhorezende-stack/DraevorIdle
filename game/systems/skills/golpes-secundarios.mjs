@@ -401,6 +401,9 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     encadear: efeito.encadear || 0,
     volta: efeito.retornar > 0 || (efeito.retornarChance > 0 && rng() * 100 < efeito.retornarChance),
     dividir: efeito.divisao || 0, rebatidas: efeito.rebatidas || 0, soNaVolta: !!efeito.soNaVolta, ordem: ordens++,
+    // (lote PR1, revisão: o escudo do Arremesso de Escudo Espectral solta as estilhas a cada colisão com um inimigo — em TODO voo dele: o principal, o das
+    // direções aleatórias e o ricochete no terreno)
+    estilhas: !!efeito.estilhas,
   });
   /** (lote A3) Onde a reta de `de` a `para` bate no TERRENO (a casa antes da que não se anda), ou null. */
   const terrenoNaReta = (de, para) => {
@@ -460,7 +463,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   // O principal: o golpe direto no alvo (já dado) e o que vem dele.
   emitir(alvo, 'direto', 0);
   // (lote PR1: o escudo do Arremesso de Escudo Espectral solta as estilhas a cada colisão)
-  voar({ ...base(), de: origem, pct: 100, estilhas: !!efeito.estilhas }, alvo, 'direto', true);
+  voar({ ...base(), de: origem, pct: 100 }, alvo, 'direto', true);
   // Outros golpes principais da skill (a cadeia da própria magia): impactos.
   for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);
   const fora = new Set([alvo, ...atingidos]);

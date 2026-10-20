@@ -1648,9 +1648,12 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     // (lote A1b, dono 19/10: D-b, e a revisão do dono) o ataque que gasta a Emboscada é Impelido POR ELA (`Acoes.emboscadaNoGolpe` marca `golpe`): leva a
     // `impelido` genérica (os "Ataques Impelidos …" da árvore, das peças e dos suportes valem) e a `impelidoEmboscada`, mas NÃO a `impelidoClamor` — "Ataques
     // Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades": os bônus do buff do Clamor não valem nele
-    const daEmboscada = !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
+    // (revisão do C1: a habilidade que não pode ser Impelida — `naoImpelivel`, NeverExertable no PoB: as Vaal de ataque, a Tormenta de Espadas, a Evisceração… — não é
+    // Impelida nem pela Emboscada nem pelo Clamor)
+    const naoImpelivel = t.has('naoImpelivel');
+    const daEmboscada = !naoImpelivel && !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
     if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
-    else if (!semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) { t.add('impelido'); t.add('impelidoClamor'); }
+    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) { t.add('impelido'); t.add('impelidoClamor'); }
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');
