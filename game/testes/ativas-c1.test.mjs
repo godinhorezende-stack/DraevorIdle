@@ -113,7 +113,8 @@ test('C1: a Cutilada da Fúria — +0,1 m de raio por 5 de Fúria', { skip: SEM 
 
 test('C1: a Cutilada Vaal — o buff de 20 s no golpe final num Raro; a Cutilada com ele: Golpe de Misericórdia, 60% mais Área e 60% mais Dano contra Vida Baixa', { skip: SEM }, async () => {
   assert.deepEqual(G.c1DaGema('Vaal_Cleave', 20, 0).buffDaVaal, { areaMaisPct: 60, maisVidaBaixaPct: 60, culling: true });
-  assert.equal(G.areaNoNivel('Vaal_Cleave', 20, 0).raioM, G.areaNoNivel('Cleave', 20, 0).raioM, 'o raio da Cutilada (radius 20 + o do nível)');
+  // (dono 20/10 — aval: com a tabela do poedb do B1, a Cutilada Vaal ganha +2,4 m no nível 20: 2 m de base + 2,4 = 4,4 m)
+  assert.ok(Math.abs(G.areaNoNivel('Vaal_Cleave', 20, 0).raioM - 4.4) < 1e-9, 'o raio da Cutilada Vaal: 2 m de base + 2,4 m do nível 20');
   assert.deepEqual(['Cleave', 'Cleave_of_Rage', 'Vaal_Cleave'].map(C1.melhoradaPelaCutiladaVaal), [true, true, false]);
   // o golpe final da Vaal num Raro dá o buff; num Normal, não
   const v = await montar('Vaal_Cleave');
