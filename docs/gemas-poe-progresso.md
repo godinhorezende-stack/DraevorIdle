@@ -378,6 +378,35 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - **Teste que quebra pelo progresso, para o aval:** `itens-poe-gemas.test.mjs:36` exige `st.parcial > 300`; agora são 298 (287 parciais + 11 de limitação do idle).
 - Depois: parcial 305 → 287 nas ativas; 111 → 111 nos suportes.
 
+### C1 — corpo a corpo, impacto e canalização: a forma do golpe, o raio condicional e os buffs da gema (20/10, as recomendações do plano aceitas)
+
+- **O plano tinha 16 gemas; nenhuma saiu de parcial antes, nos lotes A5–B1.** Saíram 14 (`gemas-c1.mjs`, `acoes.mjs`). A Pancada de Gelo da Cadência fica só com o "Físico como Gelo Extra" (família 5, o A6). A Ruptura de Trarthus fica para o dono.
+- **As Cutiladas:**
+  - a Cutilada e a Vaal (D1.1): +0,1 m de raio por inimigo a até 2 casas de você, na qualidade 20, até 10 inimigos (o PoB: 0,05 por ponto, `limit 10`);
+  - a da Fúria: +0,1 m por 5 de Fúria (o leitor da Corrente com Gancho);
+  - a Vaal: o golpe final num Raro ou Único dá o buff de 20 s × a Duração (`hunt.poeCutiladaVaal`). Com ele, a Cutilada e as transfiguradas ganham o Golpe de Misericórdia, 60% mais Área e 60% mais Dano com Acertos e Afecções contra quem está em Vida Baixa (os `af:` do uso, como os suportes). O raio-base da Vaal é o da Cutilada, 2 m (radius 20 do PoB). Nem o PoB nem o poedb publicam o dela.
+- **O Acerto Elemental:** o elemento sai no começo do uso, sem repetir o anterior (a descrição). Fica guardado até o uso sair e vai para o golpe (`partesDoAtaque` com `escolhido`). Contra o alvo com a afecção desse elemento, o raio é 80% maior: Fogo é o Incêndio, Gelo é o Resfriamento ou o Congelamento, Raio é a Eletrização. O número é o do texto do 3.29; o PoB guarda o nome antigo do stat ("+100%").
+- **A Corrente de Anzol para Pesca** (D1.2): o alvo e os mais perto de você, até 7, no alcance de 6 m da Corrente com Gancho, +40% na qualidade 20 (8,4 m).
+- **As linhas lidas no uso:**
+  - as Lâminas Velozes Vaal: 100% de chance de Cegar e o Efeito da Cegueira +68% (`chance_cegar`, `efeito_cegueira`);
+  - o Impacto Sísmico Vaal: "pode ser Impelido como se não fosse Vaal". No jogo, todo ataque é Impelido pelo Clamor, e a gema segue a regra.
+- **O Frenesi e o da Agressividade:** o primeiro acerto do uso dá 1 Frenesi (a descrição das duas gemas). No máximo de Frenesi, o da Agressividade consome todas e dá 1 s de Agressividade por carga (o PoB: `frenzy_consume_charges_to_onslaught_for_ms_per_charge` 1000).
+- **A Tormenta de Espadas:** 8 acertos em cada inimigo da área (`swordstorm_num_hits` 8), cada um com as duas armas somadas (`doubleHitsWhenDualWielding`, pela frase da descrição).
+- **A Evisceração:** a onda retangular de 10 m (5 casas) à frente. A largura é a "Circunferência base" (5 m no nível 20). A fração da meia largura é a chance de uma casa a mais de cada lado, como na Chuva de Lâminas. A Área de Efeito do uso estica a forma depois.
+- **O Esmagar Escudos do Chefe Guerreiro** (D1.6): o cone usa o raio de 2,9 m do PoB (radius 29). A Onda Central é o terço do meio do ângulo, no raio × √(1 + 88% do nível + 40% da qualidade 20).
+- **O Escudo de Luz** (D1.3): do primeiro inimigo acertado (o mais perto de você), saem as ondas dos aliados a até 4 m (2 casas) dele. Contam a party e os seus lacaios, os mais perto primeiro, até 4. Cada onda é a mesma do uso e sai do aliado na direção do alvo.
+- **O Castigo do Julgamento Divino** (D1.4): o raio cai nos 3 inimigos mais perto de você, a até 5 m (+2 m na qualidade 20), que o golpe ainda não pegou. É um acerto cada, com 38% mais dano. O "mais Dano em Área" vale só no raio: no PoB, o golpe corpo a corpo não tem área.
+- **O Estilhaçar a Terra da Proeminência:** cria 1 fissura e no máximo 5 estacas. A explosão tem 100% mais dano (+1% por ponto de qualidade) no lugar do −30% do comum. O raio da explosão é × √(1 + 157%), sorteado na criação da estaca: 1 casa vira 1,6 casa.
+- **A Pancada de Gelo da Cadência** (D1.5): a área centrada na casa à sua frente. O raio é de 1,1 m na mão principal e de 3,1 m na secundária, no revezamento das duas armas do golpe básico (`maoDaGemaDeAtaque`). Sem a segunda arma, vale a principal.
+- **Escolhas sem fonte, para o dono conferir:**
+  1. o Castigo exclui os bonecos de treino do raio, como os toques da Ira Divina;
+  2. o raio da Vaal Cutilada é o da Cutilada;
+  3. a Cadência começa pela mão que o revezamento do golpe básico der (o D1.5 pedia a principal; o revezamento é comum a todas as gemas).
+- **Fica para o dono:** a Ruptura de Trarthus ("Onda pode recomeçar até 3 vezes", o "se houver um inimigo no alcance" sem número).
+- Teste novo: `game/testes/ativas-c1.test.mjs` (15 casos, os sorteios travados).
+- **Teste que segue quebrado pelo progresso, para o aval:** `itens-poe-gemas.test.mjs:36` exige `st.parcial > 300`; agora são 284 (273 parciais + 11 de limitação do idle).
+- Depois: parcial 287 → 273 nas ativas; 111 → 111 nos suportes.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.

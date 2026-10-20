@@ -119,6 +119,10 @@ const REGRAS = [
   [/^Mutila ao Acertar$/i, () => ({ chance_mutilar: 100 })],
   [new RegExp(`^${N} ?% de aumento do Efeito de Mutilação$`, 'i'), (m) => ({ efeito_mutilacao: num(m[1]) })],
   [new RegExp(`^${N} ?% mais Velocidade de Conjuração$`, 'i'), (m) => ({ cast_speed_mais: num(m[1]) })],
+  // (lote C1, dono 20/10) a Cegueira das Lâminas Velozes Vaal: "100% de chance de Cegar inimigos ao acertá-los" (o PoB: global_chance_to_blind_on_hit_%) e "Efeito da
+  // Cegueira aumentado em 68%" (blind_effect_+%) — a Cegueira do PoE no acerto (`ModsPoe.aoAcertar`: `chance_cegar`, `efeito_cegueira`)
+  [new RegExp(`^${N} ?% de chance de Cegar inimigos ao acertá-los$`, 'i'), (m) => ({ chance_cegar: num(m[1]) })],
+  [new RegExp(`^Efeito da Cegueira aumentado em ${N} ?%$`, 'i'), (m) => ({ efeito_cegueira: num(m[1]) })],
 ];
 
 /**
