@@ -593,7 +593,9 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
 
   /** Os mobs da área em edição (uma cópia; "Salvar mobs da área" grava e vale na próxima entrada). */
   E.mobsEditando = {};
-  const CAMPOS_DO_MOB = [['nivel', 'Nível', 1], ['vida', 'Vida', 1], ['escudoDeEnergia', 'Escudo de Energia', 1], ['dano', 'Golpe', 1], ['tempoAtaque', 'Tempo de ataque (s)', 0.01], ['armadura', 'Armadura', 1], ['evasao', 'Evasão', 1], ['experiencia', 'Experiência', 1]];
+  // (lote A5d) a Evasão fica só de leitura: o combate usa a tabela do PoE × o multiplicador do tipo (`mobs/atributos.mjs`); o número do poedb fica de
+  // referência (o `limparMob` o preserva — o importador das defesas o usa para escolher a variante dos únicos).
+  const CAMPOS_DO_MOB = [['nivel', 'Nível', 1], ['vida', 'Vida', 1], ['escudoDeEnergia', 'Escudo de Energia', 1], ['dano', 'Golpe', 1], ['tempoAtaque', 'Tempo de ataque (s)', 0.01], ['armadura', 'Armadura', 1], ['evasao', 'Evasão (poedb, referência — o combate usa a tabela do PoE × multiplicador)', 1, true], ['experiencia', 'Experiência', 1]];
   const RES = [['fire', 'Res. fogo'], ['ice', 'Res. gelo'], ['energy', 'Res. raio'], ['chaos', 'Res. caos']];
   const limparMob = (m) => ({ slug: m.slug, nome: m.nome, unico: !!m.unico, nivel: m.nivel, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, experiencia: m.experiencia, resistencias: { ...(m.resistencias ?? {}) }, ...(m.habilidades?.length ? { habilidades: m.habilidades } : {}) });
 
@@ -649,7 +651,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
           el('summary', {}, el('b', {}, m.nome), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null, f.conclusao?.monstro === m.slug ? el('span', { class: 'selo usos', style: 'margin-left:6px' }, 'alvo da fase') : null,
             el('span', { class: 'dica' }, ` nv ${m.nivel} · ${Number(m.vida + (m.escudoDeEnergia ?? 0)).toLocaleString('pt-BR')} vida · golpe ${m.dano} a cada ${Number(m.tempoAtaque).toFixed(2)} s`)),
           el('div', { class: 'grade atos-mob-campos' },
-            CAMPOS_DO_MOB.map(([k, rot, passo]) => campo(rot, m[k], (v) => { m[k] = Number(v); marcarCampo(); }, { type: 'number', step: passo, min: 0 })),
+            CAMPOS_DO_MOB.map(([k, rot, passo, soLeitura]) => campo(rot, m[k], (v) => { m[k] = Number(v); marcarCampo(); }, { type: 'number', step: passo, min: 0, ...(soLeitura ? { disabled: true, readOnly: true } : {}) })),
             RES.map(([k, rot]) => campo(rot, m.resistencias?.[k] ?? 0, (v) => { m.resistencias = { ...(m.resistencias ?? {}), [k]: Number(v) }; marcarCampo(); }, { type: 'number', step: 1, min: -100, max: 90 }))),
           E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { type: 'button', class: 'perigo', onclick: () => { ed.lista.splice(i, 1); marcar(); } }, 'Tirar da área')),
           m.unico && original ? [el('b', {}, 'Drops deste único'), editorDeDrops(m.slug, original.drops ?? [], { somenteLeitura: E.somenteLeitura, aoSalvar: (drops) => { original.drops = drops; } })] : null);

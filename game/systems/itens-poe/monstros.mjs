@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 import { CONFIG as ATRIBUTOS_DO_MOB } from '../mobs/atributos.mjs';
+import { usarBestiario } from '../personagem/atributos.mjs';
 import { registrarPoderes } from '../poderes.mjs';
 import * as Habilidades from './habilidades.mjs';
 
@@ -133,6 +134,8 @@ export const chaveDe = (m) => `poe-${slug(m.slug)}-${m.nivel}`;
  * Devolve a chave.
  */
 export function registrar(m, desenho, { forcar = false } = {}) {
+  // O nível do monstro do PoE (`personagem/atributos.levelDoBicho`) lê este bestiário (lote A5d); aqui, e não no topo, por causa do ciclo de imports.
+  usarBestiario(BESTIARY);
   const key = chaveDe(m);
   if (BESTIARY[key] && !forcar) return key;
   const escolhido = desenhoEscolhido(AJUSTES.desenhos[m.slug]);
@@ -155,7 +158,8 @@ export function registrar(m, desenho, { forcar = false } = {}) {
     elements: { ...m.resistencias },
     // A velocidade de ataque do bicho: o intervalo base do Draevor ÷ o tempo de ataque do PoE (criarMonstro copia).
     velocidadeDeAtaque: Math.round((intervaloBase / Math.max(100, m.tempoAtaque * 1000)) * 1000) / 1000,
-    poe: { nivel: m.nivel, dano: m.dano, tempoAtaque: m.tempoAtaque, evasao: m.evasao ?? 0, armadura: m.armadura ?? 0, unico: !!m.unico },
+    // (lote A5d) `slug`: o do poedb — a evasão e a precisão saem da tabela do PoE × o multiplicador do tipo dele (`mobs/atributos.mjs`).
+    poe: { slug: m.slug, nivel: m.nivel, dano: m.dano, tempoAtaque: m.tempoAtaque, evasao: m.evasao ?? 0, armadura: m.armadura ?? 0, unico: !!m.unico },
     ...(m.unico ? { boss: false } : {}),
   };
   // O golpe corpo a corpo e — nos chefes de área com as habilidades do poedb — as magias e áreas deles (`habilidades.mjs`).

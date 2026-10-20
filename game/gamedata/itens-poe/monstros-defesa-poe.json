@@ -1,0 +1,3360 @@
+{
+ "_nota": "Lote A5d (dono, 20/10): a evasão e a precisão dos monstros do PoE = round(tabela[nível] × multiplicador do tipo), com os aumentos do monstro por cima. Tabelas: data.monsterEvasionTable / data.monsterAccuracyTable do Misc.lua do PoB (índice 0 = nível 1). Multiplicadores: o \"Monster Type Multiplier\" do tooltip do poedb. O geral (o dos MAPAS e de todo nível sem porNivel): a moda das variantes de nível 68+ (Base Stat = tabela no 68 ou no 83), senão a de todas. porNivel[N]: o da variante cuja Base Stat é a tabela no nível N da campanha, quando difere do geral (o motor usa o do poe.nivel). A armadura só fica registrada (não vale). Sem página: evasão × 1, precisão × a mediana (`padrao`). Gerado por tools/importar-defesa-monstros-poe.mjs.",
+ "fonte": {
+  "tabelas": "Path of Building — src/Data/Misc.lua",
+  "multiplicadores": "poedb.tw/pt/<slug> (tooltips de Precisão, Evasão e Armadura)"
+ },
+ "tabelas": {
+  "evasao": [
+   67,
+   86,
+   104,
+   124,
+   144,
+   166,
+   188,
+   211,
+   234,
+   259,
+   285,
+   311,
+   339,
+   368,
+   397,
+   428,
+   460,
+   493,
+   527,
+   563,
+   600,
+   638,
+   677,
+   718,
+   760,
+   804,
+   849,
+   896,
+   944,
+   994,
+   1046,
+   1100,
+   1155,
+   1212,
+   1271,
+   1332,
+   1395,
+   1460,
+   1528,
+   1597,
+   1669,
+   1743,
+   1819,
+   1898,
+   1979,
+   2063,
+   2150,
+   2239,
+   2331,
+   2426,
+   2524,
+   2626,
+   2730,
+   2837,
+   2948,
+   3063,
+   3180,
+   3302,
+   3427,
+   3556,
+   3689,
+   3826,
+   3967,
+   4112,
+   4262,
+   4416,
+   4575,
+   4739,
+   4907,
+   5081,
+   5260,
+   5444,
+   5633,
+   5828,
+   6029,
+   6235,
+   6448,
+   6667,
+   6892,
+   7124,
+   7362,
+   7608,
+   7860,
+   8120,
+   8388,
+   8663,
+   8946,
+   9237,
+   9536,
+   9844,
+   10160,
+   10486,
+   10821,
+   11165,
+   11519,
+   11883,
+   12258,
+   12643,
+   13038,
+   13445
+  ],
+  "precisao": [
+   14,
+   15,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   23,
+   24,
+   25,
+   26,
+   28,
+   29,
+   31,
+   32,
+   34,
+   35,
+   37,
+   39,
+   41,
+   43,
+   45,
+   47,
+   49,
+   52,
+   54,
+   57,
+   59,
+   62,
+   65,
+   68,
+   71,
+   74,
+   77,
+   81,
+   84,
+   88,
+   92,
+   96,
+   100,
+   105,
+   109,
+   114,
+   119,
+   124,
+   129,
+   135,
+   140,
+   146,
+   152,
+   159,
+   165,
+   172,
+   179,
+   187,
+   195,
+   203,
+   211,
+   220,
+   229,
+   238,
+   247,
+   257,
+   268,
+   279,
+   290,
+   301,
+   314,
+   326,
+   339,
+   352,
+   366,
+   381,
+   396,
+   412,
+   428,
+   444,
+   462,
+   480,
+   499,
+   518,
+   538,
+   559,
+   580,
+   603,
+   626,
+   650,
+   675,
+   701,
+   728,
+   755,
+   784,
+   814,
+   845,
+   877,
+   910,
+   945,
+   980
+  ]
+ },
+ "padrao": {
+  "evasao": 1,
+  "precisao": 2
+ },
+ "monstros": {
+  "Abberath,_the_Cloven_One": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Acid_Slitherer": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Adolescent_Rhex": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Aggravated_Wound": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Alira_Darktongue": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Aliras_Blood_Guard": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Aliras_Martyr": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Alpine_Devil": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "Alpine_Shaman": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Amarissa,_Daughter_of_Merveil": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Ambrosia,_Daughter_of_Merveil": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Ancient_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Ancient_Bonestalker": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Ancient_Construct": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Ancient_Sentry_Apparatus": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Animated_Reef": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 2
+  },
+  "Arakaali,_Spinner_of_Shadows": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Arakaalis_Daughter": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Archbishop_Geofri_the_Abashed": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Archer_Statue": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Arctic_Wolf": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Arranged_Anatomy": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Ash_Harvester": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Ash_Prophet": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Ashen_Buccaneer": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Assault_Ribbon": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Aurate_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Aurate_Warrior": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Auric_Lion": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.5
+  },
+  "Avalanche_Rider": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Avarius,_Reassembled": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Awoken_Giant": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Banner_of_Action": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Banner_of_Knowledge": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Banner_of_Passion": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Barkhul": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Barrow_Ape": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Bear_Acolyte": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Bearded_Devil": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "Bearded_Shaman": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Black_Death": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Black_Death,_Pain_Unending": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Black_Scorpion": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Blackguard_Arcmage": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Blackguard_Elite": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Blackguard_Mage": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Blackguard_Scout": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Blackguard_Soldier": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Blackguard_Stalker": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Blast_Rain_Trap": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Bleached_Horror": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Blessed_Sister": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Blightblade": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Blood_Ape": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Blood_Chieftain": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Blood_Vortex": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Blood_Worm": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Bloodsoaked_Fallen": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Bloodsoaked_Vanguard": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 2
+  },
+  "Bloodstained_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Bloodstained_Warrior": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Boar_Acolyte": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1.75
+  },
+  "Boiling_Ambusher": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Bone_Cruncher": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Bone_Husk": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1.25
+  },
+  "Bone_Rhoa": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Bone_Stalker": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Bonewarped_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Bonewarped_Warrior": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Boulderback": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Bramble_Cobra": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Bravalo": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Brine_Vassal": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Brinecrack": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Bringer_of_Souls": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Brittle_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Brittle_Bandit": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Brittle_Born-again": {
+   "precisao": 2,
+   "evasao": 1,
+   "porNivel": {
+    "51": {
+     "evasao": 1.1
+    }
+   },
+   "armadura": 1.25
+  },
+  "Brittle_Cleric": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Brittle_Corsair": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Brittle_Farmer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Brittle_Longshoreman": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Brittle_Lookout": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Brittle_Poacher": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Brittle_Shard": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Brittle_Thief": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Brood_Princess": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Broodling": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Brutus,_Lord_Incarcerator": {
+   "precisao": 2.3,
+   "evasao": 1.2,
+   "armadura": 1.5
+  },
+  "Bundle_of_Woe": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Burned_Miscreation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Burning_Bowman": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Burrower": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Calaf,_Headstaver": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1.75
+  },
+  "Caliga,_Imperatrix": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Callow_Thug": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Cannibal": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Cannibal_Fire-eater": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Captain_Arteri": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Captain_Aurelianus": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Captain_Fairgraves": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Carnage_Ape": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Carnage_Chieftain": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Carrion_Burrower": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Carrion_Minion": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Carrion_Queen": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Carrion_Swarmer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Carrion_Wasp": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Cato,_Defiler_of_Light": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Cato,_Scholar_of_Light": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Cave_Beast": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Cave_Crustacean": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Cave_Skitterer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Cavern_Drifter": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Cavern_Strider": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Cell_Crawler": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Chaos_Guardian": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Chatters": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Chimeric_Croaker": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Chromatic_Gargoyle": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Chrome-infused_Chimeral": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Chrome-infused_Croaker": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Chrome-infused_Goliath": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1.25
+  },
+  "Chrome-touched_Chimeral": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Chrome-touched_Croaker": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Chrome-touched_Goliath": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1.25
+  },
+  "Chrometouched_Gargoyle": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Clearwater_Strider": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Coconut_Crab": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Colossal_Bonestalker": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Colossus_Crusher": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "Compulsor_Octavia_Sparkfist": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Consuming_Parasite": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Corrupted_Arach": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Corrupted_Extractor": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Corrupted_Spitter": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Crawler": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Crazed_Driver": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1.25
+  },
+  "Crimson_Scholar": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Crow_Keeper": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Crustacean_Sniper": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Crypt_Weaver": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Cursed_Mariner": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Cursed_Spawn": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Daresso,_King_of_Swords": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.75
+  },
+  "Dawn,_Harbinger_of_Solaris": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Death_Bishop": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Deep_Crustacean": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Defiled_Extractor": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Defiled_Proclamation": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 2
+  },
+  "Defiler": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Deformed_Slave": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Depraved_Enforcer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.75
+  },
+  "Depraved_Justicar": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Depraved_Slaver": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Deranged_Slaver": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Desecrated_Thrall": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.25
+  },
+  "Desperate_Soul": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Devourer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Devout_Dead": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Diabolist": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Dimachaeri_Cassius": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 2
+  },
+  "Dirt_Scrabbler": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Disbanded_Dead": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Dockhand_Wraith": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Doedre,_Darksoul": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Doedre_Darktongue": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Doedre_the_Vile": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Doedres_Ichor": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Doedres_Suffering": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Doedres_Torment": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Dominus,_High_Templar": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1.25
+  },
+  "Draconarius_Wilhelm_Flamebrand": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Dread_Primate": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Dreadwheel": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Drenched_Miscreation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Drifting_Eye": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Dripping_Dead": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Droolmaw": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Drowned": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Dusk,_Harbinger_of_Lunaris": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.75
+  },
+  "Dusk_Horror": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Effigy_of_Fear": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Enraptured_Arachnid": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Enraptured_Beast": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Enraptured_Crab": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Enslaved_Hellion": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Enthralled_Enforcer": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1.75
+  },
+  "Escaped_Revenant": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Escaped_Rhex": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1.5
+  },
+  "Experimented_Dead": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Eye_Hatchery": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Eyepecker": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Fathom_Screamer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Fencer_Statue": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Feral_Chimeral": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Feral_Fowl": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Fetid_Maw": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Fetid_Shambler": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Fevered_Clot": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Fidelitas,_Loyalty_Undying": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1.25
+  },
+  "Fidelitas,_the_Mourning": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Filth_Maw": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Fire_Fury": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Fire_Trap": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Flame_Hellion": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Flame_Mother": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Flame_Priest": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Flame_Salvager": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Flame_Sentinel": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Fleetfreak": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Flesh_Sculptor": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "porNivel": {
+    "30": {
+     "evasao": 1
+    }
+   },
+   "armadura": 1.5
+  },
+  "Fleshrend,_Grand_Inquisitor": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Foreman": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Forest_Beast": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Forgotten_Warrior": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Freezing_Wolf": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Frightened_Citizen": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Frost_Preacher": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Frost_Priest": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Frost_Sentinel": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Frozen_Titan": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Fury_Hound": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Galvanic_Ribbon": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Garukhan,_Queen_of_the_Winds": {
+   "precisao": 2,
+   "evasao": 2,
+   "armadura": 1
+  },
+  "Gemling_Captain": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Gemling_Legionnaire": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "General_Adus": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "General_Gravicius": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Ghoul": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Giant_Gladiator_Statue": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Glade_Mamba": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Gleaming_Saint": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Gluttonous_Gull": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Gneiss": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Goatman": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "Goatman_Fire-raiser": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Goatman_Shaman": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Goatman_Stomper": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "Gravel_Eater": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Grazing_Taurus": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Greust,_Lord_of_the_Forest": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Gruthkul,_Mother_of_Despair": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "Guard_Captain": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Gut_Flayer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Gut_Spiker": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Hailrake": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Hairy_Bonecruncher": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Hammerstorm": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Handmaiden": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1.25
+  },
+  "Hatchling": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "porNivel": {
+    "18": {
+     "evasao": 1
+    }
+   },
+   "armadura": 1
+  },
+  "Hatebeat": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Heartless_Deserter": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Hector_Titucius,_Eternal_Servant": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 2
+  },
+  "Heretical_Adjudicator": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Heretical_Guardian": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Heretical_Ward": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "High_Templar_Avarius": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Hill_Devil": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "Hill_Fragment": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 2
+  },
+  "Hill_Remnant": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 2
+  },
+  "Hill_Shard": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 2
+  },
+  "Hillock": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Hollowskull,_the_Willing_Host": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Host_Adder": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Host_Chieftain": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Host_Cobra": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Hulking_Titan": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Hybrid_Arachnid": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Icy_Manifestation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Idolised_Saint": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Imperator_Stantinus_Bitterblade_": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Impure_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 2
+  },
+  "Indoctrinated_Slave": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Infernal_Sentinel": {
+   "precisao": 2,
+   "evasao": 1,
+   "porNivel": {
+    "59": {
+     "evasao": 1.1
+    },
+    "60": {
+     "evasao": 1.1
+    }
+   },
+   "armadura": 1
+  },
+  "Infested_Ape": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Infested_Crab": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Infested_Crawler": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Infested_Crustacean": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Infested_Maw": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Infested_Rhoa": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Infested_Serpent": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Infested_Skitterer": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Infested_Tunnelfiend": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Infested_Ursa": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Infested_Vulture": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Ink_Spinner": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Inua_Totem": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Invading_Crustacean": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Ironpoint_the_Forsaken": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Justicar_Casticus": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Kadavrus_the_Defiler": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Karui_Rebel": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Kelp_Crab": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Kiln_Mother": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "King_Kaom": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Kitava,_the_Insatiable": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Kitava_Zealot": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1.25
+  },
+  "Kitavas_Herald": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1.5
+  },
+  "Knitted_Horror": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Kole": {
+   "precisao": 2.3,
+   "evasao": 1.2,
+   "armadura": 1.5
+  },
+  "Kraityn,_Scarbearer": {
+   "precisao": 2.2,
+   "evasao": 1.5,
+   "armadura": 1.25
+  },
+  "Kraityns_Aspirant": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Kraityns_Scout": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.25
+  },
+  "Kraityns_Thrall": {
+   "precisao": 2,
+   "evasao": 1,
+   "porNivel": {
+    "16": {
+     "evasao": 1.2
+    }
+   },
+   "armadura": 1
+  },
+  "Kuduku,_the_False_God": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Labourer_Wraith": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Leaping_Spider": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Lingering_Aberration": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Living_Fury": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Living_Memorial": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Lowlands_Hopper": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Lunar_Devotee": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Lunar_Miscreation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Lunar_Scout": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Lunaris,_Eternal_Moon": {
+   "precisao": 2,
+   "evasao": 2,
+   "armadura": 1
+  },
+  "Lunaris_Champion": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Lunaris_Concubine": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Lunaris_Elite": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Lunaris_Zealot": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Lunarsworn_Archmage": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Lunarsworn_Wintermage": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Lurking_Venom": {
+   "precisao": 2,
+   "evasao": 1,
+   "porNivel": {
+    "18": {
+     "evasao": 1.5
+    }
+   },
+   "armadura": 1
+  },
+  "Maelström": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Malachai,_The_Nightmare": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Maligaro,_The_Broken": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Maligaro,_The_Inquisitor": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Maligaro,_the_Artist": {
+   "precisao": 2,
+   "evasao": 1.35,
+   "armadura": 1
+  },
+  "Maligaros_Cruelty": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Maligaros_Inspiration": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Maligaros_Muse": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Maligaros_Passion": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Marceus_the_Defaced": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Martial_Statue": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Maternal_Rhex": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Maul_Statue": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Mephitic_Maiden": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Merciless_Killer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.25
+  },
+  "Merveil,_the_Siren": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Mevion": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.5
+  },
+  "Molten_Lion": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.5
+  },
+  "Moontouched_Miscreation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Moontouched_Zealot": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Mortality_Experimenter": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Mountain_Fragment": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Mountain_Hellion": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Mountain_Hellion_Alpha": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Mountain_Lynx": {
+   "precisao": 2,
+   "evasao": 2,
+   "armadura": 1
+  },
+  "Murk_Runner": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Mutant_Arach": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Necromancer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Night_Adder": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Night_Horror": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Nightbringer_Lucius": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Nightwane": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 2
+  },
+  "Noble_Dead": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Noisome_Ophidian": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Noxious_Maiden": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Oak,_Skullbreaker": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Oaks_Devoted": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Oaks_Sniper": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.25
+  },
+  "Ondar,_the_Betrayer": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Oozeback_Bloom": {
+   "precisao": 2.4,
+   "evasao": 1.4,
+   "armadura": 1.25
+  },
+  "Oriath_Enforcer": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1.75
+  },
+  "Overgrown_Rat": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Overseer_Krow": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1.25
+  },
+  "Pale_Blackguard": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Pale_Commander": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Paradisae_Venenum": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Parasite": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Perpetus": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Piety": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Piety,_the_Abomination": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Pietys_Miscreation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Pikerivet": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Pit_Butcher": {
+   "precisao": 2,
+   "evasao": 1.6,
+   "armadura": 1.25
+  },
+  "Pitbull_Demon": {
+   "precisao": 2,
+   "evasao": 1.6,
+   "armadura": 1.25
+  },
+  "Plague_Retch": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Plague_Wasp": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Plagued_Arachnid": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Plumed_Chimeral": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Plummeting_Ursa": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Pocked_Behemoth": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Pocked_Giant": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Pocked_Goliath": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Porcupine_Goliath": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1.25
+  },
+  "Predatory_Scorpion": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Primordial_Creation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Purge_Hound": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Quru": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Raihara,_Tukohamas_Loyal": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Rakango": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Ralakeshs_Claw": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Ralakeshs_Horn": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.25
+  },
+  "Ralakeshs_Tusk": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Rattling_Bones": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Ravenous_Parasite": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Reanimator": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Reassembled_Brutus": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Refinery_Construct": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Regulus,_Suns_Herald": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Restless_Labourer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Rhexback_Raider": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.5
+  },
+  "Rhexback_Spearman": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.5
+  },
+  "Rhoa_Mare": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Rhys_of_Abram": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Rime_Sentinel": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Riptide": {
+   "precisao": 2,
+   "evasao": 1.45,
+   "porNivel": {
+    "45": {
+     "evasao": 1
+    }
+   },
+   "armadura": 1
+  },
+  "Risen_Gladiator": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Risen_Jaeger": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Risen_Saint": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Rock_Spitter": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Rooster_Demon": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Rooster_Fiend": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Rotten_Gladiator": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Rotting_Damned": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Rotting_Vulture": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Rubble_Golem": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Rudiarius_Felix": {
+   "precisao": 2,
+   "evasao": 2,
+   "armadura": 1.5
+  },
+  "Ruined_Titan": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Ruins_Hellion": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Rumbling_Mass": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Ryslatha,_the_Puppet_Mistress": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Sand_Leaper": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Sand_Scorpion": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Sand_Serpent": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Sand_Spitter": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Sand_Strider": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Sandworn_Slaves": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Sandy_Guardian": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Sandy_Lookout": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Sanguine_Sister": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Savage_Crab": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "porNivel": {
+    "45": {
+     "evasao": 1
+    }
+   },
+   "armadura": 1
+  },
+  "Sawbones": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Scalding_Arachnid": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Scarecrow": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Scavenging_Vulture": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Scrabbling_Menace": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Scum_Crawler": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Seething_Brine": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Seleslatha": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Serpentine_Construct": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Sewer_Drifter": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Sewer_Goliath": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Shadow_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Shadow_Stalker": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Shakari,_Queen_of_the_Sands": {
+   "precisao": 2,
+   "evasao": 2,
+   "armadura": 1.5
+  },
+  "Shambling_Cadaver": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Shavronne,_Unbound": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Shavronne_of_Umbra": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Shavronne_the_Returned": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Shavronnes_Envy": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Shavronnes_Greed": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Shavronnes_Legacy": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Shavronnes_Vision": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Shield_Crab": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Shocked_Miscreation": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Shore_Crab": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Shrieking_Witch": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Sin_Archer": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Sin_Lord": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Singing_Siren": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Sirens_Spawn": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Skeleton_Spriggan": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Slave_Catcher": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Slave_Driver": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1.25
+  },
+  "Slimy_Bloodsucker": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Snow_Wolf": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Solar_Elemental": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Solar_Guard": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Solar_Scout": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Solaris,_Eternal_Sun": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Solaris_Champion": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Solaris_Elite": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Solarsworn_Archmage": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Solarsworn_Infernomage": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Soulless_Watcher": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "armadura": 1
+  },
+  "Soulmourn": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Spectral_Bowman": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Spectral_Corsair": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Spectral_Legionnaire": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Spectral_Officer": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Spectral_Soldier": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Spectral_Swashbuckler": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Spectral_Tactician": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Spider_Crab": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Spindle_Spider": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Spine_Serpent": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Spinecrack": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Stag_Acolyte": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.25
+  },
+  "Stalag_Nightmare": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Steelchaw": {
+   "precisao": 2,
+   "evasao": 1.6,
+   "armadura": 1.25
+  },
+  "Stranglecharm": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Stygian_Ape": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1
+  },
+  "Stygian_Revenant": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Stygian_Silverback": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Sutured_Aberration": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Swarming_Rat": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Swarthy_Mollusc": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Talon_Archer": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Talon_Demon": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Targa,_Beast_Poacher": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Temple_Adjudicator": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Temple_Guardian": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Temple_Justicar": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Temple_Scholar": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Temple_Ward": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Tercel_Rhoa": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "The_Animal_Pack": {
+   "precisao": 2,
+   "evasao": 1.4,
+   "porNivel": {
+    "48": {
+     "evasao": 1.8
+    }
+   },
+   "armadura": 1.75
+  },
+  "The_Basilisk": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "The_Bone_Queen": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "The_Bone_Sculptor": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Burning_Man": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "The_Burning_Menace": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "The_Conqueror_Wurm": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Depraved_Trinity": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Dishonoured_Queen": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Dreadstone": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "The_Dweller_of_the_Deep": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Faun": {
+   "precisao": 2,
+   "evasao": 1.05,
+   "armadura": 1
+  },
+  "The_Great_White_Beast": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Great_White_Bones": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "The_Hundred_Foot_Shadow": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Infernal_Seal": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "The_Matriarch": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Risen_Matriarch": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Rotten_Matriarch": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Shipyard_Terror": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "The_Voltaic_Seal": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "The_Weaver": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "The_White_Death": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Thicket_Hulk": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Thistlesage": {
+   "precisao": 2,
+   "evasao": 1.15,
+   "armadura": 1.25
+  },
+  "Thunder_Keeper": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Thunder_Priest": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Thunder_Whisperer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Tide_Strider": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Timeless_Hunter": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Timeless_Wanderer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Tolman": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Torchoak_Grove": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Treacherous_Deserter": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.25
+  },
+  "Trinian,_Intellectus_Prime": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Triskeriaki": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Truth_Extractor": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Tsoagoth,_The_Brine_King": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1.75
+  },
+  "Tukohama,_Karui_God_of_War": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Tukohamas_Scout": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Tukohamas_Vanguard": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Tukohamas_Warrior": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.25
+  },
+  "Tunneler": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Tunnelfiend": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Tunnelworm": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Twisted_Justicar": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Undead_Vaal_Archer": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1.25
+  },
+  "Undead_Vaal_Bladedancer": {
+   "precisao": 2,
+   "evasao": 1.6,
+   "armadura": 1.25
+  },
+  "Undead_Vaal_Commander": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Undead_Vaal_Guard": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Undying_Archivist": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Undying_Aristocrat": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Undying_Degenerate": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Undying_Dreg": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Undying_Engineer": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Undying_Evangelist": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Undying_Grappler": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Undying_Impaler": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Undying_Inductor": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Undying_Initiate": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Undying_Outcast": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Undying_Patrician": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Undying_Ravager": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Undying_Socialite": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1.5
+  },
+  "Undying_Untouchable": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Undying_Worker": {
+   "precisao": 2,
+   "evasao": 1.3,
+   "armadura": 1
+  },
+  "Ungulath": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Utula,_Stone_and_Steel": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Vaal_Arsonist": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.75
+  },
+  "Vaal_Construct": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Vaal_Fallen": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Vaal_Frost_Guardian": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Vaal_Gargantuan": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Vaal_Oversoul": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1.5
+  },
+  "Vaal_Recluse": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Vaal_Totem": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Vakali_Totem": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Vaulting_Croaker": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Vendigo": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Vengeful_Soul": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Vicious_Hound": {
+   "precisao": 2,
+   "evasao": 1.6,
+   "armadura": 1.25
+  },
+  "Vilenta": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Voidbearer": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Voidscream": {
+   "precisao": 2,
+   "evasao": 1.2,
+   "armadura": 1
+  },
+  "Volcanic_Golem": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Voll,_Emperor_of_Purity": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Volls_Fallen": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Volls_Vanguard": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 2
+  },
+  "Wailing_Widow": {
+   "precisao": 2,
+   "evasao": 1.25,
+   "armadura": 1
+  },
+  "Wandering_Eye": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "War_Hound": {
+   "precisao": 2,
+   "evasao": 1.1,
+   "armadura": 1
+  },
+  "Warped_Regurgitator": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Waste_Lurcher": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Wicker_Man": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 2
+  },
+  "Wide-eyed_Assemblage": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Wild_Rhex": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Withered_Husk": {
+   "precisao": 2,
+   "evasao": 1,
+   "armadura": 1
+  },
+  "Woods_Ursa": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1
+  },
+  "Yugul,_Reflection_of_Terror": {
+   "precisao": 2,
+   "evasao": 1.5,
+   "armadura": 1.5
+  }
+ },
+ "faltantes": [
+  "Grinning_Totem"
+ ],
+ "divergentes": [
+  "Aliras_Martyr.evasao: 1.2/1",
+  "Bear_Acolyte.armadura: 1.25/1.5",
+  "Bloodstained_Archer.armadura: 1/2",
+  "Boar_Acolyte.evasao: 1.2/1",
+  "Boar_Acolyte.armadura: 1.75/1/1.25",
+  "Bone_Stalker.armadura: 1/1.75",
+  "Brittle_Archer.armadura: 1/1.5",
+  "Brittle_Born-again.evasao: 1.1/1",
+  "Brittle_Born-again.armadura: 1/1.25",
+  "Brittle_Farmer.armadura: 1.5/1.25",
+  "Callow_Thug.evasao: 1/1.2",
+  "Callow_Thug.armadura: 1.5/1",
+  "Cave_Beast.armadura: 1/1.25",
+  "Daresso,_King_of_Swords.armadura: 1.75/1.5",
+  "Dimachaeri_Cassius.evasao: 1.2/1",
+  "Dockhand_Wraith.evasao: 1.2/1/1.1",
+  "Dockhand_Wraith.armadura: 1/1.5/1.25",
+  "Enraptured_Crab.evasao: 1.5/1",
+  "Enraptured_Crab.evasao@19: 1.5/1",
+  "Enraptured_Crab.armadura: 1/1.5",
+  "Flesh_Sculptor.evasao: 1/1.5",
+  "Flesh_Sculptor.armadura: 1/1.5",
+  "Gemling_Legionnaire.evasao: 1/1.5",
+  "Gemling_Legionnaire.evasao@57: 1/1.5",
+  "Guard_Captain.armadura: 1.25/2",
+  "Hatchling.evasao: 1/1.5",
+  "Idolised_Saint.evasao: 1/1.1",
+  "Infernal_Sentinel.evasao: 1.1/1",
+  "Infernal_Sentinel.armadura: 1/2",
+  "Infested_Crab.evasao: 1.5/1",
+  "Infested_Crab.armadura: 1/1.5",
+  "Infested_Crawler.evasao: 1.5/1",
+  "Infested_Crawler.armadura: 1/1.5",
+  "Kraityns_Thrall.evasao: 1.2/1",
+  "Lunaris,_Eternal_Moon.evasao: 2/1",
+  "Lurking_Venom.evasao: 1/1.5",
+  "Noisome_Ophidian.evasao: 1.1/1",
+  "Oaks_Devoted.evasao: 1.2/1",
+  "Oriath_Enforcer.evasao: 1.3/1.1",
+  "Rattling_Bones.armadura: 1.25/1",
+  "Riptide.evasao: 1/1.45",
+  "Riptide.armadura: 1/1.3",
+  "Savage_Crab.evasao: 1.5/1",
+  "Savage_Crab.evasao@3: 1.5/1",
+  "Savage_Crab.armadura: 1/1.5",
+  "Shadow_Archer.armadura: 1.25/1",
+  "Snow_Wolf.evasao: 1.1/1.3",
+  "Solaris,_Eternal_Sun.armadura: 2/1",
+  "Stag_Acolyte.evasao: 1.1/1",
+  "The_Animal_Pack.evasao: 1.8/1.4",
+  "The_Dweller_of_the_Deep.armadura: 1/1.25",
+  "Undying_Grappler.armadura: 1/1.25",
+  "Vaal_Arsonist.armadura: 1.75/1.25"
+ ]
+}

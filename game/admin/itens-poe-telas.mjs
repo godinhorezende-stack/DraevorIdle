@@ -8,6 +8,7 @@ import { BESTIARY } from '../systems/hunt/monstros.mjs';
 import { ataquesParaFicha, EFEITO_PADRAO } from '../systems/poderes.mjs';
 import * as BossesUnicos from '../systems/bosses-unicos/catalogo.mjs';
 import * as Monstros from '../systems/itens-poe/monstros.mjs';
+import { defesaPoeDoSlug } from '../systems/mobs/atributos.mjs';
 import * as Habilidades from '../systems/itens-poe/habilidades.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
@@ -29,7 +30,8 @@ function monstro(m) {
   const chave = Monstros.chaveDe(m);
   return {
     chave, nome: m.nome, slug: m.slug, nivel: m.nivel, unico: !!m.unico, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque,
-    armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, resistencias: m.resistencias ?? {}, experiencia: m.experiencia,
+    // (lote A5d) `evasao`: a do poedb (referência, a que o editor salva); `evasaoCombate`/`precisaoCombate`: as do combate — a tabela do PoE × o multiplicador
+    armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, evasaoCombate: defesaPoeDoSlug(m.slug, m.nivel).evasao, precisaoCombate: defesaPoeDoSlug(m.slug, m.nivel).precisao, resistencias: m.resistencias ?? {}, experiencia: m.experiencia,
     desenho: desenhoDe(chave), desenhoDe: BESTIARY[chave] ? Object.entries(BESTIARY).find(([k, b]) => !k.startsWith('poe-') && b.look === BESTIARY[chave].look)?.[0] ?? null : null,
     habilidades: (m.habilidades ?? []).map((h) => ({ nome: h.nome, interno: h.interno, tags: h.tags, dano: h.dano ?? null, elemento: h.elemento ?? null, tempo: h.tempo ?? null, recarga: h.recarga ?? null, descricao: h.descricao ?? null })),
     convertidas: Habilidades.convertidas(m),
@@ -165,7 +167,7 @@ export function mobs() {
     for (const m of a.monstros ?? []) {
       const x = por.get(m.slug) ?? { slug: m.slug, nome: m.nome, unico: !!m.unico, ocorrencias: [] };
       x.unico ||= !!m.unico;
-      x.ocorrencias.push({ area: a.id, areaNome: a.nome, ato: a.ato, nivel: m.nivel, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, resistencias: m.resistencias ?? {}, experiencia: m.experiencia, habilidades: (m.habilidades ?? []).length });
+      x.ocorrencias.push({ area: a.id, areaNome: a.nome, ato: a.ato, nivel: m.nivel, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, evasaoCombate: defesaPoeDoSlug(m.slug, m.nivel).evasao, precisaoCombate: defesaPoeDoSlug(m.slug, m.nivel).precisao, resistencias: m.resistencias ?? {}, experiencia: m.experiencia, habilidades: (m.habilidades ?? []).length });
       por.set(m.slug, x);
     }
   }

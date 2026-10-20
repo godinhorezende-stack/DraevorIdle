@@ -51,10 +51,10 @@ function tabelaDeHabilidades(lista) {
       el('td', {}, h.elemento ? seloDoElemento(h.elemento) : h.dano ? seloDoElemento('physical') : '—'), el('td', { class: 'num' }, h.tempo ? `${h.tempo} s` : '—'), el('td', { class: 'num' }, h.recarga ? `${h.recarga} s` : '—'))))));
 }
 
-/** Os status do PoE de um monstro (vida, ES, dano, ritmo, defesas, exp) como métricas. */
+/** Os status do PoE de um monstro (vida, ES, dano, ritmo, defesas, exp) como métricas. (Lote A5d: a Evasão e a Precisão do combate — a tabela do PoE × o multiplicador.) */
 const metricasDoMonstro = (m) => el('div', { class: 'eng-metricas' },
   metrica('Nível', m.nivel), metrica('Vida', num(m.vida)), m.escudoDeEnergia ? metrica('Escudo de Energia', num(m.escudoDeEnergia)) : null, metrica('Dano do golpe', num(m.dano)),
-  metrica('Tempo de ataque', `${Number(m.tempoAtaque).toFixed(2)} s`), metrica('Armadura', num(m.armadura)), metrica('Evasão', num(m.evasao)), metrica('Experiência', num(m.experiencia)));
+  metrica('Tempo de ataque', `${Number(m.tempoAtaque).toFixed(2)} s`), metrica('Armadura', num(m.armadura)), metrica('Evasão', num(m.evasaoCombate ?? m.evasao)), m.precisaoCombate != null ? metrica('Precisão', num(m.precisaoCombate)) : null, metrica('Experiência', num(m.experiencia)));
 
 // ================================================================ CAMPANHA
 

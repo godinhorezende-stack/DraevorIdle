@@ -1705,4 +1705,9 @@ export function round(estado, personagem) {
 }
 
 // As defesas do bicho para as condições do PoE ("ao Acertar um Inimigo sem Armadura / sem Evasão" — `condicoes-poe.tagsDoAlvo`).
-ModsPoe.definirDefesasDoBicho((m) => (m?.key ? { armadura: AtributosDoMob.armaduraDe(m, m.level ?? 1), evasao: AtributosDoMob.evasaoDe(m, m.level ?? 1) } : null));
+// (lote A5d: o monstro do PoE, no nível dele — `levelDoBicho`; a evasão dele vem da tabela do PoE pelo nível)
+ModsPoe.definirDefesasDoBicho((m) => {
+  if (!m?.key) return null;
+  const nivel = BESTIARY[m.key]?.poe ? AtributosDoPersonagem.levelDoBicho(null, m) : m.level ?? 1;
+  return { armadura: AtributosDoMob.armaduraDe(m, nivel), evasao: AtributosDoMob.evasaoDe(m, nivel) };
+});

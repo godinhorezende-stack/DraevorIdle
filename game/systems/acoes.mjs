@@ -796,7 +796,8 @@ export function explosaoDaReliquia(hunt, l, ficha, eventos = []) {
  * impacto, que caem nos inimigos em volta (a até 3 casas) e causam dano de ataque em área (a casa e as vizinhas): o golpe da arma × o Dano de
  * Ataque do nível (170% … 200%), 60% do Físico convertido em Fogo, com os seus "aumentados" e a resistência de cada um. (Lote 45: cada acerto
  * rola o CRÍTICO do ataque — a chance e o multiplicador da ficha do golpe, com a Sorte/o Azar e o "sempre"/"nunca" crítico das linhas do PoE —;
- * a área da queda (a casa e as vizinhas) cresce com a "Área de Efeito aumentada/mais", como toda área — `ModsPoe.casasPelaArea`.)
+ * a área da queda (a casa e as vizinhas) cresce com a "Área de Efeito aumentada/mais", como toda área — `ModsPoe.casasPelaArea`.) (Lote A5d: e
+ * cada acerto rola a PRECISÃO contra a evasão do bicho — `Defesa.errou`; o erro não dá dano.)
  */
 export const RAJADA = Object.freeze({ recargaMs: 150, projeteis: 4, raio: 3, raioDaQueda: 1, conversaoFogoPct: 60 });
 const doNivelDaRajada = (nivel) => { const n = Math.max(16, Math.min(20, Number(nivel) || 20)); return { chance: 20 + (n - 16) * 20, danoPct: 170 + (n - 16) * 7.5 }; };
@@ -832,6 +833,12 @@ export function rajadaVulcanica(estado, hunt, alvo, eventos = [], rng = Math.ran
     eventos.push({ t: 'shot', id: 4, x: alvo.x, y: alvo.y, tx: onde.x, ty: onde.y });
     for (const m of hunt.monstros ?? []) {
       if (!(m.hp > 0) || m.dummy || Math.max(Math.abs(m.x - onde.x), Math.abs(m.y - onde.y)) > raio) continue;
+      // (lote A5d, dono 20/10: "como no PoE") a Rajada é um ATAQUE: cada acerto rola a precisão (a da ficha do golpe, pelas tags dele) contra a evasão
+      // do bicho, pela conta do golpe básico (`Defesa.errou`: a Técnica Resoluta, o "não podem ser Evadidos", os Provocados). Errou: o evento do erro, sem dano
+      if (Defesa.errou(ficha, hunt, m, rng)) {
+        eventos.push({ t: 'block', uid: m.uid, x: m.x, y: m.y, color: '#999999', esquiva: true, errou: true, fonte: 'rajada-vulcanica' });
+        continue;
+      }
       const crit = critou();
       const v = Math.round((resistido(hunt, m, 'physical', fisico * aum('physical'), ficha) + resistido(hunt, m, 'fire', fogo * aum('fire'), ficha)) * (crit ? ficha.critMultiplier ?? 1.5 : 1));
       if (!(v > 0)) continue;

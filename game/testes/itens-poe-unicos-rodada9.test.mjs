@@ -220,7 +220,10 @@ test('lote C: as frases viram os atributos', { skip: SEM }, () => {
 
 test('o inimigo sem Armadura / sem Evasão (as defesas do bestiário) e a carga ao empurrar corpo a corpo', { skip: SEM }, () => {
   const tags = (m) => ModsPoe.tagsDoAlvo({ hp: 10, estados: {}, ...m }, 0);
-  assert.ok(tags({ key: 'poe-hillock-1' }).includes('alvoSemEvasao'), 'o Hillock não tem evasão');
+  // (lote A5d, aval do dono 20/10: no PoE todo monstro tem evasão — a tabela do PoE × o multiplicador do tipo; o Hillock do nível 1 tem 67. Antes: o
+  // Hillock sem evasão, pelo `poe.evasao` 0 do dado bruto. O "sem Evasão" agora é o da evasão zerada, no molde da armadura zerada.)
+  assert.ok(!tags({ key: 'poe-hillock-1' }).includes('alvoSemEvasao'), 'no PoE todo monstro tem evasão (67 no nível 1)');
+  assert.ok(tags({ key: 'poe-hillock-1', evasaoPct: -100 }).includes('alvoSemEvasao'), 'a evasão zerada');
   assert.ok(!tags({ key: 'poe-hillock-1' }).includes('alvoSemArmadura'), 'mas tem armadura');
   assert.ok(!tags({ key: 'poe-quru-22' }).includes('alvoSemEvasao'));
   assert.ok(tags({ key: 'poe-hillock-1', armaduraPct: -100 }).includes('alvoSemArmadura'), 'a armadura zerada');
