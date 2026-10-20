@@ -2,16 +2,16 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 334,
-   "implementada e testada": 164,
+   "parcial": 321,
+   "implementada e testada": 177,
    "implementada, sem teste próprio": 52,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "parcial": 115,
-   "implementada e testada": 67,
+   "parcial": 108,
+   "implementada e testada": 74,
    "implementada, sem teste próprio": 22,
    "limitação do modelo idle": 6
   },
@@ -30,9 +30,9 @@
    },
    "alternativas": {
     "total": 209,
-    "parcial": 136,
+    "parcial": 131,
     "implementada, sem teste próprio": 27,
-    "implementada e testada": 39,
+    "implementada e testada": 44,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 813,
-   "emDuasOuMais": 154
+   "linhasDistintas": 790,
+   "emDuasOuMais": 148
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 277,
+   "ativasCitadas": 283,
    "suportesCitados": 93,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -538,10 +538,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Redução do Ponto de Atordoamento aumentada em 75 % em inimigos na distância Máxima da investida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -697,10 +695,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +0.1 metro ao Raio por 5 de Fúria"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1626,10 +1622,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: a recarga pode ser pulada gastando uma Carga de Tolerância"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3018,13 +3012,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: a recarga pode ser pulada gastando uma Carga de Frenesi",
-    "efeito não simulado: Velocidade de Ataque aumentada em 10 % por Carga de Frenesi",
-    "efeito não simulado: 15 % de chance de receber uma Carga de Frenesi ao Acertar",
-    "efeito não simulado: 10 % de chance de receber uma Carga de Frenesi ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3036,13 +3025,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: a recarga pode ser pulada gastando uma Carga de Poder",
-    "efeito não simulado: 30 % de chance de ganhar uma Carga de Poder em Acertos Críticos",
-    "efeito não simulado: Chance de Crítico aumentada em 50 % por Carga de Poder",
-    "efeito não simulado: 20 % de chance de ganhar uma Carga de Poder em Acertos Críticos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3171,10 +3155,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Buff concede Trespassar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4358,13 +4340,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa + 150 % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento",
-    "efeito não simulado: Acertos da onda final causam 75 % de dano por estágio",
-    "efeito não simulado: A Ilusão se move com 130 % da sua Velocidade de Movimento",
-    "efeito não simulado: A Ilusão se move com um adicional de +20 % da sua Velocidade de Movimento"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4376,13 +4353,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa + 150 % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento",
-    "efeito não simulado: Acertos da onda final causam 125 % de dano por estágio",
-    "efeito não simulado: A Ilusão se move com 150 % da sua Velocidade de Movimento",
-    "efeito não simulado: Acertos da Onda final causa 20 % de Dano por estágio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4914,14 +4886,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Buff é removido para Impelir o próximo Ataque Corpo a Corpo que você executar Ataques Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades",
-    "efeito não simulado: Ataques Impelidos têm +25 % de Chance de Golpe Crítico",
-    "efeito não simulado: Ataques Impelidos têm +138 % de Multiplicador de Dano Crítico",
-    "efeito não simulado: Duração da penalidade base é de 3 segundos",
-    "efeito não simulado: Ataques Impelidos têm +10 % de Chance de Golpe Crítico"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4950,12 +4916,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "guarda",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 30 % mais Dano Físico Corpo a Corpo",
-    "efeito não simulado: 100 % de aumento da Duração da Habilidade por Carga de Frenesi removida",
-    "efeito não simulado: Buff concede Trespassar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5615,14 +5577,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada",
-    "efeito não simulado: Não pode infligir Resfriamento",
-    "efeito não simulado: 15 % mais Dano com Acertos por cada 5 % de Efeito do Resfriamento no Inimigo",
-    "efeito não simulado: Remove Resfriamentos após Causar Dano",
-    "efeito não simulado: 4 % mais Dano com Acertos por cada 5 % de Efeito do Resfriamento no Inimigo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5800,10 +5756,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 20 % de chance de Causticar Inimigos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5815,10 +5769,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "movimento",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode aglomerar até 50 usos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11285,15 +11237,6 @@
    ]
   },
   {
-   "linha": "Duração da penalidade base é de # segundos",
-   "gemas": [
-    "Ambush",
-    "Conflagration",
-    "Corrupting_Fever",
-    "Infernal_Cry"
-   ]
-  },
-  {
    "linha": "Efeito das Auras aumentado em # %",
    "gemas": [
     "Icicle_Mine_of_Sabotage",
@@ -11337,14 +11280,6 @@
    ]
   },
   {
-   "linha": "+# metro ao Raio por # de Fúria",
-   "gemas": [
-    "Chain_Hook",
-    "Chain_Hook_of_Trarthus",
-    "Cleave_of_Rage"
-   ]
-  },
-  {
    "linha": "Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte",
    "gemas": [
     "Ancestral_Call_Support",
@@ -11382,6 +11317,14 @@
     "Perforate",
     "Perforate_of_Bloodshed",
     "Perforate_of_Duality"
+   ]
+  },
+  {
+   "linha": "Duração da penalidade base é de # segundos",
+   "gemas": [
+    "Conflagration",
+    "Corrupting_Fever",
+    "Infernal_Cry"
    ]
   },
   {
@@ -11475,13 +11418,6 @@
    "gemas": [
     "Detonate_Dead",
     "Vaal_Detonate_Dead"
-   ]
-  },
-  {
-   "linha": "# % de chance de ganhar uma Carga de Poder em Acertos Críticos",
-   "gemas": [
-    "Cold_Snap_of_Power",
-    "Flicker_Strike_of_Power"
    ]
   },
   {
@@ -11632,6 +11568,13 @@
    ]
   },
   {
+   "linha": "+# metro ao Raio por # de Fúria",
+   "gemas": [
+    "Chain_Hook_of_Trarthus",
+    "Cleave_of_Rage"
+   ]
+  },
+  {
    "linha": "+# metros ao Alcance de Golpes Corpo a Corpo",
    "gemas": [
     "Frost_Blades",
@@ -11653,13 +11596,6 @@
    ]
   },
   {
-   "linha": "A Ilusão se move com # % da sua Velocidade de Movimento",
-   "gemas": [
-    "Charged_Dash",
-    "Charged_Dash_of_Projection"
-   ]
-  },
-  {
    "linha": "Abalo Secundário causa # % mais Dano com Acertos e Afecções",
    "gemas": [
     "Earthquake",
@@ -11678,13 +11614,6 @@
    "gemas": [
     "Lancing_Steel",
     "Lancing_Steel_of_Spraying"
-   ]
-  },
-  {
-   "linha": "Acertos da onda final causam # % de dano por estágio",
-   "gemas": [
-    "Charged_Dash",
-    "Charged_Dash_of_Projection"
    ]
   },
   {
@@ -11720,13 +11649,6 @@
    "gemas": [
     "Galvanic_Field",
     "Galvanic_Field_of_Intensity"
-   ]
-  },
-  {
-   "linha": "Buff concede Trespassar",
-   "gemas": [
-    "Old_Phase_Run",
-    "Withering_Step"
    ]
   },
   {
@@ -11804,13 +11726,6 @@
    "gemas": [
     "Glacial_Cascade",
     "Glacial_Cascade_of_the_Fissure"
-   ]
-  },
-  {
-   "linha": "Causa + # % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento",
-   "gemas": [
-    "Charged_Dash",
-    "Charged_Dash_of_Projection"
    ]
   },
   {
@@ -12262,13 +12177,6 @@
    ]
   },
   {
-   "linha": "Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada",
-   "gemas": [
-    "Frostblink_of_Wintry_Blast",
-    "Lightning_Conduit"
-   ]
-  },
-  {
    "linha": "Todos os Danos podem Incendiar, Congelar e Eletrizar",
    "gemas": [
     "Hexblast",
@@ -12348,21 +12256,9 @@
    ]
   },
   {
-   "linha": "# % de aumento da Duração da Habilidade por Carga de Frenesi removida",
-   "gemas": [
-    "Old_Phase_Run"
-   ]
-  },
-  {
    "linha": "# % de aumento do Efeito de Mutilação",
    "gemas": [
     "Vaal_Rain_of_Arrows"
-   ]
-  },
-  {
-   "linha": "# % de chance de Causticar Inimigos",
-   "gemas": [
-    "Flame_Dash_of_Return"
    ]
   },
   {
@@ -12390,6 +12286,12 @@
    ]
   },
   {
+   "linha": "# % de chance de ganhar uma Carga de Poder em Acertos Críticos",
+   "gemas": [
+    "Cold_Snap_of_Power"
+   ]
+  },
+  {
    "linha": "# % de chance de ganhar uma Ruína adicional ao usar",
    "gemas": [
     "Dark_Bargain_of_Trarthus"
@@ -12405,12 +12307,6 @@
    "linha": "# % de chance de ramificação de fissuras por Carga de Tolerância removida",
    "gemas": [
     "Tectonic_Slam_of_Cataclysm"
-   ]
-  },
-  {
-   "linha": "# % de chance de receber uma Carga de Frenesi ao Acertar",
-   "gemas": [
-    "Flicker_Strike"
    ]
   },
   {
@@ -12504,12 +12400,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano com Acertos por cada # % de Efeito do Resfriamento no Inimigo",
-   "gemas": [
-    "Frostblink_of_Wintry_Blast"
-   ]
-  },
-  {
    "linha": "# % mais Dano de Projétil",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
@@ -12519,12 +12409,6 @@
    "linha": "# % mais Dano em Área",
    "gemas": [
     "Smite_of_Divine_Judgement"
-   ]
-  },
-  {
-   "linha": "# % mais Dano Físico Corpo a Corpo",
-   "gemas": [
-    "Old_Phase_Run"
    ]
   },
   {
@@ -12840,12 +12724,6 @@
    ]
   },
   {
-   "linha": "A Ilusão se move com um adicional de +# % da sua Velocidade de Movimento",
-   "gemas": [
-    "Charged_Dash"
-   ]
-  },
-  {
    "linha": "a imunidade a afecções ainda não existe no jogo",
    "gemas": [
     "Purity_of_Elements"
@@ -12879,24 +12757,6 @@
    "linha": "A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano",
    "gemas": [
     "Vaal_Discipline"
-   ]
-  },
-  {
-   "linha": "a recarga pode ser pulada gastando uma Carga de Frenesi",
-   "gemas": [
-    "Flicker_Strike"
-   ]
-  },
-  {
-   "linha": "a recarga pode ser pulada gastando uma Carga de Poder",
-   "gemas": [
-    "Flicker_Strike_of_Power"
-   ]
-  },
-  {
-   "linha": "a recarga pode ser pulada gastando uma Carga de Tolerância",
-   "gemas": [
-    "Consecrated_Path_of_Endurance"
    ]
   },
   {
@@ -12951,12 +12811,6 @@
    "linha": "Acertos Corpo a Corpo Fortificam por # segundos",
    "gemas": [
     "Vigilant_Strike"
-   ]
-  },
-  {
-   "linha": "Acertos da Onda final causa # % de Dano por estágio",
-   "gemas": [
-    "Charged_Dash_of_Projection"
    ]
   },
   {
@@ -13107,18 +12961,6 @@
    "linha": "Ataques Impelidos têm # % mais Área de Efeito",
    "gemas": [
     "Seismic_Cry"
-   ]
-  },
-  {
-   "linha": "Ataques Impelidos têm +# % de Chance de Golpe Crítico",
-   "gemas": [
-    "Ambush"
-   ]
-  },
-  {
-   "linha": "Ataques Impelidos têm +# % de Multiplicador de Dano Crítico",
-   "gemas": [
-    "Ambush"
    ]
   },
   {
@@ -13293,12 +13135,6 @@
    "linha": "Buff concede Ponto de Atordoamento aumentado em # % por cada # de Poder, contando um máximo de # de Poder",
    "gemas": [
     "Seismic_Cry"
-   ]
-  },
-  {
-   "linha": "Buff é removido para Impelir o próximo Ataque Corpo a Corpo que você executar Ataques Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades",
-   "gemas": [
-    "Ambush"
    ]
   },
   {
@@ -13527,12 +13363,6 @@
    "linha": "Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Vida Máxima",
    "gemas": [
     "Summon_Reaper_of_Revenants"
-   ]
-  },
-  {
-   "linha": "Chance de Crítico aumentada em # % por Carga de Poder",
-   "gemas": [
-    "Flicker_Strike_of_Power"
    ]
   },
   {
@@ -15618,12 +15448,6 @@
    ]
   },
   {
-   "linha": "Não pode infligir Resfriamento",
-   "gemas": [
-    "Frostblink_of_Wintry_Blast"
-   ]
-  },
-  {
    "linha": "Não pode ser Convocada",
    "gemas": [
     "Armageddon_Brand_of_Volatility"
@@ -15747,12 +15571,6 @@
    "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
    "gemas": [
     "Earthbreaker_Support"
-   ]
-  },
-  {
-   "linha": "Pode aglomerar até # usos",
-   "gemas": [
-    "Lightning_Warp"
    ]
   },
   {
@@ -15930,12 +15748,6 @@
    ]
   },
   {
-   "linha": "Redução do Ponto de Atordoamento aumentada em # % em inimigos na distância Máxima da investida",
-   "gemas": [
-    "Shield_Charge"
-   ]
-  },
-  {
    "linha": "Reflete # % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar",
    "gemas": [
     "Vaal_Molten_Shell"
@@ -15945,12 +15757,6 @@
    "linha": "Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar",
    "gemas": [
     "Molten_Shell"
-   ]
-  },
-  {
-   "linha": "Remove Resfriamentos após Causar Dano",
-   "gemas": [
-    "Frostblink_of_Wintry_Blast"
    ]
   },
   {
@@ -16140,6 +15946,12 @@
    ]
   },
   {
+   "linha": "Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada",
+   "gemas": [
+    "Lightning_Conduit"
+   ]
+  },
+  {
    "linha": "Tormenta Furiosa tem +# metros ao raio por cada # de Fúria sacrificada",
    "gemas": [
     "Rage_Vortex"
@@ -16203,12 +16015,6 @@
    "linha": "Velocidade de Ataque aumentada em # % caso tenha mudado de Postura Recentemente",
    "gemas": [
     "Lacerate"
-   ]
-  },
-  {
-   "linha": "Velocidade de Ataque aumentada em # % por Carga de Frenesi",
-   "gemas": [
-    "Flicker_Strike"
    ]
   },
   {

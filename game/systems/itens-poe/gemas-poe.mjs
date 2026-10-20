@@ -27,6 +27,8 @@ import { DESLOCAMENTO, deslocamentoDasLinhas, ehLinhaDoDeslocamento } from './de
 import * as GemasA2 from './gemas-a2.mjs';
 import * as GemasA4 from './gemas-a4.mjs';
 import * as GemasA3b from './gemas-a3b.mjs';
+// (lote A1b, dono 19/10: a Investida Carregada e o resto das gemas de movimento — os dados e as contas puras)
+import * as GemasA1b from './movimento-a1b.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -411,9 +413,8 @@ const REGRAS_DE_ALVOS = [
 const DESLOCAMENTOS = new Map();
 /** (lote A1, dono 19/10: "fica para depois") A mecânica das gemas de movimento que está só na DESCRIÇÃO — o status não a vê por linha. */
 const DESCRICAO_DO_MOVIMENTO = {
-  Flicker_Strike: ['a recarga pode ser pulada gastando uma Carga de Frenesi'],
-  Flicker_Strike_of_Power: ['a recarga pode ser pulada gastando uma Carga de Poder'],
-  Consecrated_Path_of_Endurance: ['a recarga pode ser pulada gastando uma Carga de Tolerância'],
+  // (lote A1b, dono 19/10: D-a: a recarga pulada com a carga — o Golpe Súbito, o do Poder e o Caminho Sagrado da Tolerância — existe:
+  // `GemasA1b.CARGA_QUE_PULA_A_RECARGA`, `Acoes.dispararSemMarcar`)
   // (lote A4, dono 19/10: D3: os 25 golpes do Golpe Cintilante Vaal existem — `GemasA4.GOLPE_CINTILANTE_VAAL`, `Acoes.dispararSemMarcar`)
 };
 /** (lote A1 — D7) As linhas do Passo Definhante que o jogo faz (`Acoes.passoDefinhante`): o Elusivo e o Definhar de quem está na área. */
@@ -733,7 +734,9 @@ const POR_PODER = [
 ];
 const LINHAS_FIXAS_DO_CLAMOR = [
   [/^Buff concede \+ ?(\d+) ao Máximo de Fúria Buff impede a perda inerente de Fúria$/i, (m) => ({ furia_max: Number(m[1]), furia_perda_lenta: 1e6 })],
-  [/^Ataques Impelidos causam Dano Dobrado$/i, () => ({ 'chance_dano_dobrado@impelido': 100 })],
+  // (lote A1b, revisão do dono 19/10: o bônus do BUFF do Clamor vale só no ataque Impelido pelo Clamor — `impelidoClamor`; o Impelido pela Emboscada
+  // "não pode ser Impelido por outras Habilidades")
+  [/^Ataques Impelidos causam Dano Dobrado$/i, () => ({ 'chance_dano_dobrado@impelidoClamor': 100 })],
 ];
 const TOLERANCIA_POR_PODER = /^Concede (\d+) Carga de Tolerância por cada (\d+) de Poder a Você e Jogadores Aliados$/i;
 const CONTA_O_PODER = /^Conta o Poder total de Inimigos no Alcance$/i;
@@ -948,6 +951,30 @@ export const debuffDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `de
 /** (C) A área do Ciclone por alcance ("X% por cada 0.1 metro de Alcance … adicional", o nível e a qualidade) e o "menos Velocidade de Movimento". */
 export const areaPorAlcanceDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `alc|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.areaPorAlcanceDasLinhas(linhasA4(slug, nivel, qualidade).flat()));
 export const menosMovimentoDaGema = (slug, nivel = 1) => comCache(A4, `mov|${slug}@${nivel | 0}`, () => GemasA4.menosMovimentoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/*
+ * ---- (lote A1b, dono 19/10) os leitores no nível do lote A1b (`itens-poe/movimento-a1b.mjs`: os dados e as contas da Investida Carregada e das outras
+ * gemas de movimento) ----
+ */
+const A1B = new Map();
+const linhasA1b = (slug, nivel, qualidade) => [textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)];
+/** (I1–I7) A miragem da Investida Carregada (a velocidade, a onda final, o "+150%" parada, os números do PoB/poedb). */
+export const miragemDaGema = (slug, nivel = 1, qualidade = 0) => (GemasA1b.MIRAGEM[slug] ? comCache(A1B, `mir|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA1b.miragemDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade))) : null);
+/** As cargas no acerto do Golpe Súbito (a Frenesi no acerto, o Poder no crítico). */
+export const cargasNoAcertoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `car|${slug}@${nivel | 0}@${qualidade | 0}`, () => (/^Flicker_Strike/.test(slug) ? GemasA1b.cargasNoAcertoDasLinhas(...linhasA1b(slug, nivel, qualidade)) : null));
+/** (D-b) A Emboscada. */
+export const emboscadaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `emb|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA1b.emboscadaDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/** O Teleporte Gélido da Explosão Invernal (o "mais" contra o resfriado). */
+export const explosaoInvernalDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `inv|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA1b.explosaoInvernalDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/** A Corrente com Gancho: o raio por Fúria. */
+export const raioPorFuriaDaGema = (slug, nivel = 1) => comCache(A1B, `fur|${slug}@${nivel | 0}`, () => (slug === 'Chain_Hook' ? GemasA1b.raioPorFuriaDasLinhas(textosDaGema(slug, nivel).linhas) : null));
+/** A Investida com Escudo: o atordoamento na distância máxima. */
+export const atordoamentoDaInvestidaDaGema = (slug, nivel = 1) => comCache(A1B, `ato|${slug}@${nivel | 0}`, () => (slug === 'Shield_Charge' ? GemasA1b.atordoamentoDaInvestidaDasLinhas(textosDaGema(slug, nivel).linhas) : 0));
+/** (D-e) A Corrida de Fase Antiga. */
+export const corridaDeFaseDaGema = (slug, nivel = 1) => comCache(A1B, `fas|${slug}@${nivel | 0}`, () => GemasA1b.corridaDeFaseDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** (D-f) A chance de Causticar do Avanço Ardente do Retorno (o nível e a qualidade). */
+export const chanceDeCausticarDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `cau|${slug}@${nivel | 0}@${qualidade | 0}`, () => (slug === 'Flame_Dash_of_Return' ? GemasA1b.chanceDeCausticarDasLinhas(linhasA1b(slug, nivel, qualidade).flat()) : 0));
+/** (D-c) Quantos usos o Teleporte Relampejante aglomera na fila. */
+export const filaDoTeleporteDaGema = (slug, nivel = 1) => comCache(A1B, `fil|${slug}@${nivel | 0}`, () => GemasA1b.filaDoTeleporteDasLinhas(slug, textosDaGema(slug, nivel).linhas));
 
 /**
  * (17/10, lote G12) O USO DE CADÁVERES das gemas (os cadáveres da caçada — `hunt.cadaveres`, com a Vida Máxima do morto): a EXPLOSÃO ("Explosão
@@ -1358,7 +1385,7 @@ function avaliarNoJogo(h, formato) {
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
   // (lote A3: + as linhas de projétil que não se aplicam — `LINHAS_QUE_NAO_SE_APLICAM`, que vão como nota)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
   // (lote A3b, dono 19/10: o que o mecanismo dos objetos ainda simplifica — `GemasA3b.MOTIVOS_A3B`)
   for (const m of GemasA3b.MOTIVOS_A3B[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
@@ -1433,6 +1460,8 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}),
       // (lote A1: a gema que DESLOCA — o "Configurar ação" mostra a opção "direção", e a de fuga a aceita)
       ...(DESLOCAMENTO[g.slug] ? { desloca: true, ...(DESLOCAMENTO[g.slug].fuga ? { fuga: true } : {}) } : {}),
+      // (lote A1b, dono 19/10: I1: a Investida Carregada — o "Configurar ação" mostra a opção "Segurar a miragem no alvo")
+      ...(GemasA1b.MIRAGEM[g.slug] ? { miragem: true } : {}),
       // (lote A2: a gema que reserva — a Automação não suporta as que reservam, `Gemas.gruposComGatilho`)
       ...(h.stats.reserva ? { reserva: true } : {}) },
   };
@@ -1519,7 +1548,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l) && !GemasA1b.ehLinhaA1b(slug, l)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

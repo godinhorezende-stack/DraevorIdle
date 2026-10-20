@@ -1497,6 +1497,8 @@ export function round(estado, personagem) {
     if (itensPoeLigado()) ModsPoe.marcar(hunt, 'usou:ataque');
     // O golpe básico também vira o personagem para o alvo.
     Acoes.virarParaOAlvo(hunt, alvo);
+    // (lote A1b, dono 19/10: D-e) o golpe básico é um uso seu: a Corrida de Fase troca para o buff de dano (e ele já o recebe — a ficha é refeita aqui)
+    if (itensPoeLigado()) Acoes.trocarCorridaDeFase(estado, hunt, hunt.clock ?? 0);
     // (14/10, o Feiticeiro: o golpe básico de VARINHA dispara projéteis — as magias ligadas ao Feiticeiro ligado saem — `Acoes.ativarGatilhos`)
     if (itensPoeLigado() && Acoes.ehAtaqueDeVarinha(estado)) Acoes.ativarGatilhos(estado, hunt, personagem, 'ataqueDeVarinha', { alvo }, eventos);
     if (categoriaDaArma(arma) === 'magica') {
@@ -1521,9 +1523,16 @@ export function round(estado, personagem) {
         // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária — a mão é escolhida AQUI (o golpe que erra também usou
         // a dele), e o golpe leva o dano e o CRÍTICO da arma dela (`Ficha.fichaDaMao`: a base × o crítico local da arma da vez).
         const daSecundaria = !!fichaDoPersonagem.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);
-        const ficha = ModsPoe.fichaDoGolpe(daSecundaria ? Ficha.fichaDaMao(fichaDoPersonagem, 'secundaria') : fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma)), { alvo, estado });
+        // (lote A1b, dono 19/10: D-b) a EMBOSCADA também no golpe básico corpo a corpo com arma de uma mão: Impelido por ela (a tag `impelido`), com o
+        // crítico dela ("+25% de Chance de Golpe Crítico" na base, "+138% de Multiplicador"); o golpe a gasta e não gasta o Impelir do Clamor
+        const tagsDoBasico = ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma));
+        const emboscada = !segundo && tagsDoBasico.includes('corpo') ? Acoes.emboscadaNoGolpe(estado, hunt) : null;
+        if (emboscada) emboscada.golpe = true;
+        const fichaDaMao = daSecundaria ? Ficha.fichaDaMao(fichaDoPersonagem, 'secundaria') : fichaDoPersonagem;
+        const ficha = ModsPoe.fichaDoGolpe(emboscada ? Acoes.comAtributosDoUso(fichaDaMao, { crit_base_golpe: emboscada.critPontos, crit_dmg: emboscada.critMultPct }) : fichaDaMao, tagsDoBasico, { alvo, estado });
+        if (emboscada && hunt.emboscada === emboscada) delete hunt.emboscada;
         // (PoE: o golpe Impelido por um Clamor gasta um — a tag `impelido` já está na ficha deste golpe.)
-        if (!segundo && hunt.impelidos?.n > 0) hunt.impelidos.n--;
+        if (!segundo && !emboscada && hunt.impelidos?.n > 0) hunt.impelidos.n--;
         const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
         // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
         if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;

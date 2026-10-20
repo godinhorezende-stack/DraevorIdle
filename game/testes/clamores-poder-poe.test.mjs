@@ -58,7 +58,8 @@ test('G5: os números por Poder de cada clamor', { skip: SEM }, () => {
   const vingativo = G.clamorPeloPoder('Vengeful_Cry', 20, 10).af;
   assert.equal(vingativo['periodico:1:furia'], 6);
   assert.equal(vingativo.furia_max, 25);
-  assert.equal(G.clamorPeloPoder('Intimidating_Cry', 20, 0).af['chance_dano_dobrado@impelido'], 100);
+  // (lote A1b, com o aval do dono: o Dano Dobrado é do buff do Clamor — só no ataque Impelido pelo Clamor, não pela Emboscada)
+  assert.equal(G.clamorPeloPoder('Intimidating_Cry', 20, 0).af['chance_dano_dobrado@impelidoClamor'], 100);
   for (const s of ['Enduring_Cry', 'Ancestral_Cry', 'Vengeful_Cry']) assert.ok(!G.doSlug(s).motivosNoJogo.some((m) => /Poder|Fúria/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
 });
 

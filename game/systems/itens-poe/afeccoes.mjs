@@ -78,6 +78,9 @@ export function daSoma(af = {}) {
     incendiosExtra: n('incendios_extra'), incendioDuracaoBaseMs: n('incendio_duracao_base_s') * 1000,
     // (o Warden: "Acertos que causariam Incêndio causam Causticação ao invés"; "Você pode infligir uma Causticação adicional em cada Inimigo")
     incendioViraCausticacao: n('incendio_vira_causticacao') > 0, causticacoesExtra: n('causticacoes_extra'),
+    // (lote A1b, dono 19/10: D-f) "X% de chance de Causticar Inimigos" (o Avanço Ardente do Retorno, na qualidade — a gema a põe no acerto dela):
+    // a Causticação de sempre, pela chance
+    chanceCausticar: n('chance_causticar'),
     // (lote 65) o "Dano Físico Degenerativo aumentado" vale no Sangramento (o dano Físico ao longo do tempo), como no PoE
     danoSangramento: n('bleed_dmg_inc') + n('dot_dmg_inc_fisico'),
     // (lote 65) e o "Dano de Caos Degenerativo aumentado", no Veneno (o de Caos)
@@ -267,7 +270,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const raio = baseDe('eletrizacao');
   const caos = dano('chaos');
   // Incêndio: pela chance, ou crítico com dano de Fogo.
-  if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio'))) && a.incendioViraCausticacao) {
+  // (lote A1b, dono 19/10: D-f — a mesma Causticação, numa função só: a do Warden e a da chance de Causticar)
+  const causticar = () => {
     // (o Warden: a CAUSTICAÇÃO no lugar do Incêndio — "Inimigos Causticados têm suas Resistências reduzidas em até 30%, baseado no Dano de Fogo
     // do Acerto, por 4 segundos"; com a adicional, as duas mais fortes valem juntas — `condicoes-poe.causticado`.)
     // (lote 33, P009: × o "Efeito de Afecções Não-Danificadoras" — e o do crítico —, no teto de 30%)
@@ -283,11 +287,16 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
       } else if (!(e.causticado?.ate > agora && e.causticado.pct >= pct)) e.causticado = { ate, pct };
       postos.push('causticado');
     }
+  };
+  if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio'))) && a.incendioViraCausticacao) {
+    causticar();
   } else if (fogo > 0 && ((crit && !a.criticoNaoIncendeia) || sorte(chance('incendio')))) {
     const posto = dot('queimadura', BASE.incendio.porSegundo, duracaoDe(a.incendioDuracaoBaseMs > 0 ? a.incendioDuracaoBaseMs : BASE.incendio.duracaoMs, a.duracaoIncendio ?? 0), fogo, multiplicadorBase + a.multiplicadorFogo + (crit ? a.multiplicadorIncendioCritico ?? 0 : 0), (a.danoIncendio ?? 0) + aumDoSuporte('incendio'), { mais: comSuporte('incendio', a.incendioMais ?? 0), chave: chaveDoIncendio() });
     // (o "ao Incendiar um Inimigo não Incendiado" — `mods-poe.aoPorAfeccoes` lê e apaga)
     if (posto && !jaIncendiado) (bicho.estados ??= {}).incendiadoNovo = true;
   }
+  // (lote A1b, dono 19/10: D-f) "X% de chance de Causticar Inimigos": a Causticação pela chance, no acerto com Fogo (sem repetir a do Warden)
+  if (fogo > 0 && a.chanceCausticar > 0 && !postos.includes('causticado') && sorte(a.chanceCausticar)) causticar();
   // (+ "+X% de Multiplicador … para Sangramentos por Empalamento no Inimigo"; a Dança Carmesim: as pilhas e o "X% menos Dano com Sangramento")
   if (fisico > 0 && sorte(chance('sangramento'))) dot('sangramento', BASE.sangramento.porSegundo, duracaoDe(BASE.sangramento.duracaoMs, a.duracaoSangramento ?? 0), fisico, multiplicadorBase + (a.multiplicadorSangramento ?? 0) + empalamentos * (a.multiplicadorSangramentoPorEmpalamento ?? 0) + (crit ? a.multiplicadorSangramentoCritico ?? 0 : 0), (a.danoSangramento ?? 0) + aumDoSuporte('sangramento'), { mais: comSuporte('sangramento', -(a.sangramentoMenos ?? 0)), chave: chaveDoSangramento(), agravado: !!a.sangramentoAgravado && !a.sangramentoSemMovimento, semMovimento: !!a.sangramentoSemMovimento });
   // Veneno: do dano Físico e de Caos (ou de TODO o dano, com "Todo o Dano … pode Envenenar").

@@ -54,6 +54,10 @@ const REGRAS = [
   [new RegExp(`^${N} ?% mais Dano com Ataques por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`mais_dano%carga:${CARGA[m[2]]}`]: num(m[1]) })],
   [new RegExp(`^${N} ?% mais Velocidade de Ataque por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`atk_speed_mais%carga:${CARGA[m[2]]}`]: num(m[1]) })],
   [new RegExp(`^${N} ?% mais Área de Efeito por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`area_mais%carga:${CARGA[m[2]]}`]: num(m[1]) })],
+  // (lote A1b, dono 19/10) o Golpe Súbito e o do Poder: "Velocidade de Ataque aumentada em X% por Carga de Frenesi", "Chance de Crítico aumentada em X%
+  // por Carga de Poder" — os "aumentados" por carga (o "mais" está nas regras de cima)
+  [new RegExp(`^Velocidade de Ataque aumentada em ${N} ?% por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`atk_speed%carga:${CARGA[m[2]]}`]: num(m[1]) })],
+  [new RegExp(`^Chance de Crítico aumentada em ${N} ?% por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`crit_chance_inc%carga:${CARGA[m[2]]}`]: num(m[1]) })],
   // A Postura (Sangue e Areia) e a mão do ataque.
   [new RegExp(`^${N} ?% mais Área de Efeito enquanto na Postura da Areia$`), (m) => ({ 'area_mais@posturaAreia': num(m[1]) })],
   [new RegExp(`^${N} ?% menos Dano na Postura de Sangue$`), (m) => ({ 'mais_dano@posturaSangue': -num(m[1]) })],

@@ -332,6 +332,8 @@ export const TAGS_DE_GOLPE = new Set([
   'ataqueLento', 'alvoComEscudo', 'alvoSemDreno',
   // (lote G) a gema de Postura; o ataque Impelido por um Clamor (`hunt.impelidos`).
   'postura', 'impelido',
+  // (lote A1b, revisão do dono 19/10) DE QUEM é o Impelir: o do Clamor (os bônus do buff do Clamor — `GemasPoe.clamorPeloPoder`) e o da Emboscada
+  'impelidoClamor', 'impelidoEmboscada',
   // (17/10, lote G18) o terceiro uso SEGUIDO da mesma gema (o Martelo Glacial: "Cada terceiro golpe sucessivo …" — `hunt.poeTerceiroGolpe`)
   'terceiroGolpe',
   // (15/10, lote 31) o abate por um ACERTO (o golpe fatal não foi dano contínuo — `quem-feriu.tagsDoAbate`); o inimigo Provocado pelo seu
@@ -1587,7 +1589,12 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     // ("Clamores não podem Impelir Habilidades de Deslocamento": a de Movimento não leva nem gasta o Impelir.)
     const semNoDeslocamento = t.has('movimento') && Number(ficha.afPoe.clamor_nao_impele_movimento) > 0;
     // (lote G20a: o ataque do totem não é Impelido — no PoE, só os seus)
-    if (!semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) t.add('impelido');
+    // (lote A1b, dono 19/10: D-b, e a revisão do dono) o ataque que gasta a Emboscada é Impelido POR ELA (`Acoes.emboscadaNoGolpe` marca `golpe`): leva a
+    // `impelido` genérica (os "Ataques Impelidos …" da árvore, das peças e dos suportes valem) e a `impelidoEmboscada`, mas NÃO a `impelidoClamor` — "Ataques
+    // Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades": os bônus do buff do Clamor não valem nele
+    const daEmboscada = !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
+    if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
+    else if (!semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) { t.add('impelido'); t.add('impelidoClamor'); }
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');

@@ -1432,12 +1432,16 @@ const MAXIMO_DE_RUINS = 24;
  * aliado), com o vigia de progresso (sem A → B → A) e sem refazer a busca enquanto nada mudou (`aindaTravado`). Sem rota, fica parado
  * e tenta de novo quando a situação muda.
  */
-function passoAteAliado(grade, hunt, pos, quer, uid) {
+// (lote A1b, dono 19/10: D-d: `trespassa` — com Trespassar, o passo não desvia de bicho e pula por cima dele: `Acoes.passoTrespassando`)
+function passoAteAliado(grade, hunt, pos, quer, uid, trespassa = false) {
   const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
   const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
   const alvo = { uid, x: pos.x, y: pos.y };
-  if (aindaTravado(hunt, alvo)) return null;
-  const bruto = proximoPassoAte(grade, hunt.pos, pos, ocupado, casasDeBicho);
+  // (revisão do A1b: com Trespassar, o passo por cima é tentado mesmo com o vigia dizendo "travado" — a assinatura dele não vê o buff; o destino é a casa
+  // do aliado: o passo não cai nela)
+  const pulo = trespassa ? Acoes.passoTrespassando(grade, hunt.pos, pos, casasDeBicho, { destinoOcupado: true }) : null;
+  if (!pulo && aindaTravado(hunt, alvo)) return null;
+  const bruto = pulo ?? proximoPassoAte(grade, hunt.pos, pos, ocupado, casasDeBicho);
   return passoComProgresso(hunt, grade, alvo, bruto, { quer, ocupado, bloqueado: casasDeBicho });
 }
 
@@ -1797,12 +1801,14 @@ export function tique(estado, personagem, agora = Date.now()) {
      * atributo Movimento não fazia nada (auditoria, 29/09).
      */
     const passos = passosDoTique(estado, hunt);
+    // (lote A1b, dono 19/10: D-d) TRESPASSAR (a Corrida de Fase, o Passo Definhante): o caminho não desvia de bicho e o passo pula por cima dele
+    const trespassa = itensPoeLigado() && Acoes.trespassando(estado, hunt);
     for (let passo = 0; passo < passos; passo++) {
     if (passo > 0) grade = andarDaGrade(gradeDaCacada, hunt.z);
       let destino = null;
       // Caça Online: o passo na mão — a tecla (`huntWalk`, o rumo) ou, sem tecla,
       // o próximo passo até onde o jogador clicou/tocou (`huntWalkTo`, ver `andarAte`).
-      const manual = hunt.rumo && agora <= (hunt.rumoValidoAte ?? 0) ? hunt.rumo : passoDoClique(hunt, grade);
+      const manual = hunt.rumo && agora <= (hunt.rumoValidoAte ?? 0) ? hunt.rumo : passoDoClique(hunt, grade, trespassa);
       if (manual) {
         // Daqui em diante, o mesmo passo para os dois: bicho na casa, escada, parede.
         const { dx, dy } = manual;
@@ -1810,10 +1816,21 @@ export function tique(estado, personagem, agora = Date.now()) {
         else if (dy > 0) hunt.pos.dir = 2;
         else if (dx > 0) hunt.pos.dir = 1;
         else if (dx < 0) hunt.pos.dir = 3;
-        const tentativa = { x: hunt.pos.x + dx, y: hunt.pos.y + dy };
+        let tentativa = { x: hunt.pos.x + dx, y: hunt.pos.y + dy };
         // Não pisa em bicho vivo: duas criaturas na mesma casa se cortam no
         // desenho (o client desenha uma por cima da outra, e o quadrado do alvo junto).
-        const ocupada = hunt.monstros.some((b) => b.hp > 0 && b.x === tentativa.x && b.y === tentativa.y);
+        const temBicho = (c) => hunt.monstros.some((b) => b.hp > 0 && b.x === c.x && b.y === c.y);
+        let ocupada = temBicho(tentativa);
+        // (lote A1b, revisão — D-d: a TECLA com Trespassar: o passo que cairia no bicho pula por cima, no mesmo rumo, até a próxima casa livre — até 3
+        // casas, sem atravessar parede)
+        if (ocupada && trespassa) {
+          let c = tentativa;
+          for (let k = 0; k < 3; k++) {
+            c = { x: c.x + dx, y: c.y + dy };
+            if (!grade.andavel.has(`${c.x},${c.y}`)) break;
+            if (!temBicho(c)) { tentativa = c; ocupada = false; break; }
+          }
+        }
         // Rampa, degrau ou buraco: pisou, mudou de andar (ver "Os andares da hunt").
         const outroAndar = !ocupada && grade.mapa?.floors && destinoDaMudanca(grade.mapa, hunt.z, tentativa.x, tentativa.y);
         if (outroAndar) {
@@ -1822,7 +1839,7 @@ export function tique(estado, personagem, agora = Date.now()) {
         } else if (grade.andavel.has(`${tentativa.x},${tentativa.y}`) && !ocupada) destino = tentativa;
       } else if (hunt.reagrupar && distancia(hunt.pos, hunt.reagrupar.pos) > hunt.reagrupar.perto) {
         // Party: o líder chamou para perto de alguém (`party.mjs` → `reagruparDe`): anda até lá pela mesma busca, sem teleporte.
-        destino = passoAteAliado(grade, hunt, hunt.reagrupar.pos, hunt.reagrupar.perto, 'reagrupar');
+        destino = passoAteAliado(grade, hunt, hunt.reagrupar.pos, hunt.reagrupar.perto, 'reagrupar', trespassa);
         if (destino) {
           const dx = Math.sign(destino.x - hunt.pos.x);
           const dy = Math.sign(destino.y - hunt.pos.y);
@@ -1830,7 +1847,7 @@ export function tique(estado, personagem, agora = Date.now()) {
         }
       } else if (hunt.guia && distancia(hunt.pos, hunt.guia.pos) > hunt.guia.coleira) {
         // Party: longe demais de quem segue ("Seguir ... a N sqm") — volta para perto. Dentro da distância não anda (a faixa vai de 0 a N).
-        destino = passoAteAliado(grade, hunt, hunt.guia.pos, hunt.guia.coleira, 'guia');
+        destino = passoAteAliado(grade, hunt, hunt.guia.pos, hunt.guia.coleira, 'guia', trespassa);
         if (destino) {
           const dx = Math.sign(destino.x - hunt.pos.x);
           const dy = Math.sign(destino.y - hunt.pos.y);
@@ -1893,8 +1910,10 @@ export function tique(estado, personagem, agora = Date.now()) {
           const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
           const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
           // Parado sem caminho/saída e nada mudou: nem refaz a busca (ver `aindaTravado`).
-          const travado = !hunt.lurando && aindaTravado(hunt, alvo);
-          destino = travado ? null : proximoPassoAte(grade, hunt.pos, alvo, ocupado, casasDeBicho);
+          // (lote A1b, dono 19/10: D-d: com Trespassar, pelo meio dos bichos — `Acoes.passoTrespassando`; revisão: tentado antes do vigia de travado, que não vê o buff)
+          const pulo = trespassa ? Acoes.passoTrespassando(grade, hunt.pos, alvo, casasDeBicho) : null;
+          const travado = !pulo && !hunt.lurando && aindaTravado(hunt, alvo);
+          destino = pulo ?? (travado ? null : proximoPassoAte(grade, hunt.pos, alvo, ocupado, casasDeBicho));
           const espera = !travado && !hunt.lurando && voltariaAtras(hunt, alvo, destino);
           if (espera) destino = null;
           // Sem ciclo: o passo que só repete casas sem chegar mais perto vira desvio ou parada (ver `progresso.mjs`).
@@ -3156,7 +3175,7 @@ export function andarAte(estado, { x, y }) {
  * chegou, mudou de andar, o caminho fechou). Recalculado a cada passo porque
  * os bichos andam — o mesmo `proximoPassoAte`, contornando os vivos.
  */
-function passoDoClique(hunt, grade) {
+function passoDoClique(hunt, grade, trespassa = false) {
   const d = hunt.destino;
   if (!d) return null;
   if (hunt.modo !== 'online' || d.z !== hunt.z || (d.x === hunt.pos.x && d.y === hunt.pos.y)) {
@@ -3164,7 +3183,8 @@ function passoDoClique(hunt, grade) {
     return null;
   }
   const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-  const passo = proximoPassoAte(grade, hunt.pos, d, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
+  // (lote A1b, dono 19/10: D-d: com Trespassar, o passo pula por cima do bicho — `Acoes.passoTrespassando`)
+  const passo = (trespassa ? Acoes.passoTrespassando(grade, hunt.pos, d, casasDeBicho) : null) ?? proximoPassoAte(grade, hunt.pos, d, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
   if (!passo) {
     hunt.destino = null;
     return null;

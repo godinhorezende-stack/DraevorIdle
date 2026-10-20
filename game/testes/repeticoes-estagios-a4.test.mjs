@@ -252,7 +252,9 @@ test('A4 E1/E2: os estágios no nível 20 — o máximo do PoB, os modos e os "m
   for (const s of ['Vaal_Flameblast', 'Divine_Ire', 'Divine_Ire_of_Disintegration', 'Snipe', 'Blade_Flurry', 'Blade_Flurry_of_Incision', 'Reave', 'Reave_of_Refraction', 'Vaal_Reave', 'Double_Strike_of_Momentum', 'Lightning_Tendrils_of_Escalation', 'Vaal_Blade_Flurry']) {
     assert.ok(!G.doSlug(s).motivosNoJogo.some((m) => /[Ee]stágio|Estágios Máximos|do máximo/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
   }
-  assert.ok(G.doSlug('Charged_Dash').motivosNoJogo.some((m) => /onda final/.test(m)), 'D9: a Investida Carregada segue não simulada');
+  // (lote A1b, com o aval do dono: a Investida Carregada agora é simulada — a miragem, os estágios, o pulso e a onda final: `GemasPoe.miragemDaGema`,
+  // `Acoes.planoDaMiragem`; a D9 do A4 deixou-a para o A1b)
+  assert.ok(!G.doSlug('Charged_Dash').motivosNoJogo.some((m) => /onda final/.test(m)) && G.doSlug('Charged_Dash').statusNoJogo === 'funciona', 'D9 → A1b: a Investida Carregada agora é simulada');
 });
 
 test('A4 E1: a Rajada de Chamas Vaal cai no local mirado e explode a cada 3 estágios até 15 (o PoB), com 200% mais Mágico por estágio; o ciclo novo paga a recarga', { skip: SEM }, async () => {

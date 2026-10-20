@@ -146,7 +146,8 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       // (lote A1, com o aval do dono: no arquétipo `movimento`, "deslocou" é o efeito só da gema SEM dano — o Avanço, o Passo Rápido; a que tem
       // dano segue exigindo o acerto)
       const semDano = !r.ataque && !Object.keys(G.compilada(slug, 20)?.stats?.dano ?? {}).length && !(G.compilada(slug, 20)?.stats?.dot ?? []).length;
-      if (buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou)) { feito = armas[0]; break; }
+      // (lote A1b, com o aval do dono: a Emboscada colada no alvo não se move e não causa dano — o efeito dela é o buff, `hunt.emboscada`)
+      if (buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
       erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);
