@@ -153,6 +153,38 @@ const REGRAS = [
   [new RegExp(`^Habilidades Suportadas infligem Subjugado por ${N} segundos? ao Bloquear`, 'i'), (m) => ({ subjugadoMs: Math.round(num(m[1]) * 1000) })],
   [new RegExp(`^Subjugado aplica -?${N}% à chance de Bloquear`, 'i'), (m) => ({ subjugadoPct: num(m[1]) })],
   [new RegExp(`^Habilidades Suportadas têm ${N}% de Chance de Bloqueio Inimigo reduzid[ao]`, 'i'), (m) => ({ bloqueioInimigoReduzidoPct: num(m[1]) })],
+  // (lote A5, dono 20/10) os suportes simples das famílias 1–4:
+  // - o Dreno de Vida (D3): o dreno do PoE nos ataques (`af:life_leech` — a ficha do golpe) e nas magias (`af:vida_leech_magia` — `Ficha.aplicarLeech`); a
+  //   cura instantânea do Draevor (`leechVidaPct`) fica para o modo clássico;
+  [new RegExp(`têm ${N}% de Dano Drenado como Vida$`, 'i'), (m, t, a) => ({ ...(temTag(a, 'Ataque') || !temTag(a, 'Magia') ? { 'af:life_leech': num(m[1]) } : {}), ...(temTag(a, 'Magia') ? { 'af:vida_leech_magia': num(m[1]) } : {}) })],
+  // - (revisão do A5) o Dreno de Vida e o de Energia: os bônus condicionais — "Dano aumentado enquanto Drenando Vida / Escudo de Energia" (a qualidade: só com
+  //   uma instância de Dreno daquele recurso ativa — `drenandoVida`, `drenandoEs`) e "mais Dano enquanto em Escudo de Energia Completo" (`escudoCheio`);
+  [new RegExp(`causam Dano aumentado em ${N}% enquanto Drenando Vida$`, 'i'), (m) => ({ 'af:dmg_inc@drenandoVida': num(m[1]) })],
+  [new RegExp(`causam Dano aumentado em ${N}% enquanto Drenando Escudo de Energia$`, 'i'), (m) => ({ 'af:dmg_inc@drenandoEs': num(m[1]) })],
+  [new RegExp(`causam ${N}% mais Dano enquanto em Escudo de Energia Completo$`, 'i'), (m) => ({ 'af:mais_dano@escudoCheio': num(m[1]) })],
+  // - a qualidade a mais da gema ativa (D2 — o Aprimorar, o Aprimorar Desperto, o Eclipse; `Gemas.efeitoNaSkill`);
+  [new RegExp(`^\\+?${N}% de Qualidade das Gemas de Habilidade Suportadas$`, 'i'), (m) => ({ qualidadeExtra: num(m[1]) })],
+  // - a Vida ao matar do Golpe de Misericórdia e do Abater o Fraco ("Recupera 2% de Vida quando Habilidades Suportadas Matam um Inimigo" — o abate seu
+  //   pelo acerto do uso, `Acoes.vidaAoMatarDoSuporte`);
+  [new RegExp(`^Recupera ${N}% de Vida quando Habilidades Suportadas Matam um Inimigo$`, 'i'), (m) => ({ vidaAoMatarPct: num(m[1]) })],
+  // - a Sobrecarga: "Habilidades Suportadas Eletrizam Inimigos como se causassem X% mais Dano" (o PoB: ShockAsThoughDealing MORE, sup_int.lua:5170 — a força da
+  //   Eletrização do uso);
+  [new RegExp(`^Habilidades Suportadas Eletrizam Inimigos como se causassem ${N}% mais Dano$`, 'i'), (m) => ({ 'af:eletrizacao_como_mais': num(m[1]) })],
+  // - a Retaliação Experiente (D8: a janela por gema — "se tornam Utilizáveis por um tempo X% maior", só na suportada: `ModsPoe.retaliacaoUsavel`);
+  [new RegExp(`^Habilidades de Retaliação Suportadas se tornam Utilizáveis por um tempo ${N}% maior$`, 'i'), (m) => ({ retaliacaoJanelaPct: num(m[1]) })],
+  // - a Inversão de Regras (D7: em qualquer acerto da suportada, como o PoB — o texto fala de Ataques);
+  [new RegExp(`têm ${N}% de chance de considerar os valores de resistência elemental dos monstros inimigos como invertidos$`, 'i'), (m) => ({ 'af:chance_res_invertida': num(m[1]) })],
+  // - o Coursing Current: o efeito da Eletrização (a frase com "habilidades reforçadas") e as Eletrizações e os Resfriamentos que nascem um do outro (D6 —
+  //   `AfeccoesPoe.aoAcertar`: a força do outro, a duração base, o teto de cada um, sem cascata; as duas versões do texto de cada regra são a mesma regra);
+  [new RegExp(`^Efeito de eletrificações infligidos com habilidades reforçadas aumentado em ${N}%$`, 'i'), (m) => ({ 'af:efeito_eletrizacao': num(m[1]) })],
+  [/^Esfria inimigos quando eles são eletrificados por (?:seus ataques|ataques de habilidades reforçadas), reduzindo a velocidade de ação com base no efeito de eletrificação$/i, () => ({ 'af:resfria_ao_eletrizar': 1 })],
+  [/^Eletrifica inimigos quando eles são esfriados por (?:seus ataques|ataques de habilidades reforçadas), aumentando o dano sofrido com base no efeito de esfriamento$/i, () => ({ 'af:eletriza_ao_resfriar': 1 })],
+  // - o Resfriamento Ósseo (D5): o Gelo sofrido aumentado pelo Resfriamento (o debuff do PoE — qualquer Gelo no inimigo, uma vez só com o da árvore) e nas
+  //   áreas frias da suportada (`condicoes-poe.fatorRecebidoPeloBicho`, `Acoes` — `criarAreaFria`);
+  [/^Inimigos Resfriados por Habilidades Suportadas tem o Dano de Gelo sofrido aumentado pelo Efeito de Resfriamento$/i, () => ({ 'af:resfriado_fragil_gelo': 1 })],
+  [/^Inimigos em Áreas Resfriadas por Habilidades Suportadas tem o Dano de Gelo sofrido aumentado pelo Efeito de Resfriamento$/i, () => ({ areaFriaFragilGelo: 1 })],
+  // - a Lâmina Mágica (D7): o dano da arma corpo a corpo de uma mão como Dano Mágico adicional — X% de cada arma; com duas, 60% de cada (`Acoes.comAsLinhasDaGema`)
+  [new RegExp(`têm Dano Mágico Adicional igual a ${N}% do ?Dano das Armas Corpo a Corpo de Uma Mão Equipadas`, 'i'), (m, t, a) => (temTag(a, 'Magia') ? { laminaMagicaPct: num(m[1]) } : {})],
   // O custo (a propriedade "Multiplicador de Custo & Reserva: 120%").
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
   [/não Custam nada/i, () => ({ custoPct: -100 })],
@@ -368,6 +400,11 @@ const REGRAS = [
   [/Disparam Projéteis em um círculo$/i, () => ({ emCirculo: 1 })],
   [/disparam uma Flecha Carregada no ar(?:\s|\\n)+Projéteis da Habilidade Suportada Disparam de onde a Flecha Carregada cair/i, () => ({ doPontoDoAlvo: 1 })],
   [/só podem ser usadas com Arcos$/i, () => ({ soArco: 1 })],
+  // (lote A5, dono 20/10) as restrições de arma da Fissura e do Trauma (a da Onda de Choque do Vazio subiu para cá — a Excepcional tem a própria, em
+  // `PROPRIAS_A2`), da Onda de Choque e do Combate Próximo — `Acoes.dispararSemMarcar` (D6: com duas armas, a mão principal)
+  [/só podem ser usadas com Machados, Maças, Cetros ou Cajados$/i, () => ({ soMachadoMacaCetroCajado: 1 })],
+  [/só podem ser usadas com Maças, Cetros ou Cajados$/i, () => ({ soMacaCetroCajado: 1 })],
+  [/só podem ser usadas com Machados e Espadas$/i, () => ({ soMachadoEspada: 1 })],
   [new RegExp(`ganham Intensidade quando você as Conjurar, máximo de ${N}(?:\\s|\\\\n)+Habilidades Suportadas disparam um Projétil a menos por Intensidade`, 'i'), (m) => ({ intensidadeMax: num(m[1]), intensidadeMenosProjetil: 1 })],
   [new RegExp(`causam ${N}% mais Dano com Acertos por Intensidade`, 'i'), (m) => ({ intensidadeMaisProjetilPct: num(m[1]) })],
   [new RegExp(`sempre disparam ao menos ${N} Projétil`, 'i'), (m) => ({ projeteisMinimo: num(m[1]) })],
@@ -383,8 +420,10 @@ const REGRAS = [
   [new RegExp(`Dano [^%]*?aumentado em ${N}%`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`${N}% de Dano [^%]*?aumentado`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { danoPct: num(m[1]) } : null)],
   [new RegExp(`ganham ${N}% de Dano (\\S+) como Dano Extra de`, 'i'), (m, t, a) => (temTag(a, m[2]) ? { danoPct: num(m[1]) } : null)],
-  [/não causam Dano Elemental/i, (m, t, a) => (['Fogo', 'Gelo', 'Raio'].some((x) => temTag(a, x)) ? { maisDanoPct: -100 } : null)],
-  [/não causam Dano de Caos/i, (m, t, a) => (temTag(a, 'Caos') ? { maisDanoPct: -100 } : null)],
+  // (revisão do A5: "não causam Dano Elemental" / "de Caos" — a Manipulação do Vazio — tira só a PARTE daquele tipo do golpe, não o dano todo — `Acoes.contaDoDano`;
+  // antes um "−100% mais" zerava também o Caos)
+  [/não causam Dano Elemental/i, () => ({ semDanoElemental: 1 })],
+  [/não causam Dano de Caos/i, () => ({ semDanoCaos: 1 })],
   // Dano ADICIONADO (× a eficácia da gema, no `contaDoDano`).
   // O elemento vai junto (`somadoMin:fire`...): o ataque do PoE separa o dano por elemento (`GemasPoe.partesDoAtaque`).
   [new RegExp(`têm ${N} a ${N} de Dano de (\\S+) adicional`, 'i'), (m) => { const el = ELEMENTO_DO_TEXTO[m[3].toLowerCase()] ?? 'physical'; return { somadoMin: num(m[1]), somadoMax: num(m[2]), [`somadoMin:${el}`]: num(m[1]), [`somadoMax:${el}`]: num(m[2]) }; }],
@@ -444,8 +483,9 @@ const REGRAS = [
   [new RegExp(`${N}% do Dano .*Drenado como Vida`, 'i'), (m) => ({ leechVidaPct: num(m[1]) })],
   [new RegExp(`${N}% do Dano .*Drenado como Mana`, 'i'), (m) => ({ leechManaPct: num(m[1]) })],
   // Nível das gemas suportadas (Fortalecer...).
-  [new RegExp(`^\\+?${N} ao N[iíï]vel (?:de|das) Gemas de (?:Habilidade )?(\\S+)? ?(?:de )?(?:Habilidades? )?(\\S+)? ?Suportadas`, 'i'), (m, t, a) => {
-    const so = /Físicas/i.test(t) ? 'Físico' : /de Fogo/i.test(t) ? 'Fogo' : /Aura/i.test(t) ? 'Aura' : /Golpes/i.test(t) ? 'Golpe' : null;
+  // (lote A5, dono 20/10: + "1 do Nível das Gemas de Habilidade de Caos Suportadas" — o Manipulação do Vazio Desperto: "do Nível", e só nas de Caos)
+  [new RegExp(`^\\+?${N} (?:ao|do) N[iíï]vel (?:de|das) Gemas de (?:Habilidade )?(\\S+)? ?(?:de )?(?:Habilidades? )?(\\S+)? ?Suportadas`, 'i'), (m, t, a) => {
+    const so = /Físicas/i.test(t) ? 'Físico' : /de Fogo/i.test(t) ? 'Fogo' : /de Caos/i.test(t) ? 'Caos' : /Aura/i.test(t) ? 'Aura' : /Golpes/i.test(t) ? 'Golpe' : null;
     return !so || temTag(a, so) ? { nivelExtra: Math.floor(num(m[1])) } : null;
   }],
   // Repetições (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora.

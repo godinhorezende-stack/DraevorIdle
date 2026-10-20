@@ -142,7 +142,8 @@ export function andarMiragem(mir, metros, { alvo = null, andavel = null, distanc
 
 /** (D-a) A carga que a gema gasta para pular a recarga (o PoB: "The cooldown can be bypassed by expending a Frenzy Charge";
  * `active_skill_cooldown_bypass_type_override_to_power_charge` no do Poder; o Caminho Sagrado da Tolerância — a descrição da gema). */
-export const CARGA_QUE_PULA_A_RECARGA = Object.freeze({ Flicker_Strike: 'frenesi', Flicker_Strike_of_Power: 'poder', Consecrated_Path_of_Endurance: 'tolerancia' });
+// (revisão do A5, dono 20/10: + o Golpe Vigilante — "A recarga pode ser ignorada ao gastar uma Carga de Tolerância", a descrição; o PoB, VigilantStrike em act_str.lua)
+export const CARGA_QUE_PULA_A_RECARGA = Object.freeze({ Flicker_Strike: 'frenesi', Flicker_Strike_of_Power: 'poder', Consecrated_Path_of_Endurance: 'tolerancia', Vigilant_Strike: 'tolerancia' });
 
 // ---------------------------------------------------------------- o Golpe Súbito: as cargas no acerto
 

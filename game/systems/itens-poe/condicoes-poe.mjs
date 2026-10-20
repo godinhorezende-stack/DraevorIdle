@@ -81,12 +81,15 @@ export const AREAS_FRIAS = Object.freeze({
 });
 // (lote A2: + `efeitoPct` — a área com o Resfriamento próprio: o Escudo Gélido, com o "Efeito de Afecções de Gelo aumentado" da qualidade dele)
 // (lote A3b, dono 19/10: + `obj` — o id do objeto do chão a que a área fria pertence: a da Geada Rastejante anda com ele, `Acoes.tiqueDosObjetos`)
-export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null }) {
+// (lote A5, dono 20/10 — D5: + `fragilGelo` — a área da habilidade suportada pelo Resfriamento Ósseo: quem está nela sofre o Gelo aumentado pelo Resfriamento)
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
   const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora);
-  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000), ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}) });
+  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000), ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}) });
   h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
 }
+/** (lote A5, D5) O bicho está numa área fria do Resfriamento Ósseo agora? */
+export const naAreaFriaFragil = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.fragilGelo && a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
 /** O bicho está numa das suas áreas frias agora? */
 export const naAreaFria = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
 /** (lote A2) O Resfriamento da área fria em que o bicho está (o maior delas): o de sempre, ou o próprio da área. */
@@ -181,12 +184,17 @@ export function fortificacao(estado, total = null) {
   return Math.max(propria, Aliados.fortificacaoDosAliados(estado));
 }
 /** Ganha `n` Fortificações (até o máximo) e renova a duração ("Duração da Fortificação aumentada"). */
-export function ganharFortificacao(hunt, n, total, agora = hunt?.clock ?? 0) {
+// (lote A5, dono 20/10: `doUso` — o que o USO dá à Fortificação, da ficha do golpe: o "Duração da Fortificação aumentada" da qualidade do suporte Fortificar
+// — `incPct`, somado ao da soma — e a duração base da Golpe Vigilante — `baseS`, "Acertos Corpo a Corpo Fortificam por 8 segundos", no lugar dos 6 s)
+export function ganharFortificacao(hunt, n, total, agora = hunt?.clock ?? 0, doUso = null) {
   if (!hunt || !ligado() || !(n > 0)) return 0;
   const max = maxFortificacao(total);
   const f = hunt.fortificacao && hunt.fortificacao.ate > agora ? hunt.fortificacao : { n: 0, ate: 0 };
-  const dur = Math.round(FORTIFICACAO.duracaoMs * Math.max(0.1, 1 + (Number(total?.fortificacao_duracao_inc) || 0) / 100));
-  hunt.fortificacao = { n: Math.min(max, f.n + Math.max(1, Math.round(n))), ate: agora + dur };
+  const base = Number(doUso?.baseS) > 0 ? Number(doUso.baseS) * 1000 : FORTIFICACAO.duracaoMs;
+  const inc = doUso?.incPct != null ? Number(doUso.incPct) || 0 : Number(total?.fortificacao_duracao_inc) || 0;
+  const dur = Math.round(base * Math.max(0.1, 1 + inc / 100));
+  // (revisão do A5: um acerto com duração menor não encurta a Fortificação que já corre — fica o maior fim)
+  hunt.fortificacao = { n: Math.min(max, f.n + Math.max(1, Math.round(n))), ate: Math.max(f.ate ?? 0, agora + dur) };
   return hunt.fortificacao.n;
 }
 
@@ -233,7 +241,7 @@ export const CONDICOES_DE_ESTADO = new Set([
   'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
-  'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'parado',
+  'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'drenandoVida', 'parado',
   'maoSecundariaVazia', 'desarmado', 'naoSobrecarregado', 'naoVidaBaixa', 'naoAcertadoRecente', 'bloqueouRecente', 'naoBloqueouRecente', 'atordoouRecente',
   'congelouRecente', 'incendiouRecente', 'eletrizouRecente', 'usouMovimentoRecente', 'usouVaalRecente', 'clamouRecente', 'acertouRecente',
   'ganhouPoderRecente', 'naoGanhouPoderRecente', 'naoGanhouFrenesiRecente', 'naoPerdeuPoderRecente', 'consumiuCadaverRecente', 'naoConsumiuCadaverRecente',
@@ -501,6 +509,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && a.recurso === 'vida')) v.add('duranteFrascoVida');
     if (Object.values(h.frascosPoe?.tinturas ?? {}).some((t) => t?.ativa)) v.add('tinturaAtiva');
     if ((h.roubos ?? []).some((x) => x.restante > 0)) v.add('drenando');
+    // (revisão do A5: só o Dreno de VIDA — "Dano aumentado enquanto Drenando Vida", a qualidade do Dreno de Vida)
+    if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'vida')) v.add('drenandoVida');
     if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'es')) v.add('drenandoEs');
     if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'mana')) v.add('drenandoMana');
     if (!v.has('movendo')) v.add('parado');
@@ -1648,7 +1658,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const pen = s.elem_pen ?? 0;
   // (13/10: + o "mais Dano Degenerativo" com condição — `dano_dot_mais@magia`, "Mais X% de dano degenerativo com habilidades mágicas")
   // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como)/.test(k));
+  // (lote A5, dono 20/10: + o máximo da Eletrização, o −X% de Fogo dos Incendiados, o "Eletriza ao resfriar / Resfria ao eletrizar" do Coursing Current e o Resfriamento Ósseo —
+  // as linhas da gema e dos suportes que as afecções do golpe leem)
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
@@ -1739,6 +1751,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (O multiplicador FIXO — "Seu Multiplicador de Acerto Crítico é N%" — e o "Golpes Críticos não causam Dano extra" não somam o do golpe.)
   const multFixo = Number(ficha.afPoe?.crit_multi_fixo) > 0 || Number(ficha.afPoe?.critico_sem_dano_extra) > 0;
   if (critMult && !multFixo) f.critMultiplier = (ficha.critMultiplier ?? 1.5) + critMult / 100;
+  // (lote A5, dono 20/10: o "Golpes Críticos não causam Dano extra" da GEMA — a Queda de Lâminas do Empalamento —: o multiplicador do golpe em 100%; o
+  // bruto — o das afecções da Agonia Perfeita — fica)
+  if ((s.critico_sem_dano_extra ?? 0) > 0) f.critMultiplier = 1;
   // (o multiplicador de crítico BRUTO — o da Agonia Perfeita, que tira o dano extra do crítico mas usa o multiplicador nas afecções)
   if (critMult && ficha.critMultiplierBruto != null) f.critMultiplierBruto = ficha.critMultiplierBruto + critMult / 100;
   const penPorElemento = { fire: s.fire_pen ?? 0, ice: s.ice_pen ?? 0, energy: s.energy_pen ?? 0 };
@@ -2762,11 +2777,18 @@ export const RETALIACAO = { janelaMs: 2000, selvagemPct: 15 };
 export function abrirRetaliacao(hunt, gatilho, total, agora = hunt?.clock ?? 0) {
   if (!hunt || !ligado()) return;
   const ms = RETALIACAO.janelaMs * Math.max(0.1, 1 + (Number(total?.retaliacao_janela_inc) || 0) / 100) + 1000 * (Number(total?.retaliacao_janela_s) || 0);
-  (hunt.retaliacao ??= {})[gatilho] = { ate: agora + ms, usados: [] };
+  // (lote A5, dono 20/10 — D8: a janela guarda o início e a base — `de`, `msBase`: cada gema lê o seu tempo, com o "X% maior" do suporte dela)
+  (hunt.retaliacao ??= {})[gatilho] = { ate: agora + ms, de: agora, msBase: ms, usados: [] };
 }
-export const retaliacaoUsavel = (hunt, gatilho, slug, agora = hunt?.clock ?? 0) => {
+/**
+ * A gema de Retaliação `slug` pode ser usada agora? (lote A5, dono 20/10 — D8) `incDaGema`: o "se tornam Utilizáveis por um tempo X% maior" da Retaliação
+ * Experiente que a suporta — a janela DESTA gema é a base × (1 + X%), contada do início (as outras gemas seguem com a base).
+ */
+export const retaliacaoUsavel = (hunt, gatilho, slug, agora = hunt?.clock ?? 0, incDaGema = 0) => {
   const j = hunt?.retaliacao?.[gatilho];
-  return !!j && j.ate > agora && !j.usados.includes(slug);
+  if (!j || j.usados.includes(slug)) return false;
+  const ate = incDaGema > 0 && j.msBase > 0 && j.de != null ? Math.max(j.ate, j.de + j.msBase * (1 + incDaGema / 100)) : j.ate;
+  return ate > agora;
 };
 /**
  * Usou a gema de Retaliação: gasta o uso dela na janela ("X% de chance das Habilidades de Retaliação utilizadas continuarem Utilizáveis e não
@@ -3041,7 +3063,9 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)
   if (ativo(e.totemFragil, agora)) f *= 1 + (e.totemFragil.pct ?? 0) / 100;
   // (ciclo 7) a Geada Cortante: "Inimigos esfriados pelos seus ataques sofrem dano de frio aumentado pelo esfriamento" — o efeito do Resfriamento.
-  if (tipo === 'ice' && ativo(e.lento, agora) && Number(ficha?.afPoe?.resfriado_fragil) > 0) f *= 1 + (e.lento.pct ?? 0) / 100;
+  // (lote A5, dono 20/10 — D5) + o do Resfriamento Ósseo: o Resfriamento posto pela habilidade suportada, ou a área fria dela (`fragilGelo` no bicho, com a
+  // duração do Resfriamento — `afeccoes.aoAcertar`, `cacadas.resfriarNasAreasFrias`): vale em qualquer Gelo no inimigo (o debuff do PoE), uma vez só com o da árvore
+  if (tipo === 'ice' && ativo(e.lento, agora) && (Number(ficha?.afPoe?.resfriado_fragil) > 0 || ativo(e.fragilGelo, agora))) f *= 1 + (e.lento.pct ?? 0) / 100;
   // (lote G) sobre o seu Solo Sagrado; perto do seu Estandarte (`mods-poe.aurasProximas`).
   if (ativo(e.soloFragil, agora)) f *= 1 + (e.soloFragil.pct ?? 0) / 100;
   if (ativo(e.auraFragil, agora)) f *= 1 + (e.auraFragil.pct ?? 0) / 100;
@@ -3112,6 +3136,20 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
  * "Exposições infligidas por você aplicam X% extra" (`exposicao_extra`) e "aplicam ao menos X%" (`exposicao_minima`).
  */
 const EXTRA_DA_EXPOSICAO = { fire: 'exposicao_extra_fogo', ice: 'exposicao_extra_gelo', energy: 'exposicao_extra_raio' };
+/**
+ * (lote A5, dono 20/10 — D10: "uma função única para pôr Exposição") PÕE a Exposição a `el` no alvo: −`pct`% por `ms`. Como no PoE, só a mais forte de cada
+ * elemento vale: com uma ainda ativa, fica o maior % e a duração que acaba depois; a vencida não conta (antes o Raio Abrasador guardava o % de uma Exposição
+ * já vencida). Quem usa: o acerto (`mods-poe.aoAcertar` — a de valor fixo e a com chance), o Raio Abrasador, a Bomba Congelante e a Onda de Convicção.
+ */
+export function porExposicao(alvo, el, pct, ms, agora) {
+  if (!alvo || !['fire', 'ice', 'energy'].includes(el) || !(pct > 0) || !(ms > 0)) return false;
+  const e = (alvo.estados ??= {});
+  const fim = e.exposicao?.[el] ?? 0;
+  const ainda = fim > agora;
+  e.exposicao = { ...(e.exposicao ?? {}), [el]: ainda ? Math.max(fim, agora + ms) : agora + ms };
+  e.exposicaoPct = { ...(e.exposicaoPct ?? {}), [el]: ainda ? Math.max(e.exposicaoPct?.[el] ?? 10, pct) : pct };
+  return true;
+}
 export function exposicao(alvo, agora, tipo, af = null) {
   if (!((alvo?.estados?.exposicao?.[tipo] ?? 0) > agora)) return 0;
   // (13/10, as Maestrias de Fogo/Gelo/Raio: "Exposição a Fogo infligida por você aplica X% extra" — a Exposição das gemas, das auras e dos

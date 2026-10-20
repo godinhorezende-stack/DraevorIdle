@@ -8077,6 +8077,48 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes.tiqueDaTempestade (lote 81)"
+    },
+    "culling_normal_magico": {
+      "nome": "Golpe de Misericórdia em Normal e Mágico (limiar)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar: mata o Normal/Mágico com a vida no limiar ou abaixo (o Abater o Fraco — lote A5)"
+    },
+    "fortificacao_base_s": {
+      "nome": "Duração base da Fortificação (segundos)",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "a Fortificação do PoE (`condicoes-poe.ganharFortificacao`): a duração base no lugar dos 6 s (a Golpe Vigilante, 8 s — lote A5)"
+    },
+    "empalar_reflete_ao_matar": {
+      "nome": "Empalamentos refletem o dano no Golpe Final",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar: no golpe final, os Empalamentos do alvo vão aos inimigos a 1 casa (o Golpe Duplo do Empalamento — lote A5)"
+    },
+    "efeito_resfriamento_mais": {
+      "nome": "Mais/menos Efeito do Resfriamento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar e as áreas frias (`condicoes-poe.criarAreaFria`): multiplica a força do Resfriamento, no teto (o Estalo Gélido — lote A5)"
+    },
+    "resfriado_fragil_gelo": {
+      "nome": "Resfriados pela habilidade sofrem Gelo aumentado pelo Resfriamento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (marca `fragilGelo`) → condicoes-poe.fatorRecebidoPeloBicho (o Resfriamento Ósseo — lote A5)"
+    },
+    "eletriza_ao_resfriar": {
+      "nome": "Eletriza ao Resfriar (a força do Resfriamento)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (o Coursing Current — lote A5)"
+    },
+    "resfria_ao_eletrizar": {
+      "nome": "Resfria ao Eletrizar (a força da Eletrização)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar (o Coursing Current — lote A5)"
     }
   }
 }

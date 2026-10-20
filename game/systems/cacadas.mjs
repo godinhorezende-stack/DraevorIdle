@@ -2678,8 +2678,9 @@ export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0) {
     // (lote A2: a área com o Resfriamento próprio — o Escudo Gélido — vale o dela)
     const efeito = ModsPoe.efeitoDaAreaFria(hunt, m, agora) || ModsPoe.AREAS_FRIAS.efeitoPct;
     const l = m.estados?.lento;
-    if (l && l.ate - agora > 1000 && l.pct >= efeito) continue;
-    Estados.aplicar(m, { lentidaoPct: efeito }, 1, agora, Math.random, !!hunt.isBoss);
+    if (!(l && l.ate - agora > 1000 && l.pct >= efeito)) Estados.aplicar(m, { lentidaoPct: efeito }, 1, agora, Math.random, !!hunt.isBoss);
+    // (lote A5, dono 20/10 — D5) na área fria do Resfriamento Ósseo: o Gelo sofrido aumentado pelo Resfriamento, enquanto ele durar
+    if (m.estados?.lento?.ate > agora && ModsPoe.naAreaFriaFragil(hunt, m, agora)) m.estados.fragilGelo = { ate: m.estados.lento.ate };
   }
 }
 

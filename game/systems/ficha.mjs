@@ -178,6 +178,24 @@ const locaisDaArma = (peca) => {
   const ab = peca.poe.abissais?.length ? ModsPoe.locaisAbissais(peca) : {};
   return { pctVelocidade: (Number(peca.poe.af?.atk_speed_local) || 0) + (ab.atk_speed_local ?? 0), pctCritico: (Number(peca.poe.af?.crit_chance_local) || 0) + (ab.crit_chance_local ?? 0), ...(ab.phys_dmg_local ? { pctDano: ab.phys_dmg_local } : {}) };
 };
+/**
+ * (lote A5, dono 20/10 — D7) O DANO DE CADA ARMA equipada, sozinha — a base sorteada da peça com os modificadores LOCAIS dela e a qualidade (`engine/arma`),
+ * sem os adicionados globais: `[{ slot, classe, min, max, intervaloMs }]` (a principal e, com duas armas, a secundária). A Lâmina Mágica e a Detonação da
+ * Adaga (o dano da arma como Dano Mágico adicional) e o Golpe Duplo da Ambidestria (o tempo de ataque da secundária) leem daqui.
+ */
+export function armasEquipadas(estado) {
+  const saida = [];
+  for (const slot of ['weapon', 'shield']) {
+    const peca = estado?.equipment?.[slot];
+    const meta = metaDaPeca(peca);
+    if (!meta || meta.slot !== 'weapon') continue;
+    const st = ArmaMod.statsDaArma(ArmaMod.baseDaArma(meta, faixaDoCampo(peca, 'attack')), { qualidade: peca?.qualidade, locais: locaisDaArma(peca) });
+    // (`intervaloMs`: o da arma como a ficha o usa no golpe — a secundária sem a qualidade, `combate`)
+    const daFicha = slot === 'weapon' ? st : ArmaMod.statsDaArma(ArmaMod.baseDaArma(meta), { locais: locaisDaArma(peca) });
+    if (st) saida.push({ slot, classe: String(peca?.poe?.classe ?? ''), min: st.danoMin, max: st.danoMax, intervaloMs: daFicha?.aps.intervaloMs ?? null, duasMaos: !!meta.twoHanded });
+  }
+  return saida;
+}
 /** DESARMADO no PoE: 1,2 ataques por segundo (833 ms), como no PoE. No clássico, sem arma, os 2 s de sempre. */
 export const APS_DESARMADO_POE = 1.2;
 /**

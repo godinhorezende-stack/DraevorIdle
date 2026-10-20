@@ -300,7 +300,7 @@ export function debuffDasLinhas(slug, linhas = [], daQualidade = [], qualidade =
   if (/^Scorching_Ray/.test(slug)) {
     const max = achar(linhas, /^Debuff Incendiário pode ter no máximo (\d+) estágios$/i);
     if (!max) return null;
-    return { max, porEstagioPct: somar(todas, /^Estágios Adicionais do Debuff adicionam \+?([\d.]+) % de Dano$/i), aposPrimeiro: true, duracaoMs: null, exposicaoPct: somar(linhas, /^Exposição a Fogo aplica (-?[\d.]+) % de Resistência a Fogo$/i) + (EXPOSICAO_POR_QUALIDADE[slug] ?? 0) * Math.max(0, Math.min(20, Number(qualidade) || 0)) };
+    return { max, porEstagioPct: somar(todas, /^Estágios Adicionais do Debuff adicionam \+?([\d.]+) % de Dano$/i), aposPrimeiro: true, duracaoMs: null, exposicaoPct: somar(linhas, /^Exposição a Fogo aplica (-?[\d.]+) % de Resistência a Fogo$/i) + (EXPOSICAO_POR_QUALIDADE[slug] ?? 0) * Math.max(0, Number(qualidade) || 0) };
   }
   return null;
 }

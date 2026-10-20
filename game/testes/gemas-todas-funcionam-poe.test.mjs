@@ -61,6 +61,8 @@ function montar(slug, [arma, escudo], suportes = []) {
   // Energia; o Cajado Impregnado de Mana usa o cajado, que já está na lista das armas)
   if (slug === 'Berserk') e.hunt.furia = { n: 5, ganhou: e.hunt.clock, perdeu: e.hunt.clock };
   if (slug === 'Energy_Blade') e.es = 1e7;
+  // (lote A5, com o aval do dono: o Golpe Selvagem dos Extremos paga Mana, Vida e Escudo de Energia juntos, como no PoB)
+  if (slug === 'Wild_Strike_of_Extremes') e.es = 1e7;
   const [b, ...resto] = e.hunt.monstros;
   for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
   Object.assign(b, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {} });

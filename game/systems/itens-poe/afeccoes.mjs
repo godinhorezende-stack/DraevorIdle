@@ -146,6 +146,10 @@ export function daSoma(af = {}) {
     // (lote 69, as Ramificadoras) "Inimigos Incendiados por você têm −X% de Resistência a Fogo"; "Inimigos Envenenados por você não podem
     // Regenerar Vida" (`skills/estados` — a regeneração do monstro)
     resMenosFogoIncendiado: Math.abs(n('res_menos_fogo_incendiado')), envenenadosSemRegen: n('envenenados_sem_regen') > 0,
+    // (lote A5, dono 20/10) o "X% mais Efeito de Resfriamento" (o Estalo Gélido — multiplica, no teto); o Resfriamento Ósseo (D5: o Resfriamento posto marca o
+    // Gelo sofrido aumentado — `fragilGelo`); o Coursing Current (D6: a Eletrização que nasce do Resfriamento e o Resfriamento que nasce da Eletrização)
+    efeitoResfriamentoMais: n('efeito_resfriamento_mais'), resfriadoFragilGelo: n('resfriado_fragil_gelo') > 0,
+    eletrizaAoResfriar: n('eletriza_ao_resfriar') > 0, resfriaAoEletrizar: n('resfria_ao_eletrizar') > 0,
   };
 }
 
@@ -323,6 +327,32 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     if (a.envenenadosSemRegen) (bicho.estados ??= {}).semRegenEnvenenado = true;
   }
   const limiar = bicho.maxHp ?? bicho.hp;
+  // A ELETRIZAÇÃO de `pct`% no alvo (a do acerto e — lote A5, D6 — a que nasce do Resfriamento, o Coursing Current): vale a mais forte, não
+  // encurta a que já corre; com "Você pode aplicar até N Eletrizações", a pilha. Devolve se pôs.
+  const maxEl = a.eletrizacaoMaximoFixo > 0 ? a.eletrizacaoMaximoFixo : BASE.eletrizacao.maximo + (a.eletrizacaoMaximo ?? 0);
+  const eletrizar = (pct0) => {
+    if (bicho.imuneChoque) return false;
+    const pct = Math.min(maxEl, pct0);
+    const e = (bicho.estados ??= {});
+    const ate = agora + duracaoDe(BASE.eletrizacao.duracaoMs, a.duracaoEletrizacao ?? 0);
+    if (pct > 0 && a.eletrizacoesMax > 1) {
+      // "Você pode aplicar até N Eletrizações em cada Inimigo": a pilha (as N mais fortes ativas) — o dano a mais é a soma.
+      const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
+      pilha.push({ ate, pct, dur: ate - agora });
+      e.chocadosPilha = pilha.sort((x, y) => y.pct - x.pct).slice(0, Math.floor(a.eletrizacoesMax));
+      e.chocado = { ate: Math.max(...e.chocadosPilha.map((x) => x.ate)), pct: e.chocadosPilha.reduce((t, x) => t + x.pct, 0) };
+      postos.push('eletrizado');
+      return true;
+    }
+    const atual = e.chocado;
+    // Vale a mais forte; não encurta a que já corre.
+    if (pct > 0 && !(atual && atual.ate > agora && atual.pct >= pct)) {
+      e.chocado = { ate, pct, dur: ate - agora };
+      postos.push('eletrizado');
+      return true;
+    }
+    return false;
+  };
   // (+ "Efeito de Afecções não-Danificadoras infligidas por você com Golpes Críticos aumentado": o Resfriamento e a Eletrização do crítico)
   const efeitoDoCritico = crit ? a.efeitoNaoDanoCritico ?? 0 : 0;
   if (gelo > 0 || resfria > 0) {
@@ -340,6 +370,8 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     // ("Seus Resfriamentos podem reduzir a Velocidade de Ação em até um máximo de X%"; "sempre reduzem … em ao menos X%")
     const maxResfria = a.resfriamentoMaximo > 0 ? a.resfriamentoMaximo : BASE.resfriamento.maximo;
     let lento = resfria > 0 ? comEfeito(forca(resfria * (1 + (a.resfriaComoMais ?? 0) / 100), limiar, { ...BASE.resfriamento, maximo: maxResfria }), (a.efeitoResfriamento ?? 0) + efeitoDoCritico, maxResfria) : 0;
+    // (lote A5, dono 20/10) "X% mais Efeito de Resfriamento" (o Estalo Gélido): multiplica a força, no teto
+    if (lento > 0 && a.efeitoResfriamentoMais) lento = Math.min(maxResfria, Math.round(lento * Math.max(0, 1 + a.efeitoResfriamentoMais / 100) * 10) / 10);
     if (resfria > 0 && a.resfriamentoMinimo > 0) lento = Math.min(maxResfria, Math.max(lento, a.resfriamentoMinimo));
     postos.push(...Estados.aplicar(bicho, {
       ...(congela ? { congelarChance: 100, congelarMs, ...(a.congelamentoMinimoMs > 0 ? { congelarMinimoMs: a.congelamentoMinimoMs } : {}), ...(a.resfriarAoDescongelar > 0 ? { resfriarAoDescongelar: a.resfriarAoDescongelar } : {}) } : {}),
@@ -349,6 +381,12 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
     const e = (bicho.estados ??= {});
     // ("Inimigos Resfriados pelos seus Acertos reduz o Dano causado pela metade do Efeito de Resfriamento" — `condicoes-poe.doBicho`)
     if (lento && a.resfriamentoReduzDano && e.lento) e.lento.reduzDano = true;
+    // (lote A5, dono 20/10 — D5) o Resfriamento Ósseo: o Resfriamento deste acerto deixa o Gelo sofrido aumentado pelo efeito dele, enquanto durar
+    // (`condicoes-poe.fatorRecebidoPeloBicho` — qualquer Gelo no inimigo, uma vez só)
+    if (lento && a.resfriadoFragilGelo && e.lento?.ate > agora) e.fragilGelo = { ate: e.lento.ate };
+    // (lote A5, dono 20/10 — D6) o Coursing Current: "Eletrifica inimigos quando eles são esfriados" — uma Eletrização com a força do Resfriamento deste acerto
+    // (no teto dela, a duração base com os modificadores; sem a cascata: ela não Resfria de novo; não acontece se a gema não pode Eletrizar)
+    if (lento && a.eletrizaAoResfriar && !a.naoPode?.eletrizacao && !a.semElementais) eletrizar(lento);
     // ("Inimigos sofrem permanentemente Dano aumentado em X% por cada segundo que passaram Congelados/Resfriados por você" — o tempo é contado
     // em `skills/estados.tique`, o dano a mais em `condicoes-poe.fatorRecebidoPeloBicho`)
     const p = a.permanente ?? {};
@@ -358,25 +396,15 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   if (raio > 0 && !bicho.imuneChoque && (crit || sorte(chance('eletrizacao')))) {
     // O máximo ("+X% ao Máximo de Efeito da Eletrização" ou "Efeito Máximo … é igual a X%"), o efeito (+ a Mana máxima aumentada e o do
     // crítico) e o mínimo ("sempre aumentam o Dano recebido em ao menos X%").
-    const maxEl = a.eletrizacaoMaximoFixo > 0 ? a.eletrizacaoMaximoFixo : BASE.eletrizacao.maximo + (a.eletrizacaoMaximo ?? 0);
     let pct = comEfeito(forca(raio * (1 + (a.eletrizaComoMais ?? 0) / 100), limiar, { ...BASE.eletrizacao, maximo: maxEl }), (a.efeitoEletrizacao ?? 0) + (a.eletrizacaoDaMana ?? 0) + efeitoDoCritico, maxEl);
     if (a.eletrizacaoMinima > 0) pct = Math.min(maxEl, Math.max(pct, a.eletrizacaoMinima));
-    const e = (bicho.estados ??= {});
-    const ate = agora + duracaoDe(BASE.eletrizacao.duracaoMs, a.duracaoEletrizacao ?? 0);
-    if (pct > 0 && a.eletrizacoesMax > 1) {
-      // "Você pode aplicar até N Eletrizações em cada Inimigo": a pilha (as N mais fortes ativas) — o dano a mais é a soma.
-      const pilha = (e.chocadosPilha ?? []).filter((x) => x.ate > agora);
-      pilha.push({ ate, pct, dur: ate - agora });
-      e.chocadosPilha = pilha.sort((x, y) => y.pct - x.pct).slice(0, Math.floor(a.eletrizacoesMax));
-      e.chocado = { ate: Math.max(...e.chocadosPilha.map((x) => x.ate)), pct: e.chocadosPilha.reduce((t, x) => t + x.pct, 0) };
-      postos.push('eletrizado');
-    } else {
-      const atual = e.chocado;
-      // Vale a mais forte; não encurta a que já corre.
-      if (pct > 0 && !(atual && atual.ate > agora && atual.pct >= pct)) {
-        e.chocado = { ate, pct, dur: ate - agora };
-        postos.push('eletrizado');
-      }
+    // (lote A5, dono 20/10 — D6) o Coursing Current: "Esfria inimigos quando eles são eletrificados" — um Resfriamento com a força desta Eletrização, no teto
+    // dele (sem a cascata; não acontece se a gema não pode Resfriar)
+    if (eletrizar(pct) && a.resfriaAoEletrizar && !a.naoPode?.resfriamento && !a.semElementais) {
+      const maxResfria = a.resfriamentoMaximo > 0 ? a.resfriamentoMaximo : BASE.resfriamento.maximo;
+      const lento = Math.min(maxResfria, pct);
+      postos.push(...Estados.aplicar(bicho, { lentidaoPct: lento, lentidaoDuracaoPct: (a.duracaoResfriamento ?? 0) + (a.duracao ?? 0) }, 1, agora, rng, salaDeBoss));
+      if (a.resfriadoFragilGelo && bicho.estados?.lento?.ate > agora) bicho.estados.fragilGelo = { ate: bicho.estados.lento.ate };
     }
   }
   // ("Inimigos Incendiados ou Resfriados por você têm −X% de Resistências Elementais" — `hunt/resistencia.resistenciaDe`)

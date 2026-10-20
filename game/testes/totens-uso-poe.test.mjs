@@ -184,7 +184,8 @@ test('G20a: o status honesto — o Sísmico "funciona"; o que o totem não faz v
   assert.ok(!chefe.some((m) => /o totem fica parado|Velocidade de Posicionamento|enquanto o Totem estiver Ativo/.test(m)), chefe.join(' | '));
   assert.ok(G.doSlug('Holy_Flame_Totem_of_Ire').motivosNoJogo.includes('efeito não simulado: 128 % mais Velocidade de Projétil'));
   // (a chave do compilador sem leitor: o alcance corpo a corpo da gema não ia a lugar nenhum — a Lâmina Gélida também)
-  assert.ok(G.doSlug('Frost_Blades').motivosNoJogo.includes('efeito não simulado: +2.1 metros ao Alcance de Golpes Corpo a Corpo'), G.doSlug('Frost_Blades').motivosNoJogo.join(' | '));
+  // (lote A5, com o aval do dono: o alcance das Lâminas Gélidas agora é feito — `Acoes.alcanceCorpoDoUso` —, e a linha sai dos motivos)
+  assert.ok(!G.doSlug('Frost_Blades').motivosNoJogo.includes('efeito não simulado: +2.1 metros ao Alcance de Golpes Corpo a Corpo'), G.doSlug('Frost_Blades').motivosNoJogo.join(' | '));
 });
 
 test('G20a: o ALCANCE do totem ancestral é o do seu golpe corpo a corpo (o Protetor com a Espada Enferrujada: 1 + ⌊(1,1 + 1,8) / 2⌋ = 2 casas; antes 7)', { skip: SEM }, async () => {
