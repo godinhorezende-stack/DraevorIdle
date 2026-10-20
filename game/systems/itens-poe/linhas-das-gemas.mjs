@@ -119,6 +119,14 @@ const REGRAS = [
   [/^Mutila ao Acertar$/i, () => ({ chance_mutilar: 100 })],
   [new RegExp(`^${N} ?% de aumento do Efeito de Mutilação$`, 'i'), (m) => ({ efeito_mutilacao: num(m[1]) })],
   [new RegExp(`^${N} ?% mais Velocidade de Conjuração$`, 'i'), (m) => ({ cast_speed_mais: num(m[1]) })],
+  // (lote PR1, dono 20/10) o dano ADICIONAL igual a X% da Vida/Mana máxima — a Flecha Ardente do Vigor (o PoB: added_fire_damage_to_attacks_equal_to_%_maximum_life,
+  // FireMin e FireMax BASE pelo PercentStat Life, act_dex.lua:3478) e o Sifão de Poder do Arquimago (attack_skills_have_added_lightning_damage_equal_to_%_of_maximum_mana,
+  // + 0,15 por qualidade): o mínimo e o máximo iguais, × a Vida/Mana máxima de agora (a escala `vidaMax:1`/`manaMax:1`, `fatorDaEscala`)
+  [new RegExp(`^Causa Dano de (Fogo|Gelo|Raio|Caos|Físico) Adicional igual a ${N} ?% da (Vida|Mana) M[áa]xima$`, 'i'), (m) => {
+    const e = { fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos', físico: 'physical' }[m[1].toLowerCase()];
+    const escala = m[3].toLowerCase() === 'vida' ? 'vidaMax:1' : 'manaMax:1';
+    return { [`added_${e}_dmg_min%${escala}`]: num(m[2]) / 100, [`added_${e}_dmg_max%${escala}`]: num(m[2]) / 100 };
+  }],
 ];
 
 /**
