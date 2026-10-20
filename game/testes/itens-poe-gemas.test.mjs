@@ -33,7 +33,8 @@ test('as 562 gemas viram magias do jogo com o molde do Draevor, item com ícone,
   assert.equal(G.doSlug('Arc').molde, 'spell-forked-thorns', 'Arco = a corrente');
   assert.equal(G.doSlug('Raise_Zombie').statusNoJogo, 'parcial', 'o lacaio invoca (as habilidades próprias dele ainda não)');
   const st = [...G.REGISTRO.values()].reduce((o, r) => ((o[r.statusNoJogo] = (o[r.statusNoJogo] ?? 0) + 1), o), {});
-  assert.ok(st.funciona > 30 && st.parcial > 300 && st.nao < 40, JSON.stringify(st));
+  // (lote B1, dono 20/10 — aval: sem o piso de parciais, que cai a cada lote que zera gemas)
+  assert.ok(st.funciona > 30 && st.nao < 40, JSON.stringify(st));
   for (const r of G.REGISTRO.values()) if (r.statusNoJogo !== 'funciona') assert.ok(r.motivosNoJogo.length, `${r.gema.slug}: sem motivo`);
 });
 
