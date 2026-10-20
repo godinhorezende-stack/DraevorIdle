@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 276,
-   "implementada e testada": 222,
+   "implementada e testada": 236,
    "implementada, sem teste próprio": 52,
+   "parcial": 262,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "parcial": 88,
-   "implementada e testada": 93,
+   "implementada e testada": 107,
    "implementada, sem teste próprio": 23,
+   "parcial": 74,
    "limitação do modelo idle": 6
   },
   "suportes": {
@@ -24,15 +24,15 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 26,
-    "implementada e testada": 19,
+    "implementada e testada": 22,
+    "parcial": 23,
     "implementada, sem teste próprio": 7
    },
    "alternativas": {
     "total": 209,
-    "parcial": 109,
+    "implementada e testada": 72,
     "implementada, sem teste próprio": 27,
-    "implementada e testada": 66,
+    "parcial": 103,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 703,
-   "emDuasOuMais": 128
+   "linhasDistintas": 681,
+   "emDuasOuMais": 125
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 321,
+   "ativasCitadas": 326,
    "suportesCitados": 117,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -71,10 +71,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +0.1 metros de raio por inimigo próximo, até +1 metro"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -86,10 +84,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: +0.1 metro ao Raio por 5 de Fúria"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -285,11 +281,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Onda Central tem 88 % mais Área de Efeito",
-    "efeito não simulado: Onda Central tem 40 % mais Área de Efeito"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -318,12 +311,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 38 % mais Dano em Área",
-    "efeito não simulado: Raio acerta 3 alvos dentro de 5 metros",
-    "efeito não simulado: Raio acerta alvos dentro de +2 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -335,11 +324,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Buff concede Golpe Abatedor com Cutilada Buff concede 60 % mais Área de Efeito da Cutilada Buff concede 60 % mais Dano com Cutilada com Acertos e Afecções aos Inimigos que estão em Vida Baixo",
-    "efeito não simulado: +0.1 metros de raio por inimigo próximo, até +1 metro"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -364,10 +350,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Este Ataque pode ser Impelido como se não fosse uma Habilidade Vaal"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -706,11 +690,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Lança uma corrente em até 7 inimigos",
-    "efeito não simulado: Alcance aumentado em 40 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -767,13 +748,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Estacas Despedaçadas têm 157 % mais Área de Efeito",
-    "efeito não simulado: Estacas Despedaçadoras causam 100 % mais dano",
-    "efeito não simulado: Cria 1 fissura",
-    "efeito não simulado: Estacas Despedaçadoras causam +20 % mais dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1090,11 +1066,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Extensão da onda é de 10 metros",
-    "efeito não simulado: Circunferência base da onda é de 5 metros"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1195,10 +1168,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Ondas adicionais serão criadas a partir dos aliados dentro de um raio base de 4 metros do primeiro inimigo atingido"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1210,10 +1181,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano nos Inimigos 8 vezes"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -1781,8 +1750,6 @@
    "arquetipo": "impacto",
    "estado": "parcial",
    "ausentes": [
-    "efeito não simulado: Raio Base da Mão Principal é de 1.1 metros",
-    "efeito não simulado: Raio de alcance base da mão secundária é de 3.1 metros",
     "efeito não simulado: Receba 20 % do Dano Físico como Dano de Gelo Extra"
    ],
    "idle": [],
@@ -3238,10 +3205,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 80 % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3899,10 +3864,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por 1 segundo por Carga consumida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4777,11 +4740,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Efeito da Cegueira aumentado em 68 %",
-    "efeito não simulado: 100 % de chance de Cegar inimigos ao acertá-los"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11322,24 +11282,10 @@
    ]
   },
   {
-   "linha": "+# metro ao Raio por # de Fúria",
-   "gemas": [
-    "Chain_Hook_of_Trarthus",
-    "Cleave_of_Rage"
-   ]
-  },
-  {
    "linha": "+# metros ao raio do Solo Sagrado",
    "gemas": [
     "Purifying_Flame",
     "Purifying_Flame_of_Revelations"
-   ]
-  },
-  {
-   "linha": "+# metros de raio por inimigo próximo, até +# metro",
-   "gemas": [
-    "Cleave",
-    "Vaal_Cleave"
    ]
   },
   {
@@ -11784,13 +11730,6 @@
    ]
   },
   {
-   "linha": "Raio acerta # alvos dentro de # metros",
-   "gemas": [
-    "Smite_of_Divine_Judgement",
-    "Vaal_Smite"
-   ]
-  },
-  {
    "linha": "Raio Base da explosão menor igual a # metros",
    "gemas": [
     "Explosive_Trap",
@@ -11933,12 +11872,6 @@
    ]
   },
   {
-   "linha": "# % de chance de Cegar inimigos ao acertá-los",
-   "gemas": [
-    "Vaal_Blade_Flurry"
-   ]
-  },
-  {
    "linha": "# % de chance de convocar um Lacaio extra",
    "gemas": [
     "Summon_Raging_Spirit"
@@ -12053,12 +11986,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano em Área",
-   "gemas": [
-    "Smite_of_Divine_Judgement"
-   ]
-  },
-  {
    "linha": "# % mais Dano na Postura de Sangue",
    "gemas": [
     "Perforate_of_Duality"
@@ -12098,12 +12025,6 @@
    "linha": "# % mais Duração do Veneno",
    "gemas": [
     "Pestilent_Strike"
-   ]
-  },
-  {
-   "linha": "# % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido",
-   "gemas": [
-    "Elemental_Hit"
    ]
   },
   {
@@ -12269,6 +12190,12 @@
    ]
   },
   {
+   "linha": "+# metro ao Raio por # de Fúria",
+   "gemas": [
+    "Chain_Hook_of_Trarthus"
+   ]
+  },
+  {
    "linha": "+# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade",
    "gemas": [
     "Crackling_Lance"
@@ -12428,12 +12355,6 @@
    "linha": "Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros",
    "gemas": [
     "Elemental_Proliferation_Support"
-   ]
-  },
-  {
-   "linha": "Alcance aumentado em # %",
-   "gemas": [
-    "Chain_Hook_of_Angling"
    ]
   },
   {
@@ -12683,12 +12604,6 @@
    ]
   },
   {
-   "linha": "Buff concede Golpe Abatedor com Cutilada Buff concede # % mais Área de Efeito da Cutilada Buff concede # % mais Dano com Cutilada com Acertos e Afecções aos Inimigos que estão em Vida Baixo",
-   "gemas": [
-    "Vaal_Cleave"
-   ]
-  },
-  {
    "linha": "Buff concede Imunidade a Eletrização",
    "gemas": [
     "Tempest_Shield"
@@ -12869,12 +12784,6 @@
    ]
   },
   {
-   "linha": "Causa Dano nos Inimigos # vezes",
-   "gemas": [
-    "Swordstorm"
-   ]
-  },
-  {
    "linha": "Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Dano",
    "gemas": [
     "Summon_Reaper_of_Revenants"
@@ -12896,12 +12805,6 @@
    "linha": "Circunferência base da área-alvo é de # metros",
    "gemas": [
     "Kinetic_Rain_of_Impact"
-   ]
-  },
-  {
-   "linha": "Circunferência base da onda é de # metros",
-   "gemas": [
-    "Eviscerate"
    ]
   },
   {
@@ -13019,12 +12922,6 @@
    ]
   },
   {
-   "linha": "Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por # segundo por Carga consumida",
-   "gemas": [
-    "Frenzy_of_Onslaught"
-   ]
-  },
-  {
    "linha": "Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder",
    "gemas": [
     "Greater_Devour_Support"
@@ -13082,12 +12979,6 @@
    "linha": "Cria # fendas",
    "gemas": [
     "Fissure_Support"
-   ]
-  },
-  {
-   "linha": "Cria # fissura",
-   "gemas": [
-    "Earthshatter_of_Prominence"
    ]
   },
   {
@@ -13232,12 +13123,6 @@
    "linha": "Duração do Buff é atualizada após você gastar um total de # de Vida",
    "gemas": [
     "Corrupting_Fever"
-   ]
-  },
-  {
-   "linha": "Efeito da Cegueira aumentado em # %",
-   "gemas": [
-    "Vaal_Blade_Flurry"
    ]
   },
   {
@@ -13397,24 +13282,6 @@
    ]
   },
   {
-   "linha": "Estacas Despedaçadas têm # % mais Área de Efeito",
-   "gemas": [
-    "Earthshatter_of_Prominence"
-   ]
-  },
-  {
-   "linha": "Estacas Despedaçadoras causam # % mais dano",
-   "gemas": [
-    "Earthshatter_of_Prominence"
-   ]
-  },
-  {
-   "linha": "Estacas Despedaçadoras causam +# % mais dano",
-   "gemas": [
-    "Earthshatter_of_Prominence"
-   ]
-  },
-  {
    "linha": "Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados",
    "gemas": [
     "War_Banner"
@@ -13448,12 +13315,6 @@
    "linha": "Este ataque e lacaios convertem # % do dano físico em dano elétrico",
    "gemas": [
     "Holy_Strike"
-   ]
-  },
-  {
-   "linha": "Este Ataque pode ser Impelido como se não fosse uma Habilidade Vaal",
-   "gemas": [
-    "Vaal_Ground_Slam"
    ]
   },
   {
@@ -13526,12 +13387,6 @@
    "linha": "Explosões terão # a # de Dano de Fogo adicional",
    "gemas": [
     "Explosive_Arrow"
-   ]
-  },
-  {
-   "linha": "Extensão da onda é de # metros",
-   "gemas": [
-    "Eviscerate"
    ]
   },
   {
@@ -14603,12 +14458,6 @@
    ]
   },
   {
-   "linha": "Lança uma corrente em até # inimigos",
-   "gemas": [
-    "Chain_Hook_of_Angling"
-   ]
-  },
-  {
    "linha": "Libera ondas a cada # segundos",
    "gemas": [
     "Seismic_Trap"
@@ -14795,12 +14644,6 @@
    ]
   },
   {
-   "linha": "Onda Central tem # % mais Área de Efeito",
-   "gemas": [
-    "Shield_Crush_of_the_Chieftain"
-   ]
-  },
-  {
    "linha": "Onda de Choque causa # % mais Dano",
    "gemas": [
     "Purifying_Flame_of_Revelations"
@@ -14822,12 +14665,6 @@
    "linha": "Onda pode recomeçar até # vezes Áreas de onda ganham +# metros de raio para cada área anterior",
    "gemas": [
     "Sunder_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Ondas adicionais serão criadas a partir dos aliados dentro de um raio base de # metros do primeiro inimigo atingido",
-   "gemas": [
-    "Shield_of_Light"
    ]
   },
   {
@@ -14969,9 +14806,9 @@
    ]
   },
   {
-   "linha": "Raio acerta alvos dentro de +# metros",
+   "linha": "Raio acerta # alvos dentro de # metros",
    "gemas": [
-    "Smite_of_Divine_Judgement"
+    "Vaal_Smite"
    ]
   },
   {
@@ -14981,21 +14818,9 @@
    ]
   },
   {
-   "linha": "Raio Base da Mão Principal é de # metros",
-   "gemas": [
-    "Ice_Crash_of_Cadence"
-   ]
-  },
-  {
    "linha": "Raio Base terciário igual a # metros",
    "gemas": [
     "Ice_Trap"
-   ]
-  },
-  {
-   "linha": "Raio de alcance base da mão secundária é de # metros",
-   "gemas": [
-    "Ice_Crash_of_Cadence"
    ]
   },
   {

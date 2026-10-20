@@ -35,6 +35,8 @@ import * as GemasA5 from './gemas-a5.mjs';
 import * as GemasB1 from './gemas-b1.mjs';
 // (lote PR1, dono 20/10: as gemas ativas de projétil que reusam o que já existe — o Sifão de Poder, as estilhas do Arremesso de Escudo Espectral, a Galvânica)
 import * as GemasPR1 from './gemas-pr1.mjs';
+// (lote C1, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — a forma do golpe, o raio condicional, os buffs da gema)
+import * as GemasC1 from './gemas-c1.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -583,7 +585,8 @@ const podarOrigens = (p, origens) => { if (origens) for (const el of Object.keys
 // (lote A5c, dono 20/10: "a mesma ordem das magias") `outras(fisico, tetoPct)` — `ModsPoe.extrasDoFisico` com a ficha: as conversões das OUTRAS fontes só no
 // Físico que a gema deixou (proporcionais se passarem dele) e o "Físico como Extra" sobre o Físico de antes da conversão — todo o Físico do golpe (a arma × a
 // eficácia + o adicionado). Antes elas saíam da arma crua primeiro e a gema convertia o resto, multiplicando.
-export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null } = {}) {
+// (lote C1, dono 20/10: `escolhido` — o elemento do Acerto Elemental já escolhido no uso, para o raio contra a afecção dele; fora dos presentes, o sorteio)
+export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null } = {}) {
   const st = compilada(slug, nivel)?.stats ?? {};
   const ef = st.efetividade ?? 1;
   const p = {};
@@ -596,7 +599,7 @@ export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = 
   const ex = extrasDoAtaque(slug, nivel);
   if (ex.soElemental) { delete p.physical; delete p.chaos; }
   // "Apenas Causa Dano do Elemento escolhido" (Acerto Elemental): cada uso sorteia fogo, gelo ou raio e só ele fica.
-  if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
+  if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els.includes(escolhido) ? escolhido : els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
   for (const el of Object.keys(p)) if (!(p[el][1] > 0)) delete p[el];
   podarOrigens(p, origens);
   return p;
@@ -665,7 +668,9 @@ export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
  * os "+X metros de raio" da gema, × √ do "X% mais Área de Efeito" dela —, ou null se o PoE não publica o raio; `areaIncPct` — a "Área de
  * Efeito aumentada em X%" da gema (soma com a das peças e dos suportes).
  */
-const RAIO_DO_POB = Object.freeze({ Vaal_Flameblast: 4.5 });
+// (lote C1, dono 20/10: + o Esmagar Escudos do Chefe Guerreiro — radius 29 nos baseMods do PoB, act_str.lua:9950; o poedb não publica — e a Cutilada Vaal — o
+// radius 20 da Cutilada, act_str.lua:1814: a Vaal é a mesma Cutilada e nem o PoB nem o poedb publicam o dela)
+const RAIO_DO_POB = Object.freeze({ Vaal_Flameblast: 4.5, Shield_Crush_of_the_Chieftain: 2.9, Vaal_Cleave: 2 });
 export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   const st = compilada(slug, nivel, qualidade)?.stats;
   if (!st) return { raioM: null, areaIncPct: 0 };
@@ -1064,8 +1069,25 @@ export const porDuracaoDaGema = (slug, nivel = 1) => comCache(B1, `dur|${slug}@$
 export const estaloDaGema = (slug, nivel = 1) => comCache(B1, `est|${slug}@${nivel | 0}`, () => GemasB1.estaloDasLinhas(slug, textosDaGema(slug, nivel).linhas));
 /** "Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada" (o Condutor Elétrico; a Explosão Invernal do A1b). */
 export const conjuracaoNaRecargaSeAtivada = (slug) => comCache(B1, `cnr|${slug}`, () => textosDaGema(slug, 1).linhas.some((l) => GemasB1.LINHA_CONJURACAO_NA_RECARGA.test(String(l).trim())));
+
+/*
+ * ---- (lote C1, dono 20/10) os leitores no nível do lote C1 (`itens-poe/gemas-c1.mjs`) ----
+ * `{ raioPorInimigoM, buffDaVaal, raioContraAfeccaoPct, anzol, frenesi, golpesPorAlvo, onda, ondaCentralMaisPct, escudosDeLuz, raioDoCastigo, maos }`.
+ */
+const C1 = new Map();
+export const c1DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C1, `c1|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
+  return {
+    raioPorInimigoM: GemasC1.raioPorInimigoDasLinhas(slug, daQ), buffDaVaal: GemasC1.buffDaCutiladaVaalDasLinhas(slug, linhas),
+    raioContraAfeccaoPct: slug === 'Elemental_Hit' ? GemasC1.raioContraAfeccaoDasLinhas(linhas) : 0, anzol: GemasC1.anzolDasLinhas(slug, linhas, daQ),
+    frenesi: GemasC1.frenesiDasLinhas(slug, linhas), golpesPorAlvo: slug === 'Swordstorm' ? GemasC1.golpesPorAlvoDasLinhas(linhas) : 1, onda: GemasC1.ondaDasLinhas(slug, linhas),
+    ondaCentralMaisPct: GemasC1.ondaCentralDasLinhas(slug, linhas, daQ), escudosDeLuz: GemasC1.escudosDeLuzDasLinhas(slug, linhas),
+    raioDoCastigo: GemasC1.raioDoCastigoDasLinhas(slug, linhas, daQ), maos: GemasC1.maosDasLinhas(slug, linhas),
+  };
+});
 /** A Corrente com Gancho: o raio por Fúria. */
-export const raioPorFuriaDaGema = (slug, nivel = 1) => comCache(A1B, `fur|${slug}@${nivel | 0}`, () => (slug === 'Chain_Hook' ? GemasA1b.raioPorFuriaDasLinhas(textosDaGema(slug, nivel).linhas) : null));
+// (lote C1, dono 20/10: + a Cutilada da Fúria — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1875)
+export const raioPorFuriaDaGema = (slug, nivel = 1) => comCache(A1B, `fur|${slug}@${nivel | 0}`, () => (/^(Chain_Hook|Cleave_of_Rage)$/.test(slug) ? GemasA1b.raioPorFuriaDasLinhas(textosDaGema(slug, nivel).linhas) : null));
 /** A Investida com Escudo: o atordoamento na distância máxima. */
 export const atordoamentoDaInvestidaDaGema = (slug, nivel = 1) => comCache(A1B, `ato|${slug}@${nivel | 0}`, () => (slug === 'Shield_Charge' ? GemasA1b.atordoamentoDaInvestidaDasLinhas(textosDaGema(slug, nivel).linhas) : 0));
 /** (D-e) A Corrida de Fase Antiga. */
@@ -1164,7 +1186,8 @@ export function extrasDoAtaque(slug, nivel = 1, qualidade = 0) {
 const COMBINA_AS_ARMAS = /Quando em Dupla Empunhadura, Causa (\d+(?:[.,]\d+)?) ?% do Dano combinando cada Arma/i;
 // (lote A5, dono 20/10 — D5: + o Golpe da Víbora — "Se em empunhadura dupla, golpeará com ambas as armas" — e o da Mamba — "causa o dano de ambas as armas em um
 // golpe": a soma das duas armas num acerto, como o Ataque Combinado; o PoB: skill_double_hits_when_dual_wielding)
-const DANO_DE_AMBAS = /Ataca com ambas as armas, causando o dano de ambas em um ataque|Se em empunhadura dupla, golpeará com ambas as armas|Se em empunhadura dupla, causa o dano de ambas as armas em um golpe/i;
+// (lote C1, dono 20/10: + a Tormenta de Espadas — "causa o dano de ambas as Armas com cada acerto", doubleHitsWhenDualWielding no PoB, act_str.lua:10852)
+const DANO_DE_AMBAS = /Ataca com ambas as armas, causando o dano de ambas em um ataque|Se em empunhadura dupla, golpeará com ambas as armas|Se em empunhadura dupla, causa o dano de ambas as armas em um golpe|causa o dano de ambas as Armas com cada acerto/i;
 export function danoComAsDuasArmas(slug) {
   const g = POR_SLUG.get(slug);
   if (!g) return null;
@@ -1496,7 +1519,7 @@ function avaliarNoJogo(h, formato) {
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
   // (lote A3: + as linhas de projétil que não se aplicam — `LINHAS_QUE_NAO_SE_APLICAM`, que vão como nota)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
   // (lote A3b, dono 19/10: o que o mecanismo dos objetos ainda simplifica — `GemasA3b.MOTIVOS_A3B`)
   for (const m of GemasA3b.MOTIVOS_A3B[h.slug] ?? []) motivos.push(m);
   // (revisão do A5: o que a mecânica do lote A5 ainda depende de outro lote — `GemasA5.MOTIVOS_A5`)
@@ -1662,7 +1685,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l) && !GemasA1b.ehLinhaA1b(slug, l) && !GemasA5.ehLinhaA5(slug, l) && !GemasB1.ehLinhaB1(slug, l) && !GemasPR1.ehLinhaPR1(slug, l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l) && !GemasA1b.ehLinhaA1b(slug, l) && !GemasA5.ehLinhaA5(slug, l) && !GemasB1.ehLinhaB1(slug, l) && !GemasPR1.ehLinhaPR1(slug, l) && !GemasC1.ehLinhaC1(slug, l)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }
