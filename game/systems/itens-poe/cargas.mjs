@@ -119,6 +119,25 @@ export function ganhar(estado, tipo, af, quantas = 1, rng = Math.random) {
 }
 
 /**
+ * (lote A1b, dono 19/10) GASTA `quantas` cargas ativas do tipo (todas, com `Infinity`): o Golpe Súbito que pula a recarga com uma Frenesi (D-a), a
+ * Corrida de Fase que remove as Frenesis (D-e). Chama o "ao perder uma Carga" dos únicos (`aoMudar`, como o vencimento). Devolve quantas gastou (a ficha
+ * é refeita por quem chama). (`hunt.cargasPoe` também guarda as filas de recarga por ação — só os tipos de carga são tocados.)
+ */
+export function gastar(estado, tipo, quantas = 1) {
+  const hunt = estado?.hunt;
+  if (!ligado() || !hunt || !TIPOS.includes(tipo)) return 0;
+  const c = hunt.cargasPoe?.[tipo];
+  const agora = hunt.clock ?? 0;
+  if (!c || !(c.ate > agora) || !(c.n > 0)) return 0;
+  const n = Math.min(c.n, Math.max(0, quantas));
+  if (!n) return 0;
+  c.n -= n;
+  if (!c.n) delete hunt.cargasPoe[tipo];
+  aoMudar?.(estado, tipo, 'perdeu');
+  return n;
+}
+
+/**
  * O tique da caçada: as cargas vencidas voltam ao mínimo; o mínimo vale sempre; e os ganhos por tempo (Tolerância por segundo se acertado
  * recentemente; Frenesi a cada N s enquanto se move). Devolve true se algo mudou (a ficha precisa ser refeita).
  */

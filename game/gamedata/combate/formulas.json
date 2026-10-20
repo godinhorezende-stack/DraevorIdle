@@ -13,9 +13,9 @@
     "poe": { "coeficiente": 5 }
   },
   "acerto": {
-    "_nota": "`modo`: 'draevor' (a conta de `atributos-principais.json`: FATOR × acc / (acc + evasão do bicho), de MIN a MAX) ou 'poe' (precisão / (precisão + (evasão / divisor)^expoente), de `minimo` a `maximo`; vale para o golpe do jogador no bicho e para a esquiva do jogador). `entropia`: o sorteio do acerto acumula chance a cada erro seguido (sequências mais curtas, mesma taxa).",
+    "_nota": "`modo`: 'draevor' (a conta de `atributos-principais.json`: FATOR × acc / (acc + evasão do bicho), de MIN a MAX) ou 'poe' (fator × precisão / (precisão + (evasão / divisor)^expoente), arredondada a `casas` casas, de `minimo` a `maximo`; vale para o golpe do jogador no bicho e para a esquiva do jogador). `entropia`: o sorteio do acerto acumula chance a cada erro seguido (sequências mais curtas, mesma taxa).",
     "modo": "poe",
-    "poe": { "minimo": 0.05, "maximo": 0.95, "expoente": 0.8, "divisorDaEvasao": 4 },
+    "poe": { "minimo": 0.05, "maximo": 1, "fator": 1.25, "expoente": 0.9, "divisorDaEvasao": 5, "casas": 2, "_notaPoe": "(lote A5b, dono 20/10) a conta do PoE 1 pelo PoB: min(1, max(0,05, round(1,25 × precisão / (precisão + (evasão / 5)^0,9) × 100) / 100)) — o acerto do jogador, dos lacaios e dos monstros no jogador (a esquiva). Antes: precisão / (precisão + (evasão / 4)^0,8), de 5% a 95%." },
     "entropia": false
   },
   "bloqueio": {

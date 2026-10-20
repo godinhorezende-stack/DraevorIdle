@@ -48,6 +48,8 @@ export function normalizar(d) {
     base: String(d.base ?? ''),
     nivel: d.nivel != null ? Number(d.nivel) : null,
     atributos: { ...(d.atributos ?? {}) },
+    // (revisão do A5e) o chefe do PoE (`itens-poe/campanha.mjs`): `{ slug, nivel, unico }` — vai para o monstro (`boss.criarBossUnico`).
+    ...(d.poe && typeof d.poe === 'object' ? { poe: { ...d.poe } } : {}),
     melee: d.melee ? { min: Number(d.melee.min), max: Number(d.melee.max), intervaloMs: Number(d.melee.intervaloMs ?? 2000), ...(d.melee.efeito != null ? { efeito: Number(d.melee.efeito) } : {}) } : null,
     usaPoderesDoBase: d.usaPoderesDoBase === true,
     // Padrão: o chefe vai na escala da fase (vida/dano/exp) como todo bicho da campanha.

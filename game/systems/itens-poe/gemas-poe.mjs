@@ -17,7 +17,7 @@
 // (pelas tags). Sem o PoE nada disto roda.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
-import { slugDoNome, partir, condicoesDe, vale } from './condicoes-poe.mjs';
+import { slugDoNome, partir, condicoesDe, vale, somarOrigem } from './condicoes-poe.mjs';
 import { comNiveisDoPoedb } from './gemas-niveis.mjs';
 import * as Vinculos from './vinculos.mjs';
 import { ehLinhaDoAco } from './convocar-o-aco.mjs';
@@ -26,6 +26,17 @@ import { ACTION_CATALOG } from '../dados.mjs';
 import { DESLOCAMENTO, deslocamentoDasLinhas, ehLinhaDoDeslocamento } from './deslocamento.mjs';
 import * as GemasA2 from './gemas-a2.mjs';
 import * as GemasA4 from './gemas-a4.mjs';
+import * as GemasA3b from './gemas-a3b.mjs';
+// (lote A1b, dono 19/10: a Investida Carregada e o resto das gemas de movimento — os dados e as contas puras)
+import * as GemasA1b from './movimento-a1b.mjs';
+// (lote A5, dono 20/10: os leitores das linhas das famílias 1–4 — o Condutor Elétrico, a Exposição da gema, o Solo Resfriado, a arma)
+import * as GemasA5 from './gemas-a5.mjs';
+// (lote B1, dono 20/10: os leitores das gemas de área, nova, chuva e orbe que reusam o que já existe — a Descarga, os Estalos Gélidos, as Bombas…)
+import * as GemasB1 from './gemas-b1.mjs';
+// (lote PR1, dono 20/10: as gemas ativas de projétil que reusam o que já existe — o Sifão de Poder, as estilhas do Arremesso de Escudo Espectral, a Galvânica)
+import * as GemasPR1 from './gemas-pr1.mjs';
+// (lote C1, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — a forma do golpe, o raio condicional, os buffs da gema)
+import * as GemasC1 from './gemas-c1.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -174,11 +185,17 @@ const LINHAS_A2 = {
 /** (lote A2) A linha da gema do lote A2 que o jogo faz. */
 export const ehLinhaA2 = (slug, l) => !!LINHAS_A2[slug]?.some(([re]) => re.test(String(l)));
 /** (lote A2) Os atributos e os números da mecânica de uma gema do lote A2 no nível e na qualidade: `{ af, a2 }` (vazios fora do lote). */
+/**
+ * (lote A5, dono 20/10 — D2: "a qualidade acima de 20 pelo suporte, linear") A qualidade nas CONTAS da gema: inteira, sem o teto de 20 — o Aprimorar, o
+ * Aprimorar Desperto e o Eclipse ("+X% de Qualidade das Gemas de Habilidade Suportadas" — o PoB supported_active_skill_gem_quality_%, other.lua:1559) passam
+ * dele; as linhas da qualidade crescem na fração q/20 (36% = 1,8 × as de 20%). A qualidade da PEÇA (a gema, a Lapidadora) segue até 20 (`Gemas.qualidadeDaGema`).
+ */
+const qualidadeDasContas = (qualidade) => Math.max(0, Math.round(Number(qualidade) || 0));
 const A2_CACHE = new Map();
 export function daGemaA2(slug, nivel = 1, qualidade = 0) {
   const regras = LINHAS_A2[slug];
   if (!regras) return { af: {}, a2: {} };
-  const q = Math.max(0, Math.min(20, Math.round(Number(qualidade) || 0)));
+  const q = qualidadeDasContas(qualidade);
   const k = `${slug}@${nivel | 0}@${q}`;
   if (A2_CACHE.has(k)) return A2_CACHE.get(k);
   const x = { af: {}, a2: {}, q };
@@ -293,7 +310,7 @@ export function compilada(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   if (!g || !COMPILADOR) return null;
   const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
-  const q = Math.max(0, Math.min(20, Math.round(Number(qualidade) || 0)));
+  const q = qualidadeDasContas(qualidade);
   const k = `${slug}@${n}@${q}`;
   if (!CACHE.has(k)) {
     const h = COMPILADOR.compilarHabilidade(g, n, q > 0 ? linhasDaQualidade(g, q / 20) : []);
@@ -334,7 +351,8 @@ const REGRAS_DE_ALVOS = [
   // a emissão de `skills/golpes-secundarios.resolver`.
   // (só aparecem na gema que os declara)
   // (lote A3, dono 19/10: + o singular — o Pulso Congelante chega como "Dispara 5 projétil" no nível 20; o PoB dá base_number_of_projectiles 5)
-  [/^Dispara (\d+) (?:projéteis|projétil|flechas)$/i, (m, a) => { a.base = Math.max(a.base ?? 0, Number(m[1])); }],
+  // (lote B1, dono 20/10: + a flecha no singular — a Chuva Explosiva de Trarthus, "Dispara 1 Flecha"; os "+N projéteis" não valem nela, a linha de baixo)
+  [/^Dispara (\d+) (?:projéteis|projétil|flechas?)$/i, (m, a) => { a.base = Math.max(a.base ?? 0, Number(m[1])); }],
   [/^Dispara Projéteis em sequência$/i, (m, a) => { a.sequencia = true; }],
   [/^Dispara (?:um|1) Projétil adicional$/i, (m, a) => { a.projeteis += 1; }],
   // (17/10, lote G2) a qualidade escreve os adicionais com "+": "Dispara +2 projéteis", "Dispara +1 Flecha" (a fração arredonda para baixo)
@@ -410,9 +428,8 @@ const REGRAS_DE_ALVOS = [
 const DESLOCAMENTOS = new Map();
 /** (lote A1, dono 19/10: "fica para depois") A mecânica das gemas de movimento que está só na DESCRIÇÃO — o status não a vê por linha. */
 const DESCRICAO_DO_MOVIMENTO = {
-  Flicker_Strike: ['a recarga pode ser pulada gastando uma Carga de Frenesi'],
-  Flicker_Strike_of_Power: ['a recarga pode ser pulada gastando uma Carga de Poder'],
-  Consecrated_Path_of_Endurance: ['a recarga pode ser pulada gastando uma Carga de Tolerância'],
+  // (lote A1b, dono 19/10: D-a: a recarga pulada com a carga — o Golpe Súbito, o do Poder e o Caminho Sagrado da Tolerância — existe:
+  // `GemasA1b.CARGA_QUE_PULA_A_RECARGA`, `Acoes.dispararSemMarcar`)
   // (lote A4, dono 19/10: D3: os 25 golpes do Golpe Cintilante Vaal existem — `GemasA4.GOLPE_CINTILANTE_VAAL`, `Acoes.dispararSemMarcar`)
 };
 /** (lote A1 — D7) As linhas do Passo Definhante que o jogo faz (`Acoes.passoDefinhante`): o Elusivo e o Definhar de quem está na área. */
@@ -492,14 +509,15 @@ const LINHAS_QUE_NAO_SE_APLICAM = [
   [/^A Segunda forma possui [\d.]+ ?% mais Velocidade de Projétil$/i, 'não se aplica: "A Segunda forma possui X% mais Velocidade de Projétil" (Lança de Gelo) só muda a trajetória da segunda forma — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
   [/^Desaceleração do Projétil reduzida em [\d.]+ ?%$/i, 'não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta'],
   [/^Projéteis mudam de direção \d+ vezes$/i, 'não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança'],
+  // (lote PR1, dono 20/10 — D1 do plano: como a 2ª forma da Lança de Gelo) a Hélice Espectral
+  [/^Gira por [\d.]+ rotações$/i, 'não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique'],
 ];
 /**
  * (lote A3, dono 19/10) O que o projétil da gema faz só no PoB, sem linha (o status não o vê): a Vaal Faísca lança 100 projéteis em espiral por 3 s
  * (base_number_of_projectiles_in_spiral_nova, act_int.lua:16994) — as direções aleatórias valem, mas a espiral é do lote A3b (F8).
  */
-const PROJETIL_SEM_LINHA = {
-  Vaal_Spark: ['os 100 projéteis em espiral por 3 segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias'],
-};
+// (lote A3b, dono 19/10: D10: a espiral da Faísca Vaal existe — os 100 projéteis em 3 s, `GemasA3b.ESPIRAIS`, `Acoes.tiqueDosObjetos`)
+const PROJETIL_SEM_LINHA = {};
 export const ehLinhaQueNaoSeAplica = (l) => LINHAS_QUE_NAO_SE_APLICAM.some(([re]) => re.test(String(l)));
 /** (lote A3) As notas das linhas da gema que não se aplicam (sem repetição). */
 export const linhasQueNaoSeAplicam = (linhas = []) => [...new Set(linhas.map((l) => LINHAS_QUE_NAO_SE_APLICAM.find(([re]) => re.test(String(l)))?.[1]).filter(Boolean))];
@@ -511,7 +529,7 @@ const ALVOS = new Map();
 export function alvosNoNivel(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR?.nivelMaximo?.(g) ?? 40));
-  const q = Math.max(0, Math.min(20, Math.round(Number(qualidade) || 0)));
+  const q = qualidadeDasContas(qualidade);
   const k = `${slug}@${n}@${q}`;
   if (ALVOS.has(k)) return ALVOS.get(k);
   const a = { saltos: 0, pctPorRestante: 0, perfurar: 0, projeteis: 0, bifurcar: 0, divide: 0 };
@@ -538,36 +556,81 @@ export function danoNoNivel(slug, nivel) {
  * Devolve `{ elemento: [min, max] }` (no jogo: physical, fire, ice, energy, chaos).
  */
 const EL_DA_ARENA = { fisico: 'physical', fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos' };
-export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random) {
+/**
+ * (lote A5c, dono 20/10) A CONVERSÃO do Físico do golpe, a mesma nos ataques e nas magias (a ordem do PoE): a da GEMA (`conversoes`; `escolher` dá o elemento
+ * do "aleatorio"), depois as das OUTRAS fontes só no que a gema deixou e o "Físico como Extra" sobre o Físico de antes (`outras(fisico, tetoPct)`). Muda `p`
+ * no lugar; com `origens`, o que veio do Físico fica na origem `physical+<elemento>` (`somarOrigem`) — os modificadores dos dois tipos valem nele.
+ */
+function converterOFisico(p, origens, conversoes, outras, escolher) {
+  if (!p.physical || !(p.physical[0] > 0 || p.physical[1] > 0)) return;
+  const fis = [...p.physical];
+  const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, el, ['physical'], [a, b], m); };
+  let resta = 1;
+  for (const c of conversoes ?? []) {
+    const pct = Math.min(resta, Math.max(0, c.pct) / 100);
+    if (!(pct > 0)) continue;
+    somar(c.para === 'aleatorio' ? escolher() : EL_DA_ARENA[c.para] ?? 'physical', fis, pct);
+    resta -= pct;
+  }
+  if (outras) {
+    const o = outras([...fis], resta * 100);
+    for (const [el, v] of Object.entries(o?.extras ?? {})) somar(el, v);
+    resta = Math.max(0, resta - (o?.convertidoPct ?? 0) / 100);
+  }
+  p.physical = [fis[0] * resta, fis[1] * resta];
+  if (origens) origens.physical = { physical: [...p.physical] };
+}
+/** (lote A5c) Tira das `origens` as partes que saíram de `p`. */
+const podarOrigens = (p, origens) => { if (origens) for (const el of Object.keys(origens)) if (!p[el]) delete origens[el]; };
+// (lote A5c, dono 20/10: "a mesma ordem das magias") `outras(fisico, tetoPct)` — `ModsPoe.extrasDoFisico` com a ficha: as conversões das OUTRAS fontes só no
+// Físico que a gema deixou (proporcionais se passarem dele) e o "Físico como Extra" sobre o Físico de antes da conversão — todo o Físico do golpe (a arma × a
+// eficácia + o adicionado). Antes elas saíam da arma crua primeiro e a gema convertia o resto, multiplicando.
+// (lote C1, dono 20/10: `escolhido` — o elemento do Acerto Elemental já escolhido no uso, para o raio contra a afecção dele; fora dos presentes, o sorteio)
+// (revisão do lote da eficácia, 20/10: `conversoesExtras` — a conversão do Físico dos SUPORTES, `[{ para: 'raio', pct }]`: a da habilidade, com a da gema; as outras
+// fontes ficam com o que sobrou)
+export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random, { outras = null, origens = null, escolhido = null, conversoesExtras = [] } = {}) {
   const st = compilada(slug, nivel)?.stats ?? {};
   const ef = st.efetividade ?? 1;
   const p = {};
-  const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; };
+  const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, el, [], [a, b], m); };
   // (17/10, lote G4: a "arma" pode ser de outro elemento — a base de Fogo/Gelo do escudo nas gemas de escudo transfiguradas, `escudoDaGema`)
   somar(arma.elemento ?? 'physical', [arma.min ?? 1, arma.max ?? 1], ef);
   for (const [el, v] of Object.entries(st.adicional ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v, ef);
   for (const [el, v] of Object.entries(extras)) if (v && (v[0] || v[1])) somar(el, v);
-  if (p.physical) {
-    const fis = p.physical;
-    let resta = 1;
-    for (const c of st.conversao ?? []) {
-      const pct = Math.min(resta, c.pct / 100);
-      somar(c.para === 'aleatorio' ? ['fire', 'ice', 'energy'][Math.floor(rng() * 3)] : EL_DA_ARENA[c.para] ?? 'physical', fis, pct);
-      resta -= pct;
-    }
-    p.physical = [fis[0] * resta, fis[1] * resta];
-  }
+  converterOFisico(p, origens, [...(st.conversao ?? []), ...conversoesExtras], outras, () => ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]);
   const ex = extrasDoAtaque(slug, nivel);
   if (ex.soElemental) { delete p.physical; delete p.chaos; }
   // "Apenas Causa Dano do Elemento escolhido" (Acerto Elemental): cada uso sorteia fogo, gelo ou raio e só ele fica.
-  if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
+  if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els.includes(escolhido) ? escolhido : els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
   for (const el of Object.keys(p)) if (!(p[el][1] > 0)) delete p[el];
+  podarOrigens(p, origens);
   return p;
 }
-/** O dano de uma MAGIA do PoE por elemento (`{ elemento: [min, max] }`): a Bola de Fogo é só fogo; o Golpe Cósmico, fogo + gelo... */
-export function partesDaMagia(slug, nivel) {
+/**
+ * O dano de uma MAGIA do PoE por elemento (`{ elemento: [min, max] }`): a Bola de Fogo é só fogo; o Golpe Cósmico, fogo + gelo...
+ *
+ * (lote A5c, dono 20/10: "corrigir como o PoE") + a CONVERSÃO do Físico da gema, como nos ataques (`partesDoAtaque`): antes ela era ignorada e cerca de 24
+ * magias (a Onda de Convicção, a Cascata Glacial, a Marca da Penitência, a Esfera do Vácuo…) batiam só Físico. A ordem do PoE:
+ *   1. o Físico do golpe é o da gema + o ADICIONADO (`extras`: `{ elemento: [min, max] }` — as peças, os suportes, o Feiticeiro, a Lâmina Mágica —, já × a
+ *      eficácia do dano adicionado): a conversão vale para todo ele;
+ *   2. a conversão da GEMA ("50 % do Dano Físico Convertido em Dano de Raio"; "em Fogo, Gelo ou Raio": `elementoSorteado`, ou o `rng` sorteia);
+ *   3. a das OUTRAS fontes (`outras(fisico, tetoPct)` — `ModsPoe.extrasDoFisico` com a ficha): só converte o que a gema deixou; e o "Físico como Extra"
+ *      dela, sobre o Físico de ANTES da conversão (no PoE o ganho como extra é calculado do dano antes de ele se converter).
+ * As conversões entre elementos e os ganhos de um elemento em outro vêm depois, em `ModsPoe.transformarPartes`.
+ */
+export const conversaoDaMagia = (slug, nivel) => compilada(slug, nivel)?.stats?.conversao ?? [];
+/** (revisão do lote da eficácia, 20/10) A conversão do Físico dos SUPORTES do uso (`af:conv_hab_physical_<el>` no efeito — o Físico em Raio): `[{ para, pct }]`. */
+const ARENA_DO_EL = Object.fromEntries(Object.entries(EL_DA_ARENA).map(([k, v]) => [v, k]));
+export const conversoesDosSuportes = (efeito) => Object.entries(efeito ?? {}).flatMap(([k, v]) => { const m = /^af:conv_hab_physical_(\w+)$/.exec(k); return m && v > 0 && ARENA_DO_EL[m[1]] ? [{ para: ARENA_DO_EL[m[1]], pct: v }] : []; });
+// (lote B1, dono 20/10: `basePor` — o multiplicador do dano BASE da gema por elemento, `{ energy: 2, … }`: a Descarga, "por Carga removida")
+export function partesDaMagia(slug, nivel, extras = {}, { rng = Math.random, elementoSorteado = null, outras = null, origens = null, basePor = null, conversoesExtras = [] } = {}) {
   const p = {};
-  for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; const x = p[k] ?? [0, 0]; p[k] = [x[0] + v[0], x[1] + v[1]]; }
+  const somar = (k, [a, b], m = 1) => { if (!m) return; const x = p[k] ?? [0, 0]; p[k] = [x[0] + a * m, x[1] + b * m]; somarOrigem(origens, k, [], [a, b], m); };
+  for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; somar(k, v, basePor ? Math.max(0, Number(basePor[k]) || 0) : 1); }
+  for (const [el, v] of Object.entries(extras ?? {})) if (v && (v[0] || v[1])) somar(el, v);
+  converterOFisico(p, origens, [...conversaoDaMagia(slug, nivel), ...conversoesExtras], outras, () => (['fire', 'ice', 'energy'].includes(elementoSorteado) ? elementoSorteado : ['fire', 'ice', 'energy'][Math.floor(rng() * 3)]));
+  for (const el of Object.keys(p)) if (!(p[el][0] > 0 || p[el][1] > 0)) delete p[el];
+  podarOrigens(p, origens);
   return p;
 }
 /**
@@ -583,7 +646,7 @@ const QUALIDADE_PELO_COMPILADOR = /metros? (?:de|ao) raio$|^O raio Base|Área de
 /** As linhas da qualidade (o poedb junta duas numa: "+(0 — 2)% mais Dano … +(0 — 2)% mais Velocidade …"), × a fração `q` (0–1). */
 export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
-  const q = Math.max(0, Math.min(20, Math.round(Number(qualidade) || 0)));
+  const q = qualidadeDasContas(qualidade);
   const h = compilada(slug, nivel, q);
   if (!g || !h) return { af: {}, feitas: [], qualidade: [] };
   const k = `${slug}@${h.nivel}@${q}`;
@@ -610,7 +673,9 @@ export function linhasLocaisNoNivel(slug, nivel = 1, qualidade = 0) {
  * os "+X metros de raio" da gema, × √ do "X% mais Área de Efeito" dela —, ou null se o PoE não publica o raio; `areaIncPct` — a "Área de
  * Efeito aumentada em X%" da gema (soma com a das peças e dos suportes).
  */
-const RAIO_DO_POB = Object.freeze({ Vaal_Flameblast: 4.5 });
+// (lote C1, dono 20/10: + o Esmagar Escudos do Chefe Guerreiro — radius 29 nos baseMods do PoB, act_str.lua:9950; o poedb não publica — e a Cutilada Vaal — o
+// radius 20 da Cutilada, act_str.lua:1814: a Vaal é a mesma Cutilada e nem o PoB nem o poedb publicam o dela)
+const RAIO_DO_POB = Object.freeze({ Vaal_Flameblast: 4.5, Shield_Crush_of_the_Chieftain: 2.9, Vaal_Cleave: 2 });
 export function areaNoNivel(slug, nivel = 1, qualidade = 0) {
   const st = compilada(slug, nivel, qualidade)?.stats;
   if (!st) return { raioM: null, areaIncPct: 0 };
@@ -733,7 +798,9 @@ const POR_PODER = [
 ];
 const LINHAS_FIXAS_DO_CLAMOR = [
   [/^Buff concede \+ ?(\d+) ao Máximo de Fúria Buff impede a perda inerente de Fúria$/i, (m) => ({ furia_max: Number(m[1]), furia_perda_lenta: 1e6 })],
-  [/^Ataques Impelidos causam Dano Dobrado$/i, () => ({ 'chance_dano_dobrado@impelido': 100 })],
+  // (lote A1b, revisão do dono 19/10: o bônus do BUFF do Clamor vale só no ataque Impelido pelo Clamor — `impelidoClamor`; o Impelido pela Emboscada
+  // "não pode ser Impelido por outras Habilidades")
+  [/^Ataques Impelidos causam Dano Dobrado$/i, () => ({ 'chance_dano_dobrado@impelidoClamor': 100 })],
 ];
 const TOLERANCIA_POR_PODER = /^Concede (\d+) Carga de Tolerância por cada (\d+) de Poder a Você e Jogadores Aliados$/i;
 const CONTA_O_PODER = /^Conta o Poder total de Inimigos no Alcance$/i;
@@ -837,7 +904,7 @@ const ESTAGIOS = new Map();
 export function estagiosDaGema(slug, nivel = 1, qualidade = 0) {
   const h = compilada(slug, nivel, qualidade);
   if (!h?.stats) return null;
-  const q = Math.max(0, Math.min(20, Number(qualidade) || 0));
+  const q = Math.max(0, Number(qualidade) || 0);
   const k = `${slug}@${h.nivel}@${q}`;
   if (ESTAGIOS.has(k)) return ESTAGIOS.get(k);
   const e = { max: 0, mais: 0, maisAmbos: 0, maisAfeccao: 0, critMais: 0, velMais: 0, raioM: h.stats.raioPorEstagio ?? 0, raioMaxM: null, final: 0, finalIncendio: 0, finalIncendeia: false, golpesFinais: /^Blade_Flurry/.test(slug), porMs: 0,
@@ -877,7 +944,7 @@ export function estagiosDaGema(slug, nivel = 1, qualidade = 0) {
  * ou null. (O "delay entre Áreas" e o "não pode parar antes de N Áreas" são do tempo da onda e da interrupção pelo novo uso: o idle resolve a
  * onda inteira no uso — sem efeito aqui.)
  */
-const LINHA_DA_SEQUENCIA = /^Onda causa Dano em \d+ Áreas$|^Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior(?: da onda)?$|^Onda causa Ondas de Choque de até \d+ Inimigos em cada Área$|^Ondas de Choque causam \d+ ?% menos Dano$|^Onda tem o delay entre Áreas reduzido em [\d.]+ ?%$|^Onda não pode parar antes de causar Dano em \d+ Áreas$/i;
+const LINHA_DA_SEQUENCIA = /^Onda causa Dano em \d+ Áreas$|^Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior(?: da onda)?$|^Onda causa Ondas de Choque de até \d+ Inimigos em cada Área$|^Ondas de Choque causam \d+ ?% menos Dano$|^Onda tem o delay entre Áreas reduzido em [\d.]+ ?%$|^Onda não pode parar antes de causar Dano em \d+ Áreas$|^Onda pode recomeçar até \d+ vezes Áreas de onda ganham \+[\d.]+ metros de raio para cada área anterior$/i;
 export const ehLinhaDaSequencia = (l) => LINHA_DA_SEQUENCIA.test(l);
 /**
  * (lote A4, dono 19/10: R2) + as outras formas da sequência (`GemasA4.sequenciaDasLinhas`): a Chuva de Lâminas (`retangulo` — D4), a Colisão de
@@ -893,7 +960,10 @@ export function sequenciaDaGema(slug, nivel = 1, qualidade = 0) {
   const areas = achar(/^Onda causa Dano em (\d+) Áreas$/i);
   if (!areas) return null;
   return {
-    forma: 'linha', areas, raioM: areaNoNivel(slug, nivel, qualidade).raioM ?? 1.2, porAreaM: achar(/^Áreas de onda ganham \+([\d.]+) metros/i) ?? 0,
+    // (lote C1, dono 20/10: + a Ruptura de Trarthus — "Onda pode recomeçar até 3 vezes" (sunder_number_of_fake_chains 3, act_str.lua:12025), na mesma linha do "+0.1
+    // metros de raio para cada área anterior")
+    forma: 'linha', areas, raioM: areaNoNivel(slug, nivel, qualidade).raioM ?? 1.2, porAreaM: achar(/(?:^|\s)Áreas de onda ganham \+([\d.]+) metros/i) ?? 0,
+    recomecos: achar(/^Onda pode recomeçar até (\d+) vezes/i) ?? 0,
     choques: achar(/^Onda causa Ondas de Choque de até (\d+) Inimigos em cada Área$/i) ?? 0, choqueMenos: achar(/^Ondas de Choque causam (\d+) ?% menos Dano$/i) ?? 0,
   };
 }
@@ -931,6 +1001,15 @@ export const iraDivinaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, 
 export const circuloDaGema = (slug, nivel = 1) => comCache(A4, `cir|${slug}@${nivel | 0}`, () => GemasA4.circuloDasLinhas(slug, textosDaGema(slug, nivel).linhas));
 /** O "mais por Estágio do Tiro" do Atirar. */
 export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nivel | 0}`, () => GemasA4.snipeDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/*
+ * ---- (lote A3b, dono 19/10) o leitor no nível do lote A3b (`itens-poe/gemas-a3b.mjs`: os objetos que ficam no chão ou no tempo) ----
+ */
+const A3B = new Map();
+/** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
+// (lote B1, dono 20/10 — D-B1.10: + o marcador da Invocar Tormenta, `GemasB1.tormentaDasLinhas`)
+export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasPR1.objetoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** (D2) O que a gema faz com os seus Disparos Congelantes (a Nova Glacial dos Disparos, o Vórtice da Projeção). */
+export const consomeDisparosDaGema = (slug, nivel = 1) => comCache(A3B, `con|${slug}@${nivel | 0}`, () => GemasA3b.consomeDisparos(slug, textosDaGema(slug, nivel).linhas));
 /** Os esporos da Flecha Flagelante. */
 export const esporosDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `esp|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.esporosDasLinhas(slug, ...linhasA4(slug, nivel, qualidade)));
 /** O Orbe Invernal (o objeto no tempo). */
@@ -940,6 +1019,91 @@ export const debuffDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `de
 /** (C) A área do Ciclone por alcance ("X% por cada 0.1 metro de Alcance … adicional", o nível e a qualidade) e o "menos Velocidade de Movimento". */
 export const areaPorAlcanceDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `alc|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.areaPorAlcanceDasLinhas(linhasA4(slug, nivel, qualidade).flat()));
 export const menosMovimentoDaGema = (slug, nivel = 1) => comCache(A4, `mov|${slug}@${nivel | 0}`, () => GemasA4.menosMovimentoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/*
+ * ---- (lote A1b, dono 19/10) os leitores no nível do lote A1b (`itens-poe/movimento-a1b.mjs`: os dados e as contas da Investida Carregada e das outras
+ * gemas de movimento) ----
+ */
+const A1B = new Map();
+const linhasA1b = (slug, nivel, qualidade) => [textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade)];
+/** (I1–I7) A miragem da Investida Carregada (a velocidade, a onda final, o "+150%" parada, os números do PoB/poedb). */
+export const miragemDaGema = (slug, nivel = 1, qualidade = 0) => (GemasA1b.MIRAGEM[slug] ? comCache(A1B, `mir|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA1b.miragemDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade))) : null);
+/** As cargas no acerto do Golpe Súbito (a Frenesi no acerto, o Poder no crítico) e do Estalo Gélido do Poder (lote B1: o Poder no crítico). */
+export const cargasNoAcertoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `car|${slug}@${nivel | 0}@${qualidade | 0}`, () => (/^Flicker_Strike|^Cold_Snap_of_Power$/.test(slug) ? GemasA1b.cargasNoAcertoDasLinhas(...linhasA1b(slug, nivel, qualidade)) : null));
+/** (D-b) A Emboscada. */
+export const emboscadaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `emb|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA1b.emboscadaDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/** O Teleporte Gélido da Explosão Invernal (o "mais" contra o resfriado). */
+export const explosaoInvernalDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `inv|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA1b.explosaoInvernalDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/*
+ * ---- (lote A5, dono 20/10) os leitores no nível do lote A5 (`itens-poe/gemas-a5.mjs`) ----
+ */
+const A5 = new Map();
+/** (f34 D1/D2) O Condutor Elétrico: o "mais" por cada 5% de Eletrização no alvo, e tira a Eletrização. */
+export const condutorDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A5, `con|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA5.condutorDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/** (D4) O raio (m) do Solo Resfriado da gema (o Estalo Gélido), da linha; null sem ela. */
+export const raioDaAreaFriaDaGema = (slug, nivel = 1) => comCache(A5, `fri|${slug}@${nivel | 0}`, () => GemasA5.raioDaAreaFriaDasLinhas(textosDaGema(slug, nivel).linhas));
+/** (f34 D8/D9) A Exposição que a gema põe (a Bomba Congelante, a Onda de Convicção). */
+export const exposicaoDaGema = (slug, nivel = 1) => comCache(A5, `exp|${slug}@${nivel | 0}`, () => GemasA5.exposicaoDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** (f12 #34) O Golpe Duplo da Ambidestria usa o tempo de ataque da arma secundária. */
+export const usaTempoDaSecundaria = (slug) => comCache(A5, `sec|${slug}`, () => GemasA5.usaTempoDaSecundariaDasLinhas(textosDaGema(slug, 1).linhas));
+/** (f12 #36) A Detonação da Adaga: o % do dano da adaga como Dano Mágico adicional. */
+export const detonacaoDaAdagaDaGema = (slug, nivel = 1) => comCache(A5, `ada|${slug}@${nivel | 0}`, () => (slug === 'Blade_Blast_of_Dagger_Detonation' ? GemasA5.detonacaoDaAdagaDasLinhas(textosDaGema(slug, nivel).linhas) : null));
+/*
+ * ---- (lote PR1, dono 20/10) os leitores no nível do lote PR1 (`itens-poe/gemas-pr1.mjs`) ----
+ */
+const PR1 = new Map();
+/** A chance (%) de Carga de Poder por projétil que acerta um Raro ou Único (o Sifão de Poder; a Vaal: 100). */
+export const cargaDoSifaoDaGema = (slug, nivel = 1) => comCache(PR1, `sif|${slug}@${nivel | 0}`, () => (/^(Vaal_)?Power_Siphon/.test(slug) ? GemasPR1.cargaDoSifaoDasLinhas(textosDaGema(slug, nivel).linhas) : 0));
+/** As estilhas do Arremesso de Escudo Espectral (`GemasPR1.estilhasDasLinhas`). */
+export const estilhasDaGema = (slug, nivel = 1) => comCache(PR1, `est|${slug}@${nivel | 0}`, () => GemasPR1.estilhasDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** O "Vida Máxima aumentada" (%) dos cadáveres que a gema cria (a qualidade do Desenterrar). */
+export const vidaDoCadaverDaGema = (slug, qualidade = 0) => comCache(PR1, `cad|${slug}@${qualidade | 0}`, () => GemasPR1.vidaDoCadaverDasLinhas(linhasDaQualidadeDe(slug, qualidade)));
+/*
+ * ---- (lote B1, dono 20/10) os leitores no nível do lote B1 (`itens-poe/gemas-b1.mjs`) ----
+ */
+const B1 = new Map();
+/** A Descarga: o "mais Área por Carga removida" e a chance de não remover. */
+export const descargaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(B1, `des|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasB1.descargaDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/** O Condutor Elétrico dos Céus: o máximo de alvos. */
+export const maxAlvosDaGema = (slug, nivel = 1, qualidade = 0) => comCache(B1, `max|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasB1.maxAlvosDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/** (D-B1.8) A Chuva de Flechas Vaal: o total de sequências (1 + as adicionais). */
+export const sequenciasDaChuvaDaGema = (slug, nivel = 1) => comCache(B1, `seq|${slug}@${nivel | 0}`, () => GemasB1.sequenciasDaChuvaDasLinhas(textosDaGema(slug, nivel).linhas));
+/** (D-B1.9) A Chuva Tóxica do Definhamento: 1 Definhamento de 2 s por uso. */
+export const definhamentoDaChuvaDaGema = (slug, nivel = 1) => comCache(B1, `def|${slug}@${nivel | 0}`, () => GemasB1.definhamentoDaChuvaDasLinhas(textosDaGema(slug, nivel).linhas));
+/** A Bomba Congelante: a Regeneração de Vida reduzida do debuff. */
+export const regenMenosDaGema = (slug, nivel = 1) => comCache(B1, `reg|${slug}@${nivel | 0}`, () => GemasB1.regenMenosDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** (D-B1.3) A Bomba Congelante da Aproximação: o "mais" por 0,1 s de duração. */
+export const porDuracaoDaGema = (slug, nivel = 1) => comCache(B1, `dur|${slug}@${nivel | 0}`, () => GemasB1.porDuracaoDasLinhas(textosDaGema(slug, nivel).linhas));
+/** (D-B1.6/D-B1.7) O chão dos Estalos Gélidos: o raio que cresce e as cargas. */
+export const estaloDaGema = (slug, nivel = 1) => comCache(B1, `est|${slug}@${nivel | 0}`, () => GemasB1.estaloDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** "Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada" (o Condutor Elétrico; a Explosão Invernal do A1b). */
+export const conjuracaoNaRecargaSeAtivada = (slug) => comCache(B1, `cnr|${slug}`, () => textosDaGema(slug, 1).linhas.some((l) => GemasB1.LINHA_CONJURACAO_NA_RECARGA.test(String(l).trim())));
+
+/*
+ * ---- (lote C1, dono 20/10) os leitores no nível do lote C1 (`itens-poe/gemas-c1.mjs`) ----
+ * `{ raioPorInimigoM, buffDaVaal, raioContraAfeccaoPct, anzol, frenesi, golpesPorAlvo, onda, ondaCentralMaisPct, escudosDeLuz, raioDoCastigo, maos }`.
+ */
+const C1 = new Map();
+export const c1DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C1, `c1|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
+  return {
+    raioPorInimigoM: GemasC1.raioPorInimigoDasLinhas(slug, daQ), buffDaVaal: GemasC1.buffDaCutiladaVaalDasLinhas(slug, linhas),
+    raioContraAfeccaoPct: slug === 'Elemental_Hit' ? GemasC1.raioContraAfeccaoDasLinhas(linhas) : 0, anzol: GemasC1.anzolDasLinhas(slug, linhas, daQ),
+    frenesi: GemasC1.frenesiDasLinhas(slug, linhas), golpesPorAlvo: slug === 'Swordstorm' ? GemasC1.golpesPorAlvoDasLinhas(linhas) : 1, onda: GemasC1.ondaDasLinhas(slug, linhas),
+    ondaCentralMaisPct: GemasC1.ondaCentralDasLinhas(slug, linhas, daQ), escudosDeLuz: GemasC1.escudosDeLuzDasLinhas(slug, linhas),
+    raioDoCastigo: GemasC1.raioDoCastigoDasLinhas(slug, linhas, daQ), maos: GemasC1.maosDasLinhas(slug, linhas),
+  };
+});
+/** A Corrente com Gancho: o raio por Fúria. */
+// (lote C1, dono 20/10: + a Cutilada da Fúria — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1875)
+export const raioPorFuriaDaGema = (slug, nivel = 1) => comCache(A1B, `fur|${slug}@${nivel | 0}`, () => (/^(Chain_Hook|Cleave_of_Rage)$/.test(slug) ? GemasA1b.raioPorFuriaDasLinhas(textosDaGema(slug, nivel).linhas) : null));
+/** A Investida com Escudo: o atordoamento na distância máxima. */
+export const atordoamentoDaInvestidaDaGema = (slug, nivel = 1) => comCache(A1B, `ato|${slug}@${nivel | 0}`, () => (slug === 'Shield_Charge' ? GemasA1b.atordoamentoDaInvestidaDasLinhas(textosDaGema(slug, nivel).linhas) : 0));
+/** (D-e) A Corrida de Fase Antiga. */
+export const corridaDeFaseDaGema = (slug, nivel = 1) => comCache(A1B, `fas|${slug}@${nivel | 0}`, () => GemasA1b.corridaDeFaseDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/** (D-f) A chance de Causticar do Avanço Ardente do Retorno (o nível e a qualidade). */
+export const chanceDeCausticarDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A1B, `cau|${slug}@${nivel | 0}@${qualidade | 0}`, () => (slug === 'Flame_Dash_of_Return' ? GemasA1b.chanceDeCausticarDasLinhas(linhasA1b(slug, nivel, qualidade).flat()) : 0));
+/** (D-c) Quantos usos o Teleporte Relampejante aglomera na fila. */
+export const filaDoTeleporteDaGema = (slug, nivel = 1) => comCache(A1B, `fil|${slug}@${nivel | 0}`, () => GemasA1b.filaDoTeleporteDasLinhas(slug, textosDaGema(slug, nivel).linhas));
 
 /**
  * (17/10, lote G12) O USO DE CADÁVERES das gemas (os cadáveres da caçada — `hunt.cadaveres`, com a Vida Máxima do morto): a EXPLOSÃO ("Explosão
@@ -958,14 +1122,19 @@ export function cadaverDaGema(slug, nivel = 1, qualidade = 0) {
   if (!modo) return null;
   const linhas = textosDaGema(slug, nivel).linhas;
   const achar = (re) => { for (const l of linhas) { const m = re.exec(l); if (m) return Number(m[1]); } return null; };
-  const pct = achar(/^Explosão causa Dano de Fogo base igual a ([\d.]+) ?% da Vida M[áa]xima do Cad[áa]ver$/i);
-  if (pct == null) return null;
+  const pct0 = achar(/^Explosão causa Dano de Fogo base igual a ([\d.]+) ?% da Vida M[áa]xima do Cad[áa]ver$/i);
+  if (pct0 == null) return null;
+  // (lote B1, dono 20/10: a QUALIDADE — o "+X% da Vida Máxima do Cadáver" do Detonar Mortos da Limpeza, o "X% de chance de detonar um cadáver adicional" do
+  // Detonar Mortos e do Vaal e o "Dispara Projéteis X% mais rápido" da Cremação — `GemasB1`)
+  const daQ = linhasDaQualidadeDe(slug, qualidade);
+  const pct = pct0 + daQ.reduce((t, l) => t + (Number(/^Explosão causa Dano de Fogo base igual a ([\d.]+) ?% da Vida M[áa]xima do Cad[áa]ver$/i.exec(String(l).replace(/(\d)%/g, '$1 %').trim())?.[1]) || 0), 0);
+  const maisRapidoPct = GemasB1.geiserMaisRapidoDasLinhas(daQ);
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
   return {
     modo, pct, soMortos: /Scavenging/.test(slug), comDano: !!Object.keys(st.dano ?? {}).length,
     raioExplosaoM: achar(/^Raio Base da explos[aã]o igual a ([\d.]+) metros?$/i) ?? achar(/^O raio Base é de ([\d.]+) metros?$/i) ?? 1.5,
-    maximo: achar(/^Consome até (\d+) cadáveres$/i) ?? 1,
-    ...(modo === 'geiser' ? { geiser: { intervaloMs: Math.round((achar(/^Dispara Projéteis a cada ([\d.]+) segundos?$/i) ?? 1) * 1000), duracaoMs: Math.round((st.duracao ?? 8) * 1000), projeteis: achar(/^Dispara (\d+) projéteis$/i) ?? 4, max: achar(/^Máximo de (\d+) gêiseres por vez$/i) ?? 3 } } : {}),
+    maximo: achar(/^Consome até (\d+) cadáveres$/i) ?? 1, adicionalPct: GemasB1.cadaverAdicionalDasLinhas(daQ),
+    ...(modo === 'geiser' ? { geiser: { intervaloMs: Math.round(((achar(/^Dispara Projéteis a cada ([\d.]+) segundos?$/i) ?? 1) * 1000) / (1 + maisRapidoPct / 100)), duracaoMs: Math.round((st.duracao ?? 8) * 1000), projeteis: achar(/^Dispara (\d+) projéteis$/i) ?? 4, max: achar(/^Máximo de (\d+) gêiseres por vez$/i) ?? 3 } } : {}),
   };
 }
 
@@ -1011,7 +1180,8 @@ export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
 export function extrasDoAtaque(slug, nivel = 1, qualidade = 0) {
   const g = POR_SLUG.get(slug);
   const linhas = g && COMPILADOR?.textosDoNivel ? COMPILADOR.textosDoNivel(g, Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40))) : [];
-  const daQualidade = qualidade > 0 ? (g?.qualidade ?? []).map((t) => naFracao(t, Math.min(1, qualidade / 20))) : [];
+  // (revisão do A5 — D2: sem o teto de 20, linear como as outras linhas da qualidade)
+  const daQualidade = qualidade > 0 ? (g?.qualidade ?? []).map((t) => naFracao(t, qualidade / 20)) : [];
   let porAfeccao = 0;
   for (const l of [...linhas, ...daQualidade]) { const m = String(l).match(/\+?(\d+(?:[.,]\d+)?) ?% mais Dano por cada tipo de Afecção Elemental no Inimigo/i); if (m) porAfeccao += Number(m[1].replace(',', '.')); }
   return { soElemental: linhas.some((l) => /^Não causa Dano não-Elemental$/i.test(l)), umElemento: linhas.some((l) => /^Apenas Causa Dano do Elemento escolhido/i.test(l)), porAfeccao };
@@ -1022,7 +1192,10 @@ export function extrasDoAtaque(slug, nivel = 1, qualidade = 0) {
  * ataque ALTERNA entre as armas, como todo ataque do PoE.
  */
 const COMBINA_AS_ARMAS = /Quando em Dupla Empunhadura, Causa (\d+(?:[.,]\d+)?) ?% do Dano combinando cada Arma/i;
-const DANO_DE_AMBAS = /Ataca com ambas as armas, causando o dano de ambas em um ataque/i;
+// (lote A5, dono 20/10 — D5: + o Golpe da Víbora — "Se em empunhadura dupla, golpeará com ambas as armas" — e o da Mamba — "causa o dano de ambas as armas em um
+// golpe": a soma das duas armas num acerto, como o Ataque Combinado; o PoB: skill_double_hits_when_dual_wielding)
+// (lote C1, dono 20/10: + a Tormenta de Espadas — "causa o dano de ambas as Armas com cada acerto", doubleHitsWhenDualWielding no PoB, act_str.lua:10852)
+const DANO_DE_AMBAS = /Ataca com ambas as armas, causando o dano de ambas em um ataque|Se em empunhadura dupla, golpeará com ambas as armas|Se em empunhadura dupla, causa o dano de ambas as armas em um golpe|causa o dano de ambas as Armas com cada acerto/i;
 export function danoComAsDuasArmas(slug) {
   const g = POR_SLUG.get(slug);
   if (!g) return null;
@@ -1045,11 +1218,15 @@ export const eficaciaNoNivel = (slug, nivel) => compilada(slug, nivel)?.stats?.e
  * (`gamedata/itens-poe/pob-eficacia.json` — `tools/importar-pob-eficacia.mjs`, o `damageEffectiveness` de cada nível; acima da tabela, o
  * último nível dela); sem a gema no PoB, a da tabela do poedb (`eficaciaNoNivel`). O dano adicionado às magias (peças, suportes, varinhas)
  * entra × isto.
+ * (dono, 20/10: "eficácia como no PoE") Num ATAQUE, a do PoB também (a tabela `ataques` do mesmo arquivo — o `damageEffectiveness` de cada nível; sem ele no nível,
+ * 1, o `or 1` do PoB): o dano ADICIONADO ao ataque (peças, passivas, auras, Arautos, suportes, Empalamento) entra × isto; a ARMA segue ×
+ * `eficaciaNoNivel` (o "Dano de Ataque X% de base" do poedb, o `baseMultiplier`) — no PoB, `CalcOffence.lua` "Calculate base hit damage".
  */
 let POB_EFICACIA = null;
 export function eficaciaDoAdicionado(slug, nivel = 1) {
-  POB_EFICACIA ??= JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-eficacia.json', import.meta.url), 'utf8')).gemas;
-  const t = POB_EFICACIA[POR_SLUG.get(slug)?.en ?? String(slug).replace(/_/g, ' ')];
+  POB_EFICACIA ??= JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/pob-eficacia.json', import.meta.url), 'utf8'));
+  const ehAtaque = !!compilada(slug, nivel)?.ataque;
+  const t = (ehAtaque ? POB_EFICACIA.ataques ?? {} : POB_EFICACIA.gemas)[POR_SLUG.get(slug)?.en ?? String(slug).replace(/_/g, ' ')];
   if (!t) return eficaciaNoNivel(slug, nivel);
   const ks = Object.keys(t).map(Number).sort((a, b) => a - b);
   const k = ks.filter((x) => x <= Math.max(ks[0], Math.round(nivel) || 1)).at(-1) ?? ks[0];
@@ -1112,7 +1289,7 @@ const ehColunaMalRotulada = (slug, l) => !!COLUNAS_MAL_ROTULADAS[slug]?.test(l);
 /** (lote G18a) A gema cujo degenerativo leva os modificadores de Dano Mágico (o `dotIsSpell` do PoB): o "mais Dano Mágico" vale no DoT dela. */
 export const dotEhMagico = (slug) => textosDaGema(slug, 1).linhas.some((l) => /Modificadores de Dano Mágico aplicam-se ao Dano Degenerativo/i.test(l));
 /** (17/10, lote G18b) As linhas da QUALIDADE da gema na fração (0 a 20): para quem lê as linhas sozinho (o Vínculo, a maldição). */
-export const linhasDaQualidadeDe = (slug, qualidade = 0) => (qualidade > 0 ? linhasDaQualidade(POR_SLUG.get(slug), Math.min(20, qualidade) / 20) : []);
+export const linhasDaQualidadeDe = (slug, qualidade = 0) => (qualidade > 0 ? linhasDaQualidade(POR_SLUG.get(slug), qualidade / 20) : []);
 export function maisNasAfeccoesDaGema(slug, nivel = 1, qualidade = 0) {
   const st = compilada(slug, nivel, qualidade)?.stats ?? {};
   return { maisAfeccaoPct: st.maisAfeccaoPct ?? 0, maisSangramentoPct: st.maisSangramentoPct ?? 0, ...(st.maisIncendioPct ? { maisIncendioPct: st.maisIncendioPct } : {}), ...(st.maisVenenoPct ? { maisVenenoPct: st.maisVenenoPct } : {}) };
@@ -1143,6 +1320,9 @@ export function recursoDoCusto(slug, nivel = 1) {
   if (!g || !COMPILADOR?.propsDoNivel) return 'mana';
   const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
   const p = COMPILADOR.propsDoNivel(g, n).find((x) => /^Custo:/.test(x)) ?? '';
+  // (revisão do A5: o custo com os TRÊS recursos juntos — o Golpe Selvagem dos Extremos, "Custo: 28 Mana 28 Vida 28 Escudo de Energia"; o PoB: cost = { ES, Life,
+  // Mana }, act_dex.lua:17270 — paga cada um: 'todos')
+  if (/Mana/i.test(p) && /Vida/i.test(p) && /Escudo de Energia/i.test(p)) return 'todos';
   return /Escudo de Energia/i.test(p) ? 'es' : /Vida/i.test(p) ? 'vida' : 'mana';
 }
 
@@ -1177,7 +1357,8 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   for (const [el, [a, z]] of Object.entries(b.adicional ?? {})) {
     const e = AF_DO_ELEMENTO[el];
     if (!e || e === 'phys') {
-      if (e === 'phys') af.phys_add = (af.phys_add ?? 0) + Math.round((a + z) / 2);
+      // (dono, 20/10: o Físico adicionado do buff com +X no mínimo e +Y no máximo, como no PoE — antes a média em `phys_add`, com o máximo 2×)
+      if (e === 'phys') { af.phys_add_min = (af.phys_add_min ?? 0) + Math.round(a); af.phys_add_max = (af.phys_add_max ?? 0) + Math.round(z); }
       continue;
     }
     af[`added_${e}_dmg_min`] = (af[`added_${e}_dmg_min`] ?? 0) + Math.round(a);
@@ -1237,7 +1418,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
   // ganham…", "Inimigos Amaldiçoados concedem X% de Dreno de Vida quando Acertados por Ataques") e ao matá-lo ("…concedem uma Carga de Poder
   // quando mortos", "…600 de Vida quando Mortos"): guardado na maldição do bicho (`Reforcos.marcar`) e lido no golpe (`fichaDoGolpe`) e no abate.
   // (lote G18b: + as da qualidade — a duração das afecções no amaldiçoado)
-  const contra = contraOAmaldicoado([...textosDaGema(slug, nivel).linhas, ...(qualidade > 0 ? linhasDaQualidade(POR_SLUG.get(slug), Math.min(20, qualidade) / 20) : [])]);
+  const contra = contraOAmaldicoado([...textosDaGema(slug, nivel).linhas, ...(qualidade > 0 ? linhasDaQualidade(POR_SLUG.get(slug), qualidade / 20) : [])]);
   if (Object.keys(contra.golpe).length || Object.keys(contra.morte).length || Object.keys(contra.atordoar).length) efeitos.push({ efeito: 'maldicaoContra', golpe: contra.golpe, morte: contra.morte, atordoar: contra.atordoar });
   // (lote 46, dono: "Toda área em metros") o raio do Clamor em CASAS: os metros da gema ÷ 2 (antes, os metros como casas — o dobro); no uso, × √
   // da "Área de Efeito aumentada" — `acoes.raioDoClamor`
@@ -1270,6 +1451,13 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
 }
 
 // ---- o STATUS NO JOGO ----
+/**
+ * (revisão do C1) A linha que o jogo FAZ (não é "efeito não simulado"): a mesma regra no status (`avaliarNoJogo`) e no balão (`fichaNoNivel` → `naoFeitas`), para
+ * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
+ */
+function ehLinhaFeita(h, l, q) {
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l));
+}
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
   const motivos = [];
@@ -1345,12 +1533,19 @@ function avaliarNoJogo(h, formato) {
     // (lote G12: as gemas de cadáver que o jogo faz — `cadaverDaGema`)
     if (st.cadaver && !cadaverDaGema(h.slug, h.nivel)) motivos.push('o uso de cadáveres não existe no jogo');
     // (lote A1: a gema de movimento sem dano — o Avanço, o Passo Rápido, a Emboscada — tem o efeito dela: o deslocamento)
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug]) motivos.push('sem dano direto: nenhum efeito no combate');
+    // (lote B1, dono 20/10: + a gema de cadáver sem dano mágico — o Detonar Mortos da Limpeza: o efeito é a explosão, `cadaverDaGema`)
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel)) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
   // (lote A3: + as linhas de projétil que não se aplicam — `LINHAS_QUE_NAO_SE_APLICAM`, que vão como nota)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaFeita(h, l, q)) motivos.push(`efeito não simulado: ${l}`);
+  // (lote A3b, dono 19/10: o que o mecanismo dos objetos ainda simplifica — `GemasA3b.MOTIVOS_A3B`)
+  for (const m of GemasA3b.MOTIVOS_A3B[h.slug] ?? []) motivos.push(m);
+  // (revisão do A5: o que a mecânica do lote A5 ainda depende de outro lote — `GemasA5.MOTIVOS_A5`)
+  for (const m of GemasA5.MOTIVOS_A5[h.slug] ?? []) motivos.push(m);
+  // (revisão do C1: o que a mecânica do lote C1 ainda não faz — `GemasC1.MOTIVOS_C1`)
+  for (const m of GemasC1.MOTIVOS_C1[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**
@@ -1423,10 +1618,14 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff: buff && !vinculo, molde: moldeId, ...(vinculo ? { vinculo: true } : {}), ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}), ...(iconeDaHabilidade(g.slug) ? { iconeHabilidade: iconeDaHabilidade(g.slug) } : {}),
       // (lote A1: a gema que DESLOCA — o "Configurar ação" mostra a opção "direção", e a de fuga a aceita)
       ...(DESLOCAMENTO[g.slug] ? { desloca: true, ...(DESLOCAMENTO[g.slug].fuga ? { fuga: true } : {}) } : {}),
+      // (lote A1b, dono 19/10: I1: a Investida Carregada — o "Configurar ação" mostra a opção "Segurar a miragem no alvo")
+      ...(GemasA1b.MIRAGEM[g.slug] ? { miragem: true } : {}),
       // (lote A2: a gema que reserva — a Automação não suporta as que reservam, `Gemas.gruposComGatilho`)
       ...(h.stats.reserva ? { reserva: true } : {}) },
   };
   delete entry.blocked;
+  // (revisão do PR1) a Flecha Galvânica da Energia é um cone que sai de você: o alcance do uso é o do cone, não o da área no chão do molde
+  if (GemasPR1.temConeGalvanicoDeVoce(g.slug)) entry.range = GemasPR1.CONE_GALVANICO.alcanceDaEnergia;
   return entry;
 }
 
@@ -1505,11 +1704,12 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
       props.push(i > 0 ? [p.slice(0, i), valor] : [p, '']);
     }
   }
-  const q = Math.max(0, Math.min(20, qualidade || 0));
+  // (revisão do A5 — D2: o balão mostra a qualidade que vale no uso, acima de 20 com o Aprimorar/Eclipse)
+  const q = qualidadeDasContas(qualidade);
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(estagiosDaGema(slug, n) && ehLinhaDeEstagio(l)) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoArauto(slug, l) && !ehLinhaA2(slug, l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeLacaio(l) && !ehLinhaFeita({ ...h, slug, nivel: n }, l, q)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

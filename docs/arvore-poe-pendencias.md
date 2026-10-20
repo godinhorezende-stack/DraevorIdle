@@ -1,6 +1,6 @@
 # Árvore de passivas do PoE — o que falta e o que é parcial
 
-Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-19, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
+Gerado por `game/tools/relatorio-arvore-poe.mjs` em 2026-10-20, a partir de `game/gamedata/itens-poe/arvore-poe.json` — o mesmo estado que o balão da árvore mostra em cada linha. Remontar a árvore (`node tools/montar-arvore-poe.mjs`, depois de mexer numa regra de `traducao.json`) atualiza o balão e este relatório juntos.
 
 ## Resumo
 

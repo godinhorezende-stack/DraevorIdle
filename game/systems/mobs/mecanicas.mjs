@@ -173,7 +173,8 @@ function espinhos(estado, hunt, personagem, m, eventos) {
  * O mob `m` levou `dano` do `tipo`: buffs que empilham e o reflexo. `corpoACorpo`: o acerto foi um ataque corpo a corpo seu (os espinhos).
  * (PoE: o reflexo também passa pelo "Evita X% do dano refletido" — `monstros-no-jogador.fatorDoReflexo`; fora do PoE, 1.)
  */
-export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, { corpoACorpo = false, doTotem = false } = {}) {
+// (lote A5, dono 20/10: `ficha` — a ficha do GOLPE da gema, com as linhas do uso e dos suportes: o "não pode ser Refletido" do suporte vale no reflexo)
+export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, { corpoACorpo = false, doTotem = false, ficha = null } = {}) {
   if (!m || !(dano > 0)) return;
   // (lote G20a: `doTotem` — o acerto do totem: os espinhos e o reflexo iriam nele, não em você; o jogo ainda não fere o totem por eles)
   if (corpoACorpo && !doTotem && m.espinhos && ehRaro(m) && estado.hp > 0 && itensPoeLigado()) espinhos(estado, hunt, personagem, m, eventos);
@@ -186,7 +187,7 @@ export function aoReceberDano(estado, hunt, personagem, m, dano, tipo, eventos, 
     else if (mec.efeito === 'buff') {
       Buffs.por(m, { chave: `${mec.modificador}:dano`, ate: agora + (mec.duracaoMs ?? 5000), acumulaAte: mec.acumulaAte, danoPct: mec.danoPct ?? 0, resist: mec.resist }, agora);
     } else if (mec.efeito === 'refletir' && !doTotem && (mec.tipos ?? []).includes(tipo) && estado.hp > 0) {
-      const fator = NoJogador.fatorDoReflexo(Ficha.combate(estado), tipo);
+      const fator = NoJogador.fatorDoReflexo(ficha ?? Ficha.combate(estado), tipo);
       if (fator > 0) ferirJogador(estado, hunt, personagem, m, ((dano * (mec.pct ?? 10)) / 100) * fator, tipo, eventos, 'Reflexo');
     }
   }

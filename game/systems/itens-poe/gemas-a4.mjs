@@ -104,17 +104,25 @@ export function sequenciaDasLinhas(slug, linhas = [], daQualidade = []) {
     return { forma: 'concentrica', areas: 3, raiosM: [r1 + bonus, r2 + bonus, r3 + bonus], pcts: [100, 100 - (achar(todas, /^Segundo Estágio causa ([\d.]+) % menos Dano$/i) ?? 0), 100 - (achar(todas, /^Terceiro Estágio causa ([\d.]+) % menos Dano$/i) ?? 0)] };
   }
   if (/^Earthshatter/.test(slug)) {
-    const fissuras = achar(linhas, /^Cria (\d+) fissuras$/i);
+    // (lote C1, dono 20/10: + o singular — o da Proeminência, "Cria 1 fissura" — e a ESTACA GRANDE dele: "Estacas Despedaçadoras causam X% mais dano" (+ a
+    // qualidade, "+20% mais") no lugar do −30% (o PoB: spike_slam_explosion_damage_+%_final 100 + 1 por ponto, act_str.lua:3802) e "Estacas Despedaçadas têm X%
+    // mais Área de Efeito" — earthshatter_spike_area_of_effect_+%_final: o raio da explosão × √(1 + X%), a fração como a chance de uma casa a mais)
+    const fissuras = achar(linhas, /^Cria (\d+) fissuras?$/i);
     if (!fissuras) return null;
+    const LINHA_EXPLOSAO = /^Estacas Despedaçadoras causam \+?([\d.]+) % mais dano$/i;
+    const temExplosao = [...linhas, ...daQualidade].some((l) => LINHA_EXPLOSAO.test(norm(l)));
+    const areaDaEstacaMaisPct = somar(linhas, /^Estacas Despedaçadas têm ([\d.]+) % mais Área de Efeito$/i);
     return {
       forma: 'estrela', areas: fissuras + Math.floor(somar(daQualidade, /^\+([\d.]+) fissuras?$/i) + 1e-9),
       estacasMax: (achar(linhas, /^Máximo de (\d+) Estacas$/i) ?? 15) + Math.floor(somar(daQualidade, /^Máximo de \+([\d.]+) Estacas Cria$/i) + 1e-9),
       ...ESTILHACAR, quebraSozinha: /_of_Fragility$/.test(slug),
+      ...(slug === 'Earthshatter_of_Prominence' && temExplosao ? { explosaoMaisPct: somar([...linhas, ...daQualidade], LINHA_EXPLOSAO) } : {}),
+      ...(areaDaEstacaMaisPct ? { areaDaEstacaMaisPct } : {}),
     };
   }
   return null;
 }
-const LINHAS_DA_SEQUENCIA_A4 = /^\d+ Rajadas$|^\+[\d.]+ Rajadas?$|^[\d.]+ % mais Dano por Rajada$|^[\d.]+ % de aumento da Chance de Acerto Crítico por Rajada$|^(Segundo|Terceiro) Estágio causa [\d.]+ % menos Dano$|^Raio Base terciário igual a [\d.]+ metros?$|^Cria \d+ fissuras$|^\+[\d.]+ fissuras?$|^Máximo de \d+ Estacas$|^Máximo de \+[\d.]+ Estacas Cria$|^Estacas Despedaçadoras causam [\d.]+ % mais dano$/i;
+const LINHAS_DA_SEQUENCIA_A4 = /^\d+ Rajadas$|^\+[\d.]+ Rajadas?$|^[\d.]+ % mais Dano por Rajada$|^[\d.]+ % de aumento da Chance de Acerto Crítico por Rajada$|^(Segundo|Terceiro) Estágio causa [\d.]+ % menos Dano$|^Raio Base terciário igual a [\d.]+ metros?$|^Cria \d+ fissuras?$|^Estacas Despedaçadas têm [\d.]+ % mais Área de Efeito$|^\+[\d.]+ fissuras?$|^Máximo de \d+ Estacas$|^Máximo de \+[\d.]+ Estacas Cria$|^Estacas Despedaçadoras causam \+?[\d.]+ % mais dano$/i;
 export const ehLinhaDaSequenciaA4 = (l) => LINHAS_DA_SEQUENCIA_A4.test(norm(l));
 
 // ---------------------------------------------------------------- E1/E2: os estágios
@@ -300,7 +308,7 @@ export function debuffDasLinhas(slug, linhas = [], daQualidade = [], qualidade =
   if (/^Scorching_Ray/.test(slug)) {
     const max = achar(linhas, /^Debuff Incendiário pode ter no máximo (\d+) estágios$/i);
     if (!max) return null;
-    return { max, porEstagioPct: somar(todas, /^Estágios Adicionais do Debuff adicionam \+?([\d.]+) % de Dano$/i), aposPrimeiro: true, duracaoMs: null, exposicaoPct: somar(linhas, /^Exposição a Fogo aplica (-?[\d.]+) % de Resistência a Fogo$/i) + (EXPOSICAO_POR_QUALIDADE[slug] ?? 0) * Math.max(0, Math.min(20, Number(qualidade) || 0)) };
+    return { max, porEstagioPct: somar(todas, /^Estágios Adicionais do Debuff adicionam \+?([\d.]+) % de Dano$/i), aposPrimeiro: true, duracaoMs: null, exposicaoPct: somar(linhas, /^Exposição a Fogo aplica (-?[\d.]+) % de Resistência a Fogo$/i) + (EXPOSICAO_POR_QUALIDADE[slug] ?? 0) * Math.max(0, Number(qualidade) || 0) };
   }
   return null;
 }

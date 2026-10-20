@@ -25,6 +25,9 @@ const Runas = await import('../systems/itens-poe/runas-vinculadas.mjs');
 /** As armas tentadas (a primeira que a gema aceita): a varinha, o arco, a espada com escudo, a maça de duas mãos, a adaga, o cajado. */
 const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/Rusted_Sword', 'Shields/Splintered_Tower_Shield'], ['Two_Hand_Maces/Driftwood_Maul'], ['Daggers/Sai'], ['Staves/Gnarled_Branch']];
 const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo', 'feiticeiro']);
+// (lote A3b, com o aval do dono: a gema cujo dano sai por OUTRA gema — a Espiral Venenosa Vaal só cria os capturados, e as Lâminas Giratórias os soltam — é
+// conferida usando-a seguida dessa outra, encaixada junto e no slot 2; o critério do dano é o mesmo das outras)
+const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades' };
 
 let J;
 let gerarPeca;
@@ -46,6 +49,8 @@ function montar(slug, [arma, escudo], suportes = []) {
   for (let i = 0; i < n; i++) GS.encaixar(e, { de: 0, slot: 'weapon', indice: i });
   e.actions = Array(Acoes.SLOTS).fill(null);
   e.actions[0] = { id: G.doSlug(slug).acao, enabled: true, minMana: 0, conditions: [] };
+  // (lote A3b, com o aval do dono: a outra gema no slot 2)
+  if (DANO_POR_OUTRA[slug]) e.actions[1] = { id: G.doSlug(DANO_POR_OUTRA[slug]).acao, enabled: true, minMana: 0, conditions: [] };
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
   if (!Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok) return null;
@@ -56,9 +61,15 @@ function montar(slug, [arma, escudo], suportes = []) {
   // Energia; o Cajado Impregnado de Mana usa o cajado, que já está na lista das armas)
   if (slug === 'Berserk') e.hunt.furia = { n: 5, ganhou: e.hunt.clock, perdeu: e.hunt.clock };
   if (slug === 'Energy_Blade') e.es = 1e7;
+  // (lote A5, com o aval do dono: o Golpe Selvagem dos Extremos paga Mana, Vida e Escudo de Energia juntos, como no PoB)
+  if (slug === 'Wild_Strike_of_Extremes') e.es = 1e7;
   const [b, ...resto] = e.hunt.monstros;
   for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
   Object.assign(b, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {} });
+  // (lote B1, com o aval do dono 20/10 — a regra do PoE: a Descarga descarrega as SUAS cargas, sem carga ela não sai: a montagem dá Poder, Frenesi e Tolerância à
+  // Descarga e à da Miséria; o Condutor Elétrico só acerta o inimigo Eletrizado: a montagem Eletriza o alvo)
+  if (/^Discharge/.test(slug)) e.hunt.cargasPoe = Object.fromEntries(['poder', 'frenesi', 'tolerancia'].map((t) => [t, { n: 1, ate: e.hunt.clock + 60_000 }]));
+  if (slug === 'Lightning_Conduit') b.estados.chocado = { ate: e.hunt.clock + 60_000, pct: 20, dur: 60_000 };
   // (as gemas de cadáver precisam de um cadáver perto do alvo; as de Retaliação, da janela aberta — o bloqueio, o Acerto Selvagem; os Vínculos,
   // de um aliado perto — o mercenário)
   e.hunt.cadaveres = [{ key: 'x', nome: 'Morto', look: 1, x: b.x, y: b.y, maxHp: 10000 }];
@@ -88,6 +99,14 @@ function usar({ e, b }, slug) {
     const r = Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true });
     if (!r.ok) return { ok: false, erro: r.motivo ?? r.erro };
     ev.push(...(r.eventos ?? []));
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+  }
+  // (lote A3b, com o aval do dono: a gema cujo dano sai por outra — a outra logo depois, no fim do tempo de uso desta)
+  if (DANO_POR_OUTRA[slug]) {
+    e.hunt.clock = Math.max(e.hunt.clock, e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE]?.ate ?? e.hunt.clock);
+    const r2 = Acoes.disparar(e, e.hunt, PERSONAGEM, 1, b, { manual: true });
+    if (!r2.ok) return { ok: false, erro: `${DANO_POR_OUTRA[slug]}: ${r2.motivo ?? r2.erro}` };
+    ev.push(...(r2.eventos ?? []));
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
   }
   // (a Mina detona com você parado e o inimigo perto; a Armadilha, com o inimigo a 1 casa; o gêiser e a torre, no tempo)
@@ -125,7 +144,7 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
     let feito = null;
     const erros = [];
     for (const armas of ARMAS) {
-      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : []);
+      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : DANO_POR_OUTRA[slug] ? [DANO_POR_OUTRA[slug]] : []);
       if (!m) continue;
       let u;
       try { u = usar(m, slug); } catch (err) { u = { ok: false, erro: `exceção: ${err.message}` }; }
@@ -133,7 +152,8 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
       // (lote A1, com o aval do dono: no arquétipo `movimento`, "deslocou" é o efeito só da gema SEM dano — o Avanço, o Passo Rápido; a que tem
       // dano segue exigindo o acerto)
       const semDano = !r.ataque && !Object.keys(G.compilada(slug, 20)?.stats?.dano ?? {}).length && !(G.compilada(slug, 20)?.stats?.dot ?? []).length;
-      if (buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou)) { feito = armas[0]; break; }
+      // (lote A1b, com o aval do dono: a Emboscada colada no alvo não se move e não causa dano — o efeito dela é o buff, `hunt.emboscada`)
+      if (buff ? u.buff : u.dano > 0 || (r.arquetipo === 'movimento' && semDano && u.deslocou) || (slug === 'Ambush' && !!m.e.hunt.emboscada)) { feito = armas[0]; break; }
       erros.push(`${armas[0]}: saiu sem ${buff ? 'buff' : 'dano'}`);
     }
     if (!feito) falhas.push(`${slug} (${r.arquetipo}) — ${erros.slice(0, 3).join(' · ')}`);

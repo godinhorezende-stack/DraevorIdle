@@ -16,7 +16,7 @@
 // O estado mora na caçada (`hunt.debuffsDoJogador`), no relógio dela; o que muda a ficha entra por `addsDosDebuffsNoJogador` (`Afixos.soma`).
 // Quem aplica (o golpe e a magia do monstro, os espinhos, o dreno, as cargas) é `mobs/mecanicas.mjs`.
 import { ligado } from './catalogo.mjs';
-import { NO_ACERTO, imunidadeApos, fatorDosDebuffs } from './condicoes-poe.mjs';
+import { NO_ACERTO, imunidadeApos, fatorDosDebuffs, valor as valorDoGolpe } from './condicoes-poe.mjs';
 
 export const NUMEROS = {
   cegueira: { duracaoMs: 4000, menosPct: 20 },
@@ -146,7 +146,8 @@ export function fatorDoReflexo(ficha, tipo) {
   if (!ligado() || !ficha?.afPoe) return 1;
   const fisico = tipo === 'physical';
   const elemental = ['fire', 'ice', 'energy'].includes(tipo);
-  if (v(ficha, 'imune_reflexo') > 0 || (fisico && v(ficha, 'imune_reflexo_fisico') > 0) || (elemental && v(ficha, 'imune_reflexo_elemental') > 0)) return 0;
+  // (lote A5, dono 20/10: o "Dano Elemental … não pode ser Refletido" do USO — o Ataques Elementais Desperto — pela ficha do golpe, `valor`: a soma + as linhas do uso)
+  if (v(ficha, 'imune_reflexo') > 0 || (fisico && v(ficha, 'imune_reflexo_fisico') > 0) || (elemental && valorDoGolpe(ficha, 'imune_reflexo_elemental') > 0)) return 0;
   const evita = v(ficha, 'reflexo_evitado') + (fisico ? v(ficha, 'reflexo_fisico_evitado') : 0) + (elemental ? v(ficha, 'reflexo_elemental_evitado') : 0);
   return Math.max(0, 1 - evita / 100);
 }

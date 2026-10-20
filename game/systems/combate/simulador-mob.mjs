@@ -135,7 +135,8 @@ export function simularLuta(estado, { mob, level = estado.level ?? 1, lutas = 30
   const m = montarMob(mob);
   if (!m) return { ok: false, erro: 'Criatura desconhecida.' };
   const ficha = Ficha.combate(estado);
-  const nivelDoMob = level + (m.levelExtra ?? 0);
+  // (lote A5d) o nível do combate: o do monstro do PoE (`poe.nivel` + a raridade — `levelDoBicho`); o do Draevor, `level` + a raridade, como antes
+  const nivelDoMob = Atributos.levelDoBicho({ escala: { nivel: level } }, m);
   const ataques = ataquesDe(m, nivelDoMob);
   const eu = dpsDoJogador(ficha, m, nivelDoMob);
   const dps = dpsFornecido ?? eu.dps;

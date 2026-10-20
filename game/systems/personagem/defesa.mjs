@@ -17,7 +17,8 @@ import { RECENTE_MS } from '../itens-poe/condicoes-poe.mjs';
 const ES = Atributos.CONFIG.energyShield;
 
 /** O golpe do jogador ERROU `alvo`? (boneco de treino nunca esquiva) */
-export function errou(ficha, hunt, alvo) {
+/** (lote A5d: `rng`, o sorteio — o da Rajada Vulcânica, travado nos testes; sem ele, o `Math.random`.) */
+export function errou(ficha, hunt, alvo, rng = Math.random) {
   if (!alvo || alvo.dummy) return false;
   // Técnica Resoluta (keystone do PoE): os acertos não podem ser evadidos.
   if (ficha?.nuncaErra) return false;
@@ -28,7 +29,7 @@ export function errou(ficha, hunt, alvo) {
   // (ciclo 7) "X% mais Precisão contra o Inimigo Marcado / contra Inimigos Únicos / em Curta Distância": a precisão contra ESTE alvo.
   const contraOAlvo = itensPoeLigado() ? precisaoMaisContra(ficha, hunt, alvo) : 1;
   const chance = Atributos.chanceDeAcerto((ficha.accuracy ?? 0) * contraOAlvo, level, AtributosDoMob.evasaoDe(alvo, level));
-  return !sorteioDoAcerto(chance, alvo, 'errosDoJogador');
+  return !sorteioDoAcerto(chance, alvo, 'errosDoJogador', rng);
 }
 
 /** (ciclo 7) O fator da precisão contra o `alvo` (o "mais" com a tag do alvo: `accuracy_mais@alvoMarcado`, `@alvoUnico`, `@alvoPerto`). */
@@ -44,9 +45,9 @@ export function precisaoMaisContra(ficha, hunt, alvo) {
  * O sorteio de um acerto (ou de uma esquiva): com a `entropia` ligada (`combate/formulas.json`), a chance cresce a cada erro seguido e
  * volta ao começo no acerto — a taxa é a mesma, mas as sequências longas de sorte ou azar não saem. `quem` guarda a contagem de erros.
  */
-function sorteioDoAcerto(chance, quem, campo) {
-  if (!Formulas.PARAMETROS.acerto.entropia || !quem) return Math.random() < chance;
-  const r = Formulas.acertoComEntropia(chance, quem[campo] ?? 0, Math.random());
+function sorteioDoAcerto(chance, quem, campo, rng = Math.random) {
+  if (!Formulas.PARAMETROS.acerto.entropia || !quem) return rng() < chance;
+  const r = Formulas.acertoComEntropia(chance, quem[campo] ?? 0, rng());
   quem[campo] = r.erros;
   return r.acertou;
 }

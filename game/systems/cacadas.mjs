@@ -1246,6 +1246,10 @@ export function novaInstancia(estado, pronta = null) {
   hunt.outrosAndares = novo.outrosAndares;
   hunt.respawns = [];
   hunt.z = novo.andarInicial;
+  // (revisão do A3b: a instância nova começa sem os objetos das gemas do PoE — no PoE a troca de área desfaz o chão, as lâminas e os capturados — nem a área fria
+  // que andava com eles; os da party, abaixo)
+  delete hunt.poeObjetos;
+  if (hunt.areasFrias) hunt.areasFrias = hunt.areasFrias.filter((a) => !a.obj);
   hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
   hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;
   hunt.alvo = null;
@@ -1271,6 +1275,7 @@ export function novaInstancia(estado, pronta = null) {
   convidados.forEach((o, i) => chegarNaInstancia(o.hunt, casas[i] ?? novo.inicio, novo.andarInicial));
   // Instância nova = ENTRADA nova para cada um da sala: a sessão de cada um protege até o cliente confirmar (`protecao.mjs`).
   for (const h of [hunt, ...convidados.map((o) => o.hunt)]) h.entrada = Protecao.novaEntrada();
+  for (const h of convidados.map((o) => o.hunt)) { delete h.poeObjetos; if (h.areasFrias) h.areasFrias = h.areasFrias.filter((a) => !a.obj); }
   // (Cada portal com a entrada nova de quem chega por ele: a tela de cada um pula o seu — ela anima a própria chegada.)
   EventosDeEncontro.empurrar(hunt, [portalDeViagem(novo.inicio, { chegada: true, entrada: hunt.entrada }), ...convidados.map((o, i) => portalDeViagem(casas[i] ?? novo.inicio, { chegada: true, entrada: o.hunt.entrada }))]);
   return true;
@@ -1427,12 +1432,16 @@ const MAXIMO_DE_RUINS = 24;
  * aliado), com o vigia de progresso (sem A → B → A) e sem refazer a busca enquanto nada mudou (`aindaTravado`). Sem rota, fica parado
  * e tenta de novo quando a situação muda.
  */
-function passoAteAliado(grade, hunt, pos, quer, uid) {
+// (lote A1b, dono 19/10: D-d: `trespassa` — com Trespassar, o passo não desvia de bicho e pula por cima dele: `Acoes.passoTrespassando`)
+function passoAteAliado(grade, hunt, pos, quer, uid, trespassa = false) {
   const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
   const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
   const alvo = { uid, x: pos.x, y: pos.y };
-  if (aindaTravado(hunt, alvo)) return null;
-  const bruto = proximoPassoAte(grade, hunt.pos, pos, ocupado, casasDeBicho);
+  // (revisão do A1b: com Trespassar, o passo por cima é tentado mesmo com o vigia dizendo "travado" — a assinatura dele não vê o buff; o destino é a casa
+  // do aliado: o passo não cai nela)
+  const pulo = trespassa ? Acoes.passoTrespassando(grade, hunt.pos, pos, casasDeBicho, { destinoOcupado: true }) : null;
+  if (!pulo && aindaTravado(hunt, alvo)) return null;
+  const bruto = pulo ?? proximoPassoAte(grade, hunt.pos, pos, ocupado, casasDeBicho);
   return passoComProgresso(hunt, grade, alvo, bruto, { quer, ocupado, bloqueado: casasDeBicho });
 }
 
@@ -1792,12 +1801,14 @@ export function tique(estado, personagem, agora = Date.now()) {
      * atributo Movimento não fazia nada (auditoria, 29/09).
      */
     const passos = passosDoTique(estado, hunt);
+    // (lote A1b, dono 19/10: D-d) TRESPASSAR (a Corrida de Fase, o Passo Definhante): o caminho não desvia de bicho e o passo pula por cima dele
+    const trespassa = itensPoeLigado() && Acoes.trespassando(estado, hunt);
     for (let passo = 0; passo < passos; passo++) {
     if (passo > 0) grade = andarDaGrade(gradeDaCacada, hunt.z);
       let destino = null;
       // Caça Online: o passo na mão — a tecla (`huntWalk`, o rumo) ou, sem tecla,
       // o próximo passo até onde o jogador clicou/tocou (`huntWalkTo`, ver `andarAte`).
-      const manual = hunt.rumo && agora <= (hunt.rumoValidoAte ?? 0) ? hunt.rumo : passoDoClique(hunt, grade);
+      const manual = hunt.rumo && agora <= (hunt.rumoValidoAte ?? 0) ? hunt.rumo : passoDoClique(hunt, grade, trespassa);
       if (manual) {
         // Daqui em diante, o mesmo passo para os dois: bicho na casa, escada, parede.
         const { dx, dy } = manual;
@@ -1805,10 +1816,21 @@ export function tique(estado, personagem, agora = Date.now()) {
         else if (dy > 0) hunt.pos.dir = 2;
         else if (dx > 0) hunt.pos.dir = 1;
         else if (dx < 0) hunt.pos.dir = 3;
-        const tentativa = { x: hunt.pos.x + dx, y: hunt.pos.y + dy };
+        let tentativa = { x: hunt.pos.x + dx, y: hunt.pos.y + dy };
         // Não pisa em bicho vivo: duas criaturas na mesma casa se cortam no
         // desenho (o client desenha uma por cima da outra, e o quadrado do alvo junto).
-        const ocupada = hunt.monstros.some((b) => b.hp > 0 && b.x === tentativa.x && b.y === tentativa.y);
+        const temBicho = (c) => hunt.monstros.some((b) => b.hp > 0 && b.x === c.x && b.y === c.y);
+        let ocupada = temBicho(tentativa);
+        // (lote A1b, revisão — D-d: a TECLA com Trespassar: o passo que cairia no bicho pula por cima, no mesmo rumo, até a próxima casa livre — até 3
+        // casas, sem atravessar parede)
+        if (ocupada && trespassa) {
+          let c = tentativa;
+          for (let k = 0; k < 3; k++) {
+            c = { x: c.x + dx, y: c.y + dy };
+            if (!grade.andavel.has(`${c.x},${c.y}`)) break;
+            if (!temBicho(c)) { tentativa = c; ocupada = false; break; }
+          }
+        }
         // Rampa, degrau ou buraco: pisou, mudou de andar (ver "Os andares da hunt").
         const outroAndar = !ocupada && grade.mapa?.floors && destinoDaMudanca(grade.mapa, hunt.z, tentativa.x, tentativa.y);
         if (outroAndar) {
@@ -1817,7 +1839,7 @@ export function tique(estado, personagem, agora = Date.now()) {
         } else if (grade.andavel.has(`${tentativa.x},${tentativa.y}`) && !ocupada) destino = tentativa;
       } else if (hunt.reagrupar && distancia(hunt.pos, hunt.reagrupar.pos) > hunt.reagrupar.perto) {
         // Party: o líder chamou para perto de alguém (`party.mjs` → `reagruparDe`): anda até lá pela mesma busca, sem teleporte.
-        destino = passoAteAliado(grade, hunt, hunt.reagrupar.pos, hunt.reagrupar.perto, 'reagrupar');
+        destino = passoAteAliado(grade, hunt, hunt.reagrupar.pos, hunt.reagrupar.perto, 'reagrupar', trespassa);
         if (destino) {
           const dx = Math.sign(destino.x - hunt.pos.x);
           const dy = Math.sign(destino.y - hunt.pos.y);
@@ -1825,7 +1847,7 @@ export function tique(estado, personagem, agora = Date.now()) {
         }
       } else if (hunt.guia && distancia(hunt.pos, hunt.guia.pos) > hunt.guia.coleira) {
         // Party: longe demais de quem segue ("Seguir ... a N sqm") — volta para perto. Dentro da distância não anda (a faixa vai de 0 a N).
-        destino = passoAteAliado(grade, hunt, hunt.guia.pos, hunt.guia.coleira, 'guia');
+        destino = passoAteAliado(grade, hunt, hunt.guia.pos, hunt.guia.coleira, 'guia', trespassa);
         if (destino) {
           const dx = Math.sign(destino.x - hunt.pos.x);
           const dy = Math.sign(destino.y - hunt.pos.y);
@@ -1888,8 +1910,10 @@ export function tique(estado, personagem, agora = Date.now()) {
           const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
           const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
           // Parado sem caminho/saída e nada mudou: nem refaz a busca (ver `aindaTravado`).
-          const travado = !hunt.lurando && aindaTravado(hunt, alvo);
-          destino = travado ? null : proximoPassoAte(grade, hunt.pos, alvo, ocupado, casasDeBicho);
+          // (lote A1b, dono 19/10: D-d: com Trespassar, pelo meio dos bichos — `Acoes.passoTrespassando`; revisão: tentado antes do vigia de travado, que não vê o buff)
+          const pulo = trespassa ? Acoes.passoTrespassando(grade, hunt.pos, alvo, casasDeBicho) : null;
+          const travado = !pulo && !hunt.lurando && aindaTravado(hunt, alvo);
+          destino = pulo ?? (travado ? null : proximoPassoAte(grade, hunt.pos, alvo, ocupado, casasDeBicho));
           const espera = !travado && !hunt.lurando && voltariaAtras(hunt, alvo, destino);
           if (espera) destino = null;
           // Sem ciclo: o passo que só repete casas sem chegar mais perto vira desvio ou parada (ver `progresso.mjs`).
@@ -2178,7 +2202,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     if (doArauto.length) { eventos.push(...doArauto); processarMortes(estado, personagem, eventos); }
   }
   // (lote 41, P032) as suas ÁREAS FRIAS: quem está dentro fica Resfriado (`resfriarNasAreasFrias`)
-  if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt);
+  if (itensPoeLigado() && hunt.areasFrias?.length) resfriarNasAreasFrias(hunt, hunt.clock ?? 0, estado);
   // (14/10) o Infestador: Incubando/Infestando, sozinho (`Acoes.tiqueDaPraga`)
   if (itensPoeLigado()) eventos.push(...Acoes.tiqueDaPraga(estado, hunt, passou, hunt.clock ?? 0));
   // (lote 75) o Arauto da Agonia: o Rastejador vem ao Envenenar e some sem Virulência (`Acoes.tiqueDoArautoDaAgonia`)
@@ -2451,7 +2475,7 @@ export const resDoLacaio = (l, elemento, aliado = null) => (l?.poe?.res ?? 0) + 
 /**
  * (lote 87, dono 19/10: B1 — D2/D3) O golpe de ATAQUE do lacaio ERROU `alvo`? A precisão dele (`LacaiosPoe.precisaoDoLacaio`: a do PoB — a tabela
  * de precisão de monstro × o `accuracy`; o Espectro e os sem PoB, × 1) contra a evasão do bicho, pela fórmula do jogo (a sua:
- * `Atributos.chanceDeAcerto`, entre 5% e 95%); contra evasão 0, sempre acerta. Não erra: a magia (`magia` — o estilo do mago; a habilidade
+ * `Atributos.chanceDeAcerto` — lote A5b: a do PoE 1 pelo PoB, entre 5% e 100%); contra evasão 0, sempre acerta. Não erra: a magia (`magia` — o estilo do mago; a habilidade
  * principal de magia do PoB, o Golem de Chamas), o mercenário, o totem, o boneco de treino, e fora do modo PoE.
  */
 export function lacaioErrou(hunt, l, alvo, magia = false, rng = Math.random) {
@@ -2646,16 +2670,29 @@ export function golpeDoTotem(estado, hunt, l, alvo, ficha, personagem, agora) {
  * (10%), pelo caminho de sempre do Resfriamento (o chefe, o teto e a duração — `Estados.aplicar`); só renova o que está para acabar. As vencidas
  * saem.
  */
-export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0) {
+// (lote B1, dono 20/10: + o raio que cresce do Estalo Gélido — `ModsPoe.atualizarAreasFrias` — e o Frenesi por segundo do Vaal, com `estado` — o dono das áreas)
+export function resfriarNasAreasFrias(hunt, agora = hunt?.clock ?? 0, estado = null) {
+  // (revisão do B1: o Frenesi por segundo do Vaal ANTES de tirar as vencidas — o segundo do fim, em `ate`, também paga)
+  if (estado && hunt.areasFrias?.length) {
+    const ganhos = ModsPoe.cargasPorSegundoDasAreasFrias(hunt, agora);
+    if (ganhos.length) {
+      const af = Ficha.combate(estado).afPoe ?? {};
+      let mudou = false;
+      for (const t of ganhos) mudou = CargasPoe.ganhar(estado, t, af) || mudou;
+      if (mudou) Ficha.invalidar(estado);
+    }
+  }
   hunt.areasFrias = (hunt.areasFrias ?? []).filter((a) => a.ate > agora);
   if (!hunt.areasFrias.length) return;
+  ModsPoe.atualizarAreasFrias(hunt, agora);
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || m.dummy || !ModsPoe.naAreaFria(hunt, m, agora)) continue;
     // (lote A2: a área com o Resfriamento próprio — o Escudo Gélido — vale o dela)
     const efeito = ModsPoe.efeitoDaAreaFria(hunt, m, agora) || ModsPoe.AREAS_FRIAS.efeitoPct;
     const l = m.estados?.lento;
-    if (l && l.ate - agora > 1000 && l.pct >= efeito) continue;
-    Estados.aplicar(m, { lentidaoPct: efeito }, 1, agora, Math.random, !!hunt.isBoss);
+    if (!(l && l.ate - agora > 1000 && l.pct >= efeito)) Estados.aplicar(m, { lentidaoPct: efeito }, 1, agora, Math.random, !!hunt.isBoss);
+    // (lote A5, dono 20/10 — D5) na área fria do Resfriamento Ósseo: o Gelo sofrido aumentado pelo Resfriamento, enquanto ele durar
+    if (m.estados?.lento?.ate > agora && ModsPoe.naAreaFriaFragil(hunt, m, agora)) m.estados.fragilGelo = { ate: m.estados.lento.ate };
   }
 }
 
@@ -2751,7 +2788,8 @@ export function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (!(golpeDoBicho > 0)) continue;
       // (lote 32, P028: + o bloqueio de Magia da Oferenda Óssea)
       // (lote 43, P040: + a precisão do bicho contra a evasão do lacaio)
-      const precisao = AtributosDoMob.precisaoDe(b, l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
+      // (lote A5d) o monstro do PoE: a precisão no nível DELE (a tabela do PoE); os do Draevor seguem pelo nível do lacaio, como estava
+      const precisao = AtributosDoMob.precisaoDe(b, AtributosDoMob.poeDe(b) ? Atributos.levelDoBicho(hunt, b) : l.nivel ?? estado.level ?? 1) * ModsPoe.doBicho(b, hunt.clock ?? 0).precisaoFator;
       // (lote 87, dono 19/10: B3) o CRÍTICO do golpe do monstro no lacaio, como em você (`LacaiosPoe.criticoNoLacaio`: o "Afiado", a espécie, os
       // estados do monstro; o dano extra × (1 − o "Dano Extra recebido de Acertos Críticos reduzido" do lacaio))
       const critDoBicho = l.poe ? LacaiosPoe.criticoNoLacaio(l, AtributosDoMob.critico(b), b, relogio) : null;
@@ -3151,7 +3189,7 @@ export function andarAte(estado, { x, y }) {
  * chegou, mudou de andar, o caminho fechou). Recalculado a cada passo porque
  * os bichos andam — o mesmo `proximoPassoAte`, contornando os vivos.
  */
-function passoDoClique(hunt, grade) {
+function passoDoClique(hunt, grade, trespassa = false) {
   const d = hunt.destino;
   if (!d) return null;
   if (hunt.modo !== 'online' || d.z !== hunt.z || (d.x === hunt.pos.x && d.y === hunt.pos.y)) {
@@ -3159,7 +3197,8 @@ function passoDoClique(hunt, grade) {
     return null;
   }
   const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-  const passo = proximoPassoAte(grade, hunt.pos, d, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
+  // (lote A1b, dono 19/10: D-d: com Trespassar, o passo pula por cima do bicho — `Acoes.passoTrespassando`)
+  const passo = (trespassa ? Acoes.passoTrespassando(grade, hunt.pos, d, casasDeBicho) : null) ?? proximoPassoAte(grade, hunt.pos, d, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
   if (!passo) {
     hunt.destino = null;
     return null;
@@ -3279,6 +3318,10 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
     // Os lacaios e os totens das gemas do PoE (desenhados como o familiar, com a vida).
     lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS })),
+    // (lote A3b, dono 19/10: D13) os OBJETOS das gemas do PoE no chão ou no tempo (a bola, o tornado, as lâminas, os marcadores, o chão, os capturados em você):
+    // sempre presente (lista vazia sem objeto), para o quadro em delta limpar quando somem — `Acoes.objetosParaCliente`, desenhados em `map.mjs`
+    poeObjetos: Acoes.objetosParaCliente(hunt),
+    // (revisão do A3b: os dos aliados da sala vêm em `poeObjetosDoGrupo` — `Party.extrasDoRetrato`, `objetosDoPoeDoAliado`)
     summon: hunt.summon
       ? { uid: hunt.summon.uid, x: hunt.summon.x, y: hunt.summon.y, dir: hunt.summon.dir, look: hunt.summon.look, name: hunt.summon.name, nivel: hunt.summon.nivel, moveMs: hunt.summon.moveMs ?? R.PASSO_MS }
       : null,
@@ -3325,6 +3368,15 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
 }
 
 
+
+/**
+ * (revisão do A3b, D13) Os objetos das gemas do PoE de um ALIADO da sala para a tela de quem vê (`hVe`: a caçada dele) — recortados pela tela dele, o fim no
+ * relógio dele, e o id e o "segue" com o nome do aliado (`aliado:<nome>`, o uid do boneco do aliado na tela). Só os do mesmo andar.
+ */
+export function objetosDoPoeDoAliado(hAliado, hVe, nome) {
+  if (!hAliado || !hVe || (hAliado.z ?? 0) !== (hVe.z ?? 0)) return [];
+  return Acoes.objetosParaCliente(hAliado, { centro: hVe.pos, relogio: hVe.clock ?? 0, segue: `aliado:${nome}`, sufixo: `:${nome}` });
+}
 
 /**
  * O progresso por SETOR da instância da sala (`[{ id, nome, total, vivos, concluido, jogadores }]`), ou `null` fora de instância.

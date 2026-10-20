@@ -187,7 +187,9 @@ test('tradução: equivalente, aproximado (média da faixa), elemento, híbrido 
   const caos = traduzirMod(mod('+20% de Resistência a Caos'));
   assert.deepEqual([caos.estado, caos.efeitos], ['novo', [{ stat: 'chaos_res', valor: 20 }]]);
   const fis = traduzirMod(mod('Adiciona 5 a 9 de Dano Físico'));
-  assert.deepEqual([fis.estado, fis.efeitos], ['aproximado', [{ stat: 'phys_add', valor: 7 }]]);
+  // (aval do dono, 20/10 — o Físico LOCAL da arma, como no PoE: +X no mínimo e +Y no máximo, exatos, na base da própria arma — `itens-poe/jogo.mjs`,
+  // `separarFisicoLocal`; antes, a média 7 em `phys_add`, 'aproximado')
+  assert.deepEqual([fis.estado, fis.efeitos], ['equivalente', [{ stat: 'phys_add_min', valor: 5 }, { stat: 'phys_add_max', valor: 9 }]]);
   const hib = traduzirMod(mod('Armadura aumentada em 20% / Recuperação de Atordoamentos e Bloqueios aumentada em 11%'));
   assert.equal(hib.partes.length, 2);
   assert.equal(hib.estado, 'novo', 'o estado do híbrido é o pior das partes (a recuperação de atordoamento agora tem efeito: atributo novo)');

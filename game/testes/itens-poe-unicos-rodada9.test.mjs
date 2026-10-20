@@ -146,7 +146,8 @@ test('lote B: as frases viram os atributos', { skip: SEM }, () => {
     'Clamores não instantâneos ignoram o tempo de recarga ao serem utilizados': ['clamor_sem_recarga'],
     '+{0}% de chance de Bloquear o Dano de Ataques de Projéteis': ['bloqueio_projetil'],
     'Armadura contra Projéteis aumentada em {0}%': ['armadura_projetil_inc'],
-    'Acertos com esta Arma ganham {0}% de Dano Físico como Dano de Gelo ou Raio Extra': ['phys_as_extra_gelo_ou_raio'],
+    // (lote A5c, com o aval do dono: a linha é da arma — só nos ataques, `@ataque`; não vale nas magias)
+    'Acertos com esta Arma ganham {0}% de Dano Físico como Dano de Gelo ou Raio Extra': ['phys_as_extra_gelo_ou_raio@ataque'],
     'Adiciona {0} a {1} de Dano de Raio por cada Inimigo Eletrizado que você Matou Recentemente': ['added_energy_dmg_min%eletrizadosMortosRecente', 'added_energy_dmg_max%eletrizadosMortosRecente'],
   };
   for (const [texto, stats] of Object.entries(casos)) {
@@ -219,7 +220,10 @@ test('lote C: as frases viram os atributos', { skip: SEM }, () => {
 
 test('o inimigo sem Armadura / sem Evasão (as defesas do bestiário) e a carga ao empurrar corpo a corpo', { skip: SEM }, () => {
   const tags = (m) => ModsPoe.tagsDoAlvo({ hp: 10, estados: {}, ...m }, 0);
-  assert.ok(tags({ key: 'poe-hillock-1' }).includes('alvoSemEvasao'), 'o Hillock não tem evasão');
+  // (lote A5d, aval do dono 20/10: no PoE todo monstro tem evasão — a tabela do PoE × o multiplicador do tipo; o Hillock do nível 1 tem 67. Antes: o
+  // Hillock sem evasão, pelo `poe.evasao` 0 do dado bruto. O "sem Evasão" agora é o da evasão zerada, no molde da armadura zerada.)
+  assert.ok(!tags({ key: 'poe-hillock-1' }).includes('alvoSemEvasao'), 'no PoE todo monstro tem evasão (67 no nível 1)');
+  assert.ok(tags({ key: 'poe-hillock-1', evasaoPct: -100 }).includes('alvoSemEvasao'), 'a evasão zerada');
   assert.ok(!tags({ key: 'poe-hillock-1' }).includes('alvoSemArmadura'), 'mas tem armadura');
   assert.ok(!tags({ key: 'poe-quru-22' }).includes('alvoSemEvasao'));
   assert.ok(tags({ key: 'poe-hillock-1', armaduraPct: -100 }).includes('alvoSemArmadura'), 'a armadura zerada');

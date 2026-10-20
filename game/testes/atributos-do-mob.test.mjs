@@ -159,7 +159,8 @@ test('o golpe do jogador em quem bloqueia não causa dano (gema); sem bloqueio c
 });
 
 test('a precisão e a evasão explícitas do bicho entram no acerto: evasivo → o jogador erra mais; acurado → o jogador é esquivado menos', () => {
-  const ficha = { accuracy: 800, evasion: 800 };
+  // (lote A5b, dono 20/10 — aval: precisão e evasão longe do teto de 100% do PoE 1 — precisão 50: 0,79 contra o normal, 0,41 contra o evasivo; evasão 5000: esquiva 0,44 contra o normal, 0,04 contra o acurado)
+  const ficha = { accuracy: 50, evasion: 5000 };
   const hunt = { escala: { nivel: 100 } };
   const normal = troll();
   const evasivo = troll({ evasaoPct: 300 });

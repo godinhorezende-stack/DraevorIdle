@@ -1422,6 +1422,8 @@ function openEditor(slot) {
           soComUtamoPronto: action.soComUtamoPronto === true,
           // (lote A1) a gema de movimento: para o alvo (padrão) ou para longe (fugir — junto das condições do slot)
           direcao: action.direcao === 'longe' ? 'longe' : 'alvo',
+          // (lote A1b) a Investida Carregada: liberar a miragem quando ela parar (padrão) ou segurá-la no alvo
+          segurarMiragem: action.segurarMiragem === true,
         }
       : {
           id: null,
@@ -1443,6 +1445,7 @@ function openEditor(slot) {
           tirarQuando: [],
           soComUtamoPronto: false,
           direcao: 'alvo',
+          segurarMiragem: false,
         },
   };
 
@@ -2457,6 +2460,29 @@ export function renderEditor() {
     linha.append(el('span', null, 'Para onde'), direcao);
     detail.append(linha);
     detail.append(el('p', 'shop-note dica', 'Para longe só sai com um bicho colado em você (na Distância da barra ou menos) e com as condições do slot batendo — ex.: “Você · Vida · menor ou igual a · 40%”.'));
+  }
+
+  /*
+   * ---- (lote A1b, dono 19/10 — I1) A MIRAGEM da Investida Carregada ----
+   * "Quando ela parar" (o padrão): a miragem é liberada — a onda final e o teleporte — quando chega ao fim da distância, na parede ou nos 15 estágios.
+   * "Segurar a miragem no alvo": parada, ela segue pulsando com +150% de dano enquanto houver inimigo vivo na área dela; sem ninguém, libera. A regra
+   * mora no servidor (`acoes.planoDaMiragem`).
+   */
+  if (entry?.poeGema?.miragem) {
+    detail.append(el('h3', null, 'Miragem'));
+    const miragem = document.createElement('select');
+    for (const [id, label] of Object.entries({ parar: 'Liberar quando ela parar', segurar: 'Segurar a miragem no alvo' })) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = label;
+      miragem.append(option);
+    }
+    miragem.value = editing.draft.segurarMiragem ? 'segurar' : 'parar';
+    miragem.onchange = () => (editing.draft.segurarMiragem = miragem.value === 'segurar');
+    const linha = el('label', 'field');
+    linha.append(el('span', null, 'Liberar'), miragem);
+    detail.append(linha);
+    detail.append(el('p', 'shop-note dica', 'Segurando, a miragem parada continua pulsando (+150% de dano) enquanto houver inimigo na área dela; sem ninguém, ela é liberada (a onda final e o teleporte).'));
   }
 
   /*

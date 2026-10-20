@@ -96,13 +96,11 @@
   "portais": 6
  },
  "instancia": {
-  "_nota": "A INSTÂNCIA de cada tier: o TERRENO (uma hunt do Draevor, como as áreas da campanha), os MONSTROS comuns da `area` da campanha do PoE e o CHEFE (o slug de um monstro único da campanha) — todos levados ao nível do mapa pelo `crescimentoPorNivel` (o quanto cada status cresce por nível no PoE, medido nos próprios monstros da campanha, níveis 55–67, pela mediana do mesmo monstro em níveis diferentes). Concluir = limpar 100% (o chefe conta). `pausaAoConcluirMs`: o tempo do aviso antes de voltar para a cidade.",
+  "_nota": "A INSTÂNCIA de cada tier: o TERRENO (uma hunt do Draevor, como as áreas da campanha), os MONSTROS comuns da `area` da campanha do PoE e o CHEFE (o slug de um monstro único da campanha) — todos levados ao nível do mapa pelo `crescimentoPorNivel` (o quanto cada status cresce por nível no PoE, medido nos próprios monstros da campanha, níveis 55–67, pela mediana do mesmo monstro em níveis diferentes). A armadura e a evasão não crescem por ele (lote A5e, dono 20/10): saem da tabela do PoE no nível do mapa × o multiplicador do tipo (`itens-poe/monstros-defesa-poe.json`). Concluir = limpar 100% (o chefe conta). `pausaAoConcluirMs`: o tempo do aviso antes de voltar para a cidade.",
   "crescimentoPorNivel": {
    "vida": 0.0643,
    "dano": 0.0519,
    "experiencia": 0.0362,
-   "armadura": 0.0814,
-   "evasao": 0.0643,
    "escudoDeEnergia": 0.0643
   },
   "pausaAoConcluirMs": 8000,

@@ -17,6 +17,7 @@ import { CITY_MAP, CATALOGO } from '../systems/dados.mjs';
 import { validar, normalizar } from '../systems/mapa/spawns.mjs';
 import * as Raridade from '../systems/mobs/raridade.mjs';
 import * as Mobs from '../systems/mobs/atributos.mjs';
+import { levelDoBicho } from '../systems/personagem/atributos.mjs';
 import * as Poderes from '../systems/poderes.mjs';
 import { montarMob } from '../systems/combate/simulador-mob.mjs';
 import * as Protecao from '../systems/protecao.mjs';
@@ -190,13 +191,15 @@ export function atributosDoMob({ key, level = 100, raridade = 'normal', modifica
   const spawn = { key, raridade, modificadores };
   const { raridade: r, modificadores: mods } = Raridade.doSpawn(spawn);
   const m = montarMob({ key, raridade: r, modificadores: mods });
+  // (lote A5d) o monstro do PoE: o nível do COMBATE (o dele + o da raridade — `levelDoBicho`), não o digitado; os do Draevor, o digitado + a raridade
+  const lv = CATALOGO.bestiary[key]?.poe ? levelDoBicho(null, m) : nivel + (m.levelExtra ?? 0);
   return {
     ok: true,
     nome: m.name,
     raridade: r,
     modificadores: mods,
-    level: nivel + (m.levelExtra ?? 0),
-    atributos: Mobs.atributosFinais(m, nivel + (m.levelExtra ?? 0)),
+    level: lv,
+    atributos: Mobs.atributosFinais(m, lv),
     ataques: Poderes.ataquesParaFicha(key),
     erros: Raridade.errosDoSpawn(spawn),
     avisos: Raridade.avisosDoSpawn(spawn),

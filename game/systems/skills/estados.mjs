@@ -213,13 +213,17 @@ export function tique(hunt, eventos, agora) {
     const vidaMax = es ? es.vidaMax : m.maxHp;
     const vidaAgora = es ? es.vida : m.hp;
     if (m.regen && m.hp > 0 && vidaAgora < vidaMax && R.jaPode(agora, m.proximaRegen)) {
-      // (PoE: "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%".)
-      const desacelerado = ativo(m.estados?.desacelerado, agora) ? Math.max(0, 1 - (m.estados.desacelerado.regenMenosPct ?? 0) / 100) : 1;
-      // (+ ciclo 7, lote E: "Inimigos Próximos têm Regeneração de Vida reduzida em X%" — a aura do personagem, `mods-poe.aurasProximas`.)
-      const daAura = ativo(m.estados?.regenMenosAura, agora) ? Math.max(0, 1 - (m.estados.regenMenosAura.pct ?? 0) / 100) : 1;
+      // As REDUÇÕES da Regeneração de Vida do monstro, em pontos (revisão do B1 — a regra do PoE: o "reduzida" é LifeRegen INC no PoB, e os aumentados e reduzidos
+      // SOMAM num fator só, 1 − Σ; antes cada fonte multiplicava, como um "menos"):
+      //   - "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%";
+      //   - (ciclo 7, lote E) "Inimigos Próximos têm Regeneração de Vida reduzida em X%" — a aura do personagem, `mods-poe.aurasProximas`;
+      //   - (lote B1) o debuff da gema — a Bomba Congelante, "Regeneração de Vida reduzida em 75%", pela duração secundária;
+      //   - as das maldições ("Inimigos Amaldiçoados por você têm Regeneração de Vida reduzida em X%").
+      const reduzido = (ativo(m.estados?.desacelerado, agora) ? m.estados.desacelerado.regenMenosPct ?? 0 : 0) + (ativo(m.estados?.regenMenosAura, agora) ? m.estados.regenMenosAura.pct ?? 0 : 0)
+        + (ativo(m.estados?.regenMenosDebuff, agora) ? m.estados.regenMenosDebuff.pct ?? 0 : 0) + (maldicoes?.regenMenos ?? 0);
       // (lote 69: "Inimigos Envenenados por você não podem Regenerar Vida" — enquanto o veneno dura)
       const envenenado = m.estados?.semRegenEnvenenado && (m.dots ?? []).some((d) => (d.tipo === 'veneno' || d.tipo === 'venenoPoe') && d.falta > 0);
-      const fator = envenenado ? 0 : desacelerado * daAura * Math.max(0, 1 - (maldicoes?.regenMenos ?? 0) / 100);
+      const fator = envenenado ? 0 : Math.max(0, 1 - reduzido / 100);
       const ganho = Math.max(fator > 0 ? 1 : 0, Math.round((vidaMax * m.regen * fator) / 100));
       // (com escudo, a regeneração é da VIDA: não passa da vida máxima, e o escudo fica como está)
       m.hp = es ? Math.min(vidaMax, vidaAgora + ganho) + es.atual : Math.min(m.maxHp, m.hp + ganho);

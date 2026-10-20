@@ -49,7 +49,7 @@ test('acerto no modo PoE: o golpe do jogador e a esquiva dele usam a fórmula do
     const evBicho = 10 + 2 * 100;
     assert.equal(Atributos.chanceDeAcerto(1000, 100), F.chanceDeAcertoPoe(1000, evBicho));
     assert.ok(Atributos.chanceDeAcerto(0, 100) === 0.05);
-    assert.ok(Atributos.chanceDeAcerto(1e9, 100) <= 0.95);
+    assert.ok(Atributos.chanceDeAcerto(1e9, 100) <= 1); // (lote A5b, dono 20/10 — aval: o teto do PoE 1, 100%)
     const precBicho = 10 + 4 * 100;
     assert.ok(Math.abs(Atributos.chanceDeEsquiva(2000, 100) - (1 - F.chanceDeAcertoPoe(precBicho, 2000))) < 1e-12);
     assert.equal(Atributos.chanceDeEsquiva(0, 100), 0);

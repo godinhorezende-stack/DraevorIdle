@@ -31,7 +31,8 @@ const ehAusencia = (m) => /^(efeito )?não simulado: /.test(m) || /ainda não (e
 
 // Os testes que citam cada slug (o nome do arquivo de teste e a linha não importam: só "há um teste que usa a gema").
 const TESTES = readdirSync(new URL('testes/', RAIZ)).filter((f) => f.endsWith('.mjs')).map((f) => readFileSync(new URL(`testes/${f}`, RAIZ), 'utf8')).join('\n');
-const citada = (slug) => TESTES.includes(`'${slug}'`) || TESTES.includes(`"${slug}"`) || TESTES.includes(`\`${slug}\``) || TESTES.includes(`${slug}`);
+// (revisão do A5: o slug inteiro, com borda — "Awakened_X" não conta como teste de "X")
+const citada = (slug) => new RegExp(`(^|[^A-Za-z0-9_%-])${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^A-Za-z0-9_%-]|$)`).test(TESTES);
 
 // Os ícones (arquivo no repositório + o mesmo desenho em duas gemas diferentes que não são variantes uma da outra).
 const hashes = new Map();

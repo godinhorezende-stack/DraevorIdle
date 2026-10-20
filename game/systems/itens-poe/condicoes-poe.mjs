@@ -14,9 +14,11 @@ import { maximo as maximoDeCargas } from './cargas.mjs';
 import { maldicoesNoJogador as maldicoesDoMapa } from './mapas.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
+import { simples } from '../combate/modificadores.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { quemRecebeAMaldicao } from './vinculos.mjs';
 import * as Aliados from './aliados.mjs';
+import { raioQueCresce } from './gemas-b1.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -75,15 +77,53 @@ export const AREAS_FRIAS = Object.freeze({
   porGema: Object.freeze({
     Frostblink: { raioM: 2 }, Creeping_Frost: { raioM: 2, noAlvo: true }, Cold_Snap: { raioM: 3 }, Vaal_Cold_Snap: { raioM: 3.6 }, Vortex: { raioM: 2.3 },
     Frost_Blades_of_Katabasis: { raioM: 2, noAlvo: true },
+    // (lote A3b, dono 19/10: D6: a Geada Rastejante das Banquisas também deixa a área fria — ela anda com o chão, `Acoes.tiqueDosObjetos`)
+    Creeping_Frost_of_Floes: { raioM: 2, noAlvo: true },
   }),
 });
 // (lote A2: + `efeitoPct` — a área com o Resfriamento próprio: o Escudo Gélido, com o "Efeito de Afecções de Gelo aumentado" da qualidade dele)
-export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null }) {
+// (lote A3b, dono 19/10: + `obj` — o id do objeto do chão a que a área fria pertence: a da Geada Rastejante anda com ele, `Acoes.tiqueDosObjetos`)
+// (lote A5, dono 20/10 — D5: + `fragilGelo` — a área da habilidade suportada pelo Resfriamento Ósseo: quem está nela sofre o Gelo aumentado pelo Resfriamento)
+// (lote B1, dono 20/10 — D-B1.6/D-B1.7: + `cresce` — o chão dos Estalos Gélidos, `{ deM, ateM, fator, sorte }`: o raio vai de `deM` a `ateM` pela duração,
+// `atualizarAreasFrias`; + `aoMorrer` — `{ tipo, chance }`, a carga quando um inimigo morre nela, `cargasAoMorrerNaAreaFria`; + `porSegundo` — o tipo da carga a
+// cada segundo com um inimigo nela, `cargasPorSegundoDasAreasFrias`)
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false, cresce = null, aoMorrer = null, porSegundo = null }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
-  const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora);
-  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000), ...(efeitoPct > 0 ? { efeitoPct } : {}) });
+  // (revisão do B1: a do Frenesi por segundo que acaba agora fica até pagar o último — `cargasPorSegundoDasAreasFrias`)
+  const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora || (a.porSegundo && a.proximaCarga <= a.ate));
+  const durMs = Math.round(segundos * 1000);
+  const doCrescer = cresce ? { ...cresce, inicio: agora, durMs } : null;
+  lista.push({ x, y, raio: doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}),
+    ...(doCrescer ? { cresce: doCrescer } : {}), ...(aoMorrer ? { aoMorrer } : {}), ...(porSegundo ? { porSegundo, proximaCarga: agora + 1000 } : {}) });
   h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
 }
+/** (lote B1, D-B1.7) O raio das áreas frias que crescem, no instante `agora` (o tique — `cacadas.resfriarNasAreasFrias`). */
+export function atualizarAreasFrias(h, agora = h?.clock ?? 0) {
+  for (const a of h?.areasFrias ?? []) if (a.cresce) a.raio = raioQueCresce(a.cresce, agora);
+}
+const naArea = (a, b) => Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio && (b.z == null || a.z == null || b.z === a.z);
+/** (lote B1, D-B1.6) As cargas que a morte de `morto` dá (o Estalo Gélido: 25% de Frenesi; o Vaal: o Poder) — as áreas frias com `aoMorrer` em que ele estava. */
+export function cargasAoMorrerNaAreaFria(h, morto, agora = h?.clock ?? 0, rng = Math.random) {
+  const ganhos = [];
+  if (!morto) return ganhos;
+  for (const a of h?.areasFrias ?? []) if (a.aoMorrer && a.ate > agora && naArea(a, morto) && rng() * 100 < a.aoMorrer.chance) ganhos.push(a.aoMorrer.tipo);
+  return ganhos;
+}
+/** (lote B1, D-B1.6) "A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área" (o Estalo Gélido Vaal): os tipos que este tique dá. */
+export function cargasPorSegundoDasAreasFrias(h, agora = h?.clock ?? 0) {
+  const ganhos = [];
+  for (const a of h?.areasFrias ?? []) {
+    // (revisão do B1: a área que acabou neste tique ainda paga o segundo do fim — o laço vai até `ate`)
+    if (!a.porSegundo) continue;
+    while (a.proximaCarga <= Math.min(agora, a.ate)) {
+      if ((h.monstros ?? []).some((m) => m.hp > 0 && !m.dummy && naArea(a, m))) ganhos.push(a.porSegundo);
+      a.proximaCarga += 1000;
+    }
+  }
+  return ganhos;
+}
+/** (lote A5, D5) O bicho está numa área fria do Resfriamento Ósseo agora? */
+export const naAreaFriaFragil = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.fragilGelo && a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
 /** O bicho está numa das suas áreas frias agora? */
 export const naAreaFria = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);
 /** (lote A2) O Resfriamento da área fria em que o bicho está (o maior delas): o de sempre, ou o próprio da área. */
@@ -178,12 +218,17 @@ export function fortificacao(estado, total = null) {
   return Math.max(propria, Aliados.fortificacaoDosAliados(estado));
 }
 /** Ganha `n` Fortificações (até o máximo) e renova a duração ("Duração da Fortificação aumentada"). */
-export function ganharFortificacao(hunt, n, total, agora = hunt?.clock ?? 0) {
+// (lote A5, dono 20/10: `doUso` — o que o USO dá à Fortificação, da ficha do golpe: o "Duração da Fortificação aumentada" da qualidade do suporte Fortificar
+// — `incPct`, somado ao da soma — e a duração base da Golpe Vigilante — `baseS`, "Acertos Corpo a Corpo Fortificam por 8 segundos", no lugar dos 6 s)
+export function ganharFortificacao(hunt, n, total, agora = hunt?.clock ?? 0, doUso = null) {
   if (!hunt || !ligado() || !(n > 0)) return 0;
   const max = maxFortificacao(total);
   const f = hunt.fortificacao && hunt.fortificacao.ate > agora ? hunt.fortificacao : { n: 0, ate: 0 };
-  const dur = Math.round(FORTIFICACAO.duracaoMs * Math.max(0.1, 1 + (Number(total?.fortificacao_duracao_inc) || 0) / 100));
-  hunt.fortificacao = { n: Math.min(max, f.n + Math.max(1, Math.round(n))), ate: agora + dur };
+  const base = Number(doUso?.baseS) > 0 ? Number(doUso.baseS) * 1000 : FORTIFICACAO.duracaoMs;
+  const inc = doUso?.incPct != null ? Number(doUso.incPct) || 0 : Number(total?.fortificacao_duracao_inc) || 0;
+  const dur = Math.round(base * Math.max(0.1, 1 + inc / 100));
+  // (revisão do A5: um acerto com duração menor não encurta a Fortificação que já corre — fica o maior fim)
+  hunt.fortificacao = { n: Math.min(max, f.n + Math.max(1, Math.round(n))), ate: Math.max(f.ate ?? 0, agora + dur) };
   return hunt.fortificacao.n;
 }
 
@@ -230,7 +275,7 @@ export const CONDICOES_DE_ESTADO = new Set([
   'lacaioMorreuRecente', 'usouLacaioRecente', 'elusivo', 'soloSagrado', 'vidaCheia', 'furiaCheia', 'drenoRemovidoCheio',
   // (07/10, os únicos:) mana, escudo, afecções em você, frasco, roubo, parado, mão secundária, e os "recentemente" dos acontecimentos.
   'manaBaixa', 'naoManaBaixa', 'escudoCheio', 'semEscudo', 'ardendo', 'naoArdendo', 'congeladoProprio', 'eletrizadoProprio', 'resfriadoProprio',
-  'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'parado',
+  'sangrandoProprio', 'envenenadoProprio', 'amaldicoadoProprio', 'semAfeccaoElemental', 'duranteFrasco', 'semFrasco', 'drenando', 'drenandoVida', 'parado',
   'maoSecundariaVazia', 'desarmado', 'naoSobrecarregado', 'naoVidaBaixa', 'naoAcertadoRecente', 'bloqueouRecente', 'naoBloqueouRecente', 'atordoouRecente',
   'congelouRecente', 'incendiouRecente', 'eletrizouRecente', 'usouMovimentoRecente', 'usouVaalRecente', 'clamouRecente', 'acertouRecente',
   'ganhouPoderRecente', 'naoGanhouPoderRecente', 'naoGanhouFrenesiRecente', 'naoPerdeuPoderRecente', 'consumiuCadaverRecente', 'naoConsumiuCadaverRecente',
@@ -280,6 +325,8 @@ export const CONDICOES_DE_ESTADO = new Set([
   // (lote 66) "enquanto portando um(a) X ou Y" — a arma em QUALQUER das mãos (as condições `comX` são da mão principal): Garra ou Adaga, Machado
   // ou Espada, Maça, Cetro ou Cajado
   'comGarraOuAdaga', 'comMachadoOuEspada', 'comMacaCetroOuCajado',
+  // (revisão do lote da eficácia, 20/10) "com Maças e Cetros" — no PoE o Cetro é Maça (o PoB: `Sceptre = { flag = "Mace" }`): a mão principal com um dos dois
+  'comMacaOuCetro',
   // (lote 67) Resfriou um inimigo recentemente; plantou uma Mina ou arremessou uma Armadilha recentemente
   'resfriouRecente', 'plantouRecente',
   // (lote 68) durante o efeito de um Frasco de VIDA
@@ -329,6 +376,8 @@ export const TAGS_DE_GOLPE = new Set([
   'ataqueLento', 'alvoComEscudo', 'alvoSemDreno',
   // (lote G) a gema de Postura; o ataque Impelido por um Clamor (`hunt.impelidos`).
   'postura', 'impelido',
+  // (lote A1b, revisão do dono 19/10) DE QUEM é o Impelir: o do Clamor (os bônus do buff do Clamor — `GemasPoe.clamorPeloPoder`) e o da Emboscada
+  'impelidoClamor', 'impelidoEmboscada',
   // (17/10, lote G18) o terceiro uso SEGUIDO da mesma gema (o Martelo Glacial: "Cada terceiro golpe sucessivo …" — `hunt.poeTerceiroGolpe`)
   'terceiroGolpe',
   // (15/10, lote 31) o abate por um ACERTO (o golpe fatal não foi dano contínuo — `quem-feriu.tagsDoAbate`); o inimigo Provocado pelo seu
@@ -413,6 +462,7 @@ export function condicoesDe(estado, total = null, principais = null) {
   if (tem('comGarra', 'comAdaga')) v.add('comGarraOuAdaga');
   if (tem('comMachado', 'comEspada')) v.add('comMachadoOuEspada');
   if (tem('comMaca', 'comCetro', 'comCajado')) v.add('comMacaCetroOuCajado');
+  if (v.has('comMaca') || v.has('comCetro')) v.add('comMacaOuCetro');
   const h = estado?.hunt;
   const r = h?.poeRecente ?? {};
   const agora = h?.clock ?? 0;
@@ -496,6 +546,8 @@ export function condicoesDe(estado, total = null, principais = null) {
     if (Object.values(h.frascosPoe?.ativos ?? {}).some((a) => a.ate > agora && a.recurso === 'vida')) v.add('duranteFrascoVida');
     if (Object.values(h.frascosPoe?.tinturas ?? {}).some((t) => t?.ativa)) v.add('tinturaAtiva');
     if ((h.roubos ?? []).some((x) => x.restante > 0)) v.add('drenando');
+    // (revisão do A5: só o Dreno de VIDA — "Dano aumentado enquanto Drenando Vida", a qualidade do Dreno de Vida)
+    if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'vida')) v.add('drenandoVida');
     if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'es')) v.add('drenandoEs');
     if ((h.roubos ?? []).some((x) => x.restante > 0 && x.recurso === 'mana')) v.add('drenandoMana');
     if (!v.has('movendo')) v.add('parado');
@@ -1571,6 +1623,18 @@ export function congelarDaRampa(uso, u) {
   return pct * Math.max(0, 1 - u / ate);
 }
 
+/**
+ * (lote A5b, dono 20/10) A PRECISÃO pela conta da ficha (`ficha.contaDaPrecisao`): (base + fixos + a LOCAL da arma da mão + `fixos` a mais) × (1 + (o % da ficha +
+ * `pct` a mais)/100) × os "menos/mais" da ficha. A mão: a principal, a `secundaria` (a arma dela, com duas armas) ou `ambas` (o golpe que combina as duas — a
+ * média das duas locais).
+ */
+export function precisaoDaConta(c, mao = null, { fixos = 0, pct = 0 } = {}) {
+  if (!c) return 0;
+  const lp = Number(c.localPrincipal) || 0;
+  const ls = Number(c.localSecundaria) || 0;
+  const local = mao === 'secundaria' ? ls : mao === 'ambas' ? (lp + ls) / 2 : lp;
+  return Math.round(simples(c.base, { fixos: c.fixos + local + fixos, pct: c.pct + pct }).bruto * c.fator);
+}
 export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng = Math.random } = {}) {
   if (!ligado() || !ficha?.afPoe) return ficha;
   const agora = estado?.hunt?.clock ?? 0;
@@ -1584,7 +1648,15 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
     // ("Clamores não podem Impelir Habilidades de Deslocamento": a de Movimento não leva nem gasta o Impelir.)
     const semNoDeslocamento = t.has('movimento') && Number(ficha.afPoe.clamor_nao_impele_movimento) > 0;
     // (lote G20a: o ataque do totem não é Impelido — no PoE, só os seus)
-    if (!semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) t.add('impelido');
+    // (lote A1b, dono 19/10: D-b, e a revisão do dono) o ataque que gasta a Emboscada é Impelido POR ELA (`Acoes.emboscadaNoGolpe` marca `golpe`): leva a
+    // `impelido` genérica (os "Ataques Impelidos …" da árvore, das peças e dos suportes valem) e a `impelidoEmboscada`, mas NÃO a `impelidoClamor` — "Ataques
+    // Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades": os bônus do buff do Clamor não valem nele
+    // (revisão do C1: a habilidade que não pode ser Impelida — `naoImpelivel`, NeverExertable no PoB: as Vaal de ataque, a Tormenta de Espadas, a Evisceração… — não é
+    // Impelida nem pela Emboscada nem pelo Clamor)
+    const naoImpelivel = t.has('naoImpelivel');
+    const daEmboscada = !naoImpelivel && !t.has('totem') && !!estado?.hunt?.emboscada?.golpe && (estado.hunt.emboscada.ate ?? 0) > agora;
+    if (daEmboscada) { t.add('impelido'); t.add('impelidoEmboscada'); }
+    else if (!naoImpelivel && !semNoDeslocamento && !t.has('totem') && (estado?.hunt?.impelidos?.n ?? 0) > 0 && (estado.hunt.impelidos.ate ?? Infinity) > agora) { t.add('impelido'); t.add('impelidoClamor'); }
     if (estado?.hunt?.poeTerceiroGolpe) t.add('terceiroGolpe');
     if (ficha.mao === 'secundaria' || ficha.mao === 'ambas') t.add('maoSecundaria');
     if (ficha.mao !== 'secundaria') t.add('maoPrincipal');
@@ -1638,7 +1710,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const pen = s.elem_pen ?? 0;
   // (13/10: + o "mais Dano Degenerativo" com condição — `dano_dot_mais@magia`, "Mais X% de dano degenerativo com habilidades mágicas")
   // (+ lote G17: o "não pode" — o Foco Elemental e a Sede de Sangue, nas linhas dos suportes)
-  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como)/.test(k));
+  // (lote A5, dono 20/10: + o máximo da Eletrização, o −X% de Fogo dos Incendiados, o "Eletriza ao resfriar / Resfria ao eletrizar" do Coursing Current e o Resfriamento Ósseo —
+  // as linhas da gema e dos suportes que as afecções do golpe leem)
+  const temAfeccao = Object.keys(s).some((k) => /^(chance_|dot_|dano_dot_|ailment_|poison_|bleed_|ignite_|duracao_|efeito_|envenena|pode:|nao_pode:|congelamento_como|eletrizacao_como|resfriamento_como|eletrizacao_maximo|res_menos_|eletriza_ao_|resfria_ao_|resfriado_fragil_gelo)/.test(k));
   // Os sorteios do golpe: "Dano Dobrado"/"Triplicado" e "ignorar a Redução de Dano Físico" (a chance sem condição + a do golpe).
   const chance = (k) => (Number(ficha.afPoe[k]) || 0) + (s[k] ?? 0);
   const triplo = chance('chance_dano_triplo') > 0 && rng() * 100 < chance('chance_dano_triplo');
@@ -1647,6 +1721,11 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const invertida = chance('chance_res_invertida') > 0 && rng() * 100 < chance('chance_res_invertida');
   const f = { ...ficha };
   f.tagsDoGolpe = [...t];
+  // (lote A5b, dono 20/10: a PRECISÃO deste golpe — o "+X de Precisão" e o "X% de Precisão aumentada" com as tags dele: a gema e os suportes (a Precisão
+  // Adicional, pela tag `habilidade`) somam à conta da ficha, como o PoE soma os modificadores da habilidade; e o "Não pode ser Evadido" da gema — o mesmo
+  // `nuncaErra` do "Acertos não podem ser Evadidos" — `Defesa.errou`)
+  if (ficha.contaDaPrecisao && ((s.accuracy ?? 0) || (s.accuracy_inc ?? 0))) f.accuracy = precisaoDaConta(ficha.contaDaPrecisao, ficha.mao, { fixos: s.accuracy ?? 0, pct: s.accuracy_inc ?? 0 });
+  if ((s.nunca_erra ?? 0) > 0) f.nuncaErra = true;
   // (lote 71: o golpe já Dobrado/Triplicado — o "Seus Golpes Críticos têm chance de causar Dano Dobrado" não dobra de novo: `Ficha.rolarCritico`)
   f.danoDobradoNoGolpe = triplo || dobro;
   // "X% mais/menos Dano" (com condição): multiplica o golpe inteiro (o mesmo fator das cargas, em `Ficha.rolarCritico`).
@@ -1658,6 +1737,14 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (+ lote 33, P045: o Impacto — "até X% mais Dano Corpo a Corpo … baseado na proximidade", `maisPelaProximidade`)
   const fator = (triplo ? 3 : dobro ? 2 : 1) * Math.max(0, 1 + mais / 100) * (1 + furia / 100) * maisArea * maisDoCaminho * pelaDistancia(ficha, t, alvo, estado) * maisPelaProximidade(ficha, t, alvo, estado);
   if (fator !== 1) f.fatorDasCargas = (ficha.fatorDasCargas ?? 1) * fator;
+  // (lote A5b, dono 20/10) a Técnica Precisa POR USO: "40% mais Dano de Ataque se a Precisão for maior que a Vida máxima" — a precisão deste golpe (a do uso)
+  if (ficha.tecnicaPrecisa && t.has('ataque') && estado) {
+    const vale = (f.accuracy ?? 0) > (estado.maxHp ?? Infinity);
+    if (vale !== ficha.tecnicaPrecisa.aplicada) {
+      f.fatorDasCargas = (f.fatorDasCargas ?? 1) * (vale ? ficha.tecnicaPrecisa.fator : 1 / ficha.tecnicaPrecisa.fator);
+      f.tecnicaPrecisa = { ...ficha.tecnicaPrecisa, aplicada: vale };
+    }
+  }
   // (lote 30, P016/P076) o "X% mais Dano de <tipo>" com as condições deste golpe (o sem condição está na ficha) — `fatorRecebidoPeloBicho` o
   // aplica só na parte daquele tipo.
   const maisDoElemento = Object.fromEntries(Object.entries(MAIS_DANO_DO_TIPO).map(([el, k]) => [el, (s[k] ?? 0) + (Number(ficha.afPoe[k]) || 0)]).filter(([, x]) => x));
@@ -1729,6 +1816,9 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (O multiplicador FIXO — "Seu Multiplicador de Acerto Crítico é N%" — e o "Golpes Críticos não causam Dano extra" não somam o do golpe.)
   const multFixo = Number(ficha.afPoe?.crit_multi_fixo) > 0 || Number(ficha.afPoe?.critico_sem_dano_extra) > 0;
   if (critMult && !multFixo) f.critMultiplier = (ficha.critMultiplier ?? 1.5) + critMult / 100;
+  // (lote A5, dono 20/10: o "Golpes Críticos não causam Dano extra" da GEMA — a Queda de Lâminas do Empalamento —: o multiplicador do golpe em 100%; o
+  // bruto — o das afecções da Agonia Perfeita — fica)
+  if ((s.critico_sem_dano_extra ?? 0) > 0) f.critMultiplier = 1;
   // (o multiplicador de crítico BRUTO — o da Agonia Perfeita, que tira o dano extra do crítico mas usa o multiplicador nas afecções)
   if (critMult && ficha.critMultiplierBruto != null) f.critMultiplierBruto = ficha.critMultiplierBruto + critMult / 100;
   const penPorElemento = { fire: s.fire_pen ?? 0, ice: s.ice_pen ?? 0, energy: s.energy_pen ?? 0 };
@@ -2196,7 +2286,9 @@ export const ignoraReducaoFisica = (ficha, rng = Math.random) => ligado() && rng
  * … é Convertido para um Elemento Aleatório". `fisico`: `[min, max]` (ou um número). Devolve `{ extras: { elemento: [min, max] },
  * convertidoPct }` — o convertido sai do Físico (quem chama tira) e entra no elemento sorteado.
  */
-export function extrasDoFisico(ficha, fisico, rng = Math.random) {
+// (lote A5c, dono 20/10: `teto` — o que a conversão da GEMA deixou do Físico, em %: no PoE a conversão da gema vem primeiro e as de outras fontes só
+// convertem o que sobrou; sem ele, 100, como antes)
+export function extrasDoFisico(ficha, fisico, rng = Math.random, teto = 100) {
   const [a, b] = Array.isArray(fisico) ? fisico : [fisico, fisico];
   const extras = {};
   const somar = (el, pct) => { if (pct > 0) { const x = extras[el] ?? [0, 0]; extras[el] = [x[0] + (a * pct) / 100, x[1] + (b * pct) / 100]; } };
@@ -2214,10 +2306,14 @@ export function extrasDoFisico(ficha, fisico, rng = Math.random) {
   // ("Acertos com esta Arma ganham X% de Dano Físico como Dano de Gelo ou Raio Extra": um dos dois, sorteado a cada golpe.)
   if (valor(ficha, 'phys_as_extra_gelo_ou_raio') > 0) somar(rng() < 0.5 ? 'ice' : 'energy', valor(ficha, 'phys_as_extra_gelo_ou_raio'));
   // As CONVERSÕES ("X% do Dano Físico Convertido em Dano de Fogo", e a de elemento aleatório): no máximo 100% do Físico, como no PoE.
+  // (lote A5c, dono 20/10: "modo PoE segue o PoE") passando do que há para converter (o `teto`), o PoE reduz TODAS PROPORCIONALMENTE — antes eram em
+  // sequência (o Fogo primeiro, o aleatório por último)
+  const pedidos = ['fire', 'ice', 'energy', 'chaos'].map((el) => [el, Math.max(0, valor(ficha, `phys_conv_${el}`))]);
+  if (valor(ficha, 'phys_conv_random') > 0) pedidos.push([['fire', 'ice', 'energy'][Math.floor(rng() * 3)], valor(ficha, 'phys_conv_random')]);
+  const total = pedidos.reduce((t, [, x]) => t + x, 0);
+  const escala = total > 0 ? Math.min(1, Math.max(0, teto) / total) : 0;
   let conv = 0;
-  const converter = (el, pct) => { const p = Math.max(0, Math.min(100 - conv, pct)); if (p > 0) { somar(el, p); conv += p; } };
-  for (const el of ['fire', 'ice', 'energy', 'chaos']) converter(el, valor(ficha, `phys_conv_${el}`));
-  if (valor(ficha, 'phys_conv_random') > 0) converter(['fire', 'ice', 'energy'][Math.floor(rng() * 3)], valor(ficha, 'phys_conv_random'));
+  for (const [el, x] of pedidos) { const p = x * escala; if (p > 0) { somar(el, p); conv += p; } }
   return { extras, convertidoPct: conv };
 }
 
@@ -2752,11 +2848,18 @@ export const RETALIACAO = { janelaMs: 2000, selvagemPct: 15 };
 export function abrirRetaliacao(hunt, gatilho, total, agora = hunt?.clock ?? 0) {
   if (!hunt || !ligado()) return;
   const ms = RETALIACAO.janelaMs * Math.max(0.1, 1 + (Number(total?.retaliacao_janela_inc) || 0) / 100) + 1000 * (Number(total?.retaliacao_janela_s) || 0);
-  (hunt.retaliacao ??= {})[gatilho] = { ate: agora + ms, usados: [] };
+  // (lote A5, dono 20/10 — D8: a janela guarda o início e a base — `de`, `msBase`: cada gema lê o seu tempo, com o "X% maior" do suporte dela)
+  (hunt.retaliacao ??= {})[gatilho] = { ate: agora + ms, de: agora, msBase: ms, usados: [] };
 }
-export const retaliacaoUsavel = (hunt, gatilho, slug, agora = hunt?.clock ?? 0) => {
+/**
+ * A gema de Retaliação `slug` pode ser usada agora? (lote A5, dono 20/10 — D8) `incDaGema`: o "se tornam Utilizáveis por um tempo X% maior" da Retaliação
+ * Experiente que a suporta — a janela DESTA gema é a base × (1 + X%), contada do início (as outras gemas seguem com a base).
+ */
+export const retaliacaoUsavel = (hunt, gatilho, slug, agora = hunt?.clock ?? 0, incDaGema = 0) => {
   const j = hunt?.retaliacao?.[gatilho];
-  return !!j && j.ate > agora && !j.usados.includes(slug);
+  if (!j || j.usados.includes(slug)) return false;
+  const ate = incDaGema > 0 && j.msBase > 0 && j.de != null ? Math.max(j.ate, j.de + j.msBase * (1 + incDaGema / 100)) : j.ate;
+  return ate > agora;
 };
 /**
  * Usou a gema de Retaliação: gasta o uso dela na janela ("X% de chance das Habilidades de Retaliação utilizadas continuarem Utilizáveis e não
@@ -2941,26 +3044,94 @@ export const caosAtravessaOEscudo = (ficha) => ligado() && !((Number(ficha?.afPo
 // ---------------------------------------------------------------- as PARTES do dano (conversões, ganhos extras, máscara)
 
 const ELS = ['physical', 'fire', 'ice', 'energy', 'chaos'];
+const ELEMENTAIS = ['fire', 'ice', 'energy'];
+/*
+ * (lote A5c, dono 20/10: "regra do PoE, no motor inteiro") As ORIGENS das partes: o dano CONVERTIDO (e o ganho "como Extra") recebe os modificadores de TODOS os
+ * tipos por onde passou, sem contar duas vezes — o Físico convertido em Gelo soma o "Dano Físico aumentado" e o "Dano de Gelo aumentado". `origens`:
+ * `{ elementoFinal: { 'physical+ice': [min, max], ice: [min, max] } }` — a chave são os tipos do caminho (na ordem de `ELS`); a penetração, a resistência e as
+ * afecções seguem o tipo FINAL (a parte continua no elemento final).
+ */
+export const chaveDosTipos = (tipos) => ELS.filter((t) => tipos.includes(t)).join('+');
+export const tiposDaChave = (k) => String(k).split('+').filter(Boolean);
+/** Soma `[a, b] × m` na origem `tipos` da parte `el`. */
+export function somarOrigem(origens, el, tipos, [a, b], m = 1) {
+  if (!origens || !(a > 0 || b > 0) || !(m > 0)) return;
+  const k = chaveDosTipos([...tipos, el]);
+  const o = (origens[el] ??= {});
+  const x = o[k] ?? [0, 0];
+  o[k] = [x[0] + a * m, x[1] + b * m];
+}
+/**
+ * (lote A5c) O fator médio da parte pelas origens dela: Σ (média da origem × `f(tipos)`) ÷ Σ médias. Sem origens, `f([final])` — o dano que só foi do
+ * próprio tipo. (A faixa da parte rola uma vez com esse fator; a média do golpe é a exata do PoE.)
+ */
+export function fatorPelasOrigens(subs, final, f) {
+  let soma = 0;
+  let peso = 0;
+  for (const [k, [a, b]] of Object.entries(subs ?? {})) {
+    const m = (a + b) / 2;
+    if (!(m > 0)) continue;
+    soma += m * f(tiposDaChave(k));
+    peso += m;
+  }
+  return peso > 0 ? soma / peso : f([final]);
+}
+/** (lote A5c) O "X% mais Dano de <tipo>" do golpe (a ficha do golpe; sem ela, o sem condição). */
+export const maisDoTipo = (ficha, t) => ficha?.maisDoElemento?.[t] ?? (Number(ficha?.afPoe?.[MAIS_DANO_DO_TIPO[t]]) || 0);
+/**
+ * (lote A5c) Os "mais" da origem que o acerto não põe: o "mais" de cada tipo do caminho que não é o final (o do final entra no acerto —
+ * `fatorRecebidoPeloBicho`) e o "mais Dano Elemental" (`fatorDoDanoElemental`) uma vez só, se algum tipo do caminho for elemental (o final, se for).
+ */
+export function maisDaOrigem(ficha, hunt, habilidade, tipos, final) {
+  let f = 1;
+  for (const t of tipos) if (t !== final) f *= Math.max(0, 1 + maisDoTipo(ficha, t) / 100);
+  const el = ELEMENTAIS.includes(final) ? final : tipos.find((t) => ELEMENTAIS.includes(t));
+  return f * (el ? fatorDoDanoElemental(ficha, hunt, habilidade, el) : 1);
+}
 /**
  * As partes de dano de um golpe (`{ elemento: [min, max] }`) com os mods do PoE dos únicos: as CONVERSÕES entre elementos ("X% do Dano de
  * Fogo Convertido em Dano de Caos", "Todo o Dano Elemental é Convertido para Dano de Caos"), os GANHOS extras ("Ganha X% de Dano Elemental
  * como Dano Extra de Caos", "X% do Dano de Gelo como Fogo extra") e a MÁSCARA ("Não Causa Dano Elemental", "Causa Somente Dano de Raio").
- * O Físico da arma já passou pelas conversões dele (`extrasDoFisico`). Devolve outro objeto.
+ * O Físico do golpe já passou pelas conversões dele (`extrasDoFisico`). Devolve outro objeto.
+ * (lote A5c: `origens` — as origens das partes, `somarOrigem` — andam junto: o que se converte ou se ganha leva o tipo novo na chave; muda no lugar)
  */
-export function transformarPartes(ficha, partes) {
+export function transformarPartes(ficha, partes, origens = null) {
   if (!ligado() || !ficha?.afPoe || !partes) return partes;
   const v = (k) => valor(ficha, k);
   const p = Object.fromEntries(ELS.map((el) => [el, [...(partes[el] ?? [0, 0])]]));
+  const o = origens ? Object.fromEntries(ELS.map((el) => [el, { ...(origens[el] ?? (p[el][0] > 0 || p[el][1] > 0 ? { [el]: [...p[el]] } : {})) }])) : null;
   const mover = (de, para, pct) => {
     const f = Math.max(0, Math.min(100, pct)) / 100;
     if (!f) return;
     for (const i of [0, 1]) { const x = p[de][i] * f; p[de][i] -= x; p[para][i] += x; }
+    if (o) for (const [k, [a, b]] of Object.entries(o[de])) { somarOrigem(o, para, tiposDaChave(k), [a, b], f); o[de][k] = [a * (1 - f), b * (1 - f)]; }
   };
-  for (const de of ['fire', 'ice', 'energy']) {
-    mover(de, 'chaos', v(`conv_${de}_chaos`) + v('conv_elemental_chaos'));
-    for (const para of ['fire', 'ice', 'energy']) if (para !== de) mover(de, para, v(`conv_${de}_${para}`));
-  }
+  // (revisão do lote da eficácia, 20/10 — como o PoB, CalcOffence.lua `buildConversionTable`/`calcDamage`) o GANHO como extra de um tipo é sobre o dano dele
+  // ANTES de ele se converter (já com o que ele recebeu dos tipos anteriores): o `antes` de cada tipo é guardado logo antes de converter ele — antes, depois de
+  // todas as conversões (o Gelo em Fogo: 100 de Gelo, 50% convertido e 29% ganho davam 64,5 de Fogo; no PoB, 79). E a conversão da HABILIDADE (`conv_hab_<de>_<para>`:
+  // a do suporte — o Gelo em Fogo, 50%) vem primeiro; as das outras fontes ficam com o que sobrou, proporcionais se passarem dele (antes, uma depois da outra)
   const antes = Object.fromEntries(ELS.map((el) => [el, [...p[el]]]));
+  const antesO = o ? Object.fromEntries(ELS.map((el) => [el, Object.fromEntries(Object.entries(o[el]).map(([k, x]) => [k, [...x]]))])) : null;
+  for (const de of ['fire', 'ice', 'energy']) {
+    antes[de] = [...p[de]];
+    if (o) antesO[de] = Object.fromEntries(Object.entries(o[de]).map(([k, x]) => [k, [...x]]));
+    const destinos = ['chaos', ...['fire', 'ice', 'energy'].filter((x) => x !== de)];
+    const daHab = destinos.map((para) => [para, Math.max(0, v(`conv_hab_${de}_${para}`))]);
+    const totalHab = daHab.reduce((t, [, x]) => t + x, 0);
+    const escalaHab = totalHab > 100 ? 100 / totalHab : 1;
+    const resta = Math.max(0, 100 - totalHab * escalaHab);
+    const globais = destinos.map((para) => [para, Math.max(0, para === 'chaos' ? v(`conv_${de}_chaos`) + v('conv_elemental_chaos') : v(`conv_${de}_${para}`))]);
+    const totalGlobal = globais.reduce((t, [, x]) => t + x, 0);
+    const escalaGlobal = totalGlobal > resta ? (totalGlobal > 0 ? resta / totalGlobal : 0) : 1;
+    // as frações sobre o dano de ANTES da conversão deste tipo (cada `mover` tira do que sobrou: a fração equivalente)
+    let sobra = 1;
+    for (const [para, pct] of [...daHab.map(([x, y]) => [x, y * escalaHab]), ...globais.map(([x, y]) => [x, y * escalaGlobal])]) {
+      const frac = pct / 100;
+      if (!(frac > 0) || !(sobra > 1e-12)) continue;
+      mover(de, para, (Math.min(frac, sobra) / sobra) * 100);
+      sobra -= Math.min(frac, sobra);
+    }
+  }
   // (+ o de UM elemento para Caos — "Receba X% do Dano de Fogo como Dano de Caos Extra".)
   const paraCaos = { fire: 'fire_as_extra_chaos', ice: 'ice_as_extra_chaos', energy: 'energy_as_extra_chaos' };
   for (const de of ['fire', 'ice', 'energy']) { ganharDe(antes, p, de, 'chaos', v('elem_as_extra_chaos') + v(paraCaos[de])); for (const para of ['fire', 'ice', 'energy']) if (para !== de) ganharDe(antes, p, de, para, v(`${de}_as_extra_${para}`)); }
@@ -2969,7 +3140,7 @@ export function transformarPartes(ficha, partes) {
   const so = ELS.find((el) => v(`so_dano:${el}`) > 0);
   for (const el of ELS) {
     const sem = v(`sem_dano:${el}`) > 0 || (v('sem_dano:elemental') > 0 && ['fire', 'ice', 'energy'].includes(el)) || (v('sem_dano:naocaos') > 0 && el !== 'chaos') || (so && el !== so) || (v('sem_dano:naoelemental') > 0 && !['fire', 'ice', 'energy'].includes(el)) || (v('sem_dano:naofisico') > 0 && el !== 'physical');
-    if (sem) p[el] = [0, 0];
+    if (sem) { p[el] = [0, 0]; if (o) o[el] = {}; }
   }
   // (a Tempestade Turbulenta: "-X% de dano elétrico mínimo", "+X% de dano elétrico máximo" — o mínimo e o máximo da parte de Raio.)
   const rMin = v('raio_min_mais');
@@ -2978,9 +3149,22 @@ export function transformarPartes(ficha, partes) {
     const a = p.energy[0] * Math.max(0, 1 + rMin / 100);
     const b = p.energy[1] * Math.max(0, 1 + rMax / 100);
     p.energy = [Math.min(a, b), Math.max(a, b)];
+    if (o) for (const k of Object.keys(o.energy)) o.energy[k] = [o.energy[k][0] * Math.max(0, 1 + rMin / 100), o.energy[k][1] * Math.max(0, 1 + rMax / 100)];
+  }
+  if (origens) {
+    for (const k of Object.keys(origens)) delete origens[k];
+    for (const el of ELS) {
+      const subs = Object.fromEntries(Object.entries(o[el]).filter(([, [a, b]]) => a > 0 || b > 0));
+      if (Object.keys(subs).length && (p[el][0] > 0 || p[el][1] > 0)) origens[el] = subs;
+    }
   }
   return Object.fromEntries(Object.entries(p).filter(([, [a, b]]) => a > 0 || b > 0));
-  function ganharDe(base, alvo, de, para, pct) { const f = pct / 100; if (f > 0) for (const i of [0, 1]) alvo[para][i] += base[de][i] * f; }
+  function ganharDe(base, alvo, de, para, pct) {
+    const f = pct / 100;
+    if (!(f > 0)) return;
+    for (const i of [0, 1]) alvo[para][i] += base[de][i] * f;
+    if (o) for (const [k, x] of Object.entries(antesO[de])) somarOrigem(o, para, tiposDaChave(k), x, f);
+  }
 }
 /** O Físico do golpe sai (a máscara) — "Não causa Dano Físico", "Causa Somente Dano de Raio"… */
 export function semFisico(ficha) {
@@ -3031,7 +3215,9 @@ export function fatorRecebidoPeloBicho(alvo, tipo, ficha, agora) {
   // ("Cada Totem aplica Dano aumentado em X% sofrido pelos Inimigos próximos a ele" — `mods-poe.aurasProximas`.)
   if (ativo(e.totemFragil, agora)) f *= 1 + (e.totemFragil.pct ?? 0) / 100;
   // (ciclo 7) a Geada Cortante: "Inimigos esfriados pelos seus ataques sofrem dano de frio aumentado pelo esfriamento" — o efeito do Resfriamento.
-  if (tipo === 'ice' && ativo(e.lento, agora) && Number(ficha?.afPoe?.resfriado_fragil) > 0) f *= 1 + (e.lento.pct ?? 0) / 100;
+  // (lote A5, dono 20/10 — D5) + o do Resfriamento Ósseo: o Resfriamento posto pela habilidade suportada, ou a área fria dela (`fragilGelo` no bicho, com a
+  // duração do Resfriamento — `afeccoes.aoAcertar`, `cacadas.resfriarNasAreasFrias`): vale em qualquer Gelo no inimigo (o debuff do PoE), uma vez só com o da árvore
+  if (tipo === 'ice' && ativo(e.lento, agora) && (Number(ficha?.afPoe?.resfriado_fragil) > 0 || ativo(e.fragilGelo, agora))) f *= 1 + (e.lento.pct ?? 0) / 100;
   // (lote G) sobre o seu Solo Sagrado; perto do seu Estandarte (`mods-poe.aurasProximas`).
   if (ativo(e.soloFragil, agora)) f *= 1 + (e.soloFragil.pct ?? 0) / 100;
   if (ativo(e.auraFragil, agora)) f *= 1 + (e.auraFragil.pct ?? 0) / 100;
@@ -3102,6 +3288,20 @@ export function resMenosDasAfeccoes(alvo, agora, tipo) {
  * "Exposições infligidas por você aplicam X% extra" (`exposicao_extra`) e "aplicam ao menos X%" (`exposicao_minima`).
  */
 const EXTRA_DA_EXPOSICAO = { fire: 'exposicao_extra_fogo', ice: 'exposicao_extra_gelo', energy: 'exposicao_extra_raio' };
+/**
+ * (lote A5, dono 20/10 — D10: "uma função única para pôr Exposição") PÕE a Exposição a `el` no alvo: −`pct`% por `ms`. Como no PoE, só a mais forte de cada
+ * elemento vale: com uma ainda ativa, fica o maior % e a duração que acaba depois; a vencida não conta (antes o Raio Abrasador guardava o % de uma Exposição
+ * já vencida). Quem usa: o acerto (`mods-poe.aoAcertar` — a de valor fixo e a com chance), o Raio Abrasador, a Bomba Congelante e a Onda de Convicção.
+ */
+export function porExposicao(alvo, el, pct, ms, agora) {
+  if (!alvo || !['fire', 'ice', 'energy'].includes(el) || !(pct > 0) || !(ms > 0)) return false;
+  const e = (alvo.estados ??= {});
+  const fim = e.exposicao?.[el] ?? 0;
+  const ainda = fim > agora;
+  e.exposicao = { ...(e.exposicao ?? {}), [el]: ainda ? Math.max(fim, agora + ms) : agora + ms };
+  e.exposicaoPct = { ...(e.exposicaoPct ?? {}), [el]: ainda ? Math.max(e.exposicaoPct?.[el] ?? 10, pct) : pct };
+  return true;
+}
 export function exposicao(alvo, agora, tipo, af = null) {
   if (!((alvo?.estados?.exposicao?.[tipo] ?? 0) > agora)) return 0;
   // (13/10, as Maestrias de Fogo/Gelo/Raio: "Exposição a Fogo infligida por você aplica X% extra" — a Exposição das gemas, das auras e dos

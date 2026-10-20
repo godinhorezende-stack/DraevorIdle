@@ -24,7 +24,8 @@ const CARGA = { Frenesi: 'frenesi', Poder: 'poder', Tolerância: 'tolerancia' };
 const REGRAS = [
   // (17/10, lote G18) as afecções não danificadoras da gema: o "como se causasse" (o PoB: <Afecção>AsThoughDealing MORE — a força da Eletrização e
   // do Resfriamento, a duração do Congelamento), e a Duração das afecções de Gelo (o Congelamento e o Resfriamento)
-  [new RegExp(`^(Eletriza|Resfria|Congela) Inimigos como se causasse ${N} ?% mais Dano$`, 'i'), (m) => ({ [{ eletriza: 'eletrizacao_como_mais', resfria: 'resfriamento_como_mais', congela: 'congelamento_como_mais' }[m[1].toLowerCase()]]: num(m[2]) })],
+  // (lote A5, dono 20/10: o plural da Sobrecarga — "Eletrizam Inimigos como se causassem 690% mais Dano")
+  [new RegExp(`^(Eletriza|Resfria|Congela)m? Inimigos como se causassem? ${N} ?% mais Dano$`, 'i'),(m) => ({ [{ eletriza: 'eletrizacao_como_mais', resfria: 'resfriamento_como_mais', congela: 'congelamento_como_mais' }[m[1].toLowerCase()]]: num(m[2]) })],
   [new RegExp(`^Congela inimigos causando ${N} ?% mais Dano$`, 'i'), (m) => ({ congelamento_como_mais: num(m[1]) })],
   // (lote G18b: o Golpe de Misericórdia da gema — mata no acerto com 10% de vida, 5% no Raro/Único — `ModsPoe.aoAcertar`)
   [/^Golpe de Misericórdia$/i, () => ({ culling: 1 })],
@@ -54,6 +55,10 @@ const REGRAS = [
   [new RegExp(`^${N} ?% mais Dano com Ataques por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`mais_dano%carga:${CARGA[m[2]]}`]: num(m[1]) })],
   [new RegExp(`^${N} ?% mais Velocidade de Ataque por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`atk_speed_mais%carga:${CARGA[m[2]]}`]: num(m[1]) })],
   [new RegExp(`^${N} ?% mais Área de Efeito por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`area_mais%carga:${CARGA[m[2]]}`]: num(m[1]) })],
+  // (lote A1b, dono 19/10) o Golpe Súbito e o do Poder: "Velocidade de Ataque aumentada em X% por Carga de Frenesi", "Chance de Crítico aumentada em X%
+  // por Carga de Poder" — os "aumentados" por carga (o "mais" está nas regras de cima)
+  [new RegExp(`^Velocidade de Ataque aumentada em ${N} ?% por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`atk_speed%carga:${CARGA[m[2]]}`]: num(m[1]) })],
+  [new RegExp(`^Chance de Crítico aumentada em ${N} ?% por Carga de (Frenesi|Poder|Tolerância)$`), (m) => ({ [`crit_chance_inc%carga:${CARGA[m[2]]}`]: num(m[1]) })],
   // A Postura (Sangue e Areia) e a mão do ataque.
   [new RegExp(`^${N} ?% mais Área de Efeito enquanto na Postura da Areia$`), (m) => ({ 'area_mais@posturaAreia': num(m[1]) })],
   [new RegExp(`^${N} ?% menos Dano na Postura de Sangue$`), (m) => ({ 'mais_dano@posturaSangue': -num(m[1]) })],
@@ -66,14 +71,80 @@ const REGRAS = [
   // "mais Dano com Acertos e Afecções" contra um alvo (o golpe inteiro — as afecções do jogo saem do acerto).
   [new RegExp(`^\\+?${N} ?% mais Dano com Acertos e Afecções contra Inimigos em Vida Cheia$`), (m) => ({ 'mais_dano@alvoVidaCheia': num(m[1]) })],
   [new RegExp(`^${N} ?% mais Dano com Acertos e Afecções contra Inimigos Incendiados$`), (m) => ({ 'mais_dano@alvoIncendiado': num(m[1]) })],
+  // ---- (lote A5, dono 20/10: os suportes simples e as linhas das famílias 1–4 — a mesma frase vale na gema e no suporte, sem o "Habilidades
+  // Suportadas têm") ----
+  // (família 1) o Dreno de Escudo de Energia (o Dreno de Energia; o PoB: energy_shield_leech_from_any_damage_permyriad — `Ficha.aplicarLeech`), a
+  // Duração de Efeito da Habilidade na ordem do poedb (a Eficácia), o Acerto Fortificante da Golpe Vigilante (8 s — o PoB gain_fortify_on_melee_hit_ms
+  // 8000, act_str.lua:12448 — no lugar dos 6 s da base), o Empalamento do suporte e da Queda de Lâminas do Empalamento, o crítico sem dano extra,
+  // o Golpe de Misericórdia (comum) e o Abater o Fraco (só Normal e Mágico), o reflexo elemental, o atordoamento da qualidade da Carga de Tolerância
+  // e o Empalamento refletido no golpe final (o Golpe Duplo do Empalamento — D4: 1 casa)
+  [new RegExp(`^${N} ?% d[eo] Dano Drenado como Escudo de Energia$`, 'i'), (m) => ({ es_leech: num(m[1]) })],
+  [new RegExp(`^${N} ?% de Duração de Efeito da Habilidade aumentada$`, 'i'), (m) => ({ duracao_habilidades: num(m[1]) })],
+  [new RegExp(`^Acertos Corpo a Corpo Fortificam por ${N} segundos?$`, 'i'), (m) => ({ 'chance_fortificar@corpo': 100, fortificacao_base_s: num(m[1]) })],
+  [new RegExp(`^${N} ?% de chance de Empalar Inimigos ao Acertar$`, 'i'), (m) => ({ chance_empalar: num(m[1]) })],
+  [new RegExp(`^O Efeito de Empalamento aument\\S* em ${N} ?%$`, 'i'), (m) => ({ efeito_empalamento: num(m[1]) })],
+  [/^Golpes? Críticos infligem Empalamento$/i, () => ({ 'chance_empalar@critico': 100 })],
+  [/^Golpes Críticos não causam Dano extra$/i, () => ({ critico_sem_dano_extra: 1 })],
+  [new RegExp(`^Mata Inimigos com ${N} ?% de Vida ou menos quando Acertados?$`, 'i'), () => ({ culling: 1 })],
+  [new RegExp(`^Mata inimigos de raridade normal e mágica com ${N} ?% de vida ou menos quando atingidos(?: por habilidades reforçadas)?$`, 'i'), (m) => ({ culling_normal_magico: num(m[1]) })],
+  [/^Dano Elemental não pode ser Refletido$/i, () => ({ imune_reflexo_elemental: 1 })],
+  [new RegExp(`^${N} ?% de Duração de Atordoamentos em Inimigos aumentada$`, 'i'), (m) => ({ stun_duration: num(m[1]) })],
+  [/^Golpes Finais fazem com que os Empalamentos em Inimigos Reflitam o Dano aos Inimigos ao redor$/i, () => ({ empalar_reflete_ao_matar: 1 })],
+  // (família 2) o Golpe da Víbora com duas armas (o PoB: Speed MORE −30 e Damage MORE −20 com ModFlag.Hit, ambos com DualWielding — act_dex.lua:16470,
+  // 16473; o "ㅤ- " do começo é do poedb)
+  [new RegExp(`^Quando em Empunhadura Dupla, ${N} ?% Menos Velocidade de Ataque$`, 'i'), (m) => ({ 'atk_speed_mais@duasArmas': -num(m[1]) })],
+  [new RegExp(`^[\\sㅤ]*-\\s*${N} ?% de dano de ataque com duas armas$`, 'i'), (m) => ({ 'mais_dano_acerto@duasArmas': -num(m[1]) })],
+  // (família 3) a Eletrização: o "Anel sempre Eletriza" da Nova Elétrica (D3: 100% de chance no acerto dela), a duração da Sobrecarga; o Resfriamento
+  // do Resfriamento Ósseo e do Coursing Current ("Efeito dos Resfriamentos … aumentado em X%"), o "mais Efeito" do Estalo Gélido (o PoB:
+  // active_skill_chill_effect_+%_final, act_int.lua:2832 — D4: também no chão dele) e o Congelar no resfriado da Hipotermia
+  [/^Anel sempre Eletriza$/i, () => ({ chance_shock: 100 })],
+  [new RegExp(`^${N} ?% de Duração de Eletrização aumentada em Inimigos$`, 'i'), (m) => ({ duracao_eletrizacao: num(m[1]) })],
+  [new RegExp(`^Efeito dos Resfriamentos aumentado em ${N} ?%$`, 'i'), (m) => ({ efeito_resfriamento: num(m[1]) })],
+  [new RegExp(`^${N} ?% mais Efeito de Resfriamento$`, 'i'), (m) => ({ efeito_resfriamento_mais: num(m[1]) })],
+  [new RegExp(`^${N} ?% de chance de Congelar Inimigos Resfriados$`, 'i'), (m) => ({ 'chance_freeze@alvoResfriado': num(m[1]) })],
+  // (família 4) a Exposição das Penetrações Despertas (o PoB: base_inflict_<el>_exposure_on_hit_%_chance, sup_int.lua:4633 — a Exposição padrão, −10%
+  // por 4 s), a resistência invertida do Golpe Selvagem dos Extremos (o PoB: …_negated_on_elemental_damage_hit_%_chance 100, act_dex.lua:17257), o −X%
+  // de Fogo dos Incendiados da Combustão e a penetração da Chuva Explosiva
+  [new RegExp(`^${N} ?% de chance de infligir(?:em)? Exposição a (Fogo|Gelo|Raio) ao Acertar$`, 'i'), (m) => ({ [`exposicao_chance_${m[2].toLowerCase()}`]: num(m[1]) })],
+  [/^Acertos tratam os valores da Resistência Elemental dos Monstros Inimigos como invertidos$/i, () => ({ chance_res_invertida: 100 })],
+  [new RegExp(`^Inimigos Incendiados possuem -?${N} ?% de Resistência a Fogo$`, 'i'), (m) => ({ res_menos_fogo_incendiado: num(m[1]) })],
+  [new RegExp(`^Penetra ${N} ?% da Resistência a (Fogo|Gelo|Raio)$`, 'i'), (m) => ({ [`${{ fogo: 'fire', gelo: 'ice', raio: 'energy' }[m[2].toLowerCase()]}_pen`]: num(m[1]) })],
+  // (lote A5b, dono 20/10: a PRECISÃO do uso — o "+X de Precisão" já vem do tradutor; o "% aumentada" na ordem do poedb, a qualidade da Precisão Adicional — e o
+  // "Não pode ser Evadido" das gemas Vaal, da Evisceração, do Punho Esmagador…: o acerto da gema de ataque não erra — `condicoes-poe.fichaDoGolpe`, `Defesa.errou`)
+  [new RegExp(`^${N} ?% de Precisão aumentada$`, 'i'), (m) => ({ accuracy_inc: num(m[1]) })],
+  [/^Não pode ser Evadido$/i, () => ({ nunca_erra: 1 })],
+  // (lote B1, dono 20/10) a Mutilação da Chuva de Flechas Vaal ("Mutila ao Acertar" — o PoB: global_maim_on_hit — e "150% de aumento do Efeito de Mutilação" —
+  // maim_effect_+%: a lentidão de 30% × 2,5 = 75%, `ModsPoe.aoAcertar`) e o "X% mais Velocidade de Conjuração" da qualidade da Nova Elétrica da Procissão (o PoB:
+  // active_skill_cast_speed_+%_final — multiplica o tempo de conjuração do uso, `Acoes.temposDaGemaPoe`)
+  [/^Mutila ao Acertar$/i, () => ({ chance_mutilar: 100 })],
+  [new RegExp(`^${N} ?% de aumento do Efeito de Mutilação$`, 'i'), (m) => ({ efeito_mutilacao: num(m[1]) })],
+  [new RegExp(`^${N} ?% mais Velocidade de Conjuração$`, 'i'), (m) => ({ cast_speed_mais: num(m[1]) })],
+  // (lote PR1, dono 20/10) o dano ADICIONAL igual a X% da Vida/Mana máxima — a Flecha Ardente do Vigor (o PoB: added_fire_damage_to_attacks_equal_to_%_maximum_life,
+  // FireMin e FireMax BASE pelo PercentStat Life, act_dex.lua:3478) e o Sifão de Poder do Arquimago (attack_skills_have_added_lightning_damage_equal_to_%_of_maximum_mana,
+  // + 0,15 por qualidade): o mínimo e o máximo iguais, × a Vida/Mana máxima de agora (a escala `vidaMax:1`/`manaMax:1`, `fatorDaEscala`)
+  [new RegExp(`^Causa Dano de (Fogo|Gelo|Raio|Caos|Físico) Adicional igual a ${N} ?% da (Vida|Mana) M[áa]xima$`, 'i'), (m) => {
+    const e = { fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos', físico: 'physical' }[m[1].toLowerCase()];
+    const escala = m[3].toLowerCase() === 'vida' ? 'vidaMax:1' : 'manaMax:1';
+    return { [`added_${e}_dmg_min%${escala}`]: num(m[2]) / 100, [`added_${e}_dmg_max%${escala}`]: num(m[2]) / 100 };
+  }],
+  // (lote C1, dono 20/10) a Cegueira das Lâminas Velozes Vaal: "100% de chance de Cegar inimigos ao acertá-los" (o PoB: global_chance_to_blind_on_hit_%) e "Efeito da
+  // Cegueira aumentado em 68%" (blind_effect_+%) — a Cegueira do PoE no acerto (`ModsPoe.aoAcertar`: `chance_cegar`, `efeito_cegueira`)
+  [new RegExp(`^${N} ?% de chance de Cegar inimigos ao acertá-los$`, 'i'), (m) => ({ chance_cegar: num(m[1]) })],
+  [new RegExp(`^Efeito da Cegueira aumentado em ${N} ?%$`, 'i'), (m) => ({ efeito_cegueira: num(m[1]) })],
 ];
 
 /**
  * Os atributos que o USO de uma gema lê da ficha do golpe (com as tags dele — `condicoes-poe.fichaDoGolpe`, `valor`, `alvosDasPecas`,
  * `acoes.temposDaGemaPoe`). Um atributo fora daqui (o máximo de zumbis, a resistência dos lacaios…) vale na ficha do PERSONAGEM, não num
  * uso: a linha local com ele segue "efeito não simulado" até alguém o ler no uso — o balão não promete o que o golpe não faz.
+ * (lote A5, dono 20/10: + o dreno de Escudo de Energia e o de Vida das magias — `Ficha.aplicarLeech` pela ficha do uso —, a Fortificação, o crítico sem
+ * dano extra, o Golpe de Misericórdia do Normal/Mágico, o reflexo elemental — `Mecanicas.aoReceberDano` com a ficha do uso —, o Empalamento refletido,
+ * o alcance corpo a corpo — o golpe da gema —, o "mais Dano só com Acertos", o máximo da Eletrização, a Exposição com chance e o −X% de Fogo dos Incendiados)
+ * (lote A5b, dono 20/10: + a precisão — `accuracy`, `accuracy_inc` — e o "Não pode ser Evadido" — `nunca_erra` —: a ficha do golpe as lê, e a gema de ataque
+ * rola o acerto por alvo com elas — `acoes.dispararSemMarcar`, `acertar`)
+ * (lote B1, dono 20/10: + o "mais Velocidade de Conjuração" — `cast_speed_mais`, `acoes.temposDaGemaPoe`; a Mutilação já entrava pelo `chance_…`/`efeito_…`)
  */
-const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+)$/;
+const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+|es_leech|es_leech_magia|vida_leech_magia|fortificacao_[a-z_]+|critico_sem_dano_extra|culling_[a-z_]+|imune_reflexo_elemental|empalar_[a-z_]+|alcance_corpo_m|mais_dano_acerto|eletrizacao_maximo|exposicao_chance_(fogo|gelo|raio)|res_menos_fogo_incendiado|accuracy|accuracy_inc|nunca_erra|cast_speed_mais)$/;
 const lidoNoUso = (k) => LIDOS_NO_USO.test(partir(k).stat) && atributoTemEfeito(k);
 
 /** Os atributos de UMA linha (com os números do nível): `{ stat: valor }`, ou null se nenhuma regra tem efeito no uso da gema. */

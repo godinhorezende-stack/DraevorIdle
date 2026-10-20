@@ -51,11 +51,12 @@ test('armadura: a redução física tem o teto do PoE (90%, `combate/limites.jso
 
 test('acerto (modo PoE): fica entre 5% e 95%; mais precisão acerta mais, mais evasão acerta menos', () => {
   assert.equal(F.chanceDeAcertoPoe(0, 1000), 0.05);
-  assert.equal(F.chanceDeAcertoPoe(1e9, 0), 0.95);
-  assert.ok(F.chanceDeAcertoPoe(800, 1000) > F.chanceDeAcertoPoe(500, 1000));
+  // (lote A5b, dono 20/10 — aval: o teto do PoE 1 é 100%; a comparação longe do teto — 800 e 500 contra 2.000 de evasão: 0,98 e 0,87)
+  assert.equal(F.chanceDeAcertoPoe(1e9, 0), 1);
+  assert.ok(F.chanceDeAcertoPoe(800, 2000) > F.chanceDeAcertoPoe(500, 2000));
   assert.ok(F.chanceDeAcertoPoe(500, 2000) < F.chanceDeAcertoPoe(500, 1000));
-  // 500 de precisão contra 1.000 de evasão: 500 / (500 + (1000/4)^0,8) ≈ 85,8% (a conta do próprio PoE).
-  assert.ok(Math.abs(F.chanceDeAcertoPoe(500, 1000) - 0.8578) < 1e-3);
+  // (lote A5b, dono 20/10 — aval) 500 de precisão contra 2.000 de evasão, pelo PoB: round(1,25 × 500 / (500 + (2000/5)^0,9) × 100) / 100 = 0,87.
+  assert.equal(F.chanceDeAcertoPoe(500, 2000), 0.87);
 });
 
 test('entropia do acerto: a taxa de longo prazo é a chance e as sequências de erros ficam mais curtas que as do sorteio puro', () => {

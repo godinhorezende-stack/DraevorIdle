@@ -105,8 +105,9 @@ test('B0 — o escudo da Égide no lacaio: a precisão (fixa e aumentada), a rec
 
 test('B1 — o golpe de ataque do lacaio erra contra a evasão alta; contra evasão 0, acerta sempre; a magia, o mercenário e o totem não erram', { skip: SEM }, () => {
   const { h, b } = cacada();
-  // (um monstro do bestiário do PoE com evasão — a maioria tem 0)
-  b.key = Object.keys(BESTIARY).find((k) => BESTIARY[k].poe?.evasao > 0);
+  // (um monstro do bestiário do PoE: a evasão dele sai da tabela do PoE × o multiplicador do tipo — lote A5d —, todos têm)
+  // (aval do dono, 20/10: o filtro `poe?.evasao > 0` — o número de referência da campanha — virou só `poe`)
+  b.key = Object.keys(BESTIARY).find((k) => BESTIARY[k].poe);
   const z = { ...invocar('Raise_Zombie'), nivel: 68 };
   z.poe = { ...z.poe, precisaoBase: LacaiosPoe.forcaDoPob('RaisedZombie', 68).precisao };
   b.evasaoPct = 100_000;
@@ -163,7 +164,8 @@ function tiqueDoZumbi({ extra = {}, dx = 1, random = 0.5, evasaoPct = null } = {
   const q = invocar('Raise_Zombie');
   const l = { ...q, uid: 'l1', tipo: 'lacaio', x: h.pos.x + 2, y: h.pos.y, hp: q.vida, maxHp: q.vida, proximoGolpe: 0, alcanceDeAtaque: 1, perto: 6, ...extra };
   Object.assign(b, { x: l.x + dx, y: l.y, hp: 1e9, maxHp: 1e9 });
-  if (evasaoPct != null) Object.assign(b, { key: Object.keys(BESTIARY).find((k) => BESTIARY[k].poe?.evasao > 0), evasaoPct });
+  // (aval do dono, 20/10: `poe?.evasao > 0` → `poe` — a evasão do monstro do PoE sai da tabela × o multiplicador, lote A5d)
+  if (evasaoPct != null) Object.assign(b, { key: Object.keys(BESTIARY).find((k) => BESTIARY[k].poe), evasaoPct });
   h.lacaios = [l];
   const grade = Cacadas.andarDaGrade(Cacadas.gradeDaHunt(Terreno.huntOuMapaCustom(h.huntId)), h.z);
   const r = Math.random;

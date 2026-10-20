@@ -218,6 +218,23 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     const rumoDaDivisao = anguloDe(origem, de);
     for (let k = alvos.length; k < n; k++) emitidos.push({ de, para: noAngulo(de, rumoDaDivisao + (k - (n - 1) / 2) * (Math.PI / 8)), bicho: null, tipo: 'divisao' });
   };
+  /**
+   * (lote PR1, dono 20/10) as ESTILHAS do Arremesso de Escudo Espectral (`efeito.estilhas`: `{ n, pct }`): a cada colisão do escudo com um inimigo, N projéteis
+   * saem dele em direções sorteadas, cada um com o % das estilhas ("50% menos Dano": 50), perfurando todos; o inimigo em que o escudo colidiu não leva a dele
+   * (exceção 1 do lote). Elas não ricocheteiam, não difundem e não voltam (atravessam todos — no PoE o atravessar vem antes).
+   */
+  const soltarEstilhas = (ponto) => {
+    const n = Math.max(0, Math.round(Number(efeito.estilhas?.n) || 0));
+    const pct = Number(efeito.estilhas?.pct) || 0;
+    for (let k = 0; k < n; k++) {
+      const de = { x: ponto.x, y: ponto.y };
+      const fim = noAngulo(de, rng() * 2 * Math.PI);
+      const fora = new Set([ponto]);
+      const bicho = primeiroNaReta(de, fim, fora);
+      emitidos.push({ de, para: bicho ? { x: bicho.x, y: bicho.y } : fim, bicho, tipo: 'estilha' });
+      if (bicho && pct > 0) voar({ perfurar: 99, bifurcar: 0, deNovo: 0, encadear: 0, volta: false, dividir: 0, rebatidas: 0, soNaVolta: false, ordem: ordens++, de, pct, acertados: fora }, bicho, 'estilha');
+    }
+  };
   /** Um projétil: sai de `de` com `pct`% e acerta `primeiro`; daí segue as supports. */
   const voar = (projetil, primeiro, tipo, direto = false) => {
     const p = { acertados: new Set(), ida: [], perfurados: 0, ricocheteou: 0, ...projetil };
@@ -242,6 +259,8 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       ultimo = atual;
       eDireto = false;
       de = atual;
+      // (lote PR1) as ESTILHAS do Arremesso de Escudo Espectral: a cada colisão do escudo com um inimigo
+      if (p.estilhas) soltarEstilhas(atual);
       // (lote A3, D5) a DIVISÃO no primeiro acerto (o projétil segue o caminho dele)
       if (p.dividir > 0) dividir(p, atual, p.pct);
       // Pierce: o próximo bicho na MESMA reta, adiante deste.
@@ -382,6 +401,9 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
     encadear: efeito.encadear || 0,
     volta: efeito.retornar > 0 || (efeito.retornarChance > 0 && rng() * 100 < efeito.retornarChance),
     dividir: efeito.divisao || 0, rebatidas: efeito.rebatidas || 0, soNaVolta: !!efeito.soNaVolta, ordem: ordens++,
+    // (lote PR1, revisão: o escudo do Arremesso de Escudo Espectral solta as estilhas a cada colisão com um inimigo — em TODO voo dele: o principal, o das
+    // direções aleatórias e o ricochete no terreno)
+    estilhas: !!efeito.estilhas,
   });
   /** (lote A3) Onde a reta de `de` a `para` bate no TERRENO (a casa antes da que não se anda), ou null. */
   const terrenoNaReta = (de, para) => {
@@ -414,9 +436,11 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
    * `disparar` não dá o golpe direto) — saem em direções sorteadas; cada um voa em linha reta até o alcance e acerta o primeiro inimigo do
    * caminho (daí segue as supports); o que não acha ninguém pode bater no terreno (`naParede`).
    */
-  if (efeito.direcoesAleatorias && deProjetil) {
+  // (lote A3b, dono 19/10: + `efeito.angulos` — o ângulo de cada projétil, em radianos (a espiral da Bola de Fogo Vaal, do Rasgalma, do Arremesso Espectral Vaal,
+  // os fragmentos do Olho Invernal, o leque dos capturados da Espiral Venenosa — `Acoes.tiqueDosObjetos`); o ângulo null é o sorteado)
+  if ((efeito.direcoesAleatorias || efeito.angulos?.length) && deProjetil) {
     for (let k = 0; k < total; k++) {
-      const angulo = rng() * 2 * Math.PI;
+      const angulo = Number.isFinite(efeito.angulos?.[k]) ? efeito.angulos[k] : rng() * 2 * Math.PI;
       const fim = noAngulo(origem, angulo);
       const bicho = primeiroNaReta(origem, fim, new Set());
       const pct = k ? pctDe('danoDosExtrasPct') : 100;
@@ -438,6 +462,7 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
   }
   // O principal: o golpe direto no alvo (já dado) e o que vem dele.
   emitir(alvo, 'direto', 0);
+  // (lote PR1: o escudo do Arremesso de Escudo Espectral solta as estilhas a cada colisão)
   voar({ ...base(), de: origem, pct: 100 }, alvo, 'direto', true);
   // Outros golpes principais da skill (a cadeia da própria magia): impactos.
   for (const b of atingidos) if (b !== alvo) impacto(b, 100, origem, 'direto', true);

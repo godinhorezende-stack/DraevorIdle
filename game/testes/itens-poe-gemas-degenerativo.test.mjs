@@ -68,28 +68,36 @@ test('a gema do PoE sabe o dano degenerativo dela no nível (o elemento, o dano 
   assert.ok(!(G.doSlug('Contagion').motivosNoJogo ?? []).some((m) => /sem dano direto|degenerativo/.test(m)), 'Contagiar deixa de ser "sem efeito"');
 });
 
-test('Vórtice e Contagiar aplicam o dano degenerativo no bicho acertado, uma instância por gema', { skip: SEM }, async () => {
-  const { bicho, rodar } = await montar(['Vortex', 'Contagion']);
-  rodar(12);
+// (lote A3b, com o aval do dono: o degenerativo do Vórtice é o do CHÃO — D5: só quem está dentro leva, o dano exato pelo tempo, `Acoes.tiqueDosObjetos` —;
+// os dois testes medem o chão: o Contagiar segue no acertado, uma instância por gema)
+test('Vórtice deixa o dano degenerativo no CHÃO e Contagiar no bicho acertado, uma instância por gema', { skip: SEM }, async () => {
+  const { e, bicho, rodar } = await montar(['Vortex', 'Contagion']);
+  let chao = null;
+  for (let i = 0; i < 12 && !chao; i++) { rodar(1); chao = (e.hunt?.poeObjetos ?? []).find((o) => o.slug === 'Vortex' && o.efeito === 'solo') ?? null; }
+  assert.ok(chao, 'o Vórtice deixou o chão');
+  assert.equal(chao.partes[0].tipo, 'degenGelo');
+  assert.ok(chao.partes[0].porSegundo > 0);
   const dots = bicho().dots ?? [];
-  const gelo = dots.filter((d) => d.tipo === 'degenGelo');
+  assert.ok(!dots.some((d) => d.tipo === 'degenGelo' && d.chave === 'Vortex'), 'o do Vórtice não fica no acertado');
   const caos = dots.filter((d) => d.tipo === 'degenCaos');
-  assert.ok(gelo.length >= 1 || Dot.dosDoTipo(bicho(), 'degenGelo').length >= 0, 'o Vórtice acertou');
-  assert.ok(gelo.length + caos.length >= 1, `degenerativos no bicho: ${JSON.stringify(dots.map((d) => d.tipo))}`);
-  for (const lista of [gelo, caos]) assert.ok(lista.length <= 1, 'a mesma gema não acumula com ela mesma');
-  for (const d of [...gelo, ...caos]) assert.ok(['Vortex', 'Contagion'].includes(d.chave), d.chave);
+  assert.ok(caos.length <= 1, 'a mesma gema não acumula com ela mesma');
+  for (const d of caos) assert.equal(d.chave, 'Contagion');
 });
 
 test('o Multiplicador de Dano de Gelo Degenerativo agora age (no dano degenerativo das habilidades de Gelo)', { skip: SEM }, async () => {
   const mod = traduzirParte('+{0}% de Multiplicador de Dano de Gelo Degenerativo', [50]);
   assert.ok(['novo', 'equivalente', 'aproximado'].includes(mod.estado), mod.estado);
-  const sem = await montar(['Vortex']);
-  sem.rodar(6);
-  const com = await montar(['Vortex'], { dot_multi_cold: 100 });
-  com.rodar(6);
-  const maior = (b) => Math.max(0, ...(b.dots ?? []).filter((d) => d.tipo === 'degenGelo').map((d) => d.porPulso));
-  assert.ok(maior(sem.bicho()) > 0, 'sem o mod, o Vórtice já degenera');
-  assert.ok(Math.abs(maior(com.bicho()) / maior(sem.bicho()) - 2) < 0.05, `+100% de multiplicador: o dobro (${maior(com.bicho())} / ${maior(sem.bicho())})`);
+  // (lote A3b, com o aval do dono: o dano por segundo do CHÃO do Vórtice — o maior visto em 6 s)
+  const maior = async (af) => {
+    const m = await montar(['Vortex'], af);
+    let v = 0;
+    for (let i = 0; i < 6; i++) { m.rodar(1); for (const o of m.e.hunt?.poeObjetos ?? []) if (o.slug === 'Vortex' && o.efeito === 'solo') v = Math.max(v, o.partes[0].porSegundo); }
+    return v;
+  };
+  const sem = await maior({});
+  const com = await maior({ dot_multi_cold: 100 });
+  assert.ok(sem > 0, 'sem o mod, o Vórtice já degenera');
+  assert.ok(Math.abs(com / sem - 2) < 0.05, `+100% de multiplicador: o dobro (${com} / ${sem})`);
 });
 
 test('a chance de EMPALAR da gema (Golpe Duplo do Empalamento, Aço Partido… 7 gemas) chega ao acerto: a mesma mecânica de empalamento dos itens e da árvore', { skip: SEM }, async () => {

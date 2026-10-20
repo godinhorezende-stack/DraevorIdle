@@ -16,6 +16,10 @@ import * as Formulas from '../combate/formulas.mjs';
 import { daCurva } from '../mobs/curvas.mjs';
 import { classeDe } from '../itens-poe/classes.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
+// O bestiário vem registrado por `itens-poe/monstros.mjs` (quem põe os monstros do PoE nele): importar `dados.mjs` daqui fecha o ciclo
+// overrides → requisitos → … → atributos → dados → overrides (o `PASTA` dos overrides ainda não existe quando `dados` roda).
+let BESTIARIO = null;
+export function usarBestiario(b) { BESTIARIO = b; }
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
@@ -97,6 +101,12 @@ export const precisaoBase = (level) => (itensPoeLigado() ? 2 * Math.max(1, level
 export function levelDoBicho(hunt, bicho) {
   // Os levels a mais da raridade (pedido do dono, 01/10: valem no combate — ver `mobs/raridade.mjs`).
   const extra = bicho?.levelExtra ?? 0;
+  // (lote A5d, dono 20/10) O monstro do PoE tem o nível dele (`itens-poe/monstros.mjs`: o da área; nos mapas, o do mapa — `mapas-areas.noNivel`):
+  // é o nível da tabela de evasão e precisão do PoE (`mobs/atributos.mjs`). Vem antes do da fase (na campanha do PoE os dois são o nível da área;
+  // fora dela — os mapas — não há fase, e antes saía a estimativa pela exp: o Hillock do nível 1 dava 39).
+  // (revisão do A5e: o `poe` do próprio monstro antes — o chefe de ato na arena tem a base de um desenho do Draevor)
+  const doPoe = bicho?.poe?.nivel ?? BESTIARIO?.[bicho?.key]?.poe?.nivel;
+  if (doPoe) return Math.min(2000, Math.max(1, doPoe + extra));
   if (hunt?.escala?.nivel) return hunt.escala.nivel + extra;
   // A exp a mais da raridade (`expMult`) não sobe o level do mob — quem sobe é o `levelExtra`.
   const exp = Math.max(1, (bicho?.exp ?? 1) / (bicho?.expMult ?? 1));
@@ -118,8 +128,10 @@ export function chanceDeAcerto(precisao, levelBicho, evasaoDoBichoPronta = null)
  * Chance (0–1) de acertar um monstro EVASIVO do level: a evasão da curva × (1 + `evasaoPct`/100) — o modificador "Evasivo" dos monstros
  * (+100% de evasão, `itens-poe/modificadores-monstro.json`). É a linha "Chance de Acertar Monstros Evasivos" da tela do PoE.
  */
-export function chanceDeAcertoEvasivo(precisao, levelBicho, evasaoPct = 100) {
-  return chanceDeAcerto(precisao, levelBicho, daCurva('evasao', levelBicho) * (1 + evasaoPct / 100));
+// (lote A5d: `evasaoBase` — a evasão do monstro antes do Evasivo; no modo PoE, a do monstro típico do PoE no nível, `mobs/atributos.padraoPoe`;
+// sem ela, a curva do Draevor, como antes.)
+export function chanceDeAcertoEvasivo(precisao, levelBicho, evasaoPct = 100, evasaoBase = null) {
+  return chanceDeAcerto(precisao, levelBicho, (evasaoBase ?? daCurva('evasao', levelBicho)) * (1 + evasaoPct / 100));
 }
 
 /** Chance (0–1) de o jogador ESQUIVAR o golpe corpo a corpo do bicho: a Evasion dele contra a precisão do bicho. */

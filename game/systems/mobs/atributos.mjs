@@ -12,8 +12,10 @@ import { CONFIG as RARIDADES } from './raridade.mjs';
 import { CONFIG, daCurva } from './curvas.mjs';
 import { simples } from '../combate/modificadores.mjs';
 import { reducaoDeArmaduraPoe } from '../combate/formulas.mjs';
+import { DEFESA_POE, tabelaPoe, multiplicadorDoSlug, defesaPoeDoSlug, armaduraPoeDoSlug, nivelDaTabela } from '../itens-poe/defesa-poe.mjs';
+import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
 
-export { CONFIG, daCurva };
+export { CONFIG, daCurva, DEFESA_POE, tabelaPoe, multiplicadorDoSlug, defesaPoeDoSlug, armaduraPoeDoSlug };
 const L = CONFIG.limites;
 
 const limitar = (v, max) => Math.max(0, Math.min(max, Number.isFinite(v) ? v : 0));
@@ -42,16 +44,56 @@ function compor(atributo, base, level, m, { pct = 0, fixos = 0 } = {}) {
 
 // ---------------------------------------------------------------- precisão, evasão, armadura
 
+// (lote A5d, dono 20/10) O MONSTRO DO PoE (`itens-poe/monstros.mjs`): a evasão e a precisão como no PoE 1 — a tabela do PoE no nível do monstro
+// (`data.monsterEvasionTable` / `data.monsterAccuracyTable` do PoB, 1–100) × o multiplicador do TIPO dele (o "Monster Type Multiplier" do
+// tooltip do poedb — `gamedata/itens-poe/monstros-defesa-poe.json`, de `tools/importar-defesa-monstros-poe.mjs`); o `evasaoPct` (o Evasivo) e o
+// `precisaoPct` por cima. O nível é o efetivo que chega (`Atributos.levelDoBicho`: o do PoE — nos mapas, o do mapa — + o `levelExtra` da raridade).
+// Sem a página do poedb: evasão × 1, precisão × a mediana dos importados. A curva do Draevor não vale para eles.
+// (lote A5e, dono 20/10) A ARMADURA também: a tabela de armadura do POEDB (não a `monsterArmourTable` do PoB — no 68, 28790; no 83, 92477) × o
+// multiplicador do tipo, o `armaduraPct` por cima e o teto `L.armaduraMaxima`. As tabelas e os multiplicadores: `itens-poe/defesa-poe.mjs`.
+// (revisão do A5e) o `poe` do próprio monstro (o chefe de ato na arena — `bosses-unicos/boss.mjs`, com a base de um desenho do Draevor) vem antes
+// do do bestiário.
+export const poeDe = (m) => m?.poe ?? BESTIARY[m?.key]?.poe ?? null;
+/**
+ * O multiplicador do tipo do monstro do PoE (`evasao` ou `precisao`): o da variante do NÍVEL dele (`porNivel[poe.nivel]` — o nível da área da
+ * campanha onde o slug aparece, quando a variante do poedb daquele nível difere), senão o geral (o da variante de nível 68+ — o dos mapas), senão o
+ * padrão.
+ */
+export const multiplicadorPoe = (qual, m) => multiplicadorDoSlug(qual, poeDe(m)?.slug, poeDe(m)?.nivel);
+/** (lote A5d) A defesa do monstro TÍPICO do PoE no nível (a tabela × o multiplicador padrão) — a da ficha e a do simulador sem alvo. */
+export const padraoPoe = (qual, level) => tabelaPoe(qual, level) * (DEFESA_POE.padrao?.[qual] ?? 1);
+/**
+ * (lote A5d) As chances da FICHA do modo PoE contra o monstro típico do PoE do mesmo nível — as mesmas contas do combate (`Defesa.errou`,
+ * `Defesa.esquivou`): a evasão e a precisão pela tabela do PoE × o multiplicador padrão; o Evasivo, `evasivoPct` por cima. `{ acerto, acertoEvasivo, esquiva }`.
+ */
+export function chancesNoLevelPoe(precisao, evasao, level, evasivoPct = 100) {
+  const ev = padraoPoe('evasao', level);
+  const pr = padraoPoe('precisao', level);
+  return {
+    acerto: AtributosDoPersonagem.chanceDeAcerto(precisao, level, ev),
+    acertoEvasivo: AtributosDoPersonagem.chanceDeAcertoEvasivo(precisao, level, evasivoPct, ev),
+    esquiva: Math.min(0.95, AtributosDoPersonagem.chanceDeEsquiva(evasao, level, pr)),
+  };
+}
+/** O atributo do monstro do PoE com as parcelas: `{ valor, origens }`. */
+function comporPoe(qual, m, level, pct) {
+  const tabela = tabelaPoe(qual, level);
+  const mult = multiplicadorPoe(qual, m);
+  const base = Math.round(tabela * mult);
+  const origens = [{ fonte: `Tabela do PoE (nível ${nivelDaTabela(level)})`, valor: tabela }, { fonte: 'Multiplicador do tipo do monstro (poedb)', fator: mult }];
+  if (pct) origens.push({ fonte: 'Aumentos/reduções (modificadores)', pct });
+  return { valor: simples(base, { pct }).bruto, origens };
+}
+
 /** A precisão do bicho (o rating com que ele acerta o jogador) neste level. */
-export const precisaoDe = (m, level) => compor('precisao', daCurva('precisao', level), level, m, { pct: m?.precisaoPct ?? 0 }).valor;
+export const precisaoDe = (m, level) => (poeDe(m) ? comporPoe('precisao', m, level, m?.precisaoPct ?? 0) : compor('precisao', daCurva('precisao', level), level, m, { pct: m?.precisaoPct ?? 0 })).valor;
 /** A evasão do bicho (o rating com que ele evita o golpe do jogador) neste level. */
-// O monstro do PoE (`itens-poe/monstros.mjs`) usa a evasão do PoE (sem a curva do Draevor), como está.
-export const evasaoDe = (m, level) => (BESTIARY[m?.key]?.poe ? simples(BESTIARY[m.key].poe.evasao ?? 0, { pct: m?.evasaoPct ?? 0 }).bruto : compor('evasao', daCurva('evasao', level), level, m, { pct: m?.evasaoPct ?? 0 }).valor);
+export const evasaoDe = (m, level) => (poeDe(m) ? comporPoe('evasao', m, level, m?.evasaoPct ?? 0) : compor('evasao', daCurva('evasao', level), level, m, { pct: m?.evasaoPct ?? 0 })).valor;
 
 /** A armadura do bicho: a do bestiário (`armor`), a curva, os fatores e os modificadores (`armaduraPct`). Sem `key` no bestiário, zero. */
 export function armaduraDe(m, level) {
-  // O monstro do PoE: a armadura do PoE (sem a curva do Draevor), como está.
-  if (BESTIARY[m?.key]?.poe) return Math.min(L.armaduraMaxima, simples(BESTIARY[m.key].poe.armadura ?? 0, { pct: m?.armaduraPct ?? 0 }).bruto);
+  // (lote A5e) O monstro do PoE: round(tabela do poedb no nível efetivo × multiplicador do tipo), o `armaduraPct` por cima, o teto (sem a curva do Draevor).
+  if (poeDe(m)) return Math.min(L.armaduraMaxima, comporPoe('armadura', m, level, m?.armaduraPct ?? 0).valor);
   const base = (BESTIARY[m?.key]?.armor ?? 0) + daCurva('armadura', level);
   return Math.min(L.armaduraMaxima, compor('armadura', base, level, m, { pct: m?.armaduraPct ?? 0 }).valor);
 }
@@ -106,14 +148,17 @@ export function atributosFinais(m, level) {
   const g = guardados.get(m);
   if (g?.chave === chave) return g.valor;
   const esp = BESTIARY[m?.key] ?? {};
+  const poe = poeDe(m);
   const raridade = RARIDADES.raridades[m.raridade ?? 'normal'] ?? RARIDADES.raridades.normal;
   const valor = {
     level,
     vida: { valor: m.maxHp ?? esp.hp ?? 0, origens: [{ fonte: 'Base da espécie', valor: esp.hp ?? 0 }, { fonte: 'Escala da fase e raridade', fator: esp.hp ? Math.round(((m.maxHp ?? esp.hp) / esp.hp) * 1000) / 1000 : 1, raridade: m.raridade ?? 'normal', fatorDaRaridade: raridade.vida }] },
     dano: { valor: m.forca ?? 1, origens: [{ fonte: 'Multiplicador de dano (escala da fase × raridade × modificadores)', fator: m.forca ?? 1, fatorDaRaridade: raridade.dano }] },
-    precisao: compor('precisao', daCurva('precisao', level), level, m, { pct: m.precisaoPct ?? 0 }),
-    evasao: compor('evasao', daCurva('evasao', level), level, m, { pct: m.evasaoPct ?? 0 }),
-    armadura: compor('armadura', (esp.armor ?? 0) + daCurva('armadura', level), level, m, { pct: m.armaduraPct ?? 0 }),
+    // (lote A5d) o monstro do PoE: as mesmas contas do combate (`precisaoDe`, `evasaoDe`, `armaduraDe`), com as parcelas.
+    precisao: poe ? comporPoe('precisao', m, level, m.precisaoPct ?? 0) : compor('precisao', daCurva('precisao', level), level, m, { pct: m.precisaoPct ?? 0 }),
+    evasao: poe ? comporPoe('evasao', m, level, m.evasaoPct ?? 0) : compor('evasao', daCurva('evasao', level), level, m, { pct: m.evasaoPct ?? 0 }),
+    // (lote A5e) a armadura: a mesma conta de `armaduraDe` (a tabela do poedb × o multiplicador; o teto)
+    armadura: poe ? { ...comporPoe('armadura', m, level, m.armaduraPct ?? 0), valor: armaduraDe(m, level) } : compor('armadura', (esp.armor ?? 0) + daCurva('armadura', level), level, m, { pct: m.armaduraPct ?? 0 }),
     bloqueio: bloqueioDe(m),
     reducaoDeDano: reducaoDeDano(m),
     velocidadeDeAtaque: m.velocidadeDeAtaque ?? 1,

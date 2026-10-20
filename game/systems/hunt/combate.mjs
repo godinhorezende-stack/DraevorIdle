@@ -848,6 +848,11 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     const tags = QuemFeriu.tagsDoAbate(alvo);
     ModsPoe.evento(estado, hunt, 'inimigoMorrer', f, { alvo, eventos, personagem, tags: ModsPoe.pertoDoEstandarte(hunt, alvo) ? [...tags, 'alvoPertoDoEstandarte'] : tags });
     if (!QuemFeriu.abateSeu(alvo)) ModsPoe.evento(estado, hunt, QuemFeriu.eventoDoAbate(alvo), f, { alvo, eventos, personagem, tags });
+    // (lote B1, dono 20/10 — D-B1.6) o inimigo que morre no chão dos seus Estalos Gélidos (por quem for — "Enemies that die while in the area"): o Frenesi do comum
+    // (25%), o Poder do Vaal
+    let mudou = false;
+    for (const t of ModsPoe.cargasAoMorrerNaAreaFria(hunt, alvo, hunt.clock ?? 0)) mudou = CargasPoe.ganhar(estado, t, f.afPoe ?? {}) || mudou;
+    if (mudou) Ficha.invalidar(estado);
   }
   if (!itensPoeLigado() || QuemFeriu.abateSeu(alvo)) {
     const f = Ficha.combate(estado);
@@ -1430,7 +1435,12 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
     const sortudo = (elemental && elementalSortudo) || (tipo === 'energy' && raioSortudo);
     const rolar = () => min + Math.random() * (max - min);
     const sorteio = sortudo === azarado ? rolar() : sortudo ? Math.max(rolar(), rolar()) : Math.min(rolar(), rolar());
-    const bruto = sorteio * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(ficha, hunt, 'golpe', tipo);
+    // (lote A5c, dono 20/10: "regra do PoE") a parte que veio de outro tipo (o Físico como Fogo extra, o Fogo convertido em Caos…) soma o "aumentado" de todos os
+    // tipos do caminho, uma vez cada, e os "mais" deles (`ModsPoe.maisDaOrigem`); sem origens, o do próprio tipo, como antes
+    // (o "aumentado" do Físico do golpe básico: o da parte Física dele, com a Força só no corpo a corpo — `incFisicoDaOrigem`)
+    const incDe = (t) => (t === 'physical' ? ficha.incFisicoDaOrigem ?? ficha.danoDoElemento?.physical ?? 0 : ficha.danoDoElemento?.[t] ?? 0);
+    const fatorDoTipo = (tipos) => (1 + ((tipos.length > 1 ? tipos.reduce((n, t) => n + incDe(t), 0) : ficha.danoDoElemento?.[tipo] ?? 0)) / 100) * ModsPoe.maisDaOrigem(ficha, hunt, 'golpe', tipos.length ? tipos : [tipo], tipo);
+    const bruto = sorteio * ModsPoe.fatorPelasOrigens(ficha.origensDoSomado?.[tipo], tipo, fatorDoTipo);
     const base = Math.max(1, Math.round(ignoraRes ? Math.max(resistido(hunt, alvo, tipo, bruto, f), bruto) : resistido(hunt, alvo, tipo, bruto, f)));
     const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
     alvo.hp -= dano;
@@ -1497,6 +1507,8 @@ export function round(estado, personagem) {
     if (itensPoeLigado()) ModsPoe.marcar(hunt, 'usou:ataque');
     // O golpe básico também vira o personagem para o alvo.
     Acoes.virarParaOAlvo(hunt, alvo);
+    // (lote A1b, dono 19/10: D-e) o golpe básico é um uso seu: a Corrida de Fase troca para o buff de dano (e ele já o recebe — a ficha é refeita aqui)
+    if (itensPoeLigado()) Acoes.trocarCorridaDeFase(estado, hunt, hunt.clock ?? 0);
     // (14/10, o Feiticeiro: o golpe básico de VARINHA dispara projéteis — as magias ligadas ao Feiticeiro ligado saem — `Acoes.ativarGatilhos`)
     if (itensPoeLigado() && Acoes.ehAtaqueDeVarinha(estado)) Acoes.ativarGatilhos(estado, hunt, personagem, 'ataqueDeVarinha', { alvo }, eventos);
     if (categoriaDaArma(arma) === 'magica') {
@@ -1521,9 +1533,16 @@ export function round(estado, personagem) {
         // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária — a mão é escolhida AQUI (o golpe que erra também usou
         // a dele), e o golpe leva o dano e o CRÍTICO da arma dela (`Ficha.fichaDaMao`: a base × o crítico local da arma da vez).
         const daSecundaria = !!fichaDoPersonagem.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);
-        const ficha = ModsPoe.fichaDoGolpe(daSecundaria ? Ficha.fichaDaMao(fichaDoPersonagem, 'secundaria') : fichaDoPersonagem, ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma)), { alvo, estado });
+        // (lote A1b, dono 19/10: D-b) a EMBOSCADA também no golpe básico corpo a corpo com arma de uma mão: Impelido por ela (a tag `impelido`), com o
+        // crítico dela ("+25% de Chance de Golpe Crítico" na base, "+138% de Multiplicador"); o golpe a gasta e não gasta o Impelir do Clamor
+        const tagsDoBasico = ModsPoe.tagsDoGolpeBasico(estado, categoriaDaArma(arma));
+        const emboscada = !segundo && tagsDoBasico.includes('corpo') ? Acoes.emboscadaNoGolpe(estado, hunt) : null;
+        if (emboscada) emboscada.golpe = true;
+        const fichaDaMao = daSecundaria ? Ficha.fichaDaMao(fichaDoPersonagem, 'secundaria') : fichaDoPersonagem;
+        const ficha = ModsPoe.fichaDoGolpe(emboscada ? Acoes.comAtributosDoUso(fichaDaMao, { crit_base_golpe: emboscada.critPontos, crit_dmg: emboscada.critMultPct }) : fichaDaMao, tagsDoBasico, { alvo, estado });
+        if (emboscada && hunt.emboscada === emboscada) delete hunt.emboscada;
         // (PoE: o golpe Impelido por um Clamor gasta um — a tag `impelido` já está na ficha deste golpe.)
-        if (!segundo && hunt.impelidos?.n > 0) hunt.impelidos.n--;
+        if (!segundo && !emboscada && hunt.impelidos?.n > 0) hunt.impelidos.n--;
         const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
         // (lote G20b: o golpe de longe é um projétil de ataque seu, acerte ou erre — a Balista Focada ataca depois dele, `cacadas.tiqueDosLacaios`)
         if (!segundo && categoriaDaArma(arma) === 'distancia') hunt.poeProjetilDeAtaqueEm = hunt.clock ?? 0;
@@ -1587,7 +1606,15 @@ export function round(estado, personagem) {
         // (No PoE o "Dano de <elemento> aumentado" só AUMENTA o dano daquele elemento: o golpe físico não ganha partes elementais por ele.)
         // (lote 31, P043: + o Físico adicional pelos Empalamentos no alvo — o Mestre do Metal)
         const doEmpalar = poe ? ModsPoe.fisicoPorEmpalamento(ficha, alvo, hunt.clock ?? 0) : null;
-        const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(somarFaixas(ficha.danoSomado, extrasDoFisico), doEmpalar ? { physical: doEmpalar } : {})) } : ficha;
+        // (lote A5c, dono 20/10: "regra do PoE, no motor inteiro") as origens das partes: o que veio do Físico (o "como Extra" e o convertido) soma também o
+        // "aumentado" e o "mais" do Físico (`danoSomadoDoPoe`), e as conversões entre elementos levam o caminho junto (`transformarPartes`)
+        const origensDasPartes = {};
+        if (poe) {
+          for (const [el, v] of Object.entries(ficha.danoSomado ?? {})) ModsPoe.somarOrigem(origensDasPartes, el, [], v);
+          for (const [el, v] of Object.entries(extrasDoFisico)) ModsPoe.somarOrigem(origensDasPartes, el, ['physical'], v);
+          if (doEmpalar) ModsPoe.somarOrigem(origensDasPartes, 'physical', [], doEmpalar);
+        }
+        const fichaDasPartes = poe ? { ...ficha, danoSomado: ModsPoe.transformarPartes(ficha, somarFaixas(somarFaixas(ficha.danoSomado, extrasDoFisico), doEmpalar ? { physical: doEmpalar } : {}), origensDasPartes), origensDoSomado: origensDasPartes, incFisicoDaOrigem: fisicoDoGolpe } : ficha;
         const dosAtributos = [...(poe ? [] : elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught, dobraNoCritico })), ...danoSomadoDoPoe(estado, hunt, alvo, fichaDasPartes, { crit: critico, onslaught, dobraNoCritico })];
         // (14/10, a Rajada Vulcânica: o golpe básico corpo a corpo que acerta — `Acoes.rajadaVulcanica`)
         if (poe && !segundo && categoriaDaArma(arma) !== 'distancia') Acoes.rajadaVulcanica(estado, hunt, alvo, eventos);
@@ -1683,4 +1710,9 @@ export function round(estado, personagem) {
 }
 
 // As defesas do bicho para as condições do PoE ("ao Acertar um Inimigo sem Armadura / sem Evasão" — `condicoes-poe.tagsDoAlvo`).
-ModsPoe.definirDefesasDoBicho((m) => (m?.key ? { armadura: AtributosDoMob.armaduraDe(m, m.level ?? 1), evasao: AtributosDoMob.evasaoDe(m, m.level ?? 1) } : null));
+// (lote A5d: o monstro do PoE, no nível dele — `levelDoBicho`; a evasão dele vem da tabela do PoE pelo nível)
+ModsPoe.definirDefesasDoBicho((m) => {
+  if (!m?.key) return null;
+  const nivel = AtributosDoMob.poeDe(m) ? AtributosDoPersonagem.levelDoBicho(null, m) : m.level ?? 1;
+  return { armadura: AtributosDoMob.armaduraDe(m, nivel), evasao: AtributosDoMob.evasaoDe(m, nivel) };
+});

@@ -5,7 +5,7 @@ import * as QuemFeriu from '../hunt/quem-feriu.mjs';
 import { ligado } from './catalogo.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Dot from '../combate/dot.mjs';
-import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo } from './condicoes-poe.mjs';
+import { RETALIACAO, abrirRetaliacao, valorAtual, valorMaximo, estandartePlantado, marcaNoBicho, RAIO_DA_PRESENCA, criarSoloSagrado, ganharValor, posturaDe, valor, marcar, ganharFuria, ativo, fichaDa, imunidadeApos, comTeto, fatorDaEscala, NO_ACERTO, RECUPERACAO_MS, AO_BLOQUEAR, condicoesDe, vale, ehCondDeEstado, ganharBuff, tagsDoAlvo, somaPorTags as somaPorTagsDe, vidaSoPeloDreno, transferirMarca, ganharFortificacao, RAMPAGE, empurrar, marcarCriticoDaHabilidade, ALTARES_DO_SORTEIO, perderCasca, porChamaSantificada, notarParaReliquia, fatorDosDebuffs, reservadoAgora, renovarFrioEChoque, fatorNaoDano, AFECCOES_NAO_DANO, DISTANCIA_DO_PROJETIL, almaParaOsLacaios, criarSoloProfano, SOLO_PROFANO, maldicoesNoAlvo, porExposicao } from './condicoes-poe.mjs';
 import * as Plantadas from './armas-plantadas.mjs';
 export * from './condicoes-poe.mjs';
 
@@ -89,12 +89,35 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
       eventos?.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d, foe: true, alvo: alvo.name, color: '#b0b0b0', empalamento: true });
     }
   }
+  // (lote A5, dono 20/10 — D4) o GOLPE FINAL do Golpe Duplo do Empalamento ("Golpes Finais fazem com que os Empalamentos em Inimigos Reflitam o Dano aos
+  // Inimigos ao redor" — o PoB não faz a conta, act_dex.lua:5602): os Empalamentos ativos do morto — cada um × os acertos que ainda tinha — vão aos
+  // inimigos a até 1 casa dele (o raio do Dano Propagado, a decisão do dono do lote 34), pela Redução de Dano Físico de cada um; é de quem golpeou
+  // (revisão do A5: também quando quem mata é o Golpe de Misericórdia, abaixo — `refletirEmpalamentos` de novo, depois do culling)
+  const refletirEmpalamentos = () => {
+    if (alvo.hp <= 0 && v('empalar_reflete_ao_matar') > 0 && Array.isArray(e.empalado) && e.empalado.length) {
+      const guardado = e.empalado.filter((x) => x.ate > agora && x.acertos > 0).reduce((t, x) => t + x.valor * x.acertos, 0);
+      e.empalado = [];
+      if (guardado > 0) {
+        for (const m of hunt?.monstros ?? []) {
+          if (m === alvo || m.hp <= 0 || m.dummy || (m.z ?? 0) !== (alvo.z ?? 0) || Math.max(Math.abs(m.x - alvo.x), Math.abs(m.y - alvo.y)) > RAIO_DO_EMPALAR_REFLETIDO) continue;
+          const bruto = reducaoFisica && !(v('empalar_ignora_reducao') > 0) ? reducaoFisica(hunt, m, guardado) : guardado;
+          if (!(bruto > 0)) continue;
+          const d = Math.max(1, Math.round(bruto));
+          m.hp -= d;
+          QuemFeriu.carimbar(m, seu ? QuemFeriu.VOCE : QuemFeriu.TOTEM);
+          eventos?.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, alvo: m.name, color: '#b0b0b0', empalamento: true, refletido: true });
+        }
+      }
+    }
+  };
+  refletirEmpalamentos();
   // (lote D) A FORTIFICAÇÃO ("Acertos Corpo a Corpo Fortificam", "X% de chance de Fortificar"): pelo tamanho do acerto — vale também no
   // acerto que matou (`condicoes-poe.ganharFortificacao`).
   const fortificar = (chance) => {
     if (!hunt || !seu || !sorte(chance)) return;
     const pct = alvo.maxHp > 0 ? (100 * Math.max(0, dano)) / alvo.maxHp : 1;
-    ganharFortificacao(hunt, Math.max(1, Math.floor(pct)) * Math.max(0, 1 + v('fortificacao_ganho_inc') / 100), ficha.afPoe, agora);
+    // (lote A5, dono 20/10: a duração pela ficha do golpe — a da soma + a do uso, e a base da Golpe Vigilante)
+    ganharFortificacao(hunt, Math.max(1, Math.floor(pct)) * Math.max(0, 1 + v('fortificacao_ganho_inc') / 100), ficha.afPoe, agora, { incPct: v('fortificacao_duracao_inc'), baseS: v('fortificacao_base_s') });
   };
   fortificar(v('chance_fortificar'));
   // (11/10, o Elementalista) "Ganha Convergência ao Acertar um Inimigo Único, não mais do que uma vez a cada N segundos" (4 s — o lembrete).
@@ -133,7 +156,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   };
   if (sorte(v('chance_mutilar'))) {
     e.mutilado = { ate: agora + NO_ACERTO.mutilar.duracaoMs };
-    lentidao(NO_ACERTO.mutilar.lentidaoPct, NO_ACERTO.mutilar.duracaoMs);
+    // (lote B1, dono 20/10: × o "X% de aumento do Efeito de Mutilação" — a Chuva de Flechas Vaal, 150%: 30% × 2,5 = 75%)
+    lentidao(NO_ACERTO.mutilar.lentidaoPct * Math.max(0, 1 + v('efeito_mutilacao') / 100), NO_ACERTO.mutilar.duracaoMs);
     ev('mutilado');
   }
   if (sorte(v('chance_cegar'))) {
@@ -193,9 +217,8 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
     const base = Math.abs(v(k)) || (sorte(v(comChance)) ? 10 : 0);
     const pct = base + (base ? Math.abs(v(extra)) : 0);
     if (!pct) continue;
-    const ainda = (e.exposicao?.[el] ?? 0) > agora;
-    e.exposicao = { ...(e.exposicao ?? {}), [el]: agora + 4000 };
-    e.exposicaoPct = { ...(e.exposicaoPct ?? {}), [el]: ainda ? Math.max(e.exposicaoPct?.[el] ?? 10, pct) : pct };
+    // (lote A5, dono 20/10 — D10: pela função única, `porExposicao`)
+    porExposicao(alvo, el, pct, 4000, agora);
     if (seu) marcar(hunt, 'infligiuExposicao', agora);
   }
   // O EMPALAMENTO: o efeito (+ "em Inimigos não Empalados"), os acertos ("duram por N Acerto adicional"), a duração, os "N Empalamentos
@@ -266,13 +289,18 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // GOLPE DE MISERICÓRDIA (Culling Strike): o alvo com 10% da vida ou menos (5% se Raro ou Único) morre. Com condição: "Acertos Críticos
   // possuem Golpe de Misericórdia", "contra Inimigos Amaldiçoados/Incendiados/Congelados", "Ataques com Arcos têm Golpe Abatedor".
   // (as tags `critico` e `golpeAtordoou` já estão em `fichaR`: "Acertos Críticos possuem…", "Acertos que Atordoarem os Inimigos possuem…")
-  const comCulling = v('culling') + v('culling_limiar');
+  // (lote A5, dono 20/10: + o Abater o Fraco — "Mata inimigos de raridade normal e mágica com X% de vida ou menos" — `culling_normal_magico`: só no Normal
+  // e no Mágico; o elite conta como Raro, `mecanicas`)
+  const raroOuUnico = /raro|unico/.test(alvo.raridade ?? alvo.raridadePoe ?? '') || alvo.boss || alvo.chefe;
+  const doFraco = raroOuUnico || /elite/.test(alvo.raridade ?? '') ? 0 : v('culling_normal_magico');
+  const comCulling = v('culling') + v('culling_limiar') + doFraco;
   if (comCulling > 0 && alvo.hp > 0 && !alvo.dummy && alvo.maxHp > 0) {
     // (+ lote F: "Mata Inimigos que possuem X% ou menos de Vida quando Acertado por suas Habilidades" — o limiar maior vale.)
-    const limiar = Math.max(/raro|unico/.test(alvo.raridade ?? alvo.raridadePoe ?? '') || alvo.boss || alvo.chefe ? 0.05 : 0.1, v('culling_limiar') / 100);
+    const limiar = Math.max(v('culling') + v('culling_limiar') > 0 ? (raroOuUnico ? 0.05 : 0.1) : 0, v('culling_limiar') / 100, doFraco / 100);
     if (alvo.hp <= alvo.maxHp * limiar) {
       alvo.hp = 0;
       eventos?.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: 'misericordia' });
+      refletirEmpalamentos();
       if (seu) evento(estado, hunt, 'golpeDeMisericordia', ficha, { alvo, eventos, personagem, agora });
     }
   }
@@ -685,6 +713,8 @@ export function definirDreno(fn) { drenoDaFicha = fn; }
 /** Os estados que um evento põe no ALVO (`ev:<evento>:alvo:<estado>` = segundos ou chance). */
 /** O raio do "também Empalam outros Inimigos próximos deles" (O Empalador), em casas. */
 const RAIO_DO_EMPALAR_ESPALHADO = 2;
+/** (lote A5, dono 20/10 — D4) O raio do Empalamento refletido no golpe final (o Golpe Duplo do Empalamento): 1 casa, como o Dano Propagado. */
+export const RAIO_DO_EMPALAR_REFLETIDO = 1;
 // A Redução de Dano Físico do monstro no empalamento solto (`hunt/resistencia.resistido`, sem a armadura): quem registra é a caçada — este
 // módulo não importa a resistência (o ciclo de imports).
 // eslint-disable-next-line no-var

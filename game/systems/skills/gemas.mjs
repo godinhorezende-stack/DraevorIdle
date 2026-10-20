@@ -815,6 +815,9 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   }
   // "+N ao Nível das Gemas Suportadas" (Fortalecer, do PoE): o nível que vale (dano, custo, tempos da tabela).
   if (e.nivelExtra) e.nivel += e.nivelExtra;
+  // (lote A5, dono 20/10 — D2) "+X% de Qualidade das Gemas de Habilidade Suportadas" (o Aprimorar, o Aprimorar Desperto, o Eclipse): a qualidade que vale nas
+  // contas da gema ativa — passa de 20, linear (`GemasPoe`); a da peça segue até 20
+  if (e.qualidadeExtra) e.qualidade = (e.qualidade ?? 0) + e.qualidadeExtra;
   // (11/10) O que a PEÇA onde a gema está dá a ela: a Eficácia da Reserva local e o custo/reserva em Vida (`extrasDaGemaPoe`).
   if (a.local?.eficienciaReserva) e.eficienciaReservaLocal = a.local.eficienciaReserva;
   if (a.local?.custoEmVida) e.custoEmVida = 1;

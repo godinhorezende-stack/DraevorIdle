@@ -8,41 +8,41 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 137 |
-| implementada, sem teste próprio | 55 |
+| implementada e testada | 241 |
+| implementada, sem teste próprio | 48 |
 | limitação do modelo idle | 11 |
-| parcial | 358 |
+| parcial | 261 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 64 |
-| implementada, sem teste próprio | 22 |
+| implementada e testada | 112 |
+| implementada, sem teste próprio | 19 |
 | limitação do modelo idle | 6 |
-| parcial | 118 |
+| parcial | 73 |
 
 ### Gemas de suporte (262)
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 75 |
-| implementada, sem teste próprio | 52 |
-| parcial | 135 |
+| implementada e testada | 102 |
+| implementada, sem teste próprio | 51 |
+| parcial | 109 |
 
 ### Variantes
 
-- Vaal (52): parcial 35 · implementada e testada 10 · implementada, sem teste próprio 7
-- Alternativas (209): parcial 145 · implementada, sem teste próprio 29 · implementada e testada 28 · limitação do modelo idle 7
+- Vaal (52): implementada e testada 23 · parcial 23 · implementada, sem teste próprio 6
+- Alternativas (209): implementada e testada 75 · implementada, sem teste próprio 25 · parcial 102 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 844 linhas distintas (165 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 677 linhas distintas (125 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 257/562 ativas, 93/262 suportes.
+- Testes que citam a gema: 331/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -52,74 +52,57 @@ Só os ataques:
 | 16 | nenhum efeito do buff tem equivalente no jogo |
 | 12 | Lacaios têm Recuperação da Recarga aumentada em # % |
 | 9 | Efeito do Buff aumentado em # % |
-| 8 | sem dano direto: nenhum efeito no combate |
+| 7 | sem dano direto: nenhum efeito no combate |
 | 6 | # % de Chance de uma Armadilha ser Ativada uma vez adicional |
 | 5 | Duração do Efeito de Habilidades aumentada em # % |
 | 5 | Velocidade de Movimento reduzida em # % |
 | 4 | +# ao Máximo de Armas Animadas |
 | 4 | +# ao Máximo de Esqueletos Convocados |
 | 4 | Debuff pode ter até # camadas de Dano |
-| 4 | Duração da penalidade base é de # segundos |
 | 4 | Efeito das Auras aumentado em # % |
 | 4 | Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada |
 | 4 | Velocidade de Movimento dos Lacaios aumentada em # % |
 | 3 | # segundos adicionais de Duração Base por Cadáver extra consumido |
-| 3 | +# % ao Máximo de Efeito da Eletrização |
-| 3 | +# metro ao Raio por # de Fúria |
 | 3 | Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte |
 | 3 | as flechas caem em linha, cada uma com dano em área e um acerto só por inimigo (act_dex.lua:##; no jogo ainda são projéteis no alvo) |
 | 3 | Cada Flecha pode disparar # Feixes |
 | 3 | Causa +# % mais Dano por Carga Sangrenta |
 | 3 | Cria # Estaca |
+| 3 | Duração da penalidade base é de # segundos |
 | 3 | Efeito da Oferenda aumentado em # % |
 | 3 | Flecha dispara Raios a cada # segundos |
 | 3 | Habilidades Suportadas ganham uma Reserva Base igual ao Custo Base de Mana e Vida |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Parede terá # metros |
-| 3 | Projéteis de Estilhas Causam # % menos Dano |
 | 3 | Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # % |
 | 3 | Velocidade de Projéteis aumentada em # % |
-| 2 | # % de chance de causar Dano sem remover Cargas |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
-| 2 | # % de chance de detonar um cadáver adicional |
-| 2 | # % de chance de ganhar uma Carga de Poder em Acertos Críticos |
 | 2 | # % de chance de infligir Definhando por # segundos ao Acertar |
 | 2 | # % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único |
-| 2 | # % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias |
-| 2 | # % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único |
 | 2 | # % de chance de remover um Feitiço após Causar Dano |
 | 2 | # % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a # % da sua armadura, até # |
-| 2 | # % do Dano Mágico Drenado como Escudo de Energia |
-| 2 | # % mais Área de Efeito por Carga removida |
 | 2 | # % mais Dano com Acertos se o Inimigo estiver Enfeitiçado |
 | 2 | # % mais Dano com Afecções se o Inimigo estiver Enfeitiçado |
 | 2 | # % mais Dano com Sangramento enquanto na Postura de Sangue |
-| 2 | # % mais Efeito de Resfriamento |
 | 2 | # % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas |
 | 2 | # % menos Dano em Área |
 | 2 | # a # de Dano de Fogo adicionado contra Inimigos Queimando |
 | 2 | # de largura do Efeito em Área |
 | 2 | # segundos entre o aparecimento de seções da Parede |
-| 2 | #% de Qualidade das Gemas de Habilidade Suportadas |
 | 2 | #% do Dano Físico Convertido para Dano de Fogo |
 | 2 | % de chance de remover um Feitiço após Causar Dano |
 | 2 | +# ao Máximo de Zumbis Evocados |
 | 2 | +# ao número Máximo de Tempestades de Lâminas por vez |
-| 2 | +# metros ao Alcance de Golpes Corpo a Corpo |
 | 2 | +# metros ao raio do Solo Sagrado |
-| 2 | +# metros de raio por inimigo próximo, até +# metro |
-| 2 | A Ilusão se move com # % da sua Velocidade de Movimento |
 | 2 | Abalo Secundário causa # % mais Dano com Acertos e Afecções |
 | 2 | Abalo Secundário causa +# % mais Dano com Acertos e Afecções |
 | 2 | Acertos aós o primeiro em cada Inimigo causam # % menos Dano |
-| 2 | Acertos da onda final causam # % de dano por estágio |
 | 2 | Aplica feixes aos # Inimigos próximos |
 | 2 | as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente) |
 | 2 | Aura de Exposição ao Fogo aplica # % à resistência a dano de fogo |
 | 2 | Buff Concede # % de chance de Eletrizar inimigos |
 | 2 | Buff concede +# % de chance de Eletrizar inimigos |
-| 2 | Buff concede Trespassar |
 | 2 | Cada Esporo aplica # % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de # % |
 | 2 | Cada Flecha pode disparar +# Feixes |
 | 2 | Cargas de Frasco usadas reduzidas em # % |
@@ -131,9 +114,7 @@ Só os ataques:
 | 2 | Causa # a # de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas |
 | 2 | Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente |
 | 2 | Causa # rajadas |
-| 2 | Causa + # % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento |
 | 2 | Causa +# explosões menores |
-| 2 | Causa Dano a cada # segundos |
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores causem # % menos Dano |
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores tenham # % menos Vida Máxima |
 | 2 | Concede # % mais Dano Mágico |
@@ -142,13 +123,9 @@ Só os ataques:
 | 2 | Debuffs causam # % de Dano por Carga |
 | 2 | Debuffs causam +# % de Dano por Carga |
 | 2 | Definhado dura # segundos |
-| 2 | Dispara # Fragmentos de Projéteis em uma Espiral quando o Projétil terminar |
-| 2 | Dispara # Projéteis em uma espiral |
-| 2 | Dispara Projéteis # % mais rápido |
 | 2 | Dispara um feixe a cada # segundos |
 | 2 | Duração de Maldições aumentada em # % |
 | 2 | Duração do Buff aumentada em # % por Carga de Tolerância removida |
-| 2 | Efeito dos Resfriamentos infligidos por Habilidades Suportadas aumentado em #% |
 | 2 | Espalha quando o Inimigo afetado morrer |
 | 2 | Essa Gema só pode Suportar Gemas de Habilidade que requerem Nível # ou menos |
 | 2 | Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética |
@@ -158,20 +135,15 @@ Só os ataques:
 | 2 | Fissuras irrompem # vezes adicionais |
 | 2 | Ganha # Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura # segundos |
 | 2 | Ganhe uma Carga Sangrenta se esta Habilidade Acertar Inimigos e nenhum deles Morrerem Perca uma Carga Sangrenta quando um Inimigo Morrer enquanto afetado pelo Debuff desta Habilidade |
-| 2 | Gira por # rotações |
 | 2 | Golens causam # % mais Dano por Lacaio Não-Golem próximo deles, até # % |
 | 2 | Golpeia a cada # segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe |
 | 2 | Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar # de Vida e # de Mana |
-| 2 | Golpes Finais fazem com que os Empalamentos em Inimigos Reflitam o Dano aos Inimigos ao redor |
 | 2 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo |
 | 2 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\ne dos lados da área alvo |
 | 2 | Habilidades Suportadas aplicam Maldições Suportadas em Acertos |
 | 2 | Habilidades suportadas criam Solo Maldito com uma Duração base de # segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de # área de Solo Maldito |
-| 2 | Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados |
 | 2 | Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em #% |
 | 2 | Impele o próximo # Ataque de Golpe Corpo a Corpo que você executar |
-| 2 | Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até # %, com base na distância da Esfera do Vazio |
-| 2 | Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida em # % |
 | 2 | Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em #% |
 | 2 | Lacaios possuem +# % de todas Resistências Elementais |
 | 2 | Libera # onda |
@@ -186,51 +158,32 @@ Só os ataques:
 | 2 | Orbes saltam a cada # segundos |
 | 2 | Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome # Carga de # Frasco de cada tipo válido, se possível, por Projétil Disparado |
 | 2 | Pode focar em cada inimigo apenas uma vez a cada # segundos |
-| 2 | Pode ter até # Áreas Resfriadas |
-| 2 | Pode ter até # lâminas giratórias ativas |
-| 2 | Pulsa a cada # segundos |
-| 2 | Quando em Empunhadura Dupla, # % Menos Velocidade de Ataque |
-| 2 | Raio acerta # alvos dentro de # metros |
 | 2 | Raio Base da explosão menor igual a # metros |
-| 2 | Raio Base terciário igual a # metros |
 | 2 | Receba # % do Dano Físico como Dano de Gelo Extra |
-| 2 | Recupera #% de Vida quando Habilidades Suportadas Matam um Inimigo |
 | 2 | Regenera # % do Dano do Debuff como Vida |
 | 2 | Regenera +# % do Dano do Debuff como Vida |
-| 2 | Regeneração de Vida reduzida em # % |
 | 2 | Sentinelas Ascendidos causam # % mais Dano |
 | 2 | Sentinelas Ascendidos sofrem # % menos Dano |
 | 2 | Só aplica Feitiços de Gemas de Habilidades Maldição que exigem Nível # ou menor |
-| 2 | Taxa de Acerto aumentada em +# % por cada lâmina |
 | 2 | Tem # chamas |
 | 2 | Tempestade Furiosa Acerta com # % mais Frequência |
 | 2 | Tempestades de Lâminas causam # % menos Dano com Acertos e Afecções |
-| 2 | Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada |
 | 2 | Todos os Danos podem Incendiar, Congelar e Eletrizar |
 | 2 | Trava o inimigo no lugar |
-| 2 | Um impacto a cada # segundos |
 | 2 | Uma Runa é Melhorada para cada # de Mana Gasta |
 | 2 | Velocidade de Movimento do Orbe aumentada em # % |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
 | 2 | Você não pode Conjurar Magias Maldição Suportadas |
-| 2 | ㅤ- # % de dano de ataque com duas armas |
 | 1 | [DNT] Deals # % more Damage per active wall |
 | 1 | [Empowered\|Fortalece] a próxima magia vaal danosa que você conjurar |
 | 1 | [Empowered\|Fortalece] as próximas # magias que você conjurar |
 | 1 | [Empowered\|Fortalece] as próximas +# magias que você conjurar |
 | 1 | # % de aumento da Distância do Empurrão |
-| 1 | # % de aumento da Duração da Habilidade por Carga de Frenesi removida |
-| 1 | # % de aumento do Efeito de Mutilação |
-| 1 | # % de chance de Causticar Inimigos |
-| 1 | # % de chance de Cegar inimigos ao acertá-los |
 | 1 | # % de chance de convocar um Lacaio extra |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
-| 1 | # % de chance de ganhar uma Carga de Frenesi quando um Inimigo Morrer enquanto na Área dessa Habilidade |
 | 1 | # % de chance de ganhar uma Ruína adicional ao usar |
 | 1 | # % de Chance de ramificação da Fissura |
 | 1 | # % de chance de ramificação de fissuras por Carga de Tolerância removida |
-| 1 | # % de chance de receber uma Carga de Frenesi ao Acertar |
-| 1 | # % de chance do Relâmpago acertar o Marcador ao Conjurar |
 | 1 | # % de chancer de causar Sangramento enquanto na Postura de Sangue |
 | 1 | # % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade |
 | 1 | # % do Dano de Raio Convertido em Dano de Caos |
@@ -238,35 +191,25 @@ Só os ataques:
 | 1 | # % maior frequência de rajadas por # de mana máximo |
 | 1 | # % mais Área de Efeito por Carga de Tolerância removida |
 | 1 | # % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada |
-| 1 | # % mais Área de Efeito quando Conjurada em um Disparo Congelante |
 | 1 | # % mais Área de Efeito se Consumindo um Lacaio |
 | 1 | # % mais Área de Efeito se Consumiu um cadáver |
 | 1 | # % mais Dano com Acertos contra Inimigos Incendiados |
 | 1 | # % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento |
 | 1 | # % mais Dano com Acertos e Afecções por Intensidade |
 | 1 | # % mais Dano com Acertos e Afecções se usar sua Vida |
-| 1 | # % mais Dano com Acertos por cada # % de Efeito de Eletrização no Inimigo |
-| 1 | # % mais Dano com Acertos por cada # % de Efeito do Resfriamento no Inimigo |
 | 1 | # % mais Dano de Projétil |
-| 1 | # % mais Dano em Área |
-| 1 | # % mais Dano Físico Corpo a Corpo |
 | 1 | # % mais Dano na Postura de Sangue |
 | 1 | # % mais Dano por Carga de Tolerância removida |
-| 1 | # % mais dano por lâmina |
 | 1 | # % mais dano por lâmina de Vórtice de Lâminas |
 | 1 | # % mais Dano por Maldição aplicada |
 | 1 | # % mais Dano por Trauma, até # % |
 | 1 | # % mais Dano por Traumatismo |
-| 1 | # % mais Dano quando Conjurado com Disparo Congelante |
 | 1 | # % mais Duração do Veneno |
-| 1 | # % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido |
-| 1 | # % mais Velocidade de Conjuração |
 | 1 | # % mais Velocidade de Projétil |
 | 1 | # % menos Dano de Afecções |
 | 1 | # % menos Dano Físico sofrido por Carga de Tolerância removida |
 | 1 | # % menos Velocidade de Arremesso de Armadilhas |
 | 1 | # % menos velocidade de lançar armadilhas com arma de duas mãos |
-| 1 | # do Nível das Gemas de Habilidade de Caos Suportadas |
 | 1 | # metros ao raio do Solo Sagrado |
 | 1 | # metros de raio |
 | 1 | # Tiros |
@@ -281,59 +224,45 @@ Só os ataques:
 | 1 | +# % mais Dano com Acertos contra Inimigos Incendiados |
 | 1 | +# % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento |
 | 1 | +# % mais Dano com Acertos e Afecções por Intensidade |
-| 1 | +# % mais Dano com Acertos por cada # % de Efeito de Eletrização no Inimigo |
 | 1 | +# % mais Dano em Área |
 | 1 | +# % mais dano por carga de poder removida |
 | 1 | +# % mais Dano por Carga de Tolerância removida |
 | 1 | +# % mais Dano por Traumatismo |
-| 1 | +# % menos Dano em Área |
 | 1 | +# ao número máximo de Zumbis |
 | 1 | +# cascatas por carga de poder removida |
 | 1 | +# de largura por cada # % de Mana Máxima Não Reservada possuída |
 | 1 | +# de Relâmpagos Concentrados máximos |
-| 1 | +# metro ao Alcance de Golpes Corpo a Corpo |
+| 1 | +# metro ao Raio por # de Fúria |
 | 1 | +# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade |
 | 1 | +# metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +# metros |
 | 1 | +# metros ao raio do Pulso por Energia |
 | 1 | +# metros para o alcance do golpe corpo a corpo do lacaio |
 | 1 | +# vez |
-| 1 | +#% de Qualidade das Gemas de Habilidade Suportadas |
 | 1 | +#% para o número máximo de lacaios de habilidades reforçadas |
 | 1 | a absorção de dano da guarda ainda não existe no jogo |
 | 1 | A área alvejada base mede # metros de comprimento |
 | 1 | A expiração do Buff não pode ser modificada |
 | 1 | a explosão da tempestade usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); a Cegueira dentro dela (a descrição) não é aplicada |
 | 1 | a explosão das torres usa o físico médio da arma × #–#% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros |
-| 1 | A Ilusão se move com um adicional de +# % da sua Velocidade de Movimento |
 | 1 | a imunidade a afecções ainda não existe no jogo |
 | 1 | a lentidão da maldição ainda não existe no jogo |
 | 1 | a Onda Arcana é um acerto só, no anel de # casas em volta de você — a duração de # s e a Eficácia de #% do dano adicionado não entram |
 | 1 | a onda usa o físico médio da arma × o "Dano de Ataque: X% de base" dela pelo acerto sem golpe (sem o crítico e os modificadores locais da arma) |
 | 1 | a perda de #% da Vida e do Escudo de Energia por segundo é a perda por segundo do jogo — não mata (deixa # de Vida) e não passa pelos modificadores de dano degenerativo recebido; no PoE é Dano Físico degenerativo (PhysicalDegen) |
 | 1 | A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano |
-| 1 | a recarga pode ser pulada gastando uma Carga de Frenesi |
-| 1 | a recarga pode ser pulada gastando uma Carga de Poder |
-| 1 | a recarga pode ser pulada gastando uma Carga de Tolerância |
 | 1 | A Segunda forma possui +# % ao Multiplicador de Acerto Crítico |
 | 1 | Abalo Secundário causa # % mais Dano com Acertos por cada # segundos de Duração |
 | 1 | Abalo Secundário causa # % mais Dano com Afecções por cada # segundos de Duração |
 | 1 | Abalo Secundário tem # % mais Área de Efeito por cada # segundos de Duração |
 | 1 | Acada segundo # % mais Fúria perdida |
-| 1 | Acerta até # Inimigos |
-| 1 | Acerta Inimigos a cada # Segundos |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos Perde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
-| 1 | Acertos Corpo a Corpo Fortificam por # segundos |
-| 1 | Acertos da Onda final causa # % de Dano por estágio |
 | 1 | Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada # segundos |
-| 1 | Acertos tratam os valores da Resistência Elemental dos Monstros Inimigos como invertidos |
 | 1 | Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo |
 | 1 | Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros |
-| 1 | Alcance aumentado em # % |
 | 1 | Alcance do Posicionamento de Totens aumentado em # % |
 | 1 | Alvos acorrentados concedem # Fúria quando atingidos |
 | 1 | Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles |
-| 1 | Anel sempre Eletriza |
 | 1 | Ângulo da ramificação aumentado em # % |
 | 1 | Anima até # Armas |
 | 1 | Ao atingir # de Gula, perde toda a Gula e ganha Regurgitação por # segundos |
@@ -347,17 +276,12 @@ Só os ataques:
 | 1 | Ataque de Impacto dos Zumbis Erguidos tem Efeito em Área aumentado em # % |
 | 1 | Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos Perde # de Ressonância Profana por segundo para cada tipo que não ganhar |
 | 1 | Ataques com habilidades reforçadas, cujo maior tipo de dano é caos, elétrico ou físico, fazem você ganhar # de Ressonância Profana dos outros tipos por segundo durante # segundos\nPerde # de Ressonância Profana por segundo para cada tipo que não ganhar |
-| 1 | Ataques de habilidades reforçadas têm #% de chance de considerar os valores de resistência elemental dos monstros inimigos como invertidos |
 | 1 | Ataques Impelidos causam # % mais Dano por Aliado afetado, máximo de # % |
 | 1 | Ataques Impelidos têm # % mais Área de Efeito |
-| 1 | Ataques Impelidos têm +# % de Chance de Golpe Crítico |
-| 1 | Ataques Impelidos têm +# % de Multiplicador de Dano Crítico |
 | 1 | Ataques reforçados ativam Rajada de Vento ao atingir, limitado a uma vez a cada # metros percorridos |
 | 1 | Ataques Suportados causam #% mais Dano por cada Clamor que os Impelir |
 | 1 | Ataques Suportados causam Dano Físico com Armas Adicional igual a #% da Vida Máxima enquanto em Vida Baixa |
 | 1 | Ataques Suportados causam Dano Físico com Armas Adicional igual a\n#% da Vida Máxima enquanto em Vida Baixa |
-| 1 | Ataques Suportados tem #% de chance de Empalar Inimigos ao Acertar |
-| 1 | Ataques Suportados tem o Efeito de Empalamento aumentdo em #% |
 | 1 | Até # metros ao raio da propagação de Energia, escalonado pela distância da Runa |
 | 1 | Ativa a Habilidade Suportada quando você Acertar um Inimigo Raro ou Único com um Ataque |
 | 1 | Ativa Esta Habilidade quando um Feitiço de Habilidades Suportadas terminar |
@@ -367,7 +291,6 @@ Só os ataques:
 | 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto |
 | 1 | Aumenta a Velocidade de Conjuração dos Lacaios em # % |
 | 1 | Aumenta a Velocidade de Movimento dos Lacaios em # % |
-| 1 | Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade |
 | 1 | Aura faz com que Castigo ataque +# alvos com relâmpagos |
 | 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
 | 1 | Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas |
@@ -378,17 +301,14 @@ Só os ataques:
 | 1 | Buff concede +# % de Chance de Bloquear o Dano Mágico enquanto portando um Escudo |
 | 1 | Buff concede Dano de Ataque Adicional igual a # % do Dano da sua Arma da Mão Principal por cada # de Poder, contando um máximo de # de Poder |
 | 1 | Buff concede Dano de Raio Adicional igual a # % da Mana Gasta pelo efeito desta Habilidade |
-| 1 | Buff concede Golpe Abatedor com Cutilada Buff concede # % mais Área de Efeito da Cutilada Buff concede # % mais Dano com Cutilada com Acertos e Afecções aos Inimigos que estão em Vida Baixo |
 | 1 | Buff concede Imunidade a Eletrização |
 | 1 | Buff concede Ponto de Atordoamento aumentado em # % por cada # de Poder, contando um máximo de # de Poder |
-| 1 | Buff é removido para Impelir o próximo Ataque Corpo a Corpo que você executar Ataques Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades |
 | 1 | Buff tem # % mais Efeito em seus Lacaios |
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Normais ou Mágicos |
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Raros |
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Únicos |
 | 1 | Cada Esporo dispara # Flechas de Espinho |
 | 1 | Cada Esporo dispara +# Flecha de Espinho |
-| 1 | Cada Esporo inflige # Debuff de Definhamento nos Inimigos próximos |
 | 1 | Cada Flecha deixa # Esporos |
 | 1 | Cada Flecha pode disparar +# Feixe |
 | 1 | Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #% |
@@ -397,34 +317,24 @@ Só os ataques:
 | 1 | Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #% |
 | 1 | Cada onda tem # Explosões |
 | 1 | Cada rajada dispara # lâminas, que permanecem no chão |
-| 1 | Cadáveres Criados têm Vida Máxima aumentada em # % |
 | 1 | Campo ganha # % mais Dano com Ataques por cada # % de Efeito de Eletrização no Inimigo quando criado |
 | 1 | Campo ganha +# metros ao raio por cada # % de Efeito de Eletrização no Inimigo quando criado |
 | 1 | Causa # % da sua Mana Máxima como Dano de Fogo Base por segundo |
 | 1 | Causa # % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo |
 | 1 | Causa # % do seu máximo de Vida como Dano de Caos base |
-| 1 | Causa # % mais Dano com Acertos e Afecções quando conjurada em um Disparo Congelante |
-| 1 | Causa # % mais Dano com Acertos por cada # segundos de Duração |
-| 1 | Causa # % mais Dano com Afecções por cada # segundos de Duração |
 | 1 | Causa # a # de Dano de Fogo |
 | 1 | Causa # a # de Dano de Gelo |
 | 1 | Causa # Ondas |
 | 1 | Causa +# % da sua Vida Máxima como Dano de Fogo base |
 | 1 | Causa +# rajadas |
-| 1 | Causa Dano de Fogo Adicional igual a # % da Vida Máxima |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
-| 1 | Causa dano de magia adicional igual a # % do dano da adaga equipada Se duas adagas estiverem equipadas, cada uma contribui com até # % de dano adicional |
-| 1 | Causa Dano de Raio Adicional igual a # % da Mana máxima |
 | 1 | Causa Dano de Raio base igual a # % da Mana Não Reservada que falta |
 | 1 | Causa Dano de Raio base igual a +# % da Mana Não Reservada que falta |
 | 1 | Causa Dano Físico Adicional igual a # % da Mana Máxima |
-| 1 | Causa Dano nos Inimigos # vezes |
 | 1 | Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Dano |
 | 1 | Ceifadores fazem com que seus Lacaios não-Ceifadores tenham # % menos Vida Máxima |
-| 1 | Chance de Crítico aumentada em # % por Carga de Poder |
 | 1 | Chão amaldiçoado de habilidades reforçadas ativam Sapo Explosivo a cada # segundo |
 | 1 | Circunferência base da área-alvo é de # metros |
-| 1 | Circunferência base da onda é de # metros |
 | 1 | Clamores reforçados criam um chão consagrado com duração de # segundos |
 | 1 | Clamores reforçados têm #% de área de efeito |
 | 1 | Clamores reforçados têm a velocidade de recarga reduzida em #% |
@@ -444,7 +354,6 @@ Só os ataques:
 | 1 | Concede até o máximo de Cargas de Sangue |
 | 1 | Consome # Carga de # Frasco de Vida, se possível, por Projétil Disparado |
 | 1 | Consome # Cargas de # Frasco de Vida, se possível, por Projétil Disparado |
-| 1 | Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por # segundo por Carga consumida |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
 | 1 | Conta o Poder total de Inimigos e Aliados no Raio |
@@ -455,7 +364,6 @@ Só os ataques:
 | 1 | Convoca um Sentinela da Pureza quando você Matar um Inimigo |
 | 1 | Cria # Estacas adicionais se você mudou de Postura Recentemente |
 | 1 | Cria # fendas |
-| 1 | Cria # fissura |
 | 1 | Cria # mãos adicionais |
 | 1 | Cria # mãos por glifo |
 | 1 | Cria # Pilares de Cinzas |
@@ -468,38 +376,25 @@ Só os ataques:
 | 1 | Dano de Caos sofrido aumentado em # % |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de # segundos |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
-| 1 | Dano Elemental das Habilidades Suportadas não pode ser Refletido |
 | 1 | Dano Mágico Suprimido causado em você é Azarado |
 | 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
-| 1 | Deixa uma Lâmina Persistente no solo para cada # Saraivadas |
 | 1 | Detonação da Mina é Instantânea |
-| 1 | Dispara # Flecha |
-| 1 | Dispara # Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina |
-| 1 | Dispara # fragmentos por vez até que todos sejam disparados |
 | 1 | Dispara # projéteis |
-| 1 | Dispara # Projéteis em cada uma das duas espirais espelhadas |
 | 1 | Dispara # Projéteis secundários |
-| 1 | Dispara # sequências de flechas adicionais |
-| 1 | Dispara +# Fragmentos de Projéteis em uma Espiral quando o Projétil terminar |
 | 1 | Dispara até # Flechas em alvos diferentes |
+| 1 | Dispara Projéteis # % mais rápido |
 | 1 | Dispara Projéteis a cada # segundos |
-| 1 | Dispara tentáculos em até # Alvo |
 | 1 | Dispara tentáculos em até # Alvos |
 | 1 | Dispara um Carregamento de Flechas no ar Projéteis Disparam de onde a Flecha com o Carregamento cair |
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
 | 1 | Duração do Buff é atualizada após você gastar um total de # de Vida |
-| 1 | Durante a Duração Secundária, Reflete # % do Dano Sofrido aos Inimigos |
-| 1 | Efeito da Cegueira aumentado em # % |
 | 1 | Efeito da Marca aumentado em # % |
 | 1 | Efeito das Marcas de Habilidades Suportadas aumentado em #% |
 | 1 | Efeito das Marcas de Habilidades Suportadas reduzido em #% |
-| 1 | Efeito de eletrificações infligidos com habilidades reforçadas aumentado em #% |
 | 1 | Efeito de Maldições aumentado em # % |
 | 1 | Efeito do Debuff aumentado em # % |
 | 1 | Efeito em Área de Habilidades Maldição Suportadas reduzido em #% |
 | 1 | Efeitos do Sangue Fervendo Perduram por # segundos |
-| 1 | Eletrifica inimigos quando eles são esfriados por ataques de habilidades reforçadas, aumentando o dano sofrido com base no efeito de esfriamento |
-| 1 | Eletrifica inimigos quando eles são esfriados por seus ataques, aumentando o dano sofrido com base no efeito de esfriamento |
 | 1 | Empala Inimigos ao Acertar |
 | 1 | Empurra e Interrompe Inimigos em uma pequena Área |
 | 1 | Empurra Inimigos ao Acertar |
@@ -510,8 +405,6 @@ Só os ataques:
 | 1 | Envia feixes até # Inimigos, incluindo o Inimigo Vinculado |
 | 1 | Envia feixes para +# Inimigo |
 | 1 | Envia um feixe ao Inimigo Vinculado |
-| 1 | Esfria inimigos quando eles são eletrificados por ataques de habilidades reforçadas, reduzindo a velocidade de ação com base no efeito de eletrificação |
-| 1 | Esfria inimigos quando eles são eletrificados por seus ataques, reduzindo a velocidade de ação com base no efeito de eletrificação |
 | 1 | Espalha quando o Inimigo afetado for Acertado |
 | 1 | Espectros têm Duração Base de # segundos Espectros não viajam entre as Áreas |
 | 1 | Espíritos Sagrados têm #% de chance de usar a Habilidade Ativadora quando voc#e disparar um Projétil com tal Habilidade |
@@ -521,16 +414,12 @@ Só os ataques:
 | 1 | Esta habilidade é ativada quando uma habilidade de reforço causa dano elétrico com o acerto |
 | 1 | Esta Magia ganha Intensidade quando você Conjurá-la, máximo de # |
 | 1 | Esta Magia perde # de Intensidade a cada # segundos enquanto se movendo, ou imediatamente ao teleportar |
-| 1 | Estacas Despedaçadas têm # % mais Área de Efeito |
-| 1 | Estacas Despedaçadoras causam # % mais dano |
-| 1 | Estacas Despedaçadoras causam +# % mais dano |
 | 1 | Estandarte concede # % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados |
 | 1 | Estandarte concede # de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados |
 | 1 | Estandarte concede Precisão aumentada em # % a Você e Aliados |
 | 1 | Estandarte faz com que você e Aliados Recuperem # de Vida ao Bloquear |
 | 1 | Estandartes reforçados infligem Sangue Corrompido a cada segundo aos inimigos dentro de sua área |
 | 1 | Este ataque e lacaios convertem # % do dano físico em dano elétrico |
-| 1 | Este Ataque pode ser Impelido como se não fosse uma Habilidade Vaal |
 | 1 | Estímulo dura # segundos |
 | 1 | Explode um Cadáver próximo ao Disparar Projéteis |
 | 1 | Explosão causa # % mais Dano com Acertos e Afecções |
@@ -543,9 +432,6 @@ Só os ataques:
 | 1 | Explosões causam Dano de Fogo base igual a # % da Vida máxima do Lacaio |
 | 1 | Explosões causam Dano de Raio igual a # % da Vida Máxima do cadáver |
 | 1 | Explosões terão # a # de Dano de Fogo adicional |
-| 1 | Exposição a Gelo aplica # % de Resistência a Gelo |
-| 1 | Exposição aplica # % de Resistência Elemental que combine com o maior Dano sofrido |
-| 1 | Extensão da onda é de # metros |
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas afetam inimigos imunes a feitiços |
 | 1 | Feitiços aplicados por habilidades de maldição reforçadas têm #% de chance de afetar inimigos imunes a feitiços |
 | 1 | Feitiços de Habilidades Suportadas se Transferem para todos os Inimigos dentro de # metros quando o Inimigo Enfeitiçado morrer |
@@ -571,17 +457,14 @@ Só os ataques:
 | 1 | Ganha uma instância de Intensidade Sobrecarregada por # segundos após perder # de Intensidade com habilidades reforçadas |
 | 1 | Ganha uma instância de Intensidade Sobrecarregada por # segundos após\nperder # de Intensidade com habilidades reforçadas |
 | 1 | Ganha uma Ruína por uso Ao chegar a sete, sacrifica # % da sua vida e causa # % da vida sacrificada como dano de caos |
-| 1 | Ganhe uma Carga de Poder quando um Inimigo Morrer enquanto na Área dessa Habilidade A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área dessa Habilidade |
 | 1 | Gasta # % da Mana atual |
 | 1 | Gelo se quebra após você sofrer # Acertos Danificadores ou a Duração expirar |
 | 1 | Gira # vez |
 | 1 | Gira # vezes |
 | 1 | Gira +# vezes se em Empunhadura Dupla |
 | 1 | Glifos reforçados ativam Constrição Pérfida ao serem recuperados |
-| 1 | Golpe Críticos infligem Empalamento |
 | 1 | Golpe de Impacto de Zumbis Evocados tem a Velocidade de Recarga aumentada em % |
 | 1 | Golpes Críticos com Habilidades Suportadas que infligirem Sangramento também infligem Rompimento |
-| 1 | Golpes Críticos não causam Dano extra |
 | 1 | Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham #% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório |
 | 1 | Golpes fatais com habilidades reforçadas fazem com que os inimigos tenham +#% de chance de explodir e causarem um décimo da própria vida máxima como dano de um elemento aleatório |
 | 1 | Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por # segundos |
@@ -591,7 +474,6 @@ Só os ataques:
 | 1 | Habilidades de arauto reforçadas não têm efeito bônus |
 | 1 | Habilidades de Aura Suportadas não tem Reserva |
 | 1 | Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo |
-| 1 | Habilidades de Retaliação Suportadas se tornam Utilizáveis por um tempo #% maior |
 | 1 | Habilidades fortalecidas causam + # % de dano |
 | 1 | Habilidades fortalecidas causam + # % de dano com ataques e afecções |
 | 1 | Habilidades fortalecidas disparam # projéteis adicionais Habilidades fortalecidas disparam projéteis em círculo |
@@ -630,8 +512,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento |
 | 1 | Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\nÍmpeto de Combate dura # segundos ou até que você utilize uma Habilidade de Deslocamento |
 | 1 | Habilidades Suportadas Custam +# de Mana |
-| 1 | Habilidades Suportadas Eletrizam Inimigos como se causassem #% mais Dano |
-| 1 | Habilidades Suportadas ganham #% de Dano de Gelo como Dano Extra de Fogo |
 | 1 | Habilidades Suportadas ganham Dano de Raio Adicional igual a #% da Mana Máxima não Reservada |
 | 1 | Habilidades Suportadas infligem Podridão ao Acertar, causando # de Dano de Caos por segundo durante # segundos |
 | 1 | Habilidades Suportadas não podem aplicar Auras em você a menos que você tenha Lacaios de uma Habilidade Suportada |
@@ -640,8 +520,6 @@ Só os ataques:
 | 1 | Habilidades Suportadas podem ter até # Minas Remotas adicionais plantadas de uma vez |
 | 1 | Habilidades Suportadas possuem #% de chance de causar Definhado ao Acertar |
 | 1 | Habilidades Suportadas recebem #% de Dano Físico como Dano de Caos Extra |
-| 1 | Habilidades Suportadas só podem ser usadas com Maças, Cetros ou Cajados |
-| 1 | Habilidades Suportadas só podem ser usadas com Machados e Espadas |
 | 1 | Habilidades Suportadas só podem ser usadas com Varinhas |
 | 1 | Habilidades Suportadas têm # a # de Dano de Ataque Físico Adicional por Traumatismo |
 | 1 | Habilidades Suportadas têm #% da duração da Cegueira aumentada |
@@ -650,30 +528,14 @@ Só os ataques:
 | 1 | Habilidades Suportadas têm #% de chance de Esmagar Inimigos por # segundos ao Acertar |
 | 1 | Habilidades Suportadas têm #% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado |
 | 1 | Habilidades Suportadas têm #% de chance de ganhar uma Carga de Poder com Golpes Críticos |
-| 1 | Habilidades Suportadas têm #% de chance de infligir Exposição a Gelo ao Acertar |
-| 1 | Habilidades Suportadas têm #% de chance de infligir Exposição a Raio ao Acertar |
-| 1 | Habilidades Suportadas têm #% de chance de infligirem Exposição a Fogo ao Acertar |
 | 1 | Habilidades Suportadas têm #% de chance de Intimidar Inimigos por # segundos ao Acertar |
-| 1 | Habilidades Suportadas têm #% de Dano de Gelo Convertido para Dano de Fogo |
-| 1 | Habilidades Suportadas têm #% de Dano Drenado como Vida |
-| 1 | Habilidades Suportadas têm #% de Dano Físico Convertido em Dano de Raio |
-| 1 | Habilidades Suportadas têm #% de Duração de Atordoamentos em Inimigos aumentada |
-| 1 | Habilidades Suportadas têm #% de Duração de Efeito da Habilidade aumentada |
-| 1 | Habilidades Suportadas têm #% de Duração de Eletrização aumentada em Inimigos |
-| 1 | Habilidades Suportadas têm #% de Precisão aumentada |
 | 1 | Habilidades Suportadas têm #% de Velocidade de Ataque de Lacaios aumentada |
 | 1 | Habilidades Suportadas têm #% de Velocidade de Conjuração de Lacaios aumentada |
-| 1 | Habilidades Suportadas tem #% do Dano Drenado como Escudo de Energia |
 | 1 | Habilidades Suportadas têm #% mais frequência de Ativação |
-| 1 | Habilidades Suportadas têm +# de Precisão |
-| 1 | Habilidades Suportadas têm +# metros ao Alcance de Golpes Corpo a Corpo |
-| 1 | Habilidades Suportadas têm +#% de chance de Congelar Inimigos Resfriados |
 | 1 | Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em #% |
 | 1 | Habilidades Suportadas tem Chance de Golpe Crítico aumentada em #% por Carga de Inspiração |
 | 1 | Habilidades Suportadas têm Custo de Vida aumentado em #% |
-| 1 | Habilidades Suportadas têm Dano Mágico Adicional igual a #% doDano das Armas Corpo a Corpo de Uma Mão Equipadas Se duas Armas forem Equipadas, cada uma contribuindo com #% da quantidade de Dano Adicional |
 | 1 | Habilidades Suportadas têm Duração da Armadilha aumentada em #% Habilidades reforçadas têm a duração de mina aumentada em #% |
-| 1 | Habilidades Suportadas têm Duração da Fortificação aumentada em #% |
 | 1 | Habilidades Suportadas têm Duração do Atordoamento aumentada em #% por Traumatismo |
 | 1 | Habilidades Suportadas têm Efeito da Mutilação aumentado em #% |
 | 1 | Habilidades Suportadas têm Efeito das Auras reduzido em #% |
@@ -698,14 +560,11 @@ Só os ataques:
 | 1 | Inimigos Amaldiçoados têm # % de Reducão de Dano Físico |
 | 1 | Inimigos Aprisionados sofrem Dano de Projétil dos Acertos de Ataques aumentado em # % |
 | 1 | Inimigos Desacelerados sofrem Dano de Caos aumentado em # % |
-| 1 | Inimigos em Áreas Resfriadas por Habilidades Suportadas tem o Dano de Gelo sofrido aumentado pelo Efeito de Resfriamento |
 | 1 | Inimigos Encharcados têm Exposição a Gelo e Raio, aplicando # % às Resistências |
-| 1 | Inimigos Incendiados por Habilidades Suportadas possuem #% de Resistência a Fogo |
 | 1 | Inimigos possuem # % menos Velocidade de Movimento no início do Debuff |
 | 1 | Inimigos Provocados por este Clamor são Intimidados |
 | 1 | Inimigos Raros e Únicos Amaldiçoados tem # % menos Velocidade de Ação |
 | 1 | Inimigos recebem # % de aumento de Dano dos Acertos de Minas ou Armadilhas |
-| 1 | Inimigos Resfriados por Habilidades Suportadas tem o Dano de Gelo sofrido aumentado pelo Efeito de Resfriamento |
 | 1 | Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de # segundos |
 | 1 | Intensidade de Chama Santificada infligida por habilidades reforçadas aumentada em #% |
 | 1 | Invervação concede # a # de Dano de Raio |
@@ -748,7 +607,6 @@ Só os ataques:
 | 1 | Lâminas Persistêntes Animadas se tornam Arcos |
 | 1 | Lança até # armadilhas a mais ao usar duas armas |
 | 1 | Lança correntes em até # alvos ao alcance |
-| 1 | Lança uma corrente em até # inimigos |
 | 1 | Libera ondas a cada # segundos |
 | 1 | Magias reforçadas causam de # a # de dano físico adicionado para cada lacaio permanente |
 | 1 | Magias Suportadas causam # % menos Dano |
@@ -756,8 +614,6 @@ Só os ataques:
 | 1 | Magias Suportadas têm Recuperação da Recarga aumentada em #% |
 | 1 | Mais # % de dano contra inimigos atordoados |
 | 1 | Martelos Cadentes ocorrem a cada # segundos Aumentos e reduções na velocidade de ataque afetam a frequência com que esses martelos caem |
-| 1 | Mata Inimigos com #% de Vida ou menos quando Acertado por Habilidades Suportadas |
-| 1 | Mata inimigos de raridade normal e mágica com #% de vida ou menos quando atingidos por habilidades reforçadas |
 | 1 | Máximo de # Arqueiro Ilusório Convocado |
 | 1 | Máximo de # Lacaios Relâmpagos Vivos |
 | 1 | Máximo de # mãos |
@@ -765,18 +621,16 @@ Só os ataques:
 | 1 | Máximo de +# Flechas Explosivas grudadas em cada Inimigo |
 | 1 | Máximo de +# gêiseres por vez |
 | 1 | Máximo de +# Paredes Flamejantes por vez |
-| 1 | Máximo de +# Projéteis capturados |
 | 1 | Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você |
 | 1 | Minas não podem ser Re-armadas |
 | 1 | Minas tem Velocidade de Detonação aumentada em # % |
 | 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
 | 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
-| 1 | Mutila ao Acertar |
 | 1 | Não pode Incendiar |
 | 1 | Não pode infligir Envenenamento em Inimigos Envenenados |
 | 1 | Não pode infligir múltiplos envenenamentos com o mesmo ataque |
-| 1 | Não pode infligir Resfriamento |
 | 1 | Não pode ser Convocada |
+| 1 | Não pode ser Evadido |
 | 1 | Não requer um cadáver |
 | 1 | O efeito atual é finalizado após # Abalos Secundários |
 | 1 | O primeiro martelo de cada cascata causa + # % de dano |
@@ -784,29 +638,17 @@ Só os ataques:
 | 1 | o Raio por estágio e o "menos dano" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
 | 1 | Oferendas reforçadas ativam Invocar Nascidos da Colmeia ao usar |
-| 1 | Onda Central tem # % mais Área de Efeito |
 | 1 | Onda de Choque causa # % mais Dano |
 | 1 | Onda de Choque causa # % menos Dano |
 | 1 | Onda de Choque causa +# % mais Dano |
-| 1 | Onda pode recomeçar até # vezes Áreas de onda ganham +# metros de raio para cada área anterior |
-| 1 | Ondas adicionais serão criadas a partir dos aliados dentro de um raio base de # metros do primeiro inimigo atingido |
-| 1 | os # projéteis em espiral por # segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias |
 | 1 | Outros efeitos em inimigos Amaldiçoados expiram # % mais devagar |
-| 1 | Pela Duração Inicial, pode ser acertado pelos seus Projéteis até # vezes |
-| 1 | Penetra # % da Resistência a Fogo |
 | 1 | Perca # de Fúria por segundo |
 | 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
 | 1 | Perca todo o Traumatismo ao atingir # Traumatismos |
 | 1 | Perca Vida e Escudo de Energia igual a # % do Dano do Debuff |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
-| 1 | Pode aglomerar até # usos |
-| 1 | Pode explor de até # Projéteis de Disparo Congelante |
-| 1 | Pode se expandir de até # Projéteis de Disparo Congelante |
 | 1 | Possui # Chamas |
-| 1 | Possui # lâminas |
 | 1 | Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação |
-| 1 | Primeiro Impacto causa # % mais Dano com Acertos e Afecções |
-| 1 | Primeiro Impacto tem # % mais efeito em área |
 | 1 | Projéteis de Espinhos causam # % menos Dano |
 | 1 | Projéteis deixam Solo Eletrizado |
 | 1 | Projéteis Perfuram todos Alvos |
@@ -822,22 +664,17 @@ Só os ataques:
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Raio acerta # alvo dentro de # metros |
-| 1 | Raio acerta alvos dentro de +# metros |
+| 1 | Raio acerta # alvos dentro de # metros |
 | 1 | Raio base da lâmina é de # metro |
-| 1 | Raio Base da Mão Principal é de # metros |
-| 1 | Raio Base final do Solo Resfriado igual a # metros |
-| 1 | Raio de alcance base da mão secundária é de # metros |
+| 1 | Raio Base terciário igual a # metros |
 | 1 | Raio de alcance base do impacto é de # metro |
-| 1 | Raio inicial base de chão congelado é de # metros |
 | 1 | Raios acertam a cada # segundos |
 | 1 | Raios Acertam Inimigos a cada # segundos |
 | 1 | Raios causam # % menos Dano |
-| 1 | Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único |
 | 1 | Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas |
-| 1 | Redução do Ponto de Atordoamento aumentada em # % em inimigos na distância Máxima da investida |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar |
-| 1 | Remove Resfriamentos após Causar Dano |
+| 1 | Regeneração de Vida reduzida em # % |
 | 1 | Resfria Inimigos por # segundos ao Acertar, reduzindo sua Velocidade de Ação em # % |
 | 1 | Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos |
 | 1 | Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos |
@@ -867,22 +704,18 @@ Só os ataques:
 | 1 | Suas Habilidades e de seus aliados próximos não Custam Mana |
 | 1 | Suas Habilidades Não-Bênção que Reservam Mana são Desabilitadas enquanto você tiver uma Aura da Habilidade Suportada em você |
 | 1 | Taxa base de explosão do orbe é de uma vez por segundo |
-| 1 | Taxa de Acerto aumentada em # % por cada lâmina |
 | 1 | Tempestade Furiosa causa # % mais Dano por cada # de Fúria Sacrificada |
 | 1 | Tempestades Acertam Inimigos com Frequência aumentada em # % |
 | 1 | Tormenta Furiosa tem +# metros ao raio por cada # de Fúria sacrificada |
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo |
-| 1 | Um a cada # Projéteis disparados permanece no solo como Lâmina Persistente |
 | 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos iniciais com magias reforçadas |
 | 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos\niniciais com magias reforçadas |
 | 1 | Uma rajada de lâminas cai a cada # segundos |
 | 1 | Usa sua Vida se não houver Esqueletos em alcance |
 | 1 | Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas |
-| 1 | Utiliza o Tempo de Ataque da Arma Secundária |
 | 1 | Velocidade de Ataque aumentada em # % caso tenha mudado de Postura Recentemente |
-| 1 | Velocidade de Ataque aumentada em # % por Carga de Frenesi |
 | 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
 | 1 | Você e Aliados não-Lacaios Próximos têm # % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando # segundos |
 | 1 | Você e Aliados próximos ganham # % de Velocidade de Recarga de Escudo de Energia aumentada |
@@ -906,12 +739,6 @@ Só os ataques:
   - efeito não simulado: Solo Ardente causa 26 % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa 79 % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo
   - efeito não simulado: Ganha 1 Cargas de Frasco quando você Acertar um Inimigo Amaldiçoado, não mais que uma vez a cada 3 segundos
   - efeito não simulado: Efeito da Marca aumentado em 10 %
-- **Ambush** (Emboscada) — parcial
-  - efeito não simulado: Buff é removido para Impelir o próximo Ataque Corpo a Corpo que você executar Ataques Impelidos por esta Habilidade não podem ser Impelidos por outras Habilidades
-  - efeito não simulado: Ataques Impelidos têm +25 % de Chance de Golpe Crítico
-  - efeito não simulado: Ataques Impelidos têm +138 % de Multiplicador de Dano Crítico
-  - efeito não simulado: Duração da penalidade base é de 3 segundos
-  - efeito não simulado: Ataques Impelidos têm +10 % de Chance de Golpe Crítico
 - **Ancestral_Cry** (Clamor Ancestral) — parcial
   - efeito não simulado: Impele os próximos 8 Ataques de Golpe Corpo a Corpo que você executar
   - efeito não simulado: Golpes Impelidos focam em 2 Inimigos adicionais
@@ -966,10 +793,7 @@ Só os ataques:
   - efeito não simulado: Inimigos possuem 80 % menos Velocidade de Movimento no início do Debuff
 - **Bear_Trap_of_Skewers** (Armadilha de Urso dos Espetos) — parcial
   - efeito não simulado: Trava o inimigo no lugar
-  - efeito não simulado: Golpes Finais fazem com que os Empalamentos em Inimigos Reflitam o Dano aos Inimigos ao redor
   - efeito não simulado: Empala Inimigos ao Acertar
-- **Blade_Blast_of_Dagger_Detonation** (Explosão de Lâminas da Detonação da Adaga) — parcial
-  - efeito não simulado: Causa dano de magia adicional igual a 675 % do dano da adaga equipada Se duas adagas estiverem equipadas, cada uma contribui com até 60 % de dano adicional
 - **Blade_Blast_of_Unloading** (Explosão de Lâminas do Descarrego) — parcial
   - efeito não simulado: 5 % mais dano por lâmina de Vórtice de Lâminas
   - efeito não simulado: 100 % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada
@@ -984,18 +808,6 @@ Só os ataques:
   - efeito não simulado: Gira 1 vez
   - efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 50 % mais rápido
   - efeito não simulado: Sangramentos inflingidos por esta Habilidade causam Dano 10 % mais rápido
-- **Blade_Vortex** (Vórtice de Lâminas) — parcial
-  - efeito não simulado: Taxa de Acerto aumentada em 30 % por cada lâmina
-  - efeito não simulado: 30 % mais dano por lâmina
-  - efeito não simulado: Pode ter até 10 lâminas giratórias ativas
-  - efeito não simulado: Taxa de Acerto aumentada em +5 % por cada lâmina
-- **Blade_Vortex_of_the_Scythe** (Vórtice de Lâminas da Foice) — parcial
-  - efeito não simulado: Pode ter até 1 lâminas giratórias ativas
-- **Bladefall** (Chuva de Lâminas) — parcial
-  - efeito não simulado: Deixa uma Lâmina Persistente no solo para cada 1 Saraivadas
-- **Bladefall_of_Impaling** (Chuva de Lâminas do Empalamento) — parcial
-  - efeito não simulado: Golpes Críticos não causam Dano extra
-  - efeito não simulado: Golpe Críticos infligem Empalamento
 - **Bladefall_of_Trarthus** (Corrente com Gancho de Trarthus) — parcial
   - efeito não simulado: Uma rajada de lâminas cai a cada 0.7 segundos
   - efeito não simulado: 2 % maior frequência de rajadas por 100 de mana máximo
@@ -1011,10 +823,6 @@ Só os ataques:
   - efeito não simulado: 12 % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas
   - efeito não simulado: Tempestades de Lâminas causam 50 % menos Dano com Acertos e Afecções
   - efeito não simulado: +1 ao número Máximo de Tempestades de Lâminas por vez
-- **Blast_Rain** (Chuva Explosiva) — parcial
-  - efeito não simulado: Penetra 30 % da Resistência a Fogo
-- **Blast_Rain_of_Trarthus** (Chuva Explosiva de Trarthus) — parcial
-  - efeito não simulado: Dispara 1 Flecha
 - **Blight** (Infestação) — parcial
   - efeito não simulado: Velocidade de Movimento reduzida em 80 %
   - efeito não simulado: Debuff pode ter até 20 camadas de Dano
@@ -1068,49 +876,18 @@ Só os ataques:
   - efeito não simulado: 15 % mais Dano por Trauma, até 200 %
   - efeito não simulado: Pulso tem Efeito em Área aumentado em 15 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %
   - efeito não simulado: 5 % mais Dano por Trauma, até 200 %
-- **Burning_Arrow_of_Vigour** (Flecha Ardente do Vigor) — parcial
-  - efeito não simulado: Causa Dano de Fogo Adicional igual a 32 % da Vida Máxima
-- **Chain_Hook** (Corrente com Gancho) — parcial
-  - efeito não simulado: +0.1 metro ao Raio por 5 de Fúria
-- **Chain_Hook_of_Angling** (Corrente de Anzol para Pesca) — parcial
-  - efeito não simulado: Lança uma corrente em até 7 inimigos
-  - efeito não simulado: Alcance aumentado em 40 %
 - **Chain_Hook_of_Trarthus** (Corrente com Gancho de Trarthus) — parcial
   - efeito não simulado: Lança correntes em até 8 alvos ao alcance
   - efeito não simulado: Alvos acorrentados concedem 1 Fúria quando atingidos
   - efeito não simulado: Comprimento máximo da corrente: 6 metros
   - efeito não simulado: +0.1 metro ao Raio por 5 de Fúria
   - efeito não simulado: Lança correntes em até 3 alvos ao alcance
-- **Charged_Dash** (Avanço Fantasma) — parcial
-  - efeito não simulado: Causa + 150 % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento
-  - efeito não simulado: Acertos da onda final causam 75 % de dano por estágio
-  - efeito não simulado: A Ilusão se move com 130 % da sua Velocidade de Movimento
-  - efeito não simulado: A Ilusão se move com um adicional de +20 % da sua Velocidade de Movimento
-- **Charged_Dash_of_Projection** (Impulso Energizado da Projeção) — parcial
-  - efeito não simulado: Causa + 150 % de dano com ataques ao canalizar, se a Ilusão terminou seu movimento
-  - efeito não simulado: Acertos da onda final causam 125 % de dano por estágio
-  - efeito não simulado: A Ilusão se move com 150 % da sua Velocidade de Movimento
-  - efeito não simulado: Acertos da Onda final causa 20 % de Dano por estágio
-- **Cleave** (Cutilada) — parcial
-  - efeito não simulado: +0.1 metros de raio por inimigo próximo, até +1 metro
-- **Cleave_of_Rage** (Cutilada da Fúria) — parcial
-  - efeito não simulado: +0.1 metro ao Raio por 5 de Fúria
-- **Cold_Snap** (Estalo Gélido) — parcial
-  - efeito não simulado: Raio inicial base de chão congelado é de 1.5 metros
-  - efeito não simulado: Raio Base final do Solo Resfriado igual a 3 metros
-  - efeito não simulado: 25 % de chance de ganhar uma Carga de Frenesi quando um Inimigo Morrer enquanto na Área dessa Habilidade
-  - efeito não simulado: 20 % mais Efeito de Resfriamento
-- **Cold_Snap_of_Power** (Estalo Gélido do Poder) — parcial
-  - efeito não simulado: 50 % de chance de ganhar uma Carga de Poder em Acertos Críticos
-  - efeito não simulado: 20 % de chance de ganhar uma Carga de Poder em Acertos Críticos
 - **Conflagration** (Conflagração) — parcial
-  - efeito não simulado: As flechas após a primeira caem em um raio base de 6 metros
-  - efeito não simulado: Raio de alcance base do impacto é de 7 metro
+  - efeito não simulado: As flechas após a primeira caem em um raio base de 3 metros
+  - efeito não simulado: Raio de alcance base do impacto é de 1 metro
   - efeito não simulado: Explosão causa + 50 % de dano com ataques e afecções
   - efeito não simulado: Duração da penalidade base é de 4 segundos
   - efeito não simulado: Explosão causa + 30 % de dano com ataques e afecções
-- **Consecrated_Path_of_Endurance** (Caminho Sagrado da Tolerância) — parcial
-  - efeito não simulado: a recarga pode ser pulada gastando uma Carga de Tolerância
 - **Contagion** (Contagiar) — parcial
   - efeito não simulado: Espalha quando o Inimigo afetado morrer
 - **Contagion_of_Subsiding** (Contágio da Subsidência) — parcial
@@ -1132,15 +909,6 @@ Só os ataques:
   - efeito não simulado: +10 % mais Dano com Acertos e Afecções por Intensidade
 - **Crackling_Lance_of_Branching** (Lança Crepitante da Ramificação) — parcial
   - efeito não simulado: Ângulo da ramificação aumentado em 50 %
-- **Crackling_Lance_of_Disintegration** (Lança Crepitante da Desintegração) — parcial
-  - efeito não simulado: +10 % ao Máximo de Efeito da Eletrização
-  - efeito não simulado: +10 % ao Máximo de Efeito da Eletrização
-- **Creeping_Frost** (Geada Rastejante) — parcial
-  - efeito não simulado: Pode ter até 10 Áreas Resfriadas
-- **Creeping_Frost_of_Floes** (Geada Gradativa das Banquisas) — parcial
-  - efeito não simulado: Pode ter até 5 Áreas Resfriadas
-- **Cremation** (Cremação) — parcial
-  - efeito não simulado: Dispara Projéteis 15 % mais rápido
 - **Cremation_of_Exhuming** (Cremação da Exumação) — parcial
   - efeito não simulado: Explode um Cadáver próximo ao Disparar Projéteis
   - efeito não simulado: Dispara Projéteis 15 % mais rápido
@@ -1161,20 +929,10 @@ Só os ataques:
   - efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados
 - **Despair** (Desespero) — parcial
   - efeito não simulado: Efeito de Maldições aumentado em 10 %
-- **Detonate_Dead** (Detonar Morto) — parcial
-  - efeito não simulado: 15 % de chance de detonar um cadáver adicional
-- **Detonate_Dead_of_Scavenging** (Detonar Morto da Limpeza) — parcial
-  - sem dano direto: nenhum efeito no combate
 - **Detonate_Mines** (Detonar Minas) — parcial
   - sem dano direto: nenhum efeito no combate
   - efeito não simulado: Primeira Mina é Detonada Instantaneamente Minas recebem 10 % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação
   - efeito não simulado: Minas tem Velocidade de Detonação aumentada em 20 %
-- **Discharge** (Descarga) — parcial
-  - efeito não simulado: 15 % mais Área de Efeito por Carga removida
-  - efeito não simulado: 10 % de chance de causar Dano sem remover Cargas
-- **Discharge_of_Misery** (Descarga da Miséria) — parcial
-  - efeito não simulado: 20 % mais Área de Efeito por Carga removida
-  - efeito não simulado: 10 % de chance de causar Dano sem remover Cargas
 - **Discipline** (Disciplina) — parcial
   - efeito não simulado: Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada
 - **Divine_Blast** (Rajada Divina) — parcial
@@ -1191,12 +949,8 @@ Só os ataques:
 - **Dominating_Blow_of_Inspiring** (Golpe Dominador da Inspiração) — parcial
   - efeito não simulado: 25 % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Double_Strike_of_Impaling** (Golpe Duplo do Empalamento) — parcial
-  - efeito não simulado: Golpes Finais fazem com que os Empalamentos em Inimigos Reflitam o Dano aos Inimigos ao redor
 - **Dread_Banner** (Estandarte Horrendo) — parcial
   - efeito não simulado: Estandarte faz com que você e Aliados Recuperem 34 de Vida ao Bloquear
-- **Dual_Strike_of_Ambidexterity** (Golpe Duplo da Ambidestria) — parcial
-  - efeito não simulado: Utiliza o Tempo de Ataque da Arma Secundária
 - **Earthquake** (Terremoto) — parcial
   - efeito não simulado: Abalo Secundário causa 150 % mais Dano com Acertos e Afecções
   - efeito não simulado: Abalo Secundário causa +30 % mais Dano com Acertos e Afecções
@@ -1204,13 +958,6 @@ Só os ataques:
   - efeito não simulado: Abalo Secundário causa 15 % mais Dano com Acertos por cada 0.1 segundos de Duração
   - efeito não simulado: Abalo Secundário causa 5 % mais Dano com Afecções por cada 0.1 segundos de Duração
   - efeito não simulado: Abalo Secundário tem 2 % mais Área de Efeito por cada 0.1 segundos de Duração
-- **Earthshatter_of_Prominence** (Destroçador da Proeminência) — parcial
-  - efeito não simulado: Estacas Despedaçadas têm 157 % mais Área de Efeito
-  - efeito não simulado: Estacas Despedaçadoras causam 100 % mais dano
-  - efeito não simulado: Cria 1 fissura
-  - efeito não simulado: Estacas Despedaçadoras causam +20 % mais dano
-- **Elemental_Hit** (Acerto Elemental) — parcial
-  - efeito não simulado: 80 % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido
 - **Enfeeble** (Debilitar) — parcial
   - efeito não simulado: Inimigos Amaldiçoados possuem uma redução de 19 % de Precisão
   - efeito não simulado: Duração de Maldições aumentada em 20 %
@@ -1228,11 +975,6 @@ Só os ataques:
 - **Essence_Drain_of_Wickedness** (Dreno de Essência da Maldade) — parcial
   - efeito não simulado: Regenera 1 % do Dano do Debuff como Vida
   - efeito não simulado: Regenera +0.5 % do Dano do Debuff como Vida
-- **Ethereal_Knives_of_Lingering_Blades** (Facas Etéreas das Lâminas Persistentes) — parcial
-  - efeito não simulado: Um a cada 1 Projéteis disparados permanece no solo como Lâmina Persistente
-- **Eviscerate** (Eviscerar) — parcial
-  - efeito não simulado: Extensão da onda é de 10 metros
-  - efeito não simulado: Circunferência base da onda é de 5 metros
 - **Explosive_Arrow** (Flecha Explosiva) — parcial
   - efeito não simulado: Explosão causa 50 % menos Dano Base
   - efeito não simulado: Explosões terão 522 a 783 de Dano de Fogo adicional
@@ -1264,28 +1006,11 @@ Só os ataques:
   - efeito não simulado: Causa +2 explosões menores
 - **Exsanguinate** (Ensanguentar) — parcial
   - efeito não simulado: Dispara tentáculos em até 9 Alvos
-- **Exsanguinate_of_Transmission** (Ensanguentar da Transmissão) — parcial
-  - efeito não simulado: Dispara tentáculos em até 1 Alvo
-- **Eye_of_Winter** (Olho Invernal) — parcial
-  - efeito não simulado: Dispara 8 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar
-  - efeito não simulado: Dispara +2 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar
-- **Eye_of_Winter_of_Finality** (Olho Invernal da Finalidade) — parcial
-  - efeito não simulado: Dispara 16 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar
-- **Eye_of_Winter_of_Transience** (Olho Invernal da Transitoriedade) — parcial
-  - efeito não simulado: Dispara 12 Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina
 - **Fire_Trap** (Armadilha Flamejante) — parcial
   - efeito não simulado: 286 a 429 de Dano de Fogo adicionado contra Inimigos Queimando
 - **Fire_Trap_of_Blasting** (Armadilha Flamejante da Explosão) — parcial
   - efeito não simulado: 50 % de Chance de uma Armadilha ser Ativada uma vez adicional
   - efeito não simulado: 881 a 1316 de Dano de Fogo adicionado contra Inimigos Queimando
-- **Firestorm** (Tormenta Flamejante) — parcial
-  - efeito não simulado: Um impacto a cada 0.15 segundos
-  - efeito não simulado: Primeiro Impacto tem 100 % mais efeito em área
-  - efeito não simulado: Primeiro Impacto causa 325 % mais Dano com Acertos e Afecções
-- **Firestorm_of_Pelting** (Tormenta Flamejante do Disparo) — parcial
-  - efeito não simulado: Um impacto a cada 0.15 segundos
-- **Flame_Dash_of_Return** (Avanço Ardente do Retorno) — parcial
-  - efeito não simulado: 20 % de chance de Causticar Inimigos
 - **Flame_Surge** (Chicote Ardente) — parcial
   - efeito não simulado: 88 % mais Dano com Acertos contra Inimigos Incendiados
   - efeito não simulado: Não pode Incendiar
@@ -1316,16 +1041,6 @@ Só os ataques:
   - efeito não simulado: Aumenta a Velocidade de Movimento dos Lacaios em 29 %
   - efeito não simulado: Efeito da Oferenda aumentado em 10 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Flicker_Strike** (Golpe Súbito) — parcial
-  - efeito não simulado: a recarga pode ser pulada gastando uma Carga de Frenesi
-  - efeito não simulado: Velocidade de Ataque aumentada em 10 % por Carga de Frenesi
-  - efeito não simulado: 15 % de chance de receber uma Carga de Frenesi ao Acertar
-  - efeito não simulado: 10 % de chance de receber uma Carga de Frenesi ao Acertar
-- **Flicker_Strike_of_Power** (Golpe Súbito do Poder) — parcial
-  - efeito não simulado: a recarga pode ser pulada gastando uma Carga de Poder
-  - efeito não simulado: 30 % de chance de ganhar uma Carga de Poder em Acertos Críticos
-  - efeito não simulado: Chance de Crítico aumentada em 50 % por Carga de Poder
-  - efeito não simulado: 20 % de chance de ganhar uma Carga de Poder em Acertos Críticos
 - **Forbidden_Rite** (Ritual Proibido) — parcial
   - efeito não simulado: Causa 5 % do seu máximo de Escudo de Energia como Dano de Caos base
   - efeito não simulado: Causa 14 % do seu máximo de Vida como Dano de Caos base
@@ -1333,19 +1048,6 @@ Só os ataques:
 - **Forbidden_Rite_of_Soul_Sacrifice** (Ritual Proibido do Sacrifício D'alma) — parcial
   - efeito não simulado: Causa 20 % do seu máximo de Escudo de Energia como Dano de Caos base
   - efeito não simulado: Sofre 50 % do Escudo de Energia Máximo como Dano de Caos
-- **Frenzy_of_Onslaught** (Frenesi da Agressividade) — parcial
-  - efeito não simulado: Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por 1 segundo por Carga consumida
-- **Frost_Blades** (Lâminas Gélidas) — parcial
-  - efeito não simulado: +2.1 metros ao Alcance de Golpes Corpo a Corpo
-- **Frost_Blades_of_Katabasis** (Lâminas Gélidas da Catábase) — parcial
-  - efeito não simulado: +5 metros ao Alcance de Golpes Corpo a Corpo
-  - efeito não simulado: +1 metro ao Alcance de Golpes Corpo a Corpo
-- **Frost_Bomb** (Bomba Congelante) — parcial
-  - efeito não simulado: Regeneração de Vida reduzida em 75 %
-  - efeito não simulado: Exposição a Gelo aplica -15 % de Resistência a Gelo
-- **Frost_Bomb_of_Forthcoming** (Bomba Congelante da Aproximação) — parcial
-  - efeito não simulado: Causa 10 % mais Dano com Acertos por cada 0.1 segundos de Duração
-  - efeito não simulado: Causa 3 % mais Dano com Afecções por cada 0.1 segundos de Duração
 - **Frost_Wall** (Parede de Gelo) — parcial
   - efeito não simulado: 0.15 segundos entre o aparecimento de seções da Parede
   - efeito não simulado: Parede terá 5.6 metros
@@ -1353,14 +1055,6 @@ Só os ataques:
   - efeito não simulado: 0.15 segundos entre o aparecimento de seções da Parede
   - efeito não simulado: Parede terá 4.6 metros
   - efeito não simulado: [DNT] Deals 10 % more Damage per active wall
-- **Frostblink_of_Wintry_Blast** (Teleporte Gélido da Explosão Invernal) — parcial
-  - efeito não simulado: Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada
-  - efeito não simulado: Não pode infligir Resfriamento
-  - efeito não simulado: 15 % mais Dano com Acertos por cada 5 % de Efeito do Resfriamento no Inimigo
-  - efeito não simulado: Remove Resfriamentos após Causar Dano
-  - efeito não simulado: 4 % mais Dano com Acertos por cada 5 % de Efeito do Resfriamento no Inimigo
-- **Galvanic_Arrow** (Flecha Galvânica) — parcial
-  - efeito não simulado: Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade
 - **Galvanic_Field** (Campo Galvânico) — parcial
   - efeito não simulado: Dispara um feixe a cada 0.1 segundos
   - efeito não simulado: Pode focar em cada inimigo apenas uma vez a cada 0.4 segundos
@@ -1447,12 +1141,7 @@ Só os ataques:
 - **Ice_Crash** (Pancada Glacial) — parcial
   - efeito não simulado: Receba 15 % do Dano Físico como Dano de Gelo Extra
 - **Ice_Crash_of_Cadence** (Pancada de Gelo da Cadência) — parcial
-  - efeito não simulado: Raio Base da Mão Principal é de 1.1 metros
-  - efeito não simulado: Raio de alcance base da mão secundária é de 3.1 metros
   - efeito não simulado: Receba 20 % do Dano Físico como Dano de Gelo Extra
-- **Ice_Nova_of_Frostbolts** (Nova Glacial dos Disparos Congelantes) — parcial
-  - efeito não simulado: Causa 50 % mais Dano com Acertos e Afecções quando conjurada em um Disparo Congelante
-  - efeito não simulado: Pode se expandir de até 2 Projéteis de Disparo Congelante
 - **Ice_Spear** (Lança Gélida) — parcial
   - efeito não simulado: Segunda forma possui um aumento de 600 % de Chance de Crítico
   - efeito não simulado: A Segunda forma possui +49 % ao Multiplicador de Acerto Crítico
@@ -1505,13 +1194,6 @@ Só os ataques:
   - efeito não simulado: Flechas causam Dano ao alvo final 4 vezes adicionais após grudar
   - efeito não simulado: Raios acertam a cada 0.5 segundos
   - efeito não simulado: Flechas causam Dano ao alvo final 1 vezes adicionais após grudar
-- **Lightning_Conduit** (Condutor Elétrico) — parcial
-  - efeito não simulado: Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada
-  - efeito não simulado: 20 % mais Dano com Acertos por cada 1 % de Efeito de Eletrização no Inimigo
-  - efeito não simulado: +4 % mais Dano com Acertos por cada 5 % de Efeito de Eletrização no Inimigo
-- **Lightning_Conduit_of_the_Heavens** (Condutor Elétrico dos Céus) — parcial
-  - efeito não simulado: Acerta até 15 Inimigos
-  - efeito não simulado: Acerta até 4 Inimigos
 - **Lightning_Spire_Trap_of_Zapping** (Armadilha da Espiral Relampejante da Eletrização) — parcial
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
 - **Lightning_Tendrils** (Tentáculos Relampejantes) — parcial
@@ -1520,15 +1202,11 @@ Só os ataques:
   - efeito não simulado: Libera um Pulso Mais Forte a cada 5 Pulsos Pulsos Mais Fortes sempre são Golpes Críticos
   - efeito não simulado: Pulsos Mais Fortes têm 150 % mais Área de Efeito
   - efeito não simulado: Pulsos Fortalecidos causam 500 % mais Dano com Acertos e Afecções
-- **Lightning_Tendrils_of_Escalation** (Tentáculos Relampejantes do Escalonamento) — parcial
-  - efeito não simulado: +10 % ao Máximo de Efeito da Eletrização
 - **Lightning_Trap** (Armadilha Relampejante) — parcial
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
 - **Lightning_Trap_of_Sparking** (Armadilha Relampejante das Fagulhas) — parcial
   - efeito não simulado: Projéteis Ricocheteiam ao colidirem com o terreno
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
-- **Lightning_Warp** (Teleporte Relampejante) — parcial
-  - efeito não simulado: Pode aglomerar até 50 usos
 - **Mana-Infused_Staff** (Cajado Impregnado de Mana) — parcial
   - efeito não simulado: a Onda Arcana é um acerto só, no anel de 2 casas em volta de você — a duração de 0,35 s e a Eficácia de 450% do dano adicionado não entram
 - **Manabond** (Vínculo de Mana) — parcial
@@ -1548,10 +1226,6 @@ Só os ataques:
 - **Old_Arctic_Armour** (Armadura Ártica) — parcial
   - efeito não simulado: Resfria Inimigos por 0.5 segundos ao Acertar, reduzindo sua Velocidade de Ação em 30 %
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
-- **Old_Phase_Run** (Passo Etéreo) — parcial
-  - efeito não simulado: 30 % mais Dano Físico Corpo a Corpo
-  - efeito não simulado: 100 % de aumento da Duração da Habilidade por Carga de Frenesi removida
-  - efeito não simulado: Buff concede Trespassar
 - **Orb_of_Storms** (Orbe Trovejante) — parcial
   - efeito não simulado: Golpeia a cada 0.5 segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe
   - efeito não simulado: Feixes se dividem em direção a alvos dentro de um raio base de 3.5 metros
@@ -1605,12 +1279,6 @@ Só os ataques:
   - efeito não simulado: Consome 8 Cargas de 1 Frasco de Vida, se possível, por Projétil Disparado
   - efeito não simulado: Dano de Caos Adicional igual a 18 % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida
   - efeito não simulado: 20 % de chance de infligir Definhando por 2 segundos ao Acertar
-- **Power_Siphon** (Sifão de Poder) — parcial
-  - efeito não simulado: 20 % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-- **Power_Siphon_of_the_Archmage** (Sifão de Poder do Arquimago) — parcial
-  - efeito não simulado: Causa Dano de Raio Adicional igual a 24 % da Mana máxima
-  - efeito não simulado: 20 % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-  - efeito não simulado: Causa Dano de Raio Adicional igual a 3 % da Mana máxima
 - **Punishment** (Castigo) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 58 % enquanto em Vida Baixa
@@ -1711,19 +1379,6 @@ Só os ataques:
 - **Seismic_Trap_of_Swells** (Armadilha Sísmica dos Poços) — parcial
   - efeito não simulado: Libera 3 onda
   - efeito não simulado: Libera +1 onda
-- **Shield_Charge** (Investida com Escudo) — parcial
-  - efeito não simulado: Redução do Ponto de Atordoamento aumentada em 75 % em inimigos na distância Máxima da investida
-- **Shield_Crush_of_the_Chieftain** (Esmagar Escudos do Chefe Guerreiro) — parcial
-  - efeito não simulado: Onda Central tem 88 % mais Área de Efeito
-  - efeito não simulado: Onda Central tem 40 % mais Área de Efeito
-- **Shield_of_Light** (Escudo de Luz) — parcial
-  - efeito não simulado: Ondas adicionais serão criadas a partir dos aliados dentro de um raio base de 4 metros do primeiro inimigo atingido
-- **Shock_Nova** (Nova Elétrica) — parcial
-  - efeito não simulado: +10 % ao Máximo de Efeito da Eletrização
-  - efeito não simulado: Anel sempre Eletriza
-  - efeito não simulado: +10 % ao Máximo de Efeito da Eletrização
-- **Shock_Nova_of_Procession** (Nova Elétrica da Procissão) — parcial
-  - efeito não simulado: 10 % mais Velocidade de Conjuração
 - **Shrapnel_Ballista** (Balista Estilhaçante) — parcial
   - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
@@ -1750,10 +1405,6 @@ Só os ataques:
   - efeito não simulado: 20 % menos Dano em Área
   - efeito não simulado: Raio acerta 1 alvo dentro de 5 metros
   - efeito não simulado: 0 % menos Dano em Área
-- **Smite_of_Divine_Judgement** (Castigo do Julgamento Divino) — parcial
-  - efeito não simulado: 38 % mais Dano em Área
-  - efeito não simulado: Raio acerta 3 alvos dentro de 5 metros
-  - efeito não simulado: Raio acerta alvos dentro de +2 metros
 - **Smoke_Mine** (Mina de Fumaça) — parcial
   - sem dano direto: nenhum efeito no combate
   - efeito não simulado: Somente uma Mina deste tipo pode ser Detonada em cada Sequência de Detonação
@@ -1766,25 +1417,9 @@ Só os ataques:
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 5 % de Acertos de Projéteis
 - **Somatic_Shell** (Concha Somática) — parcial
   - efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 100 de dano antes de explodir
-- **Soulrend** (Rasgalma) — parcial
-  - efeito não simulado: 4 % do Dano Mágico Drenado como Escudo de Energia
-- **Soulrend_of_Reaping** (Rasgalma da Colheita) — parcial
-  - efeito não simulado: 4 % do Dano Mágico Drenado como Escudo de Energia
-- **Soulrend_of_the_Spiral** (Rasgalma da Espiral) — parcial
-  - efeito não simulado: Dispara 5 Projéteis em uma espiral
-- **Spectral_Helix** (Hélice Espectral) — parcial
-  - efeito não simulado: Gira por 4.25 rotações
 - **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — parcial
   - efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas
-  - efeito não simulado: Gira por 4.25 rotações
   - efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos
-- **Spectral_Shield_Throw** (Arremesso de Escudo Espectral) — parcial
-  - efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano
-- **Spectral_Shield_Throw_of_Shattering** (Arremesso de Escudo Espectral do Despedaçamento) — parcial
-  - efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano
-- **Spectral_Shield_Throw_of_Trarthus** (Arremesso de Escudo Espectral de Trarthus) — parcial
-  - efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano
-  - efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados
 - **Spirit_Offering** (Oferenda Espiritual) — parcial
   - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
   - efeito não simulado: Efeito da Oferenda aumentado em 10 %
@@ -1810,8 +1445,6 @@ Só os ataques:
 - **Storm_Burst_of_Repulsion** (Estouro Tempestuoso da Repulsão) — parcial
   - efeito não simulado: Orbes saltam a cada 0.4 segundos
   - efeito não simulado: Orbes Explosivas causam 75 % do Dano da Habilidade para cada 0.4 segundos de Duração restante
-- **Storm_Call** (Invocar Tormenta) — parcial
-  - efeito não simulado: 15 % de chance do Relâmpago acertar o Marcador ao Conjurar
 - **Storm_Rain** (Chuva Tempestuosa) — parcial
   - efeito não simulado: Flecha dispara Raios a cada 0.41 segundos
   - efeito não simulado: Cada Flecha pode disparar 4 Feixes
@@ -1923,10 +1556,6 @@ Só os ataques:
   - efeito não simulado: Lacaios têm 50 % menos Vida Máxima
   - efeito não simulado: Efeito do Buff aumentado em 20 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Sunder_of_Trarthus** (Ruptura de Trarthus) — parcial
-  - efeito não simulado: Onda pode recomeçar até 3 vezes Áreas de onda ganham +0.1 metros de raio para cada área anterior
-- **Swordstorm** (Tormenta de Espadas) — parcial
-  - efeito não simulado: Causa Dano nos Inimigos 8 vezes
 - **Tectonic_Slam** (Impacto Tectônico) — parcial
   - efeito não simulado: 30 % de Chance de ramificação da Fissura
   - efeito não simulado: +5 % de chance de ramificar fissuras por Carga de Tolerância
@@ -1945,14 +1574,6 @@ Só os ataques:
   - efeito não simulado: Outros efeitos em inimigos Amaldiçoados expiram 25 % mais devagar
   - efeito não simulado: Inimigos Raros e Únicos Amaldiçoados tem 18 % menos Velocidade de Ação
   - efeito não simulado: Duração de Maldições aumentada em 20 %
-- **Tornado** (Tornado) — parcial
-  - efeito não simulado: Causa Dano a cada 0.25 segundos
-  - efeito não simulado: Pela Duração Inicial, pode ser acertado pelos seus Projéteis até 20 vezes
-  - efeito não simulado: Durante a Duração Secundária, Reflete 10 % do Dano Sofrido aos Inimigos
-  - efeito não simulado: Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida em -1 %
-- **Tornado_of_Elemental_Turbulence** (Tornado da Turbulência Elemental) — parcial
-  - efeito não simulado: Causa Dano a cada 0.25 segundos
-  - efeito não simulado: Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida em -1 %
 - **Tornado_Shot** (Tiro Tornado) — parcial
   - efeito não simulado: Dispara 3 Projéteis secundários
 - **Tornado_Shot_of_Cloudburst** (Tiro Tornado da Núvem Explosiva) — parcial
@@ -1961,10 +1582,6 @@ Só os ataques:
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
 - **Toxic_Rain_of_Sporeburst** (Chuva Tóxica da Explosão de Esporos) — parcial
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
-- **Toxic_Rain_of_Withering** (Chuva Tóxica do Definhamento) — parcial
-  - efeito não simulado: Cada Esporo inflige 1 Debuff de Definhamento nos Inimigos próximos
-- **Unearth** (Desenterrar) — parcial
-  - efeito não simulado: Cadáveres Criados têm Vida Máxima aumentada em 20 %
 - **Vaal_Absolution** (Absolvição Vaal) — parcial
   - efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano
   - efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano
@@ -1980,28 +1597,12 @@ Só os ataques:
   - efeito não simulado: Buff concede 30.6 de Regeneração de Mana por segundo
   - efeito não simulado: Buff concede 395 de Regeneração de Escudo de Energia por segundo
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
-- **Vaal_Blade_Flurry** (Rajada de Lâminas Vaal) — parcial
-  - efeito não simulado: Efeito da Cegueira aumentado em 68 %
-  - efeito não simulado: 100 % de chance de Cegar inimigos ao acertá-los
-- **Vaal_Blade_Vortex** (Vórtice de Lâminas Vaal) — parcial
-  - efeito não simulado: Acerta Inimigos a cada 0.2 Segundos
-  - efeito não simulado: Possui 10 lâminas
-  - efeito não simulado: Taxa de Acerto aumentada em +5 % por cada lâmina
 - **Vaal_Blight** (Infestação Vaal) — parcial
   - efeito não simulado: Velocidade de Movimento reduzida em 80 %
   - efeito não simulado: Debuff pode ter até 20 camadas de Dano
   - efeito não simulado: Inimigos Desacelerados sofrem Dano de Caos aumentado em 30 %
 - **Vaal_Clarity** (Clareza Vaal) — parcial
   - efeito não simulado: Suas Habilidades e de seus aliados próximos não Custam Mana
-- **Vaal_Cleave** (Cutilada Vaal) — parcial
-  - efeito não simulado: Buff concede Golpe Abatedor com Cutilada Buff concede 60 % mais Área de Efeito da Cutilada Buff concede 60 % mais Dano com Cutilada com Acertos e Afecções aos Inimigos que estão em Vida Baixo
-  - efeito não simulado: +0.1 metros de raio por inimigo próximo, até +1 metro
-- **Vaal_Cold_Snap** (Estalo Gélido Vaal) — parcial
-  - efeito não simulado: Raio Base terciário igual a 3.6 metros
-  - efeito não simulado: Ganhe uma Carga de Poder quando um Inimigo Morrer enquanto na Área dessa Habilidade A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área dessa Habilidade
-  - efeito não simulado: 20 % mais Efeito de Resfriamento
-- **Vaal_Detonate_Dead** (Detonar Morto Vaal) — parcial
-  - efeito não simulado: 30 % de chance de detonar um cadáver adicional
 - **Vaal_Discipline** (Disciplina Vaal) — parcial
   - efeito não simulado: A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano
 - **Vaal_Domination** (Dominação Vaal) — parcial
@@ -2015,8 +1616,6 @@ Só os ataques:
   - efeito não simulado: Abalo Secundário causa 407 % mais Dano com Acertos e Afecções
   - efeito não simulado: O efeito atual é finalizado após 9 Abalos Secundários
   - efeito não simulado: Abalo Secundário causa +30 % mais Dano com Acertos e Afecções
-- **Vaal_Fireball** (Bola de Fogo Vaal) — parcial
-  - efeito não simulado: Dispara 32 Projéteis em uma espiral
 - **Vaal_Firestorm** (Tormenta Flamejante Vaal) — parcial
   - efeito não simulado: Solo Ardente dura 6 segundos
   - efeito não simulado: 16 Tiros
@@ -2024,8 +1623,6 @@ Só os ataques:
 - **Vaal_Grace** (Graça Vaal) — parcial
   - efeito não simulado: Você e aliados próximos têm +15 % de chance de Evadirem Acertos de Ataques
   - efeito não simulado: Dano Mágico Suprimido causado em você é Azarado
-- **Vaal_Ground_Slam** (Impacto Sísmico Vaal) — parcial
-  - efeito não simulado: Este Ataque pode ser Impelido como se não fosse uma Habilidade Vaal
 - **Vaal_Immortal_Call** (Chamado Imortal Vaal) — parcial
   - efeito não simulado: Duração do Buff aumentada em 157 % por Carga de Tolerância removida
   - efeito não simulado: A expiração do Buff não pode ser modificada
@@ -2047,12 +1644,6 @@ Só os ataques:
   - efeito não simulado: 39 % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a 20 % da sua armadura, até 10000
   - efeito não simulado: Reflete 9000 % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
-- **Vaal_Power_Siphon** (Sifão de Poder Vaal) — parcial
-  - efeito não simulado: Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-- **Vaal_Rain_of_Arrows** (Chuva de Flechas Vaal) — parcial
-  - efeito não simulado: Dispara 4 sequências de flechas adicionais
-  - efeito não simulado: Mutila ao Acertar
-  - efeito não simulado: 150 % de aumento do Efeito de Mutilação
 - **Vaal_Reap** (Ceifar Vaal) — parcial
   - efeito não simulado: Efeitos do Sangue Fervendo Perduram por 4 segundos
   - efeito não simulado: Concede +4 ao máximo de Cargas de Sangue
@@ -2061,45 +1652,23 @@ Só os ataques:
 - **Vaal_Righteous_Fire** (Círculo Ardente Vaal) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo
-  - efeito não simulado: Concede 39 % mais Dano Mágico
+  - efeito não simulado: Concede 19 % mais Dano Mágico
 - **Vaal_Smite** (Castigo Vaal) — parcial
+  - efeito não simulado: Não pode ser Evadido
   - efeito não simulado: Raio acerta 30 alvos dentro de 10 metros
   - efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos
-  - efeito não simulado: +20 % menos Dano em Área
   - efeito não simulado: +10 % mais Dano em Área
-- **Vaal_Spark** (Faísca Vaal) — parcial
-  - efeito não simulado: os 100 projéteis em espiral por 3 segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias
-- **Vaal_Spectral_Throw** (Arremesso Espectral Vaal) — parcial
-  - efeito não simulado: Dispara 8 Projéteis em cada uma das duas espirais espelhadas
 - **Vaal_Storm_Call** (Invocar Tormenta Vaal) — parcial
   - efeito não simulado: Ataca um Inimigo a cada 0.2 segundos
 - **Vaal_Summon_Skeletons** (Convocar Esqueletos Vaal) — parcial
   - efeito não simulado: +7 ao Máximo de Esqueletos Convocados
   - efeito não simulado: +1 ao Máximo de Esqueletos Convocados
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Vaal_Venom_Gyre** (Espiral Venenosa Vaal) — parcial
-  - efeito não simulado: 40 % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias
 - **Vaal_Volcanic_Fissure** (Fissura Vulcânica Vaal) — parcial
   - efeito não simulado: Fissuras irrompem 2 vezes adicionais
-- **Venom_Gyre** (Espiral Venenosa) — parcial
-  - efeito não simulado: 40 % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias
-  - efeito não simulado: Máximo de +10 Projéteis capturados
-- **Vigilant_Strike** (Golpe Vigilante) — parcial
-  - efeito não simulado: Acertos Corpo a Corpo Fortificam por 8 segundos
-- **Viper_Strike** (Golpe da Víbora) — parcial
-  - efeito não simulado: Quando em Empunhadura Dupla, 30 % Menos Velocidade de Ataque
-  - efeito não simulado: ㅤ- 20 % de dano de ataque com duas armas
 - **Viper_Strike_of_the_Mamba** (Golpe da Víbora d Mamba) — parcial
-  - efeito não simulado: Quando em Empunhadura Dupla, 30 % Menos Velocidade de Ataque
-  - efeito não simulado: ㅤ- 20 % de dano de ataque com duas armas
   - efeito não simulado: Não pode infligir múltiplos envenenamentos com o mesmo ataque
   - efeito não simulado: Não pode infligir Envenenamento em Inimigos Envenenados
-- **Void_Sphere** (Esfera do Vácuo) — parcial
-  - efeito não simulado: Pulsa a cada 0.4 segundos
-  - efeito não simulado: Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até 39 %, com base na distância da Esfera do Vazio
-- **Void_Sphere_of_Rending** (Esfera do Vazio da Fenda) — parcial
-  - efeito não simulado: Pulsa a cada 0.25 segundos
-  - efeito não simulado: Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até 39 %, com base na distância da Esfera do Vazio
 - **Volatile_Dead** (Morto Volátil) — parcial
   - efeito não simulado: Velocidade de Movimento do Orbe aumentada em 40 %
 - **Volatile_Dead_of_Seething** (Morto Volátil do Fervor) — parcial
@@ -2112,35 +1681,22 @@ Só os ataques:
   - efeito não simulado: Explosões causam Dano de Raio igual a 10 % da Vida Máxima do cadáver
   - efeito não simulado: 1 % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento
   - efeito não simulado: +1 % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento
-- **Vortex_of_Projection** (Vórtice da Proteção) — parcial
-  - efeito não simulado: 50 % mais Área de Efeito quando Conjurada em um Disparo Congelante
-  - efeito não simulado: 50 % mais Dano quando Conjurado com Disparo Congelante
-  - efeito não simulado: Pode explor de até 5 Projéteis de Disparo Congelante
 - **War_Banner** (Estandarte da Guerra) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Estandarte concede Precisão aumentada em 8 % a Você e Aliados
   - efeito não simulado: Estandarte concede 4 % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados
 - **Warlords_Mark** (Marca do Comandante) — parcial
   - efeito não simulado: Inimigos Amaldiçoados têm 5 % de chance de concederem uma Carga de Tolerância quando Acertados
-- **Wave_of_Conviction** (Onda de Convicção) — parcial
-  - efeito não simulado: Exposição aplica -15 % de Resistência Elemental que combine com o maior Dano sofrido
-- **Wild_Strike_of_Extremes** (Golpe Selvagem dos Extremos) — parcial
-  - efeito não simulado: Acertos tratam os valores da Resistência Elemental dos Monstros Inimigos como invertidos
 - **Wither** (Definhar) — parcial
   - sem dano direto: nenhum efeito no combate
   - efeito não simulado: Definhado dura 2 segundos
   - efeito não simulado: Velocidade de Movimento reduzida em 36 %
   - efeito não simulado: Dano de Caos sofrido aumentado em 6 %
-- **Withering_Step** (Passo Definhante) — parcial
-  - efeito não simulado: Buff concede Trespassar
 - **Zealotry** (Fanatismo) — parcial
   - efeito não simulado: Você e Aliados não-Lacaios Próximos têm 10 % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando 8 segundos
 
 ## Gemas de suporte pendentes
 
-- **Additional_Accuracy_Support** (Precisão Adicional) — parcial
-  - não simulado: Habilidades Suportadas têm +1034 de Precisão
-  - não simulado: Habilidades Suportadas têm 20% de Precisão aumentada
 - **Ancestral_Call_Support** (Chamado Ancestral) — parcial
   - não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 15% mais distânte
 - **Annihilation_Support** (Aniquilação (Reforço)) — parcial
@@ -2162,31 +1718,18 @@ Só os ataques:
   - não simulado: Magias Suportadas têm Recuperação da Recarga aumentada em 52%
 - **Awakened_Cast_While_Channelling_Support** (Suporte Desperto: Conjurar ao Canalizar) — parcial
   - não simulado: Ignora Atordoamentos enquanto Usando Habilidades Suportadas
-- **Awakened_Cold_Penetration_Support** (Suporte Desperto: Penetração de Gelo) — parcial
-  - não simulado: Habilidades Suportadas têm 10% de chance de infligir Exposição a Gelo ao Acertar
 - **Awakened_Controlled_Destruction_Support** (Suporte Desperto: Destruição Controlada) — parcial
   - não simulado: Habilidades Suportadas têm 10% de chance de Enervar Inimigos por 4 segundos ao Acertar
-- **Awakened_Elemental_Damage_with_Attacks_Support** (Suporte Desperto: Dano Elemental com Ataques) — parcial
-  - não simulado: Dano Elemental das Habilidades Suportadas não pode ser Refletido
-- **Awakened_Enhance_Support** (Suporte Desperto: Melhorar) — parcial
-  - não simulado: 24% de Qualidade das Gemas de Habilidade Suportadas
-- **Awakened_Fire_Penetration_Support** (Suporte Desperto: Penetração de Fogo) — parcial
-  - não simulado: Habilidades Suportadas têm 10% de chance de infligirem Exposição a Fogo ao Acertar
 - **Awakened_Hextouch_Support** (Suporte Desperto: Toque Maldito) — parcial
   - não simulado: Habilidades Suportadas aplicam Maldições Suportadas em Acertos
   - não simulado: Você não pode Conjurar Magias Maldição Suportadas
   - não simulado: Feitiços aplicados por habilidades de maldição reforçadas têm 34% de chance de afetar inimigos imunes a feitiços
-- **Awakened_Lightning_Penetration_Support** (Suporte Desperto: Penetração de Raio) — parcial
-  - não simulado: Habilidades Suportadas têm 10% de chance de infligir Exposição a Raio ao Acertar
 - **Awakened_Melee_Physical_Damage_Support** (Suporte Desperto: Dano Físico Corpo a Corpo) — parcial
   - não simulado: Habilidades Suportadas têm 10% de chance de Intimidar Inimigos por 4 segundos ao Acertar
 - **Awakened_Spell_Cascade_Support** (Suporte Desperto: Cascata Mágica) — parcial
   - não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás, e dos lados da área alvo
   - não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente, atrás,\ne dos lados da área alvo
-- **Awakened_Void_Manipulation_Support** (Suporte Desperto: Manipulação do Vácuo) — parcial
-  - não simulado: 1 do Nível das Gemas de Habilidade de Caos Suportadas
 - **Behead_Support** (Decapitar) — parcial
-  - não simulado: Habilidades Suportadas têm +0.3 metros ao Alcance de Golpes Corpo a Corpo
   - não simulado: Golpes Finais das Habilidades de Golpe Suportadas com Armas Corpo a Corpo contra Monstros Raros concedem um de seus Modificadores por 20 segundos
   - não simulado: 20% de chance de renovar a Duração do Modificador recebido em até 5 segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas
 - **Blastchain_Mine_Support** (Mina da Cadeia Explosiva) — parcial
@@ -2205,10 +1748,6 @@ Só os ataques:
 - **Bloodthirst_Support** (Sede de Sangue) — parcial
   - não simulado: Ataques Suportados causam Dano Físico com Armas Adicional igual a 2% da Vida Máxima enquanto em Vida Baixa
   - não simulado: Ataques Suportados causam Dano Físico com Armas Adicional igual a\n2% da Vida Máxima enquanto em Vida Baixa
-- **Bonechill_Support** (Suporte Resfriamento Ósseo) — parcial
-  - não simulado: Efeito dos Resfriamentos infligidos por Habilidades Suportadas aumentado em 44%
-  - não simulado: Inimigos Resfriados por Habilidades Suportadas tem o Dano de Gelo sofrido aumentado pelo Efeito de Resfriamento
-  - não simulado: Inimigos em Áreas Resfriadas por Habilidades Suportadas tem o Dano de Gelo sofrido aumentado pelo Efeito de Resfriamento
 - **Bonespire_Support** (Torre Óssea (Reforço)) — parcial
   - não simulado: a explosão das torres usa o físico médio da arma × 250–271% pelo acerto sem golpe (sem o crítico e os modificadores locais da arma); as torres não bloqueiam o caminho dos monstros
 - **Cast_on_Ward_Break_Support** (Conjurar ao Perder Salvaguarda (Reforço)) — parcial
@@ -2216,15 +1755,9 @@ Só os ataques:
 - **Close_Combat_Support** (Combate Próximo) — parcial
   - não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar Ímpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento
   - não simulado: Adrenalina de Combate concede 20% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo
-  - não simulado: Habilidades Suportadas só podem ser usadas com Machados e Espadas
   - não simulado: Habilidades Suportadas concedem Ímpeto de Combate ao Acertar\nÍmpeto de Combate dura 2 segundos ou até que você utilize uma Habilidade de Deslocamento
 - **Cluster_Traps_Support** (Grupo de Armadilhas) — parcial
   - não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%
-- **Cold_to_Fire_Support** (Gelo a Fogo) — parcial
-  - não simulado: Habilidades Suportadas ganham 29% de Dano de Gelo como Dano Extra de Fogo
-  - não simulado: Habilidades Suportadas têm 50% de Dano de Gelo Convertido para Dano de Fogo
-- **Combustion_Support** (Combustão) — parcial
-  - não simulado: Inimigos Incendiados por Habilidades Suportadas possuem -10% de Resistência a Fogo
 - **Communion_Support** (Comunhão (Reforço)) — parcial
   - não simulado: Magias reforçadas causam de 20 a 30 de dano físico adicionado para cada lacaio permanente
 - **Companionship_Support** (Companheirismo (Reforço)) — parcial
@@ -2243,21 +1776,8 @@ Só os ataques:
   - não simulado: Sangue Corrompido infligido por Clamores Suportados tem uma Duração Base de 2 segundos
   - não simulado: Clamores Suportados infligem 4 Debuffs de Sangue Corrompido
   - não simulado: Clamores Suportados infligem 1 Debuffs de Sangue Corrompido no primeiro\ninimigo Acertado por cada Ataque que Impelirem
-- **Coursing_Current_Support** (Coursing Current) — parcial
-  - não simulado: Efeito dos Resfriamentos infligidos por Habilidades Suportadas aumentado em 28%
-  - não simulado: Efeito de eletrificações infligidos com habilidades reforçadas aumentado em 28%
-  - não simulado: Esfria inimigos quando eles são eletrificados por seus ataques, reduzindo a velocidade de ação com base no efeito de eletrificação
-  - não simulado: Eletrifica inimigos quando eles são esfriados por seus ataques, aumentando o dano sofrido com base no efeito de esfriamento
-  - não simulado: Eletrifica inimigos quando eles são esfriados por ataques de habilidades reforçadas, aumentando o dano sofrido com base no efeito de esfriamento
-  - não simulado: Esfria inimigos quando eles são eletrificados por ataques de habilidades reforçadas, reduzindo a velocidade de ação com base no efeito de eletrificação
 - **Crystalfall_Support** (Cristal em Queda (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ativam Cristal em Queda ao atingir
-- **Cull_the_Weak_Support** (Exterminar os Fracos (Reforço)) — parcial
-  - não simulado: Mata inimigos de raridade normal e mágica com 34% de vida ou menos quando atingidos por habilidades reforçadas
-  - não simulado: Recupera 2% de Vida quando Habilidades Suportadas Matam um Inimigo
-- **Culling_Strike_Support** (Golpe Abatedor) — parcial
-  - não simulado: Mata Inimigos com 10% de Vida ou menos quando Acertado por Habilidades Suportadas
-  - não simulado: Recupera 2% de Vida quando Habilidades Suportadas Matam um Inimigo
 - **Cursed_Ground_Support** (Solo Maldito) — parcial
   - não simulado: Habilidades suportadas criam Solo Maldito com uma Duração base de 34 segundos Feitiços de Habilidades Suportadas não tem Duração Inimigos em Solo Maldito das Habilidades Suportadas são Amaldiçoados com tal Feitiço Limite de 1 área de Solo Maldito
 - **Decay_Support** (Decadência) — parcial
@@ -2271,10 +1791,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção
 - **Earthbreaker_Support** (Devastador) — parcial
   - não simulado: perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)
-- **Eclipse_Support** (Eclipse (Reforço)) — parcial
-  - não simulado: +12% de Qualidade das Gemas de Habilidade Suportadas
-- **Efficacy_Support** (Eficácia) — parcial
-  - não simulado: Habilidades Suportadas têm 24% de Duração de Efeito da Habilidade aumentada
 - **Eldritch_Blasphemy_Support** (Blasfêmia Sobrenatural (Reforço)) — parcial
   - não simulado: Inimigos sofrem de Insanidade Perversa se estiverem sob a influência de auras de habilidades reforçadas por mais de 5 segundos
 - **Elemental_Army_Support** (Resistências Elementais de Lacaios e Totens) — parcial
@@ -2287,11 +1803,6 @@ Só os ataques:
 - **Endurance_Charge_on_Melee_Stun_Support** (Carga de Tolerância ao Atordoar Corpo a Corpo) — parcial
   - não simulado: 4% mais Dano por Carga de Tolerância
   - não simulado: Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas
-  - não simulado: Habilidades Suportadas têm 20% de Duração de Atordoamentos em Inimigos aumentada
-- **Energy_Leech_Support** (Dreno de Energia) — parcial
-  - não simulado: Habilidades Suportadas tem 1.9% do Dano Drenado como Escudo de Energia
-- **Enhance_Support** (Melhorar) — parcial
-  - não simulado: 16% de Qualidade das Gemas de Habilidade Suportadas
 - **Eternal_Blessing_Support** (Bênção Eterna) — parcial
   - não simulado: Habilidades Suportadas não tem Reserva
   - não simulado: Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção
@@ -2303,8 +1814,6 @@ Só os ataques:
   - não simulado: Lacaios de habilidades reforçadas têm a chance de causar golpe crítico aumentada em 40% toda vez que você causar um golpe crítico recentemente com um ataque, até 200%
   - não simulado: Lacaios de habilidades reforçadas têm +20% de multiplicador de golpe crítico toda vez que você causar um golpe crítico recentemente com um ataque, até +100%
   - não simulado: Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em 20%
-- **Expert_Retaliation_Support** (Perito em Retaliação) — parcial
-  - não simulado: Habilidades de Retaliação Suportadas se tornam Utilizáveis por um tempo 39% maior
 - **Feeding_Frenzy_Support** (Frenesi Faminto) — parcial
   - não simulado: Duração Base do Frenesi Faminto é de 5.9 segundos
   - não simulado: Lacaios de Habilidades Suportadas tem 44% de chance de conceder Frenesi Faminto à você no Acerto
@@ -2312,7 +1821,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm 10% de Velocidade de Movimento de Lacaios aumentada
 - **Fissure_Support** (Fenda (Reforço)) — parcial
   - não simulado: Habilidades reforçadas ativam uma fenda no impacto da pancada
-  - não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados
   - não simulado: 60% do Dano Físico Convertido para Dano de Fogo
   - não simulado: Cria 3 fendas
   - não simulado: Cria +1 fendas
@@ -2321,8 +1829,6 @@ Só os ataques:
   - não simulado: Causa Dano de Fogo base igual a 137% da Vida Máxima dos Totens
   - não simulado: Totens com esta Habilidade a Ativam quando Acertados por um Inimigo
   - não simulado: Totens das Habilidades Suportadas ganham a Habilidade\nVingança Flamejante e a Ativa quando Acertado por um Inimigo
-- **Fortify_Support** (Fortificar) — parcial
-  - não simulado: Habilidades Suportadas têm Duração da Fortificação aumentada em 20%
 - **Foulgrasp_Support** (Constrição Pérfida (Reforço)) — parcial
   - não simulado: Habilidades reforçadas podem conjurar 2 glifos adicionais
   - não simulado: Glifos reforçados ativam Constrição Pérfida ao serem recuperados
@@ -2397,17 +1903,10 @@ Só os ataques:
   - não simulado: Invoca 5 Nascido(s) da Colmeia
   - não simulado: Lacaios têm 20% de chance de cobrir os inimigos de gelo ao atingir
   - não simulado: Máximo de 2 Nascido(s) da Colmeia
-- **Hypothermia_Support** (Hipotermia) — parcial
-  - não simulado: Habilidades Suportadas têm +20% de chance de Congelar Inimigos Resfriados
-  - não simulado: Habilidades Suportadas têm +20% de chance de Congelar Inimigos Resfriados
 - **Ice_Bite_Support** (Mordida Congelante) — parcial
   - não simulado: Habilidades Suportadas têm 69% de chance de ganhar uma Carga de Frenesi ao Matar um Inimigo Congelado
 - **Ignite_Proliferation_Support** (Proliferação de Incêndio) — parcial
   - não simulado: Incêndios causados por Habilidades Suportadas se espalham para outros Inimigos dentro de 2 metros
-- **Impale_Support** (Empalar) — parcial
-  - não simulado: Ataques Suportados tem 60% de chance de Empalar Inimigos ao Acertar
-  - não simulado: Ataques Suportados tem o Efeito de Empalamento aumentdo em 28%
-  - não simulado: Ataques Suportados tem o Efeito de Empalamento aumentdo em 10%
 - **Impending_Doom_Support** (Destruição Iminente) — parcial
   - não simulado: Ativa Explosão Destruidora quando um Feitiço de Habilidades Maldição Suportadas terminar
   - não simulado: Causa 1654 a 2481 de Dano de Caos
@@ -2428,8 +1927,6 @@ Só os ataques:
   - não simulado: Ganha uma Carga de Inspiração ao Gastar Mana em\nCustos Diretos ou Efeitos das Habilidades Suportadas
 - **Invention_Support** (Invenção (Reforço)) — parcial
   - não simulado: Habilidades Suportadas têm Duração da Armadilha aumentada em 20% Habilidades reforçadas têm a duração de mina aumentada em 20%
-- **Invert_the_Rules_Support** (Inversão de Regras (Reforço)) — parcial
-  - não simulado: Ataques de habilidades reforçadas têm 41% de chance de considerar os valores de resistência elemental dos monstros inimigos como invertidos
 - **Iron_Grip_Support** (Empunhadura de Ferro) — parcial
   - não simulado: Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas
 - **Iron_Will_Support** (Vontade de Ferro) — parcial
@@ -2440,8 +1937,6 @@ Só os ataques:
   - não simulado: Esta habilidade é ativada por habilidades reforçadas de Instabilidade Cinética
 - **Lethal_Dose_Support** (Dose Letal (Reforço)) — parcial
   - não simulado: Envenenar inimigos não envenenados com habilidades reforçadas inflige 2 envenenamentos adicionais
-- **Life_Leech_Support** (Dreno de Vida) — parcial
-  - não simulado: Habilidades Suportadas têm 3.9% de Dano Drenado como Vida
 - **Lifetap_Support** (Fonte de Vida) — parcial
   - não simulado: Ganha Fonte de Vida após Gastar um total de 273 de Vida no Custo Direto e Efeitos das Habilidades Suportadas
   - não simulado: Fonte de Vida dura 4 segundos
@@ -2494,9 +1989,6 @@ Só os ataques:
   - não simulado: Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados
 - **Multiple_Traps_Support** (Múltiplas Armadilhas) — parcial
   - não simulado: Habilidades Suportadas têm Efeito em Área da Ativação de Armadilhas aumentado em 20%
-- **Overcharge_Support** (Sobrecarga) — parcial
-  - não simulado: Habilidades Suportadas Eletrizam Inimigos como se causassem 690% mais Dano
-  - não simulado: Habilidades Suportadas têm 20% de Duração de Eletrização aumentada em Inimigos
 - **Overexertion_Support** (Esforço Excessivo) — parcial
   - não simulado: Ataques Suportados causam 10% mais Dano por cada Clamor que os Impelir
 - **Overheat_Support** (Superaquecimento (Reforço)) — parcial
@@ -2506,8 +1998,6 @@ Só os ataques:
   - não simulado: Habilidades reforçadas têm +1.4% de chance de causar golpe crítico por Intensidade Sobrecarregada
   - não simulado: Habilidades reforçadas têm +50% de multiplicador de golpe crítico por Intensidade Sobrecarregada
   - não simulado: Ganha uma instância de Intensidade Sobrecarregada por 10 segundos após\nperder 6 de Intensidade com habilidades reforçadas
-- **Physical_to_Lightning_Support** (Físico para Raio) — parcial
-  - não simulado: Habilidades Suportadas têm 50% de Dano Físico Convertido em Dano de Raio
 - **Power_Charge_On_Critical_Support** (Carga de Poder no Crítico) — parcial
   - não simulado: Habilidades Suportadas têm 54% de chance de ganhar uma Carga de Poder com Golpes Críticos
   - não simulado: Habilidades Suportadas têm 10% de chance de ganhar uma Carga de Poder com Golpes Críticos
@@ -2546,11 +2036,8 @@ Só os ataques:
   - não simulado: Habilidades Não-Instantâneas Suportadas têm +1 Usos de Tempo do Recarga
 - **Shockwave_Support** (Onda de Choque) — parcial
   - não simulado: Habilidades Suportadas Ativam Onda de Choque no Acerto Corpo a Corpo
-  - não simulado: Habilidades Suportadas só podem ser usadas com Maças, Cetros ou Cajados
 - **Spell_Cascade_Support** (Cascata Mágica) — parcial
   - não simulado: Habilidades de Efeito em Área Suportadas também afetam áreas na frente e atrás da área alvo
-- **Spellblade_Support** (Lâmina Mágica) — parcial
-  - não simulado: Habilidades Suportadas têm Dano Mágico Adicional igual a 135% doDano das Armas Corpo a Corpo de Uma Mão Equipadas Se duas Armas forem Equipadas, cada uma contribuindo com 60% da quantidade de Dano Adicional
 - **Swiftbrand_Support** (Runa Repentina) — parcial
   - não simulado: Habilidades Suportadas têm 44% mais frequência de Ativação
   - não simulado: Habilidades Suportadas têm 5% mais frequência de Ativação
@@ -2562,7 +2049,6 @@ Só os ataques:
   - não simulado: Habilidades Suportadas têm 10 a 17 de Dano de Ataque Físico Adicional por Traumatismo
   - não simulado: Habilidades Suportadas têm Duração do Atordoamento aumentada em 5% por Traumatismo
   - não simulado: Ganha 1 Traumatismo na primeira vez que um Ataque Suportado Acertar um Inimigo Sofre 146 de Dano Físico por Traumatismo quando você ganhar Traumatismo das Habilidades Suportadas Traumatismos duram 6.9 segundos
-  - não simulado: Habilidades Suportadas só podem ser usadas com Machados, Maças, Cetros ou Cajados
 - **Trinity_Support** (Suporte Trindade) — parcial
   - não simulado: Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe 25 de Ressonância de outros Elementos por 2 segundos Perde 5 de Ressonância por segundo para cada Elemento que não estiver ganhando
   - não simulado: Habilidades Suportadas causam 3% mais Dano Elemental por cada 5 da sua menor Ressonância
@@ -2600,6 +2086,10 @@ Só os ataques:
 
 - **Spectral_Throw_of_Materialising** (Arremesso Espectral da Materialização) — implementada e testada
   - não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta
+- **Spectral_Helix** (Hélice Espectral) — implementada e testada
+  - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
+- **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — parcial
+  - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
 - **Kinetic_Bolt** (Tiro Cinético) — implementada e testada
   - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
 - **Kinetic_Bolt_of_Fragmentation** (Tiro Cinético da Fragmentação) — implementada, sem teste próprio
@@ -2611,4 +2101,4 @@ Só os ataques:
 
 ## Implementadas sem teste próprio
 
-Added_Chaos_Damage_Support, Added_Cold_Damage_Support, Added_Lightning_Damage_Support, Arc_of_Oscillating, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Arrow_Nova_Support, Awakened_Blasphemy_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Fork_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Ball_Lightning_of_Orbiting, Ball_Lightning_of_Static, Barrage_Support, Battlemages_Cry, Blade_Blast, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Galvanic_Arrow_of_Energy, Galvanic_Arrow_of_Surging, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Greater_Volley_Support, Ice_Nova_of_Deep_Freeze, Ice_Spear_of_Splitting, Icicle_Mine_of_Fanning, Immolate_Support, Incinerate_of_Venting, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Bolt_of_Fragmentation, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike, Lightning_Strike_of_Arcing, Mana_Leech_Support, Minion_Life_Support, More_Duration_Support, Pact_of_Ghorr, Pact_of_Lycia, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Scorching_Ray_of_Immolation, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Cyclone, Vaal_Haste, Vaal_Ice_Shot, Vaal_Lightning_Strike, Vitality, Void_Manipulation_Support, Volatile_Dead_of_Confinement, Volcanic_Fissure, Wave_of_Conviction_of_Trarthus
+Added_Chaos_Damage_Support, Arc_of_Oscillating, Awakened_Added_Chaos_Damage_Support, Awakened_Added_Cold_Damage_Support, Awakened_Added_Fire_Damage_Support, Awakened_Added_Lightning_Damage_Support, Awakened_Arrow_Nova_Support, Awakened_Blasphemy_Support, Awakened_Burning_Damage_Support, Awakened_Chain_Support, Awakened_Deadly_Ailments_Support, Awakened_Elemental_Focus_Support, Awakened_Empower_Support, Awakened_Enlighten_Support, Awakened_Fork_Support, Awakened_Generosity_Support, Awakened_Greater_Multiple_Projectiles_Support, Awakened_Increased_Area_of_Effect_Support, Awakened_Melee_Splash_Support, Awakened_Minion_Damage_Support, Awakened_Multistrike_Support, Awakened_Swift_Affliction_Support, Awakened_Unbound_Ailments_Support, Awakened_Unleash_Support, Awakened_Vicious_Projectiles_Support, Barrage_Support, Battlemages_Cry, Blade_Trap_of_Greatswords, Blazing_Salvo, Bloodlust_Support, Brutality_Support, Cast_on_Melee_Kill_Support, Caustic_Arrow_of_Poison, Cold_Penetration_Support, Conductivity, Cooldown_Recovery_Support, Damage_on_Full_Life_Support, Detonate_Dead_of_Chain_Reaction, Elemental_Damage_with_Attacks_Support, Elemental_Penetration_Support, Elemental_Weakness, Enlighten_Support, Ethereal_Knives_of_the_Massacre, Firestorm_of_Meteors, Flameblast_of_Celerity, Flameblast_of_Contraction, Fork_Support, Frost_Bomb_of_Instability, Frozen_Legion, Frozen_Legion_of_Rallying, Generals_Cry, Glacial_Hammer_of_Shattering, Greater_Multistrike_Support, Greater_Spell_Echo_Support, Greater_Unleash_Support, Greater_Volley_Support, Ice_Nova_of_Deep_Freeze, Ice_Spear_of_Splitting, Icicle_Mine_of_Fanning, Immolate_Support, Incinerate_of_Venting, Increased_Critical_Damage_Support, Increased_Critical_Strikes_Support, Kinetic_Bolt_of_Fragmentation, Kinetic_Rain, Lacerate_of_Haemorrhage, Less_Duration_Support, Lightning_Penetration_Support, Lightning_Spire_Trap_of_Overloading, Lightning_Strike_of_Arcing, Mana_Leech_Support, Minion_Life_Support, More_Duration_Support, Multiple_Projectiles_Support, Pact_of_Ghorr, Pact_of_Lycia, Pulverise_Support, Puncture_of_Shanking, Purity_of_Ice, Purity_of_Lightning, Rain_of_Arrows_of_Artillery, Rain_of_Arrows_of_Saturation, Scorching_Ray_of_Immolation, Shattering_Steel, Spark_of_Unpredictability, Spark_of_the_Nova, Storm_Call_of_Trarthus, Stun_Support, Swift_Affliction_Support, Thunderstorm, Vaal_Arc, Vaal_Burning_Arrow, Vaal_Caustic_Arrow, Vaal_Cyclone, Vaal_Haste, Vaal_Ice_Shot, Vitality, Volatile_Dead_of_Confinement, Volcanic_Fissure

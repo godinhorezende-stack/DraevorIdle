@@ -95,6 +95,7 @@ import * as Protecao from '../systems/protecao.mjs';
 import * as Cidades from '../systems/cidades.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
+import * as AtributosDoMob from '../systems/mobs/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
 import * as Anuncios from '../systems/anuncios.mjs';
 import * as Manutencao from '../systems/modo-de-manutencao.mjs';
@@ -374,20 +375,20 @@ function characterParaCliente(personagem, estado) {
       // Quantos sqm a arma alcança — o seletor "Distância" marca "máx N" acima disso.
       attackRange: Cacadas.alcanceDaArma(Cacadas.armaDoPersonagem(estado)),
       // Accuracy e Evasion viram chance contra um bicho do MESMO level (a ficha mostra o que elas valem).
-      chancesNoLevel: {
-        acerto: Atributos.chanceDeAcerto(Ficha.combate(estado).accuracy, estado.level ?? 1),
-        esquiva: Atributos.chanceDeEsquiva(Ficha.combate(estado).evasion, estado.level ?? 1),
-      },
+      // (lote A5d: no modo PoE, contra o monstro típico do PoE do nível — a tabela do PoE × o multiplicador padrão, como no combate)
+      chancesNoLevel: ItensPoeCatalogo.ligado()
+        ? ((c) => ({ acerto: c.acerto, esquiva: c.esquiva }))(AtributosDoMob.chancesNoLevelPoe(Ficha.combate(estado).accuracy, Ficha.combate(estado).evasion, estado.level ?? 1))
+        : {
+          acerto: Atributos.chanceDeAcerto(Ficha.combate(estado).accuracy, estado.level ?? 1),
+          esquiva: Atributos.chanceDeEsquiva(Ficha.combate(estado).evasion, estado.level ?? 1),
+        },
     },
     // O Energy Shield ATUAL (o máximo é `derived.energyShield`).
     es: Defesa.esAtual(estado, Ficha.combate(estado)),
     // A FICHA no estilo do PoE (dono, 07/10): os números, as seções e DE ONDE vem cada um (`personagem/ficha-poe.mjs`). Só com ITENS_POE=1.
     ...(ItensPoeCatalogo.ligado() ? { fichaPoe: FichaPoe.montar(estado, Ficha.combate(estado), {
-      chancesNoLevel: {
-        acerto: Atributos.chanceDeAcerto(Ficha.combate(estado).accuracy, estado.level ?? 1),
-        acertoEvasivo: Atributos.chanceDeAcertoEvasivo(Ficha.combate(estado).accuracy, estado.level ?? 1, ModsDeMonstroPoe.DADOS.mods?.find((m) => m.id === 'MonsterModIncreasedEvasionRating')?.stats?.evasaoPct ?? 100),
-        esquiva: Atributos.chanceDeEsquiva(Ficha.combate(estado).evasion, estado.level ?? 1),
-      },
+      // (lote A5d: contra o monstro típico do PoE do nível — a tabela do PoE × o multiplicador padrão, como no combate; o Evasivo por cima)
+      chancesNoLevel: AtributosDoMob.chancesNoLevelPoe(Ficha.combate(estado).accuracy, Ficha.combate(estado).evasion, estado.level ?? 1, ModsDeMonstroPoe.DADOS.mods?.find((m) => m.id === 'MonsterModIncreasedEvasionRating')?.stats?.evasaoPct ?? 100),
       ...Promocao.derivados(estado, Ficha.combate(estado).regenDaArvore), speed: R.baseSpeed(estado.level),
     }) } : {}),
     marca: null,

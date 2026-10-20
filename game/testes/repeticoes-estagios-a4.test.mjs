@@ -252,7 +252,9 @@ test('A4 E1/E2: os estágios no nível 20 — o máximo do PoB, os modos e os "m
   for (const s of ['Vaal_Flameblast', 'Divine_Ire', 'Divine_Ire_of_Disintegration', 'Snipe', 'Blade_Flurry', 'Blade_Flurry_of_Incision', 'Reave', 'Reave_of_Refraction', 'Vaal_Reave', 'Double_Strike_of_Momentum', 'Lightning_Tendrils_of_Escalation', 'Vaal_Blade_Flurry']) {
     assert.ok(!G.doSlug(s).motivosNoJogo.some((m) => /[Ee]stágio|Estágios Máximos|do máximo/.test(m)), `${s}: ${G.doSlug(s).motivosNoJogo.join(' | ')}`);
   }
-  assert.ok(G.doSlug('Charged_Dash').motivosNoJogo.some((m) => /onda final/.test(m)), 'D9: a Investida Carregada segue não simulada');
+  // (lote A1b, com o aval do dono: a Investida Carregada agora é simulada — a miragem, os estágios, o pulso e a onda final: `GemasPoe.miragemDaGema`,
+  // `Acoes.planoDaMiragem`; a D9 do A4 deixou-a para o A1b)
+  assert.ok(!G.doSlug('Charged_Dash').motivosNoJogo.some((m) => /onda final/.test(m)) && G.doSlug('Charged_Dash').statusNoJogo === 'funciona', 'D9 → A1b: a Investida Carregada agora é simulada');
 });
 
 test('A4 E1: a Rajada de Chamas Vaal cai no local mirado e explode a cada 3 estágios até 15 (o PoB), com 200% mais Mágico por estágio; o ciclo novo paga a recarga', { skip: SEM }, async () => {
@@ -506,6 +508,9 @@ test('A4: a Flecha Flagelante liberada deixa 1 esporo por estágio na linha até
   assert.deepEqual(G.esporosDaGema('Scourge_Arrow', 20), { porEstagio: 1, flechas: 9, menosPct: 50, raio: 2 });
   assert.equal(G.esporosDaGema('Scourge_Arrow', 20, 20).flechas, 11);
   const m = await montar('Bows/Crude_Bow', 'Scourge_Arrow', { onde: [[3, 0]] });
+  // (lote A5c, com o aval do dono: a armadura dos bichos em 0 — `armaduraPct` −100% —, para medir a proporção pura: a armadura corta o Físico de forma não
+  // linear pelo tamanho do golpe, e o espinho é menor que a flecha)
+  for (const x of m.e.hunt.monstros) x.armaduraPct = -100;
   const usos = seguidos(m, 5, 0.999);
   const lib = usos[4];
   const espinhos = lib.ev.filter((x) => x.t === 'dmg' && x.foe && x.fonte === 'espinho');
