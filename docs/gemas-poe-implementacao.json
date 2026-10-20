@@ -2,16 +2,16 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 287,
-   "implementada e testada": 211,
+   "parcial": 276,
+   "implementada e testada": 222,
    "implementada, sem teste próprio": 52,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "parcial": 97,
-   "implementada e testada": 84,
+   "parcial": 88,
+   "implementada e testada": 93,
    "implementada, sem teste próprio": 23,
    "limitação do modelo idle": 6
   },
@@ -24,15 +24,15 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 27,
-    "implementada e testada": 18,
+    "parcial": 26,
+    "implementada e testada": 19,
     "implementada, sem teste próprio": 7
    },
    "alternativas": {
     "total": 209,
-    "parcial": 114,
+    "parcial": 109,
     "implementada, sem teste próprio": 27,
-    "implementada e testada": 61,
+    "implementada e testada": 66,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 713,
-   "emDuasOuMais": 131
+   "linhasDistintas": 703,
+   "emDuasOuMais": 128
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 316,
+   "ativasCitadas": 321,
    "suportesCitados": 117,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -800,10 +800,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "ricochete",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara tentáculos em até 1 Alvo"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2210,10 +2208,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano de Fogo Adicional igual a 32 % da Vida Máxima"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2443,10 +2439,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3091,10 +3085,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cadáveres Criados têm Vida Máxima aumentada em 20 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3576,12 +3568,13 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Gira por 4.25 rotações"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Gira por N rotações\" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -3594,11 +3587,13 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas",
-    "efeito não simulado: Gira por 4.25 rotações",
     "efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos"
    ],
    "idle": [],
    "outros": [],
+   "linhasNaoSeAplicam": [
+    "não se aplica: \"Gira por N rotações\" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique"
+   ],
    "icone": true,
    "iconeHabilidade": true
   },
@@ -4649,10 +4644,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4664,10 +4657,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4679,11 +4670,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano",
-    "efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6312,10 +6300,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 20 % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6327,12 +6313,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano de Raio Adicional igual a 24 % da Mana máxima",
-    "efeito não simulado: 20 % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único",
-    "efeito não simulado: Causa Dano de Raio Adicional igual a 3 % da Mana máxima"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6520,10 +6502,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11207,14 +11187,6 @@
    ]
   },
   {
-   "linha": "Projéteis de Estilhas Causam # % menos Dano",
-   "gemas": [
-    "Spectral_Shield_Throw",
-    "Spectral_Shield_Throw_of_Shattering",
-    "Spectral_Shield_Throw_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # %",
    "gemas": [
     "Boneshatter",
@@ -11249,13 +11221,6 @@
    "gemas": [
     "Dominating_Blow",
     "Dominating_Blow_of_Inspiring"
-   ]
-  },
-  {
-   "linha": "# % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único",
-   "gemas": [
-    "Power_Siphon",
-    "Power_Siphon_of_the_Archmage"
    ]
   },
   {
@@ -11655,13 +11620,6 @@
    "gemas": [
     "Reap",
     "Reap_of_Butchery"
-   ]
-  },
-  {
-   "linha": "Gira por # rotações",
-   "gemas": [
-    "Spectral_Helix",
-    "Spectral_Helix_of_Trarthus"
    ]
   },
   {
@@ -12665,12 +12623,6 @@
    ]
   },
   {
-   "linha": "Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade",
-   "gemas": [
-    "Galvanic_Arrow"
-   ]
-  },
-  {
    "linha": "Aura faz com que Castigo ataque +# alvos com relâmpagos",
    "gemas": [
     "Vaal_Smite"
@@ -12833,12 +12785,6 @@
    ]
   },
   {
-   "linha": "Cadáveres Criados têm Vida Máxima aumentada em # %",
-   "gemas": [
-    "Unearth"
-   ]
-  },
-  {
    "linha": "Campo ganha # % mais Dano com Ataques por cada # % de Efeito de Eletrização no Inimigo quando criado",
    "gemas": [
     "Galvanic_Field"
@@ -12899,21 +12845,9 @@
    ]
   },
   {
-   "linha": "Causa Dano de Fogo Adicional igual a # % da Vida Máxima",
-   "gemas": [
-    "Burning_Arrow_of_Vigour"
-   ]
-  },
-  {
    "linha": "Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens",
    "gemas": [
     "Flamewood_Support"
-   ]
-  },
-  {
-   "linha": "Causa Dano de Raio Adicional igual a # % da Mana máxima",
-   "gemas": [
-    "Power_Siphon_of_the_Archmage"
    ]
   },
   {
@@ -13247,12 +13181,6 @@
    ]
   },
   {
-   "linha": "Dispara # fragmentos por vez até que todos sejam disparados",
-   "gemas": [
-    "Spectral_Shield_Throw_of_Trarthus"
-   ]
-  },
-  {
    "linha": "Dispara # projéteis",
    "gemas": [
     "Windburst_Support"
@@ -13280,12 +13208,6 @@
    "linha": "Dispara Projéteis a cada # segundos",
    "gemas": [
     "Cremation_of_the_Volcano"
-   ]
-  },
-  {
-   "linha": "Dispara tentáculos em até # Alvo",
-   "gemas": [
-    "Exsanguinate_of_Transmission"
    ]
   },
   {
@@ -15098,12 +15020,6 @@
    "linha": "Raios causam # % menos Dano",
    "gemas": [
     "Static_Strike"
-   ]
-  },
-  {
-   "linha": "Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único",
-   "gemas": [
-    "Vaal_Power_Siphon"
    ]
   },
   {

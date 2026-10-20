@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 211 |
+| implementada e testada | 222 |
 | implementada, sem teste próprio | 52 |
 | limitação do modelo idle | 11 |
-| parcial | 287 |
+| parcial | 276 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 84 |
+| implementada e testada | 93 |
 | implementada, sem teste próprio | 23 |
 | limitação do modelo idle | 6 |
-| parcial | 97 |
+| parcial | 88 |
 
 ### Gemas de suporte (262)
 
@@ -33,16 +33,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): parcial 27 · implementada e testada 18 · implementada, sem teste próprio 7
-- Alternativas (209): parcial 114 · implementada, sem teste próprio 27 · implementada e testada 61 · limitação do modelo idle 7
+- Vaal (52): parcial 26 · implementada e testada 19 · implementada, sem teste próprio 7
+- Alternativas (209): parcial 109 · implementada, sem teste próprio 27 · implementada e testada 66 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 713 linhas distintas (131 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 703 linhas distintas (128 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 316/562 ativas, 117/262 suportes.
+- Testes que citam a gema: 321/562 ativas, 117/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -75,13 +75,11 @@ Só os ataques:
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Parede terá # metros |
-| 3 | Projéteis de Estilhas Causam # % menos Dano |
 | 3 | Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # % |
 | 3 | Velocidade de Projéteis aumentada em # % |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
 | 2 | # % de chance de infligir Definhando por # segundos ao Acertar |
 | 2 | # % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único |
-| 2 | # % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único |
 | 2 | # % de chance de remover um Feitiço após Causar Dano |
 | 2 | # % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a # % da sua armadura, até # |
 | 2 | # % mais Dano com Acertos se o Inimigo estiver Enfeitiçado |
@@ -139,7 +137,6 @@ Só os ataques:
 | 2 | Fissuras irrompem # vezes adicionais |
 | 2 | Ganha # Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura # segundos |
 | 2 | Ganhe uma Carga Sangrenta se esta Habilidade Acertar Inimigos e nenhum deles Morrerem Perca uma Carga Sangrenta quando um Inimigo Morrer enquanto afetado pelo Debuff desta Habilidade |
-| 2 | Gira por # rotações |
 | 2 | Golens causam # % mais Dano por Lacaio Não-Golem próximo deles, até # % |
 | 2 | Golpeia a cada # segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe |
 | 2 | Golpes Abatedores com Habilidades Suportadas Consomem cadáveres para Recuperar # de Vida e # de Mana |
@@ -300,7 +297,6 @@ Só os ataques:
 | 1 | Ativa Invocar Relâmpago Vivo quando uma habilidade\nde reforço causa dano elétrico com o acerto |
 | 1 | Aumenta a Velocidade de Conjuração dos Lacaios em # % |
 | 1 | Aumenta a Velocidade de Movimento dos Lacaios em # % |
-| 1 | Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade |
 | 1 | Aura faz com que Castigo ataque +# alvos com relâmpagos |
 | 1 | Auras das Habilidades Suportadas têm uma duração base de # segundos |
 | 1 | Bônus de Dano da Força é aplicado ao Dano de Ataque dos Projéteis assim como às Habilidades Suportadas |
@@ -328,7 +324,6 @@ Só os ataques:
 | 1 | Cada Mina das Habilidades Suportadas aplicadas #% de chance de causar Dano Dobrado aos Acertos contra Inimigos próximos a ele, até um máximo de #% |
 | 1 | Cada onda tem # Explosões |
 | 1 | Cada rajada dispara # lâminas, que permanecem no chão |
-| 1 | Cadáveres Criados têm Vida Máxima aumentada em # % |
 | 1 | Campo ganha # % mais Dano com Ataques por cada # % de Efeito de Eletrização no Inimigo quando criado |
 | 1 | Campo ganha +# metros ao raio por cada # % de Efeito de Eletrização no Inimigo quando criado |
 | 1 | Causa # % da sua Mana Máxima como Dano de Fogo Base por segundo |
@@ -339,9 +334,7 @@ Só os ataques:
 | 1 | Causa # Ondas |
 | 1 | Causa +# % da sua Vida Máxima como Dano de Fogo base |
 | 1 | Causa +# rajadas |
-| 1 | Causa Dano de Fogo Adicional igual a # % da Vida Máxima |
 | 1 | Causa Dano de Fogo base igual a #% da Vida Máxima dos Totens |
-| 1 | Causa Dano de Raio Adicional igual a # % da Mana máxima |
 | 1 | Causa Dano de Raio base igual a # % da Mana Não Reservada que falta |
 | 1 | Causa Dano de Raio base igual a +# % da Mana Não Reservada que falta |
 | 1 | Causa Dano Físico Adicional igual a # % da Mana Máxima |
@@ -397,13 +390,11 @@ Só os ataques:
 | 1 | Dano Mágico Suprimido causado em você é Azarado |
 | 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
 | 1 | Detonação da Mina é Instantânea |
-| 1 | Dispara # fragmentos por vez até que todos sejam disparados |
 | 1 | Dispara # projéteis |
 | 1 | Dispara # Projéteis secundários |
 | 1 | Dispara até # Flechas em alvos diferentes |
 | 1 | Dispara Projéteis # % mais rápido |
 | 1 | Dispara Projéteis a cada # segundos |
-| 1 | Dispara tentáculos em até # Alvo |
 | 1 | Dispara tentáculos em até # Alvos |
 | 1 | Dispara um Carregamento de Flechas no ar Projéteis Disparam de onde a Flecha com o Carregamento cair |
 | 1 | Duração Base do Frenesi Faminto é de # segundos |
@@ -706,7 +697,6 @@ Só os ataques:
 | 1 | Raios acertam a cada # segundos |
 | 1 | Raios Acertam Inimigos a cada # segundos |
 | 1 | Raios causam # % menos Dano |
-| 1 | Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único |
 | 1 | Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar |
@@ -912,8 +902,6 @@ Só os ataques:
   - efeito não simulado: 15 % mais Dano por Trauma, até 200 %
   - efeito não simulado: Pulso tem Efeito em Área aumentado em 15 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %
   - efeito não simulado: 5 % mais Dano por Trauma, até 200 %
-- **Burning_Arrow_of_Vigour** (Flecha Ardente do Vigor) — parcial
-  - efeito não simulado: Causa Dano de Fogo Adicional igual a 32 % da Vida Máxima
 - **Chain_Hook_of_Angling** (Corrente de Anzol para Pesca) — parcial
   - efeito não simulado: Lança uma corrente em até 7 inimigos
   - efeito não simulado: Alcance aumentado em 40 %
@@ -1061,8 +1049,6 @@ Só os ataques:
   - efeito não simulado: Causa +2 explosões menores
 - **Exsanguinate** (Ensanguentar) — parcial
   - efeito não simulado: Dispara tentáculos em até 9 Alvos
-- **Exsanguinate_of_Transmission** (Ensanguentar da Transmissão) — parcial
-  - efeito não simulado: Dispara tentáculos em até 1 Alvo
 - **Fire_Trap** (Armadilha Flamejante) — parcial
   - efeito não simulado: 286 a 429 de Dano de Fogo adicionado contra Inimigos Queimando
 - **Fire_Trap_of_Blasting** (Armadilha Flamejante da Explosão) — parcial
@@ -1114,8 +1100,6 @@ Só os ataques:
   - efeito não simulado: 0.15 segundos entre o aparecimento de seções da Parede
   - efeito não simulado: Parede terá 4.6 metros
   - efeito não simulado: [DNT] Deals 10 % more Damage per active wall
-- **Galvanic_Arrow** (Flecha Galvânica) — parcial
-  - efeito não simulado: Aumentos e Reduções a Velocidade de Projéteis também se aplicam ao Efeito em Área dessa Habilidade
 - **Galvanic_Field** (Campo Galvânico) — parcial
   - efeito não simulado: Dispara um feixe a cada 0.1 segundos
   - efeito não simulado: Pode focar em cada inimigo apenas uma vez a cada 0.4 segundos
@@ -1342,12 +1326,6 @@ Só os ataques:
   - efeito não simulado: Consome 8 Cargas de 1 Frasco de Vida, se possível, por Projétil Disparado
   - efeito não simulado: Dano de Caos Adicional igual a 18 % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida
   - efeito não simulado: 20 % de chance de infligir Definhando por 2 segundos ao Acertar
-- **Power_Siphon** (Sifão de Poder) — parcial
-  - efeito não simulado: 20 % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-- **Power_Siphon_of_the_Archmage** (Sifão de Poder do Arquimago) — parcial
-  - efeito não simulado: Causa Dano de Raio Adicional igual a 24 % da Mana máxima
-  - efeito não simulado: 20 % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-  - efeito não simulado: Causa Dano de Raio Adicional igual a 3 % da Mana máxima
 - **Punishment** (Castigo) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 58 % enquanto em Vida Baixa
@@ -1495,19 +1473,9 @@ Só os ataques:
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 5 % de Acertos de Projéteis
 - **Somatic_Shell** (Concha Somática) — parcial
   - efeito não simulado: Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até 100 de dano antes de explodir
-- **Spectral_Helix** (Hélice Espectral) — parcial
-  - efeito não simulado: Gira por 4.25 rotações
 - **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — parcial
   - efeito não simulado: Lança até 1 armadilhas a mais ao usar duas armas
-  - efeito não simulado: Gira por 4.25 rotações
   - efeito não simulado: 25 % menos velocidade de lançar armadilhas com arma de duas mãos
-- **Spectral_Shield_Throw** (Arremesso de Escudo Espectral) — parcial
-  - efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano
-- **Spectral_Shield_Throw_of_Shattering** (Arremesso de Escudo Espectral do Despedaçamento) — parcial
-  - efeito não simulado: Projéteis de Estilhas Causam 25 % menos Dano
-- **Spectral_Shield_Throw_of_Trarthus** (Arremesso de Escudo Espectral de Trarthus) — parcial
-  - efeito não simulado: Projéteis de Estilhas Causam 50 % menos Dano
-  - efeito não simulado: Dispara 6 fragmentos por vez até que todos sejam disparados
 - **Spirit_Offering** (Oferenda Espiritual) — parcial
   - efeito não simulado: 1 segundos adicionais de Duração Base por Cadáver extra consumido
   - efeito não simulado: Efeito da Oferenda aumentado em 10 %
@@ -1674,8 +1642,6 @@ Só os ataques:
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
 - **Toxic_Rain_of_Sporeburst** (Chuva Tóxica da Explosão de Esporos) — parcial
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
-- **Unearth** (Desenterrar) — parcial
-  - efeito não simulado: Cadáveres Criados têm Vida Máxima aumentada em 20 %
 - **Vaal_Absolution** (Absolvição Vaal) — parcial
   - efeito não simulado: Sentinelas Ascendidos causam 300 % mais Dano
   - efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano
@@ -1746,8 +1712,6 @@ Só os ataques:
   - efeito não simulado: 39 % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a 20 % da sua armadura, até 10000
   - efeito não simulado: Reflete 9000 % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
-- **Vaal_Power_Siphon** (Sifão de Poder Vaal) — parcial
-  - efeito não simulado: Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
 - **Vaal_Reap** (Ceifar Vaal) — parcial
   - efeito não simulado: Efeitos do Sangue Fervendo Perduram por 4 segundos
   - efeito não simulado: Concede +4 ao máximo de Cargas de Sangue
@@ -2195,6 +2159,10 @@ Só os ataques:
 
 - **Spectral_Throw_of_Materialising** (Arremesso Espectral da Materialização) — implementada e testada
   - não se aplica: "Desaceleração do Projétil reduzida" (Arremesso Espectral da Materialização) só muda a trajetória — o PoB não a usa na conta
+- **Spectral_Helix** (Hélice Espectral) — implementada e testada
+  - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
+- **Spectral_Helix_of_Trarthus** (Hélice Espectral de Trarthus) — parcial
+  - não se aplica: "Gira por N rotações" (Hélice Espectral) só muda a trajetória da espiral — o PoB não a usa na conta, e o projétil do jogo acerta no tique
 - **Kinetic_Bolt** (Tiro Cinético) — implementada e testada
   - não se aplica: "Projéteis mudam de direção N vezes" (Raio Cinético) só muda a trajetória — o projétil não acerta de novo a cada mudança
 - **Kinetic_Bolt_of_Fragmentation** (Tiro Cinético da Fragmentação) — implementada, sem teste próprio
