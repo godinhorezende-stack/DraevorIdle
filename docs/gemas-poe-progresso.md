@@ -377,6 +377,15 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
   - `suportes-a5.test.mjs:532`: o Condutor Elétrico completo (motivos `[]`).
 - **Teste que quebra pelo progresso, para o aval:** `itens-poe-gemas.test.mjs:36` exige `st.parcial > 300`; agora são 298 (287 parciais + 11 de limitação do idle).
 - Depois: parcial 305 → 287 nas ativas; 111 → 111 nos suportes.
+- **A revisão adversarial (20/10, 10 achados, o terceiro commit):**
+  - a Descarga conta no começo do uso só as cargas REMOVÍVEIS (acima do mínimo — o PoB, CalcPerform.lua:1023-1089) e gasta só essas: as que o golpe dá ficam; tudo no mínimo, `SEM_CARGAS`;
+  - a Regeneração de Vida reduzida dos monstros SOMA as fontes (desacelerado, aura, o debuff da gema, as maldições — LifeRegen INC no PoB), um fator só; antes multiplicavam;
+  - a Chuva de Flechas Vaal: na área que não comporta um anel por sequência, cada uma das 5 repete a área inteira (só a tela); e os anéis são o único desenho;
+  - o Estalo Gélido Vaal paga o Frenesi do último segundo (4 em 4 s);
+  - a Invocar Tormenta deixa um marcador por repetição do uso (o Eco de Magia, o Altar Ecoante — Multicastable);
+  - o Estalo Gélido que pula a recarga decide o pulo no começo e sai mesmo se a carga acabar no meio da conjuração;
+  - **as tabelas de nível**: o Estalo Gélido Vaal (2 níveis quebrados: no 20, 141–212 em vez de 1872–2807) e o Detonar Morto Vaal (a do comum: 798–1197 e 2,6 m em vez de 1395–2092 e 2,8 m) passam à do poedb salvo (Scrapling, "Level Effect"). Na VARREDURA (o texto do nível 20 × os `mods` de cada gema), mais 19 que não estavam sincronizadas trocaram pela do poedb: Vaal_Cleave, Vaal_Ground_Slam, Vaal_Smite, Vaal_Rejuvenation_Totem, as 3 Vaal_Impurity, Vaal_Animate_Weapon, Rain_of_Arrows_of_Saturation, Vaal_Blade_Vortex, Vaal_Haste, Conflagration (o "6 m" vira 3 m, o "7 metros" vira 1 m), Spectral_Shield_Throw_of_Trarthus, Vaal_Fireball, Vaal_Lightning_Warp, Arc_of_Surging (9 alvos, não 7), Vaal_Arc, Vaal_Righteous_Fire e Vaal_Flameblast — em `gemas-poe.json` e em `gemas-niveis-poedb.json`. As outras 38 diferenças da varredura são das tabelas do poedb já sincronizadas (o "+1 metro de raio" das maldições e auras, textos do poedb), não tabelas copiadas.
+- **Testes existentes que quebram pela regra do PoE (para o aval):** `projeteis-a3.test.mjs:396` esperava o Arc_of_Surging com 7 + 2 = 9 alvos; a tabela do poedb dá 9 no nível 20, + 2 da qualidade = 11. E `itens-poe-gemas.test.mjs:36` (o piso de parciais — já ajustado no branch principal).
 
 ## Pendências conhecidas (por ordem de prioridade)
 

@@ -14,6 +14,7 @@ const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
 const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
+const SP = await import('../systems/itens-poe/suportes-poe.mjs');
 const B1 = await import('../systems/itens-poe/gemas-b1.mjs');
 const L = await import('../systems/itens-poe/linhas-das-gemas.mjs');
 const ModsPoe = await import('../systems/itens-poe/mods-poe.mjs');
@@ -35,16 +36,17 @@ function travado(v, fn) {
   try { return fn(); } finally { Math.random = antes; }
 }
 /** O personagem com a gema na arma, numa caçada; o alvo imortal colado e os outros longe. */
-async function montar(slug, { nivel = 20, qualidade = 0, arma = 'Wands/Driftwood_Wand' } = {}) {
+async function montar(slug, { nivel = 20, qualidade = 0, arma = 'Wands/Driftwood_Wand', suportes = [] } = {}) {
   J ??= await import('../systems/itens-poe/jogo.mjs');
   gerarPeca ??= (await import('../systems/itens-poe/gerar.mjs')).gerarPeca;
   const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 90 }), { classePoe: 'Scion', sistema: 'poe' });
   const a = peca(arma);
-  a.soquetes = { abertos: 1, links: [], gemas: [null], cores: ['W'] };
+  const n = 1 + suportes.length;
+  a.soquetes = { abertos: n, links: Array(n - 1).fill(true), gemas: Array(n).fill(null), cores: Array(n).fill('W') };
   e.equipment = { ...e.equipment, weapon: a };
   delete e.equipment.shield;
-  e.inventory = [GS.itemDaGema({ id: G.doSlug(slug).itemId, nivel, xp: 0, raridade: 'comum', qualidade })];
-  GS.encaixar(e, { de: 0, slot: 'weapon', indice: 0 });
+  e.inventory = [GS.itemDaGema({ id: G.doSlug(slug).itemId, nivel, xp: 0, raridade: 'comum', qualidade }), ...suportes.map((x) => GS.itemDaGema({ id: SP.doSlug(x).itemId, nivel: 20, xp: 0, raridade: 'comum' }))];
+  for (let i = 0; i < n; i++) GS.encaixar(e, { de: 0, slot: 'weapon', indice: i });
   e.actions = Array(Acoes.SLOTS).fill(null);
   e.actions[0] = { id: G.doSlug(slug).acao, enabled: true, minMana: 0, conditions: [] };
   Afixos.sincronizarMaximos(e);
@@ -334,4 +336,103 @@ test('B1: os Estalos Gélidos pulam a recarga gastando uma carga (Frenesi; o do 
   const pulou = usar(e, b);
   assert.ok(pulou.ok, pulou.erro);
   assert.equal(CargasPoe.ativas(e).frenesi, 1, 'gastou uma');
+});
+
+// ---------------------------------------------------------------- a revisão adversarial do B1 (20/10)
+
+test('B1 (revisão): a Descarga conta e remove só as cargas acima do mínimo; com todas no mínimo, não sai', { skip: SEM }, async () => {
+  const { e, b } = await montar('Discharge');
+  cargas(e, { poder: 3 });
+  const f = Ficha.combate(e);
+  f.cargas = { ...(f.cargas ?? {}), min_poder: 1 };
+  assert.ok(usar(e, b).ok);
+  assert.equal(CargasPoe.ativas(e).poder, 1, 'ficou o mínimo');
+  const m = await montar('Discharge');
+  cargas(m.e, { poder: 1 });
+  const fm = Ficha.combate(m.e);
+  fm.cargas = { ...(fm.cargas ?? {}), min_poder: 1 };
+  assert.equal(usar(m.e, m.b).motivo, 'SEM_CARGAS');
+});
+
+test('B1 (revisão): a Descarga não tira as cargas que o golpe dá', { skip: SEM }, async () => {
+  const { e, b } = await montar('Discharge');
+  cargas(e, { poder: 1 });
+  // (a regra "Poder no acerto não crítico", 100%: o golpe da Descarga ganha um Poder depois da contagem do uso)
+  const f = Ficha.combate(e);
+  f.cargas = { ...(f.cargas ?? {}), carga_poder_ao_acerto_nao_critico: 100 };
+  const r = usar(e, b, 0.5);
+  assert.ok(r.ok, r.erro);
+  assert.equal(CargasPoe.ativas(e).poder, 1, 'saiu o contado; ficou o ganho no golpe');
+});
+
+test('B1 (revisão): as tabelas do Estalo Gélido Vaal e do Detonar Morto Vaal são as do poedb (nível 20)', { skip: SEM }, () => {
+  const v = G.compilada('Vaal_Cold_Snap', 20).stats;
+  assert.deepEqual(v.dano.gelo, [1872, 2807]);
+  assert.equal(v.dot[0].dps, 3626.1);
+  const d = G.compilada('Vaal_Detonate_Dead', 20).stats;
+  assert.deepEqual(d.dano.fogo, [1395, 2092]);
+  assert.equal(G.cadaverDaGema('Vaal_Detonate_Dead', 20).raioExplosaoM, 2.8);
+});
+
+test('B1 (revisão): a Regeneração de Vida reduzida SOMA as fontes, como o PoE (LifeRegen INC)', { skip: SEM }, () => {
+  const regen = (estados) => {
+    const m = { uid: 'm', x: 0, y: 0, hp: 500, maxHp: 1000, regen: 10, proximaRegen: 0, estados };
+    Estados.tique({ monstros: [m], clock: 0 }, [], 0);
+    return m.hp - 500;
+  };
+  // 50% + 20%: 30% da regeneração (antes, 0,5 × 0,8 = 40%)
+  assert.equal(regen({ regenMenosDebuff: { ate: 5000, pct: 50 }, regenMenosAura: { ate: 5000, pct: 20 } }), 30);
+  // 75% + 40%: 115% reduzida — não regenera
+  assert.equal(regen({ regenMenosDebuff: { ate: 5000, pct: 75 }, desacelerado: { ate: 5000, regenMenosPct: 40 } }), 0);
+});
+
+test('B1 (revisão): a Chuva de Flechas Vaal — 5 sequências na tela mesmo na área de 1 casa, e só os anéis', { skip: SEM }, async () => {
+  const { e, b } = await montar('Vaal_Rain_of_Arrows', { arma: 'Bows/Crude_Bow' });
+  e.hunt.cooldowns = {};
+  const r = usar(e, b);
+  assert.ok(r.ok, r.erro);
+  const areas = (r.eventos ?? []).filter((x) => x.t === 'area');
+  assert.equal(areas.filter((x) => x.sequencia != null).length, 5);
+  assert.equal(areas.filter((x) => x.sequencia == null).length, 0, 'sem a área repetida');
+});
+
+test('B1 (revisão): o Estalo Gélido Vaal dá as 4 Frenesis dos 4 s (a do fim também)', { skip: SEM }, async () => {
+  const { e, b } = await montar('Vaal_Cold_Snap');
+  const t0 = e.hunt.clock;
+  ModsPoe.criarAreaFria(e.hunt, { x: b.x, y: b.y, raioM: 3.6, segundos: 4, agora: t0, porSegundo: 'frenesi' });
+  const ganhos = [];
+  const antes = CargasPoe.ganhar;
+  for (let t = t0 + 500; t <= t0 + 4500; t += 500) {
+    const n0 = CargasPoe.ativas(e).frenesi;
+    Cacadas.resfriarNasAreasFrias(e.hunt, t, e);
+    e.hunt.clock = t;
+    ganhos.push(CargasPoe.ativas(e).frenesi - n0);
+  }
+  assert.equal(antes, CargasPoe.ganhar);
+  // (o máximo de Frenesi é 3: conta os ganhos pela área — `cargasPorSegundoDasAreasFrias`)
+  const h = { clock: 0, monstros: [{ x: 0, y: 0, hp: 10 }] };
+  ModsPoe.criarAreaFria(h, { x: 0, y: 0, raioM: 3.6, segundos: 4, agora: 0, porSegundo: 'frenesi' });
+  assert.equal(ModsPoe.cargasPorSegundoDasAreasFrias(h, 4000).length, 4);
+  assert.equal(ModsPoe.cargasPorSegundoDasAreasFrias(h, 5000).length, 0, 'não paga depois do fim');
+  assert.ok(ganhos.reduce((a, x) => a + Math.max(0, x), 0) >= 3);
+});
+
+test('B1 (revisão): a Invocar Tormenta com o Eco de Magia deixa um marcador por repetição', { skip: SEM }, async () => {
+  const { e, b } = await montar('Storm_Call', { suportes: ['Spell_Echo_Support'] });
+  assert.ok(usar(e, b).ok);
+  assert.equal((e.hunt.poeObjetos ?? []).filter((o) => o.tipo === 'tormenta').length, 2);
+});
+
+test('B1 (revisão): o Estalo Gélido que pula a recarga sai mesmo se a Frenesi acabar no meio da conjuração', { skip: SEM }, async () => {
+  const { e, b } = await montar('Cold_Snap');
+  assert.ok(usar(e, b).ok);
+  e.hunt.clock = Math.max(e.hunt.clock, e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE]?.ate ?? 0);
+  e.hunt.cargasPoe = { frenesi: { n: 1, ate: e.hunt.clock + 50 } };
+  Ficha.invalidar(e);
+  const r = travado(0.5, () => Acoes.disparar(e, e.hunt, PERSONAGEM, 0, b, { manual: true }));
+  assert.ok(r.ok, r.erro);
+  assert.ok(e.hunt.conjurando, 'conjurando');
+  e.hunt.clock = e.hunt.conjurando.fim;
+  const ev = travado(0.5, () => Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM));
+  assert.ok(ev.some((x) => x.t === 'castFim'), JSON.stringify(ev.filter((x) => x.t === 'castCancel')));
 });

@@ -39,7 +39,7 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 714 linhas distintas (131 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 713 linhas distintas (131 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
 - Testes que citam a gema: 316/562 ativas, 117/262 suportes.
@@ -237,7 +237,6 @@ Só os ataques:
 | 1 | +# % mais dano por carga de poder removida |
 | 1 | +# % mais Dano por Carga de Tolerância removida |
 | 1 | +# % mais Dano por Traumatismo |
-| 1 | +# % menos Dano em Área |
 | 1 | +# ao número máximo de Zumbis |
 | 1 | +# cascatas por carga de poder removida |
 | 1 | +# de largura por cada # % de Mana Máxima Não Reservada possuída |
@@ -929,8 +928,8 @@ Só os ataques:
 - **Cleave_of_Rage** (Cutilada da Fúria) — parcial
   - efeito não simulado: +0.1 metro ao Raio por 5 de Fúria
 - **Conflagration** (Conflagração) — parcial
-  - efeito não simulado: As flechas após a primeira caem em um raio base de 6 metros
-  - efeito não simulado: Raio de alcance base do impacto é de 7 metro
+  - efeito não simulado: As flechas após a primeira caem em um raio base de 3 metros
+  - efeito não simulado: Raio de alcance base do impacto é de 1 metro
   - efeito não simulado: Explosão causa + 50 % de dano com ataques e afecções
   - efeito não simulado: Duração da penalidade base é de 4 segundos
   - efeito não simulado: Explosão causa + 30 % de dano com ataques e afecções
@@ -1757,12 +1756,11 @@ Só os ataques:
 - **Vaal_Righteous_Fire** (Círculo Ardente Vaal) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo
-  - efeito não simulado: Concede 39 % mais Dano Mágico
+  - efeito não simulado: Concede 19 % mais Dano Mágico
 - **Vaal_Smite** (Castigo Vaal) — parcial
   - efeito não simulado: Não pode ser Evadido
   - efeito não simulado: Raio acerta 30 alvos dentro de 10 metros
   - efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos
-  - efeito não simulado: +20 % menos Dano em Área
   - efeito não simulado: +10 % mais Dano em Área
 - **Vaal_Storm_Call** (Invocar Tormenta Vaal) — parcial
   - efeito não simulado: Ataca um Inimigo a cada 0.2 segundos
