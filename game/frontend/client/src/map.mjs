@@ -5,6 +5,8 @@
 import { casasDoEvento } from '/packages/shared/src/areas.mjs';
 import { comecarPasso, teleportar } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
+// (lote A3b, dono 19/10: D13) os objetos das gemas do PoE no chão ou no tempo — a bola, o tornado, as lâminas, os marcadores, o chão, os capturados
+import { desenharObjetosDoPoe } from './objetos-do-poe.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais, desenharQuadroDeAsset, duracaoDoAsset } from './efeitos-visuais.mjs';
 import { quadroDoCiclo, quadroDaChegada, casaDoPortal, ordemDaSaida, ORDEM_DA_CHEGADA, direcaoDoPasso, entradaNova } from './portal-ciclo.mjs';
@@ -263,6 +265,8 @@ function assinaturaDoRetrato(payload) {
   for (const c of payload.chao ?? []) partes.push('c', c.x, c.y, c.item, c.count, c.sob, (c.pilha ?? []).length);
   /* As paredes de runa entram na assinatura: sem elas, plantar uma nao redesenharia. */
   for (const b of payload.barreiras ?? []) partes.push('b', b.x, b.y, b.item);
+  // (lote A3b: os objetos das gemas do PoE — aparecer, andar e sumir redesenha)
+  for (const o of [...(payload.poeObjetos ?? []), ...(payload.poeObjetosDoGrupo ?? [])]) partes.push('p', o.id, o.x, o.y, o.n ?? 0);
   // Baús e altares da caçada: aparecer, mudar de estado ou sumir redesenha.
   partes.push(assinaturaDosEncontros(payload.instancia?.encontros));
   return partes.join('|');
@@ -3787,6 +3791,8 @@ export class MapView {
     if (now >= this.trocaDeAnimacaoEm) return false;
     // Efeito, projétil, número de dano ou fala no ar.
     if (this.effects.length || this.missiles.length || this.texts.length || this.falas.length || this.buffsDoJogador?.length) return false;
+    // (lote A3b: os objetos das gemas do PoE animam — a bola pulsa, o tornado gira)
+    if (this.snapshot.poeObjetos?.length || this.snapshot.poeObjetosDoGrupo?.length) return false;
     /*
      * E qualquer criatura andando ou em pose de andar. `position` é a mesma
      * conta que o desenho faz, e ela é barata: são poucas entidades, e o caro
@@ -4128,6 +4134,12 @@ export class MapView {
     }
     // As SAFE ZONES do andar (`map.seguras`, o editor de mapas): um véu e a borda, por baixo dos efeitos.
     this.drawZonasSeguras();
+    // (lote A3b, dono 19/10: D13) os objetos das gemas do PoE, no chão (por baixo dos efeitos e dos projéteis)
+    // (os dos aliados da sala também; o que acompanha um boneco vai na posição andando dele)
+    desenharObjetosDoPoe(this.ctx, [...(this.snapshot?.poeObjetos ?? []), ...(this.snapshot?.poeObjetosDoGrupo ?? [])], {
+      camX: this.camera.x, camY: this.camera.y, tile: TILE, agora: now, relogio: this.snapshot?.clock ?? null,
+      posDe: (uid) => { const ent = this.entities.get(uid); return ent ? this.position(ent, now) : null; },
+    });
     if (graficoLigado('efeitos')) this.drawEffects(now);
     if (graficoLigado('projeteis')) this.drawMissiles(now);
     // O portal de saída da viagem: sempre (não é enfeite — é a viagem), por cima de tudo, com a barra na camada de texto.

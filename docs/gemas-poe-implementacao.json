@@ -2,16 +2,16 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 358,
-   "implementada e testada": 137,
-   "implementada, sem teste próprio": 55,
+   "parcial": 334,
+   "implementada e testada": 164,
+   "implementada, sem teste próprio": 52,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "parcial": 118,
-   "implementada e testada": 64,
+   "parcial": 115,
+   "implementada e testada": 67,
    "implementada, sem teste próprio": 22,
    "limitação do modelo idle": 6
   },
@@ -24,15 +24,15 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 35,
-    "implementada e testada": 10,
+    "parcial": 30,
+    "implementada e testada": 15,
     "implementada, sem teste próprio": 7
    },
    "alternativas": {
     "total": 209,
-    "parcial": 145,
-    "implementada, sem teste próprio": 29,
-    "implementada e testada": 28,
+    "parcial": 136,
+    "implementada, sem teste próprio": 27,
+    "implementada e testada": 39,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 844,
-   "emDuasOuMais": 165
+   "linhasDistintas": 813,
+   "emDuasOuMais": 154
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 257,
+   "ativasCitadas": 277,
    "suportesCitados": 93,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -2354,10 +2354,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Um a cada 1 Projéteis disparados permanece no solo como Lâmina Persistente"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -2677,10 +2675,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 8 Projéteis em cada uma das duas espirais espelhadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3265,13 +3261,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Taxa de Acerto aumentada em 30 % por cada lâmina",
-    "efeito não simulado: 30 % mais dano por lâmina",
-    "efeito não simulado: Pode ter até 10 lâminas giratórias ativas",
-    "efeito não simulado: Taxa de Acerto aumentada em +5 % por cada lâmina"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3283,10 +3274,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode ter até 1 lâminas giratórias ativas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3705,12 +3694,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Acerta Inimigos a cada 0.2 Segundos",
-    "efeito não simulado: Possui 10 lâminas",
-    "efeito não simulado: Taxa de Acerto aumentada em +5 % por cada lâmina"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3778,10 +3763,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 40 % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3793,11 +3776,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 40 % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias",
-    "efeito não simulado: Máximo de +10 Projéteis capturados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3868,7 +3848,7 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -4287,10 +4267,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Deixa uma Lâmina Persistente no solo para cada 1 Saraivadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5064,13 +5042,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano a cada 0.25 segundos",
-    "efeito não simulado: Pela Duração Inicial, pode ser acertado pelos seus Projéteis até 20 vezes",
-    "efeito não simulado: Durante a Duração Secundária, Reflete 10 % do Dano Sofrido aos Inimigos",
-    "efeito não simulado: Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida em -1 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5082,11 +5055,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa Dano a cada 0.25 segundos",
-    "efeito não simulado: Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida em -1 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5451,10 +5421,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 32 Projéteis em uma espiral"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5466,10 +5434,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: os 100 projéteis em espiral por 3 segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6085,10 +6051,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode ter até 10 Áreas Resfriadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6100,10 +6064,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode ter até 5 Áreas Resfriadas"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6232,11 +6194,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa 50 % mais Dano com Acertos e Afecções quando conjurada em um Disparo Congelante",
-    "efeito não simulado: Pode se expandir de até 2 Projéteis de Disparo Congelante"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7395,7 +7354,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -7408,7 +7367,7 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "implementada, sem teste próprio",
+   "estado": "implementada e testada",
    "ausentes": [],
    "idle": [],
    "outros": [],
@@ -7576,11 +7535,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 8 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar",
-    "efeito não simulado: Dispara +2 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7592,10 +7548,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 16 Fragmentos de Projéteis em uma Espiral quando o Projétil terminar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7607,10 +7561,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 12 Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7622,12 +7574,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Um impacto a cada 0.15 segundos",
-    "efeito não simulado: Primeiro Impacto tem 100 % mais efeito em área",
-    "efeito não simulado: Primeiro Impacto causa 325 % mais Dano com Acertos e Afecções"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7652,10 +7600,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Um impacto a cada 0.15 segundos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8125,10 +8071,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 5 Projéteis em uma espiral"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8269,12 +8213,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "nova",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 50 % mais Área de Efeito quando Conjurada em um Disparo Congelante",
-    "efeito não simulado: 50 % mais Dano quando Conjurado com Disparo Congelante",
-    "efeito não simulado: Pode explor de até 5 Projéteis de Disparo Congelante"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8510,11 +8450,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pulsa a cada 0.4 segundos",
-    "efeito não simulado: Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até 39 %, com base na distância da Esfera do Vazio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -8526,11 +8463,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "orbe",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pulsa a cada 0.25 segundos",
-    "efeito não simulado: Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até 39 %, com base na distância da Esfera do Vazio"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -11565,13 +11499,6 @@
    ]
   },
   {
-   "linha": "# % de chance de manter cada Projétil capturado disparado com Lâminas Giratórias",
-   "gemas": [
-    "Vaal_Venom_Gyre",
-    "Venom_Gyre"
-   ]
-  },
-  {
    "linha": "# % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único",
    "gemas": [
     "Power_Siphon",
@@ -11894,13 +11821,6 @@
    ]
   },
   {
-   "linha": "Causa Dano a cada # segundos",
-   "gemas": [
-    "Tornado",
-    "Tornado_of_Elemental_Turbulence"
-   ]
-  },
-  {
    "linha": "Ceifador faz com que seus Lacaios Não-Ceifadores causem # % menos Dano",
    "gemas": [
     "Summon_Reaper",
@@ -11954,20 +11874,6 @@
    "gemas": [
     "Wither",
     "Withering_Touch_Support"
-   ]
-  },
-  {
-   "linha": "Dispara # Fragmentos de Projéteis em uma Espiral quando o Projétil terminar",
-   "gemas": [
-    "Eye_of_Winter",
-    "Eye_of_Winter_of_Finality"
-   ]
-  },
-  {
-   "linha": "Dispara # Projéteis em uma espiral",
-   "gemas": [
-    "Soulrend_of_the_Spiral",
-    "Vaal_Fireball"
    ]
   },
   {
@@ -12153,20 +12059,6 @@
    ]
   },
   {
-   "linha": "Inimigos ao alcance são tolhidos, com velocidade de movimento reduzida em até # %, com base na distância da Esfera do Vazio",
-   "gemas": [
-    "Void_Sphere",
-    "Void_Sphere_of_Rending"
-   ]
-  },
-  {
-   "linha": "Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida em # %",
-   "gemas": [
-    "Tornado",
-    "Tornado_of_Elemental_Turbulence"
-   ]
-  },
-  {
    "linha": "Lacaios de Habilidades Suportadas têm Chance de Golpe Crítico aumentada em #%",
    "gemas": [
     "Exemplar_Support",
@@ -12265,27 +12157,6 @@
    ]
   },
   {
-   "linha": "Pode ter até # Áreas Resfriadas",
-   "gemas": [
-    "Creeping_Frost",
-    "Creeping_Frost_of_Floes"
-   ]
-  },
-  {
-   "linha": "Pode ter até # lâminas giratórias ativas",
-   "gemas": [
-    "Blade_Vortex",
-    "Blade_Vortex_of_the_Scythe"
-   ]
-  },
-  {
-   "linha": "Pulsa a cada # segundos",
-   "gemas": [
-    "Void_Sphere",
-    "Void_Sphere_of_Rending"
-   ]
-  },
-  {
    "linha": "Quando em Empunhadura Dupla, # % Menos Velocidade de Ataque",
    "gemas": [
     "Viper_Strike",
@@ -12370,13 +12241,6 @@
    ]
   },
   {
-   "linha": "Taxa de Acerto aumentada em +# % por cada lâmina",
-   "gemas": [
-    "Blade_Vortex",
-    "Vaal_Blade_Vortex"
-   ]
-  },
-  {
    "linha": "Tem # chamas",
    "gemas": [
     "Flamethrower_Trap",
@@ -12416,13 +12280,6 @@
    "gemas": [
     "Bear_Trap",
     "Bear_Trap_of_Skewers"
-   ]
-  },
-  {
-   "linha": "Um impacto a cada # segundos",
-   "gemas": [
-    "Firestorm",
-    "Firestorm_of_Pelting"
    ]
   },
   {
@@ -12605,12 +12462,6 @@
    ]
   },
   {
-   "linha": "# % mais Área de Efeito quando Conjurada em um Disparo Congelante",
-   "gemas": [
-    "Vortex_of_Projection"
-   ]
-  },
-  {
    "linha": "# % mais Área de Efeito se Consumindo um Lacaio",
    "gemas": [
     "Bodyswap_of_Sacrifice"
@@ -12689,12 +12540,6 @@
    ]
   },
   {
-   "linha": "# % mais dano por lâmina",
-   "gemas": [
-    "Blade_Vortex"
-   ]
-  },
-  {
    "linha": "# % mais dano por lâmina de Vórtice de Lâminas",
    "gemas": [
     "Blade_Blast_of_Unloading"
@@ -12716,12 +12561,6 @@
    "linha": "# % mais Dano por Traumatismo",
    "gemas": [
     "Boneshatter"
-   ]
-  },
-  {
-   "linha": "# % mais Dano quando Conjurado com Disparo Congelante",
-   "gemas": [
-    "Vortex_of_Projection"
    ]
   },
   {
@@ -13094,12 +12933,6 @@
    "linha": "Acerta até # Inimigos",
    "gemas": [
     "Lightning_Conduit_of_the_Heavens"
-   ]
-  },
-  {
-   "linha": "Acerta Inimigos a cada # Segundos",
-   "gemas": [
-    "Vaal_Blade_Vortex"
    ]
   },
   {
@@ -13595,12 +13428,6 @@
    ]
   },
   {
-   "linha": "Causa # % mais Dano com Acertos e Afecções quando conjurada em um Disparo Congelante",
-   "gemas": [
-    "Ice_Nova_of_Frostbolts"
-   ]
-  },
-  {
    "linha": "Causa # % mais Dano com Acertos por cada # segundos de Duração",
    "gemas": [
     "Frost_Bomb_of_Forthcoming"
@@ -14003,12 +13830,6 @@
    ]
   },
   {
-   "linha": "Deixa uma Lâmina Persistente no solo para cada # Saraivadas",
-   "gemas": [
-    "Bladefall"
-   ]
-  },
-  {
    "linha": "Detonação da Mina é Instantânea",
    "gemas": [
     "Smoke_Mine"
@@ -14018,12 +13839,6 @@
    "linha": "Dispara # Flecha",
    "gemas": [
     "Blast_Rain_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Dispara # Fragmentos de Projéteis em uma Espiral enquanto vôa, e então termina",
-   "gemas": [
-    "Eye_of_Winter_of_Transience"
    ]
   },
   {
@@ -14039,12 +13854,6 @@
    ]
   },
   {
-   "linha": "Dispara # Projéteis em cada uma das duas espirais espelhadas",
-   "gemas": [
-    "Vaal_Spectral_Throw"
-   ]
-  },
-  {
    "linha": "Dispara # Projéteis secundários",
    "gemas": [
     "Tornado_Shot"
@@ -14054,12 +13863,6 @@
    "linha": "Dispara # sequências de flechas adicionais",
    "gemas": [
     "Vaal_Rain_of_Arrows"
-   ]
-  },
-  {
-   "linha": "Dispara +# Fragmentos de Projéteis em uma Espiral quando o Projétil terminar",
-   "gemas": [
-    "Eye_of_Winter"
    ]
   },
   {
@@ -14102,12 +13905,6 @@
    "linha": "Duração do Buff é atualizada após você gastar um total de # de Vida",
    "gemas": [
     "Corrupting_Fever"
-   ]
-  },
-  {
-   "linha": "Durante a Duração Secundária, Reflete # % do Dano Sofrido aos Inimigos",
-   "gemas": [
-    "Tornado"
    ]
   },
   {
@@ -15767,12 +15564,6 @@
    ]
   },
   {
-   "linha": "Máximo de +# Projéteis capturados",
-   "gemas": [
-    "Venom_Gyre"
-   ]
-  },
-  {
    "linha": "Minas de Habilidades Suportadas não podem ser Detonadas enquanto dentro de # metros de você",
    "gemas": [
     "Locus_Mine_Support"
@@ -15917,21 +15708,9 @@
    ]
   },
   {
-   "linha": "os # projéteis em espiral por # segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias",
-   "gemas": [
-    "Vaal_Spark"
-   ]
-  },
-  {
    "linha": "Outros efeitos em inimigos Amaldiçoados expiram # % mais devagar",
    "gemas": [
     "Temporal_Chains"
-   ]
-  },
-  {
-   "linha": "Pela Duração Inicial, pode ser acertado pelos seus Projéteis até # vezes",
-   "gemas": [
-    "Tornado"
    ]
   },
   {
@@ -15977,45 +15756,15 @@
    ]
   },
   {
-   "linha": "Pode explor de até # Projéteis de Disparo Congelante",
-   "gemas": [
-    "Vortex_of_Projection"
-   ]
-  },
-  {
-   "linha": "Pode se expandir de até # Projéteis de Disparo Congelante",
-   "gemas": [
-    "Ice_Nova_of_Frostbolts"
-   ]
-  },
-  {
    "linha": "Possui # Chamas",
    "gemas": [
     "Flamethrower_Trap_of_Stability"
    ]
   },
   {
-   "linha": "Possui # lâminas",
-   "gemas": [
-    "Vaal_Blade_Vortex"
-   ]
-  },
-  {
    "linha": "Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação",
    "gemas": [
     "Detonate_Mines"
-   ]
-  },
-  {
-   "linha": "Primeiro Impacto causa # % mais Dano com Acertos e Afecções",
-   "gemas": [
-    "Firestorm"
-   ]
-  },
-  {
-   "linha": "Primeiro Impacto tem # % mais efeito em área",
-   "gemas": [
-    "Firestorm"
    ]
   },
   {
@@ -16379,12 +16128,6 @@
    ]
   },
   {
-   "linha": "Taxa de Acerto aumentada em # % por cada lâmina",
-   "gemas": [
-    "Blade_Vortex"
-   ]
-  },
-  {
    "linha": "Tempestade Furiosa causa # % mais Dano por cada # de Fúria Sacrificada",
    "gemas": [
     "Rage_Vortex"
@@ -16418,12 +16161,6 @@
    "linha": "Totens das Habilidades Suportadas ganham a Habilidade\\nVingança Flamejante e a Ativa quando Acertado por um Inimigo",
    "gemas": [
     "Flamewood_Support"
-   ]
-  },
-  {
-   "linha": "Um a cada # Projéteis disparados permanece no solo como Lâmina Persistente",
-   "gemas": [
-    "Ethereal_Knives_of_Lingering_Blades"
    ]
   },
   {

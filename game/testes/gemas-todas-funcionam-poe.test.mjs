@@ -25,6 +25,9 @@ const Runas = await import('../systems/itens-poe/runas-vinculadas.mjs');
 /** As armas tentadas (a primeira que a gema aceita): a varinha, o arco, a espada com escudo, a maça de duas mãos, a adaga, o cajado. */
 const ARMAS = [['Wands/Driftwood_Wand'], ['Bows/Crude_Bow'], ['One_Hand_Swords/Rusted_Sword', 'Shields/Splintered_Tower_Shield'], ['Two_Hand_Maces/Driftwood_Maul'], ['Daggers/Sai'], ['Staves/Gnarled_Branch']];
 const BUFF = new Set(['aura', 'arauto', 'clamor', 'maldicao', 'guarda', 'vinculo', 'feiticeiro']);
+// (lote A3b, com o aval do dono: a gema cujo dano sai por OUTRA gema — a Espiral Venenosa Vaal só cria os capturados, e as Lâminas Giratórias os soltam — é
+// conferida usando-a seguida dessa outra, encaixada junto e no slot 2; o critério do dano é o mesmo das outras)
+const DANO_POR_OUTRA = { Vaal_Venom_Gyre: 'Whirling_Blades' };
 
 let J;
 let gerarPeca;
@@ -46,6 +49,8 @@ function montar(slug, [arma, escudo], suportes = []) {
   for (let i = 0; i < n; i++) GS.encaixar(e, { de: 0, slot: 'weapon', indice: i });
   e.actions = Array(Acoes.SLOTS).fill(null);
   e.actions[0] = { id: G.doSlug(slug).acao, enabled: true, minMana: 0, conditions: [] };
+  // (lote A3b, com o aval do dono: a outra gema no slot 2)
+  if (DANO_POR_OUTRA[slug]) e.actions[1] = { id: G.doSlug(DANO_POR_OUTRA[slug]).acao, enabled: true, minMana: 0, conditions: [] };
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
   if (!Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok) return null;
@@ -90,6 +95,14 @@ function usar({ e, b }, slug) {
     ev.push(...(r.eventos ?? []));
     if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
   }
+  // (lote A3b, com o aval do dono: a gema cujo dano sai por outra — a outra logo depois, no fim do tempo de uso desta)
+  if (DANO_POR_OUTRA[slug]) {
+    e.hunt.clock = Math.max(e.hunt.clock, e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE]?.ate ?? e.hunt.clock);
+    const r2 = Acoes.disparar(e, e.hunt, PERSONAGEM, 1, b, { manual: true });
+    if (!r2.ok) return { ok: false, erro: `${DANO_POR_OUTRA[slug]}: ${r2.motivo ?? r2.erro}` };
+    ev.push(...(r2.eventos ?? []));
+    if (e.hunt.conjurando) { e.hunt.clock = e.hunt.conjurando.fim; ev.push(...(Acoes.concluirConjuracao(e, e.hunt, PERSONAGEM) ?? [])); }
+  }
   // (a Mina detona com você parado e o inimigo perto; a Armadilha, com o inimigo a 1 casa; o gêiser e a torre, no tempo)
   for (let i = 0; i < 6; i++) { e.hunt.clock += 400; ev.push(...Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [])); ev.push(...Acoes.tiqueDasRunas(e, e.hunt, PERSONAGEM, [])); }
   // (lote G20a, com o aval do dono: o TOTEM — o seu uso o coloca; o dano é o do totem usando a habilidade, uma vez, no alvo)
@@ -125,7 +138,7 @@ test('G16: toda gema ativa "funciona" faz no jogo o que o status promete (o dano
     let feito = null;
     const erros = [];
     for (const armas of ARMAS) {
-      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : []);
+      const m = montar(slug, armas, slug === 'Brand_Recall' ? ['Storm_Brand'] : DANO_POR_OUTRA[slug] ? [DANO_POR_OUTRA[slug]] : []);
       if (!m) continue;
       let u;
       try { u = usar(m, slug); } catch (err) { u = { ok: false, erro: `exceção: ${err.message}` }; }

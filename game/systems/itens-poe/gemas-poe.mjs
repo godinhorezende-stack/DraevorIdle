@@ -26,6 +26,7 @@ import { ACTION_CATALOG } from '../dados.mjs';
 import { DESLOCAMENTO, deslocamentoDasLinhas, ehLinhaDoDeslocamento } from './deslocamento.mjs';
 import * as GemasA2 from './gemas-a2.mjs';
 import * as GemasA4 from './gemas-a4.mjs';
+import * as GemasA3b from './gemas-a3b.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -497,9 +498,8 @@ const LINHAS_QUE_NAO_SE_APLICAM = [
  * (lote A3, dono 19/10) O que o projétil da gema faz só no PoB, sem linha (o status não o vê): a Vaal Faísca lança 100 projéteis em espiral por 3 s
  * (base_number_of_projectiles_in_spiral_nova, act_int.lua:16994) — as direções aleatórias valem, mas a espiral é do lote A3b (F8).
  */
-const PROJETIL_SEM_LINHA = {
-  Vaal_Spark: ['os 100 projéteis em espiral por 3 segundos (o PoB: base_number_of_projectiles_in_spiral_nova) — no jogo, os projéteis do uso em direções aleatórias'],
-};
+// (lote A3b, dono 19/10: D10: a espiral da Faísca Vaal existe — os 100 projéteis em 3 s, `GemasA3b.ESPIRAIS`, `Acoes.tiqueDosObjetos`)
+const PROJETIL_SEM_LINHA = {};
 export const ehLinhaQueNaoSeAplica = (l) => LINHAS_QUE_NAO_SE_APLICAM.some(([re]) => re.test(String(l)));
 /** (lote A3) As notas das linhas da gema que não se aplicam (sem repetição). */
 export const linhasQueNaoSeAplicam = (linhas = []) => [...new Set(linhas.map((l) => LINHAS_QUE_NAO_SE_APLICAM.find(([re]) => re.test(String(l)))?.[1]).filter(Boolean))];
@@ -931,6 +931,14 @@ export const iraDivinaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, 
 export const circuloDaGema = (slug, nivel = 1) => comCache(A4, `cir|${slug}@${nivel | 0}`, () => GemasA4.circuloDasLinhas(slug, textosDaGema(slug, nivel).linhas));
 /** O "mais por Estágio do Tiro" do Atirar. */
 export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nivel | 0}`, () => GemasA4.snipeDasLinhas(slug, textosDaGema(slug, nivel).linhas));
+/*
+ * ---- (lote A3b, dono 19/10) o leitor no nível do lote A3b (`itens-poe/gemas-a3b.mjs`: os objetos que ficam no chão ou no tempo) ----
+ */
+const A3B = new Map();
+/** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
+export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}));
+/** (D2) O que a gema faz com os seus Disparos Congelantes (a Nova Glacial dos Disparos, o Vórtice da Projeção). */
+export const consomeDisparosDaGema = (slug, nivel = 1) => comCache(A3B, `con|${slug}@${nivel | 0}`, () => GemasA3b.consomeDisparos(slug, textosDaGema(slug, nivel).linhas));
 /** Os esporos da Flecha Flagelante. */
 export const esporosDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A4, `esp|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA4.esporosDasLinhas(slug, ...linhasA4(slug, nivel, qualidade)));
 /** O Orbe Invernal (o objeto no tempo). */
@@ -1350,7 +1358,9 @@ function avaliarNoJogo(h, formato) {
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
   // (lote A3: + as linhas de projétil que não se aplicam — `LINHAS_QUE_NAO_SE_APLICAM`, que vão como nota)
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l)) motivos.push(`efeito não simulado: ${l}`);
+  // (lote A3b, dono 19/10: o que o mecanismo dos objetos ainda simplifica — `GemasA3b.MOTIVOS_A3B`)
+  for (const m of GemasA3b.MOTIVOS_A3B[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**

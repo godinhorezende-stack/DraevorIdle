@@ -1246,6 +1246,10 @@ export function novaInstancia(estado, pronta = null) {
   hunt.outrosAndares = novo.outrosAndares;
   hunt.respawns = [];
   hunt.z = novo.andarInicial;
+  // (revisão do A3b: a instância nova começa sem os objetos das gemas do PoE — no PoE a troca de área desfaz o chão, as lâminas e os capturados — nem a área fria
+  // que andava com eles; os da party, abaixo)
+  delete hunt.poeObjetos;
+  if (hunt.areasFrias) hunt.areasFrias = hunt.areasFrias.filter((a) => !a.obj);
   hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
   hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;
   hunt.alvo = null;
@@ -1271,6 +1275,7 @@ export function novaInstancia(estado, pronta = null) {
   convidados.forEach((o, i) => chegarNaInstancia(o.hunt, casas[i] ?? novo.inicio, novo.andarInicial));
   // Instância nova = ENTRADA nova para cada um da sala: a sessão de cada um protege até o cliente confirmar (`protecao.mjs`).
   for (const h of [hunt, ...convidados.map((o) => o.hunt)]) h.entrada = Protecao.novaEntrada();
+  for (const h of convidados.map((o) => o.hunt)) { delete h.poeObjetos; if (h.areasFrias) h.areasFrias = h.areasFrias.filter((a) => !a.obj); }
   // (Cada portal com a entrada nova de quem chega por ele: a tela de cada um pula o seu — ela anima a própria chegada.)
   EventosDeEncontro.empurrar(hunt, [portalDeViagem(novo.inicio, { chegada: true, entrada: hunt.entrada }), ...convidados.map((o, i) => portalDeViagem(casas[i] ?? novo.inicio, { chegada: true, entrada: o.hunt.entrada }))]);
   return true;
@@ -3279,6 +3284,10 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
     // Os lacaios e os totens das gemas do PoE (desenhados como o familiar, com a vida).
     lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS })),
+    // (lote A3b, dono 19/10: D13) os OBJETOS das gemas do PoE no chão ou no tempo (a bola, o tornado, as lâminas, os marcadores, o chão, os capturados em você):
+    // sempre presente (lista vazia sem objeto), para o quadro em delta limpar quando somem — `Acoes.objetosParaCliente`, desenhados em `map.mjs`
+    poeObjetos: Acoes.objetosParaCliente(hunt),
+    // (revisão do A3b: os dos aliados da sala vêm em `poeObjetosDoGrupo` — `Party.extrasDoRetrato`, `objetosDoPoeDoAliado`)
     summon: hunt.summon
       ? { uid: hunt.summon.uid, x: hunt.summon.x, y: hunt.summon.y, dir: hunt.summon.dir, look: hunt.summon.look, name: hunt.summon.name, nivel: hunt.summon.nivel, moveMs: hunt.summon.moveMs ?? R.PASSO_MS }
       : null,
@@ -3325,6 +3334,15 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
 }
 
 
+
+/**
+ * (revisão do A3b, D13) Os objetos das gemas do PoE de um ALIADO da sala para a tela de quem vê (`hVe`: a caçada dele) — recortados pela tela dele, o fim no
+ * relógio dele, e o id e o "segue" com o nome do aliado (`aliado:<nome>`, o uid do boneco do aliado na tela). Só os do mesmo andar.
+ */
+export function objetosDoPoeDoAliado(hAliado, hVe, nome) {
+  if (!hAliado || !hVe || (hAliado.z ?? 0) !== (hVe.z ?? 0)) return [];
+  return Acoes.objetosParaCliente(hAliado, { centro: hVe.pos, relogio: hVe.clock ?? 0, segue: `aliado:${nome}`, sufixo: `:${nome}` });
+}
 
 /**
  * O progresso por SETOR da instância da sala (`[{ id, nome, total, vivos, concluido, jogadores }]`), ou `null` fora de instância.

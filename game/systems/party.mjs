@@ -806,6 +806,8 @@ export function extrasDoRetrato(s) {
         return { uid: `${f.uid}:${nomeDe(o)}`, x: f.x, y: f.y, dir: f.dir, look: f.look, name: f.name, nivel: f.nivel, moveMs: f.moveMs ?? 250 };
       }),
   };
+  // (revisão do A3b, D13: os objetos das gemas do PoE dos outros da sala — a Bola, o Tornado, as lâminas, o chão —, recortados pela sua tela; sempre presente)
+  extras.poeObjetosDoGrupo = s.estado.hunt ? outros.flatMap((o) => Cacadas.objetosDoPoeDoAliado(o.estado.hunt, s.estado.hunt, nomeDe(o))) : [];
   // Sempre presente (null sem party): o quadro em delta (`game/websocket/quadro.mjs`)
   // só manda chave que MUDOU — uma chave que some nunca chegaria ao client, e
   // ele seguiria mostrando a partilha de antes de sair da party.

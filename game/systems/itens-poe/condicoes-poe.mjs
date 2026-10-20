@@ -75,13 +75,16 @@ export const AREAS_FRIAS = Object.freeze({
   porGema: Object.freeze({
     Frostblink: { raioM: 2 }, Creeping_Frost: { raioM: 2, noAlvo: true }, Cold_Snap: { raioM: 3 }, Vaal_Cold_Snap: { raioM: 3.6 }, Vortex: { raioM: 2.3 },
     Frost_Blades_of_Katabasis: { raioM: 2, noAlvo: true },
+    // (lote A3b, dono 19/10: D6: a Geada Rastejante das Banquisas também deixa a área fria — ela anda com o chão, `Acoes.tiqueDosObjetos`)
+    Creeping_Frost_of_Floes: { raioM: 2, noAlvo: true },
   }),
 });
 // (lote A2: + `efeitoPct` — a área com o Resfriamento próprio: o Escudo Gélido, com o "Efeito de Afecções de Gelo aumentado" da qualidade dele)
-export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null }) {
+// (lote A3b, dono 19/10: + `obj` — o id do objeto do chão a que a área fria pertence: a da Geada Rastejante anda com ele, `Acoes.tiqueDosObjetos`)
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
   const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora);
-  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000), ...(efeitoPct > 0 ? { efeitoPct } : {}) });
+  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000), ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}) });
   h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
 }
 /** O bicho está numa das suas áreas frias agora? */

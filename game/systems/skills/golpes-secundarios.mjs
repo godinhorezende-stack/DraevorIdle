@@ -414,9 +414,11 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
    * `disparar` não dá o golpe direto) — saem em direções sorteadas; cada um voa em linha reta até o alcance e acerta o primeiro inimigo do
    * caminho (daí segue as supports); o que não acha ninguém pode bater no terreno (`naParede`).
    */
-  if (efeito.direcoesAleatorias && deProjetil) {
+  // (lote A3b, dono 19/10: + `efeito.angulos` — o ângulo de cada projétil, em radianos (a espiral da Bola de Fogo Vaal, do Rasgalma, do Arremesso Espectral Vaal,
+  // os fragmentos do Olho Invernal, o leque dos capturados da Espiral Venenosa — `Acoes.tiqueDosObjetos`); o ângulo null é o sorteado)
+  if ((efeito.direcoesAleatorias || efeito.angulos?.length) && deProjetil) {
     for (let k = 0; k < total; k++) {
-      const angulo = rng() * 2 * Math.PI;
+      const angulo = Number.isFinite(efeito.angulos?.[k]) ? efeito.angulos[k] : rng() * 2 * Math.PI;
       const fim = noAngulo(origem, angulo);
       const bicho = primeiroNaReta(origem, fim, new Set());
       const pct = k ? pctDe('danoDosExtrasPct') : 100;
