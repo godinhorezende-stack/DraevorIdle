@@ -100,9 +100,9 @@ test('A5: as linhas das gemas e dos suportes viram os atributos lidos no uso', {
     'Penetra 30 % da Resistência a Fogo': { fire_pen: 30 },
   };
   for (const [linha, af] of Object.entries(casos)) assert.deepEqual(L.atributosDaLinha(linha), af, linha);
-  // (D1 fica para o A5b: a Precisão Adicional segue "não simulada")
-  assert.equal(L.atributosDaLinha('+1034 de Precisão'), null);
-  assert.equal(SP.doSlug('Additional_Accuracy_Support').status, 'parcial');
+  // (lote A5b, dono 20/10 — aval: a D1 feita, a Precisão Adicional vale no uso)
+  assert.deepEqual(L.atributosDaLinha('+1034 de Precisão'), { accuracy: 1034 });
+  assert.equal(SP.doSlug('Additional_Accuracy_Support').status, 'funciona');
 });
 
 test('A5: os efeitos dos suportes no nível — o Dreno (D3), a qualidade (D2), o nível de Caos, a Vida ao matar, a Retaliação (D8), as armas (D6), a Inversão (D7)', { skip: SEM }, () => {

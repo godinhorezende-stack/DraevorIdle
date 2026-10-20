@@ -302,7 +302,9 @@ export const INFORMATIVO = [
   /^Modificadores /i, /^Aumentos e Reduções(?! a Velocidade de Projéteis também se aplicam ao Efeito em Área)/i, /Almas/i, /^Pode usar Itens que exigem/i,
   /desta Habilidade não pode ser modificada/i, /A Recarga desta Habilidade não é recuperada/i,
   /^Habilidades Suportadas/i, /Armadilhas não são Ativadas no fim/i, /Lacaios não podem Provocar/i,
-  /Quando em Dupla Empunhadura/i, /^Não pode ser Evadido/i,
+  // (lote A5b, dono 20/10: o "Não pode ser Evadido" deixou de ser informativo — a gema de ataque agora rola o acerto; a linha é local do uso, `nunca_erra`,
+  // `linhas-das-gemas.mjs`)
+  /Quando em Dupla Empunhadura/i,
   /Modificadores do número de Projéteis/i, /Modificadores à quantidade de Projéteis/i,
   /Dispara Projéteis em sequência/i, /Coloque em um encaixe/i, /contra Jogadores/i,
   // (lote A1: "Qualidade não tem efeito" — o Passo Rápido — é verdade no jogo: a gema não tem linha de qualidade)

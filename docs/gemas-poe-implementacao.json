@@ -17,8 +17,8 @@
   },
   "suportes": {
    "total": 262,
-   "implementada e testada": 99,
-   "parcial": 112,
+   "implementada e testada": 100,
+   "parcial": 111,
    "implementada, sem teste próprio": 51
   },
   "variantes": {
@@ -44,7 +44,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 733,
+   "linhasDistintas": 732,
    "emDuasOuMais": 137
   },
   "imagens": {
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 304,
+   "ativasCitadas": 305,
    "suportesCitados": 117,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -394,6 +394,7 @@
    "arquetipo": "aura",
    "estado": "parcial",
    "ausentes": [
+    "efeito não simulado: Não pode ser Evadido",
     "efeito não simulado: Raio acerta 30 alvos dentro de 10 metros",
     "efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos",
     "efeito não simulado: +20 % menos Dano em Área",
@@ -9356,11 +9357,8 @@
   {
    "slug": "Additional_Accuracy_Support",
    "nome": "Precisão Adicional",
-   "estado": "parcial",
-   "ausentes": [
-    "não simulado: Habilidades Suportadas têm +1034 de Precisão",
-    "não simulado: Habilidades Suportadas têm 20% de Precisão aumentada"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "outros": [],
    "icone": true
   },
@@ -14376,12 +14374,6 @@
    ]
   },
   {
-   "linha": "Habilidades Suportadas têm #% de Precisão aumentada",
-   "gemas": [
-    "Additional_Accuracy_Support"
-   ]
-  },
-  {
    "linha": "Habilidades Suportadas têm #% de Velocidade de Ataque de Lacaios aumentada",
    "gemas": [
     "Minion_Speed_Support"
@@ -14397,12 +14389,6 @@
    "linha": "Habilidades Suportadas têm #% mais frequência de Ativação",
    "gemas": [
     "Swiftbrand_Support"
-   ]
-  },
-  {
-   "linha": "Habilidades Suportadas têm +# de Precisão",
-   "gemas": [
-    "Additional_Accuracy_Support"
    ]
   },
   {
@@ -15003,6 +14989,12 @@
    "linha": "Não pode ser Convocada",
    "gemas": [
     "Armageddon_Brand_of_Volatility"
+   ]
+  },
+  {
+   "linha": "Não pode ser Evadido",
+   "gemas": [
+    "Vaal_Smite"
    ]
   },
   {

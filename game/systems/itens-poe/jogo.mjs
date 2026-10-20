@@ -251,7 +251,13 @@ function separarLocal(classe, t, af, padrao, global, local) {
   af[local] = Math.round(((af[local] ?? 0) + soma) * 100) / 100;
 }
 /** A velocidade de ataque e o crítico LOCAIS da arma (os dois acima). */
+/*
+ * (lote A5b, dono 20/10) A PRECISÃO LOCAL da arma (PoE): na ARMA, "+X de Precisão" sem condição é LOCAL — só vale nos acertos DELA (com duas armas, cada mão com a
+ * sua). Sai de `accuracy` (global) para `accuracy_local`, que a ficha soma na mão daquela arma (`contaDaPrecisao`, `fichaDaMao`).
+ */
+const PRECISAO_LOCAL = /^\+\{\d+\} de Precisão$/;
 function separarLocaisDaArma(classe, t, af) {
+  separarLocal(classe, t, af, PRECISAO_LOCAL, 'accuracy', 'accuracy_local');
   separarLocal(classe, t, af, VELOCIDADE_LOCAL, 'atk_speed', 'atk_speed_local');
   separarLocal(classe, t, af, CRITICO_LOCAL, 'crit_chance_inc', 'crit_chance_local');
 }
@@ -422,7 +428,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
 // (70 — 19/10, lote 87: a Égide Necromântica, parte B — precisão, atordoamento e crítico nos lacaios)
 // (71 — 20/10, lote A5c: "X% do Dano Físico de Acertos com essa Arma é Convertido para um Elemento Aleatório" e "Acertos com esta Arma ganham X% de Dano Físico
 // como Dano de Gelo ou Raio Extra" só nos ataques — `@ataque` —: são da arma e não valem nas magias)
-export const VERSAO_DA_TRADUCAO = 71;
+// (72 — 20/10, lote A5b: a precisão "+X de Precisão" da arma é local — `accuracy_local`)
+export const VERSAO_DA_TRADUCAO = 72;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

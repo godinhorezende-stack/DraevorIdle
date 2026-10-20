@@ -27,9 +27,9 @@ Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 99 |
+| implementada e testada | 100 |
 | implementada, sem teste próprio | 51 |
-| parcial | 112 |
+| parcial | 111 |
 
 ### Variantes
 
@@ -39,10 +39,10 @@ Só os ataques:
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 733 linhas distintas (137 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 732 linhas distintas (137 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 304/562 ativas, 117/262 suportes.
+- Testes que citam a gema: 305/562 ativas, 117/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -576,11 +576,9 @@ Só os ataques:
 | 1 | Habilidades Suportadas têm #% de chance de Intimidar Inimigos por # segundos ao Acertar |
 | 1 | Habilidades Suportadas têm #% de Dano de Gelo Convertido para Dano de Fogo |
 | 1 | Habilidades Suportadas têm #% de Dano Físico Convertido em Dano de Raio |
-| 1 | Habilidades Suportadas têm #% de Precisão aumentada |
 | 1 | Habilidades Suportadas têm #% de Velocidade de Ataque de Lacaios aumentada |
 | 1 | Habilidades Suportadas têm #% de Velocidade de Conjuração de Lacaios aumentada |
 | 1 | Habilidades Suportadas têm #% mais frequência de Ativação |
-| 1 | Habilidades Suportadas têm +# de Precisão |
 | 1 | Habilidades Suportadas têm alcance de Transferência de Feitiços aumentado em #% |
 | 1 | Habilidades Suportadas tem Chance de Golpe Crítico aumentada em #% por Carga de Inspiração |
 | 1 | Habilidades Suportadas têm Custo de Vida aumentado em #% |
@@ -681,6 +679,7 @@ Só os ataques:
 | 1 | Não pode infligir Envenenamento em Inimigos Envenenados |
 | 1 | Não pode infligir múltiplos envenenamentos com o mesmo ataque |
 | 1 | Não pode ser Convocada |
+| 1 | Não pode ser Evadido |
 | 1 | Não requer um cadáver |
 | 1 | O efeito atual é finalizado após # Abalos Secundários |
 | 1 | O primeiro martelo de cada cascata causa + # % de dano |
@@ -1823,6 +1822,7 @@ Só os ataques:
   - efeito não simulado: Sacrifica 60 % do seu total de Escudo de Energia e Vida Causa 158 % do Escudo de Energia e Vida Sacrificados como Dano de Fogo por segundo
   - efeito não simulado: Concede 39 % mais Dano Mágico
 - **Vaal_Smite** (Castigo Vaal) — parcial
+  - efeito não simulado: Não pode ser Evadido
   - efeito não simulado: Raio acerta 30 alvos dentro de 10 metros
   - efeito não simulado: Aura faz com que Castigo ataque +1 alvos com relâmpagos
   - efeito não simulado: +20 % menos Dano em Área
@@ -1866,9 +1866,6 @@ Só os ataques:
 
 ## Gemas de suporte pendentes
 
-- **Additional_Accuracy_Support** (Precisão Adicional) — parcial
-  - não simulado: Habilidades Suportadas têm +1034 de Precisão
-  - não simulado: Habilidades Suportadas têm 20% de Precisão aumentada
 - **Ancestral_Call_Support** (Chamado Ancestral) — parcial
   - não simulado: Alvos Extras das Habilidades Suportadas podem ser encontrados 15% mais distânte
 - **Annihilation_Support** (Aniquilação (Reforço)) — parcial

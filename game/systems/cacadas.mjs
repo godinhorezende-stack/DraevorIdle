@@ -2475,7 +2475,7 @@ export const resDoLacaio = (l, elemento, aliado = null) => (l?.poe?.res ?? 0) + 
 /**
  * (lote 87, dono 19/10: B1 — D2/D3) O golpe de ATAQUE do lacaio ERROU `alvo`? A precisão dele (`LacaiosPoe.precisaoDoLacaio`: a do PoB — a tabela
  * de precisão de monstro × o `accuracy`; o Espectro e os sem PoB, × 1) contra a evasão do bicho, pela fórmula do jogo (a sua:
- * `Atributos.chanceDeAcerto`, entre 5% e 95%); contra evasão 0, sempre acerta. Não erra: a magia (`magia` — o estilo do mago; a habilidade
+ * `Atributos.chanceDeAcerto` — lote A5b: a do PoE 1 pelo PoB, entre 5% e 100%); contra evasão 0, sempre acerta. Não erra: a magia (`magia` — o estilo do mago; a habilidade
  * principal de magia do PoB, o Golem de Chamas), o mercenário, o totem, o boneco de treino, e fora do modo PoE.
  */
 export function lacaioErrou(hunt, l, alvo, magia = false, rng = Math.random) {

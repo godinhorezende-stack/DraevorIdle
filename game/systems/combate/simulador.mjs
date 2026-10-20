@@ -9,6 +9,7 @@ import * as Gemas from '../skills/gemas.mjs';
 import * as Atributos from '../personagem/atributos.mjs';
 import * as Limites from './limites.mjs';
 import * as F from './formulas.mjs';
+import * as ModsPoe from '../itens-poe/mods-poe.mjs';
 import { registrarGolpe, definirNivel, nivelDoRegistro, limparRegistro, ultimosGolpes } from './registro.mjs';
 
 /** A gema de ataque (a entrada do catálogo de ações) que o personagem tem equipada com este id. */
@@ -38,7 +39,11 @@ export function simular(estado, id, alvo = {}) {
   const penetracao = Limites.penetracaoDe(ficha.penetracao, tipo);
   const resistenciaEfetiva = Limites.resistenciaEfetiva(resistenciaDoAlvo, penetracao);
   const passa = Limites.danoAposResistencia(1, resistenciaEfetiva);
-  const chanceDeAcerto = entry.kind === 'spell' || entry.kind === 'rune' ? 1 : Atributos.chanceDeAcerto(ficha.accuracy, alvo.level ?? estado.level ?? 1);
+  // (lote A5b, dono 20/10: como o motor — a gema do PoE de ATAQUE rola com a precisão DO USO (as linhas da gema e dos suportes — `fichaDoGolpe`); a magia, o
+  // "Não pode ser Evadido" e a Técnica Resoluta (`nuncaErra`) acertam sempre. `alvo.evasao`: a evasão do alvo, se dada — senão, a da curva do nível)
+  const ehAtaque = entry.poeGema ? !!entry.poeGema.ataque && !entry.poeGema.buff : !(entry.kind === 'spell' || entry.kind === 'rune');
+  const fichaDoUso = ehAtaque && entry.poeGema ? ModsPoe.fichaDoGolpe(Acoes.comAsLinhasDaGema(estado, ficha, entry, efeito), ['habilidade', ...Acoes.tagsPoeDaSkill(entry)], { estado }) : ficha;
+  const chanceDeAcerto = !ehAtaque || fichaDoUso.nuncaErra ? 1 : Atributos.chanceDeAcerto(fichaDoUso.accuracy, alvo.level ?? estado.level ?? 1, alvo.evasao ?? null);
   // A cadência: a recarga da própria magia ou o intervalo global entre ataques, o que for maior (o motor espera os dois).
   // Gema do PoE: os tempos do PoE (sem o intervalo global do Draevor) — o tempo de uso, ou a recarga repartida pelas cargas, o que for maior.
   // (A estimativa não leva a lentidão passageira do personagem — resfriado agora não muda o DPS da ficha.)

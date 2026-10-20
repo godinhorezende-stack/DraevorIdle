@@ -181,6 +181,12 @@ const bichoForte = (forca = 1) => (e) => {
   naCacada(e, 'troll', forca);
   e.hunt.escala = { nivel: 2000, vida: 1, dano: 1, exp: 1 };
 };
+// (lote A5b, dono 20/10 — aval: no teto de 100% do PoE 1 o cavaleiro já acerta o troll de sempre; +1000% de evasão: 43% sem o anel, 100% com ele)
+const bichoEvasivo = (e) => {
+  const m = naCacada(e, 'troll', 1);
+  m.evasaoPct = 1000;
+  e.hunt.escala = { nivel: 2000, vida: 1, dano: 1, exp: 1 };
+};
 const comPeca = (slot, nome, base) => (e) => {
   naCacada(e, 'troll', 30);
   e.equipment[slot] = { id: idDe(nome), count: 1, base };
@@ -199,7 +205,8 @@ const SONDAS = {
   // Os 3 principais: STR (Life e dano físico), DEX (Accuracy, Evasion, Attack Speed), INT (Mana e dano mágico).
   str: ['knight', null, cacada(), golpes, 500, 'mais'],
   // (bicho de level alto: contra o troll, o DEX da vocação já bate no teto da esquiva)
-  dex: ['knight', null, bichoForte(30), recebido, 5000, 'menos'],
+  // (lote A5b, dono 20/10 — aval: +5000 deixa a evasão abaixo da conta do PoE 1 contra o troll de nível 2000; +50000 → esquiva ~35%)
+  dex: ['knight', null, bichoForte(30), recebido, 50000, 'menos'],
   int: ['sorcerer', null, cacada(), magia('spell-energy-strike'), 500, 'mais'],
   // Ofensivos.
   atk_flat: ['knight', null, cacada(), golpes, 50, 'mais'], // (não cai mais, mas as peças antigas seguem valendo)
@@ -207,7 +214,7 @@ const SONDAS = {
   phys_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   crit_chance: ['knight', null, cacada(), golpes, 50, 'mais'],
   crit_dmg: ['knight', null, cacada(), golpes, 200, 'mais'],
-  accuracy: ['knight', null, bichoForte(), golpes, 50000, 'mais'],
+  accuracy: ['knight', null, bichoEvasivo, golpes, 50000, 'mais'],
   // Penetração e ataque duplo (02/10): contra um bicho que resiste (60%), a penetração corta a resistência; o duplo dá um segundo golpe.
   phys_pen: ['knight', null, (e) => { naCacada(e, 'troll').resist = { physical: 60 }; }, golpes, 40, 'mais'],
   elem_pen: ['sorcerer', null, (e) => { naCacada(e, 'troll').resist = { energy: 60 }; }, magia('spell-energy-strike'), 40, 'mais'],

@@ -109,6 +109,10 @@ const REGRAS = [
   [/^Acertos tratam os valores da Resistência Elemental dos Monstros Inimigos como invertidos$/i, () => ({ chance_res_invertida: 100 })],
   [new RegExp(`^Inimigos Incendiados possuem -?${N} ?% de Resistência a Fogo$`, 'i'), (m) => ({ res_menos_fogo_incendiado: num(m[1]) })],
   [new RegExp(`^Penetra ${N} ?% da Resistência a (Fogo|Gelo|Raio)$`, 'i'), (m) => ({ [`${{ fogo: 'fire', gelo: 'ice', raio: 'energy' }[m[2].toLowerCase()]}_pen`]: num(m[1]) })],
+  // (lote A5b, dono 20/10: a PRECISÃO do uso — o "+X de Precisão" já vem do tradutor; o "% aumentada" na ordem do poedb, a qualidade da Precisão Adicional — e o
+  // "Não pode ser Evadido" das gemas Vaal, da Evisceração, do Punho Esmagador…: o acerto da gema de ataque não erra — `condicoes-poe.fichaDoGolpe`, `Defesa.errou`)
+  [new RegExp(`^${N} ?% de Precisão aumentada$`, 'i'), (m) => ({ accuracy_inc: num(m[1]) })],
+  [/^Não pode ser Evadido$/i, () => ({ nunca_erra: 1 })],
 ];
 
 /**
@@ -118,8 +122,10 @@ const REGRAS = [
  * (lote A5, dono 20/10: + o dreno de Escudo de Energia e o de Vida das magias — `Ficha.aplicarLeech` pela ficha do uso —, a Fortificação, o crítico sem
  * dano extra, o Golpe de Misericórdia do Normal/Mágico, o reflexo elemental — `Mecanicas.aoReceberDano` com a ficha do uso —, o Empalamento refletido,
  * o alcance corpo a corpo — o golpe da gema —, o "mais Dano só com Acertos", o máximo da Eletrização, a Exposição com chance e o −X% de Fogo dos Incendiados)
+ * (lote A5b, dono 20/10: + a precisão — `accuracy`, `accuracy_inc` — e o "Não pode ser Evadido" — `nunca_erra` —: a ficha do golpe as lê, e a gema de ataque
+ * rola o acerto por alvo com elas — `acoes.dispararSemMarcar`, `acertar`)
  */
-const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+|es_leech|es_leech_magia|vida_leech_magia|fortificacao_[a-z_]+|critico_sem_dano_extra|culling_[a-z_]+|imune_reflexo_elemental|empalar_[a-z_]+|alcance_corpo_m|mais_dano_acerto|eletrizacao_maximo|exposicao_chance_(fogo|gelo|raio)|res_menos_fogo_incendiado)$/;
+const LIDOS_NO_USO = /^(dmg_inc|crit_chance_inc|crit_chance|crit_dmg|crit_mais_pct|elem_pen|phys_pen|fire_pen|ice_pen|energy_pen|phys_dmg|fire_dmg|ice_dmg|energy_dmg|chaos_dmg|mais_dano|mais_dano_(fisico|fogo|gelo|raio|caos|elemental)|life_leech|mana_leech|poder_arcano|chance_dano_dobrado|chance_dano_triplo|ignora_reducao_fisica|nunca_critico|added_(fire|ice|energy|chaos|physical)_dmg_(min|max)|area_inc|area_mais|atk_speed|atk_speed_mais|cast_speed_tag|furia_por_acerto|life_on_hit|mana_on_hit|velocidade_clamor|enemy_stun_threshold_red|distancia_empurrao|stun_duration|chance_dobrar_atordoamento|culling|(eletrizacao|resfriamento|congelamento)_como_mais|(chance|dot|dano_dot|ailment|poison|bleed|ignite|duracao|efeito)_[a-z_]+|es_leech|es_leech_magia|vida_leech_magia|fortificacao_[a-z_]+|critico_sem_dano_extra|culling_[a-z_]+|imune_reflexo_elemental|empalar_[a-z_]+|alcance_corpo_m|mais_dano_acerto|eletrizacao_maximo|exposicao_chance_(fogo|gelo|raio)|res_menos_fogo_incendiado|accuracy|accuracy_inc|nunca_erra)$/;
 const lidoNoUso = (k) => LIDOS_NO_USO.test(partir(k).stat) && atributoTemEfeito(k);
 
 /** Os atributos de UMA linha (com os números do nível): `{ stat: valor }`, ou null se nenhuma regra tem efeito no uso da gema. */

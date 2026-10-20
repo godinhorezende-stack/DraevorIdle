@@ -338,6 +338,15 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - Depois: parcial 321 → 306 nas ativas; 135 → 112 nos suportes. A Precisão Adicional segue parcial (a D1 do f12 é o sublote A5b).
 - Fica: a conversão do Físico das magias (lote próprio — a Onda de Convicção e outras 23); Galvânico, Hidroesfera, Trindade, Inervação, Vínculo Frígido, Escudo Tempestuoso, Armadura Ártica (D12).
 
+### A5b — a precisão nas gemas de ataque (20/10, decisão do dono "fazer como o PoE" + a revisão adversarial)
+
+- **A conta do acerto do PoE 1 pelo PoB** (`combate/formulas.mjs` `chanceDeAcertoPoe`, `formulas.json` acerto.poe): min(1, max(0,05, round(1,25 × precisão / (precisão + (evasão / 5)^0,9) × 100) / 100)) — o seu acerto, o dos lacaios e o dos monstros em você (a esquiva). Antes: precisão / (precisão + (evasão / 4)^0,8), de 5% a 95%.
+- **A gema de ATAQUE rola o acerto por alvo** (`acoes.mjs`, `acertar`): a precisão do uso (a ficha do golpe com o "+X de Precisão" e o "% aumentada" da gema e dos suportes — `condicoes-poe.fichaDoGolpe`, `precisaoDaConta`) contra a evasão do bicho, por `Defesa.errou`. Também o ataque do totem (a sua precisão) e os acertos de ataque por fora do uso (a Onda de Choque e a Tormenta do Vazio, a Torre Óssea — `acertoDoArauto({ ataque })`). A magia, os Arautos e a Onda Arcana não rolam.
+- **As exceções:** "Acertos não podem ser Evadidos" (peça), a Técnica Resoluta, o "Não pode ser Evadido" das gemas (18 — deixou de ser informativo; `nunca_erra` local), os Provocados por você.
+- **O erro:** o evento do golpe básico (`block`/`errou`), sem dano, afecções, efeitos do acerto nem o que o acerto gasta. O bloqueio vem depois do acerto: o bloqueado conta como acertado. O que sai no acerto dentro de um passe (a propagação, os próximos do alvo, o cone) olha os acertados do passe; o do fim do uso (Rajada Vulcânica, Onda do Vazio, Devastar, Fantasma, Empurrão do Salto Impactante) os acertados em algum passe.
+- **A precisão LOCAL da arma** ("+X de Precisão" na arma → `accuracy_local`, tradução 72): só na mão dela (`fichaDaMao`; o golpe das duas, a média). **A Técnica Precisa por uso** (a precisão do uso contra a vida máxima). **O simulador** usa a precisão do uso e a mesma isenção do motor.
+- A Precisão Adicional saiu de parcial. Teste novo: `game/testes/precisao-a5b.test.mjs`. Com o aval do dono: `suportes-a5.test.mjs:104-105`.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
@@ -349,6 +358,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 7. **A interface:** o balão da gema mostra as linhas da qualidade que não valem; marcar cada linha (feita / não feita) e o motivo, nos encaixes e na barra.
 8. ~~Testes parametrizados~~ feito no G16 (uso real e dano/buff de toda ativa `funciona`; efeito lido de todo suporte `funciona`). Falta: medir o efeito de CADA suporte num uso (com e sem), não só que o código o lê.
 9. **O "Dano de Fogo/Gelo/Raio aumentado" dos suportes** vale para todo o dano da habilidade que tem a tag (`valeParaOTipo` → `danoPct`): numa habilidade de dano misto, o PoE só aumenta a parte daquele elemento. Trocar por `af:fire_dmg`… (a ficha do golpe aplica por elemento).
+10. **Acertos secundários de ataque de itens** (A5b, revisão): a Rajada Vulcânica e outros acertos de ataque que vêm de itens não rolam a precisão.
 
 ## Próximo passo exato
 

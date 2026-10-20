@@ -162,7 +162,8 @@ export function fichaDaMao(ficha, mao = 'principal', [pesoPrincipal, pesoSecunda
   const pontos = mao === 'secundaria' ? ficha.critPontosSecundaria : (ficha.critPontos * pesoPrincipal + ficha.critPontosSecundaria * pesoSecundaria) / Math.max(1e-9, pesoPrincipal + pesoSecundaria);
   const chance = Math.min(ficha.critTeto ?? 1, Math.max(0, pontos * (1 + (ficha.critInc ?? 0) / 100) * (ficha.critMais ?? 1)));
   // (a chance refeita não é a Sortuda — `critSortudo` sai: o sorteio do golpe rola duas vezes)
-  return { ...ficha, critPontos: pontos, critChance: chance, critSortudo: false, mao };
+  // (lote A5b, dono 20/10: a precisão da mão — a local da arma dela, `contaDaPrecisao`)
+  return { ...ficha, critPontos: pontos, critChance: chance, critSortudo: false, mao, ...(ficha.contaDaPrecisao ? { accuracy: ModsPoe.precisaoDaConta(ficha.contaDaPrecisao, mao) } : {}) };
 }
 
 /** O bônus de empunhar DUAS ARMAS no PoE: +15% de chance de bloqueio (somada) e 10% mais velocidade de ataque. */
@@ -258,6 +259,12 @@ function calcularCombate(estado, extrasDoPoe = null) {
    */
   const esp = Especializacoes.efeitos(estado);
   const espStat = (k) => esp.stats[k] ?? 0;
+  // (lote A5b, dono 20/10) a conta da PRECISÃO no PoE: a global (`af.accuracy`, o % e os "menos/mais") e a LOCAL de cada arma ("+X de Precisão" na arma —
+  // `accuracy_local`, só nos acertos dela; com duas armas, cada mão com a sua); a ficha mostra a da mão principal
+  const localDaPrecisao = (slot) => Number(estado.equipment?.[slot]?.poe?.af?.accuracy_local) || 0;
+  const contaDaPrecisao = itensPoeLigado()
+    ? { base: Atributos.precisaoBase(estado.level), fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0), fator: Math.max(0, 1 - (af.accuracy_less ?? 0) / 100) * Math.max(0, 1 + (af.accuracy_mais ?? 0) / 100), localPrincipal: localDaPrecisao('weapon'), localSecundaria: armaSecundaria ? localDaPrecisao('shield') : 0 }
+    : null;
   const bonusDePericia = {};
   const somaPericia = (k, v) => { const p = Treino.canonica(k); bonusDePericia[p] = (bonusDePericia[p] ?? 0) + v; };
   for (const it of itens) for (const [k, v] of Object.entries(it.skillBonus ?? {})) somaPericia(k, v);
@@ -500,7 +507,11 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
     // PoE: × (1 + "Precisão Global aumentada") × (1 − "X% menos Precisão").
     // (ciclo 7: + o "X% mais Precisão" sem condição do alvo — "5% mais Precisão por Carga de Frenesi")
-    accuracy: Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100) * Math.max(0, 1 + (itensPoeLigado() ? af.accuracy_mais ?? 0 : 0) / 100)),
+    // (lote A5b, dono 20/10: no PoE, pela conta guardada — `contaDaPrecisao`, com a precisão LOCAL da arma da mão principal)
+    accuracy: contaDaPrecisao ? ModsPoe.precisaoDaConta(contaDaPrecisao) : Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100) * Math.max(0, 1 + (itensPoeLigado() ? af.accuracy_mais ?? 0 : 0) / 100)),
+    // (lote A5b, dono 20/10: as partes da conta da Precisão — a ficha do golpe refaz a precisão do USO com o "+X de Precisão" e o "% aumentada" da gema e dos
+    // suportes, `condicoes-poe.fichaDoGolpe`; a mão secundária, com a local da arma dela — `fichaDaMao`)
+    ...(contaDaPrecisao ? { contaDaPrecisao } : {}),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
@@ -560,7 +571,7 @@ function calcularCombate(estado, extrasDoPoe = null) {
     // nos ataques e nas magias, e vida/mana por abate e por acerto.
     danoDeMagiaDoPoe: af.spell_dmg ?? 0,
     // (+ o "X a Y de Dano de Raio de Ataques Adicional por cada N de Precisão" do PoE.)
-    danoSomado: comRaioPorPrecisao(somado('added_'), af, Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100))),
+    danoSomado: comRaioPorPrecisao(somado('added_'), af, Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0) + (contaDaPrecisao?.localPrincipal ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100))), // (lote A5b: + a precisão local da arma)
     // As afecções do PoE (chances, multiplicadores, duração) — só com o sistema do PoE ligado (`itens-poe/afeccoes.mjs`).
     afeccoes: itensPoeLigado() ? AfeccoesPoe.daSoma(af) : null,
     // As cargas do PoE: o fator do golpe (4% mais por Frenesi, dano por Poder) e as regras de máximo/duração/ganho (`itens-poe/cargas.mjs`).
@@ -817,6 +828,8 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosI
   por('accuracy', `Base do level ${estado.level ?? 1}`, Atributos.precisaoBase(estado.level));
   por('accuracy', `DEX (${principais.dex})`, doAtributo.precisao);
   por('accuracy', 'Equipamento', af.accuracy ?? 0);
+  // (lote A5b: a precisão local da arma da mão principal)
+  por('accuracy', 'Arma (local)', Number(estado.equipment?.weapon?.poe?.af?.accuracy_local) || 0);
   for (const f of esp.fontes.accuracy ?? []) por('accuracy', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
   por('evasion', `DEX (${principais.dex})`, doAtributo.evasao);
   por('evasion', 'Equipamento', af.evasion ?? 0);

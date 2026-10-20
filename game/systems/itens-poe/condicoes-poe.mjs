@@ -14,6 +14,7 @@ import { maximo as maximoDeCargas } from './cargas.mjs';
 import { maldicoesNoJogador as maldicoesDoMapa } from './mapas.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
+import { simples } from '../combate/modificadores.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { quemRecebeAMaldicao } from './vinculos.mjs';
 import * as Aliados from './aliados.mjs';
@@ -1586,6 +1587,18 @@ export function congelarDaRampa(uso, u) {
   return pct * Math.max(0, 1 - u / ate);
 }
 
+/**
+ * (lote A5b, dono 20/10) A PRECISÃO pela conta da ficha (`ficha.contaDaPrecisao`): (base + fixos + a LOCAL da arma da mão + `fixos` a mais) × (1 + (o % da ficha +
+ * `pct` a mais)/100) × os "menos/mais" da ficha. A mão: a principal, a `secundaria` (a arma dela, com duas armas) ou `ambas` (o golpe que combina as duas — a
+ * média das duas locais).
+ */
+export function precisaoDaConta(c, mao = null, { fixos = 0, pct = 0 } = {}) {
+  if (!c) return 0;
+  const lp = Number(c.localPrincipal) || 0;
+  const ls = Number(c.localSecundaria) || 0;
+  const local = mao === 'secundaria' ? ls : mao === 'ambas' ? (lp + ls) / 2 : lp;
+  return Math.round(simples(c.base, { fixos: c.fixos + local + fixos, pct: c.pct + pct }).bruto * c.fator);
+}
 export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng = Math.random } = {}) {
   if (!ligado() || !ficha?.afPoe) return ficha;
   const agora = estado?.hunt?.clock ?? 0;
@@ -1669,6 +1682,11 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   const invertida = chance('chance_res_invertida') > 0 && rng() * 100 < chance('chance_res_invertida');
   const f = { ...ficha };
   f.tagsDoGolpe = [...t];
+  // (lote A5b, dono 20/10: a PRECISÃO deste golpe — o "+X de Precisão" e o "X% de Precisão aumentada" com as tags dele: a gema e os suportes (a Precisão
+  // Adicional, pela tag `habilidade`) somam à conta da ficha, como o PoE soma os modificadores da habilidade; e o "Não pode ser Evadido" da gema — o mesmo
+  // `nuncaErra` do "Acertos não podem ser Evadidos" — `Defesa.errou`)
+  if (ficha.contaDaPrecisao && ((s.accuracy ?? 0) || (s.accuracy_inc ?? 0))) f.accuracy = precisaoDaConta(ficha.contaDaPrecisao, ficha.mao, { fixos: s.accuracy ?? 0, pct: s.accuracy_inc ?? 0 });
+  if ((s.nunca_erra ?? 0) > 0) f.nuncaErra = true;
   // (lote 71: o golpe já Dobrado/Triplicado — o "Seus Golpes Críticos têm chance de causar Dano Dobrado" não dobra de novo: `Ficha.rolarCritico`)
   f.danoDobradoNoGolpe = triplo || dobro;
   // "X% mais/menos Dano" (com condição): multiplica o golpe inteiro (o mesmo fator das cargas, em `Ficha.rolarCritico`).
@@ -1680,6 +1698,14 @@ export function fichaDoGolpe(ficha, tags = [], { alvo = null, estado = null, rng
   // (+ lote 33, P045: o Impacto — "até X% mais Dano Corpo a Corpo … baseado na proximidade", `maisPelaProximidade`)
   const fator = (triplo ? 3 : dobro ? 2 : 1) * Math.max(0, 1 + mais / 100) * (1 + furia / 100) * maisArea * maisDoCaminho * pelaDistancia(ficha, t, alvo, estado) * maisPelaProximidade(ficha, t, alvo, estado);
   if (fator !== 1) f.fatorDasCargas = (ficha.fatorDasCargas ?? 1) * fator;
+  // (lote A5b, dono 20/10) a Técnica Precisa POR USO: "40% mais Dano de Ataque se a Precisão for maior que a Vida máxima" — a precisão deste golpe (a do uso)
+  if (ficha.tecnicaPrecisa && t.has('ataque') && estado) {
+    const vale = (f.accuracy ?? 0) > (estado.maxHp ?? Infinity);
+    if (vale !== ficha.tecnicaPrecisa.aplicada) {
+      f.fatorDasCargas = (f.fatorDasCargas ?? 1) * (vale ? ficha.tecnicaPrecisa.fator : 1 / ficha.tecnicaPrecisa.fator);
+      f.tecnicaPrecisa = { ...ficha.tecnicaPrecisa, aplicada: vale };
+    }
+  }
   // (lote 30, P016/P076) o "X% mais Dano de <tipo>" com as condições deste golpe (o sem condição está na ficha) — `fatorRecebidoPeloBicho` o
   // aplica só na parte daquele tipo.
   const maisDoElemento = Object.fromEntries(Object.entries(MAIS_DANO_DO_TIPO).map(([el, k]) => [el, (s[k] ?? 0) + (Number(ficha.afPoe[k]) || 0)]).filter(([, x]) => x));

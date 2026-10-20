@@ -103,6 +103,9 @@ function aplicarDoPoe(ficha, id, principais, estado) {
       // 40% mais Dano de Ataque se a Precisão for maior que a Vida máxima; nunca crítico.
       semCritico();
       if ((ficha.accuracy ?? 0) > (estado?.maxHp ?? Infinity)) multiplicarDano(1.4);
+      // (lote A5b, dono 20/10: POR USO — a ficha do golpe compara a precisão DO USO, com a da gema e dos suportes, com a vida máxima e acerta o fator:
+      // `condicoes-poe.fichaDoGolpe`; `aplicada`: a ficha já multiplicou pela precisão do personagem)
+      ficha.tecnicaPrecisa = { fator: 1.4, aplicada: (ficha.accuracy ?? 0) > (estado?.maxHp ?? Infinity) };
       break;
     case 'vontadeDeFerro': {
       // O bônus de dano da Força também vale para o dano mágico (o mesmo % que a STR dá ao físico).

@@ -56,12 +56,18 @@ export function reducaoDeArmaduraPoe(armadura, danoFisico, coeficiente = PARAMET
 
 // ---------------------------------------------------------------- acerto e evasão
 
-/** O modo 'poe': a chance de acerto = precisão / (precisão + (evasão / 4)^0,8), entre 5% e 95%. */
+/**
+ * O modo 'poe': a chance de acerto do PoE 1 pelo PoB (lote A5b, dono 20/10) — round(1,25 × precisão / (precisão + (evasão / 5)^0,9) × 100) / 100,
+ * entre 5% e 100%. A mesma conta para o seu acerto, o dos lacaios e o dos monstros em você (a esquiva = 1 − ela). Os números moram em
+ * `formulas.json` (acerto.poe). (Antes: precisão / (precisão + (evasão / 4)^0,8), de 5% a 95%.)
+ */
 export function chanceDeAcertoPoe(precisao, evasao) {
   const p = PARAMETROS.acerto.poe;
   if (!(precisao > 0)) return p.minimo;
-  const bruta = precisao / (precisao + Math.pow(Math.max(0, evasao) / p.divisorDaEvasao, p.expoente));
-  return Math.min(p.maximo, Math.max(p.minimo, bruta));
+  const bruta = ((p.fator ?? 1) * precisao) / (precisao + Math.pow(Math.max(0, evasao) / p.divisorDaEvasao, p.expoente));
+  const casas = p.casas ?? null;
+  const arredondada = casas == null ? bruta : Math.round(bruta * 10 ** casas) / 10 ** casas;
+  return Math.min(p.maximo, Math.max(p.minimo, arredondada));
 }
 
 /**

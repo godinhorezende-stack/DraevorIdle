@@ -31,6 +31,7 @@ import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
+import * as Defesa from './personagem/defesa.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG, CHARACTER_TEMPLATE, CATALOGO } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -869,6 +870,16 @@ export function acertoDoArauto(estado, hunt, id, m, bruto, elemento, { tags = nu
   const t = tags ?? tagsDoArauto(entry);
   const ef = Gemas.efeitoNaSkill(estado, id);
   const f = ModsPoe.fichaDoGolpe(fichaBase, t, { alvo: m, estado });
+  // (lote A5b, dono 20/10) o acerto de ATAQUE que sai por aqui (a Onda de Choque e a Tormenta das Excepcionais do Vazio, a explosão da Torre Óssea) rola o
+  // acerto como as gemas de ataque: a precisão do uso (as linhas da gema e dos suportes, a tag `habilidade`) contra a evasão do alvo. Errou: o evento do erro
+  // e `null` (quem chama não o conta como acertado). Os Arautos e a Onda Arcana (sem `ataque`) não rolam
+  if (ataque && itensPoeLigado()) {
+    const doUso = ModsPoe.fichaDoGolpe(comAsLinhasDaGema(estado, fichaBase, entry, ef), [...new Set(['habilidade', ...t])], { alvo: m, estado });
+    if (Defesa.errou(doUso, hunt, m)) {
+      eventos.push({ t: 'block', uid: m.uid, x: m.x, y: m.y, color: '#999999', esquiva: true, errou: true });
+      return null;
+    }
+  }
   const doSuporte = (1 + (ef?.danoPct ?? 0) / 100) * (ef?.fatorDeDano ?? 1);
   const comAumento = bruto * Math.max(0, 1 + (f.danoDoElemento?.[elemento] ?? 0) / 100) * ModsPoe.fatorDoDanoElemental(f, hunt, id, elemento) * doSuporte;
   // o crítico: a gema não tem — só o "+X% de Chance de Golpe Crítico" fixo das tags, × os "aumentados"
@@ -4690,6 +4701,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (PoE, 11/10: "Cada quarta Habilidade de Retaliação que você usar sempre será um Golpe Crítico" — este uso é o quarto?)
     const retaliacaoCritica = !!gatilhoDaRetaliacao && ModsPoe.valor(ficha, 'retaliacao_quarta_critica') > 0 && ((hunt.retaliacaoUsos ?? 0) + 1) % 4 === 0;
     let total = 0;
+    // (lote A5b, dono 20/10: "fazer como o PoE") a PRECISÃO das gemas de ATAQUE (as suas e as do totem — no PoE o ataque do totem também erra; a precisão
+    // é a sua): cada acerto rola o acerto no alvo (`acertar`). O bloqueio vem depois do acerto: o bloqueado conta como acertado. O que sai "no acerto"
+    // DENTRO de um passe (a propagação, os próximos do alvo, o cone) olha quem foi acertado NESTE passe (`acertouNoPasse` — o 1º golpe, cada repetição,
+    // os selos, a segunda ponta); o que sai no FIM do uso (a Rajada Vulcânica, a Onda do Vazio, o estágio do Devastar, o Fantasma, o Empurrão do Salto
+    // Impactante) olha quem foi acertado em algum passe (`acertouNoUso`)
+    const rolaPrecisao = itensPoeLigado() && !!entry.poeGema?.ataque;
+    const acertadosNoUso = new Set();
+    let acertadosNoPasse = new Set();
+    const acertouNoUso = (b) => !rolaPrecisao || acertadosNoUso.has(b);
+    const acertouNoPasse = (b) => !rolaPrecisao || acertadosNoPasse.has(b);
     // (PoE: o dano nos monstros com "Vida Não Pode ser Drenada" — fora do dreno de vida, `Ficha.aplicarLeech`.)
     let totalSemDreno = 0;
     let totalSemDrenoEs = 0;
@@ -4798,6 +4819,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const pct = contraVinculado && bicho.uid === plantada.vinculado ? pct0 * Math.max(0, 1 + contraVinculado / 100) : pct0;
       const noAlvo = ajusteDoAlvo(bicho);
       const fichaNoAlvo = noAlvo?.ficha ?? ficha;
+      // (lote A5b, dono 20/10: "fazer como o PoE") a gema de ATAQUE rola o acerto POR ALVO — a precisão do uso (a ficha do golpe, com a da gema e a dos
+      // suportes) contra a evasão do bicho, pela conta do golpe básico (`Defesa.errou`: as exceções "Acertos não podem ser Evadidos", a Técnica Resoluta, o
+      // "Não pode ser Evadido" da gema, os Provocados por você). A magia nunca erra; a gema só de dano contínuo não acerta. O erro é o evento do golpe
+      // básico: sem dano, sem afecções, sem os efeitos "ao acertar", sem gastar o que o acerto gasta (as Chamas, a Exposição…)
+      if (rolaPrecisao && !entry.overTime && Defesa.errou(fichaNoAlvo, hunt, bicho)) {
+        eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', esquiva: true, errou: true });
+        registrarGolpe(() => ({ origem: 'gema-errou', habilidade: entry.id, alvo: bicho.name, errou: true, precisao: fichaNoAlvo.accuracy ?? 0 }));
+        return;
+      }
+      if (rolaPrecisao) { acertadosNoUso.add(bicho); acertadosNoPasse.add(bicho); }
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
       // (lote A3c: o acerto da área no impacto tem o dano do projétil que a causou — `golpe.doImpacto`, a fonte do impacto)
@@ -5137,6 +5168,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // vez no uso. (revisão do A3c: também no Totem de Magia e na Balista — no PoE o projétil lançado pelo totem explode igual)
     const areaNoImpacto = !casas ? areaNoImpactoDoUso(entry, efeitoDaGema, intensidade) : null;
     const atacar = (segundo) => {
+      // (lote A5b) os acertados DESTE passe
+      acertadosNoPasse = new Set();
       // (lote G10: o uso que só CARREGA estágios — a Rajada de Chamas, a Flecha Flagelante antes do máximo — não acerta ninguém)
       // (lote A4, dono 19/10: o uso de carga da Ira Divina acerta os inimigos perto — `zapsDaIra`)
       // (lote A3b: + o uso que só deixa o objeto — a bola, o tornado, a espiral, o olho: o dano é o dele, no tique)
@@ -5152,7 +5185,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // (17/10, lote G18b) a Flecha Relampejante: "Acerta até N inimigos adicionais próximos ao alvo" — os até N vivos a 1 casa de cada atingido
       if (efeitoDaGema?.proximosDoAlvo > 0) {
         const ja = new Set(atingidos);
-        for (const centro of [...atingidos]) {
+        // (lote A5b: só em volta de quem o golpe acertou)
+        for (const centro of atingidos.filter(acertouNoPasse)) {
           for (const m of vivos.filter((b) => b.hp > 0 && !ja.has(b) && Math.max(Math.abs(b.x - centro.x), Math.abs(b.y - centro.y)) <= 1).slice(0, efeitoDaGema.proximosDoAlvo)) { ja.add(m); acertar(m, 100, 'proximo'); }
         }
       }
@@ -5161,7 +5195,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const ja = new Set(atingidos);
         const pct = propagaDoSuporte ? Math.max(0, 100 + (efeitoDaGema.propagaMaisPct ?? 0)) : 100;
         const raio = propagaDoSuporte ? 1 + ModsPoe.casasPelaArea(1, ModsPoe.fatorDaArea(efeitoDaGema.areaIncPct ?? 0, efeitoDaGema.areaMaisPct ?? 0, efeitoDaGema.propagaAreaMaisPct ?? 0)) : 1;
-        for (const b of atingidos) for (const m of vivos) if (m.hp > 0 && !ja.has(m) && Math.max(Math.abs(m.x - b.x), Math.abs(m.y - b.y)) <= raio) { ja.add(m); acertar(m, pct, 'propagado'); }
+        // (lote A5b: o Dano Propagado sai do acerto — não em volta de quem o golpe errou)
+        for (const b of atingidos.filter(acertouNoPasse)) for (const m of vivos) if (m.hp > 0 && !ja.has(m) && Math.max(Math.abs(m.x - b.x), Math.abs(m.y - b.y)) <= raio) { ja.add(m); acertar(m, pct, 'propagado'); }
       }
       if (localAnterior && !segundo) {
         const ja = new Set(atingidos);
@@ -5212,7 +5247,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // cone sai do acertado na direção do tiro, no raio da gema, aberto pelo "Ângulo do Efeito em Área aumentado"; os do cone levam um acerto com
       // todo o Físico como Gelo (os +40% de conversão do PoB); o acertado não leva o do próprio cone
       if (coneDoTiro) {
-        const impactos = [...(!casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : []), ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)];
+        // (lote A5b: o cone sai do impacto que acertou)
+        const impactos = [...(!casas && !projeteisAleatorios() && !soNaVolta() ? atingidos : []), ...golpes.filter((g) => FONTES_DE_PROJETIL.has(g.tipo)).map((g) => g.bicho)].filter(acertouNoPasse);
         // (revisão do A4: o da Penetração — dois cones perpendiculares ao tiro, um de cada lado do alvo)
         const perpendiculares = GemasA4.conesPerpendiculares(entry.poeGema.slug);
         for (const b of impactos) {
@@ -5326,7 +5362,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       atingidos = daPrimeiraNova;
     }
     // (revisão do A1) o Salto Impactante EMPURRA quem acertou na queda (o PoB: `leap_slam_always_knockback_within_range`) — o Empurrão do jogo
-    if (plano && desloc.empurra) for (const m of doDeslocamento) if (m.hp > 0) ModsPoe.empurrar(hunt, m);
+    if (plano && desloc.empurra) for (const m of doDeslocamento) if (m.hp > 0 && acertouNoUso(m)) ModsPoe.empurrar(hunt, m); // (lote A5b: só quem foi acertado)
     // (lote A1, dono 19/10) a SEGUNDA PONTA do deslocamento: a mesma área na outra ponta, um acerto a mais (como no PoE, quem está nas duas leva os
     // dois). A Vaal do Teleporte (D6) leva antes os bichos que você acertou para lá — os que cabem nas casas livres em volta do destino.
     if (segundaPonta) {
@@ -5500,15 +5536,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const corpoACorpo = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id))?.tags?.includes('poe:Corpo a Corpo');
       if (corpoACorpo && atingidos.some((b) => b.hp <= 0)) ativarGatilhos(estado, hunt, personagem, 'abate', { acao: entry.id, alvo: vivoAinda }, eventos);
       // (14/10, a Rajada Vulcânica: "ao atingir corpo a corpo")
-      if (corpoACorpo && atingidos.length) rajadaVulcanica(estado, hunt, atingidos[0], eventos);
+      // (lote A5b: no primeiro que o golpe acertou)
+      const primeiroAcertado = atingidos.find(acertouNoUso);
+      if (corpoACorpo && primeiroAcertado) rajadaVulcanica(estado, hunt, primeiroAcertado, eventos);
     }
     // (14/10, o Convocar Fantasma: o golpe fatal e o acerto no Raro/Único das habilidades suportadas)
-    if (efeitoDaGema && atingidos.length) convocarFantasmas(estado, hunt, efeitoDaGema, atingidos);
+    // (lote A5b: o acerto no Raro/Único — quem o golpe errou não conta)
+    if (efeitoDaGema && atingidos.length) convocarFantasmas(estado, hunt, efeitoDaGema, atingidos.filter(acertouNoUso));
     // (lote A5, dono 20/10) "Recupera X% de Vida quando Habilidades Suportadas Matam um Inimigo" (o Golpe de Misericórdia e o Abater o Fraco): X% da Vida máxima
     // por inimigo que este uso matou — o abate seu (`QuemFeriu.abateSeu`; o do totem não é seu)
     if (!doTotem && efeitoDaGema?.vidaAoMatarPct > 0 && atingidos.length) vidaAoMatarDoSuporte(estado, hunt, personagem, efeitoDaGema.vidaAoMatarPct, atingidos, eventos);
     // (lote A4, dono 19/10) as Excepcionais do Vazio: a Onda de Choque no acerto corpo a corpo (no primeiro acertado) e a Tormenta onde o ataque cai
-    if (itensPoeLigado() && efeitoDaGema?.ondaDoVazio && !gatilho && !plantada && !doTotem && atingidos.length && tagsPoeDaSkill(entry).includes('corpo')) eventos.push(...ondaDoVazio(estado, hunt, entry, efeitoDaGema, atingidos[0], personagem, agora));
+    if (itensPoeLigado() && efeitoDaGema?.ondaDoVazio && !gatilho && !plantada && !doTotem && atingidos.some(acertouNoUso) && tagsPoeDaSkill(entry).includes('corpo')) eventos.push(...ondaDoVazio(estado, hunt, entry, efeitoDaGema, atingidos.find(acertouNoUso), personagem, agora));
     if (itensPoeLigado() && efeitoDaGema?.tormentaDoVazio && !gatilho && !plantada && !doTotem && (formaNoUso || alvo)) porTormentaDoVazio(hunt, entry, efeitoDaGema, formaNoUso ?? alvo, agora);
     // (lote A4, dono 19/10: D10) o Atirar liberou com gemas de arco ligadas: uma ativação por estágio, com o "mais por Estágio do Tiro" × os estágios
     if (atirarSuportadas) ativarGatilhos(estado, hunt, personagem, 'snipe', { acao: entry.id, alvo: alvo?.hp > 0 ? alvo : null, vezes: estagioDoUso.estagio, maisAcertoPct: (estagioDoUso.estagio * (estagioDoUso.est.mais - estagioDoUso.est.maisAmbos)), maisAfeccaoPct: estagioDoUso.estagio * estagioDoUso.est.maisAfeccao }, eventos);
@@ -5530,7 +5569,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
     }
     // (lote A4, dono 19/10: E2) o Devastar que acertou ganha 1 estágio
-    if (semCanalizar?.est.modo === 'acerto' && atingidos.length) devastarAcertou(hunt, entry, semCanalizar.est, inicio);
+    // (lote A5b: só o uso que acertou alguém)
+    if (semCanalizar?.est.modo === 'acerto' && atingidos.some(acertouNoUso)) devastarAcertou(hunt, entry, semCanalizar.est, inicio);
   }
 
   // Gemas: "-Ns recarga de <magia>" (supremo), sem passar de zero.
@@ -6386,8 +6426,8 @@ function ondaDoVazio(estado, hunt, entry, ef, centro, personagem, agora) {
     for (const m of [...(hunt.monstros ?? [])]) {
       if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (hunt.z ?? 0) || distanciaChebyshev(m, c) > r) continue;
       const bruto = ((arma.min + Math.random() * (arma.max - arma.min)) * (ef.ondaDanoPct ?? 100) * (1 + (ef.ondaIncPct ?? 0) / 100) * pct) / 10000;
-      acertoDoArauto(estado, hunt, entry.id, m, bruto, 'physical', { tags, eventos, fonte: 'onda-do-vazio', personagem, ataque: true });
-      acertados.push(m);
+      // (lote A5b: só quem foi acertado de fato — o errado não é centro de repetição)
+      if (acertoDoArauto(estado, hunt, entry.id, m, bruto, 'physical', { tags, eventos, fonte: 'onda-do-vazio', personagem, ataque: true }) !== null) acertados.push(m);
     }
     return acertados;
   };
