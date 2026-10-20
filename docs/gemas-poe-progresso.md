@@ -424,7 +424,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
   1. o Castigo exclui os bonecos de treino do raio, como os toques da Ira Divina;
   2. o raio da Vaal Cutilada é o da Cutilada;
   3. a Cadência começa pela mão que o revezamento do golpe básico der (o D1.5 pedia a principal; o revezamento é comum a todas as gemas).
-- **Fica para o dono:** a Ruptura de Trarthus ("Onda pode recomeçar até 3 vezes", o "se houver um inimigo no alcance" sem número).
+- **A Ruptura de Trarthus (decisão do dono, 20/10):** a onda recomeça até 3 vezes (sunder_number_of_fake_chains 3). Recomeça se houver um inimigo vivo onde a próxima onda chegaria: a até 4 casas (8 m, o comprimento da onda) do centro da última área. Vai na direção do mais perto, pela reta da grade. O raio volta ao início a cada recomeço, como o PoB sugere (o SunderWaveArea conta só dentro de uma onda). As escolhas sem fonte do C1 (o raio da Cutilada Vaal, o Castigo sem os bonecos, a Cadência pela secundária) ficaram aprovadas.
 - Teste novo: `game/testes/ativas-c1.test.mjs` (15 casos, os sorteios travados).
 - **Teste que segue quebrado pelo progresso, para o aval:** `itens-poe-gemas.test.mjs:36` exige `st.parcial > 300`; agora são 284 (273 parciais + 11 de limitação do idle).
 - Depois: parcial 287 → 273 nas ativas; 111 → 111 nos suportes.

@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 236,
+   "implementada e testada": 237,
    "implementada, sem teste próprio": 52,
-   "parcial": 262,
+   "parcial": 261,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 107,
+   "implementada e testada": 108,
    "implementada, sem teste próprio": 23,
-   "parcial": 74,
+   "parcial": 73,
    "limitação do modelo idle": 6
   },
   "suportes": {
@@ -30,9 +30,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 72,
+    "implementada e testada": 73,
     "implementada, sem teste próprio": 27,
-    "parcial": 103,
+    "parcial": 102,
     "limitação do modelo idle": 7
    }
   },
@@ -44,7 +44,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 681,
+   "linhasDistintas": 680,
    "emDuasOuMais": 125
   },
   "imagens": {
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 326,
+   "ativasCitadas": 327,
    "suportesCitados": 117,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -908,10 +908,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "impacto",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Onda pode recomeçar até 3 vezes Áreas de onda ganham +0.1 metros de raio para cada área anterior"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -14659,12 +14657,6 @@
    "linha": "Onda de Choque causa +# % mais Dano",
    "gemas": [
     "Purifying_Flame_of_Revelations"
-   ]
-  },
-  {
-   "linha": "Onda pode recomeçar até # vezes Áreas de onda ganham +# metros de raio para cada área anterior",
-   "gemas": [
-    "Sunder_of_Trarthus"
    ]
   },
   {
