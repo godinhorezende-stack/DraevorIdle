@@ -3966,10 +3966,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const tipoPlantado = Plantadas.tipoDaGema(entry, efeitoDaGema);
   // (lote A3b, dono 19/10) o OBJETO que este uso deixa no chão ou no tempo (`GemasPoe.objetoDaGema`, `criarObjetosDoUso`): o seu uso e o do totem (D3) — a
   // armadilha, a mina e o golpe que já sai de um objeto não deixam. `semAcerto`: o uso não acerta na hora (a bola, o tornado, a espiral, o olho)
-  const objetoDoUso = itensPoeLigado() && entry.poeGema && !entry.poeGema.lacaio && !tipoPlantado && (!plantada || plantada.tipo === 'totem') ? GemasPoe.objetoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  const objetoDaGemaNoUso = itensPoeLigado() && entry.poeGema && !entry.poeGema.lacaio && !tipoPlantado && (!plantada || plantada.tipo === 'totem') ? GemasPoe.objetoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  // (lote B1, dono 20/10 — D-B1.10) a Invocar Tormenta: na chance da qualidade, o raio cai NA HORA (o uso acerta como sempre, sem o marcador); os outros marcadores
+  // dela caem junto (`tormentasCaem`)
+  const tormentaNaHora = objetoDaGemaNoUso?.tipo === 'tormenta' && Math.random() * 100 < (objetoDaGemaNoUso.naHoraPct ?? 0);
+  const objetoDoUso = tormentaNaHora ? null : objetoDaGemaNoUso;
   // (lote A3b: D1/D2: os Disparos Congelantes de que esta Nova explode — `novasDosDisparos`; D8: as Lâminas Persistentes deste uso — `laminasDoUso`; os
   // projéteis que saíram — `emitidosDoUso`)
   let novasDosDisparos = null;
+  // (lote B1, D-B1.8) os anéis das sequências da Chuva de Flechas Vaal (as casas de cada um), para a tela
+  let aneisDaChuva = null;
   let laminasDoUso = null;
   const emitidosDoUso = [];
   // (lote A1) a SEGUNDA PONTA do deslocamento (as casas da área lá) e quem ele acertou nas duas (a recarga do Piscar Gélido conta os da área)
@@ -4122,6 +4128,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote B1, dono 20/10) "Acerta até N Inimigos" (o Condutor Elétrico dos Céus — o nível + a qualidade): os N da área mais perto do centro dela
     const maxAlvos = casas && itensPoeLigado() && entry.poeGema ? GemasPoe.maxAlvosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
     if (maxAlvos) atingidos = GemasB1.maisPertoDoCentro(atingidos, formaNoUso ?? alvo ?? hunt.pos, maxAlvos);
+    // (lote B1, dono 20/10 — D-B1.8) as SEQUÊNCIAS da Chuva de Flechas Vaal (1 + 4): anéis concêntricos iguais no raio da área, a partir do alvo (o PoE e o poedb
+    // não publicam o passo); cada inimigo leva só o golpe do anel em que está — o acerto da área, uma vez —, e a tela recebe um anel por sequência (`aneisDaChuva`)
+    const seqDaChuva = casas && formaNoUso && itensPoeLigado() && entry.poeGema ? GemasPoe.sequenciasDaChuvaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
+    if (seqDaChuva > 1) {
+      const d = (c) => Math.max(Math.abs(c.x - formaNoUso.x), Math.abs(c.y - formaNoUso.y));
+      const raio = casas.reduce((r, c) => Math.max(r, d(c)), 0);
+      aneisDaChuva = Array.from({ length: seqDaChuva }, () => []);
+      for (const c of casas) aneisDaChuva[GemasB1.anelDaCasa(d(c), raio, seqDaChuva)].push(c);
+    }
     // (lote A3b: D2) as outras novas dos Disparos Congelantes: a mesma área (com a Área de Efeito do uso), em cada um dos outros Disparos
     if (novasDosDisparos && casas && formaNoUso) novasDosDisparos.casas = novasDosDisparos.marcas.slice(1).map((c) => ({ c, cs: casas.map((q) => ({ x: q.x - formaNoUso.x + c.x, y: q.y - formaNoUso.y + c.y })) }));
     if (plano) for (const b of atingidos) doDeslocamento.add(b);
@@ -4697,6 +4712,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const exposicaoDoUso = itensPoeLigado() && entry.poeGema ? GemasPoe.exposicaoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
     const msDaExposicao = exposicaoDoUso ? Math.round(exposicaoDoUso.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema)) : 0;
     const regenMenosDoUso = exposicaoDoUso ? GemasPoe.regenMenosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) ?? 0 : 0;
+    // (lote B1, dono 20/10 — D-B1.9) a Chuva Tóxica do Definhamento: 1 Definhamento (2 s) por uso em cada inimigo acertado — `definhadosNoUso`
+    const definhaDoUso = itensPoeLigado() && entry.poeGema ? GemasPoe.definhamentoDaChuvaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
+    const definhadosNoUso = new Set();
     const exporNoAcerto = (bicho, el) => {
       if (el && ModsPoe.porExposicao(bicho, el, exposicaoDoUso.pct + Math.abs(ModsPoe.valor(ficha, { fire: 'exposicao_extra_fogo', ice: 'exposicao_extra_gelo', energy: 'exposicao_extra_raio' }[el])), msDaExposicao, agora) && !doTotem) ModsPoe.marcar(hunt, 'infligiuExposicao', agora);
     };
@@ -5037,6 +5055,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       // (f34 D2) o Condutor Elétrico tira a Eletrização do alvo depois do acerto
       if (doCondutor?.tiraEletrizacao && dano > 0 && bicho.estados) { delete bicho.estados.chocado; delete bicho.estados.chocadosPilha; }
+      // (lote B1, D-B1.9) o Definhamento da Chuva Tóxica do Definhamento, uma vez por uso em cada um
+      if (definhaDoUso && dano > 0 && !definhadosNoUso.has(bicho)) { definhadosNoUso.add(bicho); for (let k = 0; k < definhaDoUso.n; k++) ModsPoe.porNoAlvoComMods(bicho, 'definhado', agora + definhaDoUso.ms, agora, ficha); }
       total += dano;
       if (noAlvo?.ficha) { rouboDosAlvos.vida += dano * ((noAlvo.ficha.lifeLeech ?? 0) - (ficha.lifeLeech ?? 0)); rouboDosAlvos.mana += dano * ((noAlvo.ficha.manaLeech ?? 0) - (ficha.manaLeech ?? 0)); }
       if (bicho.semDreno) totalSemDreno += dano;
@@ -5550,6 +5570,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // os Disparos que o Vórtice da Projeção destruiu; os seus projéteis que o Tornado absorve (D7)
     if (itensPoeLigado() && entry.poeGema) {
       const danoMedio = (partes ? partes.reduce((t, p) => t + ((p.min + p.max) / 2) * (p.mult ?? mult), 0) : ((min + max) / 2 + (daPericia ?? 0)) * mult * (sobrecarga ?? 1)) * (fatorDaGema ?? 1) / 100;
+      if (tormentaNaHora) tormentasCaem(hunt, entry.id, doTotem ? 'totem' : 'voce', agora);
+      if (aneisDaChuva && formaNoUso) aneisDaChuva.forEach((cs, k) => { if (cs.length) eventos.push({ t: 'area', id: entry.efeito ?? null, x: formaNoUso.x, y: formaNoUso.y, casas: Areas.paraTela(cs, formaNoUso), sk: entry.id, sequencia: k }); });
       if (objetoDoUso || laminasDoUso?.length || novasDosDisparos) {
         const conta = { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha, dotMagico: GemasPoe.dotEhMagico(entry.poeGema.slug) };
         eventos.push(...criarObjetosDoUso(estado, hunt, entry, efeitoDaGema, { obj: objetoDoUso, alvo, mira, x, y, formaNoUso, emitidos: emitidosDoUso, laminas: laminasDoUso, novas: novasDosDisparos, velDoTiro, conta, doTotem, dono: doTotem ? plantada?.dono ?? null : null, agora }));
@@ -6777,6 +6799,14 @@ function criarObjetosDoUso(estado, hunt, entry, ef, { obj, alvo, mira, x, y, for
     const n = obj.fim + extras;
     const doVoo = obj.noVoo ? { intervaloMs: voo / Math.max(1, n), proxima: agora + voo / Math.max(1, n), passoGraus: 360 / Math.max(1, n), noVooMax: n, fim: 0 } : { intervaloMs: obj.fragmentoMs, proxima: agora + obj.fragmentoMs, passoGraus: obj.passoGraus, fim: n };
     porObjeto(hunt, { ...base, tipo: 'olho', mov: 'reta', x, y, ox: x, oy: y, ang: rumo(alvo), vel, efeito: 'emitir', feitos: 0, ...doVoo, ate: agora + voo }, agora);
+  } else if (obj.tipo === 'tormenta') {
+    // (lote B1, dono 20/10 — D-B1.10) o MARCADOR da Invocar Tormenta: no alvo (ou na mira), o raio cai nele depois da duração (× os modificadores), uma vez, na
+    // área da gema (× √ da Área do uso, a fração como chance)
+    const c = mira ?? alvo ?? formaNoUso ?? { x, y };
+    const atraso = Math.max(1, Math.round(obj.atrasoMs * fd));
+    const raioM = GemasPoe.areaNoNivel(slug, nivel, q).raioM ?? 2;
+    const r0 = (raioM * Math.sqrt(ModsPoe.fatorDaArea(ef?.areaIncPct ?? 0, ef?.areaMaisPct ?? 0))) / 2;
+    porObjeto(hunt, { ...base, tipo: 'tormenta', mov: 'parado', x: c.x, y: c.y, efeito: 'pulso', raio: Math.trunc(r0) + (Math.random() < r0 % 1 ? 1 : 0), intervaloMs: atraso, proxima: agora + atraso, ate: agora + atraso }, agora);
   } else if (obj.tipo === 'marcador' && !doTotem) {
     // (D1) um marcador no fim do voo de cada projétil (a 7 casas, ou antes do terreno), por 2 s ÷ o mod de velocidade de projétil do uso
     const voos = emitidos.length ? emitidos : alvo ? [{ de: { x, y }, para: alvo }] : [];
@@ -6885,7 +6915,13 @@ function golpeDoObjeto(estado, hunt, personagem, o, alvo, extra, eventos) {
  * Tormenta Flamejante — o impacto num ponto sorteado da área, o primeiro com o "mais"; a Esfera do Vazio — o Tolhimento pela distância; o Vórtice de Lâminas —
  * o "mais por lâmina" e o intervalo pelas lâminas de agora.)
  */
+/** (lote B1, D-B1.10) Os marcadores da Invocar Tormenta de `acao` (de `dono`) caem agora: "causing lightning strikes at any other markers you've cast" (o PoB). */
+function tormentasCaem(hunt, acao, dono, t, exceto = null) {
+  for (const x of hunt.poeObjetos ?? []) if (x !== exceto && x.tipo === 'tormenta' && x.acao === acao && x.dono === dono && x.ate > t && x.proxima > t) x.proxima = t;
+}
 function pulsarObjeto(estado, hunt, personagem, o, t, eventos) {
+  // (lote B1, D-B1.10) o raio que cai num marcador faz os outros caírem junto
+  if (o.tipo === 'tormenta') { o.ate = Math.min(o.ate, t); tormentasCaem(hunt, o.acao, o.dono, t, o); }
   let centro = o;
   let raio = o.raio;
   const extra = {};

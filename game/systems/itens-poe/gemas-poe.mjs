@@ -989,7 +989,8 @@ export const snipeDaGema = (slug, nivel = 1) => comCache(A4, `sni|${slug}@${nive
  */
 const A3B = new Map();
 /** O objeto que o uso da gema deixa (`GemasA3b.objetoDaGema`): a bola, o tornado, a espiral, o olho, o marcador, o chão, as lâminas, a captura. */
-export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}));
+// (lote B1, dono 20/10 — D-B1.10: + o marcador da Invocar Tormenta, `GemasB1.tormentaDasLinhas`)
+export const objetoDaGema = (slug, nivel = 1, qualidade = 0) => comCache(A3B, `obj|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasA3b.objetoDaGema(slug, textosDaGema(slug, nivel).linhas, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}) ?? GemasB1.tormentaDasLinhas(slug, linhasDaQualidadeDe(slug, qualidade), compilada(slug, nivel, qualidade)?.stats ?? {}));
 /** (D2) O que a gema faz com os seus Disparos Congelantes (a Nova Glacial dos Disparos, o Vórtice da Projeção). */
 export const consomeDisparosDaGema = (slug, nivel = 1) => comCache(A3B, `con|${slug}@${nivel | 0}`, () => GemasA3b.consomeDisparos(slug, textosDaGema(slug, nivel).linhas));
 /** Os esporos da Flecha Flagelante. */
@@ -1037,6 +1038,10 @@ const B1 = new Map();
 export const descargaDaGema = (slug, nivel = 1, qualidade = 0) => comCache(B1, `des|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasB1.descargaDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
 /** O Condutor Elétrico dos Céus: o máximo de alvos. */
 export const maxAlvosDaGema = (slug, nivel = 1, qualidade = 0) => comCache(B1, `max|${slug}@${nivel | 0}@${qualidade | 0}`, () => GemasB1.maxAlvosDasLinhas(slug, ...linhasA1b(slug, nivel, qualidade)));
+/** (D-B1.8) A Chuva de Flechas Vaal: o total de sequências (1 + as adicionais). */
+export const sequenciasDaChuvaDaGema = (slug, nivel = 1) => comCache(B1, `seq|${slug}@${nivel | 0}`, () => GemasB1.sequenciasDaChuvaDasLinhas(textosDaGema(slug, nivel).linhas));
+/** (D-B1.9) A Chuva Tóxica do Definhamento: 1 Definhamento de 2 s por uso. */
+export const definhamentoDaChuvaDaGema = (slug, nivel = 1) => comCache(B1, `def|${slug}@${nivel | 0}`, () => GemasB1.definhamentoDaChuvaDasLinhas(textosDaGema(slug, nivel).linhas));
 /** A Bomba Congelante: a Regeneração de Vida reduzida do debuff. */
 export const regenMenosDaGema = (slug, nivel = 1) => comCache(B1, `reg|${slug}@${nivel | 0}`, () => GemasB1.regenMenosDasLinhas(slug, textosDaGema(slug, nivel).linhas));
 /** (D-B1.3) A Bomba Congelante da Aproximação: o "mais" por 0,1 s de duração. */

@@ -529,7 +529,8 @@ test('A5: as gemas ativas deste lote saíram de "parcial"', { skip: SEM }, () =>
     assert.equal(G.REGISTRO.get(s).statusNoJogo, 'funciona', `${s}: ${G.REGISTRO.get(s).motivosNoJogo.join(' | ')}`);
   }
   // as que seguem parciais por outras linhas, sem as deste lote
-  assert.deepEqual(G.REGISTRO.get('Lightning_Conduit').motivosNoJogo, ['efeito não simulado: Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada']);
+  // (lote B1, com o aval do dono 20/10: o Condutor Elétrico ficou completo — a conjuração vai para a recarga quando ativado, `GemasPoe.conjuracaoNaRecargaSeAtivada`)
+  assert.deepEqual(G.REGISTRO.get('Lightning_Conduit').motivosNoJogo, []);
   assert.ok(!G.REGISTRO.get('Frost_Bomb').motivosNoJogo.some((m) => /Exposição/.test(m)));
   assert.ok(!G.REGISTRO.get('Cold_Snap').motivosNoJogo.some((m) => /Solo Resfriado|Efeito de Resfriamento/.test(m)));
 });

@@ -349,7 +349,7 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 
 ### B1 — as ativas de área, nova, chuva e orbe que reusam o que já existe (20/10, as recomendações do plano aceitas)
 
-- **O plano tinha 24 gemas; depois do A5, A5b, A5c e A5d sobraram 18.** Saíram 15 de parcial. Ficam 3, com decisão do dono pendente.
+- **O plano tinha 24 gemas; depois do A5, A5b, A5c e A5d sobraram 18.** Saíram as 18 de parcial (15 no primeiro commit; as 3 que dependiam do dono, no segundo).
 - **A Descarga e a da Miséria** (`gemas-b1.mjs`, `acoes.mjs`, `GemasPoe.partesDaMagia` com `basePor`): o dano base de cada elemento × as cargas do tipo dele (Raio × Poder, Fogo × Tolerância, Gelo × Frenesi). A área ganha 15% mais (20% na Miséria) × o total de cargas, um "mais" só. As cargas saem depois do golpe, salvo a chance da qualidade (10% na 20). Sem carga, a gema não sai (`SEM_CARGAS`).
 - **O Condutor Elétrico:** o tempo de conjuração vai para a recarga do uso ativado por gatilho (a mesma linha da Explosão Invernal, agora pelo leitor da linha). **O dos Céus:** acerta até 15 (+4 da qualidade 20), os mais perto do centro da área, e não exige mais a Eletrização. O PoB só a exige na base ("strikes all Shocked enemies"); o A5 a exigia nas duas.
 - **As Bombas Congelantes:** a Regeneração de Vida −75% no debuff, junto da Exposição e pela mesma duração (`regenMenosDebuff`, `skills/estados.mjs`). A da Aproximação (D-B1.3): ⌊duração final ÷ 0,1 s⌋ × 10% mais nos acertos e × 3% nas afecções. Com 2 s, 200% e 60%; com a qualidade 20 (2,5 s), 250% e 75%.
@@ -366,12 +366,17 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
   1. o dos Céus escolhe os mais perto do centro;
   2. a Descarga tira as cargas depois do golpe (o dano e o crítico contam com elas);
   3. o cadáver adicional do Detonar soma só a explosão dele, como o Vaal já fazia com os cadáveres a mais.
-- Teste novo: `game/testes/ativas-b1.test.mjs` (14 casos, os sorteios travados). Nenhum teste existente foi alterado.
-- **Dois testes existentes quebram pela regra do PoE e esperam o aval do dono:**
-  - `gemas-todas-funcionam-poe.test.mjs:158` (G16): a Descarga e a da Miséria agora saem `SEM_CARGAS` sem carga, e o Condutor Elétrico não fere o alvo sem Eletrização. Com o aval, a montagem desse teste daria cargas e Eletrização a essas três;
-  - `suportes-a5.test.mjs:532`: esperava o Condutor Elétrico parcial pela linha da recarga. Agora os motivos são `[]`.
-- Depois: parcial 305 → 290 nas ativas; 111 → 111 nos suportes.
-- **Ficam para o dono:** a Chuva Tóxica do Definhamento (quantos Definhamentos por inimigo), as 4 sequências da Chuva de Flechas Vaal e a qualidade da Invocar Tormenta.
+- **As decisões do dono (20/10, o segundo commit):**
+  - D-B1.8, a Chuva de Flechas Vaal: as 4 sequências adicionais são anéis concêntricos iguais no raio da área, a partir do alvo. O PoE e o poedb não publicam o passo. Cada inimigo leva só o golpe do anel em que está, e a tela recebe um anel por sequência;
+  - D-B1.9, a Chuva Tóxica do Definhamento: 1 Definhamento de 2 s por uso em cada inimigo acertado;
+  - D-B1.10, a Invocar Tormenta: o marcador no alvo (`hunt.poeObjetos`, tipo `tormenta`) e o raio cai nele depois da duração (1,5 s × os modificadores), na área da gema. Quando um marcador cai, os outros da gema caem junto ("causing lightning strikes at any other markers", o PoB). A qualidade (15% na 20) faz o raio cair na hora, sem marcador;
+  - os Estalos Gélidos pulam a recarga gastando uma carga: Frenesi no comum, Poder no do Poder (o PoB; `CARGA_QUE_PULA_A_RECARGA`).
+- Teste novo: `game/testes/ativas-b1.test.mjs` (18 casos, os sorteios travados).
+- **Testes ajustados com o aval do dono (20/10):**
+  - `gemas-todas-funcionam-poe.test.mjs` (G16): a montagem dá Poder, Frenesi e Tolerância à Descarga e à da Miséria, e Eletriza o alvo do Condutor Elétrico;
+  - `suportes-a5.test.mjs:532`: o Condutor Elétrico completo (motivos `[]`).
+- **Teste que quebra pelo progresso, para o aval:** `itens-poe-gemas.test.mjs:36` exige `st.parcial > 300`; agora são 298 (287 parciais + 11 de limitação do idle).
+- Depois: parcial 305 → 287 nas ativas; 111 → 111 nos suportes.
 
 ## Pendências conhecidas (por ordem de prioridade)
 

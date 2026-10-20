@@ -134,6 +134,34 @@ export const geiserMaisRapidoDasLinhas = (linhas = []) => somar(linhas, LINHA_MA
 /** "Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada" (o PoB: spell_cast_time_added_to_cooldown_if_triggered). */
 export const LINHA_CONJURACAO_NA_RECARGA = /^Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada$/i;
 
+// ---------------------------------------------------------------- a Invocar Tormenta (D-B1.10)
+
+const LINHA_TORMENTA_NA_CONJURACAO = /^([\d.]+) % de chance do Relâmpago acertar o Marcador ao Conjurar$/i;
+/**
+ * (D-B1.10) A INVOCAR TORMENTA (o PoB, act_int.lua:18242: "Sets a marker at a location. After a short duration, lightning strikes the marker, dealing damage around
+ * it and causing lightning strikes at any other markers you've cast"; base_skill_effect_duration 1500): o MARCADOR no alvo, e o raio cai nele depois da duração
+ * (× os modificadores de duração), na área da gema; quando um cai, os seus outros marcadores da gema caem junto. A qualidade ("X% de chance do Relâmpago acertar o
+ * Marcador ao Conjurar" — storm_call_chance_to_strike_on_cast_%) faz o raio cair na hora. `{ tipo: 'tormenta', semAcerto, atrasoMs, naHoraPct }` ou null.
+ */
+export function tormentaDasLinhas(slug, daQualidade = [], stats = {}) {
+  if (slug !== 'Storm_Call') return null;
+  return { tipo: 'tormenta', semAcerto: true, atrasoMs: Math.round((stats.duracao ?? 1.5) * 1000), naHoraPct: somar(daQualidade, LINHA_TORMENTA_NA_CONJURACAO) };
+}
+
+// ---------------------------------------------------------------- a Chuva de Flechas Vaal (D-B1.8) e a Chuva Tóxica do Definhamento (D-B1.9)
+
+const LINHA_SEQUENCIAS = /^Dispara (\d+) sequências de flechas adicionais$/i;
+/** (D-B1.8) "Dispara N sequências de flechas adicionais" (o PoB: rain_of_arrows_additional_sequences 4): o total de sequências (1 + N), ou null. */
+export const sequenciasDaChuvaDasLinhas = (linhas = []) => { const n = achar(linhas, LINHA_SEQUENCIAS); return n ? 1 + n : null; };
+/**
+ * (D-B1.8) Os ANÉIS das sequências: o raio da área do uso (`raio` casas) dividido em `n` anéis iguais em volta do centro — o PoE e o poedb não publicam o passo.
+ * O anel da casa a `d` casas do centro: ⌊d × n ÷ (raio + 1)⌋ (até n − 1). Cada inimigo leva o golpe só do anel em que está.
+ */
+export const anelDaCasa = (d, raio, n) => Math.min(n - 1, Math.floor((Math.max(0, d) * n) / (Math.max(0, raio) + 1)));
+const LINHA_ESPORO_DEFINHA = /^Cada Esporo inflige 1 Debuff de Definhamento nos Inimigos próximos$/i;
+/** (D-B1.9) O Definhamento da Chuva Tóxica do Definhamento: 1 por uso em cada inimigo acertado, 2 s (o Definhar do jogo). `{ n, ms }` ou null. */
+export const definhamentoDaChuvaDasLinhas = (linhas = []) => (linhas.some((l) => LINHA_ESPORO_DEFINHA.test(norm(l))) ? { n: 1, ms: 2000 } : null);
+
 // ---------------------------------------------------------------- o status
 
 /** As linhas que este lote faz com leitor próprio (saem de "efeito não simulado"). */
@@ -149,6 +177,9 @@ export function ehLinhaB1(slug, l) {
   if (slug === 'Vaal_Cold_Snap' && (LINHA_RAIO_TERCIARIO.test(t) || LINHA_DO_VAAL.test(t))) return true;
   if (/^(Vaal_)?Detonate_Dead$/.test(slug) && LINHA_CADAVER_ADICIONAL.test(t)) return true;
   if (slug === 'Cremation' && LINHA_MAIS_RAPIDO.test(t)) return true;
+  if (slug === 'Storm_Call' && LINHA_TORMENTA_NA_CONJURACAO.test(t)) return true;
+  if (slug === 'Vaal_Rain_of_Arrows' && LINHA_SEQUENCIAS.test(t)) return true;
+  if (slug === 'Toxic_Rain_of_Withering' && LINHA_ESPORO_DEFINHA.test(t)) return true;
   // (o Estalo Gélido do Poder: o leitor do Golpe Súbito — `GemasPoe.cargasNoAcertoDaGema`)
   if (slug === 'Cold_Snap_of_Power' && /^[\d.]+ % de chance de ganhar uma Carga de Poder em Acertos Críticos$/i.test(t)) return true;
   return false;

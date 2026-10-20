@@ -2,16 +2,16 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "parcial": 290,
-   "implementada e testada": 208,
+   "parcial": 287,
+   "implementada e testada": 211,
    "implementada, sem teste próprio": 52,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "parcial": 99,
-   "implementada e testada": 82,
+   "parcial": 97,
+   "implementada e testada": 84,
    "implementada, sem teste próprio": 23,
    "limitação do modelo idle": 6
   },
@@ -24,15 +24,15 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "parcial": 28,
-    "implementada e testada": 17,
+    "parcial": 27,
+    "implementada e testada": 18,
     "implementada, sem teste próprio": 7
    },
    "alternativas": {
     "total": 209,
-    "parcial": 115,
+    "parcial": 114,
     "implementada, sem teste próprio": 27,
-    "implementada e testada": 60,
+    "implementada e testada": 61,
     "limitação do modelo idle": 7
    }
   },
@@ -44,7 +44,7 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 717,
+   "linhasDistintas": 714,
    "emDuasOuMais": 131
   },
   "imagens": {
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 315,
+   "ativasCitadas": 316,
    "suportesCitados": 117,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -3639,10 +3639,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Cada Esporo inflige 1 Debuff de Definhamento nos Inimigos próximos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3693,10 +3691,8 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "chuva",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Dispara 4 sequências de flechas adicionais"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6456,10 +6452,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "area",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 15 % de chance do Relâmpago acertar o Marcador ao Conjurar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -12018,12 +12012,6 @@
    ]
   },
   {
-   "linha": "# % de chance do Relâmpago acertar o Marcador ao Conjurar",
-   "gemas": [
-    "Storm_Call"
-   ]
-  },
-  {
    "linha": "# % de chancer de causar Sangramento enquanto na Postura de Sangue",
    "gemas": [
     "Lacerate"
@@ -12804,12 +12792,6 @@
    ]
   },
   {
-   "linha": "Cada Esporo inflige # Debuff de Definhamento nos Inimigos próximos",
-   "gemas": [
-    "Toxic_Rain_of_Withering"
-   ]
-  },
-  {
    "linha": "Cada Flecha deixa # Esporos",
    "gemas": [
     "Scourge_Arrow_of_Menace"
@@ -13287,12 +13269,6 @@
    "linha": "Dispara # Projéteis secundários",
    "gemas": [
     "Tornado_Shot"
-   ]
-  },
-  {
-   "linha": "Dispara # sequências de flechas adicionais",
-   "gemas": [
-    "Vaal_Rain_of_Arrows"
    ]
   },
   {

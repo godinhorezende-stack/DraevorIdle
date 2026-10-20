@@ -71,12 +71,10 @@ const cargas = (e, c) => { e.hunt.cargasPoe = Object.fromEntries(Object.entries(
 // ---------------------------------------------------------------- o status
 
 test('B1: as gemas do lote saem de parcial (as linhas do PoE têm leitor)', { skip: SEM }, () => {
-  for (const s of ['Blast_Rain_of_Trarthus', 'Shock_Nova_of_Procession', 'Lightning_Conduit', 'Lightning_Conduit_of_the_Heavens', 'Frost_Bomb', 'Frost_Bomb_of_Forthcoming', 'Cold_Snap', 'Cold_Snap_of_Power', 'Vaal_Cold_Snap', 'Discharge', 'Discharge_of_Misery', 'Cremation', 'Detonate_Dead', 'Vaal_Detonate_Dead', 'Detonate_Dead_of_Scavenging']) {
+  for (const s of ['Blast_Rain_of_Trarthus', 'Shock_Nova_of_Procession', 'Lightning_Conduit', 'Lightning_Conduit_of_the_Heavens', 'Frost_Bomb', 'Frost_Bomb_of_Forthcoming', 'Cold_Snap', 'Cold_Snap_of_Power', 'Vaal_Cold_Snap', 'Discharge', 'Discharge_of_Misery', 'Cremation', 'Detonate_Dead', 'Vaal_Detonate_Dead', 'Detonate_Dead_of_Scavenging', 'Toxic_Rain_of_Withering', 'Vaal_Rain_of_Arrows', 'Storm_Call']) {
     const r = G.REGISTRO.get(s);
     assert.deepEqual([s, r.statusNoJogo, r.motivosNoJogo], [s, 'funciona', []]);
   }
-  // (as decisões do dono pendentes seguem parciais)
-  for (const s of ['Toxic_Rain_of_Withering', 'Vaal_Rain_of_Arrows', 'Storm_Call']) assert.equal(G.REGISTRO.get(s).statusNoJogo, 'parcial', s);
 });
 
 // ---------------------------------------------------------------- a Descarga
@@ -257,4 +255,83 @@ test('B1 no jogo: o Condutor Elétrico dos Céus acerta quem não está Eletriza
 test('B1: a Chuva Explosiva de Trarthus dispara 1 flecha', { skip: SEM }, () => {
   assert.equal(G.alvosNoNivel('Blast_Rain_of_Trarthus', 20, 0).base, 1);
   assert.equal(G.alvosNoNivel('Blast_Rain', 20, 0).base, 6);
+});
+
+// ---------------------------------------------------------------- as decisões do dono (20/10): D-B1.8, D-B1.9, D-B1.10 e a recarga dos Estalos
+
+test('B1 (D-B1.10): a Invocar Tormenta — o marcador no alvo e o raio 1,5 s depois; a qualidade o faz cair na hora; um que cai leva os outros', { skip: SEM }, async () => {
+  assert.deepEqual(G.objetoDaGema('Storm_Call', 20, 20), { tipo: 'tormenta', semAcerto: true, atrasoMs: 1500, naHoraPct: 15 });
+  const { e, b } = await montar('Storm_Call');
+  const vida = b.hp;
+  assert.ok(usar(e, b).ok);
+  assert.equal(b.hp, vida, 'na conjuração, nada');
+  const m = e.hunt.poeObjetos.find((o) => o.tipo === 'tormenta');
+  assert.ok(m && m.x === b.x && m.y === b.y, 'o marcador está no alvo');
+  const ate = m.proxima;
+  Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [], ate - 100);
+  assert.equal(b.hp, vida, 'antes da duração, nada');
+  travado(0.5, () => Acoes.tiqueDasPlantadas(e, e.hunt, PERSONAGEM, [], ate));
+  assert.ok(b.hp < vida, 'o raio caiu');
+  assert.ok(!e.hunt.poeObjetos?.some((o) => o.tipo === 'tormenta'), 'o marcador acabou');
+  // a qualidade 20 (15%): no sorteio abaixo de 15, cai na hora
+  const q = await montar('Storm_Call', { qualidade: 20 });
+  const v2 = q.b.hp;
+  assert.ok(usar(q.e, q.b, 0.1).ok);
+  assert.ok(q.b.hp < v2, 'caiu na hora');
+  assert.ok(!q.e.hunt.poeObjetos?.some((o) => o.tipo === 'tormenta'), 'sem marcador');
+  // dois marcadores: o primeiro que cai leva o segundo
+  const d = await montar('Storm_Call');
+  assert.ok(usar(d.e, d.b).ok);
+  d.e.hunt.clock += 1000;
+  d.e.hunt.cooldowns = {};
+  d.e.hunt.conjurando = null;
+  assert.ok(usar(d.e, d.b).ok);
+  const [m1, m2] = d.e.hunt.poeObjetos.filter((o) => o.tipo === 'tormenta');
+  assert.ok(m2.proxima > m1.proxima);
+  travado(0.5, () => Acoes.tiqueDasPlantadas(d.e, d.e.hunt, PERSONAGEM, [], m1.proxima));
+  travado(0.5, () => Acoes.tiqueDasPlantadas(d.e, d.e.hunt, PERSONAGEM, [], m1.proxima + 250));
+  assert.ok(!d.e.hunt.poeObjetos?.some((o) => o.tipo === 'tormenta'), 'os dois caíram');
+});
+
+test('B1 (D-B1.8): a Chuva de Flechas Vaal — 1 + 4 sequências em anéis iguais no raio; cada inimigo leva só o golpe do anel dele', { skip: SEM }, async () => {
+  assert.equal(G.sequenciasDaChuvaDaGema('Vaal_Rain_of_Arrows', 20), 5);
+  assert.equal(G.sequenciasDaChuvaDaGema('Rain_of_Arrows', 20), null);
+  // o raio de 4 casas em 5 anéis: as distâncias 0, 1, 2, 3, 4 → um anel cada
+  assert.deepEqual([0, 1, 2, 3, 4].map((d) => B1.anelDaCasa(d, 4, 5)), [0, 1, 2, 3, 4]);
+  // o raio de 1 casa: o centro no 1º anel, a borda no 3º
+  assert.deepEqual([0, 1].map((d) => B1.anelDaCasa(d, 1, 5)), [0, 2]);
+  const { e, b } = await montar('Vaal_Rain_of_Arrows', { arma: 'Bows/Crude_Bow' });
+  e.hunt.cooldowns = {};
+  const vida = b.hp;
+  const r = usar(e, b);
+  assert.ok(r.ok, r.erro);
+  const aneis = (r.eventos ?? []).filter((x) => x.t === 'area' && x.sequencia != null);
+  assert.ok(aneis.length >= 1, 'os anéis na tela');
+  const golpes = (r.eventos ?? []).filter((x) => x.t === 'dmg' && x.uid === b.uid && x.foe && !x.empalamento);
+  assert.ok(vida - b.hp > 0);
+  assert.equal(golpes.length, 1, 'um golpe só no alvo');
+});
+
+test('B1 (D-B1.9): a Chuva Tóxica do Definhamento — 1 Definhamento (2 s) por uso em cada inimigo acertado', { skip: SEM }, async () => {
+  assert.deepEqual(G.definhamentoDaChuvaDaGema('Toxic_Rain_of_Withering', 20), { n: 1, ms: 2000 });
+  assert.equal(G.definhamentoDaChuvaDaGema('Toxic_Rain', 20), null);
+  const { e, b } = await montar('Toxic_Rain_of_Withering', { arma: 'Bows/Crude_Bow' });
+  const r = usar(e, b);
+  assert.ok(r.ok, r.erro);
+  assert.equal(b.estados.definhado?.n, 1);
+  assert.ok(b.estados.definhado.ate >= e.hunt.clock + 1000);
+});
+
+test('B1: os Estalos Gélidos pulam a recarga gastando uma carga (Frenesi; o do Poder, Poder — o PoB)', { skip: SEM }, async () => {
+  const { CARGA_QUE_PULA_A_RECARGA } = await import('../systems/itens-poe/movimento-a1b.mjs');
+  assert.deepEqual([CARGA_QUE_PULA_A_RECARGA.Cold_Snap, CARGA_QUE_PULA_A_RECARGA.Cold_Snap_of_Power, CARGA_QUE_PULA_A_RECARGA.Vaal_Cold_Snap], ['frenesi', 'poder', undefined]);
+  const { e, b } = await montar('Cold_Snap');
+  assert.ok(usar(e, b).ok);
+  e.hunt.clock = Math.max(e.hunt.clock, e.hunt.cooldowns?.[Acoes.GRUPO_DO_POE]?.ate ?? 0);
+  const recarga = usar(e, b);
+  assert.equal(recarga.motivo, 'COOLDOWN');
+  cargas(e, { frenesi: 2 });
+  const pulou = usar(e, b);
+  assert.ok(pulou.ok, pulou.erro);
+  assert.equal(CargasPoe.ativas(e).frenesi, 1, 'gastou uma');
 });

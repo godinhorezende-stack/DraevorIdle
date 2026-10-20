@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 208 |
+| implementada e testada | 211 |
 | implementada, sem teste próprio | 52 |
 | limitação do modelo idle | 11 |
-| parcial | 290 |
+| parcial | 287 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 82 |
+| implementada e testada | 84 |
 | implementada, sem teste próprio | 23 |
 | limitação do modelo idle | 6 |
-| parcial | 99 |
+| parcial | 97 |
 
 ### Gemas de suporte (262)
 
@@ -33,16 +33,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): parcial 28 · implementada e testada 17 · implementada, sem teste próprio 7
-- Alternativas (209): parcial 115 · implementada, sem teste próprio 27 · implementada e testada 60 · limitação do modelo idle 7
+- Vaal (52): parcial 27 · implementada e testada 18 · implementada, sem teste próprio 7
+- Alternativas (209): parcial 114 · implementada, sem teste próprio 27 · implementada e testada 61 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 717 linhas distintas (131 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 714 linhas distintas (131 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 315/562 ativas, 117/262 suportes.
+- Testes que citam a gema: 316/562 ativas, 117/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -191,7 +191,6 @@ Só os ataques:
 | 1 | # % de chance de ganhar uma Ruína adicional ao usar |
 | 1 | # % de Chance de ramificação da Fissura |
 | 1 | # % de chance de ramificação de fissuras por Carga de Tolerância removida |
-| 1 | # % de chance do Relâmpago acertar o Marcador ao Conjurar |
 | 1 | # % de chancer de causar Sangramento enquanto na Postura de Sangue |
 | 1 | # % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade |
 | 1 | # % do Dano de Raio Convertido em Dano de Caos |
@@ -322,7 +321,6 @@ Só os ataques:
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Únicos |
 | 1 | Cada Esporo dispara # Flechas de Espinho |
 | 1 | Cada Esporo dispara +# Flecha de Espinho |
-| 1 | Cada Esporo inflige # Debuff de Definhamento nos Inimigos próximos |
 | 1 | Cada Flecha deixa # Esporos |
 | 1 | Cada Flecha pode disparar +# Feixe |
 | 1 | Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #% |
@@ -403,7 +401,6 @@ Só os ataques:
 | 1 | Dispara # fragmentos por vez até que todos sejam disparados |
 | 1 | Dispara # projéteis |
 | 1 | Dispara # Projéteis secundários |
-| 1 | Dispara # sequências de flechas adicionais |
 | 1 | Dispara até # Flechas em alvos diferentes |
 | 1 | Dispara Projéteis # % mais rápido |
 | 1 | Dispara Projéteis a cada # segundos |
@@ -1537,8 +1534,6 @@ Só os ataques:
 - **Storm_Burst_of_Repulsion** (Estouro Tempestuoso da Repulsão) — parcial
   - efeito não simulado: Orbes saltam a cada 0.4 segundos
   - efeito não simulado: Orbes Explosivas causam 75 % do Dano da Habilidade para cada 0.4 segundos de Duração restante
-- **Storm_Call** (Invocar Tormenta) — parcial
-  - efeito não simulado: 15 % de chance do Relâmpago acertar o Marcador ao Conjurar
 - **Storm_Rain** (Chuva Tempestuosa) — parcial
   - efeito não simulado: Flecha dispara Raios a cada 0.41 segundos
   - efeito não simulado: Cada Flecha pode disparar 4 Feixes
@@ -1680,8 +1675,6 @@ Só os ataques:
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
 - **Toxic_Rain_of_Sporeburst** (Chuva Tóxica da Explosão de Esporos) — parcial
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
-- **Toxic_Rain_of_Withering** (Chuva Tóxica do Definhamento) — parcial
-  - efeito não simulado: Cada Esporo inflige 1 Debuff de Definhamento nos Inimigos próximos
 - **Unearth** (Desenterrar) — parcial
   - efeito não simulado: Cadáveres Criados têm Vida Máxima aumentada em 20 %
 - **Vaal_Absolution** (Absolvição Vaal) — parcial
@@ -1756,8 +1749,6 @@ Só os ataques:
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
 - **Vaal_Power_Siphon** (Sifão de Poder Vaal) — parcial
   - efeito não simulado: Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-- **Vaal_Rain_of_Arrows** (Chuva de Flechas Vaal) — parcial
-  - efeito não simulado: Dispara 4 sequências de flechas adicionais
 - **Vaal_Reap** (Ceifar Vaal) — parcial
   - efeito não simulado: Efeitos do Sangue Fervendo Perduram por 4 segundos
   - efeito não simulado: Concede +4 ao máximo de Cargas de Sangue
