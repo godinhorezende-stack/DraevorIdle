@@ -2161,6 +2161,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   // parede (`agora`, que começa em ~1,8e12 enquanto o da caçada começa em 0), todo pulso "já podia" e o efeito inteiro (incêndio,
   // sangramento, veneno, o degenerativo das gemas) era pago no tique seguinte, em vez de ao longo da duração.
   Estados.tique(hunt, eventos, hunt.clock ?? 0);
+  // (lote PR2, dono 20/10 — D2) o dreno dos debuffs do Drenar Essência (a Vida regenerada, a perda do Desespero), dos pulsos de agora
+  if (itensPoeLigado()) Acoes.drenoDosDebuffs(estado, hunt, personagem, eventos);
   processarMortes(estado, personagem, eventos);
 
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;

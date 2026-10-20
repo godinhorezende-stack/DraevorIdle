@@ -2,17 +2,17 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 241,
+   "implementada e testada": 250,
    "implementada, sem teste próprio": 48,
-   "parcial": 261,
+   "parcial": 252,
    "limitação do modelo idle": 11,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 112,
+   "implementada e testada": 116,
    "implementada, sem teste próprio": 19,
-   "parcial": 73,
+   "parcial": 69,
    "limitação do modelo idle": 6
   },
   "suportes": {
@@ -30,9 +30,9 @@
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 75,
+    "implementada e testada": 80,
     "implementada, sem teste próprio": 25,
-    "parcial": 102,
+    "parcial": 97,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +44,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 677,
-   "emDuasOuMais": 125
+   "linhasDistintas": 657,
+   "emDuasOuMais": 116
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +59,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 331,
+   "ativasCitadas": 338,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -3359,12 +3359,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Consome 1 Carga de 1 Frasco de Vida, se possível, por Projétil Disparado",
-    "efeito não simulado: Dano de Caos Adicional igual a 16 % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida",
-    "efeito não simulado: 20 % de chance de infligir Definhando por 2 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -3376,13 +3372,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Projéteis podem Ricochetear ao atingir o solo Projéteis Ricocheteiam para direções aleatórias",
-    "efeito não simulado: Consome 8 Cargas de 1 Frasco de Vida, se possível, por Projétil Disparado",
-    "efeito não simulado: Dano de Caos Adicional igual a 18 % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida",
-    "efeito não simulado: 20 % de chance de infligir Definhando por 2 segundos ao Acertar"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4394,14 +4385,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome 1 Carga de 1 Frasco de cada tipo válido, se possível, por Projétil Disparado",
-    "efeito não simulado: Causa 706 a 1058 de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas",
-    "efeito não simulado: Causa 151 a 1764 de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas",
-    "efeito não simulado: +196 % de Multiplicador de Dano Degenerativo com Incêndios se Cargas de um Frasco de Rubi foram consumidas",
-    "efeito não simulado: Cargas de Frasco usadas reduzidas em 15 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4413,14 +4398,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome 1 Carga de 1 Frasco de cada tipo válido, se possível, por Projétil Disparado",
-    "efeito não simulado: Causa 625 a 937 de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas",
-    "efeito não simulado: Causa 134 a 1562 de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas",
-    "efeito não simulado: +196 % de Multiplicador de Golpe Crítico se Cargas foram consumidas de um Frasco de Rubi",
-    "efeito não simulado: Cargas de Frasco usadas reduzidas em 15 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5925,11 +5904,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Regenera 0.5 % do Dano do Debuff como Vida",
-    "efeito não simulado: Regenera +0.5 % do Dano do Debuff como Vida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5941,10 +5917,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Perca Vida e Escudo de Energia igual a 0.3 % do Dano do Debuff"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5956,11 +5930,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Regenera 1 % do Dano do Debuff como Vida",
-    "efeito não simulado: Regenera +0.5 % do Dano do Debuff como Vida"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6608,12 +6579,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa 5 % do seu máximo de Escudo de Energia como Dano de Caos base",
-    "efeito não simulado: Causa 14 % do seu máximo de Vida como Dano de Caos base",
-    "efeito não simulado: Sofre 40 % da Vida Máxima e 25 % do Escudo de Energia Máximo como Dano de Caos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -6625,11 +6592,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "projetil",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Causa 20 % do seu máximo de Escudo de Energia como Dano de Caos base",
-    "efeito não simulado: Sofre 50 % do Escudo de Energia Máximo como Dano de Caos"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -7254,8 +7218,6 @@
    "estado": "parcial",
    "ausentes": [
     "efeito não simulado: Sacrifica 12 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos",
-    "efeito não simulado: Usa sua Vida se não houver Esqueletos em alcance",
-    "efeito não simulado: 136 % mais Dano com Acertos e Afecções se usar sua Vida",
     "efeito não simulado: Sacrifica +2 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos"
    ],
    "idle": [],
@@ -11163,13 +11125,6 @@
    ]
   },
   {
-   "linha": "# % de chance de infligir Definhando por # segundos ao Acertar",
-   "gemas": [
-    "Poisonous_Concoction",
-    "Poisonous_Concoction_of_Bouncing"
-   ]
-  },
-  {
    "linha": "# % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único",
    "gemas": [
     "Dominating_Blow",
@@ -11352,20 +11307,6 @@
    ]
   },
   {
-   "linha": "Cargas de Frasco usadas reduzidas em # %",
-   "gemas": [
-    "Explosive_Concoction",
-    "Explosive_Concoction_of_Destruction"
-   ]
-  },
-  {
-   "linha": "Causa # % do seu máximo de Escudo de Energia como Dano de Caos base",
-   "gemas": [
-    "Forbidden_Rite",
-    "Forbidden_Rite_of_Soul_Sacrifice"
-   ]
-  },
-  {
    "linha": "Causa # % mais Dano por Carga Sangrenta",
    "gemas": [
     "Reap",
@@ -11380,24 +11321,10 @@
    ]
   },
   {
-   "linha": "Causa # a # de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas",
-   "gemas": [
-    "Explosive_Concoction",
-    "Explosive_Concoction_of_Destruction"
-   ]
-  },
-  {
    "linha": "Causa # a # de Dano de Raio",
    "gemas": [
     "Foulgrasp_Support",
     "Prismatic_Burst_Support"
-   ]
-  },
-  {
-   "linha": "Causa # a # de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas",
-   "gemas": [
-    "Explosive_Concoction",
-    "Explosive_Concoction_of_Destruction"
    ]
   },
   {
@@ -11447,13 +11374,6 @@
    "gemas": [
     "Reap",
     "Reap_of_Butchery"
-   ]
-  },
-  {
-   "linha": "Dano de Caos Adicional igual a # % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida",
-   "gemas": [
-    "Poisonous_Concoction",
-    "Poisonous_Concoction_of_Bouncing"
    ]
   },
   {
@@ -11709,13 +11629,6 @@
    ]
   },
   {
-   "linha": "Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome # Carga de # Frasco de cada tipo válido, se possível, por Projétil Disparado",
-   "gemas": [
-    "Explosive_Concoction",
-    "Explosive_Concoction_of_Destruction"
-   ]
-  },
-  {
    "linha": "Pode focar em cada inimigo apenas uma vez a cada # segundos",
    "gemas": [
     "Galvanic_Field",
@@ -11734,20 +11647,6 @@
    "gemas": [
     "Ice_Crash",
     "Ice_Crash_of_Cadence"
-   ]
-  },
-  {
-   "linha": "Regenera # % do Dano do Debuff como Vida",
-   "gemas": [
-    "Essence_Drain",
-    "Essence_Drain_of_Wickedness"
-   ]
-  },
-  {
-   "linha": "Regenera +# % do Dano do Debuff como Vida",
-   "gemas": [
-    "Essence_Drain",
-    "Essence_Drain_of_Wickedness"
    ]
   },
   {
@@ -11967,12 +11866,6 @@
    ]
   },
   {
-   "linha": "# % mais Dano com Acertos e Afecções se usar sua Vida",
-   "gemas": [
-    "Dark_Bargain"
-   ]
-  },
-  {
    "linha": "# % mais Dano de Projétil",
    "gemas": [
     "Siege_Ballista_of_Trarthus"
@@ -12102,18 +11995,6 @@
    "linha": "+# % de chance de ramificar fissuras por Carga de Tolerância",
    "gemas": [
     "Tectonic_Slam"
-   ]
-  },
-  {
-   "linha": "+# % de Multiplicador de Dano Degenerativo com Incêndios se Cargas de um Frasco de Rubi foram consumidas",
-   "gemas": [
-    "Explosive_Concoction"
-   ]
-  },
-  {
-   "linha": "+# % de Multiplicador de Golpe Crítico se Cargas foram consumidas de um Frasco de Rubi",
-   "gemas": [
-    "Explosive_Concoction_of_Destruction"
    ]
   },
   {
@@ -12717,12 +12598,6 @@
    ]
   },
   {
-   "linha": "Causa # % do seu máximo de Vida como Dano de Caos base",
-   "gemas": [
-    "Forbidden_Rite"
-   ]
-  },
-  {
    "linha": "Causa # a # de Dano de Fogo",
    "gemas": [
     "Prismatic_Burst_Support"
@@ -12900,18 +12775,6 @@
    "linha": "Concede até o máximo de Cargas de Sangue",
    "gemas": [
     "Vaal_Reap"
-   ]
-  },
-  {
-   "linha": "Consome # Carga de # Frasco de Vida, se possível, por Projétil Disparado",
-   "gemas": [
-    "Poisonous_Concoction"
-   ]
-  },
-  {
-   "linha": "Consome # Cargas de # Frasco de Vida, se possível, por Projétil Disparado",
-   "gemas": [
-    "Poisonous_Concoction_of_Bouncing"
    ]
   },
   {
@@ -14661,12 +14524,6 @@
    ]
   },
   {
-   "linha": "Perca Vida e Escudo de Energia igual a # % do Dano do Debuff",
-   "gemas": [
-    "Essence_Drain_of_Desperation"
-   ]
-  },
-  {
    "linha": "perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB)",
    "gemas": [
     "Earthbreaker_Support"
@@ -14700,12 +14557,6 @@
    "linha": "Projéteis Perfuram todos Alvos",
    "gemas": [
     "Windburst_Support"
-   ]
-  },
-  {
-   "linha": "Projéteis podem Ricochetear ao atingir o solo Projéteis Ricocheteiam para direções aleatórias",
-   "gemas": [
-    "Poisonous_Concoction_of_Bouncing"
    ]
   },
   {
@@ -14949,18 +14800,6 @@
    ]
   },
   {
-   "linha": "Sofre # % da Vida Máxima e # % do Escudo de Energia Máximo como Dano de Caos",
-   "gemas": [
-    "Forbidden_Rite"
-   ]
-  },
-  {
-   "linha": "Sofre # % do Escudo de Energia Máximo como Dano de Caos",
-   "gemas": [
-    "Forbidden_Rite_of_Soul_Sacrifice"
-   ]
-  },
-  {
    "linha": "Solo Ardente causa # % de Dano de Fogo por segundo de Incêndio afetando o Inimigo",
    "gemas": [
     "Flame_Surge"
@@ -15066,12 +14905,6 @@
    "linha": "Uma rajada de lâminas cai a cada # segundos",
    "gemas": [
     "Bladefall_of_Trarthus"
-   ]
-  },
-  {
-   "linha": "Usa sua Vida se não houver Esqueletos em alcance",
-   "gemas": [
-    "Dark_Bargain"
    ]
   },
   {

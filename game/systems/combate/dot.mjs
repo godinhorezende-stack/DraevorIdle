@@ -131,6 +131,8 @@ export function tique(hunt, eventos, agora) {
         d.falta -= parte;
         d.proximo += t.pulsoMs;
         total += v;
+        // (lote PR2, dono 20/10 — D2) o debuff do Drenar Essência: a % do dano do pulso que volta como a sua Vida (ou a perda do Desespero) — `Acoes.drenoDosDebuffs`
+        if (d.dreno) { const r = (hunt.drenoDosDebuffs ??= { vida: 0, perda: 0 }); r.vida += (v * (d.dreno.vidaPct ?? 0)) / 100; r.perda += (v * (d.dreno.perdaPct ?? 0)) / 100; }
         eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: t.cor, dot: d.tipo, ...(d.tipo === 'queimadura' ? { queimando: true } : {}) });
         registrarGolpe(() => ({ origem: 'dot', tipo: d.elemento, dot: d.tipo, alvo: m.name, danoAntesDaResistencia: parte, danoFinal: v, vidaRestante: Math.max(0, m.hp), detalhe: { id: d.id, origem: d.origem, falta: d.falta } }));
       }

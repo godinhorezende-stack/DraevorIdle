@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 241 |
+| implementada e testada | 250 |
 | implementada, sem teste próprio | 48 |
 | limitação do modelo idle | 11 |
-| parcial | 261 |
+| parcial | 252 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 112 |
+| implementada e testada | 116 |
 | implementada, sem teste próprio | 19 |
 | limitação do modelo idle | 6 |
-| parcial | 73 |
+| parcial | 69 |
 
 ### Gemas de suporte (262)
 
@@ -34,15 +34,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 23 · parcial 23 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 75 · implementada, sem teste próprio 25 · parcial 102 · limitação do modelo idle 7
+- Alternativas (209): implementada e testada 80 · implementada, sem teste próprio 25 · parcial 97 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 677 linhas distintas (125 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 657 linhas distintas (116 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 331/562 ativas, 119/262 suportes.
+- Testes que citam a gema: 338/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -78,7 +78,6 @@ Só os ataques:
 | 3 | Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # % |
 | 3 | Velocidade de Projéteis aumentada em # % |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
-| 2 | # % de chance de infligir Definhando por # segundos ao Acertar |
 | 2 | # % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único |
 | 2 | # % de chance de remover um Feitiço após Causar Dano |
 | 2 | # % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a # % da sua armadura, até # |
@@ -105,13 +104,9 @@ Só os ataques:
 | 2 | Buff concede +# % de chance de Eletrizar inimigos |
 | 2 | Cada Esporo aplica # % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de # % |
 | 2 | Cada Flecha pode disparar +# Feixes |
-| 2 | Cargas de Frasco usadas reduzidas em # % |
-| 2 | Causa # % do seu máximo de Escudo de Energia como Dano de Caos base |
 | 2 | Causa # % mais Dano por Carga Sangrenta |
 | 2 | Causa # a # de Dano de Caos |
-| 2 | Causa # a # de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas |
 | 2 | Causa # a # de Dano de Raio |
-| 2 | Causa # a # de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas |
 | 2 | Causa # explosões menores Explosões menores têm entre # % de redução e # % de aumento do raio base, aleatoriamente |
 | 2 | Causa # rajadas |
 | 2 | Causa +# explosões menores |
@@ -119,7 +114,6 @@ Só os ataques:
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores tenham # % menos Vida Máxima |
 | 2 | Concede # % mais Dano Mágico |
 | 2 | Custa # % mais Vida por Carga Sangrenta |
-| 2 | Dano de Caos Adicional igual a # % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida |
 | 2 | Debuffs causam # % de Dano por Carga |
 | 2 | Debuffs causam +# % de Dano por Carga |
 | 2 | Definhado dura # segundos |
@@ -156,12 +150,9 @@ Só os ataques:
 | 2 | Orbes desaparecem após # Golpes |
 | 2 | Orbes Explosivas causam # % do Dano da Habilidade para cada # segundos de Duração restante |
 | 2 | Orbes saltam a cada # segundos |
-| 2 | Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome # Carga de # Frasco de cada tipo válido, se possível, por Projétil Disparado |
 | 2 | Pode focar em cada inimigo apenas uma vez a cada # segundos |
 | 2 | Raio Base da explosão menor igual a # metros |
 | 2 | Receba # % do Dano Físico como Dano de Gelo Extra |
-| 2 | Regenera # % do Dano do Debuff como Vida |
-| 2 | Regenera +# % do Dano do Debuff como Vida |
 | 2 | Sentinelas Ascendidos causam # % mais Dano |
 | 2 | Sentinelas Ascendidos sofrem # % menos Dano |
 | 2 | Só aplica Feitiços de Gemas de Habilidades Maldição que exigem Nível # ou menor |
@@ -196,7 +187,6 @@ Só os ataques:
 | 1 | # % mais Dano com Acertos contra Inimigos Incendiados |
 | 1 | # % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento |
 | 1 | # % mais Dano com Acertos e Afecções por Intensidade |
-| 1 | # % mais Dano com Acertos e Afecções se usar sua Vida |
 | 1 | # % mais Dano de Projétil |
 | 1 | # % mais Dano na Postura de Sangue |
 | 1 | # % mais Dano por Carga de Tolerância removida |
@@ -219,8 +209,6 @@ Só os ataques:
 | 1 | + # % de dano ao gastar uma carga de poder |
 | 1 | +# % de Chance de ramificação da Fissura |
 | 1 | +# % de chance de ramificar fissuras por Carga de Tolerância |
-| 1 | +# % de Multiplicador de Dano Degenerativo com Incêndios se Cargas de um Frasco de Rubi foram consumidas |
-| 1 | +# % de Multiplicador de Golpe Crítico se Cargas foram consumidas de um Frasco de Rubi |
 | 1 | +# % mais Dano com Acertos contra Inimigos Incendiados |
 | 1 | +# % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento |
 | 1 | +# % mais Dano com Acertos e Afecções por Intensidade |
@@ -321,7 +309,6 @@ Só os ataques:
 | 1 | Campo ganha +# metros ao raio por cada # % de Efeito de Eletrização no Inimigo quando criado |
 | 1 | Causa # % da sua Mana Máxima como Dano de Fogo Base por segundo |
 | 1 | Causa # % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo |
-| 1 | Causa # % do seu máximo de Vida como Dano de Caos base |
 | 1 | Causa # a # de Dano de Fogo |
 | 1 | Causa # a # de Dano de Gelo |
 | 1 | Causa # Ondas |
@@ -352,8 +339,6 @@ Só os ataques:
 | 1 | Concede +# ao máximo de Cargas de Sangue |
 | 1 | Concede aos Lacaios +# % de Chance de Bloquear Dano Mágico |
 | 1 | Concede até o máximo de Cargas de Sangue |
-| 1 | Consome # Carga de # Frasco de Vida, se possível, por Projétil Disparado |
-| 1 | Consome # Cargas de # Frasco de Vida, se possível, por Projétil Disparado |
 | 1 | Consumir um cadáver com habilidades reforçadas tem #% de chance de conceder uma alma por poder |
 | 1 | Consumir um cadáver com habilidades reforçadas tem +#% de chance de conceder uma alma por poder |
 | 1 | Conta o Poder total de Inimigos e Aliados no Raio |
@@ -645,14 +630,12 @@ Só os ataques:
 | 1 | Perca # de Fúria por segundo |
 | 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
 | 1 | Perca todo o Traumatismo ao atingir # Traumatismos |
-| 1 | Perca Vida e Escudo de Energia igual a # % do Dano do Debuff |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
 | 1 | Possui # Chamas |
 | 1 | Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação |
 | 1 | Projéteis de Espinhos causam # % menos Dano |
 | 1 | Projéteis deixam Solo Eletrizado |
 | 1 | Projéteis Perfuram todos Alvos |
-| 1 | Projéteis podem Ricochetear ao atingir o solo Projéteis Ricocheteiam para direções aleatórias |
 | 1 | Projéteis que Acertarem Inimigos Amaldiçoados se Dividem na direção de # alvos adicionais |
 | 1 | Projéteis que passam pela parede causam # a # de Dano de Fogo Adicional |
 | 1 | Projéteis Ricocheteiam ao colidirem com o terreno |
@@ -693,8 +676,6 @@ Só os ataques:
 | 1 | Sangue Corrompido infligido por estandartes reforçados tem uma duração base de # segundos |
 | 1 | Segunda forma possui um aumento de # % de Chance de Crítico |
 | 1 | Só pode ser Acertado uma vez a cada # segundo |
-| 1 | Sofre # % da Vida Máxima e # % do Escudo de Energia Máximo como Dano de Caos |
-| 1 | Sofre # % do Escudo de Energia Máximo como Dano de Caos |
 | 1 | Solo Ardente causa # % de Dano de Fogo por segundo de Incêndio afetando o Inimigo |
 | 1 | Solo Ardente causa # % do Dano de Fogo por Segundo do Incêndio mais forte no Inimigo Solo Cáustico causa # % do Dano de Caos por Segundo do Envenenamento mais forte no Inimigo Pode criar cada efeito de Solo não mais que uma vez por segundo |
 | 1 | Solo ardente causa +# % do Dano de Fogo por segundo do Incêndio infligido |
@@ -713,7 +694,6 @@ Só os ataques:
 | 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos iniciais com magias reforçadas |
 | 1 | Um lacaio próximo ganha uma alma para cada # de vida que você gasta em custos\niniciais com magias reforçadas |
 | 1 | Uma rajada de lâminas cai a cada # segundos |
-| 1 | Usa sua Vida se não houver Esqueletos em alcance |
 | 1 | Usar habilidades vaal reforçadas inflige Tentação Vaal em você, causando # de dano físico por segundo, em vez de aplicar impedimento de ganho de almas |
 | 1 | Velocidade de Ataque aumentada em # % caso tenha mudado de Postura Recentemente |
 | 1 | Velocidade de rotação aumentada em # % se em Empunhadura Dupla |
@@ -917,8 +897,6 @@ Só os ataques:
   - efeito não simulado: Máximo de +2 gêiseres por vez
 - **Dark_Bargain** (Barganha Sombria) — parcial
   - efeito não simulado: Sacrifica 12 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos
-  - efeito não simulado: Usa sua Vida se não houver Esqueletos em alcance
-  - efeito não simulado: 136 % mais Dano com Acertos e Afecções se usar sua Vida
   - efeito não simulado: Sacrifica +2 % da Vida do Esqueleto para causar a mesma quantidade de Dano de Caos
 - **Dark_Bargain_of_Trarthus** (Barganha Sombria de Trarthus) — parcial
   - efeito não simulado: Ganha uma Ruína por uso Ao chegar a sete, sacrifica 50 % da sua vida e causa 600 % da vida sacrificada como dano de caos
@@ -967,14 +945,6 @@ Só os ataques:
   - efeito não simulado: Cada Aprisionamento aplica 30 % menos Velocidade de Movimento aos Inimigos Raros
   - efeito não simulado: Cada Aprisionamento aplica 25 % menos Velocidade de Movimento aos Inimigos Únicos
   - efeito não simulado: Efeito do Debuff aumentado em 20 %
-- **Essence_Drain** (Drenar Essência) — parcial
-  - efeito não simulado: Regenera 0.5 % do Dano do Debuff como Vida
-  - efeito não simulado: Regenera +0.5 % do Dano do Debuff como Vida
-- **Essence_Drain_of_Desperation** (Dreno de Essência do Desespero) — parcial
-  - efeito não simulado: Perca Vida e Escudo de Energia igual a 0.3 % do Dano do Debuff
-- **Essence_Drain_of_Wickedness** (Dreno de Essência da Maldade) — parcial
-  - efeito não simulado: Regenera 1 % do Dano do Debuff como Vida
-  - efeito não simulado: Regenera +0.5 % do Dano do Debuff como Vida
 - **Explosive_Arrow** (Flecha Explosiva) — parcial
   - efeito não simulado: Explosão causa 50 % menos Dano Base
   - efeito não simulado: Explosões terão 522 a 783 de Dano de Fogo adicional
@@ -982,18 +952,6 @@ Só os ataques:
   - efeito não simulado: Explosão causa 6 % mais Dano com Acertos por Flecha Explosiva no Alvo
   - efeito não simulado: Explosão causa 3 % mais Dano com Afecções por Flecha Explosiva no Alvo
   - efeito não simulado: Máximo de +2 Flechas Explosivas grudadas em cada Inimigo
-- **Explosive_Concoction** (Composto Explosivo) — parcial
-  - efeito não simulado: Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome 1 Carga de 1 Frasco de cada tipo válido, se possível, por Projétil Disparado
-  - efeito não simulado: Causa 706 a 1058 de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas
-  - efeito não simulado: Causa 151 a 1764 de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas
-  - efeito não simulado: +196 % de Multiplicador de Dano Degenerativo com Incêndios se Cargas de um Frasco de Rubi foram consumidas
-  - efeito não simulado: Cargas de Frasco usadas reduzidas em 15 %
-- **Explosive_Concoction_of_Destruction** (Composto Explosivo da Destruição) — parcial
-  - efeito não simulado: Pode consumir Cargas de um Frasco de Rubi, Safira e Topázio Consome 1 Carga de 1 Frasco de cada tipo válido, se possível, por Projétil Disparado
-  - efeito não simulado: Causa 625 a 937 de Dano de Gelo Adicional se Cargas de um Frasco de Safira foram consumidas
-  - efeito não simulado: Causa 134 a 1562 de Dano de Raio Adicional se Cargas de um Frasco de Topázio foram consumidas
-  - efeito não simulado: +196 % de Multiplicador de Golpe Crítico se Cargas foram consumidas de um Frasco de Rubi
-  - efeito não simulado: Cargas de Frasco usadas reduzidas em 15 %
 - **Explosive_Trap** (Armadilha Explosiva) — parcial
   - efeito não simulado: Raio Base da explosão menor igual a 3 metros
   - efeito não simulado: Causa 7 explosões menores Explosões menores têm entre 1 % de redução e 30 % de aumento do raio base, aleatoriamente
@@ -1041,13 +999,6 @@ Só os ataques:
   - efeito não simulado: Aumenta a Velocidade de Movimento dos Lacaios em 29 %
   - efeito não simulado: Efeito da Oferenda aumentado em 10 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Forbidden_Rite** (Ritual Proibido) — parcial
-  - efeito não simulado: Causa 5 % do seu máximo de Escudo de Energia como Dano de Caos base
-  - efeito não simulado: Causa 14 % do seu máximo de Vida como Dano de Caos base
-  - efeito não simulado: Sofre 40 % da Vida Máxima e 25 % do Escudo de Energia Máximo como Dano de Caos
-- **Forbidden_Rite_of_Soul_Sacrifice** (Ritual Proibido do Sacrifício D'alma) — parcial
-  - efeito não simulado: Causa 20 % do seu máximo de Escudo de Energia como Dano de Caos base
-  - efeito não simulado: Sofre 50 % do Escudo de Energia Máximo como Dano de Caos
 - **Frost_Wall** (Parede de Gelo) — parcial
   - efeito não simulado: 0.15 segundos entre o aparecimento de seções da Parede
   - efeito não simulado: Parede terá 5.6 metros
@@ -1270,15 +1221,6 @@ Só os ataques:
 - **Poachers_Mark** (Marca do Larápio) — parcial
   - efeito não simulado: Inimigos Amaldiçoados têm -20 % de Reducão de Dano Físico
   - efeito não simulado: Inimigos Amaldiçoados têm 5 % de chance de concederem uma Carga de Frenesi quando Acertados
-- **Poisonous_Concoction** (Composto Venenoso) — parcial
-  - efeito não simulado: Consome 1 Carga de 1 Frasco de Vida, se possível, por Projétil Disparado
-  - efeito não simulado: Dano de Caos Adicional igual a 16 % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida
-  - efeito não simulado: 20 % de chance de infligir Definhando por 2 segundos ao Acertar
-- **Poisonous_Concoction_of_Bouncing** (Composto Venenoso Saltador) — parcial
-  - efeito não simulado: Projéteis podem Ricochetear ao atingir o solo Projéteis Ricocheteiam para direções aleatórias
-  - efeito não simulado: Consome 8 Cargas de 1 Frasco de Vida, se possível, por Projétil Disparado
-  - efeito não simulado: Dano de Caos Adicional igual a 18 % da Quantidade de Recuperação do Frasco se Cargas foram consumidas de um Frasco de Vida
-  - efeito não simulado: 20 % de chance de infligir Definhando por 2 segundos ao Acertar
 - **Punishment** (Castigo) — parcial
   - nenhum efeito do buff tem equivalente no jogo
   - efeito não simulado: Inimigos Amaldiçoados sofrem Dano aumentado em 58 % enquanto em Vida Baixa

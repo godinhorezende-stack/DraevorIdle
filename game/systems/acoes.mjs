@@ -81,6 +81,7 @@ import * as GemasA1b from './itens-poe/movimento-a1b.mjs';
 import * as GemasA5 from './itens-poe/gemas-a5.mjs';
 import * as GemasB1 from './itens-poe/gemas-b1.mjs';
 import * as GemasPR1 from './itens-poe/gemas-pr1.mjs';
+import * as GemasPR2 from './itens-poe/gemas-pr2.mjs';
 import * as GemasC1 from './itens-poe/gemas-c1.mjs';
 import { JANELA } from '../websocket/quadro.mjs';
 import * as ItensPoeJogo from './itens-poe/jogo.mjs';
@@ -626,6 +627,10 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       // duas) e a Detonação da Adaga ("X% do dano da adaga equipada", 60% de cada com duas): o dano de cada arma que vale — a base com os locais e a qualidade, e
       // o elemental somado da própria peça —, × a eficácia do dano adicionado, como o do Feiticeiro
       for (const [el, v] of Object.entries(danoDeArmaNaMagia(estado, entry, efeitoDaGema))) adicionar(el, v, eficacia);
+      // (lote PR2, dono 20/10) o Ritual Proibido ("Causa X% do seu máximo de Vida / Escudo de Energia como Dano de Caos base") e a Barganha Sombria sem
+      // Esqueleto ("Usa sua Vida": X% da Vida máxima) — o PoB soma no ChaosMin e no ChaosMax da gema: é dano BASE, sem a Eficácia do Dano Adicionado
+      const doRecurso = baseDoRecursoNoUso(estado, daGemaPoe.slug, nivelPoe, efeitoDaGema, fichaBase);
+      if (doRecurso > 0) adicionar('chaos', [doRecurso, doRecurso]);
       // (lote B1: + `basePor` — a Descarga, o dano base de cada elemento × as cargas do tipo dele; o adicionado não multiplica)
       const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe, adicionado, { elementoSorteado, origens, outras: (fis, teto) => ModsPoe.extrasDoFisico(fichaBase, fis, Math.random, teto), basePor: efeitoDaGema?.danoBasePor ?? null, conversoesExtras: GemasPoe.conversoesDosSuportes(efeitoDaGema) });
       for (const [el, v] of Object.entries(daMagia)) somar(el, v);
@@ -688,7 +693,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   // (17/10, lote G18) o "mais Dano" SÓ DO ACERTO da ficha (`mais_dano_acerto` — o Fogo Justo: "Concede X% mais Dano Mágico", só no acerto das magias,
   // como no PoB): no fator do acerto; o `acertar` o tira da afecção e o degenerativo da gema sai sem ele (`soAcertoDaFicha`)
   const soAcertoDaFicha = itensPoeLigado() ? Math.max(0, 1 + ModsPoe.valor(fichaBase, 'mais_dano_acerto') / 100) : 1;
-  const fatorDaGema = (semDanoNenhum ? 0 : 1) * (1 + (efeitoDaGema?.danoPct ?? 0) / 100) * (efeitoDaGema?.fatorDeDano ?? 1) * menosDoFeiticeiro * Math.max(0, 1 + (Number(maisDano) || 0) / 100) * soAcertoDaFicha;
+  // (lote PR2, dono 20/10) a Barganha Sombria: "X% mais Dano com Acertos e Afecções se usar sua Vida" (o MORE do PoB com Hit e Ailment — o golpe inteiro)
+  const daBarganha = daGemaPoe && !daGemaPoe.ataque ? maisDaBarganhaNoUso(estado, daGemaPoe.slug, nivelPoe, efeitoDaGema) : 1;
+  const fatorDaGema = daBarganha * (semDanoNenhum ? 0 : 1) * (1 + (efeitoDaGema?.danoPct ?? 0) / 100) * (efeitoDaGema?.fatorDeDano ?? 1) * menosDoFeiticeiro * Math.max(0, 1 + (Number(maisDano) || 0) / 100) * soAcertoDaFicha;
   // Os REFORÇOS ligados (posturas, raiva...): dano, crítico e treino nas skills com as tags deles.
   const tags = Tags.tagsDaAcao(entry).filter((t) => !semCorpo || t !== 'melee');
   const hunt = estado.hunt;
@@ -721,6 +728,112 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   // (lote 31, P043: o multiplicador da parte Física e a eficácia do dano adicionado — o Físico adicional por Empalamento, alvo a alvo)
   const multFisico = (mult + ((doElementoDe('physical') - doElemento) / 100) * sintonia) * ModsPoe.fatorDoDanoElemental(ficha, hunt, entry.id, 'physical');
   return { min, max, daPericia, mult, sobrecarga, fatorDaGema, ficha, partes, porAfeccao, ehMagia, sintonia, multFisico, eficacia, soAcertoDaFicha, multDosTipos };
+}
+
+/*
+ * ---- (lote PR2, dono 20/10) o RECURSO no uso: a Vida e o Escudo de Energia (`itens-poe/gemas-pr2.mjs`) ----
+ */
+/** Algum Esqueleto seu vivo a até `alcance` casas de você ou de `alvo` (sem `alcance`: em qualquer lugar da caçada) — a Barganha Sombria. */
+function esqueletoPerto(hunt, alvo = null, alcance = null) {
+  return (hunt?.lacaios ?? []).some((l) => l.hp > 0 && GemasPR2.ehEsqueleto(l) && (alcance == null || distanciaChebyshev(l, hunt.pos) <= alcance || (alvo && distanciaChebyshev(l, alvo) <= alcance)));
+}
+/** A Barganha Sombria usa a SUA Vida neste uso (sem Esqueleto vivo em alcance): o que o `disparar` decidiu (`barganhaComVida`) ou, no balão, nenhum vivo. */
+const barganhaComVida = (estado, efeito) => (efeito?.barganhaComVida ?? !esqueletoPerto(estado?.hunt));
+/** O dano de Caos BASE a mais do uso pela Vida e pelo Escudo de Energia máximos (o Ritual Proibido; a Barganha Sombria com a sua Vida). */
+function baseDoRecursoNoUso(estado, slug, nivel, efeito, ficha) {
+  if (!itensPoeLigado()) return 0;
+  const ritual = GemasPoe.ritualDaGema(slug, nivel);
+  if (ritual) return GemasPR2.baseDoRitual(ritual, estado.maxHp ?? 0, ficha?.energyShield ?? 0);
+  const b = GemasPoe.barganhaDaGema(slug, nivel, efeito?.qualidade ?? 0);
+  return b && barganhaComVida(estado, efeito) ? ((estado.maxHp ?? 0) * b.vidaPct) / 100 : 0;
+}
+/** O "X% mais Dano com Acertos e Afecções se usar sua Vida" da Barganha Sombria neste uso (o fator; 1 com Esqueleto). */
+function maisDaBarganhaNoUso(estado, slug, nivel, efeito) {
+  const b = itensPoeLigado() ? GemasPoe.barganhaDaGema(slug, nivel, efeito?.qualidade ?? 0) : null;
+  return b && barganhaComVida(estado, efeito) ? Math.max(0, 1 + b.maisPct / 100) : 1;
+}
+/**
+ * O Ritual Proibido FERE você a cada conjuração (D1 do dono: pela resistência a Caos, como o PoB, e pode matar): `GemasPR2.danoEmVoceDoRitual` com o que passa
+ * da resistência a Caos e dos "dano sofrido" (`ModsPoe.fatorDaResistenciaRecebida`); o Caos atravessa o Escudo de Energia, como no PoE (salvo "X% do dano de
+ * caos sofrido não ignora o escudo de energia"), e a espera da recarga reinicia. Devolve o dano na Vida.
+ */
+function ritualEmVoce(estado, hunt, personagem, slug, nivel, eventos) {
+  const r = GemasPoe.ritualDaGema(slug, nivel);
+  if (!r) return 0;
+  const ficha = Ficha.combate(estado);
+  let dano = GemasPR2.danoEmVoceDoRitual(r, estado.maxHp ?? 0, ficha.energyShield ?? 0, ModsPoe.fatorDaResistenciaRecebida(ficha, 'chaos'));
+  if (!(dano > 0)) return 0;
+  const base = { uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: personagem?.nome, golpe: 'Ritual Proibido' };
+  if (ModsPoe.caosAtravessaOEscudo(ficha)) {
+    estado.esEspera = Defesa.esperaDaRecarga(ficha);
+    const peloEscudo = Math.round((dano * Math.min(100, ModsPoe.valor(ficha, 'caos_pelo_escudo_pct'))) / 100);
+    if (peloEscudo > 0) dano = dano - peloEscudo + Defesa.absorver(estado, ficha, peloEscudo, eventos, base);
+  } else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
+  if (!(dano > 0)) return 0;
+  estado.hp = Math.max(0, (estado.hp ?? 0) - dano);
+  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO.chaos ?? '#b44dff' });
+  return dano;
+}
+/**
+ * Os COMPOSTOS gastam as cargas dos frascos (D4 do dono: sem carga, sai sem o bônus): o Venenoso, do PRIMEIRO Frasco de Vida do cinto que paga ao menos um
+ * projétil; o Explosivo, de um frasco de cada tipo (Rubi, Safira, Topázio — o primeiro de cada que paga). Cada projétil gasta o seu; o bônus do uso vai ×
+ * (pagos ÷ projéteis) — a exceção 4. Devolve o efeito da gema com o bônus (`GemasPR2.bonusDoComposto`), ou o mesmo efeito.
+ */
+export function comOsFrascosDoComposto(estado, entry, efeito, nProjeteis) {
+  const c = GemasPoe.compostoDaGema(entry.poeGema.slug, efeito?.nivel ?? 1, efeito?.qualidade ?? 0);
+  if (!c || !efeito) return efeito;
+  const afp = Ficha.combate(estado).afPoe ?? {};
+  const n = Math.max(1, Math.round(nProjeteis) || 1);
+  const cinto = FrascosPoe.cinto(estado);
+  const gastar = (filtro) => {
+    for (const p of cinto) {
+      if (!p?.poe || !filtro(p)) continue;
+      const par = FrascosPoe.parametros(p, afp);
+      const { pagos, gastas } = GemasPR2.pagosPeloFrasco(FrascosPoe.cargasDe(p, par), c.cargas, n);
+      if (!(pagos > 0)) continue;
+      p.poe.cargas = Math.max(0, FrascosPoe.cargasDe(p, par) - gastas);
+      return { fracao: pagos / n, recuperacao: par.quantidade };
+    }
+    return null;
+  };
+  const base = (p) => String(p.poe.base ?? '').split('/').pop();
+  let pagos;
+  if (c.tipo === 'vida') pagos = { vida: gastar((p) => p.poe.classe === 'Life_Flasks') };
+  else pagos = Object.fromEntries(Object.entries(GemasPR2.FRASCO_DO_TIPO).map(([tipo, b]) => [tipo, gastar((p) => base(p) === b)?.fracao ?? 0]));
+  const af = GemasPR2.bonusDoComposto(c, pagos);
+  if (!Object.keys(af).length) return efeito;
+  const e = { ...efeito };
+  for (const [k, v] of Object.entries(af)) e[k] = (Number(e[k]) || 0) + v;
+  return e;
+}
+
+/**
+ * (lote PR2, dono 20/10 — D2) o DRENO dos debuffs do Drenar Essência no tique (`cacadas`, depois dos pulsos — `Dot.tique` junta em `hunt.drenoDosDebuffs`): a
+ * Vida regenerada ("Regenera X% do Dano do Debuff como Vida" — salvo o "Não pode Recuperar Vida fora o Dreno" do Pacto Vaal) e a perda do Desespero ("Perca
+ * Vida e Escudo de Energia igual a X% do Dano do Debuff" — a perda por segundo do jogo: não mata, exceção 2). O que sobra da fração fica para o próximo.
+ */
+export function drenoDosDebuffs(estado, hunt, personagem, eventos) {
+  const r = hunt?.drenoDosDebuffs;
+  if (!r) return;
+  delete hunt.drenoDosDebuffs;
+  if (!(estado.hp > 0)) return;
+  const resto = (hunt.drenoResto ??= { vida: 0, perda: 0 });
+  resto.vida += r.vida;
+  resto.perda += r.perda;
+  const vida = Math.floor(resto.vida);
+  const perda = Math.floor(resto.perda);
+  resto.vida -= vida;
+  resto.perda -= perda;
+  const ficha = Ficha.combate(estado);
+  if (vida > 0 && !ModsPoe.vidaSoPeloDreno(ficha.afPoe)) {
+    const antes = estado.hp;
+    estado.hp = Math.min(estado.maxHp ?? estado.hp, estado.hp + vida);
+    if (estado.hp > antes) eventos?.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, v: estado.hp - antes, color: '#00ff66' });
+  }
+  if (perda > 0) {
+    estado.hp = Math.max(1, estado.hp - perda);
+    if ((estado.es ?? 0) > 0) estado.es = Math.max(0, estado.es - perda);
+  }
 }
 
 /**
@@ -2483,6 +2596,8 @@ function comOsProjeteisDaGema(e, a) {
   if (a.rampaCongelar) e.rampaCongelar = a.rampaCongelar;
   if (a.direcoesAleatorias) e.direcoesAleatorias = true;
   if (a.saltoNoSolo) e.saltoNoSolo = true;
+  // (lote PR2) o Composto Venenoso Saltador: o rumo de cada salto no solo, sorteado
+  if (a.saltoAleatorio) e.saltoAleatorio = true;
   if (a.aoRedor) e.aoRedor = (e.aoRedor ?? 0) + a.aoRedor;
   if (a.porProjetilAnteriorPct) e.porProjetilAnteriorPct = (e.porProjetilAnteriorPct ?? 0) + a.porProjetilAnteriorPct;
   if (a.extrasNoAlvo) e.extrasNoAlvo = true;
@@ -4044,6 +4159,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const x = (a, b) => ((1 + (a ?? 0) / 100) * (1 + (b ?? 0) / 100) - 1) * 100;
     efeitoDaGema = { ...efeitoDaGema, fatorDeDano: (efeitoDaGema.fatorDeDano ?? 1) * (1 + m.acertoPct / 100), maisDanoAcertoPct: x(efeitoDaGema.maisDanoAcertoPct, m.acertoPct), maisAfeccaoPct: x(efeitoDaGema.maisAfeccaoPct, m.afeccaoPct) };
   }
+  // (lote PR2, dono 20/10 — D3) a BARGANHA SOMBRIA: sem Esqueleto seu vivo a até o alcance da gema (de você ou do alvo), usa a SUA Vida (`baseDoRecursoNoUso`,
+  // `maisDaBarganhaNoUso`); como no PoB, a Vida não sai de você. Com Esqueleto, a parte dele é da outra sessão (os lacaios)
+  if (itensPoeLigado() && entry.poeGema && efeitoDaGema && GemasPoe.barganhaDaGema(entry.poeGema.slug, efeitoDaGema.nivel ?? 1, efeitoDaGema.qualidade ?? 0)) efeitoDaGema = { ...efeitoDaGema, barganhaComVida: !esqueletoPerto(hunt, alvo, entry.range || ALCANCE_PADRAO) };
   // (lote G12: o uso que não tem acerto próprio — a Detonação do Saque, só a explosão; a Cremação, cujo dano mágico é o dos projéteis do gêiser)
   // (lote A4, dono 19/10: + o uso do Orbe Invernal — a canalização carrega o orbe; o dano é o dos projéteis dele, `tiqueDoOrbe`)
   const orbeDoUso = itensPoeLigado() && entry.poeGema && !gatilho && !plantada && !doTotem ? GemasPoe.orbeDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
@@ -4654,6 +4772,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
 
   const eventos = [];
+  // (lote PR2, dono 20/10 — D1) o RITUAL PROIBIDO fere você a cada conjuração (pela resistência a Caos; pode matar); o do totem e o da armadilha/mina, não
+  // (exceção 1 do lote)
+  if (itensPoeLigado() && entry.poeGema && !doTotem && !plantada && !tipoPlantado && GemasPoe.ritualDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1)) ritualEmVoce(estado, hunt, personagem, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, eventos);
   // (lote A1b, dono 19/10) o uso SAIU (pagou):
   //  - D-a: a carga que pula a recarga é gasta agora (o golpe já sai sem ela — no PoE ela é gasta no uso);
   if (pulaARecarga && CargasPoe.gastar(estado, cargaQuePula, 1)) Ficha.invalidar(estado);
@@ -4868,6 +4989,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // (lote A1b, dono 19/10) + o que o uso tem a mais: o ataque Impelido pela Emboscada ("+25% de Chance de Golpe Crítico" — na chance base, como o PoE — e
     // "+138% de Multiplicador"); a Investida com Escudo — "Redução do Ponto de Atordoamento aumentada em 75% … na distância Máxima", pelas casas percorridas
     // (como o dano)
+    // (lote PR2, dono 20/10 — D4) os COMPOSTOS gastam as cargas dos frascos agora, um consumo por projétil (`comOsFrascosDoComposto`); o do totem, não
+    if (itensPoeLigado() && entry.poeGema && !doTotem && !plantada) efeitoDaGema = comOsFrascosDoComposto(estado, entry, efeitoDaGema, 1 + Math.max(0, Math.round(efeitoDaGema?.alvosExtras ?? 0)));
     const atordoamentoDaInvestida = plano && !plano.semMover && plano.max > 0 && entry.poeGema ? GemasPoe.atordoamentoDaInvestidaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) * Math.min(1, plano.casas / plano.max) : 0;
     const fichaDaGema = comAtributosDoUso(comCriticoDaIntensidade(doTotem ? Ficha.combate(estado) : doDestilador(estado, Ficha.combate(estado), entry), intensidade), {
       ...(emboscadaDoUso ? { crit_base_golpe: emboscadaDoUso.critPontos, crit_dmg: emboscadaDoUso.critMultPct } : {}), ...(atordoamentoDaInvestida ? { enemy_stun_threshold_red: atordoamentoDaInvestida } : {}),
@@ -4911,6 +5034,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const regenMenosDoUso = exposicaoDoUso ? GemasPoe.regenMenosDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) ?? 0 : 0;
     // (lote B1, dono 20/10 — D-B1.9) a Chuva Tóxica do Definhamento: 1 Definhamento (2 s) por uso em cada inimigo acertado — `definhadosNoUso`
     const definhaDoUso = itensPoeLigado() && entry.poeGema ? GemasPoe.definhamentoDaChuvaDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
+    // (lote PR2, dono 20/10) a qualidade do Composto Venenoso: "X% de chance de infligir Definhando por 2 segundos ao Acertar" — sorteado em cada acerto
+    const definharDoUso = itensPoeLigado() && entry.poeGema ? GemasPoe.definharDaGema(entry.poeGema.slug, efeitoDaGema?.qualidade ?? 0) : null;
     const definhadosNoUso = new Set();
     const exporNoAcerto = (bicho, el) => {
       if (el && ModsPoe.porExposicao(bicho, el, exposicaoDoUso.pct + Math.abs(ModsPoe.valor(ficha, { fire: 'exposicao_extra_fogo', ice: 'exposicao_extra_gelo', energy: 'exposicao_extra_raio' }[el])), msDaExposicao, agora) && !doTotem) ModsPoe.marcar(hunt, 'infligiuExposicao', agora);
@@ -5274,6 +5399,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (doCondutor?.tiraEletrizacao && dano > 0 && bicho.estados) { delete bicho.estados.chocado; delete bicho.estados.chocadosPilha; }
       // (lote B1, D-B1.9) o Definhamento da Chuva Tóxica do Definhamento, uma vez por uso em cada um
       if (definhaDoUso && dano > 0 && !definhadosNoUso.has(bicho)) { definhadosNoUso.add(bicho); for (let k = 0; k < definhaDoUso.n; k++) ModsPoe.porNoAlvoComMods(bicho, 'definhado', agora + definhaDoUso.ms, agora, ficha); }
+      if (definharDoUso && dano > 0 && Math.random() * 100 < definharDoUso.chance) ModsPoe.porNoAlvoComMods(bicho, 'definhado', agora + definharDoUso.ms, agora, ficha);
       total += dano;
       if (noAlvo?.ficha) { rouboDosAlvos.vida += dano * ((noAlvo.ficha.lifeLeech ?? 0) - (ficha.lifeLeech ?? 0)); rouboDosAlvos.mana += dano * ((noAlvo.ficha.manaLeech ?? 0) - (ficha.manaLeech ?? 0)); }
       if (bicho.semDreno) totalSemDreno += dano;
@@ -5369,6 +5495,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
           const total = totalDoDegenerativo(p, duracaoDoDebuff, { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha, dotMagico }) * fatorDoDebuff;
           const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: duracaoDoDebuff, chave: entry.poeGema.slug, origem: { fonte: doTotem ? 'totem' : 'gema', habilidade: entry.id } }, agora);
           if (posto) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: posto });
+          // (lote PR2, dono 20/10 — D2) o DRENAR ESSÊNCIA: o debuff da gema leva a % do dano dele que vira a sua Vida (ou a perda do Desespero) — cada pulso, em
+          // cada debuff ativo, somados (`Dot.tique` → `drenoDosDebuffs`); o do totem, não (exceção 1)
+          const dreno = posto && !doTotem ? GemasPoe.drenoDaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+          if (dreno) for (const d of bicho.dots ?? []) if (d.chave === entry.poeGema.slug && d.tipo === tipoDegen) d.dreno = dreno;
         }
       }
       if (ficha.afeccoes) {

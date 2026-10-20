@@ -305,10 +305,14 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
         const ux = parado ? Math.cos(anguloDoRumo) : dx / passos;
         const uy = parado ? Math.sin(anguloDoRumo) : dy / passos;
         const raioDoSalto = Math.max(0, Math.round(cfg.raioDoSaltoNoSolo ?? 1));
+        // (lote PR2, dono 20/10) o Composto Venenoso Saltador: "Ricocheteiam para direções aleatórias" — cada salto sai do anterior, 3 casas num rumo sorteado
+        let ponto = { x: atual.x, y: atual.y };
         for (let i = 1; p.encadear > 0; i++) {
           p.encadear--;
           p.ricocheteou++;
-          const centro = { x: Math.round(atual.x + ux * 3 * i), y: Math.round(atual.y + uy * 3 * i) };
+          const rumo = efeito.saltoAleatorio ? rng() * 2 * Math.PI : null;
+          const centro = rumo != null ? { x: Math.round(ponto.x + Math.cos(rumo) * 3), y: Math.round(ponto.y + Math.sin(rumo) * 3) } : { x: Math.round(atual.x + ux * 3 * i), y: Math.round(atual.y + uy * 3 * i) };
+          ponto = centro;
           explosoes.push({ ...centro, lado: 2 * raioDoSalto + 1 });
           const pctDoSalto = ((p.pct * pctDe('danoDoEncadeamentoPct')) / 100) * doRestante(p.encadear);
           for (const c of Areas.quadrado(centro, raioDoSalto)) {
