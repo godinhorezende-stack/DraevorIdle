@@ -939,6 +939,18 @@
       "combate": true,
       "efeito": "mods-poe.aoAcertar: 30% menos movimento por 4 s"
     },
+    "efeito_mutilacao": {
+      "nome": "Efeito da Mutilação aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar: a lentidão da Mutilação (30%) × (1 + X%) — lote B1, a Chuva de Flechas Vaal"
+    },
+    "cast_speed_mais": {
+      "nome": "Velocidade de Conjuração (mais)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe: o tempo de conjuração do uso ÷ (1 + X%) — lote B1, a Nova Elétrica da Procissão"
+    },
     "chance_cegar": {
       "nome": "Chance de Cegar",
       "unidade": "%",

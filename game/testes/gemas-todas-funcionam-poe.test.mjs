@@ -66,6 +66,10 @@ function montar(slug, [arma, escudo], suportes = []) {
   const [b, ...resto] = e.hunt.monstros;
   for (const m of resto) Object.assign(m, { x: e.hunt.pos.x + 60, y: e.hunt.pos.y + 60 });
   Object.assign(b, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y, hp: 1e12, maxHp: 1e12, estados: {} });
+  // (lote B1, com o aval do dono 20/10 — a regra do PoE: a Descarga descarrega as SUAS cargas, sem carga ela não sai: a montagem dá Poder, Frenesi e Tolerância à
+  // Descarga e à da Miséria; o Condutor Elétrico só acerta o inimigo Eletrizado: a montagem Eletriza o alvo)
+  if (/^Discharge/.test(slug)) e.hunt.cargasPoe = Object.fromEntries(['poder', 'frenesi', 'tolerancia'].map((t) => [t, { n: 1, ate: e.hunt.clock + 60_000 }]));
+  if (slug === 'Lightning_Conduit') b.estados.chocado = { ate: e.hunt.clock + 60_000, pct: 20, dur: 60_000 };
   // (as gemas de cadáver precisam de um cadáver perto do alvo; as de Retaliação, da janela aberta — o bloqueio, o Acerto Selvagem; os Vínculos,
   // de um aliado perto — o mercenário)
   e.hunt.cadaveres = [{ key: 'x', nome: 'Morto', look: 1, x: b.x, y: b.y, maxHp: 10000 }];

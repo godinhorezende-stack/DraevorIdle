@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 193 |
+| implementada e testada | 211 |
 | implementada, sem teste próprio | 52 |
 | limitação do modelo idle | 11 |
-| parcial | 305 |
+| parcial | 287 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 81 |
+| implementada e testada | 84 |
 | implementada, sem teste próprio | 23 |
 | limitação do modelo idle | 6 |
-| parcial | 100 |
+| parcial | 97 |
 
 ### Gemas de suporte (262)
 
@@ -33,16 +33,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): parcial 30 · implementada e testada 15 · implementada, sem teste próprio 7
-- Alternativas (209): parcial 122 · implementada, sem teste próprio 27 · implementada e testada 53 · limitação do modelo idle 7
+- Vaal (52): parcial 27 · implementada e testada 18 · implementada, sem teste próprio 7
+- Alternativas (209): parcial 114 · implementada, sem teste próprio 27 · implementada e testada 61 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 732 linhas distintas (137 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 714 linhas distintas (131 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 305/562 ativas, 117/262 suportes.
+- Testes que citam a gema: 316/562 ativas, 117/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -52,7 +52,7 @@ Só os ataques:
 | 16 | nenhum efeito do buff tem equivalente no jogo |
 | 12 | Lacaios têm Recuperação da Recarga aumentada em # % |
 | 9 | Efeito do Buff aumentado em # % |
-| 8 | sem dano direto: nenhum efeito no combate |
+| 7 | sem dano direto: nenhum efeito no combate |
 | 6 | # % de Chance de uma Armadilha ser Ativada uma vez adicional |
 | 5 | Duração do Efeito de Habilidades aumentada em # % |
 | 5 | Velocidade de Movimento reduzida em # % |
@@ -78,15 +78,12 @@ Só os ataques:
 | 3 | Projéteis de Estilhas Causam # % menos Dano |
 | 3 | Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # % |
 | 3 | Velocidade de Projéteis aumentada em # % |
-| 2 | # % de chance de causar Dano sem remover Cargas |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
-| 2 | # % de chance de detonar um cadáver adicional |
 | 2 | # % de chance de infligir Definhando por # segundos ao Acertar |
 | 2 | # % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único |
 | 2 | # % de chance de receber uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único |
 | 2 | # % de chance de remover um Feitiço após Causar Dano |
 | 2 | # % do dano de ataques é absorvido pelo bônus antes de afetar sua vida ou seu escudo de Energia Bônus pode sofrer dano equivalente a # % da sua armadura, até # |
-| 2 | # % mais Área de Efeito por Carga removida |
 | 2 | # % mais Dano com Acertos se o Inimigo estiver Enfeitiçado |
 | 2 | # % mais Dano com Afecções se o Inimigo estiver Enfeitiçado |
 | 2 | # % mais Dano com Sangramento enquanto na Postura de Sangue |
@@ -130,7 +127,6 @@ Só os ataques:
 | 2 | Debuffs causam # % de Dano por Carga |
 | 2 | Debuffs causam +# % de Dano por Carga |
 | 2 | Definhado dura # segundos |
-| 2 | Dispara Projéteis # % mais rápido |
 | 2 | Dispara um feixe a cada # segundos |
 | 2 | Duração de Maldições aumentada em # % |
 | 2 | Duração do Buff aumentada em # % por Carga de Tolerância removida |
@@ -169,11 +165,9 @@ Só os ataques:
 | 2 | Pode focar em cada inimigo apenas uma vez a cada # segundos |
 | 2 | Raio acerta # alvos dentro de # metros |
 | 2 | Raio Base da explosão menor igual a # metros |
-| 2 | Raio Base terciário igual a # metros |
 | 2 | Receba # % do Dano Físico como Dano de Gelo Extra |
 | 2 | Regenera # % do Dano do Debuff como Vida |
 | 2 | Regenera +# % do Dano do Debuff como Vida |
-| 2 | Regeneração de Vida reduzida em # % |
 | 2 | Sentinelas Ascendidos causam # % mais Dano |
 | 2 | Sentinelas Ascendidos sofrem # % menos Dano |
 | 2 | Só aplica Feitiços de Gemas de Habilidades Maldição que exigem Nível # ou menor |
@@ -191,16 +185,12 @@ Só os ataques:
 | 1 | [Empowered\|Fortalece] as próximas # magias que você conjurar |
 | 1 | [Empowered\|Fortalece] as próximas +# magias que você conjurar |
 | 1 | # % de aumento da Distância do Empurrão |
-| 1 | # % de aumento do Efeito de Mutilação |
 | 1 | # % de chance de Cegar inimigos ao acertá-los |
 | 1 | # % de chance de convocar um Lacaio extra |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
-| 1 | # % de chance de ganhar uma Carga de Frenesi quando um Inimigo Morrer enquanto na Área dessa Habilidade |
-| 1 | # % de chance de ganhar uma Carga de Poder em Acertos Críticos |
 | 1 | # % de chance de ganhar uma Ruína adicional ao usar |
 | 1 | # % de Chance de ramificação da Fissura |
 | 1 | # % de chance de ramificação de fissuras por Carga de Tolerância removida |
-| 1 | # % de chance do Relâmpago acertar o Marcador ao Conjurar |
 | 1 | # % de chancer de causar Sangramento enquanto na Postura de Sangue |
 | 1 | # % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade |
 | 1 | # % do Dano de Raio Convertido em Dano de Caos |
@@ -224,7 +214,6 @@ Só os ataques:
 | 1 | # % mais Dano por Traumatismo |
 | 1 | # % mais Duração do Veneno |
 | 1 | # % mais Raio de Área contra Inimigos afetados por uma Afecção do Elemento escolhido |
-| 1 | # % mais Velocidade de Conjuração |
 | 1 | # % mais Velocidade de Projétil |
 | 1 | # % menos Dano de Afecções |
 | 1 | # % menos Dano Físico sofrido por Carga de Tolerância removida |
@@ -275,7 +264,6 @@ Só os ataques:
 | 1 | Abalo Secundário causa # % mais Dano com Afecções por cada # segundos de Duração |
 | 1 | Abalo Secundário tem # % mais Área de Efeito por cada # segundos de Duração |
 | 1 | Acada segundo # % mais Fúria perdida |
-| 1 | Acerta até # Inimigos |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos Perde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
 | 1 | Acertos com Habilidades Suportadas para o qual o maior Tipo de Dano for Elemental fazem com que você ganhe # de Ressonância de outros Elementos por # segundos\nPerde # de Ressonância por segundo para cada Elemento que não estiver ganhando |
 | 1 | Acertos em Inimigos Incendiados criam Solo Ardente, não mais que uma vez a cada # segundos |
@@ -333,7 +321,6 @@ Só os ataques:
 | 1 | Cada Aprisionamento aplica # % menos Velocidade de Movimento aos Inimigos Únicos |
 | 1 | Cada Esporo dispara # Flechas de Espinho |
 | 1 | Cada Esporo dispara +# Flecha de Espinho |
-| 1 | Cada Esporo inflige # Debuff de Definhamento nos Inimigos próximos |
 | 1 | Cada Flecha deixa # Esporos |
 | 1 | Cada Flecha pode disparar +# Feixe |
 | 1 | Cada Habilidade Suportada causa #% mais Dano com Incêndio por cada Incêndio infligido com ela Recentemente, máximo de #% |
@@ -348,8 +335,6 @@ Só os ataques:
 | 1 | Causa # % da sua Mana Máxima como Dano de Fogo Base por segundo |
 | 1 | Causa # % do seu Escudo de Energia Máximo como Dano Base de Fogo por segundo |
 | 1 | Causa # % do seu máximo de Vida como Dano de Caos base |
-| 1 | Causa # % mais Dano com Acertos por cada # segundos de Duração |
-| 1 | Causa # % mais Dano com Afecções por cada # segundos de Duração |
 | 1 | Causa # a # de Dano de Fogo |
 | 1 | Causa # a # de Dano de Gelo |
 | 1 | Causa # Ondas |
@@ -413,12 +398,11 @@ Só os ataques:
 | 1 | Dano Mágico Suprimido causado em você é Azarado |
 | 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
 | 1 | Detonação da Mina é Instantânea |
-| 1 | Dispara # Flecha |
 | 1 | Dispara # fragmentos por vez até que todos sejam disparados |
 | 1 | Dispara # projéteis |
 | 1 | Dispara # Projéteis secundários |
-| 1 | Dispara # sequências de flechas adicionais |
 | 1 | Dispara até # Flechas em alvos diferentes |
+| 1 | Dispara Projéteis # % mais rápido |
 | 1 | Dispara Projéteis a cada # segundos |
 | 1 | Dispara tentáculos em até # Alvo |
 | 1 | Dispara tentáculos em até # Alvos |
@@ -500,7 +484,6 @@ Só os ataques:
 | 1 | Ganha uma instância de Intensidade Sobrecarregada por # segundos após perder # de Intensidade com habilidades reforçadas |
 | 1 | Ganha uma instância de Intensidade Sobrecarregada por # segundos após\nperder # de Intensidade com habilidades reforçadas |
 | 1 | Ganha uma Ruína por uso Ao chegar a sete, sacrifica # % da sua vida e causa # % da vida sacrificada como dano de caos |
-| 1 | Ganhe uma Carga de Poder quando um Inimigo Morrer enquanto na Área dessa Habilidade A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área dessa Habilidade |
 | 1 | Gasta # % da Mana atual |
 | 1 | Gelo se quebra após você sofrer # Acertos Danificadores ou a Duração expirar |
 | 1 | Gira # vez |
@@ -674,7 +657,6 @@ Só os ataques:
 | 1 | Minas tem Velocidade de Detonação aumentada em # % |
 | 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
 | 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
-| 1 | Mutila ao Acertar |
 | 1 | Não pode Incendiar |
 | 1 | Não pode infligir Envenenamento em Inimigos Envenenados |
 | 1 | Não pode infligir múltiplos envenenamentos com o mesmo ataque |
@@ -719,9 +701,9 @@ Só os ataques:
 | 1 | Raio acerta alvos dentro de +# metros |
 | 1 | Raio base da lâmina é de # metro |
 | 1 | Raio Base da Mão Principal é de # metros |
+| 1 | Raio Base terciário igual a # metros |
 | 1 | Raio de alcance base da mão secundária é de # metros |
 | 1 | Raio de alcance base do impacto é de # metro |
-| 1 | Raio inicial base de chão congelado é de # metros |
 | 1 | Raios acertam a cada # segundos |
 | 1 | Raios Acertam Inimigos a cada # segundos |
 | 1 | Raios causam # % menos Dano |
@@ -729,6 +711,7 @@ Só os ataques:
 | 1 | Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar |
+| 1 | Regeneração de Vida reduzida em # % |
 | 1 | Resfria Inimigos por # segundos ao Acertar, reduzindo sua Velocidade de Ação em # % |
 | 1 | Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos |
 | 1 | Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos |
@@ -760,7 +743,6 @@ Só os ataques:
 | 1 | Taxa base de explosão do orbe é de uma vez por segundo |
 | 1 | Tempestade Furiosa causa # % mais Dano por cada # de Fúria Sacrificada |
 | 1 | Tempestades Acertam Inimigos com Frequência aumentada em # % |
-| 1 | Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada |
 | 1 | Tormenta Furiosa tem +# metros ao raio por cada # de Fúria sacrificada |
 | 1 | Totens com esta Habilidade a Ativam quando Acertados por um Inimigo |
 | 1 | Totens das Habilidades Suportadas ganham a Habilidade Vingança Flamejante e a Ativa quando Acertado por um Inimigo |
@@ -878,8 +860,6 @@ Só os ataques:
   - efeito não simulado: 12 % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas
   - efeito não simulado: Tempestades de Lâminas causam 50 % menos Dano com Acertos e Afecções
   - efeito não simulado: +1 ao número Máximo de Tempestades de Lâminas por vez
-- **Blast_Rain_of_Trarthus** (Chuva Explosiva de Trarthus) — parcial
-  - efeito não simulado: Dispara 1 Flecha
 - **Blight** (Infestação) — parcial
   - efeito não simulado: Velocidade de Movimento reduzida em 80 %
   - efeito não simulado: Debuff pode ter até 20 camadas de Dano
@@ -948,12 +928,6 @@ Só os ataques:
   - efeito não simulado: +0.1 metros de raio por inimigo próximo, até +1 metro
 - **Cleave_of_Rage** (Cutilada da Fúria) — parcial
   - efeito não simulado: +0.1 metro ao Raio por 5 de Fúria
-- **Cold_Snap** (Estalo Gélido) — parcial
-  - efeito não simulado: Raio inicial base de chão congelado é de 1.5 metros
-  - efeito não simulado: 25 % de chance de ganhar uma Carga de Frenesi quando um Inimigo Morrer enquanto na Área dessa Habilidade
-- **Cold_Snap_of_Power** (Estalo Gélido do Poder) — parcial
-  - efeito não simulado: 50 % de chance de ganhar uma Carga de Poder em Acertos Críticos
-  - efeito não simulado: 20 % de chance de ganhar uma Carga de Poder em Acertos Críticos
 - **Conflagration** (Conflagração) — parcial
   - efeito não simulado: As flechas após a primeira caem em um raio base de 6 metros
   - efeito não simulado: Raio de alcance base do impacto é de 7 metro
@@ -981,8 +955,6 @@ Só os ataques:
   - efeito não simulado: +10 % mais Dano com Acertos e Afecções por Intensidade
 - **Crackling_Lance_of_Branching** (Lança Crepitante da Ramificação) — parcial
   - efeito não simulado: Ângulo da ramificação aumentado em 50 %
-- **Cremation** (Cremação) — parcial
-  - efeito não simulado: Dispara Projéteis 15 % mais rápido
 - **Cremation_of_Exhuming** (Cremação da Exumação) — parcial
   - efeito não simulado: Explode um Cadáver próximo ao Disparar Projéteis
   - efeito não simulado: Dispara Projéteis 15 % mais rápido
@@ -1003,20 +975,10 @@ Só os ataques:
   - efeito não simulado: Estandarte concede -12 de Dano sofrido de cada Tipo de Dano dos Acertos Suprimidos a Você e Aliados
 - **Despair** (Desespero) — parcial
   - efeito não simulado: Efeito de Maldições aumentado em 10 %
-- **Detonate_Dead** (Detonar Morto) — parcial
-  - efeito não simulado: 15 % de chance de detonar um cadáver adicional
-- **Detonate_Dead_of_Scavenging** (Detonar Morto da Limpeza) — parcial
-  - sem dano direto: nenhum efeito no combate
 - **Detonate_Mines** (Detonar Minas) — parcial
   - sem dano direto: nenhum efeito no combate
   - efeito não simulado: Primeira Mina é Detonada Instantaneamente Minas recebem 10 % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação
   - efeito não simulado: Minas tem Velocidade de Detonação aumentada em 20 %
-- **Discharge** (Descarga) — parcial
-  - efeito não simulado: 15 % mais Área de Efeito por Carga removida
-  - efeito não simulado: 10 % de chance de causar Dano sem remover Cargas
-- **Discharge_of_Misery** (Descarga da Miséria) — parcial
-  - efeito não simulado: 20 % mais Área de Efeito por Carga removida
-  - efeito não simulado: 10 % de chance de causar Dano sem remover Cargas
 - **Discipline** (Disciplina) — parcial
   - efeito não simulado: Você e Aliados próximos ganham 30 % de Velocidade de Recarga de Escudo de Energia aumentada
 - **Divine_Blast** (Rajada Divina) — parcial
@@ -1146,11 +1108,6 @@ Só os ataques:
   - efeito não simulado: Sofre 50 % do Escudo de Energia Máximo como Dano de Caos
 - **Frenzy_of_Onslaught** (Frenesi da Agressividade) — parcial
   - efeito não simulado: Consome todas as Carga de Frenesi quando você Acertar um inimigo enquanto no máximo de Cargas de Frenesi para ganhar Agressividade por 1 segundo por Carga consumida
-- **Frost_Bomb** (Bomba Congelante) — parcial
-  - efeito não simulado: Regeneração de Vida reduzida em 75 %
-- **Frost_Bomb_of_Forthcoming** (Bomba Congelante da Aproximação) — parcial
-  - efeito não simulado: Causa 10 % mais Dano com Acertos por cada 0.1 segundos de Duração
-  - efeito não simulado: Causa 3 % mais Dano com Afecções por cada 0.1 segundos de Duração
 - **Frost_Wall** (Parede de Gelo) — parcial
   - efeito não simulado: 0.15 segundos entre o aparecimento de seções da Parede
   - efeito não simulado: Parede terá 5.6 metros
@@ -1301,11 +1258,6 @@ Só os ataques:
   - efeito não simulado: Flechas causam Dano ao alvo final 4 vezes adicionais após grudar
   - efeito não simulado: Raios acertam a cada 0.5 segundos
   - efeito não simulado: Flechas causam Dano ao alvo final 1 vezes adicionais após grudar
-- **Lightning_Conduit** (Condutor Elétrico) — parcial
-  - efeito não simulado: Tempo de Conjuração desta Magia é adicionado à sua Recarga se Ativada
-- **Lightning_Conduit_of_the_Heavens** (Condutor Elétrico dos Céus) — parcial
-  - efeito não simulado: Acerta até 15 Inimigos
-  - efeito não simulado: Acerta até 4 Inimigos
 - **Lightning_Spire_Trap_of_Zapping** (Armadilha da Espiral Relampejante da Eletrização) — parcial
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
 - **Lightning_Tendrils** (Tentáculos Relampejantes) — parcial
@@ -1502,8 +1454,6 @@ Só os ataques:
   - efeito não simulado: Onda Central tem 40 % mais Área de Efeito
 - **Shield_of_Light** (Escudo de Luz) — parcial
   - efeito não simulado: Ondas adicionais serão criadas a partir dos aliados dentro de um raio base de 4 metros do primeiro inimigo atingido
-- **Shock_Nova_of_Procession** (Nova Elétrica da Procissão) — parcial
-  - efeito não simulado: 10 % mais Velocidade de Conjuração
 - **Shrapnel_Ballista** (Balista Estilhaçante) — parcial
   - efeito não simulado: as flechas do mesmo ataque podem acertar o mesmo inimigo (no jogo cada flecha a mais vai num inimigo diferente)
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
@@ -1584,8 +1534,6 @@ Só os ataques:
 - **Storm_Burst_of_Repulsion** (Estouro Tempestuoso da Repulsão) — parcial
   - efeito não simulado: Orbes saltam a cada 0.4 segundos
   - efeito não simulado: Orbes Explosivas causam 75 % do Dano da Habilidade para cada 0.4 segundos de Duração restante
-- **Storm_Call** (Invocar Tormenta) — parcial
-  - efeito não simulado: 15 % de chance do Relâmpago acertar o Marcador ao Conjurar
 - **Storm_Rain** (Chuva Tempestuosa) — parcial
   - efeito não simulado: Flecha dispara Raios a cada 0.41 segundos
   - efeito não simulado: Cada Flecha pode disparar 4 Feixes
@@ -1727,8 +1675,6 @@ Só os ataques:
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
 - **Toxic_Rain_of_Sporeburst** (Chuva Tóxica da Explosão de Esporos) — parcial
   - efeito não simulado: Cada Esporo aplica 5 % menos Velocidade de Movimento aos Inimigos próximos, até um máximo de 30 %
-- **Toxic_Rain_of_Withering** (Chuva Tóxica do Definhamento) — parcial
-  - efeito não simulado: Cada Esporo inflige 1 Debuff de Definhamento nos Inimigos próximos
 - **Unearth** (Desenterrar) — parcial
   - efeito não simulado: Cadáveres Criados têm Vida Máxima aumentada em 20 %
 - **Vaal_Absolution** (Absolvição Vaal) — parcial
@@ -1758,11 +1704,6 @@ Só os ataques:
 - **Vaal_Cleave** (Cutilada Vaal) — parcial
   - efeito não simulado: Buff concede Golpe Abatedor com Cutilada Buff concede 60 % mais Área de Efeito da Cutilada Buff concede 60 % mais Dano com Cutilada com Acertos e Afecções aos Inimigos que estão em Vida Baixo
   - efeito não simulado: +0.1 metros de raio por inimigo próximo, até +1 metro
-- **Vaal_Cold_Snap** (Estalo Gélido Vaal) — parcial
-  - efeito não simulado: Raio Base terciário igual a 3.6 metros
-  - efeito não simulado: Ganhe uma Carga de Poder quando um Inimigo Morrer enquanto na Área dessa Habilidade A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área dessa Habilidade
-- **Vaal_Detonate_Dead** (Detonar Morto Vaal) — parcial
-  - efeito não simulado: 30 % de chance de detonar um cadáver adicional
 - **Vaal_Discipline** (Disciplina Vaal) — parcial
   - efeito não simulado: A Recarga do seu Escudo de Energia e dos seus aliados próximos não é impedida por Dano
 - **Vaal_Domination** (Dominação Vaal) — parcial
@@ -1808,10 +1749,6 @@ Só os ataques:
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
 - **Vaal_Power_Siphon** (Sifão de Poder Vaal) — parcial
   - efeito não simulado: Receba uma Carga de Poder quando um Projétil Acertar um Inimigo Raro ou Único
-- **Vaal_Rain_of_Arrows** (Chuva de Flechas Vaal) — parcial
-  - efeito não simulado: Dispara 4 sequências de flechas adicionais
-  - efeito não simulado: Mutila ao Acertar
-  - efeito não simulado: 150 % de aumento do Efeito de Mutilação
 - **Vaal_Reap** (Ceifar Vaal) — parcial
   - efeito não simulado: Efeitos do Sangue Fervendo Perduram por 4 segundos
   - efeito não simulado: Concede +4 ao máximo de Cargas de Sangue

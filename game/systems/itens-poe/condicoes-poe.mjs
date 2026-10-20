@@ -18,6 +18,7 @@ import { simples } from '../combate/modificadores.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { quemRecebeAMaldicao } from './vinculos.mjs';
 import * as Aliados from './aliados.mjs';
+import { raioQueCresce } from './gemas-b1.mjs';
 
 /** "Recentemente" no PoE: nos últimos 4 segundos. */
 export const RECENTE_MS = 4000;
@@ -83,11 +84,41 @@ export const AREAS_FRIAS = Object.freeze({
 // (lote A2: + `efeitoPct` — a área com o Resfriamento próprio: o Escudo Gélido, com o "Efeito de Afecções de Gelo aumentado" da qualidade dele)
 // (lote A3b, dono 19/10: + `obj` — o id do objeto do chão a que a área fria pertence: a da Geada Rastejante anda com ele, `Acoes.tiqueDosObjetos`)
 // (lote A5, dono 20/10 — D5: + `fragilGelo` — a área da habilidade suportada pelo Resfriamento Ósseo: quem está nela sofre o Gelo aumentado pelo Resfriamento)
-export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false }) {
+// (lote B1, dono 20/10 — D-B1.6/D-B1.7: + `cresce` — o chão dos Estalos Gélidos, `{ deM, ateM, fator, sorte }`: o raio vai de `deM` a `ateM` pela duração,
+// `atualizarAreasFrias`; + `aoMorrer` — `{ tipo, chance }`, a carga quando um inimigo morre nela, `cargasAoMorrerNaAreaFria`; + `porSegundo` — o tipo da carga a
+// cada segundo com um inimigo nela, `cargasPorSegundoDasAreasFrias`)
+export function criarAreaFria(h, { x, y, raioM, segundos, agora = h?.clock ?? 0, efeitoPct = null, obj = null, fragilGelo = false, cresce = null, aoMorrer = null, porSegundo = null }) {
   if (!h || !(segundos > 0) || !Number.isFinite(x) || !Number.isFinite(y)) return;
   const lista = (h.areasFrias ??= []).filter((a) => a.ate > agora);
-  lista.push({ x, y, raio: Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + Math.round(segundos * 1000), ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}) });
+  const durMs = Math.round(segundos * 1000);
+  const doCrescer = cresce ? { ...cresce, inicio: agora, durMs } : null;
+  lista.push({ x, y, raio: doCrescer ? raioQueCresce(doCrescer, agora) : Math.max(0, Math.round((Number(raioM) || 0) / 2)), ate: agora + durMs, ...(efeitoPct > 0 ? { efeitoPct } : {}), ...(obj ? { obj } : {}), ...(fragilGelo ? { fragilGelo: true } : {}),
+    ...(doCrescer ? { cresce: doCrescer } : {}), ...(aoMorrer ? { aoMorrer } : {}), ...(porSegundo ? { porSegundo, proximaCarga: agora + 1000 } : {}) });
   h.areasFrias = lista.slice(-AREAS_FRIAS.maximo);
+}
+/** (lote B1, D-B1.7) O raio das áreas frias que crescem, no instante `agora` (o tique — `cacadas.resfriarNasAreasFrias`). */
+export function atualizarAreasFrias(h, agora = h?.clock ?? 0) {
+  for (const a of h?.areasFrias ?? []) if (a.cresce) a.raio = raioQueCresce(a.cresce, agora);
+}
+const naArea = (a, b) => Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio && (b.z == null || a.z == null || b.z === a.z);
+/** (lote B1, D-B1.6) As cargas que a morte de `morto` dá (o Estalo Gélido: 25% de Frenesi; o Vaal: o Poder) — as áreas frias com `aoMorrer` em que ele estava. */
+export function cargasAoMorrerNaAreaFria(h, morto, agora = h?.clock ?? 0, rng = Math.random) {
+  const ganhos = [];
+  if (!morto) return ganhos;
+  for (const a of h?.areasFrias ?? []) if (a.aoMorrer && a.ate > agora && naArea(a, morto) && rng() * 100 < a.aoMorrer.chance) ganhos.push(a.aoMorrer.tipo);
+  return ganhos;
+}
+/** (lote B1, D-B1.6) "A cada Segundo, receba uma Carga de Frenesi se um Inimigo estiver na Área" (o Estalo Gélido Vaal): os tipos que este tique dá. */
+export function cargasPorSegundoDasAreasFrias(h, agora = h?.clock ?? 0) {
+  const ganhos = [];
+  for (const a of h?.areasFrias ?? []) {
+    if (!a.porSegundo || !(a.ate > agora)) continue;
+    while (a.proximaCarga <= Math.min(agora, a.ate)) {
+      if ((h.monstros ?? []).some((m) => m.hp > 0 && !m.dummy && naArea(a, m))) ganhos.push(a.porSegundo);
+      a.proximaCarga += 1000;
+    }
+  }
+  return ganhos;
 }
 /** (lote A5, D5) O bicho está numa área fria do Resfriamento Ósseo agora? */
 export const naAreaFriaFragil = (h, b, agora = h?.clock ?? 0) => !!b && (h?.areasFrias ?? []).some((a) => a.fragilGelo && a.ate > agora && Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) <= a.raio);

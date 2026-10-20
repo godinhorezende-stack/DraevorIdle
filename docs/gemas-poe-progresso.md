@@ -347,6 +347,37 @@ Teste: `testes/area-no-impacto-a3c.test.mjs`. Com o aval do dono: `itens-poe-uni
 - **A precisão LOCAL da arma** ("+X de Precisão" na arma → `accuracy_local`, tradução 72): só na mão dela (`fichaDaMao`; o golpe das duas, a média). **A Técnica Precisa por uso** (a precisão do uso contra a vida máxima). **O simulador** usa a precisão do uso e a mesma isenção do motor.
 - A Precisão Adicional saiu de parcial. Teste novo: `game/testes/precisao-a5b.test.mjs`. Com o aval do dono: `suportes-a5.test.mjs:104-105`.
 
+### B1 — as ativas de área, nova, chuva e orbe que reusam o que já existe (20/10, as recomendações do plano aceitas)
+
+- **O plano tinha 24 gemas; depois do A5, A5b, A5c e A5d sobraram 18.** Saíram as 18 de parcial (15 no primeiro commit; as 3 que dependiam do dono, no segundo).
+- **A Descarga e a da Miséria** (`gemas-b1.mjs`, `acoes.mjs`, `GemasPoe.partesDaMagia` com `basePor`): o dano base de cada elemento × as cargas do tipo dele (Raio × Poder, Fogo × Tolerância, Gelo × Frenesi). A área ganha 15% mais (20% na Miséria) × o total de cargas, um "mais" só. As cargas saem depois do golpe, salvo a chance da qualidade (10% na 20). Sem carga, a gema não sai (`SEM_CARGAS`).
+- **O Condutor Elétrico:** o tempo de conjuração vai para a recarga do uso ativado por gatilho (a mesma linha da Explosão Invernal, agora pelo leitor da linha). **O dos Céus:** acerta até 15 (+4 da qualidade 20), os mais perto do centro da área, e não exige mais a Eletrização. O PoB só a exige na base ("strikes all Shocked enemies"); o A5 a exigia nas duas.
+- **As Bombas Congelantes:** a Regeneração de Vida −75% no debuff, junto da Exposição e pela mesma duração (`regenMenosDebuff`, `skills/estados.mjs`). A da Aproximação (D-B1.3): ⌊duração final ÷ 0,1 s⌋ × 10% mais nos acertos e × 3% nas afecções. Com 2 s, 200% e 60%; com a qualidade 20 (2,5 s), 250% e 75%.
+- **Os Estalos Gélidos** (D-B1.6/D-B1.7, `condicoes-poe.criarAreaFria` com `cresce`, `aoMorrer`, `porSegundo`):
+  - o chão cresce linear do raio inicial ao final pela duração (1,5 → 3 m em 5 s; o Vaal, 2 → 3,6 m em 4 s), em casas por m × √Área ÷ 2, a fração sorteada uma vez;
+  - o inimigo que morre no chão dá 25% de Frenesi (o Vaal: o Poder), e o Vaal dá 1 Frenesi por segundo com inimigo no chão;
+  - o do Poder: 50% (+20% da qualidade) de Poder no crítico.
+- **Os cadáveres:** o Detonar Mortos e o Vaal detonam um cadáver adicional na chance da qualidade (15% e 30%). A Limpeza saiu do "sem dano direto": o efeito dela é a explosão (29,5% + 5% da qualidade). A Cremação dispara 15% mais rápido na qualidade 20 (1 s ÷ 1,15).
+- **As linhas locais** (`linhas-das-gemas.mjs`):
+  - a Mutilação da Chuva de Flechas Vaal: 30% × 2,5 = 75% de lentidão (`efeito_mutilacao`, `ModsPoe.aoAcertar`);
+  - o "10% mais Velocidade de Conjuração" da Nova Elétrica da Procissão (`cast_speed_mais`, `Acoes.temposDaGemaPoe`);
+  - a Chuva Explosiva de Trarthus: "Dispara 1 Flecha" (o singular no leitor dos alvos).
+- **Escolhas sem fonte, para o dono conferir:**
+  1. o dos Céus escolhe os mais perto do centro;
+  2. a Descarga tira as cargas depois do golpe (o dano e o crítico contam com elas);
+  3. o cadáver adicional do Detonar soma só a explosão dele, como o Vaal já fazia com os cadáveres a mais.
+- **As decisões do dono (20/10, o segundo commit):**
+  - D-B1.8, a Chuva de Flechas Vaal: as 4 sequências adicionais são anéis concêntricos iguais no raio da área, a partir do alvo. O PoE e o poedb não publicam o passo. Cada inimigo leva só o golpe do anel em que está, e a tela recebe um anel por sequência;
+  - D-B1.9, a Chuva Tóxica do Definhamento: 1 Definhamento de 2 s por uso em cada inimigo acertado;
+  - D-B1.10, a Invocar Tormenta: o marcador no alvo (`hunt.poeObjetos`, tipo `tormenta`) e o raio cai nele depois da duração (1,5 s × os modificadores), na área da gema. Quando um marcador cai, os outros da gema caem junto ("causing lightning strikes at any other markers", o PoB). A qualidade (15% na 20) faz o raio cair na hora, sem marcador;
+  - os Estalos Gélidos pulam a recarga gastando uma carga: Frenesi no comum, Poder no do Poder (o PoB; `CARGA_QUE_PULA_A_RECARGA`).
+- Teste novo: `game/testes/ativas-b1.test.mjs` (18 casos, os sorteios travados).
+- **Testes ajustados com o aval do dono (20/10):**
+  - `gemas-todas-funcionam-poe.test.mjs` (G16): a montagem dá Poder, Frenesi e Tolerância à Descarga e à da Miséria, e Eletriza o alvo do Condutor Elétrico;
+  - `suportes-a5.test.mjs:532`: o Condutor Elétrico completo (motivos `[]`).
+- **Teste que quebra pelo progresso, para o aval:** `itens-poe-gemas.test.mjs:36` exige `st.parcial > 300`; agora são 298 (287 parciais + 11 de limitação do idle).
+- Depois: parcial 305 → 287 nas ativas; 111 → 111 nos suportes.
+
 ## Pendências conhecidas (por ordem de prioridade)
 
 1. ~~G3~~ feito. Resto das Minas: a reserva ("Reserva Base igual ao Custo Base"), o Locus (arco, "sempre focam na sua localização", 30% menos projéteis) e o Alto Impacto (dano dobrado perto das Minas). **Antes: os suportes de Armadilha e Mina** (14 suportes travados por "armadilhas e minas ainda não existem no jogo": as plantadas existem desde 12/10). O Suporte de Armadilha e as Minas (Explosão em Cadeia, Alto Impacto, Locus) transformam a habilidade suportada em Armadilha/Mina (`Plantadas.tipoDaGema(entry, efeito)`); Armadilhas Múltiplas/Agrupadas, Montagem Ágil (as 3 faixas de chance), Dano de Armadilha e Mina, Armadilhas Avançadas e Carregadas, Minas Carregadas, Invenção. A reserva das minas ("Reserva Base igual ao Custo Base") precisa de `reserva.mjs`.
