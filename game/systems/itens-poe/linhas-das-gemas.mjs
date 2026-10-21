@@ -37,6 +37,8 @@ const REGRAS = [
   [new RegExp(`^Duração do Atordoamento em inimigos aumentada em ${N} ?%$`, 'i'), (m) => ({ stun_duration: num(m[1]) })],
   [new RegExp(`^${N} ?% de chance de dobrar a Duração de Atordoamentos$`, 'i'), (m) => ({ chance_dobrar_atordoamento: num(m[1]) })],
   [new RegExp(`^Duração de Atordoamentos em Inimigos com Vida Cheia aumentada em ${N} ?%$`, 'i'), (m) => ({ 'stun_duration@alvoVidaCheia': num(m[1]) })],
+  // (lote C2, dono 20/10: o Esmagar Ossos da Carnificina — active_skill_damage_+%_final_vs_stunned_enemies, o "mais" contra o atordoado: hits e afecções)
+  [new RegExp(`^Mais ${N} ?% de dano contra inimigos atordoados$`, 'i'), (m) => ({ 'mais_dano@alvoAtordoado': num(m[1]) })],
   // (o Martelo Glacial: o terceiro golpe seguido — a tag `terceiroGolpe` do golpe)
   [new RegExp(`^Cada terceiro golpe sucessivo Congela inimigos como se houvesse causado ${N} ?% mais Dano$`, 'i'), (m) => ({ 'congelamento_como_mais@terceiroGolpe': num(m[1]) })],
   [/^Cada terceiro golpe sucessivo é um Golpe Crítico$/i, () => ({ 'crit_chance@terceiroGolpe': 100 })],

@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 250 |
+| implementada e testada | 263 |
 | implementada, sem teste próprio | 48 |
 | limitação do modelo idle | 11 |
-| parcial | 252 |
+| parcial | 239 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 116 |
+| implementada e testada | 125 |
 | implementada, sem teste próprio | 19 |
 | limitação do modelo idle | 6 |
-| parcial | 69 |
+| parcial | 60 |
 
 ### Gemas de suporte (262)
 
@@ -34,15 +34,15 @@ Só os ataques:
 ### Variantes
 
 - Vaal (52): implementada e testada 23 · parcial 23 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 80 · implementada, sem teste próprio 25 · parcial 97 · limitação do modelo idle 7
+- Alternativas (209): implementada e testada 88 · implementada, sem teste próprio 25 · parcial 89 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 657 linhas distintas (116 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 629 linhas distintas (109 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 338/562 ativas, 119/262 suportes.
+- Testes que citam a gema: 351/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -75,7 +75,6 @@ Só os ataques:
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção Você só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Habilidades Suportadas também contam como Habilidades Bênção\nVocê só pode ter uma Aura de suas Habilidades Bênção |
 | 3 | Parede terá # metros |
-| 3 | Pulso tem Efeito em Área aumentado em # % por cada #s de Duração do Atordoamento, máximo de # % |
 | 3 | Velocidade de Projéteis aumentada em # % |
 | 2 | # % de chance de Convocar um Sentinela da Absolvição ao Acertar um Inimigo Raro ou Único |
 | 2 | # % de chance de invocar uma Sentinela da Dominação normal ao atingir um monstro raro ou único |
@@ -114,8 +113,6 @@ Só os ataques:
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores tenham # % menos Vida Máxima |
 | 2 | Concede # % mais Dano Mágico |
 | 2 | Custa # % mais Vida por Carga Sangrenta |
-| 2 | Debuffs causam # % de Dano por Carga |
-| 2 | Debuffs causam +# % de Dano por Carga |
 | 2 | Definhado dura # segundos |
 | 2 | Dispara um feixe a cada # segundos |
 | 2 | Duração de Maldições aumentada em # % |
@@ -127,7 +124,6 @@ Só os ataques:
 | 2 | Explosão Cinética cria # explosões adicionais |
 | 2 | Feixes se dividem em direção a alvos dentro de um raio base de # metros |
 | 2 | Fissuras irrompem # vezes adicionais |
-| 2 | Ganha # Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre # de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura # segundos |
 | 2 | Ganhe uma Carga Sangrenta se esta Habilidade Acertar Inimigos e nenhum deles Morrerem Perca uma Carga Sangrenta quando um Inimigo Morrer enquanto afetado pelo Debuff desta Habilidade |
 | 2 | Golens causam # % mais Dano por Lacaio Não-Golem próximo deles, até # % |
 | 2 | Golpeia a cada # segundos enquanto Canalizando uma Habilidade de Raio próximo ao Orbe |
@@ -142,9 +138,7 @@ Só os ataques:
 | 2 | Lacaios possuem +# % de todas Resistências Elementais |
 | 2 | Libera # onda |
 | 2 | Libera +# onda |
-| 2 | Libera um Pulso Mais Forte a cada # Pulsos Pulsos Mais Fortes sempre são Golpes Críticos |
 | 2 | Martelos causam - # % de dano |
-| 2 | Martelos Sagrados se acumulam em cascata até # vezes |
 | 2 | Máximo de # anomalias |
 | 2 | o uso de cadáveres não existe no jogo |
 | 2 | Orbes desaparecem após # Golpes |
@@ -161,7 +155,6 @@ Só os ataques:
 | 2 | Tempestades de Lâminas causam # % menos Dano com Acertos e Afecções |
 | 2 | Todos os Danos podem Incendiar, Congelar e Eletrizar |
 | 2 | Trava o inimigo no lugar |
-| 2 | Uma Runa é Melhorada para cada # de Mana Gasta |
 | 2 | Velocidade de Movimento do Orbe aumentada em # % |
 | 2 | Velocidade de Movimento dos Lacaios está no Máximo |
 | 2 | Você não pode Conjurar Magias Maldição Suportadas |
@@ -173,14 +166,11 @@ Só os ataques:
 | 1 | # % de chance de convocar um Lacaio extra |
 | 1 | # % de chance de Convocar um Sentinela da Pureza ao Acertar um Inimigo Raro ou Único |
 | 1 | # % de chance de ganhar uma Ruína adicional ao usar |
-| 1 | # % de Chance de ramificação da Fissura |
-| 1 | # % de chance de ramificação de fissuras por Carga de Tolerância removida |
 | 1 | # % de chancer de causar Sangramento enquanto na Postura de Sangue |
 | 1 | # % do Dano de Acertos é sofrido no Buff antes da sua Vida ou Escudo de Energia Buff pode sofrer Dano igual a Mana Gasta pelo efeito desta Habilidade |
 | 1 | # % do Dano de Raio Convertido em Dano de Caos |
 | 1 | # % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera não possuir Afeções # % do Dano Físico é Convertido para Dano de Raio enquanto a Esfera estiver Eletrizada ou Exaurida # % do Dano Físico é Convertido para Dano de Gelo enquanto a Esfera etiver Congelada ou Enfraquecida |
 | 1 | # % maior frequência de rajadas por # de mana máximo |
-| 1 | # % mais Área de Efeito por Carga de Tolerância removida |
 | 1 | # % mais Área de Efeito por lâmina do Vórtice de Lâminas detonada |
 | 1 | # % mais Área de Efeito se Consumindo um Lacaio |
 | 1 | # % mais Área de Efeito se Consumiu um cadáver |
@@ -189,11 +179,8 @@ Só os ataques:
 | 1 | # % mais Dano com Acertos e Afecções por Intensidade |
 | 1 | # % mais Dano de Projétil |
 | 1 | # % mais Dano na Postura de Sangue |
-| 1 | # % mais Dano por Carga de Tolerância removida |
 | 1 | # % mais dano por lâmina de Vórtice de Lâminas |
 | 1 | # % mais Dano por Maldição aplicada |
-| 1 | # % mais Dano por Trauma, até # % |
-| 1 | # % mais Dano por Traumatismo |
 | 1 | # % mais Duração do Veneno |
 | 1 | # % mais Velocidade de Projétil |
 | 1 | # % menos Dano de Afecções |
@@ -206,21 +193,13 @@ Só os ataques:
 | 1 | #% de chance de renovar a Duração do Modificador recebido em até # segundos quando você Acertar um Inimigo Raro ou Único com Habilidades Suportadas |
 | 1 | #% mais Dano em Área |
 | 1 | #% mais Dano por Carga de Tolerância |
-| 1 | + # % de dano ao gastar uma carga de poder |
-| 1 | +# % de Chance de ramificação da Fissura |
-| 1 | +# % de chance de ramificar fissuras por Carga de Tolerância |
 | 1 | +# % mais Dano com Acertos contra Inimigos Incendiados |
 | 1 | +# % mais Dano com Acertos e Afecções por cada Conjuração desta Magia aguardando no momento |
 | 1 | +# % mais Dano com Acertos e Afecções por Intensidade |
 | 1 | +# % mais Dano em Área |
-| 1 | +# % mais dano por carga de poder removida |
-| 1 | +# % mais Dano por Carga de Tolerância removida |
-| 1 | +# % mais Dano por Traumatismo |
 | 1 | +# ao número máximo de Zumbis |
-| 1 | +# cascatas por carga de poder removida |
 | 1 | +# de largura por cada # % de Mana Máxima Não Reservada possuída |
 | 1 | +# de Relâmpagos Concentrados máximos |
-| 1 | +# metro ao Raio por # de Fúria |
 | 1 | +# metros à Largura do Feixe Por Intensidade # % menos ângulo de ramificação por Intensidade |
 | 1 | +# metros ao Raio da Explosão por Flecha Explosiva no Alvo, máximo de +# metros |
 | 1 | +# metros ao raio do Pulso por Energia |
@@ -249,7 +228,6 @@ Só os ataques:
 | 1 | Adrenalina de Combate concede #% mais Velocidade de Ataque às Habilidades de Deslocamento não Suportadas por Combate Próximo |
 | 1 | Afecções Elementais infligidas por Habilidades Suportadas se espalham para outros inimigos dentro de # metros |
 | 1 | Alcance do Posicionamento de Totens aumentado em # % |
-| 1 | Alvos acorrentados concedem # Fúria quando atingidos |
 | 1 | Alvos sofrem #% mais Dano do Sangramento por Rompimento das Habilidades Suportadas neles |
 | 1 | Ângulo da ramificação aumentado em # % |
 | 1 | Anima até # Armas |
@@ -330,7 +308,6 @@ Só os ataques:
 | 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro\ninimigo Acertado por cada Ataque que Impelirem |
 | 1 | Clones possuem # % de aumento da Velocidade de Movimento |
 | 1 | Cobre Inimigos em Cinzas ao Acertar |
-| 1 | Comprimento máximo da corrente: # metros |
 | 1 | Concede # % mais velocidade de conjuração |
 | 1 | Concede # de Regeneração de Mana por segundo para cada Inimigo afetado |
 | 1 | Concede # de Regeneração de Mana por segundo se qualquer Inimigo está afetado |
@@ -363,6 +340,8 @@ Só os ataques:
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
 | 1 | Dano Mágico Suprimido causado em você é Azarado |
 | 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
+| 1 | Debuffs causam # % de Dano por Carga |
+| 1 | Debuffs causam +# % de Dano por Carga |
 | 1 | Detonação da Mina é Instantânea |
 | 1 | Dispara # projéteis |
 | 1 | Dispara # Projéteis secundários |
@@ -591,13 +570,11 @@ Só os ataques:
 | 1 | Lacaios tem Efeito Resfriante aumentado em # % |
 | 1 | Lâminas Persistêntes Animadas se tornam Arcos |
 | 1 | Lança até # armadilhas a mais ao usar duas armas |
-| 1 | Lança correntes em até # alvos ao alcance |
 | 1 | Libera ondas a cada # segundos |
 | 1 | Magias reforçadas causam de # a # de dano físico adicionado para cada lacaio permanente |
 | 1 | Magias Suportadas causam # % menos Dano |
 | 1 | Magias Suportadas Sacrificam #% da sua Vida atual quando Conjuradas para ganhar Dano de Caos adicional igual a #% da Vida Sacrificada |
 | 1 | Magias Suportadas têm Recuperação da Recarga aumentada em #% |
-| 1 | Mais # % de dano contra inimigos atordoados |
 | 1 | Martelos Cadentes ocorrem a cada # segundos Aumentos e reduções na velocidade de ataque afetam a frequência com que esses martelos caem |
 | 1 | Máximo de # Arqueiro Ilusório Convocado |
 | 1 | Máximo de # Lacaios Relâmpagos Vivos |
@@ -618,7 +595,6 @@ Só os ataques:
 | 1 | Não pode ser Evadido |
 | 1 | Não requer um cadáver |
 | 1 | O efeito atual é finalizado após # Abalos Secundários |
-| 1 | O primeiro martelo de cada cascata causa + # % de dano |
 | 1 | O raio base da Saraivada é de # metros |
 | 1 | o Raio por estágio e o "menos dano" valem para você e os inimigos na área; os aliados (a party) na área não recebem o buff |
 | 1 | o totem provoca os monstros em volta a atacá-lo (act_str.lua:##) |
@@ -629,7 +605,6 @@ Só os ataques:
 | 1 | Outros efeitos em inimigos Amaldiçoados expiram # % mais devagar |
 | 1 | Perca # de Fúria por segundo |
 | 1 | Perca todas as Cargas de Inspiração após Gastar um total de # de Mana em Custos Diretos e Efeitos das Habilidades Suportadas |
-| 1 | Perca todo o Traumatismo ao atingir # Traumatismos |
 | 1 | perto do totem, você ganha Área de Efeito aumentada para Habilidades Corpo a Corpo (a descrição; o valor — ancestor_totem_grants_owner_area_of_effect_+%_with_melee_skills — não está nos dados do PoB) |
 | 1 | Possui # Chamas |
 | 1 | Primeira Mina é Detonada Instantaneamente Minas recebem # % mais Velocidade de Detonação para cada Mina anteior na Sequência de Detonação |
@@ -642,8 +617,6 @@ Só os ataques:
 | 1 | Pulsa a cada # enquanto Congelada, Eletrizada, Enfraquecida ou Exaurida |
 | 1 | Pulsos causam # % mais Dano com Afecções por Energia após a primeira |
 | 1 | Pulsos causam # % mais Dano com Dano com Acertos por Energia após a primeira |
-| 1 | Pulsos Fortalecidos causam # % mais Dano com Acertos e Afecções |
-| 1 | Pulsos Mais Fortes têm # % mais Área de Efeito |
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade Arqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Quando você Acertar um Inimigo com uma Flecha de uma Habilidade Suportada, Convoca um Arqueiro Ilusório que utiliza tal Habilidade\nArqueiros Ilusórios podem usar Ataques Ativados como se não fossem Ativados |
 | 1 | Raio acerta # alvo dentro de # metros |
@@ -705,7 +678,6 @@ Só os ataques:
 | 1 | Você Queima por # % do seu Escudo de Energia máximo por segundo como Dano de Fogo |
 | 1 | Você sofre # % menos Dano de Acertos e conta como Congelado |
 | 1 | ㅤ+ # % de dano com ataques e afecções por Relâmpagos Concentrados |
-| 1 | ㅤ+ # % de dano por carga de poder removida |
 
 ## Gemas de habilidade pendentes
 
@@ -842,26 +814,6 @@ Só os ataques:
   - efeito não simulado: Concede aos Lacaios +34 % de Chance de Bloquear Dano Mágico
   - efeito não simulado: Efeito da Oferenda aumentado em 10 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Boneshatter** (Esmaga-ossos) — parcial
-  - efeito não simulado: Ganha 6 Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre 194 de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura 6 segundos
-  - efeito não simulado: 6 % mais Dano por Traumatismo
-  - efeito não simulado: Pulso tem Efeito em Área aumentado em 15 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %
-  - efeito não simulado: +1 % mais Dano por Traumatismo
-- **Boneshatter_of_Carnage** (Quebra-Ossos da Carnificina) — parcial
-  - efeito não simulado: Pulso tem Efeito em Área aumentado em 20 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %
-  - efeito não simulado: Mais 20 % de dano contra inimigos atordoados
-- **Boneshatter_of_Complex_Trauma** (Quebra-Ossos do Traumatismo Complexo) — parcial
-  - efeito não simulado: Perca todo o Traumatismo ao atingir 10 Traumatismos
-  - efeito não simulado: Ganha 6 Traumatismo a primeira vez que este Ataque Acertar um Inimigo Sofre 582 de Dano Físico por Traumatismo quando você ganhar Traumatistmo Traumatismo dura 6 segundos
-  - efeito não simulado: 15 % mais Dano por Trauma, até 200 %
-  - efeito não simulado: Pulso tem Efeito em Área aumentado em 15 % por cada 0.1s de Duração do Atordoamento, máximo de 400 %
-  - efeito não simulado: 5 % mais Dano por Trauma, até 200 %
-- **Chain_Hook_of_Trarthus** (Corrente com Gancho de Trarthus) — parcial
-  - efeito não simulado: Lança correntes em até 8 alvos ao alcance
-  - efeito não simulado: Alvos acorrentados concedem 1 Fúria quando atingidos
-  - efeito não simulado: Comprimento máximo da corrente: 6 metros
-  - efeito não simulado: +0.1 metro ao Raio por 5 de Fúria
-  - efeito não simulado: Lança correntes em até 3 alvos ao alcance
 - **Conflagration** (Conflagração) — parcial
   - efeito não simulado: As flechas após a primeira caem em um raio base de 3 metros
   - efeito não simulado: Raio de alcance base do impacto é de 1 metro
@@ -1062,15 +1014,6 @@ Só os ataques:
   - efeito não simulado: Velocidade de Projéteis aumentada em 40 %
 - **Holy_Flame_Totem_of_Ire** (Totem Flamejante Sagrado da Ira) — parcial
   - efeito não simulado: 128 % mais Velocidade de Projétil
-- **Holy_Hammers** (Martelos Sagrados) — parcial
-  - efeito não simulado: O primeiro martelo de cada cascata causa + 100 % de dano
-  - efeito não simulado: Martelos Sagrados se acumulam em cascata até 2 vezes
-  - efeito não simulado: + 20 % de dano ao gastar uma carga de poder
-- **Holy_Hammers_of_Spirals** (Martelos Sagrados das Espirais) — parcial
-  - efeito não simulado: ㅤ+ 15 % de dano por carga de poder removida
-  - efeito não simulado: Martelos Sagrados se acumulam em cascata até 6 vezes
-  - efeito não simulado: +1 cascatas por carga de poder removida
-  - efeito não simulado: +5 % mais dano por carga de poder removida
 - **Holy_Strike** (Golpe Sagrado) — parcial
   - efeito não simulado: +2.1 metros para o alcance do golpe corpo a corpo do lacaio
   - efeito não simulado: Este ataque e lacaios convertem 50 % do dano físico em dano elétrico
@@ -1111,9 +1054,6 @@ Só os ataques:
   - o uso de cadáveres não existe no jogo
   - efeito não simulado: Debuffs causam 66 % de Dano por Carga
   - efeito não simulado: Debuffs causam +10 % de Dano por Carga
-- **Infernal_Blow_of_Immolation** (Golpe Infernal da Imolação) — parcial
-  - efeito não simulado: Debuffs causam 80 % de Dano por Carga
-  - efeito não simulado: Debuffs causam +10 % de Dano por Carga
 - **Infernal_Cry** (Clamor Infernal) — parcial
   - efeito não simulado: Duração da penalidade base é de 3.4 segundos
 - **Intimidating_Cry** (Clamor Intimidador) — parcial
@@ -1147,12 +1087,6 @@ Só os ataques:
   - efeito não simulado: Flechas causam Dano ao alvo final 1 vezes adicionais após grudar
 - **Lightning_Spire_Trap_of_Zapping** (Armadilha da Espiral Relampejante da Eletrização) — parcial
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
-- **Lightning_Tendrils** (Tentáculos Relampejantes) — parcial
-  - efeito não simulado: Libera um Pulso Mais Forte a cada 3 Pulsos Pulsos Mais Fortes sempre são Golpes Críticos
-- **Lightning_Tendrils_of_Eccentricity** (Tentáculos Relampejantes da Excentricidade) — parcial
-  - efeito não simulado: Libera um Pulso Mais Forte a cada 5 Pulsos Pulsos Mais Fortes sempre são Golpes Críticos
-  - efeito não simulado: Pulsos Mais Fortes têm 150 % mais Área de Efeito
-  - efeito não simulado: Pulsos Fortalecidos causam 500 % mais Dano com Acertos e Afecções
 - **Lightning_Trap** (Armadilha Relampejante) — parcial
   - efeito não simulado: 15 % de Chance de uma Armadilha ser Ativada uma vez adicional
 - **Lightning_Trap_of_Sparking** (Armadilha Relampejante das Fagulhas) — parcial
@@ -1399,10 +1333,6 @@ Só os ataques:
   - efeito não simulado: Flecha dispara Raios a cada 0.15 segundos
   - efeito não simulado: Cada Flecha pode disparar 20 Feixes
   - efeito não simulado: Cada Flecha pode disparar +4 Feixes
-- **Stormbind** (Vínculo Tempestuoso) — parcial
-  - efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta
-- **Stormbind_of_Teleportation** (Vínculo Tempestuoso do Teleporte) — parcial
-  - efeito não simulado: Uma Runa é Melhorada para cada 24 de Mana Gasta
 - **Stormblast_Mine** (Mina da Tormenta Explosiva) — parcial
   - efeito não simulado: Cada mina aplica Dano aumentado em +1 % aos Inimigos próximos máximo de 150 %
 - **Summon_Carrion_Golem** (Convocar Golem da Carniça) — parcial
@@ -1498,15 +1428,6 @@ Só os ataques:
   - efeito não simulado: Lacaios têm 50 % menos Vida Máxima
   - efeito não simulado: Efeito do Buff aumentado em 20 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Tectonic_Slam** (Impacto Tectônico) — parcial
-  - efeito não simulado: 30 % de Chance de ramificação da Fissura
-  - efeito não simulado: +5 % de chance de ramificar fissuras por Carga de Tolerância
-  - efeito não simulado: +30 % de Chance de ramificação da Fissura
-- **Tectonic_Slam_of_Cataclysm** (Impacto Tectônico do Cataclismo) — parcial
-  - efeito não simulado: 15 % mais Dano por Carga de Tolerância removida
-  - efeito não simulado: 10 % mais Área de Efeito por Carga de Tolerância removida
-  - efeito não simulado: 10 % de chance de ramificação de fissuras por Carga de Tolerância removida
-  - efeito não simulado: +5 % mais Dano por Carga de Tolerância removida
 - **Tempest_Shield** (Escudo Tempestuoso) — parcial
   - efeito não simulado: Buff concede +25 % de Chance de Bloquear o Dano Mágico enquanto portando um Escudo
   - efeito não simulado: Buff concede Imunidade a Eletrização

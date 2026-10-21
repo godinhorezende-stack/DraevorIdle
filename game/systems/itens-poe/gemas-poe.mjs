@@ -39,6 +39,8 @@ import * as GemasPR1 from './gemas-pr1.mjs';
 import * as GemasPR2 from './gemas-pr2.mjs';
 // (lote C1, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — a forma do golpe, o raio condicional, os buffs da gema)
 import * as GemasC1 from './gemas-c1.mjs';
+// (lote C2, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — os contadores próprios e as cargas consumidas)
+import * as GemasC2 from './gemas-c2.mjs';
 
 // As gemas (`game/tools/importar-gemas-poe.mjs`, da coleção do dono) e o interpretador delas (`compilador-de-gemas/`): no repositório.
 const ARQ_GEMAS = new URL('../../gamedata/itens-poe/gemas-poe.json', import.meta.url);
@@ -1112,9 +1114,26 @@ export const c1DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C1, `c1|${s
     raioDoCastigo: GemasC1.raioDoCastigoDasLinhas(slug, linhas, daQ), maos: GemasC1.maosDasLinhas(slug, linhas),
   };
 });
+/*
+ * ---- (lote C2, dono 20/10) os leitores no nível do lote C2 (`itens-poe/gemas-c2.mjs`) ----
+ * `{ trauma, pulso, imolacao, martelos, fissura, pulsoForte, correntes, alvoUnico, runas }`.
+ */
+const C2 = new Map();
+export const c2DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C2, `c2|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
+  const ehBone = /^Boneshatter/.test(slug);
+  return {
+    trauma: ehBone ? GemasC2.traumatismoDasLinhas(linhas, daQ) : null, pulso: ehBone ? GemasC2.pulsoDasLinhas(linhas) : null, imolacao: GemasC2.imolacaoDasLinhas(slug, linhas, daQ),
+    martelos: GemasC2.martelosDasLinhas(slug, linhas, daQ), fissura: GemasC2.fissuraDasLinhas(slug, linhas, daQ),
+    pulsoForte: /^Lightning_Tendrils(_of_Eccentricity)?$/.test(slug) ? GemasC2.pulsoForteDasLinhas(linhas) : null, correntes: GemasC2.correntesDasLinhas(slug, linhas, daQ),
+    alvoUnico: GemasC2.ALVO_UNICO.has(slug),
+    runas: GemasC2.runasDasLinhas(slug, linhas, qualidade),
+  };
+});
 /** A Corrente com Gancho: o raio por Fúria. */
 // (lote C1, dono 20/10: + a Cutilada da Fúria — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1875)
-export const raioPorFuriaDaGema = (slug, nivel = 1) => comCache(A1B, `fur|${slug}@${nivel | 0}`, () => (/^(Chain_Hook|Cleave_of_Rage)$/.test(slug) ? GemasA1b.raioPorFuriaDasLinhas(textosDaGema(slug, nivel).linhas) : null));
+// (lote C2, dono 20/10: + a Corrente com Gancho de Trarthus — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1696)
+export const raioPorFuriaDaGema = (slug, nivel = 1) => comCache(A1B, `fur|${slug}@${nivel | 0}`, () => (/^(Chain_Hook|Cleave_of_Rage|Chain_Hook_of_Trarthus)$/.test(slug) ? GemasA1b.raioPorFuriaDasLinhas(textosDaGema(slug, nivel).linhas) : null));
 /** A Investida com Escudo: o atordoamento na distância máxima. */
 export const atordoamentoDaInvestidaDaGema = (slug, nivel = 1) => comCache(A1B, `ato|${slug}@${nivel | 0}`, () => (slug === 'Shield_Charge' ? GemasA1b.atordoamentoDaInvestidaDasLinhas(textosDaGema(slug, nivel).linhas) : 0));
 /** (D-e) A Corrida de Fase Antiga. */
@@ -1475,7 +1494,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1565,6 +1584,8 @@ function avaliarNoJogo(h, formato) {
   for (const m of GemasA5.MOTIVOS_A5[h.slug] ?? []) motivos.push(m);
   // (revisão do C1: o que a mecânica do lote C1 ainda não faz — `GemasC1.MOTIVOS_C1`)
   for (const m of GemasC1.MOTIVOS_C1[h.slug] ?? []) motivos.push(m);
+  // (lote C2: o que a mecânica do lote C2 ainda não faz — `GemasC2.MOTIVOS_C2`)
+  for (const m of GemasC2.MOTIVOS_C2[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**

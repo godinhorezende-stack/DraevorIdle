@@ -24,6 +24,9 @@ export function aoAcertar(estado, hunt, alvo, ficha, { dano = 0, fisico = 0, fog
   // algo a VOCÊ não (o dreno do excedente, a Fortificação, a Convergência, o Valor, a Fúria, o escudo no acerto, os "Acertou/Criticou/Empalou
   // Recentemente" e os eventos "ao Acertar" — o PoB só marca HitRecently quando a habilidade não é de totem: CalcPerform.lua:264).
   const seu = !deTotem;
+  // (lote C2, dono 20/10 — D2.7) a Corrente com Gancho de Trarthus: o acerto seu num inimigo acorrentado (`hunt.poeCorrentes`) dá a Fúria da corrente
+  const daCorrente = seu && hunt ? (hunt.poeCorrentes ?? []).find((c) => c.uid === alvo.uid)?.furia ?? 0 : 0;
+  if (daCorrente > 0) ganharFuria(hunt, daCorrente, agora);
   // (ciclo 7, lote D) O que o golpe FEZ entra nas tags dele: o Crítico (`X@critico`) e, depois do sorteio do atordoamento, o Atordoou
   // (`X@golpeAtordoou`) — "Acertos Críticos possuem Golpe de Misericórdia", "Acertos Corpo a Corpo que Atordoam têm X% de chance de Fortificar".
   let fichaR = crit ? { ...ficha, tagsDoGolpe: [...(ficha.tagsDoGolpe ?? []), 'critico'] } : ficha;
