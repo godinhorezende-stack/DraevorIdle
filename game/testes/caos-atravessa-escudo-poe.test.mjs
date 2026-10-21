@@ -11,6 +11,7 @@ const SEM = (!existsSync(Catalogo.ARQUIVO) || !Catalogo.ligado()) && 'só no mod
 const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
 const Defesa = await import('../systems/personagem/defesa.mjs');
 const Poderes = await import('../systems/poderes.mjs');
+const Arena = await import('../systems/arena.mjs');
 const Cacadas = await import('../systems/cacadas.mjs');
 const Ficha = await import('../systems/ficha.mjs');
 const Afixos = await import('../systems/afixos.mjs');
@@ -94,4 +95,17 @@ test('o golpe corpo a corpo do monstro: a parte de Caos vai à Vida (o Escudo s�
   // o mesmo golpe nos dois: o que o Escudo deixou de segurar foi para a Vida
   assert.equal(atravessa.vida + atravessa.escudo, naoAtravessa.vida + naoAtravessa.escudo, JSON.stringify({ atravessa, naoAtravessa }));
   assert.ok(atravessa.vida > naoAtravessa.vida);
+});
+
+test('a ARENA (o duelo): o golpe de Caos no adversário atravessa o Escudo de Energia, com as mesmas exceções; o de outro tipo, pelo Escudo', { skip: SEM }, () => {
+  const caso = (elemento, afPoe = {}) => {
+    const estado = { es: 1000, esEspera: 0 };
+    const vida = Arena.absorverNoAdversario(estado, { energyShield: 1000, afPoe }, 400, elemento);
+    return [vida, estado.es];
+  };
+  assert.deepEqual(caso('chaos'), [400, 1000]);
+  assert.deepEqual(caso('energy'), [0, 600]);
+  assert.deepEqual(caso('physical'), [0, 600]);
+  assert.deepEqual(caso('chaos', { caos_nao_atravessa_escudo: 1 }), [0, 600], '"não ultrapassa o Escudo": pelo Escudo');
+  assert.deepEqual(caso('chaos', { caos_pelo_escudo_pct: 25 }), [300, 900], '25% pelo Escudo, 300 direto');
 });
