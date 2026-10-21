@@ -87,6 +87,8 @@ import * as GemasPR3 from './itens-poe/gemas-pr3.mjs';
 import * as GemasC1 from './itens-poe/gemas-c1.mjs';
 // (lote C2, dono 20/10: os contadores próprios e as cargas consumidas das gemas de corpo a corpo, impacto e canalização)
 import * as GemasC2 from './itens-poe/gemas-c2.mjs';
+// (lote C4, dono 21/10: os debuffs canalizados e as afecções específicas — a Praga, o Definhar, o Golpe Pestilento, a Víbora da Mamba)
+import * as GemasC4 from './itens-poe/gemas-c4.mjs';
 // (lote B2, dono 20/10: as gemas de contadores próprios, chão e espalhar — as Cargas Sangrentas, o Golpe Infernal, a Febre, o Contágio, a Ruína…)
 import * as GemasB2 from './itens-poe/gemas-b2.mjs';
 import * as GemasB3 from './itens-poe/gemas-b3.mjs';
@@ -1829,6 +1831,8 @@ function saltosDaCadeia(alvo, vivos, { targets = 1, distance = 1 } = {}) {
 const ALCANCE_PADRAO = 7;
 // O efeito na tela da explosão das supports (Explosion, Impact) quando a skill não tem o dela (o `explosionhit` do client).
 const EFEITO_DA_EXPLOSAO = 6;
+/** (lote C4, dono 21/10) A duração do Tolhimento das áreas renovado a cada pulso (as runas da Vinculação, a Esfera do Vazio, o Tornado): a de antes, a do `lento` (3 s). */
+const TOLHIMENTO_DAS_AREAS_MS = 3000;
 // (lote A1) o efeito na tela nas duas pontas do deslocamento (o `teleporte` dos estilos das gemas — `itens-poe/estilos-das-gemas.mjs`)
 const EFEITO_DO_TELEPORTE = 11;
 const distanciaChebyshev = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
@@ -4088,6 +4092,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   // (lote C2, dono 20/10) o que o lote C2 muda no uso antes da área (`GemasPoe.c2DaGema`, `itens-poe/gemas-c2.mjs`)
   const c2 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.c2DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  // (lote C4, dono 21/10) o que o lote C4 faz no acerto (`GemasPoe.c4DaGema`, `itens-poe/gemas-c4.mjs`): o Tolhimento e as camadas da Praga, o Definhamento do Definhar,
+  // o debuff do Golpe Pestilento e as regras do Veneno da gema
+  const c4 = itensPoeLigado() && entry.poeGema && !entry.poeGema.buff ? GemasPoe.c4DaGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : null;
+  const msDoC4 = (ms) => Math.round(ms * fatorDeDuracao(estado, entry, efeitoDaGema));
+  const definhadosPeloC4 = new Set();
   //  - o golpe de ALVO ÚNICO do Esmagar Ossos e do Golpe Infernal da Imolação (MeleeSingleTarget no PoB: a área é a do pulso e a da explosão, abaixo)
   if (c2?.alvoUnico && (!plantada || doTotem) && entry.forma) entry = { ...entry, forma: null };
   //  - D2.1: o Traumatismo — o "mais" pelos Traumatismos de agora (o ganho é no acerto — `acertar`); o totem não tem os seus
@@ -5499,6 +5508,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     // degenerativo delas; os totens e os lacaios, sim — eles têm o golpe deles, `cacadas.tiqueDosLacaios`.)
     // (lote G20a: "Você não pode causar Dano com suas Habilidades" — o totem causa: é ele quem usa)
     const semDanoProprio = itensPoeLigado() && !!entry.poeGema && !entry.poeGema.lacaio && !doTotem && ModsPoe.valor(ficha, 'sem_dano_proprio') > 0;
+    // (lote C4, dono 21/10) a MAGIA SEM ACERTO (a Praga, o Definhar, o Contágio, o Raio Abrasador…): o uso põe o debuff e não acerta — sem o "1" do piso da faixa, sem
+    // crítico, sem afecções nem os efeitos de acerto (o fator do golpe é 0, como o do Vínculo Ancestral); o degenerativo e os debuffs da gema seguem (`GemasPoe.magiaSemAcerto`)
+    const semAcertoDaGema = itensPoeLigado() && !!entry.poeGema && !entry.poeGema.lacaio && GemasPoe.magiaSemAcerto(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0);
     /*
      * (13/10) O PROJÉTIL neste acerto (`golpe`: o que `Secundarios.resolver` marcou — `atravessados`, `ricochetes`): "Projéteis causam Dano
      * aumentado em X% com Acertos e Afecções para cada Inimigo Atravessado / para cada vez que Ricochetearam" e a DISTÂNCIA até o bicho (o
@@ -5603,7 +5615,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
       // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
       // (lote A3c: o acerto da área no impacto tem o dano do projétil que a causou — `golpe.doImpacto`, a fonte do impacto)
-      const fator = (semDanoProprio ? 0 : 1) * (dobroNaFinal ? 2 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * maisDaInvestida * contraResfriado(bicho) * contraEletrizado(bicho) * contraIncendiado(bicho) * doProjetilDaGema(golpe?.tipo === 'impacto' ? golpe.doImpacto : fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const fator = (semDanoProprio || semAcertoDaGema ? 0 : 1) * (dobroNaFinal ? 2 : 1) * (impiedoso ? 1 + (efeitoDaGema.impiedosoMaisDanoPct ?? 0) / 100 : 1) * (reocorrendo ? Math.max(0, 1 - (efeitoDaGema.selosMenosDanoPct ?? 0) / 100) : 1) * maisDaIntensidade * maisDoMaximizado() * maisDaRepeticao() * porRepeticao() * porVeneno(bicho) * contraSangrando(bicho) * fatorDoPerto(bicho) * maisDaInvestida * contraResfriado(bicho) * contraEletrizado(bicho) * contraIncendiado(bicho) * doProjetilDaGema(golpe?.tipo === 'impacto' ? golpe.doImpacto : fonte) * fatorDoAco(bicho) * fatorDoProjetil(bicho, golpe) * fatorDaProximidade(bicho) * (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
       // (O dano SORTUDO do PoE — rola duas vezes e fica o maior: "Dano Elemental com Acertos é Sortudo enquanto você estiver Eletrizado" em
       // todo golpe — `sorteDoGolpe.sempre`; "Dano de Raio com Golpes Não-Críticos é Sortudo" só no não crítico — `sorteDoGolpe.naoCritico`.)
       // (17/10, lote G17) o que no PoB vale SÓ NO ACERTO e o jogo põe no `fator`: o "mais/menos Dano com Acertos" e os de Mágico/Projétil/Corpo a
@@ -5734,6 +5746,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       const { dano, crit, onslaught, chance } = rolado;
       if (crit) { houveCritico = true; danoCritico += dano; }
+      // (lote C4, dono 21/10) os debuffs do lote C4 no acertado (antes da camada nova da Praga — o "quem ainda não tem a Praga" é o de antes deste acerto)
+      if (c4) debuffsDoC4(hunt, bicho, c4, { agora, msDoC4, definhados: definhadosPeloC4, ficha, acao: entry.id, quem: doTotem ? null : personagem?.nome ?? null, raioDoPestilento: c4.pestilento ? Math.max(0, casasDoRaio(c4.pestilento.raioM * Math.sqrt(ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0)))) : 0, eventos });
       // (os suportes no acerto: a Crueldade — "Acertos de Habilidades Suportadas concedem Crueldade"; a Lâmina Noturna — "concedem Elusivo no
       // Golpe Crítico"; o Golpe Impiedoso — o atordoamento base dele e, da árvore, "Acertos Impiedosos Intimidam Inimigos por N segundos")
       const doSuporte = dano > 0 ? efeitosDosSuportesNoAcerto(estado, hunt, bicho, ficha, efeitoDaGema, { crit, impiedoso, agora, eventos, doTotem }) : null;
@@ -5820,7 +5834,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos, { corpoACorpo: Tags.tagsDaAcao(entry).includes('melee'), doTotem, ...(itensPoeLigado() && entry.poeGema ? { ficha } : {}) });
       // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
       // (A gema só de dano degenerativo — Flecha Cáustica, Contagiar… — não mostra um "0": o dano dela vem nos pulsos.)
-      if (!ferimentos && (dano > 0 || !(entry.poeGema && GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)))) {
+      // (lote C4: a magia sem acerto não mostra o "0" — o efeito dela é o debuff)
+      if (!ferimentos && !semAcertoDaGema && (dano > 0 || !(entry.poeGema && GemasPoe.degenerativoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0)))) {
         eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: pedacos ? COR_DO_ELEMENTO[tipo] ?? cor : cor, ...(fonte ? { fonte } : {}) });
       }
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
@@ -5912,6 +5927,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
           // (revisão B2, 21/10: o do Ceifar guarda QUEM o pôs — a Carga Sangrenta da morte é do dono — `aoMorrerB2`)
           const quemDoDot = !doTotem && /^Reap(_of_Butchery)?$/.test(entry.poeGema.slug) ? { quem: personagem?.nome ?? null } : {};
           const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: duracaoDoDebuff, chave: entry.poeGema.slug, origem: { fonte: doTotem ? 'totem' : 'gema', habilidade: entry.id, ...quemDoDot } }, agora);
+          // (lote C4, dono 21/10 — D4.2) a Praga: o uso põe mais uma CAMADA (cada uma com a sua duração, até o máximo): o pulso é o de uma camada × as vivas
+          if (c4?.praga && posto) {
+            const d = (bicho.dots ?? []).find((x) => x.chave === entry.poeGema.slug && x.tipo === tipoDegen);
+            const pulsoMs = Dot.CONFIG.tipos[tipoDegen]?.pulsoMs ?? 500;
+            if (d) GemasC4.porCamada(d, { ate: agora + duracaoDoDebuff, max: c4.praga.max, porPulsoCamada: total / Math.max(1, Math.round(duracaoDoDebuff / pulsoMs)), pulsoMs, agora });
+          }
           if (posto) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: posto });
           // (lote PR2, dono 20/10 — D2) o DRENAR ESSÊNCIA: o debuff da gema leva a % do dano dele que vira a sua Vida (ou a perda do Desespero) — cada pulso, em
           // cada debuff ativo, somados (`Dot.tique` → `drenoDosDebuffs`); o do totem, não (exceção 1)
@@ -5925,7 +5946,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const tagsDoAcerto = Tags.tagsDaAcao(entry);
         const ataque = entry.poeGema ? !!entry.poeGema.ataque : tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
         // A gema do PoE soma as chances dela (incendiar, congelar, eletrizar, envenenar, sangrar) no nível em que está.
-        const afeccoes = entry.poeGema ? GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0) : ficha.afeccoes;
+        // (lote C4, dono 21/10: + as regras do Veneno da gema — a Víbora da Mamba, o Golpe Pestilento — `GemasC4.comOVenenoDaGema`)
+        const afeccoes = entry.poeGema ? GemasC4.comOVenenoDaGema(GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0), c4?.veneno) : ficha.afeccoes;
         // (o Golpe Impiedoso: "X% mais Dano com Afecções causadas por Acertos Corpo a Corpo")
         // (17/10, lote G17) O DANO das afecções (Incêndio, Sangramento, Veneno) sai do acerto SEM o "mais/menos Dano com Acertos" dos suportes (as
         // Afecções Mortais: 80% menos no acerto, a afecção inteira) e COM o "mais Dano de Afecções" e o de cada uma — `fatoresDoDano`. A força das
@@ -6361,6 +6383,13 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     } else { escalaDoUso = escalaDaPrimeira; atacar(false); escalaDoUso = 100; }
     // (lote C2) as áreas a mais do golpe (`extrasDoC2`)
     extrasDoC2();
+    // (lote C4, dono 21/10) a Praga Vaal: mais 2 camadas, cada uma numa área 50% maior que a anterior, em volta do centro do uso (o passe dela: só o debuff — a magia não
+    // acerta; quem está na área de dentro leva as 3)
+    if (c4?.praga?.camadasExtras > 0 && !(plantada && !doTotem)) {
+      const centro = formaNoUso ? { x: formaNoUso.x, y: formaNoUso.y } : { x: hunt.pos.x, y: hunt.pos.y };
+      const raioM = GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 2;
+      for (let k = 1; k <= c4.praga.camadasExtras; k++) areaDoC2(Areas.quadrado(centro, Math.max(0, casasDoRaio(raioM * Math.sqrt(fatorDaAreaDoUso() * GemasC4.fatorDaCamadaVaal(c4.praga, k))))), centro, 100, 'camadaVaal');
+    }
     novasDosAcertados();
     // (lote B2, dono 20/10) depois do primeiro passe do uso:
     const atingidosDoUsoB2 = atingidos;
@@ -7870,7 +7899,8 @@ function tiqueDoC2(estado, hunt, personagem, eventos, agora, comExplosao = true)
   const runas = runasDaTempestade(hunt, agora);
   if (runas.length) {
     const casas = new Set(runas.map((r) => `${r.x},${r.y}`));
-    for (const m of vivosNoAndar(hunt)) if (!m.dummy && casas.has(`${m.x},${m.y}`)) Estados.aplicar(m, { lentidaoPct: GemasC2.RUNAS_DA_TEMPESTADE.tolhePct }, 1, agora, Math.random, !!hunt.isBoss);
+    // (lote C4, dono 21/10: o Tolhimento é o estado próprio, só de movimento e sem teto — `Estados.tolher`)
+    for (const m of vivosNoAndar(hunt)) if (!m.dummy && casas.has(`${m.x},${m.y}`)) Estados.tolher(m, GemasC2.RUNAS_DA_TEMPESTADE.tolhePct, TOLHIMENTO_DAS_AREAS_MS, agora);
     if (comExplosao) eventos.push(...explosaoDeRunas(estado, hunt, personagem, agora));
   }
   const im = hunt.poeImolacao;
@@ -8271,10 +8301,12 @@ function pulsarObjeto(estado, hunt, personagem, o, t, eventos) {
   const dentro = vivosNoAndar(hunt, o.z).filter((m) => distanciaChebyshev(m, centro) <= raio);
   if (o.tipo === 'esfera' && o.tolhePct > 0) {
     // (o Tolhimento da Esfera: o máximo colado nela, caindo até a borda do raio)
-    for (const m of dentro) Estados.aplicar(m, { lentidaoPct: Math.round(o.tolhePct * (1 - distanciaChebyshev(m, o) / (o.raio + 1))) }, 1, t, Math.random, !!hunt.isBoss);
+    // (lote C4, dono 21/10: o Tolhimento é o estado próprio, só de movimento e sem teto — `Estados.tolher`)
+    for (const m of dentro) Estados.tolher(m, Math.round(o.tolhePct * (1 - distanciaChebyshev(m, o) / (o.raio + 1))), TOLHIMENTO_DAS_AREAS_MS, t);
   }
   if (!dentro.length) return;
-  if (o.lentidaoPct > 0) for (const m of dentro) Estados.aplicar(m, { lentidaoPct: o.lentidaoPct }, 1, t, Math.random, !!hunt.isBoss);
+  // (o Tolhimento do Tornado — "Inimigos no alcance são Desacelerados com Velocidade de Movimento reduzida": o mesmo estado)
+  if (o.lentidaoPct > 0) for (const m of dentro) Estados.tolher(m, o.lentidaoPct, TOLHIMENTO_DAS_AREAS_MS, t);
   const saiu = golpeDoObjeto(estado, hunt, personagem, centro === o ? o : { ...o, x: centro.x, y: centro.y, raio }, dentro[0], extra, eventos);
   // (revisão do A3b: o guardado só soma ao golpe que saiu — na Safe Zone, ou recusado, nada)
   if (saiu && o.fase === 2 && o.absorve?.guardado > 0) {
@@ -8449,6 +8481,73 @@ function explodirInfernal(estado, hunt, personagem, onde, deb, eventos) {
   const alvo = vivosNoAndar(hunt, onde.z ?? hunt.z ?? 0).filter((m) => distanciaChebyshev(m, onde) <= r).sort((a, b) => distanciaChebyshev(a, onde) - distanciaChebyshev(b, onde))[0];
   eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: onde.x, y: onde.y, lado: 2 * r + 1 });
   if (alvo) golpeDoObjeto(estado, hunt, personagem, { acao: deb.acao, x: onde.x, y: onde.y, z: onde.z ?? hunt.z ?? 0, raio: r, dono: 'voce' }, alvo, { maisPct: GemasB2.pctDaExplosaoInfernal(inf.porCargaPct, deb.n) - 100, explosaoInfernal: true }, eventos);
+}
+/**
+ * (lote C4, dono 21/10) Os DEBUFFS DO LOTE C4 no acertado:
+ *  - D4.1: o TOLHIMENTO da Praga ("Enemies who aren't already debuffed by Blight are also hindered" — a Vaal Tolhe sempre) e o do Definhar: o `lento` do jogo com a
+ *    porcentagem do PoE pela Duração Secundária × a Duração da Habilidade (`Estados.aplicar` — vale o mais forte; o teto do jogo e a metade no chefe seguem); o Tolhido
+ *    pela Atrofia tem a Regeneração de Vida reduzida (`regenMenosDebuff`), e o pela Vaal sofre +X% de Dano de Caos (`tolhidoCaos` — no acerto e no dano contínuo);
+ *  - o DEFINHAMENTO do Definhar (2 s × a Duração; +6% de Caos sofrido por acúmulo, até 15 — o `definhado`), uma vez por uso em cada um;
+ *  - o debuff do GOLPE PESTILENTO (1 s × a Duração): quem morre com ele e Envenenado solta o secundário em volta (`aoMorrerC4`).
+ */
+function debuffsDoC4(hunt, bicho, c4, { agora, msDoC4, definhados, ficha, acao, quem, raioDoPestilento, eventos }) {
+  // (o golpe que matou ainda marca o Pestilento — a morte é processada depois do passe; o Tolhimento e o Definhamento, só no vivo)
+  // (dono, 21/10: o Tolhimento é o estado próprio `tolhido` — só de movimento, sem teto, vale o mais forte — `Estados.tolher`)
+  const tolher = (pct, ms) => {
+    if (!Estados.tolher(bicho, pct, ms, agora)) return false;
+    eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'tolhido' });
+    return true;
+  };
+  const p = c4.praga;
+  if (p && (!p.soSemPraga || !GemasC4.temPraga(bicho, agora))) {
+    const ms = msDoC4(p.tolheMs);
+    if (tolher(p.tolhePct, ms)) {
+      const e = (bicho.estados ??= {});
+      if (p.regenMenosPct > 0) {
+        const r = e.regenMenosDebuff;
+        e.regenMenosDebuff = r?.ate > agora ? { ate: Math.max(r.ate, agora + ms), pct: Math.max(r.pct ?? 0, p.regenMenosPct) } : { ate: agora + ms, pct: p.regenMenosPct };
+      }
+      if (p.caosSofridoPct > 0) {
+        const c = e.tolhidoCaos;
+        e.tolhidoCaos = c?.ate > agora ? { ate: Math.max(c.ate, agora + ms), pct: Math.max(c.pct ?? 0, p.caosSofridoPct) } : { ate: agora + ms, pct: p.caosSofridoPct };
+      }
+    }
+  }
+  const w = c4.definhar;
+  if (w && bicho.hp > 0 && !definhados.has(bicho)) {
+    definhados.add(bicho);
+    tolher(w.tolhePct, msDoC4(w.tolheMs));
+    ModsPoe.porNoAlvoComMods(bicho, 'definhado', agora + msDoC4(w.definhadoMs), agora, ficha);
+    eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: 'definhado' });
+  }
+  const ps = c4.pestilento;
+  if (ps) {
+    const e = (bicho.estados ??= {});
+    e.poePestilento = { ate: agora + msDoC4(ps.debuffMs), acao, quem, porSegundoPct: ps.porSegundoPct, secundarioMs: msDoC4(ps.secundarioMs), raio: raioDoPestilento };
+  }
+}
+/**
+ * (lote C4, dono 21/10 — D4.3) A MORTE de quem tinha o debuff do GOLPE PESTILENTO e estava Envenenado: o debuff secundário em cada vivo a até o raio da gema (2,7 m × a
+ * Área) em volta do morto — dano de Caos degenerativo, X%/s do que faltava de todos os Venenos no morto pela Duração Secundária ("This damage is not affected by your
+ * damage modifiers": o total cru; a resistência a Caos do vizinho vale no pulso). Um secundário por inimigo (o mais forte fica, renovado). Os números são os do debuff,
+ * guardados no acerto: a morte não depende da ficha de quem o pôs.
+ */
+export function aoMorrerC4(hunt, morto, eventos = []) {
+  if (!itensPoeLigado() || !hunt || !morto) return eventos;
+  const agora = hunt.clock ?? 0;
+  const deb = morto.estados?.poePestilento;
+  if (!deb) return eventos;
+  delete morto.estados.poePestilento;
+  if (!(deb.ate > agora)) return eventos;
+  const total = GemasC4.totalDoSecundario(morto, deb, deb.secundarioMs);
+  if (!(total > 0) || !(deb.secundarioMs > 0)) return eventos;
+  eventos.push({ t: 'explosao', id: EFEITO_DA_EXPLOSAO, x: morto.x, y: morto.y, lado: 2 * deb.raio + 1 });
+  for (const m of vivosNoAndar(hunt, morto.z ?? hunt.z ?? 0)) {
+    if (m === morto || m.dummy || distanciaChebyshev(m, morto) > deb.raio) continue;
+    const posto = Dot.aplicar(m, { tipo: 'degenCaos', total, duracaoMs: deb.secundarioMs, chave: 'Pestilent_Strike#secundario', origem: { fonte: 'gema', habilidade: deb.acao, ...(deb.quem != null ? { quem: deb.quem } : {}) } }, agora);
+    if (posto) eventos.push({ t: 'estado', uid: m.uid, x: m.x, y: m.y, estado: posto });
+  }
+  return eventos;
 }
 /**
  * A MORTE de um inimigo (por quem for — `combate.matarMonstro`): o Ceifar perde uma Carga Sangrenta se ele tinha o debuff de um Ceifar (D-B2.2); o Contágio espalha
@@ -8909,6 +9008,8 @@ ModsPoe.definirMaldicao((hunt, alvo, nome, nivel, semLimite, agora) => {
 });
 // (lote 32, P038) A maldição sua que pegou: as Forças Profanadas renovam o Resfriamento e a Eletrização do inimigo (a ficha da caçada).
 Reforcos.definirAoAmaldicoar((hunt, bicho, agora) => ModsPoe.aoAmaldicoar(ModsPoe.fichaDa(hunt), bicho, agora));
+// (lote C4, dono 21/10) as maldições de dano sofrido no pulso do degenerativo das gemas (`Dot.recebidoNoPulso`)
+Dot.definirVulnerabilidadeNoDot((m, el, agora) => Reforcos.vulnerabilidade(m, el, agora));
 
 /**
  * (17/10, lote G15) Depois do acerto no personagem: "Conjurar ao ser Atordoado" (o atordoamento que este acerto pôs — `hunt.controle.atordoado`,

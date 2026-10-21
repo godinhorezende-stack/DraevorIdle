@@ -76,7 +76,8 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
     const pct = Math.min(maximo, efeito.lentidaoPct) * (chefe ? cfg.chefe?.lento ?? 1 : 1);
     if (pct > 0) {
       // (`lentidaoDuracaoPct`: a "Duração do Resfriamento em Inimigos aumentada" do PoE.)
-      const ate = agora + duracaoNo(bicho, (cfg.lento?.duracao ?? 3000) * (1 + (efeito.lentidaoDuracaoPct ?? 0) / 100));
+      // (lote C4, dono 21/10: `lentidaoMs` — a duração própria da fonte, já pronta: o Tolhimento da Praga e do Definhar, a Duração Secundária da gema)
+      const ate = agora + duracaoNo(bicho, efeito.lentidaoMs > 0 ? efeito.lentidaoMs : (cfg.lento?.duracao ?? 3000) * (1 + (efeito.lentidaoDuracaoPct ?? 0) / 100));
       const l = estados.lento;
       // Vale a MAIOR lentidão (não a última) e nunca encurta o que já corre.
       // (`dur`: a duração cheia do que vale — as Forças Profanadas a renovam ao amaldiçoar, `ModsPoe.renovarFrioEChoque`)
@@ -103,10 +104,30 @@ export function atordoar(bicho, duracaoMs, agora, salaDeBoss = false) {
   return true;
 }
 
+/**
+ * (lote C4, dono 21/10) O TOLHIMENTO do PoE (Hinder): um estado próprio, `tolhido` — só a VELOCIDADE DE MOVIMENTO (o passo; o ataque não muda), sem o teto da
+ * lentidão (`lento.maximo`) e sem a metade do chefe. Um por vez, vale o mais forte ("A creature can only be affected by one Hinder at a time; … only the strongest
+ * Hinder takes effect" — o poedb): o de maior % fica, e o fim é o maior dos dois. Devolve true se pôs (ou reforçou).
+ */
+export function tolher(bicho, pct, duracaoMs, agora) {
+  if (!bicho || !(bicho.hp > 0) || !(pct > 0) || !(duracaoMs > 0)) return false;
+  const estados = (bicho.estados ??= {});
+  const t = estados.tolhido;
+  const ate = agora + Math.round(duracaoMs);
+  estados.tolhido = ativo(t, agora) ? { ate: Math.max(t.ate, ate), pct: Math.max(t.pct, pct) } : { ate, pct };
+  return true;
+}
+/** Quanto o passo do bicho Tolhido demora a mais (1 = normal): 1 / (1 − %), até 90%. */
+export function fatorDeTolhimento(m, agora) {
+  const t = m?.estados?.tolhido;
+  return ativo(t, agora) ? 1 / Math.max(0.1, 1 - (t.pct ?? 0) / 100) : 1;
+}
+
 /** Os estados ATIVOS do bicho agora (o cliente mostra um ícone de cada): `['congelado', 'lento', 'queimando']`. */
 export function ativosDe(m, agora) {
   const e = m?.estados ?? {};
-  const lista = [...['congelado', 'atordoado', 'lento'].filter((n) => ativo(e[n], agora)), ...Dot.ativosDe(m, agora)];
+  // (lote C4: + o `tolhido` — o Tolhimento, só de movimento)
+  const lista = [...['congelado', 'atordoado', 'lento', 'tolhido'].filter((n) => ativo(e[n], agora)), ...Dot.ativosDe(m, agora)];
   // A Eletrização do PoE (`itens-poe/afeccoes.mjs`: o bicho recebe mais dano) usa o ícone de eletrizado.
   if (ativo(e.chocado, agora) && !lista.includes('eletrizado')) lista.push('eletrizado');
   return lista;

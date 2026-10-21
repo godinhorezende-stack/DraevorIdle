@@ -2,18 +2,18 @@
  "totais": {
   "ativas": {
    "total": 562,
-   "implementada e testada": 307,
+   "implementada e testada": 314,
    "implementada, sem teste próprio": 47,
-   "parcial": 196,
-   "limitação do modelo idle": 11,
+   "parcial": 188,
+   "limitação do modelo idle": 12,
    "não se aplica": 1
   },
   "ataques": {
    "total": 210,
-   "implementada e testada": 141,
+   "implementada e testada": 143,
    "implementada, sem teste próprio": 18,
-   "parcial": 45,
-   "limitação do modelo idle": 6
+   "parcial": 42,
+   "limitação do modelo idle": 7
   },
   "suportes": {
    "total": 262,
@@ -24,15 +24,16 @@
   "variantes": {
    "vaal": {
     "total": 52,
-    "implementada e testada": 27,
-    "parcial": 19,
-    "implementada, sem teste próprio": 6
+    "implementada e testada": 28,
+    "parcial": 17,
+    "implementada, sem teste próprio": 6,
+    "limitação do modelo idle": 1
    },
    "alternativas": {
     "total": 209,
-    "implementada e testada": 107,
+    "implementada e testada": 110,
     "implementada, sem teste próprio": 25,
-    "parcial": 70,
+    "parcial": 67,
     "limitação do modelo idle": 7
    }
   },
@@ -44,8 +45,8 @@
    "pares": 58049
   },
   "efeitosCompartilhados": {
-   "linhasDistintas": 544,
-   "emDuasOuMais": 92
+   "linhasDistintas": 534,
+   "emDuasOuMais": 89
   },
   "imagens": {
    "ativasComIcone": 562,
@@ -59,7 +60,7 @@
    "soNoJogo": []
   },
   "testes": {
-   "ativasCitadas": 383,
+   "ativasCitadas": 388,
    "suportesCitados": 119,
    "testeGeral": "gemas-todas-funcionam-poe.test.mjs"
   }
@@ -2520,11 +2521,11 @@
    "variante": "vaal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Clones possuem 57 % de aumento da Velocidade de Movimento"
+   "estado": "limitação do modelo idle",
+   "ausentes": [],
+   "idle": [
+    "limitação do idle: os clones do Golpe Duplo Vaal não andam no jogo — o \"Clones possuem X% de aumento da Velocidade de Movimento\" não tem onde valer (D4.4)"
    ],
-   "idle": [],
    "outros": [],
    "icone": true,
    "iconeHabilidade": true
@@ -2574,11 +2575,8 @@
    "variante": "alternativa",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Não pode infligir múltiplos envenenamentos com o mesmo ataque",
-    "efeito não simulado: Não pode infligir Envenenamento em Inimigos Envenenados"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4406,12 +4404,8 @@
    "variante": "normal",
    "ataque": true,
    "arquetipo": "corpo_a_corpo",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: 30 % mais Duração do Veneno",
-    "efeito não simulado: Debuff Secundário causa 50 % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos",
-    "efeito não simulado: 20 % mais Duração do Veneno"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4820,11 +4814,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento reduzida em 80 %",
-    "efeito não simulado: Debuff pode ter até 20 camadas de Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4836,11 +4827,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento reduzida em 80 %",
-    "efeito não simulado: Debuff pode ter até 6 camadas de Dano"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -4852,12 +4840,8 @@
    "variante": "alternativa",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento reduzida em 80 %",
-    "efeito não simulado: Debuff pode ter até 20 camadas de Dano",
-    "efeito não simulado: Regeneração de Vida reduzida em 80 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5127,12 +5111,8 @@
    "variante": "vaal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "efeito não simulado: Velocidade de Movimento reduzida em 80 %",
-    "efeito não simulado: Debuff pode ter até 20 camadas de Dano",
-    "efeito não simulado: Inimigos Desacelerados sofrem Dano de Caos aumentado em 30 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -5657,13 +5637,8 @@
    "variante": "normal",
    "ataque": false,
    "arquetipo": "canalizacao",
-   "estado": "parcial",
-   "ausentes": [
-    "sem dano direto: nenhum efeito no combate",
-    "efeito não simulado: Definhado dura 2 segundos",
-    "efeito não simulado: Velocidade de Movimento reduzida em 36 %",
-    "efeito não simulado: Dano de Caos sofrido aumentado em 6 %"
-   ],
+   "estado": "implementada e testada",
+   "ausentes": [],
    "idle": [],
    "outros": [],
    "icone": true,
@@ -10723,26 +10698,6 @@
    ]
   },
   {
-   "linha": "sem dano direto: nenhum efeito no combate",
-   "gemas": [
-    "Arcanist_Brand",
-    "Conversion_Trap",
-    "Detonate_Mines",
-    "Smoke_Mine",
-    "Wither"
-   ]
-  },
-  {
-   "linha": "Velocidade de Movimento reduzida em # %",
-   "gemas": [
-    "Blight",
-    "Blight_of_Atrophy",
-    "Blight_of_Contagion",
-    "Vaal_Blight",
-    "Wither"
-   ]
-  },
-  {
    "linha": "+# ao Máximo de Armas Animadas",
    "gemas": [
     "Animate_Weapon",
@@ -10761,15 +10716,6 @@
    ]
   },
   {
-   "linha": "Debuff pode ter até # camadas de Dano",
-   "gemas": [
-    "Blight",
-    "Blight_of_Atrophy",
-    "Blight_of_Contagion",
-    "Vaal_Blight"
-   ]
-  },
-  {
    "linha": "Efeito das Auras aumentado em # %",
    "gemas": [
     "Icicle_Mine_of_Sabotage",
@@ -10785,6 +10731,15 @@
     "Feeding_Frenzy_Support",
     "Meat_Shield_Support",
     "Minion_Speed_Support"
+   ]
+  },
+  {
+   "linha": "sem dano direto: nenhum efeito no combate",
+   "gemas": [
+    "Arcanist_Brand",
+    "Conversion_Trap",
+    "Detonate_Mines",
+    "Smoke_Mine"
    ]
   },
   {
@@ -11093,13 +11048,6 @@
    "gemas": [
     "Righteous_Fire",
     "Vaal_Righteous_Fire"
-   ]
-  },
-  {
-   "linha": "Definhado dura # segundos",
-   "gemas": [
-    "Wither",
-    "Withering_Touch_Support"
    ]
   },
   {
@@ -11437,12 +11385,6 @@
    "linha": "# % mais Dano por Maldição aplicada",
    "gemas": [
     "Bane"
-   ]
-  },
-  {
-   "linha": "# % mais Duração do Veneno",
-   "gemas": [
-    "Pestilent_Strike"
    ]
   },
   {
@@ -12064,12 +12006,6 @@
    ]
   },
   {
-   "linha": "Clones possuem # % de aumento da Velocidade de Movimento",
-   "gemas": [
-    "Vaal_Double_Strike"
-   ]
-  },
-  {
    "linha": "Cobre Inimigos em Cinzas ao Acertar",
    "gemas": [
     "Pyre_Support"
@@ -12226,12 +12162,6 @@
    ]
   },
   {
-   "linha": "Dano de Caos sofrido aumentado em # %",
-   "gemas": [
-    "Wither"
-   ]
-  },
-  {
    "linha": "Dano e Resfriamentos Perduram por uma Duração Base de # segundos",
    "gemas": [
     "Frigid_Bond_Support"
@@ -12250,9 +12180,9 @@
    ]
   },
   {
-   "linha": "Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos",
+   "linha": "Definhado dura # segundos",
    "gemas": [
-    "Pestilent_Strike"
+    "Withering_Touch_Support"
    ]
   },
   {
@@ -13234,12 +13164,6 @@
    ]
   },
   {
-   "linha": "Inimigos Desacelerados sofrem Dano de Caos aumentado em # %",
-   "gemas": [
-    "Vaal_Blight"
-   ]
-  },
-  {
    "linha": "Inimigos Encharcados têm Exposição a Gelo e Raio, aplicando # % às Resistências",
    "gemas": [
     "Hydrosphere"
@@ -13618,18 +13542,6 @@
    ]
   },
   {
-   "linha": "Não pode infligir Envenenamento em Inimigos Envenenados",
-   "gemas": [
-    "Viper_Strike_of_the_Mamba"
-   ]
-  },
-  {
-   "linha": "Não pode infligir múltiplos envenenamentos com o mesmo ataque",
-   "gemas": [
-    "Viper_Strike_of_the_Mamba"
-   ]
-  },
-  {
    "linha": "Não pode ser Convocada",
    "gemas": [
     "Armageddon_Brand_of_Volatility"
@@ -13819,12 +13731,6 @@
    "linha": "Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar",
    "gemas": [
     "Molten_Shell"
-   ]
-  },
-  {
-   "linha": "Regeneração de Vida reduzida em # %",
-   "gemas": [
-    "Blight_of_Atrophy"
    ]
   },
   {

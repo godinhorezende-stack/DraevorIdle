@@ -8,20 +8,20 @@ Gerado por `ITENS_POE=1 node tools/relatorio-gemas-poe.mjs` a partir do código 
 
 | Estado | Gemas | 
 |---|---|
-| implementada e testada | 307 |
+| implementada e testada | 314 |
 | implementada, sem teste próprio | 47 |
-| limitação do modelo idle | 11 |
-| parcial | 196 |
+| limitação do modelo idle | 12 |
+| parcial | 188 |
 | não se aplica | 1 |
 
 Só os ataques:
 
 | Estado | Gemas |
 |---|---|
-| implementada e testada | 141 |
+| implementada e testada | 143 |
 | implementada, sem teste próprio | 18 |
-| limitação do modelo idle | 6 |
-| parcial | 45 |
+| limitação do modelo idle | 7 |
+| parcial | 42 |
 
 ### Gemas de suporte (262)
 
@@ -33,16 +33,16 @@ Só os ataques:
 
 ### Variantes
 
-- Vaal (52): implementada e testada 27 · parcial 19 · implementada, sem teste próprio 6
-- Alternativas (209): implementada e testada 107 · implementada, sem teste próprio 25 · parcial 70 · limitação do modelo idle 7
+- Vaal (52): implementada e testada 28 · parcial 17 · implementada, sem teste próprio 6 · limitação do modelo idle 1
+- Alternativas (209): implementada e testada 110 · implementada, sem teste próprio 25 · parcial 67 · limitação do modelo idle 7
 
 ### Compatibilidade, efeitos compartilhados, imagens, testes
 
 - Compatibilidade: 562 ativas e 260 suportes com regra; 58049 pares compatíveis; sem regra: 0 ativas, 2 suportes (Inspiration_Support, Pacifism_Support).
-- Efeitos compartilhados faltando: 544 linhas distintas (92 em duas ou mais gemas).
+- Efeitos compartilhados faltando: 534 linhas distintas (89 em duas ou mais gemas).
 - Imagens: 562/562 ativas com ícone da gema, 562/562 com ícone da habilidade, 262/262 suportes; 0 desenhos repetidos entre gemas de bases diferentes.
 - Catálogo do poedb (Skill_Gems + Support_Gems, pt): 824 gemas; faltam no jogo: nenhuma; só no jogo: nenhuma.
-- Testes que citam a gema: 383/562 ativas, 119/262 suportes.
+- Testes que citam a gema: 388/562 ativas, 119/262 suportes.
 - Teste geral (`testes/gemas-todas-funcionam-poe.test.mjs`): toda ativa `funciona` é usada de verdade numa caçada e precisa causar dano no alvo (ou ligar o buff); todo suporte `funciona` precisa de efeito sem linha não feita, e cada chave do efeito precisa ser lida pelo código do jogo. "Sem teste próprio" quer dizer que só esse teste geral cobre a gema.
 
 ## Linhas que faltam (por quantidade de gemas)
@@ -54,13 +54,11 @@ Só os ataques:
 | 9 | Efeito do Buff aumentado em # % |
 | 6 | # % de Chance de uma Armadilha ser Ativada uma vez adicional |
 | 5 | Duração do Efeito de Habilidades aumentada em # % |
-| 5 | sem dano direto: nenhum efeito no combate |
-| 5 | Velocidade de Movimento reduzida em # % |
 | 4 | +# ao Máximo de Armas Animadas |
 | 4 | +# ao Máximo de Esqueletos Convocados |
-| 4 | Debuff pode ter até # camadas de Dano |
 | 4 | Efeito das Auras aumentado em # % |
 | 4 | Habilidades Suportadas têm #% de Velocidade de Movimento de Lacaios aumentada |
+| 4 | sem dano direto: nenhum efeito no combate |
 | 4 | Velocidade de Movimento dos Lacaios aumentada em # % |
 | 3 | # segundos adicionais de Duração Base por Cadáver extra consumido |
 | 3 | Alvos Extras das Habilidades Suportadas podem ser encontrados #% mais distânte |
@@ -103,7 +101,6 @@ Só os ataques:
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores causem # % menos Dano |
 | 2 | Ceifador faz com que seus Lacaios Não-Ceifadores tenham # % menos Vida Máxima |
 | 2 | Concede # % mais Dano Mágico |
-| 2 | Definhado dura # segundos |
 | 2 | Dispara um feixe a cada # segundos |
 | 2 | Duração de Maldições aumentada em # % |
 | 2 | Duração do Buff aumentada em # % por Carga de Tolerância removida |
@@ -154,7 +151,6 @@ Só os ataques:
 | 1 | # % mais Dano de Projétil |
 | 1 | # % mais Dano na Postura de Sangue |
 | 1 | # % mais Dano por Maldição aplicada |
-| 1 | # % mais Duração do Veneno |
 | 1 | # % mais Velocidade de Projétil |
 | 1 | # % menos Dano de Afecções |
 | 1 | # % menos Dano em Área |
@@ -258,7 +254,6 @@ Só os ataques:
 | 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido |
 | 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro inimigo Acertado por cada Ataque que Impelirem |
 | 1 | Clamores Suportados infligem # Debuffs de Sangue Corrompido no primeiro\ninimigo Acertado por cada Ataque que Impelirem |
-| 1 | Clones possuem # % de aumento da Velocidade de Movimento |
 | 1 | Cobre Inimigos em Cinzas ao Acertar |
 | 1 | Concede # % mais velocidade de conjuração |
 | 1 | Concede # de Regeneração de Mana por segundo para cada Inimigo afetado |
@@ -285,11 +280,10 @@ Só os ataques:
 | 1 | Dano de ataques é absorvido pela concha antes de afetar a vida ou o escudo de Energia do alvo Concha pode sofrer até # de dano antes de explodir |
 | 1 | Dano de Caos com Acertos é Resistido pela maior Resistência ao invés |
 | 1 | Dano de Caos com Acertos é Resistido pela Resistência mais baixa |
-| 1 | Dano de Caos sofrido aumentado em # % |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de # segundos |
 | 1 | Dano e Resfriamentos Perduram por uma Duração Base de +# segundos |
 | 1 | Dano Mágico Suprimido causado em você é Azarado |
-| 1 | Debuff Secundário causa # % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos |
+| 1 | Definhado dura # segundos |
 | 1 | Detonação da Mina é Instantânea |
 | 1 | Dispara # projéteis |
 | 1 | Dispara até # Flechas em alvos diferentes |
@@ -453,7 +447,6 @@ Só os ataques:
 | 1 | Inimigos Amaldiçoados têm # % de chance de concederem uma Carga de Tolerância quando Acertados |
 | 1 | Inimigos Amaldiçoados têm # % de Reducão de Dano Físico |
 | 1 | Inimigos Aprisionados sofrem Dano de Projétil dos Acertos de Ataques aumentado em # % |
-| 1 | Inimigos Desacelerados sofrem Dano de Caos aumentado em # % |
 | 1 | Inimigos Encharcados têm Exposição a Gelo e Raio, aplicando # % às Resistências |
 | 1 | Inimigos possuem # % menos Velocidade de Movimento no início do Debuff |
 | 1 | Inimigos Provocados por este Clamor são Intimidados |
@@ -517,8 +510,6 @@ Só os ataques:
 | 1 | Minas tem Velocidade de Detonação aumentada em # % |
 | 1 | Minas usando Habilidades Suportadas sempre focam na sua localização |
 | 1 | Modificadores ao Dano Mágico são aplicados ao efeito de Dano Degenerativo das Habilidades Suportadas |
-| 1 | Não pode infligir Envenenamento em Inimigos Envenenados |
-| 1 | Não pode infligir múltiplos envenenamentos com o mesmo ataque |
 | 1 | Não pode ser Convocada |
 | 1 | Não pode ser Evadido |
 | 1 | Não requer um cadáver |
@@ -551,7 +542,6 @@ Só os ataques:
 | 1 | Receba uma Carga de Tolerância quando você Atordoar um Inimigo com um Acerto Corpo a Corpo com Habilidades Suportadas |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo por segundo, ou quando o Buff expirar ou se esgotar |
 | 1 | Reflete # % do Dano sofrido pelo Buff como Dano de Fogo quando o Buff expirar ou se esgotar |
-| 1 | Regeneração de Vida reduzida em # % |
 | 1 | Resfria Inimigos por # segundos ao Acertar, reduzindo sua Velocidade de Ação em # % |
 | 1 | Resistência à Fogo de Inimigos Próximos é Ignorada por Acertos |
 | 1 | Resistência à Gelo de Inimigos Próximos é Ignorada por Acertos |
@@ -680,16 +670,6 @@ Só os ataques:
   - efeito não simulado: 12 % mais Velocidade de Ataque enquanto estiver em uma Tempestade de Lâminas Sangrentas
   - efeito não simulado: Tempestades de Lâminas causam 50 % menos Dano com Acertos e Afecções
   - efeito não simulado: +1 ao número Máximo de Tempestades de Lâminas por vez
-- **Blight** (Infestação) — parcial
-  - efeito não simulado: Velocidade de Movimento reduzida em 80 %
-  - efeito não simulado: Debuff pode ter até 20 camadas de Dano
-- **Blight_of_Atrophy** (Infestação da Atrofia) — parcial
-  - efeito não simulado: Velocidade de Movimento reduzida em 80 %
-  - efeito não simulado: Debuff pode ter até 20 camadas de Dano
-  - efeito não simulado: Regeneração de Vida reduzida em 80 %
-- **Blight_of_Contagion** (Infestação do Contágio) — parcial
-  - efeito não simulado: Velocidade de Movimento reduzida em 80 %
-  - efeito não simulado: Debuff pode ter até 6 camadas de Dano
 - **Blink_Arrow** (Flecha Ilusória) — limitação do modelo idle
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
 - **Blink_Arrow_of_Bombarding_Clones** (Flecha Ilusória dos Clones Bombardeiros) — limitação do modelo idle
@@ -960,10 +940,6 @@ Só os ataques:
   - efeito não simulado: Cria 10 Estacas adicionais se você mudou de Postura Recentemente
   - efeito não simulado: Cria 5 Estaca
   - efeito não simulado: 5 % mais Dano na Postura de Sangue
-- **Pestilent_Strike** (Golpe Pestilento) — parcial
-  - efeito não simulado: 30 % mais Duração do Veneno
-  - efeito não simulado: Debuff Secundário causa 50 % do total restante do Dano Venenoso Esperado de todos os Venenos no Inimigo morto por segundo como Dano de Caos
-  - efeito não simulado: 20 % mais Duração do Veneno
 - **Plague_Bearer** (Infestador) — limitação do modelo idle
   - _idle:_ sai sozinha, na barra: Incuba e, no Valor Máximo da Praga com um inimigo a até 2 casas, Infesta até o Valor acabar; o raio da Infestação é de 2 casas (o PoE não publica o raio base)
 - **Poachers_Mark** (Marca do Larápio) — parcial
@@ -1243,10 +1219,6 @@ Só os ataques:
   - efeito não simulado: Buff concede 30.6 de Regeneração de Mana por segundo
   - efeito não simulado: Buff concede 395 de Regeneração de Escudo de Energia por segundo
   - efeito não simulado: Duração do Efeito de Habilidades aumentada em 20 %
-- **Vaal_Blight** (Infestação Vaal) — parcial
-  - efeito não simulado: Velocidade de Movimento reduzida em 80 %
-  - efeito não simulado: Debuff pode ter até 20 camadas de Dano
-  - efeito não simulado: Inimigos Desacelerados sofrem Dano de Caos aumentado em 30 %
 - **Vaal_Clarity** (Clareza Vaal) — parcial
   - efeito não simulado: Suas Habilidades e de seus aliados próximos não Custam Mana
 - **Vaal_Discipline** (Disciplina Vaal) — parcial
@@ -1256,8 +1228,8 @@ Só os ataques:
   - efeito não simulado: Sentinelas Ascendidos sofrem 70 % menos Dano
   - efeito não simulado: Lacaios têm Recuperação da Recarga aumentada em 40 %
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Vaal_Double_Strike** (Golpe Duplo Vaal) — parcial
-  - efeito não simulado: Clones possuem 57 % de aumento da Velocidade de Movimento
+- **Vaal_Double_Strike** (Golpe Duplo Vaal) — limitação do modelo idle
+  - _idle:_ limitação do idle: os clones do Golpe Duplo Vaal não andam no jogo — o "Clones possuem X% de aumento da Velocidade de Movimento" não tem onde valer (D4.4)
 - **Vaal_Earthquake** (Terremoto Vaal) — parcial
   - efeito não simulado: Abalo Secundário causa 407 % mais Dano com Acertos e Afecções
   - efeito não simulado: O efeito atual é finalizado após 9 Abalos Secundários
@@ -1299,9 +1271,6 @@ Só os ataques:
   - efeito não simulado: +7 ao Máximo de Esqueletos Convocados
   - efeito não simulado: +1 ao Máximo de Esqueletos Convocados
   - _idle:_ o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro
-- **Viper_Strike_of_the_Mamba** (Golpe da Víbora d Mamba) — parcial
-  - efeito não simulado: Não pode infligir múltiplos envenenamentos com o mesmo ataque
-  - efeito não simulado: Não pode infligir Envenenamento em Inimigos Envenenados
 - **Volcanic_Fissure_of_Snaking** (Fissura Vulcânica do Serpenteado) — parcial
   - efeito não simulado: Fissuras irrompem 2 vezes adicionais
   - efeito não simulado: Fissuras irrompem 1 vezes adicionais
@@ -1311,11 +1280,6 @@ Só os ataques:
   - efeito não simulado: Estandarte concede 4 % mais Dano Físico com Habilidades Corpo a Corpo a Você e Aliados
 - **Warlords_Mark** (Marca do Comandante) — parcial
   - efeito não simulado: Inimigos Amaldiçoados têm 5 % de chance de concederem uma Carga de Tolerância quando Acertados
-- **Wither** (Definhar) — parcial
-  - sem dano direto: nenhum efeito no combate
-  - efeito não simulado: Definhado dura 2 segundos
-  - efeito não simulado: Velocidade de Movimento reduzida em 36 %
-  - efeito não simulado: Dano de Caos sofrido aumentado em 6 %
 - **Zealotry** (Fanatismo) — parcial
   - efeito não simulado: Você e Aliados não-Lacaios Próximos têm 10 % de chance de criarem Solo Sagrado ao Acertar um Inimigo Raro ou Único, durando 8 segundos
 

@@ -26,7 +26,8 @@ await G.iniciar({ registrarGema: () => {}, registrarReforco: () => {} });
 SP.iniciar({ registrarSuporte: () => {} });
 
 // Os textos de limitação do idle (documentados no próprio status; não são "efeito não simulado").
-const LIMITACAO_IDLE = [/^o lacaio ataca do jeito do tipo dele/, /^o deslocamento \(salto, investida, teleporte\) não existe/, /^sai sozinha, na barra/];
+// (lote C4, dono 21/10 — D4.4: + o "limitação do idle:" que o lote põe nos motivos — os clones do Golpe Duplo Vaal não andam)
+const LIMITACAO_IDLE = [/^o lacaio ataca do jeito do tipo dele/, /^o deslocamento \(salto, investida, teleporte\) não existe/, /^sai sozinha, na barra/, /^limitação do idle: /];
 const ehAusencia = (m) => /^(efeito )?não simulado: /.test(m) || /ainda não (existe|se aplica)|não existem?:|não existe no jogo|nenhum efeito/.test(m);
 
 // Os testes que citam cada slug (o nome do arquivo de teste e a linha não importam: só "há um teste que usa a gema").

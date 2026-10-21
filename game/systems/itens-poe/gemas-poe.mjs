@@ -43,6 +43,8 @@ import * as GemasPR3 from './gemas-pr3.mjs';
 import * as GemasC1 from './gemas-c1.mjs';
 // (lote C2, dono 20/10: os leitores das gemas de corpo a corpo, impacto e canalização — os contadores próprios e as cargas consumidas)
 import * as GemasC2 from './gemas-c2.mjs';
+// (lote C4, dono 21/10: os leitores das gemas de corpo a corpo, impacto e canalização — os debuffs canalizados e as afecções específicas)
+import * as GemasC4 from './gemas-c4.mjs';
 // (lote B2, dono 20/10: os leitores das gemas de contadores próprios, chão e espalhar — as Cargas Sangrentas, o Golpe Infernal, o Contágio, a Febre…)
 import * as GemasB2 from './gemas-b2.mjs';
 // (lote B3, dono 21/10: os leitores das gemas de ondas, sequências, formas e cadáveres — a Cascata Glacial, a Retribuição Divina, a Conflagração, a Troca de Corpos…)
@@ -1210,6 +1212,32 @@ export const c2DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C2, `c2|${s
     runas: GemasC2.runasDasLinhas(slug, linhas, qualidade),
   };
 });
+/*
+ * ---- (lote C4, dono 21/10) os leitores no nível do lote C4 (`itens-poe/gemas-c4.mjs`) ----
+ * `{ praga, definhar, pestilento, veneno }`.
+ */
+const C4 = new Map();
+export const c4DaGema = (slug, nivel = 1, qualidade = 0) => comCache(C4, `c4|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const [linhas, daQ] = linhasA1b(slug, nivel, qualidade);
+  return {
+    praga: GemasC4.pragaDasLinhas(slug, linhas, daQ), definhar: GemasC4.definharDasLinhas(slug, linhas), pestilento: GemasC4.pestilentoDasLinhas(slug, linhas, daQ),
+    veneno: GemasC4.venenoDasLinhas(slug, linhas, daQ),
+  };
+});
+/**
+ * (lote C4, dono 21/10: "magias sem dano de acerto deixam de gerar o acerto de 1") A MAGIA SEM ACERTO: a gema que não é ataque, sem dano de acerto no nível (o
+ * `stats.dano` do compilador vazio), cujo efeito é o debuff — o degenerativo dela (a Praga, o Contágio, o Raio Abrasador, a Maré Invernal, a Profanação…) ou o
+ * do lote C4 (o Definhar). No PoE ela não acerta: o uso põe o debuff, sem o "1" do piso da faixa, sem crítico e sem os efeitos de acerto. Ficam de fora as de
+ * cadáver, as armadilhas, as minas e os totens (o caminho deles é outro — e são da outra sessão).
+ */
+const SEM_ACERTO_FORA = new Set(['mina', 'armadilha', 'totem']);
+export const magiaSemAcerto = (slug, nivel = 1, qualidade = 0) => comCache(C4, `sa|${slug}@${nivel | 0}@${qualidade | 0}`, () => {
+  const r = doSlug(slug);
+  if (!r || r.ataque || SEM_ACERTO_FORA.has(r.arquetipo)) return false;
+  const st = compilada(slug, nivel, qualidade)?.stats ?? {};
+  if (Object.keys(st.dano ?? {}).length || st.cadaver) return false;
+  return !!st.dot?.length || GemasC4.EFEITO_SEM_DANO.has(slug);
+});
 /** A Corrente com Gancho: o raio por Fúria. */
 // (lote C1, dono 20/10: + a Cutilada da Fúria — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1875)
 // (lote C2, dono 20/10: + a Corrente com Gancho de Trarthus — chain_strike_cone_radius_+_per_x_rage 5, act_str.lua:1696)
@@ -1578,7 +1606,7 @@ export function buffNoNivel(slug, nivel, qualidade = 0) {
  * os dois não se separarem — `h`: a gema compilada com `slug`, `arquetipo` e `nivel`; `q`: a qualidade.
  */
 function ehLinhaFeita(h, l, q) {
-  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l));
+  return !(!ehLinhaDeAlvos(l, h.arquetipo) && !ehLinhaQueNaoSeAplica(l) && !ehLinhaDeAtaque(l) && !(h.arquetipo === 'totem' && ehLinhaDoTotem(l)) && !ehLinhaDoAco(l) && !ehLinhaDeCadaver(l) && !ehLinhaDeEscudo(l) && !ehLinhaDeRetaliacao(l) && !(h.arquetipo === 'clamor' && ehLinhaDoClamor(l)) && !(h.arquetipo === 'maldicao' && ehLinhaContraOAmaldicoado(l)) && !(BUFF.has(h.arquetipo) && ehLinhaDoBuff(l)) && !ehLinhaDoArauto(h.slug, l) && !ehColunaMalRotulada(h.slug, l) && !(estagiosDaGema(h.slug, h.nivel, q) && ehLinhaDeEstagio(l)) && !(sequenciaDaGema(h.slug, h.nivel, q) && (ehLinhaDaSequencia(l) || GemasA4.ehLinhaDaSequenciaA4(l))) && !(anguloDaGema(h.slug, h.nivel, q) && GemasA4.ehLinhaDoAngulo(l)) && !GemasA4.ehLinhaA4(h.slug, l) && !(torreDaGema(h.slug, h.nivel, q) && ehLinhaDaTorre(l)) && !(cadaverDaGema(h.slug, h.nivel) && ehLinhaDeCadaverDaGema(l)) && !ehLinhaDaRuna(l) && !ehLinhaDoEstandarte(l) && !ehLinhaDaMina(l) && !(ehUso(h) && ehLinhaLocalDaGema(l)) && !(h.slug === 'Herald_of_Agony' && ehLinhaDaVirulencia(l)) && !ehLinhaDoDeslocamento(h.slug, l) && !(h.slug === 'Withering_Step' && LINHAS_DO_PASSO_DEFINHANTE.test(l)) && !ehLinhaA2(h.slug, l) && !GemasA3b.ehLinhaA3b(h.slug, l) && !GemasA1b.ehLinhaA1b(h.slug, l) && !GemasA5.ehLinhaA5(h.slug, l) && !GemasB1.ehLinhaB1(h.slug, l) && !GemasPR1.ehLinhaPR1(h.slug, l) && !GemasPR2.ehLinhaPR2(h.slug, l) && !GemasPR3.ehLinhaPR3(h.slug, l) && !GemasC1.ehLinhaC1(h.slug, l) && !GemasC2.ehLinhaC2(h.slug, l) && !GemasB2.ehLinhaB2(h.slug, l) && !GemasB3.ehLinhaB3(h.slug, l) && !GemasC4.ehLinhaC4(h.slug, l));
 }
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
@@ -1658,8 +1686,8 @@ function avaliarNoJogo(h, formato) {
     if (st.cadaver && !cadaverDaGema(h.slug, h.nivel) && !GemasB2.explodeAoMorrer(h.slug) && !GemasB3.usaCadaver(h.slug)) motivos.push('o uso de cadáveres não existe no jogo');
     // (lote A1: a gema de movimento sem dano — o Avanço, o Passo Rápido, a Emboscada — tem o efeito dela: o deslocamento)
     // (lote B1, dono 20/10: + a gema de cadáver sem dano mágico — o Detonar Mortos da Limpeza: o efeito é a explosão, `cadaverDaGema`)
-    // (lote PR3, dono 21/10: + o Pacto de Beidat — o uso é o buff que fortalece as próximas magias, `GemasPR3.pactoNoUso`; lote B3: + a Troca de Corpos — o Fogo base + a Vida, `GemasB3.temDanoProprio`)
-    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasPR3.ehPactoDeBeidat(h.slug) && !GemasB3.temDanoProprio(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
+    // (lote PR3, dono 21/10: + o Pacto de Beidat — o uso é o buff que fortalece as próximas magias, `GemasPR3.pactoNoUso`; lote B3: + a Troca de Corpos — o Fogo base + a Vida, `GemasB3.temDanoProprio`; lote C4: + o Definhar, `GemasC4.EFEITO_SEM_DANO`)
+    if (!Object.keys(st.dano ?? {}).length && !h.ataque && !st.dot?.length && !DESLOCAMENTO[h.slug] && !cadaverDaGema(h.slug, h.nivel) && !GemasPR3.ehPactoDeBeidat(h.slug) && !GemasB3.temDanoProprio(h.slug) && !GemasC4.EFEITO_SEM_DANO.has(h.slug)) motivos.push('sem dano direto: nenhum efeito no combate');
   }
   // (12/10: + as linhas dos Fragmentos de Aço — `itens-poe/convocar-o-aco.mjs`.)
   // (17/10: + as linhas locais — `linhasLocaisNoNivel`.)
@@ -1673,6 +1701,8 @@ function avaliarNoJogo(h, formato) {
   for (const m of GemasC1.MOTIVOS_C1[h.slug] ?? []) motivos.push(m);
   // (lote C2: o que a mecânica do lote C2 ainda não faz — `GemasC2.MOTIVOS_C2`)
   for (const m of GemasC2.MOTIVOS_C2[h.slug] ?? []) motivos.push(m);
+  // (lote C4: o que a mecânica do lote C4 ainda não faz, ou a limitação do idle — `GemasC4.MOTIVOS_C4`)
+  for (const m of GemasC4.MOTIVOS_C4[h.slug] ?? []) motivos.push(m);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 /**
