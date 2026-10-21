@@ -83,13 +83,27 @@ export function esAtual(estado, ficha) {
  * shield / a vida). Qualquer dano recebido — mesmo o que o ES engoliu — reinicia
  * a espera da recarga. Devolve o que sobrou.
  */
+// (Proteção Perversa: "Recarga do Escudo de Energia não é interrompida por Dano se a Recarga começou recentemente" — 4 s, o "recente". Vale para QUALQUER dano,
+// o Caos que atravessa o escudo também — revisão PR2, 21/10.)
+function recargaProtegida(estado, ficha) {
+  const agora = estado.hunt?.clock ?? 0;
+  return (Number(ficha?.afPoe?.recarga_nao_interrompida) || 0) > 0 && !(estado.esEspera > 0) && estado.esRecargaDesde != null && agora - estado.esRecargaDesde <= RECENTE_MS;
+}
+// (ciclo 7, lote H) "X% de Dano é removido da Mana antes da Vida" (a Mente sobre a Matéria do PoE): do que passou do escudo — e do Caos que o atravessa (revisão
+// PR2, 21/10: no PoE o Caos ignora só o Escudo, não a Mana). Devolve o que sobra para a Vida.
+function pelaManaAntes(estado, ficha, dano, eventos, evento) {
+  const pct = itensPoeLigado() ? Math.min(100, Number(ficha?.afPoe?.dano_pela_mana_pct) || 0) : 0;
+  const daMana = pct > 0 && dano > 0 ? Math.min(estado.mana ?? 0, Math.round((dano * pct) / 100)) : 0;
+  if (daMana > 0) {
+    estado.mana -= daMana;
+    if (eventos && evento) eventos.push({ t: 'dmg', ...evento, v: daMana, color: '#4fc3ff' });
+  }
+  return dano - daMana;
+}
 export function absorver(estado, ficha, dano, eventos, evento) {
   if (!(dano > 0)) return dano;
   const v = (k) => Number(ficha?.afPoe?.[k]) || 0;
-  // (Proteção Perversa: "Recarga do Escudo de Energia não é interrompida por Dano se a Recarga começou recentemente" — 4 s, o "recente".)
-  const agora = estado.hunt?.clock ?? 0;
-  const recargaRecente = v('recarga_nao_interrompida') > 0 && !(estado.esEspera > 0) && estado.esRecargaDesde != null && agora - estado.esRecargaDesde <= RECENTE_MS;
-  if (!recargaRecente) estado.esEspera = esperaDaRecarga(ficha);
+  if (!recargaProtegida(estado, ficha)) estado.esEspera = esperaDaRecarga(ficha);
   // (Bateria Anciã: "Escudo de Energia protege a Mana ao invés da Vida" — o escudo não segura o dano da vida; ele paga os custos.)
   if (v('es_protege_mana') > 0) return dano;
   const tem = esAtual(estado, ficha);
@@ -98,14 +112,7 @@ export function absorver(estado, ficha, dano, eventos, evento) {
     estado.es = tem - tira;
     if (eventos && evento) eventos.push({ t: 'dmg', ...evento, v: tira, color: '#b388ff', es: true });
   }
-  // (ciclo 7, lote H) "X% de Dano é removido da Mana antes da Vida" (a Mente sobre a Matéria do PoE): do que passou do escudo.
-  const pct = itensPoeLigado() ? Math.min(100, v('dano_pela_mana_pct')) : 0;
-  const daMana = pct > 0 ? Math.min(estado.mana ?? 0, Math.round(((dano - tira) * pct) / 100)) : 0;
-  if (daMana > 0) {
-    estado.mana -= daMana;
-    if (eventos && evento) eventos.push({ t: 'dmg', ...evento, v: daMana, color: '#4fc3ff' });
-  }
-  return dano - tira - daMana;
+  return pelaManaAntes(estado, ficha, dano - tira, eventos, evento);
 }
 
 /**
@@ -121,9 +128,10 @@ export function absorverComOCaos(estado, ficha, dano, caos, eventos, evento) {
   if (!(c > 0) || !ModsPoe.caosAtravessaOEscudo(ficha)) return absorver(estado, ficha, dano, eventos, evento);
   const peloEscudo = Math.round((c * Math.min(100, Math.max(0, ModsPoe.valor(ficha, 'caos_pelo_escudo_pct')))) / 100);
   const direto = c - peloEscudo;
-  estado.esEspera = esperaDaRecarga(ficha);
+  // (revisão PR2, 21/10) a espera reinicia pelo Caos que atravessa — salvo a Proteção Perversa —; o Caos direto passa pela Mente sobre a Matéria
+  if (direto > 0 && !recargaProtegida(estado, ficha)) estado.esEspera = esperaDaRecarga(ficha);
   const resto = dano - direto;
-  return direto + (resto > 0 ? absorver(estado, ficha, resto, eventos, evento) : 0);
+  return pelaManaAntes(estado, ficha, direto, eventos, evento) + (resto > 0 ? absorver(estado, ficha, resto, eventos, evento) : 0);
 }
 
 /**

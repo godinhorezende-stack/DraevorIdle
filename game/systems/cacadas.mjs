@@ -2121,7 +2121,7 @@ export function tique(estado, personagem, agora = Date.now()) {
   // As mecânicas dos mobs no tempo: enrage na vida baixa, aura de dano e o veneno dos golpes (`mobs/mecanicas.mjs`).
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // (PoE, 12/10) As Armadilhas e Minas plantadas: as que ativam ou detonam agora (`acoes.tiqueDasPlantadas`).
-  Acoes.tiqueDasPlantadas(estado, hunt, personagem, eventos);
+  Acoes.tiqueDasPlantadas(estado, hunt, personagem, eventos, hunt.clock ?? 0, { explosaoDeRunas: !umaAcaoPorVez });
   // (PoE, 12/10) As Runas vinculadas aos inimigos: as que são Ativadas agora (`acoes.tiqueDasRunas`).
   Acoes.tiqueDasRunas(estado, hunt, personagem, eventos);
   // (PoE, 12/10) Os Vínculos: o custo por segundo, a quebra e a morte do alvo (`acoes.tiqueDosVinculos`).
@@ -2183,8 +2183,19 @@ export function tique(estado, personagem, agora = Date.now()) {
       const conjurando = hunt.conjurando;
       // (Na primeira volta a conjuração já foi concluída, no começo do tique.)
       if (volta > 0) eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
-      if (usaBarra && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
-      const barraAgiu = hunt.cooldowns?.[Acoes.GRUPO_DO_POE] !== grupo || hunt.conjurando !== conjurando;
+      // (revisão C2, dono 21/10) a EXPLOSÃO DE RUNAS em cada volta, revezando com a barra (`hunt.poeVezDaExplosao`: a barra teve a vez depois do último uso dela);
+      // quem tem a vez e não age devolve a vez ao outro na mesma volta; o golpe básico só quando nenhum dos dois agiu
+      const comRunas = !!hunt.poeObjetos?.some((o) => o.tipo === 'runa_tempestade');
+      const agiu = () => hunt.cooldowns?.[Acoes.GRUPO_DO_POE] !== grupo || hunt.conjurando !== conjurando;
+      const explodir = () => { if (comRunas && estado.hp > 0) { eventos.push(...Acoes.explosaoDeRunas(estado, hunt, personagem, hunt.clock ?? 0, { logico: true })); if (agiu()) hunt.poeVezDaExplosao = false; } };
+      const vezDela = comRunas && !!hunt.poeVezDaExplosao;
+      if (vezDela) explodir();
+      if (!agiu()) {
+        if (usaBarra && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
+        if (comRunas) hunt.poeVezDaExplosao = true;
+        if (!agiu() && !vezDela) explodir();
+      }
+      const barraAgiu = agiu();
       if (!barraAgiu) golpeBasico();
       processarMortes(estado, personagem, eventos);
       if (hunt.cooldowns?.[Acoes.GRUPO_DO_POE] === grupo && hunt.conjurando === conjurando) break;

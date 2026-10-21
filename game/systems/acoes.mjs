@@ -29,6 +29,7 @@ import { valor as valorPoe, slugDoNome, NO_ACERTO } from './itens-poe/condicoes-
 import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
+import { salaDe } from './hunt/sala.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as Defesa from './personagem/defesa.mjs';
@@ -3323,6 +3324,19 @@ export function tiqueDosSolosDoJogador(hunt, eventos = [], agora = hunt?.clock ?
  * (lote A3b: a conta do Solo Ardente numa função só — o chão do Vórtice e da Geada Rastejante, `tiqueDosObjetos`, também a usa) Quem está no chão `s`
  * (`dentro(m)`) leva o dano por segundo de cada parte (`s.partes`) pelos `dt` ms, exato: a fração que não fecha 1 de dano fica para o próximo tique.
  */
+/**
+ * (revisão B2, dono 21/10 — o PoB: Burning é mais amplo que Incendiado) o monstro QUEIMANDO agora: o estado do jogo (o Incêndio, o degenerativo de Fogo — só o ativo)
+ * ou num CHÃO DE FOGO seu (o Solo Ardente — do Chicote, do Avanço Flamejante —, a Tormenta Flamejante Vaal: os chãos com parte de Fogo) ou marcado pelo Sangue Fervendo.
+ */
+const temParteDeFogo = (x) => (x?.partes ?? []).some((p) => (p.elemento === 'fire' || p.tipo === 'degenFogo') && (p.porSegundo ?? 0) > 0);
+export function queimandoAgora(hunt, m, agora = hunt?.clock ?? 0) {
+  if (!m) return false;
+  if (Dot.ativosDe(m, agora).includes('queimando')) return true;
+  const z = m.z ?? hunt?.z ?? 0;
+  if ((hunt?.poeObjetos ?? []).some((o) => o.efeito === 'solo' && o.ate > agora && (o.z ?? 0) === z && temParteDeFogo(o) && distanciaChebyshev(m, o) <= (o.raio ?? 0))) return true;
+  if ((hunt?.solosDoJogador ?? []).some((s) => s.ate > agora && (s.z ?? 0) === z && temParteDeFogo(s) && (s.casas ?? []).includes(`${m.x},${m.y}`))) return true;
+  return (m.estados?.poeSangueFervendo?.ate ?? -Infinity) > agora;
+}
 function queimarNoSolo(hunt, s, dentro, dt, eventos, origem = 'solo') {
   for (const m of hunt.monstros ?? []) {
     if (!(m.hp > 0) || m.dummy || (m.z ?? hunt.z ?? 0) !== (s.z ?? 0) || !dentro(m)) continue;
@@ -5140,7 +5154,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
     }
     //  - o Chicote Ardente: "X% mais Dano com Acertos contra Inimigos Incendiados" (só no acerto — o PoB: ModFlag.Hit, ActorCondition Burning)
-    const contraIncendiado = (bicho) => (b2?.chicote?.contraIncendiadoPct > 0 && (bicho.dots ?? []).some((d) => d.tipo === 'queimadura' && d.falta > 0) ? 1 + b2.chicote.contraIncendiadoPct / 100 : 1);
+    // (revisão B2, 21/10: QUEIMANDO — `queimandoAgora`: o estado do jogo, só o ativo, e o chão de fogo; o PoB: `ActorCondition enemy var=Burning`)
+    const contraIncendiado = (bicho) => (b2?.chicote?.contraIncendiadoPct > 0 && queimandoAgora(hunt, bicho, agora) ? 1 + b2.chicote.contraIncendiadoPct / 100 : 1);
     //  - D-B2.3: o Golpe Infernal — o debuff com cargas (`infernalNoAcerto`) e os que chegaram a 6 cargas neste passe (`explodemNoPasse`, a explosão no fim do passe)
     const infernalDoUso = b2?.infernal ?? null;
     const infernalMs = infernalDoUso ? Math.max(1, Math.round(infernalDoUso.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema))) : 0;
@@ -5521,7 +5536,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       } else bicho.hp -= dano;
       // (lote B2, dono 20/10) o acerto no lote B2: o Golpe Infernal (o debuff CARREGADO no acertado pelo golpe — +1 carga, a duração renova —; o DESCARREGADO no acertado
       // pela explosão), a Febre Corrompedora e o Contágio da Transferência (`aoAcertarB2`); o acerto do totem não é seu
-      if (infernalDoUso && infernalNoAcerto(bicho, infernalDoUso, agora + infernalMs, !(fonte === 'explosaoInfernal' || plantada?.explosaoInfernal), entry.id, agora) >= infernalDoUso.maxCargas) explodemNoPasse.push(bicho);
+      // (revisão B2, 21/10: o debuff guarda QUEM o pôs — a party divide os bichos —; o mesmo bicho entra uma vez só na lista do passe)
+      if (infernalDoUso && infernalNoAcerto(bicho, infernalDoUso, agora + infernalMs, !(fonte === 'explosaoInfernal' || plantada?.explosaoInfernal), entry.id, agora, personagem?.nome ?? null) >= infernalDoUso.maxCargas && !explodemNoPasse.includes(bicho)) explodemNoPasse.push(bicho);
       if (!doTotem) for (const st of aoAcertarB2(hunt, bicho, dano, agora)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       if (b2?.cadaverVoltaxicoPct > 0 && plantada?.voltaxica && dano > 0 && bicho.hp <= 0 && !mortosDaVoltaxica.includes(bicho)) mortosDaVoltaxica.push(bicho);
       // (decisão do dono, 20/10) o Chicote Ardente: o acerto num Incendiado cria o Solo Ardente sob ele (`soloDoChicoteArdente`)
@@ -5677,7 +5693,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         for (const p of dg?.partes ?? []) {
           const tipoDegen = GemasPoe.DEGEN_DO_ELEMENTO[p.elemento];
           const total = totalDoDegenerativo(p, duracaoDoDebuff, { efeitoDaGema, ficha, fatorDaGema, soAcertoDaFicha, dotMagico }) * fatorDoDebuff;
-          const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: duracaoDoDebuff, chave: entry.poeGema.slug, origem: { fonte: doTotem ? 'totem' : 'gema', habilidade: entry.id } }, agora);
+          // (revisão B2, 21/10: o do Ceifar guarda QUEM o pôs — a Carga Sangrenta da morte é do dono — `aoMorrerB2`)
+          const quemDoDot = !doTotem && /^Reap(_of_Butchery)?$/.test(entry.poeGema.slug) ? { quem: personagem?.nome ?? null } : {};
+          const posto = Dot.aplicar(bicho, { tipo: tipoDegen, total, duracaoMs: duracaoDoDebuff, chave: entry.poeGema.slug, origem: { fonte: doTotem ? 'totem' : 'gema', habilidade: entry.id, ...quemDoDot } }, agora);
           if (posto) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: posto });
           // (lote PR2, dono 20/10 — D2) o DRENAR ESSÊNCIA: o debuff da gema leva a % do dano dele que vira a sua Vida (ou a perda do Desespero) — cada pulso, em
           // cada debuff ativo, somados (`Dot.tique` → `drenoDosDebuffs`); o do totem, não (exceção 1)
@@ -5946,7 +5964,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (explodemNoPasse.length) {
         const pctX = GemasB2.pctDaExplosaoInfernal(infernalDoUso.porCargaPct, infernalDoUso.maxCargas);
         for (const b of explodemNoPasse.splice(0)) {
-          if (b.estados?.poeInfernal?.carregado) delete b.estados.poeInfernal;
+          // (revisão B2, 21/10) só explode quem ainda está CARREGADO: o que já explodiu (neste passe ou numa repetição) não explode de novo
+          const meu = infernalDe(b, personagem?.nome ?? null);
+          if (!meu?.carregado) continue;
+          tirarInfernal(b, meu);
           eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: b.x, y: b.y, lado: 2 * raioInfernal + 1 });
           for (const m of vivos) if (m.hp > 0 && distanciaChebyshev(m, b) <= raioInfernal) acertar(m, pctX, 'explosaoInfernal');
         }
@@ -5962,7 +5983,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (b2?.purificadora && casas && formaNoUso && plantada?.tipo !== 'objeto') {
         const fatorA = ModsPoe.fatorDaArea(efeitoDaGema?.areaIncPct ?? 0, efeitoDaGema?.areaMaisPct ?? 0);
         const raioInicialM = GemasPoe.areaNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema?.qualidade ?? 0).raioM ?? 1.8;
-        criarSoloSagrado(hunt, (b2.purificadora.duracaoMs / 1000) * fatorDeDuracao(estado, entry, efeitoDaGema), agora, { x: formaNoUso.x, y: formaNoUso.y, raio: Math.max(0, casasDoRaio((raioInicialM + b2.purificadora.sagradoExtraM) * Math.sqrt(fatorA))) });
+        criarSoloSagrado(hunt, (b2.purificadora.duracaoMs / 1000) * fatorDeDuracao(estado, entry, efeitoDaGema), agora, { x: formaNoUso.x, y: formaNoUso.y, raio: Math.max(0, casasDoRaio((raioInicialM + b2.purificadora.sagradoExtraM) * Math.sqrt(fatorA))), fonte: entry.poeGema.slug });
         const ro = Math.max(1, casasDoRaio(b2.purificadora.ondaRaioM * Math.sqrt(fatorA)));
         const ja = new Set(atingidos);
         const sagrados = (hunt.solosSagrados ?? []).filter((sg) => sg.ate > agora);
@@ -6145,7 +6166,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const o = porObjeto(hunt, {
           acao: entry.id, slug: entry.poeGema.slug, el: entry.element ?? null, dono: doTotem ? 'totem' : 'voce', tipo: 'chao', mov: 'parado', efeito: 'inerte', x: formaNoUso.x, y: formaNoUso.y, raio,
           partes: dg.partes.map((p) => ({ tipo: GemasPoe.DEGEN_DO_ELEMENTO[p.elemento], elemento: p.elemento, porSegundo: totalDoDegenerativo(p, 1000, conta) })),
-          ate: agora + Math.round(b2.ceifar.vaal.chaoMs * fatorDeDuracao(estado, entry, efeitoDaGema)), perduraMs: b2.ceifar.vaal.perduraMs, sangueFervendo: true, max: 10,
+          ate: agora + Math.round(b2.ceifar.vaal.chaoMs * fatorDeDuracao(estado, entry, efeitoDaGema)), perduraMs: b2.ceifar.vaal.perduraMs, sangueFervendo: true, quem: personagem?.nome ?? null, max: 10,
         }, agora);
         marcarSangueFervendo(hunt, o, agora);
       }
@@ -6927,7 +6948,8 @@ function auraDasMinasDaGema(estado, hunt, agora) {
   }
 }
 
-export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+// (revisão C2, dono 21/10: `explosaoDeRunas: false` — a caçada do modo PoE faz a Explosão de Runas no laço da barra, em cada volta — `cacadas`)
+export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0, { explosaoDeRunas = true } = {}) {
   if (itensPoeLigado() && hunt?.plantadas?.length) auraDasMinasDaGema(estado, hunt, agora);
   if (itensPoeLigado() && hunt?.poeTorres?.length) tiqueDasTorres(estado, hunt, personagem, eventos, agora);
   // (lote G12: os gêiseres da Cremação, no mesmo tique)
@@ -6941,7 +6963,7 @@ export function tiqueDasPlantadas(estado, hunt, personagem, eventos = [], agora 
   // (lote A3b, dono 19/10: os OBJETOS no chão ou no tempo — a bola, o tornado, a espiral, o olho, o chão —, no mesmo tique)
   if (itensPoeLigado() && hunt?.poeObjetos?.length) tiqueDosObjetos(estado, hunt, personagem, eventos, agora);
   // (lote C2, dono 20/10: a Imolação que acabou e as correntes da Corrente com Gancho de Trarthus, no mesmo tique)
-  if (itensPoeLigado() && (hunt?.poeImolacao || hunt?.poeCorrentes?.length || hunt?.poeObjetos?.length)) tiqueDoC2(estado, hunt, personagem, eventos, agora);
+  if (itensPoeLigado() && (hunt?.poeImolacao || hunt?.poeCorrentes?.length || hunt?.poeObjetos?.length)) tiqueDoC2(estado, hunt, personagem, eventos, agora, explosaoDeRunas);
   // (lote B2, dono 20/10: o debuff do Golpe Infernal que expira, o Sangue Fervendo do Ceifar Vaal — `tiqueDasGemasB2`)
   if (itensPoeLigado() && hunt?.monstros?.length) tiqueDasGemasB2(estado, hunt, personagem, eventos, agora);
   if (!hunt?.plantadas?.length || !itensPoeLigado()) return eventos;
@@ -7442,7 +7464,9 @@ function tiqueDasEstacas(estado, hunt, personagem, eventos, agora) {
 function porRunaDaTempestade(estado, hunt, entry, efeitoDaGema, R, centro, agora) {
   const z = hunt.z ?? 0;
   const minhas = (hunt.poeObjetos ?? []).filter((o) => o.tipo === 'runa_tempestade' && (o.z ?? 0) === z && o.ate > agora);
-  const c = GemasC2.casaDaProximaRuna({ x: centro.x, y: centro.y }, minhas);
+  // (revisão C2, 21/10) só casa andável do jogo (a grade do combate): nada de runa em parede ou fora da grade — e o Teletransporte herda isso
+  const andavel = ModsPoe.gradeDoCombate(hunt)?.andavel ?? null;
+  const c = GemasC2.casaDaProximaRuna({ x: centro.x, y: centro.y }, minhas, 8, andavel ? (k) => andavel.has(`${k.x},${k.y}`) : null);
   if (!c) return [];
   porObjeto(hunt, { acao: entry.id, slug: entry.poeGema.slug, tipo: 'runa_tempestade', efeito: 'inerte', mov: 'parado', dono: 'voce', x: c.x, y: c.y, raio: 0, nivel: 0, ate: agora + Math.round(R.duracaoMs * fatorDeDuracao(estado, entry, efeitoDaGema)) }, agora);
   return [{ t: 'fx', id: entry.efeito ?? EFEITO_DA_EXPLOSAO, x: c.x, y: c.y }];
@@ -7459,10 +7483,18 @@ const runasDaTempestade = (hunt, agora) => (hunt?.poeObjetos ?? []).filter((o) =
  *    detonou runas nos últimos 0,5 s. Sem mana para a canalização, libera.
  * Devolve os eventos.
  */
-function explosaoDeRunas(estado, hunt, personagem, agora) {
+/*
+ * (revisão C2, 21/10) A Explosão não trava a barra: na caçada do modo PoE ela entra no LAÇO DA BARRA (`cacadas`), em cada volta, revezando com a barra (depois
+ * de um uso dela a vez é da barra; a barra sem nada a fazer devolve a vez) — com o relógio lógico (`logico`: o uso conta de quando o relógio liberou dentro do
+ * tique, como as magias da barra), então a Velocidade de Conjuração encurta de verdade os 0,16 s. E a CANALIZAÇÃO tem fim: melhora as runas que havia quando
+ * ela começou (`canal`) — as que a Vinculação espalhar enquanto isso entram na próxima —, e libera quando nenhuma delas melhora mais (ou uma a 1 s do fim, ou
+ * sem mana): como no PoE, em que canalizar a Explosão é não espalhar runas.
+ */
+export function explosaoDeRunas(estado, hunt, personagem, agora0 = hunt?.clock ?? 0, { logico = false } = {}) {
   if ((estado.hp ?? 0) <= 0 || hunt.conjurando || Protecao.imune(hunt)) return [];
   const cds = (hunt.cooldowns ??= {});
-  if (cds[GRUPO_DO_POE] && !R.liberou(agora, cds[GRUPO_DO_POE].ate)) return [];
+  if (cds[GRUPO_DO_POE] && !R.liberou(agora0, cds[GRUPO_DO_POE].ate)) return [];
+  const agora = logico ? R.instanteLogico(agora0, hunt.relogioAnterior, [cds[GRUPO_DO_POE]?.ate]) : agora0;
   const runas = runasDaTempestade(hunt, agora);
   if (!runas.length) return [];
   // (a Vinculação encaixada que concede: a da runa mais nova — o nível e a qualidade dela)
@@ -7473,20 +7505,35 @@ function explosaoDeRunas(estado, hunt, personagem, agora) {
   if (!Rr) return [];
   const fator = ModsPoe.fatorDaArea(ef.areaIncPct ?? 0, ef.areaMaisPct ?? 0);
   const vivos = vivosNoAndar(hunt);
-  const raioDe = (r) => Math.max(0, Math.floor((GemasC2.raioDaRunaM(Rr, r.nivel ?? 0) * Math.sqrt(fator)) / 2));
+  // (revisão C2, 21/10) o raio pela regra do jogo — m ÷ 2 e a fração vira a chance de uma casa a mais (`casasDoRaio`) —, sorteado uma vez por runa, nível e Área
+  // (a decisão de qual runa pega e a explosão dela usam o mesmo)
+  const raioDe = (r) => {
+    const n = r.nivel ?? 0;
+    if (r.raioSorteado?.nivel !== n || r.raioSorteado?.fator !== fator) r.raioSorteado = { nivel: n, fator, casas: Math.max(0, casasDoRaio(GemasC2.raioDaRunaM(Rr, n) * Math.sqrt(fator))) };
+    return r.raioSorteado.casas;
+  };
   const pega = (r) => vivos.filter((m) => !m.dummy && distanciaChebyshev(m, r) <= raioDe(r)).length;
   const comAlvo = runas.map((r) => ({ r, n: pega(r) })).filter((x) => x.n > 0);
   if (!comAlvo.length) return [];
   const ficha = Ficha.combate(estado);
-  const usoMs = Math.round(Rr.explosaoMs / Math.max(0.1, 1 + (ficha.castSpeed ?? 0) / 100));
-  const custo = GemasC2.custoDaExplosao(ef.nivel ?? 1);
-  const melhoravel = runas.some((r) => (r.nivel ?? 0) < Rr.nivelMax);
+  // (revisão C2, 21/10 — o PoB, RuneBlast) a conjuração: a da ficha + a das tags dela (Magia, Canalização, Arcano) + a dos suportes da Vinculação + 0,5% por qualidade;
+  // o custo (6 a 26) com os mesmos modificadores do custo das gemas (o multiplicador dos suportes, "Custo de Mana aumentado", a eficiência, o fixo)
+  const porTag = ModsPoe.somaPorTags(ficha, [...ModsPoe.tagsDoPoe(Rr.tagsDaExplosao ?? []), 'habilidade']);
+  const vel = (ficha.castSpeed ?? 0) + (porTag.cast_speed_tag ?? 0) + (ef.velConjuracaoPct ?? 0) + (Rr.velConjuracaoPorQualidade ?? 0) * (ef.qualidade ?? 0);
+  const usoMs = Math.round(Rr.explosaoMs / Math.max(0.1, 1 + vel / 100));
+  const custo = (porTag.sem_custo_mana ?? 0) > 0 ? 0 : Math.max(0, Math.round((GemasC2.custoDaExplosao(ef.nivel ?? 1) * (1 + (ficha.custoDeMana ?? 0)) * (1 + (ef.custoPct ?? 0) / 100) * Math.max(0, 1 + (ModsPoe.valor(ficha, 'custo_mana_inc') + (porTag.custo_mana_inc ?? 0)) / 100) * Math.max(0, 1 + (ModsPoe.valor(ficha, 'custo_mana_mais') + (porTag.custo_mana_mais ?? 0)) / 100)) / Math.max(0.1, 1 + (ModsPoe.valor(ficha, 'eficiencia_custo_mana') + (porTag.eficiencia_custo_mana ?? 0)) / 100) + ModsPoe.valor(ficha, 'custo_mana_fixo') + (porTag.custo_mana_fixo ?? 0)));
+  const g = (hunt.poeExplosaoDeRunas ??= { gasto: 0 });
+  // (as runas da canalização de agora: as que havia quando ela começou, ainda vivas)
+  const vivasIds = new Set(runas.map((r) => r.id));
+  if (!g.canal?.some((id) => vivasIds.has(id))) g.canal = runas.map((r) => r.id);
+  const doCanal = new Set(g.canal);
+  const melhoravel = runas.some((r) => doCanal.has(r.id) && (r.nivel ?? 0) < Rr.nivelMax);
   const acabando = comAlvo.some((x) => x.r.ate - agora <= 1000);
   const eventos = [];
   if (melhoravel && !acabando && (estado.mana ?? 0) >= custo) {
     estado.mana = Math.max(0, (estado.mana ?? 0) - custo);
-    const g = (hunt.poeExplosaoDeRunas ??= { gasto: 0 });
     g.gasto += custo;
+    g.ultimoUso = agora;
     const n = Math.floor(g.gasto / Rr.manaPorMelhoria);
     const feitas = GemasC2.melhorarRunas(runas, n, Rr);
     g.gasto -= feitas.length * Rr.manaPorMelhoria;
@@ -7497,12 +7544,15 @@ function explosaoDeRunas(estado, hunt, personagem, agora) {
     return eventos;
   }
   cds[GRUPO_DO_POE] = { ate: agora + usoMs, total: usoMs };
+  g.ultimoUso = agora;
+  delete g.canal;
   const alvo = comAlvo.sort((a, b) => b.n - a.n || distanciaChebyshev(hunt.pos, a.r) - distanciaChebyshev(hunt.pos, b.r))[0].r;
   const cadeia = GemasC2.cadeiaDeRunas(runas, alvo);
   consumirObjetos(hunt, cadeia);
-  if (hunt.poeExplosaoDeRunas) hunt.poeExplosaoDeRunas.gasto = 0;
-  // (a do Teletransporte: até a runa detonada, se você não detonou runas há 0,5 s — e a casa não tem bicho)
-  if (Rr.teleporta && agora - (hunt.poeUltimaDetonacao ?? -Infinity) >= Rr.teleporteMs && !vivos.some((m) => m.x === alvo.x && m.y === alvo.y)) {
+  g.gasto = 0;
+  // (a do Teletransporte: até a runa detonada, se você não detonou runas há 0,5 s — e a casa não tem bicho; revisão C2, 21/10: e é andável no jogo)
+  const andavelDoTp = ModsPoe.gradeDoCombate(hunt)?.andavel ?? null;
+  if (Rr.teleporta && agora - (hunt.poeUltimaDetonacao ?? -Infinity) >= Rr.teleporteMs && !vivos.some((m) => m.x === alvo.x && m.y === alvo.y) && (!andavelDoTp || andavelDoTp.has(`${alvo.x},${alvo.y}`))) {
     eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
     moverNoDeslocamento(hunt, { x: alvo.x, y: alvo.y }, agora);
     eventos.push({ t: 'fx', id: EFEITO_DO_TELEPORTE, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
@@ -7529,7 +7579,7 @@ function explosaoDeRunas(estado, hunt, personagem, agora) {
  *    around the target").
  * O golpe sai pelo caminho de sempre (`dispararSemMarcar` com a `plantada` de tipo `estaca`: a área em volta do ponto, com o "mais" da explosão). Devolve os eventos.
  */
-function tiqueDoC2(estado, hunt, personagem, eventos, agora) {
+function tiqueDoC2(estado, hunt, personagem, eventos, agora, comExplosao = true) {
   const noPonto = (acao, centro, raioM, pct, raioExtraM = 0) => {
     const ef = Gemas.efeitoNaSkill(estado, acao);
     if (!ef) return;
@@ -7547,7 +7597,7 @@ function tiqueDoC2(estado, hunt, personagem, eventos, agora) {
   if (runas.length) {
     const casas = new Set(runas.map((r) => `${r.x},${r.y}`));
     for (const m of vivosNoAndar(hunt)) if (!m.dummy && casas.has(`${m.x},${m.y}`)) Estados.aplicar(m, { lentidaoPct: GemasC2.RUNAS_DA_TEMPESTADE.tolhePct }, 1, agora, Math.random, !!hunt.isBoss);
-    eventos.push(...explosaoDeRunas(estado, hunt, personagem, agora));
+    if (comExplosao) eventos.push(...explosaoDeRunas(estado, hunt, personagem, agora));
   }
   const im = hunt.poeImolacao;
   if (im && im.ate <= agora) {
@@ -7968,16 +8018,37 @@ export function febreNoAcerto(hunt, bicho, agora = hunt?.clock ?? 0) {
 /**
  * (D-B2.5) O CONTÁGIO espalha (na morte do afetado — `morte` — ou no acerto nele, o da Transferência): o degenerativo dele, com o dano que falta e a duração que resta,
  * para os vivos no raio (em casas, o da área do uso que o pôs) em volta do afetado; os que pegam também espalham. Uma instância da gema por inimigo (a mais forte fica).
+ * (revisão B2, dono 21/10) O MAIS FORTE FICA, pelo critério do PoE — o maior DANO POR SEGUNDO: o vizinho que já tem o da mesma gema com pelo menos o mesmo dano por
+ * segundo não recebe o espalhado (o mais fraco não encurta o dele nem tira o dano que falta); o mais forte troca o dele inteiro (o que falta, a duração e o pulso —
+ * mesmo que dure menos).
+ * (revisão PR2, 21/10) "O debuff é espalhado por Contágio" (`GemasPoe.espalhadoPeloContagio`: o Drenar Essência e o do Desespero, a Praga do Contágio): os desse
+ * inimigo vão junto, no mesmo raio, com o dreno (D2 do dono: cada debuff ativo soma) — sem marca de Contágio: só espalham de novo com um Contágio no novo alvo.
  */
+const ativoDoDot = (d, agora) => d.falta > 0 && d.ate + (Dot.CONFIG.tipos[d.tipo]?.pulsoMs ?? 1000) > agora;
+/** O dano por segundo que falta de um dano contínuo (o critério do "mais forte" do PoE). */
+const dpsDoDot = (d, agora) => d.falta / Math.max(0.05, (d.ate - agora) / 1000);
+function espalharUmDot(hunt, de, d, raio, agora, marcar) {
+  for (const m of hunt.monstros ?? []) {
+    if (m === de || !(m.hp > 0) || (m.z ?? hunt.z ?? 0) !== (de.z ?? hunt.z ?? 0) || distanciaChebyshev(m, de) > raio) continue;
+    const ja = (m.dots ?? []).find((x) => x.chave === d.chave && x.tipo === d.tipo && ativoDoDot(x, agora));
+    if (ja && dpsDoDot(ja, agora) >= dpsDoDot(d, agora)) continue;
+    if (ja) m.dots.splice(m.dots.indexOf(ja), 1);
+    if (!Dot.aplicar(m, { tipo: d.tipo, total: d.falta, duracaoMs: d.ate - agora, chave: d.chave, origem: d.origem }, agora)) continue;
+    for (const x of m.dots ?? []) if (x.chave === d.chave && x.tipo === d.tipo && x.falta > 0) marcar(x);
+  }
+}
 export function espalharContagio(hunt, de, agora = hunt?.clock ?? 0, { morte = false } = {}) {
+  let raio = -1;
   for (const d of [...(de?.dots ?? [])]) {
     const c = d.contagio;
     if (!c || !(d.falta > 0) || !(d.ate > agora) || !(morte ? c.aoMorrer : c.aoAcertar)) continue;
-    for (const m of hunt.monstros ?? []) {
-      if (m === de || !(m.hp > 0) || (m.z ?? hunt.z ?? 0) !== (de.z ?? hunt.z ?? 0) || distanciaChebyshev(m, de) > c.raio) continue;
-      if (!Dot.aplicar(m, { tipo: d.tipo, total: d.falta, duracaoMs: d.ate - agora, chave: d.chave, origem: d.origem }, agora)) continue;
-      for (const x of m.dots ?? []) if (x.chave === d.chave && x.tipo === d.tipo && x.falta > 0 && !x.contagio) x.contagio = c;
-    }
+    raio = Math.max(raio, c.raio ?? 0);
+    espalharUmDot(hunt, de, d, c.raio, agora, (x) => { if (!x.contagio) x.contagio = c; });
+  }
+  if (raio < 0) return;
+  for (const d of [...(de?.dots ?? [])]) {
+    if (d.contagio || d.chave == null || !(d.falta > 0) || !(d.ate > agora) || !GemasPoe.espalhadoPeloContagio(d.chave)) continue;
+    espalharUmDot(hunt, de, d, raio, agora, (x) => { if (d.dreno) x.dreno = d.dreno; });
   }
 }
 /** O acerto SEU num inimigo (as gemas e o golpe básico — `combate`): a Febre Corrompedora e o Contágio da Transferência. Devolve os estados postos. */
@@ -7993,15 +8064,47 @@ export function aoAcertarB2(hunt, bicho, dano, agora = hunt?.clock ?? 0) {
  * (D-B2.3) O debuff do GOLPE INFERNAL no acertado: o CARREGADO (`carregado` — o acertado pelo golpe): +1 carga (até 6), a duração renova; o DESCARREGADO (o acertado pela
  * explosão) só marca — não tira a carga de quem já a tem. Devolve as cargas de agora.
  */
-function infernalNoAcerto(bicho, inf, ate, carregado, acao, agora) {
-  const e = (bicho.estados ??= {});
-  const atual = e.poeInfernal?.ate > agora ? e.poeInfernal : null;
+// (revisão B2, dono 21/10: UM DEBUFF POR JOGADOR, como no PoE) `quem`: o nome de quem pôs (a party divide `hunt.monstros`) — cada membro tem o seu no monstro, com as
+// cargas e a explosão dele. O primeiro fica em `estados.poeInfernal` (o de quem caça sozinho); os de outros membros, em `estados.poeInfernaisDeOutros[quem]`.
+const mesmoQuem = (a, b) => (a ?? null) === (b ?? null);
+/** Todos os debuffs do Golpe Infernal no bicho (um por jogador). */
+function infernaisDe(b) {
+  const e = b?.estados;
+  return e ? [...(e.poeInfernal ? [e.poeInfernal] : []), ...Object.values(e.poeInfernaisDeOutros ?? {})] : [];
+}
+/** O debuff do Golpe Infernal de `quem` no bicho, ou null. */
+function infernalDe(b, quem) {
+  const e = b?.estados;
+  if (!e) return null;
+  if (e.poeInfernal && mesmoQuem(e.poeInfernal.quem, quem)) return e.poeInfernal;
+  return e.poeInfernaisDeOutros?.[quem ?? ''] ?? null;
+}
+function porInfernal(b, quem, deb) {
+  const e = (b.estados ??= {});
+  if (!e.poeInfernal || mesmoQuem(e.poeInfernal.quem, quem)) e.poeInfernal = deb;
+  else (e.poeInfernaisDeOutros ??= {})[quem ?? ''] = deb;
+}
+function tirarInfernal(b, deb) {
+  const e = b?.estados;
+  if (!e || !deb) return;
+  const outros = e.poeInfernaisDeOutros;
+  if (e.poeInfernal === deb) {
+    delete e.poeInfernal;
+    // (o de outro membro passa ao lugar do primeiro)
+    const k = outros ? Object.keys(outros)[0] : undefined;
+    if (k !== undefined) { e.poeInfernal = outros[k]; delete outros[k]; }
+  } else if (outros) for (const [k, v] of Object.entries(outros)) if (v === deb) delete outros[k];
+  if (outros && !Object.keys(outros).length) delete e.poeInfernaisDeOutros;
+}
+function infernalNoAcerto(bicho, inf, ate, carregado, acao, agora, quem = null) {
+  const deb = infernalDe(bicho, quem);
+  const atual = deb?.ate > agora ? deb : null;
   if (carregado) {
     const n = Math.min(inf.maxCargas, (atual?.carregado ? atual.n : 0) + 1);
-    e.poeInfernal = { carregado: true, n, ate, acao };
+    porInfernal(bicho, quem, { carregado: true, n, ate, acao, quem });
     return n;
   }
-  if (!atual?.carregado) e.poeInfernal = { carregado: false, n: 0, ate: Math.max(ate, atual?.ate ?? 0), acao };
+  if (!atual?.carregado) porInfernal(bicho, quem, { carregado: false, n: 0, ate: Math.max(ate, atual?.ate ?? 0), acao, quem });
   return atual?.carregado ? atual.n : 0;
 }
 /**
@@ -8024,20 +8127,41 @@ function explodirInfernal(estado, hunt, personagem, onde, deb, eventos) {
  * (D-B2.5); o Golpe Infernal — o carregado explode com as cargas dele, e o morto com qualquer um dos dois debuffs explode como cadáver ("Explosão causa Dano de Fogo base
  * igual a 6% da Vida máxima do cadáver", no raio da explosão — D-B2.3).
  */
+// (revisão B2, 21/10) O QUE É DE OUTRO MEMBRO da party (a sala divide os bichos): a morte que outro processa (quem matou, ou o tique dele) não usa a ficha nem as
+// cargas de quem não é o dono — fica na fila da sala (`salaDe(hunt).poeB2Pendentes`) e o DONO a faz no tique dele (`tiqueDasGemasB2`). Caçando sozinho, é sempre o seu.
+const PENDENTES_B2 = 40;
+const ehMeu = (quem, personagem) => quem == null || quem === (personagem?.nome ?? null);
+function pendenteB2(hunt, p) {
+  const sala = salaDe(hunt) ?? hunt;
+  const fila = (sala.poeB2Pendentes ??= []);
+  fila.push(p);
+  if (fila.length > PENDENTES_B2) fila.splice(0, fila.length - PENDENTES_B2);
+}
+function infernalNaMorte(estado, hunt, personagem, deb, onde, maxHp, eventos, agora) {
+  if (!((estado.hp ?? 0) > 0)) return;
+  if (deb.carregado) explodirInfernal(estado, hunt, personagem, onde, deb, eventos);
+  const entry = POR_ID.get(deb.acao);
+  const ef = entry ? Gemas.efeitoNaSkill(estado, deb.acao) : null;
+  const inf = entry?.poeGema ? GemasPoe.b2DaGema(entry.poeGema.slug, ef?.nivel ?? 1, ef?.qualidade ?? 0).infernal : null;
+  if (inf?.cadaverPct > 0) eventos.push(...explodirCadaveres(estado, hunt, entry, ef, { pct: inf.cadaverPct, raioExplosaoM: inf.raioM, tags: ['ataque', 'area', 'fogo'] }, [{ ...onde, maxHp }], Ficha.combate(estado), agora));
+}
 export function aoMorrerB2(estado, hunt, personagem, morto, eventos = []) {
   if (!itensPoeLigado() || !hunt || !morto) return eventos;
   const agora = hunt.clock ?? 0;
-  if ((morto.dots ?? []).some((d) => /^Reap(_of_Butchery)?$/.test(d.chave ?? '') && (d.ate ?? 0) > agora - 1000)) GemasB2.mudarSangrentas(hunt, -1, agora);
+  // (revisão B2, 21/10) o Ceifar: o debuff AINDA ATIVO (o `ativo` do dano contínuo: a folga de um pulso, nada mais) — uma carga de CADA dono dos Ceifares no morto
+  const donosDoCeifar = new Set((morto.dots ?? []).filter((d) => /^Reap(_of_Butchery)?$/.test(d.chave ?? '') && ativoDoDot(d, agora)).map((d) => d.origem?.quem ?? null));
+  for (const quem of donosDoCeifar) {
+    if (ehMeu(quem, personagem)) GemasB2.mudarSangrentas(hunt, -1, agora);
+    else pendenteB2(hunt, { quem, sangrenta: -1 });
+  }
   if ((morto.dots ?? []).some((d) => d.contagio?.aoMorrer)) espalharContagio(hunt, morto, agora, { morte: true });
-  const deb = morto.estados?.poeInfernal;
-  if (deb && deb.ate > agora && (estado.hp ?? 0) > 0) {
-    delete morto.estados.poeInfernal;
+  // (um debuff por jogador: cada um explode com a ficha do dono dele)
+  for (const deb of infernaisDe(morto)) {
+    tirarInfernal(morto, deb);
+    if (!(deb.ate > agora)) continue;
     const onde = { x: morto.x, y: morto.y, z: morto.z ?? hunt.z ?? 0 };
-    if (deb.carregado) explodirInfernal(estado, hunt, personagem, onde, deb, eventos);
-    const entry = POR_ID.get(deb.acao);
-    const ef = entry ? Gemas.efeitoNaSkill(estado, deb.acao) : null;
-    const inf = entry?.poeGema ? GemasPoe.b2DaGema(entry.poeGema.slug, ef?.nivel ?? 1, ef?.qualidade ?? 0).infernal : null;
-    if (inf?.cadaverPct > 0) eventos.push(...explodirCadaveres(estado, hunt, entry, ef, { pct: inf.cadaverPct, raioExplosaoM: inf.raioM, tags: ['ataque', 'area', 'fogo'] }, [{ ...onde, maxHp: morto.maxHp ?? 0 }], Ficha.combate(estado), agora));
+    if (ehMeu(deb.quem, personagem)) infernalNaMorte(estado, hunt, personagem, deb, onde, morto.maxHp ?? 0, eventos, agora);
+    else pendenteB2(hunt, { quem: deb.quem, infernal: deb, onde, maxHp: morto.maxHp ?? 0 });
   }
   return eventos;
 }
@@ -8057,6 +8181,7 @@ function soloDoChicoteArdente(estado, hunt, entry, ef, solo, bicho, agora, dono)
   return true;
 }
 /** (lote B2) Quem está agora num chão de Sangue Fervendo `o` fica queimando pelo "Perduram por N segundos" depois de sair (o fim: o do chão, ou agora, + N s). */
+// (revisão B2, 21/10: a marca guarda QUEM — o dono do chão, `o.quem` —; o tique de outro membro não a queima; a de outro dono só é trocada pela mais forte)
 function marcarSangueFervendo(hunt, o, agora) {
   const fim = Math.min(agora, o.ate);
   const forca = (x) => (x?.partes ?? []).reduce((t, p) => t + (p.porSegundo ?? 0), 0);
@@ -8064,8 +8189,10 @@ function marcarSangueFervendo(hunt, o, agora) {
     if (distanciaChebyshev(m, o) > o.raio) continue;
     const e = (m.estados ??= {});
     const s = e.poeSangueFervendo;
-    if (s && s.ate > agora && forca(s) > forca(o)) continue;
-    e.poeSangueFervendo = { ate: fim + (o.perduraMs ?? 0), partes: o.partes, acao: o.acao, dono: o.dono, z: o.z ?? hunt.z ?? 0, ultimo: s?.ate > agora ? s.ultimo : agora, resto: s?.resto ?? {} };
+    const mesmoDono = (s?.quem ?? null) === (o.quem ?? null);
+    if (s && s.ate > agora && (mesmoDono ? forca(s) > forca(o) : forca(s) >= forca(o))) continue;
+    const segue = s?.ate > agora && mesmoDono;
+    e.poeSangueFervendo = { ate: fim + (o.perduraMs ?? 0), partes: o.partes, acao: o.acao, dono: o.dono, quem: o.quem ?? null, z: o.z ?? hunt.z ?? 0, ultimo: segue ? s.ultimo : agora, resto: segue ? s?.resto ?? {} : {} };
   }
 }
 /**
@@ -8074,17 +8201,31 @@ function marcarSangueFervendo(hunt, o, agora) {
  * inimigo, o mais forte). Na Safe Zone (você nela), nada fere.
  */
 export function tiqueDasGemasB2(estado, hunt, personagem, eventos = [], agora = hunt?.clock ?? 0) {
+  // (revisão B2, 21/10) o que a morte processada por outro membro deixou para você (a carga do Ceifar, o Golpe Infernal do morto)
+  const sala = salaDe(hunt) ?? hunt;
+  if (sala.poeB2Pendentes?.length) {
+    const meus = sala.poeB2Pendentes.filter((p) => ehMeu(p.quem, personagem));
+    if (meus.length) {
+      sala.poeB2Pendentes = sala.poeB2Pendentes.filter((p) => !meus.includes(p));
+      if (!sala.poeB2Pendentes.length) delete sala.poeB2Pendentes;
+      for (const p of meus) {
+        if (p.sangrenta) GemasB2.mudarSangrentas(hunt, p.sangrenta, agora);
+        if (p.infernal) infernalNaMorte(estado, hunt, personagem, p.infernal, p.onde, p.maxHp ?? 0, eventos, agora);
+      }
+    }
+  }
   for (const m of [...(hunt.monstros ?? [])]) {
-    const deb = m.estados?.poeInfernal;
-    if (!deb || deb.ate > agora) continue;
-    delete m.estados.poeInfernal;
-    if (deb.carregado && deb.n > 0 && m.hp > 0 && (estado.hp ?? 0) > 0) explodirInfernal(estado, hunt, personagem, { x: m.x, y: m.y, z: m.z ?? hunt.z ?? 0 }, deb, eventos);
+    for (const deb of infernaisDe(m)) {
+      if (deb.ate > agora || !ehMeu(deb.quem, personagem)) continue;
+      tirarInfernal(m, deb);
+      if (deb.carregado && deb.n > 0 && m.hp > 0 && (estado.hp ?? 0) > 0) explodirInfernal(estado, hunt, personagem, { x: m.x, y: m.y, z: m.z ?? hunt.z ?? 0 }, deb, eventos);
+    }
   }
   for (const o of hunt.poeObjetos ?? []) if (o.sangueFervendo && (o.z ?? 0) === (hunt.z ?? 0) && o.ate > (o.marcado ?? -Infinity)) { marcarSangueFervendo(hunt, o, agora); o.marcado = Math.min(agora, o.ate); }
   const imune = Protecao.imune(hunt);
   for (const m of vivosNoAndar(hunt)) {
     const s = m.estados?.poeSangueFervendo;
-    if (!s) continue;
+    if (!s || !ehMeu(s.quem, personagem)) continue;
     const fim = Math.min(agora, s.ate);
     const dt = Math.max(0, fim - (s.ultimo ?? fim));
     s.ultimo = fim;

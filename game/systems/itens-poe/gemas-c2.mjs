@@ -258,6 +258,8 @@ export const furiaDoPreso = (hunt, alvo) => (hunt?.poeCorrentes ?? []).find((x) 
 export const RUNAS_DA_TEMPESTADE = Object.freeze({
   duracaoMs: 12000, nivelMax: 3, maisDanoPorNivelPct: 100, maisAreaPorNivelPct: 30, areaPorNivelPorQualidade: 0.5, raioM: 1.6, tolhePct: 50,
   explosaoMs: 160, maxMelhoriasPorUso: 9, teleporteMs: 500,
+  // (revisão C2, 21/10 — o PoB, RuneBlast: qualityStats base_cast_speed_+% 0,5 por qualidade; skillTypes Spell, Channel, Arcane — as tags da conjuração e do custo)
+  velConjuracaoPorQualidade: 0.5, tagsDaExplosao: Object.freeze(['Magia', 'Canalização', 'Arcano']),
 });
 const LINHA_MANA_POR_MELHORIA = /^Uma Runa é Melhorada para cada (\d+) de Mana Gasta$/i;
 /** As runas da Vinculação (`{ manaPorMelhoria, maisAreaPorNivelPct, teleporta, …RUNAS_DA_TEMPESTADE }`), ou null. */
@@ -279,13 +281,14 @@ export const custoDaExplosao = (nivel = 1) => CUSTO_DA_EXPLOSAO[Math.max(1, Math
  * (escolha do lote — o PoE diz "spread runes on the ground in a growing pattern", sem a geometria) a casa da próxima runa: a do alvo e, ocupada, a mais perto
  * dele na espiral (os anéis em volta, de dentro para fora), sem repetir a casa de outra runa.
  */
-export function casaDaProximaRuna(centro, ocupadas, raioMax = 8) {
+// (revisão C2, 21/10: `livre(casa)` — a casa ANDÁVEL do jogo (a grade do combate): a runa não fica em parede nem fora da grade)
+export function casaDaProximaRuna(centro, ocupadas, raioMax = 8, livre = null) {
   const tem = new Set(ocupadas.map((c) => `${c.x},${c.y}`));
   for (let r = 0; r <= raioMax; r++) {
     for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
       if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
       const c = { x: centro.x + dx, y: centro.y + dy };
-      if (!tem.has(`${c.x},${c.y}`)) return c;
+      if (!tem.has(`${c.x},${c.y}`) && (!livre || livre(c))) return c;
     }
   }
   return null;

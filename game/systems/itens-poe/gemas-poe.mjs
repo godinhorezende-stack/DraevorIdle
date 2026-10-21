@@ -1266,6 +1266,10 @@ export function danoComAsDuasArmas(slug) {
   }
   return DANO_DE_AMBAS.test(g.desc ?? '') ? 100 : null;
 }
+// (revisão B2/PR2, 21/10) "O debuff é espalhado por Contágio." (o poedb e o PoB: o Drenar Essência, o do Desespero, a Praga do Contágio): o debuff da gema vai junto
+// quando um Contágio no mesmo inimigo espalha — `Acoes.espalharContagio`
+const ESPALHADO_PELO_CONTAGIO = /espalhado por Contágio/i;
+export const espalhadoPeloContagio = (slug) => ESPALHADO_PELO_CONTAGIO.test(POR_SLUG.get(slug)?.desc ?? '');
 /** Os tipos de AFECÇÃO ELEMENTAL no bicho agora (incêndio, resfriamento, congelamento, eletrização). */
 export function afeccoesElementaisEm(bicho, agora) {
   const e = bicho?.estados ?? {};

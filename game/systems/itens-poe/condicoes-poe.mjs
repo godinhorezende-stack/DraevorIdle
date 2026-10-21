@@ -45,11 +45,16 @@ export function soloImuneAMaldicoes(h, agora = h?.clock ?? 0) {
   return !!p && (h.solosSagrados ?? []).some((s) => s.imuneMaldicao && soloValendo(h, s, agora) && Math.max(Math.abs(s.x - p.x), Math.abs(s.y - p.y)) <= s.raio);
 }
 // (lote B2, dono 20/10: + `onde` — o lugar e o raio em casas do Solo Sagrado que a gema cria longe de você: a Chama Purificadora, no local mirado)
+// (revisão B2, 21/10: o teto de 5 é POR FONTE, como no PoE — cada habilidade tem o limite dela: `onde.fonte` — a gema que o cria (a Chama Purificadora); sem ela, o
+// Solo Sagrado "seu" (o deslocamento, o no acerto). O do TOTEM (`dono`) não entra em teto nenhum: dura enquanto o totem vive; o de totem morto sai da lista.)
 export function criarSoloSagrado(h, segundos, agora = h?.clock ?? 0, onde = null) {
   if (!h?.pos || !(segundos > 0)) return;
-  const lista = (h.solosSagrados ??= []).filter((s) => s.ate > agora);
-  lista.push({ x: onde?.x ?? h.pos.x, y: onde?.y ?? h.pos.y, raio: onde?.raio ?? SOLO_SAGRADO.raio, ate: agora + segundos * 1000 });
-  h.solosSagrados = lista.slice(-SOLO_SAGRADO.maximo);
+  const fonte = onde?.fonte ?? null;
+  const vivos = (h.solosSagrados ??= []).filter((s) => soloValendo(h, s, agora));
+  const daFonte = vivos.filter((s) => !s.dono && (s.fonte ?? null) === fonte);
+  daFonte.push({ x: onde?.x ?? h.pos.x, y: onde?.y ?? h.pos.y, raio: onde?.raio ?? SOLO_SAGRADO.raio, ate: agora + segundos * 1000, ...(fonte != null ? { fonte } : {}) });
+  const fica = new Set(daFonte.slice(-SOLO_SAGRADO.maximo));
+  h.solosSagrados = [...vivos.filter((s) => s.dono || (s.fonte ?? null) !== fonte), ...daFonte.filter((s) => fica.has(s))];
 }
 /**
  * (lote 57, a Doutrina Racional — dono, 16/10: "Implementar como o Sagrado") O SOLO PROFANO que o personagem cria (`hunt.solosProfanos = [{ x,
@@ -2797,6 +2802,7 @@ export function fatorDaResistenciaRecebida(ficha, elemento, protecao = ficha?.pr
 function conversoesRecebidas(ficha, elemento, res) {
   let resto = 1;
   let convertido = 0;
+  let paraCaos = 0;
   const v = (k) => Number(ficha.afPoe[k]) || 0;
   // (+ os "Elemental … sofrido como Físico/Caos" valem para cada elemento.)
   const elemental = ['fire', 'ice', 'energy'].includes(elemento);
@@ -2804,9 +2810,39 @@ function conversoesRecebidas(ficha, elemento, res) {
     if (outro === elemento) continue;
     const pct = v(`recebe_${elemento}_como_${outro}`) + (elemental ? v(`recebe_elemental_como_${outro}`) : 0);
     const parte = Math.min(resto, pct / 100);
-    if (parte > 0) { convertido += parte * (1 - res(outro) / 100); resto -= parte; }
+    if (parte > 0) { convertido += parte * (1 - res(outro) / 100); resto -= parte; if (outro === 'chaos') paraCaos += parte * (1 - res('chaos') / 100); }
   }
-  return { convertido, resto };
+  return { convertido, resto, paraCaos };
+}
+/**
+ * (revisão PR2, 21/10) A fração do golpe de `elemento` que CHEGA como Caos (já com a resistência a Caos e o "dano recebido" do tipo, como em
+ * `fatorDaResistenciaRecebida`): o Caos que continua Caos e o "X% do Dano … recebido como Dano de Caos" — no PoE a conversão do dano recebido vem antes da
+ * divisão entre o Escudo e a Vida, e o que virou Caos atravessa o Escudo (`Defesa.absorverComOCaos`). Sem o PoE: o Caos é Caos, o resto não.
+ */
+export function parteCaosRecebida(ficha, elemento, protecao = ficha?.protection ?? {}) {
+  if (!ligado() || !ficha?.afPoe || !['fire', 'ice', 'energy', 'physical', 'chaos'].includes(elemento)) return elemento === 'chaos' ? fatorDaResistenciaRecebida(ficha, elemento, protecao) : 0;
+  if (elemento === 'chaos' && Number(ficha.afPoe.imune_caos) > 0) return 0;
+  const res = (el) => Math.min(100, protecao[el] ?? 0);
+  const { resto, paraCaos } = conversoesRecebidas(ficha, elemento, res);
+  return (elemento === 'chaos' ? resto * (1 - res('chaos') / 100) : paraCaos) * fatorDoDanoRecebido(ficha, elemento);
+}
+/**
+ * (revisão PR2, 21/10) O CAOS dentro das `partes` de um acerto recebido (`{ tipo: dano depois das resistências }`; `brutas`: o de antes): de cada tipo, a parte
+ * que chega como Caos — o Físico pelo bruto (a armadura só corta o que continua Físico), os outros na proporção do fator da resistência daquele tipo.
+ */
+export function caosNasPartes(ficha, brutas = {}, partes = {}) {
+  let c = 0;
+  for (const [el, v] of Object.entries(partes)) {
+    if (!(v > 0)) continue;
+    if (el === 'physical') { c += Math.min(v, Math.max(0, brutas[el] ?? 0) * parteCaosRecebida(ficha, el)); continue; }
+    c += Math.min(v, v * fracaoCaosDoTipo(ficha, el));
+  }
+  return c;
+}
+/** (revisão PR2, 21/10) Do dano de `elemento` que já passou pelas resistências, a fração que é Caos (1 no Caos sem conversão; 0 nos outros sem "recebido como Caos"). */
+export function fracaoCaosDoTipo(ficha, elemento) {
+  const f = fatorDaResistenciaRecebida(ficha, elemento);
+  return f > 0 ? Math.min(1, Math.max(0, parteCaosRecebida(ficha, elemento) / f)) : elemento === 'chaos' ? 1 : 0;
 }
 
 // ---------------------------------------------------------------- a DEFESA FÍSICA do PoE 1 (dono, 10/10)

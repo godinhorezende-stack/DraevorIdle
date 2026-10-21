@@ -1230,6 +1230,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     const tomou = Math.min(final, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
     if (tomou > 0) { final -= tomou; eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: tomou, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#c8a2ff' }); }
   }
+  // (revisão PR2, 21/10) o que sobrou depois da Égide: o Escudo Gélido e o Vínculo levam a parte deles de CADA tipo, na proporção (o PoB), e o Caos que
+  // atravessa o Escudo de Energia é reduzido na mesma proporção (`caosDoGolpe`, abaixo)
+  const depoisDaEgide = final;
   // (lote A2) o Escudo Gélido: com você na área, a parte do acerto vai para a Vida do globo antes do Escudo de Energia e da Vida
   if (final > 0 && hunt.a2?.escudoGelido) {
     const tomou = GemasA2.absorverNoEscudoGelido(hunt, final, bicho, hunt.clock ?? 0);
@@ -1241,12 +1244,17 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Energy Shield: absorve antes do magic shield e da vida.
   // ("Dano Físico sofrido ignora o Escudo de Energia": a parte física do golpe vai direto — a espera da recarga reinicia do mesmo jeito; o
   // resto passa pelo escudo.)
-  const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round(fisicoProtegido * fatorFinal)) : 0;
+  // (revisão PR2, 21/10: o Físico recebido como Caos já não é Físico — `caosFisico`, a parte do Físico que chega como Caos; e o Caos que veio por conversão —
+  // "X% do Dano … recebido como Dano de Caos" — também atravessa o Escudo: `ModsPoe.caosNasPartes`)
+  const caosFisico = Math.min(fisicoProtegido, brutoFisico * ModsPoe.parteCaosRecebida(ficha, 'physical'));
+  // (revisão PR2, dono 21/10: o Escudo Gélido e o Vínculo também levam a parte deles do Físico que ignora o Escudo — a mesma proporção do Caos)
+  const depoisDosDesvios = depoisDaEgide > 0 ? final / depoisDaEgide : 0;
+  const fisicoDireto = ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0 ? Math.min(final, Math.round((fisicoProtegido - caosFisico) * fatorFinal * depoisDosDesvios)) : 0;
   if (fisicoDireto > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
   // (dono, 20/10 — o lote PR2: "o Caos dos monstros atravessa o Escudo de Energia, como no PoE") a parte de Caos do golpe — a do monstro (`danoExtra`, o
   // `danoExtraPct` do mapa), depois das resistências e do fator final — vai direto à Vida, salvo as exceções do PoE (`Defesa.absorverComOCaos`); no limite
   // do que sobrou do golpe depois da Égide, do Escudo Gélido e do Vínculo
-  const caosDoGolpe = Math.min(final - fisicoDireto, Math.round((partes.chaos ?? 0) * fatorFinal));
+  const caosDoGolpe = Math.min(final - fisicoDireto, Math.round((caosFisico + ModsPoe.caosNasPartes(ficha, { ...brutas, physical: (brutas.physical ?? 0) - brutoFisico }, partes)) * fatorFinal * depoisDosDesvios));
   final = fisicoDireto + Defesa.absorverComOCaos(estado, ficha, final - fisicoDireto, caosDoGolpe, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   // (o "X% do Dano de Acertos é sofrido na Vida do seu Totem mais próximo antes da sua" sai no `Arvore.danoRecebido`, logo abaixo.)
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).

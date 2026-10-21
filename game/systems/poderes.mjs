@@ -173,7 +173,9 @@ export function alcanca(a, bicho, alvo) {
  * tirou da vida. É o mesmo caminho para as magias dos bosses e para as
  * mecânicas dos mobs (explosão, aura, veneno, reflexo — `mobs/mecanicas.mjs`).
  */
-export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo, suprimiu = false }) {
+// (revisão PR2, 21/10) `caos`: a parte de CAOS de `dano` (a magia com partes de vários tipos — `dispararMagia`); sem ela, a do tipo único (`elemento`): o Caos que
+// continua Caos e o "X% do Dano … recebido como Dano de Caos" (`ModsPoe.fracaoCaosDoTipo`). Só essa parte atravessa o Escudo de Energia.
+export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo, suprimiu = false, caos = null }) {
   // Numa Safe Zone, nada fere o jogador — magia, mecânica, dano contínuo (`protecao.mjs`).
   if (Protecao.imune(hunt)) return 0;
   // (PoE: "X% do dano mágico sofrido suprimido ignora o escudo de energia" — essa parte vai direto.)
@@ -182,7 +184,8 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
   // PoE: o dano de CAOS atravessa o Escudo de Energia (a menos que um único diga que não); a espera da recarga reinicia do mesmo jeito.
   // (+ ciclo 7, lote E: "X% do dano de caos sofrido não ignora o escudo de energia" — essa parte passa pelo escudo.)
   // (dono, 20/10 — o lote PR2: a regra num lugar só, `Defesa.absorverComOCaos`)
-  if (elemento === 'chaos' && ModsPoe.caosAtravessaOEscudo(ficha)) dano = Defesa.absorverComOCaos(estado, ficha, dano, dano, eventos, base);
+  const parteCaos = dano > 0 ? Math.min(dano, Math.max(0, caos != null ? Math.round(caos * (dano / Math.max(1e-9, dano + direto))) : Math.round(dano * ModsPoe.fracaoCaosDoTipo(ficha, elemento)))) : 0;
+  if (parteCaos > 0 && ModsPoe.caosAtravessaOEscudo(ficha)) dano = Defesa.absorverComOCaos(estado, ficha, dano, parteCaos, eventos, base);
   // ("Dano Físico sofrido ignora o Escudo de Energia".)
   else if (elemento === 'physical' && ModsPoe.valor(ficha, 'fisico_ignora_escudo') > 0) estado.esEspera = Defesa.esperaDaRecarga(ficha);
   else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
@@ -373,6 +376,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     const tomou = Math.min(dano, Math.round(ModsPoe.absorverNaEgide(hunt, porTipo, hunt.clock ?? 0)));
     if (tomou > 0) { dano -= tomou; eventos.push({ t: 'dmg', ...base, v: tomou, color: '#c8a2ff' }); }
   }
+  const depoisDaEgide = dano;
   // (lote A2) o Escudo Gélido: com você na área, a parte do acerto vai para a Vida do globo antes do Escudo de Energia e da Vida
   if (dano > 0 && hunt.a2?.escudoGelido) {
     const tomou = GemasA2.absorverNoEscudoGelido(hunt, dano, bicho, hunt.clock ?? 0);
@@ -380,7 +384,10 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
   // (PoE, 12/10: o Vínculo D'Alma de um companheiro em você — a parte do acerto no Escudo de Energia de quem vincula.)
   dano = Vinculos.desviarParaOEscudo(estado, dano);
-  dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu });
+  // (revisão PR2, 21/10) só a parte de CAOS da magia atravessa o Escudo de Energia: a de cada tipo (`ModsPoe.caosNasPartes` — o Caos e o recebido como Caos), na
+  // proporção do que sobrou do acerto (a Égide não toma Caos; o Escudo Gélido e o Vínculo levam de cada tipo na proporção)
+  const caosDaMagia = somaDasPartes > 0 ? Math.min(dano, Math.round(((danoDoAcerto * ModsPoe.caosNasPartes(ficha, brutas, partes)) / somaDasPartes) * (depoisDaEgide > 0 ? dano / depoisDaEgide : 0))) : 0;
+  dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo, suprimiu, caos: caosDaMagia });
   // PoE: o "acertado/dano recentemente", a recuperação do dano sofrido e o congelar quem acerta (a magia não é corpo a corpo: sem Reflexo).
   ModsPoe.aoSerAcertado(estado, hunt, bicho, ficha, { dano: Math.max(0, dano), corpoACorpo: false, ataque: projetil, magia: !projetil, tipo: a.elemento, eventos });
   if (critDoMob.critico) ModsPoe.evento(estado, hunt, 'serAcertadoCritico', ficha, { alvo: bicho, eventos, personagem });
